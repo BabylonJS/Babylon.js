@@ -7,7 +7,37 @@ import { InternalTexture, InternalTextureSource } from "../Materials/Textures/in
 import type { IEffectCreationOptions, IShaderPath } from "../Materials/effect";
 import { Effect } from "../Materials/effect";
 import type { EffectFallbacks } from "../Materials/effectFallbacks";
-import { Constants } from "./constants";
+import {
+    SNAPSHOTRENDERING_STANDARD,
+    LEQUAL,
+    ALPHA_ADD,
+    ALPHA_DISABLE,
+    BUFFER_CREATIONFLAG_READ,
+    BUFFER_CREATIONFLAG_WRITE,
+    BUFFER_CREATIONFLAG_UNIFORM,
+    BUFFER_CREATIONFLAG_VERTEX,
+    BUFFER_CREATIONFLAG_INDEX,
+    BUFFER_CREATIONFLAG_STORAGE,
+    BUFFER_CREATIONFLAG_INDIRECT,
+    DISABLEUA,
+    TEXTUREFORMAT_RGBA,
+    TEXTURETYPE_UNSIGNED_INT,
+    TEXTURE_TRILINEAR_SAMPLINGMODE,
+    TEXTURETYPE_FLOAT,
+    TEXTURE_NEAREST_SAMPLINGMODE,
+    TEXTURETYPE_HALF_FLOAT,
+    TEXTURE_CLAMP_ADDRESSMODE,
+    TEXTURETYPE_UNSIGNED_BYTE,
+    AUTOSAMPLERSUFFIX,
+    DELAYLOADSTATE_NOTLOADED,
+    TEXTURE_CUBIC_MODE,
+    TEXTURE_SKYBOX_MODE,
+    TEXTURE_WRAP_ADDRESSMODE,
+    TEXTURETYPE_UNSIGNED_INTEGER,
+    TEXTURETYPE_UNSIGNED_SHORT,
+    TEXTUREFORMAT_DEPTH24_STENCIL8,
+    TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8,
+} from "./constants";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import * as WebGPUConstants from "./WebGPU/webgpuConstants";
 import { VertexBuffer } from "../Buffers/buffer";
@@ -377,7 +407,7 @@ export class WebGPUEngine extends AbstractEngine {
     public dbgShowEmptyEnableEffectCalls = true;
 
     private _snapshotRendering: WebGPUSnapshotRendering;
-    protected _snapshotRenderingMode = Constants.SNAPSHOTRENDERING_STANDARD;
+    protected _snapshotRenderingMode = SNAPSHOTRENDERING_STANDARD;
 
     /**
      * Gets or sets the snapshot rendering mode
@@ -824,7 +854,7 @@ export class WebGPUEngine extends AbstractEngine {
                 this._stencilStateComposer.stencilGlobal = this._stencilState;
 
                 this._depthCullingState.depthTest = true;
-                this._depthCullingState.depthFunc = Constants.LEQUAL;
+                this._depthCullingState.depthFunc = LEQUAL;
                 this._depthCullingState.depthMask = true;
 
                 this._textureHelper.setCommandEncoder(this._uploadEncoder);
@@ -1316,11 +1346,11 @@ export class WebGPUEngine extends AbstractEngine {
             this._stencilStateComposer.reset();
 
             this._depthCullingState.reset();
-            this._depthCullingState.depthFunc = Constants.LEQUAL;
+            this._depthCullingState.depthFunc = LEQUAL;
 
             this._alphaState.reset();
-            this._alphaMode = Constants.ALPHA_ADD;
-            this._alphaEquation = Constants.ALPHA_DISABLE;
+            this._alphaMode = ALPHA_ADD;
+            this._alphaEquation = ALPHA_DISABLE;
             this._cacheRenderPipeline.setAlphaBlendFactors(this._alphaState._blendFunctionParameters, this._alphaState._blendEquationParameters);
             this._cacheRenderPipeline.setAlphaBlendEnabled(false);
 
@@ -1748,25 +1778,25 @@ export class WebGPUEngine extends AbstractEngine {
         }
 
         let flags = 0;
-        if (creationFlags & Constants.BUFFER_CREATIONFLAG_READ) {
+        if (creationFlags & BUFFER_CREATIONFLAG_READ) {
             flags |= WebGPUConstants.BufferUsage.CopySrc;
         }
-        if (creationFlags & Constants.BUFFER_CREATIONFLAG_WRITE) {
+        if (creationFlags & BUFFER_CREATIONFLAG_WRITE) {
             flags |= WebGPUConstants.BufferUsage.CopyDst;
         }
-        if (creationFlags & Constants.BUFFER_CREATIONFLAG_UNIFORM) {
+        if (creationFlags & BUFFER_CREATIONFLAG_UNIFORM) {
             flags |= WebGPUConstants.BufferUsage.Uniform;
         }
-        if (creationFlags & Constants.BUFFER_CREATIONFLAG_VERTEX) {
+        if (creationFlags & BUFFER_CREATIONFLAG_VERTEX) {
             flags |= WebGPUConstants.BufferUsage.Vertex;
         }
-        if (creationFlags & Constants.BUFFER_CREATIONFLAG_INDEX) {
+        if (creationFlags & BUFFER_CREATIONFLAG_INDEX) {
             flags |= WebGPUConstants.BufferUsage.Index;
         }
-        if (creationFlags & Constants.BUFFER_CREATIONFLAG_STORAGE) {
+        if (creationFlags & BUFFER_CREATIONFLAG_STORAGE) {
             flags |= WebGPUConstants.BufferUsage.Storage;
         }
-        if (creationFlags & Constants.BUFFER_CREATIONFLAG_INDIRECT) {
+        if (creationFlags & BUFFER_CREATIONFLAG_INDIRECT) {
             flags |= WebGPUConstants.BufferUsage.Indirect;
         }
 
@@ -2019,8 +2049,8 @@ export class WebGPUEngine extends AbstractEngine {
     }
 
     private _compileRawPipelineStageDescriptor(vertexCode: string, fragmentCode: string, shaderLanguage: ShaderLanguage): IWebGPURenderPipelineStageDescriptor {
-        const disableUniformityAnalysisInVertex = vertexCode.indexOf(Constants.DISABLEUA) >= 0;
-        const disableUniformityAnalysisInFragment = fragmentCode.indexOf(Constants.DISABLEUA) >= 0;
+        const disableUniformityAnalysisInVertex = vertexCode.indexOf(DISABLEUA) >= 0;
+        const disableUniformityAnalysisInFragment = fragmentCode.indexOf(DISABLEUA) >= 0;
 
         const vertexShader = shaderLanguage === ShaderLanguage.GLSL ? this._compileRawShaderToSpirV(vertexCode, "vertex") : vertexCode;
         const fragmentShader = shaderLanguage === ShaderLanguage.GLSL ? this._compileRawShaderToSpirV(fragmentCode, "fragment") : fragmentCode;
@@ -2036,8 +2066,8 @@ export class WebGPUEngine extends AbstractEngine {
     ): IWebGPURenderPipelineStageDescriptor {
         this.onBeforeShaderCompilationObservable.notifyObservers(this);
 
-        const disableUniformityAnalysisInVertex = vertexCode.indexOf(Constants.DISABLEUA) >= 0;
-        const disableUniformityAnalysisInFragment = fragmentCode.indexOf(Constants.DISABLEUA) >= 0;
+        const disableUniformityAnalysisInVertex = vertexCode.indexOf(DISABLEUA) >= 0;
+        const disableUniformityAnalysisInFragment = fragmentCode.indexOf(DISABLEUA) >= 0;
 
         const shaderVersion = "#version 450\n";
         const vertexShader =
@@ -2296,7 +2326,7 @@ export class WebGPUEngine extends AbstractEngine {
      * @internal
      */
     public _getRGBABufferInternalSizedFormat(): number {
-        return Constants.TEXTUREFORMAT_RGBA;
+        return TEXTUREFORMAT_RGBA;
     }
 
     public updateTextureComparisonFunction(texture: InternalTexture, comparisonFunction: number): void {
@@ -2322,30 +2352,30 @@ export class WebGPUEngine extends AbstractEngine {
 
         if (options !== undefined && typeof options === "object") {
             fullOptions.generateMipMaps = options.generateMipMaps;
-            fullOptions.type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
-            fullOptions.samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
-            fullOptions.format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;
+            fullOptions.type = options.type === undefined ? TEXTURETYPE_UNSIGNED_INT : options.type;
+            fullOptions.samplingMode = options.samplingMode === undefined ? TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
+            fullOptions.format = options.format === undefined ? TEXTUREFORMAT_RGBA : options.format;
             fullOptions.samples = options.samples ?? 1;
             fullOptions.creationFlags = options.creationFlags ?? 0;
             fullOptions.useSRGBBuffer = options.useSRGBBuffer ?? false;
             fullOptions.label = options.label;
         } else {
             fullOptions.generateMipMaps = <boolean>options;
-            fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
-            fullOptions.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
-            fullOptions.format = Constants.TEXTUREFORMAT_RGBA;
+            fullOptions.type = TEXTURETYPE_UNSIGNED_INT;
+            fullOptions.samplingMode = TEXTURE_TRILINEAR_SAMPLINGMODE;
+            fullOptions.format = TEXTUREFORMAT_RGBA;
             fullOptions.samples = 1;
             fullOptions.creationFlags = 0;
             fullOptions.useSRGBBuffer = false;
         }
 
-        if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
-            fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-        } else if (fullOptions.type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
-            fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        if (fullOptions.type === TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+            fullOptions.samplingMode = TEXTURE_NEAREST_SAMPLINGMODE;
+        } else if (fullOptions.type === TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+            fullOptions.samplingMode = TEXTURE_NEAREST_SAMPLINGMODE;
         }
-        if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-            fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
+        if (fullOptions.type === TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
+            fullOptions.type = TEXTURETYPE_UNSIGNED_INT;
             Logger.Warn("Float textures are not supported. Type forced to TEXTURETYPE_UNSIGNED_BYTE");
         }
 
@@ -2369,8 +2399,8 @@ export class WebGPUEngine extends AbstractEngine {
         texture.format = fullOptions.format;
         texture.is2DArray = layers > 0;
         texture.is3D = depth > 0;
-        texture._cachedWrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
-        texture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+        texture._cachedWrapU = TEXTURE_CLAMP_ADDRESSMODE;
+        texture._cachedWrapV = TEXTURE_CLAMP_ADDRESSMODE;
         texture._useSRGBBuffer = fullOptions.useSRGBBuffer;
         texture.label = fullOptions.label;
 
@@ -2411,7 +2441,7 @@ export class WebGPUEngine extends AbstractEngine {
         noMipmap: boolean,
         invertY: boolean,
         scene: Nullable<ISceneLike>,
-        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+        samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<(texture: InternalTexture) => void> = null,
         onError: Nullable<(message: string, exception: any) => void> = null,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
@@ -2454,8 +2484,8 @@ export class WebGPUEngine extends AbstractEngine {
                 texture.baseHeight = imageBitmap.height;
                 texture.width = imageBitmap.width;
                 texture.height = imageBitmap.height;
-                texture.format = texture.format !== -1 ? texture.format : (format ?? Constants.TEXTUREFORMAT_RGBA);
-                texture.type = texture.type !== -1 ? texture.type : Constants.TEXTURETYPE_UNSIGNED_BYTE;
+                texture.format = texture.format !== -1 ? texture.format : (format ?? TEXTUREFORMAT_RGBA);
+                texture.type = texture.type !== -1 ? texture.type : TEXTURETYPE_UNSIGNED_BYTE;
                 texture._creationFlags = creationFlags ?? 0;
 
                 processFunction(texture.width, texture.height, imageBitmap, extension, texture, () => {});
@@ -2611,7 +2641,7 @@ export class WebGPUEngine extends AbstractEngine {
             this._currentMaterialContext.setTexture(name, texture);
 
             if (availableTexture && availableTexture.autoBindSampler) {
-                const samplerName = baseName + Constants.AUTOSAMPLERSUFFIX;
+                const samplerName = baseName + AUTOSAMPLERSUFFIX;
                 this._currentMaterialContext.setSampler(samplerName, texture as InternalTexture); // we can safely cast to InternalTexture because ExternalTexture always has autoBindSampler = false
             }
         }
@@ -2715,7 +2745,7 @@ export class WebGPUEngine extends AbstractEngine {
             // Video
             if ((<VideoTexture>texture).video) {
                 (<VideoTexture>texture).update();
-            } else if (texture.delayLoadState === Constants.DELAYLOADSTATE_NOTLOADED) {
+            } else if (texture.delayLoadState === DELAYLOADSTATE_NOTLOADED) {
                 // Delay loading
                 texture.delayLoad();
                 return false;
@@ -2742,9 +2772,7 @@ export class WebGPUEngine extends AbstractEngine {
                     internalTexture._cachedCoordinatesMode = texture.coordinatesMode;
 
                     const textureWrapMode =
-                        texture.coordinatesMode !== Constants.TEXTURE_CUBIC_MODE && texture.coordinatesMode !== Constants.TEXTURE_SKYBOX_MODE
-                            ? Constants.TEXTURE_WRAP_ADDRESSMODE
-                            : Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                        texture.coordinatesMode !== TEXTURE_CUBIC_MODE && texture.coordinatesMode !== TEXTURE_SKYBOX_MODE ? TEXTURE_WRAP_ADDRESSMODE : TEXTURE_CLAMP_ADDRESSMODE;
                     texture.wrapU = textureWrapMode;
                     texture.wrapV = textureWrapMode;
                 }
@@ -3190,7 +3218,7 @@ export class WebGPUEngine extends AbstractEngine {
                         format: gpuMRTWrapper.format,
                         baseArrayLayer: 0,
                     };
-                    const isRTInteger = mrtTexture.type === Constants.TEXTURETYPE_UNSIGNED_INTEGER || mrtTexture.type === Constants.TEXTURETYPE_UNSIGNED_SHORT;
+                    const isRTInteger = mrtTexture.type === TEXTURETYPE_UNSIGNED_INTEGER || mrtTexture.type === TEXTURETYPE_UNSIGNED_SHORT;
 
                     const colorTextureView = gpuMRTTexture.createView(viewDescriptor);
                     const colorMSAATextureView = gpuMSAATexture?.createView(msaaViewDescriptor);
@@ -3224,7 +3252,7 @@ export class WebGPUEngine extends AbstractEngine {
                 const gpuMSAATexture = gpuWrapper.getMSAATexture();
                 const colorTextureView = gpuTexture.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
                 const colorMSAATextureView = gpuMSAATexture?.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
-                const isRTInteger = internalTexture.type === Constants.TEXTURETYPE_UNSIGNED_INTEGER || internalTexture.type === Constants.TEXTURETYPE_UNSIGNED_SHORT;
+                const isRTInteger = internalTexture.type === TEXTURETYPE_UNSIGNED_INTEGER || internalTexture.type === TEXTURETYPE_UNSIGNED_SHORT;
 
                 colorAttachments.push({
                     view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
@@ -3740,8 +3768,8 @@ export class WebGPUEngine extends AbstractEngine {
             for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.textureNames.length; ++i) {
                 const textureName = webgpuPipelineContext.shaderProcessingContext.textureNames[i];
                 const texture = this._currentMaterialContext.textures[textureName]?.texture;
-                const textureIsDepth = texture && texture.format >= Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 && texture.format <= Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8;
-                if ((texture?.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) || textureIsDepth) {
+                const textureIsDepth = texture && texture.format >= TEXTUREFORMAT_DEPTH24_STENCIL8 && texture.format <= TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8;
+                if ((texture?.type === TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) || textureIsDepth) {
                     textureState |= bitVal;
                 }
                 bitVal = bitVal << 1;
@@ -3956,7 +3984,7 @@ export class WebGPUEngine extends AbstractEngine {
      * @returns the new buffer
      */
     public createStorageBuffer(data: DataArray | number, creationFlags: number, label?: string): DataBuffer {
-        return this._createBuffer(data, creationFlags | Constants.BUFFER_CREATIONFLAG_STORAGE, label);
+        return this._createBuffer(data, creationFlags | BUFFER_CREATIONFLAG_STORAGE, label);
     }
 
     /**

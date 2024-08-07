@@ -4,7 +4,7 @@ import { Texture } from "../Materials/Textures/texture";
 import type { Mesh } from "../Meshes/mesh";
 import { EncodeArrayBufferToBase64, DecodeBase64ToBinary } from "../Misc/stringTools";
 import type { Scene } from "../scene";
-import { Constants } from "../Engines/constants";
+import { TEXTURETYPE_FLOAT } from "../Engines/constants";
 import { Skeleton } from "core/Bones/skeleton";
 import type { Nullable } from "core/types";
 
@@ -106,7 +106,7 @@ export class VertexAnimationBaker {
             false,
             false,
             Texture.NEAREST_NEAREST,
-            Constants.TEXTURETYPE_FLOAT
+            TEXTURETYPE_FLOAT
         );
         texture.name = "VAT" + this._skeleton.name;
         return texture;

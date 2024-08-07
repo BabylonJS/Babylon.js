@@ -1,4 +1,4 @@
-import { Constants } from "../Engines/constants";
+import { MATERIAL_AllDirtyFlag } from "../Engines/constants";
 import { Scene } from "../scene";
 import type { ISceneComponent } from "../sceneComponent";
 import { SceneComponentConstants } from "../sceneComponent";
@@ -51,7 +51,7 @@ Object.defineProperty(Scene.prototype, "useOrderIndependentTransparency", {
             return;
         }
         this._useOrderIndependentTransparency = value;
-        this.markAllMaterialsAsDirty(Constants.MATERIAL_AllDirtyFlag);
+        this.markAllMaterialsAsDirty(MATERIAL_AllDirtyFlag);
         this.prePassRenderer?.markAsDirty();
     },
     enumerable: true,

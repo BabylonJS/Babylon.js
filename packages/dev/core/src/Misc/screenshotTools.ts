@@ -3,7 +3,7 @@ import type { Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { FxaaPostProcess } from "../PostProcesses/fxaaPostProcess";
-import { Constants } from "../Engines/constants";
+import { TEXTURETYPE_UNSIGNED_INT } from "../Engines/constants";
 import { Logger } from "./logger";
 import { Tools } from "./tools";
 import type { IScreenshotSize } from "./interfaces/screenshotSize";
@@ -242,7 +242,7 @@ export function CreateScreenshotUsingRenderTarget(
         scene,
         false,
         false,
-        Constants.TEXTURETYPE_UNSIGNED_INT,
+        TEXTURETYPE_UNSIGNED_INT,
         false,
         Texture.BILINEAR_SAMPLINGMODE,
         undefined,

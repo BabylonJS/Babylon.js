@@ -16,7 +16,7 @@ import type { PostProcess } from "../PostProcesses/postProcess";
 import { BlurPostProcess } from "../PostProcesses/blurPostProcess";
 import { EffectLayer } from "./effectLayer";
 import { AbstractScene } from "../abstractScene";
-import { Constants } from "../Engines/constants";
+import { ALPHA_ADD, TEXTURETYPE_UNSIGNED_INT, TEXTURETYPE_HALF_FLOAT } from "../Engines/constants";
 import { RegisterClass } from "../Misc/typeStore";
 import { Color4 } from "../Maths/math.color";
 import type { PBRMaterial } from "../Materials/PBR/pbrMaterial";
@@ -213,8 +213,8 @@ export class GlowLayer extends EffectLayer {
             mainTextureSamples: 1,
             renderingGroupId: -1,
             ldrMerge: false,
-            alphaBlendingMode: Constants.ALPHA_ADD,
-            mainTextureType: Constants.TEXTURETYPE_UNSIGNED_INT,
+            alphaBlendingMode: ALPHA_ADD,
+            mainTextureType: TEXTURETYPE_UNSIGNED_INT,
             generateStencilBuffer: false,
             ...options,
         };
@@ -265,9 +265,9 @@ export class GlowLayer extends EffectLayer {
 
         let textureType = 0;
         if (this._engine.getCaps().textureHalfFloatRender) {
-            textureType = Constants.TEXTURETYPE_HALF_FLOAT;
+            textureType = TEXTURETYPE_HALF_FLOAT;
         } else {
-            textureType = Constants.TEXTURETYPE_UNSIGNED_INT;
+            textureType = TEXTURETYPE_UNSIGNED_INT;
         }
 
         this._blurTexture1 = new RenderTargetTexture(

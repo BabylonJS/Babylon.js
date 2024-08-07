@@ -2,7 +2,16 @@ import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import { InternalTextureSource } from "../Materials/Textures/internalTexture";
 import type { RenderTargetCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
 import type { Nullable } from "../types";
-import { Constants } from "./constants";
+import {
+    TEXTUREFORMAT_DEPTH32_FLOAT,
+    TEXTURE_2D_ARRAY,
+    TEXTURE_CUBE_MAP,
+    TEXTURE_3D,
+    TEXTURE_2D,
+    TEXTURE_BILINEAR_SAMPLINGMODE,
+    TEXTURE_TRILINEAR_SAMPLINGMODE,
+    TEXTURE_LINEAR_LINEAR_MIPNEAREST,
+} from "./constants";
 import type { AbstractEngine } from "./abstractEngine";
 import type { IMultiRenderTargetOptions } from "../Materials/Textures/multiRenderTarget";
 
@@ -278,7 +287,7 @@ export class RenderTargetWrapper {
         bilinearFiltering: boolean = true,
         generateStencil: boolean = false,
         samples: number = 1,
-        format: number = Constants.TEXTUREFORMAT_DEPTH32_FLOAT,
+        format: number = TEXTUREFORMAT_DEPTH32_FLOAT,
         label?: string
     ): InternalTexture {
         this._depthStencilTexture?.dispose();
@@ -377,19 +386,19 @@ export class RenderTargetWrapper {
                     } else {
                         internalTexture2Index[texture.uniqueId] = i;
                         if (texture.is2DArray) {
-                            targetTypes.push(Constants.TEXTURE_2D_ARRAY);
+                            targetTypes.push(TEXTURE_2D_ARRAY);
                             layerCounts.push(texture.depth);
                         } else if (texture.isCube) {
-                            targetTypes.push(Constants.TEXTURE_CUBE_MAP);
+                            targetTypes.push(TEXTURE_CUBE_MAP);
                             layerCounts.push(0);
                         } /*else if (texture.isCubeArray) {
                             targetTypes.push(Constants.TEXTURE_CUBE_MAP_ARRAY);
                             layerCounts.push(texture.depth);
                         }*/ else if (texture.is3D) {
-                            targetTypes.push(Constants.TEXTURE_3D);
+                            targetTypes.push(TEXTURE_3D);
                             layerCounts.push(texture.depth);
                         } else {
-                            targetTypes.push(Constants.TEXTURE_2D);
+                            targetTypes.push(TEXTURE_2D);
                             layerCounts.push(0);
                         }
                     }
@@ -491,10 +500,7 @@ export class RenderTargetWrapper {
         if (this._depthStencilTexture) {
             const samplingMode = this._depthStencilTexture.samplingMode;
             const format = this._depthStencilTexture.format;
-            const bilinear =
-                samplingMode === Constants.TEXTURE_BILINEAR_SAMPLINGMODE ||
-                samplingMode === Constants.TEXTURE_TRILINEAR_SAMPLINGMODE ||
-                samplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST;
+            const bilinear = samplingMode === TEXTURE_BILINEAR_SAMPLINGMODE || samplingMode === TEXTURE_TRILINEAR_SAMPLINGMODE || samplingMode === TEXTURE_LINEAR_LINEAR_MIPNEAREST;
 
             rtw.createDepthStencilTexture(
                 this._depthStencilTexture._comparisonFunction,

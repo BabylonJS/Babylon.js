@@ -10,7 +10,7 @@ import { Matrix, TmpVectors, Vector2, Vector3, Quaternion } from "core/Maths/mat
 import { Logger } from "core/Misc/logger";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
-import { Constants } from "core/Engines/constants";
+import { TEXTURE_BILINEAR_SAMPLINGMODE, TEXTURETYPE_FLOAT, TEXTUREFORMAT_RGBA } from "core/Engines/constants";
 
 /**
  * Class used to render a gaussian splatting mesh
@@ -475,7 +475,7 @@ export class GaussianSplattingMesh extends Mesh {
 
         // Update the material
         const createTextureFromData = (data: Float32Array, width: number, height: number, format: number) => {
-            return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
+            return new RawTexture(data, width, height, format, this._scene, false, false, TEXTURE_BILINEAR_SAMPLINGMODE, TEXTURETYPE_FLOAT);
         };
 
         const convertRgbToRgba = (rgb: Float32Array) => {
@@ -498,10 +498,10 @@ export class GaussianSplattingMesh extends Mesh {
             colorArray[i * 4 + 3] = uBuffer[32 * i + 24 + 3] / 255;
         }
 
-        this._covariancesATexture = createTextureFromData(convertRgbToRgba(covA), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
-        this._covariancesBTexture = createTextureFromData(convertRgbToRgba(covB), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
-        this._centersTexture = createTextureFromData(convertRgbToRgba(this._splatPositions), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
-        this._colorsTexture = createTextureFromData(colorArray, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+        this._covariancesATexture = createTextureFromData(convertRgbToRgba(covA), textureSize.x, textureSize.y, TEXTUREFORMAT_RGBA);
+        this._covariancesBTexture = createTextureFromData(convertRgbToRgba(covB), textureSize.x, textureSize.y, TEXTUREFORMAT_RGBA);
+        this._centersTexture = createTextureFromData(convertRgbToRgba(this._splatPositions), textureSize.x, textureSize.y, TEXTUREFORMAT_RGBA);
+        this._colorsTexture = createTextureFromData(colorArray, textureSize.x, textureSize.y, TEXTUREFORMAT_RGBA);
 
         this._instanciateWorker();
     }

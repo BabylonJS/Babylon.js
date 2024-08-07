@@ -1,5 +1,5 @@
 import type { Camera } from "core/Cameras/camera";
-import { Constants } from "core/Engines/constants";
+import { TEXTURETYPE_FLOAT, TEXTUREFORMAT_R, TEXTURE_NEAREST_SAMPLINGMODE, TEXTURETYPE_HALF_FLOAT, TEXTURE_BILINEAR_SAMPLINGMODE } from "core/Engines/constants";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import { Texture } from "core/Materials/Textures/texture";
@@ -95,10 +95,10 @@ export class FluidRenderingTextures {
         height: number,
         blurTextureSizeX: number,
         blurTextureSizeY: number,
-        textureType: number = Constants.TEXTURETYPE_FLOAT,
-        textureFormat: number = Constants.TEXTUREFORMAT_R,
-        blurTextureType: number = Constants.TEXTURETYPE_FLOAT,
-        blurTextureFormat: number = Constants.TEXTUREFORMAT_R,
+        textureType: number = TEXTURETYPE_FLOAT,
+        textureFormat: number = TEXTUREFORMAT_R,
+        blurTextureType: number = TEXTURETYPE_FLOAT,
+        blurTextureFormat: number = TEXTUREFORMAT_R,
         useStandardBlur = false,
         camera: Nullable<Camera> = null,
         generateDepthBuffer = true,
@@ -164,7 +164,7 @@ export class FluidRenderingTextures {
                 generateMipMaps: false,
                 type: this._textureType,
                 format: this._textureFormat,
-                samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                samplingMode: TEXTURE_NEAREST_SAMPLINGMODE,
                 generateDepthBuffer: this._generateDepthBuffer,
                 generateStencilBuffer: false,
                 samples: this._samples,
@@ -195,8 +195,8 @@ export class FluidRenderingTextures {
         const engine = this._scene.getEngine();
         const targetSize = new Vector2(Math.floor(this._blurTextureSizeX / blurSizeDivisor), Math.floor(this._blurTextureSizeY / blurSizeDivisor));
         const useBilinearFiltering =
-            (textureType === Constants.TEXTURETYPE_FLOAT && engine.getCaps().textureFloatLinearFiltering) ||
-            (textureType === Constants.TEXTURETYPE_HALF_FLOAT && engine.getCaps().textureHalfFloatLinearFiltering);
+            (textureType === TEXTURETYPE_FLOAT && engine.getCaps().textureFloatLinearFiltering) ||
+            (textureType === TEXTURETYPE_HALF_FLOAT && engine.getCaps().textureHalfFloatLinearFiltering);
 
         const rtBlur = this._engine.createRenderTargetTexture(
             { width: targetSize.x, height: targetSize.y },
@@ -204,7 +204,7 @@ export class FluidRenderingTextures {
                 generateMipMaps: false,
                 type: textureType,
                 format: textureFormat,
-                samplingMode: useBilinearFiltering ? Constants.TEXTURE_BILINEAR_SAMPLINGMODE : Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                samplingMode: useBilinearFiltering ? TEXTURE_BILINEAR_SAMPLINGMODE : TEXTURE_NEAREST_SAMPLINGMODE,
                 generateDepthBuffer: false,
                 generateStencilBuffer: false,
                 samples: this._samples,
@@ -231,7 +231,7 @@ export class FluidRenderingTextures {
                 null,
                 1,
                 null,
-                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                TEXTURE_NEAREST_SAMPLINGMODE,
                 engine,
                 true,
                 null,
@@ -268,7 +268,7 @@ export class FluidRenderingTextures {
                 null,
                 1,
                 null,
-                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                TEXTURE_NEAREST_SAMPLINGMODE,
                 engine,
                 true,
                 null,
@@ -311,7 +311,7 @@ export class FluidRenderingTextures {
                 null,
                 1,
                 null,
-                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                TEXTURE_NEAREST_SAMPLINGMODE,
                 engine,
                 true,
                 null,
@@ -350,7 +350,7 @@ export class FluidRenderingTextures {
                 null,
                 1,
                 null,
-                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                TEXTURE_NEAREST_SAMPLINGMODE,
                 engine,
                 true,
                 null,

@@ -9,7 +9,7 @@ import type { GPUParticleSystem } from "./gpuParticleSystem";
 import type { DataArray, Nullable } from "../types";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
-import { Constants } from "../Engines/constants";
+import { MATERIAL_PointListDrawMode } from "../Engines/constants";
 import { RegisterClass } from "../Misc/typeStore";
 
 import "../Shaders/gpuUpdateParticles.fragment";
@@ -219,7 +219,7 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
         engine.bindTransformFeedbackBuffer(targetBuffer.getBuffer());
         engine.setRasterizerState(false);
         engine.beginTransformFeedback(true);
-        engine.drawArraysType(Constants.MATERIAL_PointListDrawMode, 0, currentActiveCount);
+        engine.drawArraysType(MATERIAL_PointListDrawMode, 0, currentActiveCount);
         engine.endTransformFeedback();
         engine.setRasterizerState(true);
         engine.bindTransformFeedbackBuffer(null);

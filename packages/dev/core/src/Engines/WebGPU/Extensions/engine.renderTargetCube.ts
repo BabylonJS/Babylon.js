@@ -1,6 +1,17 @@
 import { InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
 import type { RenderTargetCreationOptions } from "../../../Materials/Textures/textureCreationOptions";
-import { Constants } from "../../constants";
+import {
+    TEXTURETYPE_UNSIGNED_INT,
+    TEXTURE_TRILINEAR_SAMPLINGMODE,
+    TEXTUREFORMAT_RGBA,
+    TEXTURE_BILINEAR_SAMPLINGMODE,
+    TEXTURE_LINEAR_LINEAR,
+    TEXTURE_LINEAR_LINEAR_MIPLINEAR,
+    TEXTURE_NEAREST_LINEAR_MIPNEAREST,
+    TEXTURE_NEAREST_LINEAR_MIPLINEAR,
+    TEXTURE_NEAREST_LINEAR,
+    TEXTURE_LINEAR_LINEAR_MIPNEAREST,
+} from "../../constants";
 import type { RenderTargetWrapper } from "../../renderTargetWrapper";
 import { WebGPUEngine } from "../../webgpuEngine";
 
@@ -23,9 +34,9 @@ WebGPUEngine.prototype.createRenderTargetCubeTexture = function (size: number, o
         generateMipMaps: true,
         generateDepthBuffer: true,
         generateStencilBuffer: false,
-        type: Constants.TEXTURETYPE_UNSIGNED_INT,
-        samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-        format: Constants.TEXTUREFORMAT_RGBA,
+        type: TEXTURETYPE_UNSIGNED_INT,
+        samplingMode: TEXTURE_TRILINEAR_SAMPLINGMODE,
+        format: TEXTUREFORMAT_RGBA,
         samples: 1,
         ...options,
     };
@@ -55,14 +66,14 @@ WebGPUEngine.prototype.createRenderTargetCubeTexture = function (size: number, o
         rtWrapper.createDepthStencilTexture(
             0,
             fullOptions.samplingMode === undefined ||
-                fullOptions.samplingMode === Constants.TEXTURE_BILINEAR_SAMPLINGMODE ||
-                fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR ||
-                fullOptions.samplingMode === Constants.TEXTURE_TRILINEAR_SAMPLINGMODE ||
-                fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR ||
-                fullOptions.samplingMode === Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST ||
-                fullOptions.samplingMode === Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR ||
-                fullOptions.samplingMode === Constants.TEXTURE_NEAREST_LINEAR ||
-                fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST,
+                fullOptions.samplingMode === TEXTURE_BILINEAR_SAMPLINGMODE ||
+                fullOptions.samplingMode === TEXTURE_LINEAR_LINEAR ||
+                fullOptions.samplingMode === TEXTURE_TRILINEAR_SAMPLINGMODE ||
+                fullOptions.samplingMode === TEXTURE_LINEAR_LINEAR_MIPLINEAR ||
+                fullOptions.samplingMode === TEXTURE_NEAREST_LINEAR_MIPNEAREST ||
+                fullOptions.samplingMode === TEXTURE_NEAREST_LINEAR_MIPLINEAR ||
+                fullOptions.samplingMode === TEXTURE_NEAREST_LINEAR ||
+                fullOptions.samplingMode === TEXTURE_LINEAR_LINEAR_MIPNEAREST,
             rtWrapper._generateStencilBuffer,
             rtWrapper.samples
         );

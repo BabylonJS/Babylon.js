@@ -3,7 +3,31 @@ import * as React from "react";
 import type { Observable } from "core/Misc/observable";
 import { Material } from "core/Materials/material";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import { Constants } from "core/Engines/constants";
+import {
+    ALPHA_COMBINE,
+    ALPHA_ONEONE,
+    ALPHA_ADD,
+    ALPHA_SUBTRACT,
+    ALPHA_MULTIPLY,
+    ALPHA_MAXIMIZED,
+    ALPHA_PREMULTIPLIED,
+    NEVER,
+    ALWAYS,
+    EQUAL,
+    LESS,
+    LEQUAL,
+    GREATER,
+    GEQUAL,
+    NOTEQUAL,
+    KEEP,
+    ZERO,
+    REPLACE,
+    INCR,
+    DECR,
+    INVERT,
+    INCR_WRAP,
+    DECR_WRAP,
+} from "core/Engines/constants";
 import { Engine } from "core/Engines/engine";
 
 import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
@@ -53,13 +77,13 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
         ];
 
         const alphaModeOptions = [
-            { label: "Combine", value: Constants.ALPHA_COMBINE },
-            { label: "One one", value: Constants.ALPHA_ONEONE },
-            { label: "Add", value: Constants.ALPHA_ADD },
-            { label: "Subtract", value: Constants.ALPHA_SUBTRACT },
-            { label: "Multiply", value: Constants.ALPHA_MULTIPLY },
-            { label: "Maximized", value: Constants.ALPHA_MAXIMIZED },
-            { label: "Pre-multiplied", value: Constants.ALPHA_PREMULTIPLIED },
+            { label: "Combine", value: ALPHA_COMBINE },
+            { label: "One one", value: ALPHA_ONEONE },
+            { label: "Add", value: ALPHA_ADD },
+            { label: "Subtract", value: ALPHA_SUBTRACT },
+            { label: "Multiply", value: ALPHA_MULTIPLY },
+            { label: "Maximized", value: ALPHA_MAXIMIZED },
+            { label: "Pre-multiplied", value: ALPHA_PREMULTIPLIED },
         ];
 
         const depthfunctionOptions = [
@@ -75,25 +99,25 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
         ];
 
         const stencilFunctionOptions = [
-            { label: "Never", value: Constants.NEVER },
-            { label: "Always", value: Constants.ALWAYS },
-            { label: "Equal", value: Constants.EQUAL },
-            { label: "Less", value: Constants.LESS },
-            { label: "Less or equal", value: Constants.LEQUAL },
-            { label: "Greater", value: Constants.GREATER },
-            { label: "Greater or equal", value: Constants.GEQUAL },
-            { label: "Not equal", value: Constants.NOTEQUAL },
+            { label: "Never", value: NEVER },
+            { label: "Always", value: ALWAYS },
+            { label: "Equal", value: EQUAL },
+            { label: "Less", value: LESS },
+            { label: "Less or equal", value: LEQUAL },
+            { label: "Greater", value: GREATER },
+            { label: "Greater or equal", value: GEQUAL },
+            { label: "Not equal", value: NOTEQUAL },
         ];
 
         const stencilOperationOptions = [
-            { label: "Keep", value: Constants.KEEP },
-            { label: "Zero", value: Constants.ZERO },
-            { label: "Replace", value: Constants.REPLACE },
-            { label: "Incr", value: Constants.INCR },
-            { label: "Decr", value: Constants.DECR },
-            { label: "Invert", value: Constants.INVERT },
-            { label: "Incr wrap", value: Constants.INCR_WRAP },
-            { label: "Decr wrap", value: Constants.DECR_WRAP },
+            { label: "Keep", value: KEEP },
+            { label: "Zero", value: ZERO },
+            { label: "Replace", value: REPLACE },
+            { label: "Incr", value: INCR },
+            { label: "Decr", value: DECR },
+            { label: "Invert", value: INVERT },
+            { label: "Incr wrap", value: INCR_WRAP },
+            { label: "Decr wrap", value: DECR_WRAP },
         ];
 
         return (

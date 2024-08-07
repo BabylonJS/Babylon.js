@@ -1,7 +1,24 @@
 import { ThinEngine } from "../../Engines/thinEngine";
 import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import type { Nullable } from "../../types";
-import { Constants } from "../constants";
+import {
+    TEXTURETYPE_BYTE,
+    TEXTURETYPE_UNSIGNED_BYTE,
+    TEXTURETYPE_SHORT,
+    TEXTURETYPE_UNSIGNED_SHORT,
+    TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4,
+    TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1,
+    TEXTURETYPE_UNSIGNED_SHORT_5_6_5,
+    TEXTURETYPE_HALF_FLOAT,
+    TEXTURETYPE_INT,
+    TEXTURETYPE_UNSIGNED_INTEGER,
+    TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV,
+    TEXTURETYPE_UNSIGNED_INT_24_8,
+    TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV,
+    TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV,
+    TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV,
+    TEXTURETYPE_FLOAT,
+} from "../constants";
 
 declare module "../../Engines/abstractEngine" {
     export interface AbstractEngine {
@@ -45,58 +62,58 @@ declare module "../../Engines/abstractEngine" {
  */
 export function allocateAndCopyTypedBuffer(type: number, sizeOrDstBuffer: number | ArrayBuffer, sizeInBytes = false, copyBuffer?: ArrayBuffer): ArrayBufferView {
     switch (type) {
-        case Constants.TEXTURETYPE_BYTE: {
+        case TEXTURETYPE_BYTE: {
             const buffer = sizeOrDstBuffer instanceof ArrayBuffer ? new Int8Array(sizeOrDstBuffer) : new Int8Array(sizeOrDstBuffer);
             if (copyBuffer) {
                 buffer.set(new Int8Array(copyBuffer));
             }
             return buffer;
         }
-        case Constants.TEXTURETYPE_UNSIGNED_BYTE: {
+        case TEXTURETYPE_UNSIGNED_BYTE: {
             const buffer = sizeOrDstBuffer instanceof ArrayBuffer ? new Uint8Array(sizeOrDstBuffer) : new Uint8Array(sizeOrDstBuffer);
             if (copyBuffer) {
                 buffer.set(new Uint8Array(copyBuffer));
             }
             return buffer;
         }
-        case Constants.TEXTURETYPE_SHORT: {
+        case TEXTURETYPE_SHORT: {
             const buffer = sizeOrDstBuffer instanceof ArrayBuffer ? new Int16Array(sizeOrDstBuffer) : new Int16Array(sizeInBytes ? sizeOrDstBuffer / 2 : sizeOrDstBuffer);
             if (copyBuffer) {
                 buffer.set(new Int16Array(copyBuffer));
             }
             return buffer;
         }
-        case Constants.TEXTURETYPE_UNSIGNED_SHORT:
-        case Constants.TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4:
-        case Constants.TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1:
-        case Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5:
-        case Constants.TEXTURETYPE_HALF_FLOAT: {
+        case TEXTURETYPE_UNSIGNED_SHORT:
+        case TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4:
+        case TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1:
+        case TEXTURETYPE_UNSIGNED_SHORT_5_6_5:
+        case TEXTURETYPE_HALF_FLOAT: {
             const buffer = sizeOrDstBuffer instanceof ArrayBuffer ? new Uint16Array(sizeOrDstBuffer) : new Uint16Array(sizeInBytes ? sizeOrDstBuffer / 2 : sizeOrDstBuffer);
             if (copyBuffer) {
                 buffer.set(new Uint16Array(copyBuffer));
             }
             return buffer;
         }
-        case Constants.TEXTURETYPE_INT: {
+        case TEXTURETYPE_INT: {
             const buffer = sizeOrDstBuffer instanceof ArrayBuffer ? new Int32Array(sizeOrDstBuffer) : new Int32Array(sizeInBytes ? sizeOrDstBuffer / 4 : sizeOrDstBuffer);
             if (copyBuffer) {
                 buffer.set(new Int32Array(copyBuffer));
             }
             return buffer;
         }
-        case Constants.TEXTURETYPE_UNSIGNED_INTEGER:
-        case Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV:
-        case Constants.TEXTURETYPE_UNSIGNED_INT_24_8:
-        case Constants.TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV:
-        case Constants.TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV:
-        case Constants.TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV: {
+        case TEXTURETYPE_UNSIGNED_INTEGER:
+        case TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV:
+        case TEXTURETYPE_UNSIGNED_INT_24_8:
+        case TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV:
+        case TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV:
+        case TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV: {
             const buffer = sizeOrDstBuffer instanceof ArrayBuffer ? new Uint32Array(sizeOrDstBuffer) : new Uint32Array(sizeInBytes ? sizeOrDstBuffer / 4 : sizeOrDstBuffer);
             if (copyBuffer) {
                 buffer.set(new Uint32Array(copyBuffer));
             }
             return buffer;
         }
-        case Constants.TEXTURETYPE_FLOAT: {
+        case TEXTURETYPE_FLOAT: {
             const buffer = sizeOrDstBuffer instanceof ArrayBuffer ? new Float32Array(sizeOrDstBuffer) : new Float32Array(sizeInBytes ? sizeOrDstBuffer / 4 : sizeOrDstBuffer);
             if (copyBuffer) {
                 buffer.set(new Float32Array(copyBuffer));

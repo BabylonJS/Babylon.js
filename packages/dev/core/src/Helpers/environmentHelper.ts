@@ -11,7 +11,7 @@ import { Texture } from "../Materials/Textures/texture";
 import { MirrorTexture } from "../Materials/Textures/mirrorTexture";
 import { CubeTexture } from "../Materials/Textures/cubeTexture";
 import { BackgroundMaterial } from "../Materials/Background/backgroundMaterial";
-import { Constants } from "../Engines/constants";
+import { TEXTURETYPE_UNSIGNED_INT, ALPHA_PREMULTIPLIED_PORTERDUFF } from "../Engines/constants";
 
 import { CreatePlane } from "../Meshes/Builders/planeBuilder";
 import { CreateBox } from "../Meshes/Builders/boxBuilder";
@@ -226,7 +226,7 @@ export class EnvironmentHelper {
             groundMirrorAmount: 1,
             groundMirrorFresnelWeight: 1,
             groundMirrorFallOffDistance: 0,
-            groundMirrorTextureType: Constants.TEXTURETYPE_UNSIGNED_INT,
+            groundMirrorTextureType: TEXTURETYPE_UNSIGNED_INT,
 
             groundYBias: 0.00001,
 
@@ -557,7 +557,7 @@ export class EnvironmentHelper {
             this._groundMaterial = new BackgroundMaterial("BackgroundPlaneMaterial", this._scene);
         }
         this._groundMaterial.alpha = this._options.groundOpacity;
-        this._groundMaterial.alphaMode = Constants.ALPHA_PREMULTIPLIED_PORTERDUFF;
+        this._groundMaterial.alphaMode = ALPHA_PREMULTIPLIED_PORTERDUFF;
         this._groundMaterial.shadowLevel = this._options.groundShadowLevel;
         this._groundMaterial.primaryColor = this._options.groundColor;
         this._groundMaterial.useRGBColor = false;

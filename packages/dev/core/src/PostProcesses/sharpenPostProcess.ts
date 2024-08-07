@@ -3,7 +3,7 @@ import type { Camera } from "../Cameras/camera";
 import type { Effect } from "../Materials/effect";
 import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
-import { Constants } from "../Engines/constants";
+import { TEXTURETYPE_UNSIGNED_INT } from "../Engines/constants";
 
 import "../Shaders/sharpen.fragment";
 import { RegisterClass } from "../Misc/typeStore";
@@ -55,7 +55,7 @@ export class SharpenPostProcess extends PostProcess {
         samplingMode?: number,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        textureType: number = TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false
     ) {
         super(name, "sharpen", ["sharpnessAmounts", "screenSize"], null, options, camera, samplingMode, engine, reusable, null, textureType, undefined, null, blockCompilation);

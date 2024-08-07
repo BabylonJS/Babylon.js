@@ -21,7 +21,7 @@ import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
 import type { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import type { IShadowLight } from "../../Lights/shadowLight";
-import { Constants } from "../../Engines/constants";
+import { ALPHA_PREMULTIPLIED, ALPHA_PREMULTIPLIED_PORTERDUFF } from "../../Engines/constants";
 import { RegisterClass } from "../../Misc/typeStore";
 import { MaterialFlags } from "../materialFlags";
 import { Color3 } from "../../Maths/math.color";
@@ -887,7 +887,7 @@ export class BackgroundMaterial extends PushMaterial {
                 }
             }
 
-            defines.PREMULTIPLYALPHA = this.alphaMode === Constants.ALPHA_PREMULTIPLIED || this.alphaMode === Constants.ALPHA_PREMULTIPLIED_PORTERDUFF;
+            defines.PREMULTIPLYALPHA = this.alphaMode === ALPHA_PREMULTIPLIED || this.alphaMode === ALPHA_PREMULTIPLIED_PORTERDUFF;
             defines.USERGBCOLOR = this._useRGBColor;
             defines.NOISE = this._enableNoise;
         }

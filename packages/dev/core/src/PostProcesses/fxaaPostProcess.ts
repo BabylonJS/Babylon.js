@@ -5,7 +5,7 @@ import { Texture } from "../Materials/Textures/texture";
 import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
 import type { AbstractEngine } from "../Engines/abstractEngine";
-import { Constants } from "../Engines/constants";
+import { TEXTURETYPE_UNSIGNED_INT } from "../Engines/constants";
 
 import "../Shaders/fxaa.fragment";
 import "../Shaders/fxaa.vertex";
@@ -33,7 +33,7 @@ export class FxaaPostProcess extends PostProcess {
         samplingMode?: number,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT
+        textureType: number = TEXTURETYPE_UNSIGNED_INT
     ) {
         super(name, "fxaa", ["texelSize"], null, options, camera, samplingMode || Texture.BILINEAR_SAMPLINGMODE, engine, reusable, null, textureType, "fxaa", undefined, true);
 

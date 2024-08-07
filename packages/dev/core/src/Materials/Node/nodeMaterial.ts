@@ -39,7 +39,17 @@ import { EffectFallbacks } from "../effectFallbacks";
 import { WebRequest } from "../../Misc/webRequest";
 import type { PostProcessOptions } from "../../PostProcesses/postProcess";
 import { PostProcess } from "../../PostProcesses/postProcess";
-import { Constants } from "../../Engines/constants";
+import {
+    SnippetUrl,
+    MAX_SUPPORTED_UV_SETS,
+    PREPASS_COLOR_TEXTURE_TYPE,
+    PREPASS_DEPTH_TEXTURE_TYPE,
+    PREPASS_NORMAL_TEXTURE_TYPE,
+    PREPASS_POSITION_TEXTURE_TYPE,
+    TEXTURE_NEAREST_SAMPLINGMODE,
+    TEXTURETYPE_UNSIGNED_INT,
+    TEXTUREFORMAT_RGBA,
+} from "../../Engines/constants";
 import type { Camera } from "../../Cameras/camera";
 import { VectorMergerBlock } from "./Blocks/vectorMergerBlock";
 import { RemapBlock } from "./Blocks/remapBlock";
@@ -258,7 +268,7 @@ export class NodeMaterial extends PushMaterial {
     public static EditorURL = `${Tools._DefaultCdnUrl}/v${AbstractEngine.Version}/nodeEditor/babylon.nodeEditor.js`;
 
     /** Define the Url to load snippets */
-    public static SnippetUrl = Constants.SnippetUrl;
+    public static SnippetUrl = SnippetUrl;
 
     /** Gets or sets a boolean indicating that node materials should not deserialize textures from json / snippet content */
     public static IgnoreTexturesAtLoadTime = false;
@@ -978,7 +988,7 @@ export class NodeMaterial extends PushMaterial {
         defines["VERTEXCOLOR_NME"] = hasVertexColors;
 
         let uvChanged = false;
-        for (let i = 1; i <= Constants.MAX_SUPPORTED_UV_SETS; ++i) {
+        for (let i = 1; i <= MAX_SUPPORTED_UV_SETS; ++i) {
             const oldUV = defines["UV" + i];
             defines["UV" + i] = mesh.isVerticesDataPresent(`uv${i === 1 ? "" : i}`);
             uvChanged = uvChanged || defines["UV" + i] !== oldUV;
@@ -1005,7 +1015,7 @@ export class NodeMaterial extends PushMaterial {
      */
     public get prePassTextureOutputs(): number[] {
         const prePassOutputBlock = this.getBlockByPredicate((block) => block.getClassName() === "PrePassOutputBlock") as PrePassOutputBlock;
-        const result = [Constants.PREPASS_COLOR_TEXTURE_TYPE];
+        const result = [PREPASS_COLOR_TEXTURE_TYPE];
         if (!prePassOutputBlock) {
             return result;
         }
@@ -1015,15 +1025,15 @@ export class NodeMaterial extends PushMaterial {
         }
 
         if (prePassOutputBlock.viewDepth.isConnected) {
-            result.push(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
+            result.push(PREPASS_DEPTH_TEXTURE_TYPE);
         }
 
         if (prePassOutputBlock.viewNormal.isConnected) {
-            result.push(Constants.PREPASS_NORMAL_TEXTURE_TYPE);
+            result.push(PREPASS_NORMAL_TEXTURE_TYPE);
         }
 
         if (prePassOutputBlock.worldPosition.isConnected) {
-            result.push(Constants.PREPASS_POSITION_TEXTURE_TYPE);
+            result.push(PREPASS_POSITION_TEXTURE_TYPE);
         }
 
         return result;
@@ -1037,14 +1047,14 @@ export class NodeMaterial extends PushMaterial {
         const result = [] as number[];
 
         for (const block of prePassTextureBlocks) {
-            if (block.position.isConnected && !result.includes(Constants.PREPASS_POSITION_TEXTURE_TYPE)) {
-                result.push(Constants.PREPASS_POSITION_TEXTURE_TYPE);
+            if (block.position.isConnected && !result.includes(PREPASS_POSITION_TEXTURE_TYPE)) {
+                result.push(PREPASS_POSITION_TEXTURE_TYPE);
             }
-            if (block.depth.isConnected && !result.includes(Constants.PREPASS_DEPTH_TEXTURE_TYPE)) {
-                result.push(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
+            if (block.depth.isConnected && !result.includes(PREPASS_DEPTH_TEXTURE_TYPE)) {
+                result.push(PREPASS_DEPTH_TEXTURE_TYPE);
             }
-            if (block.normal.isConnected && !result.includes(Constants.PREPASS_NORMAL_TEXTURE_TYPE)) {
-                result.push(Constants.PREPASS_NORMAL_TEXTURE_TYPE);
+            if (block.normal.isConnected && !result.includes(PREPASS_NORMAL_TEXTURE_TYPE)) {
+                result.push(PREPASS_NORMAL_TEXTURE_TYPE);
             }
         }
 
@@ -1096,11 +1106,11 @@ export class NodeMaterial extends PushMaterial {
     public createPostProcess(
         camera: Nullable<Camera>,
         options: number | PostProcessOptions = 1,
-        samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+        samplingMode: number = TEXTURE_NEAREST_SAMPLINGMODE,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
-        textureFormat = Constants.TEXTUREFORMAT_RGBA
+        textureType: number = TEXTURETYPE_UNSIGNED_INT,
+        textureFormat = TEXTUREFORMAT_RGBA
     ): Nullable<PostProcess> {
         if (this.mode !== NodeMaterialModes.PostProcess) {
             Logger.Log("Incompatible material mode");
@@ -1121,11 +1131,11 @@ export class NodeMaterial extends PushMaterial {
         postProcess: Nullable<PostProcess>,
         camera?: Nullable<Camera>,
         options: number | PostProcessOptions = 1,
-        samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+        samplingMode: number = TEXTURE_NEAREST_SAMPLINGMODE,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
-        textureFormat = Constants.TEXTUREFORMAT_RGBA
+        textureType: number = TEXTURETYPE_UNSIGNED_INT,
+        textureFormat = TEXTUREFORMAT_RGBA
     ): PostProcess {
         let tempName = this.name + this._buildId;
 

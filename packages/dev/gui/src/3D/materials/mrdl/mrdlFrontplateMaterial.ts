@@ -10,7 +10,7 @@ import type { Scene } from "core/scene";
 import type { SubMesh } from "core/Meshes/subMesh";
 
 import { Color4 } from "core/Maths/math.color";
-import { Constants } from "core/Engines/constants";
+import { ALPHA_ADD } from "core/Engines/constants";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { PushMaterial } from "core/Materials/pushMaterial";
@@ -274,7 +274,7 @@ export class MRDLFrontplateMaterial extends PushMaterial {
 
     constructor(name: string, scene: Scene) {
         super(name, scene);
-        this.alphaMode = Constants.ALPHA_ADD;
+        this.alphaMode = ALPHA_ADD;
         this.disableDepthWrite = true;
         this.backFaceCulling = false;
         this._blobTexture = new Texture(MRDLFrontplateMaterial.BLOB_TEXTURE_URL, scene, true, false, Texture.NEAREST_SAMPLINGMODE);

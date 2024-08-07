@@ -1,4 +1,11 @@
-import { Constants } from "../Engines/constants";
+import {
+    MATERIAL_PointListDrawMode,
+    MATERIAL_LineLoopDrawMode,
+    MATERIAL_LineStripDrawMode,
+    MATERIAL_TriangleFanDrawMode,
+    MATERIAL_TriangleStripDrawMode,
+    MATERIAL_LineListDrawMode,
+} from "../Engines/constants";
 import { TmpVectors, Vector3 } from "../Maths/math.vector";
 import type { IndicesArray } from "../types";
 import { SubMesh } from "./subMesh";
@@ -97,12 +104,12 @@ SubMesh.prototype.projectToRef = function (vector: Vector3, positions: Vector3[]
     let checkStopper = false;
 
     switch (material.fillMode) {
-        case Constants.MATERIAL_PointListDrawMode:
-        case Constants.MATERIAL_LineLoopDrawMode:
-        case Constants.MATERIAL_LineStripDrawMode:
-        case Constants.MATERIAL_TriangleFanDrawMode:
+        case MATERIAL_PointListDrawMode:
+        case MATERIAL_LineLoopDrawMode:
+        case MATERIAL_LineStripDrawMode:
+        case MATERIAL_TriangleFanDrawMode:
             return -1;
-        case Constants.MATERIAL_TriangleStripDrawMode:
+        case MATERIAL_TriangleStripDrawMode:
             step = 1;
             checkStopper = true;
             break;
@@ -111,7 +118,7 @@ SubMesh.prototype.projectToRef = function (vector: Vector3, positions: Vector3[]
     }
 
     // LineMesh first as it's also a Mesh...
-    if (material.fillMode === Constants.MATERIAL_LineListDrawMode) {
+    if (material.fillMode === MATERIAL_LineListDrawMode) {
         return -1;
     } else {
         // Check if mesh is unindexed

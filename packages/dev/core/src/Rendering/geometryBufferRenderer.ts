@@ -2,7 +2,15 @@ import { Matrix } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
 import type { SubMesh } from "../Meshes/subMesh";
 import type { Mesh } from "../Meshes/mesh";
-import { Constants } from "../Engines/constants";
+import {
+    TEXTUREFORMAT_DEPTH16,
+    TEXTURETYPE_UNSIGNED_BYTE,
+    TEXTURETYPE_FLOAT,
+    TEXTURETYPE_HALF_FLOAT,
+    TEXTUREFORMAT_RGBA,
+    TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV,
+    TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV,
+} from "../Engines/constants";
 import type { SmartArray } from "../Misc/smartArray";
 import { Texture } from "../Materials/Textures/texture";
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
@@ -377,7 +385,7 @@ export class GeometryBufferRenderer {
     constructor(
         scene: Scene,
         ratioOrDimensions: number | { width: number; height: number } = 1,
-        depthFormat = Constants.TEXTUREFORMAT_DEPTH16,
+        depthFormat = TEXTUREFORMAT_DEPTH16,
         textureTypesAndFormats?: { [key: number]: { textureType: number; textureFormat: number } }
     ) {
         this._scene = scene;
@@ -752,11 +760,11 @@ export class GeometryBufferRenderer {
         const engine = this._scene.getEngine();
         const [count, textureNames, textureTypesAndFormat] = this._assignRenderTargetIndices();
 
-        let type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        let type = TEXTURETYPE_UNSIGNED_BYTE;
         if (engine._caps.textureFloat && engine._caps.textureFloatLinearFiltering) {
-            type = Constants.TEXTURETYPE_FLOAT;
+            type = TEXTURETYPE_FLOAT;
         } else if (engine._caps.textureHalfFloat && engine._caps.textureHalfFloatLinearFiltering) {
-            type = Constants.TEXTURETYPE_HALF_FLOAT;
+            type = TEXTURETYPE_HALF_FLOAT;
         }
 
         const dimensions =
@@ -773,13 +781,13 @@ export class GeometryBufferRenderer {
                 textureFormats.push(typeAndFormat.textureFormat);
             } else {
                 textureTypes.push(type);
-                textureFormats.push(Constants.TEXTUREFORMAT_RGBA);
+                textureFormats.push(TEXTUREFORMAT_RGBA);
             }
         }
 
         this._normalsAreUnsigned =
-            textureTypes[GeometryBufferRenderer.NORMAL_TEXTURE_TYPE] === Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV ||
-            textureTypes[GeometryBufferRenderer.NORMAL_TEXTURE_TYPE] === Constants.TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV;
+            textureTypes[GeometryBufferRenderer.NORMAL_TEXTURE_TYPE] === TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV ||
+            textureTypes[GeometryBufferRenderer.NORMAL_TEXTURE_TYPE] === TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV;
 
         this._multiRenderTarget = new MultiRenderTarget(
             "gBuffer",

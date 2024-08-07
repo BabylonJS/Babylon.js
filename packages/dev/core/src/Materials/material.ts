@@ -14,7 +14,27 @@ import type { Effect } from "./effect";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { MaterialDefines } from "./materialDefines";
-import { Constants } from "../Engines/constants";
+import {
+    MATERIAL_TriangleFillMode,
+    MATERIAL_WireFrameFillMode,
+    MATERIAL_PointFillMode,
+    MATERIAL_PointListDrawMode,
+    MATERIAL_LineListDrawMode,
+    MATERIAL_LineLoopDrawMode,
+    MATERIAL_LineStripDrawMode,
+    MATERIAL_TriangleStripDrawMode,
+    MATERIAL_TriangleFanDrawMode,
+    MATERIAL_ClockWiseSideOrientation,
+    MATERIAL_CounterClockWiseSideOrientation,
+    MATERIAL_TextureDirtyFlag,
+    MATERIAL_LightDirtyFlag,
+    MATERIAL_FresnelDirtyFlag,
+    MATERIAL_AttributesDirtyFlag,
+    MATERIAL_MiscDirtyFlag,
+    MATERIAL_PrePassDirtyFlag,
+    MATERIAL_AllDirtyFlag,
+    ALPHA_COMBINE,
+} from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import type { IInspectable } from "../Misc/iInspectable";
 import { Plane } from "../Maths/math.plane";
@@ -87,84 +107,84 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     /**
      * Returns the triangle fill mode
      */
-    public static readonly TriangleFillMode = Constants.MATERIAL_TriangleFillMode;
+    public static readonly TriangleFillMode = MATERIAL_TriangleFillMode;
     /**
      * Returns the wireframe mode
      */
-    public static readonly WireFrameFillMode = Constants.MATERIAL_WireFrameFillMode;
+    public static readonly WireFrameFillMode = MATERIAL_WireFrameFillMode;
     /**
      * Returns the point fill mode
      */
-    public static readonly PointFillMode = Constants.MATERIAL_PointFillMode;
+    public static readonly PointFillMode = MATERIAL_PointFillMode;
     /**
      * Returns the point list draw mode
      */
-    public static readonly PointListDrawMode = Constants.MATERIAL_PointListDrawMode;
+    public static readonly PointListDrawMode = MATERIAL_PointListDrawMode;
     /**
      * Returns the line list draw mode
      */
-    public static readonly LineListDrawMode = Constants.MATERIAL_LineListDrawMode;
+    public static readonly LineListDrawMode = MATERIAL_LineListDrawMode;
     /**
      * Returns the line loop draw mode
      */
-    public static readonly LineLoopDrawMode = Constants.MATERIAL_LineLoopDrawMode;
+    public static readonly LineLoopDrawMode = MATERIAL_LineLoopDrawMode;
     /**
      * Returns the line strip draw mode
      */
-    public static readonly LineStripDrawMode = Constants.MATERIAL_LineStripDrawMode;
+    public static readonly LineStripDrawMode = MATERIAL_LineStripDrawMode;
     /**
      * Returns the triangle strip draw mode
      */
-    public static readonly TriangleStripDrawMode = Constants.MATERIAL_TriangleStripDrawMode;
+    public static readonly TriangleStripDrawMode = MATERIAL_TriangleStripDrawMode;
     /**
      * Returns the triangle fan draw mode
      */
-    public static readonly TriangleFanDrawMode = Constants.MATERIAL_TriangleFanDrawMode;
+    public static readonly TriangleFanDrawMode = MATERIAL_TriangleFanDrawMode;
 
     /**
      * Stores the clock-wise side orientation
      */
-    public static readonly ClockWiseSideOrientation = Constants.MATERIAL_ClockWiseSideOrientation;
+    public static readonly ClockWiseSideOrientation = MATERIAL_ClockWiseSideOrientation;
 
     /**
      * Stores the counter clock-wise side orientation
      */
-    public static readonly CounterClockWiseSideOrientation = Constants.MATERIAL_CounterClockWiseSideOrientation;
+    public static readonly CounterClockWiseSideOrientation = MATERIAL_CounterClockWiseSideOrientation;
 
     /**
      * The dirty texture flag value
      */
-    public static readonly TextureDirtyFlag = Constants.MATERIAL_TextureDirtyFlag;
+    public static readonly TextureDirtyFlag = MATERIAL_TextureDirtyFlag;
 
     /**
      * The dirty light flag value
      */
-    public static readonly LightDirtyFlag = Constants.MATERIAL_LightDirtyFlag;
+    public static readonly LightDirtyFlag = MATERIAL_LightDirtyFlag;
 
     /**
      * The dirty fresnel flag value
      */
-    public static readonly FresnelDirtyFlag = Constants.MATERIAL_FresnelDirtyFlag;
+    public static readonly FresnelDirtyFlag = MATERIAL_FresnelDirtyFlag;
 
     /**
      * The dirty attribute flag value
      */
-    public static readonly AttributesDirtyFlag = Constants.MATERIAL_AttributesDirtyFlag;
+    public static readonly AttributesDirtyFlag = MATERIAL_AttributesDirtyFlag;
 
     /**
      * The dirty misc flag value
      */
-    public static readonly MiscDirtyFlag = Constants.MATERIAL_MiscDirtyFlag;
+    public static readonly MiscDirtyFlag = MATERIAL_MiscDirtyFlag;
 
     /**
      * The dirty prepass flag value
      */
-    public static readonly PrePassDirtyFlag = Constants.MATERIAL_PrePassDirtyFlag;
+    public static readonly PrePassDirtyFlag = MATERIAL_PrePassDirtyFlag;
 
     /**
      * The all dirty flag value
      */
-    public static readonly AllDirtyFlag = Constants.MATERIAL_AllDirtyFlag;
+    public static readonly AllDirtyFlag = MATERIAL_AllDirtyFlag;
 
     /**
      * MaterialTransparencyMode: No transparency mode, Alpha channel is not use.
@@ -544,7 +564,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * Stores the value of the alpha mode
      */
     @serialize("alphaMode")
-    private _alphaMode: number = Constants.ALPHA_COMBINE;
+    private _alphaMode: number = ALPHA_COMBINE;
 
     /**
      * Sets the value of the alpha mode.
@@ -930,13 +950,13 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         this._scene = setScene;
         this._dirtyCallbacks = {};
 
-        this._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag] = this._markAllSubMeshesAsTexturesDirty.bind(this);
-        this._dirtyCallbacks[Constants.MATERIAL_LightDirtyFlag] = this._markAllSubMeshesAsLightsDirty.bind(this);
-        this._dirtyCallbacks[Constants.MATERIAL_FresnelDirtyFlag] = this._markAllSubMeshesAsFresnelDirty.bind(this);
-        this._dirtyCallbacks[Constants.MATERIAL_AttributesDirtyFlag] = this._markAllSubMeshesAsAttributesDirty.bind(this);
-        this._dirtyCallbacks[Constants.MATERIAL_MiscDirtyFlag] = this._markAllSubMeshesAsMiscDirty.bind(this);
-        this._dirtyCallbacks[Constants.MATERIAL_PrePassDirtyFlag] = this._markAllSubMeshesAsPrePassDirty.bind(this);
-        this._dirtyCallbacks[Constants.MATERIAL_AllDirtyFlag] = this._markAllSubMeshesAsAllDirty.bind(this);
+        this._dirtyCallbacks[MATERIAL_TextureDirtyFlag] = this._markAllSubMeshesAsTexturesDirty.bind(this);
+        this._dirtyCallbacks[MATERIAL_LightDirtyFlag] = this._markAllSubMeshesAsLightsDirty.bind(this);
+        this._dirtyCallbacks[MATERIAL_FresnelDirtyFlag] = this._markAllSubMeshesAsFresnelDirty.bind(this);
+        this._dirtyCallbacks[MATERIAL_AttributesDirtyFlag] = this._markAllSubMeshesAsAttributesDirty.bind(this);
+        this._dirtyCallbacks[MATERIAL_MiscDirtyFlag] = this._markAllSubMeshesAsMiscDirty.bind(this);
+        this._dirtyCallbacks[MATERIAL_PrePassDirtyFlag] = this._markAllSubMeshesAsPrePassDirty.bind(this);
+        this._dirtyCallbacks[MATERIAL_AllDirtyFlag] = this._markAllSubMeshesAsAllDirty.bind(this);
 
         this.id = name || Tools.RandomId();
         this.uniqueId = this._scene.getUniqueId();

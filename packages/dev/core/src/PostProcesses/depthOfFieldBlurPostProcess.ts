@@ -6,7 +6,7 @@ import { Texture } from "../Materials/Textures/texture";
 import type { PostProcess, PostProcessOptions } from "./postProcess";
 import { BlurPostProcess } from "./blurPostProcess";
 import type { Scene } from "../scene";
-import { Constants } from "../Engines/constants";
+import { TEXTURETYPE_UNSIGNED_INT, TEXTUREFORMAT_RGBA, TEXTURE_BILINEAR_SAMPLINGMODE } from "../Engines/constants";
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
@@ -61,9 +61,9 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
         samplingMode = Texture.BILINEAR_SAMPLINGMODE,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
+        textureType = TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false,
-        textureFormat = Constants.TEXTUREFORMAT_RGBA
+        textureFormat = TEXTUREFORMAT_RGBA
     ) {
         super(
             name,
@@ -72,7 +72,7 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
             options,
             camera,
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            (samplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE),
+            (samplingMode = TEXTURE_BILINEAR_SAMPLINGMODE),
             engine,
             reusable,
             textureType,

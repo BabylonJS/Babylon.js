@@ -13,7 +13,7 @@ import { StandardMaterial } from "../Materials/standardMaterial";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { PostProcess } from "./postProcess";
-import { Constants } from "../Engines/constants";
+import { TEXTURETYPE_UNSIGNED_INT, ALPHA_COMBINE, ALPHA_DISABLE } from "../Engines/constants";
 import type { Scene } from "../scene";
 
 import { CreatePlane } from "../Meshes/Builders/planeBuilder";
@@ -328,7 +328,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
             scene,
             false,
             true,
-            Constants.TEXTURETYPE_UNSIGNED_INT
+            TEXTURETYPE_UNSIGNED_INT
         );
         this._volumetricLightScatteringRTT.wrapU = Texture.CLAMP_ADDRESSMODE;
         this._volumetricLightScatteringRTT.wrapV = Texture.CLAMP_ADDRESSMODE;
@@ -525,11 +525,11 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
                 });
 
                 // Render sub meshes
-                engine.setAlphaMode(Constants.ALPHA_COMBINE);
+                engine.setAlphaMode(ALPHA_COMBINE);
                 for (index = 0; index < sortedArray.length; index++) {
                     renderSubMesh(sortedArray[index]);
                 }
-                engine.setAlphaMode(Constants.ALPHA_DISABLE);
+                engine.setAlphaMode(ALPHA_DISABLE);
             }
         };
     }

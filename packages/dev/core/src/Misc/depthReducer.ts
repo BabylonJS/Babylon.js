@@ -1,7 +1,7 @@
 import type { Nullable } from "../types";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { Camera } from "../Cameras/camera";
-import { Constants } from "../Engines/constants";
+import { TEXTURETYPE_HALF_FLOAT, TEXTURE_NEAREST_SAMPLINGMODE } from "../Engines/constants";
 import { DepthRenderer } from "../Rendering/depthRenderer";
 
 import { MinMaxReducer } from "./minMaxReducer";
@@ -35,7 +35,7 @@ export class DepthReducer extends MinMaxReducer {
      * @param type The texture type of the depth map (default: TEXTURETYPE_HALF_FLOAT)
      * @param forceFullscreenViewport Forces the post processes used for the reduction to be applied without taking into account viewport (defaults to true)
      */
-    public setDepthRenderer(depthRenderer: Nullable<DepthRenderer> = null, type: number = Constants.TEXTURETYPE_HALF_FLOAT, forceFullscreenViewport = true): void {
+    public setDepthRenderer(depthRenderer: Nullable<DepthRenderer> = null, type: number = TEXTURETYPE_HALF_FLOAT, forceFullscreenViewport = true): void {
         const scene = this._camera.getScene();
 
         if (this._depthRenderer) {
@@ -50,7 +50,7 @@ export class DepthReducer extends MinMaxReducer {
                 scene._depthRenderer = {};
             }
 
-            depthRenderer = this._depthRenderer = new DepthRenderer(scene, type, this._camera, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+            depthRenderer = this._depthRenderer = new DepthRenderer(scene, type, this._camera, false, TEXTURE_NEAREST_SAMPLINGMODE);
             depthRenderer.enabled = false;
 
             this._depthRendererId = "minmax" + this._camera.id;
@@ -63,12 +63,7 @@ export class DepthReducer extends MinMaxReducer {
     /**
      * @internal
      */
-    public override setSourceTexture(
-        sourceTexture: RenderTargetTexture,
-        depthRedux: boolean,
-        type: number = Constants.TEXTURETYPE_HALF_FLOAT,
-        forceFullscreenViewport = true
-    ): void {
+    public override setSourceTexture(sourceTexture: RenderTargetTexture, depthRedux: boolean, type: number = TEXTURETYPE_HALF_FLOAT, forceFullscreenViewport = true): void {
         super.setSourceTexture(sourceTexture, depthRedux, type, forceFullscreenViewport);
     }
 

@@ -1,4 +1,4 @@
-import { Constants } from "../Engines/constants";
+import { SCENELOADER_NO_LOGGING } from "../Engines/constants";
 
 /**
  * Class used to represent data loading progression
@@ -8,7 +8,7 @@ export class SceneLoaderFlags {
     private static _ForceFullSceneLoadingForIncremental = false;
     private static _ShowLoadingScreen = true;
     private static _CleanBoneMatrixWeights = false;
-    private static _LoggingLevel = Constants.SCENELOADER_NO_LOGGING;
+    private static _LoggingLevel = SCENELOADER_NO_LOGGING;
 
     /**
      * Gets or sets a boolean indicating if entire scene must be loaded even if scene contains incremental data

@@ -14,7 +14,24 @@ import type { IDisposable, Scene } from "../scene";
 import type { IParticleSystem } from "./IParticleSystem";
 import { BaseParticleSystem } from "./baseParticleSystem";
 import { Particle } from "./particle";
-import { Constants } from "../Engines/constants";
+import {
+    TEXTURE_NEAREST_SAMPLINGMODE,
+    PARTICLES_BILLBOARDMODE_STRETCHED,
+    PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL,
+    FOGMODE_NONE,
+    PARTICLES_BILLBOARDMODE_Y,
+    PARTICLES_BILLBOARDMODE_ALL,
+    RENDERPASS_MAIN,
+    ALPHA_ADD,
+    ALPHA_ONEONE,
+    ALPHA_COMBINE,
+    ALPHA_MULTIPLY,
+    MATERIAL_LineStripDrawMode,
+    MATERIAL_TriangleStripDrawMode,
+    MATERIAL_WireFrameFillMode,
+    MATERIAL_TriangleFillMode,
+    ALPHA_DISABLE,
+} from "../Engines/constants";
 import type { IAnimatable } from "../Animations/animatable.interface";
 import { DrawWrapper } from "../Materials/drawWrapper";
 
@@ -892,7 +909,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             });
         }
 
-        this._rampGradientsTexture = RawTexture.CreateRGBATexture(data, this._rawTextureWidth, 1, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+        this._rampGradientsTexture = RawTexture.CreateRGBATexture(data, this._rawTextureWidth, 1, this._scene, false, false, TEXTURE_NEAREST_SAMPLINGMODE);
     }
 
     /**
@@ -1072,11 +1089,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             this._vertexBufferSize += 1;
         }
 
-        if (
-            !this._isBillboardBased ||
-            this.billboardMode === Constants.PARTICLES_BILLBOARDMODE_STRETCHED ||
-            this.billboardMode === Constants.PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL
-        ) {
+        if (!this._isBillboardBased || this.billboardMode === PARTICLES_BILLBOARDMODE_STRETCHED || this.billboardMode === PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL) {
             this._vertexBufferSize += 3;
         }
 
@@ -1112,11 +1125,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             dataOffset += 1;
         }
 
-        if (
-            !this._isBillboardBased ||
-            this.billboardMode === Constants.PARTICLES_BILLBOARDMODE_STRETCHED ||
-            this.billboardMode === Constants.PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL
-        ) {
+        if (!this._isBillboardBased || this.billboardMode === PARTICLES_BILLBOARDMODE_STRETCHED || this.billboardMode === PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL) {
             const directionBuffer = this._vertexBuffer.createVertexBuffer("direction", dataOffset, 3, this._vertexBufferSize, this._useInstancing);
             this._vertexBuffers["direction"] = directionBuffer;
             dataOffset += 3;
@@ -1348,7 +1357,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                 this._vertexData[offset++] = direction.y;
                 this._vertexData[offset++] = direction.z;
             }
-        } else if (this.billboardMode === Constants.PARTICLES_BILLBOARDMODE_STRETCHED || this.billboardMode === Constants.PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL) {
+        } else if (this.billboardMode === PARTICLES_BILLBOARDMODE_STRETCHED || this.billboardMode === PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL) {
             this._vertexData[offset++] = particle.direction.x;
             this._vertexData[offset++] = particle.direction.y;
             this._vertexData[offset++] = particle.direction.z;
@@ -1680,7 +1689,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     public fillDefines(defines: Array<string>, blendMode: number, fillImageProcessing: boolean = true): void {
         if (this._scene) {
             prepareStringDefinesForClipPlanes(this, this._scene, defines);
-            if (this.applyFog && this._scene.fogEnabled && this._scene.fogMode !== Constants.FOGMODE_NONE) {
+            if (this.applyFog && this._scene.fogEnabled && this._scene.fogMode !== FOGMODE_NONE) {
                 defines.push("#define FOG");
             }
         }
@@ -1705,17 +1714,17 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             defines.push("#define BILLBOARD");
 
             switch (this.billboardMode) {
-                case Constants.PARTICLES_BILLBOARDMODE_Y:
+                case PARTICLES_BILLBOARDMODE_Y:
                     defines.push("#define BILLBOARDY");
                     break;
-                case Constants.PARTICLES_BILLBOARDMODE_STRETCHED:
-                case Constants.PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL:
+                case PARTICLES_BILLBOARDMODE_STRETCHED:
+                case PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL:
                     defines.push("#define BILLBOARDSTRETCHED");
-                    if (this.billboardMode === Constants.PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL) {
+                    if (this.billboardMode === PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL) {
                         defines.push("#define BILLBOARDSTRETCHED_LOCAL");
                     }
                     break;
-                case Constants.PARTICLES_BILLBOARDMODE_ALL:
+                case PARTICLES_BILLBOARDMODE_ALL:
                     defines.push("#define BILLBOARDMODE_ALL");
                     break;
                 default:
@@ -1739,9 +1748,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         attributes.push(
             ...ThinParticleSystem._GetAttributeNamesOrOptions(
                 this._isAnimationSheetEnabled,
-                this._isBillboardBased &&
-                    this.billboardMode !== Constants.PARTICLES_BILLBOARDMODE_STRETCHED &&
-                    this.billboardMode !== Constants.PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL,
+                this._isBillboardBased && this.billboardMode !== PARTICLES_BILLBOARDMODE_STRETCHED && this.billboardMode !== PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL,
                 this._useRampGradients
             )
         );
@@ -1771,7 +1778,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         this.fillDefines(defines, blendMode);
 
         // Effect
-        const currentRenderPassId = this._engine._features.supportRenderPasses ? (this._engine as Engine).currentRenderPassId : Constants.RENDERPASS_MAIN;
+        const currentRenderPassId = this._engine._features.supportRenderPasses ? (this._engine as Engine).currentRenderPassId : RENDERPASS_MAIN;
         let drawWrappers = this._drawWrappers[currentRenderPassId];
         if (!drawWrappers) {
             drawWrappers = this._drawWrappers[currentRenderPassId] = [];
@@ -2032,16 +2039,16 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         // Draw order
         switch (blendMode) {
             case BaseParticleSystem.BLENDMODE_ADD:
-                engine.setAlphaMode(Constants.ALPHA_ADD);
+                engine.setAlphaMode(ALPHA_ADD);
                 break;
             case BaseParticleSystem.BLENDMODE_ONEONE:
-                engine.setAlphaMode(Constants.ALPHA_ONEONE);
+                engine.setAlphaMode(ALPHA_ONEONE);
                 break;
             case BaseParticleSystem.BLENDMODE_STANDARD:
-                engine.setAlphaMode(Constants.ALPHA_COMBINE);
+                engine.setAlphaMode(ALPHA_COMBINE);
                 break;
             case BaseParticleSystem.BLENDMODE_MULTIPLY:
-                engine.setAlphaMode(Constants.ALPHA_MULTIPLY);
+                engine.setAlphaMode(ALPHA_MULTIPLY);
                 break;
         }
 
@@ -2051,15 +2058,15 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
 
         if (this._useInstancing) {
             if (this._scene?.forceWireframe) {
-                engine.drawElementsType(Constants.MATERIAL_LineStripDrawMode, 0, 10, this._particles.length);
+                engine.drawElementsType(MATERIAL_LineStripDrawMode, 0, 10, this._particles.length);
             } else {
-                engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, this._particles.length);
+                engine.drawArraysType(MATERIAL_TriangleStripDrawMode, 0, 4, this._particles.length);
             }
         } else {
             if (this._scene?.forceWireframe) {
-                engine.drawElementsType(Constants.MATERIAL_WireFrameFillMode, 0, this._particles.length * 10);
+                engine.drawElementsType(MATERIAL_WireFrameFillMode, 0, this._particles.length * 10);
             } else {
-                engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, this._particles.length * 6);
+                engine.drawElementsType(MATERIAL_TriangleFillMode, 0, this._particles.length * 6);
             }
         }
 
@@ -2094,7 +2101,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         }
 
         this._engine.unbindInstanceAttributes();
-        this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
+        this._engine.setAlphaMode(ALPHA_DISABLE);
 
         return outparticles;
     }

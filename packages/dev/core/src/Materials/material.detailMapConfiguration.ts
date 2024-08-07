@@ -8,7 +8,7 @@ import type { UniformBuffer } from "./uniformBuffer";
 import type { IAnimatable } from "../Animations/animatable.interface";
 import { MaterialDefines } from "./materialDefines";
 import { MaterialPluginBase } from "./materialPluginBase";
-import { Constants } from "../Engines/constants";
+import { MATERIAL_TextureDirtyFlag } from "../Engines/constants";
 
 import type { Engine } from "../Engines/engine";
 import type { Scene } from "../scene";
@@ -91,7 +91,7 @@ export class DetailMapConfiguration extends MaterialPluginBase {
     constructor(material: PBRBaseMaterial | StandardMaterial, addToPluginList = true) {
         super(material, "DetailMap", 140, new MaterialDetailMapDefines(), addToPluginList);
 
-        this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
+        this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[MATERIAL_TextureDirtyFlag];
     }
 
     public override isReadyForSubMesh(defines: MaterialDetailMapDefines, scene: Scene, engine: Engine): boolean {

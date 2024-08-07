@@ -3,7 +3,16 @@
  * The ReflectiveShadowMap class only implements the position / normal / flux texture generation part.
  * For the global illumination effect, see the GIRSMManager class.
  */
-import { Constants } from "core/Engines/constants";
+import {
+    TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV,
+    TEXTURETYPE_HALF_FLOAT,
+    TEXTUREFORMAT_RGB,
+    TEXTUREFORMAT_RGBA,
+    TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV,
+    TEXTURE_BILINEAR_SAMPLINGMODE,
+    TEXTURE_2D,
+    MATERIAL_TextureDirtyFlag,
+} from "core/Engines/constants";
 import { MultiRenderTarget } from "core/Materials/Textures/multiRenderTarget";
 import type { UniformBuffer } from "core/Materials/uniformBuffer";
 import { Color3, Color4 } from "core/Maths/math.color";
@@ -182,8 +191,8 @@ export class ReflectiveShadowMap {
 
         const caps = this._scene.getEngine().getCaps();
 
-        const fluxTextureType = caps.rg11b10ufColorRenderable ? Constants.TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV : Constants.TEXTURETYPE_HALF_FLOAT;
-        const fluxTextureFormat = caps.rg11b10ufColorRenderable ? Constants.TEXTUREFORMAT_RGB : Constants.TEXTUREFORMAT_RGBA;
+        const fluxTextureType = caps.rg11b10ufColorRenderable ? TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV : TEXTURETYPE_HALF_FLOAT;
+        const fluxTextureFormat = caps.rg11b10ufColorRenderable ? TEXTUREFORMAT_RGB : TEXTUREFORMAT_RGBA;
 
         this._mrt = new MultiRenderTarget(
             "RSMmrt_" + name,
@@ -191,11 +200,11 @@ export class ReflectiveShadowMap {
             3, // number of RTT - position / normal / flux
             this._scene,
             {
-                types: [Constants.TEXTURETYPE_HALF_FLOAT, Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV, fluxTextureType],
-                samplingModes: [Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURE_BILINEAR_SAMPLINGMODE],
+                types: [TEXTURETYPE_HALF_FLOAT, TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV, fluxTextureType],
+                samplingModes: [TEXTURE_BILINEAR_SAMPLINGMODE, TEXTURE_BILINEAR_SAMPLINGMODE, TEXTURE_BILINEAR_SAMPLINGMODE],
                 generateMipMaps: false,
-                targetTypes: [Constants.TEXTURE_2D, Constants.TEXTURE_2D, Constants.TEXTURE_2D],
-                formats: [Constants.TEXTUREFORMAT_RGBA, Constants.TEXTUREFORMAT_RGBA, fluxTextureFormat],
+                targetTypes: [TEXTURE_2D, TEXTURE_2D, TEXTURE_2D],
+                formats: [TEXTUREFORMAT_RGBA, TEXTUREFORMAT_RGBA, fluxTextureFormat],
             },
             ["RSMPosition_" + name, "RSMNormal_" + name, "RSMFlux_" + name]
         );
@@ -358,7 +367,7 @@ export class RSMCreatePluginMaterial extends MaterialPluginBase {
     constructor(material: Material | StandardMaterial | PBRBaseMaterial) {
         super(material, RSMCreatePluginMaterial.Name, 300, new MaterialRSMCreateDefines());
 
-        this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
+        this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[MATERIAL_TextureDirtyFlag];
 
         this._varAlbedoName = material instanceof PBRBaseMaterial ? "surfaceAlbedo" : "baseColor.rgb";
     }

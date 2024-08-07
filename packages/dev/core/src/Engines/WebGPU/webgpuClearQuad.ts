@@ -4,7 +4,7 @@ import type { IColor4Like } from "../../Maths/math.like";
 import type { VertexBuffer } from "../../Buffers/buffer";
 import type { WebGPUDataBuffer } from "../../Meshes/WebGPU/webgpuDataBuffer";
 import type { Nullable } from "../../types";
-import { Constants } from "../constants";
+import { ALWAYS, NEVER, REPLACE, KEEP, MATERIAL_TriangleStripDrawMode } from "../constants";
 import type { WebGPUEngine } from "../webgpuEngine";
 import type { WebGPUCacheRenderPipeline } from "./webgpuCacheRenderPipeline";
 import { WebGPUCacheRenderPipelineTree } from "./webgpuCacheRenderPipelineTree";
@@ -104,11 +104,11 @@ export class WebGPUClearQuad {
         this._cacheRenderPipeline.setDepthWriteEnabled(!!clearDepth);
         this._cacheRenderPipeline.setStencilEnabled(!!clearStencil && !!this._depthTextureFormat && WebGPUTextureHelper.HasStencilAspect(this._depthTextureFormat));
         this._cacheRenderPipeline.setStencilWriteMask(clearStencil ? 0xff : 0);
-        this._cacheRenderPipeline.setStencilCompare(clearStencil ? Constants.ALWAYS : Constants.NEVER);
-        this._cacheRenderPipeline.setStencilPassOp(clearStencil ? Constants.REPLACE : Constants.KEEP);
+        this._cacheRenderPipeline.setStencilCompare(clearStencil ? ALWAYS : NEVER);
+        this._cacheRenderPipeline.setStencilPassOp(clearStencil ? REPLACE : KEEP);
         this._cacheRenderPipeline.setWriteMask(clearColor ? 0xf : 0);
 
-        const pipeline = this._cacheRenderPipeline.getRenderPipeline(Constants.MATERIAL_TriangleStripDrawMode, this._effect, sampleCount);
+        const pipeline = this._cacheRenderPipeline.getRenderPipeline(MATERIAL_TriangleStripDrawMode, this._effect, sampleCount);
 
         const webgpuPipelineContext = this._effect._pipelineContext as WebGPUPipelineContext;
 

@@ -3,7 +3,7 @@ import type { Camera } from "../Cameras/camera";
 import type { Effect } from "../Materials/effect";
 import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
-import { Constants } from "../Engines/constants";
+import { TEXTURETYPE_UNSIGNED_INT, PREPASS_POSITION_TEXTURE_TYPE, PREPASS_REFLECTIVITY_TEXTURE_TYPE, PREPASS_NORMAL_TEXTURE_TYPE } from "../Engines/constants";
 import { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer";
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
@@ -100,7 +100,7 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
         samplingMode?: number,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        textureType: number = TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false,
         forceGeometryBuffer = false
     ) {
@@ -166,9 +166,9 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
                 effect.setTexture("reflectivitySampler", geometryBufferRenderer.getGBuffer().textures[roughnessIndex]);
             } else if (prePassRenderer) {
                 // Samplers
-                const positionIndex = prePassRenderer.getIndex(Constants.PREPASS_POSITION_TEXTURE_TYPE);
-                const roughnessIndex = prePassRenderer.getIndex(Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE);
-                const normalIndex = prePassRenderer.getIndex(Constants.PREPASS_NORMAL_TEXTURE_TYPE);
+                const positionIndex = prePassRenderer.getIndex(PREPASS_POSITION_TEXTURE_TYPE);
+                const roughnessIndex = prePassRenderer.getIndex(PREPASS_REFLECTIVITY_TEXTURE_TYPE);
+                const normalIndex = prePassRenderer.getIndex(PREPASS_NORMAL_TEXTURE_TYPE);
 
                 effect.setTexture("normalSampler", prePassRenderer.getRenderTarget().textures[normalIndex]);
                 effect.setTexture("positionSampler", prePassRenderer.getRenderTarget().textures[positionIndex]);

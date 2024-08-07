@@ -8,7 +8,7 @@ import { PostProcessRenderPipeline } from "../postProcessRenderPipeline";
 import { PostProcessRenderEffect } from "../postProcessRenderEffect";
 import type { Scene } from "../../../scene";
 import { RegisterClass } from "../../../Misc/typeStore";
-import { Constants } from "../../../Engines/constants";
+import { TEXTURETYPE_UNSIGNED_BYTE, TEXTURETYPE_HALF_FLOAT, TEXTURE_NEAREST_NEAREST } from "../../../Engines/constants";
 import type { Nullable } from "../../../types";
 import { PassPostProcess } from "core/PostProcesses/passPostProcess";
 import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
@@ -151,7 +151,7 @@ export class TAARenderingPipeline extends PostProcessRenderPipeline {
      * @param cameras The array of cameras that the rendering pipeline will be attached to (default: scene.cameras)
      * @param textureType The type of texture where the scene will be rendered (default: Constants.TEXTURETYPE_UNSIGNED_BYTE)
      */
-    constructor(name: string, scene: Scene, cameras?: Camera[], textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE) {
+    constructor(name: string, scene: Scene, cameras?: Camera[], textureType = TEXTURETYPE_UNSIGNED_BYTE) {
         const engine = scene.getEngine();
 
         super(engine, name);
@@ -222,12 +222,12 @@ export class TAARenderingPipeline extends PostProcessRenderPipeline {
 
         this._ping = engine.createRenderTargetTexture(
             { width, height },
-            { generateMipMaps: false, generateDepthBuffer: false, type: Constants.TEXTURETYPE_HALF_FLOAT, samplingMode: Constants.TEXTURE_NEAREST_NEAREST }
+            { generateMipMaps: false, generateDepthBuffer: false, type: TEXTURETYPE_HALF_FLOAT, samplingMode: TEXTURE_NEAREST_NEAREST }
         );
 
         this._pong = engine.createRenderTargetTexture(
             { width, height },
-            { generateMipMaps: false, generateDepthBuffer: false, type: Constants.TEXTURETYPE_HALF_FLOAT, samplingMode: Constants.TEXTURE_NEAREST_NEAREST }
+            { generateMipMaps: false, generateDepthBuffer: false, type: TEXTURETYPE_HALF_FLOAT, samplingMode: TEXTURE_NEAREST_NEAREST }
         );
 
         this._hs.setDimensions(width / 2, height / 2);
@@ -357,7 +357,7 @@ export class TAARenderingPipeline extends PostProcessRenderPipeline {
     private _createPassPostProcess() {
         const engine = this._scene.getEngine();
 
-        this._passPostProcess = new PassPostProcess("TAAPass", 1, null, Constants.TEXTURE_NEAREST_NEAREST, engine);
+        this._passPostProcess = new PassPostProcess("TAAPass", 1, null, TEXTURE_NEAREST_NEAREST, engine);
         this._passPostProcess.inputTexture = this._ping;
         this._passPostProcess.autoClear = false;
     }

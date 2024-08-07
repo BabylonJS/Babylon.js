@@ -8,7 +8,7 @@ import type { Nullable } from "../../types";
 import type { IAnimatable } from "../../Animations/animatable.interface";
 import type { EffectFallbacks } from "../effectFallbacks";
 import type { SubMesh } from "../../Meshes/subMesh";
-import { Constants } from "../../Engines/constants";
+import { MATERIAL_TextureDirtyFlag } from "../../Engines/constants";
 import { MaterialPluginBase } from "../materialPluginBase";
 import { MaterialDefines } from "../materialDefines";
 
@@ -126,7 +126,7 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
     constructor(material: PBRBaseMaterial, addToPluginList = true) {
         super(material, "Sheen", 120, new MaterialSheenDefines(), addToPluginList);
 
-        this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
+        this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[MATERIAL_TextureDirtyFlag];
     }
 
     public override isReadyForSubMesh(defines: MaterialSheenDefines, scene: Scene): boolean {

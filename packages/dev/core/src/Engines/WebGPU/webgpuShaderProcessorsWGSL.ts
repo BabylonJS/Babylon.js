@@ -11,7 +11,7 @@ import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
 import { RemoveComments, InjectStartingAndEndingCode } from "../../Misc/codeStringParsingTools";
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 
-import { Constants } from "../constants";
+import { DISABLEUA, AUTOSAMPLERSUFFIX } from "../constants";
 
 import "../../ShadersWGSL/ShadersInclude/bakedVertexAnimationDeclaration";
 import "../../ShadersWGSL/ShadersInclude/bakedVertexAnimation";
@@ -333,7 +333,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         const vertexMainEndingCode = this.pureMode
             ? `  return vertexOutputs;`
             : `  vertexOutputs.position.y = vertexOutputs.position.y * internals.yFactor_;\n  return vertexOutputs;`;
-        let needDiagnosticOff = vertexCode.indexOf(Constants.DISABLEUA) !== -1;
+        let needDiagnosticOff = vertexCode.indexOf(DISABLEUA) !== -1;
 
         vertexCode =
             (needDiagnosticOff ? "diagnostic(off, derivative_uniformity);\n" : "") +
@@ -415,7 +415,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
         const fragmentStartingCode = "  fragmentInputs = input;\n  " + fragCoordCode;
         const fragmentEndingCode = "  return fragmentOutputs;";
-        needDiagnosticOff = fragmentCode.indexOf(Constants.DISABLEUA) !== -1;
+        needDiagnosticOff = fragmentCode.indexOf(DISABLEUA) !== -1;
 
         fragmentCode =
             (needDiagnosticOff ? "diagnostic(off, derivative_uniformity);\n" : "") + InjectStartingAndEndingCode(fragmentCode, "fn main", fragmentStartingCode, fragmentEndingCode);
@@ -471,8 +471,8 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
             const name = match[1]; // name of the variable
             const samplerType = match[2]; // sampler or sampler_comparison
-            const suffixLessLength = name.length - Constants.AUTOSAMPLERSUFFIX.length;
-            const textureName = name.lastIndexOf(Constants.AUTOSAMPLERSUFFIX) === suffixLessLength ? name.substring(0, suffixLessLength) : null;
+            const suffixLessLength = name.length - AUTOSAMPLERSUFFIX.length;
+            const textureName = name.lastIndexOf(AUTOSAMPLERSUFFIX) === suffixLessLength ? name.substring(0, suffixLessLength) : null;
             const samplerBindingType = samplerType === "sampler_comparison" ? WebGPUConstants.SamplerBindingType.Comparison : WebGPUConstants.SamplerBindingType.Filtering;
 
             if (textureName) {

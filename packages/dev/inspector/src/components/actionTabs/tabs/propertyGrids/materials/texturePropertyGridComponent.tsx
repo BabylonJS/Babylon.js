@@ -8,7 +8,50 @@ import { Texture } from "core/Materials/Textures/texture";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { MultiRenderTarget } from "core/Materials/Textures/multiRenderTarget";
 import type { CubeTexture } from "core/Materials/Textures/cubeTexture";
-import { Constants } from "core/Engines/constants";
+import {
+    TEXTUREFORMAT_ALPHA,
+    TEXTUREFORMAT_LUMINANCE,
+    TEXTUREFORMAT_LUMINANCE_ALPHA,
+    TEXTUREFORMAT_RGB,
+    TEXTUREFORMAT_RGBA,
+    TEXTUREFORMAT_RED,
+    TEXTUREFORMAT_RG,
+    TEXTUREFORMAT_RED_INTEGER,
+    TEXTUREFORMAT_RG_INTEGER,
+    TEXTUREFORMAT_RGB_INTEGER,
+    TEXTUREFORMAT_RGBA_INTEGER,
+    TEXTUREFORMAT_BGRA,
+    TEXTUREFORMAT_DEPTH24_STENCIL8,
+    TEXTUREFORMAT_DEPTH32_FLOAT,
+    TEXTUREFORMAT_DEPTH16,
+    TEXTUREFORMAT_DEPTH24,
+    TEXTUREFORMAT_DEPTH24UNORM_STENCIL8,
+    TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8,
+    TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM,
+    TEXTUREFORMAT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT,
+    TEXTUREFORMAT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT,
+    TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5,
+    TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3,
+    TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1,
+    TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1,
+    TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4,
+    TEXTURETYPE_UNSIGNED_BYTE,
+    TEXTURETYPE_FLOAT,
+    TEXTURETYPE_HALF_FLOAT,
+    TEXTURETYPE_BYTE,
+    TEXTURETYPE_SHORT,
+    TEXTURETYPE_UNSIGNED_SHORT,
+    TEXTURETYPE_INT,
+    TEXTURETYPE_UNSIGNED_INTEGER,
+    TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4,
+    TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1,
+    TEXTURETYPE_UNSIGNED_SHORT_5_6_5,
+    TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV,
+    TEXTURETYPE_UNSIGNED_INT_24_8,
+    TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV,
+    TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV,
+    TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV,
+} from "core/Engines/constants";
 
 import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
@@ -47,51 +90,51 @@ interface ITexturePropertyGridComponentState {
 }
 
 const textureFormat = [
-    { label: "Alpha", normalizable: 0, value: Constants.TEXTUREFORMAT_ALPHA },
-    { label: "Luminance", normalizable: 0, value: Constants.TEXTUREFORMAT_LUMINANCE },
-    { label: "Luminance/Alpha", normalizable: 0, value: Constants.TEXTUREFORMAT_LUMINANCE_ALPHA },
-    { label: "RGB", normalizable: 1, value: Constants.TEXTUREFORMAT_RGB },
-    { label: "RGBA", normalizable: 1, value: Constants.TEXTUREFORMAT_RGBA },
-    { label: "R (red)", normalizable: 1, value: Constants.TEXTUREFORMAT_RED },
-    { label: "RG (red/green)", normalizable: 1, value: Constants.TEXTUREFORMAT_RG },
-    { label: "R (red) integer", normalizable: 0, value: Constants.TEXTUREFORMAT_RED_INTEGER },
-    { label: "RG (red/green) integer", normalizable: 0, value: Constants.TEXTUREFORMAT_RG_INTEGER },
-    { label: "RGB integer", normalizable: 0, value: Constants.TEXTUREFORMAT_RGB_INTEGER },
-    { label: "RGBA integer", normalizable: 0, value: Constants.TEXTUREFORMAT_RGBA_INTEGER },
-    { label: "BGRA", normalizable: 1, value: Constants.TEXTUREFORMAT_BGRA },
-    { label: "Depth24/Stencil8", normalizable: 0, hideType: true, value: Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 },
-    { label: "Depth32 float", normalizable: 0, hideType: true, value: Constants.TEXTUREFORMAT_DEPTH32_FLOAT },
-    { label: "Depth16", normalizable: 0, value: Constants.TEXTUREFORMAT_DEPTH16 },
-    { label: "Depth24", normalizable: 0, value: Constants.TEXTUREFORMAT_DEPTH24 },
-    { label: "Depth24Unorm/Stencil8", normalizable: 0, hideType: true, value: Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 },
-    { label: "Depth32Float/Stencil8", normalizable: 0, hideType: true, value: Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8 },
-    { label: "RGBA BPTC UNorm", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM },
-    { label: "RGB BPTC UFloat", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT },
-    { label: "RGB BPTC SFloat", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT },
-    { label: "RGBA S3TC DXT5", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5 },
-    { label: "RGBA S3TC DXT3", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3 },
-    { label: "RGBA S3TC DXT1", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1 },
-    { label: "RGB S3TC DXT1", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1 },
-    { label: "RGBA ASTC 4x4", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4 },
+    { label: "Alpha", normalizable: 0, value: TEXTUREFORMAT_ALPHA },
+    { label: "Luminance", normalizable: 0, value: TEXTUREFORMAT_LUMINANCE },
+    { label: "Luminance/Alpha", normalizable: 0, value: TEXTUREFORMAT_LUMINANCE_ALPHA },
+    { label: "RGB", normalizable: 1, value: TEXTUREFORMAT_RGB },
+    { label: "RGBA", normalizable: 1, value: TEXTUREFORMAT_RGBA },
+    { label: "R (red)", normalizable: 1, value: TEXTUREFORMAT_RED },
+    { label: "RG (red/green)", normalizable: 1, value: TEXTUREFORMAT_RG },
+    { label: "R (red) integer", normalizable: 0, value: TEXTUREFORMAT_RED_INTEGER },
+    { label: "RG (red/green) integer", normalizable: 0, value: TEXTUREFORMAT_RG_INTEGER },
+    { label: "RGB integer", normalizable: 0, value: TEXTUREFORMAT_RGB_INTEGER },
+    { label: "RGBA integer", normalizable: 0, value: TEXTUREFORMAT_RGBA_INTEGER },
+    { label: "BGRA", normalizable: 1, value: TEXTUREFORMAT_BGRA },
+    { label: "Depth24/Stencil8", normalizable: 0, hideType: true, value: TEXTUREFORMAT_DEPTH24_STENCIL8 },
+    { label: "Depth32 float", normalizable: 0, hideType: true, value: TEXTUREFORMAT_DEPTH32_FLOAT },
+    { label: "Depth16", normalizable: 0, value: TEXTUREFORMAT_DEPTH16 },
+    { label: "Depth24", normalizable: 0, value: TEXTUREFORMAT_DEPTH24 },
+    { label: "Depth24Unorm/Stencil8", normalizable: 0, hideType: true, value: TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 },
+    { label: "Depth32Float/Stencil8", normalizable: 0, hideType: true, value: TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8 },
+    { label: "RGBA BPTC UNorm", normalizable: 0, compressed: true, value: TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM },
+    { label: "RGB BPTC UFloat", normalizable: 0, compressed: true, value: TEXTUREFORMAT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT },
+    { label: "RGB BPTC SFloat", normalizable: 0, compressed: true, value: TEXTUREFORMAT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT },
+    { label: "RGBA S3TC DXT5", normalizable: 0, compressed: true, value: TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5 },
+    { label: "RGBA S3TC DXT3", normalizable: 0, compressed: true, value: TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3 },
+    { label: "RGBA S3TC DXT1", normalizable: 0, compressed: true, value: TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1 },
+    { label: "RGB S3TC DXT1", normalizable: 0, compressed: true, value: TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1 },
+    { label: "RGBA ASTC 4x4", normalizable: 0, compressed: true, value: TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4 },
 ];
 
 const textureType = [
-    { label: "unsigned byte", normalizable: 1, value: Constants.TEXTURETYPE_UNSIGNED_BYTE },
-    { label: "32-bit float", normalizable: 0, value: Constants.TEXTURETYPE_FLOAT },
-    { label: "16-bit float", normalizable: 0, value: Constants.TEXTURETYPE_HALF_FLOAT },
-    { label: "signed byte", normalizable: 1, value: Constants.TEXTURETYPE_BYTE },
-    { label: "signed short", normalizable: 0, value: Constants.TEXTURETYPE_SHORT },
-    { label: "unsigned short", normalizable: 0, value: Constants.TEXTURETYPE_UNSIGNED_SHORT },
-    { label: "signed int", normalizable: 0, value: Constants.TEXTURETYPE_INT },
-    { label: "unsigned int", normalizable: 0, value: Constants.TEXTURETYPE_UNSIGNED_INTEGER },
-    { label: "unsigned 4/4/4/4 short", normalizable: 0, value: Constants.TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4 },
-    { label: "unsigned 5/5/5/1 short", normalizable: 0, value: Constants.TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1 },
-    { label: "unsigned 5/6/5 short", normalizable: 0, value: Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5 },
-    { label: "unsigned 2/10/10/10 int", normalizable: 0, value: Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV },
-    { label: "unsigned 24/8 int", normalizable: 0, value: Constants.TEXTURETYPE_UNSIGNED_INT_24_8 },
-    { label: "unsigned 10f/11f/11f int", normalizable: 0, value: Constants.TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV },
-    { label: "unsigned 5/9/9/9 int", normalizable: 0, value: Constants.TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV },
-    { label: "32-bits with only 8-bit used (stencil)", normalizable: 0, value: Constants.TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV },
+    { label: "unsigned byte", normalizable: 1, value: TEXTURETYPE_UNSIGNED_BYTE },
+    { label: "32-bit float", normalizable: 0, value: TEXTURETYPE_FLOAT },
+    { label: "16-bit float", normalizable: 0, value: TEXTURETYPE_HALF_FLOAT },
+    { label: "signed byte", normalizable: 1, value: TEXTURETYPE_BYTE },
+    { label: "signed short", normalizable: 0, value: TEXTURETYPE_SHORT },
+    { label: "unsigned short", normalizable: 0, value: TEXTURETYPE_UNSIGNED_SHORT },
+    { label: "signed int", normalizable: 0, value: TEXTURETYPE_INT },
+    { label: "unsigned int", normalizable: 0, value: TEXTURETYPE_UNSIGNED_INTEGER },
+    { label: "unsigned 4/4/4/4 short", normalizable: 0, value: TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4 },
+    { label: "unsigned 5/5/5/1 short", normalizable: 0, value: TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1 },
+    { label: "unsigned 5/6/5 short", normalizable: 0, value: TEXTURETYPE_UNSIGNED_SHORT_5_6_5 },
+    { label: "unsigned 2/10/10/10 int", normalizable: 0, value: TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV },
+    { label: "unsigned 24/8 int", normalizable: 0, value: TEXTURETYPE_UNSIGNED_INT_24_8 },
+    { label: "unsigned 10f/11f/11f int", normalizable: 0, value: TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV },
+    { label: "unsigned 5/9/9/9 int", normalizable: 0, value: TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV },
+    { label: "32-bits with only 8-bit used (stencil)", normalizable: 0, value: TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV },
 ];
 
 export class TexturePropertyGridComponent extends React.Component<ITexturePropertyGridComponentProps, ITexturePropertyGridComponentState> {
@@ -251,8 +294,8 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
         const format = texture._texture?.format ?? -2; // -2 is an invalid value so that findTextureFormat will return null when texture is null/undefined. It can't be -1 because -1 means RGBA, so it is -2 :)
         const type = texture._texture?.type ?? -2; // same than above, -1 means ubyte
 
-        const oformat = this.findTextureFormat(format === -1 ? Constants.TEXTUREFORMAT_RGBA : format);
-        const otype = this.findTextureType(type === -1 ? Constants.TEXTURETYPE_UNSIGNED_BYTE : type);
+        const oformat = this.findTextureFormat(format === -1 ? TEXTUREFORMAT_RGBA : format);
+        const otype = this.findTextureType(type === -1 ? TEXTURETYPE_UNSIGNED_BYTE : type);
         const textureClass = texture instanceof MultiRenderTarget ? "MultiRenderTarget" : texture instanceof RenderTargetTexture ? "RenderTargetTexture" : texture.getClassName();
         const count = texture instanceof MultiRenderTarget ? texture.count : -1;
         const oformatDepthStencil =

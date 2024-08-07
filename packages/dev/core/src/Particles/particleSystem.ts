@@ -12,7 +12,7 @@ import { GetClass } from "../Misc/typeStore";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import type { Effect } from "../Materials/effect";
 import type { Particle } from "./particle";
-import { Constants } from "../Engines/constants";
+import { PARTICLES_BILLBOARDMODE_Y, PARTICLES_BILLBOARDMODE_ALL, PARTICLES_BILLBOARDMODE_STRETCHED, PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL } from "../Engines/constants";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { MeshParticleEmitter } from "./EmitterTypes/meshParticleEmitter";
 import { CustomParticleEmitter } from "./EmitterTypes/customParticleEmitter";
@@ -44,19 +44,19 @@ export class ParticleSystem extends ThinParticleSystem {
     /**
      * Billboard mode will only apply to Y axis
      */
-    public static readonly BILLBOARDMODE_Y = Constants.PARTICLES_BILLBOARDMODE_Y;
+    public static readonly BILLBOARDMODE_Y = PARTICLES_BILLBOARDMODE_Y;
     /**
      * Billboard mode will apply to all axes
      */
-    public static readonly BILLBOARDMODE_ALL = Constants.PARTICLES_BILLBOARDMODE_ALL;
+    public static readonly BILLBOARDMODE_ALL = PARTICLES_BILLBOARDMODE_ALL;
     /**
      * Special billboard mode where the particle will be biilboard to the camera but rotated to align with direction
      */
-    public static readonly BILLBOARDMODE_STRETCHED = Constants.PARTICLES_BILLBOARDMODE_STRETCHED;
+    public static readonly BILLBOARDMODE_STRETCHED = PARTICLES_BILLBOARDMODE_STRETCHED;
     /**
      * Special billboard mode where the particle will be billboard to the camera but only around the axis of the direction of particle emission
      */
-    public static readonly BILLBOARDMODE_STRETCHED_LOCAL = Constants.PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL;
+    public static readonly BILLBOARDMODE_STRETCHED_LOCAL = PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL;
 
     // Sub-emitters
     private _rootParticleSystem: Nullable<ParticleSystem>;

@@ -16,7 +16,7 @@ import { EngineStore } from "../../../Engines/engineStore";
 import { SSAO2Configuration } from "../../../Rendering/ssao2Configuration";
 import type { PrePassRenderer } from "../../../Rendering/prePassRenderer";
 import type { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRenderer";
-import { Constants } from "../../../Engines/constants";
+import { TEXTURETYPE_UNSIGNED_INT, PREPASS_DEPTH_TEXTURE_TYPE, PREPASS_NORMAL_TEXTURE_TYPE, TEXTURE_BILINEAR_SAMPLINGMODE } from "../../../Engines/constants";
 import type { Nullable } from "../../../types";
 import { Scalar } from "../../../Maths/math.scalar";
 import { RawTexture } from "../../../Materials/Textures/rawTexture";
@@ -275,7 +275,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
      * @param forceGeometryBuffer Set to true if you want to use the legacy geometry buffer renderer
      * @param textureType The texture type used by the different post processes created by SSAO (default: Constants.TEXTURETYPE_UNSIGNED_INT)
      */
-    constructor(name: string, scene: Scene, ratio: any, cameras?: Camera[], forceGeometryBuffer = false, textureType = Constants.TEXTURETYPE_UNSIGNED_INT) {
+    constructor(name: string, scene: Scene, ratio: any, cameras?: Camera[], forceGeometryBuffer = false, textureType = TEXTURETYPE_UNSIGNED_INT) {
         super(scene.getEngine(), name);
 
         this._scene = scene;
@@ -467,7 +467,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             if (this._geometryBufferRenderer) {
                 effect.setTexture("depthSampler", this._geometryBufferRenderer.getGBuffer().textures[0]);
             } else if (this._prePassRenderer) {
-                effect.setTexture("depthSampler", this._prePassRenderer.getRenderTarget().textures[this._prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)]);
+                effect.setTexture("depthSampler", this._prePassRenderer.getRenderTarget().textures[this._prePassRenderer.getIndex(PREPASS_DEPTH_TEXTURE_TYPE)]);
             }
         };
 
@@ -605,8 +605,8 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
                 effect.setTexture("depthSampler", this._geometryBufferRenderer.getGBuffer().textures[0]);
                 effect.setTexture("normalSampler", this._geometryBufferRenderer.getGBuffer().textures[1]);
             } else if (this._prePassRenderer) {
-                effect.setTexture("depthSampler", this._prePassRenderer.getRenderTarget().textures[this._prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)]);
-                effect.setTexture("normalSampler", this._prePassRenderer.getRenderTarget().textures[this._prePassRenderer.getIndex(Constants.PREPASS_NORMAL_TEXTURE_TYPE)]);
+                effect.setTexture("depthSampler", this._prePassRenderer.getRenderTarget().textures[this._prePassRenderer.getIndex(PREPASS_DEPTH_TEXTURE_TYPE)]);
+                effect.setTexture("normalSampler", this._prePassRenderer.getRenderTarget().textures[this._prePassRenderer.getIndex(PREPASS_NORMAL_TEXTURE_TYPE)]);
             }
             effect.setTexture("randomSampler", this._randomTexture);
         };
@@ -654,7 +654,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             data[index++] = 255;
         }
 
-        const texture = RawTexture.CreateRGBATexture(data, size, size, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
+        const texture = RawTexture.CreateRGBATexture(data, size, size, this._scene, false, false, TEXTURE_BILINEAR_SAMPLINGMODE);
         texture.name = "SSAORandomTexture";
         texture.wrapU = Texture.WRAP_ADDRESSMODE;
         texture.wrapV = Texture.WRAP_ADDRESSMODE;

@@ -18,7 +18,7 @@ import type { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
-import { Constants } from "core/Engines/constants";
+import { ALPHA_ADD } from "core/Engines/constants";
 
 import "./shaders/fluentButton.fragment";
 import "./shaders/fluentButton.vertex";
@@ -273,7 +273,7 @@ export class FluentButtonMaterial extends PushMaterial {
 
     constructor(name: string, scene?: Scene) {
         super(name, scene);
-        this.alphaMode = Constants.ALPHA_ADD;
+        this.alphaMode = ALPHA_ADD;
         this.disableDepthWrite = true;
         this.backFaceCulling = false;
 

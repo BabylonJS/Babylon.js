@@ -1,6 +1,6 @@
 import type { Scene } from "../../scene";
 import { Texture } from "./texture";
-import { Constants } from "../../Engines/constants";
+import { TEXTURETYPE_UNSIGNED_INT } from "../../Engines/constants";
 import "../../Engines/Extensions/engine.rawTexture";
 import type { Nullable } from "../../types";
 /**
@@ -32,7 +32,7 @@ export class RawTexture3D extends Texture {
         generateMipMaps: boolean = true,
         invertY: boolean = false,
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
-        textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
+        textureType = TEXTURETYPE_UNSIGNED_INT,
         creationFlags?: number
     ) {
         super(null, scene, !generateMipMaps, invertY);

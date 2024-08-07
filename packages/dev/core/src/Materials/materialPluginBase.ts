@@ -2,7 +2,7 @@ import { serialize } from "../Misc/decorators";
 import type { Nullable } from "../types";
 import { MaterialPluginManager } from "./materialPluginManager";
 import type { SmartArray } from "../Misc/smartArray";
-import { Constants } from "../Engines/constants";
+import { MATERIAL_AllDirtyFlag } from "../Engines/constants";
 
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Scene } from "../scene";
@@ -96,7 +96,7 @@ export class MaterialPluginBase {
             this._enable(true);
         }
 
-        this.markAllDefinesAsDirty = material._dirtyCallbacks[Constants.MATERIAL_AllDirtyFlag];
+        this.markAllDefinesAsDirty = material._dirtyCallbacks[MATERIAL_AllDirtyFlag];
     }
 
     /**

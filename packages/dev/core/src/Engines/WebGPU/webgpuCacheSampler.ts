@@ -2,7 +2,34 @@
 /* eslint-disable jsdoc/require-jsdoc */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import * as WebGPUConstants from "./webgpuConstants";
-import { Constants } from "../constants";
+import {
+    TEXTURE_LINEAR_LINEAR_MIPNEAREST,
+    TEXTURE_LINEAR_LINEAR_MIPLINEAR,
+    TEXTURE_TRILINEAR_SAMPLINGMODE,
+    TEXTURE_NEAREST_NEAREST_MIPLINEAR,
+    TEXTURE_NEAREST_NEAREST_MIPNEAREST,
+    TEXTURE_NEAREST_LINEAR_MIPNEAREST,
+    TEXTURE_NEAREST_LINEAR_MIPLINEAR,
+    TEXTURE_NEAREST_LINEAR,
+    TEXTURE_NEAREST_NEAREST,
+    TEXTURE_NEAREST_SAMPLINGMODE,
+    TEXTURE_LINEAR_NEAREST_MIPNEAREST,
+    TEXTURE_LINEAR_NEAREST_MIPLINEAR,
+    TEXTURE_LINEAR_LINEAR,
+    TEXTURE_BILINEAR_SAMPLINGMODE,
+    TEXTURE_LINEAR_NEAREST,
+    TEXTURE_WRAP_ADDRESSMODE,
+    TEXTURE_CLAMP_ADDRESSMODE,
+    TEXTURE_MIRROR_ADDRESSMODE,
+    ALWAYS,
+    EQUAL,
+    GREATER,
+    GEQUAL,
+    LESS,
+    LEQUAL,
+    NEVER,
+    NOTEQUAL,
+} from "../constants";
 import type { TextureSampler } from "../../Materials/Textures/textureSampler";
 import type { Nullable } from "../../types";
 
@@ -93,7 +120,7 @@ export class WebGPUCacheSampler {
         let magFilter: GPUFilterMode, minFilter: GPUFilterMode, mipmapFilter: GPUFilterMode, lodMinClamp: number | undefined, lodMaxClamp: number | undefined;
         const useMipMaps = sampler.useMipMaps;
         switch (sampler.samplingMode) {
-            case Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST:
+            case TEXTURE_LINEAR_LINEAR_MIPNEAREST:
                 magFilter = WebGPUConstants.FilterMode.Linear;
                 minFilter = WebGPUConstants.FilterMode.Linear;
                 mipmapFilter = WebGPUConstants.FilterMode.Nearest;
@@ -101,8 +128,8 @@ export class WebGPUCacheSampler {
                     lodMinClamp = lodMaxClamp = 0;
                 }
                 break;
-            case Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR:
-            case Constants.TEXTURE_TRILINEAR_SAMPLINGMODE:
+            case TEXTURE_LINEAR_LINEAR_MIPLINEAR:
+            case TEXTURE_TRILINEAR_SAMPLINGMODE:
                 magFilter = WebGPUConstants.FilterMode.Linear;
                 minFilter = WebGPUConstants.FilterMode.Linear;
                 if (!useMipMaps) {
@@ -112,7 +139,7 @@ export class WebGPUCacheSampler {
                     mipmapFilter = WebGPUConstants.FilterMode.Linear;
                 }
                 break;
-            case Constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR:
+            case TEXTURE_NEAREST_NEAREST_MIPLINEAR:
                 magFilter = WebGPUConstants.FilterMode.Nearest;
                 minFilter = WebGPUConstants.FilterMode.Nearest;
                 if (!useMipMaps) {
@@ -122,7 +149,7 @@ export class WebGPUCacheSampler {
                     mipmapFilter = WebGPUConstants.FilterMode.Linear;
                 }
                 break;
-            case Constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST:
+            case TEXTURE_NEAREST_NEAREST_MIPNEAREST:
                 magFilter = WebGPUConstants.FilterMode.Nearest;
                 minFilter = WebGPUConstants.FilterMode.Nearest;
                 mipmapFilter = WebGPUConstants.FilterMode.Nearest;
@@ -130,7 +157,7 @@ export class WebGPUCacheSampler {
                     lodMinClamp = lodMaxClamp = 0;
                 }
                 break;
-            case Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST:
+            case TEXTURE_NEAREST_LINEAR_MIPNEAREST:
                 magFilter = WebGPUConstants.FilterMode.Nearest;
                 minFilter = WebGPUConstants.FilterMode.Linear;
                 mipmapFilter = WebGPUConstants.FilterMode.Nearest;
@@ -138,7 +165,7 @@ export class WebGPUCacheSampler {
                     lodMinClamp = lodMaxClamp = 0;
                 }
                 break;
-            case Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR:
+            case TEXTURE_NEAREST_LINEAR_MIPLINEAR:
                 magFilter = WebGPUConstants.FilterMode.Nearest;
                 minFilter = WebGPUConstants.FilterMode.Linear;
                 if (!useMipMaps) {
@@ -148,20 +175,20 @@ export class WebGPUCacheSampler {
                     mipmapFilter = WebGPUConstants.FilterMode.Linear;
                 }
                 break;
-            case Constants.TEXTURE_NEAREST_LINEAR:
+            case TEXTURE_NEAREST_LINEAR:
                 magFilter = WebGPUConstants.FilterMode.Nearest;
                 minFilter = WebGPUConstants.FilterMode.Linear;
                 mipmapFilter = WebGPUConstants.FilterMode.Nearest;
                 lodMinClamp = lodMaxClamp = 0;
                 break;
-            case Constants.TEXTURE_NEAREST_NEAREST:
-            case Constants.TEXTURE_NEAREST_SAMPLINGMODE:
+            case TEXTURE_NEAREST_NEAREST:
+            case TEXTURE_NEAREST_SAMPLINGMODE:
                 magFilter = WebGPUConstants.FilterMode.Nearest;
                 minFilter = WebGPUConstants.FilterMode.Nearest;
                 mipmapFilter = WebGPUConstants.FilterMode.Nearest;
                 lodMinClamp = lodMaxClamp = 0;
                 break;
-            case Constants.TEXTURE_LINEAR_NEAREST_MIPNEAREST:
+            case TEXTURE_LINEAR_NEAREST_MIPNEAREST:
                 magFilter = WebGPUConstants.FilterMode.Linear;
                 minFilter = WebGPUConstants.FilterMode.Nearest;
                 mipmapFilter = WebGPUConstants.FilterMode.Nearest;
@@ -169,7 +196,7 @@ export class WebGPUCacheSampler {
                     lodMinClamp = lodMaxClamp = 0;
                 }
                 break;
-            case Constants.TEXTURE_LINEAR_NEAREST_MIPLINEAR:
+            case TEXTURE_LINEAR_NEAREST_MIPLINEAR:
                 magFilter = WebGPUConstants.FilterMode.Linear;
                 minFilter = WebGPUConstants.FilterMode.Nearest;
                 if (!useMipMaps) {
@@ -179,14 +206,14 @@ export class WebGPUCacheSampler {
                     mipmapFilter = WebGPUConstants.FilterMode.Linear;
                 }
                 break;
-            case Constants.TEXTURE_LINEAR_LINEAR:
-            case Constants.TEXTURE_BILINEAR_SAMPLINGMODE:
+            case TEXTURE_LINEAR_LINEAR:
+            case TEXTURE_BILINEAR_SAMPLINGMODE:
                 magFilter = WebGPUConstants.FilterMode.Linear;
                 minFilter = WebGPUConstants.FilterMode.Linear;
                 mipmapFilter = WebGPUConstants.FilterMode.Nearest;
                 lodMinClamp = lodMaxClamp = 0;
                 break;
-            case Constants.TEXTURE_LINEAR_NEAREST:
+            case TEXTURE_LINEAR_NEAREST:
                 magFilter = WebGPUConstants.FilterMode.Linear;
                 minFilter = WebGPUConstants.FilterMode.Nearest;
                 mipmapFilter = WebGPUConstants.FilterMode.Nearest;
@@ -220,11 +247,11 @@ export class WebGPUCacheSampler {
 
     private static _GetWrappingMode(mode: number): GPUAddressMode {
         switch (mode) {
-            case Constants.TEXTURE_WRAP_ADDRESSMODE:
+            case TEXTURE_WRAP_ADDRESSMODE:
                 return WebGPUConstants.AddressMode.Repeat;
-            case Constants.TEXTURE_CLAMP_ADDRESSMODE:
+            case TEXTURE_CLAMP_ADDRESSMODE:
                 return WebGPUConstants.AddressMode.ClampToEdge;
-            case Constants.TEXTURE_MIRROR_ADDRESSMODE:
+            case TEXTURE_MIRROR_ADDRESSMODE:
                 return WebGPUConstants.AddressMode.MirrorRepeat;
         }
         return WebGPUConstants.AddressMode.Repeat;
@@ -257,21 +284,21 @@ export class WebGPUCacheSampler {
 
     public static GetCompareFunction(compareFunction: Nullable<number>): GPUCompareFunction {
         switch (compareFunction) {
-            case Constants.ALWAYS:
+            case ALWAYS:
                 return WebGPUConstants.CompareFunction.Always;
-            case Constants.EQUAL:
+            case EQUAL:
                 return WebGPUConstants.CompareFunction.Equal;
-            case Constants.GREATER:
+            case GREATER:
                 return WebGPUConstants.CompareFunction.Greater;
-            case Constants.GEQUAL:
+            case GEQUAL:
                 return WebGPUConstants.CompareFunction.GreaterEqual;
-            case Constants.LESS:
+            case LESS:
                 return WebGPUConstants.CompareFunction.Less;
-            case Constants.LEQUAL:
+            case LEQUAL:
                 return WebGPUConstants.CompareFunction.LessEqual;
-            case Constants.NEVER:
+            case NEVER:
                 return WebGPUConstants.CompareFunction.Never;
-            case Constants.NOTEQUAL:
+            case NOTEQUAL:
                 return WebGPUConstants.CompareFunction.NotEqual;
             default:
                 return WebGPUConstants.CompareFunction.Less;

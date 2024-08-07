@@ -7,7 +7,7 @@ import { Texture } from "../../Materials/Textures/texture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import type { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration";
 import { BlurPostProcess } from "../../PostProcesses/blurPostProcess";
-import { Constants } from "../../Engines/constants";
+import { TEXTURETYPE_UNSIGNED_INT, TEXTURETYPE_FLOAT, TEXTURETYPE_HALF_FLOAT } from "../../Engines/constants";
 import { Plane } from "../../Maths/math.plane";
 import type { UniformBuffer } from "../uniformBuffer";
 /**
@@ -159,7 +159,7 @@ export class MirrorTexture extends RenderTargetTexture {
         size: number | { width: number; height: number } | { ratio: number },
         scene?: Scene,
         generateMipMaps?: boolean,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        type: number = TEXTURETYPE_UNSIGNED_INT,
         samplingMode = Texture.BILINEAR_SAMPLINGMODE,
         generateDepthBuffer = true
     ) {
@@ -228,8 +228,7 @@ export class MirrorTexture extends RenderTargetTexture {
         if (this._blurKernelX && this._blurKernelY) {
             const engine = (<Scene>this.getScene()).getEngine();
 
-            const textureType =
-                engine.getCaps().textureFloatRender && engine.getCaps().textureFloatLinearFiltering ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_HALF_FLOAT;
+            const textureType = engine.getCaps().textureFloatRender && engine.getCaps().textureFloatLinearFiltering ? TEXTURETYPE_FLOAT : TEXTURETYPE_HALF_FLOAT;
 
             this._blurX = new BlurPostProcess(
                 "horizontal blur",

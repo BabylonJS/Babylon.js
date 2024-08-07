@@ -6,7 +6,7 @@ import { PostProcess } from "./postProcess";
 import type { Camera } from "../Cameras/camera";
 import type { Effect } from "../Materials/effect";
 import { Texture } from "../Materials/Textures/texture";
-import { Constants } from "../Engines/constants";
+import { TEXTURETYPE_UNSIGNED_INT, TEXTUREFORMAT_RGBA } from "../Engines/constants";
 
 import "../Shaders/kernelBlur.fragment";
 import "../Shaders/kernelBlur.vertex";
@@ -116,10 +116,10 @@ export class BlurPostProcess extends PostProcess {
         samplingMode: number = Texture.BILINEAR_SAMPLINGMODE,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
+        textureType = TEXTURETYPE_UNSIGNED_INT,
         defines = "",
         private _blockCompilation = false,
-        textureFormat = Constants.TEXTUREFORMAT_RGBA,
+        textureFormat = TEXTUREFORMAT_RGBA,
         forceGLSL = false
     ) {
         super(

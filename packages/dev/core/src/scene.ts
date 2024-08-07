@@ -41,7 +41,25 @@ import type {
     CameraStageFrameBufferAction,
 } from "./sceneComponent";
 import { Stage } from "./sceneComponent";
-import { Constants } from "./Engines/constants";
+import {
+    FOGMODE_NONE,
+    FOGMODE_EXP,
+    FOGMODE_EXP2,
+    FOGMODE_LINEAR,
+    MATERIAL_TextureDirtyFlag,
+    MATERIAL_MiscDirtyFlag,
+    MATERIAL_LightDirtyFlag,
+    MATERIAL_AttributesDirtyFlag,
+    DELAYLOADSTATE_LOADING,
+    SNAPSHOTRENDERING_FAST,
+    ACTION_OnIntersectionEnterTrigger,
+    ACTION_OnIntersectionExitTrigger,
+    RENDERPASS_MAIN,
+    RIG_MODE_NONE,
+    ACTION_OnEveryFrameTrigger,
+    RIG_MODE_CUSTOM,
+    MATERIAL_AllDirtyFlag,
+} from "./Engines/constants";
 import { IsWindowObjectExist } from "./Misc/domManagement";
 import { EngineStore } from "./Engines/engineStore";
 import type { AbstractActionManager } from "./Actions/abstractActionManager";
@@ -144,13 +162,13 @@ export const enum ScenePerformancePriority {
  */
 export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHolder {
     /** The fog is deactivated */
-    public static readonly FOGMODE_NONE = Constants.FOGMODE_NONE;
+    public static readonly FOGMODE_NONE = FOGMODE_NONE;
     /** The fog density is following an exponential function */
-    public static readonly FOGMODE_EXP = Constants.FOGMODE_EXP;
+    public static readonly FOGMODE_EXP = FOGMODE_EXP;
     /** The fog density is following an exponential function faster than FOGMODE_EXP */
-    public static readonly FOGMODE_EXP2 = Constants.FOGMODE_EXP2;
+    public static readonly FOGMODE_EXP2 = FOGMODE_EXP2;
     /** The fog density is following a linear function. */
-    public static readonly FOGMODE_LINEAR = Constants.FOGMODE_LINEAR;
+    public static readonly FOGMODE_LINEAR = FOGMODE_LINEAR;
 
     /**
      * Gets or sets the minimum deltatime when deterministic lock step is enabled
@@ -242,7 +260,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         this._environmentTexture = value;
-        this.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        this.markAllMaterialsAsDirty(MATERIAL_TextureDirtyFlag);
     }
 
     /**
@@ -320,7 +338,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             return;
         }
         this._forceWireframe = value;
-        this.markAllMaterialsAsDirty(Constants.MATERIAL_MiscDirtyFlag);
+        this.markAllMaterialsAsDirty(MATERIAL_MiscDirtyFlag);
     }
     public get forceWireframe(): boolean {
         return this._forceWireframe;
@@ -349,7 +367,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             return;
         }
         this._forcePointsCloud = value;
-        this.markAllMaterialsAsDirty(Constants.MATERIAL_MiscDirtyFlag);
+        this.markAllMaterialsAsDirty(MATERIAL_MiscDirtyFlag);
     }
     public get forcePointsCloud(): boolean {
         return this._forcePointsCloud;
@@ -1004,7 +1022,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             return;
         }
         this._useRightHandedSystem = value;
-        this.markAllMaterialsAsDirty(Constants.MATERIAL_MiscDirtyFlag);
+        this.markAllMaterialsAsDirty(MATERIAL_MiscDirtyFlag);
     }
     public get useRightHandedSystem(): boolean {
         return this._useRightHandedSystem;
@@ -1055,7 +1073,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             return;
         }
         this._fogEnabled = value;
-        this.markAllMaterialsAsDirty(Constants.MATERIAL_MiscDirtyFlag);
+        this.markAllMaterialsAsDirty(MATERIAL_MiscDirtyFlag);
     }
     public get fogEnabled(): boolean {
         return this._fogEnabled;
@@ -1077,7 +1095,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             return;
         }
         this._fogMode = value;
-        this.markAllMaterialsAsDirty(Constants.MATERIAL_MiscDirtyFlag);
+        this.markAllMaterialsAsDirty(MATERIAL_MiscDirtyFlag);
     }
     public get fogMode(): number {
         return this._fogMode;
@@ -1130,7 +1148,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             return;
         }
         this._shadowsEnabled = value;
-        this.markAllMaterialsAsDirty(Constants.MATERIAL_LightDirtyFlag);
+        this.markAllMaterialsAsDirty(MATERIAL_LightDirtyFlag);
     }
     public get shadowsEnabled(): boolean {
         return this._shadowsEnabled;
@@ -1145,7 +1163,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             return;
         }
         this._lightsEnabled = value;
-        this.markAllMaterialsAsDirty(Constants.MATERIAL_LightDirtyFlag);
+        this.markAllMaterialsAsDirty(MATERIAL_LightDirtyFlag);
     }
 
     public get lightsEnabled(): boolean {
@@ -1217,7 +1235,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             return;
         }
         this._texturesEnabled = value;
-        this.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        this.markAllMaterialsAsDirty(MATERIAL_TextureDirtyFlag);
     }
 
     public get texturesEnabled(): boolean {
@@ -1252,7 +1270,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             return;
         }
         this._skeletonsEnabled = value;
-        this.markAllMaterialsAsDirty(Constants.MATERIAL_AttributesDirtyFlag);
+        this.markAllMaterialsAsDirty(MATERIAL_AttributesDirtyFlag);
     }
 
     public get skeletonsEnabled(): boolean {
@@ -2103,7 +2121,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         for (index = 0; index < this.geometries.length; index++) {
             const geometry = this.geometries[index];
 
-            if (geometry.delayLoadState === Constants.DELAYLOADSTATE_LOADING) {
+            if (geometry.delayLoadState === DELAYLOADSTATE_LOADING) {
                 isReady = false;
             }
         }
@@ -3961,7 +3979,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     private _executeActiveContainerCleanup(container: SmartArray<any>) {
-        const isInFastMode = this._engine.snapshotRendering && this._engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST;
+        const isInFastMode = this._engine.snapshotRendering && this._engine.snapshotRenderingMode === SNAPSHOTRENDERING_FAST;
 
         if (!isInFastMode && this._activeMeshesFrozen && this._activeMeshes.length) {
             return; // Do not execute in frozen mode
@@ -3972,7 +3990,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     private _evaluateActiveMeshes(): void {
-        if (this._engine.snapshotRendering && this._engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST) {
+        if (this._engine.snapshotRendering && this._engine.snapshotRenderingMode === SNAPSHOTRENDERING_FAST) {
             if (this._activeMeshes.length > 0) {
                 this.activeCamera?._activeMeshes.reset();
                 this._activeMeshes.reset();
@@ -4046,7 +4064,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             mesh.computeWorldMatrix();
 
             // Intersections
-            if (mesh.actionManager && mesh.actionManager.hasSpecificTriggers2(Constants.ACTION_OnIntersectionEnterTrigger, Constants.ACTION_OnIntersectionExitTrigger)) {
+            if (mesh.actionManager && mesh.actionManager.hasSpecificTriggers2(ACTION_OnIntersectionEnterTrigger, ACTION_OnIntersectionExitTrigger)) {
                 this._meshesForIntersections.pushNoDuplicate(mesh);
             }
 
@@ -4308,7 +4326,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this._intermediateRendering = false;
         }
 
-        this._engine.currentRenderPassId = camera.outputRenderTarget?.renderPassId ?? camera.renderPassId ?? Constants.RENDERPASS_MAIN;
+        this._engine.currentRenderPassId = camera.outputRenderTarget?.renderPassId ?? camera.renderPassId ?? RENDERPASS_MAIN;
 
         // Restore framebuffer after rendering to targets
         if (needRebind && !this.prePass) {
@@ -4331,7 +4349,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         // Render
         this.onBeforeDrawPhaseObservable.notifyObservers(this);
 
-        if (engine.snapshotRendering && engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST) {
+        if (engine.snapshotRendering && engine.snapshotRenderingMode === SNAPSHOTRENDERING_FAST) {
             this.finalizeSceneUbo();
         }
         this._renderingManager.render(null, null, true, true);
@@ -4361,7 +4379,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     private _processSubCameras(camera: Camera, bindFrameBuffer = true): void {
-        if (camera.cameraRigMode === Constants.RIG_MODE_NONE || camera._renderingMultiview) {
+        if (camera.cameraRigMode === RIG_MODE_NONE || camera._renderingMultiview) {
             if (camera._renderingMultiview && !this._multiviewSceneUbo) {
                 this._createMultiviewUbo();
             }
@@ -4397,7 +4415,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             for (let actionIndex = 0; sourceMesh.actionManager && actionIndex < sourceMesh.actionManager.actions.length; actionIndex++) {
                 const action: IAction = sourceMesh.actionManager.actions[actionIndex];
 
-                if (action.trigger === Constants.ACTION_OnIntersectionEnterTrigger || action.trigger === Constants.ACTION_OnIntersectionExitTrigger) {
+                if (action.trigger === ACTION_OnIntersectionEnterTrigger || action.trigger === ACTION_OnIntersectionExitTrigger) {
                     const parameters = action.getTriggerParameter();
                     const otherMesh = parameters.mesh ? parameters.mesh : parameters;
 
@@ -4405,27 +4423,27 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                     const currentIntersectionInProgress = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
 
                     if (areIntersecting && currentIntersectionInProgress === -1) {
-                        if (action.trigger === Constants.ACTION_OnIntersectionEnterTrigger) {
+                        if (action.trigger === ACTION_OnIntersectionEnterTrigger) {
                             action._executeCurrent(ActionEvent.CreateNew(sourceMesh, undefined, otherMesh));
                             sourceMesh._intersectionsInProgress.push(otherMesh);
-                        } else if (action.trigger === Constants.ACTION_OnIntersectionExitTrigger) {
+                        } else if (action.trigger === ACTION_OnIntersectionExitTrigger) {
                             sourceMesh._intersectionsInProgress.push(otherMesh);
                         }
                     } else if (!areIntersecting && currentIntersectionInProgress > -1) {
                         //They intersected, and now they don't.
 
                         //is this trigger an exit trigger? execute an event.
-                        if (action.trigger === Constants.ACTION_OnIntersectionExitTrigger) {
+                        if (action.trigger === ACTION_OnIntersectionExitTrigger) {
                             action._executeCurrent(ActionEvent.CreateNew(sourceMesh, undefined, otherMesh));
                         }
 
                         //if this is an exit trigger, or no exit trigger exists, remove the id from the intersection in progress array.
                         if (
-                            !sourceMesh.actionManager.hasSpecificTrigger(Constants.ACTION_OnIntersectionExitTrigger, (parameter) => {
+                            !sourceMesh.actionManager.hasSpecificTrigger(ACTION_OnIntersectionExitTrigger, (parameter) => {
                                 const parameterMesh = parameter.mesh ? parameter.mesh : parameter;
                                 return otherMesh === parameterMesh;
                             }) ||
-                            action.trigger === Constants.ACTION_OnIntersectionExitTrigger
+                            action.trigger === ACTION_OnIntersectionExitTrigger
                         ) {
                             sourceMesh._intersectionsInProgress.splice(currentIntersectionInProgress, 1);
                         }
@@ -4574,7 +4592,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         // Actions
         if (this.actionManager) {
-            this.actionManager.processTrigger(Constants.ACTION_OnEveryFrameTrigger);
+            this.actionManager.processTrigger(ACTION_OnEveryFrameTrigger);
         }
 
         // Animations
@@ -4593,7 +4611,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                 for (let cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
                     const camera = this.activeCameras[cameraIndex];
                     camera.update();
-                    if (camera.cameraRigMode !== Constants.RIG_MODE_NONE) {
+                    if (camera.cameraRigMode !== RIG_MODE_NONE) {
                         // rig cameras
                         for (let index = 0; index < camera._rigCameras.length; index++) {
                             camera._rigCameras[index].update();
@@ -4602,7 +4620,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                 }
             } else if (this.activeCamera) {
                 this.activeCamera.update();
-                if (this.activeCamera.cameraRigMode !== Constants.RIG_MODE_NONE) {
+                if (this.activeCamera.cameraRigMode !== RIG_MODE_NONE) {
                     // rig cameras
                     for (let index = 0; index < this.activeCamera._rigCameras.length; index++) {
                         this.activeCamera._rigCameras[index].update();
@@ -4648,11 +4666,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this._renderId++;
         }
 
-        this._engine.currentRenderPassId = currentActiveCamera?.renderPassId ?? Constants.RENDERPASS_MAIN;
+        this._engine.currentRenderPassId = currentActiveCamera?.renderPassId ?? RENDERPASS_MAIN;
 
         // Restore back buffer
         this.activeCamera = currentActiveCamera;
-        if (this._activeCamera && this._activeCamera.cameraRigMode !== Constants.RIG_MODE_CUSTOM && !this.prePass) {
+        if (this._activeCamera && this._activeCamera.cameraRigMode !== RIG_MODE_CUSTOM && !this.prePass) {
             this._bindFrameBuffer(this._activeCamera, false);
         }
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
@@ -5240,7 +5258,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             texture._rebuild(true);
         }
 
-        this.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        this.markAllMaterialsAsDirty(MATERIAL_TextureDirtyFlag);
     }
 
     /**
@@ -5379,7 +5397,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         if (!value) {
             // Do a complete update
-            this.markAllMaterialsAsDirty(Constants.MATERIAL_AllDirtyFlag);
+            this.markAllMaterialsAsDirty(MATERIAL_AllDirtyFlag);
         }
     }
 

@@ -6,7 +6,7 @@ import { Vector3 } from "../Maths/math.vector";
 import type { IParticleSystem } from "../Particles/IParticleSystem";
 import type { IEdgesRenderer } from "./edgesRenderer";
 import type { ISpriteManager } from "../Sprites/spriteManager";
-import { Constants } from "../Engines/constants";
+import { ALPHA_DISABLE } from "../Engines/constants";
 import type { Material } from "../Materials/material";
 import type { Scene } from "../scene";
 import type { Camera } from "../Cameras/camera";
@@ -177,7 +177,7 @@ export class RenderingGroup {
             } else {
                 this._renderTransparent(this._transparentSubMeshes);
             }
-            engine.setAlphaMode(Constants.ALPHA_DISABLE);
+            engine.setAlphaMode(ALPHA_DISABLE);
         }
 
         // Set back stencil to false in case it changes before the edge renderer.
@@ -189,7 +189,7 @@ export class RenderingGroup {
                 this._edgesRenderers.data[edgesRendererIndex].render();
             }
 
-            engine.setAlphaMode(Constants.ALPHA_DISABLE);
+            engine.setAlphaMode(ALPHA_DISABLE);
         }
 
         // Restore Stencil state.
@@ -265,7 +265,7 @@ export class RenderingGroup {
                 if (material && material.needDepthPrePass) {
                     const engine = material.getScene().getEngine();
                     engine.setColorWrite(false);
-                    engine.setAlphaMode(Constants.ALPHA_DISABLE);
+                    engine.setAlphaMode(ALPHA_DISABLE);
                     subMesh.render(false);
                     engine.setColorWrite(true);
                 }

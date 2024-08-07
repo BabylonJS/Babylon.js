@@ -4,7 +4,17 @@ import { Tools } from "./tools";
 import { Texture } from "../Materials/Textures/texture";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { Scalar } from "../Maths/math.scalar";
-import { Constants } from "../Engines/constants";
+import {
+    TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL,
+    TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1,
+    TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5,
+    TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4,
+    TEXTUREFORMAT_COMPRESSED_RGBA8_ETC2_EAC,
+    TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM,
+    TEXTURETYPE_UNSIGNED_SHORT_5_6_5,
+    TEXTUREFORMAT_RGB,
+    TEXTURE_LINEAR_LINEAR,
+} from "../Engines/constants";
 import type { Engine } from "../Engines/engine";
 import { initializeWebWorker, workerFunction } from "./basisWorker";
 
@@ -133,22 +143,22 @@ export const GetInternalFormatFromBasisFormat = (basisFormat: number, engine: En
     let format;
     switch (basisFormat) {
         case BASIS_FORMATS.cTFETC1:
-            format = Constants.TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL;
+            format = TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL;
             break;
         case BASIS_FORMATS.cTFBC1:
-            format = Constants.TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1;
+            format = TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1;
             break;
         case BASIS_FORMATS.cTFBC4:
-            format = Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5;
+            format = TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5;
             break;
         case BASIS_FORMATS.cTFASTC_4x4:
-            format = Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4;
+            format = TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4;
             break;
         case BASIS_FORMATS.cTFETC2:
-            format = Constants.TEXTUREFORMAT_COMPRESSED_RGBA8_ETC2_EAC;
+            format = TEXTUREFORMAT_COMPRESSED_RGBA8_ETC2_EAC;
             break;
         case BASIS_FORMATS.cTFBC7:
-            format = Constants.TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM;
+            format = TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM;
             break;
     }
 
@@ -258,24 +268,24 @@ export const LoadTextureFromTranscodeResult = (texture: InternalTexture, transco
         texture._invertVScale = texture.invertY;
         if (transcodeResult.format === -1 || transcodeResult.format === BASIS_FORMATS.cTFRGB565) {
             // No compatable compressed format found, fallback to RGB
-            texture.type = Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
-            texture.format = Constants.TEXTUREFORMAT_RGB;
+            texture.type = TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
+            texture.format = TEXTUREFORMAT_RGB;
 
             if (engine._features.basisNeedsPOT && (Scalar.Log2(rootImage.width) % 1 !== 0 || Scalar.Log2(rootImage.height) % 1 !== 0)) {
                 // Create non power of two texture
                 const source = new InternalTexture(engine, InternalTextureSource.Temp);
 
                 texture._invertVScale = texture.invertY;
-                source.type = Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
-                source.format = Constants.TEXTUREFORMAT_RGB;
+                source.type = TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
+                source.format = TEXTUREFORMAT_RGB;
                 // Fallback requires aligned width/height
                 source.width = (rootImage.width + 3) & ~3;
                 source.height = (rootImage.height + 3) & ~3;
                 BindTexture(source, engine);
-                engine._uploadDataToTextureDirectly(source, new Uint16Array(rootImage.transcodedPixels.buffer), i, 0, Constants.TEXTUREFORMAT_RGB, true);
+                engine._uploadDataToTextureDirectly(source, new Uint16Array(rootImage.transcodedPixels.buffer), i, 0, TEXTUREFORMAT_RGB, true);
 
                 // Resize to power of two
-                engine._rescaleTexture(source, texture, engine.scenes[0], engine._getInternalFormat(Constants.TEXTUREFORMAT_RGB), () => {
+                engine._rescaleTexture(source, texture, engine.scenes[0], engine._getInternalFormat(TEXTUREFORMAT_RGB), () => {
                     engine._releaseTexture(source);
                     BindTexture(texture, engine);
                 });
@@ -286,9 +296,9 @@ export const LoadTextureFromTranscodeResult = (texture: InternalTexture, transco
                 // Upload directly
                 texture.width = (rootImage.width + 3) & ~3;
                 texture.height = (rootImage.height + 3) & ~3;
-                texture.samplingMode = Constants.TEXTURE_LINEAR_LINEAR;
+                texture.samplingMode = TEXTURE_LINEAR_LINEAR;
                 BindTexture(texture, engine);
-                engine._uploadDataToTextureDirectly(texture, new Uint16Array(rootImage.transcodedPixels.buffer), i, 0, Constants.TEXTUREFORMAT_RGB, true);
+                engine._uploadDataToTextureDirectly(texture, new Uint16Array(rootImage.transcodedPixels.buffer), i, 0, TEXTUREFORMAT_RGB, true);
             }
         } else {
             texture.width = rootImage.width;

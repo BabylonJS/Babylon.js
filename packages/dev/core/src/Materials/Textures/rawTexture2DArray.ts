@@ -1,5 +1,5 @@
 import { Texture } from "./texture";
-import { Constants } from "../../Engines/constants";
+import { TEXTURETYPE_UNSIGNED_INT, TEXTURE_TRILINEAR_SAMPLINGMODE, TEXTUREFORMAT_RGBA } from "../../Engines/constants";
 import "../../Engines/Extensions/engine.rawTexture";
 import type { Nullable } from "../../types";
 
@@ -43,7 +43,7 @@ export class RawTexture2DArray extends Texture {
         generateMipMaps: boolean = true,
         invertY: boolean = false,
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
-        textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
+        textureType = TEXTURETYPE_UNSIGNED_INT,
         creationFlags?: number
     ) {
         super(null, scene, !generateMipMaps, invertY);
@@ -86,9 +86,9 @@ export class RawTexture2DArray extends Texture {
         scene: Scene,
         generateMipMaps: boolean = true,
         invertY: boolean = false,
-        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT
+        samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE,
+        type: number = TEXTURETYPE_UNSIGNED_INT
     ): RawTexture2DArray {
-        return new RawTexture2DArray(data, width, height, depth, Constants.TEXTUREFORMAT_RGBA, scene, generateMipMaps, invertY, samplingMode, type);
+        return new RawTexture2DArray(data, width, height, depth, TEXTUREFORMAT_RGBA, scene, generateMipMaps, invertY, samplingMode, type);
     }
 }

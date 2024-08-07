@@ -8,7 +8,15 @@ import type { Scene } from "../scene";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { Camera } from "../Cameras/camera";
-import { Constants } from "../Engines/constants";
+import {
+    TEXTURETYPE_FLOAT,
+    TEXTURETYPE_UNSIGNED_BYTE,
+    TEXTURETYPE_HALF_FLOAT,
+    TEXTUREFORMAT_RGBA,
+    TEXTUREFORMAT_R,
+    MATERIAL_ClockWiseSideOrientation,
+    MATERIAL_CounterClockWiseSideOrientation,
+} from "../Engines/constants";
 
 import "../Shaders/depth.fragment";
 import "../Shaders/depth.vertex";
@@ -83,7 +91,7 @@ export class DepthRenderer {
      */
     constructor(
         scene: Scene,
-        type: number = Constants.TEXTURETYPE_FLOAT,
+        type: number = TEXTURETYPE_FLOAT,
         camera: Nullable<Camera> = null,
         storeNonLinearDepth = false,
         samplingMode = Texture.TRILINEAR_SAMPLINGMODE,
@@ -93,7 +101,7 @@ export class DepthRenderer {
         this._scene = scene;
         this._storeNonLinearDepth = storeNonLinearDepth;
         this._storeCameraSpaceZ = storeCameraSpaceZ;
-        this.isPacked = type === Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        this.isPacked = type === TEXTURETYPE_UNSIGNED_BYTE;
         if (this.isPacked) {
             this.clearColor = new Color4(1.0, 1.0, 1.0, 1.0);
         } else {
@@ -107,16 +115,16 @@ export class DepthRenderer {
         this._camera = camera;
 
         if (samplingMode !== Texture.NEAREST_SAMPLINGMODE) {
-            if (type === Constants.TEXTURETYPE_FLOAT && !engine._caps.textureFloatLinearFiltering) {
+            if (type === TEXTURETYPE_FLOAT && !engine._caps.textureFloatLinearFiltering) {
                 samplingMode = Texture.NEAREST_SAMPLINGMODE;
             }
-            if (type === Constants.TEXTURETYPE_HALF_FLOAT && !engine._caps.textureHalfFloatLinearFiltering) {
+            if (type === TEXTURETYPE_HALF_FLOAT && !engine._caps.textureHalfFloatLinearFiltering) {
                 samplingMode = Texture.NEAREST_SAMPLINGMODE;
             }
         }
 
         // Render target
-        const format = this.isPacked || !engine._features.supportExtendedTextureFormats ? Constants.TEXTUREFORMAT_RGBA : Constants.TEXTUREFORMAT_R;
+        const format = this.isPacked || !engine._features.supportExtendedTextureFormats ? TEXTUREFORMAT_RGBA : TEXTUREFORMAT_R;
         this._depthMap = new RenderTargetTexture(
             name ?? "DepthRenderer",
             { width: engine.getRenderWidth(), height: engine.getRenderHeight() },
@@ -195,12 +203,9 @@ export class DepthRenderer {
             let sideOrientation = material._getEffectiveOrientation(renderingMesh);
 
             if (detNeg) {
-                sideOrientation =
-                    sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation
-                        ? Constants.MATERIAL_CounterClockWiseSideOrientation
-                        : Constants.MATERIAL_ClockWiseSideOrientation;
+                sideOrientation = sideOrientation === MATERIAL_ClockWiseSideOrientation ? MATERIAL_CounterClockWiseSideOrientation : MATERIAL_ClockWiseSideOrientation;
             }
-            const reverseSideOrientation = sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation;
+            const reverseSideOrientation = sideOrientation === MATERIAL_ClockWiseSideOrientation;
 
             engine.setState(material.backFaceCulling, 0, false, reverseSideOrientation, this.reverseCulling ? !material.cullBackFaces : material.cullBackFaces);
 

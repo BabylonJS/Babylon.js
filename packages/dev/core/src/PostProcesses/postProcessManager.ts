@@ -2,7 +2,7 @@ import type { Nullable } from "../types";
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import type { PostProcess } from "./postProcess";
 import { VertexBuffer } from "../Buffers/buffer";
-import { Constants } from "../Engines/constants";
+import { MATERIAL_TriangleFillMode, ALPHA_DISABLE } from "../Engines/constants";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 
@@ -139,7 +139,7 @@ export class PostProcessManager {
                 engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
 
                 // Draw order
-                engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, 6);
+                engine.drawElementsType(MATERIAL_TriangleFillMode, 0, 6);
 
                 pp.onAfterRenderObservable.notifyObservers(effect);
             }
@@ -210,7 +210,7 @@ export class PostProcessManager {
                 engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
 
                 // Draw order
-                engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, 6);
+                engine.drawElementsType(MATERIAL_TriangleFillMode, 0, 6);
 
                 pp.onAfterRenderObservable.notifyObservers(effect);
             }
@@ -219,7 +219,7 @@ export class PostProcessManager {
         // Restore states
         engine.setDepthBuffer(true);
         engine.setDepthWrite(true);
-        engine.setAlphaMode(Constants.ALPHA_DISABLE);
+        engine.setAlphaMode(ALPHA_DISABLE);
     }
 
     /**

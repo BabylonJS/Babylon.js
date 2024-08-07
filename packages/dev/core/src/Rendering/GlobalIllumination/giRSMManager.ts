@@ -15,7 +15,23 @@ import { PostProcess } from "core/PostProcesses/postProcess";
 import type { Observer } from "core/Misc/observable";
 import { Layer } from "core/Layers/layer";
 import { Matrix } from "core/Maths/math.vector";
-import { Constants } from "core/Engines/constants";
+import {
+    TEXTURETYPE_HALF_FLOAT,
+    TEXTUREFORMAT_R,
+    TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV,
+    TEXTUREFORMAT_RGBA,
+    TEXTURE_NEAREST_SAMPLINGMODE,
+    TEXTURETYPE_FLOAT,
+    ALPHA_DISABLE,
+    TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV,
+    TEXTUREFORMAT_RGB,
+    TEXTUREFORMAT_DEPTH32_FLOAT,
+    TEXTUREFORMAT_DEPTH16,
+    TEXTURE_BILINEAR_SAMPLINGMODE,
+    ALPHA_ADD,
+    TEXTURE_CLAMP_ADDRESSMODE,
+    MATERIAL_TextureDirtyFlag,
+} from "core/Engines/constants";
 import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import { MaterialPluginBase } from "core/Materials/materialPluginBase";
 import type { InternalTexture } from "core/Materials/Textures/internalTexture";
@@ -68,11 +84,11 @@ export class GIRSMManager {
      */
     public static GeometryBufferTextureTypesAndFormats: { [key: number]: { textureType: number; textureFormat: number } } = {
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        0: { textureType: Constants.TEXTURETYPE_HALF_FLOAT, textureFormat: Constants.TEXTUREFORMAT_R }, // depth
+        0: { textureType: TEXTURETYPE_HALF_FLOAT, textureFormat: TEXTUREFORMAT_R }, // depth
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        1: { textureType: Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV, textureFormat: Constants.TEXTUREFORMAT_RGBA }, // normal
+        1: { textureType: TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV, textureFormat: TEXTUREFORMAT_RGBA }, // normal
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        2: { textureType: Constants.TEXTURETYPE_HALF_FLOAT, textureFormat: Constants.TEXTUREFORMAT_RGBA }, // position
+        2: { textureType: TEXTURETYPE_HALF_FLOAT, textureFormat: TEXTUREFORMAT_RGBA }, // position
     };
 
     /**
@@ -389,17 +405,7 @@ export class GIRSMManager {
             data[i * 4 + 3] = 1;
         }
 
-        this._sampleTexture = new RawTexture(
-            data,
-            this._maxSamples,
-            1,
-            Constants.TEXTUREFORMAT_RGBA,
-            this._scene,
-            false,
-            false,
-            Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-            Constants.TEXTURETYPE_FLOAT
-        );
+        this._sampleTexture = new RawTexture(data, this._maxSamples, 1, TEXTUREFORMAT_RGBA, this._scene, false, false, TEXTURE_NEAREST_SAMPLINGMODE, TEXTURETYPE_FLOAT);
         this._sampleTexture.name = "GIRSMSamples";
     }
 
@@ -426,7 +432,7 @@ export class GIRSMManager {
         outputDimensions: { width: number; height: number },
         giTextureDimensions = { width: 256, height: 256 },
         maxSamples = 2048,
-        giTextureType = Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV
+        giTextureType = TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV
     ) {
         this._scene = scene;
         this._engine = scene.getEngine();
@@ -451,7 +457,7 @@ export class GIRSMManager {
                     this._scene.postProcessManager.directRender(this._ppGlobalIllumination, this._ppGlobalIllumination[0].inputTexture);
                     this._engine.unBindFramebuffer(this._ppGlobalIllumination[0].inputTexture, true);
 
-                    this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
+                    this._engine.setAlphaMode(ALPHA_DISABLE);
 
                     rebindCurrentRenderTarget = true;
 
@@ -531,7 +537,7 @@ export class GIRSMManager {
             return;
         }
 
-        const textureFormat = this._giTextureType === Constants.TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV ? Constants.TEXTUREFORMAT_RGB : Constants.TEXTUREFORMAT_RGBA;
+        const textureFormat = this._giTextureType === TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV ? TEXTUREFORMAT_RGB : TEXTUREFORMAT_RGBA;
 
         if (this._firstActivation) {
             this._firstActivation = false;
@@ -545,7 +551,7 @@ export class GIRSMManager {
 
         const geometryBufferRenderer = this._scene.enableGeometryBufferRenderer(
             this._enableBlur ? this._outputDimensions : this._giTextureDimensions,
-            this._use32BitsDepthBuffer ? Constants.TEXTUREFORMAT_DEPTH32_FLOAT : Constants.TEXTUREFORMAT_DEPTH16,
+            this._use32BitsDepthBuffer ? TEXTUREFORMAT_DEPTH32_FLOAT : TEXTUREFORMAT_DEPTH16,
             GIRSMManager.GeometryBufferTextureTypesAndFormats
         );
 
@@ -581,7 +587,7 @@ export class GIRSMManager {
                 uniforms: ["rsmLightMatrix", "rsmInfo", "rsmInfo2", "invView"],
                 samplers: ["normalSampler", "rsmPositionW", "rsmNormalW", "rsmFlux", "rsmSamples"],
                 defines,
-                samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+                samplingMode: TEXTURE_BILINEAR_SAMPLINGMODE,
                 engine: this._engine,
                 textureType: this._giTextureType,
                 textureFormat,
@@ -591,7 +597,7 @@ export class GIRSMManager {
 
             if (i !== 0) {
                 ppGlobalIllumination.shareOutputWith(this._ppGlobalIllumination[0]);
-                ppGlobalIllumination.alphaMode = Constants.ALPHA_ADD;
+                ppGlobalIllumination.alphaMode = ALPHA_ADD;
             }
 
             ppGlobalIllumination.autoClear = false;
@@ -653,9 +659,9 @@ export class GIRSMManager {
                 format: textureFormat,
                 generateDepthBuffer: false,
             });
-            this._blurRTT.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
-            this._blurRTT.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
-            this._blurRTT.updateSamplingMode(Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+            this._blurRTT.wrapU = TEXTURE_CLAMP_ADDRESSMODE;
+            this._blurRTT.wrapV = TEXTURE_CLAMP_ADDRESSMODE;
+            this._blurRTT.updateSamplingMode(TEXTURE_NEAREST_SAMPLINGMODE);
             this._blurRTT.skipInitialClear = true;
 
             const blurRTWs: RenderTargetWrapper[] = [];
@@ -669,7 +675,7 @@ export class GIRSMManager {
                 samplers: ["depthSampler", "normalSampler"],
                 defines: decodeGeometryBufferNormals ? "#define DECODE_NORMAL" : undefined,
                 size: blurTextureSize,
-                samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+                samplingMode: TEXTURE_BILINEAR_SAMPLINGMODE,
                 engine: this._engine,
                 textureType: this._giTextureType,
                 textureFormat,
@@ -697,7 +703,7 @@ export class GIRSMManager {
                     samplers: ["depthSampler", "normalSampler"],
                     defines: decodeGeometryBufferNormals ? "#define DECODE_NORMAL" : undefined,
                     size: blurTextureSize,
-                    samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+                    samplingMode: TEXTURE_BILINEAR_SAMPLINGMODE,
                     engine: this._engine,
                     textureType: this._giTextureType,
                     textureFormat,
@@ -746,7 +752,7 @@ export class GIRSMManager {
                         samplers: ["depthSampler", "normalSampler"],
                         defines: decodeGeometryBufferNormals ? "#define DECODE_NORMAL" : undefined,
                         size: blurTextureSize,
-                        samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+                        samplingMode: TEXTURE_BILINEAR_SAMPLINGMODE,
                         engine: this._engine,
                         textureType: this._giTextureType,
                         textureFormat,
@@ -779,7 +785,7 @@ export class GIRSMManager {
                         samplers: ["depthSampler", "normalSampler"],
                         defines: decodeGeometryBufferNormals ? "#define DECODE_NORMAL" : undefined,
                         size: this._outputDimensions,
-                        samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+                        samplingMode: TEXTURE_BILINEAR_SAMPLINGMODE,
                         engine: this._engine,
                         textureType: this._giTextureType,
                         textureFormat,
@@ -895,7 +901,7 @@ export class GIRSMRenderPluginMaterial extends MaterialPluginBase {
     constructor(material: Material | StandardMaterial | PBRBaseMaterial) {
         super(material, GIRSMRenderPluginMaterial.Name, 310, new MaterialGIRSMRenderDefines());
 
-        this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
+        this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[MATERIAL_TextureDirtyFlag];
 
         this._isPBR = material instanceof PBRBaseMaterial;
     }

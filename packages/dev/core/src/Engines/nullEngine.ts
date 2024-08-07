@@ -6,7 +6,15 @@ import type { RenderTargetCreationOptions } from "../Materials/Textures/textureC
 import type { VertexBuffer } from "../Buffers/buffer";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import type { Effect } from "../Materials/effect";
-import { Constants } from "./constants";
+import {
+    ALPHA_DISABLE,
+    TEXTURE_TRILINEAR_SAMPLINGMODE,
+    TEXTURETYPE_UNSIGNED_INT,
+    TEXTUREFORMAT_RGBA,
+    TEXTURETYPE_FLOAT,
+    TEXTURE_NEAREST_SAMPLINGMODE,
+    TEXTURETYPE_HALF_FLOAT,
+} from "./constants";
 import type { IPipelineContext } from "./IPipelineContext";
 import { DataBuffer } from "../Buffers/dataBuffer";
 import type { IColor4Like, IViewportLike } from "../Maths/math.like";
@@ -583,10 +591,10 @@ export class NullEngine extends Engine {
             return;
         }
 
-        this.alphaState.alphaBlend = mode !== Constants.ALPHA_DISABLE;
+        this.alphaState.alphaBlend = mode !== ALPHA_DISABLE;
 
         if (!noDepthWriteChange) {
-            this.setDepthWrite(mode === Constants.ALPHA_DISABLE);
+            this.setDepthWrite(mode === ALPHA_DISABLE);
         }
         this._alphaMode = mode;
     }
@@ -686,7 +694,7 @@ export class NullEngine extends Engine {
         noMipmap: boolean,
         invertY: boolean,
         scene: Nullable<ISceneLike>,
-        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+        samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<(texture: InternalTexture) => void> = null,
         onError: Nullable<(message: string, exception: any) => void> = null,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
@@ -751,14 +759,14 @@ export class NullEngine extends Engine {
             fullOptions.generateMipMaps = options.generateMipMaps;
             fullOptions.generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
             fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && options.generateStencilBuffer;
-            fullOptions.type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
-            fullOptions.samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
+            fullOptions.type = options.type === undefined ? TEXTURETYPE_UNSIGNED_INT : options.type;
+            fullOptions.samplingMode = options.samplingMode === undefined ? TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
         } else {
             fullOptions.generateMipMaps = <boolean>options;
             fullOptions.generateDepthBuffer = true;
             fullOptions.generateStencilBuffer = false;
-            fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
-            fullOptions.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
+            fullOptions.type = TEXTURETYPE_UNSIGNED_INT;
+            fullOptions.samplingMode = TEXTURE_TRILINEAR_SAMPLINGMODE;
         }
         const texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
 
@@ -796,19 +804,19 @@ export class NullEngine extends Engine {
             generateMipMaps: true,
             generateDepthBuffer: true,
             generateStencilBuffer: false,
-            type: Constants.TEXTURETYPE_UNSIGNED_INT,
-            samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-            format: Constants.TEXTUREFORMAT_RGBA,
+            type: TEXTURETYPE_UNSIGNED_INT,
+            samplingMode: TEXTURE_TRILINEAR_SAMPLINGMODE,
+            format: TEXTUREFORMAT_RGBA,
             ...options,
         };
         fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && fullOptions.generateStencilBuffer;
 
-        if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+        if (fullOptions.type === TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
             // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
-            fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-        } else if (fullOptions.type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+            fullOptions.samplingMode = TEXTURE_NEAREST_SAMPLINGMODE;
+        } else if (fullOptions.type === TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
             // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
-            fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+            fullOptions.samplingMode = TEXTURE_NEAREST_SAMPLINGMODE;
         }
 
         rtWrapper._generateDepthBuffer = fullOptions.generateDepthBuffer;
@@ -864,7 +872,7 @@ export class NullEngine extends Engine {
         invertY: boolean,
         samplingMode: number,
         compression: Nullable<string> = null,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        type: number = TEXTURETYPE_UNSIGNED_INT,
         creationFlags = 0,
         useSRGBBuffer = false
     ): InternalTexture {
@@ -904,7 +912,7 @@ export class NullEngine extends Engine {
         format: number,
         invertY: boolean,
         compression: Nullable<string> = null,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        type: number = TEXTURETYPE_UNSIGNED_INT,
         useSRGBBuffer: boolean = false
     ): void {
         if (texture) {

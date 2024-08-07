@@ -9,7 +9,7 @@ import type { Viewport } from "../../Maths/math.viewport";
 import type { Scene } from "../../scene";
 import { Matrix } from "../../Maths/math.vector";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
-import { Constants } from "../../Engines/constants";
+import { TEXTURETYPE_HALF_FLOAT, TEXTUREFORMAT_RGBA } from "../../Engines/constants";
 import { ShaderMaterial } from "../../Materials/shaderMaterial";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { Material } from "../../Materials/material";
@@ -35,7 +35,7 @@ export class XRSpaceWarpRenderTarget extends RenderTargetTexture {
      * @param size the size of the render target (used for each view)
      */
     constructor(motionVectorTexture: WebGLTexture, depthStencilTexture: WebGLTexture, scene?: Scene, size: number | { width: number; height: number } | { ratio: number } = 512) {
-        super("spacewarp rtt", size, scene, false, true, Constants.TEXTURETYPE_HALF_FLOAT, false, undefined, false, false, true, undefined, true);
+        super("spacewarp rtt", size, scene, false, true, TEXTURETYPE_HALF_FLOAT, false, undefined, false, false, true, undefined, true);
         this._renderTarget = (this.getScene()!.getEngine() as Engine).createMultiviewRenderTargetTexture(
             this.getRenderWidth(),
             this.getRenderHeight(),
@@ -45,7 +45,7 @@ export class XRSpaceWarpRenderTarget extends RenderTargetTexture {
         (this._renderTarget as WebGLRenderTargetWrapper)._disposeOnlyFramebuffers = true;
         this._texture = this._renderTarget.texture!;
         this._texture.isMultiview = true;
-        this._texture.format = Constants.TEXTUREFORMAT_RGBA;
+        this._texture.format = TEXTUREFORMAT_RGBA;
 
         if (scene) {
             this._velocityMaterial = new ShaderMaterial(

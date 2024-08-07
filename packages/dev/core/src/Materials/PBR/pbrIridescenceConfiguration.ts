@@ -6,7 +6,7 @@ import { MaterialFlags } from "../materialFlags";
 import type { UniformBuffer } from "../../Materials/uniformBuffer";
 import type { IAnimatable } from "../../Animations/animatable.interface";
 import type { EffectFallbacks } from "../effectFallbacks";
-import { Constants } from "../../Engines/constants";
+import { MATERIAL_TextureDirtyFlag } from "../../Engines/constants";
 import { MaterialPluginBase } from "../materialPluginBase";
 import { MaterialDefines } from "../materialDefines";
 
@@ -112,7 +112,7 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
     constructor(material: PBRBaseMaterial, addToPluginList = true) {
         super(material, "PBRIridescence", 110, new MaterialIridescenceDefines(), addToPluginList);
 
-        this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
+        this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[MATERIAL_TextureDirtyFlag];
     }
 
     public override isReadyForSubMesh(defines: MaterialIridescenceDefines, scene: Scene): boolean {

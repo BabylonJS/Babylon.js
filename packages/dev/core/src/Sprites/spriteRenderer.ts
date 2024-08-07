@@ -1,5 +1,5 @@
 import type { Nullable } from "../types";
-import { Constants } from "../Engines/constants";
+import { ALPHA_COMBINE, GEQUAL, LEQUAL, MATERIAL_TriangleStripDrawMode, MATERIAL_TriangleFillMode, ALPHA_DISABLE } from "../Engines/constants";
 import type { IMatrixLike } from "../Maths/math.like";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { DataBuffer } from "../Buffers/dataBuffer";
@@ -46,7 +46,7 @@ export class SpriteRenderer {
      * the static Constants.ALPHA_x properties provided in this class.
      * Default value is Constants.ALPHA_COMBINE
      */
-    public blendMode = Constants.ALPHA_COMBINE;
+    public blendMode = ALPHA_COMBINE;
 
     /**
      * Gets or sets a boolean indicating if alpha mode is automatically
@@ -339,15 +339,15 @@ export class SpriteRenderer {
         }
 
         // Draw order
-        engine.depthCullingState.depthFunc = engine.useReverseDepthBuffer ? Constants.GEQUAL : Constants.LEQUAL;
+        engine.depthCullingState.depthFunc = engine.useReverseDepthBuffer ? GEQUAL : LEQUAL;
         if (!this.disableDepthWrite) {
             effect.setBool("alphaTest", true);
             engine.setColorWrite(false);
             engine.enableEffect(drawWrapperDepth);
             if (this._useInstancing) {
-                engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, offset);
+                engine.drawArraysType(MATERIAL_TriangleStripDrawMode, 0, 4, offset);
             } else {
-                engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, (offset / 4) * 6);
+                engine.drawElementsType(MATERIAL_TriangleFillMode, 0, (offset / 4) * 6);
             }
             engine.enableEffect(drawWrapper);
             engine.setColorWrite(true);
@@ -356,13 +356,13 @@ export class SpriteRenderer {
 
         engine.setAlphaMode(this.blendMode);
         if (this._useInstancing) {
-            engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, offset);
+            engine.drawArraysType(MATERIAL_TriangleStripDrawMode, 0, 4, offset);
         } else {
-            engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, (offset / 4) * 6);
+            engine.drawElementsType(MATERIAL_TriangleFillMode, 0, (offset / 4) * 6);
         }
 
         if (this.autoResetAlpha) {
-            engine.setAlphaMode(Constants.ALPHA_DISABLE);
+            engine.setAlphaMode(ALPHA_DISABLE);
         }
 
         // Restore Right Handed

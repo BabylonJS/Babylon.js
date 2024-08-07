@@ -13,7 +13,19 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Scene } from "../../../../scene";
 import { InputBlock } from "../Input/inputBlock";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
-import { Constants } from "../../../../Engines/constants";
+import {
+    MATERIAL_TextureDirtyFlag,
+    TEXTURE_EXPLICIT_MODE,
+    TEXTURE_SKYBOX_MODE,
+    TEXTURE_CUBIC_MODE,
+    TEXTURE_INVCUBIC_MODE,
+    TEXTURE_SPHERICAL_MODE,
+    TEXTURE_PLANAR_MODE,
+    TEXTURE_PROJECTION_MODE,
+    TEXTURE_EQUIRECTANGULAR_MODE,
+    TEXTURE_FIXED_EQUIRECTANGULAR_MODE,
+    TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE,
+} from "../../../../Engines/constants";
 
 import { CubeTexture } from "../../../Textures/cubeTexture";
 import { Texture } from "../../../Textures/texture";
@@ -86,7 +98,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         const scene = texture?.getScene() ?? EngineStore.LastCreatedScene;
 
         if (!texture && scene) {
-            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+            scene.markAllMaterialsAsDirty(MATERIAL_TextureDirtyFlag, (mat) => {
                 return mat.hasTexture(this._texture!);
             });
         }
@@ -94,7 +106,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         this._texture = texture;
 
         if (texture && scene) {
-            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+            scene.markAllMaterialsAsDirty(MATERIAL_TextureDirtyFlag, (mat) => {
                 return mat.hasTexture(texture);
             });
         }
@@ -237,16 +249,16 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
 
         defines.setValue(this._define3DName, texture.isCube, true);
         defines.setValue(this._defineLocalCubicName, (<any>texture).boundingBoxSize ? true : false, true);
-        defines.setValue(this._defineExplicitName, texture.coordinatesMode === Constants.TEXTURE_EXPLICIT_MODE, true);
-        defines.setValue(this._defineSkyboxName, texture.coordinatesMode === Constants.TEXTURE_SKYBOX_MODE, true);
-        defines.setValue(this._defineCubicName, texture.coordinatesMode === Constants.TEXTURE_CUBIC_MODE || texture.coordinatesMode === Constants.TEXTURE_INVCUBIC_MODE, true);
-        defines.setValue("INVERTCUBICMAP", texture.coordinatesMode === Constants.TEXTURE_INVCUBIC_MODE, true);
-        defines.setValue(this._defineSphericalName, texture.coordinatesMode === Constants.TEXTURE_SPHERICAL_MODE, true);
-        defines.setValue(this._definePlanarName, texture.coordinatesMode === Constants.TEXTURE_PLANAR_MODE, true);
-        defines.setValue(this._defineProjectionName, texture.coordinatesMode === Constants.TEXTURE_PROJECTION_MODE, true);
-        defines.setValue(this._defineEquirectangularName, texture.coordinatesMode === Constants.TEXTURE_EQUIRECTANGULAR_MODE, true);
-        defines.setValue(this._defineEquirectangularFixedName, texture.coordinatesMode === Constants.TEXTURE_FIXED_EQUIRECTANGULAR_MODE, true);
-        defines.setValue(this._defineMirroredEquirectangularFixedName, texture.coordinatesMode === Constants.TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE, true);
+        defines.setValue(this._defineExplicitName, texture.coordinatesMode === TEXTURE_EXPLICIT_MODE, true);
+        defines.setValue(this._defineSkyboxName, texture.coordinatesMode === TEXTURE_SKYBOX_MODE, true);
+        defines.setValue(this._defineCubicName, texture.coordinatesMode === TEXTURE_CUBIC_MODE || texture.coordinatesMode === TEXTURE_INVCUBIC_MODE, true);
+        defines.setValue("INVERTCUBICMAP", texture.coordinatesMode === TEXTURE_INVCUBIC_MODE, true);
+        defines.setValue(this._defineSphericalName, texture.coordinatesMode === TEXTURE_SPHERICAL_MODE, true);
+        defines.setValue(this._definePlanarName, texture.coordinatesMode === TEXTURE_PLANAR_MODE, true);
+        defines.setValue(this._defineProjectionName, texture.coordinatesMode === TEXTURE_PROJECTION_MODE, true);
+        defines.setValue(this._defineEquirectangularName, texture.coordinatesMode === TEXTURE_EQUIRECTANGULAR_MODE, true);
+        defines.setValue(this._defineEquirectangularFixedName, texture.coordinatesMode === TEXTURE_FIXED_EQUIRECTANGULAR_MODE, true);
+        defines.setValue(this._defineMirroredEquirectangularFixedName, texture.coordinatesMode === TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE, true);
     }
 
     public override isReady() {

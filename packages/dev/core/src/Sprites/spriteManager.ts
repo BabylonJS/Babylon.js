@@ -16,7 +16,7 @@ import { SpriteRenderer } from "./spriteRenderer";
 import type { ThinSprite } from "./thinSprite";
 import type { ISize } from "../Maths/math.size";
 import { EngineStore } from "../Engines/engineStore";
-import { Constants } from "../Engines/constants";
+import { SnippetUrl, TEXTURE_TRILINEAR_SAMPLINGMODE } from "../Engines/constants";
 
 import type { Ray } from "../Culling/ray";
 
@@ -113,7 +113,7 @@ export interface ISpriteManager extends IDisposable {
  */
 export class SpriteManager implements ISpriteManager {
     /** Define the Url to load snippets */
-    public static SnippetUrl = Constants.SnippetUrl;
+    public static SnippetUrl = SnippetUrl;
 
     /** Snippet ID if the manager was created from the snippet server */
     public snippetId: string;
@@ -258,8 +258,8 @@ export class SpriteManager implements ISpriteManager {
 
     public set pixelPerfect(value: boolean) {
         this._spriteRenderer.pixelPerfect = value;
-        if (value && this.texture.samplingMode !== Constants.TEXTURE_TRILINEAR_SAMPLINGMODE) {
-            this.texture.updateSamplingMode(Constants.TEXTURE_TRILINEAR_SAMPLINGMODE);
+        if (value && this.texture.samplingMode !== TEXTURE_TRILINEAR_SAMPLINGMODE) {
+            this.texture.updateSamplingMode(TEXTURE_TRILINEAR_SAMPLINGMODE);
         }
     }
 

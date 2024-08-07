@@ -9,7 +9,7 @@ import { Logger } from "../../Misc/logger";
 import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 import { InjectStartingAndEndingCode } from "../../Misc/codeStringParsingTools";
-import { Constants } from "../constants";
+import { AUTOSAMPLERSUFFIX } from "../constants";
 
 /** @internal */
 export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
@@ -176,7 +176,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
                 const samplerType = WebGPUShaderProcessor._SamplerTypeByWebGLSamplerType[uniformType] ?? "sampler";
                 const isComparisonSampler = !!WebGPUShaderProcessor._IsComparisonSamplerByWebGPUSamplerType[samplerType];
                 const samplerBindingType = isComparisonSampler ? WebGPUConstants.SamplerBindingType.Comparison : WebGPUConstants.SamplerBindingType.Filtering;
-                const samplerName = name + Constants.AUTOSAMPLERSUFFIX;
+                const samplerName = name + AUTOSAMPLERSUFFIX;
 
                 let samplerInfo = this._webgpuProcessingContext.availableSamplers[samplerName];
                 if (!samplerInfo) {

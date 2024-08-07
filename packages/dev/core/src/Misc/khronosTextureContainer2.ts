@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import type { AbstractEngine } from "../Engines/abstractEngine";
-import { Constants } from "../Engines/constants";
+import { TEXTURETYPE_UNSIGNED_BYTE, TEXTUREFORMAT_RGBA, TEXTUREFORMAT_R, TEXTUREFORMAT_RG } from "../Engines/constants";
 import { AutoReleaseWorkerPool } from "./workerPool";
 import { Tools } from "./tools";
 import type { Nullable } from "../types";
@@ -422,16 +422,16 @@ export class KhronosTextureContainer2 {
 
         switch (data.transcodedFormat) {
             case 0x8058 /* RGBA8 */:
-                internalTexture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
-                internalTexture.format = Constants.TEXTUREFORMAT_RGBA;
+                internalTexture.type = TEXTURETYPE_UNSIGNED_BYTE;
+                internalTexture.format = TEXTUREFORMAT_RGBA;
                 break;
             case 0x8229 /* R8 */:
-                internalTexture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
-                internalTexture.format = Constants.TEXTUREFORMAT_R;
+                internalTexture.type = TEXTURETYPE_UNSIGNED_BYTE;
+                internalTexture.format = TEXTUREFORMAT_R;
                 break;
             case 0x822b /* RG8 */:
-                internalTexture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
-                internalTexture.format = Constants.TEXTUREFORMAT_RG;
+                internalTexture.type = TEXTURETYPE_UNSIGNED_BYTE;
+                internalTexture.format = TEXTUREFORMAT_RG;
                 break;
             default:
                 internalTexture.format = data.transcodedFormat;

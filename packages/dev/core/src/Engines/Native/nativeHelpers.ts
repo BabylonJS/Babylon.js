@@ -1,5 +1,5 @@
 import { ErrorCodes, RuntimeError } from "core/Misc/error";
-import { Constants } from "../constants";
+import * as Constants from "../constants";
 import type { INative } from "./nativeInterfaces";
 import { VertexBuffer } from "core/Buffers/buffer";
 

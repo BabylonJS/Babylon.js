@@ -1,7 +1,7 @@
 import type { Nullable } from "../types";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { Camera } from "../Cameras/camera";
-import { Constants } from "../Engines/constants";
+import { TEXTURETYPE_HALF_FLOAT, TEXTURE_NEAREST_NEAREST, TEXTUREFORMAT_RG } from "../Engines/constants";
 import type { Observer } from "./observable";
 import { Observable } from "./observable";
 import type { Effect } from "../Materials/effect";
@@ -65,7 +65,7 @@ export class MinMaxReducer {
      * @param type The type of the textures created for the reduction (defaults to TEXTURETYPE_HALF_FLOAT)
      * @param forceFullscreenViewport Forces the post processes used for the reduction to be applied without taking into account viewport (defaults to true)
      */
-    public setSourceTexture(sourceTexture: RenderTargetTexture, depthRedux: boolean, type: number = Constants.TEXTURETYPE_HALF_FLOAT, forceFullscreenViewport = true): void {
+    public setSourceTexture(sourceTexture: RenderTargetTexture, depthRedux: boolean, type: number = TEXTURETYPE_HALF_FLOAT, forceFullscreenViewport = true): void {
         if (sourceTexture === this._sourceTexture) {
             return;
         }
@@ -86,7 +86,7 @@ export class MinMaxReducer {
             ["sourceTexture"], // textures
             1.0, // options
             null, // camera
-            Constants.TEXTURE_NEAREST_NEAREST, // sampling
+            TEXTURE_NEAREST_NEAREST, // sampling
             scene.getEngine(), // engine
             false, // reusable
             "#define INITIAL" + (depthRedux ? "\n#define DEPTH_REDUX" : ""), // defines
@@ -94,7 +94,7 @@ export class MinMaxReducer {
             undefined,
             undefined,
             undefined,
-            Constants.TEXTUREFORMAT_RG
+            TEXTUREFORMAT_RG
         );
 
         reductionInitial.autoClear = false;
@@ -126,7 +126,7 @@ export class MinMaxReducer {
                 null,
                 { width: w, height: h }, // options
                 null, // camera
-                Constants.TEXTURE_NEAREST_NEAREST, // sampling
+                TEXTURE_NEAREST_NEAREST, // sampling
                 scene.getEngine(), // engine
                 false, // reusable
                 "#define " + (w == 1 && h == 1 ? "LAST" : w == 1 || h == 1 ? "ONEBEFORELAST" : "MAIN"), // defines
@@ -134,7 +134,7 @@ export class MinMaxReducer {
                 undefined,
                 undefined,
                 undefined,
-                Constants.TEXTUREFORMAT_RG
+                TEXTUREFORMAT_RG
             );
 
             reduction.autoClear = false;

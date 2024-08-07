@@ -20,7 +20,7 @@ import { Container } from "./controls/container";
 import { Control } from "./controls/control";
 import { Style } from "./style";
 import { Measure } from "./measure";
-import { Constants } from "core/Engines/constants";
+import { SnippetUrl, TEXTUREFORMAT_RGBA } from "core/Engines/constants";
 import { Viewport } from "core/Maths/math.viewport";
 import { Color3 } from "core/Maths/math.color";
 import { WebRequest } from "core/Misc/webRequest";
@@ -38,7 +38,7 @@ import type { AbstractEngine } from "core/Engines/abstractEngine";
  */
 export class AdvancedDynamicTexture extends DynamicTexture {
     /** Define the url to load snippets */
-    public static SnippetUrl = Constants.SnippetUrl;
+    public static SnippetUrl = SnippetUrl;
 
     /** Indicates if some optimizations can be performed in GUI GPU management (the downside is additional memory/GPU texture memory used) */
     public static AllowGPUOptimizations = true;
@@ -395,7 +395,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
      */
     constructor(name: string, width = 0, height = 0, scene?: Nullable<Scene>, generateMipMaps = false, samplingMode = Texture.NEAREST_SAMPLINGMODE, invertY = true) {
-        super(name, { width: width, height: height }, scene, generateMipMaps, samplingMode, Constants.TEXTUREFORMAT_RGBA, invertY);
+        super(name, { width: width, height: height }, scene, generateMipMaps, samplingMode, TEXTUREFORMAT_RGBA, invertY);
         scene = this.getScene();
         if (!scene || !this._texture) {
             return;

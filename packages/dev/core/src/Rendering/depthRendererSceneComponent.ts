@@ -3,7 +3,7 @@ import { Scene } from "../scene";
 import type { SmartArrayNoDuplicate } from "../Misc/smartArray";
 import { DepthRenderer } from "./depthRenderer";
 import type { Camera } from "../Cameras/camera";
-import { Constants } from "../Engines/constants";
+import { TEXTURE_TRILINEAR_SAMPLINGMODE, TEXTURETYPE_HALF_FLOAT, TEXTURETYPE_FLOAT, TEXTURETYPE_UNSIGNED_BYTE } from "../Engines/constants";
 import type { ISceneComponent } from "../sceneComponent";
 import { SceneComponentConstants } from "../sceneComponent";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
@@ -42,7 +42,7 @@ Scene.prototype.enableDepthRenderer = function (
     camera?: Nullable<Camera>,
     storeNonLinearDepth = false,
     force32bitsFloat: boolean = false,
-    samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+    samplingMode = TEXTURE_TRILINEAR_SAMPLINGMODE,
     storeCameraSpaceZ: boolean = false
 ): DepthRenderer {
     camera = camera || this.activeCamera;
@@ -57,11 +57,11 @@ Scene.prototype.enableDepthRenderer = function (
         const supportFullfloat = !!this.getEngine().getCaps().textureFloatRender;
         let textureType = 0;
         if (this.getEngine().getCaps().textureHalfFloatRender && (!force32bitsFloat || !supportFullfloat)) {
-            textureType = Constants.TEXTURETYPE_HALF_FLOAT;
+            textureType = TEXTURETYPE_HALF_FLOAT;
         } else if (supportFullfloat) {
-            textureType = Constants.TEXTURETYPE_FLOAT;
+            textureType = TEXTURETYPE_FLOAT;
         } else {
-            textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+            textureType = TEXTURETYPE_UNSIGNED_BYTE;
         }
         this._depthRenderer[camera.id] = new DepthRenderer(this, textureType, camera, storeNonLinearDepth, samplingMode, storeCameraSpaceZ);
     }

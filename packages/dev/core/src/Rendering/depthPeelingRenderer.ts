@@ -1,7 +1,19 @@
 /**
  * Implementation based on https://medium.com/@shrekshao_71662/dual-depth-peeling-implementation-in-webgl-11baa061ba4b
  */
-import { Constants } from "../Engines/constants";
+import {
+    PREPASS_COLOR_TEXTURE_TYPE,
+    TEXTUREFORMAT_RG,
+    TEXTURE_NEAREST_SAMPLINGMODE,
+    TEXTURETYPE_FLOAT,
+    TEXTURETYPE_HALF_FLOAT,
+    TEXTUREFORMAT_RGBA,
+    ALPHA_DISABLE,
+    ALPHA_ONEONE_ONEONE,
+    ALPHA_EQUATION_MAX,
+    ALPHA_EQUATION_ADD,
+    ALPHA_LAYER_ACCUMULATE,
+} from "../Engines/constants";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Effect } from "../Materials/effect";
 import { MultiRenderTarget } from "../Materials/Textures/multiRenderTarget";
@@ -42,7 +54,7 @@ class DepthPeelingEffectConfiguration implements PrePassEffectConfiguration {
     /**
      * Textures that should be present in the MRT for this effect to work
      */
-    public readonly texturesRequired: number[] = [Constants.PREPASS_COLOR_TEXTURE_TYPE];
+    public readonly texturesRequired: number[] = [PREPASS_COLOR_TEXTURE_TYPE];
 }
 
 /**
@@ -221,15 +233,15 @@ export class DepthPeelingRenderer {
         // 1 is a color texture
         const optionsArray = [
             {
-                format: Constants.TEXTUREFORMAT_RG, // For MSAA we need RGBA
-                samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-                type: this._engine.getCaps().textureFloatLinearFiltering ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_HALF_FLOAT,
+                format: TEXTUREFORMAT_RG, // For MSAA we need RGBA
+                samplingMode: TEXTURE_NEAREST_SAMPLINGMODE,
+                type: this._engine.getCaps().textureFloatLinearFiltering ? TEXTURETYPE_FLOAT : TEXTURETYPE_HALF_FLOAT,
                 label: "DepthPeelingRenderer-DepthTexture",
             } as InternalTextureCreationOptions,
             {
-                format: Constants.TEXTUREFORMAT_RGBA,
-                samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-                type: Constants.TEXTURETYPE_HALF_FLOAT, // For MSAA we need FLOAT
+                format: TEXTUREFORMAT_RGBA,
+                samplingMode: TEXTURE_NEAREST_SAMPLINGMODE,
+                type: TEXTURETYPE_HALF_FLOAT, // For MSAA we need FLOAT
                 label: "DepthPeelingRenderer-ColorTexture",
             } as InternalTextureCreationOptions,
         ];
@@ -296,7 +308,7 @@ export class DepthPeelingRenderer {
         }
 
         // Retrieve opaque color texture
-        const textureIndex = prePassRenderer.getIndex(Constants.PREPASS_COLOR_TEXTURE_TYPE);
+        const textureIndex = prePassRenderer.getIndex(PREPASS_COLOR_TEXTURE_TYPE);
         const prePassTexture = prePassRenderer.defaultRT.textures?.length ? prePassRenderer.defaultRT.textures[textureIndex].getInternalTexture() : null;
 
         if (!prePassTexture) {
@@ -417,7 +429,7 @@ export class DepthPeelingRenderer {
             this._engine.restoreDefaultFramebuffer();
         }
 
-        this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
+        this._engine.setAlphaMode(ALPHA_DISABLE);
         this._engine.applyStates();
 
         this._engine.enableEffect(this._finalEffectWrapper._drawWrapper);
@@ -514,8 +526,8 @@ export class DepthPeelingRenderer {
         this._engine.bindFramebuffer(this._depthMrts[0].renderTarget!);
         this._engine.bindAttachments(this._layoutCache[0]);
 
-        this._engine.setAlphaMode(Constants.ALPHA_ONEONE_ONEONE); // in WebGPU, when using MIN or MAX equation, the src / dst color factors should not use SRC_ALPHA and the src / dst alpha factors must be 1 else WebGPU will throw a validation error
-        this._engine.setAlphaEquation(Constants.ALPHA_EQUATION_MAX);
+        this._engine.setAlphaMode(ALPHA_ONEONE_ONEONE); // in WebGPU, when using MIN or MAX equation, the src / dst color factors should not use SRC_ALPHA and the src / dst alpha factors must be 1 else WebGPU will throw a validation error
+        this._engine.setAlphaEquation(ALPHA_EQUATION_MAX);
         this._engine.depthCullingState.depthMask = false;
         this._engine.depthCullingState.depthTest = true;
         this._engine.applyStates();
@@ -558,8 +570,8 @@ export class DepthPeelingRenderer {
             this._engine.bindFramebuffer(this._depthMrts[writeId].renderTarget!);
             this._engine.bindAttachments(this._layoutCache[2]);
 
-            this._engine.setAlphaMode(Constants.ALPHA_ONEONE_ONEONE); // the value does not matter (as MAX operation does not use them) but the src and dst color factors should not use SRC_ALPHA else WebGPU will throw a validation error
-            this._engine.setAlphaEquation(Constants.ALPHA_EQUATION_MAX);
+            this._engine.setAlphaMode(ALPHA_ONEONE_ONEONE); // the value does not matter (as MAX operation does not use them) but the src and dst color factors should not use SRC_ALPHA else WebGPU will throw a validation error
+            this._engine.setAlphaEquation(ALPHA_EQUATION_MAX);
             this._engine.depthCullingState.depthTest = false;
             this._engine.applyStates();
 
@@ -572,8 +584,8 @@ export class DepthPeelingRenderer {
             // Back color
             this._engine.bindFramebuffer(this._blendBackMrt.renderTarget!);
             this._engine.bindAttachments(this._layoutCache[0]);
-            this._engine.setAlphaEquation(Constants.ALPHA_EQUATION_ADD);
-            this._engine.setAlphaMode(Constants.ALPHA_LAYER_ACCUMULATE);
+            this._engine.setAlphaEquation(ALPHA_EQUATION_ADD);
+            this._engine.setAlphaMode(ALPHA_LAYER_ACCUMULATE);
             this._engine.applyStates();
 
             const blendBackEffectWrapper = writeId === 0 || !this._useRenderPasses ? this._blendBackEffectWrapper : this._blendBackEffectWrapperPingPong;

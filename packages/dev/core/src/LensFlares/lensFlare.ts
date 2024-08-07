@@ -2,7 +2,7 @@ import type { Nullable } from "../types";
 import { Color3 } from "../Maths/math.color";
 import { Texture } from "../Materials/Textures/texture";
 import type { LensFlareSystem } from "./lensFlareSystem";
-import { Constants } from "../Engines/constants";
+import { ALPHA_ONEONE } from "../Engines/constants";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { VertexBuffer } from "../Buffers/buffer";
 /**
@@ -24,7 +24,7 @@ export class LensFlare {
     /**
      * Define the alpha mode to render this particular lens.
      */
-    public alphaMode: number = Constants.ALPHA_ONEONE;
+    public alphaMode: number = ALPHA_ONEONE;
 
     /** @internal */
     public _drawWrapper: DrawWrapper;

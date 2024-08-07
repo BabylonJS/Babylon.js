@@ -5,7 +5,7 @@ import type { Scene } from "../../scene";
 import type { Nullable } from "../../types";
 import { Tools } from "../../Misc/tools";
 import "../../Engines/Extensions/engine.rawTexture";
-import { Constants } from "../../Engines/constants";
+import { DELAYLOADSTATE_NOTLOADED, TEXTUREFORMAT_RGB, TEXTURETYPE_FLOAT, TEXTURETYPE_UNSIGNED_INTEGER, TEXTURE_TRILINEAR_SAMPLINGMODE } from "../../Engines/constants";
 import { LoadImage } from "../../Misc/fileTools";
 
 /**
@@ -84,7 +84,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
             if (!scene.useDelayedTextureLoading) {
                 this._loadImage(() => this._loadTexture(), this._onError);
             } else {
-                this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
+                this.delayLoadState = DELAYLOADSTATE_NOTLOADED;
             }
         } else if (onLoad) {
             if (this._texture.isReady) {
@@ -112,11 +112,11 @@ export class EquiRectangularCubeTexture extends BaseTexture {
             .createRawCubeTexture(
                 null,
                 this._size,
-                Constants.TEXTUREFORMAT_RGB,
-                scene.getEngine().getCaps().textureFloat ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_INTEGER,
+                TEXTUREFORMAT_RGB,
+                scene.getEngine().getCaps().textureFloat ? TEXTURETYPE_FLOAT : TEXTURETYPE_UNSIGNED_INTEGER,
                 !this._noMipmap,
                 false,
-                Constants.TEXTURE_TRILINEAR_SAMPLINGMODE
+                TEXTURE_TRILINEAR_SAMPLINGMODE
             );
         texture.generateMipMaps = !this._noMipmap;
         scene.addPendingData(texture);

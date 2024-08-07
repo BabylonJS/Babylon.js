@@ -2,7 +2,23 @@ import { InternalTexture, InternalTextureSource } from "../../../Materials/Textu
 import type { IMultiRenderTargetOptions } from "../../../Materials/Textures/multiRenderTarget";
 import { Logger } from "../../../Misc/logger";
 import type { Nullable } from "../../../types";
-import { Constants } from "../../constants";
+import {
+    TEXTUREFORMAT_DEPTH16,
+    TEXTURETYPE_UNSIGNED_INT,
+    TEXTURE_TRILINEAR_SAMPLINGMODE,
+    TEXTUREFORMAT_RGBA,
+    TEXTURE_2D,
+    TEXTUREFORMAT_DEPTH24_STENCIL8,
+    TEXTUREFORMAT_DEPTH32_FLOAT,
+    TEXTUREFORMAT_STENCIL8,
+    TEXTURETYPE_FLOAT,
+    TEXTURE_NEAREST_SAMPLINGMODE,
+    TEXTURETYPE_HALF_FLOAT,
+    TEXTURE_CUBE_MAP,
+    TEXTURE_3D,
+    TEXTURE_2D_ARRAY,
+    TEXTURE_CLAMP_ADDRESSMODE,
+} from "../../constants";
 import type { TextureSize } from "../../../Materials/Textures/textureCreationOptions";
 import type { RenderTargetWrapper } from "../../renderTargetWrapper";
 import { WebGPUEngine } from "../../webgpuEngine";
@@ -99,14 +115,14 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
     let generateDepthBuffer = true;
     let generateStencilBuffer = false;
     let generateDepthTexture = false;
-    let depthTextureFormat = Constants.TEXTUREFORMAT_DEPTH16;
+    let depthTextureFormat = TEXTUREFORMAT_DEPTH16;
     let textureCount = 1;
 
-    const defaultType = Constants.TEXTURETYPE_UNSIGNED_INT;
-    const defaultSamplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
+    const defaultType = TEXTURETYPE_UNSIGNED_INT;
+    const defaultSamplingMode = TEXTURE_TRILINEAR_SAMPLINGMODE;
     const defaultUseSRGBBuffer = false;
-    const defaultFormat = Constants.TEXTUREFORMAT_RGBA;
-    const defaultTarget = Constants.TEXTURE_2D;
+    const defaultFormat = TEXTUREFORMAT_RGBA;
+    const defaultTarget = TEXTURE_2D;
 
     let types: number[] = [];
     let samplingModes: number[] = [];
@@ -126,7 +142,7 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
         generateStencilBuffer = options.generateStencilBuffer === undefined ? false : options.generateStencilBuffer;
         generateDepthTexture = options.generateDepthTexture === undefined ? false : options.generateDepthTexture;
         textureCount = options.textureCount || 1;
-        depthTextureFormat = options.depthTextureFormat ?? Constants.TEXTUREFORMAT_DEPTH16;
+        depthTextureFormat = options.depthTextureFormat ?? TEXTUREFORMAT_DEPTH16;
 
         if (options.types) {
             types = options.types;
@@ -167,11 +183,11 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
             // The caller doesn't want a depth texture, so we are free to use the depth texture format we want.
             // So, we will align with what the WebGL engine does
             if (generateDepthBuffer && generateStencilBuffer) {
-                depthTextureFormat = Constants.TEXTUREFORMAT_DEPTH24_STENCIL8;
+                depthTextureFormat = TEXTUREFORMAT_DEPTH24_STENCIL8;
             } else if (generateDepthBuffer) {
-                depthTextureFormat = Constants.TEXTUREFORMAT_DEPTH32_FLOAT;
+                depthTextureFormat = TEXTUREFORMAT_DEPTH32_FLOAT;
             } else {
-                depthTextureFormat = Constants.TEXTUREFORMAT_STENCIL8;
+                depthTextureFormat = TEXTUREFORMAT_STENCIL8;
             }
         }
         depthStencilTexture = rtWrapper.createDepthStencilTexture(0, false, generateStencilBuffer, 1, depthTextureFormat, "MultipleRenderTargetDepthStencil");
@@ -196,16 +212,16 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
         const target = targets[i] || defaultTarget;
         const layerCount = layers[i] ?? 1;
 
-        if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+        if (type === TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
             // if floating point linear (FLOAT) then force to NEAREST_SAMPLINGMODE
-            samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-        } else if (type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+            samplingMode = TEXTURE_NEAREST_SAMPLINGMODE;
+        } else if (type === TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
             // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
-            samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+            samplingMode = TEXTURE_NEAREST_SAMPLINGMODE;
         }
 
-        if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-            type = Constants.TEXTURETYPE_UNSIGNED_INT;
+        if (type === TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
+            type = TEXTURETYPE_UNSIGNED_INT;
             Logger.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
         }
 
@@ -220,14 +236,14 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
         textures[i] = texture;
 
         switch (target) {
-            case Constants.TEXTURE_CUBE_MAP:
+            case TEXTURE_CUBE_MAP:
                 texture.isCube = true;
                 break;
-            case Constants.TEXTURE_3D:
+            case TEXTURE_3D:
                 texture.is3D = true;
                 texture.baseDepth = texture.depth = layerCount;
                 break;
-            case Constants.TEXTURE_2D_ARRAY:
+            case TEXTURE_2D_ARRAY:
                 texture.is2DArray = true;
                 texture.baseDepth = texture.depth = layerCount;
                 break;
@@ -242,8 +258,8 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
         texture.generateMipMaps = generateMipMaps;
         texture.samplingMode = samplingMode;
         texture.type = type;
-        texture._cachedWrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
-        texture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+        texture._cachedWrapU = TEXTURE_CLAMP_ADDRESSMODE;
+        texture._cachedWrapV = TEXTURE_CLAMP_ADDRESSMODE;
         texture._useSRGBBuffer = useSRGBBuffer;
         texture.format = format;
         texture.label = labels[i];

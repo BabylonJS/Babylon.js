@@ -1,5 +1,5 @@
 import type { IAction } from "core/Actions/action";
-import { Constants } from "core/Engines/constants";
+import { ACTION_OnLeftPickTrigger, ACTION_OnPickTrigger, ACTION_OnRightPickTrigger } from "core/Engines/constants";
 import { Color4 } from "core/Maths/math.color";
 import { Mesh } from "core/Meshes/mesh";
 import type { Node } from "core/node";
@@ -101,8 +101,8 @@ export class HTMLTwinNodeItem extends HTMLTwinItem {
                     eventHandler.click();
                     return;
                 }
-                actions.push(...this._getTriggerActions(this.entity, Constants.ACTION_OnLeftPickTrigger));
-                actions.push(...this._getTriggerActions(this.entity, Constants.ACTION_OnPickTrigger));
+                actions.push(...this._getTriggerActions(this.entity, ACTION_OnLeftPickTrigger));
+                actions.push(...this._getTriggerActions(this.entity, ACTION_OnPickTrigger));
                 break;
 
             case "contextmenu":
@@ -110,8 +110,8 @@ export class HTMLTwinNodeItem extends HTMLTwinItem {
                     eventHandler.contextmenu();
                     return;
                 }
-                actions.push(...this._getTriggerActions(this.entity, Constants.ACTION_OnRightPickTrigger));
-                actions.push(...this._getTriggerActions(this.entity, Constants.ACTION_OnPickTrigger));
+                actions.push(...this._getTriggerActions(this.entity, ACTION_OnRightPickTrigger));
+                actions.push(...this._getTriggerActions(this.entity, ACTION_OnPickTrigger));
                 break;
 
             default:

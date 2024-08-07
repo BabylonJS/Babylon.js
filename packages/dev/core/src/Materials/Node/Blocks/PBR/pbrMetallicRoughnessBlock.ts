@@ -28,7 +28,7 @@ import { IridescenceBlock } from "./iridescenceBlock";
 import { SubSurfaceBlock } from "./subSurfaceBlock";
 import type { RefractionBlock } from "./refractionBlock";
 import type { PerturbNormalBlock } from "../Fragment/perturbNormalBlock";
-import { Constants } from "../../../../Engines/constants";
+import { TEXTURE_FILTERING_QUALITY_LOW, TEXTURE_FILTERING_QUALITY_MEDIUM, TEXTURE_FILTERING_QUALITY_HIGH } from "../../../../Engines/constants";
 import { Color3, TmpColors } from "../../../../Maths/math.color";
 import { Logger } from "core/Misc/logger";
 import {
@@ -262,12 +262,12 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     @editableInPropertyPage("Realtime filtering quality", PropertyTypeForEdition.List, "RENDERING", {
         notifiers: { update: true },
         options: [
-            { label: "Low", value: Constants.TEXTURE_FILTERING_QUALITY_LOW },
-            { label: "Medium", value: Constants.TEXTURE_FILTERING_QUALITY_MEDIUM },
-            { label: "High", value: Constants.TEXTURE_FILTERING_QUALITY_HIGH },
+            { label: "Low", value: TEXTURE_FILTERING_QUALITY_LOW },
+            { label: "Medium", value: TEXTURE_FILTERING_QUALITY_MEDIUM },
+            { label: "High", value: TEXTURE_FILTERING_QUALITY_HIGH },
         ],
     })
-    public realTimeFilteringQuality = Constants.TEXTURE_FILTERING_QUALITY_LOW;
+    public realTimeFilteringQuality = TEXTURE_FILTERING_QUALITY_LOW;
 
     /**
      * Defines if the material uses energy conservation.
@@ -1510,7 +1510,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         this.useSpecularOverAlpha = serializationObject.useSpecularOverAlpha;
         this.enableSpecularAntiAliasing = serializationObject.enableSpecularAntiAliasing;
         this.realTimeFiltering = !!serializationObject.realTimeFiltering;
-        this.realTimeFilteringQuality = serializationObject.realTimeFilteringQuality ?? Constants.TEXTURE_FILTERING_QUALITY_LOW;
+        this.realTimeFilteringQuality = serializationObject.realTimeFilteringQuality ?? TEXTURE_FILTERING_QUALITY_LOW;
         this.useEnergyConservation = serializationObject.useEnergyConservation;
         this.useRadianceOcclusion = serializationObject.useRadianceOcclusion;
         this.useHorizonOcclusion = serializationObject.useHorizonOcclusion;

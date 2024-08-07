@@ -4,7 +4,7 @@ import type { NodeMaterialBuildStateSharedData } from "./nodeMaterialBuildStateS
 import { ShaderLanguage } from "../shaderLanguage";
 import type { NodeMaterialConnectionPoint } from "./nodeMaterialBlockConnectionPoint";
 import { ShaderStore as EngineShaderStore } from "../../Engines/shaderStore";
-import { Constants } from "../../Engines/constants";
+import { AUTOSAMPLERSUFFIX } from "../../Engines/constants";
 
 /**
  * Class used to store node based material build state
@@ -222,7 +222,7 @@ export class NodeMaterialBuildState {
             }
 
             if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                this._samplerDeclaration += `var ${name + Constants.AUTOSAMPLERSUFFIX}: sampler;\n`;
+                this._samplerDeclaration += `var ${name + AUTOSAMPLERSUFFIX}: sampler;\n`;
                 this._samplerDeclaration += `var ${name}: texture_2d<f32>;\n`;
             } else {
                 this._samplerDeclaration += `uniform sampler2D ${name};\n`;
@@ -248,7 +248,7 @@ export class NodeMaterialBuildState {
             }
 
             if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                this._samplerDeclaration += `var ${name + Constants.AUTOSAMPLERSUFFIX}: sampler;\n`;
+                this._samplerDeclaration += `var ${name + AUTOSAMPLERSUFFIX}: sampler;\n`;
                 this._samplerDeclaration += `var ${name}: texture_cube<f32>;\n`;
             } else {
                 this._samplerDeclaration += `uniform samplerCube ${name};\n`;
@@ -628,7 +628,7 @@ export class NodeMaterialBuildState {
      */
     public _generateTextureSample(uv: string, samplerName: string) {
         if (this.shaderLanguage === ShaderLanguage.WGSL) {
-            return `${this._samplerFunc()}(${samplerName},${samplerName + Constants.AUTOSAMPLERSUFFIX}, ${uv})`;
+            return `${this._samplerFunc()}(${samplerName},${samplerName + AUTOSAMPLERSUFFIX}, ${uv})`;
         }
         return `${this._samplerFunc()}(${samplerName}, ${uv})`;
     }
@@ -638,7 +638,7 @@ export class NodeMaterialBuildState {
      */
     public _generateTextureSampleLOD(uv: string, samplerName: string, lod: string) {
         if (this.shaderLanguage === ShaderLanguage.WGSL) {
-            return `${this._samplerLODFunc()}(${samplerName},${samplerName + Constants.AUTOSAMPLERSUFFIX}, ${uv}, ${lod})`;
+            return `${this._samplerLODFunc()}(${samplerName},${samplerName + AUTOSAMPLERSUFFIX}, ${uv}, ${lod})`;
         }
         return `${this._samplerLODFunc()}(${samplerName}, ${uv}, ${lod})`;
     }
@@ -648,7 +648,7 @@ export class NodeMaterialBuildState {
      */
     public _generateTextureSampleCube(uv: string, samplerName: string) {
         if (this.shaderLanguage === ShaderLanguage.WGSL) {
-            return `${this._samplerCubeFunc()}(${samplerName},${samplerName + Constants.AUTOSAMPLERSUFFIX}, ${uv})`;
+            return `${this._samplerCubeFunc()}(${samplerName},${samplerName + AUTOSAMPLERSUFFIX}, ${uv})`;
         }
         return `${this._samplerCubeFunc()}(${samplerName}, ${uv})`;
     }
@@ -658,7 +658,7 @@ export class NodeMaterialBuildState {
      */
     public _generateTextureSampleCubeLOD(uv: string, samplerName: string, lod: string) {
         if (this.shaderLanguage === ShaderLanguage.WGSL) {
-            return `${this._samplerCubeFunc()}(${samplerName},${samplerName + Constants.AUTOSAMPLERSUFFIX}, ${uv}, ${lod})`;
+            return `${this._samplerCubeFunc()}(${samplerName},${samplerName + AUTOSAMPLERSUFFIX}, ${uv}, ${lod})`;
         }
         return `${this._samplerCubeFunc()}(${samplerName}, ${uv}, ${lod})`;
     }

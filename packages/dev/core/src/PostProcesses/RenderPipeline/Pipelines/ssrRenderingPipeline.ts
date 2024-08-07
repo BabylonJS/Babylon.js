@@ -12,7 +12,16 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { ScreenSpaceReflections2Configuration } from "../../../Rendering/screenSpaceReflections2Configuration";
 import type { PrePassRenderer } from "../../../Rendering/prePassRenderer";
 import { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRenderer";
-import { Constants } from "../../../Engines/constants";
+import {
+    TEXTURETYPE_UNSIGNED_BYTE,
+    PREPASS_COLOR_TEXTURE_TYPE,
+    ORTHOGRAPHIC_CAMERA,
+    TEXTURE_NEAREST_SAMPLINGMODE,
+    PREPASS_DEPTH_TEXTURE_TYPE,
+    PREPASS_REFLECTIVITY_TEXTURE_TYPE,
+    PREPASS_NORMAL_TEXTURE_TYPE,
+    TEXTURE_BILINEAR_SAMPLINGMODE,
+} from "../../../Engines/constants";
 import type { Nullable } from "../../../types";
 import type { CubeTexture } from "../../../Materials/Textures/cubeTexture";
 import { DepthRenderer } from "../../../Rendering/depthRenderer";
@@ -633,7 +642,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
      * @param forceGeometryBuffer Set to true if you want to use the legacy geometry buffer renderer (default: false)
      * @param textureType The texture type used by the different post processes created by SSR (default: Constants.TEXTURETYPE_UNSIGNED_BYTE)
      */
-    constructor(name: string, scene: Scene, cameras?: Camera[], forceGeometryBuffer = false, textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE) {
+    constructor(name: string, scene: Scene, cameras?: Camera[], forceGeometryBuffer = false, textureType = TEXTURETYPE_UNSIGNED_BYTE) {
         super(scene.getEngine(), name);
 
         this._cameras = cameras || scene.cameras;
@@ -719,7 +728,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             const renderTarget = prePassRenderer.getRenderTarget();
 
             if (renderTarget && renderTarget.textures) {
-                textureSize = renderTarget.textures[prePassRenderer.getIndex(Constants.PREPASS_COLOR_TEXTURE_TYPE)].getSize();
+                textureSize = renderTarget.textures[prePassRenderer.getIndex(PREPASS_COLOR_TEXTURE_TYPE)].getSize();
             }
         } else if (this._ssrPostProcess?.inputTexture) {
             textureSize.width = this._ssrPostProcess.inputTexture.width;
@@ -803,7 +812,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
 
         const camera = this._cameras?.[0];
 
-        if (camera && camera.mode === Constants.ORTHOGRAPHIC_CAMERA) {
+        if (camera && camera.mode === ORTHOGRAPHIC_CAMERA) {
             defines.push("#define ORTHOGRAPHIC_CAMERA");
         }
 
@@ -838,7 +847,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
 
             if (camera) {
                 this._depthRendererCamera = camera;
-                this._depthRenderer = new DepthRenderer(this._scene, undefined, undefined, undefined, Constants.TEXTURE_NEAREST_SAMPLINGMODE, true, "SSRBackDepth");
+                this._depthRenderer = new DepthRenderer(this._scene, undefined, undefined, undefined, TEXTURE_NEAREST_SAMPLINGMODE, true, "SSRBackDepth");
                 this._depthRenderer.clearColor.r = 1e8; // "infinity": put a big value because we use the storeCameraSpaceZ mode
                 this._depthRenderer.reverseCulling = true; // we generate depth for the back faces
                 this._depthRenderer.forceDepthWriteTransparentMeshes = this._backfaceForceDepthWriteTransparentMeshes;
@@ -989,9 +998,9 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                 effect.setTexture("reflectivitySampler", geometryBufferRenderer.getGBuffer().textures[roughnessIndex]);
                 effect.setTexture("depthSampler", geometryBufferRenderer.getGBuffer().textures[0]);
             } else if (prePassRenderer) {
-                const depthIndex = prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
-                const roughnessIndex = prePassRenderer.getIndex(Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE);
-                const normalIndex = prePassRenderer.getIndex(Constants.PREPASS_NORMAL_TEXTURE_TYPE);
+                const depthIndex = prePassRenderer.getIndex(PREPASS_DEPTH_TEXTURE_TYPE);
+                const roughnessIndex = prePassRenderer.getIndex(PREPASS_REFLECTIVITY_TEXTURE_TYPE);
+                const normalIndex = prePassRenderer.getIndex(PREPASS_NORMAL_TEXTURE_TYPE);
 
                 effect.setTexture("normalSampler", prePassRenderer.getRenderTarget().textures[normalIndex]);
                 effect.setTexture("depthSampler", prePassRenderer.getRenderTarget().textures[depthIndex]);
@@ -1065,7 +1074,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             ["textureSampler"],
             this._useBlur() ? 1 / (this._ssrDownsample + 1) : 1,
             null,
-            Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+            TEXTURE_BILINEAR_SAMPLINGMODE,
             engine,
             false,
             "",
@@ -1086,7 +1095,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             ["textureSampler"],
             this._useBlur() ? 1 / (this._blurDownsample + 1) : 1,
             null,
-            Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+            TEXTURE_BILINEAR_SAMPLINGMODE,
             engine,
             false,
             "",
@@ -1131,7 +1140,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             samplerNames,
             this._useBlur() ? 1 / (this._blurDownsample + 1) : 1,
             null,
-            Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+            TEXTURE_NEAREST_SAMPLINGMODE,
             engine,
             false,
             defines,
@@ -1151,7 +1160,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                 const renderTarget = prePassRenderer.getRenderTarget();
 
                 if (renderTarget && renderTarget.textures) {
-                    effect.setTexture("mainSampler", renderTarget.textures[prePassRenderer.getIndex(Constants.PREPASS_COLOR_TEXTURE_TYPE)]);
+                    effect.setTexture("mainSampler", renderTarget.textures[prePassRenderer.getIndex(PREPASS_COLOR_TEXTURE_TYPE)]);
                 }
             } else {
                 effect.setTextureFromPostProcess("mainSampler", this._ssrPostProcess);
@@ -1165,11 +1174,11 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                     effect.setTexture("depthSampler", geometryBufferRenderer.getGBuffer().textures[0]);
                 }
             } else if (prePassRenderer) {
-                const roughnessIndex = prePassRenderer.getIndex(Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE);
+                const roughnessIndex = prePassRenderer.getIndex(PREPASS_REFLECTIVITY_TEXTURE_TYPE);
                 effect.setTexture("reflectivitySampler", prePassRenderer.getRenderTarget().textures[roughnessIndex]);
                 if (this.useFresnel) {
-                    const depthIndex = prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
-                    const normalIndex = prePassRenderer.getIndex(Constants.PREPASS_NORMAL_TEXTURE_TYPE);
+                    const depthIndex = prePassRenderer.getIndex(PREPASS_DEPTH_TEXTURE_TYPE);
+                    const normalIndex = prePassRenderer.getIndex(PREPASS_NORMAL_TEXTURE_TYPE);
 
                     effect.setTexture("normalSampler", prePassRenderer.getRenderTarget().textures[normalIndex]);
                     effect.setTexture("depthSampler", prePassRenderer.getRenderTarget().textures[depthIndex]);

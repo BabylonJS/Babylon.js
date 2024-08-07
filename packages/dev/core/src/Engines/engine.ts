@@ -9,7 +9,7 @@ import type { IPipelineContext } from "./IPipelineContext";
 import type { ICustomAnimationFrameRequester } from "../Misc/customAnimationFrameRequester";
 import type { EngineOptions } from "./thinEngine";
 import { ThinEngine } from "./thinEngine";
-import { Constants } from "./constants";
+import * as Constants from "./constants";
 import type { IViewportLike, IColor4Like } from "../Maths/math.like";
 import { PerformanceMonitor } from "../Misc/performanceMonitor";
 import type { DataBuffer } from "../Buffers/dataBuffer";

@@ -5,7 +5,7 @@ import type { Camera } from "../Cameras/camera";
 import type { Effect } from "../Materials/effect";
 import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
-import { Constants } from "../Engines/constants";
+import { TEXTURETYPE_UNSIGNED_INT, PREPASS_VELOCITY_TEXTURE_TYPE, PREPASS_DEPTH_TEXTURE_TYPE } from "../Engines/constants";
 import { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { MotionBlurConfiguration } from "../Rendering/motionBlurConfiguration";
@@ -129,7 +129,7 @@ export class MotionBlurPostProcess extends PostProcess {
         samplingMode?: number,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        textureType: number = TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false,
         forceGeometryBuffer = false
     ) {
@@ -250,7 +250,7 @@ export class MotionBlurPostProcess extends PostProcess {
 
         if (this.isObjectBased) {
             if (this._prePassRenderer && this._prePassEffectConfiguration) {
-                this._prePassEffectConfiguration.texturesRequired[0] = Constants.PREPASS_VELOCITY_TEXTURE_TYPE;
+                this._prePassEffectConfiguration.texturesRequired[0] = PREPASS_VELOCITY_TEXTURE_TYPE;
             }
 
             this.onApply = (effect: Effect) => this._onApplyObjectBased(effect);
@@ -259,7 +259,7 @@ export class MotionBlurPostProcess extends PostProcess {
             this._previousViewProjection = this._scene.getTransformMatrix().clone();
 
             if (this._prePassRenderer && this._prePassEffectConfiguration) {
-                this._prePassEffectConfiguration.texturesRequired[0] = Constants.PREPASS_DEPTH_TEXTURE_TYPE;
+                this._prePassEffectConfiguration.texturesRequired[0] = PREPASS_DEPTH_TEXTURE_TYPE;
             }
 
             this.onApply = (effect: Effect) => this._onApplyScreenBased(effect);
@@ -280,7 +280,7 @@ export class MotionBlurPostProcess extends PostProcess {
             const velocityIndex = this._geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.VELOCITY_TEXTURE_TYPE);
             effect.setTexture("velocitySampler", this._geometryBufferRenderer.getGBuffer().textures[velocityIndex]);
         } else if (this._prePassRenderer) {
-            const velocityIndex = this._prePassRenderer.getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE);
+            const velocityIndex = this._prePassRenderer.getIndex(PREPASS_VELOCITY_TEXTURE_TYPE);
             effect.setTexture("velocitySampler", this._prePassRenderer.getRenderTarget().textures[velocityIndex]);
         }
     }
@@ -310,7 +310,7 @@ export class MotionBlurPostProcess extends PostProcess {
             const depthIndex = this._geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.DEPTH_TEXTURE_TYPE);
             effect.setTexture("depthSampler", this._geometryBufferRenderer.getGBuffer().textures[depthIndex]);
         } else if (this._prePassRenderer) {
-            const depthIndex = this._prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
+            const depthIndex = this._prePassRenderer.getIndex(PREPASS_DEPTH_TEXTURE_TYPE);
             effect.setTexture("depthSampler", this._prePassRenderer.getRenderTarget().textures[depthIndex]);
         }
     }

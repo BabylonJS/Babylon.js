@@ -12,7 +12,7 @@ import type { Texture } from "core/Materials/Textures/texture";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import type { Observer } from "core/Misc/observable";
 import { Observable } from "core/Misc/observable";
-import { Constants } from "core/Engines/constants";
+import { TEXTURETYPE_HALF_FLOAT } from "core/Engines/constants";
 import { Tools } from "core/Misc/tools";
 import type { Color4 } from "core/Maths/math.color";
 
@@ -75,7 +75,7 @@ class TransmissionHelper {
             samples: 4,
             lodGenerationScale: 1,
             lodGenerationOffset: -4,
-            renderTargetTextureType: Constants.TEXTURETYPE_HALF_FLOAT,
+            renderTargetTextureType: TEXTURETYPE_HALF_FLOAT,
             generateMipmaps: true,
         };
     }

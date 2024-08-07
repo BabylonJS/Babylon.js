@@ -10,7 +10,7 @@ import { serialize } from "core/Misc/decorators";
 import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
 import { Texture } from "core/Materials/Textures/texture";
-import { Constants } from "core/Engines/constants";
+import { TEXTUREFORMAT_RGBA } from "core/Engines/constants";
 import { Observable } from "core/Misc/observable";
 import type { BaseGradient } from "./gradient/BaseGradient";
 import { Tools } from "core/Misc/tools";
@@ -411,7 +411,7 @@ export class Container extends Control {
                         this._host.getScene(),
                         false,
                         Texture.NEAREST_SAMPLINGMODE,
-                        Constants.TEXTUREFORMAT_RGBA,
+                        TEXTUREFORMAT_RGBA,
                         false
                     );
                     this._intermediateTexture.hasAlpha = true;

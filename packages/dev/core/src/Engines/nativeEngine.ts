@@ -20,7 +20,28 @@ import type { RenderTargetCreationOptions, TextureSize, DepthTextureCreationOpti
 import type { IPipelineContext } from "./IPipelineContext";
 import type { IColor3Like, IColor4Like, IViewportLike } from "../Maths/math.like";
 import { Logger } from "../Misc/logger";
-import { Constants } from "./constants";
+import {
+    ALWAYS,
+    KEEP,
+    REPLACE,
+    MATERIAL_LineLoopDrawMode,
+    MATERIAL_TriangleFanDrawMode,
+    NEVER,
+    GREATER,
+    GEQUAL,
+    NOTEQUAL,
+    EQUAL,
+    LESS,
+    LEQUAL,
+    ALPHA_DISABLE,
+    TEXTUREFORMAT_RGBA,
+    TEXTURETYPE_UNSIGNED_INT,
+    TEXTURE_TRILINEAR_SAMPLINGMODE,
+    TEXTURETYPE_FLOAT,
+    TEXTURE_NEAREST_SAMPLINGMODE,
+    TEXTURETYPE_HALF_FLOAT,
+    DELAYLOADSTATE_NOTLOADED,
+} from "./constants";
 import type { ISceneLike } from "./abstractEngine";
 import { ThinEngine } from "./thinEngine";
 import type { IWebRequest } from "../Misc/interfaces/iWebRequest";
@@ -224,12 +245,12 @@ export class NativeEngine extends Engine {
     private _currentDepthTest: number = _native.Engine.DEPTH_TEST_LEQUAL;
     private _stencilTest = false;
     private _stencilMask: number = 255;
-    private _stencilFunc: number = Constants.ALWAYS;
+    private _stencilFunc: number = ALWAYS;
     private _stencilFuncRef: number = 0;
     private _stencilFuncMask: number = 255;
-    private _stencilOpStencilFail: number = Constants.KEEP;
-    private _stencilOpDepthFail: number = Constants.KEEP;
-    private _stencilOpStencilDepthPass: number = Constants.REPLACE;
+    private _stencilOpStencilFail: number = KEEP;
+    private _stencilOpDepthFail: number = KEEP;
+    private _stencilOpStencilDepthPass: number = REPLACE;
     private _zOffset: number = 0;
     private _zOffsetUnits: number = 0;
     private _depthWrite: boolean = true;
@@ -650,7 +671,7 @@ export class NativeEngine extends Engine {
      * @returns true if supported
      */
     private _checkSupportedFillMode(fillMode: number): boolean {
-        if (fillMode == Constants.MATERIAL_LineLoopDrawMode || fillMode == Constants.MATERIAL_TriangleFanDrawMode) {
+        if (fillMode == MATERIAL_LineLoopDrawMode || fillMode == MATERIAL_TriangleFanDrawMode) {
             if (!this._fillModeWarningDisplayed) {
                 Logger.Warn("Line Loop and Triangle Fan are not supported fill modes with Babylon Native. Elements with these fill mode will not be visible.");
                 this._fillModeWarningDisplayed = true;
@@ -1036,21 +1057,21 @@ export class NativeEngine extends Engine {
     public override getDepthFunction(): Nullable<number> {
         switch (this._currentDepthTest) {
             case _native.Engine.DEPTH_TEST_NEVER:
-                return Constants.NEVER;
+                return NEVER;
             case _native.Engine.DEPTH_TEST_ALWAYS:
-                return Constants.ALWAYS;
+                return ALWAYS;
             case _native.Engine.DEPTH_TEST_GREATER:
-                return Constants.GREATER;
+                return GREATER;
             case _native.Engine.DEPTH_TEST_GEQUAL:
-                return Constants.GEQUAL;
+                return GEQUAL;
             case _native.Engine.DEPTH_TEST_NOTEQUAL:
-                return Constants.NOTEQUAL;
+                return NOTEQUAL;
             case _native.Engine.DEPTH_TEST_EQUAL:
-                return Constants.EQUAL;
+                return EQUAL;
             case _native.Engine.DEPTH_TEST_LESS:
-                return Constants.LESS;
+                return LESS;
             case _native.Engine.DEPTH_TEST_LEQUAL:
-                return Constants.LEQUAL;
+                return LEQUAL;
         }
         return null;
     }
@@ -1058,28 +1079,28 @@ export class NativeEngine extends Engine {
     public override setDepthFunction(depthFunc: number) {
         let nativeDepthFunc = 0;
         switch (depthFunc) {
-            case Constants.NEVER:
+            case NEVER:
                 nativeDepthFunc = _native.Engine.DEPTH_TEST_NEVER;
                 break;
-            case Constants.ALWAYS:
+            case ALWAYS:
                 nativeDepthFunc = _native.Engine.DEPTH_TEST_ALWAYS;
                 break;
-            case Constants.GREATER:
+            case GREATER:
                 nativeDepthFunc = _native.Engine.DEPTH_TEST_GREATER;
                 break;
-            case Constants.GEQUAL:
+            case GEQUAL:
                 nativeDepthFunc = _native.Engine.DEPTH_TEST_GEQUAL;
                 break;
-            case Constants.NOTEQUAL:
+            case NOTEQUAL:
                 nativeDepthFunc = _native.Engine.DEPTH_TEST_NOTEQUAL;
                 break;
-            case Constants.EQUAL:
+            case EQUAL:
                 nativeDepthFunc = _native.Engine.DEPTH_TEST_EQUAL;
                 break;
-            case Constants.LESS:
+            case LESS:
                 nativeDepthFunc = _native.Engine.DEPTH_TEST_LESS;
                 break;
-            case Constants.LEQUAL:
+            case LEQUAL:
                 nativeDepthFunc = _native.Engine.DEPTH_TEST_LEQUAL;
                 break;
         }
@@ -1317,7 +1338,7 @@ export class NativeEngine extends Engine {
         this._commandBufferEncoder.finishEncodingCommand();
 
         if (!noDepthWriteChange) {
-            this.setDepthWrite(mode === Constants.ALPHA_DISABLE);
+            this.setDepthWrite(mode === ALPHA_DISABLE);
         }
 
         this._alphaMode = mode;
@@ -1628,7 +1649,7 @@ export class NativeEngine extends Engine {
         // Worst case is getting a crash/assert.
         width = Math.max(width, 1);
         height = Math.max(height, 1);
-        return this.createRawTexture(new Uint8Array(width * height * 4), width, height, Constants.TEXTUREFORMAT_RGBA, false, false, samplingMode);
+        return this.createRawTexture(new Uint8Array(width * height * 4), width, height, TEXTUREFORMAT_RGBA, false, false, samplingMode);
     }
 
     public override createVideoElement(constraints: MediaTrackConstraints): any {
@@ -1655,7 +1676,7 @@ export class NativeEngine extends Engine {
         invertY: boolean,
         samplingMode: number,
         compression: Nullable<string> = null,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        type: number = TEXTURETYPE_UNSIGNED_INT,
         creationFlags: number = 0,
         useSRGBBuffer: boolean = false
     ): InternalTexture {
@@ -1695,7 +1716,7 @@ export class NativeEngine extends Engine {
         invertY: boolean,
         samplingMode: number,
         compression: Nullable<string> = null,
-        textureType = Constants.TEXTURETYPE_UNSIGNED_INT
+        textureType = TEXTURETYPE_UNSIGNED_INT
     ): InternalTexture {
         const texture = new InternalTexture(this, InternalTextureSource.Raw2DArray);
 
@@ -1731,7 +1752,7 @@ export class NativeEngine extends Engine {
         format: number,
         invertY: boolean,
         compression: Nullable<string> = null,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        type: number = TEXTURETYPE_UNSIGNED_INT,
         useSRGBBuffer: boolean = false
     ): void {
         if (!texture) {
@@ -1783,7 +1804,7 @@ export class NativeEngine extends Engine {
         noMipmap: boolean,
         invertY: boolean,
         scene: Nullable<ISceneLike>,
-        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+        samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<(texture: InternalTexture) => void> = null,
         onError: Nullable<(message: string, exception: any) => void> = null,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
@@ -1948,7 +1969,7 @@ export class NativeEngine extends Engine {
      * @param samplingMode defines the sampling mode for the external texture (default: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE)
      * @returns the babylon internal texture
      */
-    public wrapNativeTexture(texture: NativeTexture, hasMipMaps: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE): InternalTexture {
+    public wrapNativeTexture(texture: NativeTexture, hasMipMaps: boolean = false, samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE): InternalTexture {
         const hardwareTexture = new NativeHardwareTexture(texture, this._engine);
         const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
         internalTexture._hardwareTexture = hardwareTexture;
@@ -2128,8 +2149,8 @@ export class NativeEngine extends Engine {
                 texture._lodGenerationScale = specularInfo.lodGenerationScale;
                 const imageData = CreateImageDataArrayBufferViews(data, info);
 
-                texture.format = Constants.TEXTUREFORMAT_RGBA;
-                texture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
+                texture.format = TEXTUREFORMAT_RGBA;
+                texture.type = TEXTURETYPE_UNSIGNED_INT;
                 texture.generateMipMaps = true;
                 texture.getEngine().updateTextureSamplingMode(Texture.TRILINEAR_SAMPLINGMODE, texture);
                 texture._isRGBD = true;
@@ -2227,17 +2248,17 @@ export class NativeEngine extends Engine {
         source = InternalTextureSource.Unknown
     ): InternalTexture {
         let generateMipMaps = false;
-        let type = Constants.TEXTURETYPE_UNSIGNED_INT;
-        let samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
-        let format = Constants.TEXTUREFORMAT_RGBA;
+        let type = TEXTURETYPE_UNSIGNED_INT;
+        let samplingMode = TEXTURE_TRILINEAR_SAMPLINGMODE;
+        let format = TEXTUREFORMAT_RGBA;
         let useSRGBBuffer = false;
         let samples = 1;
         let label: string | undefined;
         if (options !== undefined && typeof options === "object") {
             generateMipMaps = !!options.generateMipMaps;
-            type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
-            samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
-            format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;
+            type = options.type === undefined ? TEXTURETYPE_UNSIGNED_INT : options.type;
+            samplingMode = options.samplingMode === undefined ? TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
+            format = options.format === undefined ? TEXTUREFORMAT_RGBA : options.format;
             useSRGBBuffer = options.useSRGBBuffer === undefined ? false : options.useSRGBBuffer;
             samples = options.samples ?? 1;
             label = options.label;
@@ -2247,15 +2268,15 @@ export class NativeEngine extends Engine {
 
         useSRGBBuffer = this._getUseSRGBBuffer(useSRGBBuffer, !generateMipMaps);
 
-        if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+        if (type === TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
             // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
-            samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-        } else if (type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+            samplingMode = TEXTURE_NEAREST_SAMPLINGMODE;
+        } else if (type === TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
             // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
-            samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+            samplingMode = TEXTURE_NEAREST_SAMPLINGMODE;
         }
-        if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-            type = Constants.TEXTURETYPE_UNSIGNED_INT;
+        if (type === TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
+            type = TEXTURETYPE_UNSIGNED_INT;
             Logger.Warn("Float textures are not supported. Type forced to TEXTURETYPE_UNSIGNED_BYTE");
         }
 
@@ -2431,7 +2452,7 @@ export class NativeEngine extends Engine {
         if ((<VideoTexture>texture).video) {
             this._activeChannel = channel;
             (<VideoTexture>texture).update();
-        } else if (texture.delayLoadState === Constants.DELAYLOADSTATE_NOTLOADED) {
+        } else if (texture.delayLoadState === DELAYLOADSTATE_NOTLOADED) {
             // Delay loading
             texture.delayLoad();
             return false;

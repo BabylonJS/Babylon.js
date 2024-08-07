@@ -21,7 +21,7 @@ import { PassPostProcess } from "../PostProcesses/passPostProcess";
 import { BlurPostProcess } from "../PostProcesses/blurPostProcess";
 import { EffectLayer } from "./effectLayer";
 import { AbstractScene } from "../abstractScene";
-import { Constants } from "../Engines/constants";
+import { ALPHA_COMBINE, TEXTURETYPE_UNSIGNED_INT, TEXTURETYPE_HALF_FLOAT, REPLACE, KEEP, NOTEQUAL, EQUAL } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import { RegisterClass } from "../Misc/typeStore";
 import { Color4, Color3 } from "../Maths/math.color";
@@ -307,10 +307,10 @@ export class HighlightLayer extends EffectLayer {
             blurTextureSizeRatio: 0.5,
             blurHorizontalSize: 1.0,
             blurVerticalSize: 1.0,
-            alphaBlendingMode: Constants.ALPHA_COMBINE,
+            alphaBlendingMode: ALPHA_COMBINE,
             camera: null,
             renderingGroupId: -1,
-            mainTextureType: Constants.TEXTURETYPE_UNSIGNED_INT,
+            mainTextureType: TEXTURETYPE_UNSIGNED_INT,
             ...options,
         };
 
@@ -361,9 +361,9 @@ export class HighlightLayer extends EffectLayer {
 
         let textureType = 0;
         if (this._engine.getCaps().textureHalfFloatRender) {
-            textureType = Constants.TEXTURETYPE_HALF_FLOAT;
+            textureType = TEXTURETYPE_HALF_FLOAT;
         } else {
-            textureType = Constants.TEXTURETYPE_UNSIGNED_INT;
+            textureType = TEXTURETYPE_UNSIGNED_INT;
         }
 
         this._blurTexture = new RenderTargetTexture(
@@ -386,7 +386,7 @@ export class HighlightLayer extends EffectLayer {
 
         this._textures = [this._blurTexture];
 
-        if (this._options.alphaBlendingMode === Constants.ALPHA_COMBINE) {
+        if (this._options.alphaBlendingMode === ALPHA_COMBINE) {
             this._downSamplePostprocess = new PassPostProcess(
                 "HighlightLayerPPP",
                 this._options.blurTextureSizeRatio,
@@ -528,9 +528,9 @@ export class HighlightLayer extends EffectLayer {
         engine.cacheStencilState();
 
         // Stencil operations
-        engine.setStencilOperationPass(Constants.REPLACE);
-        engine.setStencilOperationFail(Constants.KEEP);
-        engine.setStencilOperationDepthFail(Constants.KEEP);
+        engine.setStencilOperationPass(REPLACE);
+        engine.setStencilOperationFail(KEEP);
+        engine.setStencilOperationDepthFail(KEEP);
 
         // Draw order
         engine.setStencilMask(0x00);
@@ -541,13 +541,13 @@ export class HighlightLayer extends EffectLayer {
         if (this.outerGlow && renderIndex === 0) {
             // the outer glow is rendered the first time _internalRender is called, so when renderIndex == 0 (and only if outerGlow is enabled)
             effect.setFloat("offset", 0);
-            engine.setStencilFunction(Constants.NOTEQUAL);
+            engine.setStencilFunction(NOTEQUAL);
             engine.drawElementsType(Material.TriangleFillMode, 0, 6);
         }
         if (this.innerGlow && renderIndex === 1) {
             // the inner glow is rendered the second time _internalRender is called, so when renderIndex == 1 (and only if innerGlow is enabled)
             effect.setFloat("offset", 1);
-            engine.setStencilFunction(Constants.EQUAL);
+            engine.setStencilFunction(EQUAL);
             engine.drawElementsType(Material.TriangleFillMode, 0, 6);
         }
 

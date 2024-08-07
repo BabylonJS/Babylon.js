@@ -40,7 +40,7 @@ import { FileButtonLine } from "shared-ui-components/lines/fileButtonLineCompone
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { ParticleHelper } from "core/Particles/particleHelper";
 import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
-import { Constants } from "core/Engines/constants";
+import { SnippetUrl } from "core/Engines/constants";
 import { Texture } from "core/Materials/Textures/texture";
 
 interface IParticleSystemPropertyGridComponentProps {
@@ -52,7 +52,7 @@ interface IParticleSystemPropertyGridComponentProps {
 }
 
 export class ParticleSystemPropertyGridComponent extends React.Component<IParticleSystemPropertyGridComponentProps> {
-    private _snippetUrl = Constants.SnippetUrl;
+    private _snippetUrl = SnippetUrl;
 
     constructor(props: IParticleSystemPropertyGridComponentProps) {
         super(props);

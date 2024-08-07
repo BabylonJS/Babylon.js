@@ -1,6 +1,6 @@
 import type { Nullable } from "../../types";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
-import { Constants } from "../../Engines/constants";
+import { TEXTURE_BILINEAR_SAMPLINGMODE, TEXTUREFORMAT_RGBA } from "../../Engines/constants";
 import { Matrix } from "../../Maths/math.vector";
 import { Observable } from "../../Misc/observable";
 import type { ExternalTexture } from "./externalTexture";
@@ -60,8 +60,8 @@ export class HtmlElementTexture extends BaseTexture {
 
     private static readonly _DefaultOptions: IHtmlElementTextureOptions = {
         generateMipMaps: false,
-        samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
-        format: Constants.TEXTUREFORMAT_RGBA,
+        samplingMode: TEXTURE_BILINEAR_SAMPLINGMODE,
+        format: TEXTUREFORMAT_RGBA,
         engine: null,
         scene: null,
     };

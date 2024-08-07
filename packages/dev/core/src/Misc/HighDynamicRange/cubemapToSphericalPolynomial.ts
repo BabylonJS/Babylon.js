@@ -3,7 +3,7 @@ import { Scalar } from "../../Maths/math.scalar";
 import { SphericalPolynomial, SphericalHarmonics } from "../../Maths/sphericalPolynomial";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import type { Nullable } from "../../types";
-import { Constants } from "../../Engines/constants";
+import { TEXTUREFORMAT_RGBA, TEXTURETYPE_UNSIGNED_INT, TEXTURETYPE_FLOAT, TEXTURETYPE_HALF_FLOAT } from "../../Engines/constants";
 import type { CubeMapInfo } from "./panoramaToCubemap";
 import { ToLinearSpace } from "../../Maths/math.constants";
 import { Color3 } from "../../Maths/math.color";
@@ -75,10 +75,10 @@ export class CubeMapToSphericalPolynomialTools {
 
         const gammaSpace = texture.gammaSpace;
         // Always read as RGBA.
-        const format = Constants.TEXTUREFORMAT_RGBA;
-        let type = Constants.TEXTURETYPE_UNSIGNED_INT;
-        if (texture.textureType == Constants.TEXTURETYPE_FLOAT || texture.textureType == Constants.TEXTURETYPE_HALF_FLOAT) {
-            type = Constants.TEXTURETYPE_FLOAT;
+        const format = TEXTUREFORMAT_RGBA;
+        let type = TEXTURETYPE_UNSIGNED_INT;
+        if (texture.textureType == TEXTURETYPE_FLOAT || texture.textureType == TEXTURETYPE_HALF_FLOAT) {
+            type = TEXTURETYPE_FLOAT;
         }
 
         return new Promise((resolve) => {
@@ -140,7 +140,7 @@ export class CubeMapToSphericalPolynomialTools {
             // TODO: we could perform the summation directly into a SphericalPolynomial (SP), which is more efficient than SphericalHarmonic (SH).
             // This is possible because during the summation we do not need the SH-specific properties, e.g. orthogonality.
             // Because SP is still linear, so summation is fine in that basis.
-            const stride = cubeInfo.format === Constants.TEXTUREFORMAT_RGBA ? 4 : 3;
+            const stride = cubeInfo.format === TEXTUREFORMAT_RGBA ? 4 : 3;
             for (let y = 0; y < cubeInfo.size; y++) {
                 let u = minUV;
 
@@ -171,7 +171,7 @@ export class CubeMapToSphericalPolynomialTools {
                     }
 
                     // Handle Integer types.
-                    if (cubeInfo.type === Constants.TEXTURETYPE_UNSIGNED_INT) {
+                    if (cubeInfo.type === TEXTURETYPE_UNSIGNED_INT) {
                         r /= 255;
                         g /= 255;
                         b /= 255;

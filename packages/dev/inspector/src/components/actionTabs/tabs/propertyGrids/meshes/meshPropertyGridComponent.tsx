@@ -44,7 +44,7 @@ import "core/Physics/v1/physicsEngineComponent";
 import { ParentPropertyGridComponent } from "../parentPropertyGridComponent";
 import { Tools } from "core/Misc/tools";
 import { PhysicsBodyGridComponent } from "./physics/physicsBodyGridComponent";
-import { Constants } from "core/Engines/constants";
+import { MATERIAL_ClockWiseSideOrientation, MATERIAL_CounterClockWiseSideOrientation } from "core/Engines/constants";
 
 interface IMeshPropertyGridComponentProps {
     globalState: GlobalState;
@@ -383,8 +383,8 @@ export class MeshPropertyGridComponent extends React.Component<
         ];
 
         const orientationOptions = [
-            { label: "Clockwise", value: Constants.MATERIAL_ClockWiseSideOrientation },
-            { label: "Counterclockwise", value: Constants.MATERIAL_CounterClockWiseSideOrientation },
+            { label: "Clockwise", value: MATERIAL_ClockWiseSideOrientation },
+            { label: "Counterclockwise", value: MATERIAL_CounterClockWiseSideOrientation },
         ];
 
         const sortedMaterials = scene.materials.slice(0).sort((a, b) => (a.name || "no name").localeCompare(b.name || "no name"));

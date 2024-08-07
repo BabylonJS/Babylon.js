@@ -1,5 +1,18 @@
 import { Texture } from "./texture";
-import { Constants } from "../../Engines/constants";
+import {
+    TEXTURE_TRILINEAR_SAMPLINGMODE,
+    TEXTURETYPE_UNSIGNED_INT,
+    TEXTURETYPE_FLOAT,
+    TEXTURE_NEAREST_SAMPLINGMODE,
+    TEXTURETYPE_HALF_FLOAT,
+    TEXTUREFORMAT_LUMINANCE,
+    TEXTUREFORMAT_LUMINANCE_ALPHA,
+    TEXTUREFORMAT_ALPHA,
+    TEXTUREFORMAT_RGB,
+    TEXTUREFORMAT_RGBA,
+    TEXTURE_CREATIONFLAG_STORAGE,
+    TEXTUREFORMAT_R,
+} from "../../Engines/constants";
 import "../../Engines/Extensions/engine.rawTexture";
 import type { Nullable } from "../../types";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
@@ -40,8 +53,8 @@ export class RawTexture extends Texture {
         sceneOrEngine: Nullable<Scene | AbstractEngine>,
         generateMipMaps: boolean = true,
         invertY: boolean = false,
-        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE,
+        type: number = TEXTURETYPE_UNSIGNED_INT,
         creationFlags?: number,
         useSRGBBuffer?: boolean
     ) {
@@ -51,11 +64,11 @@ export class RawTexture extends Texture {
             return;
         }
 
-        if (!this._engine._caps.textureFloatLinearFiltering && type === Constants.TEXTURETYPE_FLOAT) {
-            samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        if (!this._engine._caps.textureFloatLinearFiltering && type === TEXTURETYPE_FLOAT) {
+            samplingMode = TEXTURE_NEAREST_SAMPLINGMODE;
         }
-        if (!this._engine._caps.textureHalfFloatLinearFiltering && type === Constants.TEXTURETYPE_HALF_FLOAT) {
-            samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        if (!this._engine._caps.textureHalfFloatLinearFiltering && type === TEXTURETYPE_HALF_FLOAT) {
+            samplingMode = TEXTURE_NEAREST_SAMPLINGMODE;
         }
 
         this._texture = this._engine.createRawTexture(data, width, height, format, generateMipMaps, invertY, samplingMode, null, type, creationFlags ?? 0, useSRGBBuffer ?? false);
@@ -119,9 +132,9 @@ export class RawTexture extends Texture {
         sceneOrEngine: Nullable<Scene | AbstractEngine>,
         generateMipMaps: boolean = true,
         invertY: boolean = false,
-        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE
+        samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE
     ): RawTexture {
-        return new RawTexture(data, width, height, Constants.TEXTUREFORMAT_LUMINANCE, sceneOrEngine, generateMipMaps, invertY, samplingMode);
+        return new RawTexture(data, width, height, TEXTUREFORMAT_LUMINANCE, sceneOrEngine, generateMipMaps, invertY, samplingMode);
     }
 
     /**
@@ -142,9 +155,9 @@ export class RawTexture extends Texture {
         sceneOrEngine: Nullable<Scene | AbstractEngine>,
         generateMipMaps: boolean = true,
         invertY: boolean = false,
-        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE
+        samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE
     ): RawTexture {
-        return new RawTexture(data, width, height, Constants.TEXTUREFORMAT_LUMINANCE_ALPHA, sceneOrEngine, generateMipMaps, invertY, samplingMode);
+        return new RawTexture(data, width, height, TEXTUREFORMAT_LUMINANCE_ALPHA, sceneOrEngine, generateMipMaps, invertY, samplingMode);
     }
 
     /**
@@ -165,9 +178,9 @@ export class RawTexture extends Texture {
         sceneOrEngine: Nullable<Scene | AbstractEngine>,
         generateMipMaps: boolean = true,
         invertY: boolean = false,
-        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE
+        samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE
     ): RawTexture {
-        return new RawTexture(data, width, height, Constants.TEXTUREFORMAT_ALPHA, sceneOrEngine, generateMipMaps, invertY, samplingMode);
+        return new RawTexture(data, width, height, TEXTUREFORMAT_ALPHA, sceneOrEngine, generateMipMaps, invertY, samplingMode);
     }
 
     /**
@@ -191,12 +204,12 @@ export class RawTexture extends Texture {
         sceneOrEngine: Nullable<Scene | AbstractEngine>,
         generateMipMaps: boolean = true,
         invertY: boolean = false,
-        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE,
+        type: number = TEXTURETYPE_UNSIGNED_INT,
         creationFlags: number = 0,
         useSRGBBuffer: boolean = false
     ): RawTexture {
-        return new RawTexture(data, width, height, Constants.TEXTUREFORMAT_RGB, sceneOrEngine, generateMipMaps, invertY, samplingMode, type, creationFlags, useSRGBBuffer);
+        return new RawTexture(data, width, height, TEXTUREFORMAT_RGB, sceneOrEngine, generateMipMaps, invertY, samplingMode, type, creationFlags, useSRGBBuffer);
     }
 
     /**
@@ -220,12 +233,12 @@ export class RawTexture extends Texture {
         sceneOrEngine: Nullable<Scene | AbstractEngine>,
         generateMipMaps: boolean = true,
         invertY: boolean = false,
-        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE,
+        type: number = TEXTURETYPE_UNSIGNED_INT,
         creationFlags: number = 0,
         useSRGBBuffer: boolean = false
     ): RawTexture {
-        return new RawTexture(data, width, height, Constants.TEXTUREFORMAT_RGBA, sceneOrEngine, generateMipMaps, invertY, samplingMode, type, creationFlags, useSRGBBuffer);
+        return new RawTexture(data, width, height, TEXTUREFORMAT_RGBA, sceneOrEngine, generateMipMaps, invertY, samplingMode, type, creationFlags, useSRGBBuffer);
     }
 
     /**
@@ -248,23 +261,11 @@ export class RawTexture extends Texture {
         sceneOrEngine: Nullable<Scene | AbstractEngine>,
         generateMipMaps: boolean = true,
         invertY: boolean = false,
-        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE,
+        type: number = TEXTURETYPE_UNSIGNED_INT,
         useSRGBBuffer: boolean = false
     ): RawTexture {
-        return new RawTexture(
-            data,
-            width,
-            height,
-            Constants.TEXTUREFORMAT_RGBA,
-            sceneOrEngine,
-            generateMipMaps,
-            invertY,
-            samplingMode,
-            type,
-            Constants.TEXTURE_CREATIONFLAG_STORAGE,
-            useSRGBBuffer
-        );
+        return new RawTexture(data, width, height, TEXTUREFORMAT_RGBA, sceneOrEngine, generateMipMaps, invertY, samplingMode, type, TEXTURE_CREATIONFLAG_STORAGE, useSRGBBuffer);
     }
 
     /**
@@ -287,9 +288,9 @@ export class RawTexture extends Texture {
         generateMipMaps: boolean = true,
         invertY: boolean = false,
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
-        type: number = Constants.TEXTURETYPE_FLOAT
+        type: number = TEXTURETYPE_FLOAT
     ): RawTexture {
-        return new RawTexture(data, width, height, Constants.TEXTUREFORMAT_R, sceneOrEngine, generateMipMaps, invertY, samplingMode, type);
+        return new RawTexture(data, width, height, TEXTUREFORMAT_R, sceneOrEngine, generateMipMaps, invertY, samplingMode, type);
     }
 
     /**
@@ -312,8 +313,8 @@ export class RawTexture extends Texture {
         generateMipMaps: boolean = true,
         invertY: boolean = false,
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
-        type: number = Constants.TEXTURETYPE_FLOAT
+        type: number = TEXTURETYPE_FLOAT
     ): RawTexture {
-        return new RawTexture(data, width, height, Constants.TEXTUREFORMAT_R, sceneOrEngine, generateMipMaps, invertY, samplingMode, type, Constants.TEXTURE_CREATIONFLAG_STORAGE);
+        return new RawTexture(data, width, height, TEXTUREFORMAT_R, sceneOrEngine, generateMipMaps, invertY, samplingMode, type, TEXTURE_CREATIONFLAG_STORAGE);
     }
 }

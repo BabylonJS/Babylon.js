@@ -1,4 +1,4 @@
-import { Constants } from "../constants";
+import { SNAPSHOTRENDERING_STANDARD, SNAPSHOTRENDERING_FAST } from "../constants";
 import type { WebGPUEngine } from "../webgpuEngine";
 import type { WebGPUBundleList } from "./webgpuBundleList";
 
@@ -40,7 +40,7 @@ export class WebGPUSnapshotRendering {
         this._play = false;
         if (activate) {
             this._modeSaved = this._mode;
-            this._mode = Constants.SNAPSHOTRENDERING_STANDARD; // need to reset to standard for the recording pass to avoid some code being bypassed
+            this._mode = SNAPSHOTRENDERING_STANDARD; // need to reset to standard for the recording pass to avoid some code being bypassed
         }
     }
 
@@ -80,7 +80,7 @@ export class WebGPUSnapshotRendering {
 
         bundleList.run(currentRenderPass);
 
-        if (this._mode === Constants.SNAPSHOTRENDERING_FAST) {
+        if (this._mode === SNAPSHOTRENDERING_FAST) {
             this._engine._reportDrawCall(bundleList.numDrawCalls);
         }
 

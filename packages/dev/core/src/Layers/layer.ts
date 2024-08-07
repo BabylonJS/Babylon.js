@@ -11,7 +11,7 @@ import { Texture } from "../Materials/Textures/texture";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { SceneComponentConstants } from "../sceneComponent";
 import { LayerSceneComponent } from "./layerSceneComponent";
-import { Constants } from "../Engines/constants";
+import { ALPHA_COMBINE, ALPHA_DISABLE } from "../Engines/constants";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import { DrawWrapper } from "../Materials/drawWrapper";
@@ -65,7 +65,7 @@ export class Layer {
     /**
      * Define the alpha blending mode used in the layer in case the texture or color has an alpha.
      */
-    public alphaBlendingMode = Constants.ALPHA_COMBINE;
+    public alphaBlendingMode = ALPHA_COMBINE;
 
     /**
      * Define if the layer should alpha test or alpha blend with the rest of the scene.
@@ -299,7 +299,7 @@ export class Layer {
         if (!this.alphaTest) {
             engine.setAlphaMode(this.alphaBlendingMode);
             engine.drawElementsType(Material.TriangleFillMode, 0, 6);
-            engine.setAlphaMode(Constants.ALPHA_DISABLE);
+            engine.setAlphaMode(ALPHA_DISABLE);
         } else {
             engine.drawElementsType(Material.TriangleFillMode, 0, 6);
         }

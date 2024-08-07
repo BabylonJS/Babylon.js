@@ -9,7 +9,7 @@ import type { AssetContainer } from "../assetContainer";
 import type { IParticleSystem } from "../Particles/IParticleSystem";
 import type { Skeleton } from "../Bones/skeleton";
 import { Logger } from "../Misc/logger";
-import { Constants } from "../Engines/constants";
+import { SCENELOADER_NO_LOGGING, SCENELOADER_MINIMAL_LOGGING, SCENELOADER_SUMMARY_LOGGING, SCENELOADER_DETAILED_LOGGING } from "../Engines/constants";
 import { SceneLoaderFlags } from "./sceneLoaderFlags";
 import type { IFileRequest } from "../Misc/fileRequest";
 import type { WebRequest } from "../Misc/webRequest";
@@ -377,22 +377,22 @@ export class SceneLoader {
     /**
      * No logging while loading
      */
-    public static readonly NO_LOGGING = Constants.SCENELOADER_NO_LOGGING;
+    public static readonly NO_LOGGING = SCENELOADER_NO_LOGGING;
 
     /**
      * Minimal logging while loading
      */
-    public static readonly MINIMAL_LOGGING = Constants.SCENELOADER_MINIMAL_LOGGING;
+    public static readonly MINIMAL_LOGGING = SCENELOADER_MINIMAL_LOGGING;
 
     /**
      * Summary logging while loading
      */
-    public static readonly SUMMARY_LOGGING = Constants.SCENELOADER_SUMMARY_LOGGING;
+    public static readonly SUMMARY_LOGGING = SCENELOADER_SUMMARY_LOGGING;
 
     /**
      * Detailed logging while loading
      */
-    public static readonly DETAILED_LOGGING = Constants.SCENELOADER_DETAILED_LOGGING;
+    public static readonly DETAILED_LOGGING = SCENELOADER_DETAILED_LOGGING;
 
     /**
      * Gets or sets a boolean indicating if entire scene must be loaded even if scene contains incremental data

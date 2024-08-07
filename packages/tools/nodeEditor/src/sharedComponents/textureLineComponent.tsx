@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { Constants } from "core/Engines/constants";
+import { TEXTURETYPE_UNSIGNED_INT } from "core/Engines/constants";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
@@ -78,9 +78,9 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
         let passPostProcess: PostProcess;
 
         if (!texture.isCube) {
-            passPostProcess = new PassPostProcess("pass", 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, Constants.TEXTURETYPE_UNSIGNED_INT);
+            passPostProcess = new PassPostProcess("pass", 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, TEXTURETYPE_UNSIGNED_INT);
         } else {
-            const passCubePostProcess = new PassCubePostProcess("pass", 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, Constants.TEXTURETYPE_UNSIGNED_INT);
+            const passCubePostProcess = new PassCubePostProcess("pass", 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, TEXTURETYPE_UNSIGNED_INT);
             passCubePostProcess.face = options.face;
 
             passPostProcess = passCubePostProcess;

@@ -5,7 +5,7 @@ import type { Scene } from "../../scene";
 import { Matrix, TmpVectors, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
-import { Constants } from "../../Engines/constants";
+import { MATERIAL_TextureDirtyFlag, TEXTUREFORMAT_RGBA, DELAYLOADSTATE_NOTLOADED, DELAYLOADSTATE_LOADED } from "../../Engines/constants";
 import { GetClass, RegisterClass } from "../../Misc/typeStore";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import { Observable } from "../../Misc/observable";
@@ -108,7 +108,7 @@ export class CubeTexture extends BaseTexture {
         this._boundingBoxSize = value;
         const scene = this.getScene();
         if (scene) {
-            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+            scene.markAllMaterialsAsDirty(MATERIAL_TextureDirtyFlag);
         }
     }
     /**
@@ -237,7 +237,7 @@ export class CubeTexture extends BaseTexture {
         files: Nullable<string[]> = null,
         onLoad: Nullable<() => void> = null,
         onError: Nullable<(message?: string, exception?: any) => void> = null,
-        format: number = Constants.TEXTUREFORMAT_RGBA,
+        format: number = TEXTUREFORMAT_RGBA,
         prefiltered = false,
         forcedExtension: any = null,
         createPolynomials: boolean = false,
@@ -264,7 +264,7 @@ export class CubeTexture extends BaseTexture {
             this._noMipmap = extensionsOrOptions.noMipmap ?? false;
             files = extensionsOrOptions.files ?? null;
             buffer = extensionsOrOptions.buffer ?? null;
-            this._format = extensionsOrOptions.format ?? Constants.TEXTUREFORMAT_RGBA;
+            this._format = extensionsOrOptions.format ?? TEXTUREFORMAT_RGBA;
             prefiltered = extensionsOrOptions.prefiltered ?? false;
             forcedExtension = extensionsOrOptions.forcedExtension ?? null;
             this._createPolynomials = extensionsOrOptions.createPolynomials ?? false;
@@ -372,7 +372,7 @@ export class CubeTexture extends BaseTexture {
         this._buffer = buffer;
 
         if (delayLoad) {
-            this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
+            this.delayLoadState = DELAYLOADSTATE_NOTLOADED;
             this._delayedOnLoad = onLoad;
             this._delayedOnError = onError;
         } else {
@@ -385,14 +385,14 @@ export class CubeTexture extends BaseTexture {
      * @param forcedExtension defines the extension to use
      */
     public override delayLoad(forcedExtension?: string): void {
-        if (this.delayLoadState !== Constants.DELAYLOADSTATE_NOTLOADED) {
+        if (this.delayLoadState !== DELAYLOADSTATE_NOTLOADED) {
             return;
         }
         if (forcedExtension) {
             this._forcedExtension = forcedExtension;
         }
 
-        this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
+        this.delayLoadState = DELAYLOADSTATE_LOADED;
         this._loadTexture(this._delayedOnLoad, this._delayedOnError);
     }
 
@@ -414,7 +414,7 @@ export class CubeTexture extends BaseTexture {
         }
 
         if (value.isIdentity() !== this._textureMatrix.isIdentity()) {
-            this.getScene()?.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => mat.getActiveTextures().indexOf(this) !== -1);
+            this.getScene()?.markAllMaterialsAsDirty(MATERIAL_TextureDirtyFlag, (mat) => mat.getActiveTextures().indexOf(this) !== -1);
         }
 
         this._textureMatrix = value;
@@ -453,7 +453,7 @@ export class CubeTexture extends BaseTexture {
             this.onLoadObservable.notifyObservers(this);
             if (oldTexture) {
                 oldTexture.dispose();
-                this.getScene()?.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+                this.getScene()?.markAllMaterialsAsDirty(MATERIAL_TextureDirtyFlag);
             }
             if (onLoad) {
                 onLoad();

@@ -14,7 +14,7 @@ import { RawTexture } from "core/Materials/Textures/rawTexture";
 import type { Scene } from "core/scene";
 
 import type { _Exporter } from "./glTFExporter";
-import { Constants } from "core/Engines/constants";
+import { ALPHA_COMBINE, TEXTURETYPE_UNSIGNED_INT, TEXTUREFORMAT_RGBA, TEXTURE_NEAREST_SAMPLINGMODE } from "core/Engines/constants";
 import { DumpTools } from "core/Misc/dumpTools";
 
 import type { Material } from "core/Materials/material";
@@ -378,7 +378,7 @@ export class _GLTFMaterialExporter {
         }
 
         if (babylonStandardMaterial.alpha < 1.0 || babylonStandardMaterial.opacityTexture) {
-            if (babylonStandardMaterial.alphaMode === Constants.ALPHA_COMBINE) {
+            if (babylonStandardMaterial.alphaMode === ALPHA_COMBINE) {
                 material.alphaMode = MaterialAlphaMode.BLEND;
             } else {
                 Tools.Warn(babylonStandardMaterial.name + ": glTF 2.0 does not support alpha mode: " + babylonStandardMaterial.alphaMode.toString());
@@ -432,15 +432,15 @@ export class _GLTFMaterialExporter {
      * @returns base64 image string
      */
     private async _getImageDataAsync(buffer: Uint8Array | Float32Array, width: number, height: number, mimeType: ImageMimeType): Promise<ArrayBuffer> {
-        const textureType = Constants.TEXTURETYPE_UNSIGNED_INT;
+        const textureType = TEXTURETYPE_UNSIGNED_INT;
 
         const hostingScene = this._exporter._babylonScene;
         const engine = hostingScene.getEngine();
 
         // Create a temporary texture with the texture buffer data
-        const tempTexture = engine.createRawTexture(buffer, width, height, Constants.TEXTUREFORMAT_RGBA, false, true, Texture.NEAREST_SAMPLINGMODE, null, textureType);
+        const tempTexture = engine.createRawTexture(buffer, width, height, TEXTUREFORMAT_RGBA, false, true, Texture.NEAREST_SAMPLINGMODE, null, textureType);
 
-        await TextureTools.ApplyPostProcess("pass", tempTexture, hostingScene, textureType, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTUREFORMAT_RGBA);
+        await TextureTools.ApplyPostProcess("pass", tempTexture, hostingScene, textureType, TEXTURE_NEAREST_SAMPLINGMODE, TEXTUREFORMAT_RGBA);
 
         const data = await engine._readTexturePixels(tempTexture, width, height);
 
@@ -1059,9 +1059,7 @@ export class _GLTFMaterialExporter {
 
     private _getPixelsFromTexture(babylonTexture: BaseTexture): Promise<Nullable<Uint8Array | Float32Array>> {
         const pixels =
-            babylonTexture.textureType === Constants.TEXTURETYPE_UNSIGNED_INT
-                ? (babylonTexture.readPixels() as Promise<Uint8Array>)
-                : (babylonTexture.readPixels() as Promise<Float32Array>);
+            babylonTexture.textureType === TEXTURETYPE_UNSIGNED_INT ? (babylonTexture.readPixels() as Promise<Uint8Array>) : (babylonTexture.readPixels() as Promise<Float32Array>);
         return pixels;
     }
 

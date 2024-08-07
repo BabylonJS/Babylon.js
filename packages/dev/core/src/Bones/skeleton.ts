@@ -10,7 +10,7 @@ import type { AnimationPropertiesOverride } from "../Animations/animationPropert
 import { Animation } from "../Animations/animation";
 import { AnimationRange } from "../Animations/animationRange";
 import { EngineStore } from "../Engines/engineStore";
-import { Constants } from "../Engines/constants";
+import { TEXTURE_NEAREST_SAMPLINGMODE, TEXTURETYPE_FLOAT } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import { DeepCopier } from "../Misc/deepCopier";
 import type { IInspectable } from "../Misc/iInspectable";
@@ -573,8 +573,8 @@ export class Skeleton implements IAnimatable {
                                 this._scene,
                                 false,
                                 false,
-                                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-                                Constants.TEXTURETYPE_FLOAT
+                                TEXTURE_NEAREST_SAMPLINGMODE,
+                                TEXTURETYPE_FLOAT
                             );
                         }
                     }
@@ -606,8 +606,8 @@ export class Skeleton implements IAnimatable {
                         this._scene,
                         false,
                         false,
-                        Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-                        Constants.TEXTURETYPE_FLOAT
+                        TEXTURE_NEAREST_SAMPLINGMODE,
+                        TEXTURETYPE_FLOAT
                     );
                 }
             }

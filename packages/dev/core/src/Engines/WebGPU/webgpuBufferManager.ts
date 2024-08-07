@@ -3,7 +3,7 @@ import type { DataBuffer } from "../../Buffers/dataBuffer";
 import { WebGPUDataBuffer } from "../../Meshes/WebGPU/webgpuDataBuffer";
 import { FromHalfFloat } from "../../Misc/textureTools";
 import type { Nullable } from "../../types";
-import { Constants } from "../constants";
+import { TEXTURETYPE_UNSIGNED_BYTE, TEXTURETYPE_FLOAT, TEXTURETYPE_HALF_FLOAT } from "../constants";
 import { allocateAndCopyTypedBuffer } from "../Extensions/engine.readTexture";
 import type { WebGPUEngine } from "../webgpuEngine";
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -122,13 +122,13 @@ export class WebGPUBufferManager {
         height: number,
         bytesPerRow: number,
         bytesPerRowAligned: number,
-        type = Constants.TEXTURETYPE_UNSIGNED_BYTE,
+        type = TEXTURETYPE_UNSIGNED_BYTE,
         offset = 0,
         buffer: Nullable<ArrayBufferView> = null,
         destroyBuffer = true,
         noDataConversion = false
     ): Promise<ArrayBufferView> {
-        const floatFormat = type === Constants.TEXTURETYPE_FLOAT ? 2 : type === Constants.TEXTURETYPE_HALF_FLOAT ? 1 : 0;
+        const floatFormat = type === TEXTURETYPE_FLOAT ? 2 : type === TEXTURETYPE_HALF_FLOAT ? 1 : 0;
         const engineId = this._engine.uniqueId;
         return new Promise((resolve, reject) => {
             gpuBuffer.mapAsync(WebGPUConstants.MapMode.Read, offset, size).then(

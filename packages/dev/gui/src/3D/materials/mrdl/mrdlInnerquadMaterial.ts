@@ -9,7 +9,7 @@ import type { Scene } from "core/scene";
 import type { SubMesh } from "core/Meshes/subMesh";
 
 import { Color4 } from "core/Maths/math.color";
-import { Constants } from "core/Engines/constants";
+import { ALPHA_COMBINE } from "core/Engines/constants";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { PushMaterial } from "core/Materials/pushMaterial";
@@ -72,7 +72,7 @@ export class MRDLInnerquadMaterial extends PushMaterial {
 
     constructor(name: string, scene: Scene) {
         super(name, scene);
-        this.alphaMode = Constants.ALPHA_COMBINE;
+        this.alphaMode = ALPHA_COMBINE;
         this.backFaceCulling = false;
     }
 

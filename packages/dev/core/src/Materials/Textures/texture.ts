@@ -3,7 +3,40 @@ import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 import { Matrix, TmpVectors, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
-import { Constants } from "../../Engines/constants";
+import {
+    TEXTUREFORMAT_RGBA,
+    TEXTURE_NEAREST_SAMPLINGMODE,
+    TEXTURE_NEAREST_NEAREST_MIPLINEAR,
+    TEXTURE_BILINEAR_SAMPLINGMODE,
+    TEXTURE_LINEAR_LINEAR_MIPNEAREST,
+    TEXTURE_TRILINEAR_SAMPLINGMODE,
+    TEXTURE_LINEAR_LINEAR_MIPLINEAR,
+    TEXTURE_NEAREST_NEAREST_MIPNEAREST,
+    TEXTURE_NEAREST_LINEAR_MIPNEAREST,
+    TEXTURE_NEAREST_LINEAR_MIPLINEAR,
+    TEXTURE_NEAREST_LINEAR,
+    TEXTURE_NEAREST_NEAREST,
+    TEXTURE_LINEAR_NEAREST_MIPNEAREST,
+    TEXTURE_LINEAR_NEAREST_MIPLINEAR,
+    TEXTURE_LINEAR_LINEAR,
+    TEXTURE_LINEAR_NEAREST,
+    TEXTURE_EXPLICIT_MODE,
+    TEXTURE_SPHERICAL_MODE,
+    TEXTURE_PLANAR_MODE,
+    TEXTURE_CUBIC_MODE,
+    TEXTURE_PROJECTION_MODE,
+    TEXTURE_SKYBOX_MODE,
+    TEXTURE_INVCUBIC_MODE,
+    TEXTURE_EQUIRECTANGULAR_MODE,
+    TEXTURE_FIXED_EQUIRECTANGULAR_MODE,
+    TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE,
+    TEXTURE_CLAMP_ADDRESSMODE,
+    TEXTURE_WRAP_ADDRESSMODE,
+    TEXTURE_MIRROR_ADDRESSMODE,
+    DELAYLOADSTATE_NOTLOADED,
+    MATERIAL_TextureDirtyFlag,
+    DELAYLOADSTATE_LOADED,
+} from "../../Engines/constants";
 import { GetClass, RegisterClass } from "../../Misc/typeStore";
 import { _WarnImport } from "../../Misc/devTools";
 import type { IInspectable } from "../../Misc/iInspectable";
@@ -129,72 +162,72 @@ export class Texture extends BaseTexture {
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
         settings: Partial<VideoTextureSettings> = {},
         onError?: Nullable<(message?: string, exception?: any) => void>,
-        format: number = Constants.TEXTUREFORMAT_RGBA
+        format: number = TEXTUREFORMAT_RGBA
     ): VideoTexture {
         throw _WarnImport("VideoTexture");
     }
 
     /** nearest is mag = nearest and min = nearest and no mip */
-    public static readonly NEAREST_SAMPLINGMODE = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+    public static readonly NEAREST_SAMPLINGMODE = TEXTURE_NEAREST_SAMPLINGMODE;
     /** nearest is mag = nearest and min = nearest and mip = linear */
-    public static readonly NEAREST_NEAREST_MIPLINEAR = Constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR; // nearest is mag = nearest and min = nearest and mip = linear
+    public static readonly NEAREST_NEAREST_MIPLINEAR = TEXTURE_NEAREST_NEAREST_MIPLINEAR; // nearest is mag = nearest and min = nearest and mip = linear
 
     /** Bilinear is mag = linear and min = linear and no mip */
-    public static readonly BILINEAR_SAMPLINGMODE = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
+    public static readonly BILINEAR_SAMPLINGMODE = TEXTURE_BILINEAR_SAMPLINGMODE;
     /** Bilinear is mag = linear and min = linear and mip = nearest */
-    public static readonly LINEAR_LINEAR_MIPNEAREST = Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST; // Bilinear is mag = linear and min = linear and mip = nearest
+    public static readonly LINEAR_LINEAR_MIPNEAREST = TEXTURE_LINEAR_LINEAR_MIPNEAREST; // Bilinear is mag = linear and min = linear and mip = nearest
 
     /** Trilinear is mag = linear and min = linear and mip = linear */
-    public static readonly TRILINEAR_SAMPLINGMODE = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
+    public static readonly TRILINEAR_SAMPLINGMODE = TEXTURE_TRILINEAR_SAMPLINGMODE;
     /** Trilinear is mag = linear and min = linear and mip = linear */
-    public static readonly LINEAR_LINEAR_MIPLINEAR = Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR; // Trilinear is mag = linear and min = linear and mip = linear
+    public static readonly LINEAR_LINEAR_MIPLINEAR = TEXTURE_LINEAR_LINEAR_MIPLINEAR; // Trilinear is mag = linear and min = linear and mip = linear
 
     /** mag = nearest and min = nearest and mip = nearest */
-    public static readonly NEAREST_NEAREST_MIPNEAREST = Constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST;
+    public static readonly NEAREST_NEAREST_MIPNEAREST = TEXTURE_NEAREST_NEAREST_MIPNEAREST;
     /** mag = nearest and min = linear and mip = nearest */
-    public static readonly NEAREST_LINEAR_MIPNEAREST = Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST;
+    public static readonly NEAREST_LINEAR_MIPNEAREST = TEXTURE_NEAREST_LINEAR_MIPNEAREST;
     /** mag = nearest and min = linear and mip = linear */
-    public static readonly NEAREST_LINEAR_MIPLINEAR = Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR;
+    public static readonly NEAREST_LINEAR_MIPLINEAR = TEXTURE_NEAREST_LINEAR_MIPLINEAR;
     /** mag = nearest and min = linear and mip = none */
-    public static readonly NEAREST_LINEAR = Constants.TEXTURE_NEAREST_LINEAR;
+    public static readonly NEAREST_LINEAR = TEXTURE_NEAREST_LINEAR;
     /** mag = nearest and min = nearest and mip = none */
-    public static readonly NEAREST_NEAREST = Constants.TEXTURE_NEAREST_NEAREST;
+    public static readonly NEAREST_NEAREST = TEXTURE_NEAREST_NEAREST;
     /** mag = linear and min = nearest and mip = nearest */
-    public static readonly LINEAR_NEAREST_MIPNEAREST = Constants.TEXTURE_LINEAR_NEAREST_MIPNEAREST;
+    public static readonly LINEAR_NEAREST_MIPNEAREST = TEXTURE_LINEAR_NEAREST_MIPNEAREST;
     /** mag = linear and min = nearest and mip = linear */
-    public static readonly LINEAR_NEAREST_MIPLINEAR = Constants.TEXTURE_LINEAR_NEAREST_MIPLINEAR;
+    public static readonly LINEAR_NEAREST_MIPLINEAR = TEXTURE_LINEAR_NEAREST_MIPLINEAR;
     /** mag = linear and min = linear and mip = none */
-    public static readonly LINEAR_LINEAR = Constants.TEXTURE_LINEAR_LINEAR;
+    public static readonly LINEAR_LINEAR = TEXTURE_LINEAR_LINEAR;
     /** mag = linear and min = nearest and mip = none */
-    public static readonly LINEAR_NEAREST = Constants.TEXTURE_LINEAR_NEAREST;
+    public static readonly LINEAR_NEAREST = TEXTURE_LINEAR_NEAREST;
 
     /** Explicit coordinates mode */
-    public static readonly EXPLICIT_MODE = Constants.TEXTURE_EXPLICIT_MODE;
+    public static readonly EXPLICIT_MODE = TEXTURE_EXPLICIT_MODE;
     /** Spherical coordinates mode */
-    public static readonly SPHERICAL_MODE = Constants.TEXTURE_SPHERICAL_MODE;
+    public static readonly SPHERICAL_MODE = TEXTURE_SPHERICAL_MODE;
     /** Planar coordinates mode */
-    public static readonly PLANAR_MODE = Constants.TEXTURE_PLANAR_MODE;
+    public static readonly PLANAR_MODE = TEXTURE_PLANAR_MODE;
     /** Cubic coordinates mode */
-    public static readonly CUBIC_MODE = Constants.TEXTURE_CUBIC_MODE;
+    public static readonly CUBIC_MODE = TEXTURE_CUBIC_MODE;
     /** Projection coordinates mode */
-    public static readonly PROJECTION_MODE = Constants.TEXTURE_PROJECTION_MODE;
+    public static readonly PROJECTION_MODE = TEXTURE_PROJECTION_MODE;
     /** Inverse Cubic coordinates mode */
-    public static readonly SKYBOX_MODE = Constants.TEXTURE_SKYBOX_MODE;
+    public static readonly SKYBOX_MODE = TEXTURE_SKYBOX_MODE;
     /** Inverse Cubic coordinates mode */
-    public static readonly INVCUBIC_MODE = Constants.TEXTURE_INVCUBIC_MODE;
+    public static readonly INVCUBIC_MODE = TEXTURE_INVCUBIC_MODE;
     /** Equirectangular coordinates mode */
-    public static readonly EQUIRECTANGULAR_MODE = Constants.TEXTURE_EQUIRECTANGULAR_MODE;
+    public static readonly EQUIRECTANGULAR_MODE = TEXTURE_EQUIRECTANGULAR_MODE;
     /** Equirectangular Fixed coordinates mode */
-    public static readonly FIXED_EQUIRECTANGULAR_MODE = Constants.TEXTURE_FIXED_EQUIRECTANGULAR_MODE;
+    public static readonly FIXED_EQUIRECTANGULAR_MODE = TEXTURE_FIXED_EQUIRECTANGULAR_MODE;
     /** Equirectangular Fixed Mirrored coordinates mode */
-    public static readonly FIXED_EQUIRECTANGULAR_MIRRORED_MODE = Constants.TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE;
+    public static readonly FIXED_EQUIRECTANGULAR_MIRRORED_MODE = TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE;
 
     /** Texture is not repeating outside of 0..1 UVs */
-    public static readonly CLAMP_ADDRESSMODE = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+    public static readonly CLAMP_ADDRESSMODE = TEXTURE_CLAMP_ADDRESSMODE;
     /** Texture is repeating outside of 0..1 UVs */
-    public static readonly WRAP_ADDRESSMODE = Constants.TEXTURE_WRAP_ADDRESSMODE;
+    public static readonly WRAP_ADDRESSMODE = TEXTURE_WRAP_ADDRESSMODE;
     /** Texture is repeating and mirrored */
-    public static readonly MIRROR_ADDRESSMODE = Constants.TEXTURE_MIRROR_ADDRESSMODE;
+    public static readonly MIRROR_ADDRESSMODE = TEXTURE_MIRROR_ADDRESSMODE;
 
     /**
      * Gets or sets a boolean which defines if the texture url must be build from the serialized URL instead of just using the name and loading them side by side with the scene file
@@ -537,7 +570,7 @@ export class Texture extends BaseTexture {
                     this._buffer = null;
                 }
             } else {
-                this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
+                this.delayLoadState = DELAYLOADSTATE_NOTLOADED;
 
                 this._delayedOnLoad = load;
                 this._delayedOnError = errorHandler;
@@ -570,7 +603,7 @@ export class Texture extends BaseTexture {
     ): void {
         if (this.url) {
             this.releaseInternalTexture();
-            this.getScene()!.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+            this.getScene()!.markAllMaterialsAsDirty(MATERIAL_TextureDirtyFlag, (mat) => {
                 return mat.hasTexture(this);
             });
         }
@@ -581,7 +614,7 @@ export class Texture extends BaseTexture {
         this.url = url;
         this._buffer = buffer;
         this._forcedExtension = forcedExtension;
-        this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
+        this.delayLoadState = DELAYLOADSTATE_NOTLOADED;
 
         if (onLoad) {
             this._delayedOnLoad = onLoad;
@@ -594,7 +627,7 @@ export class Texture extends BaseTexture {
      * @internal
      */
     public override delayLoad(): void {
-        if (this.delayLoadState !== Constants.DELAYLOADSTATE_NOTLOADED) {
+        if (this.delayLoadState !== DELAYLOADSTATE_NOTLOADED) {
             return;
         }
 
@@ -603,7 +636,7 @@ export class Texture extends BaseTexture {
             return;
         }
 
-        this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
+        this.delayLoadState = DELAYLOADSTATE_LOADED;
         this._texture = this._getFromCache(this.url, this._noMipmap, this.samplingMode, this._invertY, this._useSRGBBuffer, this.isCube);
 
         if (!this._texture) {
@@ -756,7 +789,7 @@ export class Texture extends BaseTexture {
         if (this.optimizeUVAllocation && previousIdentity3x2 !== this._cachedIdentity3x2) {
             // We flag the materials that are using this texture as "texture dirty" because depending on the fact that the matrix is the identity or not, some defines
             // will get different values (see PrepareDefinesForMergedUV), meaning we should regenerate the effect accordingly
-            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+            scene.markAllMaterialsAsDirty(MATERIAL_TextureDirtyFlag, (mat) => {
                 return mat.hasTexture(this);
             });
         }
@@ -832,7 +865,7 @@ export class Texture extends BaseTexture {
         if (flagMaterialsAsTextureDirty) {
             // We flag the materials that are using this texture as "texture dirty" if the coordinatesMode has changed.
             // Indeed, this property is used to set the value of some defines used to generate the effect (in material.isReadyForSubMesh), so we must make sure this code will be re-executed and the effect recreated if necessary
-            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+            scene.markAllMaterialsAsDirty(MATERIAL_TextureDirtyFlag, (mat) => {
                 return mat.hasTexture(this);
             });
         }
@@ -1136,7 +1169,7 @@ export class Texture extends BaseTexture {
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null,
         onError: Nullable<() => void> = null,
-        format: number = Constants.TEXTUREFORMAT_RGBA,
+        format: number = TEXTUREFORMAT_RGBA,
         creationFlags?: number,
         forcedExtension?: string
     ): Texture {
@@ -1184,7 +1217,7 @@ export class Texture extends BaseTexture {
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null,
         onError: Nullable<(message?: string, exception?: any) => void> = null,
-        format: number = Constants.TEXTUREFORMAT_RGBA,
+        format: number = TEXTUREFORMAT_RGBA,
         creationFlags?: number,
         forcedExtension?: string
     ): Texture {

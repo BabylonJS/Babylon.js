@@ -16,7 +16,19 @@ import type { IDisposable } from "../scene";
 import type { Effect } from "../Materials/effect";
 import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
 import { RawTexture } from "../Materials/Textures/rawTexture";
-import { Constants } from "../Engines/constants";
+import {
+    TEXTUREFORMAT_RGBA,
+    TEXTURE_NEAREST_SAMPLINGMODE,
+    TEXTURETYPE_FLOAT,
+    TEXTURE_WRAP_ADDRESSMODE,
+    ALPHA_ADD,
+    ALPHA_ONEONE,
+    ALPHA_COMBINE,
+    ALPHA_MULTIPLY,
+    MATERIAL_LineStripDrawMode,
+    MATERIAL_TriangleStripDrawMode,
+    ALPHA_DISABLE,
+} from "../Engines/constants";
 import { EngineStore } from "../Engines/engineStore";
 import type { IAnimatable } from "../Animations/animatable.interface";
 import { CustomParticleEmitter } from "./EmitterTypes/customParticleEmitter";
@@ -1012,16 +1024,16 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             new Float32Array(d),
             maxTextureSize,
             1,
-            Constants.TEXTUREFORMAT_RGBA,
+            TEXTUREFORMAT_RGBA,
             sceneOrEngine,
             false,
             false,
-            Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-            Constants.TEXTURETYPE_FLOAT
+            TEXTURE_NEAREST_SAMPLINGMODE,
+            TEXTURETYPE_FLOAT
         );
         this._randomTexture.name = "GPUParticleSystem_random1";
-        this._randomTexture.wrapU = Constants.TEXTURE_WRAP_ADDRESSMODE;
-        this._randomTexture.wrapV = Constants.TEXTURE_WRAP_ADDRESSMODE;
+        this._randomTexture.wrapU = TEXTURE_WRAP_ADDRESSMODE;
+        this._randomTexture.wrapV = TEXTURE_WRAP_ADDRESSMODE;
 
         d = [];
         for (let i = 0; i < maxTextureSize; ++i) {
@@ -1034,16 +1046,16 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             new Float32Array(d),
             maxTextureSize,
             1,
-            Constants.TEXTUREFORMAT_RGBA,
+            TEXTUREFORMAT_RGBA,
             sceneOrEngine,
             false,
             false,
-            Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-            Constants.TEXTURETYPE_FLOAT
+            TEXTURE_NEAREST_SAMPLINGMODE,
+            TEXTURETYPE_FLOAT
         );
         this._randomTexture2.name = "GPUParticleSystem_random2";
-        this._randomTexture2.wrapU = Constants.TEXTURE_WRAP_ADDRESSMODE;
-        this._randomTexture2.wrapV = Constants.TEXTURE_WRAP_ADDRESSMODE;
+        this._randomTexture2.wrapU = TEXTURE_WRAP_ADDRESSMODE;
+        this._randomTexture2.wrapV = TEXTURE_WRAP_ADDRESSMODE;
 
         this._randomTextureSize = maxTextureSize;
     }
@@ -1597,7 +1609,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             });
         }
 
-        (<any>this)[textureName] = RawTexture.CreateRTexture(data, this._rawTextureWidth, 1, this._scene || this._engine, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+        (<any>this)[textureName] = RawTexture.CreateRTexture(data, this._rawTextureWidth, 1, this._scene || this._engine, false, false, TEXTURE_NEAREST_SAMPLINGMODE);
         (<any>this)[textureName].name = textureName.substring(1);
     }
 
@@ -1641,7 +1653,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             });
         }
 
-        this._colorGradientsTexture = RawTexture.CreateRGBATexture(data, this._rawTextureWidth, 1, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+        this._colorGradientsTexture = RawTexture.CreateRGBATexture(data, this._rawTextureWidth, 1, this._scene, false, false, TEXTURE_NEAREST_SAMPLINGMODE);
         this._colorGradientsTexture.name = "colorGradients";
     }
 
@@ -1705,16 +1717,16 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         // Draw order
         switch (blendMode) {
             case ParticleSystem.BLENDMODE_ADD:
-                this._engine.setAlphaMode(Constants.ALPHA_ADD);
+                this._engine.setAlphaMode(ALPHA_ADD);
                 break;
             case ParticleSystem.BLENDMODE_ONEONE:
-                this._engine.setAlphaMode(Constants.ALPHA_ONEONE);
+                this._engine.setAlphaMode(ALPHA_ONEONE);
                 break;
             case ParticleSystem.BLENDMODE_STANDARD:
-                this._engine.setAlphaMode(Constants.ALPHA_COMBINE);
+                this._engine.setAlphaMode(ALPHA_COMBINE);
                 break;
             case ParticleSystem.BLENDMODE_MULTIPLY:
-                this._engine.setAlphaMode(Constants.ALPHA_MULTIPLY);
+                this._engine.setAlphaMode(ALPHA_MULTIPLY);
                 break;
         }
 
@@ -1727,11 +1739,11 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         // Render
         if (this._scene?.forceWireframe) {
-            this._engine.drawElementsType(Constants.MATERIAL_LineStripDrawMode, 0, 10, this._currentActiveCount);
+            this._engine.drawElementsType(MATERIAL_LineStripDrawMode, 0, 10, this._currentActiveCount);
         } else {
-            this._engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, this._currentActiveCount);
+            this._engine.drawArraysType(MATERIAL_TriangleStripDrawMode, 0, 4, this._currentActiveCount);
         }
-        this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
+        this._engine.setAlphaMode(ALPHA_DISABLE);
 
         if (this._scene?.forceWireframe) {
             this._engine.unbindInstanceAttributes();
@@ -1892,7 +1904,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
                 outparticles = this._render(this.blendMode, emitterWM);
             }
 
-            this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
+            this._engine.setAlphaMode(ALPHA_DISABLE);
         }
 
         return outparticles;

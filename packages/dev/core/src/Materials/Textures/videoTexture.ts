@@ -4,7 +4,7 @@ import { Logger } from "../../Misc/logger";
 import type { Nullable } from "../../types";
 import type { Scene } from "../../scene";
 import { Texture } from "../../Materials/Textures/texture";
-import { Constants } from "../../Engines/constants";
+import { TEXTUREFORMAT_RGBA, TEXTUREFORMAT_RGB } from "../../Engines/constants";
 import type { ExternalTexture } from "./externalTexture";
 import type { WebGPUEngine } from "core/Engines";
 
@@ -173,7 +173,7 @@ export class VideoTexture extends Texture {
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
         settings: Partial<VideoTextureSettings> = {},
         onError?: Nullable<(message?: string, exception?: any) => void>,
-        format: number = Constants.TEXTUREFORMAT_RGBA
+        format: number = TEXTUREFORMAT_RGBA
     ) {
         super(null, scene, !generateMipMaps, invertY);
 
@@ -301,7 +301,7 @@ export class VideoTexture extends Texture {
         }
 
         this._texture = this._getEngine()!.createDynamicTexture(this.video.videoWidth, this.video.videoHeight, this._generateMipMaps, this.samplingMode);
-        this._texture.format = this._format ?? Constants.TEXTUREFORMAT_RGBA;
+        this._texture.format = this._format ?? TEXTUREFORMAT_RGBA;
 
         // Reset the frame ID and update the new texture to ensure it pulls in the current video frame
         this._frameId = -1;
@@ -502,7 +502,7 @@ export class VideoTexture extends Texture {
 
         return new Promise<VideoTexture>((resolve) => {
             const onPlaying = () => {
-                const videoTexture = new VideoTexture("video", video, scene, true, invertY, undefined, undefined, undefined, Constants.TEXTUREFORMAT_RGB);
+                const videoTexture = new VideoTexture("video", video, scene, true, invertY, undefined, undefined, undefined, TEXTUREFORMAT_RGB);
                 if (scene.getEngine()._badOS) {
                     videoTexture.onDisposeObservable.addOnce(() => {
                         video.remove();
@@ -602,7 +602,7 @@ Texture._CreateVideoTexture = (
     samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
     settings: Partial<VideoTextureSettings> = {},
     onError?: Nullable<(message?: string, exception?: any) => void>,
-    format: number = Constants.TEXTUREFORMAT_RGBA
+    format: number = TEXTUREFORMAT_RGBA
 ) => {
     return new VideoTexture(name, src, scene, generateMipMaps, invertY, samplingMode, settings, onError, format);
 };

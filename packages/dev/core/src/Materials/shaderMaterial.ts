@@ -19,7 +19,7 @@ import type { TextureSampler } from "./Textures/textureSampler";
 import type { StorageBuffer } from "../Buffers/storageBuffer";
 import { PushMaterial } from "./pushMaterial";
 import { EngineStore } from "../Engines/engineStore";
-import { Constants } from "../Engines/constants";
+import { SnippetUrl } from "../Engines/constants";
 import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
 import type { WebGPUEngine } from "core/Engines/webgpuEngine";
 
@@ -147,7 +147,7 @@ export class ShaderMaterial extends PushMaterial {
     public _materialHelperNeedsPreviousMatrices = false;
 
     /** Define the Url to load snippets */
-    public static SnippetUrl = Constants.SnippetUrl;
+    public static SnippetUrl = SnippetUrl;
 
     /** Snippet ID if the material was created from the snippet server */
     public snippetId: string;

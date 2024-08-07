@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
-import { Constants } from "../constants";
+import * as Constants from "../constants";
 import * as WebGPUConstants from "./webgpuConstants";
 import type { Effect } from "../../Materials/effect";
 import type { InternalTexture } from "../../Materials/Textures/internalTexture";

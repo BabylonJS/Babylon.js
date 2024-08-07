@@ -30,7 +30,14 @@ import { Material } from "../Materials/material";
 import { MultiMaterial } from "../Materials/multiMaterial";
 import { SceneLoaderFlags } from "../Loading/sceneLoaderFlags";
 import type { Skeleton } from "../Bones/skeleton";
-import { Constants } from "../Engines/constants";
+import {
+    DELAYLOADSTATE_NONE,
+    MATERIAL_CounterClockWiseSideOrientation,
+    MATERIAL_ClockWiseSideOrientation,
+    DELAYLOADSTATE_NOTLOADED,
+    DELAYLOADSTATE_LOADING,
+    DELAYLOADSTATE_LOADED,
+} from "../Engines/constants";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { Logger } from "../Misc/logger";
 import { GetClass, RegisterClass } from "../Misc/typeStore";
@@ -384,7 +391,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Gets the delay loading state of the mesh (when delay loading is turned on)
      * @see https://doc.babylonjs.com/features/featuresDeepDive/importers/incrementalLoading
      */
-    public delayLoadState = Constants.DELAYLOADSTATE_NONE;
+    public delayLoadState = DELAYLOADSTATE_NONE;
 
     /**
      * Gets the list of instances created from this mesh
@@ -458,8 +465,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         this._internalMeshDataInfo._sideOrientation = value;
 
         this._internalAbstractMeshDataInfo._sideOrientationHint =
-            (this._scene.useRightHandedSystem && value === Constants.MATERIAL_CounterClockWiseSideOrientation) ||
-            (!this._scene.useRightHandedSystem && value === Constants.MATERIAL_ClockWiseSideOrientation);
+            (this._scene.useRightHandedSystem && value === MATERIAL_CounterClockWiseSideOrientation) ||
+            (!this._scene.useRightHandedSystem && value === MATERIAL_ClockWiseSideOrientation);
     }
 
     /**
@@ -761,9 +768,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         scene = this.getScene();
 
         if (this._scene.useRightHandedSystem) {
-            this.sideOrientation = Constants.MATERIAL_ClockWiseSideOrientation;
+            this.sideOrientation = MATERIAL_ClockWiseSideOrientation;
         } else {
-            this.sideOrientation = Constants.MATERIAL_CounterClockWiseSideOrientation;
+            this.sideOrientation = MATERIAL_CounterClockWiseSideOrientation;
         }
 
         this._onBeforeDraw = (isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => {
@@ -1043,12 +1050,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             if (compareSign * level.distanceOrScreenCoverage < compareSign * compareValue) {
                 if (level.mesh) {
-                    if (level.mesh.delayLoadState === Constants.DELAYLOADSTATE_NOTLOADED) {
+                    if (level.mesh.delayLoadState === DELAYLOADSTATE_NOTLOADED) {
                         level.mesh._checkDelayState();
                         return this;
                     }
 
-                    if (level.mesh.delayLoadState === Constants.DELAYLOADSTATE_LOADING) {
+                    if (level.mesh.delayLoadState === DELAYLOADSTATE_LOADING) {
                         return this;
                     }
 
@@ -1281,7 +1288,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns true if all associated assets are ready (material, textures, shaders)
      */
     public override isReady(completeCheck = false, forceInstanceSupport = false): boolean {
-        if (this.delayLoadState === Constants.DELAYLOADSTATE_LOADING) {
+        if (this.delayLoadState === DELAYLOADSTATE_LOADING) {
             return false;
         }
 
@@ -2722,8 +2729,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const scene = this.getScene();
         if (this._geometry) {
             this._geometry.load(scene);
-        } else if (this.delayLoadState === Constants.DELAYLOADSTATE_NOTLOADED) {
-            this.delayLoadState = Constants.DELAYLOADSTATE_LOADING;
+        } else if (this.delayLoadState === DELAYLOADSTATE_NOTLOADED) {
+            this.delayLoadState = DELAYLOADSTATE_LOADING;
 
             this._queueLoad(scene);
         }
@@ -2749,7 +2756,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     instance._syncSubMeshes();
                 });
 
-                this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
+                this.delayLoadState = DELAYLOADSTATE_LOADED;
                 scene.removePendingData(this);
             },
             () => {},
@@ -2766,7 +2773,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns true if the mesh is in the frustum planes
      */
     public override isInFrustum(frustumPlanes: Plane[]): boolean {
-        if (this.delayLoadState === Constants.DELAYLOADSTATE_LOADING) {
+        if (this.delayLoadState === DELAYLOADSTATE_LOADING) {
             return false;
         }
 
@@ -3156,8 +3163,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         let normalsCount = 0;
 
         // Decide if normals should be flipped
-        const flipNormalGeneration =
-            this.sideOrientation === (this._scene.useRightHandedSystem ? Constants.MATERIAL_CounterClockWiseSideOrientation : Constants.MATERIAL_ClockWiseSideOrientation);
+        const flipNormalGeneration = this.sideOrientation === (this._scene.useRightHandedSystem ? MATERIAL_CounterClockWiseSideOrientation : MATERIAL_ClockWiseSideOrientation);
 
         // Generate new normals
         for (let index = 0; index < indices.length; index += 3) {
@@ -4187,7 +4193,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         mesh.hasVertexAlpha = parsedMesh.hasVertexAlpha;
 
         if (parsedMesh.delayLoadingFile) {
-            mesh.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
+            mesh.delayLoadState = DELAYLOADSTATE_NOTLOADED;
             mesh.delayLoadingFile = rootUrl + parsedMesh.delayLoadingFile;
             mesh.buildBoundingInfo(Vector3.FromArray(parsedMesh.boundingBoxMinimum), Vector3.FromArray(parsedMesh.boundingBoxMaximum));
 

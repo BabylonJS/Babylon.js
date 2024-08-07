@@ -44,7 +44,7 @@ import { WebGL2ShaderProcessor } from "./WebGL/webGL2ShaderProcessors";
 import { WebGLDataBuffer } from "../Meshes/WebGL/webGLDataBuffer";
 import { CeilingPOT, FloorPOT, GetExponentOfTwo, NearestPOT } from "../Misc/tools.functions";
 import { AbstractEngine, QueueNewFrame } from "./abstractEngine";
-import { Constants } from "./constants";
+import * as Constants from "./constants";
 import { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";

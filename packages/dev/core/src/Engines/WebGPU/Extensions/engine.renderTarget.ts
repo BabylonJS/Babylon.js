@@ -1,7 +1,15 @@
 import { InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
 import type { RenderTargetCreationOptions, DepthTextureCreationOptions, TextureSize } from "../../../Materials/Textures/textureCreationOptions";
 import type { Nullable } from "../../../types";
-import { Constants } from "../../constants";
+import {
+    TEXTURE_TRILINEAR_SAMPLINGMODE,
+    TEXTUREFORMAT_DEPTH24_STENCIL8,
+    TEXTUREFORMAT_DEPTH32_FLOAT,
+    TEXTURE_BILINEAR_SAMPLINGMODE,
+    TEXTURE_NEAREST_SAMPLINGMODE,
+    TEXTURETYPE_FLOAT,
+    TEXTURE_CLAMP_ADDRESSMODE,
+} from "../../constants";
 import type { RenderTargetWrapper } from "../../renderTargetWrapper";
 import { WebGPUEngine } from "../../webgpuEngine";
 import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
@@ -62,7 +70,7 @@ WebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSize, 
         fullOptions.generateMipMaps = options.generateMipMaps;
         fullOptions.generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
         fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && options.generateStencilBuffer;
-        fullOptions.samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
+        fullOptions.samplingMode = options.samplingMode === undefined ? TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
         fullOptions.creationFlags = options.creationFlags ?? 0;
         fullOptions.noColorAttachment = !!options.noColorAttachment;
         fullOptions.samples = options.samples;
@@ -71,7 +79,7 @@ WebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSize, 
         fullOptions.generateMipMaps = <boolean>options;
         fullOptions.generateDepthBuffer = true;
         fullOptions.generateStencilBuffer = false;
-        fullOptions.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
+        fullOptions.samplingMode = TEXTURE_TRILINEAR_SAMPLINGMODE;
         fullOptions.creationFlags = 0;
         fullOptions.noColorAttachment = false;
     }
@@ -91,7 +99,7 @@ WebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSize, 
             false, // force false as filtering is not supported for depth textures
             rtWrapper._generateStencilBuffer,
             rtWrapper.samples,
-            fullOptions.generateStencilBuffer ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT,
+            fullOptions.generateStencilBuffer ? TEXTUREFORMAT_DEPTH24_STENCIL8 : TEXTUREFORMAT_DEPTH32_FLOAT,
             fullOptions.label ? fullOptions.label + "-DepthStencil" : undefined
         );
     }
@@ -121,7 +129,7 @@ WebGPUEngine.prototype._createDepthStencilTexture = function (size: TextureSize,
         comparisonFunction: 0,
         generateStencil: false,
         samples: 1,
-        depthTextureFormat: options.generateStencil ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT,
+        depthTextureFormat: options.generateStencil ? TEXTUREFORMAT_DEPTH24_STENCIL8 : TEXTUREFORMAT_DEPTH32_FLOAT,
         ...options,
     };
 
@@ -171,11 +179,11 @@ WebGPUEngine.prototype._setupDepthStencilTexture = function (
     internalTexture.isReady = true;
     internalTexture.samples = samples;
     internalTexture.generateMipMaps = false;
-    internalTexture.samplingMode = bilinearFiltering ? Constants.TEXTURE_BILINEAR_SAMPLINGMODE : Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-    internalTexture.type = Constants.TEXTURETYPE_FLOAT;
+    internalTexture.samplingMode = bilinearFiltering ? TEXTURE_BILINEAR_SAMPLINGMODE : TEXTURE_NEAREST_SAMPLINGMODE;
+    internalTexture.type = TEXTURETYPE_FLOAT;
     internalTexture._comparisonFunction = comparisonFunction;
-    internalTexture._cachedWrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
-    internalTexture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+    internalTexture._cachedWrapU = TEXTURE_CLAMP_ADDRESSMODE;
+    internalTexture._cachedWrapV = TEXTURE_CLAMP_ADDRESSMODE;
 };
 
 WebGPUEngine.prototype.updateRenderTargetTextureSampleCount = function (rtWrapper: Nullable<RenderTargetWrapper>, samples: number): number {

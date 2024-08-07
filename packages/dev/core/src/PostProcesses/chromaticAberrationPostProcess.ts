@@ -5,7 +5,7 @@ import { PostProcess } from "./postProcess";
 import type { Effect } from "../Materials/effect";
 import type { Camera } from "../Cameras/camera";
 import type { AbstractEngine } from "../Engines/abstractEngine";
-import { Constants } from "../Engines/constants";
+import { TEXTURETYPE_UNSIGNED_INT } from "../Engines/constants";
 
 import "../Shaders/chromaticAberration.fragment";
 import { RegisterClass } from "../Misc/typeStore";
@@ -80,7 +80,7 @@ export class ChromaticAberrationPostProcess extends PostProcess {
         samplingMode?: number,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        textureType: number = TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false
     ) {
         super(

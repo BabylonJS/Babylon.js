@@ -1,9 +1,13 @@
 import type { DeepImmutable } from "../types";
 import { ArrayTools } from "../Misc/arrayTools";
 import type { Matrix } from "../Maths/math.vector";
-import { TmpVectors } from "../Maths/math.vector";
-import { Vector3 } from "../Maths/math.vector";
-import { Constants } from "../Engines/constants";
+import { TmpVectors, Vector3 } from "../Maths/math.vector";
+import {
+    MESHES_CULLINGSTRATEGY_STANDARD,
+    MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION,
+    MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY,
+    MESHES_CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY,
+} from "../Engines/constants";
 import { BoundingBox } from "./boundingBox";
 import { BoundingSphere } from "./boundingSphere";
 import type { Plane } from "../Maths/math.plane";
@@ -199,9 +203,8 @@ export class BoundingInfo implements ICullable {
      * * BABYLON.AbstractMesh.CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY can be faster if always visible @see https://doc.babylonjs.com/typedoc/classes/BABYLON.AbstractMesh#CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY
      * @returns true if the bounding info is in the frustum planes
      */
-    public isInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>, strategy: number = Constants.MESHES_CULLINGSTRATEGY_STANDARD): boolean {
-        const inclusionTest =
-            strategy === Constants.MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION || strategy === Constants.MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY;
+    public isInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>, strategy: number = MESHES_CULLINGSTRATEGY_STANDARD): boolean {
+        const inclusionTest = strategy === MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION || strategy === MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY;
         if (inclusionTest) {
             if (this.boundingSphere.isCenterInFrustum(frustumPlanes)) {
                 return true;
@@ -212,8 +215,7 @@ export class BoundingInfo implements ICullable {
             return false;
         }
 
-        const bSphereOnlyTest =
-            strategy === Constants.MESHES_CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY || strategy === Constants.MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY;
+        const bSphereOnlyTest = strategy === MESHES_CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY || strategy === MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY;
         if (bSphereOnlyTest) {
             return true;
         }

@@ -3,7 +3,7 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { TriPlanarBlock } from "./triPlanarBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
 import { ShaderLanguage } from "../../../Materials/shaderLanguage";
-import { Constants } from "../../../Engines/constants";
+import { AUTOSAMPLERSUFFIX } from "../../../Engines/constants";
 
 /**
  * Block used to read a texture with triplanar mapping (see https://iquilezles.org/articles/biplanar/)
@@ -35,7 +35,7 @@ export class BiPlanarBlock extends TriPlanarBlock {
 
     private _getTextureGrad(state: NodeMaterialBuildState, samplerName: string) {
         if (state.shaderLanguage === ShaderLanguage.WGSL) {
-            return `textureSampleGrad(${samplerName},${samplerName + Constants.AUTOSAMPLERSUFFIX}`;
+            return `textureSampleGrad(${samplerName},${samplerName + AUTOSAMPLERSUFFIX}`;
         }
 
         return `textureGrad(${samplerName}`;

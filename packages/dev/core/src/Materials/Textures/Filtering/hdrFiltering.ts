@@ -3,7 +3,16 @@ import { Scalar } from "../../../Maths/math.scalar";
 import type { BaseTexture } from "../baseTexture";
 import type { AbstractEngine } from "../../../Engines/abstractEngine";
 import type { Effect } from "../../../Materials/effect";
-import { Constants } from "../../../Engines/constants";
+import {
+    TEXTURE_FILTERING_QUALITY_OFFLINE,
+    TEXTURETYPE_UNSIGNED_BYTE,
+    TEXTURETYPE_HALF_FLOAT,
+    TEXTURETYPE_FLOAT,
+    TEXTUREFORMAT_RGBA,
+    TEXTURE_NEAREST_SAMPLINGMODE,
+    TEXTURE_CLAMP_ADDRESSMODE,
+    TEXTURE_TRILINEAR_SAMPLINGMODE,
+} from "../../../Engines/constants";
 import { EffectWrapper, EffectRenderer } from "../../../Materials/effectRenderer";
 import type { Nullable } from "../../../types";
 import type { RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
@@ -43,7 +52,7 @@ export class HDRFiltering {
      * Quality switch for prefiltering. Should be set to `Constants.TEXTURE_FILTERING_QUALITY_OFFLINE` unless
      * you care about baking speed.
      */
-    public quality: number = Constants.TEXTURE_FILTERING_QUALITY_OFFLINE;
+    public quality: number = TEXTURE_FILTERING_QUALITY_OFFLINE;
 
     /**
      * Scales pixel intensity for the input HDR map.
@@ -64,25 +73,25 @@ export class HDRFiltering {
     }
 
     private _createRenderTarget(size: number): RenderTargetWrapper {
-        let textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        let textureType = TEXTURETYPE_UNSIGNED_BYTE;
         if (this._engine.getCaps().textureHalfFloatRender) {
-            textureType = Constants.TEXTURETYPE_HALF_FLOAT;
+            textureType = TEXTURETYPE_HALF_FLOAT;
         } else if (this._engine.getCaps().textureFloatRender) {
-            textureType = Constants.TEXTURETYPE_FLOAT;
+            textureType = TEXTURETYPE_FLOAT;
         }
 
         const rtWrapper = this._engine.createRenderTargetCubeTexture(size, {
-            format: Constants.TEXTUREFORMAT_RGBA,
+            format: TEXTUREFORMAT_RGBA,
             type: textureType,
             createMipMaps: true,
             generateMipMaps: false,
             generateDepthBuffer: false,
             generateStencilBuffer: false,
-            samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+            samplingMode: TEXTURE_NEAREST_SAMPLINGMODE,
         });
-        this._engine.updateTextureWrappingMode(rtWrapper.texture!, Constants.TEXTURE_CLAMP_ADDRESSMODE, Constants.TEXTURE_CLAMP_ADDRESSMODE, Constants.TEXTURE_CLAMP_ADDRESSMODE);
+        this._engine.updateTextureWrappingMode(rtWrapper.texture!, TEXTURE_CLAMP_ADDRESSMODE, TEXTURE_CLAMP_ADDRESSMODE, TEXTURE_CLAMP_ADDRESSMODE);
 
-        this._engine.updateTextureSamplingMode(Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, rtWrapper.texture!, true);
+        this._engine.updateTextureSamplingMode(TEXTURE_TRILINEAR_SAMPLINGMODE, rtWrapper.texture!, true);
 
         return rtWrapper;
     }
@@ -99,7 +108,7 @@ export class HDRFiltering {
         const intTexture = texture.getInternalTexture();
         if (intTexture) {
             // Just in case generate fresh clean mips.
-            this._engine.updateTextureSamplingMode(Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, intTexture, true);
+            this._engine.updateTextureSamplingMode(TEXTURE_TRILINEAR_SAMPLINGMODE, intTexture, true);
         }
 
         this._effectRenderer.applyEffectWrapper(this._effectWrapper);

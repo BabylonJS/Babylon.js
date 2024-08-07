@@ -5,7 +5,16 @@ import { Observable } from "../Misc/observable";
 import { Vector2 } from "../Maths/math.vector";
 import type { Camera } from "../Cameras/camera";
 import { Effect } from "../Materials/effect";
-import { Constants } from "../Engines/constants";
+import {
+    ALPHA_DISABLE,
+    SCALEMODE_FLOOR,
+    TEXTURE_NEAREST_SAMPLINGMODE,
+    TEXTURETYPE_UNSIGNED_INT,
+    TEXTUREFORMAT_RGBA,
+    TEXTURE_NEAREST_LINEAR,
+    TEXTURE_NEAREST_NEAREST,
+    TEXTURE_LINEAR_LINEAR,
+} from "../Engines/constants";
 import type { RenderTargetCreationOptions } from "../Materials/Textures/textureCreationOptions";
 import "../Shaders/postprocess.vertex";
 import type { IInspectable } from "../Misc/iInspectable";
@@ -296,7 +305,7 @@ export class PostProcess {
      * Type of alpha mode to use when performing the post process (default: Engine.ALPHA_DISABLE)
      */
     @serialize()
-    public alphaMode = Constants.ALPHA_DISABLE;
+    public alphaMode = ALPHA_DISABLE;
     /**
      * Sets the setAlphaBlendConstants of the babylon engine
      */
@@ -337,7 +346,7 @@ export class PostProcess {
      *
      */
     @serialize()
-    public scaleMode = Constants.SCALEMODE_FLOOR;
+    public scaleMode = SCALEMODE_FLOOR;
     /**
      * Force textures to be a power of two (default: false)
      */
@@ -616,15 +625,15 @@ export class PostProcess {
         samplers?: Nullable<string[]>,
         _size?: number | PostProcessOptions,
         camera?: Nullable<Camera>,
-        samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+        samplingMode: number = TEXTURE_NEAREST_SAMPLINGMODE,
         engine?: AbstractEngine,
         reusable?: boolean,
         defines: Nullable<string> = null,
-        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        textureType: number = TEXTURETYPE_UNSIGNED_INT,
         vertexUrl: string = "postprocess",
         indexParameters?: any,
         blockCompilation = false,
-        textureFormat = Constants.TEXTUREFORMAT_RGBA,
+        textureFormat = TEXTUREFORMAT_RGBA,
         shaderLanguage = ShaderLanguage.GLSL
     ) {
         this.name = name;
@@ -636,15 +645,15 @@ export class PostProcess {
             samplers = options.samplers ?? null;
             size = options.size ?? 1;
             camera = options.camera ?? null;
-            samplingMode = options.samplingMode ?? Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+            samplingMode = options.samplingMode ?? TEXTURE_NEAREST_SAMPLINGMODE;
             engine = options.engine;
             reusable = options.reusable;
             defines = options.defines ?? null;
-            textureType = options.textureType ?? Constants.TEXTURETYPE_UNSIGNED_INT;
+            textureType = options.textureType ?? TEXTURETYPE_UNSIGNED_INT;
             vertexUrl = options.vertexUrl ?? "postprocess";
             indexParameters = options.indexParameters;
             blockCompilation = options.blockCompilation ?? false;
-            textureFormat = options.textureFormat ?? Constants.TEXTUREFORMAT_RGBA;
+            textureFormat = options.textureFormat ?? TEXTUREFORMAT_RGBA;
             shaderLanguage = options.shaderLanguage ?? ShaderLanguage.GLSL;
             uniformBuffers = options.uniformBuffers ?? null;
         } else if (_size) {
@@ -669,7 +678,7 @@ export class PostProcess {
         }
 
         this._options = size;
-        this.renderTargetSamplingMode = samplingMode ? samplingMode : Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        this.renderTargetSamplingMode = samplingMode ? samplingMode : TEXTURE_NEAREST_SAMPLINGMODE;
         this._reusable = reusable || false;
         this._textureType = textureType;
         this._textureFormat = textureFormat;
@@ -953,9 +962,9 @@ export class PostProcess {
         let desiredHeight = (<PostProcessOptions>this._options).height || requiredHeight;
 
         const needMipMaps =
-            this.renderTargetSamplingMode !== Constants.TEXTURE_NEAREST_LINEAR &&
-            this.renderTargetSamplingMode !== Constants.TEXTURE_NEAREST_NEAREST &&
-            this.renderTargetSamplingMode !== Constants.TEXTURE_LINEAR_LINEAR;
+            this.renderTargetSamplingMode !== TEXTURE_NEAREST_LINEAR &&
+            this.renderTargetSamplingMode !== TEXTURE_NEAREST_NEAREST &&
+            this.renderTargetSamplingMode !== TEXTURE_LINEAR_LINEAR;
 
         let target: Nullable<RenderTargetWrapper> = null;
 
@@ -1011,7 +1020,7 @@ export class PostProcess {
         this.onActivateObservable.notifyObservers(camera);
 
         // Clear
-        if (this.autoClear && (this.alphaMode === Constants.ALPHA_DISABLE || this.forceAutoClearInAlphaMode)) {
+        if (this.autoClear && (this.alphaMode === ALPHA_DISABLE || this.forceAutoClearInAlphaMode)) {
             this._engine.clear(this.clearColor ? this.clearColor : scene.clearColor, scene._allowPostProcessClearColor, true, true);
         }
 

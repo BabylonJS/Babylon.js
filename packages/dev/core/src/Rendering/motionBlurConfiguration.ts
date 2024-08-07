@@ -1,4 +1,4 @@
-import { Constants } from "../Engines/constants";
+import { PREPASS_VELOCITY_TEXTURE_TYPE } from "../Engines/constants";
 import type { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 
 /**
@@ -19,5 +19,5 @@ export class MotionBlurConfiguration implements PrePassEffectConfiguration {
     /**
      * Textures that should be present in the MRT for this effect to work
      */
-    public readonly texturesRequired: number[] = [Constants.PREPASS_VELOCITY_TEXTURE_TYPE];
+    public readonly texturesRequired: number[] = [PREPASS_VELOCITY_TEXTURE_TYPE];
 }

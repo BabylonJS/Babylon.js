@@ -1,4 +1,4 @@
-import { Constants } from "../../Engines/constants";
+import { TEXTURE_WRAP_ADDRESSMODE, TEXTURE_BILINEAR_SAMPLINGMODE } from "../../Engines/constants";
 import type { Nullable } from "../../types";
 
 /**
@@ -128,11 +128,11 @@ export class TextureSampler {
      * @returns the current sampler instance
      */
     public setParameters(
-        wrapU = Constants.TEXTURE_WRAP_ADDRESSMODE,
-        wrapV = Constants.TEXTURE_WRAP_ADDRESSMODE,
-        wrapR = Constants.TEXTURE_WRAP_ADDRESSMODE,
+        wrapU = TEXTURE_WRAP_ADDRESSMODE,
+        wrapV = TEXTURE_WRAP_ADDRESSMODE,
+        wrapR = TEXTURE_WRAP_ADDRESSMODE,
         anisotropicFilteringLevel = 1,
-        samplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+        samplingMode = TEXTURE_BILINEAR_SAMPLINGMODE,
         comparisonFunction = 0
     ): TextureSampler {
         this._cachedWrapU = wrapU;

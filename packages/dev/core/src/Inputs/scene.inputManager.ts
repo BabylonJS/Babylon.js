@@ -5,7 +5,21 @@ import { AbstractActionManager } from "../Actions/abstractActionManager";
 import { PickingInfo } from "../Collisions/pickingInfo";
 import { Vector2, Matrix } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
-import { Constants } from "../Engines/constants";
+import {
+    ACTION_OnPickDownTrigger,
+    ACTION_OnLeftPickTrigger,
+    ACTION_OnCenterPickTrigger,
+    ACTION_OnRightPickTrigger,
+    ACTION_OnLongPressTrigger,
+    ACTION_OnPickUpTrigger,
+    ACTION_OnPickTrigger,
+    ACTION_OnDoublePickTrigger,
+    ACTION_OnPickOutTrigger,
+    ACTION_OnKeyDownTrigger,
+    ACTION_OnKeyUpTrigger,
+    ACTION_OnPointerOutTrigger,
+    ACTION_OnPointerOverTrigger,
+} from "../Engines/constants";
 import { ActionEvent } from "../Actions/actionEvent";
 import { KeyboardEventTypes, KeyboardInfoPre, KeyboardInfo } from "../Events/keyboardEvents";
 import { DeviceType, PointerInput } from "../DeviceInput/InputDevices/deviceEnums";
@@ -379,21 +393,21 @@ export class InputManager {
             const actionManager = pickResult.pickedMesh._getActionManagerForTrigger();
             if (actionManager) {
                 if (actionManager.hasPickTriggers) {
-                    actionManager.processTrigger(Constants.ACTION_OnPickDownTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt, pickResult));
+                    actionManager.processTrigger(ACTION_OnPickDownTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt, pickResult));
                     switch (evt.button) {
                         case 0:
-                            actionManager.processTrigger(Constants.ACTION_OnLeftPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt, pickResult));
+                            actionManager.processTrigger(ACTION_OnLeftPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt, pickResult));
                             break;
                         case 1:
-                            actionManager.processTrigger(Constants.ACTION_OnCenterPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt, pickResult));
+                            actionManager.processTrigger(ACTION_OnCenterPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt, pickResult));
                             break;
                         case 2:
-                            actionManager.processTrigger(Constants.ACTION_OnRightPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt, pickResult));
+                            actionManager.processTrigger(ACTION_OnRightPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt, pickResult));
                             break;
                     }
                 }
 
-                if (actionManager.hasSpecificTrigger(Constants.ACTION_OnLongPressTrigger)) {
+                if (actionManager.hasSpecificTrigger(ACTION_OnLongPressTrigger)) {
                     window.setTimeout(() => {
                         const pickResult = scene.pick(
                             this._unTranslatedPointerX,
@@ -404,7 +418,7 @@ export class InputManager {
                                         mesh.isVisible &&
                                         mesh.isReady() &&
                                         mesh.actionManager &&
-                                        mesh.actionManager.hasSpecificTrigger(Constants.ACTION_OnLongPressTrigger) &&
+                                        mesh.actionManager.hasSpecificTrigger(ACTION_OnLongPressTrigger) &&
                                         mesh === this._pickedDownMesh)
                                 ),
                             false,
@@ -414,7 +428,7 @@ export class InputManager {
                         if (pickResult?.pickedMesh && actionManager) {
                             if (this._totalPointersPressed !== 0 && Date.now() - this._startingPointerTime > InputManager.LongPressDelay && !this._isPointerSwiping()) {
                                 this._startingPointerTime = 0;
-                                actionManager.processTrigger(Constants.ACTION_OnLongPressTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
+                                actionManager.processTrigger(ACTION_OnLongPressTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                             }
                         }
                     }, InputManager.LongPressDelay);
@@ -495,15 +509,15 @@ export class InputManager {
             }
             const actionManager = pickResult.pickedMesh._getActionManagerForTrigger();
             if (actionManager && !clickInfo.ignore) {
-                actionManager.processTrigger(Constants.ACTION_OnPickUpTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt, pickResult));
+                actionManager.processTrigger(ACTION_OnPickUpTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt, pickResult));
 
                 if (!clickInfo.hasSwiped && clickInfo.singleClick) {
-                    actionManager.processTrigger(Constants.ACTION_OnPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt, pickResult));
+                    actionManager.processTrigger(ACTION_OnPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt, pickResult));
                 }
 
-                const doubleClickActionManager = pickResult.pickedMesh._getActionManagerForTrigger(Constants.ACTION_OnDoublePickTrigger);
+                const doubleClickActionManager = pickResult.pickedMesh._getActionManagerForTrigger(ACTION_OnDoublePickTrigger);
                 if (clickInfo.doubleClick && doubleClickActionManager) {
-                    doubleClickActionManager.processTrigger(Constants.ACTION_OnDoublePickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt, pickResult));
+                    doubleClickActionManager.processTrigger(ACTION_OnDoublePickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt, pickResult));
                 }
             }
         } else {
@@ -515,9 +529,9 @@ export class InputManager {
         }
 
         if (this._pickedDownMesh && this._pickedDownMesh !== this._pickedUpMesh) {
-            const pickedDownActionManager = this._pickedDownMesh._getActionManagerForTrigger(Constants.ACTION_OnPickOutTrigger);
+            const pickedDownActionManager = this._pickedDownMesh._getActionManagerForTrigger(ACTION_OnPickOutTrigger);
             if (pickedDownActionManager) {
-                pickedDownActionManager.processTrigger(Constants.ACTION_OnPickOutTrigger, ActionEvent.CreateNew(this._pickedDownMesh, evt));
+                pickedDownActionManager.processTrigger(ACTION_OnPickOutTrigger, ActionEvent.CreateNew(this._pickedDownMesh, evt));
             }
         }
 
@@ -663,10 +677,10 @@ export class InputManager {
                     if (!checkSingleClickImmediately) {
                         checkSingleClickImmediately = !obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) && !obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
 
-                        if (checkSingleClickImmediately && !AbstractActionManager.HasSpecificTrigger(Constants.ACTION_OnDoublePickTrigger)) {
+                        if (checkSingleClickImmediately && !AbstractActionManager.HasSpecificTrigger(ACTION_OnDoublePickTrigger)) {
                             act = this._initActionManager(act, clickInfo);
                             if (act) {
-                                checkSingleClickImmediately = !act.hasSpecificTrigger(Constants.ACTION_OnDoublePickTrigger);
+                                checkSingleClickImmediately = !act.hasSpecificTrigger(ACTION_OnDoublePickTrigger);
                             }
                         }
                     }
@@ -695,10 +709,10 @@ export class InputManager {
                     }
 
                     let checkDoubleClick = obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) || obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
-                    if (!checkDoubleClick && AbstractActionManager.HasSpecificTrigger(Constants.ACTION_OnDoublePickTrigger)) {
+                    if (!checkDoubleClick && AbstractActionManager.HasSpecificTrigger(ACTION_OnDoublePickTrigger)) {
                         act = this._initActionManager(act, clickInfo);
                         if (act) {
-                            checkDoubleClick = act.hasSpecificTrigger(Constants.ACTION_OnDoublePickTrigger);
+                            checkDoubleClick = act.hasSpecificTrigger(ACTION_OnDoublePickTrigger);
                         }
                     }
                     if (checkDoubleClick) {
@@ -1013,7 +1027,7 @@ export class InputManager {
             }
 
             if (scene.actionManager) {
-                scene.actionManager.processTrigger(Constants.ACTION_OnKeyDownTrigger, ActionEvent.CreateNewFromScene(scene, evt));
+                scene.actionManager.processTrigger(ACTION_OnKeyDownTrigger, ActionEvent.CreateNewFromScene(scene, evt));
             }
         };
 
@@ -1033,7 +1047,7 @@ export class InputManager {
             }
 
             if (scene.actionManager) {
-                scene.actionManager.processTrigger(Constants.ACTION_OnKeyUpTrigger, ActionEvent.CreateNewFromScene(scene, evt));
+                scene.actionManager.processTrigger(ACTION_OnKeyUpTrigger, ActionEvent.CreateNewFromScene(scene, evt));
             }
         };
 
@@ -1134,9 +1148,9 @@ export class InputManager {
 
         let actionManager: Nullable<AbstractActionManager>;
         if (underPointerMesh) {
-            actionManager = underPointerMesh._getActionManagerForTrigger(Constants.ACTION_OnPointerOutTrigger);
+            actionManager = underPointerMesh._getActionManagerForTrigger(ACTION_OnPointerOutTrigger);
             if (actionManager) {
-                actionManager.processTrigger(Constants.ACTION_OnPointerOutTrigger, ActionEvent.CreateNew(underPointerMesh, evt, { pointerId }));
+                actionManager.processTrigger(ACTION_OnPointerOutTrigger, ActionEvent.CreateNew(underPointerMesh, evt, { pointerId }));
             }
         }
 
@@ -1144,9 +1158,9 @@ export class InputManager {
             this._meshUnderPointerId[pointerId] = mesh;
             this._pointerOverMesh = mesh;
 
-            actionManager = mesh._getActionManagerForTrigger(Constants.ACTION_OnPointerOverTrigger);
+            actionManager = mesh._getActionManagerForTrigger(ACTION_OnPointerOverTrigger);
             if (actionManager) {
-                actionManager.processTrigger(Constants.ACTION_OnPointerOverTrigger, ActionEvent.CreateNew(mesh, evt, { pointerId, pickResult }));
+                actionManager.processTrigger(ACTION_OnPointerOverTrigger, ActionEvent.CreateNew(mesh, evt, { pointerId, pickResult }));
             }
         } else {
             delete this._meshUnderPointerId[pointerId];

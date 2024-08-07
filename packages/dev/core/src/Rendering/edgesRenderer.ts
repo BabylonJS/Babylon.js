@@ -11,7 +11,7 @@ import type { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { ShaderMaterial } from "../Materials/shaderMaterial";
 import { Camera } from "../Cameras/camera";
-import { Constants } from "../Engines/constants";
+import { ALPHA_COMBINE, ALPHA_DISABLE } from "../Engines/constants";
 import type { Node } from "../node";
 
 import "../Shaders/line.fragment";
@@ -977,9 +977,9 @@ export class EdgesRenderer implements IEdgesRenderer {
         this._lineShader._preBind();
 
         if (this._source.edgesColor.a !== 1) {
-            engine.setAlphaMode(Constants.ALPHA_COMBINE);
+            engine.setAlphaMode(ALPHA_COMBINE);
         } else {
-            engine.setAlphaMode(Constants.ALPHA_DISABLE);
+            engine.setAlphaMode(ALPHA_DISABLE);
         }
 
         // VBOs

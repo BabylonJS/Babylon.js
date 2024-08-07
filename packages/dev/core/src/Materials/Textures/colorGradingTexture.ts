@@ -3,7 +3,14 @@ import type { Scene } from "../../scene";
 import { Matrix } from "../../Maths/math.vector";
 import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
-import { Constants } from "../../Engines/constants";
+import {
+    DELAYLOADSTATE_NOTLOADED,
+    TEXTUREFORMAT_RGBA,
+    TEXTURE_BILINEAR_SAMPLINGMODE,
+    TEXTURETYPE_UNSIGNED_INT,
+    TEXTURE_CLAMP_ADDRESSMODE,
+    DELAYLOADSTATE_LOADED,
+} from "../../Engines/constants";
 import { RegisterClass } from "../../Misc/typeStore";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 
@@ -59,7 +66,7 @@ export class ColorGradingTexture extends BaseTexture {
                 if (!scene.useDelayedTextureLoading) {
                     this._loadTexture();
                 } else {
-                    this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
+                    this.delayLoadState = DELAYLOADSTATE_NOTLOADED;
                 }
             } else {
                 this._loadTexture();
@@ -94,30 +101,9 @@ export class ColorGradingTexture extends BaseTexture {
         const engine = this._getEngine()!;
         let texture: InternalTexture;
         if (!engine._features.support3DTextures) {
-            texture = engine.createRawTexture(
-                null,
-                1,
-                1,
-                Constants.TEXTUREFORMAT_RGBA,
-                false,
-                false,
-                Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
-                null,
-                Constants.TEXTURETYPE_UNSIGNED_INT
-            );
+            texture = engine.createRawTexture(null, 1, 1, TEXTUREFORMAT_RGBA, false, false, TEXTURE_BILINEAR_SAMPLINGMODE, null, TEXTURETYPE_UNSIGNED_INT);
         } else {
-            texture = engine.createRawTexture3D(
-                null,
-                1,
-                1,
-                1,
-                Constants.TEXTUREFORMAT_RGBA,
-                false,
-                false,
-                Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
-                null,
-                Constants.TEXTURETYPE_UNSIGNED_INT
-            );
+            texture = engine.createRawTexture3D(null, 1, 1, 1, TEXTUREFORMAT_RGBA, false, false, TEXTURE_BILINEAR_SAMPLINGMODE, null, TEXTURETYPE_UNSIGNED_INT);
         }
 
         this._texture = texture;
@@ -125,9 +111,9 @@ export class ColorGradingTexture extends BaseTexture {
 
         this.isCube = false;
         this.is3D = engine._features.support3DTextures;
-        this.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
-        this.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
-        this.wrapR = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+        this.wrapU = TEXTURE_CLAMP_ADDRESSMODE;
+        this.wrapV = TEXTURE_CLAMP_ADDRESSMODE;
+        this.wrapR = TEXTURE_CLAMP_ADDRESSMODE;
         this.anisotropicFilteringLevel = 1;
 
         const callback = (text: string | ArrayBuffer) => {
@@ -219,10 +205,10 @@ export class ColorGradingTexture extends BaseTexture {
 
             if (texture.is3D) {
                 texture.updateSize(size, size, size);
-                engine.updateRawTexture3D(texture, data, Constants.TEXTUREFORMAT_RGBA, false);
+                engine.updateRawTexture3D(texture, data, TEXTUREFORMAT_RGBA, false);
             } else {
                 texture.updateSize(size * size, size);
-                engine.updateRawTexture(texture, data, Constants.TEXTUREFORMAT_RGBA, false);
+                engine.updateRawTexture(texture, data, TEXTUREFORMAT_RGBA, false);
             }
 
             texture.isReady = true;
@@ -265,11 +251,11 @@ export class ColorGradingTexture extends BaseTexture {
      * Called during delayed load for textures.
      */
     public override delayLoad(): void {
-        if (this.delayLoadState !== Constants.DELAYLOADSTATE_NOTLOADED) {
+        if (this.delayLoadState !== DELAYLOADSTATE_NOTLOADED) {
             return;
         }
 
-        this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
+        this.delayLoadState = DELAYLOADSTATE_LOADED;
         this._texture = this._getFromCache(this.url, true);
 
         if (!this._texture) {

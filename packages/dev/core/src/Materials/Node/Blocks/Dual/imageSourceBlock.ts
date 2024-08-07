@@ -7,7 +7,7 @@ import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Nullable } from "../../../../types";
 import { Texture } from "../../../Textures/texture";
-import { Constants } from "../../../../Engines/constants";
+import { MATERIAL_TextureDirtyFlag } from "../../../../Engines/constants";
 import type { Effect } from "../../../effect";
 import { NodeMaterial } from "../../nodeMaterial";
 import type { Scene } from "../../../../scene";
@@ -34,7 +34,7 @@ export class ImageSourceBlock extends NodeMaterialBlock {
         const scene = texture?.getScene() ?? EngineStore.LastCreatedScene;
 
         if (!texture && scene) {
-            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+            scene.markAllMaterialsAsDirty(MATERIAL_TextureDirtyFlag, (mat) => {
                 return mat.hasTexture(this._texture!);
             });
         }
@@ -42,7 +42,7 @@ export class ImageSourceBlock extends NodeMaterialBlock {
         this._texture = texture;
 
         if (texture && scene) {
-            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+            scene.markAllMaterialsAsDirty(MATERIAL_TextureDirtyFlag, (mat) => {
                 return mat.hasTexture(texture);
             });
         }

@@ -2,7 +2,7 @@ import type { Scene } from "../../scene";
 import type { Engine } from "../../Engines/engine";
 import { Texture } from "../../Materials/Textures/texture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
-import { Constants } from "../../Engines/constants";
+import { TEXTUREFORMAT_DEPTH16, TEXTURETYPE_UNSIGNED_INT, TEXTUREFORMAT_RGBA, TEXTURE_2D, TEXTURE_2D_ARRAY, TEXTURE_CUBE_MAP, TEXTURE_3D } from "../../Engines/constants";
 
 import "../../Engines/Extensions/engine.multiRender";
 import type { InternalTexture } from "./internalTexture";
@@ -175,7 +175,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
     constructor(name: string, size: any, count: number, scene?: Scene, options?: IMultiRenderTargetOptions, textureNames?: string[]) {
         const generateMipMaps = options && options.generateMipMaps ? options.generateMipMaps : false;
         const generateDepthTexture = options && options.generateDepthTexture ? options.generateDepthTexture : false;
-        const depthTextureFormat = options && options.depthTextureFormat ? options.depthTextureFormat : Constants.TEXTUREFORMAT_DEPTH16;
+        const depthTextureFormat = options && options.depthTextureFormat ? options.depthTextureFormat : TEXTUREFORMAT_DEPTH16;
         const doNotChangeAspectRatio = !options || options.doNotChangeAspectRatio === undefined ? true : options.doNotChangeAspectRatio;
         const drawOnlyOnFirstAttachmentByDefault = options && options.drawOnlyOnFirstAttachmentByDefault ? options.drawOnlyOnFirstAttachmentByDefault : false;
         super(name, size, scene, generateMipMaps, doNotChangeAspectRatio, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true);
@@ -244,7 +244,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
             if (options && options.types && options.types[i] !== undefined) {
                 types.push(options.types[i]);
             } else {
-                types.push(options && options.defaultType ? options.defaultType : Constants.TEXTURETYPE_UNSIGNED_INT);
+                types.push(options && options.defaultType ? options.defaultType : TEXTURETYPE_UNSIGNED_INT);
             }
 
             if (options && options.samplingModes && options.samplingModes[i] !== undefined) {
@@ -262,13 +262,13 @@ export class MultiRenderTarget extends RenderTargetTexture {
             if (options && options.formats && options.formats[i] !== undefined) {
                 formats.push(options.formats[i]);
             } else {
-                formats.push(Constants.TEXTUREFORMAT_RGBA);
+                formats.push(TEXTUREFORMAT_RGBA);
             }
 
             if (options && options.targetTypes && options.targetTypes[i] !== undefined) {
                 targets.push(options.targetTypes[i]);
             } else {
-                targets.push(Constants.TEXTURE_2D);
+                targets.push(TEXTURE_2D);
             }
 
             if (options && options.faceIndex && options.faceIndex[i] !== undefined) {
@@ -422,15 +422,15 @@ export class MultiRenderTarget extends RenderTargetTexture {
         if (this._multiRenderTargetOptions.targetTypes && this._multiRenderTargetOptions.targetTypes[index] !== -1) {
             let target: number = 0;
             if (texture.is2DArray) {
-                target = Constants.TEXTURE_2D_ARRAY;
+                target = TEXTURE_2D_ARRAY;
             } else if (texture.isCube) {
-                target = Constants.TEXTURE_CUBE_MAP;
+                target = TEXTURE_CUBE_MAP;
             } /*else if (texture.isCubeArray) {
                 target = Constants.TEXTURE_CUBE_MAP_ARRAY;
             }*/ else if (texture.is3D) {
-                target = Constants.TEXTURE_3D;
+                target = TEXTURE_3D;
             } else {
-                target = Constants.TEXTURE_2D;
+                target = TEXTURE_2D;
             }
             this._multiRenderTargetOptions.targetTypes[index] = target;
         }

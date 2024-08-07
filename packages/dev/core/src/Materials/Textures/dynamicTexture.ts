@@ -3,7 +3,7 @@ import type { Nullable } from "../../types";
 import type { Scene } from "../../scene";
 import type { ISize } from "../../Maths/math.size";
 import { Texture } from "../../Materials/Textures/texture";
-import { Constants } from "../../Engines/constants";
+import { TEXTURE_TRILINEAR_SAMPLINGMODE, TEXTUREFORMAT_RGBA } from "../../Engines/constants";
 import type { ICanvas, ICanvasRenderingContext } from "../../Engines/ICanvas";
 
 import "../../Engines/Extensions/engine.dynamicTexture";
@@ -34,8 +34,8 @@ export class DynamicTexture extends Texture {
         options: any,
         scene: Nullable<Scene> = null,
         generateMipMaps: boolean = false,
-        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-        format: number = Constants.TEXTUREFORMAT_RGBA,
+        samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE,
+        format: number = TEXTUREFORMAT_RGBA,
         invertY?: boolean
     ) {
         super(null, scene, !generateMipMaps, invertY, samplingMode, undefined, undefined, undefined, undefined, format);

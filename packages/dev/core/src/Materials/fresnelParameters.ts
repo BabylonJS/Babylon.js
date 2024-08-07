@@ -3,7 +3,7 @@ import type { DeepImmutable } from "../types";
 import { Color3 } from "../Maths/math.color";
 import { Engine } from "../Engines/engine";
 import { SerializationHelper } from "../Misc/decorators.serialization";
-import { Constants } from "../Engines/constants";
+import { MATERIAL_FresnelDirtyFlag, MATERIAL_MiscDirtyFlag } from "../Engines/constants";
 
 /**
  * Options to be used when creating a FresnelParameters.
@@ -83,7 +83,7 @@ export class FresnelParameters {
         }
 
         this._isEnabled = value;
-        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_FresnelDirtyFlag | Constants.MATERIAL_MiscDirtyFlag);
+        Engine.MarkAllMaterialsAsDirty(MATERIAL_FresnelDirtyFlag | MATERIAL_MiscDirtyFlag);
     }
 
     /**

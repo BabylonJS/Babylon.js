@@ -5,7 +5,7 @@ import { SceneComponentConstants } from "../sceneComponent";
 import type { SmartArrayNoDuplicate } from "../Misc/smartArray";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { GeometryBufferRenderer } from "./geometryBufferRenderer";
-import { Constants } from "../Engines/constants";
+import { TEXTUREFORMAT_DEPTH16 } from "../Engines/constants";
 
 declare module "../scene" {
     export interface Scene {
@@ -52,7 +52,7 @@ Object.defineProperty(Scene.prototype, "geometryBufferRenderer", {
 
 Scene.prototype.enableGeometryBufferRenderer = function (
     ratio: number | { width: number; height: number } = 1,
-    depthFormat = Constants.TEXTUREFORMAT_DEPTH16,
+    depthFormat = TEXTUREFORMAT_DEPTH16,
     textureTypesAndFormats?: { [key: number]: { textureType: number; textureFormat: number } }
 ): Nullable<GeometryBufferRenderer> {
     if (this._geometryBufferRenderer) {

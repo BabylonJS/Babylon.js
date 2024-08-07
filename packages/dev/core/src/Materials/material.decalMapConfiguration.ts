@@ -1,7 +1,7 @@
 import { serialize, expandToProperty } from "../Misc/decorators";
 import { MaterialDefines } from "./materialDefines";
 import { MaterialPluginBase } from "./materialPluginBase";
-import { Constants } from "../Engines/constants";
+import { MATERIAL_TextureDirtyFlag } from "../Engines/constants";
 import { MaterialFlags } from "./materialFlags";
 import type { Scene } from "core/scene";
 import type { Engine } from "core/Engines/engine";
@@ -63,7 +63,7 @@ export class DecalMapConfiguration extends MaterialPluginBase {
         super(material, "DecalMap", 150, new DecalMapDefines(), addToPluginList);
 
         this.registerForExtraEvents = true; // because we override the hardBindForSubMesh method
-        this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
+        this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[MATERIAL_TextureDirtyFlag];
     }
 
     public override isReadyForSubMesh(defines: DecalMapDefines, scene: Scene, engine: Engine, subMesh: SubMesh): boolean {

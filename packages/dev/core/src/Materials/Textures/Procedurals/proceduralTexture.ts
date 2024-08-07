@@ -23,7 +23,7 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import type { NodeMaterial } from "../../Node/nodeMaterial";
 import type { TextureSize } from "../../../Materials/Textures/textureCreationOptions";
 import { EngineStore } from "../../../Engines/engineStore";
-import { Constants } from "../../../Engines/constants";
+import { TEXTURETYPE_UNSIGNED_INT } from "../../../Engines/constants";
 import { DrawWrapper } from "../../drawWrapper";
 import type { RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
 
@@ -145,7 +145,7 @@ export class ProceduralTexture extends Texture {
         fallbackTexture: Nullable<Texture> | IProceduralTextureCreationOptions = null,
         generateMipMaps = true,
         isCube = false,
-        textureType = Constants.TEXTURETYPE_UNSIGNED_INT
+        textureType = TEXTURETYPE_UNSIGNED_INT
     ) {
         super(null, scene, !generateMipMaps);
 

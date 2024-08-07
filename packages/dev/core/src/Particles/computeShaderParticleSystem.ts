@@ -8,7 +8,7 @@ import type { GPUParticleSystem } from "./gpuParticleSystem";
 
 import type { DataArray, Nullable } from "../types";
 import type { DataBuffer } from "../Buffers/dataBuffer";
-import { Constants } from "../Engines/constants";
+import { BUFFER_CREATIONFLAG_READWRITE, BUFFER_CREATIONFLAG_VERTEX } from "../Engines/constants";
 import { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
 import type { ComputeBindingMapping } from "../Engines/Extensions/engine.computeShader";
 import type { Effect } from "../Materials/effect";
@@ -118,12 +118,7 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
     }
 
     public createParticleBuffer(data: number[]): DataArray | DataBuffer {
-        const buffer = new StorageBuffer(
-            this._engine,
-            data.length * 4,
-            Constants.BUFFER_CREATIONFLAG_READWRITE | Constants.BUFFER_CREATIONFLAG_VERTEX,
-            "ComputeShaderParticleSystemBuffer"
-        );
+        const buffer = new StorageBuffer(this._engine, data.length * 4, BUFFER_CREATIONFLAG_READWRITE | BUFFER_CREATIONFLAG_VERTEX, "ComputeShaderParticleSystemBuffer");
 
         buffer.update(data);
         this._bufferComputeShader.push(buffer);

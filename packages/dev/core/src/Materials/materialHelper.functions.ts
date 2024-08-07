@@ -3,7 +3,29 @@ import type { Camera } from "../Cameras/camera";
 import type { Scene } from "../scene";
 import type { Effect, IEffectCreationOptions } from "./effect";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
-import { Constants } from "../Engines/constants";
+import {
+    ORTHOGRAPHIC_CAMERA,
+    FOGMODE_NONE,
+    PositionKind,
+    NormalKind,
+    TangentKind,
+    UVKind,
+    PREPASS_VELOCITY_TEXTURE_TYPE,
+    MatricesIndicesKind,
+    MatricesWeightsKind,
+    MatricesIndicesExtraKind,
+    MatricesWeightsExtraKind,
+    ColorInstanceKind,
+    MAX_SUPPORTED_UV_SETS,
+    ColorKind,
+    PREPASS_POSITION_TEXTURE_TYPE,
+    PREPASS_REFLECTIVITY_TEXTURE_TYPE,
+    PREPASS_IRRADIANCE_TEXTURE_TYPE,
+    PREPASS_ALBEDO_SQRT_TEXTURE_TYPE,
+    PREPASS_DEPTH_TEXTURE_TYPE,
+    PREPASS_NORMAL_TEXTURE_TYPE,
+    PERSPECTIVE_CAMERA,
+} from "../Engines/constants";
 import { Color3 } from "../Maths/math.color";
 import { EngineStore } from "../Engines/engineStore";
 import type { Mesh } from "../Meshes/mesh";
@@ -32,7 +54,7 @@ const _TmpMorphInfluencers = { NUM_MORPH_INFLUENCERS: 0 };
 export function BindLogDepth(defines: any, effect: Effect, scene: Scene): void {
     if (!defines || defines["LOGARITHMICDEPTH"] || (defines.indexOf && defines.indexOf("LOGARITHMICDEPTH") >= 0)) {
         const camera = scene.activeCamera as Camera;
-        if (camera.mode === Constants.ORTHOGRAPHIC_CAMERA) {
+        if (camera.mode === ORTHOGRAPHIC_CAMERA) {
             Logger.Error("Logarithmic depth is not compatible with orthographic cameras!", 20);
         }
         effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(camera.maxZ + 1.0) / Math.LN2));
@@ -47,7 +69,7 @@ export function BindLogDepth(defines: any, effect: Effect, scene: Scene): void {
  * @param linearSpace Defines if the fog effect is applied in linear space
  */
 export function BindFogParameters(scene: Scene, mesh?: AbstractMesh, effect?: Effect, linearSpace = false): void {
-    if (effect && scene.fogEnabled && (!mesh || mesh.applyFog) && scene.fogMode !== Constants.FOGMODE_NONE) {
+    if (effect && scene.fogEnabled && (!mesh || mesh.applyFog) && scene.fogMode !== FOGMODE_NONE) {
         effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
         // Convert fog color to linear space if used in a linear space computed shader.
         if (linearSpace) {
@@ -89,18 +111,18 @@ export function PrepareAttributesForMorphTargets(attribs: string[], mesh: Abstra
         const tangent = manager && manager.supportsTangents && defines["TANGENT"];
         const uv = manager && manager.supportsUVs && defines["UV1"];
         for (let index = 0; index < influencers; index++) {
-            attribs.push(Constants.PositionKind + index);
+            attribs.push(PositionKind + index);
 
             if (normal) {
-                attribs.push(Constants.NormalKind + index);
+                attribs.push(NormalKind + index);
             }
 
             if (tangent) {
-                attribs.push(Constants.TangentKind + index);
+                attribs.push(TangentKind + index);
             }
 
             if (uv) {
-                attribs.push(Constants.UVKind + "_" + index);
+                attribs.push(UVKind + "_" + index);
             }
 
             if (attribs.length > maxAttributesCount) {
@@ -228,7 +250,7 @@ export function BindBonesParameters(mesh?: AbstractMesh, effect?: Effect, prePas
 
             if (matrices) {
                 effect.setMatrices("mBones", matrices);
-                if (prePassConfiguration && mesh.getScene().prePassRenderer && mesh.getScene().prePassRenderer!.getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE)) {
+                if (prePassConfiguration && mesh.getScene().prePassRenderer && mesh.getScene().prePassRenderer!.getIndex(PREPASS_VELOCITY_TEXTURE_TYPE)) {
                     if (!prePassConfiguration.previousBones[mesh.uniqueId]) {
                         prePassConfiguration.previousBones[mesh.uniqueId] = matrices.slice();
                     }
@@ -291,11 +313,11 @@ export function PrepareAttributesForBones(attribs: string[], mesh: AbstractMesh,
     if (defines["NUM_BONE_INFLUENCERS"] > 0) {
         fallbacks.addCPUSkinningFallback(0, mesh);
 
-        attribs.push(Constants.MatricesIndicesKind);
-        attribs.push(Constants.MatricesWeightsKind);
+        attribs.push(MatricesIndicesKind);
+        attribs.push(MatricesWeightsKind);
         if (defines["NUM_BONE_INFLUENCERS"] > 4) {
-            attribs.push(Constants.MatricesIndicesExtraKind);
-            attribs.push(Constants.MatricesWeightsExtraKind);
+            attribs.push(MatricesIndicesExtraKind);
+            attribs.push(MatricesWeightsExtraKind);
         }
     }
 }
@@ -311,7 +333,7 @@ export function PrepareAttributesForInstances(attribs: string[], defines: Materi
     }
 
     if (defines.INSTANCESCOLOR) {
-        attribs.push(Constants.ColorInstanceKind);
+        attribs.push(ColorInstanceKind);
     }
 }
 
@@ -371,7 +393,7 @@ export function HandleFallbacksForShadows(defines: any, fallbacks: EffectFallbac
  * @returns true if fog must be enabled
  */
 export function GetFogState(mesh: AbstractMesh, scene: Scene) {
-    return scene.fogEnabled && mesh.applyFog && scene.fogMode !== Constants.FOGMODE_NONE;
+    return scene.fogEnabled && mesh.applyFog && scene.fogMode !== FOGMODE_NONE;
 }
 
 /**
@@ -731,23 +753,23 @@ export function PrepareDefinesForAttributes(
     defines._normals = defines._needNormals;
     defines._uvs = defines._needUVs;
 
-    defines["NORMAL"] = defines._needNormals && mesh.isVerticesDataPresent(Constants.NormalKind);
+    defines["NORMAL"] = defines._needNormals && mesh.isVerticesDataPresent(NormalKind);
 
-    if (defines._needNormals && mesh.isVerticesDataPresent(Constants.TangentKind)) {
+    if (defines._needNormals && mesh.isVerticesDataPresent(TangentKind)) {
         defines["TANGENT"] = true;
     }
 
-    for (let i = 1; i <= Constants.MAX_SUPPORTED_UV_SETS; ++i) {
+    for (let i = 1; i <= MAX_SUPPORTED_UV_SETS; ++i) {
         defines["UV" + i] = defines._needUVs ? mesh.isVerticesDataPresent(`uv${i === 1 ? "" : i}`) : false;
     }
 
     if (useVertexColor) {
-        const hasVertexColors = mesh.useVertexColors && mesh.isVerticesDataPresent(Constants.ColorKind);
+        const hasVertexColors = mesh.useVertexColors && mesh.isVerticesDataPresent(ColorKind);
         defines["VERTEXCOLOR"] = hasVertexColors;
         defines["VERTEXALPHA"] = mesh.hasVertexAlpha && hasVertexColors && useVertexAlpha;
     }
 
-    if (mesh.isVerticesDataPresent(Constants.ColorInstanceKind) && (mesh.hasInstances || mesh.hasThinInstances)) {
+    if (mesh.isVerticesDataPresent(ColorInstanceKind) && (mesh.hasInstances || mesh.hasThinInstances)) {
         defines["INSTANCESCOLOR"] = true;
     }
 
@@ -814,37 +836,37 @@ export function PrepareDefinesForPrePass(scene: Scene, defines: any, canRenderTo
 
     const texturesList = [
         {
-            type: Constants.PREPASS_POSITION_TEXTURE_TYPE,
+            type: PREPASS_POSITION_TEXTURE_TYPE,
             define: "PREPASS_POSITION",
             index: "PREPASS_POSITION_INDEX",
         },
         {
-            type: Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
+            type: PREPASS_VELOCITY_TEXTURE_TYPE,
             define: "PREPASS_VELOCITY",
             index: "PREPASS_VELOCITY_INDEX",
         },
         {
-            type: Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE,
+            type: PREPASS_REFLECTIVITY_TEXTURE_TYPE,
             define: "PREPASS_REFLECTIVITY",
             index: "PREPASS_REFLECTIVITY_INDEX",
         },
         {
-            type: Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
+            type: PREPASS_IRRADIANCE_TEXTURE_TYPE,
             define: "PREPASS_IRRADIANCE",
             index: "PREPASS_IRRADIANCE_INDEX",
         },
         {
-            type: Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE,
+            type: PREPASS_ALBEDO_SQRT_TEXTURE_TYPE,
             define: "PREPASS_ALBEDO_SQRT",
             index: "PREPASS_ALBEDO_SQRT_INDEX",
         },
         {
-            type: Constants.PREPASS_DEPTH_TEXTURE_TYPE,
+            type: PREPASS_DEPTH_TEXTURE_TYPE,
             define: "PREPASS_DEPTH",
             index: "PREPASS_DEPTH_INDEX",
         },
         {
-            type: Constants.PREPASS_NORMAL_TEXTURE_TYPE,
+            type: PREPASS_NORMAL_TEXTURE_TYPE,
             define: "PREPASS_NORMAL",
             index: "PREPASS_NORMAL_INDEX",
         },
@@ -889,8 +911,8 @@ export function PrepareDefinesForCamera(scene: Scene, defines: any): boolean {
     if (scene.activeCamera) {
         const wasOrtho = defines["CAMERA_ORTHOGRAPHIC"] ? 1 : 0;
         const wasPersp = defines["CAMERA_PERSPECTIVE"] ? 1 : 0;
-        const isOrtho = scene.activeCamera.mode === Constants.ORTHOGRAPHIC_CAMERA ? 1 : 0;
-        const isPersp = scene.activeCamera.mode === Constants.PERSPECTIVE_CAMERA ? 1 : 0;
+        const isOrtho = scene.activeCamera.mode === ORTHOGRAPHIC_CAMERA ? 1 : 0;
+        const isPersp = scene.activeCamera.mode === PERSPECTIVE_CAMERA ? 1 : 0;
 
         if (wasOrtho ^ isOrtho || wasPersp ^ isPersp) {
             defines["CAMERA_ORTHOGRAPHIC"] = isOrtho === 1;

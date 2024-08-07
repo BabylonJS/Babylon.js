@@ -18,7 +18,7 @@ import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineCompon
 import { Sprite } from "core/Sprites/sprite";
 import { Tools } from "core/Misc/tools";
 import { FileButtonLine } from "shared-ui-components/lines/fileButtonLineComponent";
-import { Constants } from "core/Engines/constants";
+import { SnippetUrl, ALPHA_COMBINE, ALPHA_ONEONE, ALPHA_ADD, ALPHA_SUBTRACT, ALPHA_MULTIPLY, ALPHA_MAXIMIZED, ALPHA_PREMULTIPLIED } from "core/Engines/constants";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 
 interface ISpriteManagerPropertyGridComponentProps {
@@ -30,7 +30,7 @@ interface ISpriteManagerPropertyGridComponentProps {
 }
 
 export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteManagerPropertyGridComponentProps> {
-    private _snippetUrl = Constants.SnippetUrl;
+    private _snippetUrl = SnippetUrl;
 
     constructor(props: ISpriteManagerPropertyGridComponentProps) {
         super(props);
@@ -154,13 +154,13 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
         const spriteManager = this.props.spriteManager;
 
         const alphaModeOptions = [
-            { label: "Combine", value: Constants.ALPHA_COMBINE },
-            { label: "One one", value: Constants.ALPHA_ONEONE },
-            { label: "Add", value: Constants.ALPHA_ADD },
-            { label: "Subtract", value: Constants.ALPHA_SUBTRACT },
-            { label: "Multiply", value: Constants.ALPHA_MULTIPLY },
-            { label: "Maximized", value: Constants.ALPHA_MAXIMIZED },
-            { label: "Pre-multiplied", value: Constants.ALPHA_PREMULTIPLIED },
+            { label: "Combine", value: ALPHA_COMBINE },
+            { label: "One one", value: ALPHA_ONEONE },
+            { label: "Add", value: ALPHA_ADD },
+            { label: "Subtract", value: ALPHA_SUBTRACT },
+            { label: "Multiply", value: ALPHA_MULTIPLY },
+            { label: "Maximized", value: ALPHA_MAXIMIZED },
+            { label: "Pre-multiplied", value: ALPHA_PREMULTIPLIED },
         ];
 
         return (

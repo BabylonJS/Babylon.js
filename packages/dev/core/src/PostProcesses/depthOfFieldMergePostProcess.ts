@@ -3,7 +3,7 @@ import type { Camera } from "../Cameras/camera";
 import type { Effect } from "../Materials/effect";
 import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
-import { Constants } from "../Engines/constants";
+import { TEXTURETYPE_UNSIGNED_INT } from "../Engines/constants";
 
 import "../Shaders/depthOfFieldMerge.fragment";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
@@ -44,7 +44,7 @@ export class DepthOfFieldMergePostProcess extends PostProcess {
         samplingMode?: number,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
+        textureType = TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false
     ) {
         super(

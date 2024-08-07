@@ -1,7 +1,7 @@
 import type { Camera } from "../Cameras/camera";
 import type { Effect } from "../Materials/effect";
 import { PostProcess } from "./postProcess";
-import { Constants } from "../Engines/constants";
+import { TEXTURE_BILINEAR_SAMPLINGMODE, TEXTURETYPE_UNSIGNED_INT } from "../Engines/constants";
 
 import "../Shaders/tonemap.fragment";
 import type { Nullable } from "../types";
@@ -49,9 +49,9 @@ export class TonemapPostProcess extends PostProcess {
         /** Defines the required exposure adjustment */
         public exposureAdjustment: number,
         camera: Nullable<Camera>,
-        samplingMode: number = Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+        samplingMode: number = TEXTURE_BILINEAR_SAMPLINGMODE,
         engine?: Engine,
-        textureFormat = Constants.TEXTURETYPE_UNSIGNED_INT,
+        textureFormat = TEXTURETYPE_UNSIGNED_INT,
         reusable?: boolean
     ) {
         super(name, "tonemap", ["_ExposureAdjustment"], null, 1.0, camera, samplingMode, engine, reusable, null, textureFormat);

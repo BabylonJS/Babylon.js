@@ -1,7 +1,7 @@
 import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import type { TextureSize } from "../../Materials/Textures/textureCreationOptions";
 import type { Nullable } from "../../types";
-import { Constants } from "../constants";
+import { TEXTUREFORMAT_DEPTH32_FLOAT } from "../constants";
 import type { Engine } from "../engine";
 import { RenderTargetWrapper } from "../renderTargetWrapper";
 import type { ThinEngine } from "../thinEngine";
@@ -89,7 +89,7 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
         bilinearFiltering: boolean = true,
         generateStencil: boolean = false,
         samples: number = 1,
-        format: number = Constants.TEXTUREFORMAT_DEPTH32_FLOAT,
+        format: number = TEXTUREFORMAT_DEPTH32_FLOAT,
         label?: string
     ): InternalTexture {
         if (this._depthStencilBuffer) {

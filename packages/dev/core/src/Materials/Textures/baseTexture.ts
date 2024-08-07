@@ -6,7 +6,7 @@ import type { Scene } from "../../scene";
 import { Matrix } from "../../Maths/math.vector";
 import { EngineStore } from "../../Engines/engineStore";
 import type { InternalTexture } from "../../Materials/Textures/internalTexture";
-import { Constants } from "../../Engines/constants";
+import { MATERIAL_TextureDirtyFlag, TEXTURE_EXPLICIT_MODE, TEXTURE_WRAP_ADDRESSMODE, TEXTURETYPE_UNSIGNED_INT, TEXTUREFORMAT_RGBA } from "../../Engines/constants";
 import type { IAnimatable } from "../../Animations/animatable.interface";
 import { RandomGUID } from "../../Misc/guid";
 
@@ -69,7 +69,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         }
         this._hasAlpha = value;
         if (this._scene) {
-            this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+            this._scene.markAllMaterialsAsDirty(MATERIAL_TextureDirtyFlag, (mat) => {
                 return mat.hasTexture(this);
             });
         }
@@ -90,7 +90,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         }
         this._getAlphaFromRGB = value;
         if (this._scene) {
-            this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+            this._scene.markAllMaterialsAsDirty(MATERIAL_TextureDirtyFlag, (mat) => {
                 return mat.hasTexture(this);
             });
         }
@@ -126,7 +126,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         }
         this._coordinatesIndex = value;
         if (this._scene) {
-            this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+            this._scene.markAllMaterialsAsDirty(MATERIAL_TextureDirtyFlag, (mat) => {
                 return mat.hasTexture(this);
             });
         }
@@ -136,7 +136,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     }
 
     @serialize("coordinatesMode")
-    protected _coordinatesMode = Constants.TEXTURE_EXPLICIT_MODE;
+    protected _coordinatesMode = TEXTURE_EXPLICIT_MODE;
 
     /**
      * How a texture is mapped.
@@ -160,7 +160,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         }
         this._coordinatesMode = value;
         if (this._scene) {
-            this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+            this._scene.markAllMaterialsAsDirty(MATERIAL_TextureDirtyFlag, (mat) => {
                 return mat.hasTexture(this);
             });
         }
@@ -207,7 +207,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
      * | 2     | MIRROR_ADDRESSMODE |             |
      */
     @serialize()
-    public override wrapR = Constants.TEXTURE_WRAP_ADDRESSMODE;
+    public override wrapR = TEXTURE_WRAP_ADDRESSMODE;
 
     /**
      * With compliant hardware and browser (supporting anisotropic filtering)
@@ -316,7 +316,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
             this._texture._gammaSpace = gamma;
         }
 
-        this.getScene()?.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+        this.getScene()?.markAllMaterialsAsDirty(MATERIAL_TextureDirtyFlag, (mat) => {
             return mat.hasTexture(this);
         });
     }
@@ -336,7 +336,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
             this._texture._isRGBD = value;
         }
 
-        this.getScene()?.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+        this.getScene()?.markAllMaterialsAsDirty(MATERIAL_TextureDirtyFlag, (mat) => {
             return mat.hasTexture(this);
         });
     }
@@ -672,10 +672,10 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
      */
     public get textureType(): number {
         if (!this._texture) {
-            return Constants.TEXTURETYPE_UNSIGNED_INT;
+            return TEXTURETYPE_UNSIGNED_INT;
         }
 
-        return this._texture.type !== undefined ? this._texture.type : Constants.TEXTURETYPE_UNSIGNED_INT;
+        return this._texture.type !== undefined ? this._texture.type : TEXTURETYPE_UNSIGNED_INT;
     }
 
     /**
@@ -683,10 +683,10 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
      */
     public get textureFormat(): number {
         if (!this._texture) {
-            return Constants.TEXTUREFORMAT_RGBA;
+            return TEXTUREFORMAT_RGBA;
         }
 
-        return this._texture.format !== undefined ? this._texture.format : Constants.TEXTUREFORMAT_RGBA;
+        return this._texture.format !== undefined ? this._texture.format : TEXTUREFORMAT_RGBA;
     }
 
     /**
@@ -699,7 +699,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
             return;
         }
 
-        scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        scene.markAllMaterialsAsDirty(MATERIAL_TextureDirtyFlag);
     }
 
     /**

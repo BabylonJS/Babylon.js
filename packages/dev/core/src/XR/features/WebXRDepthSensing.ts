@@ -7,7 +7,14 @@ import { Texture } from "../../Materials/Textures/texture";
 import { Engine } from "../../Engines/engine";
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
-import { Constants } from "../../Engines/constants";
+import {
+    TEXTUREFORMAT_LUMINANCE_ALPHA,
+    TEXTUREFORMAT_RGBA,
+    TEXTURETYPE_UNSIGNED_SHORT,
+    TEXTURETYPE_FLOAT,
+    TEXTURE_NEAREST_LINEAR,
+    TEXTURE_WRAP_ADDRESSMODE,
+} from "../../Engines/constants";
 import { WebGLHardwareTexture } from "../../Engines/WebGL/webGLHardwareTexture";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import type { ThinEngine } from "../../Engines/thinEngine";
@@ -110,14 +117,14 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         internalTexture.isCube = false;
         internalTexture.invertY = false;
         internalTexture._useSRGBBuffer = false;
-        internalTexture.format = this.depthDataFormat === "ushort" ? Constants.TEXTUREFORMAT_LUMINANCE_ALPHA : Constants.TEXTUREFORMAT_RGBA;
+        internalTexture.format = this.depthDataFormat === "ushort" ? TEXTUREFORMAT_LUMINANCE_ALPHA : TEXTUREFORMAT_RGBA;
         internalTexture.generateMipMaps = false;
-        internalTexture.type = this.depthDataFormat === "ushort" ? Constants.TEXTURETYPE_UNSIGNED_SHORT : Constants.TEXTURETYPE_FLOAT;
-        internalTexture.samplingMode = Constants.TEXTURE_NEAREST_LINEAR;
+        internalTexture.type = this.depthDataFormat === "ushort" ? TEXTURETYPE_UNSIGNED_SHORT : TEXTURETYPE_FLOAT;
+        internalTexture.samplingMode = TEXTURE_NEAREST_LINEAR;
         internalTexture.width = this.width ?? 0;
         internalTexture.height = this.height ?? 0;
-        internalTexture._cachedWrapU = Constants.TEXTURE_WRAP_ADDRESSMODE;
-        internalTexture._cachedWrapV = Constants.TEXTURE_WRAP_ADDRESSMODE;
+        internalTexture._cachedWrapU = TEXTURE_WRAP_ADDRESSMODE;
+        internalTexture._cachedWrapV = TEXTURE_WRAP_ADDRESSMODE;
         internalTexture._hardwareTexture = new WebGLHardwareTexture(this._cachedWebGLTexture, (engine as ThinEngine)._gl);
 
         return internalTexture;

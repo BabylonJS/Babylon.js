@@ -2,7 +2,7 @@ import type { Nullable } from "../types";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Viewport } from "../Maths/math.viewport";
-import { Constants } from "../Engines/constants";
+import { MATERIAL_TriangleFillMode } from "../Engines/constants";
 import type { Observer } from "../Misc/observable";
 import { Observable } from "../Misc/observable";
 import { Effect } from "./effect";
@@ -129,7 +129,7 @@ export class EffectRenderer {
      * Draws a full screen quad.
      */
     public draw(): void {
-        this.engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, 6);
+        this.engine.drawElementsType(MATERIAL_TriangleFillMode, 0, 6);
     }
 
     private _isRenderTargetTexture(texture: RenderTargetWrapper | IRenderTargetTexture): texture is IRenderTargetTexture {

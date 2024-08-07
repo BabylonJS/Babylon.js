@@ -19,7 +19,7 @@ import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
-import { Constants } from "../Engines/constants";
+import { ALPHA_COMBINE, TEXTURETYPE_UNSIGNED_INT } from "../Engines/constants";
 
 import "../Shaders/glowMapGeneration.fragment";
 import "../Shaders/glowMapGeneration.vertex";
@@ -334,10 +334,10 @@ export abstract class EffectLayer {
         // Adapt options
         this._effectLayerOptions = {
             mainTextureRatio: 0.5,
-            alphaBlendingMode: Constants.ALPHA_COMBINE,
+            alphaBlendingMode: ALPHA_COMBINE,
             camera: null,
             renderingGroupId: -1,
-            mainTextureType: Constants.TEXTURETYPE_UNSIGNED_INT,
+            mainTextureType: TEXTURETYPE_UNSIGNED_INT,
             generateStencilBuffer: false,
             ...options,
         };

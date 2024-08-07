@@ -8,7 +8,7 @@ import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { NodeMaterial } from "../../nodeMaterial";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
-import { Constants } from "../../../../Engines/constants";
+import { PREPASS_POSITION_TEXTURE_TYPE, PREPASS_DEPTH_TEXTURE_TYPE, PREPASS_NORMAL_TEXTURE_TYPE } from "../../../../Engines/constants";
 import { ImageSourceBlock } from "../Dual/imageSourceBlock";
 
 /**
@@ -168,13 +168,13 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
         }
 
         if (this.position.isConnected) {
-            effect.setTexture(this._positionSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_POSITION_TEXTURE_TYPE)]);
+            effect.setTexture(this._positionSamplerName, sceneRT.textures[prePassRenderer.getIndex(PREPASS_POSITION_TEXTURE_TYPE)]);
         }
         if (this.depth.isConnected) {
-            effect.setTexture(this._depthSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)]);
+            effect.setTexture(this._depthSamplerName, sceneRT.textures[prePassRenderer.getIndex(PREPASS_DEPTH_TEXTURE_TYPE)]);
         }
         if (this.normal.isConnected) {
-            effect.setTexture(this._normalSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_NORMAL_TEXTURE_TYPE)]);
+            effect.setTexture(this._normalSamplerName, sceneRT.textures[prePassRenderer.getIndex(PREPASS_NORMAL_TEXTURE_TYPE)]);
         }
     }
 }

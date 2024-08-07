@@ -1,6 +1,6 @@
 import { Observable } from "../Misc/observable";
 import type { FloatArray, Nullable } from "../types";
-import { Constants } from "../Engines/constants";
+import { MATERIAL_AllDirtyFlag } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import type { IDisposable } from "../scene";
 import type { IPipelineContext } from "../Engines/IPipelineContext";
@@ -682,7 +682,7 @@ export class Effect implements IDisposable {
             const scenes = this.getEngine().scenes;
             if (scenes) {
                 for (let i = 0; i < scenes.length; i++) {
-                    scenes[i].markAllMaterialsAsDirty(Constants.MATERIAL_AllDirtyFlag);
+                    scenes[i].markAllMaterialsAsDirty(MATERIAL_AllDirtyFlag);
                 }
             }
 

@@ -13,7 +13,7 @@ import { Node } from "../node";
 import type { IAnimatable } from "./animatable.interface";
 import { Size } from "../Maths/math.size";
 import { WebRequest } from "../Misc/webRequest";
-import { Constants } from "../Engines/constants";
+import { SnippetUrl } from "../Engines/constants";
 import type { Animatable } from "./animatable";
 import type { RuntimeAnimation } from "./runtimeAnimation";
 import { SerializationHelper } from "../Misc/decorators.serialization";
@@ -115,7 +115,7 @@ export class Animation {
     public uniqueId: number;
 
     /** Define the Url to load snippets */
-    public static SnippetUrl = Constants.SnippetUrl;
+    public static SnippetUrl = SnippetUrl;
 
     /** Snippet ID if the animation was created from the snippet server */
     public snippetId: string;

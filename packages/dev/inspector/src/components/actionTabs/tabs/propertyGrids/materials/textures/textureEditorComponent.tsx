@@ -19,7 +19,7 @@ import type { PointerInfo } from "core/Events/pointerEvents";
 
 import type { PopupComponent } from "../../../../../popupComponent";
 import { ToolSettings } from "./toolSettings";
-import { Constants } from "core/Engines/constants";
+import { TEXTUREFORMAT_RGBA } from "core/Engines/constants";
 
 import "./textureEditor.scss";
 
@@ -320,7 +320,7 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
                         pickerOpen={this.state.pickerOpen}
                         setPickerOpen={this.setPickerOpen}
                         pickerRef={this._pickerRef}
-                        hasAlpha={this.props.texture.textureFormat === -1 || this.props.texture.textureFormat === Constants.TEXTUREFORMAT_RGBA}
+                        hasAlpha={this.props.texture.textureFormat === -1 || this.props.texture.textureFormat === TEXTUREFORMAT_RGBA}
                     />
                 )}
                 <ChannelsBar

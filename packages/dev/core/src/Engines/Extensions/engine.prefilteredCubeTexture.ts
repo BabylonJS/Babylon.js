@@ -3,7 +3,7 @@ import { InternalTexture, InternalTextureSource } from "../../Materials/Textures
 import { Logger } from "../../Misc/logger";
 import type { Nullable } from "../../types";
 import type { Scene } from "../../scene";
-import { Constants } from "../constants";
+import { TEXTURE_CLAMP_ADDRESSMODE, TEXTURE_LINEAR_LINEAR } from "../constants";
 import { SphericalPolynomial } from "core/Maths/sphericalPolynomial";
 import { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Scalar } from "core/Maths/math.scalar";
@@ -102,11 +102,11 @@ ThinEngine.prototype.createPrefilteredCubeTexture = function (
             glTextureFromLod.width = Math.pow(2, Math.max(Scalar.Log2(width) - mipmapIndex, 0));
             glTextureFromLod.height = glTextureFromLod.width;
             glTextureFromLod.isCube = true;
-            glTextureFromLod._cachedWrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
-            glTextureFromLod._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+            glTextureFromLod._cachedWrapU = TEXTURE_CLAMP_ADDRESSMODE;
+            glTextureFromLod._cachedWrapV = TEXTURE_CLAMP_ADDRESSMODE;
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, glTextureFromLod, true);
 
-            glTextureFromLod.samplingMode = Constants.TEXTURE_LINEAR_LINEAR;
+            glTextureFromLod.samplingMode = TEXTURE_LINEAR_LINEAR;
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);

@@ -1,7 +1,7 @@
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import type { DataArray } from "../types";
 import type { WebGPUEngine } from "core/Engines/webgpuEngine";
-import { Constants } from "../Engines/constants";
+import { BUFFER_CREATIONFLAG_READWRITE } from "../Engines/constants";
 
 /**
  * This class is a small wrapper around a native buffer that can be read and/or written
@@ -20,7 +20,7 @@ export class StorageBuffer {
      * @param creationFlags flags to use when creating the buffer (see Constants.BUFFER_CREATIONFLAG_XXX). The BUFFER_CREATIONFLAG_STORAGE flag will be automatically added.
      * @param label defines the label of the buffer (for debug purpose)
      */
-    constructor(engine: WebGPUEngine, size: number, creationFlags = Constants.BUFFER_CREATIONFLAG_READWRITE, label?: string) {
+    constructor(engine: WebGPUEngine, size: number, creationFlags = BUFFER_CREATIONFLAG_READWRITE, label?: string) {
         this._engine = engine;
         this._label = label;
         this._engine._storageBuffers.push(this);
