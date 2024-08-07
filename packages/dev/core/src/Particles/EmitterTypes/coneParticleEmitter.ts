@@ -1,7 +1,7 @@
 import { DeepCopier } from "../../Misc/deepCopier";
 import type { Matrix } from "../../Maths/math.vector";
 import { Vector3, TmpVectors } from "../../Maths/math.vector";
-import { Scalar } from "../../Maths/math.scalar";
+import { randomRange } from "../../Maths/math.scalar.functions";
 import type { Particle } from "../../Particles/particle";
 import type { IParticleEmitterType } from "./IParticleEmitterType";
 import type { UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
@@ -93,9 +93,9 @@ export class ConeParticleEmitter implements IParticleEmitterType {
             particle.position.subtractToRef(worldMatrix.getTranslation(), TmpVectors.Vector3[0]).normalize();
         }
 
-        const randX = Scalar.RandomRange(0, this.directionRandomizer);
-        const randY = Scalar.RandomRange(0, this.directionRandomizer);
-        const randZ = Scalar.RandomRange(0, this.directionRandomizer);
+        const randX = randomRange(0, this.directionRandomizer);
+        const randY = randomRange(0, this.directionRandomizer);
+        const randZ = randomRange(0, this.directionRandomizer);
         directionToUpdate.x = TmpVectors.Vector3[0].x + randX;
         directionToUpdate.y = TmpVectors.Vector3[0].y + randY;
         directionToUpdate.z = TmpVectors.Vector3[0].z + randZ;
@@ -110,17 +110,17 @@ export class ConeParticleEmitter implements IParticleEmitterType {
      * @param isLocal defines if the position should be set in local space
      */
     startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
-        const s = Scalar.RandomRange(0, Math.PI * 2);
+        const s = randomRange(0, Math.PI * 2);
         let h: number;
 
         if (!this.emitFromSpawnPointOnly) {
-            h = Scalar.RandomRange(0, this.heightRange);
+            h = randomRange(0, this.heightRange);
             // Better distribution in a cone at normal angles.
             h = 1 - h * h;
         } else {
             h = 0.0001;
         }
-        let radius = this._radius - Scalar.RandomRange(0, this._radius * this.radiusRange);
+        let radius = this._radius - randomRange(0, this._radius * this.radiusRange);
         radius = radius * h;
 
         const randX = radius * Math.sin(s);
@@ -247,9 +247,9 @@ export class ConeDirectedParticleEmitter extends ConeParticleEmitter {
      * @param directionToUpdate is the direction vector to update with the result
      */
     public override startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3): void {
-        const randX = Scalar.RandomRange(this.direction1.x, this.direction2.x);
-        const randY = Scalar.RandomRange(this.direction1.y, this.direction2.y);
-        const randZ = Scalar.RandomRange(this.direction1.z, this.direction2.z);
+        const randX = randomRange(this.direction1.x, this.direction2.x);
+        const randY = randomRange(this.direction1.y, this.direction2.y);
+        const randZ = randomRange(this.direction1.z, this.direction2.z);
         Vector3.TransformNormalFromFloatsToRef(randX, randY, randZ, worldMatrix, directionToUpdate);
     }
 

@@ -147,7 +147,7 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
                 const sphericalPolynomial = SphericalPolynomial.FromHarmonics(sphericalHarmonics);
 
                 // Compute the lod generation scale to fit exactly to the number of levels available.
-                const lodGenerationScale = (imageData.length - 1) / Scalar.Log2(light.specularImageSize);
+                const lodGenerationScale = (imageData.length - 1) / Math.log2(light.specularImageSize);
                 return babylonTexture.updateRGBDAsync(imageData, sphericalPolynomial, lodGenerationScale);
             });
         }

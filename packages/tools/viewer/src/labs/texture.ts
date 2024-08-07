@@ -299,7 +299,7 @@ export class TextureUtils {
                                 const alphaG = roughness * roughness + kMinimumVariance;
                                 const microsurfaceAverageSlopeTexels = alphaG * textureCube.Width;
 
-                                const environmentSpecularLOD = TextureUtils.EnvironmentLODScale * Scalar.Log2(microsurfaceAverageSlopeTexels) + TextureUtils.EnvironmentLODOffset;
+                                const environmentSpecularLOD = TextureUtils.EnvironmentLODScale * Math.log2(microsurfaceAverageSlopeTexels) + TextureUtils.EnvironmentLODOffset;
 
                                 const maxLODIndex = textureCube.source.length - 1;
                                 const mipmapIndex = Math.min(Math.max(Math.round(environmentSpecularLOD), 0), maxLODIndex);

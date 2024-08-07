@@ -1,6 +1,6 @@
 import type { Matrix } from "../../Maths/math.vector";
 import { Vector3 } from "../../Maths/math.vector";
-import { Scalar } from "../../Maths/math.scalar";
+import { randomRange } from "../../Maths/math.scalar.functions";
 import type { Particle } from "../../Particles/particle";
 import type { IParticleEmitterType } from "./IParticleEmitterType";
 import { DeepCopier } from "../../Misc/deepCopier";
@@ -41,9 +41,9 @@ export class SphereParticleEmitter implements IParticleEmitterType {
      */
     public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
         const direction = particle.position.subtract(worldMatrix.getTranslation()).normalize();
-        const randX = Scalar.RandomRange(0, this.directionRandomizer);
-        const randY = Scalar.RandomRange(0, this.directionRandomizer);
-        const randZ = Scalar.RandomRange(0, this.directionRandomizer);
+        const randX = randomRange(0, this.directionRandomizer);
+        const randY = randomRange(0, this.directionRandomizer);
+        const randZ = randomRange(0, this.directionRandomizer);
         direction.x += randX;
         direction.y += randY;
         direction.z += randZ;
@@ -65,9 +65,9 @@ export class SphereParticleEmitter implements IParticleEmitterType {
      * @param isLocal defines if the position should be set in local space
      */
     public startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
-        const randRadius = this.radius - Scalar.RandomRange(0, this.radius * this.radiusRange);
-        const v = Scalar.RandomRange(0, 1.0);
-        const phi = Scalar.RandomRange(0, 2 * Math.PI);
+        const randRadius = this.radius - randomRange(0, this.radius * this.radiusRange);
+        const v = randomRange(0, 1.0);
+        const phi = randomRange(0, 2 * Math.PI);
         const theta = Math.acos(2 * v - 1);
         const randX = randRadius * Math.cos(phi) * Math.sin(theta);
         const randY = randRadius * Math.cos(theta);
@@ -185,9 +185,9 @@ export class SphereDirectedParticleEmitter extends SphereParticleEmitter {
      * @param directionToUpdate is the direction vector to update with the result
      */
     public override startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3): void {
-        const randX = Scalar.RandomRange(this.direction1.x, this.direction2.x);
-        const randY = Scalar.RandomRange(this.direction1.y, this.direction2.y);
-        const randZ = Scalar.RandomRange(this.direction1.z, this.direction2.z);
+        const randX = randomRange(this.direction1.x, this.direction2.x);
+        const randY = randomRange(this.direction1.y, this.direction2.y);
+        const randZ = randomRange(this.direction1.z, this.direction2.z);
         Vector3.TransformNormalFromFloatsToRef(randX, randY, randZ, worldMatrix, directionToUpdate);
     }
 

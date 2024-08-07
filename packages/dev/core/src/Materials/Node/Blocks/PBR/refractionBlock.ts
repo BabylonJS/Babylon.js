@@ -18,7 +18,6 @@ import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { CubeTexture } from "../../../Textures/cubeTexture";
 import { Texture } from "../../../Textures/texture";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
-import { Scalar } from "../../../../Maths/math.scalar";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
@@ -262,7 +261,7 @@ export class RefractionBlock extends NodeMaterialBlock {
 
         const width = refractionTexture.getSize().width;
 
-        effect.setFloat2(this._vRefractionFilteringInfoName, width, Scalar.Log2(width));
+        effect.setFloat2(this._vRefractionFilteringInfoName, width, Math.log2(width));
 
         if ((<any>refractionTexture).boundingBoxSize) {
             const cubeTexture = <CubeTexture>refractionTexture;
