@@ -41,7 +41,7 @@ import { ShadowLight } from "core/Lights/shadowLight";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import type { DirectionalLight } from "core/Lights/directionalLight";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
-import { Scalar } from "core/Maths/math.scalar";
+import { clamp } from "core/Maths/math.scalar.functions";
 import type { SpotLight } from "core/Lights/spotLight";
 import type { PointLight } from "core/Lights/pointLight";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
@@ -1159,9 +1159,9 @@ export class SceneManager {
                     const exposure = Math.pow(2.0, -this.scene.imageProcessingConfiguration.exposure) * Math.PI;
                     mirrorClearColor.scaleToRef(1 / exposure, mirrorClearColor);
 
-                    this.environmentHelper.groundMirror.clearColor.r = Scalar.Clamp(mirrorClearColor.r);
-                    this.environmentHelper.groundMirror.clearColor.g = Scalar.Clamp(mirrorClearColor.g);
-                    this.environmentHelper.groundMirror.clearColor.b = Scalar.Clamp(mirrorClearColor.b);
+                    this.environmentHelper.groundMirror.clearColor.r = clamp(mirrorClearColor.r);
+                    this.environmentHelper.groundMirror.clearColor.g = clamp(mirrorClearColor.g);
+                    this.environmentHelper.groundMirror.clearColor.b = clamp(mirrorClearColor.b);
                     this.environmentHelper.groundMirror.clearColor.a = 1;
 
                     if (!this.groundMirrorEnabled) {

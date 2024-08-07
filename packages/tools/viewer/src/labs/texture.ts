@@ -1,7 +1,6 @@
 import type { Scene } from "core/scene";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
-import { Scalar } from "core/Maths/math.scalar";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import type { Engine } from "core/Engines/engine";
