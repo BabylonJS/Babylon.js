@@ -3,7 +3,7 @@
  * @param value number value
  * @returns int value
  */
-export function ExtractAsInt(value: number) {
+export function extractAsInt(value: number) {
     return parseInt(value.toString().replace(/\W/g, ""));
 }
 
@@ -14,7 +14,7 @@ export function ExtractAsInt(value: number) {
  * @param epsilon (default = 1.401298E-45)
  * @returns true if the absolute difference between a and b is lower than epsilon (default = 1.401298E-45)
  */
-export function WithinEpsilon(a: number, b: number, epsilon: number = 1.401298e-45): boolean {
+export function withinEpsilon(a: number, b: number, epsilon: number = 1.401298e-45): boolean {
     return Math.abs(a - b) <= epsilon;
 }
 
@@ -24,7 +24,7 @@ export function WithinEpsilon(a: number, b: number, epsilon: number = 1.401298e-
  * @param max max value of random
  * @returns random value
  */
-export function RandomRange(min: number, max: number): number {
+export function randomRange(min: number, max: number): number {
     if (min === max) {
         return min;
     }
@@ -38,7 +38,7 @@ export function RandomRange(min: number, max: number): number {
  * @param amount amount to lerp between
  * @returns the lerped value
  */
-export function Lerp(start: number, end: number, amount: number): number {
+export function lerp(start: number, end: number, amount: number): number {
     return start + (end - start) * amount;
 }
 
@@ -55,7 +55,7 @@ export function lerpAngle(start: number, end: number, amount: number): number {
     if (num > 180.0) {
         num -= 360.0;
     }
-    return start + num * Clamp(amount);
+    return start + num * clamp(amount);
 }
 
 /**
@@ -68,7 +68,7 @@ export function lerpAngle(start: number, end: number, amount: number): number {
 export function inverseLerp(a: number, b: number, value: number): number {
     let result: number = 0;
     if (a != b) {
-        result = Clamp((value - a) / (b - a));
+        result = clamp((value - a) / (b - a));
     } else {
         result = 0.0;
     }
@@ -119,7 +119,7 @@ export function hermite1stDerivative(value1: number, tangent1: number, value2: n
  * @param max the max value to clamp to (default: 1)
  * @returns the clamped value
  */
-export function Clamp(value: number, min = 0, max = 1): number {
+export function clamp(value: number, min = 0, max = 1): number {
     return Math.min(max, Math.max(min, value));
 }
 
@@ -128,7 +128,7 @@ export function Clamp(value: number, min = 0, max = 1): number {
  * @param angle The angle to normalize in radian.
  * @returns The converted angle.
  */
-export function NormalizeRadians(angle: number): number {
+export function normalizeRadians(angle: number): number {
     // More precise but slower version kept for reference.
     // angle = angle % Tools.TwoPi;
     // angle = (angle + Tools.TwoPi) % Tools.TwoPi;
@@ -147,7 +147,7 @@ export function NormalizeRadians(angle: number): number {
  * @param i number
  * @returns the upper case translation of the number i to hexadecimal.
  */
-export function ToHex(i: number): string {
+export function toHex(i: number): string {
     const str = i.toString(16);
 
     if (i <= 15) {
@@ -263,7 +263,7 @@ export function pingPong(tx: number, length: number): number {
  * @returns the smooth stepped value
  */
 export function smoothStep(from: number, to: number, tx: number): number {
-    let t: number = Clamp(tx);
+    let t: number = clamp(tx);
     t = -2.0 * t * t * t + 3.0 * t * t;
     return to * t + from * (1.0 - t);
 }
@@ -350,3 +350,35 @@ export function highestCommonFactor(a: number, b: number): number {
     }
     return highestCommonFactor(b, r);
 }
+
+// For case difference
+export {
+    /**
+     * @deprecated use `extractAsInt`
+     */
+    extractAsInt as ExtractAsInt,
+    /**
+     * @deprecated use `withinEpsilon`
+     */
+    withinEpsilon as WithinEpsilon,
+    /**
+     * @deprecated use `randomRange`
+     */
+    randomRange as RandomRange,
+    /**
+     * @deprecated use `lerp`
+     */
+    lerp as Lerp,
+    /**
+     * @deprecated use `clamp`
+     */
+    clamp as Clamp,
+    /**
+     * @deprecated use `normalizeRadians`
+     */
+    normalizeRadians as NormalizeRadians,
+    /**
+     * @deprecated use `toHex`
+     */
+    toHex as ToHex,
+};
