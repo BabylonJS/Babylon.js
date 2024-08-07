@@ -1,7 +1,8 @@
-import { Clamp, Lerp, NormalizeRadians, RandomRange, ToHex, WithinEpsilon } from "./math.scalar.functions";
+import * as functions from "./math.scalar.functions";
 
 /**
  * Scalar computation library
+ * @deprecated Please use the scalar functions
  */
 export class Scalar {
     /**
@@ -16,29 +17,21 @@ export class Scalar {
      * @param epsilon (default = 1.401298E-45)
      * @returns true if the absolute difference between a and b is lower than epsilon (default = 1.401298E-45)
      */
-    public static WithinEpsilon: (a: number, b: number, epsilon?: number) => boolean = WithinEpsilon;
+    public static WithinEpsilon: (a: number, b: number, epsilon?: number) => boolean = functions.WithinEpsilon;
 
     /**
      * Returns a string : the upper case translation of the number i to hexadecimal.
      * @param i number
      * @returns the upper case translation of the number i to hexadecimal.
      */
-    public static ToHex: (i: number) => string = ToHex;
+    public static ToHex: (i: number) => string = functions.ToHex;
 
     /**
      * Returns -1 if value is negative and +1 is value is positive.
      * @param value the value
      * @returns the value itself if it's equal to zero.
      */
-    public static Sign(value: number): number {
-        value = +value; // convert to a number
-
-        if (value === 0 || isNaN(value)) {
-            return value;
-        }
-
-        return value > 0 ? 1 : -1;
-    }
+    public static Sign: (value: number) => number = Math.sign;
 
     /**
      * Returns the value itself if it's between min and max.
@@ -49,49 +42,21 @@ export class Scalar {
      * @param max the max value to clamp to (default: 1)
      * @returns the clamped value
      */
-    public static Clamp: (value: number, min?: number, max?: number) => number = Clamp;
+    public static Clamp: (value: number, min?: number, max?: number) => number = functions.Clamp;
 
     /**
      * the log2 of value.
      * @param value the value to compute log2 of
      * @returns the log2 of value.
      */
-    public static Log2(value: number): number {
-        return Math.log(value) * Math.LOG2E;
-    }
+    public static Log2: (value: number) => number = Math.log2;
 
     /**
      * the floor part of a log2 value.
      * @param value the value to compute log2 of
      * @returns the log2 of value.
      */
-    public static ILog2(value: number): number {
-        if (Math.log2) {
-            return Math.floor(Math.log2(value));
-        }
-
-        if (value < 0) {
-            return NaN;
-        } else if (value === 0) {
-            return -Infinity;
-        }
-
-        let n = 0;
-        if (value < 1) {
-            while (value < 1) {
-                n++;
-                value = value * 2;
-            }
-            n = -n;
-        } else if (value > 1) {
-            while (value > 1) {
-                n++;
-                value = Math.floor(value / 2);
-            }
-        }
-
-        return n;
-    }
+    public static ILog2: (value: number) => number = functions.iLog2;
 
     /**
      * Loops the value, so that it is never larger than length and never smaller than 0.
@@ -104,9 +69,7 @@ export class Scalar {
      * @param length the length
      * @returns the looped value
      */
-    public static Repeat(value: number, length: number): number {
-        return value - Math.floor(value / length) * length;
-    }
+    public static Repeat: (value: number, length: number) => number = functions.repeat;
 
     /**
      * Normalize the value between 0.0 and 1.0 using min and max values
@@ -115,9 +78,7 @@ export class Scalar {
      * @param max min to normalize between
      * @returns the normalized value
      */
-    public static Normalize(value: number, min: number, max: number): number {
-        return (value - min) / (max - min);
-    }
+    public static Normalize: (value: number, min: number, max: number) => number = functions.normalize;
 
     /**
      * Denormalize the value from 0.0 and 1.0 using min and max values
@@ -126,9 +87,7 @@ export class Scalar {
      * @param max min to denormalize between
      * @returns the denormalized value
      */
-    public static Denormalize(normalized: number, min: number, max: number): number {
-        return normalized * (max - min) + min;
-    }
+    public static Denormalize: (normalized: number, min: number, max: number) => number = functions.denormalize;
 
     /**
      * Calculates the shortest difference between two given angles given in degrees.
@@ -136,13 +95,7 @@ export class Scalar {
      * @param target target angle in degrees
      * @returns the delta
      */
-    public static DeltaAngle(current: number, target: number): number {
-        let num: number = Scalar.Repeat(target - current, 360.0);
-        if (num > 180.0) {
-            num -= 360.0;
-        }
-        return num;
-    }
+    public static DeltaAngle: (current: number, target: number) => number = functions.deltaAngle;
 
     /**
      * PingPongs the value t, so that it is never larger than length and never smaller than 0.
@@ -150,10 +103,7 @@ export class Scalar {
      * @param length length
      * @returns The returned value will move back and forth between 0 and length
      */
-    public static PingPong(tx: number, length: number): number {
-        const t: number = Scalar.Repeat(tx, length * 2.0);
-        return length - Math.abs(t - length);
-    }
+    public static PingPong: (tx: number, length: number) => number = functions.pingPong;
 
     /**
      * Interpolates between min and max with smoothing at the limits.
@@ -165,11 +115,7 @@ export class Scalar {
      * @param tx value
      * @returns the smooth stepped value
      */
-    public static SmoothStep(from: number, to: number, tx: number): number {
-        let t: number = Scalar.Clamp(tx);
-        t = -2.0 * t * t * t + 3.0 * t * t;
-        return to * t + from * (1.0 - t);
-    }
+    public static SmoothStep: (from: number, to: number, tx: number) => number = functions.smoothStep;
 
     /**
      * Moves a value current towards target.
@@ -181,15 +127,7 @@ export class Scalar {
      * @param maxDelta max distance to move
      * @returns resulting value
      */
-    public static MoveTowards(current: number, target: number, maxDelta: number): number {
-        let result: number = 0;
-        if (Math.abs(target - current) <= maxDelta) {
-            result = target;
-        } else {
-            result = current + Scalar.Sign(target - current) * maxDelta;
-        }
-        return result;
-    }
+    public static MoveTowards: (current: number, target: number, maxDelta: number) => number = functions.moveTowards;
 
     /**
      * Same as MoveTowards but makes sure the values interpolate correctly when they wrap around 360 degrees.
@@ -201,17 +139,7 @@ export class Scalar {
      * @param maxDelta max distance to move
      * @returns resulting angle
      */
-    public static MoveTowardsAngle(current: number, target: number, maxDelta: number): number {
-        const num: number = Scalar.DeltaAngle(current, target);
-        let result: number = 0;
-        if (-maxDelta < num && num < maxDelta) {
-            result = target;
-        } else {
-            target = current + num;
-            result = Scalar.MoveTowards(current, target, maxDelta);
-        }
-        return result;
-    }
+    public static MoveTowardsAngle: (current: number, target: number, maxDelta: number) => number = functions.moveTowardsAngle;
 
     /**
      * Creates a new scalar with values linearly interpolated of "amount" between the start scalar and the end scalar.
@@ -220,7 +148,7 @@ export class Scalar {
      * @param amount amount to lerp between
      * @returns the lerped value
      */
-    public static Lerp: (start: number, end: number, amount: number) => number = Lerp;
+    public static Lerp: (start: number, end: number, amount: number) => number = functions.Lerp;
 
     /**
      * Same as Lerp but makes sure the values interpolate correctly when they wrap around 360 degrees.
@@ -230,13 +158,7 @@ export class Scalar {
      * @param amount amount to lerp between
      * @returns the lerped value
      */
-    public static LerpAngle(start: number, end: number, amount: number): number {
-        let num: number = Scalar.Repeat(end - start, 360.0);
-        if (num > 180.0) {
-            num -= 360.0;
-        }
-        return start + num * Clamp(amount);
-    }
+    public static LerpAngle: (start: number, end: number, amount: number) => number = functions.lerpAngle;
 
     /**
      * Calculates the linear parameter t that produces the interpolant value within the range [a, b].
@@ -245,15 +167,7 @@ export class Scalar {
      * @param value value between a and b
      * @returns the inverseLerp value
      */
-    public static InverseLerp(a: number, b: number, value: number): number {
-        let result: number = 0;
-        if (a != b) {
-            result = Clamp((value - a) / (b - a));
-        } else {
-            result = 0.0;
-        }
-        return result;
-    }
+    public static InverseLerp: (a: number, b: number, value: number) => number = functions.inverseLerp;
 
     /**
      * Returns a new scalar located for "amount" (float) on the Hermite spline defined by the scalars "value1", "value3", "tangent1", "tangent2".
@@ -265,16 +179,7 @@ export class Scalar {
      * @param amount defines the amount on the interpolation spline (between 0 and 1)
      * @returns hermite result
      */
-    public static Hermite(value1: number, tangent1: number, value2: number, tangent2: number, amount: number): number {
-        const squared = amount * amount;
-        const cubed = amount * squared;
-        const part1 = 2.0 * cubed - 3.0 * squared + 1.0;
-        const part2 = -2.0 * cubed + 3.0 * squared;
-        const part3 = cubed - 2.0 * squared + amount;
-        const part4 = cubed - squared;
-
-        return value1 * part1 + value2 * part2 + tangent1 * part3 + tangent2 * part4;
-    }
+    public static Hermite: (value1: number, tangent1: number, value2: number, tangent2: number, amount: number) => number = functions.hermite;
 
     /**
      * Returns a new scalar which is the 1st derivative of the Hermite spline defined by the scalars "value1", "value2", "tangent1", "tangent2".
@@ -285,10 +190,7 @@ export class Scalar {
      * @param time define where the derivative must be done
      * @returns 1st derivative
      */
-    public static Hermite1stDerivative(value1: number, tangent1: number, value2: number, tangent2: number, time: number): number {
-        const t2 = time * time;
-        return (t2 - time) * 6 * value1 + (3 * t2 - 4 * time + 1) * tangent1 + (-t2 + time) * 6 * value2 + (3 * t2 - 2 * time) * tangent2;
-    }
+    public static Hermite1stDerivative: (value1: number, tangent1: number, value2: number, tangent2: number, time: number) => number = functions.hermite1stDerivative;
 
     /**
      * Returns a random float number between and min and max values
@@ -296,7 +198,7 @@ export class Scalar {
      * @param max max value of random
      * @returns random value
      */
-    public static RandomRange: (min: number, max: number) => number = RandomRange;
+    public static RandomRange: (min: number, max: number) => number = functions.RandomRange;
 
     /**
      * This function returns percentage of a number in a given range.
@@ -308,9 +210,7 @@ export class Scalar {
      * @param max max range
      * @returns the percentage
      */
-    public static RangeToPercent(number: number, min: number, max: number): number {
-        return (number - min) / (max - min);
-    }
+    public static RangeToPercent: (number: number, min: number, max: number) => number = functions.rangeToPercent;
 
     /**
      * This function returns number that corresponds to the percentage in a given range.
@@ -321,16 +221,14 @@ export class Scalar {
      * @param max max range
      * @returns the number
      */
-    public static PercentToRange(percent: number, min: number, max: number): number {
-        return (max - min) * percent + min;
-    }
+    public static PercentToRange: (percent: number, min: number, max: number) => number = functions.percentToRange;
 
     /**
      * Returns the angle converted to equivalent value between -Math.PI and Math.PI radians.
      * @param angle The angle to normalize in radian.
      * @returns The converted angle.
      */
-    public static NormalizeRadians: (angle: number) => number = NormalizeRadians;
+    public static NormalizeRadians: (angle: number) => number = functions.NormalizeRadians;
 
     /**
      * Returns the highest common factor of two integers.
@@ -338,11 +236,5 @@ export class Scalar {
      * @param b second parameter
      * @returns HCF of a and b
      */
-    public static HCF(a: number, b: number): number {
-        const r: number = a % b;
-        if (r === 0) {
-            return b;
-        }
-        return Scalar.HCF(b, r);
-    }
+    public static HCF: (a: number, b: number) => number = functions.highestCommonFactor;
 }
