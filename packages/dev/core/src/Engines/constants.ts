@@ -557,89 +557,146 @@ export const MATERIAL_ClockWiseSideOrientation = 0;
 export const MATERIAL_CounterClockWiseSideOrientation = 1;
 
 /**
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
+ */
+export const enum ActionTrigger {
+    /** Nothing */
+    Nothing = 0,
+    /** On pick */
+    OnPick = 1,
+    /** On left pick */
+    OnLeftPick = 2,
+    /** On right pick */
+    OnRightPick = 3,
+    /** On center pick */
+    OnCenterPick = 4,
+    /** On pick down */
+    OnPickDown = 5,
+    /** On double pick */
+    OnDoublePick = 6,
+    /** On pick up */
+    OnPickUp = 7,
+    /** On pick out. This trigger will only be raised if you also declared a OnPickDown */
+    OnPickOut = 16,
+    /** On long press */
+    OnLongPress = 8,
+    /** On pointer over */
+    OnPointerOver = 9,
+    /** On pointer out */
+    OnPointerOut = 10,
+    /** On every frame */
+    OnEveryFrame = 11,
+    /** On intersection enter */
+    OnIntersectionEnter = 12,
+    /** On intersection exit */
+    OnIntersectionExit = 13,
+    /** On key down */
+    OnKeyDown = 14,
+    /** On key up */
+    OnKeyUp = 15,
+}
+
+/**
  * Nothing
  * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
+ * @deprecated use ActionTrigger
  */
 export const ACTION_NothingTrigger = 0;
 /**
  * On pick
  * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
+ * @deprecated use ActionTrigger
  */
 export const ACTION_OnPickTrigger = 1;
 /**
  * On left pick
  * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
+ * @deprecated use ActionTrigger
  */
 export const ACTION_OnLeftPickTrigger = 2;
 /**
  * On right pick
  * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
+ * @deprecated use ActionTrigger
  */
 export const ACTION_OnRightPickTrigger = 3;
 /**
  * On center pick
  * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
+ * @deprecated use ActionTrigger
  */
 export const ACTION_OnCenterPickTrigger = 4;
 /**
  * On pick down
  * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
+ * @deprecated use ActionTrigger
  */
 export const ACTION_OnPickDownTrigger = 5;
 /**
  * On double pick
  * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
+ * @deprecated use ActionTrigger
  */
 export const ACTION_OnDoublePickTrigger = 6;
 /**
  * On pick up
  * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
+ * @deprecated use ActionTrigger
  */
 export const ACTION_OnPickUpTrigger = 7;
 /**
  * On pick out.
  * This trigger will only be raised if you also declared a OnPickDown
  * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
+ * @deprecated use ActionTrigger
  */
 export const ACTION_OnPickOutTrigger = 16;
 /**
  * On long press
  * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
+ * @deprecated use ActionTrigger
  */
 export const ACTION_OnLongPressTrigger = 8;
 /**
  * On pointer over
  * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
+ * @deprecated use ActionTrigger
  */
 export const ACTION_OnPointerOverTrigger = 9;
 /**
  * On pointer out
  * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
+ * @deprecated use ActionTrigger
  */
 export const ACTION_OnPointerOutTrigger = 10;
 /**
  * On every frame
  * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
+ * @deprecated use ActionTrigger
  */
 export const ACTION_OnEveryFrameTrigger = 11;
 /**
  * On intersection enter
  * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
+ * @deprecated use ActionTrigger
  */
 export const ACTION_OnIntersectionEnterTrigger = 12;
 /**
  * On intersection exit
  * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
+ * @deprecated use ActionTrigger
  */
 export const ACTION_OnIntersectionExitTrigger = 13;
 /**
  * On key down
  * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
+ * @deprecated use ActionTrigger
  */
 export const ACTION_OnKeyDownTrigger = 14;
 /**
  * On key up
  * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
+ * @deprecated use ActionTrigger
  */
 export const ACTION_OnKeyUpTrigger = 15;
 

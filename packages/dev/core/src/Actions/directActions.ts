@@ -2,7 +2,7 @@ import { Logger } from "../Misc/logger";
 import { Vector3 } from "../Maths/math.vector";
 import { Action } from "./action";
 import type { Condition } from "./condition";
-import { ACTION_NothingTrigger } from "../Engines/constants";
+import { ActionTrigger } from "../Engines/constants";
 import { RegisterClass } from "../Misc/typeStore";
 
 import type { ActionEvent } from "./actionEvent";
@@ -386,7 +386,7 @@ export class DoNothingAction extends Action {
      * @param triggerOptions defines the trigger options
      * @param condition defines the trigger related conditions
      */
-    constructor(triggerOptions: any = ACTION_NothingTrigger, condition?: Condition) {
+    constructor(triggerOptions: any = ActionTrigger.Nothing, condition?: Condition) {
         super(triggerOptions, condition);
     }
 

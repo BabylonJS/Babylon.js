@@ -14,25 +14,7 @@ import { Logger } from "../Misc/logger";
 import { DeepCopier } from "../Misc/deepCopier";
 import { GetClass } from "../Misc/typeStore";
 import { AbstractActionManager } from "./abstractActionManager";
-import {
-    ACTION_NothingTrigger,
-    ACTION_OnPickTrigger,
-    ACTION_OnLeftPickTrigger,
-    ACTION_OnRightPickTrigger,
-    ACTION_OnCenterPickTrigger,
-    ACTION_OnPickDownTrigger,
-    ACTION_OnDoublePickTrigger,
-    ACTION_OnPickUpTrigger,
-    ACTION_OnPickOutTrigger,
-    ACTION_OnLongPressTrigger,
-    ACTION_OnPointerOverTrigger,
-    ACTION_OnPointerOutTrigger,
-    ACTION_OnEveryFrameTrigger,
-    ACTION_OnIntersectionEnterTrigger,
-    ACTION_OnIntersectionExitTrigger,
-    ACTION_OnKeyDownTrigger,
-    ACTION_OnKeyUpTrigger,
-} from "../Engines/constants";
+import { ActionTrigger } from "../Engines/constants";
 
 /**
  * Action Manager manages all events to be triggered on a given mesh or the global scene.
@@ -44,102 +26,102 @@ export class ActionManager extends AbstractActionManager {
      * Nothing
      * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
-    public static readonly NothingTrigger = ACTION_NothingTrigger;
+    public static readonly NothingTrigger = ActionTrigger.Nothing;
 
     /**
      * On pick
      * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
-    public static readonly OnPickTrigger = ACTION_OnPickTrigger;
+    public static readonly OnPickTrigger = ActionTrigger.OnPick;
 
     /**
      * On left pick
      * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
-    public static readonly OnLeftPickTrigger = ACTION_OnLeftPickTrigger;
+    public static readonly OnLeftPickTrigger = ActionTrigger.OnLeftPick;
 
     /**
      * On right pick
      * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
-    public static readonly OnRightPickTrigger = ACTION_OnRightPickTrigger;
+    public static readonly OnRightPickTrigger = ActionTrigger.OnRightPick;
 
     /**
      * On center pick
      * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
-    public static readonly OnCenterPickTrigger = ACTION_OnCenterPickTrigger;
+    public static readonly OnCenterPickTrigger = ActionTrigger.OnCenterPick;
 
     /**
      * On pick down
      * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
-    public static readonly OnPickDownTrigger = ACTION_OnPickDownTrigger;
+    public static readonly OnPickDownTrigger = ActionTrigger.OnPickDown;
 
     /**
      * On double pick
      * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
-    public static readonly OnDoublePickTrigger = ACTION_OnDoublePickTrigger;
+    public static readonly OnDoublePickTrigger = ActionTrigger.OnDoublePick;
 
     /**
      * On pick up
      * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
-    public static readonly OnPickUpTrigger = ACTION_OnPickUpTrigger;
+    public static readonly OnPickUpTrigger = ActionTrigger.OnPickUp;
     /**
      * On pick out.
      * This trigger will only be raised if you also declared a OnPickDown
      * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
-    public static readonly OnPickOutTrigger = ACTION_OnPickOutTrigger;
+    public static readonly OnPickOutTrigger = ActionTrigger.OnPickOut;
 
     /**
      * On long press
      * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
-    public static readonly OnLongPressTrigger = ACTION_OnLongPressTrigger;
+    public static readonly OnLongPressTrigger = ActionTrigger.OnLongPress;
 
     /**
      * On pointer over
      * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
-    public static readonly OnPointerOverTrigger = ACTION_OnPointerOverTrigger;
+    public static readonly OnPointerOverTrigger = ActionTrigger.OnPointerOver;
 
     /**
      * On pointer out
      * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
-    public static readonly OnPointerOutTrigger = ACTION_OnPointerOutTrigger;
+    public static readonly OnPointerOutTrigger = ActionTrigger.OnPointerOut;
 
     /**
      * On every frame
      * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
-    public static readonly OnEveryFrameTrigger = ACTION_OnEveryFrameTrigger;
+    public static readonly OnEveryFrameTrigger = ActionTrigger.OnEveryFrame;
     /**
      * On intersection enter
      * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
-    public static readonly OnIntersectionEnterTrigger = ACTION_OnIntersectionEnterTrigger;
+    public static readonly OnIntersectionEnterTrigger = ActionTrigger.OnIntersectionEnter;
 
     /**
      * On intersection exit
      * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
-    public static readonly OnIntersectionExitTrigger = ACTION_OnIntersectionExitTrigger;
+    public static readonly OnIntersectionExitTrigger = ActionTrigger.OnIntersectionExit;
 
     /**
      * On key down
      * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
-    public static readonly OnKeyDownTrigger = ACTION_OnKeyDownTrigger;
+    public static readonly OnKeyDownTrigger = ActionTrigger.OnKeyDown;
 
     /**
      * On key up
      * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
-    public static readonly OnKeyUpTrigger = ACTION_OnKeyUpTrigger;
+    public static readonly OnKeyUpTrigger = ActionTrigger.OnKeyUp;
 
     // Members
     private _scene: Scene;
@@ -660,39 +642,39 @@ export class ActionManager extends AbstractActionManager {
      */
     public static GetTriggerName(trigger: number): string {
         switch (trigger) {
-            case ACTION_NothingTrigger:
+            case ActionTrigger.Nothing:
                 return "NothingTrigger";
-            case ACTION_OnPickTrigger:
+            case ActionTrigger.OnPick:
                 return "OnPickTrigger";
-            case ACTION_OnLeftPickTrigger:
+            case ActionTrigger.OnLeftPick:
                 return "OnLeftPickTrigger";
-            case ACTION_OnRightPickTrigger:
+            case ActionTrigger.OnRightPick:
                 return "OnRightPickTrigger";
-            case ACTION_OnCenterPickTrigger:
+            case ActionTrigger.OnCenterPick:
                 return "OnCenterPickTrigger";
-            case ACTION_OnPickDownTrigger:
+            case ActionTrigger.OnPickDown:
                 return "OnPickDownTrigger";
-            case ACTION_OnDoublePickTrigger:
+            case ActionTrigger.OnDoublePick:
                 return "OnDoublePickTrigger"; // start;
-            case ACTION_OnPickUpTrigger:
+            case ActionTrigger.OnPickUp:
                 return "OnPickUpTrigger";
-            case ACTION_OnLongPressTrigger:
+            case ActionTrigger.OnLongPress:
                 return "OnLongPressTrigger";
-            case ACTION_OnPointerOverTrigger:
+            case ActionTrigger.OnPointerOver:
                 return "OnPointerOverTrigger";
-            case ACTION_OnPointerOutTrigger:
+            case ActionTrigger.OnPointerOut:
                 return "OnPointerOutTrigger";
-            case ACTION_OnEveryFrameTrigger:
+            case ActionTrigger.OnEveryFrame:
                 return "OnEveryFrameTrigger";
-            case ACTION_OnIntersectionEnterTrigger:
+            case ActionTrigger.OnIntersectionEnter:
                 return "OnIntersectionEnterTrigger";
-            case ACTION_OnIntersectionExitTrigger:
+            case ActionTrigger.OnIntersectionExit:
                 return "OnIntersectionExitTrigger";
-            case ACTION_OnKeyDownTrigger:
+            case ActionTrigger.OnKeyDown:
                 return "OnKeyDownTrigger";
-            case ACTION_OnKeyUpTrigger:
+            case ActionTrigger.OnKeyUp:
                 return "OnKeyUpTrigger";
-            case ACTION_OnPickOutTrigger:
+            case ActionTrigger.OnPickOut:
                 return "OnPickOutTrigger";
             default:
                 return "";

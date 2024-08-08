@@ -52,11 +52,9 @@ import {
     MATERIAL_AttributesDirtyFlag,
     DELAYLOADSTATE_LOADING,
     SNAPSHOTRENDERING_FAST,
-    ACTION_OnIntersectionEnterTrigger,
-    ACTION_OnIntersectionExitTrigger,
+    ActionTrigger,
     RENDERPASS_MAIN,
     RIG_MODE_NONE,
-    ACTION_OnEveryFrameTrigger,
     RIG_MODE_CUSTOM,
     MATERIAL_AllDirtyFlag,
 } from "./Engines/constants";
@@ -4064,7 +4062,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             mesh.computeWorldMatrix();
 
             // Intersections
-            if (mesh.actionManager && mesh.actionManager.hasSpecificTriggers2(ACTION_OnIntersectionEnterTrigger, ACTION_OnIntersectionExitTrigger)) {
+            if (mesh.actionManager && mesh.actionManager.hasSpecificTriggers2(ActionTrigger.OnIntersectionEnter, ActionTrigger.OnIntersectionExit)) {
                 this._meshesForIntersections.pushNoDuplicate(mesh);
             }
 
@@ -4415,7 +4413,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             for (let actionIndex = 0; sourceMesh.actionManager && actionIndex < sourceMesh.actionManager.actions.length; actionIndex++) {
                 const action: IAction = sourceMesh.actionManager.actions[actionIndex];
 
-                if (action.trigger === ACTION_OnIntersectionEnterTrigger || action.trigger === ACTION_OnIntersectionExitTrigger) {
+                if (action.trigger === ActionTrigger.OnIntersectionEnter || action.trigger === ActionTrigger.OnIntersectionExit) {
                     const parameters = action.getTriggerParameter();
                     const otherMesh = parameters.mesh ? parameters.mesh : parameters;
 
@@ -4423,27 +4421,27 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                     const currentIntersectionInProgress = sourceMesh._intersectionsInProgress.indexOf(otherMesh);
 
                     if (areIntersecting && currentIntersectionInProgress === -1) {
-                        if (action.trigger === ACTION_OnIntersectionEnterTrigger) {
+                        if (action.trigger === ActionTrigger.OnIntersectionEnter) {
                             action._executeCurrent(ActionEvent.CreateNew(sourceMesh, undefined, otherMesh));
                             sourceMesh._intersectionsInProgress.push(otherMesh);
-                        } else if (action.trigger === ACTION_OnIntersectionExitTrigger) {
+                        } else if (action.trigger === ActionTrigger.OnIntersectionExit) {
                             sourceMesh._intersectionsInProgress.push(otherMesh);
                         }
                     } else if (!areIntersecting && currentIntersectionInProgress > -1) {
                         //They intersected, and now they don't.
 
                         //is this trigger an exit trigger? execute an event.
-                        if (action.trigger === ACTION_OnIntersectionExitTrigger) {
+                        if (action.trigger === ActionTrigger.OnIntersectionExit) {
                             action._executeCurrent(ActionEvent.CreateNew(sourceMesh, undefined, otherMesh));
                         }
 
                         //if this is an exit trigger, or no exit trigger exists, remove the id from the intersection in progress array.
                         if (
-                            !sourceMesh.actionManager.hasSpecificTrigger(ACTION_OnIntersectionExitTrigger, (parameter) => {
+                            !sourceMesh.actionManager.hasSpecificTrigger(ActionTrigger.OnIntersectionExit, (parameter) => {
                                 const parameterMesh = parameter.mesh ? parameter.mesh : parameter;
                                 return otherMesh === parameterMesh;
                             }) ||
-                            action.trigger === ACTION_OnIntersectionExitTrigger
+                            action.trigger === ActionTrigger.OnIntersectionExit
                         ) {
                             sourceMesh._intersectionsInProgress.splice(currentIntersectionInProgress, 1);
                         }
@@ -4592,7 +4590,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         // Actions
         if (this.actionManager) {
-            this.actionManager.processTrigger(ACTION_OnEveryFrameTrigger);
+            this.actionManager.processTrigger(ActionTrigger.OnEveryFrame);
         }
 
         // Animations

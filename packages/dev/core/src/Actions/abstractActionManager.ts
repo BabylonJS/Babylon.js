@@ -1,7 +1,7 @@
 import type { IDisposable } from "../scene";
 import type { IActionEvent } from "./actionEvent";
 import type { IAction } from "./action";
-import { ACTION_OnPickTrigger, ACTION_OnPickUpTrigger } from "../Engines/constants";
+import { ActionTrigger } from "../Engines/constants";
 import type { Nullable } from "../types";
 
 /**
@@ -115,7 +115,7 @@ export abstract class AbstractActionManager implements IDisposable {
         for (const t in AbstractActionManager.Triggers) {
             if (Object.prototype.hasOwnProperty.call(AbstractActionManager.Triggers, t)) {
                 const tAsInt = parseInt(t);
-                if (tAsInt >= ACTION_OnPickTrigger && tAsInt <= ACTION_OnPickUpTrigger) {
+                if (tAsInt >= ActionTrigger.OnPick && tAsInt <= ActionTrigger.OnPickUp) {
                     return true;
                 }
             }
