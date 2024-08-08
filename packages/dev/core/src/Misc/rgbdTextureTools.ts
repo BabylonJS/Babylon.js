@@ -52,13 +52,12 @@ export class RGBDTextureTools {
 
         const expandRGBDTexture = async () => {
             const isWebGPU = engine.isWebGPU;
-            let shaderLanguage = ShaderLanguage.GLSL;
+            const shaderLanguage = isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
             internalTexture.isReady = false;
 
             if (!this._ShaderImported) {
                 this._ShaderImported = true;
                 if (isWebGPU) {
-                    shaderLanguage = ShaderLanguage.WGSL;
                     await Promise.all([import("../ShadersWGSL/rgbdDecode.fragment"), import("../ShadersWGSL/rgbdEncode.fragment")]);
                 } else {
                     await Promise.all([import("../Shaders/rgbdDecode.fragment"), import("../Shaders/rgbdEncode.fragment")]);

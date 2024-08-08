@@ -44,3 +44,6 @@ export * from "../Shaders/pass.fragment";
 export * from "../Shaders/passCube.fragment";
 export * from "../ShadersWGSL/pass.fragment";
 export * from "../ShadersWGSL/passCube.fragment";
+
+// vrDFistortionCorrection postprocess
+export * from "../Shaders/vrDistortionCorrection.fragment";
