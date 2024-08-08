@@ -101,8 +101,8 @@ export class HTMLTwinNodeItem extends HTMLTwinItem {
                     eventHandler.click();
                     return;
                 }
-                actions.push(...this._getTriggerActions(this.entity, ActionTrigger.OnLeftPickTrigger));
-                actions.push(...this._getTriggerActions(this.entity, ActionTrigger.OnPickTrigger));
+                actions.push(...this._getTriggerActions(this.entity, ActionTrigger.OnLeftPick));
+                actions.push(...this._getTriggerActions(this.entity, ActionTrigger.OnPick));
                 break;
 
             case "contextmenu":
@@ -110,8 +110,8 @@ export class HTMLTwinNodeItem extends HTMLTwinItem {
                     eventHandler.contextmenu();
                     return;
                 }
-                actions.push(...this._getTriggerActions(this.entity, ActionTrigger.OnRightPickTrigger));
-                actions.push(...this._getTriggerActions(this.entity, ActionTrigger.OnPickTrigger));
+                actions.push(...this._getTriggerActions(this.entity, ActionTrigger.OnRightPick));
+                actions.push(...this._getTriggerActions(this.entity, ActionTrigger.OnPick));
                 break;
 
             default:
