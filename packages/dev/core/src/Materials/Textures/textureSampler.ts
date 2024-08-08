@@ -1,4 +1,4 @@
-import { TEXTURE_WRAP_ADDRESSMODE, TEXTURE_BILINEAR_SAMPLINGMODE } from "../../Engines/constants";
+import { TextureAddressMode, TEXTURE_BILINEAR_SAMPLINGMODE } from "../../Engines/constants";
 import type { Nullable } from "../../types";
 
 /**
@@ -119,18 +119,18 @@ export class TextureSampler {
 
     /**
      * Sets all the parameters of the sampler
-     * @param wrapU u address mode (default: TEXTURE_WRAP_ADDRESSMODE)
-     * @param wrapV v address mode (default: TEXTURE_WRAP_ADDRESSMODE)
-     * @param wrapR r address mode (default: TEXTURE_WRAP_ADDRESSMODE)
+     * @param wrapU u address mode (default: TextureAddressMode.WRAP)
+     * @param wrapV v address mode (default: TextureAddressMode.WRAP)
+     * @param wrapR r address mode (default: TextureAddressMode.WRAP)
      * @param anisotropicFilteringLevel anisotropic level (default: 1)
      * @param samplingMode sampling mode (default: Constants.TEXTURE_BILINEAR_SAMPLINGMODE)
      * @param comparisonFunction comparison function (default: 0 - no comparison function)
      * @returns the current sampler instance
      */
     public setParameters(
-        wrapU = TEXTURE_WRAP_ADDRESSMODE,
-        wrapV = TEXTURE_WRAP_ADDRESSMODE,
-        wrapR = TEXTURE_WRAP_ADDRESSMODE,
+        wrapU = TextureAddressMode.WRAP,
+        wrapV = TextureAddressMode.WRAP,
+        wrapR = TextureAddressMode.WRAP,
         anisotropicFilteringLevel = 1,
         samplingMode = TEXTURE_BILINEAR_SAMPLINGMODE,
         comparisonFunction = 0

@@ -8,7 +8,7 @@ import {
     TextureType,
     TextureFormat,
     TEXTURE_NEAREST_SAMPLINGMODE,
-    TEXTURE_CLAMP_ADDRESSMODE,
+    TextureAddressMode,
     TEXTURE_TRILINEAR_SAMPLINGMODE,
 } from "../../../Engines/constants";
 import { EffectWrapper, EffectRenderer } from "../../../Materials/effectRenderer";
@@ -87,7 +87,7 @@ export class HDRFiltering {
             generateStencilBuffer: false,
             samplingMode: TEXTURE_NEAREST_SAMPLINGMODE,
         });
-        this._engine.updateTextureWrappingMode(rtWrapper.texture!, TEXTURE_CLAMP_ADDRESSMODE, TEXTURE_CLAMP_ADDRESSMODE, TEXTURE_CLAMP_ADDRESSMODE);
+        this._engine.updateTextureWrappingMode(rtWrapper.texture!, TextureAddressMode.CLAMP, TextureAddressMode.CLAMP, TextureAddressMode.CLAMP);
 
         this._engine.updateTextureSamplingMode(TEXTURE_TRILINEAR_SAMPLINGMODE, rtWrapper.texture!, true);
 

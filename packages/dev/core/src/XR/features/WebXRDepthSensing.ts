@@ -7,7 +7,7 @@ import { Texture } from "../../Materials/Textures/texture";
 import type { Engine } from "../../Engines/engine";
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
-import { TextureFormat, TextureType, TEXTURE_NEAREST_LINEAR, TEXTURE_WRAP_ADDRESSMODE } from "../../Engines/constants";
+import { TextureFormat, TextureType, TEXTURE_NEAREST_LINEAR, TextureAddressMode } from "../../Engines/constants";
 import { WebGLHardwareTexture } from "../../Engines/WebGL/webGLHardwareTexture";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import type { ThinEngine } from "../../Engines/thinEngine";
@@ -116,8 +116,8 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         internalTexture.samplingMode = TEXTURE_NEAREST_LINEAR;
         internalTexture.width = this.width ?? 0;
         internalTexture.height = this.height ?? 0;
-        internalTexture._cachedWrapU = TEXTURE_WRAP_ADDRESSMODE;
-        internalTexture._cachedWrapV = TEXTURE_WRAP_ADDRESSMODE;
+        internalTexture._cachedWrapU = TextureAddressMode.WRAP;
+        internalTexture._cachedWrapV = TextureAddressMode.WRAP;
         internalTexture._hardwareTexture = new WebGLHardwareTexture(this._cachedWebGLTexture, (engine as ThinEngine)._gl);
 
         return internalTexture;

@@ -11,7 +11,7 @@ import {
     TEXTURE_CUBE_MAP,
     TEXTURE_3D,
     TEXTURE_2D_ARRAY,
-    TEXTURE_CLAMP_ADDRESSMODE,
+    TextureAddressMode,
 } from "../../constants";
 import type { TextureSize } from "../../../Materials/Textures/textureCreationOptions";
 import type { RenderTargetWrapper } from "../../renderTargetWrapper";
@@ -252,8 +252,8 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
         texture.generateMipMaps = generateMipMaps;
         texture.samplingMode = samplingMode;
         texture.type = type;
-        texture._cachedWrapU = TEXTURE_CLAMP_ADDRESSMODE;
-        texture._cachedWrapV = TEXTURE_CLAMP_ADDRESSMODE;
+        texture._cachedWrapU = TextureAddressMode.CLAMP;
+        texture._cachedWrapV = TextureAddressMode.CLAMP;
         texture._useSRGBBuffer = useSRGBBuffer;
         texture.format = format;
         texture.label = labels[i];

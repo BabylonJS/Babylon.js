@@ -6,7 +6,7 @@ import type { Nullable } from "../../types";
 import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import type { WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
-import { TextureFormat, TextureType, TEXTURE_LINEAR_LINEAR_MIPLINEAR, TEXTURE_WRAP_ADDRESSMODE, MATERIAL_TextureDirtyFlag, TEXTURE_CUBIC_MODE } from "../../Engines/constants";
+import { TextureFormat, TextureType, TEXTURE_LINEAR_LINEAR_MIPLINEAR, TextureAddressMode, MATERIAL_TextureDirtyFlag, TEXTURE_CUBIC_MODE } from "../../Engines/constants";
 import { Color3 } from "../../Maths/math.color";
 import { Vector3 } from "../../Maths/math.vector";
 import { DirectionalLight } from "../../Lights/directionalLight";
@@ -233,8 +233,8 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
                 internalTexture.samplingMode = TEXTURE_LINEAR_LINEAR_MIPLINEAR;
                 internalTexture.width = this._reflectionCubeMapTextureSize;
                 internalTexture.height = this._reflectionCubeMapTextureSize;
-                internalTexture._cachedWrapU = TEXTURE_WRAP_ADDRESSMODE;
-                internalTexture._cachedWrapV = TEXTURE_WRAP_ADDRESSMODE;
+                internalTexture._cachedWrapU = TextureAddressMode.WRAP;
+                internalTexture._cachedWrapV = TextureAddressMode.WRAP;
                 internalTexture._hardwareTexture = new WebGLHardwareTexture(lp, this._getCanvasContext() as WebGLRenderingContext);
                 this._reflectionCubeMap._texture = internalTexture;
             } else {

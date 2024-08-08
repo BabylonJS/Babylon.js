@@ -100,7 +100,7 @@ export class GLTFUtils {
     /**
      * Returns the wrap mode of the texture
      * @param mode the mode value
-     * @returns the wrap mode (TEXTURE_WRAP_ADDRESSMODE, MIRROR_ADDRESSMODE or CLAMP_ADDRESSMODE)
+     * @returns the wrap mode (TextureAddressMode)
      */
     public static GetWrapMode(mode: number): number {
         switch (mode) {

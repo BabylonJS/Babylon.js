@@ -20,7 +20,7 @@ import {
     TextureFormat,
     TEXTURE_NEAREST_SAMPLINGMODE,
     TextureType,
-    TEXTURE_WRAP_ADDRESSMODE,
+    TextureAddressMode,
     ALPHA_ADD,
     ALPHA_ONEONE,
     ALPHA_COMBINE,
@@ -1032,8 +1032,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             TextureType.FLOAT
         );
         this._randomTexture.name = "GPUParticleSystem_random1";
-        this._randomTexture.wrapU = TEXTURE_WRAP_ADDRESSMODE;
-        this._randomTexture.wrapV = TEXTURE_WRAP_ADDRESSMODE;
+        this._randomTexture.wrapU = TextureAddressMode.WRAP;
+        this._randomTexture.wrapV = TextureAddressMode.WRAP;
 
         d = [];
         for (let i = 0; i < maxTextureSize; ++i) {
@@ -1054,8 +1054,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             TextureType.FLOAT
         );
         this._randomTexture2.name = "GPUParticleSystem_random2";
-        this._randomTexture2.wrapU = TEXTURE_WRAP_ADDRESSMODE;
-        this._randomTexture2.wrapV = TEXTURE_WRAP_ADDRESSMODE;
+        this._randomTexture2.wrapU = TextureAddressMode.WRAP;
+        this._randomTexture2.wrapV = TextureAddressMode.WRAP;
 
         this._randomTextureSize = maxTextureSize;
     }

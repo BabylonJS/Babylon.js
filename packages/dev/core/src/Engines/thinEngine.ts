@@ -3675,11 +3675,11 @@ export class ThinEngine extends AbstractEngine {
 
     private _getTextureWrapMode(mode: number): number {
         switch (mode) {
-            case Constants.TEXTURE_WRAP_ADDRESSMODE:
+            case Constants.TextureAddressMode.WRAP:
                 return this._gl.REPEAT;
-            case Constants.TEXTURE_CLAMP_ADDRESSMODE:
+            case Constants.TextureAddressMode.CLAMP:
                 return this._gl.CLAMP_TO_EDGE;
-            case Constants.TEXTURE_MIRROR_ADDRESSMODE:
+            case Constants.TextureAddressMode.MIRROR:
                 return this._gl.MIRRORED_REPEAT;
         }
         return this._gl.REPEAT;
@@ -3755,8 +3755,8 @@ export class ThinEngine extends AbstractEngine {
 
                 const textureWrapMode =
                     texture.coordinatesMode !== Constants.TEXTURE_CUBIC_MODE && texture.coordinatesMode !== Constants.TEXTURE_SKYBOX_MODE
-                        ? Constants.TEXTURE_WRAP_ADDRESSMODE
-                        : Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                        ? Constants.TextureAddressMode.WRAP
+                        : Constants.TextureAddressMode.CLAMP;
                 texture.wrapU = textureWrapMode;
                 texture.wrapV = textureWrapMode;
             }

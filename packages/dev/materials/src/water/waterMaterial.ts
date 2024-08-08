@@ -6,7 +6,7 @@ import { Matrix, Vector2, Vector3 } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
 import { Plane } from "core/Maths/math.plane";
 import type { IAnimatable } from "core/Animations/animatable.interface";
-import { TEXTURE_MIRROR_ADDRESSMODE } from "core/Engines/constants";
+import { TextureAddressMode } from "core/Engines/constants";
 import { SmartArray } from "core/Misc/smartArray";
 import type { Observer } from "core/Misc/observable";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
@@ -669,8 +669,8 @@ export class WaterMaterial extends PushMaterial {
     private _createRenderTargets(scene: Scene, renderTargetSize: Vector2): void {
         // Render targets
         this._refractionRTT = new RenderTargetTexture(name + "_refraction", { width: renderTargetSize.x, height: renderTargetSize.y }, scene, false, true);
-        this._refractionRTT.wrapU = TEXTURE_MIRROR_ADDRESSMODE;
-        this._refractionRTT.wrapV = TEXTURE_MIRROR_ADDRESSMODE;
+        this._refractionRTT.wrapU = TextureAddressMode.MIRROR;
+        this._refractionRTT.wrapV = TextureAddressMode.MIRROR;
         this._refractionRTT.ignoreCameraViewport = true;
 
         let boundingBoxRendererEnabled = false;
@@ -683,8 +683,8 @@ export class WaterMaterial extends PushMaterial {
         });
 
         this._reflectionRTT = new RenderTargetTexture(name + "_reflection", { width: renderTargetSize.x, height: renderTargetSize.y }, scene, false, true);
-        this._reflectionRTT.wrapU = TEXTURE_MIRROR_ADDRESSMODE;
-        this._reflectionRTT.wrapV = TEXTURE_MIRROR_ADDRESSMODE;
+        this._reflectionRTT.wrapU = TextureAddressMode.MIRROR;
+        this._reflectionRTT.wrapV = TextureAddressMode.MIRROR;
         this._reflectionRTT.ignoreCameraViewport = true;
 
         let isVisible: boolean;

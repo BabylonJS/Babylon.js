@@ -160,11 +160,11 @@ export function getNativeSamplingMode(samplingMode: number): number {
 
 export function getNativeAddressMode(wrapMode: number): number {
     switch (wrapMode) {
-        case Constants.TEXTURE_WRAP_ADDRESSMODE:
+        case Constants.TextureAddressMode.WRAP:
             return _native.Engine.ADDRESS_MODE_WRAP;
-        case Constants.TEXTURE_CLAMP_ADDRESSMODE:
+        case Constants.TextureAddressMode.CLAMP:
             return _native.Engine.ADDRESS_MODE_CLAMP;
-        case Constants.TEXTURE_MIRROR_ADDRESSMODE:
+        case Constants.TextureAddressMode.MIRROR:
             return _native.Engine.ADDRESS_MODE_MIRROR;
         default:
             throw new Error("Unexpected wrap mode: " + wrapMode + ".");

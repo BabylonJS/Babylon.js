@@ -3,7 +3,7 @@ import type { Scene } from "../../scene";
 import { Matrix } from "../../Maths/math.vector";
 import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
-import { DELAYLOADSTATE_NOTLOADED, TextureFormat, TEXTURE_BILINEAR_SAMPLINGMODE, TextureType, TEXTURE_CLAMP_ADDRESSMODE, DELAYLOADSTATE_LOADED } from "../../Engines/constants";
+import { DELAYLOADSTATE_NOTLOADED, TextureFormat, TEXTURE_BILINEAR_SAMPLINGMODE, TextureType, TextureAddressMode, DELAYLOADSTATE_LOADED } from "../../Engines/constants";
 import { RegisterClass } from "../../Misc/typeStore";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 
@@ -104,9 +104,9 @@ export class ColorGradingTexture extends BaseTexture {
 
         this.isCube = false;
         this.is3D = engine._features.support3DTextures;
-        this.wrapU = TEXTURE_CLAMP_ADDRESSMODE;
-        this.wrapV = TEXTURE_CLAMP_ADDRESSMODE;
-        this.wrapR = TEXTURE_CLAMP_ADDRESSMODE;
+        this.wrapU = TextureAddressMode.CLAMP;
+        this.wrapV = TextureAddressMode.CLAMP;
+        this.wrapR = TextureAddressMode.CLAMP;
         this.anisotropicFilteringLevel = 1;
 
         const callback = (text: string | ArrayBuffer) => {

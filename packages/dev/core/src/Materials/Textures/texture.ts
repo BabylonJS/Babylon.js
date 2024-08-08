@@ -30,9 +30,7 @@ import {
     TEXTURE_EQUIRECTANGULAR_MODE,
     TEXTURE_FIXED_EQUIRECTANGULAR_MODE,
     TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE,
-    TEXTURE_CLAMP_ADDRESSMODE,
-    TEXTURE_WRAP_ADDRESSMODE,
-    TEXTURE_MIRROR_ADDRESSMODE,
+    TextureAddressMode,
     DELAYLOADSTATE_NOTLOADED,
     MATERIAL_TextureDirtyFlag,
     DELAYLOADSTATE_LOADED,
@@ -222,12 +220,12 @@ export class Texture extends BaseTexture {
     /** Equirectangular Fixed Mirrored coordinates mode */
     public static readonly FIXED_EQUIRECTANGULAR_MIRRORED_MODE = TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE;
 
-    /** Texture is not repeating outside of 0..1 UVs */
-    public static readonly CLAMP_ADDRESSMODE = TEXTURE_CLAMP_ADDRESSMODE;
-    /** Texture is repeating outside of 0..1 UVs */
-    public static readonly WRAP_ADDRESSMODE = TEXTURE_WRAP_ADDRESSMODE;
-    /** Texture is repeating and mirrored */
-    public static readonly MIRROR_ADDRESSMODE = TEXTURE_MIRROR_ADDRESSMODE;
+    /** Texture is not repeating outside of 0..1 UVs @deprecated use TextureAddressMode */
+    public static readonly CLAMP_ADDRESSMODE = TextureAddressMode.CLAMP;
+    /** Texture is repeating outside of 0..1 UVs @deprecated use TextureAddressMode */
+    public static readonly WRAP_ADDRESSMODE = TextureAddressMode.WRAP;
+    /** Texture is repeating and mirrored @deprecated use TextureAddressMode */
+    public static readonly MIRROR_ADDRESSMODE = TextureAddressMode.MIRROR;
 
     /**
      * Gets or sets a boolean which defines if the texture url must be build from the serialized URL instead of just using the name and loading them side by side with the scene file

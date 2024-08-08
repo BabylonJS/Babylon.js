@@ -1,7 +1,7 @@
 import { InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
 import type { IWebRequest } from "../../../Misc/interfaces/iWebRequest";
 import type { Nullable } from "../../../types";
-import { TextureType, TextureFormat, TEXTURE_NEAREST_SAMPLINGMODE, TEXTURE_CLAMP_ADDRESSMODE, TEXTURE_TRILINEAR_SAMPLINGMODE } from "../../constants";
+import { TextureType, TextureFormat, TEXTURE_NEAREST_SAMPLINGMODE, TextureAddressMode, TEXTURE_TRILINEAR_SAMPLINGMODE } from "../../constants";
 import { WebGPUEngine } from "../../webgpuEngine";
 import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 import { Logger } from "../../../Misc/logger";
@@ -322,8 +322,8 @@ WebGPUEngine.prototype.createRawCubeTexture = function (
     }
     texture.invertY = invertY;
     texture._compression = compression;
-    texture._cachedWrapU = TEXTURE_CLAMP_ADDRESSMODE;
-    texture._cachedWrapV = TEXTURE_CLAMP_ADDRESSMODE;
+    texture._cachedWrapU = TextureAddressMode.CLAMP;
+    texture._cachedWrapV = TextureAddressMode.CLAMP;
 
     this._textureHelper.createGPUTextureForInternalTexture(texture);
 

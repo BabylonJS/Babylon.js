@@ -2,7 +2,7 @@ import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager"
 import type { WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Observable } from "../../Misc/observable";
-import { TextureFormat, TextureType, TEXTURE_LINEAR_LINEAR_MIPLINEAR, TEXTURE_WRAP_ADDRESSMODE } from "../../Engines/constants";
+import { TextureFormat, TextureType, TEXTURE_LINEAR_LINEAR_MIPLINEAR, TextureAddressMode } from "../../Engines/constants";
 import { WebGLHardwareTexture } from "../../Engines/WebGL/webGLHardwareTexture";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
@@ -172,8 +172,8 @@ export class WebXRRawCameraAccess extends WebXRAbstractFeature {
             internalTexture.samplingMode = TEXTURE_LINEAR_LINEAR_MIPLINEAR;
             internalTexture.width = view.camera.width;
             internalTexture.height = view.camera.height;
-            internalTexture._cachedWrapU = TEXTURE_WRAP_ADDRESSMODE;
-            internalTexture._cachedWrapV = TEXTURE_WRAP_ADDRESSMODE;
+            internalTexture._cachedWrapU = TextureAddressMode.WRAP;
+            internalTexture._cachedWrapV = TextureAddressMode.WRAP;
             internalTexture._hardwareTexture = new WebGLHardwareTexture(lp, this._glContext);
             this._cachedInternalTextures[index] = internalTexture;
             // create the base texture

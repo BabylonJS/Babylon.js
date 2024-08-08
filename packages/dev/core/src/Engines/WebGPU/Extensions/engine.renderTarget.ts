@@ -1,14 +1,7 @@
 import { InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
 import type { RenderTargetCreationOptions, DepthTextureCreationOptions, TextureSize } from "../../../Materials/Textures/textureCreationOptions";
 import type { Nullable } from "../../../types";
-import {
-    TEXTURE_TRILINEAR_SAMPLINGMODE,
-    TextureFormat,
-    TEXTURE_BILINEAR_SAMPLINGMODE,
-    TEXTURE_NEAREST_SAMPLINGMODE,
-    TextureType,
-    TEXTURE_CLAMP_ADDRESSMODE,
-} from "../../constants";
+import { TEXTURE_TRILINEAR_SAMPLINGMODE, TextureFormat, TEXTURE_BILINEAR_SAMPLINGMODE, TEXTURE_NEAREST_SAMPLINGMODE, TextureType, TextureAddressMode } from "../../constants";
 import type { RenderTargetWrapper } from "../../renderTargetWrapper";
 import { WebGPUEngine } from "../../webgpuEngine";
 import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
@@ -181,8 +174,8 @@ WebGPUEngine.prototype._setupDepthStencilTexture = function (
     internalTexture.samplingMode = bilinearFiltering ? TEXTURE_BILINEAR_SAMPLINGMODE : TEXTURE_NEAREST_SAMPLINGMODE;
     internalTexture.type = TextureType.FLOAT;
     internalTexture._comparisonFunction = comparisonFunction;
-    internalTexture._cachedWrapU = TEXTURE_CLAMP_ADDRESSMODE;
-    internalTexture._cachedWrapV = TEXTURE_CLAMP_ADDRESSMODE;
+    internalTexture._cachedWrapU = TextureAddressMode.CLAMP;
+    internalTexture._cachedWrapV = TextureAddressMode.CLAMP;
 };
 
 WebGPUEngine.prototype.updateRenderTargetTextureSampleCount = function (rtWrapper: Nullable<RenderTargetWrapper>, samples: number): number {

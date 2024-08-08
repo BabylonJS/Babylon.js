@@ -22,7 +22,7 @@ import {
     ALPHA_DISABLE,
     TEXTURE_BILINEAR_SAMPLINGMODE,
     ALPHA_ADD,
-    TEXTURE_CLAMP_ADDRESSMODE,
+    TextureAddressMode,
     MATERIAL_TextureDirtyFlag,
 } from "core/Engines/constants";
 import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
@@ -652,8 +652,8 @@ export class GIRSMManager {
                 format: textureFormat,
                 generateDepthBuffer: false,
             });
-            this._blurRTT.wrapU = TEXTURE_CLAMP_ADDRESSMODE;
-            this._blurRTT.wrapV = TEXTURE_CLAMP_ADDRESSMODE;
+            this._blurRTT.wrapU = TextureAddressMode.CLAMP;
+            this._blurRTT.wrapV = TextureAddressMode.CLAMP;
             this._blurRTT.updateSamplingMode(TEXTURE_NEAREST_SAMPLINGMODE);
             this._blurRTT.skipInitialClear = true;
 

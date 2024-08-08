@@ -18,9 +18,7 @@ import {
     TEXTURE_LINEAR_LINEAR,
     TEXTURE_BILINEAR_SAMPLINGMODE,
     TEXTURE_LINEAR_NEAREST,
-    TEXTURE_WRAP_ADDRESSMODE,
-    TEXTURE_CLAMP_ADDRESSMODE,
-    TEXTURE_MIRROR_ADDRESSMODE,
+    TextureAddressMode,
     ALWAYS,
     EQUAL,
     GREATER,
@@ -247,11 +245,11 @@ export class WebGPUCacheSampler {
 
     private static _GetWrappingMode(mode: number): GPUAddressMode {
         switch (mode) {
-            case TEXTURE_WRAP_ADDRESSMODE:
+            case TextureAddressMode.WRAP:
                 return WebGPUConstants.AddressMode.Repeat;
-            case TEXTURE_CLAMP_ADDRESSMODE:
+            case TextureAddressMode.CLAMP:
                 return WebGPUConstants.AddressMode.ClampToEdge;
-            case TEXTURE_MIRROR_ADDRESSMODE:
+            case TextureAddressMode.MIRROR:
                 return WebGPUConstants.AddressMode.MirrorRepeat;
         }
         return WebGPUConstants.AddressMode.Repeat;

@@ -18,12 +18,11 @@ import {
     TextureType,
     TEXTURE_TRILINEAR_SAMPLINGMODE,
     TEXTURE_NEAREST_SAMPLINGMODE,
-    TEXTURE_CLAMP_ADDRESSMODE,
+    TextureAddressMode,
     AUTOSAMPLERSUFFIX,
     DELAYLOADSTATE_NOTLOADED,
     TEXTURE_CUBIC_MODE,
     TEXTURE_SKYBOX_MODE,
-    TEXTURE_WRAP_ADDRESSMODE,
 } from "./constants";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import * as WebGPUConstants from "./WebGPU/webgpuConstants";
@@ -2386,8 +2385,8 @@ export class WebGPUEngine extends AbstractEngine {
         texture.format = fullOptions.format;
         texture.is2DArray = layers > 0;
         texture.is3D = depth > 0;
-        texture._cachedWrapU = TEXTURE_CLAMP_ADDRESSMODE;
-        texture._cachedWrapV = TEXTURE_CLAMP_ADDRESSMODE;
+        texture._cachedWrapU = TextureAddressMode.CLAMP;
+        texture._cachedWrapV = TextureAddressMode.CLAMP;
         texture._useSRGBBuffer = fullOptions.useSRGBBuffer;
         texture.label = fullOptions.label;
 
@@ -2759,7 +2758,7 @@ export class WebGPUEngine extends AbstractEngine {
                     internalTexture._cachedCoordinatesMode = texture.coordinatesMode;
 
                     const textureWrapMode =
-                        texture.coordinatesMode !== TEXTURE_CUBIC_MODE && texture.coordinatesMode !== TEXTURE_SKYBOX_MODE ? TEXTURE_WRAP_ADDRESSMODE : TEXTURE_CLAMP_ADDRESSMODE;
+                        texture.coordinatesMode !== TEXTURE_CUBIC_MODE && texture.coordinatesMode !== TEXTURE_SKYBOX_MODE ? TextureAddressMode.WRAP : TextureAddressMode.CLAMP;
                     texture.wrapU = textureWrapMode;
                     texture.wrapV = textureWrapMode;
                 }

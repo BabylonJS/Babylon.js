@@ -6,7 +6,7 @@ import type { Scene } from "../../scene";
 import { Matrix } from "../../Maths/math.vector";
 import { EngineStore } from "../../Engines/engineStore";
 import type { InternalTexture } from "../../Materials/Textures/internalTexture";
-import { MATERIAL_TextureDirtyFlag, TEXTURE_EXPLICIT_MODE, TEXTURE_WRAP_ADDRESSMODE, TextureType, TextureFormat } from "../../Engines/constants";
+import { MATERIAL_TextureDirtyFlag, TEXTURE_EXPLICIT_MODE, TextureAddressMode, TextureType, TextureFormat } from "../../Engines/constants";
 import type { IAnimatable } from "../../Animations/animatable.interface";
 import { RandomGUID } from "../../Misc/guid";
 
@@ -207,7 +207,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
      * | 2     | MIRROR_ADDRESSMODE |             |
      */
     @serialize()
-    public override wrapR = TEXTURE_WRAP_ADDRESSMODE;
+    public override wrapR = TextureAddressMode.WRAP;
 
     /**
      * With compliant hardware and browser (supporting anisotropic filtering)

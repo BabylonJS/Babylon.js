@@ -1,6 +1,6 @@
 import { InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
 import type { Nullable } from "../../../types";
-import { TextureFormat, TEXTURE_TRILINEAR_SAMPLINGMODE, TEXTURE_BILINEAR_SAMPLINGMODE, TEXTURE_CLAMP_ADDRESSMODE } from "../../constants";
+import { TextureFormat, TEXTURE_TRILINEAR_SAMPLINGMODE, TEXTURE_BILINEAR_SAMPLINGMODE, TextureAddressMode } from "../../constants";
 import type { DepthTextureCreationOptions } from "../../../Materials/Textures/textureCreationOptions";
 import { WebGPUEngine } from "../../webgpuEngine";
 import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
@@ -277,8 +277,8 @@ WebGPUEngine.prototype.createCubeTexture = function (
 
 WebGPUEngine.prototype._setCubeMapTextureParams = function (texture: InternalTexture, loadMipmap: boolean, maxLevel?: number) {
     texture.samplingMode = loadMipmap ? TEXTURE_TRILINEAR_SAMPLINGMODE : TEXTURE_BILINEAR_SAMPLINGMODE;
-    texture._cachedWrapU = TEXTURE_CLAMP_ADDRESSMODE;
-    texture._cachedWrapV = TEXTURE_CLAMP_ADDRESSMODE;
+    texture._cachedWrapU = TextureAddressMode.CLAMP;
+    texture._cachedWrapV = TextureAddressMode.CLAMP;
     if (maxLevel) {
         texture._maxLodLevel = maxLevel;
     }

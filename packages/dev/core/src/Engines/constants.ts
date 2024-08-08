@@ -129,12 +129,14 @@ export const INCR_WRAP = 0x8507;
 /** Passed to stencilOperation to specify that stencil value must be decremented with wrapping */
 export const DECR_WRAP = 0x8508;
 
-/** Texture is not repeating outside of 0..1 UVs */
-export const TEXTURE_CLAMP_ADDRESSMODE = 0;
-/** Texture is repeating outside of 0..1 UVs */
-export const TEXTURE_WRAP_ADDRESSMODE = 1;
-/** Texture is repeating and mirrored */
-export const TEXTURE_MIRROR_ADDRESSMODE = 2;
+export const enum TextureAddressMode {
+    /** Texture is not repeating outside of 0..1 UVs */
+    CLAMP = 0,
+    /** Texture is repeating outside of 0..1 UVs */
+    WRAP = 1,
+    /** Texture is repeating and mirrored */
+    MIRROR = 2,
+}
 
 /** Flag to create a storage texture */
 export const TEXTURE_CREATIONFLAG_STORAGE = 1;
@@ -862,6 +864,10 @@ export const MatricesWeightsExtraKind = "matricesWeightsExtra";
  * @deprecated use named exports
  */
 export const Constants = {
+    TEXTURE_CLAMP_ADDRESSMODE: TextureAddressMode.CLAMP,
+    TEXTURE_WRAP_ADDRESSMODE: TextureAddressMode.WRAP,
+    TEXTURE_MIRROR_ADDRESSMODE: TextureAddressMode.MIRROR,
+
     TEXTUREFORMAT_ALPHA: TextureFormat.ALPHA,
     TEXTUREFORMAT_LUMINANCE: TextureFormat.LUMINANCE,
     TEXTUREFORMAT_LUMINANCE_ALPHA: TextureFormat.LUMINANCE_ALPHA,
