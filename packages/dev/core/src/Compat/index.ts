@@ -1,1 +1,1 @@
-export * from "./compatibilityOptions";
+export { CompatibilityOptions } from "./compatibilityOptions";
