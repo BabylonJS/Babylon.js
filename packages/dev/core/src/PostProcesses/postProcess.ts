@@ -1066,6 +1066,9 @@ export class PostProcess {
      * If the post process is supported.
      */
     public get isSupported(): boolean {
+        if (!this._shadersLoaded) {
+            return true; // Waiting for the effect to be created
+        }
         return this._drawWrapper.effect!.isSupported;
     }
 
