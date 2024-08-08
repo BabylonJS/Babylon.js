@@ -578,22 +578,24 @@ export const enum PrepassTextureType {
     ALBEDO_SQRT = 7,
 }
 
-/** Flag to create a readable buffer (the buffer can be the source of a copy) */
-export const BUFFER_CREATIONFLAG_READ = 1;
-/** Flag to create a writable buffer (the buffer can be the destination of a copy) */
-export const BUFFER_CREATIONFLAG_WRITE = 2;
-/** Flag to create a readable and writable buffer */
-export const BUFFER_CREATIONFLAG_READWRITE = 3;
-/** Flag to create a buffer suitable to be used as a uniform buffer */
-export const BUFFER_CREATIONFLAG_UNIFORM = 4;
-/** Flag to create a buffer suitable to be used as a vertex buffer */
-export const BUFFER_CREATIONFLAG_VERTEX = 8;
-/** Flag to create a buffer suitable to be used as an index buffer */
-export const BUFFER_CREATIONFLAG_INDEX = 16;
-/** Flag to create a buffer suitable to be used as a storage buffer */
-export const BUFFER_CREATIONFLAG_STORAGE = 32;
-/** Flag to create a buffer suitable to be used for indirect calls, such as `dispatchIndirect` */
-export const BUFFER_CREATIONFLAG_INDIRECT = 64;
+export const enum BufferCreationFlag {
+    /** Flag to create a readable buffer (the buffer can be the source of a copy) */
+    READ = 1,
+    /** Flag to create a writable buffer (the buffer can be the destination of a copy) */
+    WRITE = 2,
+    /** Flag to create a readable and writable buffer */
+    READWRITE = 3,
+    /** Flag to create a buffer suitable to be used as a uniform buffer */
+    UNIFORM = 4,
+    /** Flag to create a buffer suitable to be used as a vertex buffer */
+    VERTEX = 8,
+    /** Flag to create a buffer suitable to be used as an index buffer */
+    INDEX = 16,
+    /** Flag to create a buffer suitable to be used as a storage buffer */
+    STORAGE = 32,
+    /** Flag to create a buffer suitable to be used for indirect calls, such as `dispatchIndirect` */
+    INDIRECT = 64,
+}
 
 /**
  * Prefixes used by the engine for sub mesh draw wrappers
@@ -964,4 +966,13 @@ export const Constants = {
     PREPASS_DEPTH_TEXTURE_TYPE: PrepassTextureType.DEPTH,
     PREPASS_NORMAL_TEXTURE_TYPE: PrepassTextureType.NORMAL,
     PREPASS_ALBEDO_SQRT_TEXTURE_TYPE: PrepassTextureType.ALBEDO_SQRT,
+
+    BUFFER_CREATIONFLAG_READ: BufferCreationFlag.READ,
+    BUFFER_CREATIONFLAG_WRITE: BufferCreationFlag.WRITE,
+    BUFFER_CREATIONFLAG_READWRITE: BufferCreationFlag.READWRITE,
+    BUFFER_CREATIONFLAG_UNIFORM: BufferCreationFlag.UNIFORM,
+    BUFFER_CREATIONFLAG_VERTEX: BufferCreationFlag.VERTEX,
+    BUFFER_CREATIONFLAG_INDEX: BufferCreationFlag.INDEX,
+    BUFFER_CREATIONFLAG_STORAGE: BufferCreationFlag.STORAGE,
+    BUFFER_CREATIONFLAG_INDIRECT: BufferCreationFlag.INDIRECT,
 };

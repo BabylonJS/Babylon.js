@@ -12,13 +12,7 @@ import {
     LEQUAL,
     ALPHA_ADD,
     ALPHA_DISABLE,
-    BUFFER_CREATIONFLAG_READ,
-    BUFFER_CREATIONFLAG_WRITE,
-    BUFFER_CREATIONFLAG_UNIFORM,
-    BUFFER_CREATIONFLAG_VERTEX,
-    BUFFER_CREATIONFLAG_INDEX,
-    BUFFER_CREATIONFLAG_STORAGE,
-    BUFFER_CREATIONFLAG_INDIRECT,
+    BufferCreationFlag,
     DISABLEUA,
     TextureFormat,
     TextureType,
@@ -1771,25 +1765,25 @@ export class WebGPUEngine extends AbstractEngine {
         }
 
         let flags = 0;
-        if (creationFlags & BUFFER_CREATIONFLAG_READ) {
+        if (creationFlags & BufferCreationFlag.READ) {
             flags |= WebGPUConstants.BufferUsage.CopySrc;
         }
-        if (creationFlags & BUFFER_CREATIONFLAG_WRITE) {
+        if (creationFlags & BufferCreationFlag.WRITE) {
             flags |= WebGPUConstants.BufferUsage.CopyDst;
         }
-        if (creationFlags & BUFFER_CREATIONFLAG_UNIFORM) {
+        if (creationFlags & BufferCreationFlag.UNIFORM) {
             flags |= WebGPUConstants.BufferUsage.Uniform;
         }
-        if (creationFlags & BUFFER_CREATIONFLAG_VERTEX) {
+        if (creationFlags & BufferCreationFlag.VERTEX) {
             flags |= WebGPUConstants.BufferUsage.Vertex;
         }
-        if (creationFlags & BUFFER_CREATIONFLAG_INDEX) {
+        if (creationFlags & BufferCreationFlag.INDEX) {
             flags |= WebGPUConstants.BufferUsage.Index;
         }
-        if (creationFlags & BUFFER_CREATIONFLAG_STORAGE) {
+        if (creationFlags & BufferCreationFlag.STORAGE) {
             flags |= WebGPUConstants.BufferUsage.Storage;
         }
-        if (creationFlags & BUFFER_CREATIONFLAG_INDIRECT) {
+        if (creationFlags & BufferCreationFlag.INDIRECT) {
             flags |= WebGPUConstants.BufferUsage.Indirect;
         }
 
@@ -3972,12 +3966,12 @@ export class WebGPUEngine extends AbstractEngine {
     /**
      * Creates a storage buffer
      * @param data the data for the storage buffer or the size of the buffer
-     * @param creationFlags flags to use when creating the buffer (see Constants.BUFFER_CREATIONFLAG_XXX). The BUFFER_CREATIONFLAG_STORAGE flag will be automatically added
+     * @param creationFlags flags to use when creating the buffer (see Constants.BufferCreationFlag.XXX). The BufferCreationFlag.STORAGE flag will be automatically added
      * @param label defines the label of the buffer (for debug purpose)
      * @returns the new buffer
      */
     public createStorageBuffer(data: DataArray | number, creationFlags: number, label?: string): DataBuffer {
-        return this._createBuffer(data, creationFlags | BUFFER_CREATIONFLAG_STORAGE, label);
+        return this._createBuffer(data, creationFlags | BufferCreationFlag.STORAGE, label);
     }
 
     /**
