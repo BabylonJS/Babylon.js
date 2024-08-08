@@ -230,93 +230,93 @@ export const enum TextureFormat {
 }
 
 /** ALPHA @deprecated use TextureFormat */
-export const TEXTUREFORMAT_ALPHA = 0;
+export const TEXTUREFORMAT_ALPHA = TextureFormat.ALPHA;
 /** LUMINANCE @deprecated use TextureFormat */
-export const TEXTUREFORMAT_LUMINANCE = 1;
+export const TEXTUREFORMAT_LUMINANCE = TextureFormat.LUMINANCE;
 /** LUMINANCE_ALPHA @deprecated use TextureFormat */
-export const TEXTUREFORMAT_LUMINANCE_ALPHA = 2;
+export const TEXTUREFORMAT_LUMINANCE_ALPHA = TextureFormat.LUMINANCE_ALPHA;
 /** RGB @deprecated use TextureFormat */
-export const TEXTUREFORMAT_RGB = 4;
+export const TEXTUREFORMAT_RGB = TextureFormat.RGB;
 /** RGBA @deprecated use TextureFormat */
-export const TEXTUREFORMAT_RGBA = 5;
+export const TEXTUREFORMAT_RGBA = TextureFormat.RGBA;
 /** RED @deprecated use TextureFormat */
-export const TEXTUREFORMAT_RED = 6;
+export const TEXTUREFORMAT_RED = TextureFormat.RED;
 /** RED (2nd reference) @deprecated use TextureFormat */
-export const TEXTUREFORMAT_R = 6;
+export const TEXTUREFORMAT_R = TextureFormat.R;
 /** RG @deprecated use TextureFormat */
-export const TEXTUREFORMAT_RG = 7;
+export const TEXTUREFORMAT_RG = TextureFormat.RG;
 /** RED_INTEGER @deprecated use TextureFormat */
-export const TEXTUREFORMAT_RED_INTEGER = 8;
+export const TEXTUREFORMAT_RED_INTEGER = TextureFormat.RED_INTEGER;
 /** RED_INTEGER (2nd reference) @deprecated use TextureFormat */
-export const TEXTUREFORMAT_R_INTEGER = 8;
+export const TEXTUREFORMAT_R_INTEGER = TextureFormat.R_INTEGER;
 /** RG_INTEGER @deprecated use TextureFormat */
-export const TEXTUREFORMAT_RG_INTEGER = 9;
+export const TEXTUREFORMAT_RG_INTEGER = TextureFormat.RG_INTEGER;
 /** RGB_INTEGER @deprecated use TextureFormat */
-export const TEXTUREFORMAT_RGB_INTEGER = 10;
+export const TEXTUREFORMAT_RGB_INTEGER = TextureFormat.RGB_INTEGER;
 /** RGBA_INTEGER @deprecated use TextureFormat */
-export const TEXTUREFORMAT_RGBA_INTEGER = 11;
+export const TEXTUREFORMAT_RGBA_INTEGER = TextureFormat.RGBA_INTEGER;
 /** BGRA @deprecated use TextureFormat */
-export const TEXTUREFORMAT_BGRA = 12;
+export const TEXTUREFORMAT_BGRA = TextureFormat.BGRA;
 
 /** Depth 24 bits + Stencil 8 bits @deprecated use TextureFormat */
-export const TEXTUREFORMAT_DEPTH24_STENCIL8 = 13;
+export const TEXTUREFORMAT_DEPTH24_STENCIL8 = TextureFormat.DEPTH24_STENCIL8;
 /** Depth 32 bits float @deprecated use TextureFormat */
-export const TEXTUREFORMAT_DEPTH32_FLOAT = 14;
+export const TEXTUREFORMAT_DEPTH32_FLOAT = TextureFormat.DEPTH32_FLOAT;
 /** Depth 16 bits @deprecated use TextureFormat */
-export const TEXTUREFORMAT_DEPTH16 = 15;
+export const TEXTUREFORMAT_DEPTH16 = TextureFormat.DEPTH16;
 /** Depth 24 bits @deprecated use TextureFormat */
-export const TEXTUREFORMAT_DEPTH24 = 16;
+export const TEXTUREFORMAT_DEPTH24 = TextureFormat.DEPTH24;
 /** Depth 24 bits unorm + Stencil 8 bits @deprecated use TextureFormat */
-export const TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 = 17;
+export const TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 = TextureFormat.DEPTH24UNORM_STENCIL8;
 /** Depth 32 bits float + Stencil 8 bits @deprecated use TextureFormat */
-export const TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8 = 18;
+export const TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8 = TextureFormat.DEPTH32FLOAT_STENCIL8;
 /** Stencil 8 bits @deprecated use TextureFormat */
-export const TEXTUREFORMAT_STENCIL8 = 19;
+export const TEXTUREFORMAT_STENCIL8 = TextureFormat.STENCIL8;
 /** UNDEFINED @deprecated use TextureFormat */
-export const TEXTUREFORMAT_UNDEFINED = 0xffffffff;
+export const TEXTUREFORMAT_UNDEFINED = TextureFormat.UNDEFINED;
 
 /** Compressed BC7 @deprecated use TextureFormat */
-export const TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM = 36492;
+export const TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM = TextureFormat.COMPRESSED_RGBA_BPTC_UNORM;
 /** Compressed BC7 (SRGB) @deprecated use TextureFormat */
-export const TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_BPTC_UNORM = 36493;
+export const TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_BPTC_UNORM = TextureFormat.COMPRESSED_SRGB_ALPHA_BPTC_UNORM;
 /** Compressed BC6 unsigned float @deprecated use TextureFormat */
-export const TEXTUREFORMAT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT = 36495;
+export const TEXTUREFORMAT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT = TextureFormat.COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT;
 /** Compressed BC6 signed float @deprecated use TextureFormat */
-export const TEXTUREFORMAT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT = 36494;
+export const TEXTUREFORMAT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT = TextureFormat.COMPRESSED_RGB_BPTC_SIGNED_FLOAT;
 /** Compressed BC3 @deprecated use TextureFormat */
-export const TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5 = 33779;
+export const TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5 = TextureFormat.COMPRESSED_RGBA_S3TC_DXT5;
 /** Compressed BC3 (SRGB) @deprecated use TextureFormat */
-export const TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT = 35919;
+export const TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT = TextureFormat.COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT;
 /** Compressed BC2 @deprecated use TextureFormat */
-export const TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3 = 33778;
+export const TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3 = TextureFormat.COMPRESSED_RGBA_S3TC_DXT3;
 /** Compressed BC2 (SRGB) @deprecated use TextureFormat */
-export const TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT = 35918;
+export const TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT = TextureFormat.COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT;
 /** Compressed BC1 (RGBA) @deprecated use TextureFormat */
-export const TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1 = 33777;
+export const TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1 = TextureFormat.COMPRESSED_RGBA_S3TC_DXT1;
 /** Compressed BC1 (RGB) @deprecated use TextureFormat */
-export const TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1 = 33776;
+export const TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1 = TextureFormat.COMPRESSED_RGB_S3TC_DXT1;
 /** Compressed BC1 (SRGB+A) @deprecated use TextureFormat */
-export const TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT = 35917;
+export const TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT = TextureFormat.COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT;
 /** Compressed BC1 (SRGB) @deprecated use TextureFormat */
-export const TEXTUREFORMAT_COMPRESSED_SRGB_S3TC_DXT1_EXT = 35916;
+export const TEXTUREFORMAT_COMPRESSED_SRGB_S3TC_DXT1_EXT = TextureFormat.COMPRESSED_SRGB_S3TC_DXT1_EXT;
 /** Compressed ASTC 4x4 @deprecated use TextureFormat */
-export const TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4 = 37808;
+export const TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4 = TextureFormat.COMPRESSED_RGBA_ASTC_4x4;
 /** Compressed ASTC 4x4 (SRGB) @deprecated use TextureFormat */
-export const TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR = 37840;
+export const TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR = TextureFormat.COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR;
 /** Compressed ETC1 (RGB) @deprecated use TextureFormat */
-export const TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL = 36196;
+export const TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL = TextureFormat.COMPRESSED_RGB_ETC1_WEBGL;
 /** Compressed ETC2 (RGB) @deprecated use TextureFormat */
-export const TEXTUREFORMAT_COMPRESSED_RGB8_ETC2 = 37492;
+export const TEXTUREFORMAT_COMPRESSED_RGB8_ETC2 = TextureFormat.COMPRESSED_RGB8_ETC2;
 /** Compressed ETC2 (SRGB) @deprecated use TextureFormat */
-export const TEXTUREFORMAT_COMPRESSED_SRGB8_ETC2 = 37493;
+export const TEXTUREFORMAT_COMPRESSED_SRGB8_ETC2 = TextureFormat.COMPRESSED_SRGB8_ETC2;
 /** Compressed ETC2 (RGB+A1) @deprecated use TextureFormat */
-export const TEXTUREFORMAT_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2 = 37494;
+export const TEXTUREFORMAT_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2 = TextureFormat.COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2;
 /** Compressed ETC2 (SRGB+A1) @deprecated use TextureFormat */
-export const TEXTUREFORMAT_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2 = 37495;
+export const TEXTUREFORMAT_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2 = TextureFormat.COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2;
 /** Compressed ETC2 (RGB+A) @deprecated use TextureFormat */
-export const TEXTUREFORMAT_COMPRESSED_RGBA8_ETC2_EAC = 37496;
+export const TEXTUREFORMAT_COMPRESSED_RGBA8_ETC2_EAC = TextureFormat.COMPRESSED_RGBA8_ETC2_EAC;
 /** Compressed ETC2 (SRGB+1) @deprecated use TextureFormat */
-export const TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC = 37497;
+export const TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC = TextureFormat.COMPRESSED_SRGB8_ALPHA8_ETC2_EAC;
 
 export const enum TextureType {
     /** UNSIGNED_BYTE */
@@ -358,41 +358,41 @@ export const enum TextureType {
 }
 
 /** UNSIGNED_BYTE @deprecated use TextureType */
-export const TEXTURETYPE_UNSIGNED_BYTE = 0;
+export const TEXTURETYPE_UNSIGNED_BYTE = TextureType.UNSIGNED_BYTE;
 /** UNSIGNED_BYTE (2nd reference) @deprecated use TextureType */
-export const TEXTURETYPE_UNSIGNED_INT = 0;
+export const TEXTURETYPE_UNSIGNED_INT = TextureType.UNSIGNED_INT;
 /** FLOAT @deprecated use TextureType */
-export const TEXTURETYPE_FLOAT = 1;
+export const TEXTURETYPE_FLOAT = TextureType.FLOAT;
 /** HALF_FLOAT @deprecated use TextureType */
-export const TEXTURETYPE_HALF_FLOAT = 2;
+export const TEXTURETYPE_HALF_FLOAT = TextureType.HALF_FLOAT;
 /** BYTE @deprecated use TextureType */
-export const TEXTURETYPE_BYTE = 3;
+export const TEXTURETYPE_BYTE = TextureType.BYTE;
 /** SHORT @deprecated use TextureType */
-export const TEXTURETYPE_SHORT = 4;
+export const TEXTURETYPE_SHORT = TextureType.SHORT;
 /** UNSIGNED_SHORT @deprecated use TextureType */
-export const TEXTURETYPE_UNSIGNED_SHORT = 5;
+export const TEXTURETYPE_UNSIGNED_SHORT = TextureType.UNSIGNED_SHORT;
 /** INT @deprecated use TextureType */
-export const TEXTURETYPE_INT = 6;
+export const TEXTURETYPE_INT = TextureType.INT;
 /** UNSIGNED_INT @deprecated use TextureType */
-export const TEXTURETYPE_UNSIGNED_INTEGER = 7;
+export const TEXTURETYPE_UNSIGNED_INTEGER = TextureType.UNSIGNED_INTEGER;
 /** UNSIGNED_SHORT_4_4_4_4 @deprecated use TextureType */
-export const TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4 = 8;
+export const TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4 = TextureType.UNSIGNED_SHORT_4_4_4_4;
 /** UNSIGNED_SHORT_5_5_5_1 @deprecated use TextureType */
-export const TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1 = 9;
+export const TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1 = TextureType.UNSIGNED_SHORT_5_5_5_1;
 /** UNSIGNED_SHORT_5_6_5 @deprecated use TextureType */
-export const TEXTURETYPE_UNSIGNED_SHORT_5_6_5 = 10;
+export const TEXTURETYPE_UNSIGNED_SHORT_5_6_5 = TextureType.UNSIGNED_SHORT_5_6_5;
 /** UNSIGNED_INT_2_10_10_10_REV @deprecated use TextureType */
-export const TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV = 11;
+export const TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV = TextureType.UNSIGNED_INT_2_10_10_10_REV;
 /** UNSIGNED_INT_24_8 @deprecated use TextureType */
-export const TEXTURETYPE_UNSIGNED_INT_24_8 = 12;
+export const TEXTURETYPE_UNSIGNED_INT_24_8 = TextureType.UNSIGNED_INT_24_8;
 /** UNSIGNED_INT_10F_11F_11F_REV @deprecated use TextureType */
-export const TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV = 13;
+export const TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV = TextureType.UNSIGNED_INT_10F_11F_11F_REV;
 /** UNSIGNED_INT_5_9_9_9_REV @deprecated use TextureType */
-export const TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV = 14;
+export const TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV = TextureType.UNSIGNED_INT_5_9_9_9_REV;
 /** FLOAT_32_UNSIGNED_INT_24_8_REV @deprecated use TextureType */
-export const TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV = 15;
+export const TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV = TextureType.FLOAT_32_UNSIGNED_INT_24_8_REV;
 /** UNDEFINED @deprecated use TextureType */
-export const TEXTURETYPE_UNDEFINED = 16;
+export const TEXTURETYPE_UNDEFINED = TextureType.UNDEFINED;
 
 /** 2D Texture target*/
 export const TEXTURE_2D = 3553;
@@ -606,39 +606,39 @@ export const enum ActionTrigger {
 }
 
 /** @deprecated use ActionTrigger */
-export const ACTION_NothingTrigger = 0;
+export const ACTION_NothingTrigger = ActionTrigger.Nothing;
 /** @deprecated use ActionTrigger */
-export const ACTION_OnPickTrigger = 1;
+export const ACTION_OnPickTrigger = ActionTrigger.OnPick;
 /** @deprecated use ActionTrigger */
-export const ACTION_OnLeftPickTrigger = 2;
+export const ACTION_OnLeftPickTrigger = ActionTrigger.OnLeftPick;
 /** @deprecated use ActionTrigger */
-export const ACTION_OnRightPickTrigger = 3;
+export const ACTION_OnRightPickTrigger = ActionTrigger.OnRightPick;
 /** @deprecated use ActionTrigger */
-export const ACTION_OnCenterPickTrigger = 4;
+export const ACTION_OnCenterPickTrigger = ActionTrigger.OnCenterPick;
 /** @deprecated use ActionTrigger */
-export const ACTION_OnPickDownTrigger = 5;
+export const ACTION_OnPickDownTrigger = ActionTrigger.OnPickDown;
 /** @deprecated use ActionTrigger */
-export const ACTION_OnDoublePickTrigger = 6;
+export const ACTION_OnDoublePickTrigger = ActionTrigger.OnDoublePick;
 /** @deprecated use ActionTrigger */
-export const ACTION_OnPickUpTrigger = 7;
+export const ACTION_OnPickUpTrigger = ActionTrigger.OnPickUp;
 /** @deprecated use ActionTrigger */
-export const ACTION_OnPickOutTrigger = 16;
+export const ACTION_OnPickOutTrigger = ActionTrigger.OnPickOut;
 /** @deprecated use ActionTrigger */
-export const ACTION_OnLongPressTrigger = 8;
+export const ACTION_OnLongPressTrigger = ActionTrigger.OnLongPress;
 /** @deprecated use ActionTrigger */
-export const ACTION_OnPointerOverTrigger = 9;
+export const ACTION_OnPointerOverTrigger = ActionTrigger.OnPointerOver;
 /** @deprecated use ActionTrigger */
-export const ACTION_OnPointerOutTrigger = 10;
+export const ACTION_OnPointerOutTrigger = ActionTrigger.OnPointerOut;
 /** @deprecated use ActionTrigger */
-export const ACTION_OnEveryFrameTrigger = 11;
+export const ACTION_OnEveryFrameTrigger = ActionTrigger.OnEveryFrame;
 /** @deprecated use ActionTrigger */
-export const ACTION_OnIntersectionEnterTrigger = 12;
+export const ACTION_OnIntersectionEnterTrigger = ActionTrigger.OnIntersectionEnter;
 /** @deprecated use ActionTrigger */
-export const ACTION_OnIntersectionExitTrigger = 13;
+export const ACTION_OnIntersectionExitTrigger = ActionTrigger.OnIntersectionExit;
 /** @deprecated use ActionTrigger */
-export const ACTION_OnKeyDownTrigger = 14;
+export const ACTION_OnKeyDownTrigger = ActionTrigger.OnKeyDown;
 /** @deprecated use ActionTrigger */
-export const ACTION_OnKeyUpTrigger = 15;
+export const ACTION_OnKeyUpTrigger = ActionTrigger.OnKeyUp;
 
 export const enum ParticlesBillboardMode {
     /**
@@ -660,13 +660,13 @@ export const enum ParticlesBillboardMode {
 }
 
 /** @deprecated use ParticlesBillboardMode */
-export const PARTICLES_BILLBOARDMODE_Y = 2;
+export const PARTICLES_BILLBOARDMODE_Y = ParticlesBillboardMode.Y;
 /** @deprecated use ParticlesBillboardMode */
-export const PARTICLES_BILLBOARDMODE_ALL = 7;
+export const PARTICLES_BILLBOARDMODE_ALL = ParticlesBillboardMode.ALL;
 /** @deprecated use ParticlesBillboardMode */
-export const PARTICLES_BILLBOARDMODE_STRETCHED = 8;
+export const PARTICLES_BILLBOARDMODE_STRETCHED = ParticlesBillboardMode.STRETCHED;
 /** @deprecated use ParticlesBillboardMode */
-export const PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL = 9;
+export const PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL = ParticlesBillboardMode.STRETCHED_LOCAL;
 
 export const enum CullingStrategy {
     /** Default culling strategy : this is an exclusion test and it's the more accurate.
@@ -706,13 +706,13 @@ export const enum CullingStrategy {
 }
 
 /** @deprecated use CullingStrategy */
-export const MESHES_CULLINGSTRATEGY_STANDARD = 0;
+export const MESHES_CULLINGSTRATEGY_STANDARD = CullingStrategy.STANDARD;
 /** @deprecated use CullingStrategy */
-export const MESHES_CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY = 1;
+export const MESHES_CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY = CullingStrategy.BOUNDINGSPHERE_ONLY;
 /** @deprecated use CullingStrategy */
-export const MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION = 2;
+export const MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION = CullingStrategy.OPTIMISTIC_INCLUSION;
 /** @deprecated use CullingStrategy */
-export const MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY = 3;
+export const MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY = CullingStrategy.OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY;
 
 export const enum SceneLoaderLogging {
     /** No logging while loading */
@@ -726,13 +726,13 @@ export const enum SceneLoaderLogging {
 }
 
 /** @deprecated use SceneLoaderLogging */
-export const SCENELOADER_NO_LOGGING = 0;
+export const SCENELOADER_NO_LOGGING = SceneLoaderLogging.NONE;
 /** @deprecated use SceneLoaderLogging */
-export const SCENELOADER_MINIMAL_LOGGING = 1;
+export const SCENELOADER_MINIMAL_LOGGING = SceneLoaderLogging.MINIMAL;
 /** @deprecated use SceneLoaderLogging */
-export const SCENELOADER_SUMMARY_LOGGING = 2;
+export const SCENELOADER_SUMMARY_LOGGING = SceneLoaderLogging.SUMMARY;
 /** @deprecated use SceneLoaderLogging */
-export const SCENELOADER_DETAILED_LOGGING = 3;
+export const SCENELOADER_DETAILED_LOGGING = SceneLoaderLogging.DETAILED;
 
 /**
  * Constant used to retrieve the irradiance texture index in the textures array in the prepass
