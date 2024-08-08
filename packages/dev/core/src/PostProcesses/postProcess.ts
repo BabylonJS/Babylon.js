@@ -707,6 +707,7 @@ export class PostProcess {
     private async _postConstructor(blockCompilation: boolean, defines: Nullable<string> = null, dealyLoadShaders: boolean = false) {
         if (dealyLoadShaders) {
             await this._initShaderSourceAsync(PostProcess.ForceGLSL);
+            this._shadersLoaded = true;
             if (this._onInitShadersDone) {
                 this._onInitShadersDone();
             }
