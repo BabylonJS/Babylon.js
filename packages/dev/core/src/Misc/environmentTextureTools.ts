@@ -2,7 +2,7 @@
 import type { Nullable } from "../types";
 import { Tools } from "./tools";
 import { Vector3 } from "../Maths/math.vector";
-import { iLog2 } from "../Maths/math.scalar.functions";
+import { ILog2 } from "../Maths/math.scalar.functions";
 import { SphericalPolynomial } from "../Maths/sphericalPolynomial";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
@@ -263,7 +263,7 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
     engine.flushFramebuffer();
 
     // Read and collect all mipmaps data from the cube.
-    const mipmapsCount = iLog2(internalTexture.width);
+    const mipmapsCount = ILog2(internalTexture.width);
     for (let i = 0; i <= mipmapsCount; i++) {
         const faceWidth = Math.pow(2, mipmapsCount - i);
 
@@ -536,7 +536,7 @@ export function UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBuff
         throw new Error("Texture size must be a power of two");
     }
 
-    const mipmapsCount = iLog2(texture.width) + 1;
+    const mipmapsCount = ILog2(texture.width) + 1;
 
     // Gets everything ready.
     const engine = texture.getEngine() as Engine;

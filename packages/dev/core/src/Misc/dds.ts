@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { clamp } from "../Maths/math.scalar.functions";
+import { Clamp } from "../Maths/math.scalar.functions";
 import type { SphericalPolynomial } from "../Maths/sphericalPolynomial";
 import { Constants } from "../Engines/constants";
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
@@ -297,13 +297,13 @@ export class DDSTools {
         for (let y = 0; y < height; y++) {
             for (let x = 0; x < width; x++) {
                 const srcPos = (x + y * width) * 4;
-                destArray[index] = clamp(srcData[srcPos]) * 255;
-                destArray[index + 1] = clamp(srcData[srcPos + 1]) * 255;
-                destArray[index + 2] = clamp(srcData[srcPos + 2]) * 255;
+                destArray[index] = Clamp(srcData[srcPos]) * 255;
+                destArray[index + 1] = Clamp(srcData[srcPos + 1]) * 255;
+                destArray[index + 2] = Clamp(srcData[srcPos + 2]) * 255;
                 if (DDSTools.StoreLODInAlphaChannel) {
                     destArray[index + 3] = lod;
                 } else {
-                    destArray[index + 3] = clamp(srcData[srcPos + 3]) * 255;
+                    destArray[index + 3] = Clamp(srcData[srcPos + 3]) * 255;
                 }
                 index += 4;
             }
@@ -319,13 +319,13 @@ export class DDSTools {
         for (let y = 0; y < height; y++) {
             for (let x = 0; x < width; x++) {
                 const srcPos = (x + y * width) * 4;
-                destArray[index] = clamp(FromHalfFloat(srcData[srcPos])) * 255;
-                destArray[index + 1] = clamp(FromHalfFloat(srcData[srcPos + 1])) * 255;
-                destArray[index + 2] = clamp(FromHalfFloat(srcData[srcPos + 2])) * 255;
+                destArray[index] = Clamp(FromHalfFloat(srcData[srcPos])) * 255;
+                destArray[index + 1] = Clamp(FromHalfFloat(srcData[srcPos + 1])) * 255;
+                destArray[index + 2] = Clamp(FromHalfFloat(srcData[srcPos + 2])) * 255;
                 if (DDSTools.StoreLODInAlphaChannel) {
                     destArray[index + 3] = lod;
                 } else {
-                    destArray[index + 3] = clamp(FromHalfFloat(srcData[srcPos + 3])) * 255;
+                    destArray[index + 3] = Clamp(FromHalfFloat(srcData[srcPos + 3])) * 255;
                 }
                 index += 4;
             }

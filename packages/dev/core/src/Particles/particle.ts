@@ -6,7 +6,7 @@ import type { ColorGradient, FactorGradient } from "../Misc/gradients";
 
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { ThinParticleSystem } from "./thinParticleSystem";
-import { clamp } from "../Maths/math.scalar.functions";
+import { Clamp } from "../Maths/math.scalar.functions";
 
 /**
  * A particle represents one of the element emitted by a particle system.
@@ -190,9 +190,9 @@ export class Particle {
         const dist = this._initialEndSpriteCellID - this._initialStartSpriteCellID + 1;
         let ratio: number;
         if (this._initialSpriteCellLoop) {
-            ratio = clamp(((offsetAge * changeSpeed) % this.lifeTime) / this.lifeTime);
+            ratio = Clamp(((offsetAge * changeSpeed) % this.lifeTime) / this.lifeTime);
         } else {
-            ratio = clamp((offsetAge * changeSpeed) / this.lifeTime);
+            ratio = Clamp((offsetAge * changeSpeed) / this.lifeTime);
         }
         this.cellIndex = (this._initialStartSpriteCellID + ratio * dist) | 0;
     }

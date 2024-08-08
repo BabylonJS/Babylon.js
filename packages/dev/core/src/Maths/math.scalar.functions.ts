@@ -3,7 +3,7 @@
  * @param value number value
  * @returns int value
  */
-export function extractAsInt(value: number) {
+export function ExtractAsInt(value: number) {
     return parseInt(value.toString().replace(/\W/g, ""));
 }
 
@@ -14,7 +14,7 @@ export function extractAsInt(value: number) {
  * @param epsilon (default = 1.401298E-45)
  * @returns true if the absolute difference between a and b is lower than epsilon (default = 1.401298E-45)
  */
-export function withinEpsilon(a: number, b: number, epsilon: number = 1.401298e-45): boolean {
+export function WithinEpsilon(a: number, b: number, epsilon: number = 1.401298e-45): boolean {
     return Math.abs(a - b) <= epsilon;
 }
 
@@ -24,7 +24,7 @@ export function withinEpsilon(a: number, b: number, epsilon: number = 1.401298e-
  * @param max max value of random
  * @returns random value
  */
-export function randomRange(min: number, max: number): number {
+export function RandomRange(min: number, max: number): number {
     if (min === max) {
         return min;
     }
@@ -38,7 +38,7 @@ export function randomRange(min: number, max: number): number {
  * @param amount amount to lerp between
  * @returns the lerped value
  */
-export function lerp(start: number, end: number, amount: number): number {
+export function Lerp(start: number, end: number, amount: number): number {
     return start + (end - start) * amount;
 }
 
@@ -50,12 +50,12 @@ export function lerp(start: number, end: number, amount: number): number {
  * @param amount amount to lerp between
  * @returns the lerped value
  */
-export function lerpAngle(start: number, end: number, amount: number): number {
-    let num: number = repeat(end - start, 360.0);
+export function LerpAngle(start: number, end: number, amount: number): number {
+    let num: number = Repeat(end - start, 360.0);
     if (num > 180.0) {
         num -= 360.0;
     }
-    return start + num * clamp(amount);
+    return start + num * Clamp(amount);
 }
 
 /**
@@ -65,10 +65,10 @@ export function lerpAngle(start: number, end: number, amount: number): number {
  * @param value value between a and b
  * @returns the inverseLerp value
  */
-export function inverseLerp(a: number, b: number, value: number): number {
+export function InverseLerp(a: number, b: number, value: number): number {
     let result: number = 0;
     if (a != b) {
-        result = clamp((value - a) / (b - a));
+        result = Clamp((value - a) / (b - a));
     } else {
         result = 0.0;
     }
@@ -85,7 +85,7 @@ export function inverseLerp(a: number, b: number, value: number): number {
  * @param amount defines the amount on the interpolation spline (between 0 and 1)
  * @returns hermite result
  */
-export function hermite(value1: number, tangent1: number, value2: number, tangent2: number, amount: number): number {
+export function Hermite(value1: number, tangent1: number, value2: number, tangent2: number, amount: number): number {
     const squared = amount * amount;
     const cubed = amount * squared;
     const part1 = 2.0 * cubed - 3.0 * squared + 1.0;
@@ -105,7 +105,7 @@ export function hermite(value1: number, tangent1: number, value2: number, tangen
  * @param time define where the derivative must be done
  * @returns 1st derivative
  */
-export function hermite1stDerivative(value1: number, tangent1: number, value2: number, tangent2: number, time: number): number {
+export function Hermite1stDerivative(value1: number, tangent1: number, value2: number, tangent2: number, time: number): number {
     const t2 = time * time;
     return (t2 - time) * 6 * value1 + (3 * t2 - 4 * time + 1) * tangent1 + (-t2 + time) * 6 * value2 + (3 * t2 - 2 * time) * tangent2;
 }
@@ -119,7 +119,7 @@ export function hermite1stDerivative(value1: number, tangent1: number, value2: n
  * @param max the max value to clamp to (default: 1)
  * @returns the clamped value
  */
-export function clamp(value: number, min = 0, max = 1): number {
+export function Clamp(value: number, min = 0, max = 1): number {
     return Math.min(max, Math.max(min, value));
 }
 
@@ -128,7 +128,7 @@ export function clamp(value: number, min = 0, max = 1): number {
  * @param angle The angle to normalize in radian.
  * @returns The converted angle.
  */
-export function normalizeRadians(angle: number): number {
+export function NormalizeRadians(angle: number): number {
     // More precise but slower version kept for reference.
     // angle = angle % Tools.TwoPi;
     // angle = (angle + Tools.TwoPi) % Tools.TwoPi;
@@ -147,7 +147,7 @@ export function normalizeRadians(angle: number): number {
  * @param i number
  * @returns the upper case translation of the number i to hexadecimal.
  */
-export function toHex(i: number): string {
+export function ToHex(i: number): string {
     const str = i.toString(16);
 
     if (i <= 15) {
@@ -162,7 +162,7 @@ export function toHex(i: number): string {
  * @param value the value to compute log2 of
  * @returns the log2 of value.
  */
-export function iLog2(value: number): number {
+export function ILog2(value: number): number {
     if (Math.log2) {
         return Math.floor(Math.log2(value));
     }
@@ -201,7 +201,7 @@ export function iLog2(value: number): number {
  * @param length the length
  * @returns the looped value
  */
-export function repeat(value: number, length: number): number {
+export function Repeat(value: number, length: number): number {
     return value - Math.floor(value / length) * length;
 }
 
@@ -212,7 +212,7 @@ export function repeat(value: number, length: number): number {
  * @param max min to normalize between
  * @returns the normalized value
  */
-export function normalize(value: number, min: number, max: number): number {
+export function Normalize(value: number, min: number, max: number): number {
     return (value - min) / (max - min);
 }
 
@@ -223,7 +223,7 @@ export function normalize(value: number, min: number, max: number): number {
  * @param max min to denormalize between
  * @returns the denormalized value
  */
-export function denormalize(normalized: number, min: number, max: number): number {
+export function Denormalize(normalized: number, min: number, max: number): number {
     return normalized * (max - min) + min;
 }
 
@@ -233,8 +233,8 @@ export function denormalize(normalized: number, min: number, max: number): numbe
  * @param target target angle in degrees
  * @returns the delta
  */
-export function deltaAngle(current: number, target: number): number {
-    let num: number = repeat(target - current, 360.0);
+export function DeltaAngle(current: number, target: number): number {
+    let num: number = Repeat(target - current, 360.0);
     if (num > 180.0) {
         num -= 360.0;
     }
@@ -247,8 +247,8 @@ export function deltaAngle(current: number, target: number): number {
  * @param length length
  * @returns The returned value will move back and forth between 0 and length
  */
-export function pingPong(tx: number, length: number): number {
-    const t: number = repeat(tx, length * 2.0);
+export function PingPong(tx: number, length: number): number {
+    const t: number = Repeat(tx, length * 2.0);
     return length - Math.abs(t - length);
 }
 
@@ -262,8 +262,8 @@ export function pingPong(tx: number, length: number): number {
  * @param tx value
  * @returns the smooth stepped value
  */
-export function smoothStep(from: number, to: number, tx: number): number {
-    let t: number = clamp(tx);
+export function SmoothStep(from: number, to: number, tx: number): number {
+    let t: number = Clamp(tx);
     t = -2.0 * t * t * t + 3.0 * t * t;
     return to * t + from * (1.0 - t);
 }
@@ -278,7 +278,7 @@ export function smoothStep(from: number, to: number, tx: number): number {
  * @param maxDelta max distance to move
  * @returns resulting value
  */
-export function moveTowards(current: number, target: number, maxDelta: number): number {
+export function MoveTowards(current: number, target: number, maxDelta: number): number {
     let result: number = 0;
     if (Math.abs(target - current) <= maxDelta) {
         result = target;
@@ -298,14 +298,14 @@ export function moveTowards(current: number, target: number, maxDelta: number): 
  * @param maxDelta max distance to move
  * @returns resulting angle
  */
-export function moveTowardsAngle(current: number, target: number, maxDelta: number): number {
-    const num: number = deltaAngle(current, target);
+export function MoveTowardsAngle(current: number, target: number, maxDelta: number): number {
+    const num: number = DeltaAngle(current, target);
     let result: number = 0;
     if (-maxDelta < num && num < maxDelta) {
         result = target;
     } else {
         target = current + num;
-        result = moveTowards(current, target, maxDelta);
+        result = MoveTowards(current, target, maxDelta);
     }
     return result;
 }
@@ -320,7 +320,7 @@ export function moveTowardsAngle(current: number, target: number, maxDelta: numb
  * @param max max range
  * @returns the percentage
  */
-export function rangeToPercent(number: number, min: number, max: number): number {
+export function RangeToPercent(number: number, min: number, max: number): number {
     return (number - min) / (max - min);
 }
 
@@ -333,7 +333,7 @@ export function rangeToPercent(number: number, min: number, max: number): number
  * @param max max range
  * @returns the number
  */
-export function percentToRange(percent: number, min: number, max: number): number {
+export function PercentToRange(percent: number, min: number, max: number): number {
     return (max - min) * percent + min;
 }
 
@@ -343,42 +343,10 @@ export function percentToRange(percent: number, min: number, max: number): numbe
  * @param b second parameter
  * @returns HCF of a and b
  */
-export function highestCommonFactor(a: number, b: number): number {
+export function HighestCommonFactor(a: number, b: number): number {
     const r: number = a % b;
     if (r === 0) {
         return b;
     }
-    return highestCommonFactor(b, r);
+    return HighestCommonFactor(b, r);
 }
-
-// For case difference
-export {
-    /**
-     * @deprecated use `extractAsInt`
-     */
-    extractAsInt as ExtractAsInt,
-    /**
-     * @deprecated use `withinEpsilon`
-     */
-    withinEpsilon as WithinEpsilon,
-    /**
-     * @deprecated use `randomRange`
-     */
-    randomRange as RandomRange,
-    /**
-     * @deprecated use `lerp`
-     */
-    lerp as Lerp,
-    /**
-     * @deprecated use `clamp`
-     */
-    clamp as Clamp,
-    /**
-     * @deprecated use `normalizeRadians`
-     */
-    normalizeRadians as NormalizeRadians,
-    /**
-     * @deprecated use `toHex`
-     */
-    toHex as ToHex,
-};

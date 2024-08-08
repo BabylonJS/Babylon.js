@@ -1,5 +1,5 @@
 import { Vector3 } from "../../../Maths/math";
-import { iLog2 } from "../../../Maths/math.scalar.functions";
+import { ILog2 } from "../../../Maths/math.scalar.functions";
 import type { BaseTexture } from "../baseTexture";
 import type { AbstractEngine } from "../../../Engines/abstractEngine";
 import type { Effect } from "../../../Materials/effect";
@@ -89,7 +89,7 @@ export class HDRFiltering {
 
     private _prefilterInternal(texture: BaseTexture): BaseTexture {
         const width = texture.getSize().width;
-        const mipmapsCount = iLog2(width) + 1;
+        const mipmapsCount = ILog2(width) + 1;
 
         const effect = this._effectWrapper.effect;
         const outputTexture = this._createRenderTarget(width);
