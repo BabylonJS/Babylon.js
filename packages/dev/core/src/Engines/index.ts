@@ -1,9 +1,6 @@
 /* eslint-disable import/no-internal-modules */
 export * as constants from "./constants";
-/**
- * @deprecated use `constants`
- */
-export * as Constants from "./constants";
+export { Constants } from "./constants";
 export * from "./engineCapabilities";
 export * from "./instancingAttributeInfo";
 export * from "./abstractEngine";
