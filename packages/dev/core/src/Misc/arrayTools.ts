@@ -27,11 +27,6 @@ export function BuildTuple<T, N extends number>(size: N, itemBuilder: () => T): 
 }
 
 /**
- * Object containing a set of static utilities functions for arrays.
- */
-export const ArrayTools = { BuildArray, BuildTuple };
-
-/**
  * Defines the callback type used when an observed array function is triggered.
  * @internal
  */
