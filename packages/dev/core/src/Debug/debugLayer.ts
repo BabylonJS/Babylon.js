@@ -407,6 +407,12 @@ export class DebugLayer {
         }
     }
 
+    public popupEmbed() {
+        if (this.BJSINSPECTOR) {
+            this.BJSINSPECTOR.Inspector.PopupEmbed();
+        }
+    }
+
     /**
      * Launch the debugLayer.
      * @param config Define the configuration of the inspector
