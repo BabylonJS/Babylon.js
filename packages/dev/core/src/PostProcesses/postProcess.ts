@@ -709,6 +709,7 @@ export class PostProcess {
             await this._initShaderSourceAsync(PostProcess.ForceGLSL);
             if (this._onInitShadersDone) {
                 this._onInitShadersDone();
+                return;
             }
         }
         this._shadersLoaded = true;
