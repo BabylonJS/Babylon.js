@@ -565,13 +565,21 @@ export class GLTFLoader implements IGLTFLoader {
 
     private _loadExtensions(): void {
         for (const name in GLTFLoader._RegisteredExtensions) {
-            const extension = GLTFLoader._RegisteredExtensions[name].factory(this);
-            if (extension.name !== name) {
-                Logger.Warn(`The name of the glTF loader extension instance does not match the registered name: ${extension.name} !== ${name}`);
-            }
+            // Don't load explicitly disabled extensions.
+            if (this.parent.extensionOptions[name]?.enabled === false) {
+                // But warn if the disabled extension is used by the model.
+                if (this.isExtensionUsed(name)) {
+                    Logger.Warn(`Extension ${name} is used but has been explicitly disabled.`);
+                }
+            } else {
+                const extension = GLTFLoader._RegisteredExtensions[name].factory(this);
+                if (extension.name !== name) {
+                    Logger.Warn(`The name of the glTF loader extension instance does not match the registered name: ${extension.name} !== ${name}`);
+                }
 
-            this._extensions.push(extension);
-            this._parent.onExtensionLoadedObservable.notifyObservers(extension);
+                this._extensions.push(extension);
+                this._parent.onExtensionLoadedObservable.notifyObservers(extension);
+            }
         }
 
         this._extensions.sort((a, b) => (a.order || Number.MAX_VALUE) - (b.order || Number.MAX_VALUE));
@@ -583,6 +591,9 @@ export class GLTFLoader implements IGLTFLoader {
             for (const name of this._gltf.extensionsRequired) {
                 const available = this._extensions.some((extension) => extension.name === name && extension.enabled);
                 if (!available) {
+                    if (this.parent.extensionOptions[name]?.enabled === false) {
+                        throw new Error(`Required extension ${name} is disabled`);
+                    }
                     throw new Error(`Required extension ${name} is not available`);
                 }
             }

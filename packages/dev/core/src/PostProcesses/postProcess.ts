@@ -215,6 +215,12 @@ type TextureCache = { texture: RenderTargetWrapper; postProcessChannel: number; 
  * See https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/usePostProcesses
  */
 export class PostProcess {
+    /**
+     * Force all the postprocesses to compile to glsl even on WebGPU engines.
+     * False by default. This is mostly meant for backward compatibility.
+     */
+    public static ForceGLSL = false;
+
     /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
 
@@ -371,6 +377,8 @@ export class PostProcess {
     private _camera: Camera;
     protected _scene: Scene;
     private _engine: AbstractEngine;
+
+    protected _shadersLoaded = true;
 
     private _options: number | { width: number; height: number };
     private _reusable = false;
@@ -605,7 +613,8 @@ export class PostProcess {
         indexParameters?: any,
         blockCompilation?: boolean,
         textureFormat?: number,
-        shaderLanguage?: ShaderLanguage
+        shaderLanguage?: ShaderLanguage,
+        dealyLoadShaders?: boolean
     );
 
     /** @internal */
@@ -625,7 +634,8 @@ export class PostProcess {
         indexParameters?: any,
         blockCompilation = false,
         textureFormat = Constants.TEXTUREFORMAT_RGBA,
-        shaderLanguage = ShaderLanguage.GLSL
+        shaderLanguage = ShaderLanguage.GLSL,
+        dealyLoadShaders = false
     ) {
         this.name = name;
         let size: number | { width: number; height: number } = 1;
@@ -687,6 +697,16 @@ export class PostProcess {
 
         this._indexParameters = indexParameters;
         this._drawWrapper = new DrawWrapper(this._engine);
+
+        this._postConstructor(blockCompilation, defines, dealyLoadShaders);
+    }
+
+    protected async _initShaderSourceAsync(_forceGLSL = false) {}
+
+    private async _postConstructor(blockCompilation: boolean, defines: Nullable<string> = null, dealyLoadShaders: boolean = false) {
+        if (dealyLoadShaders) {
+            await this._initShaderSourceAsync(PostProcess.ForceGLSL);
+        }
 
         if (!blockCompilation) {
             this.updateEffect(defines);
@@ -1047,6 +1067,9 @@ export class PostProcess {
      * @returns true if the post-process is ready (shader is compiled)
      */
     public isReady(): boolean {
+        if (!this._shadersLoaded) {
+            return false;
+        }
         return this._drawWrapper.effect?.isReady() ?? false;
     }
 

@@ -199,7 +199,7 @@ export interface WebGPUEngineOptions extends AbstractEngineOptions, GPURequestAd
  */
 export class WebGPUEngine extends AbstractEngine {
     // Default glslang options.
-    private static readonly _GLSLslangDefaultOptions: GlslangOptions = {
+    private static readonly _GlslangDefaultOptions: GlslangOptions = {
         jsPath: `${Tools._DefaultCdnUrl}/glslang/glslang.js`,
         wasmPath: `${Tools._DefaultCdnUrl}/glslang/glslang.wasm`,
     };
@@ -651,15 +651,15 @@ export class WebGPUEngine extends AbstractEngine {
     //------------------------------------------------------------------------------
     //                              Initialization
     //------------------------------------------------------------------------------
-    private _workingGlsLangAndTintPromise: Nullable<Promise<void>> = null;
+    private _workingGlslangAndTintPromise: Nullable<Promise<void>> = null;
 
     /**
      * Load the glslang and tintWASM libraries and prepare them for use.
      * @returns a promise that resolves when the engine is ready to use the glslang and tintWASM
      */
-    public prepareGlsLangAndTintAsync(): Promise<void> {
-        if (!this._workingGlsLangAndTintPromise) {
-            this._workingGlsLangAndTintPromise = new Promise<void>((resolve) => {
+    public prepareGlslangAndTintAsync(): Promise<void> {
+        if (!this._workingGlslangAndTintPromise) {
+            this._workingGlslangAndTintPromise = new Promise<void>((resolve) => {
                 this._initGlslang(this._glslangOptions ?? this._options?.glslangOptions).then((glslang: any) => {
                     this._glslang = glslang;
                     this._tintWASM = new WebGPUTintWASM();
@@ -670,7 +670,7 @@ export class WebGPUEngine extends AbstractEngine {
             });
         }
 
-        return this._workingGlsLangAndTintPromise;
+        return this._workingGlslangAndTintPromise;
     }
 
     /**
@@ -848,7 +848,7 @@ export class WebGPUEngine extends AbstractEngine {
     private _initGlslang(glslangOptions?: GlslangOptions): Promise<any> {
         glslangOptions = glslangOptions || {};
         glslangOptions = {
-            ...WebGPUEngine._GLSLslangDefaultOptions,
+            ...WebGPUEngine._GlslangDefaultOptions,
             ...glslangOptions,
         };
 
@@ -2127,7 +2127,7 @@ export class WebGPUEngine extends AbstractEngine {
         const shaderLanguage = webGpuContext.shaderProcessingContext.shaderLanguage;
 
         if (shaderLanguage === ShaderLanguage.GLSL && (!this._glslang || !this._tintWASM)) {
-            await this.prepareGlsLangAndTintAsync();
+            await this.prepareGlslangAndTintAsync();
         }
 
         if (this.dbgShowShaderCode) {
