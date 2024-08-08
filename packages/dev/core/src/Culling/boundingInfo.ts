@@ -2,12 +2,7 @@ import type { DeepImmutable } from "../types";
 import { ArrayTools } from "../Misc/arrayTools";
 import type { Matrix } from "../Maths/math.vector";
 import { TmpVectors, Vector3 } from "../Maths/math.vector";
-import {
-    MESHES_CULLINGSTRATEGY_STANDARD,
-    MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION,
-    MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY,
-    MESHES_CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY,
-} from "../Engines/constants";
+import { CullingStrategy } from "../Engines/constants";
 import { BoundingBox } from "./boundingBox";
 import { BoundingSphere } from "./boundingSphere";
 import type { Plane } from "../Maths/math.plane";
@@ -195,16 +190,16 @@ export class BoundingInfo implements ICullable {
     /**
      * Returns `true` if the bounding info is within the frustum defined by the passed array of planes.
      * @param frustumPlanes defines the frustum to test
-     * @param strategy defines the strategy to use for the culling (default is BABYLON.AbstractMesh.CULLINGSTRATEGY_STANDARD)
+     * @param strategy defines the strategy to use for the culling (default is CullingStrategy.STANDARD)
      * The different strategies available are:
-     * * BABYLON.AbstractMesh.CULLINGSTRATEGY_STANDARD most accurate but slower @see https://doc.babylonjs.com/typedoc/classes/BABYLON.AbstractMesh#CULLINGSTRATEGY_STANDARD
-     * * BABYLON.AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY faster but less accurate @see https://doc.babylonjs.com/typedoc/classes/BABYLON.AbstractMesh#CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY
-     * * BABYLON.AbstractMesh.CULLINGSTRATEGY_OPTIMISTIC_INCLUSION can be faster if always visible @see https://doc.babylonjs.com/typedoc/classes/BABYLON.AbstractMesh#CULLINGSTRATEGY_OPTIMISTIC_INCLUSION
-     * * BABYLON.AbstractMesh.CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY can be faster if always visible @see https://doc.babylonjs.com/typedoc/classes/BABYLON.AbstractMesh#CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY
+     * * CullingStrategy.STANDARD most accurate but slower @see https://doc.babylonjs.com/typedoc/classes/BABYLON.AbstractMesh#CULLINGSTRATEGY_STANDARD
+     * * CullingStrategy.BOUNDINGSPHERE_ONLY faster but less accurate @see https://doc.babylonjs.com/typedoc/classes/BABYLON.AbstractMesh#CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY
+     * * CullingStrategy.OPTIMISTIC_INCLUSION can be faster if always visible @see https://doc.babylonjs.com/typedoc/classes/BABYLON.AbstractMesh#CULLINGSTRATEGY_OPTIMISTIC_INCLUSION
+     * * CullingStrategy.OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY can be faster if always visible @see https://doc.babylonjs.com/typedoc/classes/BABYLON.AbstractMesh#CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY
      * @returns true if the bounding info is in the frustum planes
      */
-    public isInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>, strategy: number = MESHES_CULLINGSTRATEGY_STANDARD): boolean {
-        const inclusionTest = strategy === MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION || strategy === MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY;
+    public isInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>, strategy: CullingStrategy = CullingStrategy.STANDARD): boolean {
+        const inclusionTest = strategy === CullingStrategy.OPTIMISTIC_INCLUSION || strategy === CullingStrategy.OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY;
         if (inclusionTest) {
             if (this.boundingSphere.isCenterInFrustum(frustumPlanes)) {
                 return true;
@@ -215,7 +210,7 @@ export class BoundingInfo implements ICullable {
             return false;
         }
 
-        const bSphereOnlyTest = strategy === MESHES_CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY || strategy === MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY;
+        const bSphereOnlyTest = strategy === CullingStrategy.BOUNDINGSPHERE_ONLY || strategy === CullingStrategy.OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY;
         if (bSphereOnlyTest) {
             return true;
         }

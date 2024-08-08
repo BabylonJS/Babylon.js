@@ -596,108 +596,39 @@ export const enum ActionTrigger {
     OnKeyUp = 15,
 }
 
-/**
- * Nothing
- * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
- * @deprecated use ActionTrigger
- */
+/** @deprecated use ActionTrigger */
 export const ACTION_NothingTrigger = 0;
-/**
- * On pick
- * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
- * @deprecated use ActionTrigger
- */
+/** @deprecated use ActionTrigger */
 export const ACTION_OnPickTrigger = 1;
-/**
- * On left pick
- * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
- * @deprecated use ActionTrigger
- */
+/** @deprecated use ActionTrigger */
 export const ACTION_OnLeftPickTrigger = 2;
-/**
- * On right pick
- * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
- * @deprecated use ActionTrigger
- */
+/** @deprecated use ActionTrigger */
 export const ACTION_OnRightPickTrigger = 3;
-/**
- * On center pick
- * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
- * @deprecated use ActionTrigger
- */
+/** @deprecated use ActionTrigger */
 export const ACTION_OnCenterPickTrigger = 4;
-/**
- * On pick down
- * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
- * @deprecated use ActionTrigger
- */
+/** @deprecated use ActionTrigger */
 export const ACTION_OnPickDownTrigger = 5;
-/**
- * On double pick
- * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
- * @deprecated use ActionTrigger
- */
+/** @deprecated use ActionTrigger */
 export const ACTION_OnDoublePickTrigger = 6;
-/**
- * On pick up
- * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
- * @deprecated use ActionTrigger
- */
+/** @deprecated use ActionTrigger */
 export const ACTION_OnPickUpTrigger = 7;
-/**
- * On pick out.
- * This trigger will only be raised if you also declared a OnPickDown
- * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
- * @deprecated use ActionTrigger
- */
+/** @deprecated use ActionTrigger */
 export const ACTION_OnPickOutTrigger = 16;
-/**
- * On long press
- * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
- * @deprecated use ActionTrigger
- */
+/** @deprecated use ActionTrigger */
 export const ACTION_OnLongPressTrigger = 8;
-/**
- * On pointer over
- * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
- * @deprecated use ActionTrigger
- */
+/** @deprecated use ActionTrigger */
 export const ACTION_OnPointerOverTrigger = 9;
-/**
- * On pointer out
- * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
- * @deprecated use ActionTrigger
- */
+/** @deprecated use ActionTrigger */
 export const ACTION_OnPointerOutTrigger = 10;
-/**
- * On every frame
- * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
- * @deprecated use ActionTrigger
- */
+/** @deprecated use ActionTrigger */
 export const ACTION_OnEveryFrameTrigger = 11;
-/**
- * On intersection enter
- * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
- * @deprecated use ActionTrigger
- */
+/** @deprecated use ActionTrigger */
 export const ACTION_OnIntersectionEnterTrigger = 12;
-/**
- * On intersection exit
- * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
- * @deprecated use ActionTrigger
- */
+/** @deprecated use ActionTrigger */
 export const ACTION_OnIntersectionExitTrigger = 13;
-/**
- * On key down
- * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
- * @deprecated use ActionTrigger
- */
+/** @deprecated use ActionTrigger */
 export const ACTION_OnKeyDownTrigger = 14;
-/**
- * On key up
- * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
- * @deprecated use ActionTrigger
- */
+/** @deprecated use ActionTrigger */
 export const ACTION_OnKeyUpTrigger = 15;
 
 export const enum ParticlesBillboardMode {
@@ -719,60 +650,59 @@ export const enum ParticlesBillboardMode {
     STRETCHED_LOCAL = 9,
 }
 
-/**
- * Billboard mode will only apply to Y axis
- * @deprecated use ParticlesBillboardMode
- */
+/** @deprecated use ParticlesBillboardMode */
 export const PARTICLES_BILLBOARDMODE_Y = 2;
-/**
- * Billboard mode will apply to all axes
- * @deprecated use ParticlesBillboardMode
- */
+/** @deprecated use ParticlesBillboardMode */
 export const PARTICLES_BILLBOARDMODE_ALL = 7;
-/**
- * Special billboard mode where the particle will be biilboard to the camera but rotated to align with direction
- * @deprecated use ParticlesBillboardMode
- */
+/** @deprecated use ParticlesBillboardMode */
 export const PARTICLES_BILLBOARDMODE_STRETCHED = 8;
-/**
- * Special billboard mode where the particle will be billboard to the camera but only around the axis of the direction of particle emission
- * @deprecated use ParticlesBillboardMode
- */
+/** @deprecated use ParticlesBillboardMode */
 export const PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL = 9;
 
-/** Default culling strategy : this is an exclusion test and it's the more accurate.
- *  Test order :
- *  Is the bounding sphere outside the frustum ?
- *  If not, are the bounding box vertices outside the frustum ?
- *  It not, then the cullable object is in the frustum.
- */
+export const enum CullingStrategy {
+    /** Default culling strategy : this is an exclusion test and it's the more accurate.
+     *  Test order :
+     *  Is the bounding sphere outside the frustum ?
+     *  If not, are the bounding box vertices outside the frustum ?
+     *  It not, then the cullable object is in the frustum.
+     */
+    STANDARD = 0,
+    /** Culling strategy : Bounding Sphere Only.
+     *  This is an exclusion test. It's faster than the standard strategy because the bounding box is not tested.
+     *  It's also less accurate than the standard because some not visible objects can still be selected.
+     *  Test : is the bounding sphere outside the frustum ?
+     *  If not, then the cullable object is in the frustum.
+     */
+    BOUNDINGSPHERE_ONLY = 1,
+    /** Culling strategy : Optimistic Inclusion.
+     *  This in an inclusion test first, then the standard exclusion test.
+     *  This can be faster when a cullable object is expected to be almost always in the camera frustum.
+     *  This could also be a little slower than the standard test when the tested object center is not the frustum but one of its bounding box vertex is still inside.
+     *  Anyway, it's as accurate as the standard strategy.
+     *  Test :
+     *  Is the cullable object bounding sphere center in the frustum ?
+     *  If not, apply the default culling strategy.
+     */
+    OPTIMISTIC_INCLUSION = 2,
+    /** Culling strategy : Optimistic Inclusion then Bounding Sphere Only.
+     *  This in an inclusion test first, then the bounding sphere only exclusion test.
+     *  This can be the fastest test when a cullable object is expected to be almost always in the camera frustum.
+     *  This could also be a little slower than the BoundingSphereOnly strategy when the tested object center is not in the frustum but its bounding sphere still intersects it.
+     *  It's less accurate than the standard strategy and as accurate as the BoundingSphereOnly strategy.
+     *  Test :
+     *  Is the cullable object bounding sphere center in the frustum ?
+     *  If not, apply the Bounding Sphere Only strategy. No Bounding Box is tested here.
+     */
+    OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY = 3,
+}
+
+/** @deprecated use CullingStrategy */
 export const MESHES_CULLINGSTRATEGY_STANDARD = 0;
-/** Culling strategy : Bounding Sphere Only.
- *  This is an exclusion test. It's faster than the standard strategy because the bounding box is not tested.
- *  It's also less accurate than the standard because some not visible objects can still be selected.
- *  Test : is the bounding sphere outside the frustum ?
- *  If not, then the cullable object is in the frustum.
- */
+/** @deprecated use CullingStrategy */
 export const MESHES_CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY = 1;
-/** Culling strategy : Optimistic Inclusion.
- *  This in an inclusion test first, then the standard exclusion test.
- *  This can be faster when a cullable object is expected to be almost always in the camera frustum.
- *  This could also be a little slower than the standard test when the tested object center is not the frustum but one of its bounding box vertex is still inside.
- *  Anyway, it's as accurate as the standard strategy.
- *  Test :
- *  Is the cullable object bounding sphere center in the frustum ?
- *  If not, apply the default culling strategy.
- */
+/** @deprecated use CullingStrategy */
 export const MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION = 2;
-/** Culling strategy : Optimistic Inclusion then Bounding Sphere Only.
- *  This in an inclusion test first, then the bounding sphere only exclusion test.
- *  This can be the fastest test when a cullable object is expected to be almost always in the camera frustum.
- *  This could also be a little slower than the BoundingSphereOnly strategy when the tested object center is not in the frustum but its bounding sphere still intersects it.
- *  It's less accurate than the standard strategy and as accurate as the BoundingSphereOnly strategy.
- *  Test :
- *  Is the cullable object bounding sphere center in the frustum ?
- *  If not, apply the Bounding Sphere Only strategy. No Bounding Box is tested here.
- */
+/** @deprecated use CullingStrategy */
 export const MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY = 3;
 
 /**
