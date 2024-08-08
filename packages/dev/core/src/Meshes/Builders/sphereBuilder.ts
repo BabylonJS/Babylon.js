@@ -4,7 +4,7 @@ import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import type { Scene } from "../../scene";
 import type { Nullable } from "../../types";
-import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
+import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
 
 /**
  * Creates the VertexData for an ellipsoid, defaults to a sphere
@@ -72,7 +72,7 @@ export function CreateSphereVertexData(options: {
 
             positions.push(vertex.x, vertex.y, vertex.z);
             normals.push(normal.x, normal.y, normal.z);
-            uvs.push(normalizedY, CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 - normalizedZ : normalizedZ);
+            uvs.push(normalizedY, useOpenGLOrientationForUV ? 1.0 - normalizedZ : normalizedZ);
         }
 
         if (zRotationStep > 0) {

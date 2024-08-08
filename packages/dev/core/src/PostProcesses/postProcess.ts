@@ -378,7 +378,7 @@ export class PostProcess {
     protected _scene: Scene;
     private _engine: AbstractEngine;
 
-    protected _shadersLoaded = true;
+    protected _shadersLoaded = false;
 
     private _options: number | { width: number; height: number };
     private _reusable = false;
@@ -438,6 +438,12 @@ export class PostProcess {
     public getEffectName(): string {
         return this._fragmentUrl;
     }
+
+    /**
+     * Executed when the effect was created
+     * @returns effect that was created for this post process
+     */
+    public onEffectCreatedObservable = new Observable<Effect>();
 
     // Events
 
@@ -703,11 +709,16 @@ export class PostProcess {
 
     protected async _initShaderSourceAsync(_forceGLSL = false) {}
 
+    private _onInitShadersDone: Nullable<() => void> = null;
     private async _postConstructor(blockCompilation: boolean, defines: Nullable<string> = null, dealyLoadShaders: boolean = false) {
         if (dealyLoadShaders) {
             await this._initShaderSourceAsync(PostProcess.ForceGLSL);
+            if (this._onInitShadersDone) {
+                this._onInitShadersDone();
+                return;
+            }
         }
-
+        this._shadersLoaded = true;
         if (!blockCompilation) {
             this.updateEffect(defines);
         }
@@ -783,6 +794,15 @@ export class PostProcess {
         vertexUrl?: string,
         fragmentUrl?: string
     ) {
+        if (!this._shadersLoaded) {
+            this._onInitShadersDone = () => {
+                this._shadersLoaded = true;
+                this._onInitShadersDone = null;
+                this.updateEffect(defines, uniforms, samplers, indexParameters, onCompiled, onError, vertexUrl, fragmentUrl);
+            };
+            return;
+        }
+
         const customShaderCodeProcessing = PostProcess._GetShaderCodeProcessing(this.name);
         if (customShaderCodeProcessing?.defineCustomBindings) {
             const newUniforms = uniforms?.slice() ?? [];
@@ -818,6 +838,7 @@ export class PostProcess {
             },
             this._engine
         );
+        this.onEffectCreatedObservable.notifyObservers(this._drawWrapper.effect);
     }
 
     /**
@@ -1199,6 +1220,7 @@ export class PostProcess {
         this.onApplyObservable.clear();
         this.onBeforeRenderObservable.clear();
         this.onSizeChangedObservable.clear();
+        this.onEffectCreatedObservable.clear();
     }
 
     /**
