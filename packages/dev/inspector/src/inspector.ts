@@ -91,6 +91,46 @@ export class Inspector {
         }
     }
 
+    private static _SceneExplorerOptions: IInternalInspectorOptions;
+
+    public static PopupSceneExplorer() {
+        const scene = this._Scene;
+        const options = this._SceneExplorerOptions;
+        ReactDOM.unmountComponentAtNode(this._SceneExplorerHost!);
+
+        this._RemoveElementFromDOM(this._SceneExplorerHost);
+
+        if (options.popup) {
+            this._SceneExplorerWindow.close();
+        }
+
+        options.popup = !options.popup;
+        options.showExplorer = true;
+        options.showInspector = false;
+        options.explorerWidth = options.popup ? "100%" : "300px";
+        Inspector.Show(scene, options);
+    }
+
+    private static _InspectorOptions: IInternalInspectorOptions;
+
+    public static PopupInspector() {
+        const scene = this._Scene;
+        const options = this._InspectorOptions;
+        ReactDOM.unmountComponentAtNode(this._ActionTabsHost!);
+
+        this._RemoveElementFromDOM(this._ActionTabsHost);
+
+        if (options.popup) {
+            this._ActionTabsWindow.close();
+        }
+
+        options.popup = !options.popup;
+        options.showExplorer = false;
+        options.showInspector = true;
+        options.inspectorWidth = options.popup ? "100%" : "300px";
+        Inspector.Show(scene, options);
+    }
+
     private static _CreateSceneExplorer(scene: Scene, options: IInternalInspectorOptions, parentControlExplorer: Nullable<HTMLElement>) {
         // Duplicating the options as they can be different for each pane
         if (options.original) {
@@ -111,6 +151,7 @@ export class Inspector {
                 contextMenuOverride: options.contextMenuOverride,
             };
         }
+        this._SceneExplorerOptions = options;
 
         // Prepare the scene explorer host
         if (parentControlExplorer) {
@@ -145,19 +186,7 @@ export class Inspector {
                 noExpand: !options.enablePopup,
                 popupMode: options.popup,
                 onPopup: () => {
-                    ReactDOM.unmountComponentAtNode(this._SceneExplorerHost!);
-
-                    this._RemoveElementFromDOM(this._SceneExplorerHost);
-
-                    if (options.popup) {
-                        this._SceneExplorerWindow.close();
-                    }
-
-                    options.popup = !options.popup;
-                    options.showExplorer = true;
-                    options.showInspector = false;
-                    options.explorerWidth = options.popup ? "100%" : "300px";
-                    Inspector.Show(scene, options);
+                    this.PopupSceneExplorer();
                 },
                 onClose: () => {
                     ReactDOM.unmountComponentAtNode(this._SceneExplorerHost!);
@@ -180,6 +209,8 @@ export class Inspector {
 
     private static _CreateActionTabs(scene: Scene, options: IInternalInspectorOptions, parentControlActions: Nullable<HTMLElement>) {
         options.original = false;
+
+        this._InspectorOptions = options;
 
         // Prepare the inspector host
         if (parentControlActions) {
@@ -206,19 +237,7 @@ export class Inspector {
                 noExpand: !options.enablePopup,
                 popupMode: options.popup,
                 onPopup: () => {
-                    ReactDOM.unmountComponentAtNode(this._ActionTabsHost!);
-
-                    this._RemoveElementFromDOM(this._ActionTabsHost);
-
-                    if (options.popup) {
-                        this._ActionTabsWindow.close();
-                    }
-
-                    options.popup = !options.popup;
-                    options.showExplorer = false;
-                    options.showInspector = true;
-                    options.inspectorWidth = options.popup ? "100%" : "300px";
-                    Inspector.Show(scene, options);
+                    this.PopupInspector();
                 },
                 onClose: () => {
                     ReactDOM.unmountComponentAtNode(this._ActionTabsHost!);
