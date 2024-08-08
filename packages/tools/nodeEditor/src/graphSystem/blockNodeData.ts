@@ -46,6 +46,10 @@ export class BlockNodeData implements INodeData {
         this.data.comments = value;
     }
 
+    public get executionTime() {
+        return -1;
+    }
+
     public getPortByName(name: string) {
         for (const input of this.inputs) {
             if (input.internalName === name) {
