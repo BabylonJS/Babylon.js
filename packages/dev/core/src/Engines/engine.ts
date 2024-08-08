@@ -837,7 +837,7 @@ export class Engine extends ThinEngine {
 
         if (this._rescalePostProcess) {
             this._rescalePostProcess.externalTextureSamplerBinding = true;
-            this._rescalePostProcess.getEffect().executeWhenCompiled(() => {
+            const onCompiled = () => {
                 this._rescalePostProcess!.onApply = function (effect) {
                     effect._bindTexture("textureSampler", source);
                 };
@@ -858,7 +858,15 @@ export class Engine extends ThinEngine {
                 if (onComplete) {
                     onComplete();
                 }
-            });
+            };
+            const effect = this._rescalePostProcess.getEffect();
+            if (effect) {
+                effect.executeWhenCompiled(onCompiled);
+            } else {
+                this._rescalePostProcess.onEffectCreatedObservable.addOnce((effect) => {
+                    effect.executeWhenCompiled(onCompiled);
+                });
+            }
         }
     }
 
