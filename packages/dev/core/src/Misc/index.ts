@@ -63,7 +63,7 @@ export * from "./error";
 // eslint-disable-next-line import/export
 export * from "./observableCoroutine";
 export * from "./copyTextureToTexture";
-export * from "./dumpTools";
+export * as DumpTools from "./dumpTools";
 export * from "./greasedLineTools";
 export * from "./equirectangularCapture";
 export * from "./decorators.serialization";
