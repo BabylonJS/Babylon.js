@@ -1,4 +1,4 @@
-import { Camera } from "../../Cameras/camera";
+import type { Camera } from "../../Cameras/camera";
 import { UniversalCamera } from "../../Cameras/universalCamera";
 import type { Scene } from "../../scene";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
@@ -6,6 +6,7 @@ import type { Nullable } from "../../types";
 import { TargetCamera } from "../targetCamera";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Viewport } from "../../Maths/math.viewport";
+import { RigMode } from "../../Engines/constants";
 
 /**
  * Camera used to simulate stereoscopic rendering on real screens (based on UniversalCamera)
@@ -48,7 +49,7 @@ export class StereoscopicScreenUniversalCamera extends UniversalCamera {
         super(name, position, scene);
         this._distanceBetweenEyes = distanceBetweenEyes;
         this._distanceToProjectionPlane = distanceToProjectionPlane;
-        this.setCameraRigMode(Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL, {
+        this.setCameraRigMode(RigMode.STEREOSCOPIC_SIDEBYSIDE_PARALLEL, {
             stereoHalfAngle: 0,
         });
         this._cameraRigParams.stereoHalfAngle = 0;

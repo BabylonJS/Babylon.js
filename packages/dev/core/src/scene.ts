@@ -54,8 +54,7 @@ import {
     SnapshotRendering,
     ActionTrigger,
     RENDERPASS_MAIN,
-    RIG_MODE_NONE,
-    RIG_MODE_CUSTOM,
+    RigMode,
     MATERIAL_AllDirtyFlag,
 } from "./Engines/constants";
 import { IsWindowObjectExist } from "./Misc/domManagement";
@@ -4377,7 +4376,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     private _processSubCameras(camera: Camera, bindFrameBuffer = true): void {
-        if (camera.cameraRigMode === RIG_MODE_NONE || camera._renderingMultiview) {
+        if (camera.cameraRigMode === RigMode.NONE || camera._renderingMultiview) {
             if (camera._renderingMultiview && !this._multiviewSceneUbo) {
                 this._createMultiviewUbo();
             }
@@ -4609,7 +4608,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                 for (let cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
                     const camera = this.activeCameras[cameraIndex];
                     camera.update();
-                    if (camera.cameraRigMode !== RIG_MODE_NONE) {
+                    if (camera.cameraRigMode !== RigMode.NONE) {
                         // rig cameras
                         for (let index = 0; index < camera._rigCameras.length; index++) {
                             camera._rigCameras[index].update();
@@ -4618,7 +4617,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                 }
             } else if (this.activeCamera) {
                 this.activeCamera.update();
-                if (this.activeCamera.cameraRigMode !== RIG_MODE_NONE) {
+                if (this.activeCamera.cameraRigMode !== RigMode.NONE) {
                     // rig cameras
                     for (let index = 0; index < this.activeCamera._rigCameras.length; index++) {
                         this.activeCamera._rigCameras[index].update();
@@ -4668,7 +4667,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         // Restore back buffer
         this.activeCamera = currentActiveCamera;
-        if (this._activeCamera && this._activeCamera.cameraRigMode !== RIG_MODE_CUSTOM && !this.prePass) {
+        if (this._activeCamera && this._activeCamera.cameraRigMode !== RigMode.CUSTOM && !this.prePass) {
             this._bindFrameBuffer(this._activeCamera, false);
         }
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);

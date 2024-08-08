@@ -16,20 +16,7 @@ import { _WarnImport } from "../Misc/devTools";
 import { Viewport } from "../Maths/math.viewport";
 import { Frustum } from "../Maths/math.frustum";
 import type { Plane } from "../Maths/math.plane";
-import {
-    PERSPECTIVE_CAMERA,
-    ORTHOGRAPHIC_CAMERA,
-    FOVMODE_VERTICAL_FIXED,
-    FOVMODE_HORIZONTAL_FIXED,
-    RIG_MODE_NONE,
-    RIG_MODE_STEREOSCOPIC_ANAGLYPH,
-    RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL,
-    RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED,
-    RIG_MODE_STEREOSCOPIC_OVERUNDER,
-    RIG_MODE_STEREOSCOPIC_INTERLACED,
-    RIG_MODE_VR,
-    RIG_MODE_CUSTOM,
-} from "../Engines/constants";
+import { PERSPECTIVE_CAMERA, ORTHOGRAPHIC_CAMERA, FOVMODE_VERTICAL_FIXED, FOVMODE_HORIZONTAL_FIXED, RigMode } from "../Engines/constants";
 
 import type { PostProcess } from "../PostProcesses/postProcess";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
@@ -89,37 +76,45 @@ export class Camera extends Node {
     /**
      * This specifies there is no need for a camera rig.
      * Basically only one eye is rendered corresponding to the camera.
+     * @deprecated use RigMode
      */
-    public static readonly RIG_MODE_NONE = RIG_MODE_NONE;
+    public static readonly RIG_MODE_NONE = RigMode.NONE;
     /**
      * Simulates a camera Rig with one blue eye and one red eye.
      * This can be use with 3d blue and red glasses.
+     * @deprecated use RigMode
      */
-    public static readonly RIG_MODE_STEREOSCOPIC_ANAGLYPH = RIG_MODE_STEREOSCOPIC_ANAGLYPH;
+    public static readonly RIG_MODE_STEREOSCOPIC_ANAGLYPH = RigMode.STEREOSCOPIC_ANAGLYPH;
     /**
      * Defines that both eyes of the camera will be rendered side by side with a parallel target.
+     * @deprecated use RigMode
      */
-    public static readonly RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL = RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL;
+    public static readonly RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL = RigMode.STEREOSCOPIC_SIDEBYSIDE_PARALLEL;
     /**
      * Defines that both eyes of the camera will be rendered side by side with a none parallel target.
+     * @deprecated use RigMode
      */
-    public static readonly RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED = RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED;
+    public static readonly RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED = RigMode.STEREOSCOPIC_SIDEBYSIDE_CROSSEYED;
     /**
      * Defines that both eyes of the camera will be rendered over under each other.
+     * @deprecated use RigMode
      */
-    public static readonly RIG_MODE_STEREOSCOPIC_OVERUNDER = RIG_MODE_STEREOSCOPIC_OVERUNDER;
+    public static readonly RIG_MODE_STEREOSCOPIC_OVERUNDER = RigMode.STEREOSCOPIC_OVERUNDER;
     /**
      * Defines that both eyes of the camera will be rendered on successive lines interlaced for passive 3d monitors.
+     * @deprecated use RigMode
      */
-    public static readonly RIG_MODE_STEREOSCOPIC_INTERLACED = RIG_MODE_STEREOSCOPIC_INTERLACED;
+    public static readonly RIG_MODE_STEREOSCOPIC_INTERLACED = RigMode.STEREOSCOPIC_INTERLACED;
     /**
      * Defines that both eyes of the camera should be renderered in a VR mode (carbox).
+     * @deprecated use RigMode
      */
-    public static readonly RIG_MODE_VR = RIG_MODE_VR;
+    public static readonly RIG_MODE_VR = RigMode.VR;
     /**
      * Custom rig mode allowing rig cameras to be populated manually with any number of cameras
+     * @deprecated use RigMode
      */
-    public static readonly RIG_MODE_CUSTOM = RIG_MODE_CUSTOM;
+    public static readonly RIG_MODE_CUSTOM = RigMode.CUSTOM;
 
     /**
      * Defines if by default attaching controls should prevent the default javascript event to continue.
@@ -354,7 +349,7 @@ export class Camera extends Node {
      * This is normally controlled byt the camera themselves as internal use.
      */
     @serialize()
-    public cameraRigMode = Camera.RIG_MODE_NONE;
+    public cameraRigMode = RigMode.NONE;
 
     /**
      * Defines the distance between both "eyes" in case of a RIG
@@ -730,7 +725,7 @@ export class Camera extends Node {
     public update(): void {
         this._hasMoved = false;
         this._checkInputs();
-        if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
+        if (this.cameraRigMode !== RigMode.NONE) {
             this._updateRigCameras();
         }
 
@@ -1191,7 +1186,7 @@ export class Camera extends Node {
             this._rigPostProcess.dispose(this);
             this._rigPostProcess = null;
             this._postProcesses.length = 0;
-        } else if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
+        } else if (this.cameraRigMode !== RigMode.NONE) {
             this._rigPostProcess = null;
             this._postProcesses.length = 0;
         } else {
@@ -1302,7 +1297,7 @@ export class Camera extends Node {
         this._cameraRigParams.stereoHalfAngle = Tools.ToRadians(this._cameraRigParams.interaxialDistance / 0.0637);
 
         // create the rig cameras, unless none
-        if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
+        if (this.cameraRigMode !== RigMode.NONE) {
             const leftCamera = this.createRigCamera(this.name + "_L", 0);
             if (leftCamera) {
                 leftCamera._isLeftCamera = true;
@@ -1379,7 +1374,7 @@ export class Camera extends Node {
         }
 
         // only update viewport when ANAGLYPH
-        if (this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH) {
+        if (this.cameraRigMode === RigMode.STEREOSCOPIC_ANAGLYPH) {
             this._rigCameras[0].viewport = this._rigCameras[1].viewport = this.viewport;
         }
     }

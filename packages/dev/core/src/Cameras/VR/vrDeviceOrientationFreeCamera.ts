@@ -1,4 +1,4 @@
-import { Camera } from "../../Cameras/camera";
+import { RigMode } from "../../Engines/constants";
 import { DeviceOrientationCamera } from "../../Cameras/deviceOrientationCamera";
 import { VRCameraMetrics } from "./vrCameraMetrics";
 import type { Scene } from "../../scene";
@@ -27,7 +27,7 @@ export class VRDeviceOrientationFreeCamera extends DeviceOrientationCamera {
         super(name, position, scene);
 
         vrCameraMetrics.compensateDistortion = compensateDistortion;
-        this.setCameraRigMode(Camera.RIG_MODE_VR, { vrCameraMetrics: vrCameraMetrics });
+        this.setCameraRigMode(RigMode.VR, { vrCameraMetrics: vrCameraMetrics });
     }
 
     /**

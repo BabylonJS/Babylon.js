@@ -1,16 +1,16 @@
-import { Camera } from "../camera";
+import type { Camera } from "../camera";
 import { Viewport } from "../../Maths/math.viewport";
 import { PassPostProcess } from "../../PostProcesses/passPostProcess";
 import { StereoscopicInterlacePostProcessI } from "../../PostProcesses/stereoscopicInterlacePostProcess";
+import { RigMode } from "../../Engines/constants";
 
 /**
  * @internal
  */
 export function setStereoscopicRigMode(camera: Camera): void {
-    const isStereoscopicHoriz =
-        camera.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL || camera.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED;
-    const isCrossEye = camera.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED;
-    const isInterlaced = camera.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_INTERLACED;
+    const isStereoscopicHoriz = camera.cameraRigMode === RigMode.STEREOSCOPIC_SIDEBYSIDE_PARALLEL || camera.cameraRigMode === RigMode.STEREOSCOPIC_SIDEBYSIDE_CROSSEYED;
+    const isCrossEye = camera.cameraRigMode === RigMode.STEREOSCOPIC_SIDEBYSIDE_CROSSEYED;
+    const isInterlaced = camera.cameraRigMode === RigMode.STEREOSCOPIC_INTERLACED;
     // Use post-processors for interlacing
     if (isInterlaced) {
         camera._rigCameras[0]._rigPostProcess = new PassPostProcess(camera.name + "_passthru", 1.0, camera._rigCameras[0]);

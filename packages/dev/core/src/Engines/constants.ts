@@ -666,40 +666,42 @@ export const FOVMODE_VERTICAL_FIXED = 0;
  */
 export const FOVMODE_HORIZONTAL_FIXED = 1;
 
-/**
- * This specifies there is no need for a camera rig.
- * Basically only one eye is rendered corresponding to the camera.
- */
-export const RIG_MODE_NONE = 0;
-/**
- * Simulates a camera Rig with one blue eye and one red eye.
- * This can be use with 3d blue and red glasses.
- */
-export const RIG_MODE_STEREOSCOPIC_ANAGLYPH = 10;
-/**
- * Defines that both eyes of the camera will be rendered side by side with a parallel target.
- */
-export const RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL = 11;
-/**
- * Defines that both eyes of the camera will be rendered side by side with a none parallel target.
- */
-export const RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED = 12;
-/**
- * Defines that both eyes of the camera will be rendered over under each other.
- */
-export const RIG_MODE_STEREOSCOPIC_OVERUNDER = 13;
-/**
- * Defines that both eyes of the camera will be rendered on successive lines interlaced for passive 3d monitors.
- */
-export const RIG_MODE_STEREOSCOPIC_INTERLACED = 14;
-/**
- * Defines that both eyes of the camera should be renderered in a VR mode (carbox).
- */
-export const RIG_MODE_VR = 20;
-/**
- * Custom rig mode allowing rig cameras to be populated manually with any number of cameras
- */
-export const RIG_MODE_CUSTOM = 22;
+export const enum RigMode {
+    /**
+     * This specifies there is no need for a camera rig.
+     * Basically only one eye is rendered corresponding to the camera.
+     */
+    NONE = 0,
+    /**
+     * Simulates a camera Rig with one blue eye and one red eye.
+     * This can be use with 3d blue and red glasses.
+     */
+    STEREOSCOPIC_ANAGLYPH = 10,
+    /**
+     * Defines that both eyes of the camera will be rendered side by side with a parallel target.
+     */
+    STEREOSCOPIC_SIDEBYSIDE_PARALLEL = 11,
+    /**
+     * Defines that both eyes of the camera will be rendered side by side with a none parallel target.
+     */
+    STEREOSCOPIC_SIDEBYSIDE_CROSSEYED = 12,
+    /**
+     * Defines that both eyes of the camera will be rendered over under each other.
+     */
+    STEREOSCOPIC_OVERUNDER = 13,
+    /**
+     * Defines that both eyes of the camera will be rendered on successive lines interlaced for passive 3d monitors.
+     */
+    STEREOSCOPIC_INTERLACED = 14,
+    /**
+     * Defines that both eyes of the camera should be renderered in a VR mode (carbox).
+     */
+    VR = 20,
+    /**
+     * Custom rig mode allowing rig cameras to be populated manually with any number of cameras
+     */
+    CUSTOM = 22,
+}
 
 /**
  * Maximum number of uv sets supported
@@ -989,4 +991,13 @@ export const Constants = {
 
     SNAPSHOTRENDERING_STANDARD: SnapshotRendering.STANDARD,
     SNAPSHOTRENDERING_FAST: SnapshotRendering.FAST,
+
+    RIG_MODE_NONE: RigMode.NONE,
+    RIG_MODE_STEREOSCOPIC_ANAGLYPH: RigMode.STEREOSCOPIC_ANAGLYPH,
+    RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL: RigMode.STEREOSCOPIC_SIDEBYSIDE_PARALLEL,
+    RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED: RigMode.STEREOSCOPIC_SIDEBYSIDE_CROSSEYED,
+    RIG_MODE_STEREOSCOPIC_OVERUNDER: RigMode.STEREOSCOPIC_OVERUNDER,
+    RIG_MODE_STEREOSCOPIC_INTERLACED: RigMode.STEREOSCOPIC_INTERLACED,
+    RIG_MODE_VR: RigMode.VR,
+    RIG_MODE_CUSTOM: RigMode.CUSTOM,
 };

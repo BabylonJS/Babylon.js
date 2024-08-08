@@ -1,4 +1,4 @@
-import { Camera } from "../../Cameras/camera";
+import { RigMode } from "../../Engines/constants";
 import { FreeCamera } from "../../Cameras/freeCamera";
 import type { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
@@ -24,7 +24,7 @@ export class AnaglyphFreeCamera extends FreeCamera {
     constructor(name: string, position: Vector3, interaxialDistance: number, scene?: Scene) {
         super(name, position, scene);
         this.interaxialDistance = interaxialDistance;
-        this.setCameraRigMode(Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH, { interaxialDistance: interaxialDistance });
+        this.setCameraRigMode(RigMode.STEREOSCOPIC_ANAGLYPH, { interaxialDistance: interaxialDistance });
     }
 
     /**
