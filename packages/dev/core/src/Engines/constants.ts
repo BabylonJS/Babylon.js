@@ -472,13 +472,22 @@ export const TEXTURE_FILTERING_QUALITY_MEDIUM = 16;
 /** Low quality for texture filtering */
 export const TEXTURE_FILTERING_QUALITY_LOW = 8;
 
-// Texture rescaling mode
-/** Defines that texture rescaling will use a floor to find the closer power of 2 size */
-export const SCALEMODE_FLOOR = 1;
-/** Defines that texture rescaling will look for the nearest power of 2 size */
-export const SCALEMODE_NEAREST = 2;
-/** Defines that texture rescaling will use a ceil to find the closer power of 2 size */
-export const SCALEMODE_CEILING = 3;
+/** Texture rescaling mode */
+export const enum ScaleMode {
+    /** Defines that texture rescaling will use a floor to find the closer power of 2 size */
+    FLOOR = 1,
+    /** Defines that texture rescaling will look for the nearest power of 2 size */
+    NEAREST = 2,
+    /** Defines that texture rescaling will use a ceil to find the closer power of 2 size */
+    CEILING = 3,
+}
+
+/** @deprecated use ScaleMode */
+export const SCALEMODE_FLOOR = ScaleMode.FLOOR;
+/** @deprecated use ScaleMode */
+export const SCALEMODE_NEAREST = ScaleMode.NEAREST;
+/** @deprecated use ScaleMode */
+export const SCALEMODE_CEILING = ScaleMode.CEILING;
 
 /**
  * The dirty texture flag value

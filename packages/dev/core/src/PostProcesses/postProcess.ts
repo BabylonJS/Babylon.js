@@ -7,7 +7,7 @@ import type { Camera } from "../Cameras/camera";
 import { Effect } from "../Materials/effect";
 import {
     ALPHA_DISABLE,
-    SCALEMODE_FLOOR,
+    ScaleMode,
     TEXTURE_NEAREST_SAMPLINGMODE,
     TextureType,
     TextureFormat,
@@ -336,17 +336,17 @@ export class PostProcess {
     public inspectableCustomProperties: IInspectable[];
 
     /**
-     * Scale mode for the post process (default: Engine.SCALEMODE_FLOOR)
+     * Scale mode for the post process (default: Engine.ScaleMode.FLOOR)
      *
      * | Value | Type                                | Description |
      * | ----- | ----------------------------------- | ----------- |
-     * | 1     | SCALEMODE_FLOOR                     | [engine.scalemode_floor](https://doc.babylonjs.com/api/classes/babylon.engine#scalemode_floor) |
-     * | 2     | SCALEMODE_NEAREST                   | [engine.scalemode_nearest](https://doc.babylonjs.com/api/classes/babylon.engine#scalemode_nearest) |
-     * | 3     | SCALEMODE_CEILING                   | [engine.scalemode_ceiling](https://doc.babylonjs.com/api/classes/babylon.engine#scalemode_ceiling) |
+     * | 1     | ScaleMode.FLOOR                     | [engine.scalemode_floor](https://doc.babylonjs.com/api/classes/babylon.engine#scalemode_floor) |
+     * | 2     | ScaleMode.NEAREST                   | [engine.scalemode_nearest](https://doc.babylonjs.com/api/classes/babylon.engine#scalemode_nearest) |
+     * | 3     | ScaleMode.CEILING                   | [engine.scalemode_ceiling](https://doc.babylonjs.com/api/classes/babylon.engine#scalemode_ceiling) |
      *
      */
     @serialize()
-    public scaleMode = SCALEMODE_FLOOR;
+    public scaleMode = ScaleMode.FLOOR;
     /**
      * Force textures to be a power of two (default: false)
      */

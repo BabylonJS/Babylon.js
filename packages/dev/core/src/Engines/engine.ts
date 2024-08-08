@@ -129,67 +129,67 @@ export class Engine extends ThinEngine {
     /** Texture is repeating and mirrored */
     public static readonly TEXTURE_MIRROR_ADDRESSMODE = constants.TEXTURE_MIRROR_ADDRESSMODE;
 
-    /** ALPHA */
+    /** @deprecated use TextureType */
     public static readonly TEXTUREFORMAT_ALPHA = constants.TextureFormat.ALPHA;
-    /** LUMINANCE */
+    /** @deprecated use TextureType */
     public static readonly TEXTUREFORMAT_LUMINANCE = constants.TextureFormat.LUMINANCE;
-    /** LUMINANCE_ALPHA */
+    /** @deprecated use TextureType */
     public static readonly TEXTUREFORMAT_LUMINANCE_ALPHA = constants.TextureFormat.LUMINANCE_ALPHA;
-    /** RGB */
+    /** @deprecated use TextureType */
     public static readonly TEXTUREFORMAT_RGB = constants.TextureFormat.RGB;
-    /** RGBA */
+    /** @deprecated use TextureType */
     public static readonly TEXTUREFORMAT_RGBA = constants.TextureFormat.RGBA;
-    /** RED */
+    /** @deprecated use TextureType */
     public static readonly TEXTUREFORMAT_RED = constants.TextureFormat.RED;
-    /** RED (2nd reference) */
+    /** @deprecated use TextureType */
     public static readonly TEXTUREFORMAT_R = constants.TextureFormat.R;
-    /** RG */
+    /** @deprecated use TextureType */
     public static readonly TEXTUREFORMAT_RG = constants.TextureFormat.RG;
-    /** RED_INTEGER */
+    /** @deprecated use TextureType */
     public static readonly TEXTUREFORMAT_RED_INTEGER = constants.TextureFormat.RED_INTEGER;
-    /** RED_INTEGER (2nd reference) */
+    /** @deprecated use TextureType */
     public static readonly TEXTUREFORMAT_R_INTEGER = constants.TextureFormat.R_INTEGER;
-    /** RG_INTEGER */
+    /** @deprecated use TextureType */
     public static readonly TEXTUREFORMAT_RG_INTEGER = constants.TextureFormat.RG_INTEGER;
-    /** RGB_INTEGER */
+    /** @deprecated use TextureType */
     public static readonly TEXTUREFORMAT_RGB_INTEGER = constants.TextureFormat.RGB_INTEGER;
-    /** RGBA_INTEGER */
+    /** @deprecated use TextureType */
     public static readonly TEXTUREFORMAT_RGBA_INTEGER = constants.TextureFormat.RGBA_INTEGER;
 
-    /** UNSIGNED_BYTE */
-    public static readonly TEXTURETYPE_UNSIGNED_BYTE = constants.TEXTURETYPE_UNSIGNED_BYTE;
-    /** UNSIGNED_BYTE (2nd reference) */
-    public static readonly TEXTURETYPE_UNSIGNED_INT = constants.TEXTURETYPE_UNSIGNED_INT;
-    /** FLOAT */
-    public static readonly TEXTURETYPE_FLOAT = constants.TEXTURETYPE_FLOAT;
-    /** HALF_FLOAT */
-    public static readonly TEXTURETYPE_HALF_FLOAT = constants.TEXTURETYPE_HALF_FLOAT;
-    /** BYTE */
-    public static readonly TEXTURETYPE_BYTE = constants.TEXTURETYPE_BYTE;
-    /** SHORT */
-    public static readonly TEXTURETYPE_SHORT = constants.TEXTURETYPE_SHORT;
-    /** UNSIGNED_SHORT */
-    public static readonly TEXTURETYPE_UNSIGNED_SHORT = constants.TEXTURETYPE_UNSIGNED_SHORT;
-    /** INT */
-    public static readonly TEXTURETYPE_INT = constants.TEXTURETYPE_INT;
-    /** UNSIGNED_INT */
-    public static readonly TEXTURETYPE_UNSIGNED_INTEGER = constants.TEXTURETYPE_UNSIGNED_INTEGER;
-    /** UNSIGNED_SHORT_4_4_4_4 */
-    public static readonly TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4 = constants.TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4;
-    /** UNSIGNED_SHORT_5_5_5_1 */
-    public static readonly TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1 = constants.TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1;
-    /** UNSIGNED_SHORT_5_6_5 */
-    public static readonly TEXTURETYPE_UNSIGNED_SHORT_5_6_5 = constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
-    /** UNSIGNED_INT_2_10_10_10_REV */
-    public static readonly TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV = constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV;
-    /** UNSIGNED_INT_24_8 */
-    public static readonly TEXTURETYPE_UNSIGNED_INT_24_8 = constants.TEXTURETYPE_UNSIGNED_INT_24_8;
-    /** UNSIGNED_INT_10F_11F_11F_REV */
-    public static readonly TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV = constants.TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV;
-    /** UNSIGNED_INT_5_9_9_9_REV */
-    public static readonly TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV = constants.TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV;
-    /** FLOAT_32_UNSIGNED_INT_24_8_REV */
-    public static readonly TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV = constants.TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV;
+    /** @deprecated use TextureType */
+    public static readonly TEXTURETYPE_UNSIGNED_BYTE = constants.TextureType.UNSIGNED_BYTE;
+    /** @deprecated use TextureType */
+    public static readonly TEXTURETYPE_UNSIGNED_INT = constants.TextureType.UNSIGNED_INT;
+    /** @deprecated use TextureType */
+    public static readonly TEXTURETYPE_FLOAT = constants.TextureType.FLOAT;
+    /** @deprecated use TextureType */
+    public static readonly TEXTURETYPE_HALF_FLOAT = constants.TextureType.HALF_FLOAT;
+    /** @deprecated use TextureType */
+    public static readonly TEXTURETYPE_BYTE = constants.TextureType.BYTE;
+    /** @deprecated use TextureType */
+    public static readonly TEXTURETYPE_SHORT = constants.TextureType.SHORT;
+    /** @deprecated use TextureType */
+    public static readonly TEXTURETYPE_UNSIGNED_SHORT = constants.TextureType.UNSIGNED_SHORT;
+    /** @deprecated use TextureType */
+    public static readonly TEXTURETYPE_INT = constants.TextureType.INT;
+    /** @deprecated use TextureType */
+    public static readonly TEXTURETYPE_UNSIGNED_INTEGER = constants.TextureType.UNSIGNED_INTEGER;
+    /** @deprecated use TextureType */
+    public static readonly TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4 = constants.TextureType.UNSIGNED_SHORT_4_4_4_4;
+    /** @deprecated use TextureType */
+    public static readonly TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1 = constants.TextureType.UNSIGNED_SHORT_5_5_5_1;
+    /** @deprecated use TextureType */
+    public static readonly TEXTURETYPE_UNSIGNED_SHORT_5_6_5 = constants.TextureType.UNSIGNED_SHORT_5_6_5;
+    /** @deprecated use TextureType */
+    public static readonly TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV = constants.TextureType.UNSIGNED_INT_2_10_10_10_REV;
+    /** @deprecated use TextureType */
+    public static readonly TEXTURETYPE_UNSIGNED_INT_24_8 = constants.TextureType.UNSIGNED_INT_24_8;
+    /** @deprecated use TextureType */
+    public static readonly TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV = constants.TextureType.UNSIGNED_INT_10F_11F_11F_REV;
+    /** @deprecated use TextureType */
+    public static readonly TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV = constants.TextureType.UNSIGNED_INT_5_9_9_9_REV;
+    /** @deprecated use TextureType */
+    public static readonly TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV = constants.TextureType.FLOAT_32_UNSIGNED_INT_24_8_REV;
 
     /** nearest is mag = nearest and min = nearest and mip = none */
     public static readonly TEXTURE_NEAREST_SAMPLINGMODE = constants.TEXTURE_NEAREST_SAMPLINGMODE;
@@ -244,12 +244,12 @@ export class Engine extends ThinEngine {
     public static readonly TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE = constants.TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE;
 
     // Texture rescaling mode
-    /** Defines that texture rescaling will use a floor to find the closer power of 2 size */
-    public static readonly SCALEMODE_FLOOR = constants.SCALEMODE_FLOOR;
-    /** Defines that texture rescaling will look for the nearest power of 2 size */
-    public static readonly SCALEMODE_NEAREST = constants.SCALEMODE_NEAREST;
-    /** Defines that texture rescaling will use a ceil to find the closer power of 2 size */
-    public static readonly SCALEMODE_CEILING = constants.SCALEMODE_CEILING;
+    /** @deprecated use ScaleMode */
+    public static readonly SCALEMODE_FLOOR = constants.ScaleMode.FLOOR;
+    /** @deprecated use ScaleMode */
+    public static readonly SCALEMODE_NEAREST = constants.ScaleMode.NEAREST;
+    /** @deprecated use ScaleMode */
+    public static readonly SCALEMODE_CEILING = constants.ScaleMode.CEILING;
 
     /**
      * Returns the current npm package of the sdk
@@ -824,7 +824,7 @@ export class Engine extends ThinEngine {
             },
             {
                 generateMipMaps: false,
-                type: constants.TEXTURETYPE_UNSIGNED_INT,
+                type: constants.TextureType.UNSIGNED_INT,
                 samplingMode: constants.TEXTURE_BILINEAR_SAMPLINGMODE,
                 generateDepthBuffer: false,
                 generateStencilBuffer: false,
