@@ -4,7 +4,7 @@ import { IsNavigatorAvailable } from "../Misc/domManagement";
 import type { Observer } from "../Misc/observable";
 import { Tools } from "../Misc/tools";
 import type { Nullable } from "../types";
-import { DeviceEventFactory } from "./eventFactory";
+import { CreateDeviceEvent } from "./eventFactory";
 import { DeviceType, PointerInput } from "./InputDevices/deviceEnums";
 import type { IDeviceInputSystem } from "./inputInterfaces";
 
@@ -376,7 +376,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
                 if (this._usingMacOS && evt.key === "Meta" && this._metaKeys.length > 0) {
                     for (const keyCode of this._metaKeys) {
-                        const deviceEvent: IUIEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Keyboard, 0, keyCode, 0, this, this._elementToAttachTo);
+                        const deviceEvent: IUIEvent = CreateDeviceEvent(DeviceType.Keyboard, 0, keyCode, 0, this, this._elementToAttachTo);
                         kbKey[keyCode] = 0;
                         this._onInputChanged(DeviceType.Keyboard, 0, deviceEvent);
                     }
@@ -395,7 +395,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                     if (kbKey[i] !== 0) {
                         kbKey[i] = 0;
 
-                        const deviceEvent: IUIEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Keyboard, 0, i, 0, this, this._elementToAttachTo);
+                        const deviceEvent: IUIEvent = CreateDeviceEvent(DeviceType.Keyboard, 0, i, 0, this, this._elementToAttachTo);
 
                         this._onInputChanged(DeviceType.Keyboard, 0, deviceEvent);
                     }
@@ -628,7 +628,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                     if (pointer[inputIndex] === 1) {
                         pointer[inputIndex] = 0;
 
-                        const deviceEvent: IUIEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Mouse, 0, inputIndex, 0, this, this._elementToAttachTo);
+                        const deviceEvent: IUIEvent = CreateDeviceEvent(DeviceType.Mouse, 0, inputIndex, 0, this, this._elementToAttachTo);
 
                         this._onInputChanged(DeviceType.Mouse, 0, deviceEvent);
                     }
@@ -647,15 +647,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
                 this._inputs[DeviceType.Touch][deviceSlot][PointerInput.LeftClick] = 0;
 
-                const deviceEvent: IUIEvent = DeviceEventFactory.CreateDeviceEvent(
-                    DeviceType.Touch,
-                    deviceSlot,
-                    PointerInput.LeftClick,
-                    0,
-                    this,
-                    this._elementToAttachTo,
-                    evt.pointerId
-                );
+                const deviceEvent: IUIEvent = CreateDeviceEvent(DeviceType.Touch, deviceSlot, PointerInput.LeftClick, 0, this, this._elementToAttachTo, evt.pointerId);
 
                 this._onInputChanged(DeviceType.Touch, deviceSlot, deviceEvent);
 
@@ -705,7 +697,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                     if (pointer[inputIndex] === 1) {
                         pointer[inputIndex] = 0;
 
-                        const deviceEvent: IUIEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Mouse, 0, inputIndex, 0, this, this._elementToAttachTo);
+                        const deviceEvent: IUIEvent = CreateDeviceEvent(DeviceType.Mouse, 0, inputIndex, 0, this, this._elementToAttachTo);
 
                         this._onInputChanged(DeviceType.Mouse, 0, deviceEvent);
                     }
@@ -726,15 +718,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                     if (pointerId !== -1 && pointer[deviceSlot]?.[PointerInput.LeftClick] === 1) {
                         pointer[deviceSlot][PointerInput.LeftClick] = 0;
 
-                        const deviceEvent: IUIEvent = DeviceEventFactory.CreateDeviceEvent(
-                            DeviceType.Touch,
-                            deviceSlot,
-                            PointerInput.LeftClick,
-                            0,
-                            this,
-                            this._elementToAttachTo,
-                            pointerId
-                        );
+                        const deviceEvent: IUIEvent = CreateDeviceEvent(DeviceType.Touch, deviceSlot, PointerInput.LeftClick, 0, this, this._elementToAttachTo, pointerId);
 
                         this._onInputChanged(DeviceType.Touch, deviceSlot, deviceEvent);
 

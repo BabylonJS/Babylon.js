@@ -1,6 +1,6 @@
 import type { INative } from "../Engines/Native/nativeInterfaces";
 import type { IUIEvent } from "../Events/deviceInputEvents";
-import { DeviceEventFactory } from "./eventFactory";
+import { CreateDeviceEvent } from "./eventFactory";
 import { DeviceType } from "./InputDevices/deviceEnums";
 import type { IDeviceInputSystem } from "./inputInterfaces";
 
@@ -17,7 +17,7 @@ export class NativeDeviceInputSystem implements IDeviceInputSystem {
     ) {
         this._nativeInput = _native.DeviceInputSystem
             ? new _native.DeviceInputSystem(onDeviceConnected, onDeviceDisconnected, (deviceType, deviceSlot, inputIndex, currentState) => {
-                  const evt = DeviceEventFactory.CreateDeviceEvent(deviceType, deviceSlot, inputIndex, currentState, this);
+                  const evt = CreateDeviceEvent(deviceType, deviceSlot, inputIndex, currentState, this);
 
                   onInputChanged(deviceType, deviceSlot, evt);
               })

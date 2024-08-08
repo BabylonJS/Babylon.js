@@ -1,6 +1,6 @@
 import { FreeCamera } from "core/Cameras/freeCamera";
 import { PickingInfo } from "core/Collisions";
-import { DeviceEventFactory } from "core/DeviceInput/eventFactory";
+import { CreateDeviceEvent } from "core/DeviceInput/eventFactory";
 import { DeviceType, PointerInput } from "core/DeviceInput/InputDevices/deviceEnums";
 import { NullEngine } from "core/Engines/nullEngine";
 import { PointerEventTypes, PointerInfo } from "core/Events";
@@ -52,18 +52,18 @@ describe("FreeCameraMouseInput", () => {
         testDeviceInputSystem.changeInput(DeviceType.Touch, 2, PointerInput.Horizontal, 0, false);
         testDeviceInputSystem.changeInput(DeviceType.Touch, 2, PointerInput.Vertical, 0, false);
 
-        const downEvt1 = DeviceEventFactory.CreateDeviceEvent(DeviceType.Touch, 2, PointerInput.LeftClick, 1, testDeviceInputSystem);
+        const downEvt1 = CreateDeviceEvent(DeviceType.Touch, 2, PointerInput.LeftClick, 1, testDeviceInputSystem);
         const downPI1 = new PointerInfo(PointerEventTypes.POINTERDOWN, downEvt1 as IMouseEvent, new PickingInfo());
 
         testDeviceInputSystem.changeInput(DeviceType.Touch, 2, PointerInput.Horizontal, 10, false);
         testDeviceInputSystem.changeInput(DeviceType.Touch, 2, PointerInput.Vertical, 10, false);
 
-        const moveEvt1 = DeviceEventFactory.CreateDeviceEvent(DeviceType.Touch, 2, PointerInput.Move, 1, testDeviceInputSystem);
+        const moveEvt1 = CreateDeviceEvent(DeviceType.Touch, 2, PointerInput.Move, 1, testDeviceInputSystem);
         const movePI1 = new PointerInfo(PointerEventTypes.POINTERMOVE, moveEvt1 as IMouseEvent, new PickingInfo());
 
         testDeviceInputSystem.changeInput(DeviceType.Touch, 2, PointerInput.LeftClick, 0, false);
 
-        const upEvt1 = DeviceEventFactory.CreateDeviceEvent(DeviceType.Touch, 2, PointerInput.LeftClick, 0, testDeviceInputSystem);
+        const upEvt1 = CreateDeviceEvent(DeviceType.Touch, 2, PointerInput.LeftClick, 0, testDeviceInputSystem);
         const upPI1 = new PointerInfo(PointerEventTypes.POINTERUP, upEvt1 as IMouseEvent, new PickingInfo());
 
         // Second touch
@@ -71,18 +71,18 @@ describe("FreeCameraMouseInput", () => {
         testDeviceInputSystem.changeInput(DeviceType.Touch, 3, PointerInput.Horizontal, 20, false);
         testDeviceInputSystem.changeInput(DeviceType.Touch, 3, PointerInput.Vertical, 20, false);
 
-        const downEvt2 = DeviceEventFactory.CreateDeviceEvent(DeviceType.Touch, 3, PointerInput.LeftClick, 1, testDeviceInputSystem);
+        const downEvt2 = CreateDeviceEvent(DeviceType.Touch, 3, PointerInput.LeftClick, 1, testDeviceInputSystem);
         const downPI2 = new PointerInfo(PointerEventTypes.POINTERDOWN, downEvt2 as IMouseEvent, new PickingInfo());
 
         testDeviceInputSystem.changeInput(DeviceType.Touch, 3, PointerInput.Horizontal, 0, false);
         testDeviceInputSystem.changeInput(DeviceType.Touch, 3, PointerInput.Vertical, 0, false);
 
-        const moveEvt2 = DeviceEventFactory.CreateDeviceEvent(DeviceType.Touch, 2, PointerInput.Move, 1, testDeviceInputSystem);
+        const moveEvt2 = CreateDeviceEvent(DeviceType.Touch, 2, PointerInput.Move, 1, testDeviceInputSystem);
         const movePI2 = new PointerInfo(PointerEventTypes.POINTERMOVE, moveEvt2 as IMouseEvent, new PickingInfo());
 
         testDeviceInputSystem.changeInput(DeviceType.Touch, 2, PointerInput.LeftClick, 0, false);
 
-        const upEvt2 = DeviceEventFactory.CreateDeviceEvent(DeviceType.Touch, 2, PointerInput.LeftClick, 0, testDeviceInputSystem);
+        const upEvt2 = CreateDeviceEvent(DeviceType.Touch, 2, PointerInput.LeftClick, 0, testDeviceInputSystem);
         const upPI2 = new PointerInfo(PointerEventTypes.POINTERUP, upEvt2 as IMouseEvent, new PickingInfo());
 
         // With the first touch, the camera should rotate
@@ -110,14 +110,14 @@ describe("FreeCameraMouseInput", () => {
             () => {}
         );
         testDeviceInputSystem.connectDevice(DeviceType.Mouse, 0, TestDeviceInputSystem.MAX_POINTER_INPUTS);
-        
+
         // Create two events with different movement values
-        const moveEvt = DeviceEventFactory.CreateDeviceEvent(DeviceType.Mouse, 0, PointerInput.Move, 1, testDeviceInputSystem) as IMouseEvent;
+        const moveEvt = CreateDeviceEvent(DeviceType.Mouse, 0, PointerInput.Move, 1, testDeviceInputSystem) as IMouseEvent;
         moveEvt.movementX = 10;
         moveEvt.movementY = 10;
         const movePI = new PointerInfo(PointerEventTypes.POINTERMOVE, moveEvt, new PickingInfo());
 
-        const moveEvt2 = DeviceEventFactory.CreateDeviceEvent(DeviceType.Mouse, 0, PointerInput.Move, 1, testDeviceInputSystem) as IMouseEvent;
+        const moveEvt2 = CreateDeviceEvent(DeviceType.Mouse, 0, PointerInput.Move, 1, testDeviceInputSystem) as IMouseEvent;
         moveEvt2.movementX = -15;
         moveEvt2.movementY = -15;
         const movePI2 = new PointerInfo(PointerEventTypes.POINTERMOVE, moveEvt2, new PickingInfo());

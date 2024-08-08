@@ -1,4 +1,4 @@
-import { DeviceEventFactory } from "core/DeviceInput/eventFactory";
+import { CreateDeviceEvent } from "core/DeviceInput/eventFactory";
 import { DeviceType } from "core/DeviceInput/InputDevices/deviceEnums";
 import type { IDeviceInputSystem } from "core/DeviceInput/inputInterfaces";
 import type { Engine } from "core/Engines/engine";
@@ -82,16 +82,16 @@ export class TestDeviceInputSystem implements ITestDeviceInputSystem {
         }
 
         const device = this._inputs[deviceType][deviceSlot];
-        
-            if (device) {
-                device[inputIndex] = currentState;
-                if (createEvent) {
-                const evt = DeviceEventFactory.CreateDeviceEvent(deviceType, deviceSlot, inputIndex, currentState, this as unknown as IDeviceInputSystem);
+
+        if (device) {
+            device[inputIndex] = currentState;
+            if (createEvent) {
+                const evt = CreateDeviceEvent(deviceType, deviceSlot, inputIndex, currentState, this as unknown as IDeviceInputSystem);
                 this._onInputChanged(deviceType, deviceSlot, evt);
-                }
-            } else {
-                throw `Unable to find device type ${DeviceType[deviceType]}:${deviceSlot}`;
             }
+        } else {
+            throw `Unable to find device type ${DeviceType[deviceType]}:${deviceSlot}`;
+        }
     }
 
     public dispose(): void {
