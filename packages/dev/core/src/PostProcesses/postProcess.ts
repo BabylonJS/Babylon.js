@@ -439,6 +439,12 @@ export class PostProcess {
         return this._fragmentUrl;
     }
 
+    /**
+     * Executed when the effect was created
+     * @returns effect that was created for this post process
+     */
+    public onEffectCreatedObservable = new Observable<Effect>();
+
     // Events
 
     /**
@@ -832,6 +838,7 @@ export class PostProcess {
             },
             this._engine
         );
+        this.onEffectCreatedObservable.notifyObservers(this._drawWrapper.effect);
     }
 
     /**
