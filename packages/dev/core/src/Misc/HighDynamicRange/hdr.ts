@@ -76,7 +76,7 @@ function readStringLine(uint8array: Uint8Array, startIndex: number): string {
  * @returns The header information.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function readRGBEHeader(uint8array: Uint8Array): HDRInfo {
+export function RGBE_ReadHeader(uint8array: Uint8Array): HDRInfo {
     let height: number = 0;
     let width: number = 0;
 
@@ -146,10 +146,10 @@ export function readRGBEHeader(uint8array: Uint8Array): HDRInfo {
  * @param supersample enable supersampling the cubemap (default: false)
  * @returns The Cube Map information.
  */
-export function getCubeMapTextureData(buffer: ArrayBuffer, size: number, supersample = false): CubeMapInfo {
+export function GetCubeMapTextureData(buffer: ArrayBuffer, size: number, supersample = false): CubeMapInfo {
     const uint8array = new Uint8Array(buffer);
-    const hdrInfo = readRGBEHeader(uint8array);
-    const data = readRGBEPixels(uint8array, hdrInfo);
+    const hdrInfo = RGBE_ReadHeader(uint8array);
+    const data = RGBE_ReadPixels(uint8array, hdrInfo);
 
     const cubeMapData = PanoramaToCubeMapTools.ConvertPanoramaToCubemap(data, hdrInfo.width, hdrInfo.height, size, supersample);
 
@@ -168,7 +168,7 @@ export function getCubeMapTextureData(buffer: ArrayBuffer, size: number, supersa
  * @returns The pixels data in RGB right to left up to down order.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function readRGBEPixels(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Array {
+export function RGBE_ReadPixels(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Array {
     return readRGBEPixelsRLE(uint8array, hdrInfo);
 }
 
@@ -296,9 +296,9 @@ function readRGBEPixelsNotRLE(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32
  */
 export const HDRTools = {
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    RGBE_ReadHeader: readRGBEHeader,
+    RGBE_ReadHeader,
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    GetCubeMapTextureData: getCubeMapTextureData,
+    GetCubeMapTextureData,
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    RGBE_ReadPixels: readRGBEPixels,
+    RGBE_ReadPixels,
 };
