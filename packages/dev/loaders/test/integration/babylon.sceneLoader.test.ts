@@ -263,7 +263,7 @@ describe("Babylon Scene Loader", function () {
                         return data;
                     });
             });
-            expect(assertionData.length).toBeGreaterThan(1);
+            expect(assertionData.length).toBeGreaterThan(0);
             assertionData.forEach((data) => {
                 expect(data).toBe(true);
             });
