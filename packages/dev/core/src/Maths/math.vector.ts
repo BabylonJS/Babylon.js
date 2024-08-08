@@ -5385,12 +5385,11 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
      * @returns the target quaternion
      */
     public static RotationAxisToRef<T extends Quaternion>(axis: DeepImmutable<Vector3>, angle: number, result: T): T {
-        const sin = Math.sin(angle / 2);
-        axis.normalize();
         result._w = Math.cos(angle / 2);
-        result._x = axis._x * sin;
-        result._y = axis._y * sin;
-        result._z = axis._z * sin;
+        const sinByLength = Math.sin(angle / 2) / axis.length();
+        result._x = axis._x * sinByLength;
+        result._y = axis._y * sinByLength;
+        result._z = axis._z * sinByLength;
         result._isDirty = true;
         return result;
     }
