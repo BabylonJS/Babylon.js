@@ -60,7 +60,7 @@
 		output = ACESOutputMat * output;
 
 		// Clamp to [0, 1]
-		output = saturate(output);
+		output = saturateVec3(output);
 
 		return output;
 	}
@@ -127,14 +127,14 @@ fn applyImageProcessing(result: vec4f) -> vec4f {
 
 	// Apply Color Transform
 #ifdef COLORGRADING
-	var colorTransformInput: vec3f = rgb * colorTransformSettings.xxx + colorTransformSettings.yyy;
+	var colorTransformInput: vec3f = rgb * uniforms.colorTransformSettings.xxx + uniforms.colorTransformSettings.yyy;
 	#ifdef COLORGRADING3D
-		var colorTransformOutput: vec3f = texture(txColorTransform, colorTransformInput).rgb;
+		var colorTransformOutput: vec3f = textureSample(txColorTransform, txColorTransformSampler, colorTransformInput).rgb;
 	#else
-		var colorTransformOutput: vec3f = sampleTexture3D(txColorTransform, colorTransformInput, colorTransformSettings.yz).rgb;
+		var colorTransformOutput: vec3f = textureSample(txColorTransform, txColorTransformSampler, colorTransformInput, uniforms.colorTransformSettings.yz).rgb;
 	#endif
 
-	rgb = mix(rgb, colorTransformOutput, colorTransformSettings.www);
+	rgb = mix(rgb, colorTransformOutput, uniforms.colorTransformSettings.www);
 #endif
 
 #ifdef COLORCURVES

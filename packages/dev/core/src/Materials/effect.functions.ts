@@ -281,7 +281,7 @@ export const createAndPreparePipelineContext = (
     createPipelineContext: typeof AbstractEngine.prototype.createPipelineContext,
     _preparePipelineContext: typeof AbstractEngine.prototype._preparePipelineContext,
     _executeWhenRenderingStateIsCompiled: typeof AbstractEngine.prototype._executeWhenRenderingStateIsCompiled
-) => {
+): IPipelineContext => {
     try {
         const pipelineContext: IPipelineContext = options.existingPipelineContext || createPipelineContext(options.shaderProcessingContext);
         pipelineContext._name = options.name;
@@ -290,6 +290,8 @@ export const createAndPreparePipelineContext = (
             stateObject.cachedPipelines[options.name] = pipelineContext;
         }
 
+        // Flagged as async as we may need to delay load some processing tools
+        // This does not break anything as the execution is waiting for _executeWhenRenderingStateIsCompiled
         _preparePipelineContext(
             pipelineContext,
             options.vertex,
@@ -300,12 +302,13 @@ export const createAndPreparePipelineContext = (
             options.rebuildRebind,
             options.defines,
             options.transformFeedbackVaryings,
-            ""
+            "",
+            () => {
+                _executeWhenRenderingStateIsCompiled(pipelineContext, () => {
+                    options.onRenderingStateCompiled?.(pipelineContext);
+                });
+            }
         );
-
-        _executeWhenRenderingStateIsCompiled(pipelineContext, () => {
-            options.onRenderingStateCompiled?.(pipelineContext);
-        });
 
         return pipelineContext;
     } catch (e) {

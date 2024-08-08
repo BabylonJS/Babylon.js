@@ -252,6 +252,7 @@ export class NodeMaterial extends PushMaterial {
     private _cachedWorldViewProjectionMatrix = new Matrix();
     private _optimizers = new Array<NodeMaterialOptimizer>();
     private _animationFrame = -1;
+    private _buildIsInProgress = false;
 
     /** Define the Url to load node editor script */
     public static EditorURL = `${Tools._DefaultCdnUrl}/v${AbstractEngine.Version}/nodeEditor/babylon.nodeEditor.js`;
@@ -306,11 +307,11 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /** Gets or sets the active shader language */
-    public get shaderLanguage(): ShaderLanguage {
+    public override get shaderLanguage(): ShaderLanguage {
         return this._options.shaderLanguage;
     }
 
-    public set shaderLanguage(value: ShaderLanguage) {
+    public override set shaderLanguage(value: ShaderLanguage) {
         this._options.shaderLanguage = value;
     }
 
@@ -801,6 +802,11 @@ export class NodeMaterial extends PushMaterial {
      * @param autoConfigure defines if the autoConfigure method should be called when initializing blocks (default is false)
      */
     public build(verbose: boolean = false, updateBuildId = true, autoConfigure = false) {
+        if (this._buildIsInProgress) {
+            Logger.Warn("Build is already in progress, You can use NodeMaterial.onBuildObservable to determine when the build is completed.");
+            return;
+        }
+        this._buildIsInProgress = true;
         // First time?
         if (!this._vertexCompilationState && !autoConfigure) {
             autoConfigure = true;
@@ -855,6 +861,28 @@ export class NodeMaterial extends PushMaterial {
             this._initializeBlock(fragmentOutputNode, this._fragmentCompilationState, vertexNodes, autoConfigure);
         }
 
+        // Are blocks code ready?
+        let waitingNodeCount = 0;
+        for (const node of this.attachedBlocks) {
+            if (!node.codeIsReady) {
+                waitingNodeCount++;
+                node.onCodeIsReadyObservable.addOnce(() => {
+                    waitingNodeCount--;
+                    if (waitingNodeCount === 0) {
+                        this._finishBuildProcess(verbose, updateBuildId, vertexNodes, fragmentNodes);
+                    }
+                });
+            }
+        }
+
+        if (waitingNodeCount !== 0) {
+            return;
+        }
+
+        this._finishBuildProcess(verbose, updateBuildId, vertexNodes, fragmentNodes);
+    }
+
+    private _finishBuildProcess(verbose: boolean = false, updateBuildId = true, vertexNodes: NodeMaterialBlock[], fragmentNodes: NodeMaterialBlock[]) {
         // Optimize
         this.optimize();
 
@@ -895,6 +923,7 @@ export class NodeMaterial extends PushMaterial {
             Logger.Log(this._fragmentCompilationState.compilationString);
         }
 
+        this._buildIsInProgress = false;
         this._buildWasSuccessful = true;
         this.onBuildObservable.notifyObservers(this);
 
@@ -1226,7 +1255,7 @@ export class NodeMaterial extends PushMaterial {
         proceduralTexture._setEffect(effect);
 
         let buildId = this._buildId;
-        proceduralTexture.onBeforeGenerationObservable.add(() => {
+        const refreshEffect = () => {
             if (buildId !== this._buildId) {
                 delete Effect.ShadersStore[tempName + "VertexShader"];
                 delete Effect.ShadersStore[tempName + "PixelShader"];
@@ -1262,6 +1291,15 @@ export class NodeMaterial extends PushMaterial {
             }
 
             this._checkInternals(effect);
+        };
+
+        proceduralTexture.onBeforeGenerationObservable.add(() => {
+            refreshEffect();
+        });
+
+        // This is needed if the procedural texture is not set to refresh automatically
+        this.onBuildObservable.add(() => {
+            refreshEffect();
         });
 
         return proceduralTexture;

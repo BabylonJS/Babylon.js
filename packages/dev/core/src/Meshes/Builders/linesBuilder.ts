@@ -163,6 +163,7 @@ export function CreateLineSystem(
         if (colors && vertexColor) {
             instance.updateVerticesData(VertexBuffer.ColorKind, vertexColor, false, false);
         }
+        instance.refreshBoundingInfo();
         return instance;
     }
 

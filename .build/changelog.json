@@ -1,21 +1,747 @@
 {
-    "fromTag": "7.16.0",
+    "fromTag": "7.19.1",
     "changelog": {
-        "7.16.0": [
+        "7.19.1": [
             {
-                "pr": "15299",
-                "title": "Fix raw texture clone by leveraging a shared internal texture",
+                "pr": "15357",
+                "title": "Fix crash when multi call to build for nme",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/nme-multi-build.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            }
+        ],
+        "7.20.0": [
+            {
+                "pr": "15378",
+                "title": "Use correct glslang capitalization",
+                "description": null,
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/tools/testTools/src/visualizationUtils.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15344",
+                "title": "SceneLoader Options",
+                "description": "This is an alternative approach to https://github.com/BabylonJS/Babylon.js/pull/15222. Compared to the original approach, this one:\r\n1. Has a simpler implementation and has a smaller impact on the API surface.\r\n1. Is slightly less type safe when adding new loader plugins or glTF extensions.\r\n1. Is much simpler for the caller.\r\n\r\nWith this approach, options are a type safe plain object with no factory functions. Invocation looks like this (for example):\r\n```ts\r\nawait SceneLoader.LoadAssetContainerAsync(\"https://raw.githubusercontent.com/BabylonJS/Assets/master/meshes/LevelOfDetail.glb\", scene, {\r\n  onProgress: (event) => { },\r\n  pluginOptions: {\r\n    gltf: {\r\n      loadOnlyMaterials: true,\r\n      extensionOptions: {\r\n        MSFT_lod: {\r\n          maxLODsToLoad: 5,\r\n        },\r\n        MSFT_minecraftMesh: {\r\n          enabled: false,\r\n        },\r\n      },\r\n    },\r\n  },\r\n});\r\n```\r\n\r\nThis works by simply allowing plugins and extensions to augment the options interface, such that when you import a plugin or extension, it augments the options interface with options specific to the plugin or extension. From the consumer's standpoint, this is fully type safe, so you get clear intellisense showing you exactly how the options can be configured.\r\n\r\nI only implemented options for glTF in this PR, not any other loaders.\r\n\r\nThis is how it shows up with intellisense in VS Code:\r\n![image](https://github.com/user-attachments/assets/b98ce86b-2f5e-48cb-a9cc-6b4b14464059)\r\n![image](https://github.com/user-attachments/assets/d169d3f8-c5ba-4d07-bb2f-5331905e348e)\r\n\r\n@deltakosh, @sebavan, @bghgary ",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Loading/sceneLoader.ts",
+                    "packages/dev/loaders/src/OBJ/objFileLoader.ts",
+                    "packages/dev/loaders/src/SPLAT/splatFileLoader.ts",
+                    "packages/dev/loaders/src/STL/stlFileLoader.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/MSFT_lod.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts",
+                    "packages/dev/loaders/src/glTF/glTFFileLoader.ts",
+                    "packages/tools/viewer-alpha/src/viewer.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15375",
+                "title": "HighlightLayer webgpu port",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.rawTexture.ts",
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/Layers/glowLayer.ts",
+                    "packages/dev/core/src/Layers/highlightLayer.ts",
+                    "packages/dev/core/src/Layers/index.ts",
+                    "packages/dev/core/src/PostProcesses/blurPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/index.ts",
+                    "packages/dev/core/src/PostProcesses/passPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/postProcess.ts",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBRDFFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/glowBlurPostProcess.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/glowMapGeneration.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/glowMapGeneration.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/glowMapMerge.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/glowMapMerge.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/pass.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/passCube.fragment.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15372",
+                "title": "Make `Vector3` compatible with `Vector3LikeInternal`",
+                "description": "This PR makes `Vector3` work with `Vector3LikeInternal`, a new interface. The idea is that this is now valid:\r\n```ts\r\nconst vec3 = new Vector3();\r\n\r\nvec3.addInPlace({ _x: 1, _y: 2, _z: 3 });\r\n\r\nconst half = vec3.divide({ _x: 2, _y: 2, _z: 2 });\r\n```\r\n\r\nThe necessary inlining of some `copyFrom` and `copyFromFloats` calls should speed up performance as well.\r\n\r\nThis was discussed in a [form post](https://forum.babylonjs.com/t/52593/26?u=vortex).",
+                "author": {
+                    "name": "james-pre",
+                    "url": "https://github.com/james-pre"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.like.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15374",
+                "title": "Fix `Epsilon` export",
+                "description": "This PR condenses the exporting of `Epsilon` with its definition:\r\n\r\n```diff\r\n/**\r\n * Constant used to define the minimal number value in Babylon.js\r\n * @ignorenaming\r\n */\r\n// eslint-disable-next-line @typescript-eslint/naming-convention\r\n-const Epsilon = 0.001;\r\n-export { Epsilon };\r\n+export const Epsilon = 0.001;\r\n\r\n```",
+                "author": {
+                    "name": "james-pre",
+                    "url": "https://github.com/james-pre"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.constants.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15371",
+                "title": "Add support for inline comments in OBJ loaded",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/loaders/src/OBJ/objFileLoader.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15368",
+                "title": "fix WebGPU morphtargets with texture",
+                "description": "If you compare it to the [original glsl code](https://github.com/BabylonJS/Babylon.js/blob/master/packages/dev/core/src/Shaders/ShadersInclude/morphTargetsVertex.fx), you can see why it should be this way.\r\n\r\nI've already checked the behavior in my personal project.",
+                "author": {
+                    "name": "noname0310",
+                    "url": "https://github.com/noname0310"
+                },
+                "files": [
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/morphTargetsVertex.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15367",
+                "title": "Fix WebGPU ACES tonemapping shader compilation error",
+                "description": "You can check out the problem in this demo:\r\nhttps://www.babylonjs.com/Demos/WebGPU/forestWebGPU.html",
+                "author": {
+                    "name": "noname0310",
+                    "url": "https://github.com/noname0310"
+                },
+                "files": [
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/imageProcessingFunctions.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15365",
+                "title": "Shadow maps webgpu",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Lights/Shadows/index.ts",
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Misc/index.ts",
+                    "packages/dev/core/src/Misc/rgbdTextureTools.ts",
+                    "packages/dev/core/src/PostProcesses/blurPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/index.ts",
+                    "packages/dev/core/src/PostProcesses/postProcess.ts",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/bayerDitherFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/kernelBlurFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/kernelBlurFragment2.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/kernelBlurVaryingDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/kernelBlurVertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/shadowMapFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/shadowMapFragmentExtraDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/shadowMapFragmentSoftTransparentShadow.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/shadowMapVertexExtraDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/shadowMapVertexMetric.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/shadowMapVertexNormalBias.fx",
+                    "packages/dev/core/src/ShadersWGSL/depthBoxBlur.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/kernelBlur.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/kernelBlur.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/rgbdDecode.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/rgbdEncode.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/shadowMap.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/shadowMap.vertex.fx"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15366",
+                "title": "Fix procedural refresh issue",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15364",
+                "title": "Fix Typo in NME shader",
+                "description": "https://github.com/BabylonJS/Babylon.js/issues/15363#issuecomment-2271743966",
+                "author": {
+                    "name": "FlorentMasson",
+                    "url": "https://github.com/FlorentMasson"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15358",
+                "title": "Port WebGPUTextureManager to WGSL",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Buffers/buffer.nonFloatVertexBuffers.ts",
+                    "packages/dev/core/src/Engines/Processors/shaderProcessor.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessingContext.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureManager.ts",
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.functions.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/effect.functions.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/tools/testTools/src/visualizationUtils.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15361",
+                "title": "wgsl clamp fix",
+                "description": "https://forum.babylonjs.com/t/sceneloader-importmesh/52571\r\n\r\nThere is a small bug in the shader. `clamp` is called with `vec3` instead of `f32`.",
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/ShadersWGSL/default.fragment.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15350",
+                "title": "Add option to add custom material to GPUPicker",
+                "description": "In response to my own post https://forum.babylonjs.com/t/new-feature-gpu-picking/51106/54?u=vinhui\r\n\r\nThis PR allows the user to pass a custom material to the `GPUPicker.setPickingList` method.\r\n\r\nI tested with a bunch of other existing playgrounds to see if I broke anything.\r\nI created a playground that shows how to use this PR `#4RKT66#4`. In this PR, there's a gui with a transparent background. The shader then ignores any transparent pixels when picking. There's a faint black border around the GUI that shows the border of the plane.\r\n\r\nPlanes with transparent textures are the obvious use-case for this PR (sprites for example), but there are probably other use-cases.",
+                "author": {
+                    "name": "vinhui",
+                    "url": "https://github.com/vinhui"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "7.19.0": [
+            {
+                "pr": "15356",
+                "title": "LinesMesh refreshBoundingInfo fix",
+                "description": "When in instance mode refreshBoundingInfo was not called after the mesh has been updated.",
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLineMaterialInterfaces.ts",
+                    "packages/dev/core/src/Meshes/Builders/linesBuilder.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15349",
+                "title": "Port StandardMaterial to webgpu",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/buildShaders.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts",
+                    "packages/dev/core/src/Materials/Background/index.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/index.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/index.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/index.ts",
+                    "packages/dev/core/src/Materials/PBR/index.ts",
+                    "packages/dev/core/src/Materials/index.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Meshes/Builders/greasedLineBuilder.ts",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/defaultUboDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/imageProcessingDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/imageProcessingFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/instancesVertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightUboDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/oitDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/oitFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrDebug.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrFragmentSamplersDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/reflectionFunction.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/shadowsVertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/uvVariableDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/vertexColorMixing.fx",
+                    "packages/dev/core/src/ShadersWGSL/default.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/default.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/pbr.fragment.fx",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "new feature",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "15353",
+                "title": "Fix AnimationGroup Animatable leak and onAnimationGroupEndObservable",
+                "description": "Forum issue: https://forum.babylonjs.com/t/onanimationgroupendobservable-can-only-trigger-once/52494/2\r\n\r\nIn a [recent change](https://github.com/BabylonJS/Babylon.js/pull/15339), the `onAnimationEnd` event can be suppressed when an animation is stopped. `AnimationGroup` uses this, but also relies on `onAnimationEnd` to know when to remove an `Animatable`. Since it no longer fires, `Animatables` are not removed and just keep accumulating in the `_animatables` array (e.g. if you keep calling `stop`/`start` on the `AnimationGroup`). Additionally, since these `Animatable`s are accumulating indefinitely, the array will never be empty again and so `onAnimationGroupEndObservable` stops firing.\r\n\r\nSee https://playground.babylonjs.com/#7V0Y1I#4118\r\n\r\nThe change here is to explicitly remove the `Animatable`(s) when the `AnimationGroup` is stopped and the `onAnimationEnd` event is suppressed (and also suppress the `AnimationGroup` from triggering `onAnimationGroupEndObservable`). The `AnimationGroup` logic is a bit complex, so I'm not 100% sure this is the right fix.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animationGroup.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15352",
+                "title": "add dynamic imports to index.ts to avoid chunking UMD",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/buildShaders.ts",
+                    "packages/dev/core/src/Materials/Background/index.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/index.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/index.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/index.ts",
+                    "packages/dev/core/src/Materials/PBR/index.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15351",
+                "title": "Update chokidar and improve assets watch",
+                "description": "Improve stability during shader updates",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/buildTools/src/buildShaders.ts",
+                    "packages/dev/buildTools/src/copyAssets.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15346",
+                "title": "Add flags to control glTF loading capabilities",
+                "description": "Fixes #15338",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoaderInterfaces.ts",
+                    "packages/dev/loaders/src/glTF/glTFFileLoader.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/glTFLoaderCapabilities.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15347",
+                "title": "Fix glob sync load",
+                "description": "new glob version doesn't support windows paths, unless a specific flag is provided. path.resolve provides a windows path, so whenever we use path.resolve we have to pass the flag to `globSync`.\n\nThis will fix declaration generation on local windows.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/addJSToCompiledFiles.ts",
+                    "packages/dev/buildTools/src/declarationsEs6.ts",
+                    "packages/dev/buildTools/src/generateDeclaration.ts",
+                    "packages/dev/buildTools/src/ltsTransformer.ts",
+                    "packages/dev/buildTools/src/prepareEs6Build.ts",
+                    "packages/dev/buildTools/src/prepareSnapshot.ts",
+                    "packages/dev/buildTools/src/utils.ts",
+                    "packages/tools/tests/scripts/generateFileSizes.js",
+                    "scripts/typedoc-generator.js",
+                    "scripts/updateVersion.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15333",
+                "title": "Port PBR and Background materials to WGSL",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/addJSToCompiledFiles.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts",
+                    "packages/dev/core/src/Materials/Background/backgroundMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/clipPlanesBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/fogBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/lightBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBaseBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/imageProcessingBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/perturbNormalBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/shadowMapBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/anisotropyBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/clearCoatBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/refractionBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/bonesBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/morphTargetsBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBlock.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrMaterial.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Materials/materialPluginManager.ts",
+                    "packages/dev/core/src/Meshes/Builders/greasedLineBuilder.ts",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/backgroundUboDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/bumpFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/bumpFragmentFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/bumpFragmentMainFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/bumpVertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/bumpVertexDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/decalFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/decalFragmentDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/decalVertexDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/fogFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/fogFragmentDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/fogVertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/helperFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/instancesVertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightVxFragmentDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightsFragmentFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/logDepthFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/logDepthVertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/mainUVVaryingDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/morphTargetsVertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/oitDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/oitFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBRDFFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockAlbedoOpacity.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockAlphaFresnel.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockAnisotropic.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockClearcoat.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockFinalColorComposition.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockFinalLitComponents.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockFinalUnlitComponents.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockImageProcessing.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockIridescence.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockLightmapInit.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockNormalFinal.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockNormalGeometric.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflection.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockSheen.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockSubSurface.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrDebug.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrFragmentExtraDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrFragmentSamplersDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrHelperFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrIBLFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrUboDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/prePassDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/prePassVertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/prePassVertexDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/reflectionFunction.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/samplerFragmentAlternateDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/samplerFragmentDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/samplerVertexDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/samplerVertexImplementation.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/subSurfaceScatteringFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/uvAttributeDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/uvVariableDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/vertexColorMixing.fx",
+                    "packages/dev/core/src/ShadersWGSL/background.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/background.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/pbr.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/pbr.vertex.fx",
+                    "packages/dev/materials/src/custom/pbrCustomMaterial.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "materials",
+                    "new feature"
+                ]
+            }
+        ],
+        "7.18.0": [
+            {
+                "pr": "15342",
+                "title": "Support getAlphaFromRGB in transparent shadow maps",
+                "description": "https://forum.babylonjs.com/t/the-shadow-is-not-in-transparency-if-opacity-texture-gets-alpha-from-rgb/52392/2",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/shadowMapFragmentExtraDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/shadowMapFragmentSoftTransparentShadow.fx",
+                    "packages/dev/core/src/Shaders/shadowMap.fragment.fx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "shadows"
+                ]
+            },
+            {
+                "pr": "15332",
+                "title": "fix: change devicePixelRatio to hardwareScalingLevel and fix thinInstance pick index",
+                "description": null,
+                "author": {
+                    "name": "zhangyahan",
+                    "url": "https://github.com/zhangyahan"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15341",
+                "title": "Lint config fixes",
+                "description": "Two small changes:\r\n1. Put quotes around the file pattern in the eslint command. Without this, the command does not work on Mac. With it, it works on both Mac and Windows.\r\n2. Update the prettier config to allow LF or CRLF line endings. Right now we have a mix (e.g. some files are LF and some are CRLF). When I run the linter, I get like 15K warnings because of LF line endings. I would think everyone else would be hitting this as well.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    ".prettierrc",
+                    "packages/dev/core/package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15340",
+                "title": "Remove viewer-alpha dependency on sceneHelpers",
+                "description": "`sceneHelpers` pulls in a ton of stuff, which we knew, but I was waiting to make this change until getting some of the size analysis tooling in place. Removing this dependency reduces the package size by about 560kb.\r\n\r\nAlso included in this PR are a couple other small changes:\r\n- Switch from `string` to `URL` for model/env source. I don't think we want to support anything other than valid URLs for the viewer.\r\n- Also accept `File` for the model. It would make sense to do this for env as well, but this isn't currently supported in Babylon, so I'll revisit it later.\r\n- Remove a couple `console.log` statements that were added for debugging and accidentally left in with a previous PR.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts",
+                    "scripts/queryRollupStats.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15339",
+                "title": "Fix animationGrup.reset endless loop",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animatable.ts",
+                    "packages/dev/core/src/Animations/animationGroup.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15334",
+                "title": "Add viewer alpha tooling for code coverage and used bytes flame chart",
+                "description": "This PR adds the last piece of planned local dev tooling for package size analysis for the new alpha viewer (building on top of the previous PR: https://github.com/BabylonJS/Babylon.js/pull/15319).\r\n\r\nThe primary change is the introduction of nyc/istanbul (nyc is the command line interface for the istanbul code coverage library) for code coverage so you can easily see what code is actually executed when the viewer runs. This is done by:\r\n1. Running `npm run start:coverage`, which launches a test app (will add more functionality later exercises more Babylon code for expected scenarios) that looks like this:\r\n![image](https://github.com/user-attachments/assets/6d1ab5bc-f940-4a5a-9d18-59f25e9c5bf9)\r\n1. Clicking the \"Collect Coverage\" button, which collects the istanbul coverage data and generates and opens two reports that look like this:\r\n![image](https://github.com/user-attachments/assets/6b30cae8-763d-4dfe-bce0-20fdada2529e)\r\nThe left report is the standard nyc html report. The right flame chart is a variation of the file/folder size flame chart where it specifically shows the approximate unused bytes per file/folder (e.g. `(1-coverage)*size`).\r\nThe goal is to make it easy to see where there might be opportunity to reduce the package size.\r\n\r\nTo make this work, the following is what happens under the hood:\r\n1. The code is tree shaken but not bundled into a single file, nor is it minified (to make line number status useful)\r\n1. The resulting code is then instrumented with the `nyc` command line\r\n1. The vite local server is started and the test web page is launched\r\n1. The vite local server uses middleware to expose an api that the page can send coverage information to\r\n1. The vite middleware saves the coverage data locally and invokes a report generation script\r\n1. The report generation script reads the coverage data and uses `nyc` to generate the html coverage report as well as a json summary, then uses the file/folder size flame chart generation script plus the json coverage summary to create a flame chart of unused bytes\r\n\r\nAnother change in this PR makes it easier to find import chains by just running an npm command like: `npm run import-chains -- standardmaterial`",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/tools/viewer-alpha/README.md",
+                    "packages/tools/viewer-alpha/generateCoverageReports.mjs",
+                    "packages/tools/viewer-alpha/package.json",
+                    "packages/tools/viewer-alpha/rollup.config.analyze.mjs",
+                    "packages/tools/viewer-alpha/rollup.config.common.mjs",
+                    "packages/tools/viewer-alpha/rollup.config.coverage.mjs",
+                    "packages/tools/viewer-alpha/test/apps/web/analyze.html",
+                    "packages/tools/viewer-alpha/test/apps/web/coverage.html",
+                    "packages/tools/viewer-alpha/vite.config.mjs",
+                    "scripts/folderSizeFlameChart.js",
+                    "scripts/queryRollupStats.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15336",
+                "title": "Viewer alpha inline dynamic imports",
+                "description": "To unblock the build, I am just explicitly configuring inline dynamic imports. This just embeds dynamic imports directly in the single file bundle, and retains the asynchrony so it behaves the same.\r\n\r\nIn a later PR, I will take a bit more time and update the rollup config to actually respect the dynamic imports and test it all out.\r\n\r\nNOTE: For some reason this file was not correctly formatted. I guess my format on save must have stopped working in a previous VSCode session. So there are a few small formatting changes included as well.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/public/@babylonjs/viewer-alpha/rollup.config.dist.esm.mjs"
+                ],
+                "tags": []
+            }
+        ],
+        "7.17.2": [
+            {
+                "pr": "15331",
+                "title": "set activeView regardless of view.camera",
+                "description": "fixes where `engine.activeView` was always null if no camera is set\r\n\r\naddresses https://forum.babylonjs.com/t/activeview-for-multi-canvas-should-be-set-regardless-of-camera/52329",
+                "author": {
+                    "name": "zb-sj",
+                    "url": "https://github.com/zb-sj"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/AbstractEngine/abstractEngine.views.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15330",
+                "title": "gpuPicker adapt to screen resolution",
+                "description": "Fix the position of xy screen coordinates on devices with different pixel ratios.",
+                "author": {
+                    "name": "zhangyahan",
+                    "url": "https://github.com/zhangyahan"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15329",
+                "title": "Fix Texture Decals shader recompilation",
                 "description": null,
                 "author": {
                     "name": "sebavan",
                     "url": "https://github.com/sebavan"
                 },
                 "files": [
-                    "packages/dev/core/src/Materials/Textures/rawTexture.ts"
+                    "packages/dev/core/src/Meshes/meshUVSpaceRenderer.ts"
                 ],
                 "tags": [
-                    "bug",
-                    "texture"
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15328",
+                "title": "Move playground qr code position",
+                "description": "Move to bottom left to be less obstructive.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/tools/playground/src/scss/qrCode.scss"
+                ],
+                "tags": []
+            }
+        ],
+        "7.17.1": [
+            {
+                "pr": "15326",
+                "title": "Fix ReferenceError: Property 'name' doesn't exist at _copySource",
+                "description": "When cloning a Mesh with the current version 7.17 I get a ReferenceError in the _copySource method of the Mesh object. The error was caused by accessing \"name\" without this. Prefixed \"name\" with this in _copySource.\r\n",
+                "author": {
+                    "name": "stetbern",
+                    "url": "https://github.com/stetbern"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "7.17.0": [
+            {
+                "pr": "15325",
+                "title": "Fix issue where the attribute names where polluted on rebuild with a …",
+                "description": "…\"vertexInputs.\"",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Input/inputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/refractionBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15323",
+                "title": "Fix decal",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/decalBuilder.ts"
+                ],
+                "tags": [
+                    "bug"
                 ]
             }
         ],
@@ -442,6 +1168,24 @@
                     "packages/tools/playground/src/tools/monacoManager.ts"
                 ],
                 "tags": []
+            }
+        ],
+        "7.16.0": [
+            {
+                "pr": "15299",
+                "title": "Fix raw texture clone by leveraging a shared internal texture",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/rawTexture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "texture"
+                ]
             }
         ],
         "7.15.2": [

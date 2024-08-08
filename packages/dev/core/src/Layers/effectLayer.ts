@@ -30,6 +30,7 @@ import { DrawWrapper } from "../Materials/drawWrapper";
 import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
 import { BindMorphTargetParameters, PrepareAttributesForMorphTargetsInfluencers, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Effect layer options. This helps customizing the behaviour
@@ -97,6 +98,12 @@ export abstract class EffectLayer {
     protected _textures: BaseTexture[] = [];
     protected _emissiveTextureAndColor: { texture: Nullable<BaseTexture>; color: Color4 } = { texture: null, color: new Color4() };
     protected _effectIntensity: { [meshUniqueId: number]: number } = {};
+
+    /**
+     * Force all the effect layers to compile to glsl even on WebGPU engines.
+     * False by default. This is mostly meant for backward compatibility.
+     */
+    public static ForceGLSL = false;
 
     /**
      * The name of the layer
@@ -183,6 +190,16 @@ export abstract class EffectLayer {
         return this._mainTexture;
     }
 
+    /** Shader language used by the material */
+    protected _shaderLanguage = ShaderLanguage.GLSL;
+
+    /**
+     * Gets the shader language used in this material.
+     */
+    public get shaderLanguage(): ShaderLanguage {
+        return this._shaderLanguage;
+    }
+
     /**
      * @internal
      */
@@ -239,16 +256,20 @@ export abstract class EffectLayer {
      * Instantiates a new effect Layer and references it in the scene.
      * @param name The name of the layer
      * @param scene The scene to use the layer in
+     * @param forceGLSL Use the GLSL code generation for the shader (even on WebGPU). Default is false
      */
     constructor(
         /** The Friendly of the effect in the scene */
         name: string,
-        scene?: Scene
+        scene?: Scene,
+        forceGLSL = false
     ) {
         this.name = name;
 
         this._scene = scene || <Scene>EngineStore.LastCreatedScene;
         EffectLayer._SceneComponentInitialization(this._scene);
+
+        this._initShaderSourceAsync(forceGLSL);
 
         this._engine = this._scene.getEngine();
         this._maxSize = this._engine.getCaps().maxTextureSize;
@@ -259,6 +280,21 @@ export abstract class EffectLayer {
         // Generate Buffers
         this._generateIndexBuffer();
         this._generateVertexBuffer();
+    }
+
+    private _shadersLoaded = false;
+    protected async _initShaderSourceAsync(forceGLSL = false) {
+        const engine = this._scene.getEngine();
+
+        if (engine.isWebGPU && !forceGLSL && !EffectLayer.ForceGLSL) {
+            this._shaderLanguage = ShaderLanguage.WGSL;
+
+            await Promise.all([import("../ShadersWGSL/glowMapGeneration.fragment"), import("../ShadersWGSL/glowMapGeneration.vertex")]);
+        } else {
+            await Promise.all([import("../Shaders/glowMapGeneration.fragment"), import("../Shaders/glowMapGeneration.vertex")]);
+        }
+
+        this._shadersLoaded = true;
     }
 
     /**
@@ -542,6 +578,10 @@ export abstract class EffectLayer {
      * @returns true if ready otherwise, false
      */
     protected _isReady(subMesh: SubMesh, useInstances: boolean, emissiveTexture: Nullable<BaseTexture>): boolean {
+        if (!this._shadersLoaded) {
+            return false;
+        }
+
         const engine = this._scene.getEngine();
         const mesh = subMesh.getMesh();
 
@@ -727,7 +767,8 @@ export abstract class EffectLayer {
                     fallbacks,
                     undefined,
                     undefined,
-                    { maxSimultaneousMorphTargets: morphInfluencers }
+                    { maxSimultaneousMorphTargets: morphInfluencers },
+                    this._shaderLanguage
                 ),
                 join
             );

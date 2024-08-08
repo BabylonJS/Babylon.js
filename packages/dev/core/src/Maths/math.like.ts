@@ -34,6 +34,16 @@ export interface IVector3Like extends IVector2Like {
 /**
  * @internal
  */
+export interface Vector3LikeInternal {
+    _x: number;
+    _y: number;
+    _z: number;
+    _isDirty?: boolean;
+}
+
+/**
+ * @internal
+ */
 export interface IVector4Like extends IVector3Like {
     w: float;
 }

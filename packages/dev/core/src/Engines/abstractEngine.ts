@@ -390,7 +390,8 @@ export abstract class AbstractEngine {
         rebuildRebind: any,
         defines: Nullable<string>,
         transformFeedbackVaryings: Nullable<string[]>,
-        key: string
+        key: string,
+        onReady: () => void
     ): void;
 
     /** @internal */
@@ -1704,7 +1705,7 @@ export abstract class AbstractEngine {
     /**
      * @internal
      */
-    public abstract _getShaderProcessingContext(shaderLanguage: ShaderLanguage): Nullable<ShaderProcessingContext>;
+    public abstract _getShaderProcessingContext(shaderLanguage: ShaderLanguage, pureMode: boolean): Nullable<ShaderProcessingContext>;
 
     /**
      * Gets host document
@@ -1790,14 +1791,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@7.16.1";
+        return "babylonjs@7.20.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "7.16.1";
+        return "7.20.0";
     }
 
     /**

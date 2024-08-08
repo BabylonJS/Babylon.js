@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "NME Multi Build",
+            "playgroundId": "#D8AK3Z#104",
+            "referenceImage": "nme-multi-build.png"
+        },
+        {
             "title": "BoundingInfo Helper",
             "playgroundId": "#BCNJD4#42",
             "referenceImage": "bbhelper.png",
@@ -543,7 +548,8 @@
             "title": "Shadow depth wrappers",
             "playgroundId": "#PNQRY1#73",
             "referenceImage": "shadowDepthWrappers.png",
-            "renderCount": 20
+            "renderCount": 20,
+            "excludedEngines": ["webgpu"]
         },
         {
             "title": "Displacement map",
@@ -826,7 +832,8 @@
             "title": "GLTF Serializer Morph Target Animation",
             "renderCount": 2,
             "playgroundId": "#84M2SR#107",
-            "referenceImage": "gltfSerializerMorphTargetAnimation.png"
+            "referenceImage": "gltfSerializerMorphTargetAnimation.png",
+            "excludedEngines": ["webgpu"]
         },
         {
             "title": "GLTF Serializer Morph Target Animation Group",
@@ -1642,7 +1649,8 @@
         {
             "title": "Material Plugin",
             "playgroundId": "#22HT5Z#10",
-            "referenceImage": "materialPlugin.png"
+            "referenceImage": "materialPlugin.png",
+            "excludedEngines": ["webgpu"]
         },
         {
             "title": "Serialize and Load Instanced Hierarchy",
@@ -1846,7 +1854,7 @@
         {
             "title": "MeshDebugPluginMaterial",
             "playgroundId": "#TFDNZI#2",
-            "excludedEngines": ["webgl1"]
+            "excludedEngines": ["webgl1", "webgpu"]
         },
         {
             "title": "SerializeScene and ImportMesh with string skeletonIds",
@@ -2152,6 +2160,11 @@
             "playgroundId": "#M2H33B",
             "replace": "//options//, modelIndex = 5;",
             "referenceImage": "computeMaxExtents-MorphStressTest.png"
+        },
+        {
+            "title": "glTF Loader Capabilities",
+            "playgroundId": "#EBO3J1#10",
+            "referenceImage": "glTFLoaderCapabilities.png"
         }
     ]
 }

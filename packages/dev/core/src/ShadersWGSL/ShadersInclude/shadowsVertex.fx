@@ -1,6 +1,6 @@
 #ifdef SHADOWS
 	#if defined(SHADOWCSM{X})
-		vertexOutputs.vPositionFromCamera{X} = view * worldPos;
+		vertexOutputs.vPositionFromCamera{X} = scene.view * worldPos;
 		#if SHADOWCSMNUM_CASCADES{X} > 0
 			vertexOutputs.vPositionFromLight{X}_0 = uniforms.lightMatrix{X}[0] * worldPos;
             #ifdef USE_REVERSE_DEPTHBUFFER

@@ -4,16 +4,17 @@
     //
     // Subsurface scattering also requires to stay in linear space
 #if !defined(SKIPFINALCOLORCLAMP)
-    finalColor.rgb = clamp(finalColor.rgb, 0., 30.0);
+    finalColor = vec4f(clamp(finalColor.rgb, vec3f(0.), vec3f(30.0)), finalColor.a);
 #endif
 #else
     // Alway run to ensure we are going back to gamma space.
     finalColor = applyImageProcessing(finalColor);
 #endif
 
-    finalColor.a *= visibility;
+    finalColor = vec4f(finalColor.rgb, finalColor.a * mesh.visibility);
 
 #ifdef PREMULTIPLYALPHA
     // Convert to associative (premultiplied) format if needed.
-    finalColor.rgb *= finalColor.a;
+    finalColor = vec4f(finalColor.rgb * finalColor.a, finalColor.a);
+    ;
 #endif

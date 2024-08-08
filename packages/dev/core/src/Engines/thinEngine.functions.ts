@@ -265,6 +265,7 @@ export function _preparePipelineContext(
     defines: Nullable<string>,
     transformFeedbackVaryings: Nullable<string[]>,
     _key: string = "",
+    onReady: () => void,
     createRawShaderProgramInjection?: typeof createRawShaderProgram,
     createShaderProgramInjection?: typeof createShaderProgram
 ) {
@@ -296,6 +297,8 @@ export function _preparePipelineContext(
         );
     }
     webGLRenderingState.program.__SPECTOR_rebuildProgram = rebuildRebind;
+
+    onReady();
 }
 
 function _compileShader(source: string, type: string, defines: Nullable<string>, shaderVersion: string, gl: WebGLContext, _contextWasLost?: boolean): WebGLShader {

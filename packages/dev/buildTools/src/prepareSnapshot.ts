@@ -1,5 +1,5 @@
 import * as fs from "fs";
-import * as glob from "glob";
+import { globSync } from "glob";
 import * as path from "path";
 import type { UMDPackageName } from "./packageMapping.js";
 import { umdPackageMapping } from "./packageMapping.js";
@@ -11,7 +11,7 @@ export const prepareSnapshot = () => {
     Object.keys(umdPackageMapping).forEach((packageName) => {
         const metadata = umdPackageMapping[packageName as UMDPackageName];
         const corePath = path.join(baseDirectory, "packages", "public", "umd", packageName);
-        const coreUmd = glob.sync(`${corePath}/*+(.js|.d.ts|.map)`);
+        const coreUmd = globSync(`${corePath}/*+(.js|.d.ts|.map)`);
         for (const file of coreUmd) {
             copyFile(file, path.join(snapshotDirectory, metadata.baseDir, path.basename(file)), true);
         }
@@ -20,7 +20,7 @@ export const prepareSnapshot = () => {
     // copy gltf2interface
     {
         const baseLocation = path.join(baseDirectory, "packages", "public");
-        const staticFiles = glob.sync(`${baseLocation}/glTF2Interface/*.*`);
+        const staticFiles = globSync(`${baseLocation}/glTF2Interface/*.*`);
         for (const file of staticFiles) {
             // ignore package.json files
             if (path.basename(file) === "package.json") {
@@ -34,7 +34,7 @@ export const prepareSnapshot = () => {
     // make sure the .d.ts files are also available, clone the .module.d.ts files
     {
         const baseLocation = path.join(baseDirectory, ".snapshot");
-        const staticFiles = glob.sync(`${baseLocation}/**/*.module.d.ts`);
+        const staticFiles = globSync(`${baseLocation}/**/*.module.d.ts`);
         for (const file of staticFiles) {
             // check if the file already exists. if it isn't, copy it
             if (!fs.existsSync(file.replace(".module", ""))) {
@@ -45,7 +45,7 @@ export const prepareSnapshot = () => {
 
     // copy all static files
     const baseLocation = path.join(baseDirectory, "packages", "tools", "babylonServer", "public");
-    const staticFiles = glob.sync(`${baseLocation}/**/*.*`);
+    const staticFiles = globSync(`${baseLocation}/**/*.*`);
     for (const file of staticFiles) {
         // ignore package.json files
         if (path.basename(file) === "package.json") {
@@ -56,7 +56,7 @@ export const prepareSnapshot = () => {
     }
     // copy dist from babylon server
     const baseLocationDist = path.join(baseDirectory, "packages", "tools", "babylonServer", "dist");
-    const staticFilesDist = glob.sync(`${baseLocationDist}/**/*.js`);
+    const staticFilesDist = globSync(`${baseLocationDist}/**/*.js`);
     for (const file of staticFilesDist) {
         const relative = path.relative(baseLocationDist, file);
         copyFile(file, path.join(snapshotDirectory, relative), true);

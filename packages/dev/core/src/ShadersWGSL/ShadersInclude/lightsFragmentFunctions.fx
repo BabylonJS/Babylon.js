@@ -17,7 +17,7 @@ fn computeLighting(viewDirectionW: vec3f, vNormal: vec3f, lightData: vec4f, diff
 	var attenuation: f32 = 1.0;
 	if (lightData.w == 0.)
 	{
-		var direction: vec3f = lightData.xyz - vPositionW;
+		var direction: vec3f = lightData.xyz - fragmentInputs.vPositionW;
 
 		var attenuation: f32 = max(0., 1.0 - length(direction) / range);
 		lightVectorW = normalize(direction);
@@ -47,7 +47,7 @@ fn computeLighting(viewDirectionW: vec3f, vNormal: vec3f, lightData: vec4f, diff
 fn computeSpotLighting(viewDirectionW: vec3f, vNormal: vec3f , lightData: vec4f, lightDirection: vec4f, diffuseColor: vec3f, specularColor: vec3f, range: f32, glossiness: f32) -> lightingInfo {
 	var result: lightingInfo;
 
-	var direction: vec3f = lightData.xyz - vPositionW;
+	var direction: vec3f = lightData.xyz - fragmentInputs.vPositionW;
 	var lightVectorW: vec3f = normalize(direction);
 	var attenuation: f32 = max(0., 1.0 - length(direction) / range);
 

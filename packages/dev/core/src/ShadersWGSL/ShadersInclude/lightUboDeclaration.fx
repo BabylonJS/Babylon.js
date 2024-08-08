@@ -21,7 +21,7 @@ var<uniform> light{X} : Light{X};
 
 #ifdef PROJECTEDLIGHTTEXTURE{X}
 	uniform textureProjectionMatrix{X}: mat4x4f;
-	var projectionLightTexture{X}sampler: sampler;
+	var projectionLightTexture{X}Sampler: sampler;
 	var projectionLightTexture{X}: texture_2d<f32>;
 #endif
 #ifdef SHADOW{X}

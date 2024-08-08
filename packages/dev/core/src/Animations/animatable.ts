@@ -339,8 +339,9 @@ export class Animatable {
      * @param animationName defines a string used to only stop some of the runtime animations instead of all
      * @param targetMask a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
      * @param useGlobalSplice if true, the animatables will be removed by the caller of this function (false by default)
+     * @param skipOnAnimationEnd defines if the system should not raise onAnimationEnd. Default is false
      */
-    public stop(animationName?: string, targetMask?: (target: any) => boolean, useGlobalSplice = false): void {
+    public stop(animationName?: string, targetMask?: (target: any) => boolean, useGlobalSplice = false, skipOnAnimationEnd = false): void {
         if (animationName || targetMask) {
             const idx = this._scene._activeAnimatables.indexOf(this);
 
@@ -364,7 +365,9 @@ export class Animatable {
                     if (!useGlobalSplice) {
                         this._scene._activeAnimatables.splice(idx, 1);
                     }
-                    this._raiseOnAnimationEnd();
+                    if (!skipOnAnimationEnd) {
+                        this._raiseOnAnimationEnd();
+                    }
                 }
             }
         } else {
@@ -382,7 +385,9 @@ export class Animatable {
 
                 this._runtimeAnimations.length = 0;
 
-                this._raiseOnAnimationEnd();
+                if (!skipOnAnimationEnd) {
+                    this._raiseOnAnimationEnd();
+                }
             }
         }
     }

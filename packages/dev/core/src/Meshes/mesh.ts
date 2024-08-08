@@ -682,7 +682,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Pivot
         this.setPivotMatrix(source.getPivotMatrix(), this._postMultiplyPivotMatrix);
 
-        this.id = name + "." + source.id;
+        this.id = this.name + "." + source.id;
 
         // Material
         this.material = source.material;
@@ -694,7 +694,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 const child = directDescendants[index];
 
                 if ((<any>child).clone) {
-                    (<any>child).clone(name + "." + child.name, this);
+                    (<any>child).clone(this.name + "." + child.name, this);
                 }
             }
         }

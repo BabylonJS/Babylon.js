@@ -5,9 +5,9 @@
         #ifdef PBR
             // Compute Pre Lighting infos
             #ifdef SPOTLIGHT{X}
-                preInfo = computePointAndSpotPreLightingInfo(light{X}.vLightData, viewDirectionW, normalW, vPositionW);
+                preInfo = computePointAndSpotPreLightingInfo(light{X}.vLightData, viewDirectionW, normalW, input.vPositionW);
             #elif defined(POINTLIGHT{X})
-                preInfo = computePointAndSpotPreLightingInfo(light{X}.vLightData, viewDirectionW, normalW, vPositionW);
+                preInfo = computePointAndSpotPreLightingInfo(light{X}.vLightData, viewDirectionW, normalW, input.vPositionW);
             #elif defined(HEMILIGHT{X})
                 preInfo = computeHemisphericPreLightingInfo(light{X}.vLightData, viewDirectionW, normalW);
             #elif defined(DIRLIGHT{X})
@@ -130,7 +130,7 @@
         #endif
 
         #ifdef PROJECTEDLIGHTTEXTURE{X}
-            info.diffuse *= computeProjectionTextureDiffuseLighting(projectionLightTexture{X}, projectionLightTexture{X}Sampler, textureProjectionMatrix{X}, vPositionW;
+            info.diffuse *= computeProjectionTextureDiffuseLighting(projectionLightTexture{X}, projectionLightTexture{X}Sampler, uniforms.textureProjectionMatrix{X}, input.vPositionW);
         #endif
     #endif
 
@@ -233,19 +233,19 @@
             }
         #elif defined(SHADOWCLOSEESM{X})
             #if defined(SHADOWCUBE{X})
-                shadow = computeShadowWithCloseESMCube(vPositionW, light{X}.vLightData.xyz, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.x, light{X}.shadowsInfo.z, light{X}.depthValues);
+                shadow = computeShadowWithCloseESMCube(input.vPositionW, light{X}.vLightData.xyz, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.x, light{X}.shadowsInfo.z, light{X}.depthValues);
             #else
                 shadow = computeShadowWithCloseESM(fragmentInputs.vPositionFromLight{X}, fragmentInputs.vDepthMetric{X}, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.x, light{X}.shadowsInfo.z, light{X}.shadowsInfo.w);
             #endif
         #elif defined(SHADOWESM{X})
             #if defined(SHADOWCUBE{X})
-                shadow = computeShadowWithESMCube(vPositionW, light{X}.vLightData.xyz, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.x, light{X}.shadowsInfo.z, light{X}.depthValues);
+                shadow = computeShadowWithESMCube(input.vPositionW, light{X}.vLightData.xyz, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.x, light{X}.shadowsInfo.z, light{X}.depthValues);
             #else
                 shadow = computeShadowWithESM(fragmentInputs.vPositionFromLight{X}, fragmentInputs.vDepthMetric{X}, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.x, light{X}.shadowsInfo.z, light{X}.shadowsInfo.w);
             #endif
         #elif defined(SHADOWPOISSON{X})
             #if defined(SHADOWCUBE{X})
-                shadow = computeShadowWithPoissonSamplingCube(vPositionW, light{X}.vLightData.xyz, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.y, light{X}.shadowsInfo.x, light{X}.depthValues);
+                shadow = computeShadowWithPoissonSamplingCube(input.vPositionW, light{X}.vLightData.xyz, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.y, light{X}.shadowsInfo.x, light{X}.depthValues);
             #else
                 shadow = computeShadowWithPoissonSampling(fragmentInputs.vPositionFromLight{X}, fragmentInputs.vDepthMetric{X}, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.y, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
             #endif
@@ -267,7 +267,7 @@
             #endif
         #else
             #if defined(SHADOWCUBE{X})
-                shadow = computeShadowCube(vPositionW, light{X}.vLightData.xyz, shadowTexture{X}Sampler, light{X}.shadowsInfo.x, light{X}.depthValues);
+                shadow = computeShadowCube(input.vPositionW, light{X}.vLightData.xyz, shadowTexture{X}Sampler, light{X}.shadowsInfo.x, light{X}.depthValues);
             #else
                 shadow = computeShadow(fragmentInputs.vPositionFromLight{X}, fragmentInputs.vDepthMetric{X}, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
             #endif

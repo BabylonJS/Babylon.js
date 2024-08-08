@@ -32,3 +32,15 @@ export * from "./vrDistortionCorrectionPostProcess";
 export * from "./vrMultiviewToSingleviewPostProcess";
 export * from "./screenSpaceReflectionPostProcess";
 export * from "./screenSpaceCurvaturePostProcess";
+
+// Blur postprocess
+export * from "../Shaders/kernelBlur.fragment";
+export * from "../Shaders/kernelBlur.vertex";
+export * from "../ShadersWGSL/kernelBlur.fragment";
+export * from "../ShadersWGSL/kernelBlur.vertex";
+
+// Pass postprocess
+export * from "../Shaders/pass.fragment";
+export * from "../Shaders/passCube.fragment";
+export * from "../ShadersWGSL/pass.fragment";
+export * from "../ShadersWGSL/passCube.fragment";

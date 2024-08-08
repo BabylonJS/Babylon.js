@@ -17,6 +17,7 @@ import type {
     ISceneLoaderAsyncResult,
 } from "core/Loading/sceneLoader";
 import { SceneLoader } from "core/Loading/sceneLoader";
+import type { SceneLoaderPluginOptions } from "core/Loading/sceneLoader";
 import { AssetContainer } from "core/assetContainer";
 import type { Scene, IDisposable } from "core/scene";
 import type { WebRequest } from "core/Misc/webRequest";
@@ -30,6 +31,23 @@ import { DecodeBase64UrlToBinary } from "core/Misc/fileTools";
 import { RuntimeError, ErrorCodes } from "core/Misc/error";
 import type { TransformNode } from "core/Meshes/transformNode";
 import type { MorphTargetManager } from "core/Morph/morphTargetManager";
+
+const PLUGIN_GLTF = "gltf";
+
+/**
+ * Defines options for glTF loader extensions. This interface is extended by specific extensions.
+ */
+export interface GLTFLoaderExtensionOptions extends Record<string, Record<string, unknown> | undefined> {}
+
+declare module "core/Loading/sceneLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface SceneLoaderPluginOptions {
+        /**
+         * Defines options for the glTF loader.
+         */
+        [PLUGIN_GLTF]?: Partial<GLTFLoaderOptions>;
+    }
+}
 
 interface IFileRequestInfo extends IFileRequest {
     _lengthComputable?: boolean;
@@ -167,54 +185,25 @@ export interface IGLTFLoader extends IDisposable {
 }
 
 /**
- * File loader for loading glTF files into a scene.
+ * Adds default/implicit options to extension specific options.
  */
-export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
-    /** @internal */
-    public static _CreateGLTF1Loader: (parent: GLTFFileLoader) => IGLTFLoader;
-
-    /** @internal */
-    public static _CreateGLTF2Loader: (parent: GLTFFileLoader) => IGLTFLoader;
-
-    // --------------
-    // Common options
-    // --------------
-
+type DefaultExtensionOptions<BaseExtensionOptions> = {
     /**
-     * Raised when the asset has been parsed
+     * Defines if the extension is enabled
      */
-    public onParsedObservable = new Observable<IGLTFLoaderData>();
+    enabled?: boolean;
+} & BaseExtensionOptions;
 
-    private _onParsedObserver: Nullable<Observer<IGLTFLoaderData>>;
-
-    /**
-     * Raised when the asset has been parsed
-     */
-    public set onParsed(callback: (loaderData: IGLTFLoaderData) => void) {
-        if (this._onParsedObserver) {
-            this.onParsedObservable.remove(this._onParsedObserver);
+class GLTFLoaderOptions {
+    // eslint-disable-next-line babylonjs/available
+    public constructor(options?: Partial<Readonly<GLTFLoaderOptions>>) {
+        if (options) {
+            for (const key in this) {
+                const typedKey = key as keyof GLTFLoaderOptions;
+                (this as Record<keyof GLTFLoaderOptions, unknown>)[typedKey] = options[typedKey] ?? this[typedKey];
+            }
         }
-        this._onParsedObserver = this.onParsedObservable.add(callback);
     }
-
-    // ----------
-    // V1 options
-    // ----------
-
-    /**
-     * Set this property to false to disable incremental loading which delays the loader from calling the success callback until after loading the meshes and shaders.
-     * Textures always loads asynchronously. For example, the success callback can compute the bounding information of the loaded meshes when incremental loading is disabled.
-     * Defaults to true.
-     * @internal
-     */
-    public static IncrementalLoading = true;
-
-    /**
-     * Set this property to true in order to work with homogeneous coordinates, available with some converters and exporters.
-     * Defaults to false. See https://en.wikipedia.org/wiki/Homogeneous_coordinates.
-     * @internal
-     */
-    public static HomogeneousCoordinates = false;
 
     // ----------
     // V2 options
@@ -229,6 +218,22 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
      * The animation start mode. Defaults to FIRST.
      */
     public animationStartMode = GLTFLoaderAnimationStartMode.FIRST;
+
+    /**
+     * Defines if the loader should load node animations. Defaults to true.
+     * NOTE: The animation of this node will still load if the node is also a joint of a skin and `loadSkins` is true.
+     */
+    public loadNodeAnimations = true;
+
+    /**
+     * Defines if the loader should load skins. Defaults to true.
+     */
+    public loadSkins = true;
+
+    /**
+     * Defines if the loader should load morph targets. Defaults to true.
+     */
+    public loadMorphTargets = true;
 
     /**
      * Defines if the loader should compile materials before raising the success callback. Defaults to false.
@@ -312,6 +317,69 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
      * You can also pass null if you don't want a root node to be created.
      */
     public customRootNode?: Nullable<TransformNode>;
+
+    /**
+     * Defines options for glTF extensions.
+     */
+    public extensionOptions: {
+        // NOTE: This type is doing two things:
+        // 1. Adding an implicit 'enabled' property to the options for each extension.
+        // 2. Creating a mapped type of all the options of all the extensions to make it just look like a consolidated plain object in intellisense for the user.
+        [Extension in keyof GLTFLoaderExtensionOptions]: {
+            [Option in keyof DefaultExtensionOptions<GLTFLoaderExtensionOptions[Extension]>]: DefaultExtensionOptions<GLTFLoaderExtensionOptions[Extension]>[Option];
+        };
+    } = {};
+}
+
+/**
+ * File loader for loading glTF files into a scene.
+ */
+export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
+    /** @internal */
+    public static _CreateGLTF1Loader: (parent: GLTFFileLoader) => IGLTFLoader;
+
+    /** @internal */
+    public static _CreateGLTF2Loader: (parent: GLTFFileLoader) => IGLTFLoader;
+
+    // --------------
+    // Common options
+    // --------------
+
+    /**
+     * Raised when the asset has been parsed
+     */
+    public onParsedObservable = new Observable<IGLTFLoaderData>();
+
+    private _onParsedObserver: Nullable<Observer<IGLTFLoaderData>>;
+
+    /**
+     * Raised when the asset has been parsed
+     */
+    public set onParsed(callback: (loaderData: IGLTFLoaderData) => void) {
+        if (this._onParsedObserver) {
+            this.onParsedObservable.remove(this._onParsedObserver);
+        }
+        this._onParsedObserver = this.onParsedObservable.add(callback);
+    }
+
+    // ----------
+    // V1 options
+    // ----------
+
+    /**
+     * Set this property to false to disable incremental loading which delays the loader from calling the success callback until after loading the meshes and shaders.
+     * Textures always loads asynchronously. For example, the success callback can compute the bounding information of the loaded meshes when incremental loading is disabled.
+     * Defaults to true.
+     * @internal
+     */
+    public static IncrementalLoading = true;
+
+    /**
+     * Set this property to true in order to work with homogeneous coordinates, available with some converters and exporters.
+     * Defaults to false. See https://en.wikipedia.org/wiki/Homogeneous_coordinates.
+     * @internal
+     */
+    public static HomogeneousCoordinates = false;
 
     /**
      * Observable raised when the loader creates a mesh after parsing the glTF properties of the mesh.
@@ -535,18 +603,18 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     private _progressCallback?: (event: ISceneLoaderProgressEvent) => void;
     private _requests = new Array<IFileRequestInfo>();
 
-    private static _MagicBase64Encoded = "Z2xURg"; // "glTF" base64 encoded (without the quotes!)
+    private static readonly _MagicBase64Encoded = "Z2xURg"; // "glTF" base64 encoded (without the quotes!)
 
     /**
      * Name of the loader ("gltf")
      */
-    public name = "gltf";
+    public readonly name = PLUGIN_GLTF;
 
     /** @internal */
-    public extensions: ISceneLoaderPluginExtensions = {
+    public readonly extensions = {
         ".gltf": { isBinary: false },
         ".glb": { isBinary: true },
-    };
+    } as const satisfies ISceneLoaderPluginExtensions;
 
     /**
      * Disposes the loader, releases resources during load, and cancels any outstanding requests.
@@ -847,8 +915,8 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     public rewriteRootURL?(rootUrl: string, responseURL?: string): string;
 
     /** @internal */
-    public createPlugin(): ISceneLoaderPluginAsync {
-        return new GLTFFileLoader();
+    public createPlugin(options: SceneLoaderPluginOptions): ISceneLoaderPluginAsync {
+        return new GLTFFileLoader(options[PLUGIN_GLTF]);
     }
 
     /**

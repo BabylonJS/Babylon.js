@@ -9,11 +9,14 @@ import { ApplyPostProcess } from "./textureTools";
 import type { Texture } from "../Materials/Textures/texture";
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import type { Scene } from "../scene";
+import { ShaderLanguage } from "core/Materials";
 
 /**
  * Class used to host RGBD texture specific utilities
  */
 export class RGBDTextureTools {
+    private static _ShaderImported = false;
+
     /**
      * Expand the RGBD Texture from RGBD to Half Float if possible.
      * @param texture the texture to expand.
@@ -48,7 +51,20 @@ export class RGBDTextureTools {
             internalTexture.invertY = false;
         }
 
-        const expandRGBDTexture = () => {
+        const expandRGBDTexture = async () => {
+            const isWebGPU = engine.isWebGPU;
+            let shaderLanguage = ShaderLanguage.GLSL;
+
+            if (!this._ShaderImported) {
+                this._ShaderImported = true;
+                if (isWebGPU) {
+                    shaderLanguage = ShaderLanguage.WGSL;
+                    await Promise.all([import("../ShadersWGSL/rgbdDecode.fragment"), import("../ShadersWGSL/rgbdEncode.fragment")]);
+                } else {
+                    await Promise.all([import("../Shaders/rgbdDecode.fragment"), import("../Shaders/rgbdEncode.fragment")]);
+                }
+            }
+
             // Expand the texture if possible
             // Simply run through the decode PP.
             const rgbdPostProcess = new PostProcess(
@@ -65,7 +81,9 @@ export class RGBDTextureTools {
                 internalTexture.type,
                 undefined,
                 null,
-                false
+                false,
+                undefined,
+                shaderLanguage
             );
             rgbdPostProcess.externalTextureSamplerBinding = true;
 

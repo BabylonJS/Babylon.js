@@ -16,9 +16,6 @@ import type { TextureBlock } from "../Dual/textureBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { TBNBlock } from "./TBNBlock";
 
-import "../../../../Shaders/ShadersInclude/bumpFragmentMainFunctions";
-import "../../../../Shaders/ShadersInclude/bumpFragmentFunctions";
-import "../../../../Shaders/ShadersInclude/bumpFragment";
 import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
 import { Constants } from "../../../../Engines/constants";
 
@@ -176,6 +173,31 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         return this._outputs[1];
     }
 
+    public override initialize(state: NodeMaterialBuildState) {
+        this._initShaderSourceAsync(state.shaderLanguage);
+    }
+
+    private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
+        this._codeIsReady = false;
+
+        if (shaderLanguage === ShaderLanguage.WGSL) {
+            await Promise.all([
+                import("../../../../ShadersWGSL/ShadersInclude/bumpFragment"),
+                import("../../../../ShadersWGSL/ShadersInclude/bumpFragmentMainFunctions"),
+                import("../../../../ShadersWGSL/ShadersInclude/bumpFragmentFunctions"),
+            ]);
+        } else {
+            await Promise.all([
+                import("../../../../Shaders/ShadersInclude/bumpFragment"),
+                import("../../../../Shaders/ShadersInclude/bumpFragmentMainFunctions"),
+                import("../../../../Shaders/ShadersInclude/bumpFragmentFunctions"),
+            ]);
+        }
+
+        this._codeIsReady = true;
+        this.onCodeIsReadyObservable.notifyObservers(this);
+    }
+
     public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         const normalSamplerName = (this.normalMapColor.connectedPoint!._ownerBlock as TextureBlock).samplerName;
         const useParallax = this.viewDirection.isConnected && ((this.useParallaxOcclusion && normalSamplerName) || (!this.useParallaxOcclusion && this.parallaxHeight.isConnected));
@@ -326,41 +348,57 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
 
         const tempOutput = state._getFreeVariableName("tempOutput");
         state.compilationString += state._declareLocalVar(tempOutput, NodeMaterialBlockConnectionPointTypes.Vector3) + ` = vec3${fSuffix}(0.);\n`;
+
+        const replaceStrings = [
+            { search: new RegExp(`texture.+?bumpSampler${isWebGPU ? "Sampler,fragmentInputs." : ","}vBumpUV\\)`, "g"), replace: `${uvForPerturbNormal}` },
+            {
+                search: /#define CUSTOM_FRAGMENT_BUMP_FRAGMENT/g,
+                replace: `${state._declareLocalVar("normalMatrix", NodeMaterialBlockConnectionPointTypes.Matrix)} = toNormalMatrix(${this.world.isConnected ? this.world.associatedVariableName : this._worldMatrixName});`,
+            },
+            {
+                search: new RegExp(
+                    `perturbNormal\\(TBN,texture.+?bumpSampler${isWebGPU ? "Sampler,fragmentInputs." : ","}vBumpUV\\+uvOffset\\).xyz,${isWebGPU ? "uniforms." : ""}vBumpInfos.y\\)`,
+                    "g"
+                ),
+                replace: `perturbNormal(TBN, ${uvForPerturbNormal}, vBumpInfos.y)`,
+            },
+            {
+                search: /parallaxOcclusion\(invTBN\*-viewDirectionW,invTBN\*normalW,vBumpUV,vBumpInfos.z\)/g,
+                replace: `parallaxOcclusion((invTBN * -viewDirectionW), (invTBN * normalW), vBumpUV, vBumpInfos.z, ${
+                    isWebGPU
+                        ? useParallax && this.useParallaxOcclusion
+                            ? `${normalSamplerName}, ${normalSamplerName + Constants.AUTOSAMPLERSUFFIX}`
+                            : "bump, bumpSampler"
+                        : useParallax && this.useParallaxOcclusion
+                          ? normalSamplerName
+                          : "bumpSampler"
+                })`,
+            },
+            {
+                search: /parallaxOffset\(invTBN\*viewDirectionW,vBumpInfos\.z\)/g,
+                replace: `parallaxOffset(invTBN * viewDirectionW, vBumpInfos.z, ${useParallax ? this.parallaxHeight.associatedVariableName : "0."})`,
+            },
+            { search: /vBumpInfos.y/g, replace: replaceForBumpInfos },
+            { search: /vBumpInfos.z/g, replace: replaceForParallaxInfos },
+            { search: /normalW=/g, replace: tempOutput + " = " },
+            { search: /mat3\(normalMatrix\)\*normalW/g, replace: `${mat3}(normalMatrix) * ` + tempOutput },
+            { search: /normalW/g, replace: worldNormal.associatedVariableName + ".xyz" },
+            { search: /viewDirectionW/g, replace: useParallax ? this.viewDirection.associatedVariableName : `vec3${fSuffix}(0.)` },
+            tangentReplaceString,
+        ];
+
+        if (isWebGPU) {
+            replaceStrings.push({ search: /fragmentInputs.vBumpUV/g, replace: uv.associatedVariableName });
+            replaceStrings.push({ search: /input.vPositionW/g, replace: worldPosition.associatedVariableName + ".xyz" });
+            replaceStrings.push({ search: /uniforms.vTangentSpaceParams/g, replace: uniformPrefix + this._tangentSpaceParameterName });
+        } else {
+            replaceStrings.push({ search: /vBumpUV/g, replace: uv.associatedVariableName });
+            replaceStrings.push({ search: /vPositionW/g, replace: worldPosition.associatedVariableName + ".xyz" });
+            replaceStrings.push({ search: /vTangentSpaceParams/g, replace: uniformPrefix + this._tangentSpaceParameterName });
+        }
+
         state.compilationString += state._emitCodeFromInclude("bumpFragment", comments, {
-            replaceStrings: [
-                { search: /texture.+?bumpSampler,vBumpUV\)/g, replace: `${uvForPerturbNormal}` },
-                {
-                    search: /#define CUSTOM_FRAGMENT_BUMP_FRAGMENT/g,
-                    replace: `${state._declareLocalVar("normalMatrix", NodeMaterialBlockConnectionPointTypes.Matrix)} = toNormalMatrix(${this.world.isConnected ? this.world.associatedVariableName : this._worldMatrixName});`,
-                },
-                { search: /perturbNormal\(TBN,texture.+?bumpSampler,vBumpUV\+uvOffset\).xyz,vBumpInfos.y\)/g, replace: `perturbNormal(TBN, ${uvForPerturbNormal}, vBumpInfos.y)` },
-                {
-                    search: /parallaxOcclusion\(invTBN\*-viewDirectionW,invTBN\*normalW,vBumpUV,vBumpInfos.z\)/g,
-                    replace: `parallaxOcclusion((invTBN * -viewDirectionW), (invTBN * normalW), vBumpUV, vBumpInfos.z, ${
-                        isWebGPU
-                            ? useParallax && this.useParallaxOcclusion
-                                ? `${normalSamplerName}, ${normalSamplerName + Constants.AUTOSAMPLERSUFFIX}`
-                                : "bump, bumpSampler"
-                            : useParallax && this.useParallaxOcclusion
-                              ? normalSamplerName
-                              : "bumpSampler"
-                    })`,
-                },
-                {
-                    search: /parallaxOffset\(invTBN\*viewDirectionW,vBumpInfos\.z\)/g,
-                    replace: `parallaxOffset(invTBN * viewDirectionW, vBumpInfos.z, ${useParallax ? this.parallaxHeight.associatedVariableName : "0."})`,
-                },
-                { search: /vTangentSpaceParams/g, replace: uniformPrefix + this._tangentSpaceParameterName },
-                { search: /vBumpInfos.y/g, replace: replaceForBumpInfos },
-                { search: /vBumpInfos.z/g, replace: replaceForParallaxInfos },
-                { search: /vBumpUV/g, replace: uv.associatedVariableName },
-                { search: /vPositionW/g, replace: worldPosition.associatedVariableName + ".xyz" },
-                { search: /normalW=/g, replace: tempOutput + " = " },
-                { search: /mat3\(normalMatrix\)\*normalW/g, replace: `${mat3}(normalMatrix) * ` + tempOutput },
-                { search: /normalW/g, replace: worldNormal.associatedVariableName + ".xyz" },
-                { search: /viewDirectionW/g, replace: useParallax ? this.viewDirection.associatedVariableName : `vec3${fSuffix}(0.)` },
-                tangentReplaceString,
-            ],
+            replaceStrings: replaceStrings,
         });
 
         state.compilationString += state._declareOutput(this.output) + ` = vec4${fSuffix}(${tempOutput}, 0.);\n`;

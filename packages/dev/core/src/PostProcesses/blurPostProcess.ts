@@ -16,6 +16,7 @@ import { SerializationHelper } from "../Misc/decorators.serialization";
 
 import type { Scene } from "../scene";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * The Blur Post Process which blurs an image based on a kernel and direction.
@@ -128,7 +129,9 @@ export class BlurPostProcess extends PostProcess {
             "kernelBlur",
             { varyingCount: 0, depCount: 0 },
             true,
-            textureFormat
+            textureFormat,
+            undefined,
+            true
         );
         this._staticDefines = defines;
         this.direction = direction;
@@ -141,6 +144,29 @@ export class BlurPostProcess extends PostProcess {
         });
 
         this.kernel = kernel;
+    }
+
+    protected override async _initShaderSourceAsync(forceGLSL = false) {
+        const engine = this.getEngine();
+
+        this._shadersLoaded = false;
+        if (engine.isWebGPU && !forceGLSL) {
+            this._shaderLanguage = ShaderLanguage.WGSL;
+
+            await Promise.all([import("../ShadersWGSL/kernelBlur.fragment"), import("../ShadersWGSL/kernelBlur.vertex")]);
+        } else {
+            await Promise.all([import("../Shaders/kernelBlur.fragment"), import("../Shaders/kernelBlur.vertex")]);
+        }
+
+        this._shadersLoaded = true;
+    }
+
+    /**
+     * Get a value indicating if the post-process is ready to be used
+     * @returns true if the post-process is ready (shader is compiled)
+     */
+    public override isReady(): boolean {
+        return this._shadersLoaded && super.isReady();
     }
 
     /**
@@ -225,7 +251,7 @@ export class BlurPostProcess extends PostProcess {
         weights = linearSamplingWeights;
 
         // Generate shaders
-        const maxVaryingRows = this.getEngine().getCaps().maxVaryingVectors;
+        const maxVaryingRows = this.getEngine().getCaps().maxVaryingVectors - (this._shaderLanguage === ShaderLanguage.WGSL ? 1 : 0); // Because of the additional builtins
         const freeVaryingVec2 = Math.max(maxVaryingRows, 0) - 1; // Because of sampleCenter
 
         let varyingCount = Math.min(offsets.length, freeVaryingVec2);

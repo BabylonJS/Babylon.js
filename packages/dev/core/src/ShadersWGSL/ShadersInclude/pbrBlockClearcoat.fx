@@ -142,7 +142,7 @@ struct clearcoatOutParams
 
             #ifdef CLEARCOAT_TINT_TEXTURE
                 #ifdef CLEARCOAT_TINT_GAMMATEXTURE
-                    clearCoatColor *= toLinearSpace(clearCoatTintMapData.rgb);
+                    clearCoatColor *= toLinearSpaceVec3(clearCoatTintMapData.rgb);
                 #else
                     clearCoatColor *= clearCoatTintMapData.rgb;
                 #endif
@@ -192,7 +192,7 @@ struct clearcoatOutParams
 
             #ifdef OBJECTSPACE_NORMALMAP
                 clearCoatNormalW = normalize(clearCoatBumpMapData.xyz  * 2.0 - 1.0);
-                clearCoatNormalW = normalize( mat3x3f(normalMatrix) * clearCoatNormalW);
+                clearCoatNormalW = normalize( mat3x3f(normalMatrix[0].xyz, normalMatrix[1].xyz, normalMatrix[2].xyz) * clearCoatNormalW);
             #else
                 clearCoatNormalW = perturbNormal(TBNClearCoat, clearCoatBumpMapData.xyz, vClearCoatBumpInfos.y);
             #endif
@@ -290,7 +290,7 @@ struct clearcoatOutParams
 
             // _________________________ Clear Coat Environment Oclusion __________________________
             #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
-                var clearCoatEnvironmentReflectance: vec3f = getReflectanceFromBRDFLookup(vec3f(vClearCoatRefractionParams.x), environmentClearCoatBrdf);
+                var clearCoatEnvironmentReflectance: vec3f = getReflectanceFromBRDFLookup(vec3f(uniforms.vClearCoatRefractionParams.x), environmentClearCoatBrdf);
 
                 #ifdef HORIZONOCCLUSION
                     #ifdef BUMP
@@ -323,7 +323,7 @@ struct clearcoatOutParams
         #endif
 
         // clear coat energy conservation
-        var fresnelIBLClearCoat: f32 = fresnelSchlickGGX(clearCoatNdotV, vClearCoatRefractionParams.x, CLEARCOATREFLECTANCE90);
+        var fresnelIBLClearCoat: f32 = fresnelSchlickGGX(clearCoatNdotV, uniforms.vClearCoatRefractionParams.x, CLEARCOATREFLECTANCE90);
         fresnelIBLClearCoat *= clearCoatIntensity;
 
         outParams.conservationFactor = (1. - fresnelIBLClearCoat);

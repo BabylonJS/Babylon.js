@@ -291,6 +291,7 @@ export class MaterialPluginManager {
                 this._uniformList = [];
                 this._samplerList = [];
                 this._uboList = [];
+                const isWebGPU = this._material.shaderLanguage === ShaderLanguage.WGSL;
                 for (const plugin of this._plugins) {
                     const uniforms = plugin.getUniforms();
                     if (uniforms) {
@@ -299,7 +300,24 @@ export class MaterialPluginManager {
                                 if (uniform.size && uniform.type) {
                                     const arraySize = uniform.arraySize ?? 0;
                                     eventData.ubo.addUniform(uniform.name, uniform.size, arraySize);
-                                    this._uboDeclaration += `${uniform.type} ${uniform.name}${arraySize > 0 ? `[${arraySize}]` : ""};\n`;
+                                    if (isWebGPU) {
+                                        let type: string;
+                                        switch (uniform.type) {
+                                            case "mat4":
+                                                type = "mat4x4f";
+                                                break;
+                                            case "float":
+                                                type = "f32";
+                                                break;
+                                            default:
+                                                type = `${uniform.type}f`;
+                                                break;
+                                        }
+
+                                        this._uboDeclaration += `uniform ${uniform.name}: ${type}${arraySize > 0 ? `[${arraySize}]` : ""};\n`;
+                                    } else {
+                                        this._uboDeclaration += `${uniform.type} ${uniform.name}${arraySize > 0 ? `[${arraySize}]` : ""};\n`;
+                                    }
                                 }
                                 this._uniformList.push(uniform.name);
                             }

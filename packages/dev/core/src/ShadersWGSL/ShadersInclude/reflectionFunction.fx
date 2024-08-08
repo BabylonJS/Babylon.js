@@ -104,41 +104,43 @@ fn computeSkyBoxCoords(positionW: vec3f, reflectionMatrix: mat4x4f) -> vec3f
 fn computeReflectionCoords(worldPos: vec4f, worldNormal: vec3f) -> vec3f
 {
 #ifdef REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED
-	var direction: vec3f = normalize(vDirectionW);
+	var direction: vec3f = normalize(fragmentInputs.vDirectionW);
 	return computeMirroredFixedEquirectangularCoords(worldPos, worldNormal, direction);
 #endif
 
 #ifdef REFLECTIONMAP_EQUIRECTANGULAR_FIXED
-	var direction: vec3f = normalize(vDirectionW);
+	var direction: vec3f = normalize(fragmentInputs.vDirectionW);
 	return computeFixedEquirectangularCoords(worldPos, worldNormal, direction);
 #endif
 
 #ifdef REFLECTIONMAP_EQUIRECTANGULAR
-	return computeEquirectangularCoords(worldPos, worldNormal, vEyePosition.xyz, reflectionMatrix);
+	return computeEquirectangularCoords(worldPos, worldNormal, scene.vEyePosition.xyz, uniforms.reflectionMatrix);
 #endif
 
 #ifdef REFLECTIONMAP_SPHERICAL
-	return computeSphericalCoords(worldPos, worldNormal, view, reflectionMatrix);
+	return computeSphericalCoords(worldPos, worldNormal, scene.view, uniforms.reflectionMatrix);
 #endif
 
 #ifdef REFLECTIONMAP_PLANAR
-	return computePlanarCoords(worldPos, worldNormal, vEyePosition.xyz, reflectionMatrix);
+	return computePlanarCoords(worldPos, worldNormal, scene.vEyePosition.xyz, uniforms.reflectionMatrix);
 #endif
 
 #ifdef REFLECTIONMAP_CUBIC
 	#ifdef USE_LOCAL_REFLECTIONMAP_CUBIC
-    	return computeCubicLocalCoords(worldPos, worldNormal, vEyePosition.xyz, reflectionMatrix, vReflectionSize, vReflectionPosition);
+    	return computeCubicLocalCoords(worldPos, worldNormal, scene.vEyePosition.xyz, uniforms.reflectionMatrix, uniforms.vReflectionSize, uniforms.vReflectionPosition);
 	#else
-    	return computeCubicCoords(worldPos, worldNormal, vEyePosition.xyz, reflectionMatrix);
+    	return computeCubicCoords(worldPos, worldNormal, scene.vEyePosition.xyz, uniforms.reflectionMatrix);
 	#endif
 #endif
 
 #ifdef REFLECTIONMAP_PROJECTION
-	return computeProjectionCoords(worldPos, view, reflectionMatrix);
+	return computeProjectionCoords(worldPos, scene.view, uniforms.reflectionMatrix);
 #endif
 
-#ifdef REFLECTIONMAP_SKYBOX
-	return computeSkyBoxCoords(vPositionUVW, reflectionMatrix);
+#ifndef REFLECTIONMAP_CUBIC
+	#ifdef REFLECTIONMAP_SKYBOX
+		return computeSkyBoxCoords(fragmentInputs.vPositionUVW, uniforms.reflectionMatrix);
+	#endif
 #endif
 
 #ifdef REFLECTIONMAP_EXPLICIT

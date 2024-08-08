@@ -33,9 +33,9 @@ var finalColor: vec4f =  vec4f(
 #ifdef LIGHTMAP
     #ifndef LIGHTMAPEXCLUDED
         #ifdef USELIGHTMAPASSHADOWMAP
-            finalColor.rgb *= lightmapColor.rgb;
+            finalColor = vec4f(finalColor.rgb * lightmapColor.rgb, finalColor.a);
         #else
-            finalColor.rgb += lightmapColor.rgb;
+            finalColor = vec4f(finalColor.rgb + lightmapColor.rgb, finalColor.a);
         #endif
     #endif
 #endif
