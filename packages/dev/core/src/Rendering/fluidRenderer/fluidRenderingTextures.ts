@@ -1,5 +1,5 @@
 import type { Camera } from "core/Cameras/camera";
-import { TEXTURETYPE_FLOAT, TEXTUREFORMAT_R, TEXTURE_NEAREST_SAMPLINGMODE, TEXTURETYPE_HALF_FLOAT, TEXTURE_BILINEAR_SAMPLINGMODE } from "core/Engines/constants";
+import { TEXTURETYPE_FLOAT, TextureFormat, TEXTURE_NEAREST_SAMPLINGMODE, TEXTURETYPE_HALF_FLOAT, TEXTURE_BILINEAR_SAMPLINGMODE } from "core/Engines/constants";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import { Texture } from "core/Materials/Textures/texture";
@@ -96,9 +96,9 @@ export class FluidRenderingTextures {
         blurTextureSizeX: number,
         blurTextureSizeY: number,
         textureType: number = TEXTURETYPE_FLOAT,
-        textureFormat: number = TEXTUREFORMAT_R,
+        textureFormat: number = TextureFormat.R,
         blurTextureType: number = TEXTURETYPE_FLOAT,
-        blurTextureFormat: number = TEXTUREFORMAT_R,
+        blurTextureFormat: number = TextureFormat.R,
         useStandardBlur = false,
         camera: Nullable<Camera> = null,
         generateDepthBuffer = true,

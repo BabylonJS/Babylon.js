@@ -1,4 +1,4 @@
-import { TEXTURETYPE_UNSIGNED_BYTE, TEXTUREFORMAT_R, TEXTURE_NEAREST_SAMPLINGMODE } from "core/Engines/constants";
+import { TEXTURETYPE_UNSIGNED_BYTE, TextureFormat, TEXTURE_NEAREST_SAMPLINGMODE } from "core/Engines/constants";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import type { InternalTexture } from "core/Materials/Textures/internalTexture";
@@ -23,7 +23,7 @@ export class FluidRenderingDepthTextureCopy {
             {
                 generateMipMaps: false,
                 type: TEXTURETYPE_UNSIGNED_BYTE,
-                format: TEXTUREFORMAT_R,
+                format: TextureFormat.R,
                 samplingMode: TEXTURE_NEAREST_SAMPLINGMODE,
                 generateDepthBuffer: true,
                 generateStencilBuffer: false,

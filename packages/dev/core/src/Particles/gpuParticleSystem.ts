@@ -17,7 +17,7 @@ import type { Effect } from "../Materials/effect";
 import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import {
-    TEXTUREFORMAT_RGBA,
+    TextureFormat,
     TEXTURE_NEAREST_SAMPLINGMODE,
     TEXTURETYPE_FLOAT,
     TEXTURE_WRAP_ADDRESSMODE,
@@ -1024,7 +1024,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             new Float32Array(d),
             maxTextureSize,
             1,
-            TEXTUREFORMAT_RGBA,
+            TextureFormat.RGBA,
             sceneOrEngine,
             false,
             false,
@@ -1046,7 +1046,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             new Float32Array(d),
             maxTextureSize,
             1,
-            TEXTUREFORMAT_RGBA,
+            TextureFormat.RGBA,
             sceneOrEngine,
             false,
             false,

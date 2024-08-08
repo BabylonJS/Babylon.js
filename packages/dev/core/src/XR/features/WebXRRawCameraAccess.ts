@@ -2,7 +2,7 @@ import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager"
 import type { WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Observable } from "../../Misc/observable";
-import { TEXTUREFORMAT_RGBA, TEXTURETYPE_FLOAT, TEXTURE_LINEAR_LINEAR_MIPLINEAR, TEXTURE_WRAP_ADDRESSMODE } from "../../Engines/constants";
+import { TextureFormat, TEXTURETYPE_FLOAT, TEXTURE_LINEAR_LINEAR_MIPLINEAR, TEXTURE_WRAP_ADDRESSMODE } from "../../Engines/constants";
 import { WebGLHardwareTexture } from "../../Engines/WebGL/webGLHardwareTexture";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
@@ -166,7 +166,7 @@ export class WebXRRawCameraAccess extends WebXRAbstractFeature {
         if (!this._cachedInternalTextures[index]) {
             const internalTexture = new InternalTexture(this._xrSessionManager.scene.getEngine(), InternalTextureSource.Unknown, true);
             internalTexture.invertY = false;
-            internalTexture.format = TEXTUREFORMAT_RGBA;
+            internalTexture.format = TextureFormat.RGBA;
             internalTexture.generateMipMaps = true;
             internalTexture.type = TEXTURETYPE_FLOAT;
             internalTexture.samplingMode = TEXTURE_LINEAR_LINEAR_MIPLINEAR;

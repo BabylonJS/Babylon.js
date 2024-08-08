@@ -1,6 +1,6 @@
 import { RenderTargetTexture } from "../Textures/renderTargetTexture";
 import type { Scene } from "../../scene";
-import { TEXTURETYPE_UNSIGNED_INT, TEXTUREFORMAT_RGBA } from "../../Engines/constants";
+import { TEXTURETYPE_UNSIGNED_INT, TextureFormat } from "../../Engines/constants";
 import type { Engine } from "../../Engines/engine";
 
 /**
@@ -28,7 +28,7 @@ export class MultiviewRenderTarget extends RenderTargetTexture {
         this._renderTarget = (this.getScene()!.getEngine() as Engine).createMultiviewRenderTargetTexture(this.getRenderWidth(), this.getRenderHeight());
         this._texture = this._renderTarget.texture!;
         this._texture.isMultiview = true;
-        this._texture.format = TEXTUREFORMAT_RGBA;
+        this._texture.format = TextureFormat.RGBA;
         this.samples = this._getEngine()!.getCaps().maxSamples || this.samples;
         this._texture.samples = this._samples;
     }

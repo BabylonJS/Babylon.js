@@ -3,11 +3,10 @@ import type { IWebRequest } from "../../../Misc/interfaces/iWebRequest";
 import type { Nullable } from "../../../types";
 import {
     TEXTURETYPE_UNSIGNED_INT,
-    TEXTUREFORMAT_RGB,
+    TextureFormat,
     TEXTURETYPE_FLOAT,
     TEXTURE_NEAREST_SAMPLINGMODE,
     TEXTURETYPE_HALF_FLOAT,
-    TEXTUREFORMAT_RGBA,
     TEXTURE_CLAMP_ADDRESSMODE,
     TEXTURE_TRILINEAR_SAMPLINGMODE,
     TEXTURETYPE_UNSIGNED_INTEGER,
@@ -274,7 +273,7 @@ WebGPUEngine.prototype.updateRawTexture = function (
 
     if (bufferView) {
         const gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
-        const needConversion = format === TEXTUREFORMAT_RGB;
+        const needConversion = format === TextureFormat.RGB;
 
         if (needConversion) {
             bufferView = _convertRGBtoRGBATextureData(bufferView, texture.width, texture.height, type);
@@ -321,7 +320,7 @@ WebGPUEngine.prototype.createRawCubeTexture = function (
 
     texture.isCube = true;
     texture._originalFormat = format;
-    texture.format = format === TEXTUREFORMAT_RGB ? TEXTUREFORMAT_RGBA : format;
+    texture.format = format === TextureFormat.RGB ? TextureFormat.RGBA : format;
     texture.type = type;
     texture.generateMipMaps = generateMipMaps;
     texture.width = size;
@@ -337,7 +336,7 @@ WebGPUEngine.prototype.createRawCubeTexture = function (
 
     this._textureHelper.createGPUTextureForInternalTexture(texture);
 
-    if (format === TEXTUREFORMAT_RGB) {
+    if (format === TextureFormat.RGB) {
         const gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
         gpuTextureWrapper._originalFormatIsRGB = true;
     }
@@ -421,7 +420,7 @@ WebGPUEngine.prototype.createRawCubeTextureFromUrl = function (
         }
 
         if (mipmapGenerator) {
-            const needConversion = format === TEXTUREFORMAT_RGB;
+            const needConversion = format === TextureFormat.RGB;
             const mipData = mipmapGenerator(faceDataArrays);
             const gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
             const faces = [0, 1, 2, 3, 4, 5];
@@ -522,7 +521,7 @@ WebGPUEngine.prototype.updateRawTexture3D = function (
 
     if (bufferView) {
         const gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
-        const needConversion = format === TEXTUREFORMAT_RGB;
+        const needConversion = format === TextureFormat.RGB;
 
         if (needConversion) {
             bufferView = _convertRGBtoRGBATextureData(bufferView, texture.width, texture.height, textureType);
@@ -598,7 +597,7 @@ WebGPUEngine.prototype.updateRawTexture2DArray = function (
 
     if (bufferView) {
         const gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
-        const needConversion = format === TEXTUREFORMAT_RGB;
+        const needConversion = format === TextureFormat.RGB;
 
         if (needConversion) {
             bufferView = _convertRGBtoRGBATextureData(bufferView, texture.width, texture.height, textureType);

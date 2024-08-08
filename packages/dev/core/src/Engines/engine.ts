@@ -9,7 +9,7 @@ import type { IPipelineContext } from "./IPipelineContext";
 import type { ICustomAnimationFrameRequester } from "../Misc/customAnimationFrameRequester";
 import type { EngineOptions } from "./thinEngine";
 import { ThinEngine } from "./thinEngine";
-import * as Constants from "./constants";
+import * as constants from "./constants";
 import type { IViewportLike, IColor4Like } from "../Maths/math.like";
 import { PerformanceMonitor } from "../Misc/performanceMonitor";
 import type { DataBuffer } from "../Buffers/dataBuffer";
@@ -51,205 +51,205 @@ export class Engine extends ThinEngine {
     // Const statics
 
     /** Defines that alpha blending is disabled */
-    public static readonly ALPHA_DISABLE = Constants.ALPHA_DISABLE;
+    public static readonly ALPHA_DISABLE = constants.ALPHA_DISABLE;
     /** Defines that alpha blending to SRC ALPHA * SRC + DEST */
-    public static readonly ALPHA_ADD = Constants.ALPHA_ADD;
+    public static readonly ALPHA_ADD = constants.ALPHA_ADD;
     /** Defines that alpha blending to SRC ALPHA * SRC + (1 - SRC ALPHA) * DEST */
-    public static readonly ALPHA_COMBINE = Constants.ALPHA_COMBINE;
+    public static readonly ALPHA_COMBINE = constants.ALPHA_COMBINE;
     /** Defines that alpha blending to DEST - SRC * DEST */
-    public static readonly ALPHA_SUBTRACT = Constants.ALPHA_SUBTRACT;
+    public static readonly ALPHA_SUBTRACT = constants.ALPHA_SUBTRACT;
     /** Defines that alpha blending to SRC * DEST */
-    public static readonly ALPHA_MULTIPLY = Constants.ALPHA_MULTIPLY;
+    public static readonly ALPHA_MULTIPLY = constants.ALPHA_MULTIPLY;
     /** Defines that alpha blending to SRC ALPHA * SRC + (1 - SRC) * DEST */
-    public static readonly ALPHA_MAXIMIZED = Constants.ALPHA_MAXIMIZED;
+    public static readonly ALPHA_MAXIMIZED = constants.ALPHA_MAXIMIZED;
     /** Defines that alpha blending to SRC + DEST */
-    public static readonly ALPHA_ONEONE = Constants.ALPHA_ONEONE;
+    public static readonly ALPHA_ONEONE = constants.ALPHA_ONEONE;
     /** Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST */
-    public static readonly ALPHA_PREMULTIPLIED = Constants.ALPHA_PREMULTIPLIED;
+    public static readonly ALPHA_PREMULTIPLIED = constants.ALPHA_PREMULTIPLIED;
     /**
      * Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST
      * Alpha will be set to (1 - SRC ALPHA) * DEST ALPHA
      */
-    public static readonly ALPHA_PREMULTIPLIED_PORTERDUFF = Constants.ALPHA_PREMULTIPLIED_PORTERDUFF;
+    public static readonly ALPHA_PREMULTIPLIED_PORTERDUFF = constants.ALPHA_PREMULTIPLIED_PORTERDUFF;
     /** Defines that alpha blending to CST * SRC + (1 - CST) * DEST */
-    public static readonly ALPHA_INTERPOLATE = Constants.ALPHA_INTERPOLATE;
+    public static readonly ALPHA_INTERPOLATE = constants.ALPHA_INTERPOLATE;
     /**
      * Defines that alpha blending to SRC + (1 - SRC) * DEST
      * Alpha will be set to SRC ALPHA + (1 - SRC ALPHA) * DEST ALPHA
      */
-    public static readonly ALPHA_SCREENMODE = Constants.ALPHA_SCREENMODE;
+    public static readonly ALPHA_SCREENMODE = constants.ALPHA_SCREENMODE;
 
     /** Defines that the resource is not delayed*/
-    public static readonly DELAYLOADSTATE_NONE = Constants.DELAYLOADSTATE_NONE;
+    public static readonly DELAYLOADSTATE_NONE = constants.DELAYLOADSTATE_NONE;
     /** Defines that the resource was successfully delay loaded */
-    public static readonly DELAYLOADSTATE_LOADED = Constants.DELAYLOADSTATE_LOADED;
+    public static readonly DELAYLOADSTATE_LOADED = constants.DELAYLOADSTATE_LOADED;
     /** Defines that the resource is currently delay loading */
-    public static readonly DELAYLOADSTATE_LOADING = Constants.DELAYLOADSTATE_LOADING;
+    public static readonly DELAYLOADSTATE_LOADING = constants.DELAYLOADSTATE_LOADING;
     /** Defines that the resource is delayed and has not started loading */
-    public static readonly DELAYLOADSTATE_NOTLOADED = Constants.DELAYLOADSTATE_NOTLOADED;
+    public static readonly DELAYLOADSTATE_NOTLOADED = constants.DELAYLOADSTATE_NOTLOADED;
 
     // Depht or Stencil test Constants.
     /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will never pass. i.e. Nothing will be drawn */
-    public static readonly NEVER = Constants.NEVER;
+    public static readonly NEVER = constants.NEVER;
     /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn */
-    public static readonly ALWAYS = Constants.ALWAYS;
+    public static readonly ALWAYS = constants.ALWAYS;
     /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than the stored value */
-    public static readonly LESS = Constants.LESS;
+    public static readonly LESS = constants.LESS;
     /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is equals to the stored value */
-    public static readonly EQUAL = Constants.EQUAL;
+    public static readonly EQUAL = constants.EQUAL;
     /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than or equal to the stored value */
-    public static readonly LEQUAL = Constants.LEQUAL;
+    public static readonly LEQUAL = constants.LEQUAL;
     /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than the stored value */
-    public static readonly GREATER = Constants.GREATER;
+    public static readonly GREATER = constants.GREATER;
     /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than or equal to the stored value */
-    public static readonly GEQUAL = Constants.GEQUAL;
+    public static readonly GEQUAL = constants.GEQUAL;
     /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is not equal to the stored value */
-    public static readonly NOTEQUAL = Constants.NOTEQUAL;
+    public static readonly NOTEQUAL = constants.NOTEQUAL;
 
     // Stencil Actions Constants.
     /** Passed to stencilOperation to specify that stencil value must be kept */
-    public static readonly KEEP = Constants.KEEP;
+    public static readonly KEEP = constants.KEEP;
     /** Passed to stencilOperation to specify that stencil value must be replaced */
-    public static readonly REPLACE = Constants.REPLACE;
+    public static readonly REPLACE = constants.REPLACE;
     /** Passed to stencilOperation to specify that stencil value must be incremented */
-    public static readonly INCR = Constants.INCR;
+    public static readonly INCR = constants.INCR;
     /** Passed to stencilOperation to specify that stencil value must be decremented */
-    public static readonly DECR = Constants.DECR;
+    public static readonly DECR = constants.DECR;
     /** Passed to stencilOperation to specify that stencil value must be inverted */
-    public static readonly INVERT = Constants.INVERT;
+    public static readonly INVERT = constants.INVERT;
     /** Passed to stencilOperation to specify that stencil value must be incremented with wrapping */
-    public static readonly INCR_WRAP = Constants.INCR_WRAP;
+    public static readonly INCR_WRAP = constants.INCR_WRAP;
     /** Passed to stencilOperation to specify that stencil value must be decremented with wrapping */
-    public static readonly DECR_WRAP = Constants.DECR_WRAP;
+    public static readonly DECR_WRAP = constants.DECR_WRAP;
 
     /** Texture is not repeating outside of 0..1 UVs */
-    public static readonly TEXTURE_CLAMP_ADDRESSMODE = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+    public static readonly TEXTURE_CLAMP_ADDRESSMODE = constants.TEXTURE_CLAMP_ADDRESSMODE;
     /** Texture is repeating outside of 0..1 UVs */
-    public static readonly TEXTURE_WRAP_ADDRESSMODE = Constants.TEXTURE_WRAP_ADDRESSMODE;
+    public static readonly TEXTURE_WRAP_ADDRESSMODE = constants.TEXTURE_WRAP_ADDRESSMODE;
     /** Texture is repeating and mirrored */
-    public static readonly TEXTURE_MIRROR_ADDRESSMODE = Constants.TEXTURE_MIRROR_ADDRESSMODE;
+    public static readonly TEXTURE_MIRROR_ADDRESSMODE = constants.TEXTURE_MIRROR_ADDRESSMODE;
 
     /** ALPHA */
-    public static readonly TEXTUREFORMAT_ALPHA = Constants.TEXTUREFORMAT_ALPHA;
+    public static readonly TEXTUREFORMAT_ALPHA = constants.TextureFormat.ALPHA;
     /** LUMINANCE */
-    public static readonly TEXTUREFORMAT_LUMINANCE = Constants.TEXTUREFORMAT_LUMINANCE;
+    public static readonly TEXTUREFORMAT_LUMINANCE = constants.TextureFormat.LUMINANCE;
     /** LUMINANCE_ALPHA */
-    public static readonly TEXTUREFORMAT_LUMINANCE_ALPHA = Constants.TEXTUREFORMAT_LUMINANCE_ALPHA;
+    public static readonly TEXTUREFORMAT_LUMINANCE_ALPHA = constants.TextureFormat.LUMINANCE_ALPHA;
     /** RGB */
-    public static readonly TEXTUREFORMAT_RGB = Constants.TEXTUREFORMAT_RGB;
+    public static readonly TEXTUREFORMAT_RGB = constants.TextureFormat.RGB;
     /** RGBA */
-    public static readonly TEXTUREFORMAT_RGBA = Constants.TEXTUREFORMAT_RGBA;
+    public static readonly TEXTUREFORMAT_RGBA = constants.TextureFormat.RGBA;
     /** RED */
-    public static readonly TEXTUREFORMAT_RED = Constants.TEXTUREFORMAT_RED;
+    public static readonly TEXTUREFORMAT_RED = constants.TextureFormat.RED;
     /** RED (2nd reference) */
-    public static readonly TEXTUREFORMAT_R = Constants.TEXTUREFORMAT_R;
+    public static readonly TEXTUREFORMAT_R = constants.TextureFormat.R;
     /** RG */
-    public static readonly TEXTUREFORMAT_RG = Constants.TEXTUREFORMAT_RG;
+    public static readonly TEXTUREFORMAT_RG = constants.TextureFormat.RG;
     /** RED_INTEGER */
-    public static readonly TEXTUREFORMAT_RED_INTEGER = Constants.TEXTUREFORMAT_RED_INTEGER;
+    public static readonly TEXTUREFORMAT_RED_INTEGER = constants.TextureFormat.RED_INTEGER;
     /** RED_INTEGER (2nd reference) */
-    public static readonly TEXTUREFORMAT_R_INTEGER = Constants.TEXTUREFORMAT_R_INTEGER;
+    public static readonly TEXTUREFORMAT_R_INTEGER = constants.TextureFormat.R_INTEGER;
     /** RG_INTEGER */
-    public static readonly TEXTUREFORMAT_RG_INTEGER = Constants.TEXTUREFORMAT_RG_INTEGER;
+    public static readonly TEXTUREFORMAT_RG_INTEGER = constants.TextureFormat.RG_INTEGER;
     /** RGB_INTEGER */
-    public static readonly TEXTUREFORMAT_RGB_INTEGER = Constants.TEXTUREFORMAT_RGB_INTEGER;
+    public static readonly TEXTUREFORMAT_RGB_INTEGER = constants.TextureFormat.RGB_INTEGER;
     /** RGBA_INTEGER */
-    public static readonly TEXTUREFORMAT_RGBA_INTEGER = Constants.TEXTUREFORMAT_RGBA_INTEGER;
+    public static readonly TEXTUREFORMAT_RGBA_INTEGER = constants.TextureFormat.RGBA_INTEGER;
 
     /** UNSIGNED_BYTE */
-    public static readonly TEXTURETYPE_UNSIGNED_BYTE = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+    public static readonly TEXTURETYPE_UNSIGNED_BYTE = constants.TEXTURETYPE_UNSIGNED_BYTE;
     /** UNSIGNED_BYTE (2nd reference) */
-    public static readonly TEXTURETYPE_UNSIGNED_INT = Constants.TEXTURETYPE_UNSIGNED_INT;
+    public static readonly TEXTURETYPE_UNSIGNED_INT = constants.TEXTURETYPE_UNSIGNED_INT;
     /** FLOAT */
-    public static readonly TEXTURETYPE_FLOAT = Constants.TEXTURETYPE_FLOAT;
+    public static readonly TEXTURETYPE_FLOAT = constants.TEXTURETYPE_FLOAT;
     /** HALF_FLOAT */
-    public static readonly TEXTURETYPE_HALF_FLOAT = Constants.TEXTURETYPE_HALF_FLOAT;
+    public static readonly TEXTURETYPE_HALF_FLOAT = constants.TEXTURETYPE_HALF_FLOAT;
     /** BYTE */
-    public static readonly TEXTURETYPE_BYTE = Constants.TEXTURETYPE_BYTE;
+    public static readonly TEXTURETYPE_BYTE = constants.TEXTURETYPE_BYTE;
     /** SHORT */
-    public static readonly TEXTURETYPE_SHORT = Constants.TEXTURETYPE_SHORT;
+    public static readonly TEXTURETYPE_SHORT = constants.TEXTURETYPE_SHORT;
     /** UNSIGNED_SHORT */
-    public static readonly TEXTURETYPE_UNSIGNED_SHORT = Constants.TEXTURETYPE_UNSIGNED_SHORT;
+    public static readonly TEXTURETYPE_UNSIGNED_SHORT = constants.TEXTURETYPE_UNSIGNED_SHORT;
     /** INT */
-    public static readonly TEXTURETYPE_INT = Constants.TEXTURETYPE_INT;
+    public static readonly TEXTURETYPE_INT = constants.TEXTURETYPE_INT;
     /** UNSIGNED_INT */
-    public static readonly TEXTURETYPE_UNSIGNED_INTEGER = Constants.TEXTURETYPE_UNSIGNED_INTEGER;
+    public static readonly TEXTURETYPE_UNSIGNED_INTEGER = constants.TEXTURETYPE_UNSIGNED_INTEGER;
     /** UNSIGNED_SHORT_4_4_4_4 */
-    public static readonly TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4 = Constants.TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4;
+    public static readonly TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4 = constants.TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4;
     /** UNSIGNED_SHORT_5_5_5_1 */
-    public static readonly TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1 = Constants.TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1;
+    public static readonly TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1 = constants.TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1;
     /** UNSIGNED_SHORT_5_6_5 */
-    public static readonly TEXTURETYPE_UNSIGNED_SHORT_5_6_5 = Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
+    public static readonly TEXTURETYPE_UNSIGNED_SHORT_5_6_5 = constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
     /** UNSIGNED_INT_2_10_10_10_REV */
-    public static readonly TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV = Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV;
+    public static readonly TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV = constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV;
     /** UNSIGNED_INT_24_8 */
-    public static readonly TEXTURETYPE_UNSIGNED_INT_24_8 = Constants.TEXTURETYPE_UNSIGNED_INT_24_8;
+    public static readonly TEXTURETYPE_UNSIGNED_INT_24_8 = constants.TEXTURETYPE_UNSIGNED_INT_24_8;
     /** UNSIGNED_INT_10F_11F_11F_REV */
-    public static readonly TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV = Constants.TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV;
+    public static readonly TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV = constants.TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV;
     /** UNSIGNED_INT_5_9_9_9_REV */
-    public static readonly TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV = Constants.TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV;
+    public static readonly TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV = constants.TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV;
     /** FLOAT_32_UNSIGNED_INT_24_8_REV */
-    public static readonly TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV = Constants.TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV;
+    public static readonly TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV = constants.TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV;
 
     /** nearest is mag = nearest and min = nearest and mip = none */
-    public static readonly TEXTURE_NEAREST_SAMPLINGMODE = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+    public static readonly TEXTURE_NEAREST_SAMPLINGMODE = constants.TEXTURE_NEAREST_SAMPLINGMODE;
     /** Bilinear is mag = linear and min = linear and mip = nearest */
-    public static readonly TEXTURE_BILINEAR_SAMPLINGMODE = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
+    public static readonly TEXTURE_BILINEAR_SAMPLINGMODE = constants.TEXTURE_BILINEAR_SAMPLINGMODE;
     /** Trilinear is mag = linear and min = linear and mip = linear */
-    public static readonly TEXTURE_TRILINEAR_SAMPLINGMODE = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
+    public static readonly TEXTURE_TRILINEAR_SAMPLINGMODE = constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
     /** nearest is mag = nearest and min = nearest and mip = linear */
-    public static readonly TEXTURE_NEAREST_NEAREST_MIPLINEAR = Constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR;
+    public static readonly TEXTURE_NEAREST_NEAREST_MIPLINEAR = constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR;
     /** Bilinear is mag = linear and min = linear and mip = nearest */
-    public static readonly TEXTURE_LINEAR_LINEAR_MIPNEAREST = Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST;
+    public static readonly TEXTURE_LINEAR_LINEAR_MIPNEAREST = constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST;
     /** Trilinear is mag = linear and min = linear and mip = linear */
-    public static readonly TEXTURE_LINEAR_LINEAR_MIPLINEAR = Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR;
+    public static readonly TEXTURE_LINEAR_LINEAR_MIPLINEAR = constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR;
     /** mag = nearest and min = nearest and mip = nearest */
-    public static readonly TEXTURE_NEAREST_NEAREST_MIPNEAREST = Constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST;
+    public static readonly TEXTURE_NEAREST_NEAREST_MIPNEAREST = constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST;
     /** mag = nearest and min = linear and mip = nearest */
-    public static readonly TEXTURE_NEAREST_LINEAR_MIPNEAREST = Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST;
+    public static readonly TEXTURE_NEAREST_LINEAR_MIPNEAREST = constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST;
     /** mag = nearest and min = linear and mip = linear */
-    public static readonly TEXTURE_NEAREST_LINEAR_MIPLINEAR = Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR;
+    public static readonly TEXTURE_NEAREST_LINEAR_MIPLINEAR = constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR;
     /** mag = nearest and min = linear and mip = none */
-    public static readonly TEXTURE_NEAREST_LINEAR = Constants.TEXTURE_NEAREST_LINEAR;
+    public static readonly TEXTURE_NEAREST_LINEAR = constants.TEXTURE_NEAREST_LINEAR;
     /** mag = nearest and min = nearest and mip = none */
-    public static readonly TEXTURE_NEAREST_NEAREST = Constants.TEXTURE_NEAREST_NEAREST;
+    public static readonly TEXTURE_NEAREST_NEAREST = constants.TEXTURE_NEAREST_NEAREST;
     /** mag = linear and min = nearest and mip = nearest */
-    public static readonly TEXTURE_LINEAR_NEAREST_MIPNEAREST = Constants.TEXTURE_LINEAR_NEAREST_MIPNEAREST;
+    public static readonly TEXTURE_LINEAR_NEAREST_MIPNEAREST = constants.TEXTURE_LINEAR_NEAREST_MIPNEAREST;
     /** mag = linear and min = nearest and mip = linear */
-    public static readonly TEXTURE_LINEAR_NEAREST_MIPLINEAR = Constants.TEXTURE_LINEAR_NEAREST_MIPLINEAR;
+    public static readonly TEXTURE_LINEAR_NEAREST_MIPLINEAR = constants.TEXTURE_LINEAR_NEAREST_MIPLINEAR;
     /** mag = linear and min = linear and mip = none */
-    public static readonly TEXTURE_LINEAR_LINEAR = Constants.TEXTURE_LINEAR_LINEAR;
+    public static readonly TEXTURE_LINEAR_LINEAR = constants.TEXTURE_LINEAR_LINEAR;
     /** mag = linear and min = nearest and mip = none */
-    public static readonly TEXTURE_LINEAR_NEAREST = Constants.TEXTURE_LINEAR_NEAREST;
+    public static readonly TEXTURE_LINEAR_NEAREST = constants.TEXTURE_LINEAR_NEAREST;
 
     /** Explicit coordinates mode */
-    public static readonly TEXTURE_EXPLICIT_MODE = Constants.TEXTURE_EXPLICIT_MODE;
+    public static readonly TEXTURE_EXPLICIT_MODE = constants.TEXTURE_EXPLICIT_MODE;
     /** Spherical coordinates mode */
-    public static readonly TEXTURE_SPHERICAL_MODE = Constants.TEXTURE_SPHERICAL_MODE;
+    public static readonly TEXTURE_SPHERICAL_MODE = constants.TEXTURE_SPHERICAL_MODE;
     /** Planar coordinates mode */
-    public static readonly TEXTURE_PLANAR_MODE = Constants.TEXTURE_PLANAR_MODE;
+    public static readonly TEXTURE_PLANAR_MODE = constants.TEXTURE_PLANAR_MODE;
     /** Cubic coordinates mode */
-    public static readonly TEXTURE_CUBIC_MODE = Constants.TEXTURE_CUBIC_MODE;
+    public static readonly TEXTURE_CUBIC_MODE = constants.TEXTURE_CUBIC_MODE;
     /** Projection coordinates mode */
-    public static readonly TEXTURE_PROJECTION_MODE = Constants.TEXTURE_PROJECTION_MODE;
+    public static readonly TEXTURE_PROJECTION_MODE = constants.TEXTURE_PROJECTION_MODE;
     /** Skybox coordinates mode */
-    public static readonly TEXTURE_SKYBOX_MODE = Constants.TEXTURE_SKYBOX_MODE;
+    public static readonly TEXTURE_SKYBOX_MODE = constants.TEXTURE_SKYBOX_MODE;
     /** Inverse Cubic coordinates mode */
-    public static readonly TEXTURE_INVCUBIC_MODE = Constants.TEXTURE_INVCUBIC_MODE;
+    public static readonly TEXTURE_INVCUBIC_MODE = constants.TEXTURE_INVCUBIC_MODE;
     /** Equirectangular coordinates mode */
-    public static readonly TEXTURE_EQUIRECTANGULAR_MODE = Constants.TEXTURE_EQUIRECTANGULAR_MODE;
+    public static readonly TEXTURE_EQUIRECTANGULAR_MODE = constants.TEXTURE_EQUIRECTANGULAR_MODE;
     /** Equirectangular Fixed coordinates mode */
-    public static readonly TEXTURE_FIXED_EQUIRECTANGULAR_MODE = Constants.TEXTURE_FIXED_EQUIRECTANGULAR_MODE;
+    public static readonly TEXTURE_FIXED_EQUIRECTANGULAR_MODE = constants.TEXTURE_FIXED_EQUIRECTANGULAR_MODE;
     /** Equirectangular Fixed Mirrored coordinates mode */
-    public static readonly TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE = Constants.TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE;
+    public static readonly TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE = constants.TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE;
 
     // Texture rescaling mode
     /** Defines that texture rescaling will use a floor to find the closer power of 2 size */
-    public static readonly SCALEMODE_FLOOR = Constants.SCALEMODE_FLOOR;
+    public static readonly SCALEMODE_FLOOR = constants.SCALEMODE_FLOOR;
     /** Defines that texture rescaling will look for the nearest power of 2 size */
-    public static readonly SCALEMODE_NEAREST = Constants.SCALEMODE_NEAREST;
+    public static readonly SCALEMODE_NEAREST = constants.SCALEMODE_NEAREST;
     /** Defines that texture rescaling will use a ceil to find the closer power of 2 size */
-    public static readonly SCALEMODE_CEILING = Constants.SCALEMODE_CEILING;
+    public static readonly SCALEMODE_CEILING = constants.SCALEMODE_CEILING;
 
     /**
      * Returns the current npm package of the sdk
@@ -824,8 +824,8 @@ export class Engine extends ThinEngine {
             },
             {
                 generateMipMaps: false,
-                type: Constants.TEXTURETYPE_UNSIGNED_INT,
-                samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+                type: constants.TEXTURETYPE_UNSIGNED_INT,
+                samplingMode: constants.TEXTURE_BILINEAR_SAMPLINGMODE,
                 generateDepthBuffer: false,
                 generateStencilBuffer: false,
             }
@@ -874,7 +874,7 @@ export class Engine extends ThinEngine {
     public wrapWebGLTexture(
         texture: WebGLTexture,
         hasMipMaps: boolean = false,
-        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+        samplingMode: number = constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         width: number = 0,
         height: number = 0
     ): InternalTexture {
@@ -934,7 +934,7 @@ export class Engine extends ThinEngine {
             this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, texture, true);
 
             if (comparisonFunction === 0) {
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_FUNC, Constants.LEQUAL);
+                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_FUNC, constants.LEQUAL);
                 gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_MODE, gl.NONE);
             } else {
                 gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
@@ -946,7 +946,7 @@ export class Engine extends ThinEngine {
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
 
             if (comparisonFunction === 0) {
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, Constants.LEQUAL);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, constants.LEQUAL);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.NONE);
             } else {
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);

@@ -3,7 +3,7 @@ import type { RenderTargetCreationOptions } from "../../../Materials/Textures/te
 import {
     TEXTURETYPE_UNSIGNED_INT,
     TEXTURE_TRILINEAR_SAMPLINGMODE,
-    TEXTUREFORMAT_RGBA,
+    TextureFormat,
     TEXTURE_BILINEAR_SAMPLINGMODE,
     TEXTURE_LINEAR_LINEAR,
     TEXTURE_LINEAR_LINEAR_MIPLINEAR,
@@ -36,7 +36,7 @@ WebGPUEngine.prototype.createRenderTargetCubeTexture = function (size: number, o
         generateStencilBuffer: false,
         type: TEXTURETYPE_UNSIGNED_INT,
         samplingMode: TEXTURE_TRILINEAR_SAMPLINGMODE,
-        format: TEXTUREFORMAT_RGBA,
+        format: TextureFormat.RGBA,
         samples: 1,
         ...options,
     };

@@ -8,38 +8,38 @@ declare const _native: INative;
 export function getNativeTextureFormat(format: number, type: number): number {
     switch (format) {
         // Depth (type is ignored)
-        case Constants.TEXTUREFORMAT_DEPTH16:
+        case Constants.TextureFormat.DEPTH16:
             return _native.Engine.TEXTURE_FORMAT_D16;
-        case Constants.TEXTUREFORMAT_DEPTH24:
+        case Constants.TextureFormat.DEPTH24:
             return _native.Engine.TEXTURE_FORMAT_D24;
-        case Constants.TEXTUREFORMAT_DEPTH24_STENCIL8:
+        case Constants.TextureFormat.DEPTH24_STENCIL8:
             return _native.Engine.TEXTURE_FORMAT_D24S8;
-        case Constants.TEXTUREFORMAT_DEPTH32_FLOAT:
+        case Constants.TextureFormat.DEPTH32_FLOAT:
             return _native.Engine.TEXTURE_FORMAT_D32F;
 
         // Compressed (type is ignored)
-        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM:
+        case Constants.TextureFormat.COMPRESSED_RGBA_BPTC_UNORM:
             return _native.Engine.TEXTURE_FORMAT_BC7;
-        case Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT:
+        case Constants.TextureFormat.COMPRESSED_RGB_BPTC_SIGNED_FLOAT:
             return _native.Engine.TEXTURE_FORMAT_BC6H;
-        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5:
+        case Constants.TextureFormat.COMPRESSED_RGBA_S3TC_DXT5:
             return _native.Engine.TEXTURE_FORMAT_BC3;
-        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3:
+        case Constants.TextureFormat.COMPRESSED_RGBA_S3TC_DXT3:
             return _native.Engine.TEXTURE_FORMAT_BC2;
-        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1:
+        case Constants.TextureFormat.COMPRESSED_RGBA_S3TC_DXT1:
             return _native.Engine.TEXTURE_FORMAT_BC1;
-        case Constants.TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1:
+        case Constants.TextureFormat.COMPRESSED_RGB_S3TC_DXT1:
             return _native.Engine.TEXTURE_FORMAT_BC1;
-        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4:
+        case Constants.TextureFormat.COMPRESSED_RGBA_ASTC_4x4:
             return _native.Engine.TEXTURE_FORMAT_ASTC4x4;
-        case Constants.TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL:
+        case Constants.TextureFormat.COMPRESSED_RGB_ETC1_WEBGL:
             return _native.Engine.TEXTURE_FORMAT_ETC1;
-        case Constants.TEXTUREFORMAT_COMPRESSED_RGB8_ETC2:
+        case Constants.TextureFormat.COMPRESSED_RGB8_ETC2:
             return _native.Engine.TEXTURE_FORMAT_ETC2;
-        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA8_ETC2_EAC:
+        case Constants.TextureFormat.COMPRESSED_RGBA8_ETC2_EAC:
             return _native.Engine.TEXTURE_FORMAT_ETC2A;
 
-        case Constants.TEXTUREFORMAT_RGB: {
+        case Constants.TextureFormat.RGB: {
             switch (type) {
                 case Constants.TEXTURETYPE_UNSIGNED_BYTE:
                     return _native.Engine.TEXTURE_FORMAT_RGB8;
@@ -52,7 +52,7 @@ export function getNativeTextureFormat(format: number, type: number): number {
             }
             break;
         }
-        case Constants.TEXTUREFORMAT_RGBA: {
+        case Constants.TextureFormat.RGBA: {
             switch (type) {
                 case Constants.TEXTURETYPE_UNSIGNED_BYTE:
                     return _native.Engine.TEXTURE_FORMAT_RGBA8;
@@ -73,7 +73,7 @@ export function getNativeTextureFormat(format: number, type: number): number {
             }
             break;
         }
-        case Constants.TEXTUREFORMAT_R: {
+        case Constants.TextureFormat.R: {
             switch (type) {
                 case Constants.TEXTURETYPE_UNSIGNED_BYTE:
                     return _native.Engine.TEXTURE_FORMAT_R8;
@@ -94,7 +94,7 @@ export function getNativeTextureFormat(format: number, type: number): number {
             }
             break;
         }
-        case Constants.TEXTUREFORMAT_RG: {
+        case Constants.TextureFormat.RG: {
             switch (type) {
                 case Constants.TEXTURETYPE_UNSIGNED_BYTE:
                     return _native.Engine.TEXTURE_FORMAT_RG8;
@@ -115,7 +115,7 @@ export function getNativeTextureFormat(format: number, type: number): number {
             }
             break;
         }
-        case Constants.TEXTUREFORMAT_BGRA: {
+        case Constants.TextureFormat.BGRA: {
             switch (type) {
                 case Constants.TEXTURETYPE_UNSIGNED_BYTE:
                     return _native.Engine.TEXTURE_FORMAT_BGRA8;

@@ -7,7 +7,7 @@ import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager"
 import type { WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import {
-    TEXTUREFORMAT_RGBA,
+    TextureFormat,
     TEXTURETYPE_HALF_FLOAT,
     TEXTURETYPE_UNSIGNED_BYTE,
     TEXTURE_LINEAR_LINEAR_MIPLINEAR,
@@ -235,7 +235,7 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
                 internalTexture.isCube = true;
                 internalTexture.invertY = false;
                 internalTexture._useSRGBBuffer = this.options.reflectionFormat === "srgba8";
-                internalTexture.format = TEXTUREFORMAT_RGBA;
+                internalTexture.format = TextureFormat.RGBA;
                 internalTexture.generateMipMaps = true;
                 internalTexture.type = this.options.reflectionFormat !== "srgba8" ? TEXTURETYPE_HALF_FLOAT : TEXTURETYPE_UNSIGNED_BYTE;
                 internalTexture.samplingMode = TEXTURE_LINEAR_LINEAR_MIPLINEAR;

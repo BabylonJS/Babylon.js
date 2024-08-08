@@ -9,7 +9,7 @@ import {
     TEXTURETYPE_UNSIGNED_BYTE,
     TEXTURETYPE_FLOAT,
     TEXTURETYPE_HALF_FLOAT,
-    TEXTUREFORMAT_RGB,
+    TextureFormat,
     DELAYLOADSTATE_LOADED,
 } from "../../Engines/constants";
 import { HDRTools } from "../../Misc/HighDynamicRange/hdr";
@@ -295,7 +295,7 @@ export class HDRCubeTexture extends BaseTexture {
             this.url,
             this.getScene(),
             this._size,
-            TEXTUREFORMAT_RGB,
+            TextureFormat.RGB,
             textureType,
             this._noMipmap,
             callback,

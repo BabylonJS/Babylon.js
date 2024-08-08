@@ -17,16 +17,12 @@ import { Layer } from "core/Layers/layer";
 import { Matrix } from "core/Maths/math.vector";
 import {
     TEXTURETYPE_HALF_FLOAT,
-    TEXTUREFORMAT_R,
+    TextureFormat,
     TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV,
-    TEXTUREFORMAT_RGBA,
     TEXTURE_NEAREST_SAMPLINGMODE,
     TEXTURETYPE_FLOAT,
     ALPHA_DISABLE,
     TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV,
-    TEXTUREFORMAT_RGB,
-    TEXTUREFORMAT_DEPTH32_FLOAT,
-    TEXTUREFORMAT_DEPTH16,
     TEXTURE_BILINEAR_SAMPLINGMODE,
     ALPHA_ADD,
     TEXTURE_CLAMP_ADDRESSMODE,
@@ -84,11 +80,11 @@ export class GIRSMManager {
      */
     public static GeometryBufferTextureTypesAndFormats: { [key: number]: { textureType: number; textureFormat: number } } = {
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        0: { textureType: TEXTURETYPE_HALF_FLOAT, textureFormat: TEXTUREFORMAT_R }, // depth
+        0: { textureType: TEXTURETYPE_HALF_FLOAT, textureFormat: TextureFormat.R }, // depth
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        1: { textureType: TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV, textureFormat: TEXTUREFORMAT_RGBA }, // normal
+        1: { textureType: TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV, textureFormat: TextureFormat.RGBA }, // normal
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        2: { textureType: TEXTURETYPE_HALF_FLOAT, textureFormat: TEXTUREFORMAT_RGBA }, // position
+        2: { textureType: TEXTURETYPE_HALF_FLOAT, textureFormat: TextureFormat.RGBA }, // position
     };
 
     /**
@@ -405,7 +401,7 @@ export class GIRSMManager {
             data[i * 4 + 3] = 1;
         }
 
-        this._sampleTexture = new RawTexture(data, this._maxSamples, 1, TEXTUREFORMAT_RGBA, this._scene, false, false, TEXTURE_NEAREST_SAMPLINGMODE, TEXTURETYPE_FLOAT);
+        this._sampleTexture = new RawTexture(data, this._maxSamples, 1, TextureFormat.RGBA, this._scene, false, false, TEXTURE_NEAREST_SAMPLINGMODE, TEXTURETYPE_FLOAT);
         this._sampleTexture.name = "GIRSMSamples";
     }
 
@@ -537,7 +533,7 @@ export class GIRSMManager {
             return;
         }
 
-        const textureFormat = this._giTextureType === TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV ? TEXTUREFORMAT_RGB : TEXTUREFORMAT_RGBA;
+        const textureFormat = this._giTextureType === TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV ? TextureFormat.RGB : TextureFormat.RGBA;
 
         if (this._firstActivation) {
             this._firstActivation = false;
@@ -551,7 +547,7 @@ export class GIRSMManager {
 
         const geometryBufferRenderer = this._scene.enableGeometryBufferRenderer(
             this._enableBlur ? this._outputDimensions : this._giTextureDimensions,
-            this._use32BitsDepthBuffer ? TEXTUREFORMAT_DEPTH32_FLOAT : TEXTUREFORMAT_DEPTH16,
+            this._use32BitsDepthBuffer ? TextureFormat.DEPTH32_FLOAT : TextureFormat.DEPTH16,
             GIRSMManager.GeometryBufferTextureTypesAndFormats
         );
 

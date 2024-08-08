@@ -1,12 +1,6 @@
 import { InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
 import type { Nullable } from "../../../types";
-import {
-    TEXTUREFORMAT_DEPTH24_STENCIL8,
-    TEXTUREFORMAT_DEPTH32_FLOAT,
-    TEXTURE_TRILINEAR_SAMPLINGMODE,
-    TEXTURE_BILINEAR_SAMPLINGMODE,
-    TEXTURE_CLAMP_ADDRESSMODE,
-} from "../../constants";
+import { TextureFormat, TEXTURE_TRILINEAR_SAMPLINGMODE, TEXTURE_BILINEAR_SAMPLINGMODE, TEXTURE_CLAMP_ADDRESSMODE } from "../../constants";
 import type { DepthTextureCreationOptions } from "../../../Materials/Textures/textureCreationOptions";
 import { WebGPUEngine } from "../../webgpuEngine";
 import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
@@ -193,7 +187,7 @@ WebGPUEngine.prototype._createDepthStencilCubeTexture = function (size: number, 
         comparisonFunction: 0,
         generateStencil: false,
         samples: 1,
-        depthTextureFormat: options.generateStencil ? TEXTUREFORMAT_DEPTH24_STENCIL8 : TEXTUREFORMAT_DEPTH32_FLOAT,
+        depthTextureFormat: options.generateStencil ? TextureFormat.DEPTH24_STENCIL8 : TextureFormat.DEPTH32_FLOAT,
         ...options,
     };
 

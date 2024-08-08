@@ -5,7 +5,7 @@ import type { Scene } from "../../scene";
 import type { SphericalPolynomial } from "../../Maths/sphericalPolynomial";
 import { InternalTextureSource } from "./internalTexture";
 import { CubeTexture } from "./cubeTexture";
-import { TEXTUREFORMAT_RGBA, TEXTURETYPE_UNSIGNED_INT, TEXTURE_TRILINEAR_SAMPLINGMODE } from "../../Engines/constants";
+import { TextureFormat, TEXTURETYPE_UNSIGNED_INT, TEXTURE_TRILINEAR_SAMPLINGMODE } from "../../Engines/constants";
 import "../../Engines/Extensions/engine.rawTexture";
 import type { Engine } from "../../Engines/engine";
 
@@ -29,7 +29,7 @@ export class RawCubeTexture extends CubeTexture {
         scene: Scene,
         data: Nullable<ArrayBufferView[]>,
         size: number,
-        format: number = TEXTUREFORMAT_RGBA,
+        format: number = TextureFormat.RGBA,
         type: number = TEXTURETYPE_UNSIGNED_INT,
         generateMipMaps: boolean = false,
         invertY: boolean = false,

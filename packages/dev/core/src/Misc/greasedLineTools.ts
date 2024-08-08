@@ -531,7 +531,7 @@ export class GreasedLineTools {
             colors = [...colors, ...Array(width * height - colors.length).fill(colors[0])];
         }
         const colorsArray = GreasedLineTools.Color3toRGBAUint8(colors);
-        const colorsTexture = new RawTexture(colorsArray, width, height, Engine.TEXTUREFORMAT_RGBA, scene, false, true, colorsSampling);
+        const colorsTexture = new RawTexture(colorsArray, width, height, Engine.TextureFormat.RGBA, scene, false, true, colorsSampling);
         colorsTexture.name = name;
         return colorsTexture;
     }
@@ -545,7 +545,7 @@ export class GreasedLineTools {
     public static PrepareEmptyColorsTexture(scene: Scene) {
         if (!GreasedLineMaterialDefaults.EmptyColorsTexture) {
             const colorsArray = new Uint8Array(4);
-            GreasedLineMaterialDefaults.EmptyColorsTexture = new RawTexture(colorsArray, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false, false, RawTexture.NEAREST_NEAREST);
+            GreasedLineMaterialDefaults.EmptyColorsTexture = new RawTexture(colorsArray, 1, 1, Engine.TextureFormat.RGBA, scene, false, false, RawTexture.NEAREST_NEAREST);
             GreasedLineMaterialDefaults.EmptyColorsTexture.name = "grlEmptyColorsTexture";
         }
 

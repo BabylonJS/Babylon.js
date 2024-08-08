@@ -21,8 +21,7 @@ import {
     TEXTURETYPE_HALF_FLOAT,
     TEXTURETYPE_FLOAT,
     TEXTURETYPE_UNSIGNED_INT,
-    TEXTUREFORMAT_RED,
-    TEXTUREFORMAT_RGBA,
+    TextureFormat,
     GREATER,
     LESS,
     MATERIAL_ClockWiseSideOrientation,
@@ -960,7 +959,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 false,
                 false,
                 undefined,
-                this._useRedTextureType ? TEXTUREFORMAT_RED : TEXTUREFORMAT_RGBA
+                this._useRedTextureType ? TextureFormat.RED : TextureFormat.RGBA
             );
             this._shadowMap.createDepthStencilTexture(
                 engine.useReverseDepthBuffer ? GREATER : LESS,

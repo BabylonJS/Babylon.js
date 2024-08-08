@@ -4,7 +4,7 @@ import type { Nullable } from "../../types";
 import { Matrix, TmpVectors, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import {
-    TEXTUREFORMAT_RGBA,
+    TextureFormat,
     TEXTURE_NEAREST_SAMPLINGMODE,
     TEXTURE_NEAREST_NEAREST_MIPLINEAR,
     TEXTURE_BILINEAR_SAMPLINGMODE,
@@ -82,7 +82,7 @@ export interface ITextureCreationOptions {
     /** Defines if the buffer we are loading the texture from should be deleted after load (default: false) */
     deleteBuffer?: boolean;
 
-    /** Defines the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...) (default: ) */
+    /** Defines the format of the texture we are trying to load (Engine.TextureFormat.RGBA...) (default: ) */
     format?: number;
 
     /** Defines an optional mime type information (default: undefined) */
@@ -162,7 +162,7 @@ export class Texture extends BaseTexture {
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
         settings: Partial<VideoTextureSettings> = {},
         onError?: Nullable<(message?: string, exception?: any) => void>,
-        format: number = TEXTUREFORMAT_RGBA
+        format: number = TextureFormat.RGBA
     ): VideoTexture {
         throw _WarnImport("VideoTexture");
     }
@@ -417,7 +417,7 @@ export class Texture extends BaseTexture {
      * @param onError defines a callback triggered when an error occurred during the loading session
      * @param buffer defines the buffer to load the texture from in case the texture is loaded from a buffer representation
      * @param deleteBuffer defines if the buffer we are loading the texture from should be deleted after load
-     * @param format defines the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
+     * @param format defines the format of the texture we are trying to load (Engine.TextureFormat.RGBA...)
      * @param mimeType defines an optional mime type information
      * @param loaderOptions options to be passed to the loader
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
@@ -1155,7 +1155,7 @@ export class Texture extends BaseTexture {
      * @param samplingMode define the sampling mode we want for the texture while fetching from it (Texture.NEAREST_SAMPLINGMODE...)
      * @param onLoad define a callback triggered when the texture has been loaded
      * @param onError define a callback triggered when an error occurred during the loading session
-     * @param format define the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
+     * @param format define the format of the texture we are trying to load (Engine.TextureFormat.RGBA...)
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      * @param forcedExtension defines the extension to use to pick the right loader
      * @returns the created texture
@@ -1169,7 +1169,7 @@ export class Texture extends BaseTexture {
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null,
         onError: Nullable<() => void> = null,
-        format: number = TEXTUREFORMAT_RGBA,
+        format: number = TextureFormat.RGBA,
         creationFlags?: number,
         forcedExtension?: string
     ): Texture {
@@ -1202,7 +1202,7 @@ export class Texture extends BaseTexture {
      * @param samplingMode define the sampling mode we want for the texture while fetching from it (Texture.NEAREST_SAMPLINGMODE...)
      * @param onLoad define a callback triggered when the texture has been loaded
      * @param onError define a callback triggered when an error occurred during the loading session
-     * @param format define the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
+     * @param format define the format of the texture we are trying to load (Engine.TextureFormat.RGBA...)
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      * @param forcedExtension defines the extension to use to pick the right loader
      * @returns the created texture
@@ -1217,7 +1217,7 @@ export class Texture extends BaseTexture {
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null,
         onError: Nullable<(message?: string, exception?: any) => void> = null,
-        format: number = TEXTUREFORMAT_RGBA,
+        format: number = TextureFormat.RGBA,
         creationFlags?: number,
         forcedExtension?: string
     ): Texture {

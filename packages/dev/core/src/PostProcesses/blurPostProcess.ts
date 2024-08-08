@@ -6,7 +6,7 @@ import { PostProcess } from "./postProcess";
 import type { Camera } from "../Cameras/camera";
 import type { Effect } from "../Materials/effect";
 import { Texture } from "../Materials/Textures/texture";
-import { TEXTURETYPE_UNSIGNED_INT, TEXTUREFORMAT_RGBA } from "../Engines/constants";
+import { TEXTURETYPE_UNSIGNED_INT, TextureFormat } from "../Engines/constants";
 
 import "../Shaders/kernelBlur.fragment";
 import "../Shaders/kernelBlur.vertex";
@@ -104,7 +104,7 @@ export class BlurPostProcess extends PostProcess {
      * @param textureType Type of textures used when performing the post process. (default: 0)
      * @param defines
      * @param _blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
-     * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
+     * @param textureFormat Format of textures used when performing the post process. (default: TextureFormat.RGBA)
      * @param forceGLSL defines a boolean indicating if the shader must be compiled in GLSL even if we are using WebGPU
      */
     constructor(
@@ -119,7 +119,7 @@ export class BlurPostProcess extends PostProcess {
         textureType = TEXTURETYPE_UNSIGNED_INT,
         defines = "",
         private _blockCompilation = false,
-        textureFormat = TEXTUREFORMAT_RGBA,
+        textureFormat = TextureFormat.RGBA,
         forceGLSL = false
     ) {
         super(

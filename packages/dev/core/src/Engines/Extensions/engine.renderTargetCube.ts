@@ -1,13 +1,6 @@
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { Logger } from "../../Misc/logger";
-import {
-    TEXTURETYPE_UNSIGNED_INT,
-    TEXTURE_TRILINEAR_SAMPLINGMODE,
-    TEXTUREFORMAT_RGBA,
-    TEXTURETYPE_FLOAT,
-    TEXTURE_NEAREST_SAMPLINGMODE,
-    TEXTURETYPE_HALF_FLOAT,
-} from "../constants";
+import { TEXTURETYPE_UNSIGNED_INT, TEXTURE_TRILINEAR_SAMPLINGMODE, TextureFormat, TEXTURETYPE_FLOAT, TEXTURE_NEAREST_SAMPLINGMODE, TEXTURETYPE_HALF_FLOAT } from "../constants";
 import { ThinEngine } from "../thinEngine";
 import type { RenderTargetWrapper } from "../renderTargetWrapper";
 import type { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
@@ -34,7 +27,7 @@ ThinEngine.prototype.createRenderTargetCubeTexture = function (size: number, opt
         generateStencilBuffer: false,
         type: TEXTURETYPE_UNSIGNED_INT,
         samplingMode: TEXTURE_TRILINEAR_SAMPLINGMODE,
-        format: TEXTUREFORMAT_RGBA,
+        format: TextureFormat.RGBA,
         ...options,
     };
     fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && fullOptions.generateStencilBuffer;

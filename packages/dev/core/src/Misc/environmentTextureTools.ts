@@ -12,7 +12,7 @@ import {
     TEXTURETYPE_UNSIGNED_BYTE,
     TEXTURETYPE_UNSIGNED_INT,
     TEXTURETYPE_UNSIGNED_INTEGER,
-    TEXTUREFORMAT_RGBA,
+    TextureFormat,
     TEXTURE_NEAREST_SAMPLINGMODE,
     TEXTURE_TRILINEAR_SAMPLINGMODE,
     TEXTURE_LINEAR_LINEAR,
@@ -296,7 +296,7 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
                 }
             }
 
-            const tempTexture = engine.createRawTexture(faceData, faceWidth, faceWidth, TEXTUREFORMAT_RGBA, false, true, TEXTURE_NEAREST_SAMPLINGMODE, null, textureType);
+            const tempTexture = engine.createRawTexture(faceData, faceWidth, faceWidth, TextureFormat.RGBA, false, true, TEXTURE_NEAREST_SAMPLINGMODE, null, textureType);
 
             await RGBDTextureTools.EncodeTextureToRGBD(tempTexture, hostingScene, textureType);
 
@@ -547,7 +547,7 @@ export function UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBuff
     let lodTextures: Nullable<{ [lod: number]: BaseTexture }> = null;
     const caps = engine.getCaps();
 
-    texture.format = TEXTUREFORMAT_RGBA;
+    texture.format = TextureFormat.RGBA;
     texture.type = TEXTURETYPE_UNSIGNED_INT;
     texture.generateMipMaps = true;
     texture._cachedAnisotropicFilteringLevel = null;
@@ -602,7 +602,7 @@ export function UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBuff
             generateStencilBuffer: false,
             samplingMode: TEXTURE_TRILINEAR_SAMPLINGMODE,
             type: texture.type,
-            format: TEXTUREFORMAT_RGBA,
+            format: TextureFormat.RGBA,
         });
     } else {
         texture._isRGBD = true;

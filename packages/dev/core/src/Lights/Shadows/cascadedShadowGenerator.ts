@@ -7,7 +7,7 @@ import type { IShadowLight } from "../../Lights/shadowLight";
 import type { Effect } from "../../Materials/effect";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 
-import { TEXTUREFORMAT_RED, TEXTUREFORMAT_RGBA, GREATER, LESS } from "../../Engines/constants";
+import { TextureFormat, GREATER, LESS } from "../../Engines/constants";
 
 import "../../Shaders/shadowMap.fragment";
 import "../../Shaders/shadowMap.vertex";
@@ -812,7 +812,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             false,
             false,
             undefined,
-            this._useRedTextureType ? TEXTUREFORMAT_RED : TEXTUREFORMAT_RGBA
+            this._useRedTextureType ? TextureFormat.RED : TextureFormat.RGBA
         );
         this._shadowMap.createDepthStencilTexture(
             engine.useReverseDepthBuffer ? GREATER : LESS,

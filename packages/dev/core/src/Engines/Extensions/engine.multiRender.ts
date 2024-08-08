@@ -3,16 +3,10 @@ import type { IMultiRenderTargetOptions } from "../../Materials/Textures/multiRe
 import { Logger } from "../../Misc/logger";
 import type { Nullable } from "../../types";
 import {
-    TEXTUREFORMAT_DEPTH16,
+    TextureFormat,
     TEXTURETYPE_UNSIGNED_INT,
     TEXTURE_TRILINEAR_SAMPLINGMODE,
-    TEXTUREFORMAT_RGBA,
     TEXTURE_2D,
-    TEXTUREFORMAT_DEPTH24_STENCIL8,
-    TEXTUREFORMAT_DEPTH24UNORM_STENCIL8,
-    TEXTUREFORMAT_DEPTH24,
-    TEXTUREFORMAT_DEPTH32_FLOAT,
-    TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8,
     TEXTURETYPE_FLOAT,
     TEXTURE_NEAREST_SAMPLINGMODE,
     TEXTURETYPE_HALF_FLOAT,
@@ -182,13 +176,13 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
     let generateDepthBuffer = true;
     let generateStencilBuffer = false;
     let generateDepthTexture = false;
-    let depthTextureFormat = TEXTUREFORMAT_DEPTH16;
+    let depthTextureFormat = TextureFormat.DEPTH16;
     let textureCount = 1;
 
     const defaultType = TEXTURETYPE_UNSIGNED_INT;
     const defaultSamplingMode = TEXTURE_TRILINEAR_SAMPLINGMODE;
     const defaultUseSRGBBuffer = false;
-    const defaultFormat = TEXTUREFORMAT_RGBA;
+    const defaultFormat = TextureFormat.RGBA;
     const defaultTarget = TEXTURE_2D;
 
     let types: number[] = [];
@@ -235,11 +229,11 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
         }
         if (
             this.webGLVersion > 1 &&
-            (options.depthTextureFormat === TEXTUREFORMAT_DEPTH24_STENCIL8 ||
-                options.depthTextureFormat === TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 ||
-                options.depthTextureFormat === TEXTUREFORMAT_DEPTH24 ||
-                options.depthTextureFormat === TEXTUREFORMAT_DEPTH32_FLOAT ||
-                options.depthTextureFormat === TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8)
+            (options.depthTextureFormat === TextureFormat.DEPTH24_STENCIL8 ||
+                options.depthTextureFormat === TextureFormat.DEPTH24UNORM_STENCIL8 ||
+                options.depthTextureFormat === TextureFormat.DEPTH24 ||
+                options.depthTextureFormat === TextureFormat.DEPTH32_FLOAT ||
+                options.depthTextureFormat === TextureFormat.DEPTH32FLOAT_STENCIL8)
         ) {
             depthTextureFormat = options.depthTextureFormat;
         }
@@ -261,9 +255,9 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
     const useStencilTexture =
         this.webGLVersion > 1 &&
         generateDepthTexture &&
-        (options.depthTextureFormat === TEXTUREFORMAT_DEPTH24_STENCIL8 ||
-            options.depthTextureFormat === TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 ||
-            options.depthTextureFormat === TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8);
+        (options.depthTextureFormat === TextureFormat.DEPTH24_STENCIL8 ||
+            options.depthTextureFormat === TextureFormat.DEPTH24UNORM_STENCIL8 ||
+            options.depthTextureFormat === TextureFormat.DEPTH32FLOAT_STENCIL8);
     const depthStencilBuffer = this._setupFramebufferDepthAttachments(!useStencilTexture && generateStencilBuffer, !generateDepthTexture && generateDepthBuffer, width, height);
 
     rtWrapper._framebuffer = framebuffer;
@@ -375,22 +369,22 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
         if (this.webGLVersion < 2) {
             glDepthTextureInternalFormat = gl.DEPTH_COMPONENT;
         } else {
-            if (depthTextureFormat === TEXTUREFORMAT_DEPTH32_FLOAT) {
+            if (depthTextureFormat === TextureFormat.DEPTH32_FLOAT) {
                 depthTextureType = TEXTURETYPE_FLOAT;
                 glDepthTextureType = gl.FLOAT;
                 glDepthTextureInternalFormat = gl.DEPTH_COMPONENT32F;
-            } else if (depthTextureFormat === TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8) {
+            } else if (depthTextureFormat === TextureFormat.DEPTH32FLOAT_STENCIL8) {
                 depthTextureType = TEXTURETYPE_UNSIGNED_INT;
                 glDepthTextureType = gl.FLOAT_32_UNSIGNED_INT_24_8_REV;
                 glDepthTextureInternalFormat = gl.DEPTH32F_STENCIL8;
                 glDepthTextureFormat = gl.DEPTH_STENCIL;
                 glDepthTextureAttachment = gl.DEPTH_STENCIL_ATTACHMENT;
-            } else if (depthTextureFormat === TEXTUREFORMAT_DEPTH24) {
+            } else if (depthTextureFormat === TextureFormat.DEPTH24) {
                 depthTextureType = TEXTURETYPE_UNSIGNED_INT;
                 glDepthTextureType = gl.UNSIGNED_INT;
                 glDepthTextureInternalFormat = gl.DEPTH_COMPONENT24;
                 glDepthTextureAttachment = gl.DEPTH_ATTACHMENT;
-            } else if (depthTextureFormat === TEXTUREFORMAT_DEPTH24_STENCIL8 || depthTextureFormat === TEXTUREFORMAT_DEPTH24UNORM_STENCIL8) {
+            } else if (depthTextureFormat === TextureFormat.DEPTH24_STENCIL8 || depthTextureFormat === TextureFormat.DEPTH24UNORM_STENCIL8) {
                 depthTextureType = TEXTURETYPE_UNSIGNED_INT_24_8;
                 glDepthTextureType = gl.UNSIGNED_INT_24_8;
                 glDepthTextureInternalFormat = gl.DEPTH24_STENCIL8;

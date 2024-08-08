@@ -20,7 +20,7 @@ import {
     BUFFER_CREATIONFLAG_STORAGE,
     BUFFER_CREATIONFLAG_INDIRECT,
     DISABLEUA,
-    TEXTUREFORMAT_RGBA,
+    TextureFormat,
     TEXTURETYPE_UNSIGNED_INT,
     TEXTURE_TRILINEAR_SAMPLINGMODE,
     TEXTURETYPE_FLOAT,
@@ -35,8 +35,6 @@ import {
     TEXTURE_WRAP_ADDRESSMODE,
     TEXTURETYPE_UNSIGNED_INTEGER,
     TEXTURETYPE_UNSIGNED_SHORT,
-    TEXTUREFORMAT_DEPTH24_STENCIL8,
-    TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8,
 } from "./constants";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import * as WebGPUConstants from "./WebGPU/webgpuConstants";
@@ -2326,7 +2324,7 @@ export class WebGPUEngine extends AbstractEngine {
      * @internal
      */
     public _getRGBABufferInternalSizedFormat(): number {
-        return TEXTUREFORMAT_RGBA;
+        return TextureFormat.RGBA;
     }
 
     public updateTextureComparisonFunction(texture: InternalTexture, comparisonFunction: number): void {
@@ -2354,7 +2352,7 @@ export class WebGPUEngine extends AbstractEngine {
             fullOptions.generateMipMaps = options.generateMipMaps;
             fullOptions.type = options.type === undefined ? TEXTURETYPE_UNSIGNED_INT : options.type;
             fullOptions.samplingMode = options.samplingMode === undefined ? TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
-            fullOptions.format = options.format === undefined ? TEXTUREFORMAT_RGBA : options.format;
+            fullOptions.format = options.format === undefined ? TextureFormat.RGBA : options.format;
             fullOptions.samples = options.samples ?? 1;
             fullOptions.creationFlags = options.creationFlags ?? 0;
             fullOptions.useSRGBBuffer = options.useSRGBBuffer ?? false;
@@ -2363,7 +2361,7 @@ export class WebGPUEngine extends AbstractEngine {
             fullOptions.generateMipMaps = <boolean>options;
             fullOptions.type = TEXTURETYPE_UNSIGNED_INT;
             fullOptions.samplingMode = TEXTURE_TRILINEAR_SAMPLINGMODE;
-            fullOptions.format = TEXTUREFORMAT_RGBA;
+            fullOptions.format = TextureFormat.RGBA;
             fullOptions.samples = 1;
             fullOptions.creationFlags = 0;
             fullOptions.useSRGBBuffer = false;
@@ -2484,7 +2482,7 @@ export class WebGPUEngine extends AbstractEngine {
                 texture.baseHeight = imageBitmap.height;
                 texture.width = imageBitmap.width;
                 texture.height = imageBitmap.height;
-                texture.format = texture.format !== -1 ? texture.format : (format ?? TEXTUREFORMAT_RGBA);
+                texture.format = texture.format !== -1 ? texture.format : (format ?? TextureFormat.RGBA);
                 texture.type = texture.type !== -1 ? texture.type : TEXTURETYPE_UNSIGNED_BYTE;
                 texture._creationFlags = creationFlags ?? 0;
 
@@ -3768,7 +3766,7 @@ export class WebGPUEngine extends AbstractEngine {
             for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.textureNames.length; ++i) {
                 const textureName = webgpuPipelineContext.shaderProcessingContext.textureNames[i];
                 const texture = this._currentMaterialContext.textures[textureName]?.texture;
-                const textureIsDepth = texture && texture.format >= TEXTUREFORMAT_DEPTH24_STENCIL8 && texture.format <= TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8;
+                const textureIsDepth = texture && texture.format >= TextureFormat.DEPTH24_STENCIL8 && texture.format <= TextureFormat.DEPTH32FLOAT_STENCIL8;
                 if ((texture?.type === TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) || textureIsDepth) {
                     textureState |= bitVal;
                 }

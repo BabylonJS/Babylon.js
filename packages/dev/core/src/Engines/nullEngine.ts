@@ -10,7 +10,7 @@ import {
     ALPHA_DISABLE,
     TEXTURE_TRILINEAR_SAMPLINGMODE,
     TEXTURETYPE_UNSIGNED_INT,
-    TEXTUREFORMAT_RGBA,
+    TextureFormat,
     TEXTURETYPE_FLOAT,
     TEXTURE_NEAREST_SAMPLINGMODE,
     TEXTURETYPE_HALF_FLOAT,
@@ -806,7 +806,7 @@ export class NullEngine extends Engine {
             generateStencilBuffer: false,
             type: TEXTURETYPE_UNSIGNED_INT,
             samplingMode: TEXTURE_TRILINEAR_SAMPLINGMODE,
-            format: TEXTUREFORMAT_RGBA,
+            format: TextureFormat.RGBA,
             ...options,
         };
         fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && fullOptions.generateStencilBuffer;

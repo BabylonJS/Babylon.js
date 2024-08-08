@@ -3,7 +3,7 @@ import { InternalTextureSource } from "../Materials/Textures/internalTexture";
 import type { RenderTargetCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
 import type { Nullable } from "../types";
 import {
-    TEXTUREFORMAT_DEPTH32_FLOAT,
+    TextureFormat,
     TEXTURE_2D_ARRAY,
     TEXTURE_CUBE_MAP,
     TEXTURE_3D,
@@ -287,7 +287,7 @@ export class RenderTargetWrapper {
         bilinearFiltering: boolean = true,
         generateStencil: boolean = false,
         samples: number = 1,
-        format: number = TEXTUREFORMAT_DEPTH32_FLOAT,
+        format: number = TextureFormat.DEPTH32_FLOAT,
         label?: string
     ): InternalTexture {
         this._depthStencilTexture?.dispose();

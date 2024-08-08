@@ -2,7 +2,7 @@ import type { Scene } from "../../scene";
 import type { Engine } from "../../Engines/engine";
 import { Texture } from "../../Materials/Textures/texture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
-import { TEXTUREFORMAT_DEPTH16, TEXTURETYPE_UNSIGNED_INT, TEXTUREFORMAT_RGBA, TEXTURE_2D, TEXTURE_2D_ARRAY, TEXTURE_CUBE_MAP, TEXTURE_3D } from "../../Engines/constants";
+import { TextureFormat, TEXTURETYPE_UNSIGNED_INT, TEXTURE_2D, TEXTURE_2D_ARRAY, TEXTURE_CUBE_MAP, TEXTURE_3D } from "../../Engines/constants";
 
 import "../../Engines/Extensions/engine.multiRender";
 import type { InternalTexture } from "./internalTexture";
@@ -175,7 +175,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
     constructor(name: string, size: any, count: number, scene?: Scene, options?: IMultiRenderTargetOptions, textureNames?: string[]) {
         const generateMipMaps = options && options.generateMipMaps ? options.generateMipMaps : false;
         const generateDepthTexture = options && options.generateDepthTexture ? options.generateDepthTexture : false;
-        const depthTextureFormat = options && options.depthTextureFormat ? options.depthTextureFormat : TEXTUREFORMAT_DEPTH16;
+        const depthTextureFormat = options && options.depthTextureFormat ? options.depthTextureFormat : TextureFormat.DEPTH16;
         const doNotChangeAspectRatio = !options || options.doNotChangeAspectRatio === undefined ? true : options.doNotChangeAspectRatio;
         const drawOnlyOnFirstAttachmentByDefault = options && options.drawOnlyOnFirstAttachmentByDefault ? options.drawOnlyOnFirstAttachmentByDefault : false;
         super(name, size, scene, generateMipMaps, doNotChangeAspectRatio, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true);
@@ -262,7 +262,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
             if (options && options.formats && options.formats[i] !== undefined) {
                 formats.push(options.formats[i]);
             } else {
-                formats.push(TEXTUREFORMAT_RGBA);
+                formats.push(TextureFormat.RGBA);
             }
 
             if (options && options.targetTypes && options.targetTypes[i] !== undefined) {

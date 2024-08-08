@@ -2,7 +2,7 @@ import {
     TEXTURETYPE_HALF_FLOAT,
     TEXTURETYPE_FLOAT,
     TEXTURE_TRILINEAR_SAMPLINGMODE,
-    TEXTUREFORMAT_RGBA,
+    TextureFormat,
     TEXTURETYPE_UNSIGNED_BYTE,
     TEXTURE_NEAREST_SAMPLINGMODE,
 } from "../Engines/constants";
@@ -101,7 +101,7 @@ export class RGBDTextureTools {
                 generateStencilBuffer: false,
                 samplingMode: internalTexture.samplingMode,
                 type: internalTexture.type,
-                format: TEXTUREFORMAT_RGBA,
+                format: TextureFormat.RGBA,
             });
 
             rgbdPostProcess.getEffect().executeWhenCompiled(() => {
@@ -144,6 +144,6 @@ export class RGBDTextureTools {
      * @returns a promise with the internalTexture having its texture replaced by the result of the processing
      */
     public static EncodeTextureToRGBD(internalTexture: InternalTexture, scene: Scene, outputTextureType = TEXTURETYPE_UNSIGNED_BYTE): Promise<InternalTexture> {
-        return ApplyPostProcess("rgbdEncode", internalTexture, scene, outputTextureType, TEXTURE_NEAREST_SAMPLINGMODE, TEXTUREFORMAT_RGBA);
+        return ApplyPostProcess("rgbdEncode", internalTexture, scene, outputTextureType, TEXTURE_NEAREST_SAMPLINGMODE, TextureFormat.RGBA);
     }
 }

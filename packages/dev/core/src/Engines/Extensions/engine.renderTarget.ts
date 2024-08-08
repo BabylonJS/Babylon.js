@@ -7,18 +7,7 @@ import type { RenderTargetWrapper } from "../renderTargetWrapper";
 import { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
 import type { WebGLHardwareTexture } from "../WebGL/webGLHardwareTexture";
 
-import {
-    TEXTUREFORMAT_DEPTH16,
-    TEXTUREFORMAT_DEPTH24,
-    TEXTUREFORMAT_DEPTH24UNORM_STENCIL8,
-    TEXTUREFORMAT_DEPTH24_STENCIL8,
-    TEXTUREFORMAT_DEPTH32_FLOAT,
-    TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8,
-    TEXTURE_BILINEAR_SAMPLINGMODE,
-    TEXTURE_NEAREST_SAMPLINGMODE,
-    TEXTURETYPE_UNSIGNED_INT,
-    LEQUAL,
-} from "../constants";
+import { TextureFormat, TEXTURE_BILINEAR_SAMPLINGMODE, TEXTURE_NEAREST_SAMPLINGMODE, TEXTURETYPE_UNSIGNED_INT, LEQUAL } from "../constants";
 
 import "../AbstractEngine/abstractEngine.texture";
 
@@ -157,49 +146,49 @@ ThinEngine.prototype._createDepthStencilTexture = function (size: TextureSize, o
 
     if (internalOptions.depthTextureFormat !== undefined) {
         if (
-            internalOptions.depthTextureFormat !== TEXTUREFORMAT_DEPTH16 &&
-            internalOptions.depthTextureFormat !== TEXTUREFORMAT_DEPTH24 &&
-            internalOptions.depthTextureFormat !== TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 &&
-            internalOptions.depthTextureFormat !== TEXTUREFORMAT_DEPTH24_STENCIL8 &&
-            internalOptions.depthTextureFormat !== TEXTUREFORMAT_DEPTH32_FLOAT &&
-            internalOptions.depthTextureFormat !== TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8
+            internalOptions.depthTextureFormat !== TextureFormat.DEPTH16 &&
+            internalOptions.depthTextureFormat !== TextureFormat.DEPTH24 &&
+            internalOptions.depthTextureFormat !== TextureFormat.DEPTH24UNORM_STENCIL8 &&
+            internalOptions.depthTextureFormat !== TextureFormat.DEPTH24_STENCIL8 &&
+            internalOptions.depthTextureFormat !== TextureFormat.DEPTH32_FLOAT &&
+            internalOptions.depthTextureFormat !== TextureFormat.DEPTH32FLOAT_STENCIL8
         ) {
             Logger.Error("Depth texture format is not supported.");
             return internalTexture;
         }
         internalTexture.format = internalOptions.depthTextureFormat;
     } else {
-        internalTexture.format = internalOptions.generateStencil ? TEXTUREFORMAT_DEPTH24_STENCIL8 : TEXTUREFORMAT_DEPTH24;
+        internalTexture.format = internalOptions.generateStencil ? TextureFormat.DEPTH24_STENCIL8 : TextureFormat.DEPTH24;
     }
 
     const hasStencil =
-        internalTexture.format === TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 ||
-        internalTexture.format === TEXTUREFORMAT_DEPTH24_STENCIL8 ||
-        internalTexture.format === TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8;
+        internalTexture.format === TextureFormat.DEPTH24UNORM_STENCIL8 ||
+        internalTexture.format === TextureFormat.DEPTH24_STENCIL8 ||
+        internalTexture.format === TextureFormat.DEPTH32FLOAT_STENCIL8;
 
     let type: GLenum = gl.UNSIGNED_INT;
-    if (internalTexture.format === TEXTUREFORMAT_DEPTH16) {
+    if (internalTexture.format === TextureFormat.DEPTH16) {
         type = gl.UNSIGNED_SHORT;
-    } else if (internalTexture.format === TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 || internalTexture.format === TEXTUREFORMAT_DEPTH24_STENCIL8) {
+    } else if (internalTexture.format === TextureFormat.DEPTH24UNORM_STENCIL8 || internalTexture.format === TextureFormat.DEPTH24_STENCIL8) {
         type = gl.UNSIGNED_INT_24_8;
-    } else if (internalTexture.format === TEXTUREFORMAT_DEPTH32_FLOAT) {
+    } else if (internalTexture.format === TextureFormat.DEPTH32_FLOAT) {
         type = gl.FLOAT;
-    } else if (internalTexture.format === TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8) {
+    } else if (internalTexture.format === TextureFormat.DEPTH32FLOAT_STENCIL8) {
         type = gl.FLOAT_32_UNSIGNED_INT_24_8_REV;
     }
 
     const format: GLenum = hasStencil ? gl.DEPTH_STENCIL : gl.DEPTH_COMPONENT;
     let internalFormat = format;
     if (this.webGLVersion > 1) {
-        if (internalTexture.format === TEXTUREFORMAT_DEPTH16) {
+        if (internalTexture.format === TextureFormat.DEPTH16) {
             internalFormat = gl.DEPTH_COMPONENT16;
-        } else if (internalTexture.format === TEXTUREFORMAT_DEPTH24) {
+        } else if (internalTexture.format === TextureFormat.DEPTH24) {
             internalFormat = gl.DEPTH_COMPONENT24;
-        } else if (internalTexture.format === TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 || internalTexture.format === TEXTUREFORMAT_DEPTH24_STENCIL8) {
+        } else if (internalTexture.format === TextureFormat.DEPTH24UNORM_STENCIL8 || internalTexture.format === TextureFormat.DEPTH24_STENCIL8) {
             internalFormat = gl.DEPTH24_STENCIL8;
-        } else if (internalTexture.format === TEXTUREFORMAT_DEPTH32_FLOAT) {
+        } else if (internalTexture.format === TextureFormat.DEPTH32_FLOAT) {
             internalFormat = gl.DEPTH_COMPONENT32F;
-        } else if (internalTexture.format === TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8) {
+        } else if (internalTexture.format === TextureFormat.DEPTH32FLOAT_STENCIL8) {
             internalFormat = gl.DEPTH32F_STENCIL8;
         }
     }

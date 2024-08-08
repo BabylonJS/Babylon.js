@@ -55,7 +55,7 @@ import {
     GEQUAL,
     LEQUAL,
     SNAPSHOTRENDERING_STANDARD,
-    TEXTUREFORMAT_RGBA,
+    TextureFormat,
     TEXTURE_NEAREST_SAMPLINGMODE,
     TEXTURETYPE_UNSIGNED_INT,
     TEXTURE_TRILINEAR_SAMPLINGMODE,
@@ -759,7 +759,7 @@ export abstract class AbstractEngine {
      */
     public get emptyTexture(): InternalTexture {
         if (!this._emptyTexture) {
-            this._emptyTexture = this.createRawTexture(new Uint8Array(4), 1, 1, TEXTUREFORMAT_RGBA, false, false, TEXTURE_NEAREST_SAMPLINGMODE);
+            this._emptyTexture = this.createRawTexture(new Uint8Array(4), 1, 1, TextureFormat.RGBA, false, false, TEXTURE_NEAREST_SAMPLINGMODE);
         }
 
         return this._emptyTexture;
@@ -770,7 +770,7 @@ export abstract class AbstractEngine {
      */
     public get emptyTexture3D(): InternalTexture {
         if (!this._emptyTexture3D) {
-            this._emptyTexture3D = this.createRawTexture3D(new Uint8Array(4), 1, 1, 1, TEXTUREFORMAT_RGBA, false, false, TEXTURE_NEAREST_SAMPLINGMODE);
+            this._emptyTexture3D = this.createRawTexture3D(new Uint8Array(4), 1, 1, 1, TextureFormat.RGBA, false, false, TEXTURE_NEAREST_SAMPLINGMODE);
         }
 
         return this._emptyTexture3D;
@@ -781,7 +781,7 @@ export abstract class AbstractEngine {
      */
     public get emptyTexture2DArray(): InternalTexture {
         if (!this._emptyTexture2DArray) {
-            this._emptyTexture2DArray = this.createRawTexture2DArray(new Uint8Array(4), 1, 1, 1, TEXTUREFORMAT_RGBA, false, false, TEXTURE_NEAREST_SAMPLINGMODE);
+            this._emptyTexture2DArray = this.createRawTexture2DArray(new Uint8Array(4), 1, 1, 1, TextureFormat.RGBA, false, false, TEXTURE_NEAREST_SAMPLINGMODE);
         }
 
         return this._emptyTexture2DArray;
@@ -794,7 +794,7 @@ export abstract class AbstractEngine {
         if (!this._emptyCubeTexture) {
             const faceData = new Uint8Array(4);
             const cubeData = [faceData, faceData, faceData, faceData, faceData, faceData];
-            this._emptyCubeTexture = this.createRawCubeTexture(cubeData, 1, TEXTUREFORMAT_RGBA, TEXTURETYPE_UNSIGNED_INT, false, false, TEXTURE_NEAREST_SAMPLINGMODE);
+            this._emptyCubeTexture = this.createRawCubeTexture(cubeData, 1, TextureFormat.RGBA, TEXTURETYPE_UNSIGNED_INT, false, false, TEXTURE_NEAREST_SAMPLINGMODE);
         }
 
         return this._emptyCubeTexture;

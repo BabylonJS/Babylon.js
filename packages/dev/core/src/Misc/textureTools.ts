@@ -4,7 +4,7 @@ import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { PassPostProcess } from "../PostProcesses/passPostProcess";
-import { TEXTURETYPE_UNSIGNED_INT, TEXTURETYPE_UNSIGNED_BYTE, TEXTUREFORMAT_RGBA } from "../Engines/constants";
+import { TEXTURETYPE_UNSIGNED_INT, TEXTURETYPE_UNSIGNED_BYTE, TextureFormat } from "../Engines/constants";
 import type { Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess";
 import type { AbstractEngine } from "../Engines/abstractEngine";
@@ -159,7 +159,7 @@ export function ApplyPostProcess(
 
             // Ready to get rolling again.
             internalTexture.type = type!;
-            internalTexture.format = TEXTUREFORMAT_RGBA;
+            internalTexture.format = TextureFormat.RGBA;
             internalTexture.isReady = true;
 
             resolve(internalTexture);

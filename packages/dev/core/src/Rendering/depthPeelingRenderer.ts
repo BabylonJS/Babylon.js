@@ -3,11 +3,10 @@
  */
 import {
     PREPASS_COLOR_TEXTURE_TYPE,
-    TEXTUREFORMAT_RG,
+    TextureFormat,
     TEXTURE_NEAREST_SAMPLINGMODE,
     TEXTURETYPE_FLOAT,
     TEXTURETYPE_HALF_FLOAT,
-    TEXTUREFORMAT_RGBA,
     ALPHA_DISABLE,
     ALPHA_ONEONE_ONEONE,
     ALPHA_EQUATION_MAX,
@@ -233,13 +232,13 @@ export class DepthPeelingRenderer {
         // 1 is a color texture
         const optionsArray = [
             {
-                format: TEXTUREFORMAT_RG, // For MSAA we need RGBA
+                format: TextureFormat.RG, // For MSAA we need RGBA
                 samplingMode: TEXTURE_NEAREST_SAMPLINGMODE,
                 type: this._engine.getCaps().textureFloatLinearFiltering ? TEXTURETYPE_FLOAT : TEXTURETYPE_HALF_FLOAT,
                 label: "DepthPeelingRenderer-DepthTexture",
             } as InternalTextureCreationOptions,
             {
-                format: TEXTUREFORMAT_RGBA,
+                format: TextureFormat.RGBA,
                 samplingMode: TEXTURE_NEAREST_SAMPLINGMODE,
                 type: TEXTURETYPE_HALF_FLOAT, // For MSAA we need FLOAT
                 label: "DepthPeelingRenderer-ColorTexture",

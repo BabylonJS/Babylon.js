@@ -7,14 +7,7 @@ import { Texture } from "../../Materials/Textures/texture";
 import { Engine } from "../../Engines/engine";
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
-import {
-    TEXTUREFORMAT_LUMINANCE_ALPHA,
-    TEXTUREFORMAT_RGBA,
-    TEXTURETYPE_UNSIGNED_SHORT,
-    TEXTURETYPE_FLOAT,
-    TEXTURE_NEAREST_LINEAR,
-    TEXTURE_WRAP_ADDRESSMODE,
-} from "../../Engines/constants";
+import { TextureFormat, TEXTURETYPE_UNSIGNED_SHORT, TEXTURETYPE_FLOAT, TEXTURE_NEAREST_LINEAR, TEXTURE_WRAP_ADDRESSMODE } from "../../Engines/constants";
 import { WebGLHardwareTexture } from "../../Engines/WebGL/webGLHardwareTexture";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import type { ThinEngine } from "../../Engines/thinEngine";
@@ -117,7 +110,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         internalTexture.isCube = false;
         internalTexture.invertY = false;
         internalTexture._useSRGBBuffer = false;
-        internalTexture.format = this.depthDataFormat === "ushort" ? TEXTUREFORMAT_LUMINANCE_ALPHA : TEXTUREFORMAT_RGBA;
+        internalTexture.format = this.depthDataFormat === "ushort" ? TextureFormat.LUMINANCE_ALPHA : TextureFormat.RGBA;
         internalTexture.generateMipMaps = false;
         internalTexture.type = this.depthDataFormat === "ushort" ? TEXTURETYPE_UNSIGNED_SHORT : TEXTURETYPE_FLOAT;
         internalTexture.samplingMode = TEXTURE_NEAREST_LINEAR;

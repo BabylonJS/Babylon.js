@@ -9,7 +9,7 @@ import { CircleOfConfusionPostProcess } from "./circleOfConfusionPostProcess";
 import { DepthOfFieldBlurPostProcess } from "./depthOfFieldBlurPostProcess";
 import { DepthOfFieldMergePostProcess } from "./depthOfFieldMergePostProcess";
 import type { Scene } from "../scene";
-import { TEXTUREFORMAT_RED, TEXTUREFORMAT_RGBA } from "../Engines/constants";
+import { TextureFormat } from "../Engines/constants";
 
 /**
  * Specifies the level of max blur that should be applied when using the depth of field effect
@@ -109,7 +109,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
         // Use R-only formats if supported to store the circle of confusion values.
         // This should be more space and bandwidth efficient than using RGBA.
         const engine = scene.getEngine();
-        const circleOfConfusionTextureFormat = engine.isWebGPU || engine.version > 1 ? TEXTUREFORMAT_RED : TEXTUREFORMAT_RGBA;
+        const circleOfConfusionTextureFormat = engine.isWebGPU || engine.version > 1 ? TextureFormat.RED : TextureFormat.RGBA;
 
         // Circle of confusion value for each pixel is used to determine how much to blur that pixel
         this._circleOfConfusion = new CircleOfConfusionPostProcess(
@@ -165,7 +165,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
                 false,
                 pipelineTextureType,
                 blockCompilation,
-                i == 0 ? circleOfConfusionTextureFormat : TEXTUREFORMAT_RGBA
+                i == 0 ? circleOfConfusionTextureFormat : TextureFormat.RGBA
             );
             blurY.autoClear = false;
             ratio = 0.75 / Math.pow(2, i);

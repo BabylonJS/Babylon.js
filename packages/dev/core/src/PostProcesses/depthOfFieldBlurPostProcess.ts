@@ -6,7 +6,7 @@ import { Texture } from "../Materials/Textures/texture";
 import type { PostProcess, PostProcessOptions } from "./postProcess";
 import { BlurPostProcess } from "./blurPostProcess";
 import type { Scene } from "../scene";
-import { TEXTURETYPE_UNSIGNED_INT, TEXTUREFORMAT_RGBA, TEXTURE_BILINEAR_SAMPLINGMODE } from "../Engines/constants";
+import { TEXTURETYPE_UNSIGNED_INT, TextureFormat, TEXTURE_BILINEAR_SAMPLINGMODE } from "../Engines/constants";
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
@@ -47,7 +47,7 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
      * @param reusable If the post process can be reused on the same frame. (default: false)
      * @param textureType Type of textures used when performing the post process. (default: 0)
      * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
-     * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
+     * @param textureFormat Format of textures used when performing the post process. (default: TextureFormat.RGBA)
      */
     constructor(
         name: string,
@@ -63,7 +63,7 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
         reusable?: boolean,
         textureType = TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false,
-        textureFormat = TEXTUREFORMAT_RGBA
+        textureFormat = TextureFormat.RGBA
     ) {
         super(
             name,

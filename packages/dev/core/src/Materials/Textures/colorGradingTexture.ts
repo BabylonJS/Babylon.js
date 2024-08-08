@@ -5,7 +5,7 @@ import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import {
     DELAYLOADSTATE_NOTLOADED,
-    TEXTUREFORMAT_RGBA,
+    TextureFormat,
     TEXTURE_BILINEAR_SAMPLINGMODE,
     TEXTURETYPE_UNSIGNED_INT,
     TEXTURE_CLAMP_ADDRESSMODE,
@@ -101,9 +101,9 @@ export class ColorGradingTexture extends BaseTexture {
         const engine = this._getEngine()!;
         let texture: InternalTexture;
         if (!engine._features.support3DTextures) {
-            texture = engine.createRawTexture(null, 1, 1, TEXTUREFORMAT_RGBA, false, false, TEXTURE_BILINEAR_SAMPLINGMODE, null, TEXTURETYPE_UNSIGNED_INT);
+            texture = engine.createRawTexture(null, 1, 1, TextureFormat.RGBA, false, false, TEXTURE_BILINEAR_SAMPLINGMODE, null, TEXTURETYPE_UNSIGNED_INT);
         } else {
-            texture = engine.createRawTexture3D(null, 1, 1, 1, TEXTUREFORMAT_RGBA, false, false, TEXTURE_BILINEAR_SAMPLINGMODE, null, TEXTURETYPE_UNSIGNED_INT);
+            texture = engine.createRawTexture3D(null, 1, 1, 1, TextureFormat.RGBA, false, false, TEXTURE_BILINEAR_SAMPLINGMODE, null, TEXTURETYPE_UNSIGNED_INT);
         }
 
         this._texture = texture;
@@ -205,10 +205,10 @@ export class ColorGradingTexture extends BaseTexture {
 
             if (texture.is3D) {
                 texture.updateSize(size, size, size);
-                engine.updateRawTexture3D(texture, data, TEXTUREFORMAT_RGBA, false);
+                engine.updateRawTexture3D(texture, data, TextureFormat.RGBA, false);
             } else {
                 texture.updateSize(size * size, size);
-                engine.updateRawTexture(texture, data, TEXTUREFORMAT_RGBA, false);
+                engine.updateRawTexture(texture, data, TextureFormat.RGBA, false);
             }
 
             texture.isReady = true;

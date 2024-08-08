@@ -3,11 +3,10 @@ import { VertexBuffer } from "../Buffers/buffer";
 import type { SubMesh } from "../Meshes/subMesh";
 import type { Mesh } from "../Meshes/mesh";
 import {
-    TEXTUREFORMAT_DEPTH16,
+    TextureFormat,
     TEXTURETYPE_UNSIGNED_BYTE,
     TEXTURETYPE_FLOAT,
     TEXTURETYPE_HALF_FLOAT,
-    TEXTUREFORMAT_RGBA,
     TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV,
     TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV,
 } from "../Engines/constants";
@@ -379,13 +378,13 @@ export class GeometryBufferRenderer {
      * Creates a new G Buffer for the scene
      * @param scene The scene the buffer belongs to
      * @param ratioOrDimensions How big is the buffer related to the main canvas (default: 1). You can also directly pass a width and height for the generated textures
-     * @param depthFormat Format of the depth texture (default: Constants.TEXTUREFORMAT_DEPTH16)
+     * @param depthFormat Format of the depth texture (default: Constants.TextureFormat.DEPTH16)
      * @param textureTypesAndFormats The types and formats of textures to create as render targets. If not provided, all textures will be RGBA and float or half float, depending on the engine capabilities.
      */
     constructor(
         scene: Scene,
         ratioOrDimensions: number | { width: number; height: number } = 1,
-        depthFormat = TEXTUREFORMAT_DEPTH16,
+        depthFormat = TextureFormat.DEPTH16,
         textureTypesAndFormats?: { [key: number]: { textureType: number; textureFormat: number } }
     ) {
         this._scene = scene;
@@ -781,7 +780,7 @@ export class GeometryBufferRenderer {
                 textureFormats.push(typeAndFormat.textureFormat);
             } else {
                 textureTypes.push(type);
-                textureFormats.push(TEXTUREFORMAT_RGBA);
+                textureFormats.push(TextureFormat.RGBA);
             }
         }
 

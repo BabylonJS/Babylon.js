@@ -243,7 +243,7 @@ export class TexturePacker {
                 this.scene,
                 true, //Generate Mips
                 Texture.TRILINEAR_SAMPLINGMODE,
-                Engine.TEXTUREFORMAT_RGBA
+                Engine.TextureFormat.RGBA
             );
 
             const dtx = dt.getContext();

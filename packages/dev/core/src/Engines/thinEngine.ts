@@ -896,10 +896,10 @@ export class ThinEngine extends AbstractEngine {
             if (this._currentRenderTarget) {
                 const textureFormat = this._currentRenderTarget.texture?.format;
                 if (
-                    textureFormat === Constants.TEXTUREFORMAT_RED_INTEGER ||
-                    textureFormat === Constants.TEXTUREFORMAT_RG_INTEGER ||
-                    textureFormat === Constants.TEXTUREFORMAT_RGB_INTEGER ||
-                    textureFormat === Constants.TEXTUREFORMAT_RGBA_INTEGER
+                    textureFormat === Constants.TextureFormat.RED_INTEGER ||
+                    textureFormat === Constants.TextureFormat.RG_INTEGER ||
+                    textureFormat === Constants.TextureFormat.RGB_INTEGER ||
+                    textureFormat === Constants.TextureFormat.RGBA_INTEGER
                 ) {
                     const textureType = this._currentRenderTarget.texture?.type;
                     if (textureType === Constants.TEXTURETYPE_UNSIGNED_INTEGER || textureType === Constants.TEXTURETYPE_UNSIGNED_SHORT) {
@@ -2835,7 +2835,7 @@ export class ThinEngine extends AbstractEngine {
         let generateMipMaps = false;
         let type = Constants.TEXTURETYPE_UNSIGNED_INT;
         let samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
-        let format = Constants.TEXTUREFORMAT_RGBA;
+        let format = Constants.TextureFormat.RGBA;
         let useSRGBBuffer = false;
         let samples = 1;
         let label: string | undefined;
@@ -2843,7 +2843,7 @@ export class ThinEngine extends AbstractEngine {
             generateMipMaps = !!options.generateMipMaps;
             type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
             samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
-            format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;
+            format = options.format === undefined ? Constants.TextureFormat.RGBA : options.format;
             useSRGBBuffer = options.useSRGBBuffer === undefined ? false : options.useSRGBBuffer;
             samples = options.samples ?? 1;
             label = options.label;
@@ -3190,8 +3190,8 @@ export class ThinEngine extends AbstractEngine {
 
         if (texture._useSRGBBuffer) {
             switch (internalFormat) {
-                case Constants.TEXTUREFORMAT_COMPRESSED_RGB8_ETC2:
-                case Constants.TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL:
+                case Constants.TextureFormat.COMPRESSED_RGB8_ETC2:
+                case Constants.TextureFormat.COMPRESSED_RGB_ETC1_WEBGL:
                     // Note, if using ETC1 and sRGB is requested, this will use ETC2 if available.
                     if (this._caps.etc2) {
                         internalFormat = gl.COMPRESSED_SRGB8_ETC2;
@@ -3199,20 +3199,20 @@ export class ThinEngine extends AbstractEngine {
                         texture._useSRGBBuffer = false;
                     }
                     break;
-                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA8_ETC2_EAC:
+                case Constants.TextureFormat.COMPRESSED_RGBA8_ETC2_EAC:
                     if (this._caps.etc2) {
                         internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ETC2_EAC;
                     } else {
                         texture._useSRGBBuffer = false;
                     }
                     break;
-                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM:
+                case Constants.TextureFormat.COMPRESSED_RGBA_BPTC_UNORM:
                     internalFormat = gl.COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT;
                     break;
-                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4:
+                case Constants.TextureFormat.COMPRESSED_RGBA_ASTC_4x4:
                     internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR;
                     break;
-                case Constants.TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1:
+                case Constants.TextureFormat.COMPRESSED_RGB_S3TC_DXT1:
                     if (this._caps.s3tc_srgb) {
                         internalFormat = gl.COMPRESSED_SRGB_S3TC_DXT1_EXT;
                     } else {
@@ -3220,7 +3220,7 @@ export class ThinEngine extends AbstractEngine {
                         texture._useSRGBBuffer = false;
                     }
                     break;
-                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1:
+                case Constants.TextureFormat.COMPRESSED_RGBA_S3TC_DXT1:
                     if (this._caps.s3tc_srgb) {
                         internalFormat = gl.COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT;
                     } else {
@@ -3228,7 +3228,7 @@ export class ThinEngine extends AbstractEngine {
                         texture._useSRGBBuffer = false;
                     }
                     break;
-                case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5:
+                case Constants.TextureFormat.COMPRESSED_RGBA_S3TC_DXT5:
                     if (this._caps.s3tc_srgb) {
                         internalFormat = gl.COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT;
                     } else {
@@ -3409,7 +3409,7 @@ export class ThinEngine extends AbstractEngine {
         texture.isReady = true;
         texture.type = texture.type !== -1 ? texture.type : Constants.TEXTURETYPE_UNSIGNED_BYTE;
         texture.format =
-            texture.format !== -1 ? texture.format : (format ?? (extension === ".jpg" && !texture._useSRGBBuffer ? Constants.TEXTUREFORMAT_RGB : Constants.TEXTUREFORMAT_RGBA));
+            texture.format !== -1 ? texture.format : (format ?? (extension === ".jpg" && !texture._useSRGBBuffer ? Constants.TextureFormat.RGB : Constants.TextureFormat.RGBA));
 
         if (
             processFunction(potWidth, potHeight, img, extension, texture, () => {
@@ -4085,41 +4085,41 @@ export class ThinEngine extends AbstractEngine {
         let internalFormat: GLenum = useSRGBBuffer ? this._glSRGBExtensionValues.SRGB8_ALPHA8 : this._gl.RGBA;
 
         switch (format) {
-            case Constants.TEXTUREFORMAT_ALPHA:
+            case Constants.TextureFormat.ALPHA:
                 internalFormat = this._gl.ALPHA;
                 break;
-            case Constants.TEXTUREFORMAT_LUMINANCE:
+            case Constants.TextureFormat.LUMINANCE:
                 internalFormat = this._gl.LUMINANCE;
                 break;
-            case Constants.TEXTUREFORMAT_LUMINANCE_ALPHA:
+            case Constants.TextureFormat.LUMINANCE_ALPHA:
                 internalFormat = this._gl.LUMINANCE_ALPHA;
                 break;
-            case Constants.TEXTUREFORMAT_RED:
+            case Constants.TextureFormat.RED:
                 internalFormat = this._gl.RED;
                 break;
-            case Constants.TEXTUREFORMAT_RG:
+            case Constants.TextureFormat.RG:
                 internalFormat = this._gl.RG;
                 break;
-            case Constants.TEXTUREFORMAT_RGB:
+            case Constants.TextureFormat.RGB:
                 internalFormat = useSRGBBuffer ? this._glSRGBExtensionValues.SRGB : this._gl.RGB;
                 break;
-            case Constants.TEXTUREFORMAT_RGBA:
+            case Constants.TextureFormat.RGBA:
                 internalFormat = useSRGBBuffer ? this._glSRGBExtensionValues.SRGB8_ALPHA8 : this._gl.RGBA;
                 break;
         }
 
         if (this._webGLVersion > 1) {
             switch (format) {
-                case Constants.TEXTUREFORMAT_RED_INTEGER:
+                case Constants.TextureFormat.RED_INTEGER:
                     internalFormat = this._gl.RED_INTEGER;
                     break;
-                case Constants.TEXTUREFORMAT_RG_INTEGER:
+                case Constants.TextureFormat.RG_INTEGER:
                     internalFormat = this._gl.RG_INTEGER;
                     break;
-                case Constants.TEXTUREFORMAT_RGB_INTEGER:
+                case Constants.TextureFormat.RGB_INTEGER:
                     internalFormat = this._gl.RGB_INTEGER;
                     break;
-                case Constants.TEXTUREFORMAT_RGBA_INTEGER:
+                case Constants.TextureFormat.RGBA_INTEGER:
                     internalFormat = this._gl.RGBA_INTEGER;
                     break;
             }
@@ -4135,13 +4135,13 @@ export class ThinEngine extends AbstractEngine {
         if (this._webGLVersion === 1) {
             if (format !== undefined) {
                 switch (format) {
-                    case Constants.TEXTUREFORMAT_ALPHA:
+                    case Constants.TextureFormat.ALPHA:
                         return this._gl.ALPHA;
-                    case Constants.TEXTUREFORMAT_LUMINANCE:
+                    case Constants.TextureFormat.LUMINANCE:
                         return this._gl.LUMINANCE;
-                    case Constants.TEXTUREFORMAT_LUMINANCE_ALPHA:
+                    case Constants.TextureFormat.LUMINANCE_ALPHA:
                         return this._gl.LUMINANCE_ALPHA;
-                    case Constants.TEXTUREFORMAT_RGB:
+                    case Constants.TextureFormat.RGB:
                         return useSRGBBuffer ? this._glSRGBExtensionValues.SRGB : this._gl.RGB;
                 }
             }
@@ -4151,124 +4151,124 @@ export class ThinEngine extends AbstractEngine {
         switch (type) {
             case Constants.TEXTURETYPE_BYTE:
                 switch (format) {
-                    case Constants.TEXTUREFORMAT_RED:
+                    case Constants.TextureFormat.RED:
                         return this._gl.R8_SNORM;
-                    case Constants.TEXTUREFORMAT_RG:
+                    case Constants.TextureFormat.RG:
                         return this._gl.RG8_SNORM;
-                    case Constants.TEXTUREFORMAT_RGB:
+                    case Constants.TextureFormat.RGB:
                         return this._gl.RGB8_SNORM;
-                    case Constants.TEXTUREFORMAT_RED_INTEGER:
+                    case Constants.TextureFormat.RED_INTEGER:
                         return this._gl.R8I;
-                    case Constants.TEXTUREFORMAT_RG_INTEGER:
+                    case Constants.TextureFormat.RG_INTEGER:
                         return this._gl.RG8I;
-                    case Constants.TEXTUREFORMAT_RGB_INTEGER:
+                    case Constants.TextureFormat.RGB_INTEGER:
                         return this._gl.RGB8I;
-                    case Constants.TEXTUREFORMAT_RGBA_INTEGER:
+                    case Constants.TextureFormat.RGBA_INTEGER:
                         return this._gl.RGBA8I;
                     default:
                         return this._gl.RGBA8_SNORM;
                 }
             case Constants.TEXTURETYPE_UNSIGNED_BYTE:
                 switch (format) {
-                    case Constants.TEXTUREFORMAT_RED:
+                    case Constants.TextureFormat.RED:
                         return this._gl.R8;
-                    case Constants.TEXTUREFORMAT_RG:
+                    case Constants.TextureFormat.RG:
                         return this._gl.RG8;
-                    case Constants.TEXTUREFORMAT_RGB:
+                    case Constants.TextureFormat.RGB:
                         return useSRGBBuffer ? this._glSRGBExtensionValues.SRGB8 : this._gl.RGB8; // By default. Other possibilities are RGB565, SRGB8.
-                    case Constants.TEXTUREFORMAT_RGBA:
+                    case Constants.TextureFormat.RGBA:
                         return useSRGBBuffer ? this._glSRGBExtensionValues.SRGB8_ALPHA8 : this._gl.RGBA8; // By default. Other possibilities are RGB5_A1, RGBA4, SRGB8_ALPHA8.
-                    case Constants.TEXTUREFORMAT_RED_INTEGER:
+                    case Constants.TextureFormat.RED_INTEGER:
                         return this._gl.R8UI;
-                    case Constants.TEXTUREFORMAT_RG_INTEGER:
+                    case Constants.TextureFormat.RG_INTEGER:
                         return this._gl.RG8UI;
-                    case Constants.TEXTUREFORMAT_RGB_INTEGER:
+                    case Constants.TextureFormat.RGB_INTEGER:
                         return this._gl.RGB8UI;
-                    case Constants.TEXTUREFORMAT_RGBA_INTEGER:
+                    case Constants.TextureFormat.RGBA_INTEGER:
                         return this._gl.RGBA8UI;
-                    case Constants.TEXTUREFORMAT_ALPHA:
+                    case Constants.TextureFormat.ALPHA:
                         return this._gl.ALPHA;
-                    case Constants.TEXTUREFORMAT_LUMINANCE:
+                    case Constants.TextureFormat.LUMINANCE:
                         return this._gl.LUMINANCE;
-                    case Constants.TEXTUREFORMAT_LUMINANCE_ALPHA:
+                    case Constants.TextureFormat.LUMINANCE_ALPHA:
                         return this._gl.LUMINANCE_ALPHA;
                     default:
                         return this._gl.RGBA8;
                 }
             case Constants.TEXTURETYPE_SHORT:
                 switch (format) {
-                    case Constants.TEXTUREFORMAT_RED_INTEGER:
+                    case Constants.TextureFormat.RED_INTEGER:
                         return this._gl.R16I;
-                    case Constants.TEXTUREFORMAT_RG_INTEGER:
+                    case Constants.TextureFormat.RG_INTEGER:
                         return this._gl.RG16I;
-                    case Constants.TEXTUREFORMAT_RGB_INTEGER:
+                    case Constants.TextureFormat.RGB_INTEGER:
                         return this._gl.RGB16I;
-                    case Constants.TEXTUREFORMAT_RGBA_INTEGER:
+                    case Constants.TextureFormat.RGBA_INTEGER:
                         return this._gl.RGBA16I;
                     default:
                         return this._gl.RGBA16I;
                 }
             case Constants.TEXTURETYPE_UNSIGNED_SHORT:
                 switch (format) {
-                    case Constants.TEXTUREFORMAT_RED_INTEGER:
+                    case Constants.TextureFormat.RED_INTEGER:
                         return this._gl.R16UI;
-                    case Constants.TEXTUREFORMAT_RG_INTEGER:
+                    case Constants.TextureFormat.RG_INTEGER:
                         return this._gl.RG16UI;
-                    case Constants.TEXTUREFORMAT_RGB_INTEGER:
+                    case Constants.TextureFormat.RGB_INTEGER:
                         return this._gl.RGB16UI;
-                    case Constants.TEXTUREFORMAT_RGBA_INTEGER:
+                    case Constants.TextureFormat.RGBA_INTEGER:
                         return this._gl.RGBA16UI;
                     default:
                         return this._gl.RGBA16UI;
                 }
             case Constants.TEXTURETYPE_INT:
                 switch (format) {
-                    case Constants.TEXTUREFORMAT_RED_INTEGER:
+                    case Constants.TextureFormat.RED_INTEGER:
                         return this._gl.R32I;
-                    case Constants.TEXTUREFORMAT_RG_INTEGER:
+                    case Constants.TextureFormat.RG_INTEGER:
                         return this._gl.RG32I;
-                    case Constants.TEXTUREFORMAT_RGB_INTEGER:
+                    case Constants.TextureFormat.RGB_INTEGER:
                         return this._gl.RGB32I;
-                    case Constants.TEXTUREFORMAT_RGBA_INTEGER:
+                    case Constants.TextureFormat.RGBA_INTEGER:
                         return this._gl.RGBA32I;
                     default:
                         return this._gl.RGBA32I;
                 }
             case Constants.TEXTURETYPE_UNSIGNED_INTEGER: // Refers to UNSIGNED_INT
                 switch (format) {
-                    case Constants.TEXTUREFORMAT_RED_INTEGER:
+                    case Constants.TextureFormat.RED_INTEGER:
                         return this._gl.R32UI;
-                    case Constants.TEXTUREFORMAT_RG_INTEGER:
+                    case Constants.TextureFormat.RG_INTEGER:
                         return this._gl.RG32UI;
-                    case Constants.TEXTUREFORMAT_RGB_INTEGER:
+                    case Constants.TextureFormat.RGB_INTEGER:
                         return this._gl.RGB32UI;
-                    case Constants.TEXTUREFORMAT_RGBA_INTEGER:
+                    case Constants.TextureFormat.RGBA_INTEGER:
                         return this._gl.RGBA32UI;
                     default:
                         return this._gl.RGBA32UI;
                 }
             case Constants.TEXTURETYPE_FLOAT:
                 switch (format) {
-                    case Constants.TEXTUREFORMAT_RED:
+                    case Constants.TextureFormat.RED:
                         return this._gl.R32F; // By default. Other possibility is R16F.
-                    case Constants.TEXTUREFORMAT_RG:
+                    case Constants.TextureFormat.RG:
                         return this._gl.RG32F; // By default. Other possibility is RG16F.
-                    case Constants.TEXTUREFORMAT_RGB:
+                    case Constants.TextureFormat.RGB:
                         return this._gl.RGB32F; // By default. Other possibilities are RGB16F, R11F_G11F_B10F, RGB9_E5.
-                    case Constants.TEXTUREFORMAT_RGBA:
+                    case Constants.TextureFormat.RGBA:
                         return this._gl.RGBA32F; // By default. Other possibility is RGBA16F.
                     default:
                         return this._gl.RGBA32F;
                 }
             case Constants.TEXTURETYPE_HALF_FLOAT:
                 switch (format) {
-                    case Constants.TEXTUREFORMAT_RED:
+                    case Constants.TextureFormat.RED:
                         return this._gl.R16F;
-                    case Constants.TEXTUREFORMAT_RG:
+                    case Constants.TextureFormat.RG:
                         return this._gl.RG16F;
-                    case Constants.TEXTUREFORMAT_RGB:
+                    case Constants.TextureFormat.RGB:
                         return this._gl.RGB16F; // By default. Other possibilities are R11F_G11F_B10F, RGB9_E5.
-                    case Constants.TEXTUREFORMAT_RGBA:
+                    case Constants.TextureFormat.RGBA:
                         return this._gl.RGBA16F;
                     default:
                         return this._gl.RGBA16F;
@@ -4285,9 +4285,9 @@ export class ThinEngine extends AbstractEngine {
                 return this._gl.RGB5_A1;
             case Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV:
                 switch (format) {
-                    case Constants.TEXTUREFORMAT_RGBA:
+                    case Constants.TextureFormat.RGBA:
                         return this._gl.RGB10_A2; // By default. Other possibility is RGB5_A1.
-                    case Constants.TEXTUREFORMAT_RGBA_INTEGER:
+                    case Constants.TextureFormat.RGBA_INTEGER:
                         return this._gl.RGB10_A2UI;
                     default:
                         return this._gl.RGB10_A2;

@@ -139,93 +139,183 @@ export const TEXTURE_MIRROR_ADDRESSMODE = 2;
 /** Flag to create a storage texture */
 export const TEXTURE_CREATIONFLAG_STORAGE = 1;
 
-/** ALPHA */
+/** Texture formats */
+export const enum TextureFormat {
+    /** ALPHA */
+    ALPHA = 0,
+    /** LUMINANCE */
+    LUMINANCE = 1,
+    /** LUMINANCE_ALPHA */
+    LUMINANCE_ALPHA = 2,
+    /** RGB */
+    RGB = 4,
+    /** RGBA */
+    RGBA = 5,
+    /** RED */
+    RED = 6,
+    /** RED (2nd reference) */
+    R = 6,
+    /** RG */
+    RG = 7,
+    /** RED_INTEGER */
+    RED_INTEGER = 8,
+    /** RED_INTEGER (2nd reference) */
+    R_INTEGER = 8,
+    /** RG_INTEGER */
+    RG_INTEGER = 9,
+    /** RGB_INTEGER */
+    RGB_INTEGER = 10,
+    /** RGBA_INTEGER */
+    RGBA_INTEGER = 11,
+    /** BGRA */
+    BGRA = 12,
+    /** Depth 24 bits + Stencil 8 bits */
+    DEPTH24_STENCIL8 = 13,
+    /** Depth 32 bits float */
+    DEPTH32_FLOAT = 14,
+    /** Depth 16 bits */
+    DEPTH16 = 15,
+    /** Depth 24 bits */
+    DEPTH24 = 16,
+    /** Depth 24 bits unorm + Stencil 8 bits */
+    DEPTH24UNORM_STENCIL8 = 17,
+    /** Depth 32 bits float + Stencil 8 bits */
+    DEPTH32FLOAT_STENCIL8 = 18,
+    /** Stencil 8 bits */
+    STENCIL8 = 19,
+    /** Compressed BC7 */
+    COMPRESSED_RGBA_BPTC_UNORM = 36492,
+    /** Compressed BC7 (SRGB) */
+    COMPRESSED_SRGB_ALPHA_BPTC_UNORM = 36493,
+    /** Compressed BC6 unsigned float */
+    COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT = 36495,
+    /** Compressed BC6 signed float */
+    COMPRESSED_RGB_BPTC_SIGNED_FLOAT = 36494,
+    /** Compressed BC3 */
+    COMPRESSED_RGBA_S3TC_DXT5 = 33779,
+    /** Compressed BC3 (SRGB) */
+    COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT = 35919,
+    /** Compressed BC2 */
+    COMPRESSED_RGBA_S3TC_DXT3 = 33778,
+    /** Compressed BC2 (SRGB) */
+    COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT = 35918,
+    /** Compressed BC1 (RGBA) */
+    COMPRESSED_RGBA_S3TC_DXT1 = 33777,
+    /** Compressed BC1 (RGB) */
+    COMPRESSED_RGB_S3TC_DXT1 = 33776,
+    /** Compressed BC1 (SRGB+A) */
+    COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT = 35917,
+    /** Compressed BC1 (SRGB) */
+    COMPRESSED_SRGB_S3TC_DXT1_EXT = 35916,
+    /** Compressed ASTC 4x4 */
+    COMPRESSED_RGBA_ASTC_4x4 = 37808,
+    /** Compressed ASTC 4x4 (SRGB) */
+    COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR = 37840,
+    /** Compressed ETC1 (RGB) */
+    COMPRESSED_RGB_ETC1_WEBGL = 36196,
+    /** Compressed ETC2 (RGB) */
+    COMPRESSED_RGB8_ETC2 = 37492,
+    /** Compressed ETC2 (SRGB) */
+    COMPRESSED_SRGB8_ETC2 = 37493,
+    /** Compressed ETC2 (RGB+A1) */
+    COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2 = 37494,
+    /** Compressed ETC2 (SRGB+A1)*/
+    COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2 = 37495,
+    /** Compressed ETC2 (RGB+A) */
+    COMPRESSED_RGBA8_ETC2_EAC = 37496,
+    /** Compressed ETC2 (SRGB+1) */
+    COMPRESSED_SRGB8_ALPHA8_ETC2_EAC = 37497,
+    /** UNDEFINED */
+    UNDEFINED = 0xffffffff,
+}
+
+/** ALPHA @deprecated use TextureFormat */
 export const TEXTUREFORMAT_ALPHA = 0;
-/** LUMINANCE */
+/** LUMINANCE @deprecated use TextureFormat */
 export const TEXTUREFORMAT_LUMINANCE = 1;
-/** LUMINANCE_ALPHA */
+/** LUMINANCE_ALPHA @deprecated use TextureFormat */
 export const TEXTUREFORMAT_LUMINANCE_ALPHA = 2;
-/** RGB */
+/** RGB @deprecated use TextureFormat */
 export const TEXTUREFORMAT_RGB = 4;
-/** RGBA */
+/** RGBA @deprecated use TextureFormat */
 export const TEXTUREFORMAT_RGBA = 5;
-/** RED */
+/** RED @deprecated use TextureFormat */
 export const TEXTUREFORMAT_RED = 6;
-/** RED (2nd reference) */
+/** RED (2nd reference) @deprecated use TextureFormat */
 export const TEXTUREFORMAT_R = 6;
-/** RG */
+/** RG @deprecated use TextureFormat */
 export const TEXTUREFORMAT_RG = 7;
-/** RED_INTEGER */
+/** RED_INTEGER @deprecated use TextureFormat */
 export const TEXTUREFORMAT_RED_INTEGER = 8;
-/** RED_INTEGER (2nd reference) */
+/** RED_INTEGER (2nd reference) @deprecated use TextureFormat */
 export const TEXTUREFORMAT_R_INTEGER = 8;
-/** RG_INTEGER */
+/** RG_INTEGER @deprecated use TextureFormat */
 export const TEXTUREFORMAT_RG_INTEGER = 9;
-/** RGB_INTEGER */
+/** RGB_INTEGER @deprecated use TextureFormat */
 export const TEXTUREFORMAT_RGB_INTEGER = 10;
-/** RGBA_INTEGER */
+/** RGBA_INTEGER @deprecated use TextureFormat */
 export const TEXTUREFORMAT_RGBA_INTEGER = 11;
-/** BGRA */
+/** BGRA @deprecated use TextureFormat */
 export const TEXTUREFORMAT_BGRA = 12;
 
-/** Depth 24 bits + Stencil 8 bits */
+/** Depth 24 bits + Stencil 8 bits @deprecated use TextureFormat */
 export const TEXTUREFORMAT_DEPTH24_STENCIL8 = 13;
-/** Depth 32 bits float */
+/** Depth 32 bits float @deprecated use TextureFormat */
 export const TEXTUREFORMAT_DEPTH32_FLOAT = 14;
-/** Depth 16 bits */
+/** Depth 16 bits @deprecated use TextureFormat */
 export const TEXTUREFORMAT_DEPTH16 = 15;
-/** Depth 24 bits */
+/** Depth 24 bits @deprecated use TextureFormat */
 export const TEXTUREFORMAT_DEPTH24 = 16;
-/** Depth 24 bits unorm + Stencil 8 bits */
+/** Depth 24 bits unorm + Stencil 8 bits @deprecated use TextureFormat */
 export const TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 = 17;
-/** Depth 32 bits float + Stencil 8 bits */
+/** Depth 32 bits float + Stencil 8 bits @deprecated use TextureFormat */
 export const TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8 = 18;
-/** Stencil 8 bits */
+/** Stencil 8 bits @deprecated use TextureFormat */
 export const TEXTUREFORMAT_STENCIL8 = 19;
-/** UNDEFINED */
+/** UNDEFINED @deprecated use TextureFormat */
 export const TEXTUREFORMAT_UNDEFINED = 0xffffffff;
 
-/** Compressed BC7 */
+/** Compressed BC7 @deprecated use TextureFormat */
 export const TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM = 36492;
-/** Compressed BC7 (SRGB) */
+/** Compressed BC7 (SRGB) @deprecated use TextureFormat */
 export const TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_BPTC_UNORM = 36493;
-/** Compressed BC6 unsigned float */
+/** Compressed BC6 unsigned float @deprecated use TextureFormat */
 export const TEXTUREFORMAT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT = 36495;
-/** Compressed BC6 signed float */
+/** Compressed BC6 signed float @deprecated use TextureFormat */
 export const TEXTUREFORMAT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT = 36494;
-/** Compressed BC3 */
+/** Compressed BC3 @deprecated use TextureFormat */
 export const TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5 = 33779;
-/** Compressed BC3 (SRGB) */
+/** Compressed BC3 (SRGB) @deprecated use TextureFormat */
 export const TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT = 35919;
-/** Compressed BC2 */
+/** Compressed BC2 @deprecated use TextureFormat */
 export const TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3 = 33778;
-/** Compressed BC2 (SRGB) */
+/** Compressed BC2 (SRGB) @deprecated use TextureFormat */
 export const TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT = 35918;
-/** Compressed BC1 (RGBA) */
+/** Compressed BC1 (RGBA) @deprecated use TextureFormat */
 export const TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1 = 33777;
-/** Compressed BC1 (RGB) */
+/** Compressed BC1 (RGB) @deprecated use TextureFormat */
 export const TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1 = 33776;
-/** Compressed BC1 (SRGB+A) */
+/** Compressed BC1 (SRGB+A) @deprecated use TextureFormat */
 export const TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT = 35917;
-/** Compressed BC1 (SRGB) */
+/** Compressed BC1 (SRGB) @deprecated use TextureFormat */
 export const TEXTUREFORMAT_COMPRESSED_SRGB_S3TC_DXT1_EXT = 35916;
-/** Compressed ASTC 4x4 */
+/** Compressed ASTC 4x4 @deprecated use TextureFormat */
 export const TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4 = 37808;
-/** Compressed ASTC 4x4 (SRGB) */
+/** Compressed ASTC 4x4 (SRGB) @deprecated use TextureFormat */
 export const TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR = 37840;
-/** Compressed ETC1 (RGB) */
+/** Compressed ETC1 (RGB) @deprecated use TextureFormat */
 export const TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL = 36196;
-/** Compressed ETC2 (RGB) */
+/** Compressed ETC2 (RGB) @deprecated use TextureFormat */
 export const TEXTUREFORMAT_COMPRESSED_RGB8_ETC2 = 37492;
-/** Compressed ETC2 (SRGB) */
+/** Compressed ETC2 (SRGB) @deprecated use TextureFormat */
 export const TEXTUREFORMAT_COMPRESSED_SRGB8_ETC2 = 37493;
-/** Compressed ETC2 (RGB+A1) */
+/** Compressed ETC2 (RGB+A1) @deprecated use TextureFormat */
 export const TEXTUREFORMAT_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2 = 37494;
-/** Compressed ETC2 (SRGB+A1)*/
+/** Compressed ETC2 (SRGB+A1) @deprecated use TextureFormat */
 export const TEXTUREFORMAT_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2 = 37495;
-/** Compressed ETC2 (RGB+A) */
+/** Compressed ETC2 (RGB+A) @deprecated use TextureFormat */
 export const TEXTUREFORMAT_COMPRESSED_RGBA8_ETC2_EAC = 37496;
-/** Compressed ETC2 (SRGB+1) */
+/** Compressed ETC2 (SRGB+1) @deprecated use TextureFormat */
 export const TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC = 37497;
 
 /** UNSIGNED_BYTE */

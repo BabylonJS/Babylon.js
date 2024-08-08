@@ -6,7 +6,7 @@ import type { Scene } from "../../scene";
 import { Matrix } from "../../Maths/math.vector";
 import { EngineStore } from "../../Engines/engineStore";
 import type { InternalTexture } from "../../Materials/Textures/internalTexture";
-import { MATERIAL_TextureDirtyFlag, TEXTURE_EXPLICIT_MODE, TEXTURE_WRAP_ADDRESSMODE, TEXTURETYPE_UNSIGNED_INT, TEXTUREFORMAT_RGBA } from "../../Engines/constants";
+import { MATERIAL_TextureDirtyFlag, TEXTURE_EXPLICIT_MODE, TEXTURE_WRAP_ADDRESSMODE, TEXTURETYPE_UNSIGNED_INT, TextureFormat } from "../../Engines/constants";
 import type { IAnimatable } from "../../Animations/animatable.interface";
 import { RandomGUID } from "../../Misc/guid";
 
@@ -683,10 +683,10 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
      */
     public get textureFormat(): number {
         if (!this._texture) {
-            return TEXTUREFORMAT_RGBA;
+            return TextureFormat.RGBA;
         }
 
-        return this._texture.format !== undefined ? this._texture.format : TEXTUREFORMAT_RGBA;
+        return this._texture.format !== undefined ? this._texture.format : TextureFormat.RGBA;
     }
 
     /**

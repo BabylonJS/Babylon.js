@@ -9,7 +9,7 @@ import type { Viewport } from "../../Maths/math.viewport";
 import type { Scene } from "../../scene";
 import { Matrix } from "../../Maths/math.vector";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
-import { TEXTURETYPE_HALF_FLOAT, TEXTUREFORMAT_RGBA } from "../../Engines/constants";
+import { TEXTURETYPE_HALF_FLOAT, TextureFormat } from "../../Engines/constants";
 import { ShaderMaterial } from "../../Materials/shaderMaterial";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { Material } from "../../Materials/material";
@@ -45,7 +45,7 @@ export class XRSpaceWarpRenderTarget extends RenderTargetTexture {
         (this._renderTarget as WebGLRenderTargetWrapper)._disposeOnlyFramebuffers = true;
         this._texture = this._renderTarget.texture!;
         this._texture.isMultiview = true;
-        this._texture.format = TEXTUREFORMAT_RGBA;
+        this._texture.format = TextureFormat.RGBA;
 
         if (scene) {
             this._velocityMaterial = new ShaderMaterial(

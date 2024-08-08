@@ -14,14 +14,7 @@ import { Texture } from "../../Materials/Textures/texture";
 import { PostProcessManager } from "../../PostProcesses/postProcessManager";
 import type { PostProcess } from "../../PostProcesses/postProcess";
 import { RenderingManager } from "../../Rendering/renderingManager";
-import {
-    MATERIAL_TextureDirtyFlag,
-    TEXTURETYPE_UNSIGNED_INT,
-    TEXTUREFORMAT_RGBA,
-    TEXTURETYPE_UNSIGNED_BYTE,
-    TEXTUREFORMAT_DEPTH32_FLOAT,
-    SNAPSHOTRENDERING_FAST,
-} from "../../Engines/constants";
+import { MATERIAL_TextureDirtyFlag, TEXTURETYPE_UNSIGNED_INT, TextureFormat, TEXTURETYPE_UNSIGNED_BYTE, SNAPSHOTRENDERING_FAST } from "../../Engines/constants";
 import type { IRenderTargetTexture, RenderTargetWrapper } from "../../Engines/renderTargetWrapper";
 
 import "../../Engines/Extensions/engine.renderTarget";
@@ -507,7 +500,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         generateDepthBuffer = true,
         generateStencilBuffer = false,
         isMulti = false,
-        format = TEXTUREFORMAT_RGBA,
+        format = TextureFormat.RGBA,
         delayAllocation = false,
         samples?: number,
         creationFlags?: number,
@@ -526,7 +519,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             generateDepthBuffer = options.generateDepthBuffer ?? true;
             generateStencilBuffer = !!options.generateStencilBuffer;
             isMulti = !!options.isMulti;
-            format = options.format ?? TEXTUREFORMAT_RGBA;
+            format = options.format ?? TextureFormat.RGBA;
             delayAllocation = !!options.delayAllocation;
             samples = options.samples;
             creationFlags = options.creationFlags;
@@ -613,7 +606,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * @param bilinearFiltering Specifies whether or not bilinear filtering is enable on the texture (default: true)
      * @param generateStencil Specifies whether or not a stencil should be allocated in the texture (default: false)
      * @param samples sample count of the depth/stencil texture (default: 1)
-     * @param format format of the depth texture (default: Constants.TEXTUREFORMAT_DEPTH32_FLOAT)
+     * @param format format of the depth texture (default: Constants.TextureFormat.DEPTH32_FLOAT)
      * @param label defines the label of the texture (for debugging purpose)
      */
     public createDepthStencilTexture(
@@ -621,7 +614,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         bilinearFiltering: boolean = true,
         generateStencil: boolean = false,
         samples: number = 1,
-        format: number = TEXTUREFORMAT_DEPTH32_FLOAT,
+        format: number = TextureFormat.DEPTH32_FLOAT,
         label?: string
     ): void {
         this._renderTarget?.createDepthStencilTexture(comparisonFunction, bilinearFiltering, generateStencil, samples, format, label);

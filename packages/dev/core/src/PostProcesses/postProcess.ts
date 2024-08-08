@@ -10,7 +10,7 @@ import {
     SCALEMODE_FLOOR,
     TEXTURE_NEAREST_SAMPLINGMODE,
     TEXTURETYPE_UNSIGNED_INT,
-    TEXTUREFORMAT_RGBA,
+    TextureFormat,
     TEXTURE_NEAREST_LINEAR,
     TEXTURE_NEAREST_NEAREST,
     TEXTURE_LINEAR_LINEAR,
@@ -208,7 +208,7 @@ export type PostProcessOptions = {
      */
     blockCompilation?: boolean;
     /**
-     * Format of the texture created for this post process (default: TEXTUREFORMAT_RGBA)
+     * Format of the texture created for this post process (default: TextureFormat.RGBA)
      */
     textureFormat?: number;
     /**
@@ -595,7 +595,7 @@ export class PostProcess {
      * @param vertexUrl The url of the vertex shader to be used. (default: "postprocess")
      * @param indexParameters The index parameters to be used for babylons include syntax "#include<kernelBlurVaryingDeclaration>[0..varyingCount]". (default: undefined) See usage in babylon.blurPostProcess.ts and kernelBlur.vertex.fx
      * @param blockCompilation If the shader should not be compiled immediatly. (default: false)
-     * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
+     * @param textureFormat Format of textures used when performing the post process. (default: TextureFormat.RGBA)
      * @param shaderLanguage The shader language of the shader. (default: GLSL)
      */
     constructor(
@@ -633,7 +633,7 @@ export class PostProcess {
         vertexUrl: string = "postprocess",
         indexParameters?: any,
         blockCompilation = false,
-        textureFormat = TEXTUREFORMAT_RGBA,
+        textureFormat = TextureFormat.RGBA,
         shaderLanguage = ShaderLanguage.GLSL
     ) {
         this.name = name;
@@ -653,7 +653,7 @@ export class PostProcess {
             vertexUrl = options.vertexUrl ?? "postprocess";
             indexParameters = options.indexParameters;
             blockCompilation = options.blockCompilation ?? false;
-            textureFormat = options.textureFormat ?? TEXTUREFORMAT_RGBA;
+            textureFormat = options.textureFormat ?? TextureFormat.RGBA;
             shaderLanguage = options.shaderLanguage ?? ShaderLanguage.GLSL;
             uniformBuffers = options.uniformBuffers ?? null;
         } else if (_size) {

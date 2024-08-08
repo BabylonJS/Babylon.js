@@ -34,7 +34,7 @@ import {
     LESS,
     LEQUAL,
     ALPHA_DISABLE,
-    TEXTUREFORMAT_RGBA,
+    TextureFormat,
     TEXTURETYPE_UNSIGNED_INT,
     TEXTURE_TRILINEAR_SAMPLINGMODE,
     TEXTURETYPE_FLOAT,
@@ -1649,7 +1649,7 @@ export class NativeEngine extends Engine {
         // Worst case is getting a crash/assert.
         width = Math.max(width, 1);
         height = Math.max(height, 1);
-        return this.createRawTexture(new Uint8Array(width * height * 4), width, height, TEXTUREFORMAT_RGBA, false, false, samplingMode);
+        return this.createRawTexture(new Uint8Array(width * height * 4), width, height, TextureFormat.RGBA, false, false, samplingMode);
     }
 
     public override createVideoElement(constraints: MediaTrackConstraints): any {
@@ -2149,7 +2149,7 @@ export class NativeEngine extends Engine {
                 texture._lodGenerationScale = specularInfo.lodGenerationScale;
                 const imageData = CreateImageDataArrayBufferViews(data, info);
 
-                texture.format = TEXTUREFORMAT_RGBA;
+                texture.format = TextureFormat.RGBA;
                 texture.type = TEXTURETYPE_UNSIGNED_INT;
                 texture.generateMipMaps = true;
                 texture.getEngine().updateTextureSamplingMode(Texture.TRILINEAR_SAMPLINGMODE, texture);
@@ -2250,7 +2250,7 @@ export class NativeEngine extends Engine {
         let generateMipMaps = false;
         let type = TEXTURETYPE_UNSIGNED_INT;
         let samplingMode = TEXTURE_TRILINEAR_SAMPLINGMODE;
-        let format = TEXTUREFORMAT_RGBA;
+        let format = TextureFormat.RGBA;
         let useSRGBBuffer = false;
         let samples = 1;
         let label: string | undefined;
@@ -2258,7 +2258,7 @@ export class NativeEngine extends Engine {
             generateMipMaps = !!options.generateMipMaps;
             type = options.type === undefined ? TEXTURETYPE_UNSIGNED_INT : options.type;
             samplingMode = options.samplingMode === undefined ? TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
-            format = options.format === undefined ? TEXTUREFORMAT_RGBA : options.format;
+            format = options.format === undefined ? TextureFormat.RGBA : options.format;
             useSRGBBuffer = options.useSRGBBuffer === undefined ? false : options.useSRGBBuffer;
             samples = options.samples ?? 1;
             label = options.label;

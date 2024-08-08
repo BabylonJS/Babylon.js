@@ -8,7 +8,7 @@ import type { ISceneComponent } from "core/sceneComponent";
 import { SceneComponentConstants } from "core/sceneComponent";
 import type { SmartArrayNoDuplicate } from "core/Misc/smartArray";
 import type { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
-import { TEXTUREFORMAT_DEPTH24_STENCIL8, TEXTUREFORMAT_DEPTH32_FLOAT } from "core/Engines/constants";
+import { TextureFormat } from "core/Engines/constants";
 import type { Buffer } from "core/Buffers/buffer";
 
 import type { FluidRenderingObject } from "./fluidRenderingObject";
@@ -428,7 +428,7 @@ export class FluidRenderer {
                         true,
                         this._engine.isStencilEnable,
                         targetRenderers[0].samples,
-                        this._engine.isStencilEnable ? TEXTUREFORMAT_DEPTH24_STENCIL8 : TEXTUREFORMAT_DEPTH32_FLOAT,
+                        this._engine.isStencilEnable ? TextureFormat.DEPTH24_STENCIL8 : TextureFormat.DEPTH32_FLOAT,
                         `PostProcessRTTDepthStencil-${firstPostProcess.name}`
                     );
                 }

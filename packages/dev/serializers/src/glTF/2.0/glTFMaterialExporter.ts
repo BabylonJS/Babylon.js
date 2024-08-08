@@ -14,7 +14,7 @@ import { RawTexture } from "core/Materials/Textures/rawTexture";
 import type { Scene } from "core/scene";
 
 import type { _Exporter } from "./glTFExporter";
-import { ALPHA_COMBINE, TEXTURETYPE_UNSIGNED_INT, TEXTUREFORMAT_RGBA, TEXTURE_NEAREST_SAMPLINGMODE } from "core/Engines/constants";
+import { ALPHA_COMBINE, TEXTURETYPE_UNSIGNED_INT, TextureFormat.RGBA, TEXTURE_NEAREST_SAMPLINGMODE } from "core/Engines/constants";
 import { DumpTools } from "core/Misc/dumpTools";
 
 import type { Material } from "core/Materials/material";
@@ -438,9 +438,9 @@ export class _GLTFMaterialExporter {
         const engine = hostingScene.getEngine();
 
         // Create a temporary texture with the texture buffer data
-        const tempTexture = engine.createRawTexture(buffer, width, height, TEXTUREFORMAT_RGBA, false, true, Texture.NEAREST_SAMPLINGMODE, null, textureType);
+        const tempTexture = engine.createRawTexture(buffer, width, height, TextureFormat.RGBA, false, true, Texture.NEAREST_SAMPLINGMODE, null, textureType);
 
-        await TextureTools.ApplyPostProcess("pass", tempTexture, hostingScene, textureType, TEXTURE_NEAREST_SAMPLINGMODE, TEXTUREFORMAT_RGBA);
+        await TextureTools.ApplyPostProcess("pass", tempTexture, hostingScene, textureType, TEXTURE_NEAREST_SAMPLINGMODE, TextureFormat.RGBA);
 
         const data = await engine._readTexturePixels(tempTexture, width, height);
 

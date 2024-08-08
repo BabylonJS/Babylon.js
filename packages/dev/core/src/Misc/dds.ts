@@ -1,18 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Scalar } from "../Maths/math.scalar";
 import type { SphericalPolynomial } from "../Maths/sphericalPolynomial";
-import {
-    TEXTURETYPE_UNSIGNED_INT,
-    TEXTURETYPE_HALF_FLOAT,
-    TEXTURETYPE_FLOAT,
-    TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1,
-    TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3,
-    TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5,
-    TEXTUREFORMAT_RGBA,
-    TEXTURETYPE_UNSIGNED_BYTE,
-    TEXTUREFORMAT_RGB,
-    TEXTUREFORMAT_LUMINANCE,
-} from "../Engines/constants";
+import { TEXTURETYPE_UNSIGNED_INT, TEXTURETYPE_HALF_FLOAT, TEXTURETYPE_FLOAT, TextureFormat, TEXTURETYPE_UNSIGNED_BYTE } from "../Engines/constants";
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import type { Nullable } from "../types";
 import { Logger } from "../Misc/logger";
@@ -483,15 +472,15 @@ export class DDSTools {
             switch (fourCC) {
                 case FOURCC_DXT1:
                     blockBytes = 8;
-                    internalCompressedFormat = TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1;
+                    internalCompressedFormat = TextureFormat.COMPRESSED_RGBA_S3TC_DXT1;
                     break;
                 case FOURCC_DXT3:
                     blockBytes = 16;
-                    internalCompressedFormat = TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3;
+                    internalCompressedFormat = TextureFormat.COMPRESSED_RGBA_S3TC_DXT3;
                     break;
                 case FOURCC_DXT5:
                     blockBytes = 16;
-                    internalCompressedFormat = TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5;
+                    internalCompressedFormat = TextureFormat.COMPRESSED_RGBA_S3TC_DXT5;
                     break;
                 case FOURCC_D3DFMT_R16G16B16A16F:
                     computeFormats = true;
@@ -562,7 +551,7 @@ export class DDSTools {
                     const i = lodIndex === -1 ? mip : 0;
 
                     if (!info.isCompressed && info.isFourCC) {
-                        texture.format = TEXTUREFORMAT_RGBA;
+                        texture.format = TextureFormat.RGBA;
                         dataLength = width * height * 4;
                         let floatArray: Nullable<ArrayBufferView> = null;
 
@@ -654,13 +643,13 @@ export class DDSTools {
                     } else if (info.isRGB) {
                         texture.type = TEXTURETYPE_UNSIGNED_INT;
                         if (bpp === 24) {
-                            texture.format = TEXTUREFORMAT_RGB;
+                            texture.format = TextureFormat.RGB;
                             dataLength = width * height * 3;
                             byteArray = DDSTools._GetRGBArrayBuffer(width, height, data.byteOffset + dataOffset, dataLength, data.buffer, rOffset, gOffset, bOffset);
                             engine._uploadDataToTextureDirectly(texture, byteArray, face, i);
                         } else {
                             // 32
-                            texture.format = TEXTUREFORMAT_RGBA;
+                            texture.format = TextureFormat.RGBA;
                             dataLength = width * height * 4;
                             byteArray = DDSTools._GetRGBAArrayBuffer(width, height, data.byteOffset + dataOffset, dataLength, data.buffer, rOffset, gOffset, bOffset, aOffset);
                             engine._uploadDataToTextureDirectly(texture, byteArray, face, i);
@@ -672,7 +661,7 @@ export class DDSTools {
                         dataLength = paddedRowSize * (height - 1) + unpaddedRowSize;
 
                         byteArray = DDSTools._GetLuminanceArrayBuffer(width, height, data.byteOffset + dataOffset, dataLength, data.buffer);
-                        texture.format = TEXTUREFORMAT_LUMINANCE;
+                        texture.format = TextureFormat.LUMINANCE;
                         texture.type = TEXTURETYPE_UNSIGNED_INT;
 
                         engine._uploadDataToTextureDirectly(texture, byteArray, face, i);
@@ -706,7 +695,7 @@ export class DDSTools {
                 down: sphericalPolynomialFaces[3],
                 front: sphericalPolynomialFaces[4],
                 back: sphericalPolynomialFaces[5],
-                format: TEXTUREFORMAT_RGBA,
+                format: TextureFormat.RGBA,
                 type: TEXTURETYPE_FLOAT,
                 gammaSpace: false,
             });

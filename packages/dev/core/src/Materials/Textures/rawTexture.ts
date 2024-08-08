@@ -5,13 +5,8 @@ import {
     TEXTURETYPE_FLOAT,
     TEXTURE_NEAREST_SAMPLINGMODE,
     TEXTURETYPE_HALF_FLOAT,
-    TEXTUREFORMAT_LUMINANCE,
-    TEXTUREFORMAT_LUMINANCE_ALPHA,
-    TEXTUREFORMAT_ALPHA,
-    TEXTUREFORMAT_RGB,
-    TEXTUREFORMAT_RGBA,
+    TextureFormat,
     TEXTURE_CREATIONFLAG_STORAGE,
-    TEXTUREFORMAT_R,
 } from "../../Engines/constants";
 import "../../Engines/Extensions/engine.rawTexture";
 import type { Nullable } from "../../types";
@@ -33,7 +28,7 @@ export class RawTexture extends Texture {
      * @param data define the array of data to use to create the texture (null to create an empty texture)
      * @param width define the width of the texture
      * @param height define the height of the texture
-     * @param format define the format of the data (RGB, RGBA... Engine.TEXTUREFORMAT_xxx)
+     * @param format define the format of the data (RGB, RGBA... Engine.TextureFormat.xxx)
      * @param sceneOrEngine defines the scene or engine the texture will belong to
      * @param generateMipMaps define whether mip maps should be generated or not
      * @param invertY define if the data should be flipped on Y when uploaded to the GPU
@@ -47,7 +42,7 @@ export class RawTexture extends Texture {
         width: number,
         height: number,
         /**
-         * Define the format of the data (RGB, RGBA... Engine.TEXTUREFORMAT_xxx)
+         * Define the format of the data (RGB, RGBA... Engine.TextureFormat.xxx)
          */
         public format: number,
         sceneOrEngine: Nullable<Scene | AbstractEngine>,
@@ -134,7 +129,7 @@ export class RawTexture extends Texture {
         invertY: boolean = false,
         samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE
     ): RawTexture {
-        return new RawTexture(data, width, height, TEXTUREFORMAT_LUMINANCE, sceneOrEngine, generateMipMaps, invertY, samplingMode);
+        return new RawTexture(data, width, height, TextureFormat.LUMINANCE, sceneOrEngine, generateMipMaps, invertY, samplingMode);
     }
 
     /**
@@ -157,7 +152,7 @@ export class RawTexture extends Texture {
         invertY: boolean = false,
         samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE
     ): RawTexture {
-        return new RawTexture(data, width, height, TEXTUREFORMAT_LUMINANCE_ALPHA, sceneOrEngine, generateMipMaps, invertY, samplingMode);
+        return new RawTexture(data, width, height, TextureFormat.LUMINANCE_ALPHA, sceneOrEngine, generateMipMaps, invertY, samplingMode);
     }
 
     /**
@@ -180,7 +175,7 @@ export class RawTexture extends Texture {
         invertY: boolean = false,
         samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE
     ): RawTexture {
-        return new RawTexture(data, width, height, TEXTUREFORMAT_ALPHA, sceneOrEngine, generateMipMaps, invertY, samplingMode);
+        return new RawTexture(data, width, height, TextureFormat.ALPHA, sceneOrEngine, generateMipMaps, invertY, samplingMode);
     }
 
     /**
@@ -209,7 +204,7 @@ export class RawTexture extends Texture {
         creationFlags: number = 0,
         useSRGBBuffer: boolean = false
     ): RawTexture {
-        return new RawTexture(data, width, height, TEXTUREFORMAT_RGB, sceneOrEngine, generateMipMaps, invertY, samplingMode, type, creationFlags, useSRGBBuffer);
+        return new RawTexture(data, width, height, TextureFormat.RGB, sceneOrEngine, generateMipMaps, invertY, samplingMode, type, creationFlags, useSRGBBuffer);
     }
 
     /**
@@ -238,7 +233,7 @@ export class RawTexture extends Texture {
         creationFlags: number = 0,
         useSRGBBuffer: boolean = false
     ): RawTexture {
-        return new RawTexture(data, width, height, TEXTUREFORMAT_RGBA, sceneOrEngine, generateMipMaps, invertY, samplingMode, type, creationFlags, useSRGBBuffer);
+        return new RawTexture(data, width, height, TextureFormat.RGBA, sceneOrEngine, generateMipMaps, invertY, samplingMode, type, creationFlags, useSRGBBuffer);
     }
 
     /**
@@ -265,7 +260,7 @@ export class RawTexture extends Texture {
         type: number = TEXTURETYPE_UNSIGNED_INT,
         useSRGBBuffer: boolean = false
     ): RawTexture {
-        return new RawTexture(data, width, height, TEXTUREFORMAT_RGBA, sceneOrEngine, generateMipMaps, invertY, samplingMode, type, TEXTURE_CREATIONFLAG_STORAGE, useSRGBBuffer);
+        return new RawTexture(data, width, height, TextureFormat.RGBA, sceneOrEngine, generateMipMaps, invertY, samplingMode, type, TEXTURE_CREATIONFLAG_STORAGE, useSRGBBuffer);
     }
 
     /**
@@ -290,7 +285,7 @@ export class RawTexture extends Texture {
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
         type: number = TEXTURETYPE_FLOAT
     ): RawTexture {
-        return new RawTexture(data, width, height, TEXTUREFORMAT_R, sceneOrEngine, generateMipMaps, invertY, samplingMode, type);
+        return new RawTexture(data, width, height, TextureFormat.R, sceneOrEngine, generateMipMaps, invertY, samplingMode, type);
     }
 
     /**
@@ -315,6 +310,6 @@ export class RawTexture extends Texture {
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
         type: number = TEXTURETYPE_FLOAT
     ): RawTexture {
-        return new RawTexture(data, width, height, TEXTUREFORMAT_R, sceneOrEngine, generateMipMaps, invertY, samplingMode, type, TEXTURE_CREATIONFLAG_STORAGE);
+        return new RawTexture(data, width, height, TextureFormat.R, sceneOrEngine, generateMipMaps, invertY, samplingMode, type, TEXTURE_CREATIONFLAG_STORAGE);
     }
 }

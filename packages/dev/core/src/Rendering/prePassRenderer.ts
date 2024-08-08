@@ -4,7 +4,7 @@ import type { AbstractEngine } from "../Engines/abstractEngine";
 import {
     PREPASS_IRRADIANCE_TEXTURE_TYPE,
     TEXTURETYPE_HALF_FLOAT,
-    TEXTUREFORMAT_RGBA,
+    TextureFormat,
     PREPASS_POSITION_TEXTURE_TYPE,
     PREPASS_VELOCITY_TEXTURE_TYPE,
     TEXTURETYPE_UNSIGNED_INT,
@@ -12,11 +12,9 @@ import {
     PREPASS_COLOR_TEXTURE_TYPE,
     PREPASS_DEPTH_TEXTURE_TYPE,
     TEXTURETYPE_FLOAT,
-    TEXTUREFORMAT_R,
     PREPASS_NORMAL_TEXTURE_TYPE,
     PREPASS_ALBEDO_SQRT_TEXTURE_TYPE,
     TEXTURETYPE_UNSIGNED_BYTE,
-    TEXTUREFORMAT_RG,
 } from "../Engines/constants";
 import type { PostProcess } from "../PostProcesses/postProcess";
 import type { Effect } from "../Materials/effect";
@@ -141,49 +139,49 @@ export class PrePassRenderer {
         {
             purpose: PREPASS_IRRADIANCE_TEXTURE_TYPE,
             type: TEXTURETYPE_HALF_FLOAT,
-            format: TEXTUREFORMAT_RGBA,
+            format: TextureFormat.RGBA,
             name: "prePass_Irradiance",
         },
         {
             purpose: PREPASS_POSITION_TEXTURE_TYPE,
             type: TEXTURETYPE_HALF_FLOAT,
-            format: TEXTUREFORMAT_RGBA,
+            format: TextureFormat.RGBA,
             name: "prePass_Position",
         },
         {
             purpose: PREPASS_VELOCITY_TEXTURE_TYPE,
             type: TEXTURETYPE_UNSIGNED_INT,
-            format: TEXTUREFORMAT_RGBA,
+            format: TextureFormat.RGBA,
             name: "prePass_Velocity",
         },
         {
             purpose: PREPASS_REFLECTIVITY_TEXTURE_TYPE,
             type: TEXTURETYPE_UNSIGNED_INT,
-            format: TEXTUREFORMAT_RGBA,
+            format: TextureFormat.RGBA,
             name: "prePass_Reflectivity",
         },
         {
             purpose: PREPASS_COLOR_TEXTURE_TYPE,
             type: TEXTURETYPE_HALF_FLOAT,
-            format: TEXTUREFORMAT_RGBA,
+            format: TextureFormat.RGBA,
             name: "prePass_Color",
         },
         {
             purpose: PREPASS_DEPTH_TEXTURE_TYPE,
             type: TEXTURETYPE_FLOAT,
-            format: TEXTUREFORMAT_R,
+            format: TextureFormat.R,
             name: "prePass_Depth",
         },
         {
             purpose: PREPASS_NORMAL_TEXTURE_TYPE,
             type: TEXTURETYPE_HALF_FLOAT,
-            format: TEXTUREFORMAT_RGBA,
+            format: TextureFormat.RGBA,
             name: "prePass_Normal",
         },
         {
             purpose: PREPASS_ALBEDO_SQRT_TEXTURE_TYPE,
             type: TEXTURETYPE_UNSIGNED_INT,
-            format: TEXTUREFORMAT_RGBA,
+            format: TextureFormat.RGBA,
             name: "prePass_Albedo",
         },
     ];
@@ -306,7 +304,7 @@ export class PrePassRenderer {
             const format = PrePassRenderer.TextureFormats[i].format;
             if (PrePassRenderer.TextureFormats[i].type === TEXTURETYPE_FLOAT) {
                 PrePassRenderer.TextureFormats[PREPASS_DEPTH_TEXTURE_TYPE].type = type;
-                if ((format === TEXTUREFORMAT_R || format === TEXTUREFORMAT_RG || format === TEXTUREFORMAT_RGBA) && !this._engine._caps.supportFloatTexturesResolve) {
+                if ((format === TextureFormat.R || format === TextureFormat.RG || format === TextureFormat.RGBA) && !this._engine._caps.supportFloatTexturesResolve) {
                     // We don't know in advance if the texture will be used as a resolve target, so we revert to half_float if the extension to resolve full float textures is not supported
                     PrePassRenderer.TextureFormats[PREPASS_DEPTH_TEXTURE_TYPE].type = TEXTURETYPE_HALF_FLOAT;
                 }

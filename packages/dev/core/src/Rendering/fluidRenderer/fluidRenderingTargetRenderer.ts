@@ -1,14 +1,5 @@
 import type { Camera } from "core/Cameras/camera";
-import {
-    TEXTURETYPE_FLOAT,
-    TEXTUREFORMAT_RG,
-    TEXTURETYPE_UNSIGNED_BYTE,
-    TEXTUREFORMAT_RGBA,
-    TEXTURETYPE_HALF_FLOAT,
-    TEXTUREFORMAT_R,
-    TEXTURE_BILINEAR_SAMPLINGMODE,
-    ALPHA_DISABLE,
-} from "core/Engines/constants";
+import { TEXTURETYPE_FLOAT, TextureFormat, TEXTURETYPE_UNSIGNED_BYTE, TEXTURETYPE_HALF_FLOAT, TEXTURE_BILINEAR_SAMPLINGMODE, ALPHA_DISABLE } from "core/Engines/constants";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { InternalTexture } from "core/Materials/Textures/internalTexture";
@@ -547,9 +538,9 @@ export class FluidRenderingTargetRenderer {
             depthWidth,
             depthHeight,
             TEXTURETYPE_FLOAT,
-            TEXTUREFORMAT_RG,
+            TextureFormat.RG,
             TEXTURETYPE_FLOAT,
-            TEXTUREFORMAT_RG,
+            TextureFormat.RG,
             false,
             this._camera,
             true,
@@ -573,9 +564,9 @@ export class FluidRenderingTargetRenderer {
                 0,
                 0,
                 TEXTURETYPE_UNSIGNED_BYTE,
-                TEXTUREFORMAT_RGBA,
+                TextureFormat.RGBA,
                 TEXTURETYPE_UNSIGNED_BYTE,
-                TEXTUREFORMAT_RGBA,
+                TextureFormat.RGBA,
                 true,
                 this._camera,
                 true,
@@ -600,9 +591,9 @@ export class FluidRenderingTargetRenderer {
                 thicknessWidth,
                 thicknessHeight,
                 TEXTURETYPE_HALF_FLOAT,
-                TEXTUREFORMAT_R,
+                TextureFormat.R,
                 TEXTURETYPE_HALF_FLOAT,
-                TEXTUREFORMAT_R,
+                TextureFormat.R,
                 true,
                 this._camera,
                 false,

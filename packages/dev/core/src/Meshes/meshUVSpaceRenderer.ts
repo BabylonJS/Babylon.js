@@ -10,10 +10,9 @@ import {
     ALPHA_COMBINE,
     TEXTURETYPE_UNSIGNED_BYTE,
     TEXTURE_BILINEAR_SAMPLINGMODE,
-    TEXTUREFORMAT_R,
+    TextureFormat,
     TEXTURE_NEAREST_SAMPLINGMODE,
     TEXTURE_TRILINEAR_SAMPLINGMODE,
-    TEXTUREFORMAT_RGBA,
 } from "core/Engines/constants";
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
@@ -302,7 +301,7 @@ export class MeshUVSpaceRenderer {
             undefined,
             undefined,
             undefined,
-            TEXTUREFORMAT_R
+            TextureFormat.R
         );
 
         this._maskTexture.clearColor = new Color4(0, 0, 0, 0);
@@ -354,7 +353,7 @@ export class MeshUVSpaceRenderer {
             false,
             false,
             false,
-            TEXTUREFORMAT_RGBA
+            TextureFormat.RGBA
         );
 
         rtt.renderParticles = false;

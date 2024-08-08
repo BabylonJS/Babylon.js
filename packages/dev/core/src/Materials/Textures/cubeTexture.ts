@@ -5,7 +5,7 @@ import type { Scene } from "../../scene";
 import { Matrix, TmpVectors, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
-import { MATERIAL_TextureDirtyFlag, TEXTUREFORMAT_RGBA, DELAYLOADSTATE_NOTLOADED, DELAYLOADSTATE_LOADED } from "../../Engines/constants";
+import { MATERIAL_TextureDirtyFlag, TextureFormat, DELAYLOADSTATE_NOTLOADED, DELAYLOADSTATE_LOADED } from "../../Engines/constants";
 import { GetClass, RegisterClass } from "../../Misc/typeStore";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import { Observable } from "../../Misc/observable";
@@ -237,7 +237,7 @@ export class CubeTexture extends BaseTexture {
         files: Nullable<string[]> = null,
         onLoad: Nullable<() => void> = null,
         onError: Nullable<(message?: string, exception?: any) => void> = null,
-        format: number = TEXTUREFORMAT_RGBA,
+        format: number = TextureFormat.RGBA,
         prefiltered = false,
         forcedExtension: any = null,
         createPolynomials: boolean = false,
@@ -264,7 +264,7 @@ export class CubeTexture extends BaseTexture {
             this._noMipmap = extensionsOrOptions.noMipmap ?? false;
             files = extensionsOrOptions.files ?? null;
             buffer = extensionsOrOptions.buffer ?? null;
-            this._format = extensionsOrOptions.format ?? TEXTUREFORMAT_RGBA;
+            this._format = extensionsOrOptions.format ?? TextureFormat.RGBA;
             prefiltered = extensionsOrOptions.prefiltered ?? false;
             forcedExtension = extensionsOrOptions.forcedExtension ?? null;
             this._createPolynomials = extensionsOrOptions.createPolynomials ?? false;

@@ -8,7 +8,7 @@ import {
     TEXTURETYPE_UNSIGNED_BYTE,
     TEXTURETYPE_HALF_FLOAT,
     TEXTURETYPE_FLOAT,
-    TEXTUREFORMAT_RGBA,
+    TextureFormat,
     TEXTURE_NEAREST_SAMPLINGMODE,
     TEXTURE_CLAMP_ADDRESSMODE,
     TEXTURE_TRILINEAR_SAMPLINGMODE,
@@ -81,7 +81,7 @@ export class HDRFiltering {
         }
 
         const rtWrapper = this._engine.createRenderTargetCubeTexture(size, {
-            format: TEXTUREFORMAT_RGBA,
+            format: TextureFormat.RGBA,
             type: textureType,
             createMipMaps: true,
             generateMipMaps: false,

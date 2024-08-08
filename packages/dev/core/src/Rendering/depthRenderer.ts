@@ -12,8 +12,7 @@ import {
     TEXTURETYPE_FLOAT,
     TEXTURETYPE_UNSIGNED_BYTE,
     TEXTURETYPE_HALF_FLOAT,
-    TEXTUREFORMAT_RGBA,
-    TEXTUREFORMAT_R,
+    TextureFormat,
     MATERIAL_ClockWiseSideOrientation,
     MATERIAL_CounterClockWiseSideOrientation,
 } from "../Engines/constants";
@@ -124,7 +123,7 @@ export class DepthRenderer {
         }
 
         // Render target
-        const format = this.isPacked || !engine._features.supportExtendedTextureFormats ? TEXTUREFORMAT_RGBA : TEXTUREFORMAT_R;
+        const format = this.isPacked || !engine._features.supportExtendedTextureFormats ? TextureFormat.RGBA : TextureFormat.R;
         this._depthMap = new RenderTargetTexture(
             name ?? "DepthRenderer",
             { width: engine.getRenderWidth(), height: engine.getRenderHeight() },

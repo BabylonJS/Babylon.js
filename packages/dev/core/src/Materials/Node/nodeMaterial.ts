@@ -48,7 +48,7 @@ import {
     PREPASS_POSITION_TEXTURE_TYPE,
     TEXTURE_NEAREST_SAMPLINGMODE,
     TEXTURETYPE_UNSIGNED_INT,
-    TEXTUREFORMAT_RGBA,
+    TextureFormat,
 } from "../../Engines/constants";
 import type { Camera } from "../../Cameras/camera";
 import { VectorMergerBlock } from "./Blocks/vectorMergerBlock";
@@ -1100,7 +1100,7 @@ export class NodeMaterial extends PushMaterial {
      * @param engine The engine which the post process will be applied. (default: current engine)
      * @param reusable If the post process can be reused on the same frame. (default: false)
      * @param textureType Type of textures used when performing the post process. (default: 0)
-     * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
+     * @param textureFormat Format of textures used when performing the post process. (default: TextureFormat.RGBA)
      * @returns the post process created
      */
     public createPostProcess(
@@ -1110,7 +1110,7 @@ export class NodeMaterial extends PushMaterial {
         engine?: AbstractEngine,
         reusable?: boolean,
         textureType: number = TEXTURETYPE_UNSIGNED_INT,
-        textureFormat = TEXTUREFORMAT_RGBA
+        textureFormat = TextureFormat.RGBA
     ): Nullable<PostProcess> {
         if (this.mode !== NodeMaterialModes.PostProcess) {
             Logger.Log("Incompatible material mode");
@@ -1135,7 +1135,7 @@ export class NodeMaterial extends PushMaterial {
         engine?: AbstractEngine,
         reusable?: boolean,
         textureType: number = TEXTURETYPE_UNSIGNED_INT,
-        textureFormat = TEXTUREFORMAT_RGBA
+        textureFormat = TextureFormat.RGBA
     ): PostProcess {
         let tempName = this.name + this._buildId;
 

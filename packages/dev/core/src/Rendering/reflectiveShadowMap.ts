@@ -6,8 +6,7 @@
 import {
     TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV,
     TEXTURETYPE_HALF_FLOAT,
-    TEXTUREFORMAT_RGB,
-    TEXTUREFORMAT_RGBA,
+    TextureFormat,
     TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV,
     TEXTURE_BILINEAR_SAMPLINGMODE,
     TEXTURE_2D,
@@ -192,7 +191,7 @@ export class ReflectiveShadowMap {
         const caps = this._scene.getEngine().getCaps();
 
         const fluxTextureType = caps.rg11b10ufColorRenderable ? TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV : TEXTURETYPE_HALF_FLOAT;
-        const fluxTextureFormat = caps.rg11b10ufColorRenderable ? TEXTUREFORMAT_RGB : TEXTUREFORMAT_RGBA;
+        const fluxTextureFormat = caps.rg11b10ufColorRenderable ? TextureFormat.RGB : TextureFormat.RGBA;
 
         this._mrt = new MultiRenderTarget(
             "RSMmrt_" + name,
@@ -204,7 +203,7 @@ export class ReflectiveShadowMap {
                 samplingModes: [TEXTURE_BILINEAR_SAMPLINGMODE, TEXTURE_BILINEAR_SAMPLINGMODE, TEXTURE_BILINEAR_SAMPLINGMODE],
                 generateMipMaps: false,
                 targetTypes: [TEXTURE_2D, TEXTURE_2D, TEXTURE_2D],
-                formats: [TEXTUREFORMAT_RGBA, TEXTUREFORMAT_RGBA, fluxTextureFormat],
+                formats: [TextureFormat.RGBA, TextureFormat.RGBA, fluxTextureFormat],
             },
             ["RSMPosition_" + name, "RSMNormal_" + name, "RSMFlux_" + name]
         );

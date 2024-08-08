@@ -3,14 +3,10 @@ import type { IMultiRenderTargetOptions } from "../../../Materials/Textures/mult
 import { Logger } from "../../../Misc/logger";
 import type { Nullable } from "../../../types";
 import {
-    TEXTUREFORMAT_DEPTH16,
+    TextureFormat,
     TEXTURETYPE_UNSIGNED_INT,
     TEXTURE_TRILINEAR_SAMPLINGMODE,
-    TEXTUREFORMAT_RGBA,
     TEXTURE_2D,
-    TEXTUREFORMAT_DEPTH24_STENCIL8,
-    TEXTUREFORMAT_DEPTH32_FLOAT,
-    TEXTUREFORMAT_STENCIL8,
     TEXTURETYPE_FLOAT,
     TEXTURE_NEAREST_SAMPLINGMODE,
     TEXTURETYPE_HALF_FLOAT,
@@ -115,13 +111,13 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
     let generateDepthBuffer = true;
     let generateStencilBuffer = false;
     let generateDepthTexture = false;
-    let depthTextureFormat = TEXTUREFORMAT_DEPTH16;
+    let depthTextureFormat = TextureFormat.DEPTH16;
     let textureCount = 1;
 
     const defaultType = TEXTURETYPE_UNSIGNED_INT;
     const defaultSamplingMode = TEXTURE_TRILINEAR_SAMPLINGMODE;
     const defaultUseSRGBBuffer = false;
-    const defaultFormat = TEXTUREFORMAT_RGBA;
+    const defaultFormat = TextureFormat.RGBA;
     const defaultTarget = TEXTURE_2D;
 
     let types: number[] = [];
@@ -142,7 +138,7 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
         generateStencilBuffer = options.generateStencilBuffer === undefined ? false : options.generateStencilBuffer;
         generateDepthTexture = options.generateDepthTexture === undefined ? false : options.generateDepthTexture;
         textureCount = options.textureCount || 1;
-        depthTextureFormat = options.depthTextureFormat ?? TEXTUREFORMAT_DEPTH16;
+        depthTextureFormat = options.depthTextureFormat ?? TextureFormat.DEPTH16;
 
         if (options.types) {
             types = options.types;
@@ -183,11 +179,11 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
             // The caller doesn't want a depth texture, so we are free to use the depth texture format we want.
             // So, we will align with what the WebGL engine does
             if (generateDepthBuffer && generateStencilBuffer) {
-                depthTextureFormat = TEXTUREFORMAT_DEPTH24_STENCIL8;
+                depthTextureFormat = TextureFormat.DEPTH24_STENCIL8;
             } else if (generateDepthBuffer) {
-                depthTextureFormat = TEXTUREFORMAT_DEPTH32_FLOAT;
+                depthTextureFormat = TextureFormat.DEPTH32_FLOAT;
             } else {
-                depthTextureFormat = TEXTUREFORMAT_STENCIL8;
+                depthTextureFormat = TextureFormat.STENCIL8;
             }
         }
         depthStencilTexture = rtWrapper.createDepthStencilTexture(0, false, generateStencilBuffer, 1, depthTextureFormat, "MultipleRenderTargetDepthStencil");

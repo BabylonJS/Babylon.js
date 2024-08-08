@@ -1,7 +1,7 @@
 import type { Nullable } from "../types";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { Camera } from "../Cameras/camera";
-import { TEXTURETYPE_HALF_FLOAT, TEXTURE_NEAREST_NEAREST, TEXTUREFORMAT_RG } from "../Engines/constants";
+import { TEXTURETYPE_HALF_FLOAT, TEXTURE_NEAREST_NEAREST, TextureFormat } from "../Engines/constants";
 import type { Observer } from "./observable";
 import { Observable } from "./observable";
 import type { Effect } from "../Materials/effect";
@@ -94,7 +94,7 @@ export class MinMaxReducer {
             undefined,
             undefined,
             undefined,
-            TEXTUREFORMAT_RG
+            TextureFormat.RG
         );
 
         reductionInitial.autoClear = false;
@@ -134,7 +134,7 @@ export class MinMaxReducer {
                 undefined,
                 undefined,
                 undefined,
-                TEXTUREFORMAT_RG
+                TextureFormat.RG
             );
 
             reduction.autoClear = false;

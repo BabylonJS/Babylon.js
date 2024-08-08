@@ -3,8 +3,7 @@ import type { RenderTargetCreationOptions, DepthTextureCreationOptions, TextureS
 import type { Nullable } from "../../../types";
 import {
     TEXTURE_TRILINEAR_SAMPLINGMODE,
-    TEXTUREFORMAT_DEPTH24_STENCIL8,
-    TEXTUREFORMAT_DEPTH32_FLOAT,
+    TextureFormat,
     TEXTURE_BILINEAR_SAMPLINGMODE,
     TEXTURE_NEAREST_SAMPLINGMODE,
     TEXTURETYPE_FLOAT,
@@ -99,7 +98,7 @@ WebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSize, 
             false, // force false as filtering is not supported for depth textures
             rtWrapper._generateStencilBuffer,
             rtWrapper.samples,
-            fullOptions.generateStencilBuffer ? TEXTUREFORMAT_DEPTH24_STENCIL8 : TEXTUREFORMAT_DEPTH32_FLOAT,
+            fullOptions.generateStencilBuffer ? TextureFormat.DEPTH24_STENCIL8 : TextureFormat.DEPTH32_FLOAT,
             fullOptions.label ? fullOptions.label + "-DepthStencil" : undefined
         );
     }
@@ -129,7 +128,7 @@ WebGPUEngine.prototype._createDepthStencilTexture = function (size: TextureSize,
         comparisonFunction: 0,
         generateStencil: false,
         samples: 1,
-        depthTextureFormat: options.generateStencil ? TEXTUREFORMAT_DEPTH24_STENCIL8 : TEXTUREFORMAT_DEPTH32_FLOAT,
+        depthTextureFormat: options.generateStencil ? TextureFormat.DEPTH24_STENCIL8 : TextureFormat.DEPTH32_FLOAT,
         ...options,
     };
 
