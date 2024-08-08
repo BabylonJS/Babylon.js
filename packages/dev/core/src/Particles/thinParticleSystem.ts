@@ -16,11 +16,8 @@ import { BaseParticleSystem } from "./baseParticleSystem";
 import { Particle } from "./particle";
 import {
     TEXTURE_NEAREST_SAMPLINGMODE,
-    PARTICLES_BILLBOARDMODE_STRETCHED,
-    PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL,
+    ParticlesBillboardMode,
     FOGMODE_NONE,
-    PARTICLES_BILLBOARDMODE_Y,
-    PARTICLES_BILLBOARDMODE_ALL,
     RENDERPASS_MAIN,
     ALPHA_ADD,
     ALPHA_ONEONE,
@@ -1089,7 +1086,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             this._vertexBufferSize += 1;
         }
 
-        if (!this._isBillboardBased || this.billboardMode === PARTICLES_BILLBOARDMODE_STRETCHED || this.billboardMode === PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL) {
+        if (!this._isBillboardBased || this.billboardMode === ParticlesBillboardMode.STRETCHED || this.billboardMode === ParticlesBillboardMode.STRETCHED_LOCAL) {
             this._vertexBufferSize += 3;
         }
 
@@ -1125,7 +1122,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             dataOffset += 1;
         }
 
-        if (!this._isBillboardBased || this.billboardMode === PARTICLES_BILLBOARDMODE_STRETCHED || this.billboardMode === PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL) {
+        if (!this._isBillboardBased || this.billboardMode === ParticlesBillboardMode.STRETCHED || this.billboardMode === ParticlesBillboardMode.STRETCHED_LOCAL) {
             const directionBuffer = this._vertexBuffer.createVertexBuffer("direction", dataOffset, 3, this._vertexBufferSize, this._useInstancing);
             this._vertexBuffers["direction"] = directionBuffer;
             dataOffset += 3;
@@ -1357,7 +1354,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                 this._vertexData[offset++] = direction.y;
                 this._vertexData[offset++] = direction.z;
             }
-        } else if (this.billboardMode === PARTICLES_BILLBOARDMODE_STRETCHED || this.billboardMode === PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL) {
+        } else if (this.billboardMode === ParticlesBillboardMode.STRETCHED || this.billboardMode === ParticlesBillboardMode.STRETCHED_LOCAL) {
             this._vertexData[offset++] = particle.direction.x;
             this._vertexData[offset++] = particle.direction.y;
             this._vertexData[offset++] = particle.direction.z;
@@ -1714,17 +1711,17 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             defines.push("#define BILLBOARD");
 
             switch (this.billboardMode) {
-                case PARTICLES_BILLBOARDMODE_Y:
+                case ParticlesBillboardMode.Y:
                     defines.push("#define BILLBOARDY");
                     break;
-                case PARTICLES_BILLBOARDMODE_STRETCHED:
-                case PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL:
+                case ParticlesBillboardMode.STRETCHED:
+                case ParticlesBillboardMode.STRETCHED_LOCAL:
                     defines.push("#define BILLBOARDSTRETCHED");
-                    if (this.billboardMode === PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL) {
+                    if (this.billboardMode === ParticlesBillboardMode.STRETCHED_LOCAL) {
                         defines.push("#define BILLBOARDSTRETCHED_LOCAL");
                     }
                     break;
-                case PARTICLES_BILLBOARDMODE_ALL:
+                case ParticlesBillboardMode.ALL:
                     defines.push("#define BILLBOARDMODE_ALL");
                     break;
                 default:
@@ -1748,7 +1745,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         attributes.push(
             ...ThinParticleSystem._GetAttributeNamesOrOptions(
                 this._isAnimationSheetEnabled,
-                this._isBillboardBased && this.billboardMode !== PARTICLES_BILLBOARDMODE_STRETCHED && this.billboardMode !== PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL,
+                this._isBillboardBased && this.billboardMode !== ParticlesBillboardMode.STRETCHED && this.billboardMode !== ParticlesBillboardMode.STRETCHED_LOCAL,
                 this._useRampGradients
             )
         );

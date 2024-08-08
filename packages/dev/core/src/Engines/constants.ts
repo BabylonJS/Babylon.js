@@ -700,20 +700,43 @@ export const ACTION_OnKeyDownTrigger = 14;
  */
 export const ACTION_OnKeyUpTrigger = 15;
 
+export const enum ParticlesBillboardMode {
+    /**
+     * Billboard mode will only apply to Y axis
+     */
+    Y = 2,
+    /**
+     * Billboard mode will apply to all axes
+     */
+    ALL = 7,
+    /**
+     * Special billboard mode where the particle will be biilboard to the camera but rotated to align with direction
+     */
+    STRETCHED = 8,
+    /**
+     * Special billboard mode where the particle will be billboard to the camera but only around the axis of the direction of particle emission
+     */
+    STRETCHED_LOCAL = 9,
+}
+
 /**
  * Billboard mode will only apply to Y axis
+ * @deprecated use ParticlesBillboardMode
  */
 export const PARTICLES_BILLBOARDMODE_Y = 2;
 /**
  * Billboard mode will apply to all axes
+ * @deprecated use ParticlesBillboardMode
  */
 export const PARTICLES_BILLBOARDMODE_ALL = 7;
 /**
  * Special billboard mode where the particle will be biilboard to the camera but rotated to align with direction
+ * @deprecated use ParticlesBillboardMode
  */
 export const PARTICLES_BILLBOARDMODE_STRETCHED = 8;
 /**
  * Special billboard mode where the particle will be billboard to the camera but only around the axis of the direction of particle emission
+ * @deprecated use ParticlesBillboardMode
  */
 export const PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL = 9;
 

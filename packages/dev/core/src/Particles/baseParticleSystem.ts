@@ -6,7 +6,7 @@ import type { ImageProcessingConfiguration } from "../Materials/imageProcessingC
 import { ImageProcessingConfigurationDefines } from "../Materials/imageProcessingConfiguration.defines";
 import type { ColorGradient, FactorGradient, Color3Gradient, IValueGradient } from "../Misc/gradients";
 import type { BoxParticleEmitter } from "../Particles/EmitterTypes/boxParticleEmitter";
-import { PARTICLES_BILLBOARDMODE_ALL } from "../Engines/constants";
+import { ParticlesBillboardMode } from "../Engines/constants";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Color4 } from "../Maths/math.color";
 import type { AbstractEngine } from "../Engines/abstractEngine";
@@ -613,7 +613,7 @@ export class BaseParticleSystem implements IClipPlanesHolder {
     public _isSubEmitter = false;
 
     /** @internal */
-    public _billboardMode = PARTICLES_BILLBOARDMODE_ALL;
+    public _billboardMode = ParticlesBillboardMode.ALL;
     /**
      * Gets or sets the billboard mode to use when isBillboardBased = true.
      * Value can be: ParticleSystem.BILLBOARDMODE_ALL, ParticleSystem.BILLBOARDMODE_Y, ParticleSystem.BILLBOARDMODE_STRETCHED
