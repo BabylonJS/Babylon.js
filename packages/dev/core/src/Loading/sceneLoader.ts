@@ -22,7 +22,7 @@ import { RuntimeError, ErrorCodes } from "../Misc/error";
 import type { ISpriteManager } from "../Sprites/spriteManager";
 import { RandomGUID } from "../Misc/guid";
 import { Engine } from "../Engines/engine";
-import type { AbstractEngine } from "../Engines/abstractEngine";
+import { AbstractEngine } from "../Engines/abstractEngine";
 
 /**
  * Type used for the success callback of ImportMesh
@@ -110,7 +110,7 @@ export interface ISceneLoaderPluginExtensions {
     /**
      * Defines the list of supported extensions
      */
-    [extension: string]: {
+    readonly [extension: string]: {
         isBinary: boolean;
     };
 }
@@ -122,13 +122,14 @@ export interface ISceneLoaderPluginFactory {
     /**
      * Defines the name of the factory
      */
-    name: string;
+    readonly name: string;
 
     /**
      * Function called to create a new plugin
+     * @param options plugin options that were passed to the SceneLoader operation
      * @returns the new plugin
      */
-    createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
+    createPlugin(options: SceneLoaderPluginOptions): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
 
     /**
      * The callback that returns true if the data can be directly loaded.
@@ -145,12 +146,12 @@ export interface ISceneLoaderPluginBase {
     /**
      * The friendly name of this plugin.
      */
-    name: string;
+    readonly name: string;
 
     /**
      * The file extensions supported by this plugin.
      */
-    extensions: string | ISceneLoaderPluginExtensions;
+    readonly extensions: string | ISceneLoaderPluginExtensions;
 
     /**
      * The callback called when loading from a url.
@@ -370,6 +371,114 @@ interface IFileInfo {
 }
 
 /**
+ * Defines options for SceneLoader plugins. This interface is extended by specific plugins.
+ */
+export interface SceneLoaderPluginOptions extends Record<string, Record<string, unknown> | undefined> {}
+
+/**
+ * Adds default/implicit options to plugin specific options.
+ */
+type DefaultPluginOptions<BasePluginOptions> = {
+    /**
+     * Defines if the plugin is enabled
+     */
+    enabled?: boolean;
+} & BasePluginOptions;
+
+// This captures the type defined inline for the pluginOptions property, which is just SceneLoaderPluginOptions wrapped with DefaultPluginOptions.
+// We do it this way rather than explicitly defining the type here and then using it in SceneLoaderOptions because we want the full expanded type
+// to show up in the user's intellisense to make it easier to understand what options are available.
+type PluginOptions = SceneLoaderOptions["pluginOptions"];
+
+type SceneSource = string | File | ArrayBufferView;
+
+/**
+ * Defines common options for loading operations performed by SceneLoader.
+ */
+interface SceneLoaderOptions {
+    /**
+     * A string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+     */
+    rootUrl?: string;
+
+    /**
+     * A callback with a progress event for each file being loaded
+     */
+    onProgress?: (event: ISceneLoaderProgressEvent) => void;
+
+    /**
+     * The extension used to determine the plugin
+     */
+    pluginExtension?: string;
+
+    /**
+     * Defines the filename, if the data is binary
+     */
+    name?: string;
+
+    /**
+     * Defines options for the registered plugins
+     */
+    pluginOptions?: {
+        // NOTE: This type is doing two things:
+        // 1. Adding an implicit 'enabled' property to the options for each plugin.
+        // 2. Creating a mapped type of all the options of all the plugins to make it just look like a consolidated plain object in intellisense for the user.
+        [Plugin in keyof SceneLoaderPluginOptions]: {
+            [Option in keyof DefaultPluginOptions<SceneLoaderPluginOptions[Plugin]>]: DefaultPluginOptions<SceneLoaderPluginOptions[Plugin]>[Option];
+        };
+    };
+}
+
+/**
+ * Defines options for ImportMeshAsync.
+ */
+export interface ImportMeshOptions extends SceneLoaderOptions {
+    /**
+     * An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+     */
+    meshNames?: string | readonly string[] | null | undefined;
+}
+
+/**
+ * Defines options for LoadAsync.
+ */
+export interface LoadOptions extends SceneLoaderOptions {}
+
+/**
+ * Defines options for AppendAsync.
+ */
+export interface AppendOptions extends SceneLoaderOptions {}
+
+/**
+ * Defines options for LoadAssetContainerAsync.
+ */
+export interface LoadAssetContainerOptions extends SceneLoaderOptions {}
+
+/**
+ * Defines options for ImportAnimationsAsync.
+ */
+export interface ImportAnimationsOptions extends SceneLoaderOptions {
+    /**
+     * When true, animations are cleaned before importing new ones. Animations are appended otherwise
+     */
+    overwriteAnimations?: boolean;
+
+    /**
+     * Defines how to handle old animations groups before importing new ones
+     */
+    animationGroupLoadingMode?: SceneLoaderAnimationGroupLoadingMode;
+
+    /**
+     * defines a function used to convert animation targets from loaded scene to current scene (default: search node by name)
+     */
+    targetConverter?: Nullable<(target: unknown) => unknown>;
+}
+
+function isFile(value: unknown): value is File {
+    return !!(value as File).name;
+}
+
+/**
  * Class used to load scene from various file formats using registered plugins
  * @see https://doc.babylonjs.com/features/featuresDeepDive/importers/loadingFileTypes
  */
@@ -519,7 +628,8 @@ export class SceneLoader {
         onError: (message?: string, exception?: any) => void,
         onDispose: () => void,
         pluginExtension: Nullable<string>,
-        name: string
+        name: string,
+        pluginOptions: PluginOptions
     ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
         const directLoad = SceneLoader._GetDirectLoad(fileInfo.url);
 
@@ -534,15 +644,22 @@ export class SceneLoader {
               ? SceneLoader._GetPluginForDirectLoad(fileInfo.url)
               : SceneLoader._GetPluginForFilename(fileInfo.url);
 
+        if (pluginOptions?.[registeredPlugin.plugin.name]?.enabled === false) {
+            throw new Error(`The '${registeredPlugin.plugin.name}' plugin is disabled via the loader options passed to the loading operation.`);
+        }
+
         if (fileInfo.rawData && !registeredPlugin.isBinary) {
             // eslint-disable-next-line no-throw-literal
             throw "Loading from ArrayBufferView can not be used with plugins that don't support binary loading.";
         }
 
-        const plugin: IRegisteredPlugin["plugin"] = registeredPlugin.plugin.createPlugin?.() ?? registeredPlugin.plugin;
+        // For plugin factories, the plugin is instantiated on each SceneLoader operation. This makes options handling
+        // much simpler as we can just pass the options to the factory, rather than passing options through to every possible
+        // plugin call. Given this, options are only supported for plugins that provide a factory function.
+        const plugin: IRegisteredPlugin["plugin"] = registeredPlugin.plugin.createPlugin?.(pluginOptions ?? {}) ?? registeredPlugin.plugin;
         if (!plugin) {
             // eslint-disable-next-line no-throw-literal
-            throw "The loader plugin corresponding to the file type you are trying to load has not been found. If using es6, please import the plugin you wish to use before.";
+            throw `The loader plugin corresponding to the '${pluginExtension}' file type has not been found. If using es6, please import the plugin you wish to use before.`;
         }
 
         SceneLoader.OnPluginActivatedObservable.notifyObservers(plugin);
@@ -637,30 +754,29 @@ export class SceneLoader {
         return plugin;
     }
 
-    private static _GetFileInfo(rootUrl: string, sceneFilename: string | File | ArrayBufferView): Nullable<IFileInfo> {
+    private static _GetFileInfo(rootUrl: string, sceneSource: SceneSource): Nullable<IFileInfo> {
         let url: string;
         let name: string;
         let file: Nullable<File> = null;
         let rawData: Nullable<ArrayBufferView> = null;
 
-        if (!sceneFilename) {
+        if (!sceneSource) {
             url = rootUrl;
             name = Tools.GetFilename(rootUrl);
             rootUrl = Tools.GetFolderPath(rootUrl);
-        } else if ((sceneFilename as File).name) {
-            const sceneFile = sceneFilename as File;
-            url = `file:${sceneFile.name}`;
-            name = sceneFile.name;
-            file = sceneFile;
-        } else if (ArrayBuffer.isView(sceneFilename)) {
+        } else if (isFile(sceneSource)) {
+            url = `file:${sceneSource.name}`;
+            name = sceneSource.name;
+            file = sceneSource;
+        } else if (ArrayBuffer.isView(sceneSource)) {
             url = "";
             name = RandomGUID();
-            rawData = sceneFilename as ArrayBufferView;
-        } else if (typeof sceneFilename === "string" && sceneFilename.startsWith("data:")) {
-            url = sceneFilename;
+            rawData = sceneSource;
+        } else if (sceneSource.startsWith("data:")) {
+            url = sceneSource;
             name = "";
-        } else {
-            const filename = sceneFilename as string;
+        } else if (rootUrl) {
+            const filename = sceneSource;
             if (filename.substr(0, 1) === "/") {
                 Tools.Error("Wrong sceneFilename parameter");
                 return null;
@@ -668,6 +784,10 @@ export class SceneLoader {
 
             url = rootUrl + filename;
             name = filename;
+        } else {
+            url = sceneSource;
+            name = Tools.GetFilename(sceneSource);
+            rootUrl = Tools.GetFolderPath(sceneSource);
         }
 
         return {
@@ -705,13 +825,13 @@ export class SceneLoader {
      */
     public static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void {
         if (typeof plugin.extensions === "string") {
-            const extension = <string>plugin.extensions;
+            const extension = plugin.extensions;
             SceneLoader._RegisteredPlugins[extension.toLowerCase()] = {
                 plugin: plugin,
                 isBinary: false,
             };
         } else {
-            const extensions = <ISceneLoaderPluginExtensions>plugin.extensions;
+            const extensions = plugin.extensions;
             Object.keys(extensions).forEach((extension) => {
                 SceneLoader._RegisteredPlugins[extension.toLowerCase()] = {
                     plugin: plugin,
@@ -737,13 +857,28 @@ export class SceneLoader {
     public static ImportMesh(
         meshNames: string | readonly string[] | null | undefined,
         rootUrl: string,
-        sceneFilename: string | File | ArrayBufferView = "",
+        sceneFilename?: SceneSource,
+        scene?: Nullable<Scene>,
+        onSuccess?: Nullable<SceneLoaderSuccessCallback>,
+        onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
+        onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>,
+        pluginExtension?: Nullable<string>,
+        name?: string
+    ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
+        return SceneLoader._ImportMesh(meshNames, rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name);
+    }
+
+    private static _ImportMesh(
+        meshNames: string | readonly string[] | null | undefined,
+        rootUrl: string,
+        sceneFilename: SceneSource = "",
         scene: Nullable<Scene> = EngineStore.LastCreatedScene,
         onSuccess: Nullable<SceneLoaderSuccessCallback> = null,
         onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
         onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
         pluginExtension: Nullable<string> = null,
-        name: string = ""
+        name = "",
+        pluginOptions: PluginOptions = {}
     ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
         if (!scene) {
             Logger.Error("No scene available to import mesh to");
@@ -845,9 +980,20 @@ export class SceneLoader {
             errorHandler,
             disposeHandler,
             pluginExtension,
-            name
+            name,
+            pluginOptions
         );
     }
+
+    /**
+     * Import meshes into a scene
+     * @experimental
+     * @param source a string that defines the name of the scene file, or starts with "data:" following by the stringified version of the scene, or a File object, or an ArrayBufferView
+     * @param scene the instance of BABYLON.Scene to append to
+     * @param options an object that configures aspects of how the scene is loaded
+     * @returns The loaded list of imported meshes, particle systems, skeletons, and animation groups
+     */
+    public static ImportMeshAsync(source: SceneSource, scene: Scene, options?: ImportMeshOptions): Promise<ISceneLoaderAsyncResult>;
 
     /**
      * Import meshes into a scene
@@ -863,14 +1009,55 @@ export class SceneLoader {
     public static ImportMeshAsync(
         meshNames: string | readonly string[] | null | undefined,
         rootUrl: string,
-        sceneFilename: string | File | ArrayBufferView = "",
-        scene: Nullable<Scene> = EngineStore.LastCreatedScene,
-        onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
-        pluginExtension: Nullable<string> = null,
-        name: string = ""
+        sceneFilename?: SceneSource,
+        scene?: Nullable<Scene>,
+        onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
+        pluginExtension?: Nullable<string>,
+        name?: string
+    ): Promise<ISceneLoaderAsyncResult>;
+
+    public static ImportMeshAsync(
+        ...args:
+            | [
+                  meshNames: string | readonly string[] | null | undefined,
+                  rootUrl: string,
+                  sceneFilename?: SceneSource,
+                  scene?: Nullable<Scene>,
+                  onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
+                  pluginExtension?: Nullable<string>,
+                  name?: string,
+              ]
+            | [source: SceneSource, scene: Scene, options?: ImportMeshOptions]
     ): Promise<ISceneLoaderAsyncResult> {
+        let meshNames: string | readonly string[] | null | undefined;
+        let rootUrl: string;
+        let sceneFilename: SceneSource | undefined;
+        let scene: Nullable<Scene> | undefined;
+        let onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> | undefined;
+        let pluginExtension: Nullable<string> | undefined;
+        let name: string | undefined;
+        let pluginOptions: PluginOptions;
+
+        // This is a user-defined type guard: https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards
+        // This is the most type safe way to distinguish between the two possible argument arrays.
+        const isOptionsArgs = (maybeOptionsArgs: typeof args): maybeOptionsArgs is [SceneSource, Scene, ImportMeshOptions?] => {
+            // If the second argument is an object, then it must be the options overload.
+            return typeof maybeOptionsArgs[1] === "object";
+        };
+
+        if (isOptionsArgs(args)) {
+            // Source is mapped to sceneFileName
+            sceneFilename = args[0];
+            scene = args[1];
+            // Options determine the rest of the arguments
+            ({ meshNames, rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = args[2] ?? {});
+        } else {
+            // For the legacy signature, we just directly map each argument
+            [meshNames, rootUrl, sceneFilename, scene, onProgress, pluginExtension, name] = args;
+        }
+
         return new Promise((resolve, reject) => {
-            SceneLoader.ImportMesh(
+            SceneLoader._ImportMesh(
                 meshNames,
                 rootUrl,
                 sceneFilename,
@@ -892,7 +1079,8 @@ export class SceneLoader {
                     reject(exception || new Error(message));
                 },
                 pluginExtension,
-                name
+                name,
+                pluginOptions
             );
         });
     }
@@ -911,21 +1099,45 @@ export class SceneLoader {
      */
     public static Load(
         rootUrl: string,
-        sceneFilename: string | File | ArrayBufferView = "",
+        sceneFilename?: SceneSource,
+        engine?: Nullable<AbstractEngine>,
+        onSuccess?: Nullable<(scene: Scene) => void>,
+        onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
+        onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>,
+        pluginExtension?: Nullable<string>,
+        name?: string
+    ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
+        return SceneLoader._Load(rootUrl, sceneFilename, engine, onSuccess, onProgress, onError, pluginExtension, name);
+    }
+
+    private static _Load(
+        rootUrl: string,
+        sceneFilename: SceneSource = "",
         engine: Nullable<AbstractEngine> = EngineStore.LastCreatedEngine,
         onSuccess: Nullable<(scene: Scene) => void> = null,
         onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
         onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
         pluginExtension: Nullable<string> = null,
-        name: string = ""
+        name = "",
+        pluginOptions: PluginOptions = {}
     ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
         if (!engine) {
             Tools.Error("No engine available");
             return null;
         }
 
-        return SceneLoader.Append(rootUrl, sceneFilename, new Scene(engine), onSuccess, onProgress, onError, pluginExtension, name);
+        return SceneLoader._Append(rootUrl, sceneFilename, new Scene(engine), onSuccess, onProgress, onError, pluginExtension, name, pluginOptions);
     }
+
+    /**
+     * Load a scene
+     * @experimental
+     * @param source a string that defines the name of the scene file, or starts with "data:" following by the stringified version of the scene, or a File object, or an ArrayBufferView
+     * @param engine is the instance of BABYLON.Engine to use to create the scene
+     * @param options an object that configures aspects of how the scene is loaded
+     * @returns The loaded scene
+     */
+    public static LoadAsync(source: SceneSource, engine: AbstractEngine, options?: LoadOptions): Promise<Scene>;
 
     /**
      * Load a scene
@@ -939,14 +1151,53 @@ export class SceneLoader {
      */
     public static LoadAsync(
         rootUrl: string,
-        sceneFilename: string | File | ArrayBufferView = "",
-        engine: Nullable<AbstractEngine> = EngineStore.LastCreatedEngine,
-        onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
-        pluginExtension: Nullable<string> = null,
-        name: string = ""
+        sceneFilename?: SceneSource,
+        engine?: Nullable<AbstractEngine>,
+        onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
+        pluginExtension?: Nullable<string>,
+        name?: string
+    ): Promise<Scene>;
+
+    public static LoadAsync(
+        ...args:
+            | [
+                  rootUrl: string,
+                  sceneFilename?: SceneSource,
+                  engine?: Nullable<AbstractEngine>,
+                  onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
+                  pluginExtension?: Nullable<string>,
+                  name?: string,
+              ]
+            | [source: SceneSource, engine: AbstractEngine, options?: LoadOptions]
     ): Promise<Scene> {
+        let rootUrl: string;
+        let sceneFilename: SceneSource | undefined;
+        let engine: Nullable<AbstractEngine> | undefined;
+        let onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> | undefined;
+        let pluginExtension: Nullable<string> | undefined;
+        let name: string | undefined;
+        let pluginOptions: PluginOptions;
+
+        // This is a user-defined type guard: https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards
+        // This is the most type safe way to distinguish between the two possible argument arrays.
+        const isOptionsArgs = (maybeOptionsArgs: typeof args): maybeOptionsArgs is [SceneSource, AbstractEngine, LoadOptions?] => {
+            // If the second argument is an engine, then it must be the options overload.
+            return maybeOptionsArgs[1] instanceof AbstractEngine;
+        };
+
+        if (isOptionsArgs(args)) {
+            // Source is mapped to sceneFileName
+            sceneFilename = args[0];
+            engine = args[1];
+            // Options determine the rest of the arguments
+            ({ rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = args[2] ?? {});
+        } else {
+            // For the legacy signature, we just directly map each argument
+            [rootUrl, sceneFilename, engine, onProgress, pluginExtension, name] = args;
+        }
+
         return new Promise((resolve, reject) => {
-            SceneLoader.Load(
+            SceneLoader._Load(
                 rootUrl,
                 sceneFilename,
                 engine,
@@ -958,7 +1209,8 @@ export class SceneLoader {
                     reject(exception || new Error(message));
                 },
                 pluginExtension,
-                name
+                name,
+                pluginOptions
             );
         });
     }
@@ -977,13 +1229,27 @@ export class SceneLoader {
      */
     public static Append(
         rootUrl: string,
-        sceneFilename: string | File | ArrayBufferView = "",
+        sceneFilename?: SceneSource,
+        scene?: Nullable<Scene>,
+        onSuccess?: Nullable<(scene: Scene) => void>,
+        onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
+        onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>,
+        pluginExtension?: Nullable<string>,
+        name?: string
+    ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
+        return SceneLoader._Append(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name);
+    }
+
+    private static _Append(
+        rootUrl: string,
+        sceneFilename: SceneSource = "",
         scene: Nullable<Scene> = EngineStore.LastCreatedScene,
         onSuccess: Nullable<(scene: Scene) => void> = null,
         onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
         onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
         pluginExtension: Nullable<string> = null,
-        name: string = ""
+        name = "",
+        pluginOptions: PluginOptions = {}
     ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
         if (!scene) {
             Logger.Error("No scene available to append to");
@@ -1075,9 +1341,20 @@ export class SceneLoader {
             errorHandler,
             disposeHandler,
             pluginExtension,
-            name
+            name,
+            pluginOptions
         );
     }
+
+    /**
+     * Append a scene
+     * @experimental
+     * @param source a string that defines the name of the scene file, or starts with "data:" following by the stringified version of the scene, or a File object, or an ArrayBufferView
+     * @param scene is the instance of BABYLON.Scene to append to
+     * @param options an object that configures aspects of how the scene is loaded
+     * @returns The given scene
+     */
+    public static AppendAsync(source: SceneSource, scene: Scene, options?: LoadAssetContainerOptions): Promise<Scene>;
 
     /**
      * Append a scene
@@ -1091,14 +1368,53 @@ export class SceneLoader {
      */
     public static AppendAsync(
         rootUrl: string,
-        sceneFilename: string | File | ArrayBufferView = "",
-        scene: Nullable<Scene> = EngineStore.LastCreatedScene,
-        onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
-        pluginExtension: Nullable<string> = null,
-        name: string = ""
+        sceneFilename?: SceneSource,
+        scene?: Nullable<Scene>,
+        onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
+        pluginExtension?: Nullable<string>,
+        name?: string
+    ): Promise<Scene>;
+
+    public static AppendAsync(
+        ...args:
+            | [
+                  rootUrl: string,
+                  sceneFilename?: SceneSource,
+                  scene?: Nullable<Scene>,
+                  onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
+                  pluginExtension?: Nullable<string>,
+                  name?: string,
+              ]
+            | [source: SceneSource, scene: Scene, options?: AppendOptions]
     ): Promise<Scene> {
+        let rootUrl: string;
+        let sceneFilename: SceneSource | undefined;
+        let scene: Nullable<Scene> | undefined;
+        let onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> | undefined;
+        let pluginExtension: Nullable<string> | undefined;
+        let name: string | undefined;
+        let pluginOptions: PluginOptions;
+
+        // This is a user-defined type guard: https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards
+        // This is the most type safe way to distinguish between the two possible argument arrays.
+        const isOptionsArgs = (maybeOptionsArgs: typeof args): maybeOptionsArgs is [SceneSource, Scene, AppendOptions?] => {
+            // If the second argument is a Scene, then it must be the options overload.
+            return maybeOptionsArgs[1] instanceof Scene;
+        };
+
+        if (isOptionsArgs(args)) {
+            // Source is mapped to sceneFileName
+            sceneFilename = args[0];
+            scene = args[1];
+            // Options determine the rest of the arguments
+            ({ rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = args[2] ?? {});
+        } else {
+            // For the legacy signature, we just directly map each argument
+            [rootUrl, sceneFilename, scene, onProgress, pluginExtension, name] = args;
+        }
+
         return new Promise((resolve, reject) => {
-            SceneLoader.Append(
+            SceneLoader._Append(
                 rootUrl,
                 sceneFilename,
                 scene,
@@ -1110,7 +1426,8 @@ export class SceneLoader {
                     reject(exception || new Error(message));
                 },
                 pluginExtension,
-                name
+                name,
+                pluginOptions
             );
         });
     }
@@ -1129,13 +1446,27 @@ export class SceneLoader {
      */
     public static LoadAssetContainer(
         rootUrl: string,
-        sceneFilename: string | File | ArrayBufferView = "",
+        sceneFilename?: SceneSource,
+        scene?: Nullable<Scene>,
+        onSuccess?: Nullable<(assets: AssetContainer) => void>,
+        onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
+        onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>,
+        pluginExtension?: Nullable<string>,
+        name?: string
+    ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
+        return SceneLoader._LoadAssetContainer(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name);
+    }
+
+    private static _LoadAssetContainer(
+        rootUrl: string,
+        sceneFilename: SceneSource = "",
         scene: Nullable<Scene> = EngineStore.LastCreatedScene,
         onSuccess: Nullable<(assets: AssetContainer) => void> = null,
         onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
         onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
         pluginExtension: Nullable<string> = null,
-        name: string = ""
+        name = "",
+        pluginOptions: PluginOptions = {}
     ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
         if (!scene) {
             Logger.Error("No scene available to load asset container to");
@@ -1222,9 +1553,20 @@ export class SceneLoader {
             errorHandler,
             disposeHandler,
             pluginExtension,
-            name
+            name,
+            pluginOptions
         );
     }
+
+    /**
+     * Load a scene into an asset container
+     * @experimental
+     * @param source a string that defines the name of the scene file, or starts with "data:" following by the stringified version of the scene, or a File object, or an ArrayBufferView
+     * @param scene is the instance of Scene to append to
+     * @param options an object that configures aspects of how the scene is loaded
+     * @returns The loaded asset container
+     */
+    public static LoadAssetContainerAsync(source: SceneSource, scene: Scene, options?: LoadAssetContainerOptions): Promise<AssetContainer>;
 
     /**
      * Load a scene into an asset container
@@ -1233,17 +1575,60 @@ export class SceneLoader {
      * @param scene is the instance of Scene to append to
      * @param onProgress a callback with a progress event for each file being loaded
      * @param pluginExtension the extension used to determine the plugin
+     * @param name defines the filename, if the data is binary
      * @returns The loaded asset container
      */
     public static LoadAssetContainerAsync(
         rootUrl: string,
-        sceneFilename: string | File = "",
-        scene: Nullable<Scene> = EngineStore.LastCreatedScene,
-        onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
-        pluginExtension: Nullable<string> = null
+        sceneFilename?: SceneSource,
+        scene?: Nullable<Scene>,
+        onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
+        pluginExtension?: Nullable<string>,
+        name?: string
+    ): Promise<AssetContainer>;
+
+    // This is the single implementation that handles both the legacy many-parameters overload and the
+    // new source + config overload. Using a parameters array union is the most type safe way to handle this.
+    public static LoadAssetContainerAsync(
+        ...args:
+            | [
+                  rootUrl: string,
+                  sceneFilename?: SceneSource,
+                  scene?: Nullable<Scene>,
+                  onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
+                  pluginExtension?: Nullable<string>,
+                  name?: string,
+              ]
+            | [source: SceneSource, scene: Scene, options?: LoadAssetContainerOptions]
     ): Promise<AssetContainer> {
+        let rootUrl: string;
+        let sceneFilename: SceneSource | undefined;
+        let scene: Nullable<Scene> | undefined;
+        let onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> | undefined;
+        let pluginExtension: Nullable<string> | undefined;
+        let name: string | undefined;
+        let pluginOptions: PluginOptions;
+
+        // This is a user-defined type guard: https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards
+        // This is the most type safe way to distinguish between the two possible argument arrays.
+        const isOptionsArgs = (maybeOptionsArgs: typeof args): maybeOptionsArgs is [SceneSource, Scene, LoadAssetContainerOptions?] => {
+            // If the second argument is a Scene, then it must be the options overload.
+            return maybeOptionsArgs[1] instanceof Scene;
+        };
+
+        if (isOptionsArgs(args)) {
+            // Source is mapped to sceneFileName
+            sceneFilename = args[0];
+            scene = args[1];
+            // Options determine the rest of the arguments
+            ({ rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = args[2] ?? {});
+        } else {
+            // For the legacy signature, we just directly map each argument
+            [rootUrl, sceneFilename, scene, onProgress, pluginExtension, name] = args;
+        }
+
         return new Promise((resolve, reject) => {
-            SceneLoader.LoadAssetContainer(
+            SceneLoader._LoadAssetContainer(
                 rootUrl,
                 sceneFilename,
                 scene,
@@ -1254,7 +1639,9 @@ export class SceneLoader {
                 (scene, message, exception) => {
                     reject(exception || new Error(message));
                 },
-                pluginExtension
+                pluginExtension,
+                name,
+                pluginOptions
             );
         });
     }
@@ -1271,10 +1658,39 @@ export class SceneLoader {
      * @param onProgress a callback with a progress event for each file being loaded
      * @param onError a callback with the scene, a message, and possibly an exception when import fails
      * @param pluginExtension the extension used to determine the plugin
+     * @param name defines the filename, if the data is binary
      */
     public static ImportAnimations(
         rootUrl: string,
-        sceneFilename: string | File = "",
+        sceneFilename?: SceneSource,
+        scene?: Nullable<Scene>,
+        overwriteAnimations?: boolean,
+        animationGroupLoadingMode?: SceneLoaderAnimationGroupLoadingMode,
+        targetConverter?: Nullable<(target: any) => any>,
+        onSuccess?: Nullable<(scene: Scene) => void>,
+        onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
+        onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>,
+        pluginExtension?: Nullable<string>,
+        name?: string
+    ): void {
+        SceneLoader._ImportAnimations(
+            rootUrl,
+            sceneFilename,
+            scene,
+            overwriteAnimations,
+            animationGroupLoadingMode,
+            targetConverter,
+            onSuccess,
+            onProgress,
+            onError,
+            pluginExtension,
+            name
+        );
+    }
+
+    private static _ImportAnimations(
+        rootUrl: string,
+        sceneFilename: SceneSource = "",
         scene: Nullable<Scene> = EngineStore.LastCreatedScene,
         overwriteAnimations = true,
         animationGroupLoadingMode = SceneLoaderAnimationGroupLoadingMode.Clean,
@@ -1282,7 +1698,9 @@ export class SceneLoader {
         onSuccess: Nullable<(scene: Scene) => void> = null,
         onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
         onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
-        pluginExtension: Nullable<string> = null
+        pluginExtension: Nullable<string> = null,
+        name = "",
+        pluginOptions: PluginOptions = {}
     ): void {
         if (!scene) {
             Logger.Error("No scene available to load animations to");
@@ -1345,8 +1763,18 @@ export class SceneLoader {
             }
         };
 
-        this.LoadAssetContainer(rootUrl, sceneFilename, scene, onAssetContainerLoaded, onProgress, onError, pluginExtension);
+        this._LoadAssetContainer(rootUrl, sceneFilename, scene, onAssetContainerLoaded, onProgress, onError, pluginExtension, name, pluginOptions);
     }
+
+    /**
+     * Import animations from a file into a scene
+     * @experimental
+     * @param source a string that defines the name of the scene file, or starts with "data:" following by the stringified version of the scene, or a File object, or an ArrayBufferView
+     * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
+     * @param options an object that configures aspects of how the scene is loaded
+     * @returns The loaded asset container
+     */
+    public static ImportAnimationsAsync(source: SceneSource, scene: Scene, options?: ImportAnimationsOptions): Promise<Scene>;
 
     /**
      * Import animations from a file into a scene
@@ -1360,24 +1788,71 @@ export class SceneLoader {
      * @param onProgress a callback with a progress event for each file being loaded
      * @param onError a callback with the scene, a message, and possibly an exception when import fails
      * @param pluginExtension the extension used to determine the plugin
+     * @param name defines the filename, if the data is binary
      * @returns the updated scene with imported animations
      */
     public static ImportAnimationsAsync(
         rootUrl: string,
-        sceneFilename: string | File = "",
-        scene: Nullable<Scene> = EngineStore.LastCreatedScene,
-        overwriteAnimations = true,
-        animationGroupLoadingMode = SceneLoaderAnimationGroupLoadingMode.Clean,
-        targetConverter: Nullable<(target: any) => any> = null,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        onSuccess: Nullable<(scene: Scene) => void> = null,
-        onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
-        pluginExtension: Nullable<string> = null
+        sceneFilename?: SceneSource,
+        scene?: Nullable<Scene>,
+        overwriteAnimations?: boolean,
+        animationGroupLoadingMode?: SceneLoaderAnimationGroupLoadingMode,
+        targetConverter?: Nullable<(target: any) => any>,
+        onSuccess?: Nullable<(scene: Scene) => void>,
+        onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
+        onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>,
+        pluginExtension?: Nullable<string>,
+        name?: string
+    ): Promise<Scene>;
+
+    public static ImportAnimationsAsync(
+        ...args:
+            | [
+                  rootUrl: string,
+                  sceneFilename?: SceneSource,
+                  scene?: Nullable<Scene>,
+                  overwriteAnimations?: boolean,
+                  animationGroupLoadingMode?: SceneLoaderAnimationGroupLoadingMode,
+                  targetConverter?: Nullable<(target: any) => any>,
+                  onSuccess?: Nullable<(scene: Scene) => void>,
+                  onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
+                  onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>,
+                  pluginExtension?: Nullable<string>,
+                  name?: string,
+              ]
+            | [source: SceneSource, scene: Scene, options?: ImportAnimationsOptions]
     ): Promise<Scene> {
+        let rootUrl: string;
+        let sceneFilename: SceneSource | undefined;
+        let scene: Nullable<Scene> | undefined;
+        let overwriteAnimations: boolean | undefined;
+        let animationGroupLoadingMode: SceneLoaderAnimationGroupLoadingMode | undefined;
+        let targetConverter: Nullable<(target: any) => any> | undefined;
+        let onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> | undefined;
+        let pluginExtension: Nullable<string> | undefined;
+        let name: string | undefined;
+        let pluginOptions: PluginOptions;
+
+        // This is a user-defined type guard: https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards
+        // This is the most type safe way to distinguish between the two possible argument arrays.
+        const isOptionsArgs = (maybeOptionsArgs: typeof args): maybeOptionsArgs is [SceneSource, Scene, ImportAnimationsOptions?] => {
+            // If the second argument is a Scene, then it must be the options overload.
+            return maybeOptionsArgs[1] instanceof Scene;
+        };
+
+        if (isOptionsArgs(args)) {
+            // Source is mapped to sceneFileName
+            sceneFilename = args[0];
+            scene = args[1];
+            // Options determine the rest of the arguments
+            ({ rootUrl = "", overwriteAnimations, animationGroupLoadingMode, targetConverter, onProgress, pluginExtension, name, pluginOptions } = args[2] ?? {});
+        } else {
+            // For the legacy signature, we just directly map each argument
+            [rootUrl, sceneFilename, scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, , onProgress, , pluginExtension, name] = args;
+        }
+
         return new Promise((resolve, reject) => {
-            SceneLoader.ImportAnimations(
+            SceneLoader._ImportAnimations(
                 rootUrl,
                 sceneFilename,
                 scene,
@@ -1391,7 +1866,9 @@ export class SceneLoader {
                 (_scene: Scene, message: string, exception: any) => {
                     reject(exception || new Error(message));
                 },
-                pluginExtension
+                pluginExtension,
+                name,
+                pluginOptions
             );
         });
     }

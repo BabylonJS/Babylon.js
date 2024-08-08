@@ -392,6 +392,7 @@ WebGPUEngine.prototype.createRawCubeTextureFromUrl = function (
     const texture = this.createRawCubeTexture(null, size, format, type, !noMipmap, invertY, samplingMode, null);
     scene?.addPendingData(texture);
     texture.url = url;
+    texture.isReady = false;
 
     this._internalTexturesCache.push(texture);
 

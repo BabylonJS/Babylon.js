@@ -23,7 +23,7 @@
         var brdfLookup: vec4f =  textureSample(environmentBrdfSampler, environmentBrdfSamplerSampler, UV);
 
         #ifdef ENVIRONMENTBRDF_RGBD
-            brdfLookup.rgb = fromRGBD(brdfLookup.rgba);
+            brdfLookup = vec4f(fromRGBD(brdfLookup.rgba), brdfLookup.a);
         #endif
 
         return brdfLookup.rgb;

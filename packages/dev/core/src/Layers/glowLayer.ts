@@ -21,11 +21,10 @@ import { RegisterClass } from "../Misc/typeStore";
 import { Color4 } from "../Maths/math.color";
 import type { PBRMaterial } from "../Materials/PBR/pbrMaterial";
 
-import "../Shaders/glowMapMerge.fragment";
-import "../Shaders/glowMapMerge.vertex";
 import "../Layers/effectLayerSceneComponent";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 declare module "../abstractScene" {
     export interface AbstractScene {
@@ -231,6 +230,23 @@ export class GlowLayer extends EffectLayer {
         });
     }
 
+    protected override async _initShaderSourceAsync(forceGLSL = false) {
+        const engine = this._scene.getEngine();
+
+        if (engine.isWebGPU && !forceGLSL && !EffectLayer.ForceGLSL) {
+            this._shaderLanguage = ShaderLanguage.WGSL;
+            await Promise.all([
+                import("../ShadersWGSL/glowMapMerge.fragment"),
+                import("../ShadersWGSL/glowMapMerge.vertex"),
+                import("../ShadersWGSL/glowBlurPostProcess.fragment"),
+            ]);
+        } else {
+            await Promise.all([import("../Shaders/glowMapMerge.fragment"), import("../Shaders/glowMapMerge.vertex"), import("../Shaders/glowBlurPostProcess.fragment")]);
+        }
+
+        await super._initShaderSourceAsync(forceGLSL);
+    }
+
     /**
      * Get the effect name of the layer.
      * @returns The effect name
@@ -251,7 +267,18 @@ export class GlowLayer extends EffectLayer {
         }
 
         // Effect
-        return this._engine.createEffect("glowMapMerge", [VertexBuffer.PositionKind], ["offset"], ["textureSampler", "textureSampler2"], defines);
+        return this._engine.createEffect(
+            "glowMapMerge",
+            [VertexBuffer.PositionKind],
+            ["offset"],
+            ["textureSampler", "textureSampler2"],
+            defines,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            this.shaderLanguage
+        );
     }
 
     /**

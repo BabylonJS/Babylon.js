@@ -30,12 +30,6 @@ export class BlurPostProcess extends PostProcess {
     protected _packedFloat: boolean = false;
     private _staticDefines: string = "";
 
-    /**
-     * Force all the postprocess to compile to glsl even on WebGPU engines.
-     * False by default. This is mostly meant for backward compatibility.
-     */
-    public static ForceGLSL = false;
-
     /** The direction in which to blur the image. */
     @serializeAsVector2()
     public direction: Vector2;
@@ -105,7 +99,6 @@ export class BlurPostProcess extends PostProcess {
      * @param defines
      * @param _blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
      * @param textureFormat Format of textures used when performing the post process. (default: TextureFormat.RGBA)
-     * @param forceGLSL defines a boolean indicating if the shader must be compiled in GLSL even if we are using WebGPU
      */
     constructor(
         name: string,
@@ -119,8 +112,7 @@ export class BlurPostProcess extends PostProcess {
         textureType = TextureType.UNSIGNED_INT,
         defines = "",
         private _blockCompilation = false,
-        textureFormat = TextureFormat.RGBA,
-        forceGLSL = false
+        textureFormat = TextureFormat.RGBA
     ) {
         super(
             name,
@@ -137,9 +129,10 @@ export class BlurPostProcess extends PostProcess {
             "kernelBlur",
             { varyingCount: 0, depCount: 0 },
             true,
-            textureFormat
+            textureFormat,
+            undefined,
+            true
         );
-        this._initShaderSourceAsync(forceGLSL);
         this._staticDefines = defines;
         this.direction = direction;
         this.onApplyObservable.add((effect: Effect) => {
@@ -153,11 +146,11 @@ export class BlurPostProcess extends PostProcess {
         this.kernel = kernel;
     }
 
-    private _shadersLoaded = false;
-    private async _initShaderSourceAsync(forceGLSL = false) {
+    protected override async _initShaderSourceAsync(forceGLSL = false) {
         const engine = this.getEngine();
 
-        if (engine.isWebGPU && !forceGLSL && !BlurPostProcess.ForceGLSL) {
+        this._shadersLoaded = false;
+        if (engine.isWebGPU && !forceGLSL) {
             this._shaderLanguage = ShaderLanguage.WGSL;
 
             await Promise.all([import("../ShadersWGSL/kernelBlur.fragment"), import("../ShadersWGSL/kernelBlur.vertex")]);
