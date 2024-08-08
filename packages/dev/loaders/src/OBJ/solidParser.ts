@@ -550,11 +550,10 @@ export class SolidParser {
         }
 
         // Split the file into lines
+        // Preprocess line data
         const linesOBJ = data.split("\n");
         const lines: string[] = [];
         const lineLines: string[] = [];
-        // const vertexLines: string[] = [];
-        //
 
         for (let i = 0; i < linesOBJ.length; i++) {
             const line = linesOBJ[i].trim().replace(/\s\s/g, " ");
@@ -566,6 +565,7 @@ export class SolidParser {
 
             if (SolidParser._IsLineElement(line)) {
                 const lineValues = line.split(" ");
+                // create line elements with two vertices only
                 for (let i = 1; i < lineValues.length - 1; i++) {
                     lineLines.push(`l ${lineValues[i]} ${lineValues[i + 1]}`);
                 }
