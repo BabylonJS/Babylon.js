@@ -8,7 +8,7 @@ import type { Scene } from "../scene";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { Camera } from "../Cameras/camera";
-import { TextureType, TextureFormat, MATERIAL_ClockWiseSideOrientation, MATERIAL_CounterClockWiseSideOrientation } from "../Engines/constants";
+import { TextureType, TextureFormat, MATERIAL_ClockWiseSideOrientation, MATERIAL_CounterClockWiseSideOrientation, TextureAddressMode } from "../Engines/constants";
 
 import "../Shaders/depth.fragment";
 import "../Shaders/depth.vertex";
@@ -131,8 +131,8 @@ export class DepthRenderer {
             undefined,
             format
         );
-        this._depthMap.wrapU = Texture.CLAMP_ADDRESSMODE;
-        this._depthMap.wrapV = Texture.CLAMP_ADDRESSMODE;
+        this._depthMap.wrapU = TextureAddressMode.CLAMP;
+        this._depthMap.wrapV = TextureAddressMode.CLAMP;
         this._depthMap.refreshRate = 1;
         this._depthMap.renderParticles = false;
         this._depthMap.renderList = null;

@@ -2,9 +2,8 @@ import { Matrix } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
 import type { SubMesh } from "../Meshes/subMesh";
 import type { Mesh } from "../Meshes/mesh";
-import { TextureFormat, TextureType } from "../Engines/constants";
+import { TextureAddressMode, TextureFormat, TextureType } from "../Engines/constants";
 import type { SmartArray } from "../Misc/smartArray";
-import { Texture } from "../Materials/Textures/texture";
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import { MultiRenderTarget } from "../Materials/Textures/multiRenderTarget";
 import type { PrePassRenderer } from "../Rendering/prePassRenderer";
@@ -792,8 +791,8 @@ export class GeometryBufferRenderer {
         if (!this.isSupported) {
             return;
         }
-        this._multiRenderTarget.wrapU = Texture.CLAMP_ADDRESSMODE;
-        this._multiRenderTarget.wrapV = Texture.CLAMP_ADDRESSMODE;
+        this._multiRenderTarget.wrapU = TextureAddressMode.CLAMP;
+        this._multiRenderTarget.wrapV = TextureAddressMode.CLAMP;
         this._multiRenderTarget.refreshRate = 1;
         this._multiRenderTarget.renderParticles = false;
         this._multiRenderTarget.renderList = null;

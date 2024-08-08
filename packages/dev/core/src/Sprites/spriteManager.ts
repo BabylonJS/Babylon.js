@@ -16,7 +16,7 @@ import { SpriteRenderer } from "./spriteRenderer";
 import type { ThinSprite } from "./thinSprite";
 import type { ISize } from "../Maths/math.size";
 import { EngineStore } from "../Engines/engineStore";
-import { SnippetUrl, TEXTURE_TRILINEAR_SAMPLINGMODE } from "../Engines/constants";
+import { SnippetUrl, TEXTURE_TRILINEAR_SAMPLINGMODE, TextureAddressMode } from "../Engines/constants";
 
 import type { Ray } from "../Culling/ray";
 
@@ -183,8 +183,8 @@ export class SpriteManager implements ISpriteManager {
         return this._spriteRenderer.texture as Texture;
     }
     public set texture(value: Texture) {
-        value.wrapU = Texture.CLAMP_ADDRESSMODE;
-        value.wrapV = Texture.CLAMP_ADDRESSMODE;
+        value.wrapU = TextureAddressMode.CLAMP;
+        value.wrapV = TextureAddressMode.CLAMP;
         this._spriteRenderer.texture = value;
         this._textureContent = null;
     }

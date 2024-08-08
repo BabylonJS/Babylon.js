@@ -88,7 +88,7 @@ export class Engine extends ThinEngine {
     /** Defines that the resource is delayed and has not started loading */
     public static readonly DELAYLOADSTATE_NOTLOADED = constants.DELAYLOADSTATE_NOTLOADED;
 
-    // Depht or Stencil test Constants.
+    // Depth or Stencil test Constants.
     /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will never pass. i.e. Nothing will be drawn */
     public static readonly NEVER = constants.NEVER;
     /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn */
@@ -122,12 +122,12 @@ export class Engine extends ThinEngine {
     /** Passed to stencilOperation to specify that stencil value must be decremented with wrapping */
     public static readonly DECR_WRAP = constants.DECR_WRAP;
 
-    /** Texture is not repeating outside of 0..1 UVs */
-    public static readonly TEXTURE_CLAMP_ADDRESSMODE = constants.TEXTURE_CLAMP_ADDRESSMODE;
-    /** Texture is repeating outside of 0..1 UVs */
-    public static readonly TEXTURE_WRAP_ADDRESSMODE = constants.TEXTURE_WRAP_ADDRESSMODE;
-    /** Texture is repeating and mirrored */
-    public static readonly TEXTURE_MIRROR_ADDRESSMODE = constants.TEXTURE_MIRROR_ADDRESSMODE;
+    /** Texture is not repeating outside of 0..1 UVs @deprecated use TextureAddressMode */
+    public static readonly TEXTURE_CLAMP_ADDRESSMODE = constants.TextureAddressMode.CLAMP;
+    /** Texture is repeating outside of 0..1 UVs @deprecated use TextureAddressMode */
+    public static readonly TEXTURE_WRAP_ADDRESSMODE = constants.TextureAddressMode.WRAP;
+    /** Texture is repeating and mirrored @deprecated use TextureAddressMode */
+    public static readonly TEXTURE_MIRROR_ADDRESSMODE = constants.TextureAddressMode.MIRROR;
 
     /** @deprecated use TextureType */
     public static readonly TEXTUREFORMAT_ALPHA = constants.TextureFormat.ALPHA;

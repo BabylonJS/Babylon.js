@@ -16,7 +16,7 @@ import { EngineStore } from "../../../Engines/engineStore";
 import { SSAO2Configuration } from "../../../Rendering/ssao2Configuration";
 import type { PrePassRenderer } from "../../../Rendering/prePassRenderer";
 import type { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRenderer";
-import { TextureType, PrepassTextureType, TEXTURE_BILINEAR_SAMPLINGMODE } from "../../../Engines/constants";
+import { TextureType, PrepassTextureType, TEXTURE_BILINEAR_SAMPLINGMODE, TextureAddressMode } from "../../../Engines/constants";
 import type { Nullable } from "../../../types";
 import { Scalar } from "../../../Maths/math.scalar";
 import { RawTexture } from "../../../Materials/Textures/rawTexture";
@@ -656,8 +656,8 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
 
         const texture = RawTexture.CreateRGBATexture(data, size, size, this._scene, false, false, TEXTURE_BILINEAR_SAMPLINGMODE);
         texture.name = "SSAORandomTexture";
-        texture.wrapU = Texture.WRAP_ADDRESSMODE;
-        texture.wrapV = Texture.WRAP_ADDRESSMODE;
+        texture.wrapU = TextureAddressMode.WRAP;
+        texture.wrapV = TextureAddressMode.WRAP;
         this._randomTexture = texture;
     }
 

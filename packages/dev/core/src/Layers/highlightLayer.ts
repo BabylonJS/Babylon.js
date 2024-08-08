@@ -21,7 +21,7 @@ import { PassPostProcess } from "../PostProcesses/passPostProcess";
 import { BlurPostProcess } from "../PostProcesses/blurPostProcess";
 import { EffectLayer } from "./effectLayer";
 import { AbstractScene } from "../abstractScene";
-import { ALPHA_COMBINE, TextureType, REPLACE, KEEP, NOTEQUAL, EQUAL } from "../Engines/constants";
+import { ALPHA_COMBINE, TextureType, REPLACE, KEEP, NOTEQUAL, EQUAL, TextureAddressMode } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import { RegisterClass } from "../Misc/typeStore";
 import { Color4, Color3 } from "../Maths/math.color";
@@ -446,8 +446,8 @@ export class HighlightLayer extends EffectLayer {
             true,
             textureType
         );
-        this._blurTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
-        this._blurTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
+        this._blurTexture.wrapU = TextureAddressMode.CLAMP;
+        this._blurTexture.wrapV = TextureAddressMode.CLAMP;
         this._blurTexture.anisotropicFilteringLevel = 16;
         this._blurTexture.updateSamplingMode(Texture.TRILINEAR_SAMPLINGMODE);
         this._blurTexture.renderParticles = false;

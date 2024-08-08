@@ -20,7 +20,7 @@ import { Container } from "./controls/container";
 import { Control } from "./controls/control";
 import { Style } from "./style";
 import { Measure } from "./measure";
-import { SnippetUrl, TextureFormat.RGBA } from "core/Engines/constants";
+import { SnippetUrl, TextureAddressMode, TextureFormat } from "core/Engines/constants";
 import { Viewport } from "core/Maths/math.viewport";
 import { Color3 } from "core/Maths/math.color";
 import { WebRequest } from "core/Misc/webRequest";
@@ -1117,21 +1117,21 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         }
 
         // In wrap and mirror mode, the texture coordinate for coordinates more than 1 is the fractional part of the coordinate
-        if (this.wrapU === Texture.WRAP_ADDRESSMODE || this.wrapU === Texture.MIRROR_ADDRESSMODE) {
+        if (this.wrapU === TextureAddressMode.WRAP || this.wrapU === TextureAddressMode.MIRROR) {
             if (result.x > 1) {
                 let fX = result.x - Math.trunc(result.x);
                 // In mirror mode, the sign of the texture coordinate depends on the integer part -
                 // odd integers means it is mirrored from the original coordinate
-                if (this.wrapU === Texture.MIRROR_ADDRESSMODE && Math.trunc(result.x) % 2 === 1) {
+                if (this.wrapU === TextureAddressMode.MIRROR && Math.trunc(result.x) % 2 === 1) {
                     fX = 1 - fX;
                 }
                 result.x = fX;
             }
         }
-        if (this.wrapV === Texture.WRAP_ADDRESSMODE || this.wrapV === Texture.MIRROR_ADDRESSMODE) {
+        if (this.wrapV === TextureAddressMode.WRAP || this.wrapV === TextureAddressMode.MIRROR) {
             if (result.y > 1) {
                 let fY = result.y - Math.trunc(result.y);
-                if (this.wrapV === Texture.MIRROR_ADDRESSMODE && Math.trunc(result.x) % 2 === 1) {
+                if (this.wrapV === TextureAddressMode.MIRROR && Math.trunc(result.x) % 2 === 1) {
                     fY = 1 - fY;
                 }
                 result.y = fY;

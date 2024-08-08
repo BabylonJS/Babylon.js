@@ -8,7 +8,7 @@ import { Color3 } from "core/Maths/math.color";
 import type { IAnimatable } from "core/Animations/animatable.interface";
 import { Tags } from "core/Misc/tags";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { Texture } from "core/Materials/Textures/texture";
+import { TextureAddressMode } from "core/Engines/constants";
 import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
 import type { IEffectCreationOptions } from "core/Materials/effect";
 import { MaterialDefines } from "core/Materials/materialDefines";
@@ -548,8 +548,8 @@ export class FurMaterial extends PushMaterial {
         }
 
         texture.update(false);
-        texture.wrapU = Texture.WRAP_ADDRESSMODE;
-        texture.wrapV = Texture.WRAP_ADDRESSMODE;
+        texture.wrapU = TextureAddressMode.WRAP;
+        texture.wrapV = TextureAddressMode.WRAP;
 
         return texture;
     }

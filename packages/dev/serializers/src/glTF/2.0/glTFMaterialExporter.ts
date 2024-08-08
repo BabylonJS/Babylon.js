@@ -14,7 +14,7 @@ import { RawTexture } from "core/Materials/Textures/rawTexture";
 import type { Scene } from "core/scene";
 
 import type { _Exporter } from "./glTFExporter";
-import { ALPHA_COMBINE, TextureType, TextureFormat, TEXTURE_NEAREST_SAMPLINGMODE } from "core/Engines/constants";
+import { ALPHA_COMBINE, TextureType, TextureFormat, TEXTURE_NEAREST_SAMPLINGMODE, TextureAddressMode } from "core/Engines/constants";
 import { DumpTools } from "core/Misc/dumpTools";
 
 import type { Material } from "core/Materials/material";
@@ -873,13 +873,13 @@ export class _GLTFMaterialExporter {
 
     private _getGLTFTextureWrapMode(wrapMode: number): TextureWrapMode {
         switch (wrapMode) {
-            case Texture.WRAP_ADDRESSMODE: {
+            case TextureAddressMode.WRAP: {
                 return TextureWrapMode.REPEAT;
             }
-            case Texture.CLAMP_ADDRESSMODE: {
+            case TextureAddressMode.CLAMP: {
                 return TextureWrapMode.CLAMP_TO_EDGE;
             }
-            case Texture.MIRROR_ADDRESSMODE: {
+            case TextureAddressMode.MIRROR: {
                 return TextureWrapMode.MIRRORED_REPEAT;
             }
             default: {

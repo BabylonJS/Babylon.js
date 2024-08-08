@@ -8,7 +8,7 @@ import { Texture } from "core/Materials/Textures/texture";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { MultiRenderTarget } from "core/Materials/Textures/multiRenderTarget";
 import type { CubeTexture } from "core/Materials/Textures/cubeTexture";
-import { TextureFormat, TextureType } from "core/Engines/constants";
+import { TextureAddressMode, TextureFormat, TextureType } from "core/Engines/constants";
 
 import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
@@ -523,13 +523,13 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                             />
                             <CheckBoxLineComponent
                                 label="Clamp U"
-                                isSelected={() => texture.wrapU === Texture.CLAMP_ADDRESSMODE}
-                                onSelect={(value) => (texture.wrapU = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE)}
+                                isSelected={() => texture.wrapU === TextureAddressMode.CLAMP}
+                                onSelect={(value) => (texture.wrapU = value ? TextureAddressMode.CLAMP : TextureAddressMode.WRAP)}
                             />
                             <CheckBoxLineComponent
                                 label="Clamp V"
-                                isSelected={() => texture.wrapV === Texture.CLAMP_ADDRESSMODE}
-                                onSelect={(value) => (texture.wrapV = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE)}
+                                isSelected={() => texture.wrapV === TextureAddressMode.CLAMP}
+                                onSelect={(value) => (texture.wrapV = value ? TextureAddressMode.CLAMP : TextureAddressMode.WRAP)}
                             />
                         </div>
                     )}

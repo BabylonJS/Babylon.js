@@ -3,7 +3,7 @@ import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
 import { Scalar } from "core/Maths/math.scalar";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { Texture } from "core/Materials/Textures/texture";
+import { TextureAddressMode } from "core/Engines/constants";
 import type { Engine } from "core/Engines/engine";
 
 /**
@@ -399,30 +399,30 @@ export class TextureUtils {
         //set babylon wrap modes from sampling parameter
         switch (parameters.wrapS) {
             case TextureWrapMode.REPEAT:
-                babylonTexture.wrapU = Texture.WRAP_ADDRESSMODE;
+                babylonTexture.wrapU = TextureAddressMode.WRAP;
                 break;
             case TextureWrapMode.CLAMP_TO_EDGE:
-                babylonTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
+                babylonTexture.wrapU = TextureAddressMode.CLAMP;
                 break;
             case TextureWrapMode.MIRRORED_REPEAT:
-                babylonTexture.wrapU = Texture.MIRROR_ADDRESSMODE;
+                babylonTexture.wrapU = TextureAddressMode.MIRROR;
                 break;
             default:
-                babylonTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
+                babylonTexture.wrapU = TextureAddressMode.CLAMP;
         }
 
         switch (parameters.wrapT) {
             case TextureWrapMode.REPEAT:
-                babylonTexture.wrapV = Texture.WRAP_ADDRESSMODE;
+                babylonTexture.wrapV = TextureAddressMode.WRAP;
                 break;
             case TextureWrapMode.CLAMP_TO_EDGE:
-                babylonTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
+                babylonTexture.wrapV = TextureAddressMode.CLAMP;
                 break;
             case TextureWrapMode.MIRRORED_REPEAT:
-                babylonTexture.wrapV = Texture.MIRROR_ADDRESSMODE;
+                babylonTexture.wrapV = TextureAddressMode.MIRROR;
                 break;
             default:
-                babylonTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
+                babylonTexture.wrapV = TextureAddressMode.CLAMP;
         }
 
         if (parameters.maxAnisotropy != null && parameters.maxAnisotropy > 1) {

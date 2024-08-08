@@ -10,7 +10,7 @@ import { serialize } from "core/Misc/decorators";
 import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
 import { Texture } from "core/Materials/Textures/texture";
-import { TextureFormat.RGBA } from "core/Engines/constants";
+import { TextureFormat } from "core/Engines/constants";
 import { Observable } from "core/Misc/observable";
 import type { BaseGradient } from "./gradient/BaseGradient";
 import { Tools } from "core/Misc/tools";

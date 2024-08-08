@@ -4,7 +4,7 @@ import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { PassPostProcess } from "../PostProcesses/passPostProcess";
-import { TextureType, TextureFormat } from "../Engines/constants";
+import { TextureType, TextureFormat, TextureAddressMode } from "../Engines/constants";
 import type { Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess";
 import type { AbstractEngine } from "../Engines/abstractEngine";
@@ -50,8 +50,8 @@ export function CreateResizedCopy(texture: Texture, width: number, height: numbe
     rtt.anisotropicFilteringLevel = texture.anisotropicFilteringLevel;
     (<InternalTexture>rtt._texture).isReady = false;
 
-    texture.wrapU = Texture.CLAMP_ADDRESSMODE;
-    texture.wrapV = Texture.CLAMP_ADDRESSMODE;
+    texture.wrapU = TextureAddressMode.CLAMP;
+    texture.wrapV = TextureAddressMode.CLAMP;
 
     const passPostProcess = new PassPostProcess(
         "pass",

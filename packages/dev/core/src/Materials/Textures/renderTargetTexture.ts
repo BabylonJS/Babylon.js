@@ -14,7 +14,7 @@ import { Texture } from "../../Materials/Textures/texture";
 import { PostProcessManager } from "../../PostProcesses/postProcessManager";
 import type { PostProcess } from "../../PostProcesses/postProcess";
 import { RenderingManager } from "../../Rendering/renderingManager";
-import { MATERIAL_TextureDirtyFlag, TextureType, TextureFormat, SnapshotRendering } from "../../Engines/constants";
+import { MATERIAL_TextureDirtyFlag, TextureType, TextureFormat, SnapshotRendering, TextureAddressMode } from "../../Engines/constants";
 import type { IRenderTargetTexture, RenderTargetWrapper } from "../../Engines/renderTargetWrapper";
 
 import "../../Engines/Extensions/engine.renderTarget";
@@ -580,8 +580,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         };
 
         if (this.samplingMode === Texture.NEAREST_SAMPLINGMODE) {
-            this.wrapU = Texture.CLAMP_ADDRESSMODE;
-            this.wrapV = Texture.CLAMP_ADDRESSMODE;
+            this.wrapU = TextureAddressMode.CLAMP;
+            this.wrapV = TextureAddressMode.CLAMP;
         }
 
         if (!delayAllocation) {

@@ -76,6 +76,7 @@ import type { AssetContainer } from "core/assetContainer";
 import type { AnimationPropertyInfo } from "./glTFLoaderAnimation";
 import { nodeAnimationData } from "./glTFLoaderAnimation";
 import type { IObjectInfo } from "core/ObjectModel/objectModelInterfaces";
+import { TextureAddressMode } from "core/Engines/constants";
 
 interface TypedArrayLike extends ArrayBufferView {
     readonly length: number;
@@ -2544,14 +2545,14 @@ export class GLTFLoader implements IGLTFLoader {
 
         switch (mode) {
             case TextureWrapMode.CLAMP_TO_EDGE:
-                return Texture.CLAMP_ADDRESSMODE;
+                return TextureAddressMode.CLAMP;
             case TextureWrapMode.MIRRORED_REPEAT:
-                return Texture.MIRROR_ADDRESSMODE;
+                return TextureAddressMode.MIRROR;
             case TextureWrapMode.REPEAT:
-                return Texture.WRAP_ADDRESSMODE;
+                return TextureAddressMode.WRAP;
             default:
                 Logger.Warn(`${context}: Invalid value (${mode})`);
-                return Texture.WRAP_ADDRESSMODE;
+                return TextureAddressMode.WRAP;
         }
     }
 

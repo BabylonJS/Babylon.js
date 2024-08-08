@@ -1,5 +1,12 @@
 import { Texture } from "./texture";
-import { TEXTURE_TRILINEAR_SAMPLINGMODE, TEXTURE_NEAREST_SAMPLINGMODE, TextureType, TextureFormat, TEXTURE_CREATIONFLAG_STORAGE } from "../../Engines/constants";
+import {
+    TEXTURE_TRILINEAR_SAMPLINGMODE,
+    TEXTURE_NEAREST_SAMPLINGMODE,
+    TextureType,
+    TextureFormat,
+    TEXTURE_CREATIONFLAG_STORAGE,
+    TextureAddressMode,
+} from "../../Engines/constants";
 import "../../Engines/Extensions/engine.rawTexture";
 import type { Nullable } from "../../types";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
@@ -60,8 +67,8 @@ export class RawTexture extends Texture {
 
         this._texture = this._engine.createRawTexture(data, width, height, format, generateMipMaps, invertY, samplingMode, null, type, creationFlags ?? 0, useSRGBBuffer ?? false);
 
-        this.wrapU = Texture.CLAMP_ADDRESSMODE;
-        this.wrapV = Texture.CLAMP_ADDRESSMODE;
+        this.wrapU = TextureAddressMode.CLAMP;
+        this.wrapV = TextureAddressMode.CLAMP;
     }
 
     /**

@@ -16,7 +16,7 @@ import type { PostProcess } from "../PostProcesses/postProcess";
 import { BlurPostProcess } from "../PostProcesses/blurPostProcess";
 import { EffectLayer } from "./effectLayer";
 import { AbstractScene } from "../abstractScene";
-import { ALPHA_ADD, TextureType } from "../Engines/constants";
+import { ALPHA_ADD, TextureAddressMode, TextureType } from "../Engines/constants";
 import { RegisterClass } from "../Misc/typeStore";
 import { Color4 } from "../Maths/math.color";
 import type { PBRMaterial } from "../Materials/PBR/pbrMaterial";
@@ -308,8 +308,8 @@ export class GlowLayer extends EffectLayer {
             true,
             textureType
         );
-        this._blurTexture1.wrapU = Texture.CLAMP_ADDRESSMODE;
-        this._blurTexture1.wrapV = Texture.CLAMP_ADDRESSMODE;
+        this._blurTexture1.wrapU = TextureAddressMode.CLAMP;
+        this._blurTexture1.wrapV = TextureAddressMode.CLAMP;
         this._blurTexture1.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
         this._blurTexture1.renderParticles = false;
         this._blurTexture1.ignoreCameraViewport = true;
@@ -328,8 +328,8 @@ export class GlowLayer extends EffectLayer {
             true,
             textureType
         );
-        this._blurTexture2.wrapU = Texture.CLAMP_ADDRESSMODE;
-        this._blurTexture2.wrapV = Texture.CLAMP_ADDRESSMODE;
+        this._blurTexture2.wrapU = TextureAddressMode.CLAMP;
+        this._blurTexture2.wrapV = TextureAddressMode.CLAMP;
         this._blurTexture2.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
         this._blurTexture2.renderParticles = false;
         this._blurTexture2.ignoreCameraViewport = true;

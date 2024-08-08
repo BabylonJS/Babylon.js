@@ -1,5 +1,5 @@
 import type { Camera } from "core/Cameras/camera";
-import { TextureType, TextureFormat, TEXTURE_NEAREST_SAMPLINGMODE, TEXTURE_BILINEAR_SAMPLINGMODE } from "core/Engines/constants";
+import { TextureType, TextureFormat, TEXTURE_NEAREST_SAMPLINGMODE, TEXTURE_BILINEAR_SAMPLINGMODE, TextureAddressMode } from "core/Engines/constants";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import { Texture } from "core/Materials/Textures/texture";
@@ -179,8 +179,8 @@ export class FluidRenderingTextures {
         this._texture = new Texture(null, this._scene);
         this._texture.name = "rtt" + this._name;
         this._texture._texture = renderTexture;
-        this._texture.wrapU = Texture.CLAMP_ADDRESSMODE;
-        this._texture.wrapV = Texture.CLAMP_ADDRESSMODE;
+        this._texture.wrapU = TextureAddressMode.CLAMP;
+        this._texture.wrapV = TextureAddressMode.CLAMP;
         this._texture.anisotropicFilteringLevel = 1;
     }
 
@@ -219,8 +219,8 @@ export class FluidRenderingTextures {
         const texture = new Texture(null, this._scene);
         texture.name = "rttBlurred" + debugName;
         texture._texture = renderTexture;
-        texture.wrapU = Texture.CLAMP_ADDRESSMODE;
-        texture.wrapV = Texture.CLAMP_ADDRESSMODE;
+        texture.wrapU = TextureAddressMode.CLAMP;
+        texture.wrapV = TextureAddressMode.CLAMP;
         texture.anisotropicFilteringLevel = 1;
 
         if (useStandardBlur) {
@@ -255,8 +255,8 @@ export class FluidRenderingTextures {
             });
             kernelBlurXPostprocess.onSizeChangedObservable.add(() => {
                 kernelBlurXPostprocess._textures.forEach((rt) => {
-                    rt.texture!.wrapU = Texture.CLAMP_ADDRESSMODE;
-                    rt.texture!.wrapV = Texture.CLAMP_ADDRESSMODE;
+                    rt.texture!.wrapU = TextureAddressMode.CLAMP;
+                    rt.texture!.wrapV = TextureAddressMode.CLAMP;
                 });
             });
             this._fixReusablePostProcess(kernelBlurXPostprocess);
@@ -286,8 +286,8 @@ export class FluidRenderingTextures {
             });
             kernelBlurYPostprocess.onSizeChangedObservable.add(() => {
                 kernelBlurYPostprocess._textures.forEach((rt) => {
-                    rt.texture!.wrapU = Texture.CLAMP_ADDRESSMODE;
-                    rt.texture!.wrapV = Texture.CLAMP_ADDRESSMODE;
+                    rt.texture!.wrapU = TextureAddressMode.CLAMP;
+                    rt.texture!.wrapV = TextureAddressMode.CLAMP;
                 });
             });
             this._fixReusablePostProcess(kernelBlurYPostprocess);
@@ -337,8 +337,8 @@ export class FluidRenderingTextures {
             });
             kernelBlurXPostprocess.onSizeChangedObservable.add(() => {
                 kernelBlurXPostprocess._textures.forEach((rt) => {
-                    rt.texture!.wrapU = Texture.CLAMP_ADDRESSMODE;
-                    rt.texture!.wrapV = Texture.CLAMP_ADDRESSMODE;
+                    rt.texture!.wrapU = TextureAddressMode.CLAMP;
+                    rt.texture!.wrapV = TextureAddressMode.CLAMP;
                 });
             });
             this._fixReusablePostProcess(kernelBlurXPostprocess);
@@ -370,8 +370,8 @@ export class FluidRenderingTextures {
             });
             kernelBlurYPostprocess.onSizeChangedObservable.add(() => {
                 kernelBlurYPostprocess._textures.forEach((rt) => {
-                    rt.texture!.wrapU = Texture.CLAMP_ADDRESSMODE;
-                    rt.texture!.wrapV = Texture.CLAMP_ADDRESSMODE;
+                    rt.texture!.wrapU = TextureAddressMode.CLAMP;
+                    rt.texture!.wrapV = TextureAddressMode.CLAMP;
                 });
             });
             this._fixReusablePostProcess(kernelBlurYPostprocess);

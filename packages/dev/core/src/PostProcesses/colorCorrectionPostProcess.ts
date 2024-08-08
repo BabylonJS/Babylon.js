@@ -12,6 +12,7 @@ import { SerializationHelper } from "../Misc/decorators.serialization";
 import type { Nullable } from "../types";
 
 import type { Scene } from "../scene";
+import { TextureAddressMode } from "../Engines/constants";
 
 /**
  *
@@ -59,8 +60,8 @@ export class ColorCorrectionPostProcess extends PostProcess {
         const scene = camera?.getScene() || null;
         this._colorTableTexture = new Texture(colorTableUrl, scene, true, false, Texture.TRILINEAR_SAMPLINGMODE);
         this._colorTableTexture.anisotropicFilteringLevel = 1;
-        this._colorTableTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
-        this._colorTableTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
+        this._colorTableTexture.wrapU = TextureAddressMode.CLAMP;
+        this._colorTableTexture.wrapV = TextureAddressMode.CLAMP;
 
         this.colorTableUrl = colorTableUrl;
 

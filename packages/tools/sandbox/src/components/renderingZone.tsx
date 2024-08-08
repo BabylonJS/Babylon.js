@@ -22,6 +22,7 @@ import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { Texture } from "core/Materials/Textures/texture";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { TextureAddressMode } from "core/Engines/constants";
 
 function isTextureAsset(name: string): boolean {
     const queryStringIndex = name.indexOf("?");
@@ -297,8 +298,8 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
 
                 texture.gammaSpace = true;
                 texture.hasAlpha = true;
-                texture.wrapU = Texture.CLAMP_ADDRESSMODE;
-                texture.wrapV = Texture.CLAMP_ADDRESSMODE;
+                texture.wrapU = TextureAddressMode.CLAMP;
+                texture.wrapV = TextureAddressMode.CLAMP;
 
                 scene.debugLayer.show();
                 scene.debugLayer.select(texture, "PREVIEW");

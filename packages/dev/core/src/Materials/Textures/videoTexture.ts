@@ -4,7 +4,7 @@ import { Logger } from "../../Misc/logger";
 import type { Nullable } from "../../types";
 import type { Scene } from "../../scene";
 import { Texture } from "../../Materials/Textures/texture";
-import { TextureFormat } from "../../Engines/constants";
+import { TextureAddressMode, TextureFormat } from "../../Engines/constants";
 import type { ExternalTexture } from "./externalTexture";
 import type { WebGPUEngine } from "core/Engines";
 
@@ -292,11 +292,11 @@ export class VideoTexture extends Texture {
         }
 
         if (!this._getEngine()!.needPOTTextures || (Tools.IsExponentOfTwo(this.video.videoWidth) && Tools.IsExponentOfTwo(this.video.videoHeight))) {
-            this.wrapU = Texture.WRAP_ADDRESSMODE;
-            this.wrapV = Texture.WRAP_ADDRESSMODE;
+            this.wrapU = TextureAddressMode.WRAP;
+            this.wrapV = TextureAddressMode.WRAP;
         } else {
-            this.wrapU = Texture.CLAMP_ADDRESSMODE;
-            this.wrapV = Texture.CLAMP_ADDRESSMODE;
+            this.wrapU = TextureAddressMode.CLAMP;
+            this.wrapV = TextureAddressMode.CLAMP;
             this._generateMipMaps = false;
         }
 

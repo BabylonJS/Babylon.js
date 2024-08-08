@@ -19,7 +19,7 @@ import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
-import { ALPHA_COMBINE, TextureType } from "../Engines/constants";
+import { ALPHA_COMBINE, TextureAddressMode, TextureType } from "../Engines/constants";
 
 import "../Shaders/glowMapGeneration.fragment";
 import "../Shaders/glowMapGeneration.vertex";
@@ -459,8 +459,8 @@ export abstract class EffectLayer {
             this._effectLayerOptions.generateStencilBuffer
         );
         this._mainTexture.activeCamera = this._effectLayerOptions.camera;
-        this._mainTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
-        this._mainTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
+        this._mainTexture.wrapU = TextureAddressMode.CLAMP;
+        this._mainTexture.wrapV = TextureAddressMode.CLAMP;
         this._mainTexture.anisotropicFilteringLevel = 1;
         this._mainTexture.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
         this._mainTexture.renderParticles = false;

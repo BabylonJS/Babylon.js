@@ -11,7 +11,7 @@ import { Texture } from "../Materials/Textures/texture";
 import { MirrorTexture } from "../Materials/Textures/mirrorTexture";
 import { CubeTexture } from "../Materials/Textures/cubeTexture";
 import { BackgroundMaterial } from "../Materials/Background/backgroundMaterial";
-import { TextureType, ALPHA_PREMULTIPLIED_PORTERDUFF } from "../Engines/constants";
+import { TextureType, ALPHA_PREMULTIPLIED_PORTERDUFF, TextureAddressMode } from "../Engines/constants";
 
 import { CreatePlane } from "../Meshes/Builders/planeBuilder";
 import { CreateBox } from "../Meshes/Builders/boxBuilder";
@@ -596,7 +596,7 @@ export class EnvironmentHelper {
      * @param sceneSize
      */
     private _setupGroundMirrorTexture(sceneSize: ISceneSize): void {
-        const wrapping = Texture.CLAMP_ADDRESSMODE;
+        const wrapping = TextureAddressMode.CLAMP;
         if (!this._groundMirror) {
             this._groundMirror = new MirrorTexture(
                 "BackgroundPlaneMirrorTexture",
