@@ -604,35 +604,37 @@ export const enum BufferCreationFlag {
 /** @internal */
 export const RENDERPASS_MAIN = 0;
 
-/**
- * Constant used as key code for Alt key
- */
-export const INPUT_ALT_KEY = 18;
+export const enum InputKeyCode {
+    /**
+     * Constant used as key code for Alt key
+     */
+    ALT = 18,
 
-/**
- * Constant used as key code for Ctrl key
- */
-export const INPUT_CTRL_KEY = 17;
+    /**
+     * Constant used as key code for Ctrl key
+     */
+    CTRL = 17,
 
-/**
- * Constant used as key code for Meta key (Left Win, Left Cmd)
- */
-export const INPUT_META_KEY1 = 91;
+    /**
+     * Constant used as key code for Meta key (Left Win, Left Cmd)
+     */
+    META1 = 91,
 
-/**
- * Constant used as key code for Meta key (Right Win)
- */
-export const INPUT_META_KEY2 = 92;
+    /**
+     * Constant used as key code for Meta key (Right Win)
+     */
+    META2 = 92,
 
-/**
- * Constant used as key code for Meta key (Right Win, Right Cmd)
- */
-export const INPUT_META_KEY3 = 93;
+    /**
+     * Constant used as key code for Meta key (Right Win, Right Cmd)
+     */
+    META3 = 93,
 
-/**
- * Constant used as key code for Shift key
- */
-export const INPUT_SHIFT_KEY = 16;
+    /**
+     * Constant used as key code for Shift key
+     */
+    SHIFT = 16,
+}
 
 /** Standard snapshot rendering. In this mode, some form of dynamic behavior is possible (for eg, uniform buffers are still updated) */
 export const SNAPSHOTRENDERING_STANDARD = 0;
@@ -975,4 +977,11 @@ export const Constants = {
     BUFFER_CREATIONFLAG_INDEX: BufferCreationFlag.INDEX,
     BUFFER_CREATIONFLAG_STORAGE: BufferCreationFlag.STORAGE,
     BUFFER_CREATIONFLAG_INDIRECT: BufferCreationFlag.INDIRECT,
+
+    INPUT_ALT_KEY: InputKeyCode.ALT,
+    INPUT_CTRL_KEY: InputKeyCode.CTRL,
+    INPUT_META_KEY1: InputKeyCode.META1,
+    INPUT_META_KEY2: InputKeyCode.META2,
+    INPUT_META_KEY3: InputKeyCode.META3,
+    INPUT_SHIFT_KEY: InputKeyCode.SHIFT,
 };

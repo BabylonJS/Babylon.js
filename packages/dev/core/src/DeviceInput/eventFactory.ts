@@ -1,4 +1,4 @@
-import { INPUT_ALT_KEY, INPUT_CTRL_KEY, INPUT_META_KEY1, INPUT_META_KEY2, INPUT_META_KEY3, INPUT_SHIFT_KEY } from "../Engines/constants";
+import { InputKeyCode } from "../Engines/constants";
 import type { IUIEvent } from "../Events/deviceInputEvents";
 import { EventConstants } from "../Events/deviceInputEvents";
 import type { Nullable } from "../types";
@@ -220,14 +220,14 @@ export class DeviceEventFactory {
      */
     private static _CheckNonCharacterKeys(evt: any, deviceInputSystem: IDeviceInputSystem): void {
         const isKeyboardActive = deviceInputSystem.isDeviceAvailable(DeviceType.Keyboard);
-        const altKey = isKeyboardActive && deviceInputSystem.pollInput(DeviceType.Keyboard, 0, INPUT_ALT_KEY) === 1;
-        const ctrlKey = isKeyboardActive && deviceInputSystem.pollInput(DeviceType.Keyboard, 0, INPUT_CTRL_KEY) === 1;
+        const altKey = isKeyboardActive && deviceInputSystem.pollInput(DeviceType.Keyboard, 0, InputKeyCode.ALT) === 1;
+        const ctrlKey = isKeyboardActive && deviceInputSystem.pollInput(DeviceType.Keyboard, 0, InputKeyCode.CTRL) === 1;
         const metaKey =
             isKeyboardActive &&
-            (deviceInputSystem.pollInput(DeviceType.Keyboard, 0, INPUT_META_KEY1) === 1 ||
-                deviceInputSystem.pollInput(DeviceType.Keyboard, 0, INPUT_META_KEY2) === 1 ||
-                deviceInputSystem.pollInput(DeviceType.Keyboard, 0, INPUT_META_KEY3) === 1);
-        const shiftKey = isKeyboardActive && deviceInputSystem.pollInput(DeviceType.Keyboard, 0, INPUT_SHIFT_KEY) === 1;
+            (deviceInputSystem.pollInput(DeviceType.Keyboard, 0, InputKeyCode.META1) === 1 ||
+                deviceInputSystem.pollInput(DeviceType.Keyboard, 0, InputKeyCode.META2) === 1 ||
+                deviceInputSystem.pollInput(DeviceType.Keyboard, 0, InputKeyCode.META3) === 1);
+        const shiftKey = isKeyboardActive && deviceInputSystem.pollInput(DeviceType.Keyboard, 0, InputKeyCode.SHIFT) === 1;
 
         evt.altKey = altKey;
         evt.ctrlKey = ctrlKey;
