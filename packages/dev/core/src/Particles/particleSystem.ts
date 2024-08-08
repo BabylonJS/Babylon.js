@@ -43,18 +43,22 @@ import {
 export class ParticleSystem extends ThinParticleSystem {
     /**
      * Billboard mode will only apply to Y axis
+     * @deprecated use ParticlesBillboardMode
      */
     public static readonly BILLBOARDMODE_Y = ParticlesBillboardMode.Y;
     /**
      * Billboard mode will apply to all axes
+     * @deprecated use ParticlesBillboardMode
      */
     public static readonly BILLBOARDMODE_ALL = ParticlesBillboardMode.ALL;
     /**
      * Special billboard mode where the particle will be biilboard to the camera but rotated to align with direction
+     * @deprecated use ParticlesBillboardMode
      */
     public static readonly BILLBOARDMODE_STRETCHED = ParticlesBillboardMode.STRETCHED;
     /**
      * Special billboard mode where the particle will be billboard to the camera but only around the axis of the direction of particle emission
+     * @deprecated use ParticlesBillboardMode
      */
     public static readonly BILLBOARDMODE_STRETCHED_LOCAL = ParticlesBillboardMode.STRETCHED_LOCAL;
 
