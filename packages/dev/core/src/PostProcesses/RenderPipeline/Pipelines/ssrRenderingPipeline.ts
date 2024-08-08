@@ -12,16 +12,7 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { ScreenSpaceReflections2Configuration } from "../../../Rendering/screenSpaceReflections2Configuration";
 import type { PrePassRenderer } from "../../../Rendering/prePassRenderer";
 import { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRenderer";
-import {
-    TextureType,
-    PREPASS_COLOR_TEXTURE_TYPE,
-    ORTHOGRAPHIC_CAMERA,
-    TEXTURE_NEAREST_SAMPLINGMODE,
-    PREPASS_DEPTH_TEXTURE_TYPE,
-    PREPASS_REFLECTIVITY_TEXTURE_TYPE,
-    PREPASS_NORMAL_TEXTURE_TYPE,
-    TEXTURE_BILINEAR_SAMPLINGMODE,
-} from "../../../Engines/constants";
+import { TextureType, PrepassTextureType, ORTHOGRAPHIC_CAMERA, TEXTURE_NEAREST_SAMPLINGMODE, TEXTURE_BILINEAR_SAMPLINGMODE } from "../../../Engines/constants";
 import type { Nullable } from "../../../types";
 import type { CubeTexture } from "../../../Materials/Textures/cubeTexture";
 import { DepthRenderer } from "../../../Rendering/depthRenderer";
@@ -728,7 +719,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             const renderTarget = prePassRenderer.getRenderTarget();
 
             if (renderTarget && renderTarget.textures) {
-                textureSize = renderTarget.textures[prePassRenderer.getIndex(PREPASS_COLOR_TEXTURE_TYPE)].getSize();
+                textureSize = renderTarget.textures[prePassRenderer.getIndex(PrepassTextureType.COLOR)].getSize();
             }
         } else if (this._ssrPostProcess?.inputTexture) {
             textureSize.width = this._ssrPostProcess.inputTexture.width;
@@ -998,9 +989,9 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                 effect.setTexture("reflectivitySampler", geometryBufferRenderer.getGBuffer().textures[roughnessIndex]);
                 effect.setTexture("depthSampler", geometryBufferRenderer.getGBuffer().textures[0]);
             } else if (prePassRenderer) {
-                const depthIndex = prePassRenderer.getIndex(PREPASS_DEPTH_TEXTURE_TYPE);
-                const roughnessIndex = prePassRenderer.getIndex(PREPASS_REFLECTIVITY_TEXTURE_TYPE);
-                const normalIndex = prePassRenderer.getIndex(PREPASS_NORMAL_TEXTURE_TYPE);
+                const depthIndex = prePassRenderer.getIndex(PrepassTextureType.DEPTH);
+                const roughnessIndex = prePassRenderer.getIndex(PrepassTextureType.REFLECTIVITY);
+                const normalIndex = prePassRenderer.getIndex(PrepassTextureType.NORMAL);
 
                 effect.setTexture("normalSampler", prePassRenderer.getRenderTarget().textures[normalIndex]);
                 effect.setTexture("depthSampler", prePassRenderer.getRenderTarget().textures[depthIndex]);
@@ -1160,7 +1151,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                 const renderTarget = prePassRenderer.getRenderTarget();
 
                 if (renderTarget && renderTarget.textures) {
-                    effect.setTexture("mainSampler", renderTarget.textures[prePassRenderer.getIndex(PREPASS_COLOR_TEXTURE_TYPE)]);
+                    effect.setTexture("mainSampler", renderTarget.textures[prePassRenderer.getIndex(PrepassTextureType.COLOR)]);
                 }
             } else {
                 effect.setTextureFromPostProcess("mainSampler", this._ssrPostProcess);
@@ -1174,11 +1165,11 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                     effect.setTexture("depthSampler", geometryBufferRenderer.getGBuffer().textures[0]);
                 }
             } else if (prePassRenderer) {
-                const roughnessIndex = prePassRenderer.getIndex(PREPASS_REFLECTIVITY_TEXTURE_TYPE);
+                const roughnessIndex = prePassRenderer.getIndex(PrepassTextureType.REFLECTIVITY);
                 effect.setTexture("reflectivitySampler", prePassRenderer.getRenderTarget().textures[roughnessIndex]);
                 if (this.useFresnel) {
-                    const depthIndex = prePassRenderer.getIndex(PREPASS_DEPTH_TEXTURE_TYPE);
-                    const normalIndex = prePassRenderer.getIndex(PREPASS_NORMAL_TEXTURE_TYPE);
+                    const depthIndex = prePassRenderer.getIndex(PrepassTextureType.DEPTH);
+                    const normalIndex = prePassRenderer.getIndex(PrepassTextureType.NORMAL);
 
                     effect.setTexture("normalSampler", prePassRenderer.getRenderTarget().textures[normalIndex]);
                     effect.setTexture("depthSampler", prePassRenderer.getRenderTarget().textures[depthIndex]);

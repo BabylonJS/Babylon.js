@@ -2,7 +2,7 @@
  * Implementation based on https://medium.com/@shrekshao_71662/dual-depth-peeling-implementation-in-webgl-11baa061ba4b
  */
 import {
-    PREPASS_COLOR_TEXTURE_TYPE,
+    PrepassTextureType,
     TextureFormat,
     TEXTURE_NEAREST_SAMPLINGMODE,
     TextureType,
@@ -52,7 +52,7 @@ class DepthPeelingEffectConfiguration implements PrePassEffectConfiguration {
     /**
      * Textures that should be present in the MRT for this effect to work
      */
-    public readonly texturesRequired: number[] = [PREPASS_COLOR_TEXTURE_TYPE];
+    public readonly texturesRequired: number[] = [PrepassTextureType.COLOR];
 }
 
 /**
@@ -306,7 +306,7 @@ export class DepthPeelingRenderer {
         }
 
         // Retrieve opaque color texture
-        const textureIndex = prePassRenderer.getIndex(PREPASS_COLOR_TEXTURE_TYPE);
+        const textureIndex = prePassRenderer.getIndex(PrepassTextureType.COLOR);
         const prePassTexture = prePassRenderer.defaultRT.textures?.length ? prePassRenderer.defaultRT.textures[textureIndex].getInternalTexture() : null;
 
         if (!prePassTexture) {

@@ -2,7 +2,7 @@ import type { Matrix } from "../Maths/math.vector";
 import type { Mesh } from "../Meshes/mesh";
 import type { Scene } from "../scene";
 import type { Effect } from "../Materials/effect";
-import { PREPASS_VELOCITY_TEXTURE_TYPE } from "../Engines/constants";
+import { PrepassTextureType } from "../Engines/constants";
 
 /**
  * Configuration needed for prepass-capable materials
@@ -59,7 +59,7 @@ export class PrePassConfiguration {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public bindForSubMesh(effect: Effect, scene: Scene, mesh: Mesh, world: Matrix, isFrozen: boolean): void {
         if (scene.prePassRenderer && scene.prePassRenderer.enabled && scene.prePassRenderer.currentRTisSceneRT) {
-            if (scene.prePassRenderer.getIndex(PREPASS_VELOCITY_TEXTURE_TYPE) !== -1) {
+            if (scene.prePassRenderer.getIndex(PrepassTextureType.VELOCITY) !== -1) {
                 if (!this.previousWorldMatrices[mesh.uniqueId]) {
                     this.previousWorldMatrices[mesh.uniqueId] = world.clone();
                 }

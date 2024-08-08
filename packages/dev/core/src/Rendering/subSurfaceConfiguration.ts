@@ -5,7 +5,7 @@ import { SubSurfaceScatteringPostProcess } from "../PostProcesses/subSurfaceScat
 import { SceneComponentConstants } from "../sceneComponent";
 import type { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 import { _WarnImport } from "../Misc/devTools";
-import { PREPASS_DEPTH_TEXTURE_TYPE, PREPASS_ALBEDO_SQRT_TEXTURE_TYPE, PREPASS_COLOR_TEXTURE_TYPE, PREPASS_IRRADIANCE_TEXTURE_TYPE } from "../Engines/constants";
+import { PrepassTextureType } from "../Engines/constants";
 
 /**
  * Contains all parameters needed for the prepass to perform
@@ -81,7 +81,7 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
     /**
      * Textures that should be present in the MRT for this effect to work
      */
-    public readonly texturesRequired: number[] = [PREPASS_DEPTH_TEXTURE_TYPE, PREPASS_ALBEDO_SQRT_TEXTURE_TYPE, PREPASS_COLOR_TEXTURE_TYPE, PREPASS_IRRADIANCE_TEXTURE_TYPE];
+    public readonly texturesRequired: number[] = [PrepassTextureType.DEPTH, PrepassTextureType.ALBEDO_SQRT, PrepassTextureType.COLOR, PrepassTextureType.IRRADIANCE];
 
     private _scene: Scene;
 

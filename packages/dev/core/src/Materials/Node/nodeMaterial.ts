@@ -39,17 +39,7 @@ import { EffectFallbacks } from "../effectFallbacks";
 import { WebRequest } from "../../Misc/webRequest";
 import type { PostProcessOptions } from "../../PostProcesses/postProcess";
 import { PostProcess } from "../../PostProcesses/postProcess";
-import {
-    SnippetUrl,
-    MAX_SUPPORTED_UV_SETS,
-    PREPASS_COLOR_TEXTURE_TYPE,
-    PREPASS_DEPTH_TEXTURE_TYPE,
-    PREPASS_NORMAL_TEXTURE_TYPE,
-    PREPASS_POSITION_TEXTURE_TYPE,
-    TEXTURE_NEAREST_SAMPLINGMODE,
-    TextureType,
-    TextureFormat,
-} from "../../Engines/constants";
+import { SnippetUrl, MAX_SUPPORTED_UV_SETS, PrepassTextureType, TEXTURE_NEAREST_SAMPLINGMODE, TextureType, TextureFormat } from "../../Engines/constants";
 import type { Camera } from "../../Cameras/camera";
 import { VectorMergerBlock } from "./Blocks/vectorMergerBlock";
 import { RemapBlock } from "./Blocks/remapBlock";
@@ -1015,7 +1005,7 @@ export class NodeMaterial extends PushMaterial {
      */
     public get prePassTextureOutputs(): number[] {
         const prePassOutputBlock = this.getBlockByPredicate((block) => block.getClassName() === "PrePassOutputBlock") as PrePassOutputBlock;
-        const result = [PREPASS_COLOR_TEXTURE_TYPE];
+        const result = [PrepassTextureType.COLOR];
         if (!prePassOutputBlock) {
             return result;
         }
@@ -1025,15 +1015,15 @@ export class NodeMaterial extends PushMaterial {
         }
 
         if (prePassOutputBlock.viewDepth.isConnected) {
-            result.push(PREPASS_DEPTH_TEXTURE_TYPE);
+            result.push(PrepassTextureType.DEPTH);
         }
 
         if (prePassOutputBlock.viewNormal.isConnected) {
-            result.push(PREPASS_NORMAL_TEXTURE_TYPE);
+            result.push(PrepassTextureType.NORMAL);
         }
 
         if (prePassOutputBlock.worldPosition.isConnected) {
-            result.push(PREPASS_POSITION_TEXTURE_TYPE);
+            result.push(PrepassTextureType.POSITION);
         }
 
         return result;
@@ -1047,14 +1037,14 @@ export class NodeMaterial extends PushMaterial {
         const result = [] as number[];
 
         for (const block of prePassTextureBlocks) {
-            if (block.position.isConnected && !result.includes(PREPASS_POSITION_TEXTURE_TYPE)) {
-                result.push(PREPASS_POSITION_TEXTURE_TYPE);
+            if (block.position.isConnected && !result.includes(PrepassTextureType.POSITION)) {
+                result.push(PrepassTextureType.POSITION);
             }
-            if (block.depth.isConnected && !result.includes(PREPASS_DEPTH_TEXTURE_TYPE)) {
-                result.push(PREPASS_DEPTH_TEXTURE_TYPE);
+            if (block.depth.isConnected && !result.includes(PrepassTextureType.DEPTH)) {
+                result.push(PrepassTextureType.DEPTH);
             }
-            if (block.normal.isConnected && !result.includes(PREPASS_NORMAL_TEXTURE_TYPE)) {
-                result.push(PREPASS_NORMAL_TEXTURE_TYPE);
+            if (block.normal.isConnected && !result.includes(PrepassTextureType.NORMAL)) {
+                result.push(PrepassTextureType.NORMAL);
             }
         }
 

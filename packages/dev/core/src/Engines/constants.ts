@@ -735,45 +735,60 @@ export const SCENELOADER_SUMMARY_LOGGING = SceneLoaderLogging.SUMMARY;
 export const SCENELOADER_DETAILED_LOGGING = SceneLoaderLogging.DETAILED;
 
 /**
- * Constant used to retrieve the irradiance texture index in the textures array in the prepass
- * using getIndex(Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE)
+ * Constants used to retrieve an index in the textures array in the prepass
+ * using `getIndex()`
  */
-export const PREPASS_IRRADIANCE_TEXTURE_TYPE = 0;
-/**
- * Constant used to retrieve the position texture index in the textures array in the prepass
- * using getIndex(Constants.PREPASS_POSITION_TEXTURE_INDEX)
- */
-export const PREPASS_POSITION_TEXTURE_TYPE = 1;
-/**
- * Constant used to retrieve the velocity texture index in the textures array in the prepass
- * using getIndex(Constants.PREPASS_VELOCITY_TEXTURE_INDEX)
- */
-export const PREPASS_VELOCITY_TEXTURE_TYPE = 2;
-/**
- * Constant used to retrieve the reflectivity texture index in the textures array in the prepass
- * using the getIndex(Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE)
- */
-export const PREPASS_REFLECTIVITY_TEXTURE_TYPE = 3;
-/**
- * Constant used to retrieve the lit color texture index in the textures array in the prepass
- * using the getIndex(Constants.PREPASS_COLOR_TEXTURE_TYPE)
- */
-export const PREPASS_COLOR_TEXTURE_TYPE = 4;
-/**
- * Constant used to retrieve depth index in the textures array in the prepass
- * using the getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)
- */
-export const PREPASS_DEPTH_TEXTURE_TYPE = 5;
-/**
- * Constant used to retrieve normal index in the textures array in the prepass
- * using the getIndex(Constants.PREPASS_NORMAL_TEXTURE_TYPE)
- */
-export const PREPASS_NORMAL_TEXTURE_TYPE = 6;
-/**
- * Constant used to retrieve albedo index in the textures array in the prepass
- * using the getIndex(Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE)
- */
-export const PREPASS_ALBEDO_SQRT_TEXTURE_TYPE = 7;
+export const enum PrepassTextureType {
+    /**
+     * Constant used to retrieve the irradiance texture index in the textures array in the prepass
+     */
+    IRRADIANCE = 0,
+    /**
+     * Constant used to retrieve the position texture index in the textures array in the prepass
+     */
+    POSITION = 1,
+    /**
+     * Constant used to retrieve the velocity texture index in the textures array in the prepass
+     */
+    VELOCITY = 2,
+    /**
+     * Constant used to retrieve the reflectivity texture index in the textures array in the prepass
+     */
+    REFLECTIVITY = 3,
+    /**
+     * Constant used to retrieve the lit color texture index in the textures array in the prepass
+     */
+    COLOR = 4,
+    /**
+     * Constant used to retrieve depth index in the textures array in the prepass
+     */
+    DEPTH = 5,
+    /**
+     * Constant used to retrieve normal index in the textures array in the prepass
+     */
+    NORMAL = 6,
+    /**
+     * Constant used to retrieve albedo index in the textures array in the prepass
+     */
+    ALBEDO_SQRT = 7,
+}
+
+/** @deprecated use PrepassTextureType */
+export const PREPASS_IRRADIANCE_TEXTURE_TYPE = PrepassTextureType.IRRADIANCE;
+/** @deprecated use PrepassTextureType */
+export const PREPASS_POSITION_TEXTURE_TYPE = PrepassTextureType.POSITION;
+/** @deprecated use PrepassTextureType */
+export const PREPASS_VELOCITY_TEXTURE_TYPE = PrepassTextureType.VELOCITY;
+/** @deprecated use PrepassTextureType */
+export const PREPASS_REFLECTIVITY_TEXTURE_TYPE = PrepassTextureType.REFLECTIVITY;
+/** @deprecated use PrepassTextureType */
+export const PREPASS_COLOR_TEXTURE_TYPE = PrepassTextureType.COLOR;
+/** @deprecated use PrepassTextureType */
+export const PREPASS_DEPTH_TEXTURE_TYPE = PrepassTextureType.DEPTH;
+/** @deprecated use PrepassTextureType */
+export const PREPASS_NORMAL_TEXTURE_TYPE = PrepassTextureType.NORMAL;
+/** @deprecated use PrepassTextureType */
+export const PREPASS_ALBEDO_SQRT_TEXTURE_TYPE = PrepassTextureType.ALBEDO_SQRT;
 
 /** Flag to create a readable buffer (the buffer can be the source of a copy) */
 export const BUFFER_CREATIONFLAG_READ = 1;

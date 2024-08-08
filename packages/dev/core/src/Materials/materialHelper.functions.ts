@@ -10,7 +10,6 @@ import {
     NormalKind,
     TangentKind,
     UVKind,
-    PREPASS_VELOCITY_TEXTURE_TYPE,
     MatricesIndicesKind,
     MatricesWeightsKind,
     MatricesIndicesExtraKind,
@@ -18,12 +17,7 @@ import {
     ColorInstanceKind,
     MAX_SUPPORTED_UV_SETS,
     ColorKind,
-    PREPASS_POSITION_TEXTURE_TYPE,
-    PREPASS_REFLECTIVITY_TEXTURE_TYPE,
-    PREPASS_IRRADIANCE_TEXTURE_TYPE,
-    PREPASS_ALBEDO_SQRT_TEXTURE_TYPE,
-    PREPASS_DEPTH_TEXTURE_TYPE,
-    PREPASS_NORMAL_TEXTURE_TYPE,
+    PrepassTextureType,
     PERSPECTIVE_CAMERA,
 } from "../Engines/constants";
 import { Color3 } from "../Maths/math.color";
@@ -250,7 +244,7 @@ export function BindBonesParameters(mesh?: AbstractMesh, effect?: Effect, prePas
 
             if (matrices) {
                 effect.setMatrices("mBones", matrices);
-                if (prePassConfiguration && mesh.getScene().prePassRenderer && mesh.getScene().prePassRenderer!.getIndex(PREPASS_VELOCITY_TEXTURE_TYPE)) {
+                if (prePassConfiguration && mesh.getScene().prePassRenderer && mesh.getScene().prePassRenderer!.getIndex(PrepassTextureType.VELOCITY)) {
                     if (!prePassConfiguration.previousBones[mesh.uniqueId]) {
                         prePassConfiguration.previousBones[mesh.uniqueId] = matrices.slice();
                     }
@@ -836,37 +830,37 @@ export function PrepareDefinesForPrePass(scene: Scene, defines: any, canRenderTo
 
     const texturesList = [
         {
-            type: PREPASS_POSITION_TEXTURE_TYPE,
+            type: PrepassTextureType.POSITION,
             define: "PREPASS_POSITION",
             index: "PREPASS_POSITION_INDEX",
         },
         {
-            type: PREPASS_VELOCITY_TEXTURE_TYPE,
+            type: PrepassTextureType.VELOCITY,
             define: "PREPASS_VELOCITY",
             index: "PREPASS_VELOCITY_INDEX",
         },
         {
-            type: PREPASS_REFLECTIVITY_TEXTURE_TYPE,
+            type: PrepassTextureType.REFLECTIVITY,
             define: "PREPASS_REFLECTIVITY",
             index: "PREPASS_REFLECTIVITY_INDEX",
         },
         {
-            type: PREPASS_IRRADIANCE_TEXTURE_TYPE,
+            type: PrepassTextureType.IRRADIANCE,
             define: "PREPASS_IRRADIANCE",
             index: "PREPASS_IRRADIANCE_INDEX",
         },
         {
-            type: PREPASS_ALBEDO_SQRT_TEXTURE_TYPE,
+            type: PrepassTextureType.ALBEDO_SQRT,
             define: "PREPASS_ALBEDO_SQRT",
             index: "PREPASS_ALBEDO_SQRT_INDEX",
         },
         {
-            type: PREPASS_DEPTH_TEXTURE_TYPE,
+            type: PrepassTextureType.DEPTH,
             define: "PREPASS_DEPTH",
             index: "PREPASS_DEPTH_INDEX",
         },
         {
-            type: PREPASS_NORMAL_TEXTURE_TYPE,
+            type: PrepassTextureType.NORMAL,
             define: "PREPASS_NORMAL",
             index: "PREPASS_NORMAL_INDEX",
         },
