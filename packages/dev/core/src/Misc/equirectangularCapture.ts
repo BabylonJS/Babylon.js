@@ -3,7 +3,7 @@ import { ReflectionProbe } from "../Probes/reflectionProbe";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { CustomProceduralTexture } from "../Materials/Textures/Procedurals/customProceduralTexture";
-import { DumpTools } from "./dumpTools";
+import { DumpData } from "./dumpTools";
 import type { Vector3 } from "../Maths/math.vector";
 import "../Shaders/equirectangularPanorama.fragment";
 
@@ -76,7 +76,7 @@ export async function captureEquirectangularFromScene(scene: Scene, options: Equ
                     probe.dispose();
                 }
                 if (options.filename) {
-                    DumpTools.DumpData(options.size * 2, options.size, pixelData, undefined, "image/png", options.filename);
+                    DumpData(options.size * 2, options.size, pixelData, undefined, "image/png", options.filename);
                     resolve(null);
                 } else {
                     resolve(pixelData);
