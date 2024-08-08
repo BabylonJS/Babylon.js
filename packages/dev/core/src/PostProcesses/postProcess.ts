@@ -703,7 +703,7 @@ export class PostProcess {
 
     protected async _initShaderSourceAsync(_forceGLSL = false) {}
 
-    private _onInitShadersDone: () => void;
+    private _onInitShadersDone: Nullable<() => void> = null;
     private async _postConstructor(blockCompilation: boolean, defines: Nullable<string> = null, dealyLoadShaders: boolean = false) {
         if (dealyLoadShaders) {
             await this._initShaderSourceAsync(PostProcess.ForceGLSL);
@@ -790,6 +790,7 @@ export class PostProcess {
         if (!this._shadersLoaded) {
             this._onInitShadersDone = () => {
                 this._shadersLoaded = true;
+                this._onInitShadersDone = null;
                 this.updateEffect(defines, uniforms, samplers, indexParameters, onCompiled, onError, vertexUrl, fragmentUrl);
             };
             return;
