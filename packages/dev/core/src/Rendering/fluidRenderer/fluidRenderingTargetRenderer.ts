@@ -1,5 +1,5 @@
 import type { Camera } from "core/Cameras/camera";
-import { TEXTURETYPE_FLOAT, TextureFormat, TEXTURETYPE_UNSIGNED_BYTE, TEXTURETYPE_HALF_FLOAT, TEXTURE_BILINEAR_SAMPLINGMODE, ALPHA_DISABLE } from "core/Engines/constants";
+import { TextureType, TextureFormat, TEXTURE_BILINEAR_SAMPLINGMODE, ALPHA_DISABLE } from "core/Engines/constants";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { InternalTexture } from "core/Materials/Textures/internalTexture";
@@ -537,9 +537,9 @@ export class FluidRenderingTargetRenderer {
             depthHeight,
             depthWidth,
             depthHeight,
-            TEXTURETYPE_FLOAT,
+            TextureType.FLOAT,
             TextureFormat.RG,
-            TEXTURETYPE_FLOAT,
+            TextureType.FLOAT,
             TextureFormat.RG,
             false,
             this._camera,
@@ -563,9 +563,9 @@ export class FluidRenderingTargetRenderer {
                 diffuseHeight,
                 0,
                 0,
-                TEXTURETYPE_UNSIGNED_BYTE,
+                TextureType.UNSIGNED_BYTE,
                 TextureFormat.RGBA,
-                TEXTURETYPE_UNSIGNED_BYTE,
+                TextureType.UNSIGNED_BYTE,
                 TextureFormat.RGBA,
                 true,
                 this._camera,
@@ -590,9 +590,9 @@ export class FluidRenderingTargetRenderer {
                 thicknessHeight,
                 thicknessWidth,
                 thicknessHeight,
-                TEXTURETYPE_HALF_FLOAT,
+                TextureType.HALF_FLOAT,
                 TextureFormat.R,
-                TEXTURETYPE_HALF_FLOAT,
+                TextureType.HALF_FLOAT,
                 TextureFormat.R,
                 true,
                 this._camera,
@@ -734,7 +734,7 @@ export class FluidRenderingTargetRenderer {
             engine,
             false,
             null,
-            TEXTURETYPE_UNSIGNED_BYTE,
+            TextureType.UNSIGNED_BYTE,
             undefined,
             undefined,
             true,

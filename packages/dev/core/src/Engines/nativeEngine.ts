@@ -35,11 +35,9 @@ import {
     LEQUAL,
     ALPHA_DISABLE,
     TextureFormat,
-    TEXTURETYPE_UNSIGNED_INT,
+    TextureType,
     TEXTURE_TRILINEAR_SAMPLINGMODE,
-    TEXTURETYPE_FLOAT,
     TEXTURE_NEAREST_SAMPLINGMODE,
-    TEXTURETYPE_HALF_FLOAT,
     DELAYLOADSTATE_NOTLOADED,
 } from "./constants";
 import type { ISceneLike } from "./abstractEngine";
@@ -1676,7 +1674,7 @@ export class NativeEngine extends Engine {
         invertY: boolean,
         samplingMode: number,
         compression: Nullable<string> = null,
-        type: number = TEXTURETYPE_UNSIGNED_INT,
+        type: number = TextureType.UNSIGNED_INT,
         creationFlags: number = 0,
         useSRGBBuffer: boolean = false
     ): InternalTexture {
@@ -1716,7 +1714,7 @@ export class NativeEngine extends Engine {
         invertY: boolean,
         samplingMode: number,
         compression: Nullable<string> = null,
-        textureType = TEXTURETYPE_UNSIGNED_INT
+        textureType = TextureType.UNSIGNED_INT
     ): InternalTexture {
         const texture = new InternalTexture(this, InternalTextureSource.Raw2DArray);
 
@@ -1752,7 +1750,7 @@ export class NativeEngine extends Engine {
         format: number,
         invertY: boolean,
         compression: Nullable<string> = null,
-        type: number = TEXTURETYPE_UNSIGNED_INT,
+        type: number = TextureType.UNSIGNED_INT,
         useSRGBBuffer: boolean = false
     ): void {
         if (!texture) {
@@ -2150,7 +2148,7 @@ export class NativeEngine extends Engine {
                 const imageData = CreateImageDataArrayBufferViews(data, info);
 
                 texture.format = TextureFormat.RGBA;
-                texture.type = TEXTURETYPE_UNSIGNED_INT;
+                texture.type = TextureType.UNSIGNED_INT;
                 texture.generateMipMaps = true;
                 texture.getEngine().updateTextureSamplingMode(Texture.TRILINEAR_SAMPLINGMODE, texture);
                 texture._isRGBD = true;
@@ -2248,7 +2246,7 @@ export class NativeEngine extends Engine {
         source = InternalTextureSource.Unknown
     ): InternalTexture {
         let generateMipMaps = false;
-        let type = TEXTURETYPE_UNSIGNED_INT;
+        let type = TextureType.UNSIGNED_INT;
         let samplingMode = TEXTURE_TRILINEAR_SAMPLINGMODE;
         let format = TextureFormat.RGBA;
         let useSRGBBuffer = false;
@@ -2256,7 +2254,7 @@ export class NativeEngine extends Engine {
         let label: string | undefined;
         if (options !== undefined && typeof options === "object") {
             generateMipMaps = !!options.generateMipMaps;
-            type = options.type === undefined ? TEXTURETYPE_UNSIGNED_INT : options.type;
+            type = options.type === undefined ? TextureType.UNSIGNED_INT : options.type;
             samplingMode = options.samplingMode === undefined ? TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
             format = options.format === undefined ? TextureFormat.RGBA : options.format;
             useSRGBBuffer = options.useSRGBBuffer === undefined ? false : options.useSRGBBuffer;
@@ -2268,16 +2266,16 @@ export class NativeEngine extends Engine {
 
         useSRGBBuffer = this._getUseSRGBBuffer(useSRGBBuffer, !generateMipMaps);
 
-        if (type === TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+        if (type === TextureType.FLOAT && !this._caps.textureFloatLinearFiltering) {
             // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
             samplingMode = TEXTURE_NEAREST_SAMPLINGMODE;
-        } else if (type === TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+        } else if (type === TextureType.HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
             // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
             samplingMode = TEXTURE_NEAREST_SAMPLINGMODE;
         }
-        if (type === TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-            type = TEXTURETYPE_UNSIGNED_INT;
-            Logger.Warn("Float textures are not supported. Type forced to TEXTURETYPE_UNSIGNED_BYTE");
+        if (type === TextureType.FLOAT && !this._caps.textureFloat) {
+            type = TextureType.UNSIGNED_INT;
+            Logger.Warn("Float textures are not supported. Type forced to TextureType.UNSIGNED_BYTE");
         }
 
         const texture = new InternalTexture(this, source);

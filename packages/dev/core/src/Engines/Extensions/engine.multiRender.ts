@@ -2,20 +2,7 @@ import { InternalTexture, InternalTextureSource } from "../../Materials/Textures
 import type { IMultiRenderTargetOptions } from "../../Materials/Textures/multiRenderTarget";
 import { Logger } from "../../Misc/logger";
 import type { Nullable } from "../../types";
-import {
-    TextureFormat,
-    TEXTURETYPE_UNSIGNED_INT,
-    TEXTURE_TRILINEAR_SAMPLINGMODE,
-    TEXTURE_2D,
-    TEXTURETYPE_FLOAT,
-    TEXTURE_NEAREST_SAMPLINGMODE,
-    TEXTURETYPE_HALF_FLOAT,
-    TEXTURE_2D_ARRAY,
-    TEXTURE_3D,
-    TEXTURE_CUBE_MAP,
-    TEXTURETYPE_UNSIGNED_SHORT,
-    TEXTURETYPE_UNSIGNED_INT_24_8,
-} from "../constants";
+import { TextureFormat, TextureType, TEXTURE_TRILINEAR_SAMPLINGMODE, TEXTURE_2D, TEXTURE_NEAREST_SAMPLINGMODE, TEXTURE_2D_ARRAY, TEXTURE_3D, TEXTURE_CUBE_MAP } from "../constants";
 import { ThinEngine } from "../thinEngine";
 import type { RenderTargetWrapper } from "../renderTargetWrapper";
 import type { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
@@ -179,7 +166,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
     let depthTextureFormat = TextureFormat.DEPTH16;
     let textureCount = 1;
 
-    const defaultType = TEXTURETYPE_UNSIGNED_INT;
+    const defaultType = TextureType.UNSIGNED_INT;
     const defaultSamplingMode = TEXTURE_TRILINEAR_SAMPLINGMODE;
     const defaultUseSRGBBuffer = false;
     const defaultFormat = TextureFormat.RGBA;
@@ -275,18 +262,18 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
         const target = targets[i] || defaultTarget;
         const layerCount = layers[i] ?? 1;
 
-        if (type === TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+        if (type === TextureType.FLOAT && !this._caps.textureFloatLinearFiltering) {
             // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
             samplingMode = TEXTURE_NEAREST_SAMPLINGMODE;
-        } else if (type === TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+        } else if (type === TextureType.HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
             // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
             samplingMode = TEXTURE_NEAREST_SAMPLINGMODE;
         }
 
         const filters = this._getSamplingParameters(samplingMode, generateMipMaps);
-        if (type === TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-            type = TEXTURETYPE_UNSIGNED_INT;
-            Logger.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
+        if (type === TextureType.FLOAT && !this._caps.textureFloat) {
+            type = TextureType.UNSIGNED_INT;
+            Logger.Warn("Float textures are not supported. Render target forced to TextureType.UNSIGNED_BYTE type");
         }
 
         useSRGBBuffer = useSRGBBuffer && this._caps.supportSRGBBuffers && (this.webGLVersion > 1 || this.isWebGPU);
@@ -361,7 +348,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
         // Depth texture
         const depthTexture = new InternalTexture(this, InternalTextureSource.Depth);
 
-        let depthTextureType = TEXTURETYPE_UNSIGNED_SHORT;
+        let depthTextureType = TextureType.UNSIGNED_SHORT;
         let glDepthTextureInternalFormat: GLenum = gl.DEPTH_COMPONENT16;
         let glDepthTextureFormat: GLenum = gl.DEPTH_COMPONENT;
         let glDepthTextureType: GLenum = gl.UNSIGNED_SHORT;
@@ -370,22 +357,22 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
             glDepthTextureInternalFormat = gl.DEPTH_COMPONENT;
         } else {
             if (depthTextureFormat === TextureFormat.DEPTH32_FLOAT) {
-                depthTextureType = TEXTURETYPE_FLOAT;
+                depthTextureType = TextureType.FLOAT;
                 glDepthTextureType = gl.FLOAT;
                 glDepthTextureInternalFormat = gl.DEPTH_COMPONENT32F;
             } else if (depthTextureFormat === TextureFormat.DEPTH32FLOAT_STENCIL8) {
-                depthTextureType = TEXTURETYPE_UNSIGNED_INT;
+                depthTextureType = TextureType.UNSIGNED_INT;
                 glDepthTextureType = gl.FLOAT_32_UNSIGNED_INT_24_8_REV;
                 glDepthTextureInternalFormat = gl.DEPTH32F_STENCIL8;
                 glDepthTextureFormat = gl.DEPTH_STENCIL;
                 glDepthTextureAttachment = gl.DEPTH_STENCIL_ATTACHMENT;
             } else if (depthTextureFormat === TextureFormat.DEPTH24) {
-                depthTextureType = TEXTURETYPE_UNSIGNED_INT;
+                depthTextureType = TextureType.UNSIGNED_INT;
                 glDepthTextureType = gl.UNSIGNED_INT;
                 glDepthTextureInternalFormat = gl.DEPTH_COMPONENT24;
                 glDepthTextureAttachment = gl.DEPTH_ATTACHMENT;
             } else if (depthTextureFormat === TextureFormat.DEPTH24_STENCIL8 || depthTextureFormat === TextureFormat.DEPTH24UNORM_STENCIL8) {
-                depthTextureType = TEXTURETYPE_UNSIGNED_INT_24_8;
+                depthTextureType = TextureType.UNSIGNED_INT_24_8;
                 glDepthTextureType = gl.UNSIGNED_INT_24_8;
                 glDepthTextureInternalFormat = gl.DEPTH24_STENCIL8;
                 glDepthTextureFormat = gl.DEPTH_STENCIL;

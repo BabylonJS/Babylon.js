@@ -57,7 +57,7 @@ import {
     SNAPSHOTRENDERING_STANDARD,
     TextureFormat,
     TEXTURE_NEAREST_SAMPLINGMODE,
-    TEXTURETYPE_UNSIGNED_INT,
+    TextureType,
     TEXTURE_TRILINEAR_SAMPLINGMODE,
 } from "./constants";
 import { Observable } from "../Misc/observable";
@@ -794,7 +794,7 @@ export abstract class AbstractEngine {
         if (!this._emptyCubeTexture) {
             const faceData = new Uint8Array(4);
             const cubeData = [faceData, faceData, faceData, faceData, faceData, faceData];
-            this._emptyCubeTexture = this.createRawCubeTexture(cubeData, 1, TextureFormat.RGBA, TEXTURETYPE_UNSIGNED_INT, false, false, TEXTURE_NEAREST_SAMPLINGMODE);
+            this._emptyCubeTexture = this.createRawCubeTexture(cubeData, 1, TextureFormat.RGBA, TextureType.UNSIGNED_INT, false, false, TEXTURE_NEAREST_SAMPLINGMODE);
         }
 
         return this._emptyCubeTexture;
@@ -2143,7 +2143,7 @@ export abstract class AbstractEngine {
      * @param invertY defines if data must be stored with Y axis inverted
      * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
      * @param compression defines the compression used (null by default)
-     * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+     * @param type defines the type fo the data (Engine.TextureType.UNSIGNED_INT by default)
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
      * @returns the raw texture inside an InternalTexture
@@ -2170,7 +2170,7 @@ export abstract class AbstractEngine {
      * @param data defines the array of data to use to create each face
      * @param size defines the size of the textures
      * @param format defines the format of the data
-     * @param type defines the type of the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
+     * @param type defines the type of the data (like Engine.TextureType.UNSIGNED_INT)
      * @param generateMipMaps  defines if the engine should generate the mip levels
      * @param invertY defines if data must be stored with Y axis inverted
      * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)

@@ -4,7 +4,7 @@ import type { Camera } from "../Cameras/camera";
 import type { Effect } from "../Materials/effect";
 import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
-import { TEXTURETYPE_UNSIGNED_INT } from "../Engines/constants";
+import { TextureType } from "../Engines/constants";
 import type { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer";
 
 import "../Rendering/geometryBufferRendererSceneComponent";
@@ -63,7 +63,7 @@ export class ScreenSpaceCurvaturePostProcess extends PostProcess {
         samplingMode?: number,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType: number = TEXTURETYPE_UNSIGNED_INT,
+        textureType: number = TextureType.UNSIGNED_INT,
         blockCompilation = false
     ) {
         super(

@@ -16,7 +16,7 @@ import { EngineStore } from "../../../Engines/engineStore";
 import { SSAO2Configuration } from "../../../Rendering/ssao2Configuration";
 import type { PrePassRenderer } from "../../../Rendering/prePassRenderer";
 import type { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRenderer";
-import { TEXTURETYPE_UNSIGNED_INT, PREPASS_DEPTH_TEXTURE_TYPE, PREPASS_NORMAL_TEXTURE_TYPE, TEXTURE_BILINEAR_SAMPLINGMODE } from "../../../Engines/constants";
+import { TextureType, PREPASS_DEPTH_TEXTURE_TYPE, PREPASS_NORMAL_TEXTURE_TYPE, TEXTURE_BILINEAR_SAMPLINGMODE } from "../../../Engines/constants";
 import type { Nullable } from "../../../types";
 import { Scalar } from "../../../Maths/math.scalar";
 import { RawTexture } from "../../../Materials/Textures/rawTexture";
@@ -273,9 +273,9 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
      * @param ratio The size of the postprocesses. Can be a number shared between passes or an object for more precision: { ssaoRatio: 0.5, blurRatio: 1.0 }
      * @param cameras The array of cameras that the rendering pipeline will be attached to
      * @param forceGeometryBuffer Set to true if you want to use the legacy geometry buffer renderer
-     * @param textureType The texture type used by the different post processes created by SSAO (default: Constants.TEXTURETYPE_UNSIGNED_INT)
+     * @param textureType The texture type used by the different post processes created by SSAO (default: Constants.TextureType.UNSIGNED_INT)
      */
-    constructor(name: string, scene: Scene, ratio: any, cameras?: Camera[], forceGeometryBuffer = false, textureType = TEXTURETYPE_UNSIGNED_INT) {
+    constructor(name: string, scene: Scene, ratio: any, cameras?: Camera[], forceGeometryBuffer = false, textureType = TextureType.UNSIGNED_INT) {
         super(scene.getEngine(), name);
 
         this._scene = scene;

@@ -10,7 +10,7 @@ import { Matrix, TmpVectors, Vector2, Vector3, Quaternion } from "core/Maths/mat
 import { Logger } from "core/Misc/logger";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
-import { TEXTURE_BILINEAR_SAMPLINGMODE, TEXTURETYPE_FLOAT, TextureFormat } from "core/Engines/constants";
+import { TEXTURE_BILINEAR_SAMPLINGMODE, TextureType, TextureFormat } from "core/Engines/constants";
 
 /**
  * Class used to render a gaussian splatting mesh
@@ -475,7 +475,7 @@ export class GaussianSplattingMesh extends Mesh {
 
         // Update the material
         const createTextureFromData = (data: Float32Array, width: number, height: number, format: number) => {
-            return new RawTexture(data, width, height, format, this._scene, false, false, TEXTURE_BILINEAR_SAMPLINGMODE, TEXTURETYPE_FLOAT);
+            return new RawTexture(data, width, height, format, this._scene, false, false, TEXTURE_BILINEAR_SAMPLINGMODE, TextureType.FLOAT);
         };
 
         const convertRgbToRgba = (rgb: Float32Array) => {

@@ -21,7 +21,7 @@ import { PassPostProcess } from "../PostProcesses/passPostProcess";
 import { BlurPostProcess } from "../PostProcesses/blurPostProcess";
 import { EffectLayer } from "./effectLayer";
 import { AbstractScene } from "../abstractScene";
-import { ALPHA_COMBINE, TEXTURETYPE_UNSIGNED_INT, TEXTURETYPE_HALF_FLOAT, REPLACE, KEEP, NOTEQUAL, EQUAL } from "../Engines/constants";
+import { ALPHA_COMBINE, TextureType, REPLACE, KEEP, NOTEQUAL, EQUAL } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import { RegisterClass } from "../Misc/typeStore";
 import { Color4, Color3 } from "../Maths/math.color";
@@ -132,7 +132,7 @@ export interface IHighlightLayerOptions {
     renderingGroupId: number;
 
     /**
-     * The type of the main texture. Default: TEXTURETYPE_UNSIGNED_INT
+     * The type of the main texture. Default: TextureType.UNSIGNED_INT
      */
     mainTextureType: number;
 }
@@ -310,7 +310,7 @@ export class HighlightLayer extends EffectLayer {
             alphaBlendingMode: ALPHA_COMBINE,
             camera: null,
             renderingGroupId: -1,
-            mainTextureType: TEXTURETYPE_UNSIGNED_INT,
+            mainTextureType: TextureType.UNSIGNED_INT,
             ...options,
         };
 
@@ -361,9 +361,9 @@ export class HighlightLayer extends EffectLayer {
 
         let textureType = 0;
         if (this._engine.getCaps().textureHalfFloatRender) {
-            textureType = TEXTURETYPE_HALF_FLOAT;
+            textureType = TextureType.HALF_FLOAT;
         } else {
-            textureType = TEXTURETYPE_UNSIGNED_INT;
+            textureType = TextureType.UNSIGNED_INT;
         }
 
         this._blurTexture = new RenderTargetTexture(

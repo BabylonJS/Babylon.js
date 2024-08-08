@@ -3,7 +3,7 @@ import { Scalar } from "../../Maths/math.scalar";
 import { SphericalPolynomial, SphericalHarmonics } from "../../Maths/sphericalPolynomial";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import type { Nullable } from "../../types";
-import { TextureFormat, TEXTURETYPE_UNSIGNED_INT, TEXTURETYPE_FLOAT, TEXTURETYPE_HALF_FLOAT } from "../../Engines/constants";
+import { TextureFormat, TextureType } from "../../Engines/constants";
 import type { CubeMapInfo } from "./panoramaToCubemap";
 import { ToLinearSpace } from "../../Maths/math.constants";
 import { Color3 } from "../../Maths/math.color";
@@ -76,9 +76,9 @@ export class CubeMapToSphericalPolynomialTools {
         const gammaSpace = texture.gammaSpace;
         // Always read as RGBA.
         const format = TextureFormat.RGBA;
-        let type = TEXTURETYPE_UNSIGNED_INT;
-        if (texture.textureType == TEXTURETYPE_FLOAT || texture.textureType == TEXTURETYPE_HALF_FLOAT) {
-            type = TEXTURETYPE_FLOAT;
+        let type = TextureType.UNSIGNED_INT;
+        if (texture.textureType == TextureType.FLOAT || texture.textureType == TextureType.HALF_FLOAT) {
+            type = TextureType.FLOAT;
         }
 
         return new Promise((resolve) => {
@@ -171,7 +171,7 @@ export class CubeMapToSphericalPolynomialTools {
                     }
 
                     // Handle Integer types.
-                    if (cubeInfo.type === TEXTURETYPE_UNSIGNED_INT) {
+                    if (cubeInfo.type === TextureType.UNSIGNED_INT) {
                         r /= 255;
                         g /= 255;
                         b /= 255;

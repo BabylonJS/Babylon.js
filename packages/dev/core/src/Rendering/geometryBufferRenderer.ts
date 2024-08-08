@@ -2,14 +2,7 @@ import { Matrix } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
 import type { SubMesh } from "../Meshes/subMesh";
 import type { Mesh } from "../Meshes/mesh";
-import {
-    TextureFormat,
-    TEXTURETYPE_UNSIGNED_BYTE,
-    TEXTURETYPE_FLOAT,
-    TEXTURETYPE_HALF_FLOAT,
-    TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV,
-    TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV,
-} from "../Engines/constants";
+import { TextureFormat, TextureType } from "../Engines/constants";
 import type { SmartArray } from "../Misc/smartArray";
 import { Texture } from "../Materials/Textures/texture";
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
@@ -759,11 +752,11 @@ export class GeometryBufferRenderer {
         const engine = this._scene.getEngine();
         const [count, textureNames, textureTypesAndFormat] = this._assignRenderTargetIndices();
 
-        let type = TEXTURETYPE_UNSIGNED_BYTE;
+        let type = TextureType.UNSIGNED_BYTE;
         if (engine._caps.textureFloat && engine._caps.textureFloatLinearFiltering) {
-            type = TEXTURETYPE_FLOAT;
+            type = TextureType.FLOAT;
         } else if (engine._caps.textureHalfFloat && engine._caps.textureHalfFloatLinearFiltering) {
-            type = TEXTURETYPE_HALF_FLOAT;
+            type = TextureType.HALF_FLOAT;
         }
 
         const dimensions =
@@ -785,8 +778,8 @@ export class GeometryBufferRenderer {
         }
 
         this._normalsAreUnsigned =
-            textureTypes[GeometryBufferRenderer.NORMAL_TEXTURE_TYPE] === TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV ||
-            textureTypes[GeometryBufferRenderer.NORMAL_TEXTURE_TYPE] === TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV;
+            textureTypes[GeometryBufferRenderer.NORMAL_TEXTURE_TYPE] === TextureType.UNSIGNED_INT_2_10_10_10_REV ||
+            textureTypes[GeometryBufferRenderer.NORMAL_TEXTURE_TYPE] === TextureType.UNSIGNED_INT_10F_11F_11F_REV;
 
         this._multiRenderTarget = new MultiRenderTarget(
             "gBuffer",

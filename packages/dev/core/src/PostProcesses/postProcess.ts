@@ -9,7 +9,7 @@ import {
     ALPHA_DISABLE,
     SCALEMODE_FLOOR,
     TEXTURE_NEAREST_SAMPLINGMODE,
-    TEXTURETYPE_UNSIGNED_INT,
+    TextureType,
     TextureFormat,
     TEXTURE_NEAREST_LINEAR,
     TEXTURE_NEAREST_NEAREST,
@@ -191,7 +191,7 @@ export type PostProcessOptions = {
      */
     reusable?: boolean;
     /**
-     * Type of the texture created for this post process (default: Constants.TEXTURETYPE_UNSIGNED_INT)
+     * Type of the texture created for this post process (default: Constants.TextureType.UNSIGNED_INT)
      */
     textureType?: number;
     /**
@@ -629,7 +629,7 @@ export class PostProcess {
         engine?: AbstractEngine,
         reusable?: boolean,
         defines: Nullable<string> = null,
-        textureType: number = TEXTURETYPE_UNSIGNED_INT,
+        textureType: number = TextureType.UNSIGNED_INT,
         vertexUrl: string = "postprocess",
         indexParameters?: any,
         blockCompilation = false,
@@ -649,7 +649,7 @@ export class PostProcess {
             engine = options.engine;
             reusable = options.reusable;
             defines = options.defines ?? null;
-            textureType = options.textureType ?? TEXTURETYPE_UNSIGNED_INT;
+            textureType = options.textureType ?? TextureType.UNSIGNED_INT;
             vertexUrl = options.vertexUrl ?? "postprocess";
             indexParameters = options.indexParameters;
             blockCompilation = options.blockCompilation ?? false;

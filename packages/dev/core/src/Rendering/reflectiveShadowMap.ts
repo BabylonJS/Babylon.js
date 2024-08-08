@@ -3,15 +3,7 @@
  * The ReflectiveShadowMap class only implements the position / normal / flux texture generation part.
  * For the global illumination effect, see the GIRSMManager class.
  */
-import {
-    TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV,
-    TEXTURETYPE_HALF_FLOAT,
-    TextureFormat,
-    TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV,
-    TEXTURE_BILINEAR_SAMPLINGMODE,
-    TEXTURE_2D,
-    MATERIAL_TextureDirtyFlag,
-} from "core/Engines/constants";
+import { TextureType, TextureFormat, TEXTURE_BILINEAR_SAMPLINGMODE, TEXTURE_2D, MATERIAL_TextureDirtyFlag } from "core/Engines/constants";
 import { MultiRenderTarget } from "core/Materials/Textures/multiRenderTarget";
 import type { UniformBuffer } from "core/Materials/uniformBuffer";
 import { Color3, Color4 } from "core/Maths/math.color";
@@ -190,7 +182,7 @@ export class ReflectiveShadowMap {
 
         const caps = this._scene.getEngine().getCaps();
 
-        const fluxTextureType = caps.rg11b10ufColorRenderable ? TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV : TEXTURETYPE_HALF_FLOAT;
+        const fluxTextureType = caps.rg11b10ufColorRenderable ? TextureType.UNSIGNED_INT_10F_11F_11F_REV : TextureType.HALF_FLOAT;
         const fluxTextureFormat = caps.rg11b10ufColorRenderable ? TextureFormat.RGB : TextureFormat.RGBA;
 
         this._mrt = new MultiRenderTarget(
@@ -199,7 +191,7 @@ export class ReflectiveShadowMap {
             3, // number of RTT - position / normal / flux
             this._scene,
             {
-                types: [TEXTURETYPE_HALF_FLOAT, TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV, fluxTextureType],
+                types: [TextureType.HALF_FLOAT, TextureType.UNSIGNED_INT_2_10_10_10_REV, fluxTextureType],
                 samplingModes: [TEXTURE_BILINEAR_SAMPLINGMODE, TEXTURE_BILINEAR_SAMPLINGMODE, TEXTURE_BILINEAR_SAMPLINGMODE],
                 generateMipMaps: false,
                 targetTypes: [TEXTURE_2D, TEXTURE_2D, TEXTURE_2D],

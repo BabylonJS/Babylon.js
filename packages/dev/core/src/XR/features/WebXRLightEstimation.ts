@@ -6,15 +6,7 @@ import type { Nullable } from "../../types";
 import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import type { WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
-import {
-    TextureFormat,
-    TEXTURETYPE_HALF_FLOAT,
-    TEXTURETYPE_UNSIGNED_BYTE,
-    TEXTURE_LINEAR_LINEAR_MIPLINEAR,
-    TEXTURE_WRAP_ADDRESSMODE,
-    MATERIAL_TextureDirtyFlag,
-    TEXTURE_CUBIC_MODE,
-} from "../../Engines/constants";
+import { TextureFormat, TextureType, TEXTURE_LINEAR_LINEAR_MIPLINEAR, TEXTURE_WRAP_ADDRESSMODE, MATERIAL_TextureDirtyFlag, TEXTURE_CUBIC_MODE } from "../../Engines/constants";
 import { Color3 } from "../../Maths/math.color";
 import { Vector3 } from "../../Maths/math.vector";
 import { DirectionalLight } from "../../Lights/directionalLight";
@@ -237,7 +229,7 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
                 internalTexture._useSRGBBuffer = this.options.reflectionFormat === "srgba8";
                 internalTexture.format = TextureFormat.RGBA;
                 internalTexture.generateMipMaps = true;
-                internalTexture.type = this.options.reflectionFormat !== "srgba8" ? TEXTURETYPE_HALF_FLOAT : TEXTURETYPE_UNSIGNED_BYTE;
+                internalTexture.type = this.options.reflectionFormat !== "srgba8" ? TextureType.HALF_FLOAT : TextureType.UNSIGNED_BYTE;
                 internalTexture.samplingMode = TEXTURE_LINEAR_LINEAR_MIPLINEAR;
                 internalTexture.width = this._reflectionCubeMapTextureSize;
                 internalTexture.height = this._reflectionCubeMapTextureSize;

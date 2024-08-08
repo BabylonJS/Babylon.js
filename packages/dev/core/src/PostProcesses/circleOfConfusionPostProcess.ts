@@ -5,7 +5,7 @@ import type { Effect } from "../Materials/effect";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { Camera } from "../Cameras/camera";
 import { Logger } from "../Misc/logger";
-import { TEXTURETYPE_UNSIGNED_INT } from "../Engines/constants";
+import { TextureType } from "../Engines/constants";
 
 import "../Shaders/circleOfConfusion.fragment";
 import { RegisterClass } from "../Misc/typeStore";
@@ -66,7 +66,7 @@ export class CircleOfConfusionPostProcess extends PostProcess {
         samplingMode?: number,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType = TEXTURETYPE_UNSIGNED_INT,
+        textureType = TextureType.UNSIGNED_INT,
         blockCompilation = false
     ) {
         super(

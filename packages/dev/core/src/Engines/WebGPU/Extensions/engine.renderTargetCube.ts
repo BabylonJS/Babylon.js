@@ -1,7 +1,7 @@
 import { InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
 import type { RenderTargetCreationOptions } from "../../../Materials/Textures/textureCreationOptions";
 import {
-    TEXTURETYPE_UNSIGNED_INT,
+    TextureType,
     TEXTURE_TRILINEAR_SAMPLINGMODE,
     TextureFormat,
     TEXTURE_BILINEAR_SAMPLINGMODE,
@@ -34,7 +34,7 @@ WebGPUEngine.prototype.createRenderTargetCubeTexture = function (size: number, o
         generateMipMaps: true,
         generateDepthBuffer: true,
         generateStencilBuffer: false,
-        type: TEXTURETYPE_UNSIGNED_INT,
+        type: TextureType.UNSIGNED_INT,
         samplingMode: TEXTURE_TRILINEAR_SAMPLINGMODE,
         format: TextureFormat.RGBA,
         samples: 1,

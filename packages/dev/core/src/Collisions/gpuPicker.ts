@@ -1,4 +1,4 @@
-import { TEXTURETYPE_UNSIGNED_INT, TEXTURE_NEAREST_NEAREST } from "core/Engines/constants";
+import { TextureType, TEXTURE_NEAREST_NEAREST } from "core/Engines/constants";
 import type { Engine } from "core/Engines/engine";
 import type { WebGPUEngine } from "core/Engines/webgpuEngine";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
@@ -54,7 +54,7 @@ export class GPUPicker {
             scene,
             false,
             undefined,
-            TEXTURETYPE_UNSIGNED_INT,
+            TextureType.UNSIGNED_INT,
             false,
             TEXTURE_NEAREST_NEAREST
         );

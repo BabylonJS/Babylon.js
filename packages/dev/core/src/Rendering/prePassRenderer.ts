@@ -3,18 +3,15 @@ import type { Scene } from "../scene";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import {
     PREPASS_IRRADIANCE_TEXTURE_TYPE,
-    TEXTURETYPE_HALF_FLOAT,
+    TextureType,
     TextureFormat,
     PREPASS_POSITION_TEXTURE_TYPE,
     PREPASS_VELOCITY_TEXTURE_TYPE,
-    TEXTURETYPE_UNSIGNED_INT,
     PREPASS_REFLECTIVITY_TEXTURE_TYPE,
     PREPASS_COLOR_TEXTURE_TYPE,
     PREPASS_DEPTH_TEXTURE_TYPE,
-    TEXTURETYPE_FLOAT,
     PREPASS_NORMAL_TEXTURE_TYPE,
     PREPASS_ALBEDO_SQRT_TEXTURE_TYPE,
-    TEXTURETYPE_UNSIGNED_BYTE,
 } from "../Engines/constants";
 import type { PostProcess } from "../PostProcesses/postProcess";
 import type { Effect } from "../Materials/effect";
@@ -138,49 +135,49 @@ export class PrePassRenderer {
     public static TextureFormats = [
         {
             purpose: PREPASS_IRRADIANCE_TEXTURE_TYPE,
-            type: TEXTURETYPE_HALF_FLOAT,
+            type: TextureType.HALF_FLOAT,
             format: TextureFormat.RGBA,
             name: "prePass_Irradiance",
         },
         {
             purpose: PREPASS_POSITION_TEXTURE_TYPE,
-            type: TEXTURETYPE_HALF_FLOAT,
+            type: TextureType.HALF_FLOAT,
             format: TextureFormat.RGBA,
             name: "prePass_Position",
         },
         {
             purpose: PREPASS_VELOCITY_TEXTURE_TYPE,
-            type: TEXTURETYPE_UNSIGNED_INT,
+            type: TextureType.UNSIGNED_INT,
             format: TextureFormat.RGBA,
             name: "prePass_Velocity",
         },
         {
             purpose: PREPASS_REFLECTIVITY_TEXTURE_TYPE,
-            type: TEXTURETYPE_UNSIGNED_INT,
+            type: TextureType.UNSIGNED_INT,
             format: TextureFormat.RGBA,
             name: "prePass_Reflectivity",
         },
         {
             purpose: PREPASS_COLOR_TEXTURE_TYPE,
-            type: TEXTURETYPE_HALF_FLOAT,
+            type: TextureType.HALF_FLOAT,
             format: TextureFormat.RGBA,
             name: "prePass_Color",
         },
         {
             purpose: PREPASS_DEPTH_TEXTURE_TYPE,
-            type: TEXTURETYPE_FLOAT,
+            type: TextureType.FLOAT,
             format: TextureFormat.R,
             name: "prePass_Depth",
         },
         {
             purpose: PREPASS_NORMAL_TEXTURE_TYPE,
-            type: TEXTURETYPE_HALF_FLOAT,
+            type: TextureType.HALF_FLOAT,
             format: TextureFormat.RGBA,
             name: "prePass_Normal",
         },
         {
             purpose: PREPASS_ALBEDO_SQRT_TEXTURE_TYPE,
-            type: TEXTURETYPE_UNSIGNED_INT,
+            type: TextureType.UNSIGNED_INT,
             format: TextureFormat.RGBA,
             name: "prePass_Albedo",
         },
@@ -293,20 +290,20 @@ export class PrePassRenderer {
         this._scene = scene;
         this._engine = scene.getEngine();
 
-        let type = TEXTURETYPE_UNSIGNED_BYTE;
+        let type = TextureType.UNSIGNED_BYTE;
         if (this._engine._caps.textureFloat && this._engine._caps.textureFloatLinearFiltering) {
-            type = TEXTURETYPE_FLOAT;
+            type = TextureType.FLOAT;
         } else if (this._engine._caps.textureHalfFloat && this._engine._caps.textureHalfFloatLinearFiltering) {
-            type = TEXTURETYPE_HALF_FLOAT;
+            type = TextureType.HALF_FLOAT;
         }
 
         for (let i = 0; i < PrePassRenderer.TextureFormats.length; ++i) {
             const format = PrePassRenderer.TextureFormats[i].format;
-            if (PrePassRenderer.TextureFormats[i].type === TEXTURETYPE_FLOAT) {
+            if (PrePassRenderer.TextureFormats[i].type === TextureType.FLOAT) {
                 PrePassRenderer.TextureFormats[PREPASS_DEPTH_TEXTURE_TYPE].type = type;
                 if ((format === TextureFormat.R || format === TextureFormat.RG || format === TextureFormat.RGBA) && !this._engine._caps.supportFloatTexturesResolve) {
                     // We don't know in advance if the texture will be used as a resolve target, so we revert to half_float if the extension to resolve full float textures is not supported
-                    PrePassRenderer.TextureFormats[PREPASS_DEPTH_TEXTURE_TYPE].type = TEXTURETYPE_HALF_FLOAT;
+                    PrePassRenderer.TextureFormats[PREPASS_DEPTH_TEXTURE_TYPE].type = TextureType.HALF_FLOAT;
                 }
             }
         }
@@ -328,7 +325,7 @@ export class PrePassRenderer {
         const rt = new PrePassRenderTarget(name, renderTargetTexture, { width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, 0, this._scene, {
             generateMipMaps: false,
             generateStencilBuffer: this._engine.isStencilEnable,
-            defaultType: TEXTURETYPE_UNSIGNED_INT,
+            defaultType: TextureType.UNSIGNED_INT,
             types: [],
             drawOnlyOnFirstAttachmentByDefault: true,
         });

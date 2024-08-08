@@ -6,17 +6,7 @@ import { Scalar } from "../Maths/math.scalar";
 import { SphericalPolynomial } from "../Maths/sphericalPolynomial";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
-import {
-    TEXTURETYPE_HALF_FLOAT,
-    TEXTURETYPE_FLOAT,
-    TEXTURETYPE_UNSIGNED_BYTE,
-    TEXTURETYPE_UNSIGNED_INT,
-    TEXTURETYPE_UNSIGNED_INTEGER,
-    TextureFormat,
-    TEXTURE_NEAREST_SAMPLINGMODE,
-    TEXTURE_TRILINEAR_SAMPLINGMODE,
-    TEXTURE_LINEAR_LINEAR,
-} from "../Engines/constants";
+import { TextureType, TextureFormat, TEXTURE_NEAREST_SAMPLINGMODE, TEXTURE_TRILINEAR_SAMPLINGMODE, TEXTURE_LINEAR_LINEAR } from "../Engines/constants";
 import { Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { Logger } from "../Misc/logger";
@@ -241,19 +231,19 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
     const engine = internalTexture.getEngine() as Engine;
 
     if (
-        texture.textureType !== TEXTURETYPE_HALF_FLOAT &&
-        texture.textureType !== TEXTURETYPE_FLOAT &&
-        texture.textureType !== TEXTURETYPE_UNSIGNED_BYTE &&
-        texture.textureType !== TEXTURETYPE_UNSIGNED_INT &&
-        texture.textureType !== TEXTURETYPE_UNSIGNED_INTEGER &&
+        texture.textureType !== TextureType.HALF_FLOAT &&
+        texture.textureType !== TextureType.FLOAT &&
+        texture.textureType !== TextureType.UNSIGNED_BYTE &&
+        texture.textureType !== TextureType.UNSIGNED_INT &&
+        texture.textureType !== TextureType.UNSIGNED_INTEGER &&
         texture.textureType !== -1
     ) {
         return Promise.reject("The cube texture should allow HDR (Full Float or Half Float).");
     }
 
-    let textureType = TEXTURETYPE_FLOAT;
+    let textureType = TextureType.FLOAT;
     if (!engine.getCaps().textureFloatRender) {
-        textureType = TEXTURETYPE_HALF_FLOAT;
+        textureType = TextureType.HALF_FLOAT;
         if (!engine.getCaps().textureHalfFloatRender) {
             return Promise.reject("Env texture can only be created when the browser supports half float or full float rendering.");
         }
@@ -548,7 +538,7 @@ export function UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBuff
     const caps = engine.getCaps();
 
     texture.format = TextureFormat.RGBA;
-    texture.type = TEXTURETYPE_UNSIGNED_INT;
+    texture.type = TextureType.UNSIGNED_INT;
     texture.generateMipMaps = true;
     texture._cachedAnisotropicFilteringLevel = null;
     engine.updateTextureSamplingMode(TEXTURE_TRILINEAR_SAMPLINGMODE, texture);
@@ -566,12 +556,12 @@ export function UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBuff
     // If half float available we can uncompress the texture
     else if (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering) {
         expandTexture = true;
-        texture.type = TEXTURETYPE_HALF_FLOAT;
+        texture.type = TextureType.HALF_FLOAT;
     }
     // If full float available we can uncompress the texture
     else if (caps.textureFloatRender && caps.textureFloatLinearFiltering) {
         expandTexture = true;
-        texture.type = TEXTURETYPE_FLOAT;
+        texture.type = TextureType.FLOAT;
     }
 
     // Expand the texture if possible
@@ -695,15 +685,15 @@ export function UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBuff
         const size = Math.pow(2, mipmapsCount - 1 - imageData.length);
         const dataLength = size * size * 4;
         switch (texture.type) {
-            case TEXTURETYPE_UNSIGNED_INT: {
+            case TextureType.UNSIGNED_INT: {
                 data = new Uint8Array(dataLength);
                 break;
             }
-            case TEXTURETYPE_HALF_FLOAT: {
+            case TextureType.HALF_FLOAT: {
                 data = new Uint16Array(dataLength);
                 break;
             }
-            case TEXTURETYPE_FLOAT: {
+            case TextureType.FLOAT: {
                 data = new Float32Array(dataLength);
                 break;
             }

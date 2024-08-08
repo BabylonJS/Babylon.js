@@ -1,5 +1,5 @@
 import type { Nullable } from "../types";
-import { TEXTURETYPE_UNSIGNED_INT, TEXTURE_BILINEAR_SAMPLINGMODE } from "../Engines/constants";
+import { TextureType, TEXTURE_BILINEAR_SAMPLINGMODE } from "../Engines/constants";
 import type { Camera } from "../Cameras/camera";
 import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
@@ -42,7 +42,7 @@ export class PassPostProcess extends PostProcess {
         samplingMode?: number,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType: number = TEXTURETYPE_UNSIGNED_INT,
+        textureType: number = TextureType.UNSIGNED_INT,
         blockCompilation = false
     ) {
         super(name, "pass", null, null, options, camera, samplingMode, engine, reusable, undefined, textureType, undefined, null, blockCompilation);
@@ -145,7 +145,7 @@ export class PassCubePostProcess extends PostProcess {
         samplingMode?: number,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType: number = TEXTURETYPE_UNSIGNED_INT,
+        textureType: number = TextureType.UNSIGNED_INT,
         blockCompilation = false
     ) {
         super(name, "passCube", null, null, options, camera, samplingMode, engine, reusable, "#define POSITIVEX", textureType, undefined, null, blockCompilation);
@@ -174,5 +174,5 @@ export class PassCubePostProcess extends PostProcess {
 }
 
 AbstractEngine._RescalePostProcessFactory = (engine: AbstractEngine) => {
-    return new PassPostProcess("rescale", 1, null, TEXTURE_BILINEAR_SAMPLINGMODE, engine, false, TEXTURETYPE_UNSIGNED_INT);
+    return new PassPostProcess("rescale", 1, null, TEXTURE_BILINEAR_SAMPLINGMODE, engine, false, TextureType.UNSIGNED_INT);
 };

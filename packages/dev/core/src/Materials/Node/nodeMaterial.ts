@@ -47,7 +47,7 @@ import {
     PREPASS_NORMAL_TEXTURE_TYPE,
     PREPASS_POSITION_TEXTURE_TYPE,
     TEXTURE_NEAREST_SAMPLINGMODE,
-    TEXTURETYPE_UNSIGNED_INT,
+    TextureType,
     TextureFormat,
 } from "../../Engines/constants";
 import type { Camera } from "../../Cameras/camera";
@@ -1109,7 +1109,7 @@ export class NodeMaterial extends PushMaterial {
         samplingMode: number = TEXTURE_NEAREST_SAMPLINGMODE,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType: number = TEXTURETYPE_UNSIGNED_INT,
+        textureType: number = TextureType.UNSIGNED_INT,
         textureFormat = TextureFormat.RGBA
     ): Nullable<PostProcess> {
         if (this.mode !== NodeMaterialModes.PostProcess) {
@@ -1134,7 +1134,7 @@ export class NodeMaterial extends PushMaterial {
         samplingMode: number = TEXTURE_NEAREST_SAMPLINGMODE,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType: number = TEXTURETYPE_UNSIGNED_INT,
+        textureType: number = TextureType.UNSIGNED_INT,
         textureFormat = TextureFormat.RGBA
     ): PostProcess {
         let tempName = this.name + this._buildId;

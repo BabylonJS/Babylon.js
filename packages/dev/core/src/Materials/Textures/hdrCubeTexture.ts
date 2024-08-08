@@ -3,15 +3,7 @@ import type { Scene } from "../../scene";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
-import {
-    MATERIAL_TextureDirtyFlag,
-    DELAYLOADSTATE_NOTLOADED,
-    TEXTURETYPE_UNSIGNED_BYTE,
-    TEXTURETYPE_FLOAT,
-    TEXTURETYPE_HALF_FLOAT,
-    TextureFormat,
-    DELAYLOADSTATE_LOADED,
-} from "../../Engines/constants";
+import { MATERIAL_TextureDirtyFlag, DELAYLOADSTATE_NOTLOADED, TextureType, TextureFormat, DELAYLOADSTATE_LOADED } from "../../Engines/constants";
 import { HDRTools } from "../../Misc/HighDynamicRange/hdr";
 import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
 import { RegisterClass } from "../../Misc/typeStore";
@@ -195,11 +187,11 @@ export class HDRCubeTexture extends BaseTexture {
         const engine = this._getEngine()!;
         const caps = engine.getCaps();
 
-        let textureType = TEXTURETYPE_UNSIGNED_BYTE;
+        let textureType = TextureType.UNSIGNED_BYTE;
         if (caps.textureFloat && caps.textureFloatLinearFiltering) {
-            textureType = TEXTURETYPE_FLOAT;
+            textureType = TextureType.FLOAT;
         } else if (caps.textureHalfFloat && caps.textureHalfFloatLinearFiltering) {
-            textureType = TEXTURETYPE_HALF_FLOAT;
+            textureType = TextureType.HALF_FLOAT;
         }
 
         const callback = (buffer: ArrayBuffer): Nullable<ArrayBufferView[]> => {
@@ -223,9 +215,9 @@ export class HDRCubeTexture extends BaseTexture {
             // Push each faces.
             for (let j = 0; j < 6; j++) {
                 // Create fallback array
-                if (textureType === TEXTURETYPE_HALF_FLOAT) {
+                if (textureType === TextureType.HALF_FLOAT) {
                     shortArray = new Uint16Array(this._size * this._size * 3);
-                } else if (textureType === TEXTURETYPE_UNSIGNED_BYTE) {
+                } else if (textureType === TextureType.UNSIGNED_BYTE) {
                     // 3 channels of 1 bytes per pixel in bytes.
                     byteArray = new Uint8Array(this._size * this._size * 3);
                 }

@@ -1,16 +1,7 @@
 import { InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
 import type { IWebRequest } from "../../../Misc/interfaces/iWebRequest";
 import type { Nullable } from "../../../types";
-import {
-    TEXTURETYPE_UNSIGNED_INT,
-    TextureFormat,
-    TEXTURETYPE_FLOAT,
-    TEXTURE_NEAREST_SAMPLINGMODE,
-    TEXTURETYPE_HALF_FLOAT,
-    TEXTURE_CLAMP_ADDRESSMODE,
-    TEXTURE_TRILINEAR_SAMPLINGMODE,
-    TEXTURETYPE_UNSIGNED_INTEGER,
-} from "../../constants";
+import { TextureType, TextureFormat, TEXTURE_NEAREST_SAMPLINGMODE, TEXTURE_CLAMP_ADDRESSMODE, TEXTURE_TRILINEAR_SAMPLINGMODE } from "../../constants";
 import { WebGPUEngine } from "../../webgpuEngine";
 import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 import { Logger } from "../../../Misc/logger";
@@ -35,7 +26,7 @@ declare module "../../abstractEngine" {
          * @param format defines the format of the data
          * @param invertY defines if data must be stored with Y axis inverted
          * @param compression defines the compression used (null by default)
-         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+         * @param type defines the type fo the data (Engine.TextureType.UNSIGNED_INT by default)
          * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
          */
         updateRawTexture(
@@ -53,7 +44,7 @@ declare module "../../abstractEngine" {
          * @param data defines the array of data to use to create each face
          * @param size defines the size of the textures
          * @param format defines the format of the data
-         * @param type defines the type of the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
+         * @param type defines the type of the data (like Engine.TextureType.UNSIGNED_INT)
          * @param generateMipMaps  defines if the engine should generate the mip levels
          * @param invertY defines if data must be stored with Y axis inverted
          * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
@@ -76,7 +67,7 @@ declare module "../../abstractEngine" {
          * @param texture defines the texture to update
          * @param data defines the data to store
          * @param format defines the data format
-         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+         * @param type defines the type fo the data (Engine.TextureType.UNSIGNED_INT by default)
          * @param invertY defines if data must be stored with Y axis inverted
          */
         updateRawCubeTexture(texture: InternalTexture, data: ArrayBufferView[], format: number, type: number, invertY: boolean): void;
@@ -86,7 +77,7 @@ declare module "../../abstractEngine" {
          * @param texture defines the texture to update
          * @param data defines the data to store
          * @param format defines the data format
-         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+         * @param type defines the type fo the data (Engine.TextureType.UNSIGNED_INT by default)
          * @param invertY defines if data must be stored with Y axis inverted
          * @param compression defines the compression used (null by default)
          */
@@ -97,7 +88,7 @@ declare module "../../abstractEngine" {
          * @param texture defines the texture to update
          * @param data defines the data to store
          * @param format defines the data format
-         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+         * @param type defines the type fo the data (Engine.TextureType.UNSIGNED_INT by default)
          * @param invertY defines if data must be stored with Y axis inverted
          * @param compression defines the compression used (null by default)
          * @param level defines which level of the texture to update
@@ -110,7 +101,7 @@ declare module "../../abstractEngine" {
          * @param scene defines the current scene
          * @param size defines the size of the textures
          * @param format defines the format of the data
-         * @param type defines the type fo the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
+         * @param type defines the type fo the data (like Engine.TextureType.UNSIGNED_INT)
          * @param noMipmap defines if the engine should avoid generating the mip levels
          * @param callback defines a callback used to extract texture data from loaded data
          * @param mipmapGenerator defines to provide an optional tool to generate mip levels
@@ -137,7 +128,7 @@ declare module "../../abstractEngine" {
          * @param scene defines the current scene
          * @param size defines the size of the textures
          * @param format defines the format of the data
-         * @param type defines the type fo the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
+         * @param type defines the type fo the data (like Engine.TextureType.UNSIGNED_INT)
          * @param noMipmap defines if the engine should avoid generating the mip levels
          * @param callback defines a callback used to extract texture data from loaded data
          * @param mipmapGenerator defines to provide an optional tool to generate mip levels
@@ -178,7 +169,7 @@ declare module "../../abstractEngine" {
          * @param format defines the data format
          * @param invertY defines if data must be stored with Y axis inverted
          * @param compression defines the used compression (can be null)
-         * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
+         * @param textureType defines the texture Type (Engine.TextureType.UNSIGNED_INT, Engine.TextureType.FLOAT...)
          */
         updateRawTexture3D(texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string>, textureType: number): void;
 
@@ -198,7 +189,7 @@ declare module "../../abstractEngine" {
          * @param format defines the data format
          * @param invertY defines if data must be stored with Y axis inverted
          * @param compression defines the used compression (can be null)
-         * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
+         * @param textureType defines the texture Type (Engine.TextureType.UNSIGNED_INT, Engine.TextureType.FLOAT...)
          */
         updateRawTexture2DArray(
             texture: InternalTexture,
@@ -220,7 +211,7 @@ WebGPUEngine.prototype.createRawTexture = function (
     invertY: boolean,
     samplingMode: number,
     compression: Nullable<string> = null,
-    type: number = TEXTURETYPE_UNSIGNED_INT,
+    type: number = TextureType.UNSIGNED_INT,
     creationFlags: number = 0,
     useSRGBBuffer: boolean = false
 ): InternalTexture {
@@ -257,7 +248,7 @@ WebGPUEngine.prototype.updateRawTexture = function (
     format: number,
     invertY: boolean,
     compression: Nullable<string> = null,
-    type: number = TEXTURETYPE_UNSIGNED_INT,
+    type: number = TextureType.UNSIGNED_INT,
     useSRGBBuffer: boolean = false
 ): void {
     if (!texture) {
@@ -302,18 +293,18 @@ WebGPUEngine.prototype.createRawCubeTexture = function (
 ): InternalTexture {
     const texture = new InternalTexture(this, InternalTextureSource.CubeRaw);
 
-    if (type === TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+    if (type === TextureType.FLOAT && !this._caps.textureFloatLinearFiltering) {
         generateMipMaps = false;
         samplingMode = TEXTURE_NEAREST_SAMPLINGMODE;
         Logger.Warn("Float texture filtering is not supported. Mipmap generation and sampling mode are forced to false and TEXTURE_NEAREST_SAMPLINGMODE, respectively.");
-    } else if (type === TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+    } else if (type === TextureType.HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
         generateMipMaps = false;
         samplingMode = TEXTURE_NEAREST_SAMPLINGMODE;
         Logger.Warn("Half float texture filtering is not supported. Mipmap generation and sampling mode are forced to false and TEXTURE_NEAREST_SAMPLINGMODE, respectively.");
-    } else if (type === TEXTURETYPE_FLOAT && !this._caps.textureFloatRender) {
+    } else if (type === TextureType.FLOAT && !this._caps.textureFloatRender) {
         generateMipMaps = false;
         Logger.Warn("Render to float textures is not supported. Mipmap generation forced to false.");
-    } else if (type === TEXTURETYPE_HALF_FLOAT && !this._caps.colorBufferFloat) {
+    } else if (type === TextureType.HALF_FLOAT && !this._caps.colorBufferFloat) {
         generateMipMaps = false;
         Logger.Warn("Render to half float textures is not supported. Mipmap generation forced to false.");
     }
@@ -472,7 +463,7 @@ WebGPUEngine.prototype.createRawTexture3D = function (
     invertY: boolean,
     samplingMode: number,
     compression: Nullable<string> = null,
-    textureType: number = TEXTURETYPE_UNSIGNED_INT,
+    textureType: number = TextureType.UNSIGNED_INT,
     creationFlags: number = 0
 ): InternalTexture {
     const source = InternalTextureSource.Raw3D;
@@ -510,7 +501,7 @@ WebGPUEngine.prototype.updateRawTexture3D = function (
     format: number,
     invertY: boolean,
     compression: Nullable<string> = null,
-    textureType: number = TEXTURETYPE_UNSIGNED_INT
+    textureType: number = TextureType.UNSIGNED_INT
 ): void {
     if (!this._doNotHandleContextLost) {
         texture._bufferView = bufferView;
@@ -548,7 +539,7 @@ WebGPUEngine.prototype.createRawTexture2DArray = function (
     invertY: boolean,
     samplingMode: number,
     compression: Nullable<string> = null,
-    textureType: number = TEXTURETYPE_UNSIGNED_INT,
+    textureType: number = TextureType.UNSIGNED_INT,
     creationFlags: number = 0
 ): InternalTexture {
     const source = InternalTextureSource.Raw2DArray;
@@ -586,7 +577,7 @@ WebGPUEngine.prototype.updateRawTexture2DArray = function (
     format: number,
     invertY: boolean,
     compression: Nullable<string> = null,
-    textureType: number = TEXTURETYPE_UNSIGNED_INT
+    textureType: number = TextureType.UNSIGNED_INT
 ): void {
     if (!this._doNotHandleContextLost) {
         texture._bufferView = bufferView;
@@ -622,12 +613,12 @@ function _convertRGBtoRGBATextureData(rgbData: any, width: number, height: numbe
     // Create new RGBA data container.
     let rgbaData: any;
     let val1 = 1;
-    if (textureType === TEXTURETYPE_FLOAT) {
+    if (textureType === TextureType.FLOAT) {
         rgbaData = new Float32Array(width * height * 4);
-    } else if (textureType === TEXTURETYPE_HALF_FLOAT) {
+    } else if (textureType === TextureType.HALF_FLOAT) {
         rgbaData = new Uint16Array(width * height * 4);
         val1 = 15360; // 15360 is the encoding of 1 in half float
-    } else if (textureType === TEXTURETYPE_UNSIGNED_INTEGER) {
+    } else if (textureType === TextureType.UNSIGNED_INTEGER) {
         rgbaData = new Uint32Array(width * height * 4);
     } else {
         rgbaData = new Uint8Array(width * height * 4);

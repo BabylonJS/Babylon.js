@@ -6,7 +6,7 @@ import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { Nullable } from "../types";
 import { AbstractScene } from "../abstractScene";
 import type { Scene } from "../scene";
-import { TEXTURETYPE_UNSIGNED_BYTE, TEXTURETYPE_HALF_FLOAT, TEXTURETYPE_FLOAT } from "../Engines/constants";
+import { TextureType } from "../Engines/constants";
 import type { UniformBuffer } from "../Materials/uniformBuffer";
 
 declare module "../abstractScene" {
@@ -116,13 +116,13 @@ export class ReflectionProbe {
         }
         this._scene.reflectionProbes.push(this);
 
-        let textureType = TEXTURETYPE_UNSIGNED_BYTE;
+        let textureType = TextureType.UNSIGNED_BYTE;
         if (useFloat) {
             const caps = this._scene.getEngine().getCaps();
             if (caps.textureHalfFloatRender) {
-                textureType = TEXTURETYPE_HALF_FLOAT;
+                textureType = TextureType.HALF_FLOAT;
             } else if (caps.textureFloatRender) {
-                textureType = TEXTURETYPE_FLOAT;
+                textureType = TextureType.FLOAT;
             }
         }
         this._renderTargetTexture = new RenderTargetTexture(name, size, scene, generateMipMaps, true, textureType, true);

@@ -4,12 +4,10 @@ import { Logger } from "../../../Misc/logger";
 import type { Nullable } from "../../../types";
 import {
     TextureFormat,
-    TEXTURETYPE_UNSIGNED_INT,
+    TextureType,
     TEXTURE_TRILINEAR_SAMPLINGMODE,
     TEXTURE_2D,
-    TEXTURETYPE_FLOAT,
     TEXTURE_NEAREST_SAMPLINGMODE,
-    TEXTURETYPE_HALF_FLOAT,
     TEXTURE_CUBE_MAP,
     TEXTURE_3D,
     TEXTURE_2D_ARRAY,
@@ -114,7 +112,7 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
     let depthTextureFormat = TextureFormat.DEPTH16;
     let textureCount = 1;
 
-    const defaultType = TEXTURETYPE_UNSIGNED_INT;
+    const defaultType = TextureType.UNSIGNED_INT;
     const defaultSamplingMode = TEXTURE_TRILINEAR_SAMPLINGMODE;
     const defaultUseSRGBBuffer = false;
     const defaultFormat = TextureFormat.RGBA;
@@ -208,17 +206,17 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
         const target = targets[i] || defaultTarget;
         const layerCount = layers[i] ?? 1;
 
-        if (type === TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+        if (type === TextureType.FLOAT && !this._caps.textureFloatLinearFiltering) {
             // if floating point linear (FLOAT) then force to NEAREST_SAMPLINGMODE
             samplingMode = TEXTURE_NEAREST_SAMPLINGMODE;
-        } else if (type === TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+        } else if (type === TextureType.HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
             // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
             samplingMode = TEXTURE_NEAREST_SAMPLINGMODE;
         }
 
-        if (type === TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-            type = TEXTURETYPE_UNSIGNED_INT;
-            Logger.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
+        if (type === TextureType.FLOAT && !this._caps.textureFloat) {
+            type = TextureType.UNSIGNED_INT;
+            Logger.Warn("Float textures are not supported. Render target forced to TextureType.UNSIGNED_BYTE type");
         }
 
         attachments.push(i + 1);

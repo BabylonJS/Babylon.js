@@ -8,7 +8,7 @@ import { PostProcessRenderPipeline } from "../../../PostProcesses/RenderPipeline
 import { PostProcessRenderEffect } from "../../../PostProcesses/RenderPipeline/postProcessRenderEffect";
 import { PassPostProcess } from "../../../PostProcesses/passPostProcess";
 import { BlurPostProcess } from "../../../PostProcesses/blurPostProcess";
-import { TEXTURETYPE_UNSIGNED_INT, TEXTURE_BILINEAR_SAMPLINGMODE } from "../../../Engines/constants";
+import { TextureType, TEXTURE_BILINEAR_SAMPLINGMODE } from "../../../Engines/constants";
 import { serialize } from "../../../Misc/decorators";
 import type { Scene } from "../../../scene";
 import { RawTexture } from "../../../Materials/Textures/rawTexture";
@@ -247,7 +247,7 @@ export class SSAORenderingPipeline extends PostProcessRenderPipeline {
             Texture.BILINEAR_SAMPLINGMODE,
             this._scene.getEngine(),
             false,
-            TEXTURETYPE_UNSIGNED_INT
+            TextureType.UNSIGNED_INT
         );
         this._blurVPostProcess = new BlurPostProcess(
             "BlurV",
@@ -258,7 +258,7 @@ export class SSAORenderingPipeline extends PostProcessRenderPipeline {
             Texture.BILINEAR_SAMPLINGMODE,
             this._scene.getEngine(),
             false,
-            TEXTURETYPE_UNSIGNED_INT
+            TextureType.UNSIGNED_INT
         );
 
         this._blurHPostProcess.onActivateObservable.add(() => {

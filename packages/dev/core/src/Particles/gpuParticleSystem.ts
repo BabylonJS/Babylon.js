@@ -19,7 +19,7 @@ import { RawTexture } from "../Materials/Textures/rawTexture";
 import {
     TextureFormat,
     TEXTURE_NEAREST_SAMPLINGMODE,
-    TEXTURETYPE_FLOAT,
+    TextureType,
     TEXTURE_WRAP_ADDRESSMODE,
     ALPHA_ADD,
     ALPHA_ONEONE,
@@ -1029,7 +1029,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             false,
             false,
             TEXTURE_NEAREST_SAMPLINGMODE,
-            TEXTURETYPE_FLOAT
+            TextureType.FLOAT
         );
         this._randomTexture.name = "GPUParticleSystem_random1";
         this._randomTexture.wrapU = TEXTURE_WRAP_ADDRESSMODE;
@@ -1051,7 +1051,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             false,
             false,
             TEXTURE_NEAREST_SAMPLINGMODE,
-            TEXTURETYPE_FLOAT
+            TextureType.FLOAT
         );
         this._randomTexture2.name = "GPUParticleSystem_random2";
         this._randomTexture2.wrapU = TEXTURE_WRAP_ADDRESSMODE;

@@ -5,9 +5,7 @@ import type { AbstractEngine } from "../../../Engines/abstractEngine";
 import type { Effect } from "../../../Materials/effect";
 import {
     TEXTURE_FILTERING_QUALITY_OFFLINE,
-    TEXTURETYPE_UNSIGNED_BYTE,
-    TEXTURETYPE_HALF_FLOAT,
-    TEXTURETYPE_FLOAT,
+    TextureType,
     TextureFormat,
     TEXTURE_NEAREST_SAMPLINGMODE,
     TEXTURE_CLAMP_ADDRESSMODE,
@@ -73,11 +71,11 @@ export class HDRFiltering {
     }
 
     private _createRenderTarget(size: number): RenderTargetWrapper {
-        let textureType = TEXTURETYPE_UNSIGNED_BYTE;
+        let textureType = TextureType.UNSIGNED_BYTE;
         if (this._engine.getCaps().textureHalfFloatRender) {
-            textureType = TEXTURETYPE_HALF_FLOAT;
+            textureType = TextureType.HALF_FLOAT;
         } else if (this._engine.getCaps().textureFloatRender) {
-            textureType = TEXTURETYPE_FLOAT;
+            textureType = TextureType.FLOAT;
         }
 
         const rtWrapper = this._engine.createRenderTargetCubeTexture(size, {

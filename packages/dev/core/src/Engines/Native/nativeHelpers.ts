@@ -41,83 +41,83 @@ export function getNativeTextureFormat(format: number, type: number): number {
 
         case Constants.TextureFormat.RGB: {
             switch (type) {
-                case Constants.TEXTURETYPE_UNSIGNED_BYTE:
+                case Constants.TextureType.UNSIGNED_BYTE:
                     return _native.Engine.TEXTURE_FORMAT_RGB8;
-                case Constants.TEXTURETYPE_BYTE:
+                case Constants.TextureType.BYTE:
                     return _native.Engine.TEXTURE_FORMAT_RGB8S;
-                case Constants.TEXTURETYPE_INT:
+                case Constants.TextureType.INT:
                     return _native.Engine.TEXTURE_FORMAT_RGB8I;
-                case Constants.TEXTURETYPE_UNSIGNED_INTEGER:
+                case Constants.TextureType.UNSIGNED_INTEGER:
                     return _native.Engine.TEXTURE_FORMAT_RGB8U;
             }
             break;
         }
         case Constants.TextureFormat.RGBA: {
             switch (type) {
-                case Constants.TEXTURETYPE_UNSIGNED_BYTE:
+                case Constants.TextureType.UNSIGNED_BYTE:
                     return _native.Engine.TEXTURE_FORMAT_RGBA8;
-                case Constants.TEXTURETYPE_FLOAT:
+                case Constants.TextureType.FLOAT:
                     return _native.Engine.TEXTURE_FORMAT_RGBA32F;
-                case Constants.TEXTURETYPE_HALF_FLOAT:
+                case Constants.TextureType.HALF_FLOAT:
                     return _native.Engine.TEXTURE_FORMAT_RGBA16F;
-                case Constants.TEXTURETYPE_BYTE:
+                case Constants.TextureType.BYTE:
                     return _native.Engine.TEXTURE_FORMAT_RGBA8S;
-                case Constants.TEXTURETYPE_SHORT:
+                case Constants.TextureType.SHORT:
                     return _native.Engine.TEXTURE_FORMAT_RGBA16I;
-                case Constants.TEXTURETYPE_UNSIGNED_SHORT:
+                case Constants.TextureType.UNSIGNED_SHORT:
                     return _native.Engine.TEXTURE_FORMAT_RGBA16U;
-                case Constants.TEXTURETYPE_INT:
+                case Constants.TextureType.INT:
                     return _native.Engine.TEXTURE_FORMAT_RGBA32I;
-                case Constants.TEXTURETYPE_UNSIGNED_INTEGER:
+                case Constants.TextureType.UNSIGNED_INTEGER:
                     return _native.Engine.TEXTURE_FORMAT_RGBA32U;
             }
             break;
         }
         case Constants.TextureFormat.R: {
             switch (type) {
-                case Constants.TEXTURETYPE_UNSIGNED_BYTE:
+                case Constants.TextureType.UNSIGNED_BYTE:
                     return _native.Engine.TEXTURE_FORMAT_R8;
-                case Constants.TEXTURETYPE_FLOAT:
+                case Constants.TextureType.FLOAT:
                     return _native.Engine.TEXTURE_FORMAT_R32F;
-                case Constants.TEXTURETYPE_HALF_FLOAT:
+                case Constants.TextureType.HALF_FLOAT:
                     return _native.Engine.TEXTURE_FORMAT_R16F;
-                case Constants.TEXTURETYPE_BYTE:
+                case Constants.TextureType.BYTE:
                     return _native.Engine.TEXTURE_FORMAT_R8S;
-                case Constants.TEXTURETYPE_SHORT:
+                case Constants.TextureType.SHORT:
                     return _native.Engine.TEXTURE_FORMAT_R16S;
-                case Constants.TEXTURETYPE_UNSIGNED_SHORT:
+                case Constants.TextureType.UNSIGNED_SHORT:
                     return _native.Engine.TEXTURE_FORMAT_R16U;
-                case Constants.TEXTURETYPE_INT:
+                case Constants.TextureType.INT:
                     return _native.Engine.TEXTURE_FORMAT_R32I;
-                case Constants.TEXTURETYPE_UNSIGNED_INTEGER:
+                case Constants.TextureType.UNSIGNED_INTEGER:
                     return _native.Engine.TEXTURE_FORMAT_R32U;
             }
             break;
         }
         case Constants.TextureFormat.RG: {
             switch (type) {
-                case Constants.TEXTURETYPE_UNSIGNED_BYTE:
+                case Constants.TextureType.UNSIGNED_BYTE:
                     return _native.Engine.TEXTURE_FORMAT_RG8;
-                case Constants.TEXTURETYPE_FLOAT:
+                case Constants.TextureType.FLOAT:
                     return _native.Engine.TEXTURE_FORMAT_RG32F;
-                case Constants.TEXTURETYPE_HALF_FLOAT:
+                case Constants.TextureType.HALF_FLOAT:
                     return _native.Engine.TEXTURE_FORMAT_RG16F;
-                case Constants.TEXTURETYPE_BYTE:
+                case Constants.TextureType.BYTE:
                     return _native.Engine.TEXTURE_FORMAT_RG8S;
-                case Constants.TEXTURETYPE_SHORT:
+                case Constants.TextureType.SHORT:
                     return _native.Engine.TEXTURE_FORMAT_RG16S;
-                case Constants.TEXTURETYPE_UNSIGNED_SHORT:
+                case Constants.TextureType.UNSIGNED_SHORT:
                     return _native.Engine.TEXTURE_FORMAT_RG16U;
-                case Constants.TEXTURETYPE_INT:
+                case Constants.TextureType.INT:
                     return _native.Engine.TEXTURE_FORMAT_RG32I;
-                case Constants.TEXTURETYPE_UNSIGNED_INTEGER:
+                case Constants.TextureType.UNSIGNED_INTEGER:
                     return _native.Engine.TEXTURE_FORMAT_RG32U;
             }
             break;
         }
         case Constants.TextureFormat.BGRA: {
             switch (type) {
-                case Constants.TEXTURETYPE_UNSIGNED_BYTE:
+                case Constants.TextureType.UNSIGNED_BYTE:
                     return _native.Engine.TEXTURE_FORMAT_BGRA8;
             }
             break;

@@ -14,7 +14,7 @@ import { Texture } from "../../Materials/Textures/texture";
 import { PostProcessManager } from "../../PostProcesses/postProcessManager";
 import type { PostProcess } from "../../PostProcesses/postProcess";
 import { RenderingManager } from "../../Rendering/renderingManager";
-import { MATERIAL_TextureDirtyFlag, TEXTURETYPE_UNSIGNED_INT, TextureFormat, TEXTURETYPE_UNSIGNED_BYTE, SNAPSHOTRENDERING_FAST } from "../../Engines/constants";
+import { MATERIAL_TextureDirtyFlag, TextureType, TextureFormat, SNAPSHOTRENDERING_FAST } from "../../Engines/constants";
 import type { IRenderTargetTexture, RenderTargetWrapper } from "../../Engines/renderTargetWrapper";
 
 import "../../Engines/Extensions/engine.renderTarget";
@@ -494,7 +494,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         scene?: Nullable<Scene>,
         generateMipMaps: boolean | RenderTargetTextureOptions = false,
         doNotChangeAspectRatio: boolean = true,
-        type: number = TEXTURETYPE_UNSIGNED_INT,
+        type: number = TextureType.UNSIGNED_INT,
         isCube = false,
         samplingMode = Texture.TRILINEAR_SAMPLINGMODE,
         generateDepthBuffer = true,
@@ -513,7 +513,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             const options = generateMipMaps;
             generateMipMaps = !!options.generateMipMaps;
             doNotChangeAspectRatio = options.doNotChangeAspectRatio ?? true;
-            type = options.type ?? TEXTURETYPE_UNSIGNED_BYTE;
+            type = options.type ?? TextureType.UNSIGNED_BYTE;
             isCube = !!options.isCube;
             samplingMode = options.samplingMode ?? Texture.TRILINEAR_SAMPLINGMODE;
             generateDepthBuffer = options.generateDepthBuffer ?? true;

@@ -7,7 +7,7 @@ import type { RenderTargetWrapper } from "../renderTargetWrapper";
 import { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
 import type { WebGLHardwareTexture } from "../WebGL/webGLHardwareTexture";
 
-import { TextureFormat, TEXTURE_BILINEAR_SAMPLINGMODE, TEXTURE_NEAREST_SAMPLINGMODE, TEXTURETYPE_UNSIGNED_INT, LEQUAL } from "../constants";
+import { TextureFormat, TEXTURE_BILINEAR_SAMPLINGMODE, TEXTURE_NEAREST_SAMPLINGMODE, TextureType, LEQUAL } from "../constants";
 
 import "../AbstractEngine/abstractEngine.texture";
 
@@ -302,7 +302,7 @@ ThinEngine.prototype._setupDepthStencilTexture = function (
     internalTexture.samples = samples;
     internalTexture.generateMipMaps = false;
     internalTexture.samplingMode = bilinearFiltering ? TEXTURE_BILINEAR_SAMPLINGMODE : TEXTURE_NEAREST_SAMPLINGMODE;
-    internalTexture.type = TEXTURETYPE_UNSIGNED_INT;
+    internalTexture.type = TextureType.UNSIGNED_INT;
     internalTexture._comparisonFunction = comparisonFunction;
 
     const gl = this._gl;

@@ -87,7 +87,7 @@ export class WebGPUTextureHelper {
             case TextureFormat.ASTC12x12Unorm:
             case TextureFormat.ASTC12x12UnormSRGB:
             case TextureFormat.Stencil8:
-                return Constants.TEXTURETYPE_UNSIGNED_BYTE;
+                return Constants.TextureType.UNSIGNED_BYTE;
 
             // One component = 16 bits
             case TextureFormat.R16Uint:
@@ -97,12 +97,12 @@ export class WebGPUTextureHelper {
             case TextureFormat.RGBA16Uint:
             case TextureFormat.RGBA16Sint:
             case TextureFormat.Depth16Unorm:
-                return Constants.TEXTURETYPE_UNSIGNED_SHORT;
+                return Constants.TextureType.UNSIGNED_SHORT;
 
             case TextureFormat.R16Float:
             case TextureFormat.RG16Float:
             case TextureFormat.RGBA16Float:
-                return Constants.TEXTURETYPE_HALF_FLOAT;
+                return Constants.TextureType.HALF_FLOAT;
 
             // One component = 32 bits
             case TextureFormat.R32Uint:
@@ -111,7 +111,7 @@ export class WebGPUTextureHelper {
             case TextureFormat.RG32Sint:
             case TextureFormat.RGBA32Uint:
             case TextureFormat.RGBA32Sint:
-                return Constants.TEXTURETYPE_UNSIGNED_INTEGER;
+                return Constants.TextureType.UNSIGNED_INTEGER;
 
             case TextureFormat.R32Float:
             case TextureFormat.RG32Float:
@@ -120,10 +120,10 @@ export class WebGPUTextureHelper {
             case TextureFormat.Depth32FloatStencil8:
             case TextureFormat.Depth24Plus:
             case TextureFormat.Depth24PlusStencil8:
-                return Constants.TEXTURETYPE_FLOAT;
+                return Constants.TextureType.FLOAT;
         }
 
-        return Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        return Constants.TextureType.UNSIGNED_BYTE;
     }
 
     public static GetBlockInformationFromFormat(format: GPUTextureFormat): { width: number; height: number; length: number } {
@@ -396,7 +396,7 @@ export class WebGPUTextureHelper {
         }
 
         switch (type) {
-            case Constants.TEXTURETYPE_BYTE:
+            case Constants.TextureType.BYTE:
                 switch (format) {
                     case Constants.TextureFormat.RED:
                         return TextureFormat.R8Snorm;
@@ -417,7 +417,7 @@ export class WebGPUTextureHelper {
                     default:
                         return TextureFormat.RGBA8Snorm;
                 }
-            case Constants.TEXTURETYPE_UNSIGNED_BYTE:
+            case Constants.TextureType.UNSIGNED_BYTE:
                 switch (format) {
                     case Constants.TextureFormat.RED:
                         return TextureFormat.R8Unorm;
@@ -451,7 +451,7 @@ export class WebGPUTextureHelper {
                     default:
                         return TextureFormat.RGBA8Unorm;
                 }
-            case Constants.TEXTURETYPE_SHORT:
+            case Constants.TextureType.SHORT:
                 switch (format) {
                     case Constants.TextureFormat.RED_INTEGER:
                         return TextureFormat.R16Sint;
@@ -465,7 +465,7 @@ export class WebGPUTextureHelper {
                     default:
                         return TextureFormat.RGBA16Sint;
                 }
-            case Constants.TEXTURETYPE_UNSIGNED_SHORT:
+            case Constants.TextureType.UNSIGNED_SHORT:
                 switch (format) {
                     case Constants.TextureFormat.RED_INTEGER:
                         return TextureFormat.R16Uint;
@@ -479,7 +479,7 @@ export class WebGPUTextureHelper {
                     default:
                         return TextureFormat.RGBA16Uint;
                 }
-            case Constants.TEXTURETYPE_INT:
+            case Constants.TextureType.INT:
                 switch (format) {
                     case Constants.TextureFormat.RED_INTEGER:
                         return TextureFormat.R32Sint;
@@ -493,7 +493,7 @@ export class WebGPUTextureHelper {
                     default:
                         return TextureFormat.RGBA32Sint;
                 }
-            case Constants.TEXTURETYPE_UNSIGNED_INTEGER: // Refers to UNSIGNED_INT
+            case Constants.TextureType.UNSIGNED_INTEGER: // Refers to UNSIGNED_INT
                 switch (format) {
                     case Constants.TextureFormat.RED_INTEGER:
                         return TextureFormat.R32Uint;
@@ -507,7 +507,7 @@ export class WebGPUTextureHelper {
                     default:
                         return TextureFormat.RGBA32Uint;
                 }
-            case Constants.TEXTURETYPE_FLOAT:
+            case Constants.TextureType.FLOAT:
                 switch (format) {
                     case Constants.TextureFormat.RED:
                         return TextureFormat.R32Float; // By default. Other possibility is R16Float.
@@ -521,7 +521,7 @@ export class WebGPUTextureHelper {
                     default:
                         return TextureFormat.RGBA32Float;
                 }
-            case Constants.TEXTURETYPE_HALF_FLOAT:
+            case Constants.TextureType.HALF_FLOAT:
                 switch (format) {
                     case Constants.TextureFormat.RED:
                         return TextureFormat.R16Float;
@@ -535,36 +535,36 @@ export class WebGPUTextureHelper {
                     default:
                         return TextureFormat.RGBA16Float;
                 }
-            case Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5:
+            case Constants.TextureType.UNSIGNED_SHORT_5_6_5:
                 // eslint-disable-next-line no-throw-literal
-                throw "TEXTURETYPE_UNSIGNED_SHORT_5_6_5 format not supported in WebGPU";
-            case Constants.TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV:
+                throw "TextureType.UNSIGNED_SHORT_5_6_5 format not supported in WebGPU";
+            case Constants.TextureType.UNSIGNED_INT_10F_11F_11F_REV:
                 switch (format) {
                     case Constants.TextureFormat.RGBA:
                         return TextureFormat.RG11B10UFloat;
                     case Constants.TextureFormat.RGBA_INTEGER:
                         // eslint-disable-next-line no-throw-literal
-                        throw "TextureFormat.RGBA_INTEGER format not supported in WebGPU when type is TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV";
+                        throw "TextureFormat.RGBA_INTEGER format not supported in WebGPU when type is TextureType.UNSIGNED_INT_10F_11F_11F_REV";
                     default:
                         return TextureFormat.RG11B10UFloat;
                 }
-            case Constants.TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV:
+            case Constants.TextureType.UNSIGNED_INT_5_9_9_9_REV:
                 switch (format) {
                     case Constants.TextureFormat.RGBA:
                         return TextureFormat.RGB9E5UFloat;
                     case Constants.TextureFormat.RGBA_INTEGER:
                         // eslint-disable-next-line no-throw-literal
-                        throw "TextureFormat.RGBA_INTEGER format not supported in WebGPU when type is TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV";
+                        throw "TextureFormat.RGBA_INTEGER format not supported in WebGPU when type is TextureType.UNSIGNED_INT_5_9_9_9_REV";
                     default:
                         return TextureFormat.RGB9E5UFloat;
                 }
-            case Constants.TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4:
+            case Constants.TextureType.UNSIGNED_SHORT_4_4_4_4:
                 // eslint-disable-next-line no-throw-literal
-                throw "TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4 format not supported in WebGPU";
-            case Constants.TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1:
+                throw "TextureType.UNSIGNED_SHORT_4_4_4_4 format not supported in WebGPU";
+            case Constants.TextureType.UNSIGNED_SHORT_5_5_5_1:
                 // eslint-disable-next-line no-throw-literal
-                throw "TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1 format not supported in WebGPU";
-            case Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV:
+                throw "TextureType.UNSIGNED_SHORT_5_5_5_1 format not supported in WebGPU";
+            case Constants.TextureType.UNSIGNED_INT_2_10_10_10_REV:
                 switch (format) {
                     case Constants.TextureFormat.RGBA:
                         return TextureFormat.RGB10A2Unorm;

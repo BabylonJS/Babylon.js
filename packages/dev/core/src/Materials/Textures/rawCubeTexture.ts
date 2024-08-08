@@ -5,7 +5,7 @@ import type { Scene } from "../../scene";
 import type { SphericalPolynomial } from "../../Maths/sphericalPolynomial";
 import { InternalTextureSource } from "./internalTexture";
 import { CubeTexture } from "./cubeTexture";
-import { TextureFormat, TEXTURETYPE_UNSIGNED_INT, TEXTURE_TRILINEAR_SAMPLINGMODE } from "../../Engines/constants";
+import { TextureFormat, TextureType, TEXTURE_TRILINEAR_SAMPLINGMODE } from "../../Engines/constants";
 import "../../Engines/Extensions/engine.rawTexture";
 import type { Engine } from "../../Engines/engine";
 
@@ -19,7 +19,7 @@ export class RawCubeTexture extends CubeTexture {
      * @param data defines the array of data to use to create each face
      * @param size defines the size of the textures
      * @param format defines the format of the data
-     * @param type defines the type of the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
+     * @param type defines the type of the data (like Engine.TextureType.UNSIGNED_INT)
      * @param generateMipMaps  defines if the engine should generate the mip levels
      * @param invertY defines if data must be stored with Y axis inverted
      * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
@@ -30,7 +30,7 @@ export class RawCubeTexture extends CubeTexture {
         data: Nullable<ArrayBufferView[]>,
         size: number,
         format: number = TextureFormat.RGBA,
-        type: number = TEXTURETYPE_UNSIGNED_INT,
+        type: number = TextureType.UNSIGNED_INT,
         generateMipMaps: boolean = false,
         invertY: boolean = false,
         samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE,
@@ -45,7 +45,7 @@ export class RawCubeTexture extends CubeTexture {
      * Updates the raw cube texture.
      * @param data defines the data to store
      * @param format defines the data format
-     * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+     * @param type defines the type fo the data (Engine.TextureType.UNSIGNED_INT by default)
      * @param invertY defines if data must be stored with Y axis inverted
      * @param compression defines the compression used (null by default)
      */

@@ -12,7 +12,7 @@ import type { Texture } from "core/Materials/Textures/texture";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import type { Observer } from "core/Misc/observable";
 import { Observable } from "core/Misc/observable";
-import { TEXTURETYPE_HALF_FLOAT } from "core/Engines/constants";
+import { TextureType } from "core/Engines/constants";
 import { Tools } from "core/Misc/tools";
 import type { Color4 } from "core/Maths/math.color";
 
@@ -45,7 +45,7 @@ interface ITransmissionHelperOptions {
     lodGenerationOffset: number;
 
     /**
-     * Type of the refraction render target texture (default: TEXTURETYPE_HALF_FLOAT)
+     * Type of the refraction render target texture (default: TextureType.HALF_FLOAT)
      */
     renderTargetTextureType: number;
 
@@ -75,7 +75,7 @@ class TransmissionHelper {
             samples: 4,
             lodGenerationScale: 1,
             lodGenerationOffset: -4,
-            renderTargetTextureType: TEXTURETYPE_HALF_FLOAT,
+            renderTargetTextureType: TextureType.HALF_FLOAT,
             generateMipmaps: true,
         };
     }

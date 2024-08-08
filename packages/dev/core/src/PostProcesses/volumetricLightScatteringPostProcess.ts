@@ -13,7 +13,7 @@ import { StandardMaterial } from "../Materials/standardMaterial";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { PostProcess } from "./postProcess";
-import { TEXTURETYPE_UNSIGNED_INT, ALPHA_COMBINE, ALPHA_DISABLE } from "../Engines/constants";
+import { TextureType, ALPHA_COMBINE, ALPHA_DISABLE } from "../Engines/constants";
 import type { Scene } from "../scene";
 
 import { CreatePlane } from "../Meshes/Builders/planeBuilder";
@@ -328,7 +328,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
             scene,
             false,
             true,
-            TEXTURETYPE_UNSIGNED_INT
+            TextureType.UNSIGNED_INT
         );
         this._volumetricLightScatteringRTT.wrapU = Texture.CLAMP_ADDRESSMODE;
         this._volumetricLightScatteringRTT.wrapV = Texture.CLAMP_ADDRESSMODE;

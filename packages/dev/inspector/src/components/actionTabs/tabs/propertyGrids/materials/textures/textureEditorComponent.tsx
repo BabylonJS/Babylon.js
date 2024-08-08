@@ -19,7 +19,7 @@ import type { PointerInfo } from "core/Events/pointerEvents";
 
 import type { PopupComponent } from "../../../../../popupComponent";
 import { ToolSettings } from "./toolSettings";
-import { TextureFormat.RGBA } from "core/Engines/constants";
+import { TextureFormat } from "core/Engines/constants";
 
 import "./textureEditor.scss";
 

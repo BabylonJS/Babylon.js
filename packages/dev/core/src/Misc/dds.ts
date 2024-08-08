@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Scalar } from "../Maths/math.scalar";
 import type { SphericalPolynomial } from "../Maths/sphericalPolynomial";
-import { TEXTURETYPE_UNSIGNED_INT, TEXTURETYPE_HALF_FLOAT, TEXTURETYPE_FLOAT, TextureFormat, TEXTURETYPE_UNSIGNED_BYTE } from "../Engines/constants";
+import { TextureType, TextureFormat } from "../Engines/constants";
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import type { Nullable } from "../types";
 import { Logger } from "../Misc/logger";
@@ -136,7 +136,7 @@ export interface DDSInfo {
      */
     dxgiFormat: number;
     /**
-     * Texture type eg. Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT
+     * Texture type eg. Engine.TextureType.UNSIGNED_INT, Engine.TextureType.FLOAT
      */
     textureType: number;
     /**
@@ -170,22 +170,22 @@ export class DDSTools {
 
         const fourCC = header[off_pfFourCC];
         const dxgiFormat = fourCC === FOURCC_DX10 ? extendedHeader[off_dxgiFormat] : 0;
-        let textureType = TEXTURETYPE_UNSIGNED_INT;
+        let textureType = TextureType.UNSIGNED_INT;
 
         switch (fourCC) {
             case FOURCC_D3DFMT_R16G16B16A16F:
-                textureType = TEXTURETYPE_HALF_FLOAT;
+                textureType = TextureType.HALF_FLOAT;
                 break;
             case FOURCC_D3DFMT_R32G32B32A32F:
-                textureType = TEXTURETYPE_FLOAT;
+                textureType = TextureType.FLOAT;
                 break;
             case FOURCC_DX10:
                 if (dxgiFormat === DXGI_FORMAT_R16G16B16A16_FLOAT) {
-                    textureType = TEXTURETYPE_HALF_FLOAT;
+                    textureType = TextureType.HALF_FLOAT;
                     break;
                 }
                 if (dxgiFormat === DXGI_FORMAT_R32G32B32A32_FLOAT) {
-                    textureType = TEXTURETYPE_FLOAT;
+                    textureType = TextureType.FLOAT;
                     break;
                 }
         }
@@ -571,17 +571,17 @@ export class DDSTools {
                                 }
                             }
 
-                            texture.type = TEXTURETYPE_UNSIGNED_INT;
+                            texture.type = TextureType.UNSIGNED_INT;
                         } else {
                             const floatAvailable = caps.textureFloat && ((destTypeMustBeFilterable && caps.textureFloatLinearFiltering) || !destTypeMustBeFilterable);
                             const halfFloatAvailable = caps.textureHalfFloat && ((destTypeMustBeFilterable && caps.textureHalfFloatLinearFiltering) || !destTypeMustBeFilterable);
 
                             const destType =
                                 (bpp === 128 || (bpp === 64 && !halfFloatAvailable)) && floatAvailable
-                                    ? TEXTURETYPE_FLOAT
+                                    ? TextureType.FLOAT
                                     : (bpp === 64 || (bpp === 128 && !floatAvailable)) && halfFloatAvailable
-                                      ? TEXTURETYPE_HALF_FLOAT
-                                      : TEXTURETYPE_UNSIGNED_BYTE;
+                                      ? TextureType.HALF_FLOAT
+                                      : TextureType.UNSIGNED_BYTE;
 
                             let dataGetter: (width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number) => ArrayBufferView;
                             let dataGetterPolynomial: Nullable<
@@ -591,15 +591,15 @@ export class DDSTools {
                             switch (bpp) {
                                 case 128: {
                                     switch (destType) {
-                                        case TEXTURETYPE_FLOAT:
+                                        case TextureType.FLOAT:
                                             dataGetter = DDSTools._GetFloatRGBAArrayBuffer;
                                             dataGetterPolynomial = null;
                                             break;
-                                        case TEXTURETYPE_HALF_FLOAT:
+                                        case TextureType.HALF_FLOAT:
                                             dataGetter = DDSTools._GetFloatAsHalfFloatRGBAArrayBuffer;
                                             dataGetterPolynomial = DDSTools._GetFloatRGBAArrayBuffer;
                                             break;
-                                        case TEXTURETYPE_UNSIGNED_BYTE:
+                                        case TextureType.UNSIGNED_BYTE:
                                             dataGetter = DDSTools._GetFloatAsUIntRGBAArrayBuffer;
                                             dataGetterPolynomial = DDSTools._GetFloatRGBAArrayBuffer;
                                             break;
@@ -609,15 +609,15 @@ export class DDSTools {
                                 default: {
                                     // 64 bpp
                                     switch (destType) {
-                                        case TEXTURETYPE_FLOAT:
+                                        case TextureType.FLOAT:
                                             dataGetter = DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer;
                                             dataGetterPolynomial = null;
                                             break;
-                                        case TEXTURETYPE_HALF_FLOAT:
+                                        case TextureType.HALF_FLOAT:
                                             dataGetter = DDSTools._GetHalfFloatRGBAArrayBuffer;
                                             dataGetterPolynomial = DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer;
                                             break;
-                                        case TEXTURETYPE_UNSIGNED_BYTE:
+                                        case TextureType.UNSIGNED_BYTE:
                                             dataGetter = DDSTools._GetHalfFloatAsUIntRGBAArrayBuffer;
                                             dataGetterPolynomial = DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer;
                                             break;
@@ -641,7 +641,7 @@ export class DDSTools {
                             engine._uploadDataToTextureDirectly(texture, floatArray, face, i);
                         }
                     } else if (info.isRGB) {
-                        texture.type = TEXTURETYPE_UNSIGNED_INT;
+                        texture.type = TextureType.UNSIGNED_INT;
                         if (bpp === 24) {
                             texture.format = TextureFormat.RGB;
                             dataLength = width * height * 3;
@@ -662,14 +662,14 @@ export class DDSTools {
 
                         byteArray = DDSTools._GetLuminanceArrayBuffer(width, height, data.byteOffset + dataOffset, dataLength, data.buffer);
                         texture.format = TextureFormat.LUMINANCE;
-                        texture.type = TEXTURETYPE_UNSIGNED_INT;
+                        texture.type = TextureType.UNSIGNED_INT;
 
                         engine._uploadDataToTextureDirectly(texture, byteArray, face, i);
                     } else {
                         dataLength = (((Math.max(4, width) / 4) * Math.max(4, height)) / 4) * blockBytes;
                         byteArray = new Uint8Array(data.buffer, data.byteOffset + dataOffset, dataLength);
 
-                        texture.type = TEXTURETYPE_UNSIGNED_INT;
+                        texture.type = TextureType.UNSIGNED_INT;
                         engine._uploadCompressedDataToTextureDirectly(texture, internalCompressedFormat, width, height, byteArray, face, i);
                     }
                 }
@@ -696,7 +696,7 @@ export class DDSTools {
                 front: sphericalPolynomialFaces[4],
                 back: sphericalPolynomialFaces[5],
                 format: TextureFormat.RGBA,
-                type: TEXTURETYPE_FLOAT,
+                type: TextureType.FLOAT,
                 gammaSpace: false,
             });
         } else {

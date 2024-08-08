@@ -1,7 +1,7 @@
 import type { Nullable } from "../types";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { Camera } from "../Cameras/camera";
-import { TEXTURETYPE_HALF_FLOAT, TEXTURE_NEAREST_NEAREST, TextureFormat } from "../Engines/constants";
+import { TextureType, TEXTURE_NEAREST_NEAREST, TextureFormat } from "../Engines/constants";
 import type { Observer } from "./observable";
 import { Observable } from "./observable";
 import type { Effect } from "../Materials/effect";
@@ -62,10 +62,10 @@ export class MinMaxReducer {
      * Note that the computation is not activated by calling this function, you must call activate() for that!
      * @param sourceTexture The texture to read the values from. The values should be in the red channel.
      * @param depthRedux Indicates if the texture is a depth texture or not
-     * @param type The type of the textures created for the reduction (defaults to TEXTURETYPE_HALF_FLOAT)
+     * @param type The type of the textures created for the reduction (defaults to TextureType.HALF_FLOAT)
      * @param forceFullscreenViewport Forces the post processes used for the reduction to be applied without taking into account viewport (defaults to true)
      */
-    public setSourceTexture(sourceTexture: RenderTargetTexture, depthRedux: boolean, type: number = TEXTURETYPE_HALF_FLOAT, forceFullscreenViewport = true): void {
+    public setSourceTexture(sourceTexture: RenderTargetTexture, depthRedux: boolean, type: number = TextureType.HALF_FLOAT, forceFullscreenViewport = true): void {
         if (sourceTexture === this._sourceTexture) {
             return;
         }

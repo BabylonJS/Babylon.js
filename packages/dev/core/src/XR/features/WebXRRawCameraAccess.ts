@@ -2,7 +2,7 @@ import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager"
 import type { WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Observable } from "../../Misc/observable";
-import { TextureFormat, TEXTURETYPE_FLOAT, TEXTURE_LINEAR_LINEAR_MIPLINEAR, TEXTURE_WRAP_ADDRESSMODE } from "../../Engines/constants";
+import { TextureFormat, TextureType, TEXTURE_LINEAR_LINEAR_MIPLINEAR, TEXTURE_WRAP_ADDRESSMODE } from "../../Engines/constants";
 import { WebGLHardwareTexture } from "../../Engines/WebGL/webGLHardwareTexture";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
@@ -168,7 +168,7 @@ export class WebXRRawCameraAccess extends WebXRAbstractFeature {
             internalTexture.invertY = false;
             internalTexture.format = TextureFormat.RGBA;
             internalTexture.generateMipMaps = true;
-            internalTexture.type = TEXTURETYPE_FLOAT;
+            internalTexture.type = TextureType.FLOAT;
             internalTexture.samplingMode = TEXTURE_LINEAR_LINEAR_MIPLINEAR;
             internalTexture.width = view.camera.width;
             internalTexture.height = view.camera.height;

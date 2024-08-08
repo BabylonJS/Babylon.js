@@ -17,16 +17,7 @@ import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTextur
 
 import { PostProcess } from "../../PostProcesses/postProcess";
 import { BlurPostProcess } from "../../PostProcesses/blurPostProcess";
-import {
-    TEXTURETYPE_HALF_FLOAT,
-    TEXTURETYPE_FLOAT,
-    TEXTURETYPE_UNSIGNED_INT,
-    TextureFormat,
-    GREATER,
-    LESS,
-    MATERIAL_ClockWiseSideOrientation,
-    MATERIAL_CounterClockWiseSideOrientation,
-} from "../../Engines/constants";
+import { TextureType, TextureFormat, GREATER, LESS, MATERIAL_ClockWiseSideOrientation, MATERIAL_CounterClockWiseSideOrientation } from "../../Engines/constants";
 import { Observable } from "../../Misc/observable";
 import { _WarnImport } from "../../Misc/devTools";
 import { EffectFallbacks } from "../../Materials/effectFallbacks";
@@ -919,19 +910,19 @@ export class ShadowGenerator implements IShadowGenerator {
 
         if (!usefullFloatFirst) {
             if (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering) {
-                this._textureType = TEXTURETYPE_HALF_FLOAT;
+                this._textureType = TextureType.HALF_FLOAT;
             } else if (caps.textureFloatRender && caps.textureFloatLinearFiltering) {
-                this._textureType = TEXTURETYPE_FLOAT;
+                this._textureType = TextureType.FLOAT;
             } else {
-                this._textureType = TEXTURETYPE_UNSIGNED_INT;
+                this._textureType = TextureType.UNSIGNED_INT;
             }
         } else {
             if (caps.textureFloatRender && caps.textureFloatLinearFiltering) {
-                this._textureType = TEXTURETYPE_FLOAT;
+                this._textureType = TextureType.FLOAT;
             } else if (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering) {
-                this._textureType = TEXTURETYPE_HALF_FLOAT;
+                this._textureType = TextureType.HALF_FLOAT;
             } else {
-                this._textureType = TEXTURETYPE_UNSIGNED_INT;
+                this._textureType = TextureType.UNSIGNED_INT;
             }
         }
 
@@ -1152,7 +1143,7 @@ export class ShadowGenerator implements IShadowGenerator {
             this._kernelBlurXPostprocess.autoClear = false;
             this._kernelBlurYPostprocess.autoClear = false;
 
-            if (this._textureType === TEXTURETYPE_UNSIGNED_INT) {
+            if (this._textureType === TextureType.UNSIGNED_INT) {
                 (<BlurPostProcess>this._kernelBlurXPostprocess).packedFloat = true;
                 (<BlurPostProcess>this._kernelBlurYPostprocess).packedFloat = true;
             }
@@ -1494,7 +1485,7 @@ export class ShadowGenerator implements IShadowGenerator {
     private _prepareShadowDefines(subMesh: SubMesh, useInstances: boolean, defines: string[], isTransparent: boolean): string[] {
         defines.push("#define SM_LIGHTTYPE_" + this._light.getClassName().toUpperCase());
 
-        defines.push("#define SM_FLOAT " + (this._textureType !== TEXTURETYPE_UNSIGNED_INT ? "1" : "0"));
+        defines.push("#define SM_FLOAT " + (this._textureType !== TextureType.UNSIGNED_INT ? "1" : "0"));
 
         defines.push("#define SM_ESM " + (this.useExponentialShadowMap || this.useBlurExponentialShadowMap ? "1" : "0"));
 

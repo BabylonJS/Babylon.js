@@ -6,15 +6,7 @@ import type { RenderTargetCreationOptions } from "../Materials/Textures/textureC
 import type { VertexBuffer } from "../Buffers/buffer";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import type { Effect } from "../Materials/effect";
-import {
-    ALPHA_DISABLE,
-    TEXTURE_TRILINEAR_SAMPLINGMODE,
-    TEXTURETYPE_UNSIGNED_INT,
-    TextureFormat,
-    TEXTURETYPE_FLOAT,
-    TEXTURE_NEAREST_SAMPLINGMODE,
-    TEXTURETYPE_HALF_FLOAT,
-} from "./constants";
+import { ALPHA_DISABLE, TEXTURE_TRILINEAR_SAMPLINGMODE, TextureType, TextureFormat, TEXTURE_NEAREST_SAMPLINGMODE } from "./constants";
 import type { IPipelineContext } from "./IPipelineContext";
 import { DataBuffer } from "../Buffers/dataBuffer";
 import type { IColor4Like, IViewportLike } from "../Maths/math.like";
@@ -759,13 +751,13 @@ export class NullEngine extends Engine {
             fullOptions.generateMipMaps = options.generateMipMaps;
             fullOptions.generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
             fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && options.generateStencilBuffer;
-            fullOptions.type = options.type === undefined ? TEXTURETYPE_UNSIGNED_INT : options.type;
+            fullOptions.type = options.type === undefined ? TextureType.UNSIGNED_INT : options.type;
             fullOptions.samplingMode = options.samplingMode === undefined ? TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
         } else {
             fullOptions.generateMipMaps = <boolean>options;
             fullOptions.generateDepthBuffer = true;
             fullOptions.generateStencilBuffer = false;
-            fullOptions.type = TEXTURETYPE_UNSIGNED_INT;
+            fullOptions.type = TextureType.UNSIGNED_INT;
             fullOptions.samplingMode = TEXTURE_TRILINEAR_SAMPLINGMODE;
         }
         const texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
@@ -804,17 +796,17 @@ export class NullEngine extends Engine {
             generateMipMaps: true,
             generateDepthBuffer: true,
             generateStencilBuffer: false,
-            type: TEXTURETYPE_UNSIGNED_INT,
+            type: TextureType.UNSIGNED_INT,
             samplingMode: TEXTURE_TRILINEAR_SAMPLINGMODE,
             format: TextureFormat.RGBA,
             ...options,
         };
         fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && fullOptions.generateStencilBuffer;
 
-        if (fullOptions.type === TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+        if (fullOptions.type === TextureType.FLOAT && !this._caps.textureFloatLinearFiltering) {
             // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
             fullOptions.samplingMode = TEXTURE_NEAREST_SAMPLINGMODE;
-        } else if (fullOptions.type === TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+        } else if (fullOptions.type === TextureType.HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
             // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
             fullOptions.samplingMode = TEXTURE_NEAREST_SAMPLINGMODE;
         }
@@ -858,7 +850,7 @@ export class NullEngine extends Engine {
      * @param invertY defines if data must be stored with Y axis inverted
      * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
      * @param compression defines the compression used (null by default)
-     * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+     * @param type defines the type fo the data (Engine.TextureType.UNSIGNED_INT by default)
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
      * @returns the raw texture inside an InternalTexture
@@ -872,7 +864,7 @@ export class NullEngine extends Engine {
         invertY: boolean,
         samplingMode: number,
         compression: Nullable<string> = null,
-        type: number = TEXTURETYPE_UNSIGNED_INT,
+        type: number = TextureType.UNSIGNED_INT,
         creationFlags = 0,
         useSRGBBuffer = false
     ): InternalTexture {
@@ -903,7 +895,7 @@ export class NullEngine extends Engine {
      * @param format defines the format of the data
      * @param invertY defines if data must be stored with Y axis inverted
      * @param compression defines the compression used (null by default)
-     * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+     * @param type defines the type fo the data (Engine.TextureType.UNSIGNED_INT by default)
      * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
      */
     public override updateRawTexture(
@@ -912,7 +904,7 @@ export class NullEngine extends Engine {
         format: number,
         invertY: boolean,
         compression: Nullable<string> = null,
-        type: number = TEXTURETYPE_UNSIGNED_INT,
+        type: number = TextureType.UNSIGNED_INT,
         useSRGBBuffer: boolean = false
     ): void {
         if (texture) {

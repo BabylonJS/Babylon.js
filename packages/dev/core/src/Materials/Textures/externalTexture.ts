@@ -1,4 +1,4 @@
-import { TEXTURETYPE_UNDEFINED, TextureFormat } from "../../Engines/constants";
+import { TextureType, TextureFormat } from "../../Engines/constants";
 import { InternalTexture } from "./internalTexture";
 
 /**
@@ -39,7 +39,7 @@ export class ExternalTexture {
     /**
      * The type of the underlying texture is implementation dependent, so return "UNDEFINED" for the type
      */
-    public readonly type = TEXTURETYPE_UNDEFINED;
+    public readonly type = TextureType.UNDEFINED;
 
     /**
      * The format of the underlying texture is implementation dependent, so return "UNDEFINED" for the format

@@ -1,7 +1,7 @@
 import { ThinEngine } from "../../Engines/thinEngine";
 import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import type { Nullable } from "../../types";
-import { TEXTURETYPE_UNSIGNED_BYTE } from "../constants";
+import { TextureType } from "../constants";
 import type { ExternalTexture } from "../../Materials/Textures/externalTexture";
 
 declare module "../../Engines/abstractEngine" {
@@ -22,7 +22,7 @@ ThinEngine.prototype.updateVideoTexture = function (texture: Nullable<InternalTe
     }
 
     const glformat = this._getInternalFormat(texture.format);
-    const internalFormat = this._getRGBABufferInternalSizedFormat(TEXTURETYPE_UNSIGNED_BYTE, texture.format);
+    const internalFormat = this._getRGBABufferInternalSizedFormat(TextureType.UNSIGNED_BYTE, texture.format);
 
     const wasPreviouslyBound = this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
     this._unpackFlipY(!invertY); // Video are upside down by default

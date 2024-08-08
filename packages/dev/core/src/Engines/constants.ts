@@ -318,41 +318,80 @@ export const TEXTUREFORMAT_COMPRESSED_RGBA8_ETC2_EAC = 37496;
 /** Compressed ETC2 (SRGB+1) @deprecated use TextureFormat */
 export const TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC = 37497;
 
-/** UNSIGNED_BYTE */
+export const enum TextureType {
+    /** UNSIGNED_BYTE */
+    UNSIGNED_BYTE = 0,
+    /** UNSIGNED_BYTE (2nd reference) */
+    UNSIGNED_INT = 0,
+    /** FLOAT */
+    FLOAT = 1,
+    /** HALF_FLOAT */
+    HALF_FLOAT = 2,
+    /** BYTE */
+    BYTE = 3,
+    /** SHORT */
+    SHORT = 4,
+    /** UNSIGNED_SHORT */
+    UNSIGNED_SHORT = 5,
+    /** INT */
+    INT = 6,
+    /** UNSIGNED_INT */
+    UNSIGNED_INTEGER = 7,
+    /** UNSIGNED_SHORT_4_4_4_4 */
+    UNSIGNED_SHORT_4_4_4_4 = 8,
+    /** UNSIGNED_SHORT_5_5_5_1 */
+    UNSIGNED_SHORT_5_5_5_1 = 9,
+    /** UNSIGNED_SHORT_5_6_5 */
+    UNSIGNED_SHORT_5_6_5 = 10,
+    /** UNSIGNED_INT_2_10_10_10_REV */
+    UNSIGNED_INT_2_10_10_10_REV = 11,
+    /** UNSIGNED_INT_24_8 */
+    UNSIGNED_INT_24_8 = 12,
+    /** UNSIGNED_INT_10F_11F_11F_REV */
+    UNSIGNED_INT_10F_11F_11F_REV = 13,
+    /** UNSIGNED_INT_5_9_9_9_REV */
+    UNSIGNED_INT_5_9_9_9_REV = 14,
+    /** FLOAT_32_UNSIGNED_INT_24_8_REV */
+    FLOAT_32_UNSIGNED_INT_24_8_REV = 15,
+    /** UNDEFINED */
+    UNDEFINED = 16,
+}
+
+/** UNSIGNED_BYTE @deprecated use TextureType */
 export const TEXTURETYPE_UNSIGNED_BYTE = 0;
-/** UNSIGNED_BYTE (2nd reference) */
+/** UNSIGNED_BYTE (2nd reference) @deprecated use TextureType */
 export const TEXTURETYPE_UNSIGNED_INT = 0;
-/** FLOAT */
+/** FLOAT @deprecated use TextureType */
 export const TEXTURETYPE_FLOAT = 1;
-/** HALF_FLOAT */
+/** HALF_FLOAT @deprecated use TextureType */
 export const TEXTURETYPE_HALF_FLOAT = 2;
-/** BYTE */
+/** BYTE @deprecated use TextureType */
 export const TEXTURETYPE_BYTE = 3;
-/** SHORT */
+/** SHORT @deprecated use TextureType */
 export const TEXTURETYPE_SHORT = 4;
-/** UNSIGNED_SHORT */
+/** UNSIGNED_SHORT @deprecated use TextureType */
 export const TEXTURETYPE_UNSIGNED_SHORT = 5;
-/** INT */
+/** INT @deprecated use TextureType */
 export const TEXTURETYPE_INT = 6;
-/** UNSIGNED_INT */
+/** UNSIGNED_INT @deprecated use TextureType */
 export const TEXTURETYPE_UNSIGNED_INTEGER = 7;
-/** UNSIGNED_SHORT_4_4_4_4 */
+/** UNSIGNED_SHORT_4_4_4_4 @deprecated use TextureType */
 export const TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4 = 8;
-/** UNSIGNED_SHORT_5_5_5_1 */
+/** UNSIGNED_SHORT_5_5_5_1 @deprecated use TextureType */
 export const TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1 = 9;
-/** UNSIGNED_SHORT_5_6_5 */
+/** UNSIGNED_SHORT_5_6_5 @deprecated use TextureType */
 export const TEXTURETYPE_UNSIGNED_SHORT_5_6_5 = 10;
-/** UNSIGNED_INT_2_10_10_10_REV */
+/** UNSIGNED_INT_2_10_10_10_REV @deprecated use TextureType */
 export const TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV = 11;
-/** UNSIGNED_INT_24_8 */
+/** UNSIGNED_INT_24_8 @deprecated use TextureType */
 export const TEXTURETYPE_UNSIGNED_INT_24_8 = 12;
-/** UNSIGNED_INT_10F_11F_11F_REV */
+/** UNSIGNED_INT_10F_11F_11F_REV @deprecated use TextureType */
 export const TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV = 13;
-/** UNSIGNED_INT_5_9_9_9_REV */
+/** UNSIGNED_INT_5_9_9_9_REV @deprecated use TextureType */
 export const TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV = 14;
-/** FLOAT_32_UNSIGNED_INT_24_8_REV */
+/** FLOAT_32_UNSIGNED_INT_24_8_REV @deprecated use TextureType */
 export const TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV = 15;
-/** UNDEFINED */
+/** UNDEFINED @deprecated use TextureType */
 export const TEXTURETYPE_UNDEFINED = 16;
 
 /** 2D Texture target*/

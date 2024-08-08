@@ -5,7 +5,7 @@ import type { Camera } from "../Cameras/camera";
 import type { Effect } from "../Materials/effect";
 import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
-import { TEXTURETYPE_UNSIGNED_INT, PREPASS_VELOCITY_TEXTURE_TYPE, PREPASS_DEPTH_TEXTURE_TYPE } from "../Engines/constants";
+import { TextureType, PREPASS_VELOCITY_TEXTURE_TYPE, PREPASS_DEPTH_TEXTURE_TYPE } from "../Engines/constants";
 import { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { MotionBlurConfiguration } from "../Rendering/motionBlurConfiguration";
@@ -129,7 +129,7 @@ export class MotionBlurPostProcess extends PostProcess {
         samplingMode?: number,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType: number = TEXTURETYPE_UNSIGNED_INT,
+        textureType: number = TextureType.UNSIGNED_INT,
         blockCompilation = false,
         forceGeometryBuffer = false
     ) {

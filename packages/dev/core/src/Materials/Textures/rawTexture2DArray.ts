@@ -1,5 +1,5 @@
 import { Texture } from "./texture";
-import { TEXTURETYPE_UNSIGNED_INT, TEXTURE_TRILINEAR_SAMPLINGMODE, TextureFormat } from "../../Engines/constants";
+import { TextureType, TEXTURE_TRILINEAR_SAMPLINGMODE, TextureFormat } from "../../Engines/constants";
 import "../../Engines/Extensions/engine.rawTexture";
 import type { Nullable } from "../../types";
 
@@ -29,7 +29,7 @@ export class RawTexture2DArray extends Texture {
      * @param generateMipMaps defines a boolean indicating if mip levels should be generated (true by default)
      * @param invertY defines if texture must be stored with Y axis inverted
      * @param samplingMode defines the sampling mode to use (Texture.TRILINEAR_SAMPLINGMODE by default)
-     * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
+     * @param textureType defines the texture Type (Engine.TextureType.UNSIGNED_INT, Engine.TextureType.FLOAT...)
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      */
     constructor(
@@ -43,7 +43,7 @@ export class RawTexture2DArray extends Texture {
         generateMipMaps: boolean = true,
         invertY: boolean = false,
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
-        textureType = TEXTURETYPE_UNSIGNED_INT,
+        textureType = TextureType.UNSIGNED_INT,
         creationFlags?: number
     ) {
         super(null, scene, !generateMipMaps, invertY);
@@ -75,7 +75,7 @@ export class RawTexture2DArray extends Texture {
      * @param generateMipMaps Define whether or not to create mip maps for the texture
      * @param invertY define if the data should be flipped on Y when uploaded to the GPU
      * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
-     * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
+     * @param type define the format of the data (int, float... Engine.TextureType.xxx)
      * @returns the RGBA texture
      */
     public static CreateRGBATexture(
@@ -87,7 +87,7 @@ export class RawTexture2DArray extends Texture {
         generateMipMaps: boolean = true,
         invertY: boolean = false,
         samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE,
-        type: number = TEXTURETYPE_UNSIGNED_INT
+        type: number = TextureType.UNSIGNED_INT
     ): RawTexture2DArray {
         return new RawTexture2DArray(data, width, height, depth, TextureFormat.RGBA, scene, generateMipMaps, invertY, samplingMode, type);
     }

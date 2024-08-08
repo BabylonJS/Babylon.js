@@ -16,13 +16,10 @@ import type { Observer } from "core/Misc/observable";
 import { Layer } from "core/Layers/layer";
 import { Matrix } from "core/Maths/math.vector";
 import {
-    TEXTURETYPE_HALF_FLOAT,
+    TextureType,
     TextureFormat,
-    TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV,
     TEXTURE_NEAREST_SAMPLINGMODE,
-    TEXTURETYPE_FLOAT,
     ALPHA_DISABLE,
-    TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV,
     TEXTURE_BILINEAR_SAMPLINGMODE,
     ALPHA_ADD,
     TEXTURE_CLAMP_ADDRESSMODE,
@@ -80,11 +77,11 @@ export class GIRSMManager {
      */
     public static GeometryBufferTextureTypesAndFormats: { [key: number]: { textureType: number; textureFormat: number } } = {
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        0: { textureType: TEXTURETYPE_HALF_FLOAT, textureFormat: TextureFormat.R }, // depth
+        0: { textureType: TextureType.HALF_FLOAT, textureFormat: TextureFormat.R }, // depth
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        1: { textureType: TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV, textureFormat: TextureFormat.RGBA }, // normal
+        1: { textureType: TextureType.UNSIGNED_INT_2_10_10_10_REV, textureFormat: TextureFormat.RGBA }, // normal
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        2: { textureType: TEXTURETYPE_HALF_FLOAT, textureFormat: TextureFormat.RGBA }, // position
+        2: { textureType: TextureType.HALF_FLOAT, textureFormat: TextureFormat.RGBA }, // position
     };
 
     /**
@@ -280,7 +277,7 @@ export class GIRSMManager {
     private _giTextureType: number;
 
     /**
-     * Gets or sets the texture type used by the GI texture. Default is Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV.
+     * Gets or sets the texture type used by the GI texture. Default is Constants.TextureType.UNSIGNED_INT_2_10_10_10_REV.
      */
     public get giTextureType() {
         return this._giTextureType;
@@ -401,7 +398,7 @@ export class GIRSMManager {
             data[i * 4 + 3] = 1;
         }
 
-        this._sampleTexture = new RawTexture(data, this._maxSamples, 1, TextureFormat.RGBA, this._scene, false, false, TEXTURE_NEAREST_SAMPLINGMODE, TEXTURETYPE_FLOAT);
+        this._sampleTexture = new RawTexture(data, this._maxSamples, 1, TextureFormat.RGBA, this._scene, false, false, TEXTURE_NEAREST_SAMPLINGMODE, TextureType.FLOAT);
         this._sampleTexture.name = "GIRSMSamples";
     }
 
@@ -421,14 +418,14 @@ export class GIRSMManager {
      * @param outputDimensions The dimensions of the output texture (width and height). Should normally be the same as the output dimensions of the screen.
      * @param giTextureDimensions The dimensions of the GI texture (width and height). Try to use the smallest size possible for better performance.
      * @param maxSamples The maximum number of samples to generate in the sample texture. Default value is 2048. The numSamples property of the GIRSM should be less than or equal to this value!
-     * @param giTextureType The texture type used by the GI texture. Default is Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV.
+     * @param giTextureType The texture type used by the GI texture. Default is Constants.TextureType.UNSIGNED_INT_2_10_10_10_REV.
      */
     constructor(
         scene: Scene,
         outputDimensions: { width: number; height: number },
         giTextureDimensions = { width: 256, height: 256 },
         maxSamples = 2048,
-        giTextureType = TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV
+        giTextureType = TextureType.UNSIGNED_INT_2_10_10_10_REV
     ) {
         this._scene = scene;
         this._engine = scene.getEngine();
@@ -533,7 +530,7 @@ export class GIRSMManager {
             return;
         }
 
-        const textureFormat = this._giTextureType === TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV ? TextureFormat.RGB : TextureFormat.RGBA;
+        const textureFormat = this._giTextureType === TextureType.UNSIGNED_INT_10F_11F_11F_REV ? TextureFormat.RGB : TextureFormat.RGBA;
 
         if (this._firstActivation) {
             this._firstActivation = false;

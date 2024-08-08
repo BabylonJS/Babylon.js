@@ -4,7 +4,7 @@ import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { PassPostProcess } from "../PostProcesses/passPostProcess";
-import { TEXTURETYPE_UNSIGNED_INT, TEXTURETYPE_UNSIGNED_BYTE, TextureFormat } from "../Engines/constants";
+import { TextureType, TextureFormat } from "../Engines/constants";
 import type { Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess";
 import type { AbstractEngine } from "../Engines/abstractEngine";
@@ -60,7 +60,7 @@ export function CreateResizedCopy(texture: Texture, width: number, height: numbe
         useBilinearMode ? Texture.BILINEAR_SAMPLINGMODE : Texture.NEAREST_SAMPLINGMODE,
         engine,
         false,
-        TEXTURETYPE_UNSIGNED_INT
+        TextureType.UNSIGNED_INT
     );
     passPostProcess.externalTextureSamplerBinding = true;
     passPostProcess.getEffect().executeWhenCompiled(() => {
@@ -118,7 +118,7 @@ export function ApplyPostProcess(
     height = height ?? internalTexture.height;
 
     if (type === -1) {
-        type = TEXTURETYPE_UNSIGNED_BYTE;
+        type = TextureType.UNSIGNED_BYTE;
     }
 
     return new Promise((resolve) => {

@@ -5,7 +5,7 @@ import type { Scene } from "../../scene";
 import type { Nullable } from "../../types";
 import { Tools } from "../../Misc/tools";
 import "../../Engines/Extensions/engine.rawTexture";
-import { DELAYLOADSTATE_NOTLOADED, TextureFormat, TEXTURETYPE_FLOAT, TEXTURETYPE_UNSIGNED_INTEGER, TEXTURE_TRILINEAR_SAMPLINGMODE } from "../../Engines/constants";
+import { DELAYLOADSTATE_NOTLOADED, TextureFormat, TextureType, TEXTURE_TRILINEAR_SAMPLINGMODE } from "../../Engines/constants";
 import { LoadImage } from "../../Misc/fileTools";
 
 /**
@@ -113,7 +113,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
                 null,
                 this._size,
                 TextureFormat.RGB,
-                scene.getEngine().getCaps().textureFloat ? TEXTURETYPE_FLOAT : TEXTURETYPE_UNSIGNED_INTEGER,
+                scene.getEngine().getCaps().textureFloat ? TextureType.FLOAT : TextureType.UNSIGNED_INTEGER,
                 !this._noMipmap,
                 false,
                 TEXTURE_TRILINEAR_SAMPLINGMODE

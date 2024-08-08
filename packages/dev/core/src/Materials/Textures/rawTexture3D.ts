@@ -1,6 +1,6 @@
 import type { Scene } from "../../scene";
 import { Texture } from "./texture";
-import { TEXTURETYPE_UNSIGNED_INT } from "../../Engines/constants";
+import { TextureType } from "../../Engines/constants";
 import "../../Engines/Extensions/engine.rawTexture";
 import type { Nullable } from "../../types";
 /**
@@ -18,7 +18,7 @@ export class RawTexture3D extends Texture {
      * @param generateMipMaps defines a boolean indicating if mip levels should be generated (true by default)
      * @param invertY defines if texture must be stored with Y axis inverted
      * @param samplingMode defines the sampling mode to use (Texture.TRILINEAR_SAMPLINGMODE by default)
-     * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
+     * @param textureType defines the texture Type (Engine.TextureType.UNSIGNED_INT, Engine.TextureType.FLOAT...)
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      */
     constructor(
@@ -32,7 +32,7 @@ export class RawTexture3D extends Texture {
         generateMipMaps: boolean = true,
         invertY: boolean = false,
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
-        textureType = TEXTURETYPE_UNSIGNED_INT,
+        textureType = TextureType.UNSIGNED_INT,
         creationFlags?: number
     ) {
         super(null, scene, !generateMipMaps, invertY);

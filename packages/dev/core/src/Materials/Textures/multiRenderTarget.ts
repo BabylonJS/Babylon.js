@@ -2,7 +2,7 @@ import type { Scene } from "../../scene";
 import type { Engine } from "../../Engines/engine";
 import { Texture } from "../../Materials/Textures/texture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
-import { TextureFormat, TEXTURETYPE_UNSIGNED_INT, TEXTURE_2D, TEXTURE_2D_ARRAY, TEXTURE_CUBE_MAP, TEXTURE_3D } from "../../Engines/constants";
+import { TextureFormat, TextureType, TEXTURE_2D, TEXTURE_2D_ARRAY, TEXTURE_CUBE_MAP, TEXTURE_3D } from "../../Engines/constants";
 
 import "../../Engines/Extensions/engine.multiRender";
 import type { InternalTexture } from "./internalTexture";
@@ -244,7 +244,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
             if (options && options.types && options.types[i] !== undefined) {
                 types.push(options.types[i]);
             } else {
-                types.push(options && options.defaultType ? options.defaultType : TEXTURETYPE_UNSIGNED_INT);
+                types.push(options && options.defaultType ? options.defaultType : TextureType.UNSIGNED_INT);
             }
 
             if (options && options.samplingModes && options.samplingModes[i] !== undefined) {

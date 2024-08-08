@@ -1,4 +1,4 @@
-import { Engine } from "../../../Engines/engine";
+import { TextureFormat } from "../../../Engines/constants";
 import type { AbstractMesh } from "../../../Meshes/abstractMesh";
 import { VertexBuffer } from "../../../Buffers/buffer";
 import type { Scene } from "../../../scene";
@@ -243,7 +243,7 @@ export class TexturePacker {
                 this.scene,
                 true, //Generate Mips
                 Texture.TRILINEAR_SAMPLINGMODE,
-                Engine.TextureFormat.RGBA
+                TextureFormat.RGBA
             );
 
             const dtx = dt.getContext();

@@ -11,7 +11,7 @@ import { Texture } from "../Materials/Textures/texture";
 import { MirrorTexture } from "../Materials/Textures/mirrorTexture";
 import { CubeTexture } from "../Materials/Textures/cubeTexture";
 import { BackgroundMaterial } from "../Materials/Background/backgroundMaterial";
-import { TEXTURETYPE_UNSIGNED_INT, ALPHA_PREMULTIPLIED_PORTERDUFF } from "../Engines/constants";
+import { TextureType, ALPHA_PREMULTIPLIED_PORTERDUFF } from "../Engines/constants";
 
 import { CreatePlane } from "../Meshes/Builders/planeBuilder";
 import { CreateBox } from "../Meshes/Builders/boxBuilder";
@@ -226,7 +226,7 @@ export class EnvironmentHelper {
             groundMirrorAmount: 1,
             groundMirrorFresnelWeight: 1,
             groundMirrorFallOffDistance: 0,
-            groundMirrorTextureType: TEXTURETYPE_UNSIGNED_INT,
+            groundMirrorTextureType: TextureType.UNSIGNED_INT,
 
             groundYBias: 0.00001,
 

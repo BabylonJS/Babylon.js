@@ -6,7 +6,7 @@ import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Scene } from "../scene";
-import { TEXTURETYPE_UNSIGNED_INT, PREPASS_IRRADIANCE_TEXTURE_TYPE, PREPASS_DEPTH_TEXTURE_TYPE, PREPASS_ALBEDO_SQRT_TEXTURE_TYPE } from "../Engines/constants";
+import { TextureType, PREPASS_IRRADIANCE_TEXTURE_TYPE, PREPASS_DEPTH_TEXTURE_TYPE, PREPASS_ALBEDO_SQRT_TEXTURE_TYPE } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 
 import "../Shaders/imageProcessing.fragment";
@@ -33,7 +33,7 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
         samplingMode?: number,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType: number = TEXTURETYPE_UNSIGNED_INT
+        textureType: number = TextureType.UNSIGNED_INT
     ) {
         super(
             name,

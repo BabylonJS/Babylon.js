@@ -6,7 +6,7 @@ import {
     TextureFormat,
     TEXTURE_BILINEAR_SAMPLINGMODE,
     TEXTURE_NEAREST_SAMPLINGMODE,
-    TEXTURETYPE_FLOAT,
+    TextureType,
     TEXTURE_CLAMP_ADDRESSMODE,
 } from "../../constants";
 import type { RenderTargetWrapper } from "../../renderTargetWrapper";
@@ -179,7 +179,7 @@ WebGPUEngine.prototype._setupDepthStencilTexture = function (
     internalTexture.samples = samples;
     internalTexture.generateMipMaps = false;
     internalTexture.samplingMode = bilinearFiltering ? TEXTURE_BILINEAR_SAMPLINGMODE : TEXTURE_NEAREST_SAMPLINGMODE;
-    internalTexture.type = TEXTURETYPE_FLOAT;
+    internalTexture.type = TextureType.FLOAT;
     internalTexture._comparisonFunction = comparisonFunction;
     internalTexture._cachedWrapU = TEXTURE_CLAMP_ADDRESSMODE;
     internalTexture._cachedWrapV = TEXTURE_CLAMP_ADDRESSMODE;

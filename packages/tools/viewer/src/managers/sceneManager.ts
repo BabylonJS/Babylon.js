@@ -51,7 +51,7 @@ import type { Behavior } from "core/Behaviors/behavior";
 import type { FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
 import { Scene } from "core/scene";
 import { ShadowGenerator } from "core/Lights/Shadows/shadowGenerator";
-import { TEXTURETYPE_HALF_FLOAT, TEXTURETYPE_FLOAT, TEXTURETYPE_UNSIGNED_INT } from "core/Engines/constants";
+import { TextureType } from "core/Engines/constants";
 import "core/Audio/audioSceneComponent";
 import "core/Helpers/sceneHelpers";
 import "core/Misc/observable.extensions";
@@ -1464,17 +1464,17 @@ export class SceneManager {
         this._hdrSupport = enableHDR && !!(linearFloatTargets || linearHalfFloatTargets);
 
         if (linearHalfFloatTargets) {
-            this._defaultHighpTextureType = TEXTURETYPE_HALF_FLOAT;
+            this._defaultHighpTextureType = TextureType.HALF_FLOAT;
             this._shadowGeneratorBias = 0.002;
         } else if (linearFloatTargets) {
-            this._defaultHighpTextureType = TEXTURETYPE_FLOAT;
+            this._defaultHighpTextureType = TextureType.FLOAT;
             this._shadowGeneratorBias = 0.001;
         } else {
-            this._defaultHighpTextureType = TEXTURETYPE_UNSIGNED_INT;
+            this._defaultHighpTextureType = TextureType.UNSIGNED_INT;
             this._shadowGeneratorBias = 0.001;
         }
 
-        this._defaultPipelineTextureType = this._hdrSupport ? this._defaultHighpTextureType : TEXTURETYPE_UNSIGNED_INT;
+        this._defaultPipelineTextureType = this._hdrSupport ? this._defaultHighpTextureType : TextureType.UNSIGNED_INT;
     }
 
     /**

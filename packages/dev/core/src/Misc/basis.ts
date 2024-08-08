@@ -4,7 +4,7 @@ import { Tools } from "./tools";
 import { Texture } from "../Materials/Textures/texture";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { Scalar } from "../Maths/math.scalar";
-import { TextureFormat, TEXTURETYPE_UNSIGNED_SHORT_5_6_5, TEXTURE_LINEAR_LINEAR } from "../Engines/constants";
+import { TextureFormat, TextureType, TEXTURE_LINEAR_LINEAR } from "../Engines/constants";
 import type { Engine } from "../Engines/engine";
 import { initializeWebWorker, workerFunction } from "./basisWorker";
 
@@ -258,7 +258,7 @@ export const LoadTextureFromTranscodeResult = (texture: InternalTexture, transco
         texture._invertVScale = texture.invertY;
         if (transcodeResult.format === -1 || transcodeResult.format === BASIS_FORMATS.cTFRGB565) {
             // No compatable compressed format found, fallback to RGB
-            texture.type = TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
+            texture.type = TextureType.UNSIGNED_SHORT_5_6_5;
             texture.format = TextureFormat.RGB;
 
             if (engine._features.basisNeedsPOT && (Scalar.Log2(rootImage.width) % 1 !== 0 || Scalar.Log2(rootImage.height) % 1 !== 0)) {
@@ -266,7 +266,7 @@ export const LoadTextureFromTranscodeResult = (texture: InternalTexture, transco
                 const source = new InternalTexture(engine, InternalTextureSource.Temp);
 
                 texture._invertVScale = texture.invertY;
-                source.type = TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
+                source.type = TextureType.UNSIGNED_SHORT_5_6_5;
                 source.format = TextureFormat.RGB;
                 // Fallback requires aligned width/height
                 source.width = (rootImage.width + 3) & ~3;

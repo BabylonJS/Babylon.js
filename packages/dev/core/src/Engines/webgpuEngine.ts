@@ -21,20 +21,15 @@ import {
     BUFFER_CREATIONFLAG_INDIRECT,
     DISABLEUA,
     TextureFormat,
-    TEXTURETYPE_UNSIGNED_INT,
+    TextureType,
     TEXTURE_TRILINEAR_SAMPLINGMODE,
-    TEXTURETYPE_FLOAT,
     TEXTURE_NEAREST_SAMPLINGMODE,
-    TEXTURETYPE_HALF_FLOAT,
     TEXTURE_CLAMP_ADDRESSMODE,
-    TEXTURETYPE_UNSIGNED_BYTE,
     AUTOSAMPLERSUFFIX,
     DELAYLOADSTATE_NOTLOADED,
     TEXTURE_CUBIC_MODE,
     TEXTURE_SKYBOX_MODE,
     TEXTURE_WRAP_ADDRESSMODE,
-    TEXTURETYPE_UNSIGNED_INTEGER,
-    TEXTURETYPE_UNSIGNED_SHORT,
 } from "./constants";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import * as WebGPUConstants from "./WebGPU/webgpuConstants";
@@ -2350,7 +2345,7 @@ export class WebGPUEngine extends AbstractEngine {
 
         if (options !== undefined && typeof options === "object") {
             fullOptions.generateMipMaps = options.generateMipMaps;
-            fullOptions.type = options.type === undefined ? TEXTURETYPE_UNSIGNED_INT : options.type;
+            fullOptions.type = options.type === undefined ? TextureType.UNSIGNED_INT : options.type;
             fullOptions.samplingMode = options.samplingMode === undefined ? TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
             fullOptions.format = options.format === undefined ? TextureFormat.RGBA : options.format;
             fullOptions.samples = options.samples ?? 1;
@@ -2359,7 +2354,7 @@ export class WebGPUEngine extends AbstractEngine {
             fullOptions.label = options.label;
         } else {
             fullOptions.generateMipMaps = <boolean>options;
-            fullOptions.type = TEXTURETYPE_UNSIGNED_INT;
+            fullOptions.type = TextureType.UNSIGNED_INT;
             fullOptions.samplingMode = TEXTURE_TRILINEAR_SAMPLINGMODE;
             fullOptions.format = TextureFormat.RGBA;
             fullOptions.samples = 1;
@@ -2367,14 +2362,14 @@ export class WebGPUEngine extends AbstractEngine {
             fullOptions.useSRGBBuffer = false;
         }
 
-        if (fullOptions.type === TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+        if (fullOptions.type === TextureType.FLOAT && !this._caps.textureFloatLinearFiltering) {
             fullOptions.samplingMode = TEXTURE_NEAREST_SAMPLINGMODE;
-        } else if (fullOptions.type === TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+        } else if (fullOptions.type === TextureType.HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
             fullOptions.samplingMode = TEXTURE_NEAREST_SAMPLINGMODE;
         }
-        if (fullOptions.type === TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-            fullOptions.type = TEXTURETYPE_UNSIGNED_INT;
-            Logger.Warn("Float textures are not supported. Type forced to TEXTURETYPE_UNSIGNED_BYTE");
+        if (fullOptions.type === TextureType.FLOAT && !this._caps.textureFloat) {
+            fullOptions.type = TextureType.UNSIGNED_INT;
+            Logger.Warn("Float textures are not supported. Type forced to TextureType.UNSIGNED_BYTE");
         }
 
         const texture = new InternalTexture(this, source);
@@ -2483,7 +2478,7 @@ export class WebGPUEngine extends AbstractEngine {
                 texture.width = imageBitmap.width;
                 texture.height = imageBitmap.height;
                 texture.format = texture.format !== -1 ? texture.format : (format ?? TextureFormat.RGBA);
-                texture.type = texture.type !== -1 ? texture.type : TEXTURETYPE_UNSIGNED_BYTE;
+                texture.type = texture.type !== -1 ? texture.type : TextureType.UNSIGNED_BYTE;
                 texture._creationFlags = creationFlags ?? 0;
 
                 processFunction(texture.width, texture.height, imageBitmap, extension, texture, () => {});
@@ -3216,7 +3211,7 @@ export class WebGPUEngine extends AbstractEngine {
                         format: gpuMRTWrapper.format,
                         baseArrayLayer: 0,
                     };
-                    const isRTInteger = mrtTexture.type === TEXTURETYPE_UNSIGNED_INTEGER || mrtTexture.type === TEXTURETYPE_UNSIGNED_SHORT;
+                    const isRTInteger = mrtTexture.type === TextureType.UNSIGNED_INTEGER || mrtTexture.type === TextureType.UNSIGNED_SHORT;
 
                     const colorTextureView = gpuMRTTexture.createView(viewDescriptor);
                     const colorMSAATextureView = gpuMSAATexture?.createView(msaaViewDescriptor);
@@ -3250,7 +3245,7 @@ export class WebGPUEngine extends AbstractEngine {
                 const gpuMSAATexture = gpuWrapper.getMSAATexture();
                 const colorTextureView = gpuTexture.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
                 const colorMSAATextureView = gpuMSAATexture?.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
-                const isRTInteger = internalTexture.type === TEXTURETYPE_UNSIGNED_INTEGER || internalTexture.type === TEXTURETYPE_UNSIGNED_SHORT;
+                const isRTInteger = internalTexture.type === TextureType.UNSIGNED_INTEGER || internalTexture.type === TextureType.UNSIGNED_SHORT;
 
                 colorAttachments.push({
                     view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
@@ -3767,7 +3762,7 @@ export class WebGPUEngine extends AbstractEngine {
                 const textureName = webgpuPipelineContext.shaderProcessingContext.textureNames[i];
                 const texture = this._currentMaterialContext.textures[textureName]?.texture;
                 const textureIsDepth = texture && texture.format >= TextureFormat.DEPTH24_STENCIL8 && texture.format <= TextureFormat.DEPTH32FLOAT_STENCIL8;
-                if ((texture?.type === TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) || textureIsDepth) {
+                if ((texture?.type === TextureType.FLOAT && !this._caps.textureFloatLinearFiltering) || textureIsDepth) {
                     textureState |= bitVal;
                 }
                 bitVal = bitVal << 1;

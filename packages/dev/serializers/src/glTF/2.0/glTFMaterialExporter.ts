@@ -14,7 +14,7 @@ import { RawTexture } from "core/Materials/Textures/rawTexture";
 import type { Scene } from "core/scene";
 
 import type { _Exporter } from "./glTFExporter";
-import { ALPHA_COMBINE, TEXTURETYPE_UNSIGNED_INT, TextureFormat.RGBA, TEXTURE_NEAREST_SAMPLINGMODE } from "core/Engines/constants";
+import { ALPHA_COMBINE, TextureType, TextureFormat, TEXTURE_NEAREST_SAMPLINGMODE } from "core/Engines/constants";
 import { DumpTools } from "core/Misc/dumpTools";
 
 import type { Material } from "core/Materials/material";
@@ -432,7 +432,7 @@ export class _GLTFMaterialExporter {
      * @returns base64 image string
      */
     private async _getImageDataAsync(buffer: Uint8Array | Float32Array, width: number, height: number, mimeType: ImageMimeType): Promise<ArrayBuffer> {
-        const textureType = TEXTURETYPE_UNSIGNED_INT;
+        const textureType = TextureType.UNSIGNED_INT;
 
         const hostingScene = this._exporter._babylonScene;
         const engine = hostingScene.getEngine();
@@ -1059,7 +1059,7 @@ export class _GLTFMaterialExporter {
 
     private _getPixelsFromTexture(babylonTexture: BaseTexture): Promise<Nullable<Uint8Array | Float32Array>> {
         const pixels =
-            babylonTexture.textureType === TEXTURETYPE_UNSIGNED_INT ? (babylonTexture.readPixels() as Promise<Uint8Array>) : (babylonTexture.readPixels() as Promise<Float32Array>);
+            babylonTexture.textureType === TextureType.UNSIGNED_INT ? (babylonTexture.readPixels() as Promise<Uint8Array>) : (babylonTexture.readPixels() as Promise<Float32Array>);
         return pixels;
     }
 

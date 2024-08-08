@@ -13,7 +13,7 @@ import { ScreenSpaceReflections2Configuration } from "../../../Rendering/screenS
 import type { PrePassRenderer } from "../../../Rendering/prePassRenderer";
 import { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRenderer";
 import {
-    TEXTURETYPE_UNSIGNED_BYTE,
+    TextureType,
     PREPASS_COLOR_TEXTURE_TYPE,
     ORTHOGRAPHIC_CAMERA,
     TEXTURE_NEAREST_SAMPLINGMODE,
@@ -640,9 +640,9 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
      * @param scene The scene linked to this pipeline
      * @param cameras The array of cameras that the rendering pipeline will be attached to (default: scene.cameras)
      * @param forceGeometryBuffer Set to true if you want to use the legacy geometry buffer renderer (default: false)
-     * @param textureType The texture type used by the different post processes created by SSR (default: Constants.TEXTURETYPE_UNSIGNED_BYTE)
+     * @param textureType The texture type used by the different post processes created by SSR (default: Constants.TextureType.UNSIGNED_BYTE)
      */
-    constructor(name: string, scene: Scene, cameras?: Camera[], forceGeometryBuffer = false, textureType = TEXTURETYPE_UNSIGNED_BYTE) {
+    constructor(name: string, scene: Scene, cameras?: Camera[], forceGeometryBuffer = false, textureType = TextureType.UNSIGNED_BYTE) {
         super(scene.getEngine(), name);
 
         this._cameras = cameras || scene.cameras;

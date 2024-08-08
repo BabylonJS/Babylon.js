@@ -19,7 +19,7 @@ import type { SpotLight } from "../../../Lights/spotLight";
 import type { DirectionalLight } from "../../../Lights/directionalLight";
 import type { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRenderer";
 
-import { TEXTURETYPE_FLOAT, TEXTURETYPE_HALF_FLOAT, TEXTURETYPE_UNSIGNED_INT } from "../../../Engines/constants";
+import { TextureType } from "../../../Engines/constants";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { MotionBlurPostProcess } from "../../motionBlurPostProcess";
 import { ScreenSpaceReflectionPostProcess } from "../../screenSpaceReflectionPostProcess";
@@ -594,7 +594,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
         this._ratio = ratio;
 
         // Misc
-        this._floatTextureType = scene.getEngine().getCaps().textureFloatRender ? TEXTURETYPE_FLOAT : TEXTURETYPE_HALF_FLOAT;
+        this._floatTextureType = scene.getEngine().getCaps().textureFloatRender ? TextureType.FLOAT : TextureType.HALF_FLOAT;
 
         // Finish
         scene.postProcessRenderPipelineManager.addPipeline(this);
@@ -681,7 +681,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
                 scene.getEngine(),
                 false,
                 "#define PASS_POST_PROCESS",
-                TEXTURETYPE_UNSIGNED_INT
+                TextureType.UNSIGNED_INT
             );
             this.addEffect(
                 new PostProcessRenderEffect(
@@ -711,7 +711,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
                 scene.getEngine(),
                 false,
                 "#define PASS_POST_PROCESS",
-                TEXTURETYPE_UNSIGNED_INT
+                TextureType.UNSIGNED_INT
             );
             this.addEffect(
                 new PostProcessRenderEffect(
@@ -741,7 +741,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
                 scene.getEngine(),
                 false,
                 "#define PASS_POST_PROCESS",
-                TEXTURETYPE_UNSIGNED_INT
+                TextureType.UNSIGNED_INT
             );
             this.addEffect(
                 new PostProcessRenderEffect(
@@ -774,7 +774,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
                 scene.getEngine(),
                 false,
                 "#define PASS_POST_PROCESS",
-                TEXTURETYPE_UNSIGNED_INT
+                TextureType.UNSIGNED_INT
             );
             this.addEffect(
                 new PostProcessRenderEffect(
@@ -803,7 +803,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
 
         if (this._fxaaEnabled) {
             // Create fxaa post-process
-            this.fxaaPostProcess = new FxaaPostProcess("fxaa", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, TEXTURETYPE_UNSIGNED_INT);
+            this.fxaaPostProcess = new FxaaPostProcess("fxaa", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, TextureType.UNSIGNED_INT);
             this.addEffect(
                 new PostProcessRenderEffect(
                     scene.getEngine(),
@@ -1250,7 +1250,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
             scene.getEngine(),
             false,
             defines.join("\n"),
-            TEXTURETYPE_UNSIGNED_INT
+            TextureType.UNSIGNED_INT
         );
 
         let outputLiminance = 1;
@@ -1313,7 +1313,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
             scene.getEngine(),
             false,
             "#define LENS_FLARE",
-            TEXTURETYPE_UNSIGNED_INT
+            TextureType.UNSIGNED_INT
         );
         this.addEffect(
             new PostProcessRenderEffect(
@@ -1339,7 +1339,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
             scene.getEngine(),
             false,
             "#define LENS_FLARE_COMPOSE",
-            TEXTURETYPE_UNSIGNED_INT
+            TextureType.UNSIGNED_INT
         );
         this.addEffect(
             new PostProcessRenderEffect(
@@ -1431,7 +1431,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
             scene.getEngine(),
             false,
             "#define DEPTH_OF_FIELD",
-            TEXTURETYPE_UNSIGNED_INT
+            TextureType.UNSIGNED_INT
         );
         this.depthOfFieldPostProcess.onApply = (effect: Effect) => {
             effect.setTextureFromPostProcess("otherSampler", this._currentDepthOfFieldSource);
@@ -1456,7 +1456,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
     // Create motion blur post-process
     private _createMotionBlurPostProcess(scene: Scene, ratio: number): void {
         if (this._isObjectBasedMotionBlur) {
-            const mb = new MotionBlurPostProcess("HDRMotionBlur", scene, ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, TEXTURETYPE_UNSIGNED_INT);
+            const mb = new MotionBlurPostProcess("HDRMotionBlur", scene, ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, TextureType.UNSIGNED_INT);
             mb.motionStrength = this.motionStrength;
             mb.motionBlurSamples = this.motionBlurSamples;
             this.motionBlurPostProcess = mb;
@@ -1472,7 +1472,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
                 scene.getEngine(),
                 false,
                 "#define MOTION_BLUR\n#define MAX_MOTION_SAMPLES " + this.motionBlurSamples.toFixed(1),
-                TEXTURETYPE_UNSIGNED_INT
+                TextureType.UNSIGNED_INT
             );
 
             let motionScale: number = 0;

@@ -1,7 +1,7 @@
 import type { Nullable } from "../types";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { Camera } from "../Cameras/camera";
-import { TEXTURETYPE_HALF_FLOAT, TEXTURE_NEAREST_SAMPLINGMODE } from "../Engines/constants";
+import { TextureType, TEXTURE_NEAREST_SAMPLINGMODE } from "../Engines/constants";
 import { DepthRenderer } from "../Rendering/depthRenderer";
 
 import { MinMaxReducer } from "./minMaxReducer";
@@ -32,10 +32,10 @@ export class DepthReducer extends MinMaxReducer {
     /**
      * Sets the depth renderer to use to generate the depth map
      * @param depthRenderer The depth renderer to use. If not provided, a new one will be created automatically
-     * @param type The texture type of the depth map (default: TEXTURETYPE_HALF_FLOAT)
+     * @param type The texture type of the depth map (default: TextureType.HALF_FLOAT)
      * @param forceFullscreenViewport Forces the post processes used for the reduction to be applied without taking into account viewport (defaults to true)
      */
-    public setDepthRenderer(depthRenderer: Nullable<DepthRenderer> = null, type: number = TEXTURETYPE_HALF_FLOAT, forceFullscreenViewport = true): void {
+    public setDepthRenderer(depthRenderer: Nullable<DepthRenderer> = null, type: number = TextureType.HALF_FLOAT, forceFullscreenViewport = true): void {
         const scene = this._camera.getScene();
 
         if (this._depthRenderer) {
@@ -63,7 +63,7 @@ export class DepthReducer extends MinMaxReducer {
     /**
      * @internal
      */
-    public override setSourceTexture(sourceTexture: RenderTargetTexture, depthRedux: boolean, type: number = TEXTURETYPE_HALF_FLOAT, forceFullscreenViewport = true): void {
+    public override setSourceTexture(sourceTexture: RenderTargetTexture, depthRedux: boolean, type: number = TextureType.HALF_FLOAT, forceFullscreenViewport = true): void {
         super.setSourceTexture(sourceTexture, depthRedux, type, forceFullscreenViewport);
     }
 

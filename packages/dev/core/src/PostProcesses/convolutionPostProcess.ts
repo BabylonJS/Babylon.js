@@ -4,7 +4,7 @@ import type { Nullable } from "../types";
 import type { Camera } from "../Cameras/camera";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Effect } from "../Materials/effect";
-import { TEXTURETYPE_UNSIGNED_INT } from "../Engines/constants";
+import { TextureType } from "../Engines/constants";
 
 import "../Shaders/convolution.fragment";
 import { RegisterClass } from "../Misc/typeStore";
@@ -50,7 +50,7 @@ export class ConvolutionPostProcess extends PostProcess {
         samplingMode?: number,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType: number = TEXTURETYPE_UNSIGNED_INT
+        textureType: number = TextureType.UNSIGNED_INT
     ) {
         super(name, "convolution", ["kernel", "screenSize"], null, options, camera, samplingMode, engine, reusable, null, textureType);
         this.kernel = kernel;

@@ -13,7 +13,7 @@ import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import { EngineStore } from "../Engines/engineStore";
-import { TEXTURETYPE_UNSIGNED_INT } from "../Engines/constants";
+import { TextureType } from "../Engines/constants";
 
 import "../Shaders/imageProcessing.fragment";
 import "../Shaders/postprocess.vertex";
@@ -421,7 +421,7 @@ export class ImageProcessingPostProcess extends PostProcess {
         samplingMode?: number,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType: number = TEXTURETYPE_UNSIGNED_INT,
+        textureType: number = TextureType.UNSIGNED_INT,
         imageProcessingConfiguration?: ImageProcessingConfiguration
     ) {
         super(name, "imageProcessing", [], [], options, camera, samplingMode, engine, reusable, null, textureType, "postprocess", null, true);

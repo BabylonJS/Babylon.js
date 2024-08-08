@@ -6,7 +6,7 @@ import { Texture } from "../Materials/Textures/texture";
 import type { PostProcess, PostProcessOptions } from "./postProcess";
 import { BlurPostProcess } from "./blurPostProcess";
 import type { Scene } from "../scene";
-import { TEXTURETYPE_UNSIGNED_INT, TextureFormat, TEXTURE_BILINEAR_SAMPLINGMODE } from "../Engines/constants";
+import { TextureType, TextureFormat, TEXTURE_BILINEAR_SAMPLINGMODE } from "../Engines/constants";
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
@@ -61,7 +61,7 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
         samplingMode = Texture.BILINEAR_SAMPLINGMODE,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType = TEXTURETYPE_UNSIGNED_INT,
+        textureType = TextureType.UNSIGNED_INT,
         blockCompilation = false,
         textureFormat = TextureFormat.RGBA
     ) {

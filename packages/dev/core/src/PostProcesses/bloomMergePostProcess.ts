@@ -4,7 +4,7 @@ import type { Nullable } from "../types";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Effect } from "../Materials/effect";
 import type { Camera } from "../Cameras/camera";
-import { TEXTURETYPE_UNSIGNED_INT } from "../Engines/constants";
+import { TextureType } from "../Engines/constants";
 
 import "../Shaders/bloomMerge.fragment";
 import { RegisterClass } from "../Misc/typeStore";
@@ -51,7 +51,7 @@ export class BloomMergePostProcess extends PostProcess {
         samplingMode?: number,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType: number = TEXTURETYPE_UNSIGNED_INT,
+        textureType: number = TextureType.UNSIGNED_INT,
         blockCompilation = false
     ) {
         super(name, "bloomMerge", ["bloomWeight"], ["bloomBlur"], options, camera, samplingMode, engine, reusable, null, textureType, undefined, null, true);

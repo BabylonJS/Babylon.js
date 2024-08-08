@@ -3,14 +3,7 @@ import type { Scene } from "../../scene";
 import { Matrix } from "../../Maths/math.vector";
 import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
-import {
-    DELAYLOADSTATE_NOTLOADED,
-    TextureFormat,
-    TEXTURE_BILINEAR_SAMPLINGMODE,
-    TEXTURETYPE_UNSIGNED_INT,
-    TEXTURE_CLAMP_ADDRESSMODE,
-    DELAYLOADSTATE_LOADED,
-} from "../../Engines/constants";
+import { DELAYLOADSTATE_NOTLOADED, TextureFormat, TEXTURE_BILINEAR_SAMPLINGMODE, TextureType, TEXTURE_CLAMP_ADDRESSMODE, DELAYLOADSTATE_LOADED } from "../../Engines/constants";
 import { RegisterClass } from "../../Misc/typeStore";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 
@@ -101,9 +94,9 @@ export class ColorGradingTexture extends BaseTexture {
         const engine = this._getEngine()!;
         let texture: InternalTexture;
         if (!engine._features.support3DTextures) {
-            texture = engine.createRawTexture(null, 1, 1, TextureFormat.RGBA, false, false, TEXTURE_BILINEAR_SAMPLINGMODE, null, TEXTURETYPE_UNSIGNED_INT);
+            texture = engine.createRawTexture(null, 1, 1, TextureFormat.RGBA, false, false, TEXTURE_BILINEAR_SAMPLINGMODE, null, TextureType.UNSIGNED_INT);
         } else {
-            texture = engine.createRawTexture3D(null, 1, 1, 1, TextureFormat.RGBA, false, false, TEXTURE_BILINEAR_SAMPLINGMODE, null, TEXTURETYPE_UNSIGNED_INT);
+            texture = engine.createRawTexture3D(null, 1, 1, 1, TextureFormat.RGBA, false, false, TEXTURE_BILINEAR_SAMPLINGMODE, null, TextureType.UNSIGNED_INT);
         }
 
         this._texture = texture;

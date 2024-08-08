@@ -1,5 +1,5 @@
 import type { Camera } from "core/Cameras/camera";
-import { TEXTURETYPE_FLOAT, TextureFormat, TEXTURE_NEAREST_SAMPLINGMODE, TEXTURETYPE_HALF_FLOAT, TEXTURE_BILINEAR_SAMPLINGMODE } from "core/Engines/constants";
+import { TextureType, TextureFormat, TEXTURE_NEAREST_SAMPLINGMODE, TEXTURE_BILINEAR_SAMPLINGMODE } from "core/Engines/constants";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import { Texture } from "core/Materials/Textures/texture";
@@ -95,9 +95,9 @@ export class FluidRenderingTextures {
         height: number,
         blurTextureSizeX: number,
         blurTextureSizeY: number,
-        textureType: number = TEXTURETYPE_FLOAT,
+        textureType: number = TextureType.FLOAT,
         textureFormat: number = TextureFormat.R,
-        blurTextureType: number = TEXTURETYPE_FLOAT,
+        blurTextureType: number = TextureType.FLOAT,
         blurTextureFormat: number = TextureFormat.R,
         useStandardBlur = false,
         camera: Nullable<Camera> = null,
@@ -195,8 +195,8 @@ export class FluidRenderingTextures {
         const engine = this._scene.getEngine();
         const targetSize = new Vector2(Math.floor(this._blurTextureSizeX / blurSizeDivisor), Math.floor(this._blurTextureSizeY / blurSizeDivisor));
         const useBilinearFiltering =
-            (textureType === TEXTURETYPE_FLOAT && engine.getCaps().textureFloatLinearFiltering) ||
-            (textureType === TEXTURETYPE_HALF_FLOAT && engine.getCaps().textureHalfFloatLinearFiltering);
+            (textureType === TextureType.FLOAT && engine.getCaps().textureFloatLinearFiltering) ||
+            (textureType === TextureType.HALF_FLOAT && engine.getCaps().textureHalfFloatLinearFiltering);
 
         const rtBlur = this._engine.createRenderTargetTexture(
             { width: targetSize.x, height: targetSize.y },

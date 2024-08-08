@@ -6,7 +6,7 @@ import type { IDisposable, Scene } from "../scene";
 import { EngineStore } from "../Engines/engineStore";
 import type { Mesh } from "../Meshes/mesh";
 import { MorphTarget } from "./morphTarget";
-import { TEXTURE_NEAREST_SAMPLINGMODE, TEXTURETYPE_FLOAT } from "../Engines/constants";
+import { TEXTURE_NEAREST_SAMPLINGMODE, TextureType } from "../Engines/constants";
 import type { Effect } from "../Materials/effect";
 import { RawTexture2DArray } from "../Materials/Textures/rawTexture2DArray";
 import type { AbstractScene } from "../abstractScene";
@@ -507,7 +507,7 @@ export class MorphTargetManager implements IDisposable {
                     false,
                     false,
                     TEXTURE_NEAREST_SAMPLINGMODE,
-                    TEXTURETYPE_FLOAT
+                    TextureType.FLOAT
                 );
             }
         }
