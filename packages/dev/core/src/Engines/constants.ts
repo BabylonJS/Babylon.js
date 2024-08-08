@@ -705,21 +705,24 @@ export const MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION = 2;
 /** @deprecated use CullingStrategy */
 export const MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY = 3;
 
-/**
- * No logging while loading
- */
+export const enum SceneLoaderLogging {
+    /** No logging while loading */
+    NONE = 0,
+    /** Minimal logging while loading */
+    MINIMAL = 1,
+    /** Summary logging while loading */
+    SUMMARY = 2,
+    /** Detailed logging while loading */
+    DETAILED = 3,
+}
+
+/** @deprecated use SceneLoaderLogging */
 export const SCENELOADER_NO_LOGGING = 0;
-/**
- * Minimal logging while loading
- */
+/** @deprecated use SceneLoaderLogging */
 export const SCENELOADER_MINIMAL_LOGGING = 1;
-/**
- * Summary logging while loading
- */
+/** @deprecated use SceneLoaderLogging */
 export const SCENELOADER_SUMMARY_LOGGING = 2;
-/**
- * Detailed logging while loading
- */
+/** @deprecated use SceneLoaderLogging */
 export const SCENELOADER_DETAILED_LOGGING = 3;
 
 /**
