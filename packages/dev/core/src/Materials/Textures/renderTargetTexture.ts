@@ -14,7 +14,7 @@ import { Texture } from "../../Materials/Textures/texture";
 import { PostProcessManager } from "../../PostProcesses/postProcessManager";
 import type { PostProcess } from "../../PostProcesses/postProcess";
 import { RenderingManager } from "../../Rendering/renderingManager";
-import { MATERIAL_TextureDirtyFlag, TextureType, TextureFormat, SNAPSHOTRENDERING_FAST } from "../../Engines/constants";
+import { MATERIAL_TextureDirtyFlag, TextureType, TextureFormat, SnapshotRendering } from "../../Engines/constants";
 import type { IRenderTargetTexture, RenderTargetWrapper } from "../../Engines/renderTargetWrapper";
 
 import "../../Engines/Extensions/engine.renderTarget";
@@ -1222,7 +1222,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             this.onBeforeRenderObservable.notifyObservers(faceIndex);
         }
 
-        const fastPath = engine.snapshotRendering && engine.snapshotRenderingMode === SNAPSHOTRENDERING_FAST;
+        const fastPath = engine.snapshotRendering && engine.snapshotRenderingMode === SnapshotRendering.FAST;
 
         if (!fastPath) {
             // Get the list of meshes to render

@@ -54,7 +54,7 @@ import {
     RENDERPASS_MAIN,
     GEQUAL,
     LEQUAL,
-    SNAPSHOTRENDERING_STANDARD,
+    SnapshotRendering,
     TextureFormat,
     TEXTURE_NEAREST_SAMPLINGMODE,
     TextureType,
@@ -726,7 +726,7 @@ export abstract class AbstractEngine {
      * Gets or sets the snapshot rendering mode
      */
     public get snapshotRenderingMode(): number {
-        return SNAPSHOTRENDERING_STANDARD;
+        return SnapshotRendering.STANDARD;
     }
 
     public set snapshotRenderingMode(mode: number) {}

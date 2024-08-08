@@ -51,7 +51,7 @@ import {
     MATERIAL_LightDirtyFlag,
     MATERIAL_AttributesDirtyFlag,
     DELAYLOADSTATE_LOADING,
-    SNAPSHOTRENDERING_FAST,
+    SnapshotRendering,
     ActionTrigger,
     RENDERPASS_MAIN,
     RIG_MODE_NONE,
@@ -3977,7 +3977,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     private _executeActiveContainerCleanup(container: SmartArray<any>) {
-        const isInFastMode = this._engine.snapshotRendering && this._engine.snapshotRenderingMode === SNAPSHOTRENDERING_FAST;
+        const isInFastMode = this._engine.snapshotRendering && this._engine.snapshotRenderingMode === SnapshotRendering.FAST;
 
         if (!isInFastMode && this._activeMeshesFrozen && this._activeMeshes.length) {
             return; // Do not execute in frozen mode
@@ -3988,7 +3988,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     private _evaluateActiveMeshes(): void {
-        if (this._engine.snapshotRendering && this._engine.snapshotRenderingMode === SNAPSHOTRENDERING_FAST) {
+        if (this._engine.snapshotRendering && this._engine.snapshotRenderingMode === SnapshotRendering.FAST) {
             if (this._activeMeshes.length > 0) {
                 this.activeCamera?._activeMeshes.reset();
                 this._activeMeshes.reset();
@@ -4347,7 +4347,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         // Render
         this.onBeforeDrawPhaseObservable.notifyObservers(this);
 
-        if (engine.snapshotRendering && engine.snapshotRenderingMode === SNAPSHOTRENDERING_FAST) {
+        if (engine.snapshotRendering && engine.snapshotRenderingMode === SnapshotRendering.FAST) {
             this.finalizeSceneUbo();
         }
         this._renderingManager.render(null, null, true, true);

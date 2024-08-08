@@ -636,11 +636,13 @@ export const enum InputKeyCode {
     SHIFT = 16,
 }
 
-/** Standard snapshot rendering. In this mode, some form of dynamic behavior is possible (for eg, uniform buffers are still updated) */
-export const SNAPSHOTRENDERING_STANDARD = 0;
+export const enum SnapshotRendering {
+    /** Standard snapshot rendering. In this mode, some form of dynamic behavior is possible (for eg, uniform buffers are still updated) */
+    STANDARD = 0,
 
-/** Fast snapshot rendering. In this mode, everything is static and only some limited form of dynamic behaviour is possible */
-export const SNAPSHOTRENDERING_FAST = 1;
+    /** Fast snapshot rendering. In this mode, everything is static and only some limited form of dynamic behaviour is possible */
+    FAST = 1,
+}
 
 /**
  * This is the default projection mode used by the cameras.
@@ -984,4 +986,7 @@ export const Constants = {
     INPUT_META_KEY2: InputKeyCode.META2,
     INPUT_META_KEY3: InputKeyCode.META3,
     INPUT_SHIFT_KEY: InputKeyCode.SHIFT,
+
+    SNAPSHOTRENDERING_STANDARD: SnapshotRendering.STANDARD,
+    SNAPSHOTRENDERING_FAST: SnapshotRendering.FAST,
 };

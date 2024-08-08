@@ -8,7 +8,7 @@ import type { IEffectCreationOptions, IShaderPath } from "../Materials/effect";
 import { Effect } from "../Materials/effect";
 import type { EffectFallbacks } from "../Materials/effectFallbacks";
 import {
-    SNAPSHOTRENDERING_STANDARD,
+    SnapshotRendering,
     LEQUAL,
     ALPHA_ADD,
     ALPHA_DISABLE,
@@ -394,7 +394,7 @@ export class WebGPUEngine extends AbstractEngine {
     public dbgShowEmptyEnableEffectCalls = true;
 
     private _snapshotRendering: WebGPUSnapshotRendering;
-    protected _snapshotRenderingMode = SNAPSHOTRENDERING_STANDARD;
+    protected _snapshotRenderingMode = SnapshotRendering.STANDARD;
 
     /**
      * Gets or sets the snapshot rendering mode
