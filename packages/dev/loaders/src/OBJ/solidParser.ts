@@ -226,7 +226,6 @@ export class SolidParser {
                 this._wrappedNormalsForBabylon[l].y,
                 this._wrappedNormalsForBabylon[l].z
             );
-            debugger;
 
             this._unwrappedUVForBabylon.push(this._wrappedUvsForBabylon[l].x, this._wrappedUvsForBabylon[l].y); //z is an optional value not supported by BABYLON
             if (this._loadingOptions.importVertexColors) {
@@ -328,7 +327,7 @@ export class SolidParser {
                 indiceUvsFromObj,
                 0, //Default value for normals
                 this._positions[indicePositionFromObj], //Get the values for each element
-                this._uvs[indiceUvsFromObj],
+                this._uvs[indiceUvsFromObj] ?? Vector2.Zero(),
                 Vector3.Up(), //Default value for normals
                 this._loadingOptions.importVertexColors ? this._colors[indicePositionFromObj] : undefined
             );
@@ -364,8 +363,8 @@ export class SolidParser {
                 indiceUvsFromObj,
                 indiceNormalFromObj,
                 this._positions[indicePositionFromObj],
-                this._uvs[indiceUvsFromObj],
-                this._normals[indiceNormalFromObj] //Set the vector for each component
+                this._uvs[indiceUvsFromObj] ?? Vector2.Zero(),
+                this._normals[indiceNormalFromObj] ?? Vector3.Up() //Set the vector for each component
             );
         }
         //Reset variable for the next line
@@ -526,6 +525,10 @@ export class SolidParser {
         mesh.setVerticesData(VertexBuffer.NormalKind, normals);
     }
 
+    private static _IsLineElement(line: string) {
+        return line.startsWith("l");
+    }
+
     /**
      * Function used to parse an OBJ string
      * @param meshesNames defines the list of meshes to load (all if not defined)
@@ -547,7 +550,35 @@ export class SolidParser {
         }
 
         // Split the file into lines
-        const lines = data.split("\n");
+        const linesOBJ = data.split("\n");
+        const lines: string[] = [];
+        const lineLines: string[] = [];
+        // const vertexLines: string[] = [];
+        //
+
+        for (let i = 0; i < linesOBJ.length; i++) {
+            const line = linesOBJ[i].trim().replace(/\s\s/g, " ");
+
+            // Comment or newLine
+            if (line.length === 0 || line.charAt(0) === "#") {
+                continue;
+            }
+
+            if (SolidParser._IsLineElement(line)) {
+                const lineValues = line.split(" ");
+                for (let i = 1; i < lineValues.length - 1; i++) {
+                    lineLines.push(`l ${lineValues[i]} ${lineValues[i + 1]}`);
+                }
+            } else {
+                lines.push(line);
+            }
+        }
+
+        for (let i = 0; i < lineLines.length; i++) {
+            lines.push(lineLines[i]);
+        }
+
+        //
         // Look at each line
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i].trim().replace(/\s\s/g, " ");
@@ -556,9 +587,8 @@ export class SolidParser {
             // Comment or newLine
             if (line.length === 0 || line.charAt(0) === "#") {
                 continue;
-
-                //Get information about one position possible for the vertices
             } else if (SolidParser.VertexPattern.test(line)) {
+                //Get information about one position possible for the vertices
                 result = line.match(/[^ ]+/g)!; // match will return non-null due to passing regex pattern
 
                 // Value of result with line: "v 1.0 2.0 3.0"
@@ -839,6 +869,7 @@ export class SolidParser {
                 materialName: this._materialNameFromObj,
                 directMaterial: newMaterial,
                 isObject: true,
+                hasLines: this._hasLineData,
             });
         }
 
