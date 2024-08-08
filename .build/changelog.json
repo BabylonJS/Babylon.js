@@ -1,23 +1,188 @@
 {
-    "fromTag": "7.19.1",
+    "fromTag": "7.20.0",
     "changelog": {
-        "7.19.1": [
+        "7.20.1": [
             {
-                "pr": "15357",
-                "title": "Fix crash when multi call to build for nme",
+                "pr": "15391",
+                "title": "Missing default value (closure compiler needs that)",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphDoNBlock.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15377",
+                "title": "Migrate `HDRTools` to ES6/functions",
+                "description": "This PR migrates `HDRTools` to ES6/functions. It is for #14805.\r\n\r\nI've included an `HDRTools` object marked as deprecated, for backward compatibility.",
+                "author": {
+                    "name": "james-pre",
+                    "url": "https://github.com/james-pre"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/Loaders/hdrTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/hdrCubeTexture.ts",
+                    "packages/dev/core/src/Misc/HighDynamicRange/hdr.ts",
+                    "packages/dev/core/src/Misc/HighDynamicRange/index.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15390",
+                "title": "Allow users to popup the inspector windows",
                 "description": null,
                 "author": {
                     "name": "deltakosh",
                     "url": "https://github.com/deltakosh"
                 },
                 "files": [
-                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
-                    "packages/tools/tests/test/visualization/ReferenceImages/nme-multi-build.png",
-                    "packages/tools/tests/test/visualization/config.json"
+                    "packages/dev/core/src/Debug/debugLayer.ts",
+                    "packages/dev/inspector/src/inspector.ts"
                 ],
                 "tags": [
-                    "bug"
+                    "new feature"
                 ]
+            },
+            {
+                "pr": "15379",
+                "title": "Fix flacky test",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/rgbdTextureTools.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDebug.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrDebug.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/PBR-Debug-Modes.png"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15380",
+                "title": "Make `CompatibilityOptions` an object, not a class",
+                "description": "This PR migrates `CompatibilityOptions` from a class with static properties into a plain Javascript object. This is from https://github.com/BabylonJS/Babylon.js/issues/14805. Continued from #15376.",
+                "author": {
+                    "name": "james-pre",
+                    "url": "https://github.com/james-pre"
+                },
+                "files": [
+                    "packages/dev/core/src/Compat/compatibilityOptions.ts",
+                    "packages/dev/core/src/Compat/index.ts",
+                    "packages/dev/core/src/Materials/Textures/texture.ts",
+                    "packages/dev/core/src/Meshes/Builders/boxBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/capsuleBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/cylinderBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/decalBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/discBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/goldbergBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/groundBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/icoSphereBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/planeBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/polygonBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/polyhedronBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/ribbonBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/sphereBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/tiledBoxBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/torusBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/torusKnotBuilder.ts",
+                    "packages/dev/core/src/Meshes/geometry.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15389",
+                "title": "Wait for effect creation, if the effect is not available yet",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/PostProcesses/postProcess.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15384",
+                "title": "Migrate `DumpTools` from a class to functions",
+                "description": "This PR migrates `DumpTools` from a class with static methods and properties into a set of export functions.\r\n\r\n- Backward compatible\r\n- Backward-compatible exports marked as deprecated \r\n- PascalCase is followed for exported functions' names\r\n\r\n#### `initSideEffects`\r\nSomething I noticed is `initSideEffects`, which I think could be unwrapped, and the statements just placed at the top level of the `dumpTools.ts` module. In ES6/ESM, the function will still be called, so the doc comment \"If esm dev wants the side effects to execute they will have to run it manually\" is incorrect. Please let me know what you think about this. I haven't made the change yet, but if you want me to it should only take a few seconds.\r\n\r\nThis is for #14805.",
+                "author": {
+                    "name": "james-pre",
+                    "url": "https://github.com/james-pre"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
+                    "packages/dev/core/src/Misc/dumpTools.ts",
+                    "packages/dev/core/src/Misc/environmentTextureTools.ts",
+                    "packages/dev/core/src/Misc/equirectangularCapture.ts",
+                    "packages/dev/core/src/Misc/index.ts",
+                    "packages/dev/core/src/Misc/screenshotTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15385",
+                "title": "Migrate `ArrayTools` from a static class to functions",
+                "description": "This PR migrates `ArrayTools` from a class with static methods and properties into a set of export functions.\r\n\r\n- Backward compatible\r\n- Backward-compatible exports marked as deprecated \r\n- PascalCase is followed for exported functions' names",
+                "author": {
+                    "name": "james-pre",
+                    "url": "https://github.com/james-pre"
+                },
+                "files": [
+                    "packages/dev/core/src/Bones/bone.ts",
+                    "packages/dev/core/src/Bones/boneLookController.ts",
+                    "packages/dev/core/src/Culling/boundingBox.ts",
+                    "packages/dev/core/src/Culling/boundingInfo.ts",
+                    "packages/dev/core/src/Culling/boundingSphere.ts",
+                    "packages/dev/core/src/Culling/ray.ts",
+                    "packages/dev/core/src/Maths/math.color.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/core/src/Misc/arrayTools.ts",
+                    "packages/dev/core/src/Physics/v1/physicsImpostor.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15387",
+                "title": "Fix pipeline",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Layers/highlightLayer.ts",
+                    "packages/dev/core/src/PostProcesses/blurPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/passPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/postProcess.ts",
+                    "packages/dev/core/src/ShadersWGSL/background.fragment.fx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15381",
+                "title": "Remove side effect on axis parameter in Quaternion.RotationAxisToRef(…)",
+                "description": "See https://forum.babylonjs.com/t/unexpected-side-effect-of-quaternion-rotationaxis/52622\r\n\r\nThis PR just fixes `Quaternion.RotationAxis(...)` and `Quaternion.RotationAxisToRef(...)`.\r\nThe other 3 suspect lines in the file mentioned in my initial post are not handled here.",
+                "author": {
+                    "name": "hcschuetz",
+                    "url": "https://github.com/hcschuetz"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": []
             }
         ],
         "7.20.0": [
@@ -276,6 +441,25 @@
                     "packages/dev/core/src/Collisions/gpuPicker.ts"
                 ],
                 "tags": []
+            }
+        ],
+        "7.19.1": [
+            {
+                "pr": "15357",
+                "title": "Fix crash when multi call to build for nme",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/nme-multi-build.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug"
+                ]
             }
         ],
         "7.19.0": [
