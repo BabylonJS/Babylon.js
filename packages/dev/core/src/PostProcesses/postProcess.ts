@@ -30,6 +30,7 @@ import { AbstractEngine } from "../Engines/abstractEngine";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
 import type { FrameGraphTaskTexture, IFrameGraphInputData, IFrameGraphTask } from "../FrameGraph/Tasks/IFrameGraphTask";
 import type { FrameGraph } from "../FrameGraph/frameGraph";
+import type { TextureHandle } from "../FrameGraph/frameGraphTextureManager";
 
 declare module "../Engines/abstractEngine" {
     export interface AbstractEngine {
@@ -69,9 +70,8 @@ AbstractEngine.prototype.setTextureFromPostProcessOutput = function (channel: nu
 };
 
 export interface IFrameGraphPostProcessInputData extends IFrameGraphInputData {
-    sourceTexturePath: FrameGraphTaskTexture;
-    destinationTexturePath: FrameGraphTaskTexture;
-    outputTextureName: string;
+    sourceTexture: FrameGraphTaskTexture | TextureHandle;
+    outputTexture: FrameGraphTaskTexture | TextureHandle;
 }
 
 declare module "../Materials/effect" {
@@ -1111,14 +1111,13 @@ export class PostProcess implements IFrameGraphTask {
     }
 
     public addToFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphPostProcessInputData): void {
-        const sourceTextureHandle = frameGraph.getTextureHandleFromTask(inputData.sourceTexturePath);
-        const destinationTextureHandle = frameGraph.getTextureHandleFromTask(inputData.destinationTexturePath);
+        const sourceTextureHandle = frameGraph.getTextureHandle(inputData.sourceTexture);
+        const outputTextureHandle = frameGraph.getTextureHandle(inputData.outputTexture);
 
         const pass = frameGraph.addRenderPass(this.name);
 
-        frameGraph.registerTextureHandleForTask(this, inputData.outputTextureName, destinationTextureHandle);
-
-        pass.setRenderTarget(destinationTextureHandle);
+        pass.useTexture(sourceTextureHandle);
+        pass.setRenderTarget(outputTextureHandle);
         pass.setExecuteFunc((context) => {
             this.inputTexture = context.getTextureFromHandle(sourceTextureHandle)!;
             context.applyFullScreenEffect(this._drawWrapper, () => this._bind());

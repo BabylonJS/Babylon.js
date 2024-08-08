@@ -8,10 +8,9 @@ import { CopyTextureToTexture } from "../Misc/copyTextureToTexture";
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { IColor4Like } from "core/Maths/math.like";
-import type { FrameGraph } from "./frameGraph";
 import { FrameGraphContext } from "./frameGraphContext";
-import type { TextureHandle } from "./textureHandle";
-import { backbufferColorTextureHandle } from "./textureHandle";
+import type { TextureHandle, FrameGraphTextureManager } from "./frameGraphTextureManager";
+import { backbufferColorTextureHandle } from "./frameGraphTextureManager";
 
 export class FrameGraphRenderContext extends FrameGraphContext {
     private _effectRenderer: EffectRenderer;
@@ -21,7 +20,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
 
     constructor(
         private _engine: AbstractEngine,
-        private _frameGraph: FrameGraph
+        private _textureManager: FrameGraphTextureManager
     ) {
         super();
         this._effectRenderer = new EffectRenderer(this._engine);
@@ -30,21 +29,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     }
 
     public getTextureFromHandle(handle: TextureHandle): Nullable<RenderTargetWrapper> {
-        return this._frameGraph._textures[handle]!.texture;
-    }
-
-    /**
-     * Binds a render target texture so that upcoming draw calls will render to it
-     * Note: it is a lazy operation, so the render target will only be bound when needed. This way, it is possible to call
-     *   this method several times with different render targets without incurring the cost of binding if no draw calls are made
-     * @param renderTargetHandle The render target texture to bind
-     */
-    public bindRenderTarget(renderTargetHandle: TextureHandle = backbufferColorTextureHandle) {
-        if (renderTargetHandle === this._currentRenderTargetHandle) {
-            return;
-        }
-        this._currentRenderTargetHandle = renderTargetHandle;
-        this._renderTargetIsBound = false;
+        return this._textureManager._textures[handle]!.texture;
     }
 
     /**
@@ -55,7 +40,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      * @param stencil defines if the stencil buffer must be cleared
      */
     public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil?: boolean): void {
-        this._bindRenderTarget();
+        this._applyRenderTarget();
         this._engine.clear(color, backBuffer, depth, stencil);
     }
 
@@ -70,7 +55,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
             return false;
         }
 
-        this._bindRenderTarget();
+        this._applyRenderTarget();
 
         this._effectRenderer.saveStates();
         this._effectRenderer.setViewport();
@@ -94,11 +79,26 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      * @param sourceTexture The source texture to copy from
      */
     public copyTexture(sourceTexture: InternalTexture | ThinTexture) {
-        this._bindRenderTarget();
+        this._applyRenderTarget();
         this._copyTexture.copy(sourceTexture, this._currentRenderTargetHandle ? this.getTextureFromHandle(this._currentRenderTargetHandle) : null);
     }
 
-    private _bindRenderTarget() {
+    /**
+     * Binds a render target texture so that upcoming draw calls will render to it
+     * Note: it is a lazy operation, so the render target will only be bound when needed. This way, it is possible to call
+     *   this method several times with different render targets without incurring the cost of binding if no draw calls are made
+     * @param renderTargetHandle The render target texture to bind
+     * @internal
+     */
+    public _bindRenderTarget(renderTargetHandle: TextureHandle = backbufferColorTextureHandle) {
+        if (renderTargetHandle === this._currentRenderTargetHandle) {
+            return;
+        }
+        this._currentRenderTargetHandle = renderTargetHandle;
+        this._renderTargetIsBound = false;
+    }
+
+    private _applyRenderTarget() {
         if (this._renderTargetIsBound) {
             return;
         }

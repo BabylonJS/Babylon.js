@@ -8,9 +8,10 @@ import type { Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
 import type { Scene } from "../scene";
 import type { AbstractEngine } from "../Engines/abstractEngine";
+import { Observable } from "../Misc/observable";
 import type { FrameGraphTaskTexture, IFrameGraphInputData, IFrameGraphTask } from "../FrameGraph/Tasks/IFrameGraphTask";
 import type { FrameGraph } from "../FrameGraph/frameGraph";
-import { Observable } from "core/Misc/observable";
+import type { TextureHandle } from "../FrameGraph/frameGraphTextureManager";
 
 /**
  * Interface for the bloom effect build data
@@ -19,9 +20,8 @@ export interface IFrameGraphBloomEffectInputData extends IFrameGraphInputData {
     /**
      * The source texture for the bloom effect
      */
-    sourceTexturePath: FrameGraphTaskTexture;
-    destinationTexturePath: FrameGraphTaskTexture;
-    outputTextureName: string;
+    sourceTexture: FrameGraphTaskTexture | TextureHandle;
+    outputTexture: FrameGraphTaskTexture | TextureHandle;
 }
 
 /**
@@ -166,7 +166,7 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
     }
 
     public addToFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphBloomEffectInputData) {
-        const sourceTextureDescription = frameGraph.getTextureDescriptionFromTask(inputData.sourceTexturePath);
+        const sourceTextureDescription = frameGraph.getTextureDescription(inputData.sourceTexture);
 
         const textureCreationOptions = {
             size: { width: Math.floor(sourceTextureDescription.size.width * this._bloomScale), height: Math.floor(sourceTextureDescription.size.height * this._bloomScale) },
@@ -190,37 +190,33 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
         this._blurY.height = textureCreationOptions.size.height;
 
         textureCreationOptions.options.label = "Bloom Downscale";
-        frameGraph.createRenderTargetTexture("bloom_downscale", textureCreationOptions);
+        const downscaleTextureHandle = frameGraph.createRenderTargetTexture("bloom_downscale", textureCreationOptions);
 
         this._downscale.addToFrameGraph(frameGraph, {
-            sourceTexturePath: inputData.sourceTexturePath,
-            destinationTexturePath: [this.name, "bloom_downscale"],
-            outputTextureName: "output",
+            sourceTexture: inputData.sourceTexture,
+            outputTexture: downscaleTextureHandle,
         });
 
         textureCreationOptions.options.label = "Bloom Blur X";
-        frameGraph.createRenderTargetTexture("bloom_blurX", textureCreationOptions);
+        const blurXTextureHandle = frameGraph.createRenderTargetTexture("bloom_blurX", textureCreationOptions);
 
         this._blurX.addToFrameGraph(frameGraph, {
-            sourceTexturePath: ["highlights", "output"],
-            destinationTexturePath: [this.name, "bloom_blurX"],
-            outputTextureName: "output",
+            sourceTexture: downscaleTextureHandle,
+            outputTexture: blurXTextureHandle,
         });
 
         textureCreationOptions.options.label = "Bloom Blur Y";
-        frameGraph.createRenderTargetTexture("bloom_blurY", textureCreationOptions);
+        const blurYTextureHandle = frameGraph.createRenderTargetTexture("bloom_blurY", textureCreationOptions);
 
         this._blurY.addToFrameGraph(frameGraph, {
-            sourceTexturePath: ["horizontal blur", "output"],
-            destinationTexturePath: [this.name, "bloom_blurY"],
-            outputTextureName: "output",
+            sourceTexture: blurXTextureHandle,
+            outputTexture: blurYTextureHandle,
         });
 
         this._merge.addToFrameGraph(frameGraph, {
-            sourceTexturePath: inputData.sourceTexturePath,
-            sourceBlurTexturePath: ["vertical blur", "output"],
-            destinationTexturePath: inputData.destinationTexturePath,
-            outputTextureName: inputData.outputTextureName,
+            sourceTexture: inputData.sourceTexture,
+            sourceBlurTexture: blurYTextureHandle,
+            outputTexture: inputData.outputTexture,
         });
     }
 

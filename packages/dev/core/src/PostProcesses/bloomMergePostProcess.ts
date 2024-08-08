@@ -9,11 +9,12 @@ import { Constants } from "../Engines/constants";
 import "../Shaders/bloomMerge.fragment";
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
-import type { FrameGraph } from "core/FrameGraph/frameGraph";
-import type { FrameGraphTaskTexture } from "core/FrameGraph/Tasks/IFrameGraphTask";
+import type { FrameGraph } from "../FrameGraph/frameGraph";
+import type { FrameGraphTaskTexture } from "../FrameGraph/Tasks/IFrameGraphTask";
+import type { TextureHandle } from "../FrameGraph/frameGraphTextureManager";
 
 export interface IFrameGraphBloomMergeInputData extends IFrameGraphPostProcessInputData {
-    sourceBlurTexturePath: FrameGraphTaskTexture;
+    sourceBlurTexture: FrameGraphTaskTexture | TextureHandle;
 }
 
 /**
@@ -74,17 +75,17 @@ export class BloomMergePostProcess extends PostProcess {
     }
 
     public override addToFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphBloomMergeInputData): void {
-        const sourceTextureHandle = frameGraph.getTextureHandleFromTask(inputData.sourceTexturePath);
-        const sourceBlurTextureHandle = frameGraph.getTextureHandleFromTask(inputData.sourceBlurTexturePath);
-        const destinationTextureHandle = frameGraph.getTextureHandleFromTask(inputData.destinationTexturePath);
-
-        const pass = frameGraph.addRenderPass(this.name);
-
-        frameGraph.registerTextureHandleForTask(this, inputData.outputTextureName, destinationTextureHandle);
+        const sourceTextureHandle = frameGraph.getTextureHandle(inputData.sourceTexture);
+        const sourceBlurTextureHandle = frameGraph.getTextureHandle(inputData.sourceBlurTexture);
+        const outputTextureHandle = frameGraph.getTextureHandle(inputData.outputTexture);
 
         this.onApplyObservable.clear();
 
-        pass.setRenderTarget(destinationTextureHandle);
+        const pass = frameGraph.addRenderPass(this.name);
+
+        pass.useTexture(sourceTextureHandle);
+        pass.useTexture(sourceBlurTextureHandle);
+        pass.setRenderTarget(outputTextureHandle);
         pass.setExecuteFunc((context) => {
             context.applyFullScreenEffect(this._drawWrapper, () => {
                 this._bind();
