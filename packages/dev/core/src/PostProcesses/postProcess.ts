@@ -378,7 +378,7 @@ export class PostProcess {
     protected _scene: Scene;
     private _engine: AbstractEngine;
 
-    protected _shadersLoaded = true;
+    protected _shadersLoaded = false;
 
     private _options: number | { width: number; height: number };
     private _reusable = false;
@@ -704,7 +704,6 @@ export class PostProcess {
     protected async _initShaderSourceAsync(_forceGLSL = false) {}
 
     private _onInitShadersDone: () => void;
-    private _shadersLoaded = false;
     private async _postConstructor(blockCompilation: boolean, defines: Nullable<string> = null, dealyLoadShaders: boolean = false) {
         if (dealyLoadShaders) {
             await this._initShaderSourceAsync(PostProcess.ForceGLSL);

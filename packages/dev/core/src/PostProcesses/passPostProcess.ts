@@ -52,8 +52,6 @@ export class PassPostProcess extends PostProcess {
     protected override async _initShaderSourceAsync(forceGLSL = false) {
         const engine = this.getEngine();
 
-        this._shadersLoaded = false;
-
         if (engine.isWebGPU && !forceGLSL) {
             this._shaderLanguage = ShaderLanguage.WGSL;
 
@@ -188,7 +186,6 @@ export class PassCubePostProcess extends PostProcess {
 
     protected override async _initShaderSourceAsync(forceGLSL = false) {
         const engine = this.getEngine();
-        this._shadersLoaded = false;
         if (engine.isWebGPU && !forceGLSL) {
             this._shaderLanguage = ShaderLanguage.WGSL;
 
