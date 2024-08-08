@@ -3,14 +3,7 @@ import { Scalar } from "../../../Maths/math.scalar";
 import type { BaseTexture } from "../baseTexture";
 import type { AbstractEngine } from "../../../Engines/abstractEngine";
 import type { Effect } from "../../../Materials/effect";
-import {
-    TEXTURE_FILTERING_QUALITY_OFFLINE,
-    TextureType,
-    TextureFormat,
-    TEXTURE_NEAREST_SAMPLINGMODE,
-    TextureAddressMode,
-    TEXTURE_TRILINEAR_SAMPLINGMODE,
-} from "../../../Engines/constants";
+import { TextureFilteringQuality, TextureType, TextureFormat, TEXTURE_NEAREST_SAMPLINGMODE, TextureAddressMode, TEXTURE_TRILINEAR_SAMPLINGMODE } from "../../../Engines/constants";
 import { EffectWrapper, EffectRenderer } from "../../../Materials/effectRenderer";
 import type { Nullable } from "../../../types";
 import type { RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
@@ -30,7 +23,7 @@ interface IHDRFilteringOptions {
     hdrScale?: number;
 
     /**
-     * Quality of the filter. Should be `Constants.TEXTURE_FILTERING_QUALITY_OFFLINE` for prefiltering
+     * Quality of the filter. Should be `TextureFilteringQuality.OFFLINE` for prefiltering
      */
     quality?: number;
 }
@@ -47,10 +40,10 @@ export class HDRFiltering {
     private _lodGenerationScale: number = 0.8;
 
     /**
-     * Quality switch for prefiltering. Should be set to `Constants.TEXTURE_FILTERING_QUALITY_OFFLINE` unless
+     * Quality switch for prefiltering. Should be set to `TextureFilteringQuality.OFFLINE` unless
      * you care about baking speed.
      */
-    public quality: number = TEXTURE_FILTERING_QUALITY_OFFLINE;
+    public quality: number = TextureFilteringQuality.OFFLINE;
 
     /**
      * Scales pixel intensity for the input HDR map.

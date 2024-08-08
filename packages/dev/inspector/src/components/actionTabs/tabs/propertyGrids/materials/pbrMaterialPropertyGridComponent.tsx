@@ -2,7 +2,7 @@ import * as React from "react";
 
 import { Observable } from "core/Misc/observable";
 import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import { TEXTURE_FILTERING_QUALITY_LOW, TEXTURE_FILTERING_QUALITY_MEDIUM, TEXTURE_FILTERING_QUALITY_HIGH } from "core/Engines/constants";
+import { TextureFilteringQuality } from "core/Engines/constants";
 
 import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
@@ -242,9 +242,9 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
         ];
 
         const realTimeFilteringQualityOptions = [
-            { label: "Low", value: TEXTURE_FILTERING_QUALITY_LOW },
-            { label: "Medium", value: TEXTURE_FILTERING_QUALITY_MEDIUM },
-            { label: "High", value: TEXTURE_FILTERING_QUALITY_HIGH },
+            { label: "Low", value: TextureFilteringQuality.LOW },
+            { label: "Medium", value: TextureFilteringQuality.MEDIUM },
+            { label: "High", value: TextureFilteringQuality.HIGH },
         ];
 
         (material.sheen as any)._useRoughness = (material.sheen as any)._useRoughness ?? material.sheen.roughness !== null;

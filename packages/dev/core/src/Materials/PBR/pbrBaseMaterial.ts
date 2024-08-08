@@ -32,7 +32,7 @@ import type { RenderTargetTexture } from "../../Materials/Textures/renderTargetT
 import type { CubeTexture } from "../../Materials/Textures/cubeTexture";
 
 import { MaterialFlags } from "../materialFlags";
-import { MATERIAL_TextureDirtyFlag, TEXTURE_FILTERING_QUALITY_LOW, MAX_SUPPORTED_UV_SETS, ALPHA_PREMULTIPLIED, ALPHA_PREMULTIPLIED_PORTERDUFF } from "../../Engines/constants";
+import { MATERIAL_TextureDirtyFlag, TextureFilteringQuality, MAX_SUPPORTED_UV_SETS, ALPHA_PREMULTIPLIED, ALPHA_PREMULTIPLIED_PORTERDUFF } from "../../Engines/constants";
 import type { IAnimatable } from "../../Animations/animatable.interface";
 
 import "../../Materials/Textures/baseTexture.polynomial";
@@ -760,7 +760,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this.markAsDirty(MATERIAL_TextureDirtyFlag);
     }
 
-    private _realTimeFilteringQuality: number = TEXTURE_FILTERING_QUALITY_LOW;
+    private _realTimeFilteringQuality: number = TextureFilteringQuality.LOW;
     /**
      * Quality switch for realtime filtering
      */
