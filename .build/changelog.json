@@ -1,5 +1,5 @@
 {
-    "fromTag": "7.19.0",
+    "fromTag": "7.19.1",
     "changelog": {
         "7.19.1": [
             {
@@ -18,6 +18,264 @@
                 "tags": [
                     "bug"
                 ]
+            }
+        ],
+        "7.20.0": [
+            {
+                "pr": "15378",
+                "title": "Use correct glslang capitalization",
+                "description": null,
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/tools/testTools/src/visualizationUtils.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15344",
+                "title": "SceneLoader Options",
+                "description": "This is an alternative approach to https://github.com/BabylonJS/Babylon.js/pull/15222. Compared to the original approach, this one:\r\n1. Has a simpler implementation and has a smaller impact on the API surface.\r\n1. Is slightly less type safe when adding new loader plugins or glTF extensions.\r\n1. Is much simpler for the caller.\r\n\r\nWith this approach, options are a type safe plain object with no factory functions. Invocation looks like this (for example):\r\n```ts\r\nawait SceneLoader.LoadAssetContainerAsync(\"https://raw.githubusercontent.com/BabylonJS/Assets/master/meshes/LevelOfDetail.glb\", scene, {\r\n  onProgress: (event) => { },\r\n  pluginOptions: {\r\n    gltf: {\r\n      loadOnlyMaterials: true,\r\n      extensionOptions: {\r\n        MSFT_lod: {\r\n          maxLODsToLoad: 5,\r\n        },\r\n        MSFT_minecraftMesh: {\r\n          enabled: false,\r\n        },\r\n      },\r\n    },\r\n  },\r\n});\r\n```\r\n\r\nThis works by simply allowing plugins and extensions to augment the options interface, such that when you import a plugin or extension, it augments the options interface with options specific to the plugin or extension. From the consumer's standpoint, this is fully type safe, so you get clear intellisense showing you exactly how the options can be configured.\r\n\r\nI only implemented options for glTF in this PR, not any other loaders.\r\n\r\nThis is how it shows up with intellisense in VS Code:\r\n![image](https://github.com/user-attachments/assets/b98ce86b-2f5e-48cb-a9cc-6b4b14464059)\r\n![image](https://github.com/user-attachments/assets/d169d3f8-c5ba-4d07-bb2f-5331905e348e)\r\n\r\n@deltakosh, @sebavan, @bghgary ",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Loading/sceneLoader.ts",
+                    "packages/dev/loaders/src/OBJ/objFileLoader.ts",
+                    "packages/dev/loaders/src/SPLAT/splatFileLoader.ts",
+                    "packages/dev/loaders/src/STL/stlFileLoader.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/MSFT_lod.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts",
+                    "packages/dev/loaders/src/glTF/glTFFileLoader.ts",
+                    "packages/tools/viewer-alpha/src/viewer.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15375",
+                "title": "HighlightLayer webgpu port",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.rawTexture.ts",
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/Layers/glowLayer.ts",
+                    "packages/dev/core/src/Layers/highlightLayer.ts",
+                    "packages/dev/core/src/Layers/index.ts",
+                    "packages/dev/core/src/PostProcesses/blurPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/index.ts",
+                    "packages/dev/core/src/PostProcesses/passPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/postProcess.ts",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBRDFFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/glowBlurPostProcess.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/glowMapGeneration.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/glowMapGeneration.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/glowMapMerge.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/glowMapMerge.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/pass.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/passCube.fragment.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15372",
+                "title": "Make `Vector3` compatible with `Vector3LikeInternal`",
+                "description": "This PR makes `Vector3` work with `Vector3LikeInternal`, a new interface. The idea is that this is now valid:\r\n```ts\r\nconst vec3 = new Vector3();\r\n\r\nvec3.addInPlace({ _x: 1, _y: 2, _z: 3 });\r\n\r\nconst half = vec3.divide({ _x: 2, _y: 2, _z: 2 });\r\n```\r\n\r\nThe necessary inlining of some `copyFrom` and `copyFromFloats` calls should speed up performance as well.\r\n\r\nThis was discussed in a [form post](https://forum.babylonjs.com/t/52593/26?u=vortex).",
+                "author": {
+                    "name": "james-pre",
+                    "url": "https://github.com/james-pre"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.like.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15374",
+                "title": "Fix `Epsilon` export",
+                "description": "This PR condenses the exporting of `Epsilon` with its definition:\r\n\r\n```diff\r\n/**\r\n * Constant used to define the minimal number value in Babylon.js\r\n * @ignorenaming\r\n */\r\n// eslint-disable-next-line @typescript-eslint/naming-convention\r\n-const Epsilon = 0.001;\r\n-export { Epsilon };\r\n+export const Epsilon = 0.001;\r\n\r\n```",
+                "author": {
+                    "name": "james-pre",
+                    "url": "https://github.com/james-pre"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.constants.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15371",
+                "title": "Add support for inline comments in OBJ loaded",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/loaders/src/OBJ/objFileLoader.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15368",
+                "title": "fix WebGPU morphtargets with texture",
+                "description": "If you compare it to the [original glsl code](https://github.com/BabylonJS/Babylon.js/blob/master/packages/dev/core/src/Shaders/ShadersInclude/morphTargetsVertex.fx), you can see why it should be this way.\r\n\r\nI've already checked the behavior in my personal project.",
+                "author": {
+                    "name": "noname0310",
+                    "url": "https://github.com/noname0310"
+                },
+                "files": [
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/morphTargetsVertex.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15367",
+                "title": "Fix WebGPU ACES tonemapping shader compilation error",
+                "description": "You can check out the problem in this demo:\r\nhttps://www.babylonjs.com/Demos/WebGPU/forestWebGPU.html",
+                "author": {
+                    "name": "noname0310",
+                    "url": "https://github.com/noname0310"
+                },
+                "files": [
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/imageProcessingFunctions.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15365",
+                "title": "Shadow maps webgpu",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Lights/Shadows/index.ts",
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Misc/index.ts",
+                    "packages/dev/core/src/Misc/rgbdTextureTools.ts",
+                    "packages/dev/core/src/PostProcesses/blurPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/index.ts",
+                    "packages/dev/core/src/PostProcesses/postProcess.ts",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/bayerDitherFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/kernelBlurFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/kernelBlurFragment2.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/kernelBlurVaryingDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/kernelBlurVertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/shadowMapFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/shadowMapFragmentExtraDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/shadowMapFragmentSoftTransparentShadow.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/shadowMapVertexExtraDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/shadowMapVertexMetric.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/shadowMapVertexNormalBias.fx",
+                    "packages/dev/core/src/ShadersWGSL/depthBoxBlur.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/kernelBlur.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/kernelBlur.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/rgbdDecode.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/rgbdEncode.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/shadowMap.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/shadowMap.vertex.fx"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15366",
+                "title": "Fix procedural refresh issue",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15364",
+                "title": "Fix Typo in NME shader",
+                "description": "https://github.com/BabylonJS/Babylon.js/issues/15363#issuecomment-2271743966",
+                "author": {
+                    "name": "FlorentMasson",
+                    "url": "https://github.com/FlorentMasson"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15358",
+                "title": "Port WebGPUTextureManager to WGSL",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Buffers/buffer.nonFloatVertexBuffers.ts",
+                    "packages/dev/core/src/Engines/Processors/shaderProcessor.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessingContext.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureManager.ts",
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.functions.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/effect.functions.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/tools/testTools/src/visualizationUtils.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15361",
+                "title": "wgsl clamp fix",
+                "description": "https://forum.babylonjs.com/t/sceneloader-importmesh/52571\r\n\r\nThere is a small bug in the shader. `clamp` is called with `vec3` instead of `f32`.",
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/ShadersWGSL/default.fragment.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15350",
+                "title": "Add option to add custom material to GPUPicker",
+                "description": "In response to my own post https://forum.babylonjs.com/t/new-feature-gpu-picking/51106/54?u=vinhui\r\n\r\nThis PR allows the user to pass a custom material to the `GPUPicker.setPickingList` method.\r\n\r\nI tested with a bunch of other existing playgrounds to see if I broke anything.\r\nI created a playground that shows how to use this PR `#4RKT66#4`. In this PR, there's a gui with a transparent background. The shader then ignores any transparent pixels when picking. There's a faint black border around the GUI that shows the border of the plane.\r\n\r\nPlanes with transparent textures are the obvious use-case for this PR (sprites for example), but there are probably other use-cases.",
+                "author": {
+                    "name": "vinhui",
+                    "url": "https://github.com/vinhui"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts"
+                ],
+                "tags": []
             }
         ],
         "7.19.0": [
