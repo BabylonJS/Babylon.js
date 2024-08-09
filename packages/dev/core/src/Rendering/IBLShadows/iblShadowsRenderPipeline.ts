@@ -236,9 +236,9 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         }
         this._gbufferDebugEnabled = enabled;
         if (enabled) {
-            this._enableEffect(this._gbufferDebugPass.name, this.cameras);
+            this._enableEffect(this._getGBufferDebugPass().name, this.cameras);
         } else {
-            this._disableEffect(this._gbufferDebugPass.name, this.cameras);
+            this._disableEffect(this._getGBufferDebugPass().name, this.cameras);
         }
     }
 

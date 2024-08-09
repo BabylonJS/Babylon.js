@@ -221,12 +221,27 @@ export class _IblShadowsVoxelRenderer {
             this._maxDrawBuffers = (this._engine as Engine)._gl.getParameter((this._engine as Engine)._gl.MAX_DRAW_BUFFERS);
         }
 
+        Effect.ShadersStore["copyLayerFragmentShader"] = `
+        precision highp sampler3D;
+        
+        uniform sampler3D textureSampler;
+        uniform int layerNum;
+        varying vec2 vUV;
+
+        void main(void) {
+            vec3 coord = vec3(0.0, 0.0, float(layerNum));
+            coord.xy = vec2(vUV.x, vUV.y) * vec2(textureSize(textureSampler, 0).xy);
+            vec3 color = texelFetch(textureSampler, ivec3(coord), 0).rgb;
+            gl_FragColor = vec4(color, 1);
+        }
+    `;
+
         this._copyMipEffectRenderer = new EffectRenderer(this._engine);
         this._copyMipEffectWrapper = new EffectWrapper({
             engine: this._engine,
-            fragmentShader: "pass",
+            fragmentShader: "copyLayer",
             useShaderStore: true,
-            uniformNames: [],
+            uniformNames: ["layerNum"],
             samplerNames: ["textureSampler"],
         });
 
@@ -274,6 +289,7 @@ export class _IblShadowsVoxelRenderer {
                 this._engine.bindFramebuffer(rt, 0, bindSize, bindSize, true, lodLevel, layer);
                 this._copyMipEffectRenderer.applyEffectWrapper(this._copyMipEffectWrapper);
                 this._copyMipEffectWrapper.effect.setTexture("textureSampler", mipTarget);
+                this._copyMipEffectWrapper.effect.setInt("layerNum", layer);
                 this._copyMipEffectRenderer.draw();
                 this._engine.unBindFramebuffer(rt, true);
             }

@@ -130,7 +130,7 @@ export class _IblShadowsVoxelTracingPass {
         this._invWorldScaleMatrix = matrix;
     }
 
-    private _debugVoxelMarchEnabled: boolean = true;
+    private _debugVoxelMarchEnabled: boolean = false;
     private _debugPassPP: PostProcess;
     private _debugSizeParams: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
     public setDebugDisplayParams(x: number, y: number, widthScale: number, heightScale: number) {

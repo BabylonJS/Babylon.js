@@ -633,13 +633,13 @@ float voxelShadow(vec3 wsOrigin, vec3 wsDirection, vec3 wsNormal,
   //   return hierarchical_march(ray_vs) ? 1.0f : 0.0f;
   // #endif
 
-  // #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-  //   return anyHitVoxels(ray_vs, voxel_march_diagnostic_info) ? 1.0f : 0.0f;
-  // #else
-  //   return anyHitVoxels(ray_vs) ? 1.0f : 0.0f;
-  // #endif
+#if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
+  return anyHitVoxels(ray_vs, voxel_march_diagnostic_info) ? 1.0f : 0.0f;
+#else
+  return anyHitVoxels(ray_vs) ? 1.0f : 0.0f;
+#endif
 
-  return anyHitVoxelsSimple(ray_vs) ? 1.0f : 0.0f;
+    // return anyHitVoxelsSimple(ray_vs) ? 1.0f : 0.0f;
 }
 
 void main(void) {
