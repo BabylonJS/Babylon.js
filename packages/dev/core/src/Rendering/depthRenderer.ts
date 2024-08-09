@@ -18,6 +18,7 @@ import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes 
 import type { Material } from "../Materials/material";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { BindMorphTargetParameters, PrepareAttributesForMorphTargetsInfluencers, PushAttributesForInstances } from "../Materials/materialHelper.functions";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * This represents a depth renderer in Babylon.
@@ -28,6 +29,22 @@ export class DepthRenderer {
     private _depthMap: RenderTargetTexture;
     private readonly _storeNonLinearDepth: boolean;
     private readonly _storeCameraSpaceZ: boolean;
+
+    /** Shader language used by the material */
+    protected _shaderLanguage = ShaderLanguage.GLSL;
+
+    /**
+     * Gets the shader language used in this material.
+     */
+    public get shaderLanguage(): ShaderLanguage {
+        return this._shaderLanguage;
+    }
+
+    /**
+     * Force all the depth renderer to compile to glsl even on WebGPU engines.
+     * False by default. This is mostly meant for backward compatibility.
+     */
+    public static ForceGLSL = false;
 
     /** Color used to clear the depth texture. Default: (1,0,0,1) */
     public clearColor: Color4;
@@ -99,6 +116,8 @@ export class DepthRenderer {
         } else {
             this.clearColor = new Color4(storeCameraSpaceZ ? 1e8 : 1.0, 0.0, 0.0, 1.0);
         }
+
+        this._initShaderSourceAsync();
 
         DepthRenderer._SceneComponentInitialization(this._scene);
 
@@ -345,6 +364,21 @@ export class DepthRenderer {
         };
     }
 
+    private _shadersLoaded = false;
+    private async _initShaderSourceAsync(forceGLSL = false) {
+        const engine = this._scene.getEngine();
+
+        if (engine.isWebGPU && !forceGLSL && !DepthRenderer.ForceGLSL) {
+            this._shaderLanguage = ShaderLanguage.WGSL;
+
+            await Promise.all([import("../ShadersWGSL/depth.vertex"), import("../ShadersWGSL/depth.fragment")]);
+        } else {
+            await Promise.all([import("../Shaders/depth.vertex"), import("../Shaders/depth.fragment")]);
+        }
+
+        this._shadersLoaded = true;
+    }
+
     /**
      * Creates the depth rendering effect and checks if the effect is ready.
      * @param subMesh The submesh to be used to render the depth map of
@@ -352,6 +386,10 @@ export class DepthRenderer {
      * @returns if the depth renderer is ready to render the depth map
      */
     public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
+        if (!this._shadersLoaded) {
+            return false;
+        }
+
         const engine = this._scene.getEngine();
         const mesh = subMesh.getMesh();
         const scene = mesh.getScene();
@@ -475,9 +513,20 @@ export class DepthRenderer {
             addClipPlaneUniforms(uniforms);
 
             drawWrapper.setEffect(
-                engine.createEffect("depth", attribs, uniforms, ["diffuseSampler", "morphTargets", "boneSampler"], join, undefined, undefined, undefined, {
-                    maxSimultaneousMorphTargets: numMorphInfluencers,
-                }),
+                engine.createEffect(
+                    "depth",
+                    attribs,
+                    uniforms,
+                    ["diffuseSampler", "morphTargets", "boneSampler"],
+                    join,
+                    undefined,
+                    undefined,
+                    undefined,
+                    {
+                        maxSimultaneousMorphTargets: numMorphInfluencers,
+                    },
+                    this._shaderLanguage
+                ),
                 join
             );
         }

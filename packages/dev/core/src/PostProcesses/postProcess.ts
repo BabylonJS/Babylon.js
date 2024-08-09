@@ -378,7 +378,7 @@ export class PostProcess {
     protected _scene: Scene;
     private _engine: AbstractEngine;
 
-    protected _shadersLoaded = false;
+    private _shadersLoaded = false;
 
     private _options: number | { width: number; height: number };
     private _reusable = false;
@@ -386,7 +386,14 @@ export class PostProcess {
     private _textureType: number;
     private _textureFormat: number;
     /** @internal */
-    protected _shaderLanguage: ShaderLanguage;
+    private _shaderLanguage: ShaderLanguage;
+
+    /**
+     * Gets the shader language type used to generate vertex and fragment source code.
+     */
+    public get shaderLanguage(): ShaderLanguage {
+        return this._shaderLanguage;
+    }
 
     /**
      * if externalTextureSamplerBinding is true, the "apply" method won't bind the textureSampler texture, it is expected to be done by the "outside" (by the onApplyObservable observer most probably).
@@ -619,8 +626,7 @@ export class PostProcess {
         indexParameters?: any,
         blockCompilation?: boolean,
         textureFormat?: number,
-        shaderLanguage?: ShaderLanguage,
-        delayLoadShaders?: boolean
+        shaderLanguage?: ShaderLanguage
     );
 
     /** @internal */
@@ -640,8 +646,7 @@ export class PostProcess {
         indexParameters?: any,
         blockCompilation = false,
         textureFormat = Constants.TEXTUREFORMAT_RGBA,
-        shaderLanguage = ShaderLanguage.GLSL,
-        delayLoadShaders = false
+        shaderLanguage = ShaderLanguage.GLSL
     ) {
         this.name = name;
         let size: number | { width: number; height: number } = 1;
@@ -704,19 +709,31 @@ export class PostProcess {
         this._indexParameters = indexParameters;
         this._drawWrapper = new DrawWrapper(this._engine);
 
-        this._postConstructor(blockCompilation, defines, delayLoadShaders);
+        this._postConstructor(blockCompilation, defines);
     }
 
-    protected async _initShaderSourceAsync(_forceGLSL = false) {}
+    protected async _initShaderSourceAsync(useWebGPU = false) {
+        if (useWebGPU) {
+            await Promise.all([import("../ShadersWGSL/postprocess.vertex")]);
+        } else {
+            await Promise.all([import("../Shaders/postprocess.vertex")]);
+        }
+
+        this._shadersLoaded = true;
+    }
 
     private _onInitShadersDone: Nullable<() => void> = null;
-    private async _postConstructor(blockCompilation: boolean, defines: Nullable<string> = null, delayLoadShaders: boolean = false) {
-        if (delayLoadShaders) {
-            await this._initShaderSourceAsync(PostProcess.ForceGLSL);
-            if (this._onInitShadersDone) {
-                this._onInitShadersDone();
-                return;
-            }
+    private async _postConstructor(blockCompilation: boolean, defines: Nullable<string> = null) {
+        const engine = this.getEngine();
+        const useWebGPU = engine.isWebGPU && !PostProcess.ForceGLSL;
+        if (useWebGPU) {
+            this._shaderLanguage = ShaderLanguage.WGSL;
+        }
+
+        await this._initShaderSourceAsync(useWebGPU);
+        if (this._onInitShadersDone) {
+            this._onInitShadersDone();
+            return;
         }
         this._shadersLoaded = true;
         if (!blockCompilation) {
