@@ -66,6 +66,7 @@ export class GrainPostProcess extends PostProcess {
 
     protected override async _initShaderSourceAsync(useWebGPU: boolean) {
         if (useWebGPU) {
+            this._webGPUReady = true;
             await Promise.all([import("../ShadersWGSL/grain.fragment")]);
         } else {
             await Promise.all([import("../Shaders/grain.fragment")]);

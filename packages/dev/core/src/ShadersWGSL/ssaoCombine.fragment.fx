@@ -1,18 +1,19 @@
-uniform sampler2D textureSampler;
-uniform sampler2D originalColor;
-uniform viewport: vec4f;
-
 varying vUV: vec2f;
-
+var textureSamplerSampler: sampler;
+var textureSampler: texture_2d<f32>;
+var originalColorSampler: sampler;
+var originalColor: texture_2d<f32>;
+uniform viewport: vec4f;
 
 #define CUSTOM_FRAGMENT_DEFINITIONS
 
-fn main(void) {
+@fragment
+fn main(input: FragmentInputs) -> FragmentOutputs {
 
 #define CUSTOM_FRAGMENT_MAIN_BEGIN
 
-	var ssaoColor: vec4f = texture2D(textureSampler, viewport.xy + vUV * viewport.zw);
-	var sceneColor: vec4f = texture2D(originalColor, vUV);
+	var ssaoColor: vec4f = textureSample(textureSampler, textureSamplerSampler, uniforms.viewport.xy + input.vUV * uniforms.viewport.zw);
+	var sceneColor: vec4f = textureSample(originalColor, originalColorSampler, input.vUV);
 
 	fragmentOutputs.color = sceneColor * ssaoColor;
 

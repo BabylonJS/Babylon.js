@@ -114,6 +114,7 @@ export class ChromaticAberrationPostProcess extends PostProcess {
 
     protected override async _initShaderSourceAsync(useWebGPU: boolean) {
         if (useWebGPU) {
+            this._webGPUReady = true;
             await Promise.all([import("../ShadersWGSL/chromaticAberration.fragment")]);
         } else {
             await Promise.all([import("../Shaders/chromaticAberration.fragment")]);

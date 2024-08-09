@@ -78,6 +78,7 @@ export class DepthOfFieldMergePostProcess extends PostProcess {
 
     protected override async _initShaderSourceAsync(useWebGPU: boolean) {
         if (useWebGPU) {
+            this._webGPUReady = true;
             await import("../ShadersWGSL/depthOfFieldMerge.fragment");
         } else {
             await import("../Shaders/depthOfFieldMerge.fragment");

@@ -46,6 +46,7 @@ export class FxaaPostProcess extends PostProcess {
 
     protected override async _initShaderSourceAsync(useWebGPU: boolean) {
         if (useWebGPU) {
+            this._webGPUReady = true;
             await Promise.all([import("../ShadersWGSL/fxaa.fragment"), import("../ShadersWGSL/fxaa.vertex")]);
         } else {
             await Promise.all([import("../Shaders/fxaa.fragment"), import("../Shaders/fxaa.vertex")]);

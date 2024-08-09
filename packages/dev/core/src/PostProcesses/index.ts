@@ -90,3 +90,11 @@ export * from "../Shaders/fxaa.fragment";
 export * from "../Shaders/fxaa.vertex";
 export * from "../ShadersWGSL/fxaa.fragment";
 export * from "../ShadersWGSL/fxaa.vertex";
+
+// B&W
+export * from "../Shaders/blackAndWhite.fragment";
+export * from "../ShadersWGSL/blackAndWhite.fragment";
+
+// Anaglyph
+export * from "../Shaders/anaglyph.fragment";
+export * from "../ShadersWGSL/anaglyph.fragment";

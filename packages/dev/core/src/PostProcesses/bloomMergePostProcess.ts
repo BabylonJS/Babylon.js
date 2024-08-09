@@ -69,6 +69,7 @@ export class BloomMergePostProcess extends PostProcess {
 
     protected override async _initShaderSourceAsync(useWebGPU: boolean) {
         if (useWebGPU) {
+            this._webGPUReady = true;
             await import("../ShadersWGSL/bloomMerge.fragment");
         } else {
             await import("../Shaders/bloomMerge.fragment");

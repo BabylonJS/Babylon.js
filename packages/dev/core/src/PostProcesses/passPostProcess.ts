@@ -48,6 +48,7 @@ export class PassPostProcess extends PostProcess {
 
     protected override async _initShaderSourceAsync(useWebGPU: boolean) {
         if (useWebGPU) {
+            this._webGPUReady = true;
             await Promise.all([import("../ShadersWGSL/pass.fragment")]);
         } else {
             await Promise.all([import("../Shaders/pass.fragment")]);
@@ -161,6 +162,7 @@ export class PassCubePostProcess extends PostProcess {
 
     protected override async _initShaderSourceAsync(useWebGPU: boolean) {
         if (useWebGPU) {
+            this._webGPUReady = true;
             await Promise.all([import("../ShadersWGSL/passCube.fragment")]);
         } else {
             await Promise.all([import("../Shaders/passCube.fragment")]);

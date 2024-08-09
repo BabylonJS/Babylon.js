@@ -60,6 +60,7 @@ export class ExtractHighlightsPostProcess extends PostProcess {
 
     protected override async _initShaderSourceAsync(useWebGPU: boolean) {
         if (useWebGPU) {
+            this._webGPUReady = true;
             await import("../ShadersWGSL/extractHighlights.fragment");
         } else {
             await import("../Shaders/extractHighlights.fragment");
