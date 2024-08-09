@@ -1,5 +1,7 @@
 import * as functions from "./math.scalar.functions";
 
+const HCF: (a: number, b: number) => number = functions.HighestCommonFactor;
+
 /**
  * Scalar computation library
  * @deprecated Please use the scalar functions
@@ -33,8 +35,6 @@ export const Scalar = {
      * @param b second parameter
      * @returns HCF of a and b
      */
-    get HCF(): (a: number, b: number) => number {
-        return this.HighestCommonFactor;
-    },
+    HCF,
 };
 /* eslint-enable @typescript-eslint/naming-convention */
