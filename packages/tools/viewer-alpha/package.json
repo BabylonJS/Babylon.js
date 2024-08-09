@@ -14,8 +14,8 @@
         "compile": "tsc -b tsconfig.build.json",
         "bundle:analyze": "rimraf dist/analyze && rollup -c rollup.config.analyze.mjs",
         "bundle:coverage": "rimraf dist/coverage && rollup -c rollup.config.coverage.mjs",
-        "analyze": "npm run bundle:analyze && node ../../../scripts/folderSizeFlameChart dist/analyze \"**/*.js\" dist/analyze/flameChart",
-        "import-chains": "node -e \"require('../../../scripts/queryRollupStats.js').queryRollupStats(process.argv[1], 'dist/analyze/stats.json')\"",
+        "analyze": "npm run bundle:analyze && node ../../../scripts/folderSizeFlameChart.mjs dist/analyze \"**/*.js\" dist/analyze/flameChart",
+        "import-chains": "node -e \"require('../../../scripts/queryRollupStats.js').queryRollupStats(process.argv[1], process.argv[2], 'dist/analyze/stats.json')\"",
         "instrument": "npm run bundle:coverage && nyc --exclude-node-modules=false instrument dist/coverage/original dist/coverage/instrumented",
         "report-coverage": "node generateCoverageReports.mjs dist/analyze dist/coverage dist/coverage/original dist/coverage/raw",
         "test": "echo \"Error: no test specified\" && exit 1"

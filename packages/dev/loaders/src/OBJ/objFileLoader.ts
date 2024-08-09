@@ -3,7 +3,7 @@ import { Vector2 } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, ISceneLoaderPlugin, ISceneLoaderAsyncResult } from "core/Loading/sceneLoader";
-import { SceneLoader } from "core/Loading/sceneLoader";
+import { registerSceneLoaderPlugin } from "core/Loading/sceneLoader";
 import { AssetContainer } from "core/assetContainer";
 import type { Scene } from "core/scene";
 import type { WebRequest } from "core/Misc/webRequest";
@@ -362,7 +362,5 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     }
 }
 
-if (SceneLoader) {
-    //Add this loader into the register plugin
-    SceneLoader.RegisterPlugin(new OBJFileLoader());
-}
+//Add this loader into the register plugin
+registerSceneLoaderPlugin(new OBJFileLoader());
