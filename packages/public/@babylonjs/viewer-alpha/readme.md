@@ -31,9 +31,24 @@ To use the higher level `HTML3DElement` you can import the `@babylonjs/viewer` m
 <html lang="en">
   <body>
     <script type="module">
-      import '@babylonjs/viewer-alpha';
+      import '@babylonjs/viewer';
     </script>
     <babylon-viewer src="https://playground.babylonjs.com/scenes/BoomBox.glb"></babylon-viewer>
   </body>
 </html>
 ```
+
+## CDN/Direct usage
+
+If you want to use the viewer directly in a browser without any build tools, you can use the self-contained ESM bundle (which includes all dependencies) through a CDN such as [UNPKG](https://unpkg.com/) or [jsDelivr](https://www.jsdelivr.com/) like this:
+
+```html
+<html lang="en">
+  <body>
+    <script type="module" src="https://unpkg.com/@babylonjs/viewer@preview/dist/babylon-viewer.esm.min.js"></script>
+    <babylon-viewer src="https://playground.babylonjs.com/scenes/BoomBox.glb"></babylon-viewer>
+  </body>
+</html>
+```
+
+See the [codesandbox.io](https://codesandbox.io/p/sandbox/babylon-viewer-ws82xr) example for a live demo.

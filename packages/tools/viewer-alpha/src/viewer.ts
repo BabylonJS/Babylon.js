@@ -3,7 +3,7 @@ import type { AbstractEngine, AssetContainer, FramingBehavior, IDisposable, Mesh
 
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
-import { SceneLoader } from "core/Loading/sceneLoader";
+import { loadAssetContainerAsync } from "core/Loading/sceneLoader";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Texture } from "core/Materials/Textures/texture";
@@ -132,7 +132,7 @@ export class Viewer implements IDisposable {
         await this._loadModelLock.lockAsync(async () => {
             this._throwIfDisposedOrAborted(abortSignal, abortController.signal);
             this._details.model?.dispose();
-            this._details.model = await SceneLoader.LoadAssetContainerAsync(finalSource, this._details.scene);
+            this._details.model = await loadAssetContainerAsync(finalSource, this._details.scene);
             this._details.model.addAllToScene();
             this._reframeCamera();
         });

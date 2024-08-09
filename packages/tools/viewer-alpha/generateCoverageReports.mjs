@@ -7,7 +7,7 @@ import { readFileSync } from "fs";
 import path from "path";
 import open from "open";
 import chalk from "chalk";
-import { generateFlameChart } from "../../../scripts/folderSizeFlameChart.js";
+import { generateFlameChart } from "../../../scripts/folderSizeFlameChart.mjs";
 
 const [scriptPath, analyzeDirectory, coverageDirectory, originalDirectory, rawDirectory] = process.argv.slice(1);
 
