@@ -98,3 +98,7 @@ export * from "../ShadersWGSL/blackAndWhite.fragment";
 // Anaglyph
 export * from "../Shaders/anaglyph.fragment";
 export * from "../ShadersWGSL/anaglyph.fragment";
+
+// Color correction
+export * from "../Shaders/colorCorrection.fragment";
+export * from "../ShadersWGSL/colorCorrection.fragment";
