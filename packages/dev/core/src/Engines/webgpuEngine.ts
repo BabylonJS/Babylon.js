@@ -944,6 +944,7 @@ export class WebGPUEngine extends AbstractEngine {
             needTypeSuffixInShaderConstants: true,
             supportMSAA: true,
             supportSSAO2: true,
+            supportIBLShadows: true,
             supportExtendedTextureFormats: true,
             supportSwitchCaseInShader: true,
             supportSyncTextureRead: false,

@@ -16,8 +16,11 @@ import { ImageSourceBlock } from "../Dual/imageSourceBlock";
  */
 export class PrePassTextureBlock extends NodeMaterialBlock {
     private _positionSamplerName: string;
+    private _localPositionSamplerName: string;
     private _depthSamplerName: string;
+    private _clipSpaceDepthSamplerName: string;
     private _normalSamplerName: string;
+    private _worldNormalSamplerName: string;
 
     /**
      * The texture associated with the node is the prepass texture
@@ -76,6 +79,18 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
             return this._normalSamplerName;
         }
 
+        if (output === this._outputs[3]) {
+            return this._worldNormalSamplerName;
+        }
+
+        if (output === this._outputs[4]) {
+            return this._localPositionSamplerName;
+        }
+
+        if (output === this._outputs[5]) {
+            return this._clipSpaceDepthSamplerName;
+        }
+
         return "";
     }
 
@@ -101,6 +116,27 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the world normal texture
+     */
+    public get worldNormal(): NodeMaterialConnectionPoint {
+        return this._outputs[3];
+    }
+
+    /**
+     * Gets the local position texture
+     */
+    public get localPosition(): NodeMaterialConnectionPoint {
+        return this._outputs[4];
+    }
+
+    /**
+     * Gets the depth texture
+     */
+    public get clipSpaceDepth(): NodeMaterialConnectionPoint {
+        return this._outputs[5];
+    }
+
+    /**
      * Gets the sampler name associated with this image source
      */
     public get positionSamplerName(): string {
@@ -110,14 +146,36 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
     /**
      * Gets the sampler name associated with this image source
      */
+    public get localPositionSamplerName(): string {
+        return this._localPositionSamplerName;
+    }
+
+    /**
+     * Gets the sampler name associated with this image source
+     */
     public get normalSamplerName(): string {
         return this._normalSamplerName;
     }
+
+    /**
+     * Gets the sampler name associated with this image source
+     */
+    public get worldNormalSamplerName(): string {
+        return this._worldNormalSamplerName;
+    }
+
     /**
      * Gets the sampler name associated with this image source
      */
     public get depthSamplerName(): string {
         return this._depthSamplerName;
+    }
+
+    /**
+     * Gets the sampler name associated with this image source
+     */
+    public get linearDepthSamplerName(): string {
+        return this._clipSpaceDepthSamplerName;
     }
 
     /**
@@ -138,11 +196,17 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
         this._positionSamplerName = "prepassPositionSampler";
         this._depthSamplerName = "prepassDepthSampler";
         this._normalSamplerName = "prepassNormalSampler";
+        this._worldNormalSamplerName = "prepassWorldNormalSampler";
+        this._localPositionSamplerName = "prepassLocalPositionSampler";
+        this._clipSpaceDepthSamplerName = "prepassClipSpaceDepthSampler";
 
         // Unique sampler names for every prepasstexture block
         state.sharedData.variableNames.prepassPositionSampler = 0;
         state.sharedData.variableNames.prepassDepthSampler = 0;
         state.sharedData.variableNames.prepassNormalSampler = 0;
+        state.sharedData.variableNames.prepassWorldNormalSampler = 0;
+        state.sharedData.variableNames.prepassLocalPositionSampler = 0;
+        state.sharedData.variableNames.prepassClipSpaceDepthSampler = 0;
 
         // Declarations
         state.sharedData.textureBlocks.push(this);
@@ -151,6 +215,9 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
         state._emit2DSampler(this._positionSamplerName);
         state._emit2DSampler(this._depthSamplerName);
         state._emit2DSampler(this._normalSamplerName);
+        state._emit2DSampler(this._worldNormalSamplerName);
+        state._emit2DSampler(this._localPositionSamplerName);
+        state._emit2DSampler(this._clipSpaceDepthSamplerName);
 
         return this;
     }
@@ -170,11 +237,26 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
         if (this.position.isConnected) {
             effect.setTexture(this._positionSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_POSITION_TEXTURE_TYPE)]);
         }
+        if (this.localPosition.isConnected) {
+            effect.setTexture(this._localPositionSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE)]);
+        }
         if (this.depth.isConnected) {
             effect.setTexture(this._depthSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)]);
         }
+        if (this.clipSpaceDepth.isConnected) {
+            effect.setTexture(this._clipSpaceDepthSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_NDC_DEPTH_TEXTURE_TYPE)]);
+        }
         if (this.normal.isConnected) {
             effect.setTexture(this._normalSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_NORMAL_TEXTURE_TYPE)]);
+        }
+        if (this.worldNormal.isConnected) {
+            effect.setTexture(this._worldNormalSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE)]);
+        }
+        if (this.localPosition.isConnected) {
+            effect.setTexture(this._localPositionSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE)]);
+        }
+        if (this.clipSpaceDepth.isConnected) {
+            effect.setTexture(this._clipSpaceDepthSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_NDC_DEPTH_TEXTURE_TYPE)]);
         }
     }
 }
