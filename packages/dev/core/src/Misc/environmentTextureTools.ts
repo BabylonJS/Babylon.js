@@ -6,7 +6,7 @@ import { Scalar } from "../Maths/math.scalar";
 import { SphericalPolynomial } from "../Maths/sphericalPolynomial";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
-import { Constants } from "../Engines/constants";
+import { TextureType, TextureFormat, TEXTURE_NEAREST_SAMPLINGMODE, TEXTURE_TRILINEAR_SAMPLINGMODE, TEXTURE_LINEAR_LINEAR } from "../Engines/constants";
 import { Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { Logger } from "../Misc/logger";
@@ -232,19 +232,19 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
     const engine = internalTexture.getEngine() as Engine;
 
     if (
-        texture.textureType !== Constants.TEXTURETYPE_HALF_FLOAT &&
-        texture.textureType !== Constants.TEXTURETYPE_FLOAT &&
-        texture.textureType !== Constants.TEXTURETYPE_UNSIGNED_BYTE &&
-        texture.textureType !== Constants.TEXTURETYPE_UNSIGNED_INT &&
-        texture.textureType !== Constants.TEXTURETYPE_UNSIGNED_INTEGER &&
+        texture.textureType !== TextureType.HALF_FLOAT &&
+        texture.textureType !== TextureType.FLOAT &&
+        texture.textureType !== TextureType.UNSIGNED_BYTE &&
+        texture.textureType !== TextureType.UNSIGNED_INT &&
+        texture.textureType !== TextureType.UNSIGNED_INTEGER &&
         texture.textureType !== -1
     ) {
         return Promise.reject("The cube texture should allow HDR (Full Float or Half Float).");
     }
 
-    let textureType = Constants.TEXTURETYPE_FLOAT;
+    let textureType = TextureType.FLOAT;
     if (!engine.getCaps().textureFloatRender) {
-        textureType = Constants.TEXTURETYPE_HALF_FLOAT;
+        textureType = TextureType.HALF_FLOAT;
         if (!engine.getCaps().textureHalfFloatRender) {
             return Promise.reject("Env texture can only be created when the browser supports half float or full float rendering.");
         }
@@ -287,17 +287,7 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
                 }
             }
 
-            const tempTexture = engine.createRawTexture(
-                faceData,
-                faceWidth,
-                faceWidth,
-                Constants.TEXTUREFORMAT_RGBA,
-                false,
-                true,
-                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-                null,
-                textureType
-            );
+            const tempTexture = engine.createRawTexture(faceData, faceWidth, faceWidth, TextureFormat.RGBA, false, true, TEXTURE_NEAREST_SAMPLINGMODE, null, textureType);
 
             await RGBDTextureTools.EncodeTextureToRGBD(tempTexture, hostingScene, textureType);
 
@@ -482,7 +472,7 @@ function _OnImageReadyAsync(
                 true,
                 true,
                 null,
-                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                TEXTURE_NEAREST_SAMPLINGMODE,
                 null,
                 (message) => {
                     reject(message);
@@ -548,11 +538,11 @@ export async function UploadLevelsAsync(texture: InternalTexture, imageData: Arr
     let lodTextures: Nullable<{ [lod: number]: BaseTexture }> = null;
     const caps = engine.getCaps();
 
-    texture.format = Constants.TEXTUREFORMAT_RGBA;
-    texture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
+    texture.format = TextureFormat.RGBA;
+    texture.type = TextureType.UNSIGNED_INT;
     texture.generateMipMaps = true;
     texture._cachedAnisotropicFilteringLevel = null;
-    engine.updateTextureSamplingMode(Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, texture);
+    engine.updateTextureSamplingMode(TEXTURE_TRILINEAR_SAMPLINGMODE, texture);
 
     // Add extra process if texture lod is not supported
     if (!caps.textureLOD) {
@@ -567,12 +557,12 @@ export async function UploadLevelsAsync(texture: InternalTexture, imageData: Arr
     // If half float available we can uncompress the texture
     else if (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering) {
         expandTexture = true;
-        texture.type = Constants.TEXTURETYPE_HALF_FLOAT;
+        texture.type = TextureType.HALF_FLOAT;
     }
     // If full float available we can uncompress the texture
     else if (caps.textureFloatRender && caps.textureFloatLinearFiltering) {
         expandTexture = true;
-        texture.type = Constants.TEXTURETYPE_FLOAT;
+        texture.type = TextureType.FLOAT;
     }
 
     // Expand the texture if possible
@@ -593,7 +583,7 @@ export async function UploadLevelsAsync(texture: InternalTexture, imageData: Arr
             null,
             1,
             null,
-            Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+            TEXTURE_TRILINEAR_SAMPLINGMODE,
             engine,
             false,
             undefined,
@@ -611,9 +601,9 @@ export async function UploadLevelsAsync(texture: InternalTexture, imageData: Arr
             generateDepthBuffer: false,
             generateMipMaps: true,
             generateStencilBuffer: false,
-            samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+            samplingMode: TEXTURE_TRILINEAR_SAMPLINGMODE,
             type: texture.type,
-            format: Constants.TEXTUREFORMAT_RGBA,
+            format: TextureFormat.RGBA,
         });
     } else {
         texture._isRGBD = true;
@@ -640,7 +630,7 @@ export async function UploadLevelsAsync(texture: InternalTexture, imageData: Arr
                 glTextureFromLod.isCube = true;
                 glTextureFromLod.invertY = true;
                 glTextureFromLod.generateMipMaps = false;
-                engine.updateTextureSamplingMode(Constants.TEXTURE_LINEAR_LINEAR, glTextureFromLod);
+                engine.updateTextureSamplingMode(TEXTURE_LINEAR_LINEAR, glTextureFromLod);
 
                 // Wrap in a base texture for easy binding.
                 const lodTexture = new BaseTexture(null);
@@ -706,15 +696,15 @@ export async function UploadLevelsAsync(texture: InternalTexture, imageData: Arr
         const size = Math.pow(2, mipmapsCount - 1 - imageData.length);
         const dataLength = size * size * 4;
         switch (texture.type) {
-            case Constants.TEXTURETYPE_UNSIGNED_INT: {
+            case TextureType.UNSIGNED_INT: {
                 data = new Uint8Array(dataLength);
                 break;
             }
-            case Constants.TEXTURETYPE_HALF_FLOAT: {
+            case TextureType.HALF_FLOAT: {
                 data = new Uint16Array(dataLength);
                 break;
             }
-            case Constants.TEXTURETYPE_FLOAT: {
+            case TextureType.FLOAT: {
                 data = new Float32Array(dataLength);
                 break;
             }

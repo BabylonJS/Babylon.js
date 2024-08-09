@@ -14,7 +14,7 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import { Texture } from "../../../Textures/texture";
 import type { Scene } from "../../../../scene";
 import { NodeMaterialModes } from "../../Enums/nodeMaterialModes";
-import { Constants } from "../../../../Engines/constants";
+import { MATERIAL_TextureDirtyFlag, AUTOSAMPLERSUFFIX } from "../../../../Engines/constants";
 import "../../../../Shaders/ShadersInclude/helperFunctions";
 import { ImageSourceBlock } from "./imageSourceBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
@@ -58,7 +58,7 @@ export class TextureBlock extends NodeMaterialBlock {
         const scene = texture?.getScene() ?? EngineStore.LastCreatedScene;
 
         if (!texture && scene) {
-            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+            scene.markAllMaterialsAsDirty(MATERIAL_TextureDirtyFlag, (mat) => {
                 return mat.hasTexture(this._texture!);
             });
         }
@@ -66,7 +66,7 @@ export class TextureBlock extends NodeMaterialBlock {
         this._texture = texture;
 
         if (texture && scene) {
-            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+            scene.markAllMaterialsAsDirty(MATERIAL_TextureDirtyFlag, (mat) => {
                 return mat.hasTexture(texture);
             });
         }
@@ -114,7 +114,7 @@ export class TextureBlock extends NodeMaterialBlock {
         this._convertToGammaSpace = value;
         if (this.texture) {
             const scene = this.texture.getScene() ?? EngineStore.LastCreatedScene;
-            scene?.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+            scene?.markAllMaterialsAsDirty(MATERIAL_TextureDirtyFlag, (mat) => {
                 return mat.hasTexture(this.texture!);
             });
         }
@@ -135,7 +135,7 @@ export class TextureBlock extends NodeMaterialBlock {
         this._convertToLinearSpace = value;
         if (this.texture) {
             const scene = this.texture.getScene() ?? EngineStore.LastCreatedScene;
-            scene?.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+            scene?.markAllMaterialsAsDirty(MATERIAL_TextureDirtyFlag, (mat) => {
                 return mat.hasTexture(this.texture!);
             });
         }
@@ -491,7 +491,7 @@ export class TextureBlock extends NodeMaterialBlock {
     private _generateTextureSample(uv: string, state: NodeMaterialBuildState) {
         if (state.shaderLanguage === ShaderLanguage.WGSL) {
             const isVertex = state.target === NodeMaterialBlockTargets.Vertex;
-            return `${this._samplerFunc(state)}(${this.samplerName},${this.samplerName + Constants.AUTOSAMPLERSUFFIX}, ${this._getUVW(uv)}${this._samplerLodSuffix}${isVertex ? ", 0" : ""})`;
+            return `${this._samplerFunc(state)}(${this.samplerName},${this.samplerName + AUTOSAMPLERSUFFIX}, ${this._getUVW(uv)}${this._samplerLodSuffix}${isVertex ? ", 0" : ""})`;
         }
         return `${this._samplerFunc(state)}(${this.samplerName}, ${this._getUVW(uv)}${this._samplerLodSuffix})`;
     }

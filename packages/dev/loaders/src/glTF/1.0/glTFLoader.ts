@@ -62,7 +62,7 @@ import type { Scene } from "core/scene";
 import { GLTFUtils } from "./glTFLoaderUtils";
 import type { IGLTFLoader, IGLTFLoaderData } from "../glTFFileLoader";
 import { GLTFFileLoader } from "../glTFFileLoader";
-import { Constants } from "core/Engines/constants";
+import { ALPHA_COMBINE, ALPHA_ONEONE, ALPHA_ADD, ALPHA_SUBTRACT, ALPHA_MULTIPLY, ALPHA_MAXIMIZED } from "core/Engines/constants";
 import type { AssetContainer } from "core/assetContainer";
 
 /**
@@ -1709,42 +1709,42 @@ export class GLTFLoaderBase {
                     blendFunc[2] === EBlendingFunction.ONE &&
                     blendFunc[3] === EBlendingFunction.ONE
                 ) {
-                    shaderMaterial.alphaMode = Constants.ALPHA_COMBINE;
+                    shaderMaterial.alphaMode = ALPHA_COMBINE;
                 } else if (
                     blendFunc[0] === EBlendingFunction.ONE &&
                     blendFunc[1] === EBlendingFunction.ONE &&
                     blendFunc[2] === EBlendingFunction.ZERO &&
                     blendFunc[3] === EBlendingFunction.ONE
                 ) {
-                    shaderMaterial.alphaMode = Constants.ALPHA_ONEONE;
+                    shaderMaterial.alphaMode = ALPHA_ONEONE;
                 } else if (
                     blendFunc[0] === EBlendingFunction.SRC_ALPHA &&
                     blendFunc[1] === EBlendingFunction.ONE &&
                     blendFunc[2] === EBlendingFunction.ZERO &&
                     blendFunc[3] === EBlendingFunction.ONE
                 ) {
-                    shaderMaterial.alphaMode = Constants.ALPHA_ADD;
+                    shaderMaterial.alphaMode = ALPHA_ADD;
                 } else if (
                     blendFunc[0] === EBlendingFunction.ZERO &&
                     blendFunc[1] === EBlendingFunction.ONE_MINUS_SRC_COLOR &&
                     blendFunc[2] === EBlendingFunction.ONE &&
                     blendFunc[3] === EBlendingFunction.ONE
                 ) {
-                    shaderMaterial.alphaMode = Constants.ALPHA_SUBTRACT;
+                    shaderMaterial.alphaMode = ALPHA_SUBTRACT;
                 } else if (
                     blendFunc[0] === EBlendingFunction.DST_COLOR &&
                     blendFunc[1] === EBlendingFunction.ZERO &&
                     blendFunc[2] === EBlendingFunction.ONE &&
                     blendFunc[3] === EBlendingFunction.ONE
                 ) {
-                    shaderMaterial.alphaMode = Constants.ALPHA_MULTIPLY;
+                    shaderMaterial.alphaMode = ALPHA_MULTIPLY;
                 } else if (
                     blendFunc[0] === EBlendingFunction.SRC_ALPHA &&
                     blendFunc[1] === EBlendingFunction.ONE_MINUS_SRC_COLOR &&
                     blendFunc[2] === EBlendingFunction.ONE &&
                     blendFunc[3] === EBlendingFunction.ONE
                 ) {
-                    shaderMaterial.alphaMode = Constants.ALPHA_MAXIMIZED;
+                    shaderMaterial.alphaMode = ALPHA_MAXIMIZED;
                 }
             }
         }

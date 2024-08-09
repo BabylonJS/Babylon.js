@@ -23,6 +23,7 @@ import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import type { TriPlanarBlock } from "core/Materials/Node/Blocks/triPlanarBlock";
+import { TextureAddressMode } from "core/Engines/constants";
 
 type ReflectionTexture = ReflectionTextureBlock | ReflectionBlock | RefractionBlock;
 
@@ -319,9 +320,9 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                     {texture && !isInReflectionMode && !isFrozenTexture && (
                         <CheckBoxLineComponent
                             label="Clamp U"
-                            isSelected={() => texture!.wrapU === Texture.CLAMP_ADDRESSMODE}
+                            isSelected={() => texture!.wrapU === TextureAddressMode.CLAMP}
                             onSelect={(value) => {
-                                texture!.wrapU = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE;
+                                texture!.wrapU = value ? TextureAddressMode.CLAMP : TextureAddressMode.WRAP;
                                 this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                                 this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
                             }}
@@ -330,9 +331,9 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                     {texture && !isInReflectionMode && !isFrozenTexture && (
                         <CheckBoxLineComponent
                             label="Clamp V"
-                            isSelected={() => texture!.wrapV === Texture.CLAMP_ADDRESSMODE}
+                            isSelected={() => texture!.wrapV === TextureAddressMode.CLAMP}
                             onSelect={(value) => {
-                                texture!.wrapV = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE;
+                                texture!.wrapV = value ? TextureAddressMode.CLAMP : TextureAddressMode.WRAP;
                                 this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                                 this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
                             }}

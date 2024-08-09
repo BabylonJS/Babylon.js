@@ -3,7 +3,7 @@ import { InternalTexture, InternalTextureSource } from "../../Materials/Textures
 import { Logger } from "../../Misc/logger";
 import type { Nullable } from "../../types";
 import type { Scene } from "../../scene";
-import { Constants } from "../constants";
+import { TEXTURE_TRILINEAR_SAMPLINGMODE, TEXTURE_LINEAR_LINEAR } from "../constants";
 import type { DepthTextureCreationOptions } from "../../Materials/Textures/textureCreationOptions";
 import { GetExponentOfTwo } from "../../Misc/tools.functions";
 
@@ -183,7 +183,7 @@ ThinEngine.prototype._setCubeMapTextureParams = function (texture: InternalTextu
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, loadMipmap ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    texture.samplingMode = loadMipmap ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : Constants.TEXTURE_LINEAR_LINEAR;
+    texture.samplingMode = loadMipmap ? TEXTURE_TRILINEAR_SAMPLINGMODE : TEXTURE_LINEAR_LINEAR;
 
     if (loadMipmap && this.getCaps().textureMaxLevel && maxLevel !== undefined && maxLevel > 0) {
         gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAX_LEVEL, maxLevel);

@@ -2,7 +2,7 @@ import { RGBE_ReadHeader, RGBE_ReadPixels } from "../../../Misc/HighDynamicRange
 import { Engine } from "../../../Engines/engine";
 import type { InternalTexture } from "../../../Materials/Textures/internalTexture";
 import type { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
-import { Constants } from "../../../Engines/constants";
+import { TextureType, TextureFormat } from "../../../Engines/constants";
 
 /**
  * Implementation of the HDR Texture Loader.
@@ -58,8 +58,8 @@ export class _HDRTextureLoader implements IInternalTextureLoader {
 
         callback(hdrInfo.width, hdrInfo.height, texture.generateMipMaps, false, () => {
             const engine = texture.getEngine();
-            texture.type = Constants.TEXTURETYPE_FLOAT;
-            texture.format = Constants.TEXTUREFORMAT_RGBA;
+            texture.type = TextureType.FLOAT;
+            texture.format = TextureFormat.RGBA;
             texture._gammaSpace = false;
             engine._uploadDataToTextureDirectly(texture, pixelsDataRGBA32);
         });

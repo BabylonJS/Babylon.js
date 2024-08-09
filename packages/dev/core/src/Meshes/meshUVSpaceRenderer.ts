@@ -6,7 +6,7 @@ import type { ThinTexture } from "core/Materials/Textures/thinTexture";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { Nullable } from "core/types";
 import { Matrix } from "core/Maths/math.vector";
-import { Constants } from "core/Engines/constants";
+import { ALPHA_COMBINE, TextureType, TEXTURE_BILINEAR_SAMPLINGMODE, TextureFormat, TEXTURE_NEAREST_SAMPLINGMODE, TEXTURE_TRILINEAR_SAMPLINGMODE } from "core/Engines/constants";
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Color4 } from "core/Maths/math.color";
@@ -44,7 +44,7 @@ export interface IMeshUVSpaceRendererOptions {
      */
     height?: number;
     /**
-     * Type of the texture. Default: Constants.TEXTURETYPE_UNSIGNED_BYTE
+     * Type of the texture. Default: Constants.TextureType.UNSIGNED_BYTE
      */
     textureType?: number;
     /**
@@ -92,7 +92,7 @@ export class MeshUVSpaceRenderer {
                 }
             );
             shader.backFaceCulling = false;
-            shader.alphaMode = Constants.ALPHA_COMBINE;
+            shader.alphaMode = ALPHA_COMBINE;
 
             scene.onDisposeObservable.add(() => {
                 scene._meshUVSpaceRendererShader?.dispose();
@@ -120,7 +120,7 @@ export class MeshUVSpaceRenderer {
                 }
             );
             shader.backFaceCulling = false;
-            shader.alphaMode = Constants.ALPHA_COMBINE;
+            shader.alphaMode = ALPHA_COMBINE;
 
             scene.onDisposeObservable.add(() => {
                 scene._meshUVSpaceRendererMaskShader?.dispose();
@@ -160,7 +160,7 @@ export class MeshUVSpaceRenderer {
         this._options = {
             width: 1024,
             height: 1024,
-            textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
+            textureType: TextureType.UNSIGNED_BYTE,
             generateMipMaps: true,
             optimizeUVAllocation: true,
             uvEdgeBlending: false,
@@ -288,13 +288,13 @@ export class MeshUVSpaceRenderer {
             this._scene,
             false, // No mipmaps for the mask texture
             true,
-            Constants.TEXTURETYPE_UNSIGNED_BYTE,
+            TextureType.UNSIGNED_BYTE,
             false,
-            Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+            TEXTURE_BILINEAR_SAMPLINGMODE,
             undefined,
             undefined,
             undefined,
-            Constants.TEXTUREFORMAT_R
+            TextureFormat.R
         );
 
         this._maskTexture.clearColor = new Color4(0, 0, 0, 0);
@@ -320,7 +320,7 @@ export class MeshUVSpaceRenderer {
             ["textureSampler", "maskTextureSampler"],
             1.0,
             null,
-            Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+            TEXTURE_NEAREST_SAMPLINGMODE,
             this._scene.getEngine(),
             false,
             null,
@@ -342,11 +342,11 @@ export class MeshUVSpaceRenderer {
             true,
             this._options.textureType,
             false,
-            this._options.generateMipMaps ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+            this._options.generateMipMaps ? TEXTURE_TRILINEAR_SAMPLINGMODE : TEXTURE_BILINEAR_SAMPLINGMODE,
             false,
             false,
             false,
-            Constants.TEXTUREFORMAT_RGBA
+            TextureFormat.RGBA
         );
 
         rtt.renderParticles = false;

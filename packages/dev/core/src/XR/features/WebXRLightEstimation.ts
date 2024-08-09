@@ -6,7 +6,7 @@ import type { Nullable } from "../../types";
 import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import type { WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
-import { Constants } from "../../Engines/constants";
+import { TextureFormat, TextureType, TEXTURE_LINEAR_LINEAR_MIPLINEAR, TextureAddressMode, MATERIAL_TextureDirtyFlag, TEXTURE_CUBIC_MODE } from "../../Engines/constants";
 import { Color3 } from "../../Maths/math.color";
 import { Vector3 } from "../../Maths/math.vector";
 import { DirectionalLight } from "../../Lights/directionalLight";
@@ -227,14 +227,14 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
                 internalTexture.isCube = true;
                 internalTexture.invertY = false;
                 internalTexture._useSRGBBuffer = this.options.reflectionFormat === "srgba8";
-                internalTexture.format = Constants.TEXTUREFORMAT_RGBA;
+                internalTexture.format = TextureFormat.RGBA;
                 internalTexture.generateMipMaps = true;
-                internalTexture.type = this.options.reflectionFormat !== "srgba8" ? Constants.TEXTURETYPE_HALF_FLOAT : Constants.TEXTURETYPE_UNSIGNED_BYTE;
-                internalTexture.samplingMode = Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR;
+                internalTexture.type = this.options.reflectionFormat !== "srgba8" ? TextureType.HALF_FLOAT : TextureType.UNSIGNED_BYTE;
+                internalTexture.samplingMode = TEXTURE_LINEAR_LINEAR_MIPLINEAR;
                 internalTexture.width = this._reflectionCubeMapTextureSize;
                 internalTexture.height = this._reflectionCubeMapTextureSize;
-                internalTexture._cachedWrapU = Constants.TEXTURE_WRAP_ADDRESSMODE;
-                internalTexture._cachedWrapV = Constants.TEXTURE_WRAP_ADDRESSMODE;
+                internalTexture._cachedWrapU = TextureAddressMode.WRAP;
+                internalTexture._cachedWrapV = TextureAddressMode.WRAP;
                 internalTexture._hardwareTexture = new WebGLHardwareTexture(lp, this._getCanvasContext() as WebGLRenderingContext);
                 this._reflectionCubeMap._texture = internalTexture;
             } else {
@@ -245,12 +245,12 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
             if (!this.options.disablePreFiltering) {
                 this._xrLightProbe!.removeEventListener("reflectionchange", this._updateReflectionCubeMap);
                 this._hdrFilter.prefilter(this._reflectionCubeMap).then(() => {
-                    this._xrSessionManager.scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+                    this._xrSessionManager.scene.markAllMaterialsAsDirty(MATERIAL_TextureDirtyFlag);
                     this.onReflectionCubeMapUpdatedObservable.notifyObservers(this._reflectionCubeMap!);
                     this._xrLightProbe!.addEventListener("reflectionchange", this._updateReflectionCubeMap);
                 });
             } else {
-                this._xrSessionManager.scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+                this._xrSessionManager.scene.markAllMaterialsAsDirty(MATERIAL_TextureDirtyFlag);
 
                 this.onReflectionCubeMapUpdatedObservable.notifyObservers(this._reflectionCubeMap);
             }
@@ -280,7 +280,7 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
                     if (!this._reflectionCubeMap) {
                         this._reflectionCubeMap = new BaseTexture(this._xrSessionManager.scene);
                         this._reflectionCubeMap._isCube = true;
-                        this._reflectionCubeMap.coordinatesMode = Constants.TEXTURE_CUBIC_MODE;
+                        this._reflectionCubeMap.coordinatesMode = TEXTURE_CUBIC_MODE;
                         if (this.options.setSceneEnvironmentTexture) {
                             this._xrSessionManager.scene.environmentTexture = this._reflectionCubeMap;
                         }

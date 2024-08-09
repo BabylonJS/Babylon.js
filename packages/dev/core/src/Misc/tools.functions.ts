@@ -1,4 +1,4 @@
-import { Constants } from "../Engines/constants";
+import { ScaleMode } from "../Engines/constants";
 
 /**
  * Function indicating if a number is an exponent of 2
@@ -74,17 +74,17 @@ export function FloorPOT(x: number): number {
  * @param mode defines how to define the closest value
  * @returns closest exponent of two of the given value
  */
-export function GetExponentOfTwo(value: number, max: number, mode = Constants.SCALEMODE_NEAREST): number {
+export function GetExponentOfTwo(value: number, max: number, mode = ScaleMode.NEAREST): number {
     let pot;
 
     switch (mode) {
-        case Constants.SCALEMODE_FLOOR:
+        case ScaleMode.FLOOR:
             pot = FloorPOT(value);
             break;
-        case Constants.SCALEMODE_NEAREST:
+        case ScaleMode.NEAREST:
             pot = NearestPOT(value);
             break;
-        case Constants.SCALEMODE_CEILING:
+        case ScaleMode.CEILING:
         default:
             pot = CeilingPOT(value);
             break;

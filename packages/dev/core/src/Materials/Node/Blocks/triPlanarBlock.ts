@@ -12,7 +12,7 @@ import type { Nullable } from "../../../types";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { Texture } from "../../Textures/texture";
 import type { Scene } from "../../../scene";
-import { Constants } from "../../../Engines/constants";
+import { MATERIAL_TextureDirtyFlag, AUTOSAMPLERSUFFIX } from "../../../Engines/constants";
 import "../../../Shaders/ShadersInclude/helperFunctions";
 import { ImageSourceBlock } from "./Dual/imageSourceBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../nodeMaterialConnectionPointCustomObject";
@@ -56,7 +56,7 @@ export class TriPlanarBlock extends NodeMaterialBlock {
         const scene = texture?.getScene() ?? EngineStore.LastCreatedScene;
 
         if (!texture && scene) {
-            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+            scene.markAllMaterialsAsDirty(MATERIAL_TextureDirtyFlag, (mat) => {
                 return mat.hasTexture(this._texture!);
             });
         }
@@ -64,7 +64,7 @@ export class TriPlanarBlock extends NodeMaterialBlock {
         this._texture = texture;
 
         if (texture && scene) {
-            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+            scene.markAllMaterialsAsDirty(MATERIAL_TextureDirtyFlag, (mat) => {
                 return mat.hasTexture(texture);
             });
         }
@@ -138,7 +138,7 @@ export class TriPlanarBlock extends NodeMaterialBlock {
         this._convertToGammaSpace = value;
         if (this.texture) {
             const scene = this.texture.getScene() ?? EngineStore.LastCreatedScene;
-            scene?.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+            scene?.markAllMaterialsAsDirty(MATERIAL_TextureDirtyFlag, (mat) => {
                 return mat.hasTexture(this.texture!);
             });
         }
@@ -159,7 +159,7 @@ export class TriPlanarBlock extends NodeMaterialBlock {
         this._convertToLinearSpace = value;
         if (this.texture) {
             const scene = this.texture.getScene() ?? EngineStore.LastCreatedScene;
-            scene?.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+            scene?.markAllMaterialsAsDirty(MATERIAL_TextureDirtyFlag, (mat) => {
                 return mat.hasTexture(this.texture!);
             });
         }
@@ -366,7 +366,7 @@ export class TriPlanarBlock extends NodeMaterialBlock {
 
     private _generateTextureSample(textureName: string, uv: string, state: NodeMaterialBuildState) {
         if (state.shaderLanguage === ShaderLanguage.WGSL) {
-            return `${this._samplerFunc(state)}(${textureName},${textureName + Constants.AUTOSAMPLERSUFFIX}, ${uv})`;
+            return `${this._samplerFunc(state)}(${textureName},${textureName + AUTOSAMPLERSUFFIX}, ${uv})`;
         }
         return `${this._samplerFunc(state)}(${textureName}, ${uv})`;
     }

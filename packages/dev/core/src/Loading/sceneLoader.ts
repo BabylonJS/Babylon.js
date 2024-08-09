@@ -9,7 +9,7 @@ import type { AssetContainer } from "../assetContainer";
 import type { IParticleSystem } from "../Particles/IParticleSystem";
 import type { Skeleton } from "../Bones/skeleton";
 import { Logger } from "../Misc/logger";
-import { Constants } from "../Engines/constants";
+import { SceneLoaderLogging } from "../Engines/constants";
 import { SceneLoaderFlags } from "./sceneLoaderFlags";
 import type { IFileRequest } from "../Misc/fileRequest";
 import type { WebRequest } from "../Misc/webRequest";
@@ -483,25 +483,17 @@ function isFile(value: unknown): value is File {
  * @see https://doc.babylonjs.com/features/featuresDeepDive/importers/loadingFileTypes
  */
 export class SceneLoader {
-    /**
-     * No logging while loading
-     */
-    public static readonly NO_LOGGING = Constants.SCENELOADER_NO_LOGGING;
+    /** @deprecated use SceneLoaderLogging */
+    public static readonly NO_LOGGING = SceneLoaderLogging.NONE;
 
-    /**
-     * Minimal logging while loading
-     */
-    public static readonly MINIMAL_LOGGING = Constants.SCENELOADER_MINIMAL_LOGGING;
+    /** @deprecated use SceneLoaderLogging */
+    public static readonly MINIMAL_LOGGING = SceneLoaderLogging.MINIMAL;
 
-    /**
-     * Summary logging while loading
-     */
-    public static readonly SUMMARY_LOGGING = Constants.SCENELOADER_SUMMARY_LOGGING;
+    /** @deprecated use SceneLoaderLogging */
+    public static readonly SUMMARY_LOGGING = SceneLoaderLogging.SUMMARY;
 
-    /**
-     * Detailed logging while loading
-     */
-    public static readonly DETAILED_LOGGING = Constants.SCENELOADER_DETAILED_LOGGING;
+    /** @deprecated use SceneLoaderLogging */
+    public static readonly DETAILED_LOGGING = SceneLoaderLogging.DETAILED;
 
     /**
      * Gets or sets a boolean indicating if entire scene must be loaded even if scene contains incremental data

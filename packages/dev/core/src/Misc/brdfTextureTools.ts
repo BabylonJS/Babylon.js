@@ -1,3 +1,4 @@
+import { TextureAddressMode } from "../Engines/constants";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import type { Scene } from "../scene";
@@ -39,8 +40,8 @@ export const GetEnvironmentBRDFTexture = (scene: Scene): BaseTexture => {
         }
 
         texture.isRGBD = true;
-        texture.wrapU = Texture.CLAMP_ADDRESSMODE;
-        texture.wrapV = Texture.CLAMP_ADDRESSMODE;
+        texture.wrapU = TextureAddressMode.CLAMP;
+        texture.wrapV = TextureAddressMode.CLAMP;
         scene.environmentBRDFTexture = texture;
 
         scene.useDelayedTextureLoading = useDelayedTextureLoading;

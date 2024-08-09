@@ -1,4 +1,4 @@
-import { Camera } from "../../Cameras/camera";
+import { RigMode } from "../../Engines/constants";
 import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import type { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
@@ -27,7 +27,7 @@ export class AnaglyphArcRotateCamera extends ArcRotateCamera {
     constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, scene?: Scene) {
         super(name, alpha, beta, radius, target, scene);
         this.interaxialDistance = interaxialDistance;
-        this.setCameraRigMode(Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH, { interaxialDistance: interaxialDistance });
+        this.setCameraRigMode(RigMode.STEREOSCOPIC_ANAGLYPH, { interaxialDistance: interaxialDistance });
     }
 
     /**

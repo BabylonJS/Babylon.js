@@ -7,6 +7,7 @@ import { Epsilon } from "../Maths/math.constants";
 import { Axis } from "../Maths/math.axis";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Node } from "../node";
+import { RigMode } from "../Engines/constants";
 
 Node.AddNodeConstructor("TargetCamera", (name, scene) => {
     return () => new TargetCamera(name, Vector3.Zero(), scene);
@@ -538,11 +539,11 @@ export class TargetCamera extends Camera {
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public override createRigCamera(name: string, cameraIndex: number): Nullable<Camera> {
-        if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
+        if (this.cameraRigMode !== RigMode.NONE) {
             const rigCamera = new TargetCamera(name, this.position.clone(), this.getScene());
             rigCamera.isRigCamera = true;
             rigCamera.rigParent = this;
-            if (this.cameraRigMode === Camera.RIG_MODE_VR) {
+            if (this.cameraRigMode === RigMode.VR) {
                 if (!this.rotationQuaternion) {
                     this.rotationQuaternion = new Quaternion();
                 }
@@ -571,19 +572,19 @@ export class TargetCamera extends Camera {
         this.computeWorldMatrix();
 
         switch (this.cameraRigMode) {
-            case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
-            case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
-            case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
-            case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
-            case Camera.RIG_MODE_STEREOSCOPIC_INTERLACED: {
+            case RigMode.STEREOSCOPIC_ANAGLYPH:
+            case RigMode.STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
+            case RigMode.STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
+            case RigMode.STEREOSCOPIC_OVERUNDER:
+            case RigMode.STEREOSCOPIC_INTERLACED: {
                 //provisionnaly using _cameraRigParams.stereoHalfAngle instead of calculations based on _cameraRigParams.interaxialDistance:
-                const leftSign = this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED ? 1 : -1;
-                const rightSign = this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED ? -1 : 1;
+                const leftSign = this.cameraRigMode === RigMode.STEREOSCOPIC_SIDEBYSIDE_CROSSEYED ? 1 : -1;
+                const rightSign = this.cameraRigMode === RigMode.STEREOSCOPIC_SIDEBYSIDE_CROSSEYED ? -1 : 1;
                 this._getRigCamPositionAndTarget(this._cameraRigParams.stereoHalfAngle * leftSign, camLeft);
                 this._getRigCamPositionAndTarget(this._cameraRigParams.stereoHalfAngle * rightSign, camRight);
                 break;
             }
-            case Camera.RIG_MODE_VR:
+            case RigMode.VR:
                 if (camLeft.rotationQuaternion) {
                     camLeft.rotationQuaternion.copyFrom(this.rotationQuaternion);
                     camRight.rotationQuaternion.copyFrom(this.rotationQuaternion);

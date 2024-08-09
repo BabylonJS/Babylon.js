@@ -1,6 +1,6 @@
 import type { VertexBuffer } from "core/Buffers/buffer";
 import type { DataBuffer } from "core/Buffers/dataBuffer";
-import { Constants } from "core/Engines/constants";
+import { ALPHA_COMBINE } from "core/Engines/constants";
 import type { Effect } from "core/Materials/effect";
 import type { Observer } from "core/Misc/observable";
 import type { IParticleSystem } from "core/Particles/IParticleSystem";
@@ -56,7 +56,7 @@ export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
         } else {
             this._particleSystem.blendMode = -1;
             this._onBeforeDrawParticleObserver = this._particleSystem.onBeforeDrawParticlesObservable.add(() => {
-                this._engine.setAlphaMode(Constants.ALPHA_COMBINE);
+                this._engine.setAlphaMode(ALPHA_COMBINE);
             });
         }
     }

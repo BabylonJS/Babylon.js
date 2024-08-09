@@ -6,7 +6,7 @@ import { Texture } from "../Materials/Textures/texture";
 import type { PostProcess, PostProcessOptions } from "./postProcess";
 import { BlurPostProcess } from "./blurPostProcess";
 import type { Scene } from "../scene";
-import { Constants } from "../Engines/constants";
+import { TextureType, TextureFormat, TEXTURE_BILINEAR_SAMPLINGMODE } from "../Engines/constants";
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
@@ -47,7 +47,7 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
      * @param reusable If the post process can be reused on the same frame. (default: false)
      * @param textureType Type of textures used when performing the post process. (default: 0)
      * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
-     * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
+     * @param textureFormat Format of textures used when performing the post process. (default: TextureFormat.RGBA)
      */
     constructor(
         name: string,
@@ -61,9 +61,9 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
         samplingMode = Texture.BILINEAR_SAMPLINGMODE,
         engine?: AbstractEngine,
         reusable?: boolean,
-        textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
+        textureType = TextureType.UNSIGNED_INT,
         blockCompilation = false,
-        textureFormat = Constants.TEXTUREFORMAT_RGBA
+        textureFormat = TextureFormat.RGBA
     ) {
         super(
             name,
@@ -72,7 +72,7 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
             options,
             camera,
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            (samplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE),
+            (samplingMode = TEXTURE_BILINEAR_SAMPLINGMODE),
             engine,
             reusable,
             textureType,

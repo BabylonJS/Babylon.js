@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable } from "../types";
 import { Tools } from "./tools";
-import { Texture } from "../Materials/Textures/texture";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { Scalar } from "../Maths/math.scalar";
-import { Constants } from "../Engines/constants";
+import { TextureFormat, TextureType, TEXTURE_LINEAR_LINEAR, TextureAddressMode } from "../Engines/constants";
 import type { Engine } from "../Engines/engine";
 import { initializeWebWorker, workerFunction } from "./basisWorker";
 
@@ -133,22 +132,22 @@ export const GetInternalFormatFromBasisFormat = (basisFormat: number, engine: En
     let format;
     switch (basisFormat) {
         case BASIS_FORMATS.cTFETC1:
-            format = Constants.TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL;
+            format = TextureFormat.COMPRESSED_RGB_ETC1_WEBGL;
             break;
         case BASIS_FORMATS.cTFBC1:
-            format = Constants.TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1;
+            format = TextureFormat.COMPRESSED_RGB_S3TC_DXT1;
             break;
         case BASIS_FORMATS.cTFBC4:
-            format = Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5;
+            format = TextureFormat.COMPRESSED_RGBA_S3TC_DXT5;
             break;
         case BASIS_FORMATS.cTFASTC_4x4:
-            format = Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4;
+            format = TextureFormat.COMPRESSED_RGBA_ASTC_4x4;
             break;
         case BASIS_FORMATS.cTFETC2:
-            format = Constants.TEXTUREFORMAT_COMPRESSED_RGBA8_ETC2_EAC;
+            format = TextureFormat.COMPRESSED_RGBA8_ETC2_EAC;
             break;
         case BASIS_FORMATS.cTFBC7:
-            format = Constants.TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM;
+            format = TextureFormat.COMPRESSED_RGBA_BPTC_UNORM;
             break;
     }
 
@@ -258,24 +257,24 @@ export const LoadTextureFromTranscodeResult = (texture: InternalTexture, transco
         texture._invertVScale = texture.invertY;
         if (transcodeResult.format === -1 || transcodeResult.format === BASIS_FORMATS.cTFRGB565) {
             // No compatable compressed format found, fallback to RGB
-            texture.type = Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
-            texture.format = Constants.TEXTUREFORMAT_RGB;
+            texture.type = TextureType.UNSIGNED_SHORT_5_6_5;
+            texture.format = TextureFormat.RGB;
 
             if (engine._features.basisNeedsPOT && (Scalar.Log2(rootImage.width) % 1 !== 0 || Scalar.Log2(rootImage.height) % 1 !== 0)) {
                 // Create non power of two texture
                 const source = new InternalTexture(engine, InternalTextureSource.Temp);
 
                 texture._invertVScale = texture.invertY;
-                source.type = Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
-                source.format = Constants.TEXTUREFORMAT_RGB;
+                source.type = TextureType.UNSIGNED_SHORT_5_6_5;
+                source.format = TextureFormat.RGB;
                 // Fallback requires aligned width/height
                 source.width = (rootImage.width + 3) & ~3;
                 source.height = (rootImage.height + 3) & ~3;
                 BindTexture(source, engine);
-                engine._uploadDataToTextureDirectly(source, new Uint16Array(rootImage.transcodedPixels.buffer), i, 0, Constants.TEXTUREFORMAT_RGB, true);
+                engine._uploadDataToTextureDirectly(source, new Uint16Array(rootImage.transcodedPixels.buffer), i, 0, TextureFormat.RGB, true);
 
                 // Resize to power of two
-                engine._rescaleTexture(source, texture, engine.scenes[0], engine._getInternalFormat(Constants.TEXTUREFORMAT_RGB), () => {
+                engine._rescaleTexture(source, texture, engine.scenes[0], engine._getInternalFormat(TextureFormat.RGB), () => {
                     engine._releaseTexture(source);
                     BindTexture(texture, engine);
                 });
@@ -286,9 +285,9 @@ export const LoadTextureFromTranscodeResult = (texture: InternalTexture, transco
                 // Upload directly
                 texture.width = (rootImage.width + 3) & ~3;
                 texture.height = (rootImage.height + 3) & ~3;
-                texture.samplingMode = Constants.TEXTURE_LINEAR_LINEAR;
+                texture.samplingMode = TEXTURE_LINEAR_LINEAR;
                 BindTexture(texture, engine);
-                engine._uploadDataToTextureDirectly(texture, new Uint16Array(rootImage.transcodedPixels.buffer), i, 0, Constants.TEXTUREFORMAT_RGB, true);
+                engine._uploadDataToTextureDirectly(texture, new Uint16Array(rootImage.transcodedPixels.buffer), i, 0, TextureFormat.RGB, true);
             }
         } else {
             texture.width = rootImage.width;
@@ -307,10 +306,10 @@ export const LoadTextureFromTranscodeResult = (texture: InternalTexture, transco
 
             if (engine._features.basisNeedsPOT && (Scalar.Log2(texture.width) % 1 !== 0 || Scalar.Log2(texture.height) % 1 !== 0)) {
                 Tools.Warn(
-                    "Loaded .basis texture width and height are not a power of two. Texture wrapping will be set to Texture.CLAMP_ADDRESSMODE as other modes are not supported with non power of two dimensions in webGL 1."
+                    "Loaded .basis texture width and height are not a power of two. Texture wrapping will be set to TextureAddressMode.CLAMP as other modes are not supported with non power of two dimensions in webGL 1."
                 );
-                texture._cachedWrapU = Texture.CLAMP_ADDRESSMODE;
-                texture._cachedWrapV = Texture.CLAMP_ADDRESSMODE;
+                texture._cachedWrapU = TextureAddressMode.CLAMP;
+                texture._cachedWrapV = TextureAddressMode.CLAMP;
             }
         }
     }

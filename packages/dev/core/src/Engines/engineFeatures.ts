@@ -42,7 +42,7 @@ export interface EngineFeatures {
     /** Indicates that SSAO2 is supported */
     supportSSAO2: boolean;
 
-    /** Indicates that some additional texture formats are supported (like TEXTUREFORMAT_R for eg) */
+    /** Indicates that some additional texture formats are supported (like TextureFormat.R for eg) */
     supportExtendedTextureFormats: boolean;
 
     /** Indicates that the switch/case construct is supported in shaders */

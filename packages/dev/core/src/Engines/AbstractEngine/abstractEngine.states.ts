@@ -1,6 +1,6 @@
 import type { Nullable } from "../../types";
 import { AbstractEngine } from "../abstractEngine";
-import { Constants } from "../constants";
+import { GREATER, GEQUAL, LESS, LEQUAL } from "../constants";
 
 import "./abstractEngine.alpha";
 
@@ -207,18 +207,18 @@ AbstractEngine.prototype.setDepthFunction = function (depthFunc: number) {
 };
 
 AbstractEngine.prototype.setDepthFunctionToGreater = function (): void {
-    this.setDepthFunction(Constants.GREATER);
+    this.setDepthFunction(GREATER);
 };
 
 AbstractEngine.prototype.setDepthFunctionToGreaterOrEqual = function (): void {
-    this.setDepthFunction(Constants.GEQUAL);
+    this.setDepthFunction(GEQUAL);
 };
 
 AbstractEngine.prototype.setDepthFunctionToLess = function (): void {
-    this.setDepthFunction(Constants.LESS);
+    this.setDepthFunction(LESS);
 };
 AbstractEngine.prototype.setDepthFunctionToLessOrEqual = function (): void {
-    this.setDepthFunction(Constants.LEQUAL);
+    this.setDepthFunction(LEQUAL);
 };
 
 AbstractEngine.prototype.getDepthWrite = function (): boolean {

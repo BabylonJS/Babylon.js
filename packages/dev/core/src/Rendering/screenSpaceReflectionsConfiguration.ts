@@ -1,4 +1,4 @@
-import { Constants } from "../Engines/constants";
+import { PrepassTextureType } from "../Engines/constants";
 import type { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 
 /**
@@ -19,5 +19,5 @@ export class ScreenSpaceReflectionsConfiguration implements PrePassEffectConfigu
     /**
      * Textures that should be present in the MRT for this effect to work
      */
-    public readonly texturesRequired: number[] = [Constants.PREPASS_NORMAL_TEXTURE_TYPE, Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE, Constants.PREPASS_POSITION_TEXTURE_TYPE];
+    public readonly texturesRequired: number[] = [PrepassTextureType.NORMAL, PrepassTextureType.REFLECTIVITY, PrepassTextureType.POSITION];
 }

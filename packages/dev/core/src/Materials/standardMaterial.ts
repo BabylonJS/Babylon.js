@@ -31,7 +31,7 @@ import type { RenderTargetTexture } from "../Materials/Textures/renderTargetText
 import { RegisterClass } from "../Misc/typeStore";
 import { MaterialFlags } from "./materialFlags";
 
-import { Constants } from "../Engines/constants";
+import { MAX_SUPPORTED_UV_SETS, ALPHA_PREMULTIPLIED, ALPHA_PREMULTIPLIED_PORTERDUFF } from "../Engines/constants";
 import { EffectFallbacks } from "./effectFallbacks";
 import type { Effect, IEffectCreationOptions } from "./effect";
 import { DetailMapConfiguration } from "./material.detailMapConfiguration";
@@ -983,7 +983,7 @@ export class StandardMaterial extends PushMaterial {
             this._callbackPluginEventHasRenderTargetTextures(this._eventInfo);
             this._cacheHasRenderTargetTextures = this._eventInfo.hasRenderTargetTextures;
             defines._needUVs = false;
-            for (let i = 1; i <= Constants.MAX_SUPPORTED_UV_SETS; ++i) {
+            for (let i = 1; i <= MAX_SUPPORTED_UV_SETS; ++i) {
                 defines["MAINUV" + i] = false;
             }
             if (scene.texturesEnabled) {
@@ -1168,7 +1168,7 @@ export class StandardMaterial extends PushMaterial {
 
             defines.SPECULAROVERALPHA = this._useSpecularOverAlpha;
 
-            defines.PREMULTIPLYALPHA = this.alphaMode === Constants.ALPHA_PREMULTIPLIED || this.alphaMode === Constants.ALPHA_PREMULTIPLIED_PORTERDUFF;
+            defines.PREMULTIPLYALPHA = this.alphaMode === ALPHA_PREMULTIPLIED || this.alphaMode === ALPHA_PREMULTIPLIED_PORTERDUFF;
 
             defines.ALPHATEST_AFTERALLALPHACOMPUTATIONS = this.transparencyMode !== null;
 
@@ -1341,7 +1341,7 @@ export class StandardMaterial extends PushMaterial {
                 attribs.push(VertexBuffer.TangentKind);
             }
 
-            for (let i = 1; i <= Constants.MAX_SUPPORTED_UV_SETS; ++i) {
+            for (let i = 1; i <= MAX_SUPPORTED_UV_SETS; ++i) {
                 if (defines["UV" + i]) {
                     attribs.push(`uv${i === 1 ? "" : i}`);
                 }

@@ -4,7 +4,7 @@ import { Logger } from "../../Misc/logger";
 import type { Nullable } from "../../types";
 import type { Scene } from "../../scene";
 import { Texture } from "../../Materials/Textures/texture";
-import { Constants } from "../../Engines/constants";
+import { TextureAddressMode, TextureFormat } from "../../Engines/constants";
 import type { ExternalTexture } from "./externalTexture";
 import type { WebGPUEngine } from "core/Engines";
 
@@ -162,7 +162,7 @@ export class VideoTexture extends Texture {
      * @param samplingMode controls the sampling method and is set to TRILINEAR_SAMPLINGMODE by default
      * @param settings allows finer control over video usage
      * @param onError defines a callback triggered when an error occurred during the loading session
-     * @param format defines the texture format to use (Engine.TEXTUREFORMAT_RGBA by default)
+     * @param format defines the texture format to use (Engine.TextureFormat.RGBA by default)
      */
     constructor(
         name: Nullable<string>,
@@ -173,7 +173,7 @@ export class VideoTexture extends Texture {
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
         settings: Partial<VideoTextureSettings> = {},
         onError?: Nullable<(message?: string, exception?: any) => void>,
-        format: number = Constants.TEXTUREFORMAT_RGBA
+        format: number = TextureFormat.RGBA
     ) {
         super(null, scene, !generateMipMaps, invertY);
 
@@ -292,16 +292,16 @@ export class VideoTexture extends Texture {
         }
 
         if (!this._getEngine()!.needPOTTextures || (Tools.IsExponentOfTwo(this.video.videoWidth) && Tools.IsExponentOfTwo(this.video.videoHeight))) {
-            this.wrapU = Texture.WRAP_ADDRESSMODE;
-            this.wrapV = Texture.WRAP_ADDRESSMODE;
+            this.wrapU = TextureAddressMode.WRAP;
+            this.wrapV = TextureAddressMode.WRAP;
         } else {
-            this.wrapU = Texture.CLAMP_ADDRESSMODE;
-            this.wrapV = Texture.CLAMP_ADDRESSMODE;
+            this.wrapU = TextureAddressMode.CLAMP;
+            this.wrapV = TextureAddressMode.CLAMP;
             this._generateMipMaps = false;
         }
 
         this._texture = this._getEngine()!.createDynamicTexture(this.video.videoWidth, this.video.videoHeight, this._generateMipMaps, this.samplingMode);
-        this._texture.format = this._format ?? Constants.TEXTUREFORMAT_RGBA;
+        this._texture.format = this._format ?? TextureFormat.RGBA;
 
         // Reset the frame ID and update the new texture to ensure it pulls in the current video frame
         this._frameId = -1;
@@ -502,7 +502,7 @@ export class VideoTexture extends Texture {
 
         return new Promise<VideoTexture>((resolve) => {
             const onPlaying = () => {
-                const videoTexture = new VideoTexture("video", video, scene, true, invertY, undefined, undefined, undefined, Constants.TEXTUREFORMAT_RGB);
+                const videoTexture = new VideoTexture("video", video, scene, true, invertY, undefined, undefined, undefined, TextureFormat.RGB);
                 if (scene.getEngine()._badOS) {
                     videoTexture.onDisposeObservable.addOnce(() => {
                         video.remove();
@@ -602,7 +602,7 @@ Texture._CreateVideoTexture = (
     samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
     settings: Partial<VideoTextureSettings> = {},
     onError?: Nullable<(message?: string, exception?: any) => void>,
-    format: number = Constants.TEXTUREFORMAT_RGBA
+    format: number = TextureFormat.RGBA
 ) => {
     return new VideoTexture(name, src, scene, generateMipMaps, invertY, samplingMode, settings, onError, format);
 };

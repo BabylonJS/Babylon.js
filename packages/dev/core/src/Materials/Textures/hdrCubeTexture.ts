@@ -3,7 +3,7 @@ import type { Scene } from "../../scene";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
-import { Constants } from "../../Engines/constants";
+import { MATERIAL_TextureDirtyFlag, DELAYLOADSTATE_NOTLOADED, TextureType, TextureFormat, DELAYLOADSTATE_LOADED } from "../../Engines/constants";
 import { GetCubeMapTextureData } from "../../Misc/HighDynamicRange/hdr";
 import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
 import { RegisterClass } from "../../Misc/typeStore";
@@ -89,7 +89,7 @@ export class HDRCubeTexture extends BaseTexture {
         this._boundingBoxSize = value;
         const scene = this.getScene();
         if (scene) {
-            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+            scene.markAllMaterialsAsDirty(MATERIAL_TextureDirtyFlag);
         }
     }
     public get boundingBoxSize(): Vector3 {
@@ -161,7 +161,7 @@ export class HDRCubeTexture extends BaseTexture {
             if (!this.getScene()?.useDelayedTextureLoading) {
                 this._loadTexture();
             } else {
-                this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
+                this.delayLoadState = DELAYLOADSTATE_NOTLOADED;
             }
         } else {
             if (this._texture.isReady) {
@@ -187,11 +187,11 @@ export class HDRCubeTexture extends BaseTexture {
         const engine = this._getEngine()!;
         const caps = engine.getCaps();
 
-        let textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        let textureType = TextureType.UNSIGNED_BYTE;
         if (caps.textureFloat && caps.textureFloatLinearFiltering) {
-            textureType = Constants.TEXTURETYPE_FLOAT;
+            textureType = TextureType.FLOAT;
         } else if (caps.textureHalfFloat && caps.textureHalfFloatLinearFiltering) {
-            textureType = Constants.TEXTURETYPE_HALF_FLOAT;
+            textureType = TextureType.HALF_FLOAT;
         }
 
         const callback = (buffer: ArrayBuffer): Nullable<ArrayBufferView[]> => {
@@ -215,9 +215,9 @@ export class HDRCubeTexture extends BaseTexture {
             // Push each faces.
             for (let j = 0; j < 6; j++) {
                 // Create fallback array
-                if (textureType === Constants.TEXTURETYPE_HALF_FLOAT) {
+                if (textureType === TextureType.HALF_FLOAT) {
                     shortArray = new Uint16Array(this._size * this._size * 3);
-                } else if (textureType === Constants.TEXTURETYPE_UNSIGNED_BYTE) {
+                } else if (textureType === TextureType.UNSIGNED_BYTE) {
                     // 3 channels of 1 bytes per pixel in bytes.
                     byteArray = new Uint8Array(this._size * this._size * 3);
                 }
@@ -287,7 +287,7 @@ export class HDRCubeTexture extends BaseTexture {
             this.url,
             this.getScene(),
             this._size,
-            Constants.TEXTUREFORMAT_RGB,
+            TextureFormat.RGB,
             textureType,
             this._noMipmap,
             callback,
@@ -312,11 +312,11 @@ export class HDRCubeTexture extends BaseTexture {
 
     // Methods
     public override delayLoad(): void {
-        if (this.delayLoadState !== Constants.DELAYLOADSTATE_NOTLOADED) {
+        if (this.delayLoadState !== DELAYLOADSTATE_NOTLOADED) {
             return;
         }
 
-        this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
+        this.delayLoadState = DELAYLOADSTATE_LOADED;
         this._texture = this._getFromCache(this.url, this._noMipmap);
 
         if (!this._texture) {
@@ -344,7 +344,7 @@ export class HDRCubeTexture extends BaseTexture {
         }
 
         if (value.isIdentity() !== this._textureMatrix.isIdentity()) {
-            this.getScene()?.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => mat.getActiveTextures().indexOf(this) !== -1);
+            this.getScene()?.markAllMaterialsAsDirty(MATERIAL_TextureDirtyFlag, (mat) => mat.getActiveTextures().indexOf(this) !== -1);
         }
     }
 

@@ -14,7 +14,7 @@ import { Texture } from "../../Materials/Textures/texture";
 import { PostProcessManager } from "../../PostProcesses/postProcessManager";
 import type { PostProcess } from "../../PostProcesses/postProcess";
 import { RenderingManager } from "../../Rendering/renderingManager";
-import { Constants } from "../../Engines/constants";
+import { MATERIAL_TextureDirtyFlag, TextureType, TextureFormat, SnapshotRendering, TextureAddressMode } from "../../Engines/constants";
 import type { IRenderTargetTexture, RenderTargetWrapper } from "../../Engines/renderTargetWrapper";
 
 import "../../Engines/Extensions/engine.renderTarget";
@@ -420,7 +420,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         this._boundingBoxSize = value;
         const scene = this.getScene();
         if (scene) {
-            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+            scene.markAllMaterialsAsDirty(MATERIAL_TextureDirtyFlag);
         }
     }
     public get boundingBoxSize(): Vector3 {
@@ -494,13 +494,13 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         scene?: Nullable<Scene>,
         generateMipMaps: boolean | RenderTargetTextureOptions = false,
         doNotChangeAspectRatio: boolean = true,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        type: number = TextureType.UNSIGNED_INT,
         isCube = false,
         samplingMode = Texture.TRILINEAR_SAMPLINGMODE,
         generateDepthBuffer = true,
         generateStencilBuffer = false,
         isMulti = false,
-        format = Constants.TEXTUREFORMAT_RGBA,
+        format = TextureFormat.RGBA,
         delayAllocation = false,
         samples?: number,
         creationFlags?: number,
@@ -513,13 +513,13 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             const options = generateMipMaps;
             generateMipMaps = !!options.generateMipMaps;
             doNotChangeAspectRatio = options.doNotChangeAspectRatio ?? true;
-            type = options.type ?? Constants.TEXTURETYPE_UNSIGNED_BYTE;
+            type = options.type ?? TextureType.UNSIGNED_BYTE;
             isCube = !!options.isCube;
             samplingMode = options.samplingMode ?? Texture.TRILINEAR_SAMPLINGMODE;
             generateDepthBuffer = options.generateDepthBuffer ?? true;
             generateStencilBuffer = !!options.generateStencilBuffer;
             isMulti = !!options.isMulti;
-            format = options.format ?? Constants.TEXTUREFORMAT_RGBA;
+            format = options.format ?? TextureFormat.RGBA;
             delayAllocation = !!options.delayAllocation;
             samples = options.samples;
             creationFlags = options.creationFlags;
@@ -580,8 +580,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         };
 
         if (this.samplingMode === Texture.NEAREST_SAMPLINGMODE) {
-            this.wrapU = Texture.CLAMP_ADDRESSMODE;
-            this.wrapV = Texture.CLAMP_ADDRESSMODE;
+            this.wrapU = TextureAddressMode.CLAMP;
+            this.wrapV = TextureAddressMode.CLAMP;
         }
 
         if (!delayAllocation) {
@@ -606,7 +606,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * @param bilinearFiltering Specifies whether or not bilinear filtering is enable on the texture (default: true)
      * @param generateStencil Specifies whether or not a stencil should be allocated in the texture (default: false)
      * @param samples sample count of the depth/stencil texture (default: 1)
-     * @param format format of the depth texture (default: Constants.TEXTUREFORMAT_DEPTH32_FLOAT)
+     * @param format format of the depth texture (default: Constants.TextureFormat.DEPTH32_FLOAT)
      * @param label defines the label of the texture (for debugging purpose)
      */
     public createDepthStencilTexture(
@@ -614,7 +614,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         bilinearFiltering: boolean = true,
         generateStencil: boolean = false,
         samples: number = 1,
-        format: number = Constants.TEXTUREFORMAT_DEPTH32_FLOAT,
+        format: number = TextureFormat.DEPTH32_FLOAT,
         label?: string
     ): void {
         this._renderTarget?.createDepthStencilTexture(comparisonFunction, bilinearFiltering, generateStencil, samples, format, label);
@@ -1222,7 +1222,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             this.onBeforeRenderObservable.notifyObservers(faceIndex);
         }
 
-        const fastPath = engine.snapshotRendering && engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST;
+        const fastPath = engine.snapshotRendering && engine.snapshotRenderingMode === SnapshotRendering.FAST;
 
         if (!fastPath) {
             // Get the list of meshes to render

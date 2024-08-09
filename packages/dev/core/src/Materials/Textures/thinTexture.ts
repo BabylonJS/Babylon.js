@@ -1,6 +1,6 @@
 import type { Nullable } from "../../types";
 import type { InternalTexture } from "../../Materials/Textures/internalTexture";
-import { Constants } from "../../Engines/constants";
+import { TextureAddressMode, DELAYLOADSTATE_NONE, DELAYLOADSTATE_NOTLOADED, TEXTURE_BILINEAR_SAMPLINGMODE } from "../../Engines/constants";
 
 import type { ISize } from "../../Maths/math.size";
 import { Size } from "../../Maths/math.size";
@@ -13,13 +13,13 @@ import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
  * It groups all the common properties required to work with Thin Engine.
  */
 export class ThinTexture {
-    protected _wrapU = Constants.TEXTURE_WRAP_ADDRESSMODE;
+    protected _wrapU = TextureAddressMode.WRAP;
     /**
-     * | Value | Type               | Description |
-     * | ----- | ------------------ | ----------- |
-     * | 0     | CLAMP_ADDRESSMODE  |             |
-     * | 1     | WRAP_ADDRESSMODE   |             |
-     * | 2     | MIRROR_ADDRESSMODE |             |
+     * | Value | Type   | Description |
+     * | ----- | ------ | ----------- |
+     * | 0     | CLAMP  |             |
+     * | 1     | WRAP   |             |
+     * | 2     | MIRROR |             |
      */
     public get wrapU() {
         return this._wrapU;
@@ -29,13 +29,13 @@ export class ThinTexture {
         this._wrapU = value;
     }
 
-    protected _wrapV = Constants.TEXTURE_WRAP_ADDRESSMODE;
+    protected _wrapV = TextureAddressMode.WRAP;
     /**
-     * | Value | Type               | Description |
-     * | ----- | ------------------ | ----------- |
-     * | 0     | CLAMP_ADDRESSMODE  |             |
-     * | 1     | WRAP_ADDRESSMODE   |             |
-     * | 2     | MIRROR_ADDRESSMODE |             |
+     * | Value | Type   | Description |
+     * | ----- | ------ | ----------- |
+     * | 0     | CLAMP  |             |
+     * | 1     | WRAP   |             |
+     * | 2     | MIRROR |             |
      */
     public get wrapV() {
         return this._wrapV;
@@ -46,13 +46,13 @@ export class ThinTexture {
     }
 
     /**
-     * | Value | Type               | Description |
-     * | ----- | ------------------ | ----------- |
-     * | 0     | CLAMP_ADDRESSMODE  |             |
-     * | 1     | WRAP_ADDRESSMODE   |             |
-     * | 2     | MIRROR_ADDRESSMODE |             |
+     * | Value | Type   | Description |
+     * | ----- | ------ | ----------- |
+     * | 0     | CLAMP  |             |
+     * | 1     | WRAP   |             |
+     * | 2     | MIRROR |             |
      */
-    public wrapR = Constants.TEXTURE_WRAP_ADDRESSMODE;
+    public wrapR = TextureAddressMode.WRAP;
 
     /**
      * With compliant hardware and browser (supporting anisotropic filtering)
@@ -64,7 +64,7 @@ export class ThinTexture {
     /**
      * Define the current state of the loading sequence when in delayed load mode.
      */
-    public delayLoadState = Constants.DELAYLOADSTATE_NONE;
+    public delayLoadState = DELAYLOADSTATE_NONE;
 
     /**
      * How a texture is mapped.
@@ -172,7 +172,7 @@ export class ThinTexture {
      * @returns true if fully ready
      */
     public isReady(): boolean {
-        if (this.delayLoadState === Constants.DELAYLOADSTATE_NOTLOADED) {
+        if (this.delayLoadState === DELAYLOADSTATE_NOTLOADED) {
             this.delayLoad();
             return false;
         }
@@ -243,7 +243,7 @@ export class ThinTexture {
     }
 
     /** @internal */
-    protected _initialSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
+    protected _initialSamplingMode = TEXTURE_BILINEAR_SAMPLINGMODE;
 
     /**
      * Get the current sampling mode associated with the texture.

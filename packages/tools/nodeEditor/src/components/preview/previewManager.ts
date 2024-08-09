@@ -19,7 +19,7 @@ import { LogEntry } from "../log/logComponent";
 import { PointerEventTypes } from "core/Events/pointerEvents";
 import { Color3, Color4 } from "core/Maths/math.color";
 import type { PostProcess } from "core/PostProcesses/postProcess";
-import { Constants } from "core/Engines/constants";
+import { TEXTURE_NEAREST_SAMPLINGMODE } from "core/Engines/constants";
 import { CurrentScreenBlock } from "core/Materials/Node/Blocks/Dual/currentScreenBlock";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
 import { ParticleSystem } from "core/Particles/particleSystem";
@@ -618,7 +618,7 @@ export class PreviewManager {
                 case NodeMaterialModes.PostProcess: {
                     this._globalState.onIsLoadingChanged.notifyObservers(false);
 
-                    this._postprocess = tempMaterial.createPostProcess(this._camera, 1.0, Constants.TEXTURE_NEAREST_SAMPLINGMODE, this._engine);
+                    this._postprocess = tempMaterial.createPostProcess(this._camera, 1.0, TEXTURE_NEAREST_SAMPLINGMODE, this._engine);
 
                     const currentScreen = tempMaterial.getBlockByPredicate((block) => block instanceof CurrentScreenBlock);
                     if (currentScreen && this._postprocess) {

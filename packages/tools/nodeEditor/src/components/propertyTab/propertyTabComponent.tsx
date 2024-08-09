@@ -19,7 +19,7 @@ import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
 import { PreviewType } from "../preview/previewType";
 import { InputsPropertyTabComponent } from "./inputsPropertyTabComponent";
-import { Constants } from "core/Engines/constants";
+import { ALPHA_COMBINE, ALPHA_ONEONE, ALPHA_ADD, ALPHA_SUBTRACT, ALPHA_MULTIPLY, ALPHA_MAXIMIZED, ALPHA_PREMULTIPLIED } from "core/Engines/constants";
 import { LogEntry } from "../log/logComponent";
 import "./propertyTab.scss";
 import { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
@@ -436,13 +436,13 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         ];
 
         const alphaModeOptions = [
-            { label: "Combine", value: Constants.ALPHA_COMBINE },
-            { label: "One one", value: Constants.ALPHA_ONEONE },
-            { label: "Add", value: Constants.ALPHA_ADD },
-            { label: "Subtract", value: Constants.ALPHA_SUBTRACT },
-            { label: "Multiply", value: Constants.ALPHA_MULTIPLY },
-            { label: "Maximized", value: Constants.ALPHA_MAXIMIZED },
-            { label: "Pre-multiplied", value: Constants.ALPHA_PREMULTIPLIED },
+            { label: "Combine", value: ALPHA_COMBINE },
+            { label: "One one", value: ALPHA_ONEONE },
+            { label: "Add", value: ALPHA_ADD },
+            { label: "Subtract", value: ALPHA_SUBTRACT },
+            { label: "Multiply", value: ALPHA_MULTIPLY },
+            { label: "Maximized", value: ALPHA_MAXIMIZED },
+            { label: "Pre-multiplied", value: ALPHA_PREMULTIPLIED },
         ];
 
         return (

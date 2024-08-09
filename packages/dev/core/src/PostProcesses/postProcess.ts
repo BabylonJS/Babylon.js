@@ -5,7 +5,16 @@ import { Observable } from "../Misc/observable";
 import { Vector2 } from "../Maths/math.vector";
 import type { Camera } from "../Cameras/camera";
 import { Effect } from "../Materials/effect";
-import { Constants } from "../Engines/constants";
+import {
+    ALPHA_DISABLE,
+    ScaleMode,
+    TEXTURE_NEAREST_SAMPLINGMODE,
+    TextureType,
+    TextureFormat,
+    TEXTURE_NEAREST_LINEAR,
+    TEXTURE_NEAREST_NEAREST,
+    TEXTURE_LINEAR_LINEAR,
+} from "../Engines/constants";
 import type { RenderTargetCreationOptions } from "../Materials/Textures/textureCreationOptions";
 import "../Shaders/postprocess.vertex";
 import type { IInspectable } from "../Misc/iInspectable";
@@ -182,7 +191,7 @@ export type PostProcessOptions = {
      */
     reusable?: boolean;
     /**
-     * Type of the texture created for this post process (default: Constants.TEXTURETYPE_UNSIGNED_INT)
+     * Type of the texture created for this post process (default: Constants.TextureType.UNSIGNED_INT)
      */
     textureType?: number;
     /**
@@ -199,7 +208,7 @@ export type PostProcessOptions = {
      */
     blockCompilation?: boolean;
     /**
-     * Format of the texture created for this post process (default: TEXTUREFORMAT_RGBA)
+     * Format of the texture created for this post process (default: TextureFormat.RGBA)
      */
     textureFormat?: number;
     /**
@@ -302,7 +311,7 @@ export class PostProcess {
      * Type of alpha mode to use when performing the post process (default: Engine.ALPHA_DISABLE)
      */
     @serialize()
-    public alphaMode = Constants.ALPHA_DISABLE;
+    public alphaMode = ALPHA_DISABLE;
     /**
      * Sets the setAlphaBlendConstants of the babylon engine
      */
@@ -333,17 +342,17 @@ export class PostProcess {
     public inspectableCustomProperties: IInspectable[];
 
     /**
-     * Scale mode for the post process (default: Engine.SCALEMODE_FLOOR)
+     * Scale mode for the post process (default: Engine.ScaleMode.FLOOR)
      *
      * | Value | Type                                | Description |
      * | ----- | ----------------------------------- | ----------- |
-     * | 1     | SCALEMODE_FLOOR                     | [engine.scalemode_floor](https://doc.babylonjs.com/api/classes/babylon.engine#scalemode_floor) |
-     * | 2     | SCALEMODE_NEAREST                   | [engine.scalemode_nearest](https://doc.babylonjs.com/api/classes/babylon.engine#scalemode_nearest) |
-     * | 3     | SCALEMODE_CEILING                   | [engine.scalemode_ceiling](https://doc.babylonjs.com/api/classes/babylon.engine#scalemode_ceiling) |
+     * | 1     | ScaleMode.FLOOR                     | [engine.scalemode_floor](https://doc.babylonjs.com/api/classes/babylon.engine#scalemode_floor) |
+     * | 2     | ScaleMode.NEAREST                   | [engine.scalemode_nearest](https://doc.babylonjs.com/api/classes/babylon.engine#scalemode_nearest) |
+     * | 3     | ScaleMode.CEILING                   | [engine.scalemode_ceiling](https://doc.babylonjs.com/api/classes/babylon.engine#scalemode_ceiling) |
      *
      */
     @serialize()
-    public scaleMode = Constants.SCALEMODE_FLOOR;
+    public scaleMode = ScaleMode.FLOOR;
     /**
      * Force textures to be a power of two (default: false)
      */
@@ -600,7 +609,7 @@ export class PostProcess {
      * @param vertexUrl The url of the vertex shader to be used. (default: "postprocess")
      * @param indexParameters The index parameters to be used for babylons include syntax "#include<kernelBlurVaryingDeclaration>[0..varyingCount]". (default: undefined) See usage in babylon.blurPostProcess.ts and kernelBlur.vertex.fx
      * @param blockCompilation If the shader should not be compiled immediatly. (default: false)
-     * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
+     * @param textureFormat Format of textures used when performing the post process. (default: TextureFormat.RGBA)
      * @param shaderLanguage The shader language of the shader. (default: GLSL)
      */
     constructor(
@@ -631,15 +640,15 @@ export class PostProcess {
         samplers?: Nullable<string[]>,
         _size?: number | PostProcessOptions,
         camera?: Nullable<Camera>,
-        samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+        samplingMode: number = TEXTURE_NEAREST_SAMPLINGMODE,
         engine?: AbstractEngine,
         reusable?: boolean,
         defines: Nullable<string> = null,
-        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        textureType: number = TextureType.UNSIGNED_INT,
         vertexUrl: string = "postprocess",
         indexParameters?: any,
         blockCompilation = false,
-        textureFormat = Constants.TEXTUREFORMAT_RGBA,
+        textureFormat = TextureFormat.RGBA,
         shaderLanguage = ShaderLanguage.GLSL,
         delayLoadShaders = false
     ) {
@@ -652,15 +661,15 @@ export class PostProcess {
             samplers = options.samplers ?? null;
             size = options.size ?? 1;
             camera = options.camera ?? null;
-            samplingMode = options.samplingMode ?? Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+            samplingMode = options.samplingMode ?? TEXTURE_NEAREST_SAMPLINGMODE;
             engine = options.engine;
             reusable = options.reusable;
             defines = options.defines ?? null;
-            textureType = options.textureType ?? Constants.TEXTURETYPE_UNSIGNED_INT;
+            textureType = options.textureType ?? TextureType.UNSIGNED_INT;
             vertexUrl = options.vertexUrl ?? "postprocess";
             indexParameters = options.indexParameters;
             blockCompilation = options.blockCompilation ?? false;
-            textureFormat = options.textureFormat ?? Constants.TEXTUREFORMAT_RGBA;
+            textureFormat = options.textureFormat ?? TextureFormat.RGBA;
             shaderLanguage = options.shaderLanguage ?? ShaderLanguage.GLSL;
             uniformBuffers = options.uniformBuffers ?? null;
         } else if (_size) {
@@ -685,7 +694,7 @@ export class PostProcess {
         }
 
         this._options = size;
-        this.renderTargetSamplingMode = samplingMode ? samplingMode : Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        this.renderTargetSamplingMode = samplingMode ? samplingMode : TEXTURE_NEAREST_SAMPLINGMODE;
         this._reusable = reusable || false;
         this._textureType = textureType;
         this._textureFormat = textureFormat;
@@ -994,9 +1003,9 @@ export class PostProcess {
         let desiredHeight = (<PostProcessOptions>this._options).height || requiredHeight;
 
         const needMipMaps =
-            this.renderTargetSamplingMode !== Constants.TEXTURE_NEAREST_LINEAR &&
-            this.renderTargetSamplingMode !== Constants.TEXTURE_NEAREST_NEAREST &&
-            this.renderTargetSamplingMode !== Constants.TEXTURE_LINEAR_LINEAR;
+            this.renderTargetSamplingMode !== TEXTURE_NEAREST_LINEAR &&
+            this.renderTargetSamplingMode !== TEXTURE_NEAREST_NEAREST &&
+            this.renderTargetSamplingMode !== TEXTURE_LINEAR_LINEAR;
 
         let target: Nullable<RenderTargetWrapper> = null;
 
@@ -1052,7 +1061,7 @@ export class PostProcess {
         this.onActivateObservable.notifyObservers(camera);
 
         // Clear
-        if (this.autoClear && (this.alphaMode === Constants.ALPHA_DISABLE || this.forceAutoClearInAlphaMode)) {
+        if (this.autoClear && (this.alphaMode === ALPHA_DISABLE || this.forceAutoClearInAlphaMode)) {
             this._engine.clear(this.clearColor ? this.clearColor : scene.clearColor, scene._allowPostProcessClearColor, true, true);
         }
 

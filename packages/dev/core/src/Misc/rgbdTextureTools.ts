@@ -1,4 +1,4 @@
-import { Constants } from "../Engines/constants";
+import { TEXTURE_TRILINEAR_SAMPLINGMODE, TextureFormat, TextureType, TEXTURE_NEAREST_SAMPLINGMODE } from "../Engines/constants";
 import { PostProcess } from "../PostProcesses/postProcess";
 import type { Engine } from "../Engines/engine";
 
@@ -35,12 +35,12 @@ export class RGBDTextureTools {
         // If half float available we can uncompress the texture
         if (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering) {
             expandTexture = true;
-            internalTexture.type = Constants.TEXTURETYPE_HALF_FLOAT;
+            internalTexture.type = TextureType.HALF_FLOAT;
         }
         // If full float available we can uncompress the texture
         else if (caps.textureFloatRender && caps.textureFloatLinearFiltering) {
             expandTexture = true;
-            internalTexture.type = Constants.TEXTURETYPE_FLOAT;
+            internalTexture.type = TextureType.FLOAT;
         }
 
         if (expandTexture) {
@@ -73,7 +73,7 @@ export class RGBDTextureTools {
                 null,
                 1,
                 null,
-                Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+                TEXTURE_TRILINEAR_SAMPLINGMODE,
                 engine,
                 false,
                 undefined,
@@ -93,7 +93,7 @@ export class RGBDTextureTools {
                 generateStencilBuffer: false,
                 samplingMode: internalTexture.samplingMode,
                 type: internalTexture.type,
-                format: Constants.TEXTUREFORMAT_RGBA,
+                format: TextureFormat.RGBA,
             });
 
             rgbdPostProcess.getEffect().executeWhenCompiled(() => {
@@ -135,7 +135,7 @@ export class RGBDTextureTools {
      * @param outputTextureType type of the texture in which the encoding is performed
      * @returns a promise with the internalTexture having its texture replaced by the result of the processing
      */
-    public static EncodeTextureToRGBD(internalTexture: InternalTexture, scene: Scene, outputTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE): Promise<InternalTexture> {
-        return ApplyPostProcess("rgbdEncode", internalTexture, scene, outputTextureType, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTUREFORMAT_RGBA);
+    public static EncodeTextureToRGBD(internalTexture: InternalTexture, scene: Scene, outputTextureType = TextureType.UNSIGNED_BYTE): Promise<InternalTexture> {
+        return ApplyPostProcess("rgbdEncode", internalTexture, scene, outputTextureType, TEXTURE_NEAREST_SAMPLINGMODE, TextureFormat.RGBA);
     }
 }

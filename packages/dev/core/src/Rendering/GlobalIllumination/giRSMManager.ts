@@ -15,7 +15,16 @@ import { PostProcess } from "core/PostProcesses/postProcess";
 import type { Observer } from "core/Misc/observable";
 import { Layer } from "core/Layers/layer";
 import { Matrix } from "core/Maths/math.vector";
-import { Constants } from "core/Engines/constants";
+import {
+    TextureType,
+    TextureFormat,
+    TEXTURE_NEAREST_SAMPLINGMODE,
+    ALPHA_DISABLE,
+    TEXTURE_BILINEAR_SAMPLINGMODE,
+    ALPHA_ADD,
+    TextureAddressMode,
+    MATERIAL_TextureDirtyFlag,
+} from "core/Engines/constants";
 import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import { MaterialPluginBase } from "core/Materials/materialPluginBase";
 import type { InternalTexture } from "core/Materials/Textures/internalTexture";
@@ -68,11 +77,11 @@ export class GIRSMManager {
      */
     public static GeometryBufferTextureTypesAndFormats: { [key: number]: { textureType: number; textureFormat: number } } = {
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        0: { textureType: Constants.TEXTURETYPE_HALF_FLOAT, textureFormat: Constants.TEXTUREFORMAT_R }, // depth
+        0: { textureType: TextureType.HALF_FLOAT, textureFormat: TextureFormat.R }, // depth
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        1: { textureType: Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV, textureFormat: Constants.TEXTUREFORMAT_RGBA }, // normal
+        1: { textureType: TextureType.UNSIGNED_INT_2_10_10_10_REV, textureFormat: TextureFormat.RGBA }, // normal
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        2: { textureType: Constants.TEXTURETYPE_HALF_FLOAT, textureFormat: Constants.TEXTUREFORMAT_RGBA }, // position
+        2: { textureType: TextureType.HALF_FLOAT, textureFormat: TextureFormat.RGBA }, // position
     };
 
     /**
@@ -268,7 +277,7 @@ export class GIRSMManager {
     private _giTextureType: number;
 
     /**
-     * Gets or sets the texture type used by the GI texture. Default is Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV.
+     * Gets or sets the texture type used by the GI texture. Default is Constants.TextureType.UNSIGNED_INT_2_10_10_10_REV.
      */
     public get giTextureType() {
         return this._giTextureType;
@@ -389,17 +398,7 @@ export class GIRSMManager {
             data[i * 4 + 3] = 1;
         }
 
-        this._sampleTexture = new RawTexture(
-            data,
-            this._maxSamples,
-            1,
-            Constants.TEXTUREFORMAT_RGBA,
-            this._scene,
-            false,
-            false,
-            Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-            Constants.TEXTURETYPE_FLOAT
-        );
+        this._sampleTexture = new RawTexture(data, this._maxSamples, 1, TextureFormat.RGBA, this._scene, false, false, TEXTURE_NEAREST_SAMPLINGMODE, TextureType.FLOAT);
         this._sampleTexture.name = "GIRSMSamples";
     }
 
@@ -419,14 +418,14 @@ export class GIRSMManager {
      * @param outputDimensions The dimensions of the output texture (width and height). Should normally be the same as the output dimensions of the screen.
      * @param giTextureDimensions The dimensions of the GI texture (width and height). Try to use the smallest size possible for better performance.
      * @param maxSamples The maximum number of samples to generate in the sample texture. Default value is 2048. The numSamples property of the GIRSM should be less than or equal to this value!
-     * @param giTextureType The texture type used by the GI texture. Default is Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV.
+     * @param giTextureType The texture type used by the GI texture. Default is Constants.TextureType.UNSIGNED_INT_2_10_10_10_REV.
      */
     constructor(
         scene: Scene,
         outputDimensions: { width: number; height: number },
         giTextureDimensions = { width: 256, height: 256 },
         maxSamples = 2048,
-        giTextureType = Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV
+        giTextureType = TextureType.UNSIGNED_INT_2_10_10_10_REV
     ) {
         this._scene = scene;
         this._engine = scene.getEngine();
@@ -451,7 +450,7 @@ export class GIRSMManager {
                     this._scene.postProcessManager.directRender(this._ppGlobalIllumination, this._ppGlobalIllumination[0].inputTexture);
                     this._engine.unBindFramebuffer(this._ppGlobalIllumination[0].inputTexture, true);
 
-                    this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
+                    this._engine.setAlphaMode(ALPHA_DISABLE);
 
                     rebindCurrentRenderTarget = true;
 
@@ -531,7 +530,7 @@ export class GIRSMManager {
             return;
         }
 
-        const textureFormat = this._giTextureType === Constants.TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV ? Constants.TEXTUREFORMAT_RGB : Constants.TEXTUREFORMAT_RGBA;
+        const textureFormat = this._giTextureType === TextureType.UNSIGNED_INT_10F_11F_11F_REV ? TextureFormat.RGB : TextureFormat.RGBA;
 
         if (this._firstActivation) {
             this._firstActivation = false;
@@ -545,7 +544,7 @@ export class GIRSMManager {
 
         const geometryBufferRenderer = this._scene.enableGeometryBufferRenderer(
             this._enableBlur ? this._outputDimensions : this._giTextureDimensions,
-            this._use32BitsDepthBuffer ? Constants.TEXTUREFORMAT_DEPTH32_FLOAT : Constants.TEXTUREFORMAT_DEPTH16,
+            this._use32BitsDepthBuffer ? TextureFormat.DEPTH32_FLOAT : TextureFormat.DEPTH16,
             GIRSMManager.GeometryBufferTextureTypesAndFormats
         );
 
@@ -581,7 +580,7 @@ export class GIRSMManager {
                 uniforms: ["rsmLightMatrix", "rsmInfo", "rsmInfo2", "invView"],
                 samplers: ["normalSampler", "rsmPositionW", "rsmNormalW", "rsmFlux", "rsmSamples"],
                 defines,
-                samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+                samplingMode: TEXTURE_BILINEAR_SAMPLINGMODE,
                 engine: this._engine,
                 textureType: this._giTextureType,
                 textureFormat,
@@ -591,7 +590,7 @@ export class GIRSMManager {
 
             if (i !== 0) {
                 ppGlobalIllumination.shareOutputWith(this._ppGlobalIllumination[0]);
-                ppGlobalIllumination.alphaMode = Constants.ALPHA_ADD;
+                ppGlobalIllumination.alphaMode = ALPHA_ADD;
             }
 
             ppGlobalIllumination.autoClear = false;
@@ -653,9 +652,9 @@ export class GIRSMManager {
                 format: textureFormat,
                 generateDepthBuffer: false,
             });
-            this._blurRTT.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
-            this._blurRTT.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
-            this._blurRTT.updateSamplingMode(Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+            this._blurRTT.wrapU = TextureAddressMode.CLAMP;
+            this._blurRTT.wrapV = TextureAddressMode.CLAMP;
+            this._blurRTT.updateSamplingMode(TEXTURE_NEAREST_SAMPLINGMODE);
             this._blurRTT.skipInitialClear = true;
 
             const blurRTWs: RenderTargetWrapper[] = [];
@@ -669,7 +668,7 @@ export class GIRSMManager {
                 samplers: ["depthSampler", "normalSampler"],
                 defines: decodeGeometryBufferNormals ? "#define DECODE_NORMAL" : undefined,
                 size: blurTextureSize,
-                samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+                samplingMode: TEXTURE_BILINEAR_SAMPLINGMODE,
                 engine: this._engine,
                 textureType: this._giTextureType,
                 textureFormat,
@@ -697,7 +696,7 @@ export class GIRSMManager {
                     samplers: ["depthSampler", "normalSampler"],
                     defines: decodeGeometryBufferNormals ? "#define DECODE_NORMAL" : undefined,
                     size: blurTextureSize,
-                    samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+                    samplingMode: TEXTURE_BILINEAR_SAMPLINGMODE,
                     engine: this._engine,
                     textureType: this._giTextureType,
                     textureFormat,
@@ -746,7 +745,7 @@ export class GIRSMManager {
                         samplers: ["depthSampler", "normalSampler"],
                         defines: decodeGeometryBufferNormals ? "#define DECODE_NORMAL" : undefined,
                         size: blurTextureSize,
-                        samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+                        samplingMode: TEXTURE_BILINEAR_SAMPLINGMODE,
                         engine: this._engine,
                         textureType: this._giTextureType,
                         textureFormat,
@@ -779,7 +778,7 @@ export class GIRSMManager {
                         samplers: ["depthSampler", "normalSampler"],
                         defines: decodeGeometryBufferNormals ? "#define DECODE_NORMAL" : undefined,
                         size: this._outputDimensions,
-                        samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+                        samplingMode: TEXTURE_BILINEAR_SAMPLINGMODE,
                         engine: this._engine,
                         textureType: this._giTextureType,
                         textureFormat,
@@ -895,7 +894,7 @@ export class GIRSMRenderPluginMaterial extends MaterialPluginBase {
     constructor(material: Material | StandardMaterial | PBRBaseMaterial) {
         super(material, GIRSMRenderPluginMaterial.Name, 310, new MaterialGIRSMRenderDefines());
 
-        this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
+        this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[MATERIAL_TextureDirtyFlag];
 
         this._isPBR = material instanceof PBRBaseMaterial;
     }

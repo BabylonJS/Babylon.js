@@ -1,4 +1,4 @@
-import { Camera } from "../../Cameras/camera";
+import { RigMode } from "../../Engines/constants";
 import { FreeCamera } from "../../Cameras/freeCamera";
 import type { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
@@ -26,7 +26,7 @@ export class StereoscopicFreeCamera extends FreeCamera {
         super(name, position, scene);
         this.interaxialDistance = interaxialDistance;
         this.isStereoscopicSideBySide = isStereoscopicSideBySide;
-        this.setCameraRigMode(isStereoscopicSideBySide ? Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL : Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER, {
+        this.setCameraRigMode(isStereoscopicSideBySide ? RigMode.STEREOSCOPIC_SIDEBYSIDE_PARALLEL : RigMode.STEREOSCOPIC_OVERUNDER, {
             interaxialDistance: interaxialDistance,
         });
     }

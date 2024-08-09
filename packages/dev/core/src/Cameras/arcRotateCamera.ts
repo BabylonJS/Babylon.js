@@ -9,7 +9,8 @@ import { Mesh } from "../Meshes/mesh";
 import { AutoRotationBehavior } from "../Behaviors/Cameras/autoRotationBehavior";
 import { BouncingBehavior } from "../Behaviors/Cameras/bouncingBehavior";
 import { FramingBehavior } from "../Behaviors/Cameras/framingBehavior";
-import { Camera } from "./camera";
+import type { Camera } from "./camera";
+import { RigMode } from "../Engines/constants";
 import { TargetCamera } from "./targetCamera";
 import type { ArcRotateCameraPointersInput } from "../Cameras/Inputs/arcRotateCameraPointersInput";
 import type { ArcRotateCameraKeyboardMoveInput } from "../Cameras/Inputs/arcRotateCameraKeyboardMoveInput";
@@ -1323,14 +1324,14 @@ export class ArcRotateCamera extends TargetCamera {
     public override createRigCamera(name: string, cameraIndex: number): Camera {
         let alphaShift: number = 0;
         switch (this.cameraRigMode) {
-            case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
-            case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
-            case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
-            case Camera.RIG_MODE_STEREOSCOPIC_INTERLACED:
-            case Camera.RIG_MODE_VR:
+            case RigMode.STEREOSCOPIC_ANAGLYPH:
+            case RigMode.STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
+            case RigMode.STEREOSCOPIC_OVERUNDER:
+            case RigMode.STEREOSCOPIC_INTERLACED:
+            case RigMode.VR:
                 alphaShift = this._cameraRigParams.stereoHalfAngle * (cameraIndex === 0 ? 1 : -1);
                 break;
-            case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
+            case RigMode.STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
                 alphaShift = this._cameraRigParams.stereoHalfAngle * (cameraIndex === 0 ? -1 : 1);
                 break;
         }
@@ -1361,15 +1362,15 @@ export class ArcRotateCamera extends TargetCamera {
         camLeft.beta = camRight.beta = this.beta;
 
         switch (this.cameraRigMode) {
-            case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
-            case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
-            case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
-            case Camera.RIG_MODE_STEREOSCOPIC_INTERLACED:
-            case Camera.RIG_MODE_VR:
+            case RigMode.STEREOSCOPIC_ANAGLYPH:
+            case RigMode.STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
+            case RigMode.STEREOSCOPIC_OVERUNDER:
+            case RigMode.STEREOSCOPIC_INTERLACED:
+            case RigMode.VR:
                 camLeft.alpha = this.alpha - this._cameraRigParams.stereoHalfAngle;
                 camRight.alpha = this.alpha + this._cameraRigParams.stereoHalfAngle;
                 break;
-            case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
+            case RigMode.STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
                 camLeft.alpha = this.alpha + this._cameraRigParams.stereoHalfAngle;
                 camRight.alpha = this.alpha - this._cameraRigParams.stereoHalfAngle;
                 break;

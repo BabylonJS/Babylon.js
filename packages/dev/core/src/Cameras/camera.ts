@@ -16,7 +16,7 @@ import { _WarnImport } from "../Misc/devTools";
 import { Viewport } from "../Maths/math.viewport";
 import { Frustum } from "../Maths/math.frustum";
 import type { Plane } from "../Maths/math.plane";
-import { Constants } from "../Engines/constants";
+import { PERSPECTIVE_CAMERA, ORTHOGRAPHIC_CAMERA, FOVMODE_VERTICAL_FIXED, FOVMODE_HORIZONTAL_FIXED, RigMode } from "../Engines/constants";
 
 import type { PostProcess } from "../PostProcesses/postProcess";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
@@ -56,57 +56,65 @@ export class Camera extends Node {
      * It helps recreating a feeling of perspective and better appreciate depth.
      * This is the best way to simulate real life cameras.
      */
-    public static readonly PERSPECTIVE_CAMERA = Constants.PERSPECTIVE_CAMERA;
+    public static readonly PERSPECTIVE_CAMERA = PERSPECTIVE_CAMERA;
     /**
      * This helps creating camera with an orthographic mode.
      * Orthographic is commonly used in engineering as a means to produce object specifications that communicate dimensions unambiguously, each line of 1 unit length (cm, meter..whatever) will appear to have the same length everywhere on the drawing. This allows the drafter to dimension only a subset of lines and let the reader know that other lines of that length on the drawing are also that length in reality. Every parallel line in the drawing is also parallel in the object.
      */
-    public static readonly ORTHOGRAPHIC_CAMERA = Constants.ORTHOGRAPHIC_CAMERA;
+    public static readonly ORTHOGRAPHIC_CAMERA = ORTHOGRAPHIC_CAMERA;
 
     /**
      * This is the default FOV mode for perspective cameras.
      * This setting aligns the upper and lower bounds of the viewport to the upper and lower bounds of the camera frustum.
      */
-    public static readonly FOVMODE_VERTICAL_FIXED = Constants.FOVMODE_VERTICAL_FIXED;
+    public static readonly FOVMODE_VERTICAL_FIXED = FOVMODE_VERTICAL_FIXED;
     /**
      * This setting aligns the left and right bounds of the viewport to the left and right bounds of the camera frustum.
      */
-    public static readonly FOVMODE_HORIZONTAL_FIXED = Constants.FOVMODE_HORIZONTAL_FIXED;
+    public static readonly FOVMODE_HORIZONTAL_FIXED = FOVMODE_HORIZONTAL_FIXED;
 
     /**
      * This specifies there is no need for a camera rig.
      * Basically only one eye is rendered corresponding to the camera.
+     * @deprecated use RigMode
      */
-    public static readonly RIG_MODE_NONE = Constants.RIG_MODE_NONE;
+    public static readonly RIG_MODE_NONE = RigMode.NONE;
     /**
      * Simulates a camera Rig with one blue eye and one red eye.
      * This can be use with 3d blue and red glasses.
+     * @deprecated use RigMode
      */
-    public static readonly RIG_MODE_STEREOSCOPIC_ANAGLYPH = Constants.RIG_MODE_STEREOSCOPIC_ANAGLYPH;
+    public static readonly RIG_MODE_STEREOSCOPIC_ANAGLYPH = RigMode.STEREOSCOPIC_ANAGLYPH;
     /**
      * Defines that both eyes of the camera will be rendered side by side with a parallel target.
+     * @deprecated use RigMode
      */
-    public static readonly RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL = Constants.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL;
+    public static readonly RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL = RigMode.STEREOSCOPIC_SIDEBYSIDE_PARALLEL;
     /**
      * Defines that both eyes of the camera will be rendered side by side with a none parallel target.
+     * @deprecated use RigMode
      */
-    public static readonly RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED = Constants.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED;
+    public static readonly RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED = RigMode.STEREOSCOPIC_SIDEBYSIDE_CROSSEYED;
     /**
      * Defines that both eyes of the camera will be rendered over under each other.
+     * @deprecated use RigMode
      */
-    public static readonly RIG_MODE_STEREOSCOPIC_OVERUNDER = Constants.RIG_MODE_STEREOSCOPIC_OVERUNDER;
+    public static readonly RIG_MODE_STEREOSCOPIC_OVERUNDER = RigMode.STEREOSCOPIC_OVERUNDER;
     /**
      * Defines that both eyes of the camera will be rendered on successive lines interlaced for passive 3d monitors.
+     * @deprecated use RigMode
      */
-    public static readonly RIG_MODE_STEREOSCOPIC_INTERLACED = Constants.RIG_MODE_STEREOSCOPIC_INTERLACED;
+    public static readonly RIG_MODE_STEREOSCOPIC_INTERLACED = RigMode.STEREOSCOPIC_INTERLACED;
     /**
      * Defines that both eyes of the camera should be renderered in a VR mode (carbox).
+     * @deprecated use RigMode
      */
-    public static readonly RIG_MODE_VR = Constants.RIG_MODE_VR;
+    public static readonly RIG_MODE_VR = RigMode.VR;
     /**
      * Custom rig mode allowing rig cameras to be populated manually with any number of cameras
+     * @deprecated use RigMode
      */
-    public static readonly RIG_MODE_CUSTOM = Constants.RIG_MODE_CUSTOM;
+    public static readonly RIG_MODE_CUSTOM = RigMode.CUSTOM;
 
     /**
      * Defines if by default attaching controls should prevent the default javascript event to continue.
@@ -341,7 +349,7 @@ export class Camera extends Node {
      * This is normally controlled byt the camera themselves as internal use.
      */
     @serialize()
-    public cameraRigMode = Camera.RIG_MODE_NONE;
+    public cameraRigMode = RigMode.NONE;
 
     /**
      * Defines the distance between both "eyes" in case of a RIG
@@ -717,7 +725,7 @@ export class Camera extends Node {
     public update(): void {
         this._hasMoved = false;
         this._checkInputs();
-        if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
+        if (this.cameraRigMode !== RigMode.NONE) {
             this._updateRigCameras();
         }
 
@@ -1178,7 +1186,7 @@ export class Camera extends Node {
             this._rigPostProcess.dispose(this);
             this._rigPostProcess = null;
             this._postProcesses.length = 0;
-        } else if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
+        } else if (this.cameraRigMode !== RigMode.NONE) {
             this._rigPostProcess = null;
             this._postProcesses.length = 0;
         } else {
@@ -1289,7 +1297,7 @@ export class Camera extends Node {
         this._cameraRigParams.stereoHalfAngle = Tools.ToRadians(this._cameraRigParams.interaxialDistance / 0.0637);
 
         // create the rig cameras, unless none
-        if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
+        if (this.cameraRigMode !== RigMode.NONE) {
             const leftCamera = this.createRigCamera(this.name + "_L", 0);
             if (leftCamera) {
                 leftCamera._isLeftCamera = true;
@@ -1366,7 +1374,7 @@ export class Camera extends Node {
         }
 
         // only update viewport when ANAGLYPH
-        if (this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH) {
+        if (this.cameraRigMode === RigMode.STEREOSCOPIC_ANAGLYPH) {
             this._rigCameras[0].viewport = this._rigCameras[1].viewport = this.viewport;
         }
     }

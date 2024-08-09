@@ -1,5 +1,17 @@
 import { AbstractEngine } from "../abstractEngine";
-import { Constants } from "../constants";
+import {
+    ALPHA_EQUATION_ADD,
+    GL_ALPHA_EQUATION_ADD,
+    ALPHA_EQUATION_SUBSTRACT,
+    GL_ALPHA_EQUATION_SUBTRACT,
+    ALPHA_EQUATION_REVERSE_SUBTRACT,
+    GL_ALPHA_EQUATION_REVERSE_SUBTRACT,
+    ALPHA_EQUATION_MAX,
+    GL_ALPHA_EQUATION_MAX,
+    ALPHA_EQUATION_MIN,
+    GL_ALPHA_EQUATION_MIN,
+    ALPHA_EQUATION_DARKEN,
+} from "../constants";
 
 declare module "../abstractEngine" {
     export interface AbstractEngine {
@@ -17,23 +29,23 @@ AbstractEngine.prototype.setAlphaEquation = function (equation: number): void {
     }
 
     switch (equation) {
-        case Constants.ALPHA_EQUATION_ADD:
-            this._alphaState.setAlphaEquationParameters(Constants.GL_ALPHA_EQUATION_ADD, Constants.GL_ALPHA_EQUATION_ADD);
+        case ALPHA_EQUATION_ADD:
+            this._alphaState.setAlphaEquationParameters(GL_ALPHA_EQUATION_ADD, GL_ALPHA_EQUATION_ADD);
             break;
-        case Constants.ALPHA_EQUATION_SUBSTRACT:
-            this._alphaState.setAlphaEquationParameters(Constants.GL_ALPHA_EQUATION_SUBTRACT, Constants.GL_ALPHA_EQUATION_SUBTRACT);
+        case ALPHA_EQUATION_SUBSTRACT:
+            this._alphaState.setAlphaEquationParameters(GL_ALPHA_EQUATION_SUBTRACT, GL_ALPHA_EQUATION_SUBTRACT);
             break;
-        case Constants.ALPHA_EQUATION_REVERSE_SUBTRACT:
-            this._alphaState.setAlphaEquationParameters(Constants.GL_ALPHA_EQUATION_REVERSE_SUBTRACT, Constants.GL_ALPHA_EQUATION_REVERSE_SUBTRACT);
+        case ALPHA_EQUATION_REVERSE_SUBTRACT:
+            this._alphaState.setAlphaEquationParameters(GL_ALPHA_EQUATION_REVERSE_SUBTRACT, GL_ALPHA_EQUATION_REVERSE_SUBTRACT);
             break;
-        case Constants.ALPHA_EQUATION_MAX:
-            this._alphaState.setAlphaEquationParameters(Constants.GL_ALPHA_EQUATION_MAX, Constants.GL_ALPHA_EQUATION_MAX);
+        case ALPHA_EQUATION_MAX:
+            this._alphaState.setAlphaEquationParameters(GL_ALPHA_EQUATION_MAX, GL_ALPHA_EQUATION_MAX);
             break;
-        case Constants.ALPHA_EQUATION_MIN:
-            this._alphaState.setAlphaEquationParameters(Constants.GL_ALPHA_EQUATION_MIN, Constants.GL_ALPHA_EQUATION_MIN);
+        case ALPHA_EQUATION_MIN:
+            this._alphaState.setAlphaEquationParameters(GL_ALPHA_EQUATION_MIN, GL_ALPHA_EQUATION_MIN);
             break;
-        case Constants.ALPHA_EQUATION_DARKEN:
-            this._alphaState.setAlphaEquationParameters(Constants.GL_ALPHA_EQUATION_MIN, Constants.GL_ALPHA_EQUATION_ADD);
+        case ALPHA_EQUATION_DARKEN:
+            this._alphaState.setAlphaEquationParameters(GL_ALPHA_EQUATION_MIN, GL_ALPHA_EQUATION_ADD);
             break;
     }
     this._alphaEquation = equation;

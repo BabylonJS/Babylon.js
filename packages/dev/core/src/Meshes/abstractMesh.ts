@@ -24,7 +24,14 @@ import type { MorphTargetManager } from "../Morph/morphTargetManager";
 import type { IBakedVertexAnimationManager } from "../BakedVertexAnimation/bakedVertexAnimationManager";
 import type { IEdgesRenderer } from "../Rendering/edgesRenderer";
 import type { SolidParticle } from "../Particles/solidParticle";
-import { Constants } from "../Engines/constants";
+import {
+    CullingStrategy,
+    MATERIAL_TriangleStripDrawMode,
+    MATERIAL_TriangleFillMode,
+    MATERIAL_WireFrameFillMode,
+    MATERIAL_PointFillMode,
+    MATERIAL_LineListDrawMode,
+} from "../Engines/constants";
 import type { AbstractActionManager } from "../Actions/abstractActionManager";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { _MeshCollisionData } from "../Collisions/meshCollisionData";
@@ -254,40 +261,14 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
     /** Use a conservative occlusion algorithm */
     public static OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE = 1;
 
-    /** Default culling strategy : this is an exclusion test and it's the more accurate.
-     *  Test order :
-     *  Is the bounding sphere outside the frustum ?
-     *  If not, are the bounding box vertices outside the frustum ?
-     *  It not, then the cullable object is in the frustum.
-     */
-    public static readonly CULLINGSTRATEGY_STANDARD = Constants.MESHES_CULLINGSTRATEGY_STANDARD;
-    /** Culling strategy : Bounding Sphere Only.
-     *  This is an exclusion test. It's faster than the standard strategy because the bounding box is not tested.
-     *  It's also less accurate than the standard because some not visible objects can still be selected.
-     *  Test : is the bounding sphere outside the frustum ?
-     *  If not, then the cullable object is in the frustum.
-     */
-    public static readonly CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY = Constants.MESHES_CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY;
-    /** Culling strategy : Optimistic Inclusion.
-     *  This in an inclusion test first, then the standard exclusion test.
-     *  This can be faster when a cullable object is expected to be almost always in the camera frustum.
-     *  This could also be a little slower than the standard test when the tested object center is not the frustum but one of its bounding box vertex is still inside.
-     *  Anyway, it's as accurate as the standard strategy.
-     *  Test :
-     *  Is the cullable object bounding sphere center in the frustum ?
-     *  If not, apply the default culling strategy.
-     */
-    public static readonly CULLINGSTRATEGY_OPTIMISTIC_INCLUSION = Constants.MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION;
-    /** Culling strategy : Optimistic Inclusion then Bounding Sphere Only.
-     *  This in an inclusion test first, then the bounding sphere only exclusion test.
-     *  This can be the fastest test when a cullable object is expected to be almost always in the camera frustum.
-     *  This could also be a little slower than the BoundingSphereOnly strategy when the tested object center is not in the frustum but its bounding sphere still intersects it.
-     *  It's less accurate than the standard strategy and as accurate as the BoundingSphereOnly strategy.
-     *  Test :
-     *  Is the cullable object bounding sphere center in the frustum ?
-     *  If not, apply the Bounding Sphere Only strategy. No Bounding Box is tested here.
-     */
-    public static readonly CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY = Constants.MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY;
+    /** @deprecated use CullingStrategy */
+    public static readonly CULLINGSTRATEGY_STANDARD = CullingStrategy.STANDARD;
+    /** @deprecated use CullingStrategy */
+    public static readonly CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY = CullingStrategy.BOUNDINGSPHERE_ONLY;
+    /** @deprecated use CullingStrategy */
+    public static readonly CULLINGSTRATEGY_OPTIMISTIC_INCLUSION = CullingStrategy.OPTIMISTIC_INCLUSION;
+    /** @deprecated use CullingStrategy */
+    public static readonly CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY = CullingStrategy.OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY;
 
     /**
      * No billboard
@@ -1979,7 +1960,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
             !!subMesh.getMaterial(),
             this,
             this._shouldConvertRHS(),
-            subMesh.getMaterial()?.fillMode === Constants.MATERIAL_TriangleStripDrawMode
+            subMesh.getMaterial()?.fillMode === MATERIAL_TriangleStripDrawMode
         );
         return this;
     }
@@ -2094,11 +2075,11 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
                 continue;
             }
             if (
-                material.fillMode == Constants.MATERIAL_TriangleStripDrawMode ||
-                material.fillMode == Constants.MATERIAL_TriangleFillMode ||
-                material.fillMode == Constants.MATERIAL_WireFrameFillMode ||
-                material.fillMode == Constants.MATERIAL_PointFillMode ||
-                material.fillMode == Constants.MATERIAL_LineListDrawMode
+                material.fillMode == MATERIAL_TriangleStripDrawMode ||
+                material.fillMode == MATERIAL_TriangleFillMode ||
+                material.fillMode == MATERIAL_WireFrameFillMode ||
+                material.fillMode == MATERIAL_PointFillMode ||
+                material.fillMode == MATERIAL_LineListDrawMode
             ) {
                 anySubmeshSupportIntersect = true;
                 break;

@@ -4,7 +4,7 @@ import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { PassPostProcess } from "../PostProcesses/passPostProcess";
-import { Constants } from "../Engines/constants";
+import { TextureType, TextureFormat, TextureAddressMode } from "../Engines/constants";
 import type { Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess";
 import type { AbstractEngine } from "../Engines/abstractEngine";
@@ -50,8 +50,8 @@ export function CreateResizedCopy(texture: Texture, width: number, height: numbe
     rtt.anisotropicFilteringLevel = texture.anisotropicFilteringLevel;
     (<InternalTexture>rtt._texture).isReady = false;
 
-    texture.wrapU = Texture.CLAMP_ADDRESSMODE;
-    texture.wrapV = Texture.CLAMP_ADDRESSMODE;
+    texture.wrapU = TextureAddressMode.CLAMP;
+    texture.wrapV = TextureAddressMode.CLAMP;
 
     const passPostProcess = new PassPostProcess(
         "pass",
@@ -60,7 +60,7 @@ export function CreateResizedCopy(texture: Texture, width: number, height: numbe
         useBilinearMode ? Texture.BILINEAR_SAMPLINGMODE : Texture.NEAREST_SAMPLINGMODE,
         engine,
         false,
-        Constants.TEXTURETYPE_UNSIGNED_INT
+        TextureType.UNSIGNED_INT
     );
     passPostProcess.externalTextureSamplerBinding = true;
     passPostProcess.getEffect().executeWhenCompiled(() => {
@@ -118,7 +118,7 @@ export function ApplyPostProcess(
     height = height ?? internalTexture.height;
 
     if (type === -1) {
-        type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        type = TextureType.UNSIGNED_BYTE;
     }
 
     return new Promise((resolve) => {
@@ -159,7 +159,7 @@ export function ApplyPostProcess(
 
             // Ready to get rolling again.
             internalTexture.type = type!;
-            internalTexture.format = Constants.TEXTUREFORMAT_RGBA;
+            internalTexture.format = TextureFormat.RGBA;
             internalTexture.isReady = true;
 
             resolve(internalTexture);

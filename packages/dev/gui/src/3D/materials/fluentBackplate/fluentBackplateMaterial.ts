@@ -18,7 +18,7 @@ import type { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
 import { Color4 } from "core/Maths/math.color";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
-import { Constants } from "core/Engines/constants";
+import { ALPHA_DISABLE } from "core/Engines/constants";
 
 import "./shaders/fluentBackplate.fragment";
 import "./shaders/fluentBackplate.vertex";
@@ -222,7 +222,7 @@ export class FluentBackplateMaterial extends PushMaterial {
 
     constructor(name: string, scene?: Scene) {
         super(name, scene);
-        this.alphaMode = Constants.ALPHA_DISABLE;
+        this.alphaMode = ALPHA_DISABLE;
         this.backFaceCulling = false;
 
         this._blobTexture = new Texture(FluentBackplateMaterial.BLOB_TEXTURE_URL, this.getScene(), true, false, Texture.NEAREST_SAMPLINGMODE);

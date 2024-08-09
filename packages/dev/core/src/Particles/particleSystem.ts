@@ -12,7 +12,7 @@ import { GetClass } from "../Misc/typeStore";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import type { Effect } from "../Materials/effect";
 import type { Particle } from "./particle";
-import { Constants } from "../Engines/constants";
+import { ParticlesBillboardMode } from "../Engines/constants";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { MeshParticleEmitter } from "./EmitterTypes/meshParticleEmitter";
 import { CustomParticleEmitter } from "./EmitterTypes/customParticleEmitter";
@@ -43,20 +43,24 @@ import {
 export class ParticleSystem extends ThinParticleSystem {
     /**
      * Billboard mode will only apply to Y axis
+     * @deprecated use ParticlesBillboardMode
      */
-    public static readonly BILLBOARDMODE_Y = Constants.PARTICLES_BILLBOARDMODE_Y;
+    public static readonly BILLBOARDMODE_Y = ParticlesBillboardMode.Y;
     /**
      * Billboard mode will apply to all axes
+     * @deprecated use ParticlesBillboardMode
      */
-    public static readonly BILLBOARDMODE_ALL = Constants.PARTICLES_BILLBOARDMODE_ALL;
+    public static readonly BILLBOARDMODE_ALL = ParticlesBillboardMode.ALL;
     /**
      * Special billboard mode where the particle will be biilboard to the camera but rotated to align with direction
+     * @deprecated use ParticlesBillboardMode
      */
-    public static readonly BILLBOARDMODE_STRETCHED = Constants.PARTICLES_BILLBOARDMODE_STRETCHED;
+    public static readonly BILLBOARDMODE_STRETCHED = ParticlesBillboardMode.STRETCHED;
     /**
      * Special billboard mode where the particle will be billboard to the camera but only around the axis of the direction of particle emission
+     * @deprecated use ParticlesBillboardMode
      */
-    public static readonly BILLBOARDMODE_STRETCHED_LOCAL = Constants.PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL;
+    public static readonly BILLBOARDMODE_STRETCHED_LOCAL = ParticlesBillboardMode.STRETCHED_LOCAL;
 
     // Sub-emitters
     private _rootParticleSystem: Nullable<ParticleSystem>;

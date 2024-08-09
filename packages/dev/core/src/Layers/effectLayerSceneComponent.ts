@@ -1,4 +1,4 @@
-import { Camera } from "../Cameras/camera";
+import type { Camera } from "../Cameras/camera";
 import type { Scene } from "../scene";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
@@ -9,6 +9,7 @@ import { EffectLayer } from "./effectLayer";
 import { AbstractScene } from "../abstractScene";
 import type { AssetContainer } from "../assetContainer";
 import { EngineStore } from "../Engines/engineStore";
+import { RigMode } from "../Engines/constants";
 // Adds the parser to the scene parsers.
 AbstractScene.AddParser(SceneComponentConstants.NAME_EFFECTLAYER, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
     if (parsedData.effectLayers) {
@@ -211,8 +212,8 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
                 if (
                     effectLayer.shouldRender() &&
                     (!effectLayer.camera ||
-                        (effectLayer.camera.cameraRigMode === Camera.RIG_MODE_NONE && camera === effectLayer.camera) ||
-                        (effectLayer.camera.cameraRigMode !== Camera.RIG_MODE_NONE && effectLayer.camera._rigCameras.indexOf(camera) > -1))
+                        (effectLayer.camera.cameraRigMode === RigMode.NONE && camera === effectLayer.camera) ||
+                        (effectLayer.camera.cameraRigMode !== RigMode.NONE && effectLayer.camera._rigCameras.indexOf(camera) > -1))
                 ) {
                     this._renderEffects = true;
                     this._needStencil = this._needStencil || effectLayer.needStencil();
