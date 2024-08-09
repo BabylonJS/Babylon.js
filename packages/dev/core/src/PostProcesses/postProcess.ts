@@ -378,7 +378,8 @@ export class PostProcess {
     protected _scene: Scene;
     private _engine: AbstractEngine;
 
-    protected _shadersLoaded = false;
+    private _shadersLoaded = false;
+    protected _webGPUReady = false;
 
     private _options: number | { width: number; height: number };
     private _reusable = false;
@@ -386,7 +387,14 @@ export class PostProcess {
     private _textureType: number;
     private _textureFormat: number;
     /** @internal */
-    protected _shaderLanguage: ShaderLanguage;
+    private _shaderLanguage: ShaderLanguage;
+
+    /**
+     * Gets the shader language type used to generate vertex and fragment source code.
+     */
+    public get shaderLanguage(): ShaderLanguage {
+        return this._shaderLanguage;
+    }
 
     /**
      * if externalTextureSamplerBinding is true, the "apply" method won't bind the textureSampler texture, it is expected to be done by the "outside" (by the onApplyObservable observer most probably).
@@ -602,6 +610,7 @@ export class PostProcess {
      * @param blockCompilation If the shader should not be compiled immediatly. (default: false)
      * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
      * @param shaderLanguage The shader language of the shader. (default: GLSL)
+     * @param extraInitializations Defines additional code to call to prepare the shader code
      */
     constructor(
         name: string,
@@ -620,7 +629,7 @@ export class PostProcess {
         blockCompilation?: boolean,
         textureFormat?: number,
         shaderLanguage?: ShaderLanguage,
-        delayLoadShaders?: boolean
+        extraInitializations?: (useWebGPU: boolean) => Promise<void>
     );
 
     /** @internal */
@@ -641,7 +650,7 @@ export class PostProcess {
         blockCompilation = false,
         textureFormat = Constants.TEXTUREFORMAT_RGBA,
         shaderLanguage = ShaderLanguage.GLSL,
-        delayLoadShaders = false
+        extraInitializations?: (useWebGPU: boolean) => Promise<void>
     ) {
         this.name = name;
         let size: number | { width: number; height: number } = 1;
@@ -704,19 +713,39 @@ export class PostProcess {
         this._indexParameters = indexParameters;
         this._drawWrapper = new DrawWrapper(this._engine);
 
-        this._postConstructor(blockCompilation, defines, delayLoadShaders);
+        this._webGPUReady = this._shaderLanguage === ShaderLanguage.WGSL;
+
+        this._postConstructor(blockCompilation, defines, extraInitializations);
     }
 
-    protected async _initShaderSourceAsync(_forceGLSL = false) {}
+    protected async _initShaderSourceAsync(useWebGPU = false) {
+        // this._webGPUReady is used to detect when a postprocess is intended to be used with WebGPU
+        if (useWebGPU && this._webGPUReady) {
+            await Promise.all([import("../ShadersWGSL/postprocess.vertex")]);
+        } else {
+            await Promise.all([import("../Shaders/postprocess.vertex")]);
+        }
+
+        this._shadersLoaded = true;
+    }
 
     private _onInitShadersDone: Nullable<() => void> = null;
-    private async _postConstructor(blockCompilation: boolean, defines: Nullable<string> = null, delayLoadShaders: boolean = false) {
-        if (delayLoadShaders) {
-            await this._initShaderSourceAsync(PostProcess.ForceGLSL);
-            if (this._onInitShadersDone) {
-                this._onInitShadersDone();
-                return;
-            }
+    private async _postConstructor(blockCompilation: boolean, defines: Nullable<string> = null, extraInitializations?: (useWebGPU: boolean) => Promise<void>) {
+        const engine = this.getEngine();
+        const useWebGPU = engine.isWebGPU && !PostProcess.ForceGLSL;
+
+        await this._initShaderSourceAsync(useWebGPU);
+        if (extraInitializations) {
+            await extraInitializations(useWebGPU);
+        }
+
+        if (useWebGPU && this._webGPUReady) {
+            this._shaderLanguage = ShaderLanguage.WGSL;
+        }
+
+        if (this._onInitShadersDone) {
+            this._onInitShadersDone();
+            return;
         }
         this._shadersLoaded = true;
         if (!blockCompilation) {

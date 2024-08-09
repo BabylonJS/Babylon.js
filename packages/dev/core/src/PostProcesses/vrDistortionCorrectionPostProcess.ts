@@ -6,7 +6,6 @@ import { Texture } from "../Materials/Textures/texture";
 import { PostProcess } from "./postProcess";
 
 import type { Nullable } from "../types";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * VRDistortionCorrectionPostProcess used for mobile VR
@@ -36,25 +35,7 @@ export class VRDistortionCorrectionPostProcess extends PostProcess {
      * @param vrMetrics All the required metrics for the VR camera
      */
     constructor(name: string, camera: Nullable<Camera>, isRightEye: boolean, vrMetrics: VRCameraMetrics) {
-        super(
-            name,
-            "vrDistortionCorrection",
-            ["LensCenter", "Scale", "ScaleIn", "HmdWarpParam"],
-            null,
-            vrMetrics.postProcessScaleFactor,
-            camera,
-            Texture.BILINEAR_SAMPLINGMODE,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            true
-        );
+        super(name, "vrDistortionCorrection", ["LensCenter", "Scale", "ScaleIn", "HmdWarpParam"], null, vrMetrics.postProcessScaleFactor, camera, Texture.BILINEAR_SAMPLINGMODE);
 
         this._isRightEye = isRightEye;
         this._distortionFactors = vrMetrics.distortionK;
@@ -75,17 +56,14 @@ export class VRDistortionCorrectionPostProcess extends PostProcess {
         });
     }
 
-    protected override async _initShaderSourceAsync(forceGLSL = false) {
-        const engine = this.getEngine();
-
-        if (engine.isWebGPU && !forceGLSL) {
-            this._shaderLanguage = ShaderLanguage.WGSL;
-
+    protected override async _initShaderSourceAsync(useWebGPU: boolean) {
+        if (useWebGPU) {
+            this._webGPUReady = true;
             await import("../ShadersWGSL/vrDistortionCorrection.fragment");
         } else {
             await import("../Shaders/vrDistortionCorrection.fragment");
         }
 
-        this._shadersLoaded = true;
+        super._initShaderSourceAsync(useWebGPU);
     }
 }
