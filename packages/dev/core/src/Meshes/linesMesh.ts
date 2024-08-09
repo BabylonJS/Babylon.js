@@ -10,7 +10,6 @@ import { Material } from "../Materials/material";
 import type { IShaderMaterialOptions } from "../Materials/shaderMaterial";
 import { ShaderMaterial } from "../Materials/shaderMaterial";
 import type { Effect } from "../Materials/effect";
-import { UniformBuffer } from "core/Materials/uniformBuffer";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 Mesh._LinesMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
