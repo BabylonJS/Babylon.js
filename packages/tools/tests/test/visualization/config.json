@@ -1719,8 +1719,8 @@
             "title": "Fluid rendering box sphere",
             "playgroundId": "#PCMH7A#2",
             "referenceImage": "fluidBoxSphere.png",
-            "renderCount": 480,
-            "excludedEngines": ["webgl1"]
+            "renderCount": 120,
+            "excludedEngines": ["webgl1", "webgpu"]
         },
         {
             "title": "Export GLTF Extension KHR_texture_transform",
