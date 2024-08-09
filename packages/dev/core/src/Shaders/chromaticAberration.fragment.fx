@@ -27,8 +27,6 @@ void main(void)
 		+ centered_screen_pos.y*centered_screen_pos.y;
 	float radius = sqrt(radius2);
 
-	vec4 original = texture2D(textureSampler, vUV);
-
 	//index of refraction of each color channel, causing chromatic dispersion
 	vec3 ref_indices = vec3(-0.3, 0.0, 0.3);
 	float ref_shiftX = chromatic_aberration * pow(radius, radialIntensity) * directionOfEffect.x / screen_width;
@@ -39,9 +37,9 @@ void main(void)
 	vec2 ref_coords_g = vec2(vUV.x + ref_indices.g*ref_shiftX, vUV.y + ref_indices.g*ref_shiftY*0.5);
 	vec2 ref_coords_b = vec2(vUV.x + ref_indices.b*ref_shiftX, vUV.y + ref_indices.b*ref_shiftY*0.5);
 
-	original.r = texture2D(textureSampler, ref_coords_r).r;
-	original.g = texture2D(textureSampler, ref_coords_g).g;
-	original.b = texture2D(textureSampler, ref_coords_b).b;
-	original.a = clamp(texture2D(textureSampler, ref_coords_r).a + texture2D(textureSampler, ref_coords_g).a + texture2D(textureSampler, ref_coords_b).a, 0., 1.);
-	gl_FragColor = original;
+	vec4 r = texture2D(textureSampler, ref_coords_r);
+	vec4 g = texture2D(textureSampler, ref_coords_g);
+	vec4 b = texture2D(textureSampler, ref_coords_b);
+	float a = clamp(r.a + g.a + b.a, 0., 1.);
+	gl_FragColor = vec4(r.r, g.g, b.b, a);
 }

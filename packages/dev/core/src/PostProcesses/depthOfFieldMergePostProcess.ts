@@ -5,7 +5,6 @@ import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
 import { Constants } from "../Engines/constants";
 
-import "../Shaders/depthOfFieldMerge.fragment";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
@@ -75,6 +74,16 @@ export class DepthOfFieldMergePostProcess extends PostProcess {
         if (!blockCompilation) {
             this.updateEffect();
         }
+    }
+
+    protected override async _initShaderSourceAsync(useWebGPU: boolean) {
+        if (useWebGPU) {
+            await import("../ShadersWGSL/depthOfFieldMerge.fragment");
+        } else {
+            await import("../Shaders/depthOfFieldMerge.fragment");
+        }
+
+        super._initShaderSourceAsync(useWebGPU);
     }
 
     /**
