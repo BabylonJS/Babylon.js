@@ -129,9 +129,7 @@ export class BlurPostProcess extends PostProcess {
             "kernelBlur",
             { varyingCount: 0, depCount: 0 },
             true,
-            textureFormat,
-            undefined,
-            true
+            textureFormat
         );
         this._staticDefines = defines;
         this.direction = direction;
@@ -146,26 +144,14 @@ export class BlurPostProcess extends PostProcess {
         this.kernel = kernel;
     }
 
-    protected override async _initShaderSourceAsync(forceGLSL = false) {
-        const engine = this.getEngine();
-
-        if (engine.isWebGPU && !forceGLSL) {
-            this._shaderLanguage = ShaderLanguage.WGSL;
-
+    protected override async _initShaderSourceAsync(useWebGPU: boolean) {
+        if (useWebGPU) {
             await Promise.all([import("../ShadersWGSL/kernelBlur.fragment"), import("../ShadersWGSL/kernelBlur.vertex")]);
         } else {
             await Promise.all([import("../Shaders/kernelBlur.fragment"), import("../Shaders/kernelBlur.vertex")]);
         }
 
-        this._shadersLoaded = true;
-    }
-
-    /**
-     * Get a value indicating if the post-process is ready to be used
-     * @returns true if the post-process is ready (shader is compiled)
-     */
-    public override isReady(): boolean {
-        return this._shadersLoaded && super.isReady();
+        super._initShaderSourceAsync(useWebGPU);
     }
 
     /**
@@ -250,7 +236,7 @@ export class BlurPostProcess extends PostProcess {
         weights = linearSamplingWeights;
 
         // Generate shaders
-        const maxVaryingRows = this.getEngine().getCaps().maxVaryingVectors - (this._shaderLanguage === ShaderLanguage.WGSL ? 1 : 0); // Because of the additional builtins
+        const maxVaryingRows = this.getEngine().getCaps().maxVaryingVectors - (this.shaderLanguage === ShaderLanguage.WGSL ? 1 : 0); // Because of the additional builtins
         const freeVaryingVec2 = Math.max(maxVaryingRows, 0) - 1; // Because of sampleCenter
 
         let varyingCount = Math.min(offsets.length, freeVaryingVec2);
