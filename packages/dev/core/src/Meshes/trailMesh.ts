@@ -229,6 +229,38 @@ export class TrailMesh extends Mesh {
     }
 
     /**
+     * Reset trailing mesh geometry.
+     */
+    public reset(): void {
+        const positions = this.getVerticesData(VertexBuffer.PositionKind);
+        const normals = this.getVerticesData(VertexBuffer.NormalKind);
+        const wm = this._generator.getWorldMatrix();
+        if (positions && normals) {
+            const alpha: number = (2 * Math.PI) / this._sectionPolygonPointsCount;
+            for (let i: number = 0; i <= this._sectionPolygonPointsCount; i++) {
+                const angle = i !== this._sectionPolygonPointsCount ? i * alpha : 0;
+                this._sectionVectors[i].copyFromFloats(Math.cos(angle) * this.diameter, Math.sin(angle) * this.diameter, 0);
+                this._sectionNormalVectors[i].copyFromFloats(Math.cos(angle), Math.sin(angle), 0);
+                Vector3.TransformCoordinatesToRef(this._sectionVectors[i], wm, this._sectionVectors[i]);
+                Vector3.TransformNormalToRef(this._sectionNormalVectors[i], wm, this._sectionNormalVectors[i]);
+            }
+            for (let i: number = 0; i <= this._segments; i++) {
+                const l: number = 3 * i * (this._sectionPolygonPointsCount + 1);
+                for (let j: number = 0; j <= this._sectionPolygonPointsCount; j++) {
+                    positions[l + 3 * j] = this._sectionVectors[j].x;
+                    positions[l + 3 * j + 1] = this._sectionVectors[j].y;
+                    positions[l + 3 * j + 2] = this._sectionVectors[j].z;
+                    normals[l + 3 * j] = this._sectionNormalVectors[j].x;
+                    normals[l + 3 * j + 1] = this._sectionNormalVectors[j].y;
+                    normals[l + 3 * j + 2] = this._sectionNormalVectors[j].z;
+                }
+            }
+            this.updateVerticesData(VertexBuffer.PositionKind, positions, true, false);
+            this.updateVerticesData(VertexBuffer.NormalKind, normals, true, false);
+        }
+    }
+
+    /**
      * Returns a new TrailMesh object.
      * @param name is a string, the name given to the new mesh
      * @param newGenerator use new generator object for cloned trail mesh
