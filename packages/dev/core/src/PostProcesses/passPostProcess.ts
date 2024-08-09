@@ -11,6 +11,7 @@ import { RegisterClass } from "../Misc/typeStore";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 
 import type { Scene } from "../scene";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * PassPostProcess which produces an output the same as it's input
@@ -45,7 +46,21 @@ export class PassPostProcess extends PostProcess {
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false
     ) {
-        super(name, "pass", null, null, options, camera, samplingMode, engine, reusable, undefined, textureType, undefined, null, blockCompilation);
+        super(name, "pass", null, null, options, camera, samplingMode, engine, reusable, undefined, textureType, undefined, null, blockCompilation, undefined, undefined, true);
+    }
+
+    protected override async _initShaderSourceAsync(forceGLSL = false) {
+        const engine = this.getEngine();
+
+        if (engine.isWebGPU && !forceGLSL) {
+            this._shaderLanguage = ShaderLanguage.WGSL;
+
+            await Promise.all([import("../ShadersWGSL/pass.fragment")]);
+        } else {
+            await Promise.all([import("../Shaders/pass.fragment")]);
+        }
+
+        this._shadersLoaded = true;
     }
 
     /**
@@ -148,7 +163,38 @@ export class PassCubePostProcess extends PostProcess {
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false
     ) {
-        super(name, "passCube", null, null, options, camera, samplingMode, engine, reusable, "#define POSITIVEX", textureType, undefined, null, blockCompilation);
+        super(
+            name,
+            "passCube",
+            null,
+            null,
+            options,
+            camera,
+            samplingMode,
+            engine,
+            reusable,
+            "#define POSITIVEX",
+            textureType,
+            undefined,
+            null,
+            blockCompilation,
+            undefined,
+            undefined,
+            true
+        );
+    }
+
+    protected override async _initShaderSourceAsync(forceGLSL = false) {
+        const engine = this.getEngine();
+        if (engine.isWebGPU && !forceGLSL) {
+            this._shaderLanguage = ShaderLanguage.WGSL;
+
+            await Promise.all([import("../ShadersWGSL/passCube.fragment")]);
+        } else {
+            await Promise.all([import("../Shaders/passCube.fragment")]);
+        }
+
+        this._shadersLoaded = true;
     }
 
     /**

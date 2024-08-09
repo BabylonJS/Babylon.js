@@ -215,6 +215,12 @@ type TextureCache = { texture: RenderTargetWrapper; postProcessChannel: number; 
  * See https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/usePostProcesses
  */
 export class PostProcess {
+    /**
+     * Force all the postprocesses to compile to glsl even on WebGPU engines.
+     * False by default. This is mostly meant for backward compatibility.
+     */
+    public static ForceGLSL = false;
+
     /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
 
@@ -372,6 +378,8 @@ export class PostProcess {
     protected _scene: Scene;
     private _engine: AbstractEngine;
 
+    protected _shadersLoaded = false;
+
     private _options: number | { width: number; height: number };
     private _reusable = false;
     private _renderId = 0;
@@ -430,6 +438,12 @@ export class PostProcess {
     public getEffectName(): string {
         return this._fragmentUrl;
     }
+
+    /**
+     * Executed when the effect was created
+     * @returns effect that was created for this post process
+     */
+    public onEffectCreatedObservable = new Observable<Effect>();
 
     // Events
 
@@ -605,7 +619,8 @@ export class PostProcess {
         indexParameters?: any,
         blockCompilation?: boolean,
         textureFormat?: number,
-        shaderLanguage?: ShaderLanguage
+        shaderLanguage?: ShaderLanguage,
+        dealyLoadShaders?: boolean
     );
 
     /** @internal */
@@ -625,7 +640,8 @@ export class PostProcess {
         indexParameters?: any,
         blockCompilation = false,
         textureFormat = Constants.TEXTUREFORMAT_RGBA,
-        shaderLanguage = ShaderLanguage.GLSL
+        shaderLanguage = ShaderLanguage.GLSL,
+        dealyLoadShaders = false
     ) {
         this.name = name;
         let size: number | { width: number; height: number } = 1;
@@ -688,6 +704,21 @@ export class PostProcess {
         this._indexParameters = indexParameters;
         this._drawWrapper = new DrawWrapper(this._engine);
 
+        this._postConstructor(blockCompilation, defines, dealyLoadShaders);
+    }
+
+    protected async _initShaderSourceAsync(_forceGLSL = false) {}
+
+    private _onInitShadersDone: Nullable<() => void> = null;
+    private async _postConstructor(blockCompilation: boolean, defines: Nullable<string> = null, dealyLoadShaders: boolean = false) {
+        if (dealyLoadShaders) {
+            await this._initShaderSourceAsync(PostProcess.ForceGLSL);
+            if (this._onInitShadersDone) {
+                this._onInitShadersDone();
+                return;
+            }
+        }
+        this._shadersLoaded = true;
         if (!blockCompilation) {
             this.updateEffect(defines);
         }
@@ -763,6 +794,15 @@ export class PostProcess {
         vertexUrl?: string,
         fragmentUrl?: string
     ) {
+        if (!this._shadersLoaded) {
+            this._onInitShadersDone = () => {
+                this._shadersLoaded = true;
+                this._onInitShadersDone = null;
+                this.updateEffect(defines, uniforms, samplers, indexParameters, onCompiled, onError, vertexUrl, fragmentUrl);
+            };
+            return;
+        }
+
         const customShaderCodeProcessing = PostProcess._GetShaderCodeProcessing(this.name);
         if (customShaderCodeProcessing?.defineCustomBindings) {
             const newUniforms = uniforms?.slice() ?? [];
@@ -798,6 +838,7 @@ export class PostProcess {
             },
             this._engine
         );
+        this.onEffectCreatedObservable.notifyObservers(this._drawWrapper.effect);
     }
 
     /**
@@ -1025,6 +1066,9 @@ export class PostProcess {
      * If the post process is supported.
      */
     public get isSupported(): boolean {
+        if (!this._shadersLoaded) {
+            return true; // Waiting for the effect to be created
+        }
         return this._drawWrapper.effect!.isSupported;
     }
 
@@ -1047,6 +1091,9 @@ export class PostProcess {
      * @returns true if the post-process is ready (shader is compiled)
      */
     public isReady(): boolean {
+        if (!this._shadersLoaded) {
+            return false;
+        }
         return this._drawWrapper.effect?.isReady() ?? false;
     }
 
@@ -1176,6 +1223,7 @@ export class PostProcess {
         this.onApplyObservable.clear();
         this.onBeforeRenderObservable.clear();
         this.onSizeChangedObservable.clear();
+        this.onEffectCreatedObservable.clear();
     }
 
     /**

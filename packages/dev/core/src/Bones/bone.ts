@@ -1,6 +1,6 @@
 import type { Skeleton } from "./skeleton";
 import { Vector3, Quaternion, Matrix, TmpVectors } from "../Maths/math.vector";
-import { ArrayTools } from "../Misc/arrayTools";
+import { BuildArray } from "../Misc/arrayTools";
 import type { Nullable } from "../types";
 import type { TransformNode } from "../Meshes/transformNode";
 import { Node } from "../node";
@@ -14,9 +14,9 @@ import type { AnimationPropertiesOverride } from "../Animations/animationPropert
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/bonesSkeletons
  */
 export class Bone extends Node {
-    private static _TmpVecs: Vector3[] = ArrayTools.BuildArray(2, Vector3.Zero);
+    private static _TmpVecs: Vector3[] = BuildArray(2, Vector3.Zero);
     private static _TmpQuat = Quaternion.Identity();
-    private static _TmpMats: Matrix[] = ArrayTools.BuildArray(5, Matrix.Identity);
+    private static _TmpMats: Matrix[] = BuildArray(5, Matrix.Identity);
 
     /**
      * Gets the list of child bones

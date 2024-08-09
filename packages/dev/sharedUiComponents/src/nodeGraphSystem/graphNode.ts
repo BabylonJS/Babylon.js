@@ -383,7 +383,8 @@ export class GraphNode {
         this._comments.innerHTML = this.content.comments || "";
         this._comments.title = this.content.comments || "";
 
-        this._executionTime.innerHTML = `${(this.content.executionTime || 0).toFixed(2)} ms`;
+        const executionTime = this.content.executionTime || 0;
+        this._executionTime.innerHTML = executionTime >= 0 ? `${executionTime.toFixed(2)} ms` : "";
 
         this.content.prepareHeaderIcon(this._headerIcon, this._headerIconImg);
         if (this._headerIconImg.src) {

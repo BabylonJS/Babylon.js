@@ -22,7 +22,7 @@ import "../../Engines/Extensions/engine.renderTargetCube";
 import "../../Engines/Extensions/engine.renderTargetTexture";
 
 import { _ObserveArray } from "../../Misc/arrayTools";
-import { DumpTools } from "../../Misc/dumpTools";
+import { DumpFramebuffer } from "../../Misc/dumpTools";
 
 import type { Material } from "../material";
 import { FloorPOT, NearestPOT } from "../../Misc/tools.functions";
@@ -1304,7 +1304,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
             // Dump ?
             if (dumpForDebug) {
-                DumpTools.DumpFramebuffer(this.getRenderWidth(), this.getRenderHeight(), engine);
+                DumpFramebuffer(this.getRenderWidth(), this.getRenderHeight(), engine);
             }
         } else {
             // Clear
