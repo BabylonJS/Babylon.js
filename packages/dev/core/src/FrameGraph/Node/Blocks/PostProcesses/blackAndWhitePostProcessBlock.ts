@@ -100,7 +100,7 @@ export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
             throw new Error("BlackAndWhitePostProcessBlock: Source is not connected or is not a texture");
         }
 
-        this._postProcess.addToFrameGraph(state.frameGraph);
+        this._postProcess.recordFrameGraph(state.frameGraph);
 
         this._postProcess.onApplyObservable.remove(this._ppObserver);
         this._ppObserver = this._postProcess.onApplyObservable.add((effect) => {

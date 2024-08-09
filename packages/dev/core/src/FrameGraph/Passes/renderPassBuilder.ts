@@ -19,7 +19,7 @@ export class FrameGraphRenderPassBuilder extends FrameGraphPassBuilder<FrameGrap
     }
     public setRenderTarget(renderTargetHandle: TextureHandle) {
         this._renderTarget = renderTargetHandle;
-        this._textureManager.registerTextureHandle(this._parentTask, "output", this._renderTarget);
+        this._textureManager.registerTextureHandleForTask(this._parentTask, "output", this._renderTarget);
     }
 
     /** @internal */

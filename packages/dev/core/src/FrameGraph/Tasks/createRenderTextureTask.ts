@@ -1,8 +1,9 @@
-import type { FrameGraph, FrameGraphTextureCreationOptions } from "../frameGraph";
+import type { FrameGraph } from "../frameGraph";
+import type { FrameGraphTextureCreationOptions } from "../frameGraphTextureManager";
 import type { IFrameGraphInputData, IFrameGraphTask } from "./IFrameGraphTask";
 
 export interface IFrameGraphCreateRenderTextureInputData extends IFrameGraphInputData {
-    outputTextureName: string;
+    textureName: string;
 }
 
 export class FrameGraphCreateRenderTextureTask implements IFrameGraphTask {
@@ -15,10 +16,10 @@ export class FrameGraphCreateRenderTextureTask implements IFrameGraphTask {
         this._options = options;
     }
 
-    public addToFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphCreateRenderTextureInputData) {
-        const pass = frameGraph.addPass("create " + this.name);
+    public recordFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphCreateRenderTextureInputData) {
+        const pass = frameGraph.addPass("create " + inputData.textureName);
 
-        frameGraph.createRenderTargetTexture(inputData.outputTextureName, this._options);
+        frameGraph.createRenderTargetTexture(inputData.textureName, this._options);
 
         pass.setExecuteFunc((_context) => {});
     }

@@ -1,26 +1,30 @@
-import type { Nullable } from "core/types";
 import type { FrameGraph } from "../frameGraph";
 import type { Observable } from "core/Misc/observable";
+import type { IFrameGraphPass } from "../Passes/IFrameGraphPass";
 
 export interface IFrameGraphInputData {}
 
-export type FrameGraphTaskTexture = [Nullable<string>, string];
+export type FrameGraphTaskTexture = [string, string];
 
 /**
- * Interface used to indicate support for a frame graph task
+ * Interface used to indicate that the class can be used as a task in a frame graph.
  */
 export interface IFrameGraphTask {
     /**
      * Use this function to add content (render passes, ...) to the task
      * @param frameGraph The frame graph
+     * @param inputData The input data for the task, used to configure the task
      */
-    addToFrameGraph(frameGraph: FrameGraph, inputData?: unknown): void;
+    recordFrameGraph(frameGraph: FrameGraph, inputData?: unknown): void;
 
     name: string;
 
-    onBeforeTaskAddedToFrameGraphObservable?: Observable<FrameGraph>;
+    onBeforeTaskRecordFrameGraphObservable?: Observable<FrameGraph>;
 
-    onAfterTaskAddedToFrameGraphObservable?: Observable<FrameGraph>;
+    onAfterTaskRecordFrameGraphObservable?: Observable<FrameGraph>;
 
-    executeCondition?: () => boolean;
+    disabledFromGraph?: boolean;
+
+    /** @internal */
+    _passes?: IFrameGraphPass[];
 }

@@ -74,7 +74,7 @@ export class BloomMergePostProcess extends PostProcess {
         }
     }
 
-    public override addToFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphBloomMergeInputData): void {
+    public override recordFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphBloomMergeInputData): void {
         const sourceTextureHandle = frameGraph.getTextureHandle(inputData.sourceTexture);
         const sourceBlurTextureHandle = frameGraph.getTextureHandle(inputData.sourceBlurTexture);
         const outputTextureHandle = frameGraph.getTextureHandle(inputData.outputTexture);

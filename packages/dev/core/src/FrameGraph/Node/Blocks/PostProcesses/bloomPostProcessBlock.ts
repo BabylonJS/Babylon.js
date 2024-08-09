@@ -128,7 +128,7 @@ export class BloomPostProcessBlock extends NodeRenderGraphBlock {
             throw new Error("BloomPostProcessBlock: Source is not connected or is not a texture");
         }
 
-        this._postProcess.addToFrameGraph(state.frameGraph, { sourceTexture: sourceTexture });
+        this._postProcess.recordFrameGraph(state.frameGraph, { sourceTexture: sourceTexture });
 
         const destination = this.destination.connectedPoint?.value;
         const rtWrapper = destination?.getValueAsRenderTargetWrapper();

@@ -228,9 +228,9 @@ export class PostProcess implements IFrameGraphTask {
 
     private static _CustomShaderCodeProcessing: { [postProcessName: string]: PostProcessCustomShaderCodeProcessing } = {};
 
-    public onBeforeTaskAddedToFrameGraphObservable = new Observable<FrameGraph>();
+    public onBeforeTaskRecordFrameGraphObservable = new Observable<FrameGraph>();
 
-    public onAfterTaskAddedToFrameGraphObservable = new Observable<FrameGraph>();
+    public onAfterTaskRecordFrameGraphObservable = new Observable<FrameGraph>();
 
     /**
      * Registers a shader code processing with a post process name.
@@ -1110,7 +1110,7 @@ export class PostProcess implements IFrameGraphTask {
         return this._drawWrapper.effect;
     }
 
-    public addToFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphPostProcessInputData): void {
+    public recordFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphPostProcessInputData): void {
         const sourceTextureHandle = frameGraph.getTextureHandle(inputData.sourceTexture);
         const outputTextureHandle = frameGraph.getTextureHandle(inputData.outputTexture);
 

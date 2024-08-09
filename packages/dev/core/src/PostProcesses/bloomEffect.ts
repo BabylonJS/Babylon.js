@@ -30,9 +30,9 @@ export interface IFrameGraphBloomEffectInputData extends IFrameGraphInputData {
 export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphTask {
     public name = "Bloom";
 
-    public onBeforeTaskAddedToFrameGraphObservable = new Observable<FrameGraph>();
+    public onBeforeTaskRecordFrameGraphObservable = new Observable<FrameGraph>();
 
-    public onAfterTaskAddedToFrameGraphObservable = new Observable<FrameGraph>();
+    public onAfterTaskRecordFrameGraphObservable = new Observable<FrameGraph>();
 
     /**
      * @internal Internal
@@ -165,7 +165,7 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
         this._effects.push(this._merge);
     }
 
-    public addToFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphBloomEffectInputData) {
+    public recordFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphBloomEffectInputData) {
         const sourceTextureDescription = frameGraph.getTextureDescription(inputData.sourceTexture);
 
         const textureCreationOptions = {
@@ -190,30 +190,30 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
         this._blurY.height = textureCreationOptions.size.height;
 
         textureCreationOptions.options.label = "Bloom Downscale";
-        const downscaleTextureHandle = frameGraph.createRenderTargetTexture("bloom_downscale", textureCreationOptions);
+        const downscaleTextureHandle = frameGraph.createRenderTargetTexture("downscale", textureCreationOptions);
 
-        this._downscale.addToFrameGraph(frameGraph, {
+        this._downscale.recordFrameGraph(frameGraph, {
             sourceTexture: inputData.sourceTexture,
             outputTexture: downscaleTextureHandle,
         });
 
         textureCreationOptions.options.label = "Bloom Blur X";
-        const blurXTextureHandle = frameGraph.createRenderTargetTexture("bloom_blurX", textureCreationOptions);
+        const blurXTextureHandle = frameGraph.createRenderTargetTexture("blurX", textureCreationOptions);
 
-        this._blurX.addToFrameGraph(frameGraph, {
+        this._blurX.recordFrameGraph(frameGraph, {
             sourceTexture: downscaleTextureHandle,
             outputTexture: blurXTextureHandle,
         });
 
         textureCreationOptions.options.label = "Bloom Blur Y";
-        const blurYTextureHandle = frameGraph.createRenderTargetTexture("bloom_blurY", textureCreationOptions);
+        const blurYTextureHandle = frameGraph.createRenderTargetTexture("blurY", textureCreationOptions);
 
-        this._blurY.addToFrameGraph(frameGraph, {
+        this._blurY.recordFrameGraph(frameGraph, {
             sourceTexture: blurXTextureHandle,
             outputTexture: blurYTextureHandle,
         });
 
-        this._merge.addToFrameGraph(frameGraph, {
+        this._merge.recordFrameGraph(frameGraph, {
             sourceTexture: inputData.sourceTexture,
             sourceBlurTexture: blurYTextureHandle,
             outputTexture: inputData.outputTexture,
