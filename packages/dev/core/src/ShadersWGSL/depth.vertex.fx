@@ -66,10 +66,10 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
 #if defined(ALPHATEST) || defined(BASIC_RENDER)
 #ifdef UV1
-	vertexOutputs.vUV =  vec2f(uniforms.diffuseMatrix *  vec4f(uvUpdated, 1.0, 0.0));
+	vertexOutputs.vUV =  (uniforms.diffuseMatrix *  vec4f(uvUpdated, 1.0, 0.0)).xy;
 #endif
 #ifdef UV2
-	vertexOutputs.vUV =  vec2f(uniforms.diffuseMatrix *  vec4f(input.uv2, 1.0, 0.0));
+	vertexOutputs.vUV =  (uniforms.diffuseMatrix *  vec4f(input.uv2, 1.0, 0.0)).xy;
 #endif
 #endif
 
