@@ -118,13 +118,11 @@ export class Viewer implements IDisposable {
      * Loads a 3D model from the specified URL.
      * @remarks
      * If a model is already loaded, it will be unloaded before loading the new model.
-     * @param source A URL or File object that points to the model to load.
+     * @param source A url or File or ArrayBufferView that points to the model to load.
      * @param abortSignal An optional signal that can be used to abort the loading process.
      */
-    public async loadModelAsync(source: URL | File, abortSignal?: AbortSignal): Promise<void> {
+    public async loadModelAsync(source: string | File | ArrayBufferView, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
-
-        const finalSource = source instanceof URL ? source.href : source;
 
         this._loadModelAbortController?.abort("New model is being loaded before previous model finished loading.");
         const abortController = (this._loadModelAbortController = new AbortController());
@@ -132,21 +130,21 @@ export class Viewer implements IDisposable {
         await this._loadModelLock.lockAsync(async () => {
             this._throwIfDisposedOrAborted(abortSignal, abortController.signal);
             this._details.model?.dispose();
-            this._details.model = await loadAssetContainerAsync(finalSource, this._details.scene);
+            this._details.model = await loadAssetContainerAsync(source, this._details.scene);
             this._details.model.addAllToScene();
             this._reframeCamera();
         });
     }
 
     /**
-     * Loads an environment texture from the specified URL and sets up a corresponding skybox.
+     * Loads an environment texture from the specified url and sets up a corresponding skybox.
      * @remarks
-     * If no URL is provided, a default hemispheric light will be created.
+     * If no url is provided, a default hemispheric light will be created.
      * If an environment is already loaded, it will be unloaded before loading the new environment.
-     * @param url The URL of the environment texture to load.
+     * @param url The url of the environment texture to load.
      * @param abortSignal An optional signal that can be used to abort the loading process.
      */
-    public async loadEnvironmentAsync(url: Nullable<URL | undefined>, abortSignal?: AbortSignal): Promise<void> {
+    public async loadEnvironmentAsync(url: Nullable<string | undefined>, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
 
         this._loadEnvironmentAbortController?.abort("New environment is being loaded before previous environment finished loading.");
@@ -161,7 +159,7 @@ export class Viewer implements IDisposable {
                     this._details.scene.autoClear = true;
                     resolve(light);
                 } else {
-                    const cubeTexture = CubeTexture.CreateFromPrefilteredData(url.href, this._details.scene);
+                    const cubeTexture = CubeTexture.CreateFromPrefilteredData(url, this._details.scene);
                     this._details.scene.environmentTexture = cubeTexture;
                     const skybox = createSkybox(this._details.scene, cubeTexture, (this._camera.maxZ - this._camera.minZ) / 2, 0.3);
                     this._details.scene.autoClear = false;
