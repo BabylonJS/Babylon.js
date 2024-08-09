@@ -7,7 +7,7 @@ import { TextureType } from "../Engines/constants";
 import { Logger } from "./logger";
 import { Tools } from "./tools";
 import type { IScreenshotSize } from "./interfaces/screenshotSize";
-import { DumpTools } from "./dumpTools";
+import { DumpData } from "./dumpTools";
 import type { Nullable } from "../types";
 import { ApplyPostProcess } from "./textureTools";
 
@@ -264,23 +264,13 @@ export function CreateScreenshotUsingRenderTarget(
             engine.onEndFrameObservable.addOnce(() => {
                 if (finalWidth === width && finalHeight === height) {
                     texture.readPixels(undefined, undefined, undefined, false)!.then((data) => {
-                        DumpTools.DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true, undefined, quality);
+                        DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true, undefined, quality);
                         texture.dispose();
                     });
                 } else {
                     ApplyPostProcess("pass", texture.getInternalTexture()!, scene, undefined, undefined, undefined, finalWidth, finalHeight).then((texture) => {
                         engine._readTexturePixels(texture, finalWidth, finalHeight, -1, 0, null, true, false, 0, 0).then((data) => {
-                            DumpTools.DumpData(
-                                finalWidth,
-                                finalHeight,
-                                data,
-                                successCallback as (data: string | ArrayBuffer) => void,
-                                mimeType,
-                                fileName,
-                                true,
-                                undefined,
-                                quality
-                            );
+                            DumpData(finalWidth, finalHeight, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true, undefined, quality);
                             texture.dispose();
                         });
                     });

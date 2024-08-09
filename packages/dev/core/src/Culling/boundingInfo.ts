@@ -1,5 +1,5 @@
 import type { DeepImmutable } from "../types";
-import { ArrayTools } from "../Misc/arrayTools";
+import { BuildArray } from "../Misc/arrayTools";
 import type { Matrix } from "../Maths/math.vector";
 import { TmpVectors, Vector3 } from "../Maths/math.vector";
 import { CullingStrategy } from "../Engines/constants";
@@ -64,7 +64,7 @@ export class BoundingInfo implements ICullable {
 
     private _isLocked = false;
 
-    private static readonly _TmpVector3 = ArrayTools.BuildArray(2, Vector3.Zero);
+    private static readonly _TmpVector3 = BuildArray(2, Vector3.Zero);
 
     /**
      * Constructs bounding info

@@ -395,6 +395,24 @@ export class DebugLayer {
         }
     }
 
+    public popupSceneExplorer() {
+        if (this.BJSINSPECTOR) {
+            this.BJSINSPECTOR.Inspector.PopupSceneExplorer();
+        }
+    }
+
+    public popupInspector() {
+        if (this.BJSINSPECTOR) {
+            this.BJSINSPECTOR.Inspector.PopupInspector();
+        }
+    }
+
+    public popupEmbed() {
+        if (this.BJSINSPECTOR) {
+            this.BJSINSPECTOR.Inspector.PopupEmbed();
+        }
+    }
+
     /**
      * Launch the debugLayer.
      * @param config Define the configuration of the inspector

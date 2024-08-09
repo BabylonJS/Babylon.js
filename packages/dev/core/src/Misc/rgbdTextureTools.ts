@@ -54,6 +54,7 @@ export class RGBDTextureTools {
         const expandRGBDTexture = async () => {
             const isWebGPU = engine.isWebGPU;
             let shaderLanguage = ShaderLanguage.GLSL;
+            internalTexture.isReady = false;
 
             if (!this._ShaderImported) {
                 this._ShaderImported = true;

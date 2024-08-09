@@ -36,7 +36,7 @@ export class FlowGraphDoNBlock extends FlowGraphExecutionBlockWithOutSignal {
 
     constructor(
         /**
-         * the configuration of the block
+         * [Object] the configuration of the block
          */
         public override config: IFlowGraphDoNBlockConfiguration = { startIndex: new FlowGraphInteger(0) }
     ) {

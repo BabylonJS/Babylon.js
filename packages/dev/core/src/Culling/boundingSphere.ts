@@ -1,5 +1,5 @@
 import type { DeepImmutable } from "../types";
-import { ArrayTools } from "../Misc/arrayTools";
+import { BuildArray } from "../Misc/arrayTools";
 import { Matrix, Vector3 } from "../Maths/math.vector";
 import type { Plane } from "../Maths/math.plane";
 
@@ -33,7 +33,7 @@ export class BoundingSphere {
     public readonly maximum = Vector3.Zero();
 
     private _worldMatrix: DeepImmutable<Matrix>;
-    private static readonly _TmpVector3 = ArrayTools.BuildArray(3, Vector3.Zero);
+    private static readonly _TmpVector3 = BuildArray(3, Vector3.Zero);
 
     /**
      * Creates a new bounding sphere
