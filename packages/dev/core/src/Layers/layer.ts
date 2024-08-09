@@ -16,8 +16,6 @@ import type { RenderTargetTexture } from "../Materials/Textures/renderTargetText
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import { DrawWrapper } from "../Materials/drawWrapper";
 
-import "../Shaders/layer.fragment";
-import "../Shaders/layer.vertex";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
