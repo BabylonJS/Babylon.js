@@ -9,7 +9,7 @@ import type { Nullable } from "../../types";
 import type { IAnimatable } from "../../Animations/animatable.interface";
 import type { EffectFallbacks } from "../effectFallbacks";
 import { MaterialPluginBase } from "../materialPluginBase";
-import { Constants } from "../../Engines/constants";
+import { MATERIAL_TextureDirtyFlag, MATERIAL_MiscDirtyFlag } from "../../Engines/constants";
 import { MaterialDefines } from "../materialDefines";
 
 import type { Scene } from "../../scene";
@@ -108,8 +108,8 @@ export class PBRAnisotropicConfiguration extends MaterialPluginBase {
     constructor(material: PBRBaseMaterial, addToPluginList = true) {
         super(material, "PBRAnisotropic", 110, new MaterialAnisotropicDefines(), addToPluginList);
 
-        this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
-        this._internalMarkAllSubMeshesAsMiscDirty = material._dirtyCallbacks[Constants.MATERIAL_MiscDirtyFlag];
+        this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[MATERIAL_TextureDirtyFlag];
+        this._internalMarkAllSubMeshesAsMiscDirty = material._dirtyCallbacks[MATERIAL_MiscDirtyFlag];
     }
 
     public override isReadyForSubMesh(defines: MaterialAnisotropicDefines, scene: Scene): boolean {

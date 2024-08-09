@@ -1,6 +1,6 @@
 import type { VertexBuffer } from "core/Buffers/buffer";
 import type { DataBuffer } from "core/Buffers/dataBuffer";
-import { Constants } from "core/Engines/constants";
+import { MATERIAL_TriangleStripDrawMode, MATERIAL_TriangleFillMode, ALPHA_ONEONE, ALPHA_DISABLE } from "core/Engines/constants";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { EffectWrapper } from "core/Materials/effectRenderer";
 import { Observable } from "core/Misc/observable";
@@ -186,9 +186,9 @@ export abstract class FluidRenderingObject {
         depthEffect.setFloat("particleRadius", this._particleSize / 2);
 
         if (this.useInstancing) {
-            this._engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, numParticles);
+            this._engine.drawArraysType(MATERIAL_TriangleStripDrawMode, 0, 4, numParticles);
         } else {
-            this._engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, numParticles);
+            this._engine.drawElementsType(MATERIAL_TriangleFillMode, 0, numParticles);
         }
     }
 
@@ -205,7 +205,7 @@ export abstract class FluidRenderingObject {
         const thicknessDrawWrapper = this._thicknessEffectWrapper._drawWrapper;
         const thicknessEffect = thicknessDrawWrapper.effect!;
 
-        this._engine.setAlphaMode(Constants.ALPHA_ONEONE);
+        this._engine.setAlphaMode(ALPHA_ONEONE);
         this._engine.setDepthWrite(false);
 
         this._engine.enableEffect(thicknessDrawWrapper);
@@ -217,13 +217,13 @@ export abstract class FluidRenderingObject {
         thicknessEffect.setFloat2("size", this._particleSize, this._particleSize);
 
         if (this.useInstancing) {
-            this._engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, numParticles);
+            this._engine.drawArraysType(MATERIAL_TriangleStripDrawMode, 0, 4, numParticles);
         } else {
-            this._engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, numParticles);
+            this._engine.drawElementsType(MATERIAL_TriangleFillMode, 0, numParticles);
         }
 
         this._engine.setDepthWrite(true);
-        this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
+        this._engine.setAlphaMode(ALPHA_DISABLE);
     }
 
     /**

@@ -5,7 +5,14 @@ import { IntersectionInfo } from "../Collisions/intersectionInfo";
 import type { ICullable } from "../Culling/boundingInfo";
 import { BoundingInfo } from "../Culling/boundingInfo";
 import type { Effect } from "../Materials/effect";
-import { Constants } from "../Engines/constants";
+import {
+    MATERIAL_PointListDrawMode,
+    MATERIAL_LineLoopDrawMode,
+    MATERIAL_LineStripDrawMode,
+    MATERIAL_TriangleFanDrawMode,
+    MATERIAL_TriangleStripDrawMode,
+    MATERIAL_LineListDrawMode,
+} from "../Engines/constants";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import { extractMinAndMaxIndexed } from "../Maths/math.functions";
 import type { Plane } from "../Maths/math.plane";
@@ -477,12 +484,12 @@ export class SubMesh implements ICullable {
         let checkStopper = false;
 
         switch (material.fillMode) {
-            case Constants.MATERIAL_PointListDrawMode:
-            case Constants.MATERIAL_LineLoopDrawMode:
-            case Constants.MATERIAL_LineStripDrawMode:
-            case Constants.MATERIAL_TriangleFanDrawMode:
+            case MATERIAL_PointListDrawMode:
+            case MATERIAL_LineLoopDrawMode:
+            case MATERIAL_LineStripDrawMode:
+            case MATERIAL_TriangleFanDrawMode:
                 return null;
-            case Constants.MATERIAL_TriangleStripDrawMode:
+            case MATERIAL_TriangleStripDrawMode:
                 step = 1;
                 checkStopper = true;
                 break;
@@ -491,7 +498,7 @@ export class SubMesh implements ICullable {
         }
 
         // LineMesh first as it's also a Mesh...
-        if (material.fillMode === Constants.MATERIAL_LineListDrawMode) {
+        if (material.fillMode === MATERIAL_LineListDrawMode) {
             // Check if mesh is unindexed
             if (!indices.length) {
                 return this._intersectUnIndexedLines(ray, positions, indices, (this._mesh as any).intersectionThreshold, fastCheck);

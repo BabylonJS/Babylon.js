@@ -1,5 +1,5 @@
 import { SerializationHelper } from "../Misc/decorators.serialization";
-import { Constants } from "../Engines/constants";
+import { ALWAYS, KEEP, REPLACE } from "../Engines/constants";
 import { serialize } from "../Misc/decorators";
 import type { IStencilState } from "../States/IStencilState";
 
@@ -24,13 +24,13 @@ export class MaterialStencilState implements IStencilState {
         this.enabled = false;
         this.mask = 0xff;
 
-        this.func = Constants.ALWAYS;
+        this.func = ALWAYS;
         this.funcRef = 1;
         this.funcMask = 0xff;
 
-        this.opStencilFail = Constants.KEEP;
-        this.opDepthFail = Constants.KEEP;
-        this.opStencilDepthPass = Constants.REPLACE;
+        this.opStencilFail = KEEP;
+        this.opDepthFail = KEEP;
+        this.opStencilDepthPass = REPLACE;
     }
 
     private _func: number;

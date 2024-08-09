@@ -7,7 +7,7 @@ import { SubMesh } from "../Meshes/subMesh";
 import { Mesh } from "../Meshes/mesh";
 import type { Material } from "../Materials/material";
 import { Color4 } from "../Maths/math.color";
-import { Constants } from "../Engines/constants";
+import { MATERIAL_ClockWiseSideOrientation } from "../Engines/constants";
 import { VertexData } from "./mesh.vertexData";
 /**
  * Unique ID when we import meshes from Babylon to CSG
@@ -540,7 +540,7 @@ export class CSG {
             }
             meshScaling = mesh.scaling.clone();
             if (mesh.material && absolute) {
-                invertWinding = mesh.material.sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation;
+                invertWinding = mesh.material.sideOrientation === MATERIAL_ClockWiseSideOrientation;
             }
         } else {
             // eslint-disable-next-line no-throw-literal

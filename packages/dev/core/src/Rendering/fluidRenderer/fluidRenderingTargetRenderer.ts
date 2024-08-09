@@ -1,5 +1,5 @@
 import type { Camera } from "core/Cameras/camera";
-import { Constants } from "core/Engines/constants";
+import { TextureType, TextureFormat, TEXTURE_BILINEAR_SAMPLINGMODE, ALPHA_DISABLE } from "core/Engines/constants";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { InternalTexture } from "core/Materials/Textures/internalTexture";
@@ -537,10 +537,10 @@ export class FluidRenderingTargetRenderer {
             depthHeight,
             depthWidth,
             depthHeight,
-            Constants.TEXTURETYPE_FLOAT,
-            Constants.TEXTUREFORMAT_RG,
-            Constants.TEXTURETYPE_FLOAT,
-            Constants.TEXTUREFORMAT_RG,
+            TextureType.FLOAT,
+            TextureFormat.RG,
+            TextureType.FLOAT,
+            TextureFormat.RG,
             false,
             this._camera,
             true,
@@ -563,10 +563,10 @@ export class FluidRenderingTargetRenderer {
                 diffuseHeight,
                 0,
                 0,
-                Constants.TEXTURETYPE_UNSIGNED_BYTE,
-                Constants.TEXTUREFORMAT_RGBA,
-                Constants.TEXTURETYPE_UNSIGNED_BYTE,
-                Constants.TEXTUREFORMAT_RGBA,
+                TextureType.UNSIGNED_BYTE,
+                TextureFormat.RGBA,
+                TextureType.UNSIGNED_BYTE,
+                TextureFormat.RGBA,
                 true,
                 this._camera,
                 true,
@@ -590,10 +590,10 @@ export class FluidRenderingTargetRenderer {
                 thicknessHeight,
                 thicknessWidth,
                 thicknessHeight,
-                Constants.TEXTURETYPE_HALF_FLOAT,
-                Constants.TEXTUREFORMAT_R,
-                Constants.TEXTURETYPE_HALF_FLOAT,
-                Constants.TEXTUREFORMAT_R,
+                TextureType.HALF_FLOAT,
+                TextureFormat.R,
+                TextureType.HALF_FLOAT,
+                TextureFormat.R,
                 true,
                 this._camera,
                 false,
@@ -730,11 +730,11 @@ export class FluidRenderingTargetRenderer {
             samplerNames,
             1,
             null,
-            Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+            TEXTURE_BILINEAR_SAMPLINGMODE,
             engine,
             false,
             null,
-            Constants.TEXTURETYPE_UNSIGNED_BYTE,
+            TextureType.UNSIGNED_BYTE,
             undefined,
             undefined,
             true,
@@ -887,7 +887,7 @@ export class FluidRenderingTargetRenderer {
         this._engine.setState(false, undefined, undefined, undefined, true);
         this._engine.setDepthBuffer(true);
         this._engine.setDepthWrite(true);
-        this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
+        this._engine.setAlphaMode(ALPHA_DISABLE);
 
         // Render the particles in the depth texture
         if (this._depthRenderTarget?.renderTarget) {

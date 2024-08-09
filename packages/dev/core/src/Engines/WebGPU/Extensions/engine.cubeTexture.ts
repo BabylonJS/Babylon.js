@@ -1,6 +1,6 @@
 import { InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
 import type { Nullable } from "../../../types";
-import { Constants } from "../../constants";
+import { TextureFormat, TEXTURE_TRILINEAR_SAMPLINGMODE, TEXTURE_BILINEAR_SAMPLINGMODE, TextureAddressMode } from "../../constants";
 import type { DepthTextureCreationOptions } from "../../../Materials/Textures/textureCreationOptions";
 import { WebGPUEngine } from "../../webgpuEngine";
 import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
@@ -187,7 +187,7 @@ WebGPUEngine.prototype._createDepthStencilCubeTexture = function (size: number, 
         comparisonFunction: 0,
         generateStencil: false,
         samples: 1,
-        depthTextureFormat: options.generateStencil ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT,
+        depthTextureFormat: options.generateStencil ? TextureFormat.DEPTH24_STENCIL8 : TextureFormat.DEPTH32_FLOAT,
         ...options,
     };
 
@@ -276,9 +276,9 @@ WebGPUEngine.prototype.createCubeTexture = function (
 };
 
 WebGPUEngine.prototype._setCubeMapTextureParams = function (texture: InternalTexture, loadMipmap: boolean, maxLevel?: number) {
-    texture.samplingMode = loadMipmap ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
-    texture._cachedWrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
-    texture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+    texture.samplingMode = loadMipmap ? TEXTURE_TRILINEAR_SAMPLINGMODE : TEXTURE_BILINEAR_SAMPLINGMODE;
+    texture._cachedWrapU = TextureAddressMode.CLAMP;
+    texture._cachedWrapV = TextureAddressMode.CLAMP;
     if (maxLevel) {
         texture._maxLodLevel = maxLevel;
     }

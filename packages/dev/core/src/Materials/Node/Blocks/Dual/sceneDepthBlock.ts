@@ -12,7 +12,7 @@ import type { Effect } from "../../../effect";
 
 import type { NodeMaterial } from "../../nodeMaterial";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { Constants } from "core/Engines/constants";
+import { AUTOSAMPLERSUFFIX } from "core/Engines/constants";
 
 /**
  * Block used to retrieve the depth (zbuffer) of the scene
@@ -196,7 +196,7 @@ export class SceneDepthBlock extends NodeMaterialBlock {
             const textureReadFunc =
                 state.shaderLanguage === ShaderLanguage.GLSL
                     ? `texture2D(${this._samplerName},`
-                    : `textureSampleLevel(${this._samplerName}, ${this._samplerName + Constants.AUTOSAMPLERSUFFIX},`;
+                    : `textureSampleLevel(${this._samplerName}, ${this._samplerName + AUTOSAMPLERSUFFIX},`;
 
             const complement = state.shaderLanguage === ShaderLanguage.GLSL ? "" : ", 0";
 
@@ -205,9 +205,7 @@ export class SceneDepthBlock extends NodeMaterialBlock {
         }
 
         const textureReadFunc =
-            state.shaderLanguage === ShaderLanguage.GLSL
-                ? `texture2D(${this._samplerName},`
-                : `textureSample(${this._samplerName}, ${this._samplerName + Constants.AUTOSAMPLERSUFFIX},`;
+            state.shaderLanguage === ShaderLanguage.GLSL ? `texture2D(${this._samplerName},` : `textureSample(${this._samplerName}, ${this._samplerName + AUTOSAMPLERSUFFIX},`;
 
         if (this.uv.ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
             state.compilationString += `${state._declareLocalVar(this._tempTextureRead, NodeMaterialBlockConnectionPointTypes.Vector4)} = ${textureReadFunc} ${uvInput.associatedVariableName}.xy);\n`;

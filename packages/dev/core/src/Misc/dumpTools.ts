@@ -2,7 +2,7 @@
 import { _WarnImport } from "./devTools";
 
 import { ThinEngine } from "../Engines/thinEngine";
-import { Constants } from "../Engines/constants";
+import { TextureFormat, TEXTURE_NEAREST_NEAREST } from "../Engines/constants";
 import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
 import { Tools } from "./tools";
 import type { Nullable } from "../types";
@@ -164,7 +164,7 @@ export function DumpData(
     }
 
     // Create the image
-    const texture = renderer.engine.createRawTexture(data, width, height, Constants.TEXTUREFORMAT_RGBA, false, !invertY, Constants.TEXTURE_NEAREST_NEAREST);
+    const texture = renderer.engine.createRawTexture(data, width, height, TextureFormat.RGBA, false, !invertY, TEXTURE_NEAREST_NEAREST);
 
     renderer.renderer.setViewport();
     renderer.renderer.applyEffectWrapper(renderer.wrapper);

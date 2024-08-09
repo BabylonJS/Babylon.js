@@ -8,7 +8,7 @@ import type { Scene } from "../scene";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { Camera } from "../Cameras/camera";
-import { Constants } from "../Engines/constants";
+import { TextureType, TextureFormat, MATERIAL_ClockWiseSideOrientation, MATERIAL_CounterClockWiseSideOrientation, TextureAddressMode } from "../Engines/constants";
 
 import "../Shaders/depth.fragment";
 import "../Shaders/depth.vertex";
@@ -74,7 +74,7 @@ export class DepthRenderer {
     /**
      * Instantiates a depth renderer
      * @param scene The scene the renderer belongs to
-     * @param type The texture type of the depth map (default: Engine.TEXTURETYPE_FLOAT)
+     * @param type The texture type of the depth map (default: Engine.TextureType.FLOAT)
      * @param camera The camera to be used to render the depth map (default: scene's active camera)
      * @param storeNonLinearDepth Defines whether the depth is stored linearly like in Babylon Shadows or directly like glFragCoord.z
      * @param samplingMode The sampling mode to be used with the render target (Linear, Nearest...) (default: TRILINEAR_SAMPLINGMODE)
@@ -83,7 +83,7 @@ export class DepthRenderer {
      */
     constructor(
         scene: Scene,
-        type: number = Constants.TEXTURETYPE_FLOAT,
+        type: number = TextureType.FLOAT,
         camera: Nullable<Camera> = null,
         storeNonLinearDepth = false,
         samplingMode = Texture.TRILINEAR_SAMPLINGMODE,
@@ -93,7 +93,7 @@ export class DepthRenderer {
         this._scene = scene;
         this._storeNonLinearDepth = storeNonLinearDepth;
         this._storeCameraSpaceZ = storeCameraSpaceZ;
-        this.isPacked = type === Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        this.isPacked = type === TextureType.UNSIGNED_BYTE;
         if (this.isPacked) {
             this.clearColor = new Color4(1.0, 1.0, 1.0, 1.0);
         } else {
@@ -107,16 +107,16 @@ export class DepthRenderer {
         this._camera = camera;
 
         if (samplingMode !== Texture.NEAREST_SAMPLINGMODE) {
-            if (type === Constants.TEXTURETYPE_FLOAT && !engine._caps.textureFloatLinearFiltering) {
+            if (type === TextureType.FLOAT && !engine._caps.textureFloatLinearFiltering) {
                 samplingMode = Texture.NEAREST_SAMPLINGMODE;
             }
-            if (type === Constants.TEXTURETYPE_HALF_FLOAT && !engine._caps.textureHalfFloatLinearFiltering) {
+            if (type === TextureType.HALF_FLOAT && !engine._caps.textureHalfFloatLinearFiltering) {
                 samplingMode = Texture.NEAREST_SAMPLINGMODE;
             }
         }
 
         // Render target
-        const format = this.isPacked || !engine._features.supportExtendedTextureFormats ? Constants.TEXTUREFORMAT_RGBA : Constants.TEXTUREFORMAT_R;
+        const format = this.isPacked || !engine._features.supportExtendedTextureFormats ? TextureFormat.RGBA : TextureFormat.R;
         this._depthMap = new RenderTargetTexture(
             name ?? "DepthRenderer",
             { width: engine.getRenderWidth(), height: engine.getRenderHeight() },
@@ -131,8 +131,8 @@ export class DepthRenderer {
             undefined,
             format
         );
-        this._depthMap.wrapU = Texture.CLAMP_ADDRESSMODE;
-        this._depthMap.wrapV = Texture.CLAMP_ADDRESSMODE;
+        this._depthMap.wrapU = TextureAddressMode.CLAMP;
+        this._depthMap.wrapV = TextureAddressMode.CLAMP;
         this._depthMap.refreshRate = 1;
         this._depthMap.renderParticles = false;
         this._depthMap.renderList = null;
@@ -195,12 +195,9 @@ export class DepthRenderer {
             let sideOrientation = material._getEffectiveOrientation(renderingMesh);
 
             if (detNeg) {
-                sideOrientation =
-                    sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation
-                        ? Constants.MATERIAL_CounterClockWiseSideOrientation
-                        : Constants.MATERIAL_ClockWiseSideOrientation;
+                sideOrientation = sideOrientation === MATERIAL_ClockWiseSideOrientation ? MATERIAL_CounterClockWiseSideOrientation : MATERIAL_ClockWiseSideOrientation;
             }
-            const reverseSideOrientation = sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation;
+            const reverseSideOrientation = sideOrientation === MATERIAL_ClockWiseSideOrientation;
 
             engine.setState(material.backFaceCulling, 0, false, reverseSideOrientation, this.reverseCulling ? !material.cullBackFaces : material.cullBackFaces);
 

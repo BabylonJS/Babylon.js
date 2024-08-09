@@ -17,7 +17,7 @@ import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConne
 import { TBNBlock } from "./TBNBlock";
 
 import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
-import { Constants } from "../../../../Engines/constants";
+import { AUTOSAMPLERSUFFIX } from "../../../../Engines/constants";
 
 /**
  * Block used to perturb normals based on a normal map
@@ -342,7 +342,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
             ],
         });
 
-        const normalRead = isWebGPU ? `textureSample(${normalSamplerName}, ${normalSamplerName + Constants.AUTOSAMPLERSUFFIX}` : `texture2D(${normalSamplerName}`;
+        const normalRead = isWebGPU ? `textureSample(${normalSamplerName}, ${normalSamplerName + AUTOSAMPLERSUFFIX}` : `texture2D(${normalSamplerName}`;
 
         const uvForPerturbNormal = !useParallax || !normalSamplerName ? this.normalMapColor.associatedVariableName : `${normalRead}, ${uv.associatedVariableName} + uvOffset).xyz`;
 
@@ -367,7 +367,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
                 replace: `parallaxOcclusion((invTBN * -viewDirectionW), (invTBN * normalW), vBumpUV, vBumpInfos.z, ${
                     isWebGPU
                         ? useParallax && this.useParallaxOcclusion
-                            ? `${normalSamplerName}, ${normalSamplerName + Constants.AUTOSAMPLERSUFFIX}`
+                            ? `${normalSamplerName}, ${normalSamplerName + AUTOSAMPLERSUFFIX}`
                             : "bump, bumpSampler"
                         : useParallax && this.useParallaxOcclusion
                           ? normalSamplerName

@@ -3,7 +3,7 @@ import type { Nullable } from "../../types";
 import type { Scene } from "../../scene";
 import type { ISize } from "../../Maths/math.size";
 import { Texture } from "../../Materials/Textures/texture";
-import { Constants } from "../../Engines/constants";
+import { TEXTURE_TRILINEAR_SAMPLINGMODE, TextureAddressMode, TextureFormat } from "../../Engines/constants";
 import type { ICanvas, ICanvasRenderingContext } from "../../Engines/ICanvas";
 
 import "../../Engines/Extensions/engine.dynamicTexture";
@@ -25,7 +25,7 @@ export class DynamicTexture extends Texture {
      * @param scene defines the scene where you want the texture
      * @param generateMipMaps defines the use of MinMaps or not (default is false)
      * @param samplingMode defines the sampling mode to use (default is Texture.TRILINEAR_SAMPLINGMODE)
-     * @param format defines the texture format to use (default is Engine.TEXTUREFORMAT_RGBA)
+     * @param format defines the texture format to use (default is Engine.TextureFormat.RGBA)
      * @param invertY defines if the texture needs to be inverted on the y axis during loading
      */
 
@@ -34,15 +34,15 @@ export class DynamicTexture extends Texture {
         options: any,
         scene: Nullable<Scene> = null,
         generateMipMaps: boolean = false,
-        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-        format: number = Constants.TEXTUREFORMAT_RGBA,
+        samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE,
+        format: number = TextureFormat.RGBA,
         invertY?: boolean
     ) {
         super(null, scene, !generateMipMaps, invertY, samplingMode, undefined, undefined, undefined, undefined, format);
 
         this.name = name;
-        this.wrapU = Texture.CLAMP_ADDRESSMODE;
-        this.wrapV = Texture.CLAMP_ADDRESSMODE;
+        this.wrapU = TextureAddressMode.CLAMP;
+        this.wrapV = TextureAddressMode.CLAMP;
 
         this._generateMipMaps = generateMipMaps;
 

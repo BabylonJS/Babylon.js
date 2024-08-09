@@ -3,7 +3,7 @@ import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
 import type { IRenderTargetTexture, RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
-import { Constants } from "core/Engines/constants";
+import { ALWAYS } from "core/Engines/constants";
 
 import "../Shaders/copyTextureToTexture.fragment";
 
@@ -57,7 +57,7 @@ export class CopyTextureToTexture {
                 engine.setState(false);
                 engine.setDepthBuffer(true);
                 engine.depthCullingState.depthMask = true;
-                engine.depthCullingState.depthFunc = Constants.ALWAYS;
+                engine.depthCullingState.depthFunc = ALWAYS;
             }
 
             if (this._textureIsInternal(this._source)) {

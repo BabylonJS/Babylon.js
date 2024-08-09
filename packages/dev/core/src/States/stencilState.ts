@@ -1,4 +1,4 @@
-import { Constants } from "../Engines/constants";
+import { ALWAYS, KEEP, REPLACE } from "../Engines/constants";
 import type { IStencilState } from "./IStencilState";
 
 /**
@@ -6,11 +6,11 @@ import type { IStencilState } from "./IStencilState";
  **/
 export class StencilState implements IStencilState {
     /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn */
-    public static readonly ALWAYS = Constants.ALWAYS;
+    public static readonly ALWAYS = ALWAYS;
     /** Passed to stencilOperation to specify that stencil value must be kept */
-    public static readonly KEEP = Constants.KEEP;
+    public static readonly KEEP = KEEP;
     /** Passed to stencilOperation to specify that stencil value must be replaced */
-    public static readonly REPLACE = Constants.REPLACE;
+    public static readonly REPLACE = REPLACE;
 
     public constructor() {
         this.reset();

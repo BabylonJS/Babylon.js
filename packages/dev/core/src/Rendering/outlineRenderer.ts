@@ -4,7 +4,7 @@ import type { _InstancesBatch } from "../Meshes/mesh";
 import { Mesh } from "../Meshes/mesh";
 import { Scene } from "../scene";
 import type { AbstractEngine } from "../Engines/abstractEngine";
-import { Constants } from "../Engines/constants";
+import { REPLACE, ALWAYS, NOTEQUAL, ALPHA_COMBINE } from "../Engines/constants";
 import type { ISceneComponent } from "../sceneComponent";
 import { SceneComponentConstants } from "../sceneComponent";
 import { DrawWrapper } from "../Materials/drawWrapper";
@@ -371,15 +371,15 @@ export class OutlineRenderer implements ISceneComponent {
                 this._engine.setDepthWrite(false);
                 this._engine.setColorWrite(false);
                 this._engine.setStencilBuffer(true);
-                this._engine.setStencilOperationPass(Constants.REPLACE);
-                this._engine.setStencilFunction(Constants.ALWAYS);
+                this._engine.setStencilOperationPass(REPLACE);
+                this._engine.setStencilFunction(ALWAYS);
                 this._engine.setStencilMask(OutlineRenderer._StencilReference);
                 this._engine.setStencilFunctionReference(OutlineRenderer._StencilReference);
                 this._engine.stencilStateComposer.useStencilGlobalOnly = true;
                 this.render(subMesh, batch, /* This sets offset to 0 */ true, this._passIdForDrawWrapper[1]);
 
                 this._engine.setColorWrite(true);
-                this._engine.setStencilFunction(Constants.NOTEQUAL);
+                this._engine.setStencilFunction(NOTEQUAL);
             }
 
             // Draw the outline using the above stencil if needed to avoid drawing within the mesh
@@ -399,7 +399,7 @@ export class OutlineRenderer implements ISceneComponent {
         if (mesh.renderOverlay) {
             const currentMode = this._engine.getAlphaMode();
             const alphaBlendState = this._engine.alphaState.alphaBlend;
-            this._engine.setAlphaMode(Constants.ALPHA_COMBINE);
+            this._engine.setAlphaMode(ALPHA_COMBINE);
             this.render(subMesh, batch, true, this._passIdForDrawWrapper[3]);
             this._engine.setAlphaMode(currentMode);
             this._engine.setDepthWrite(this._savedDepthWrite);

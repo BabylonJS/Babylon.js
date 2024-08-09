@@ -9,7 +9,7 @@ import { VertexBuffer } from "../Buffers/buffer";
 import { Ray } from "../Culling/ray";
 import { Material } from "../Materials/material";
 import { LensFlare } from "./lensFlare";
-import { Constants } from "../Engines/constants";
+import { ALPHA_DISABLE } from "../Engines/constants";
 
 import "../Shaders/lensFlare.fragment";
 import "../Shaders/lensFlare.vertex";
@@ -346,7 +346,7 @@ export class LensFlareSystem {
         }
 
         engine.setDepthBuffer(true);
-        engine.setAlphaMode(Constants.ALPHA_DISABLE);
+        engine.setAlphaMode(ALPHA_DISABLE);
         return true;
     }
 

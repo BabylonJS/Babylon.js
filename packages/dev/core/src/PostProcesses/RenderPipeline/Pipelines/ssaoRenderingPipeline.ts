@@ -8,7 +8,7 @@ import { PostProcessRenderPipeline } from "../../../PostProcesses/RenderPipeline
 import { PostProcessRenderEffect } from "../../../PostProcesses/RenderPipeline/postProcessRenderEffect";
 import { PassPostProcess } from "../../../PostProcesses/passPostProcess";
 import { BlurPostProcess } from "../../../PostProcesses/blurPostProcess";
-import { Constants } from "../../../Engines/constants";
+import { TextureType, TEXTURE_BILINEAR_SAMPLINGMODE, TextureAddressMode } from "../../../Engines/constants";
 import { serialize } from "../../../Misc/decorators";
 import type { Scene } from "../../../scene";
 import { RawTexture } from "../../../Materials/Textures/rawTexture";
@@ -247,7 +247,7 @@ export class SSAORenderingPipeline extends PostProcessRenderPipeline {
             Texture.BILINEAR_SAMPLINGMODE,
             this._scene.getEngine(),
             false,
-            Constants.TEXTURETYPE_UNSIGNED_INT
+            TextureType.UNSIGNED_INT
         );
         this._blurVPostProcess = new BlurPostProcess(
             "BlurV",
@@ -258,7 +258,7 @@ export class SSAORenderingPipeline extends PostProcessRenderPipeline {
             Texture.BILINEAR_SAMPLINGMODE,
             this._scene.getEngine(),
             false,
-            Constants.TEXTURETYPE_UNSIGNED_INT
+            TextureType.UNSIGNED_INT
         );
 
         this._blurHPostProcess.onActivateObservable.add(() => {
@@ -349,10 +349,10 @@ export class SSAORenderingPipeline extends PostProcessRenderPipeline {
             data[index++] = 255;
         }
 
-        const texture = RawTexture.CreateRGBATexture(data, size, size, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
+        const texture = RawTexture.CreateRGBATexture(data, size, size, this._scene, false, false, TEXTURE_BILINEAR_SAMPLINGMODE);
         texture.name = "SSAORandomTexture";
-        texture.wrapU = Texture.WRAP_ADDRESSMODE;
-        texture.wrapV = Texture.WRAP_ADDRESSMODE;
+        texture.wrapU = TextureAddressMode.WRAP;
+        texture.wrapV = TextureAddressMode.WRAP;
         this._randomTexture = texture;
     }
 }

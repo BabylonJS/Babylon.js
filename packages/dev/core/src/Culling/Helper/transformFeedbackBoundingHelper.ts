@@ -2,7 +2,7 @@ import type { Effect } from "core/Materials/effect";
 import type { ThinEngine } from "core/Engines/thinEngine";
 import { VertexBuffer, Buffer } from "core/Buffers/buffer";
 import type { Engine } from "core/Engines/engine";
-import { Constants } from "core/Engines/constants";
+import { MATERIAL_PointFillMode } from "core/Engines/constants";
 import type { Nullable } from "core/types";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { BindBonesParameters, BindMorphTargetParameters, PrepareAttributesForBakedVertexAnimation } from "core/Materials/materialHelper.functions";
@@ -220,7 +220,7 @@ export class TransformFeedbackBoundingHelper implements IBoundingInfoHelperPlatf
         engine.bindTransformFeedbackBuffer(targetBuffer.getBuffer());
         engine.setRasterizerState(false);
         engine.beginTransformFeedback(true);
-        engine.drawArraysType(Constants.MATERIAL_PointFillMode, 0, vertexCount);
+        engine.drawArraysType(MATERIAL_PointFillMode, 0, vertexCount);
         engine.endTransformFeedback();
         engine.setRasterizerState(true);
         engine.readTransformFeedbackBuffer(arrayBuffer);

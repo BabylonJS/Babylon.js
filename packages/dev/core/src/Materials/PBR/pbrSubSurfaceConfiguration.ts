@@ -14,7 +14,7 @@ import type { CubeTexture } from "../Textures/cubeTexture";
 import { TmpVectors } from "../../Maths/math.vector";
 import type { SubMesh } from "../../Meshes/subMesh";
 import { MaterialPluginBase } from "../materialPluginBase";
-import { Constants } from "../../Engines/constants";
+import { MATERIAL_TextureDirtyFlag, MATERIAL_PrePassDirtyFlag } from "../../Engines/constants";
 import { MaterialDefines } from "../materialDefines";
 
 import type { Engine } from "../../Engines/engine";
@@ -356,8 +356,8 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         this._scene = material.getScene();
         this.registerForExtraEvents = true;
 
-        this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
-        this._internalMarkScenePrePassDirty = material._dirtyCallbacks[Constants.MATERIAL_PrePassDirtyFlag];
+        this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[MATERIAL_TextureDirtyFlag];
+        this._internalMarkScenePrePassDirty = material._dirtyCallbacks[MATERIAL_PrePassDirtyFlag];
     }
 
     public override isReadyForSubMesh(defines: MaterialSubSurfaceDefines, scene: Scene): boolean {

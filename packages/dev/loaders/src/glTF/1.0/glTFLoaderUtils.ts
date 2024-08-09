@@ -9,6 +9,7 @@ import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import { Texture } from "core/Materials/Textures/texture";
 import type { Node } from "core/node";
 import type { Scene } from "core/scene";
+import { TextureAddressMode } from "core/Engines/constants";
 
 /**
  * Utils functions for GLTF
@@ -100,18 +101,18 @@ export class GLTFUtils {
     /**
      * Returns the wrap mode of the texture
      * @param mode the mode value
-     * @returns the wrap mode (TEXTURE_WRAP_ADDRESSMODE, MIRROR_ADDRESSMODE or CLAMP_ADDRESSMODE)
+     * @returns the wrap mode (TextureAddressMode)
      */
     public static GetWrapMode(mode: number): number {
         switch (mode) {
             case ETextureWrapMode.CLAMP_TO_EDGE:
-                return Texture.CLAMP_ADDRESSMODE;
+                return TextureAddressMode.CLAMP;
             case ETextureWrapMode.MIRRORED_REPEAT:
-                return Texture.MIRROR_ADDRESSMODE;
+                return TextureAddressMode.MIRROR;
             case ETextureWrapMode.REPEAT:
-                return Texture.WRAP_ADDRESSMODE;
+                return TextureAddressMode.WRAP;
             default:
-                return Texture.WRAP_ADDRESSMODE;
+                return TextureAddressMode.WRAP;
         }
     }
 

@@ -1,5 +1,5 @@
 import type { Camera } from "core/Cameras/camera";
-import { Constants } from "core/Engines/constants";
+import { TextureType, TextureFormat, TEXTURE_NEAREST_SAMPLINGMODE, TEXTURE_BILINEAR_SAMPLINGMODE, TextureAddressMode } from "core/Engines/constants";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import { Texture } from "core/Materials/Textures/texture";
@@ -95,10 +95,10 @@ export class FluidRenderingTextures {
         height: number,
         blurTextureSizeX: number,
         blurTextureSizeY: number,
-        textureType: number = Constants.TEXTURETYPE_FLOAT,
-        textureFormat: number = Constants.TEXTUREFORMAT_R,
-        blurTextureType: number = Constants.TEXTURETYPE_FLOAT,
-        blurTextureFormat: number = Constants.TEXTUREFORMAT_R,
+        textureType: number = TextureType.FLOAT,
+        textureFormat: number = TextureFormat.R,
+        blurTextureType: number = TextureType.FLOAT,
+        blurTextureFormat: number = TextureFormat.R,
         useStandardBlur = false,
         camera: Nullable<Camera> = null,
         generateDepthBuffer = true,
@@ -164,7 +164,7 @@ export class FluidRenderingTextures {
                 generateMipMaps: false,
                 type: this._textureType,
                 format: this._textureFormat,
-                samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                samplingMode: TEXTURE_NEAREST_SAMPLINGMODE,
                 generateDepthBuffer: this._generateDepthBuffer,
                 generateStencilBuffer: false,
                 samples: this._samples,
@@ -179,8 +179,8 @@ export class FluidRenderingTextures {
         this._texture = new Texture(null, this._scene);
         this._texture.name = "rtt" + this._name;
         this._texture._texture = renderTexture;
-        this._texture.wrapU = Texture.CLAMP_ADDRESSMODE;
-        this._texture.wrapV = Texture.CLAMP_ADDRESSMODE;
+        this._texture.wrapU = TextureAddressMode.CLAMP;
+        this._texture.wrapV = TextureAddressMode.CLAMP;
         this._texture.anisotropicFilteringLevel = 1;
     }
 
@@ -195,8 +195,8 @@ export class FluidRenderingTextures {
         const engine = this._scene.getEngine();
         const targetSize = new Vector2(Math.floor(this._blurTextureSizeX / blurSizeDivisor), Math.floor(this._blurTextureSizeY / blurSizeDivisor));
         const useBilinearFiltering =
-            (textureType === Constants.TEXTURETYPE_FLOAT && engine.getCaps().textureFloatLinearFiltering) ||
-            (textureType === Constants.TEXTURETYPE_HALF_FLOAT && engine.getCaps().textureHalfFloatLinearFiltering);
+            (textureType === TextureType.FLOAT && engine.getCaps().textureFloatLinearFiltering) ||
+            (textureType === TextureType.HALF_FLOAT && engine.getCaps().textureHalfFloatLinearFiltering);
 
         const rtBlur = this._engine.createRenderTargetTexture(
             { width: targetSize.x, height: targetSize.y },
@@ -204,7 +204,7 @@ export class FluidRenderingTextures {
                 generateMipMaps: false,
                 type: textureType,
                 format: textureFormat,
-                samplingMode: useBilinearFiltering ? Constants.TEXTURE_BILINEAR_SAMPLINGMODE : Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                samplingMode: useBilinearFiltering ? TEXTURE_BILINEAR_SAMPLINGMODE : TEXTURE_NEAREST_SAMPLINGMODE,
                 generateDepthBuffer: false,
                 generateStencilBuffer: false,
                 samples: this._samples,
@@ -219,8 +219,8 @@ export class FluidRenderingTextures {
         const texture = new Texture(null, this._scene);
         texture.name = "rttBlurred" + debugName;
         texture._texture = renderTexture;
-        texture.wrapU = Texture.CLAMP_ADDRESSMODE;
-        texture.wrapV = Texture.CLAMP_ADDRESSMODE;
+        texture.wrapU = TextureAddressMode.CLAMP;
+        texture.wrapV = TextureAddressMode.CLAMP;
         texture.anisotropicFilteringLevel = 1;
 
         if (useStandardBlur) {
@@ -231,7 +231,7 @@ export class FluidRenderingTextures {
                 null,
                 1,
                 null,
-                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                TEXTURE_NEAREST_SAMPLINGMODE,
                 engine,
                 true,
                 null,
@@ -255,8 +255,8 @@ export class FluidRenderingTextures {
             });
             kernelBlurXPostprocess.onSizeChangedObservable.add(() => {
                 kernelBlurXPostprocess._textures.forEach((rt) => {
-                    rt.texture!.wrapU = Texture.CLAMP_ADDRESSMODE;
-                    rt.texture!.wrapV = Texture.CLAMP_ADDRESSMODE;
+                    rt.texture!.wrapU = TextureAddressMode.CLAMP;
+                    rt.texture!.wrapV = TextureAddressMode.CLAMP;
                 });
             });
             this._fixReusablePostProcess(kernelBlurXPostprocess);
@@ -268,7 +268,7 @@ export class FluidRenderingTextures {
                 null,
                 1,
                 null,
-                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                TEXTURE_NEAREST_SAMPLINGMODE,
                 engine,
                 true,
                 null,
@@ -286,8 +286,8 @@ export class FluidRenderingTextures {
             });
             kernelBlurYPostprocess.onSizeChangedObservable.add(() => {
                 kernelBlurYPostprocess._textures.forEach((rt) => {
-                    rt.texture!.wrapU = Texture.CLAMP_ADDRESSMODE;
-                    rt.texture!.wrapV = Texture.CLAMP_ADDRESSMODE;
+                    rt.texture!.wrapU = TextureAddressMode.CLAMP;
+                    rt.texture!.wrapV = TextureAddressMode.CLAMP;
                 });
             });
             this._fixReusablePostProcess(kernelBlurYPostprocess);
@@ -311,7 +311,7 @@ export class FluidRenderingTextures {
                 null,
                 1,
                 null,
-                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                TEXTURE_NEAREST_SAMPLINGMODE,
                 engine,
                 true,
                 null,
@@ -337,8 +337,8 @@ export class FluidRenderingTextures {
             });
             kernelBlurXPostprocess.onSizeChangedObservable.add(() => {
                 kernelBlurXPostprocess._textures.forEach((rt) => {
-                    rt.texture!.wrapU = Texture.CLAMP_ADDRESSMODE;
-                    rt.texture!.wrapV = Texture.CLAMP_ADDRESSMODE;
+                    rt.texture!.wrapU = TextureAddressMode.CLAMP;
+                    rt.texture!.wrapV = TextureAddressMode.CLAMP;
                 });
             });
             this._fixReusablePostProcess(kernelBlurXPostprocess);
@@ -350,7 +350,7 @@ export class FluidRenderingTextures {
                 null,
                 1,
                 null,
-                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                TEXTURE_NEAREST_SAMPLINGMODE,
                 engine,
                 true,
                 null,
@@ -370,8 +370,8 @@ export class FluidRenderingTextures {
             });
             kernelBlurYPostprocess.onSizeChangedObservable.add(() => {
                 kernelBlurYPostprocess._textures.forEach((rt) => {
-                    rt.texture!.wrapU = Texture.CLAMP_ADDRESSMODE;
-                    rt.texture!.wrapV = Texture.CLAMP_ADDRESSMODE;
+                    rt.texture!.wrapU = TextureAddressMode.CLAMP;
+                    rt.texture!.wrapV = TextureAddressMode.CLAMP;
                 });
             });
             this._fixReusablePostProcess(kernelBlurYPostprocess);

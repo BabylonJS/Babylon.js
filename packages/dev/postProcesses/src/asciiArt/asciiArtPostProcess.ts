@@ -9,6 +9,7 @@ import { PostProcess } from "core/PostProcesses/postProcess";
 import type { Scene } from "core/scene";
 import "core/Engines/Extensions/engine.dynamicTexture";
 import "./asciiart.fragment";
+import { TextureAddressMode } from "core/Engines/constants";
 
 /**
  * AsciiArtFontTexture is the helper class used to easily create your ascii art font texture.
@@ -52,8 +53,8 @@ export class AsciiArtFontTexture extends BaseTexture {
         this._text == text;
         this._font == font;
 
-        this.wrapU = Texture.CLAMP_ADDRESSMODE;
-        this.wrapV = Texture.CLAMP_ADDRESSMODE;
+        this.wrapU = TextureAddressMode.CLAMP;
+        this.wrapV = TextureAddressMode.CLAMP;
         //this.anisotropicFilteringLevel = 1;
 
         // Get the font specific info.

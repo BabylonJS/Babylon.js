@@ -23,7 +23,7 @@ import { CreateIcoSphere } from "../../Meshes/Builders/icoSphereBuilder";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Axis } from "../../Maths/math.axis";
 import { EngineStore } from "../../Engines/engineStore";
-import { Constants } from "../../Engines/constants";
+import { ALPHA_COMBINE } from "../../Engines/constants";
 import type { WebXRCompositionLayerWrapper } from "./Layers/WebXRCompositionLayer";
 
 declare const XRHand: XRHand;
@@ -598,7 +598,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
             // depth prepass and alpha mode
             handShader.needDepthPrePass = true;
             handShader.transparencyMode = Material.MATERIAL_ALPHABLEND;
-            handShader.alphaMode = Constants.ALPHA_COMBINE;
+            handShader.alphaMode = ALPHA_COMBINE;
 
             // build node materials
             handShader.build(false);

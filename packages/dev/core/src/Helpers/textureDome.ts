@@ -11,6 +11,7 @@ import { Vector3 } from "../Maths/math.vector";
 import { Axis } from "../Maths/math";
 
 import type { Camera } from "../Cameras/camera";
+import { TextureAddressMode } from "../Engines/constants";
 
 /**
  * Display a 360/180 degree texture on an approximately spherical surface, useful for VR applications or skyboxes.
@@ -58,12 +59,12 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
         }
         this._texture = newTexture;
         if (this._useDirectMapping) {
-            this._texture.wrapU = Texture.CLAMP_ADDRESSMODE;
-            this._texture.wrapV = Texture.CLAMP_ADDRESSMODE;
+            this._texture.wrapU = TextureAddressMode.CLAMP;
+            this._texture.wrapV = TextureAddressMode.CLAMP;
             this._material.diffuseTexture = this._texture;
         } else {
             this._texture.coordinatesMode = Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE; // matches orientation
-            this._texture.wrapV = Texture.CLAMP_ADDRESSMODE;
+            this._texture.wrapV = TextureAddressMode.CLAMP;
             this._material.reflectionTexture = this._texture;
         }
         this._changeTextureMode(this._textureMode);

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable } from "../../types";
 import { Vector3 } from "../../Maths/math.vector";
-import { Constants } from "../../Engines/constants";
+import { TextureType, TextureFormat } from "../../Engines/constants";
 
 /**
  * CubeMap information grouping all the data for each faces as well as the cubemap size.
@@ -117,8 +117,8 @@ export class PanoramaToCubeMapTools {
             up: textureUp,
             down: textureDown,
             size: size,
-            type: Constants.TEXTURETYPE_FLOAT,
-            format: Constants.TEXTUREFORMAT_RGB,
+            type: TextureType.FLOAT,
+            format: TextureFormat.RGB,
             gammaSpace: false,
         };
     }

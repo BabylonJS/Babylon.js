@@ -2,7 +2,7 @@ import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager"
 import type { WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Observable } from "../../Misc/observable";
-import { Constants } from "../../Engines/constants";
+import { TextureFormat, TextureType, TEXTURE_LINEAR_LINEAR_MIPLINEAR, TextureAddressMode } from "../../Engines/constants";
 import { WebGLHardwareTexture } from "../../Engines/WebGL/webGLHardwareTexture";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
@@ -166,14 +166,14 @@ export class WebXRRawCameraAccess extends WebXRAbstractFeature {
         if (!this._cachedInternalTextures[index]) {
             const internalTexture = new InternalTexture(this._xrSessionManager.scene.getEngine(), InternalTextureSource.Unknown, true);
             internalTexture.invertY = false;
-            internalTexture.format = Constants.TEXTUREFORMAT_RGBA;
+            internalTexture.format = TextureFormat.RGBA;
             internalTexture.generateMipMaps = true;
-            internalTexture.type = Constants.TEXTURETYPE_FLOAT;
-            internalTexture.samplingMode = Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR;
+            internalTexture.type = TextureType.FLOAT;
+            internalTexture.samplingMode = TEXTURE_LINEAR_LINEAR_MIPLINEAR;
             internalTexture.width = view.camera.width;
             internalTexture.height = view.camera.height;
-            internalTexture._cachedWrapU = Constants.TEXTURE_WRAP_ADDRESSMODE;
-            internalTexture._cachedWrapV = Constants.TEXTURE_WRAP_ADDRESSMODE;
+            internalTexture._cachedWrapU = TextureAddressMode.WRAP;
+            internalTexture._cachedWrapV = TextureAddressMode.WRAP;
             internalTexture._hardwareTexture = new WebGLHardwareTexture(lp, this._glContext);
             this._cachedInternalTextures[index] = internalTexture;
             // create the base texture

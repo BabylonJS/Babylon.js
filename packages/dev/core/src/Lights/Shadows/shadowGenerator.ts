@@ -17,7 +17,15 @@ import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTextur
 
 import { PostProcess } from "../../PostProcesses/postProcess";
 import { BlurPostProcess } from "../../PostProcesses/blurPostProcess";
-import { Constants } from "../../Engines/constants";
+import {
+    TextureType,
+    TextureFormat,
+    GREATER,
+    LESS,
+    MATERIAL_ClockWiseSideOrientation,
+    MATERIAL_CounterClockWiseSideOrientation,
+    TextureAddressMode,
+} from "../../Engines/constants";
 import { Observable } from "../../Misc/observable";
 import { _WarnImport } from "../../Misc/devTools";
 import { EffectFallbacks } from "../../Materials/effectFallbacks";
@@ -910,19 +918,19 @@ export class ShadowGenerator implements IShadowGenerator {
 
         if (!usefullFloatFirst) {
             if (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering) {
-                this._textureType = Constants.TEXTURETYPE_HALF_FLOAT;
+                this._textureType = TextureType.HALF_FLOAT;
             } else if (caps.textureFloatRender && caps.textureFloatLinearFiltering) {
-                this._textureType = Constants.TEXTURETYPE_FLOAT;
+                this._textureType = TextureType.FLOAT;
             } else {
-                this._textureType = Constants.TEXTURETYPE_UNSIGNED_INT;
+                this._textureType = TextureType.UNSIGNED_INT;
             }
         } else {
             if (caps.textureFloatRender && caps.textureFloatLinearFiltering) {
-                this._textureType = Constants.TEXTURETYPE_FLOAT;
+                this._textureType = TextureType.FLOAT;
             } else if (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering) {
-                this._textureType = Constants.TEXTURETYPE_HALF_FLOAT;
+                this._textureType = TextureType.HALF_FLOAT;
             } else {
-                this._textureType = Constants.TEXTURETYPE_UNSIGNED_INT;
+                this._textureType = TextureType.UNSIGNED_INT;
             }
         }
 
@@ -950,10 +958,10 @@ export class ShadowGenerator implements IShadowGenerator {
                 false,
                 false,
                 undefined,
-                this._useRedTextureType ? Constants.TEXTUREFORMAT_RED : Constants.TEXTUREFORMAT_RGBA
+                this._useRedTextureType ? TextureFormat.RED : TextureFormat.RGBA
             );
             this._shadowMap.createDepthStencilTexture(
-                engine.useReverseDepthBuffer ? Constants.GREATER : Constants.LESS,
+                engine.useReverseDepthBuffer ? GREATER : LESS,
                 true,
                 undefined,
                 undefined,
@@ -973,8 +981,8 @@ export class ShadowGenerator implements IShadowGenerator {
             return;
         }
 
-        this._shadowMap.wrapU = Texture.CLAMP_ADDRESSMODE;
-        this._shadowMap.wrapV = Texture.CLAMP_ADDRESSMODE;
+        this._shadowMap.wrapU = TextureAddressMode.CLAMP;
+        this._shadowMap.wrapV = TextureAddressMode.CLAMP;
         this._shadowMap.anisotropicFilteringLevel = 1;
         this._shadowMap.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
         this._shadowMap.renderParticles = false;
@@ -1104,8 +1112,8 @@ export class ShadowGenerator implements IShadowGenerator {
 
         if (!this.useKernelBlur || this.blurScale !== 1.0) {
             this._shadowMap2 = new RenderTargetTexture(this._light.name + "_shadowMap2", targetSize, this._scene, false, true, this._textureType, undefined, undefined, false);
-            this._shadowMap2.wrapU = Texture.CLAMP_ADDRESSMODE;
-            this._shadowMap2.wrapV = Texture.CLAMP_ADDRESSMODE;
+            this._shadowMap2.wrapU = TextureAddressMode.CLAMP;
+            this._shadowMap2.wrapV = TextureAddressMode.CLAMP;
             this._shadowMap2.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
         }
 
@@ -1143,7 +1151,7 @@ export class ShadowGenerator implements IShadowGenerator {
             this._kernelBlurXPostprocess.autoClear = false;
             this._kernelBlurYPostprocess.autoClear = false;
 
-            if (this._textureType === Constants.TEXTURETYPE_UNSIGNED_INT) {
+            if (this._textureType === TextureType.UNSIGNED_INT) {
                 (<BlurPostProcess>this._kernelBlurXPostprocess).packedFloat = true;
                 (<BlurPostProcess>this._kernelBlurYPostprocess).packedFloat = true;
             }
@@ -1241,10 +1249,9 @@ export class ShadowGenerator implements IShadowGenerator {
         let sideOrientation = material._getEffectiveOrientation(renderingMesh);
 
         if ((detNeg && !useRHS) || (!detNeg && useRHS)) {
-            sideOrientation =
-                sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation ? Constants.MATERIAL_CounterClockWiseSideOrientation : Constants.MATERIAL_ClockWiseSideOrientation;
+            sideOrientation = sideOrientation === MATERIAL_ClockWiseSideOrientation ? MATERIAL_CounterClockWiseSideOrientation : MATERIAL_ClockWiseSideOrientation;
         }
-        const reverseSideOrientation = sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation;
+        const reverseSideOrientation = sideOrientation === MATERIAL_ClockWiseSideOrientation;
 
         engine.setState(material.backFaceCulling, undefined, undefined, reverseSideOrientation, material.cullBackFaces);
 
@@ -1491,7 +1498,7 @@ export class ShadowGenerator implements IShadowGenerator {
     private _prepareShadowDefines(subMesh: SubMesh, useInstances: boolean, defines: string[], isTransparent: boolean): string[] {
         defines.push("#define SM_LIGHTTYPE_" + this._light.getClassName().toUpperCase());
 
-        defines.push("#define SM_FLOAT " + (this._textureType !== Constants.TEXTURETYPE_UNSIGNED_INT ? "1" : "0"));
+        defines.push("#define SM_FLOAT " + (this._textureType !== TextureType.UNSIGNED_INT ? "1" : "0"));
 
         defines.push("#define SM_ESM " + (this.useExponentialShadowMap || this.useBlurExponentialShadowMap ? "1" : "0"));
 

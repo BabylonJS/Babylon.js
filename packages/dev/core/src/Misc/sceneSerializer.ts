@@ -1,6 +1,6 @@
 import type { Geometry } from "../Meshes/geometry";
 import { Mesh } from "../Meshes/mesh";
-import { Constants } from "../Engines/constants";
+import { DELAYLOADSTATE_LOADED, DELAYLOADSTATE_NONE } from "../Engines/constants";
 import { MultiMaterial } from "../Materials/multiMaterial";
 import type { Material } from "../Materials/material";
 import type { Scene } from "../scene";
@@ -48,7 +48,7 @@ const FinalizeSingleNode = (node: Node, serializationObject: any) => {
     if ((node as Mesh)._isMesh) {
         const mesh = node as Mesh;
         //only works if the mesh is already loaded
-        if (mesh.delayLoadState === Constants.DELAYLOADSTATE_LOADED || mesh.delayLoadState === Constants.DELAYLOADSTATE_NONE) {
+        if (mesh.delayLoadState === DELAYLOADSTATE_LOADED || mesh.delayLoadState === DELAYLOADSTATE_NONE) {
             const serializeMaterial = (material: Material) => {
                 serializationObject.materials = serializationObject.materials || [];
                 if (mesh.material && !serializationObject.materials.some((mat: Material) => mat.id === (<Material>mesh.material).id)) {
@@ -325,7 +325,7 @@ export class SceneSerializer {
             if (abstractMesh instanceof Mesh) {
                 const mesh = abstractMesh;
                 if (!mesh.doNotSerialize) {
-                    if (mesh.delayLoadState === Constants.DELAYLOADSTATE_LOADED || mesh.delayLoadState === Constants.DELAYLOADSTATE_NONE) {
+                    if (mesh.delayLoadState === DELAYLOADSTATE_LOADED || mesh.delayLoadState === DELAYLOADSTATE_NONE) {
                         serializationObject.meshes.push(SerializeMesh(mesh, serializationObject));
                     }
                 }

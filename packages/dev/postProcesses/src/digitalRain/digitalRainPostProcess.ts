@@ -5,6 +5,7 @@ import { Matrix } from "core/Maths/math.vector";
 import type { Camera } from "core/Cameras/camera";
 import { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Texture } from "core/Materials/Textures/texture";
+import { TextureAddressMode } from "core/Engines/constants";
 import type { Effect } from "core/Materials/effect";
 import { PostProcess } from "core/PostProcesses/postProcess";
 import type { Scene } from "core/scene";
@@ -53,8 +54,8 @@ export class DigitalRainFontTexture extends BaseTexture {
         this._text == text;
         this._font == font;
 
-        this.wrapU = Texture.CLAMP_ADDRESSMODE;
-        this.wrapV = Texture.CLAMP_ADDRESSMODE;
+        this.wrapU = TextureAddressMode.CLAMP;
+        this.wrapV = TextureAddressMode.CLAMP;
 
         // Get the font specific info.
         const maxCharHeight = this._getFontHeight(font);

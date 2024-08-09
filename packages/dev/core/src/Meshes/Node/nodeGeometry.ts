@@ -9,7 +9,7 @@ import { NodeGeometryBuildState } from "./nodeGeometryBuildState";
 import { GetClass } from "../../Misc/typeStore";
 import { serialize } from "../../Misc/decorators";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
-import { Constants } from "../../Engines/constants";
+import { SnippetUrl } from "../../Engines/constants";
 import { WebRequest } from "../../Misc/webRequest";
 import { BoxBlock } from "./Blocks/Sources/boxBlock";
 import type { GeometryInputBlock } from "./Blocks/geometryInputBlock";
@@ -53,7 +53,7 @@ export class NodeGeometry {
     public static EditorURL = `${Tools._DefaultCdnUrl}/v${Engine.Version}/nodeGeometryEditor/babylon.nodeGeometryEditor.js`;
 
     /** Define the Url to load snippets */
-    public static SnippetUrl = Constants.SnippetUrl;
+    public static SnippetUrl = SnippetUrl;
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     private BJSNODEGEOMETRYEDITOR = this._getGlobalNodeGeometryEditor();

@@ -1,12 +1,13 @@
 import { Vector3, Matrix, Quaternion, TmpVectors } from "../Maths/math.vector";
 import type { Scene } from "../scene";
-import { Camera } from "../Cameras/camera";
+import type { Camera } from "../Cameras/camera";
 import { FreeCamera } from "../Cameras/freeCamera";
 import { TargetCamera } from "../Cameras/targetCamera";
 import type { WebXRSessionManager } from "./webXRSessionManager";
 import { Viewport } from "../Maths/math.viewport";
 import { Observable } from "../Misc/observable";
 import { WebXRTrackingState } from "./webXRTypes";
+import { RigMode } from "../Engines/constants";
 
 /**
  * WebXR Camera which holds the views for the xrSession
@@ -72,7 +73,7 @@ export class WebXRCamera extends FreeCamera {
         // Initial camera configuration
         this.minZ = 0.1;
         this.rotationQuaternion = new Quaternion();
-        this.cameraRigMode = Camera.RIG_MODE_CUSTOM;
+        this.cameraRigMode = RigMode.CUSTOM;
         this.updateUpVectorFromRotation = true;
         this._updateNumberOfRigCameras(1);
         // freeze projection matrix, which will be copied later

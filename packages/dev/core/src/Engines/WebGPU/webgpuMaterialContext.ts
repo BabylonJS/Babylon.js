@@ -4,7 +4,7 @@ import { ExternalTexture } from "../../Materials/Textures/externalTexture";
 import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import type { TextureSampler } from "../../Materials/Textures/textureSampler";
 import type { Nullable } from "../../types";
-import { Constants } from "../constants";
+import { TextureType, TextureFormat } from "../constants";
 import type { IMaterialContext } from "../IMaterialContext";
 import { WebGPUCacheSampler } from "./webgpuCacheSampler";
 
@@ -105,8 +105,7 @@ export class WebGPUMaterialContext implements IMaterialContext {
 
         if (texture) {
             textureCache.isFloatOrDepthTexture =
-                texture.type === Constants.TEXTURETYPE_FLOAT ||
-                (texture.format >= Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 && texture.format <= Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8);
+                texture.type === TextureType.FLOAT || (texture.format >= TextureFormat.DEPTH24_STENCIL8 && texture.format <= TextureFormat.DEPTH32FLOAT_STENCIL8);
             textureCache.isExternalTexture = ExternalTexture.IsExternalTexture(texture);
             if (textureCache.isFloatOrDepthTexture) {
                 this._numFloatOrDepthTextures++;

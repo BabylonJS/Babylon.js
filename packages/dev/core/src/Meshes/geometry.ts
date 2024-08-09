@@ -11,7 +11,7 @@ import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { Effect } from "../Materials/effect";
 import { SceneLoaderFlags } from "../Loading/sceneLoaderFlags";
 import { BoundingInfo } from "../Culling/boundingInfo";
-import { Constants } from "../Engines/constants";
+import { DELAYLOADSTATE_NONE, DELAYLOADSTATE_LOADED, DELAYLOADSTATE_LOADING, DELAYLOADSTATE_NOTLOADED } from "../Engines/constants";
 import { Tools } from "../Misc/tools";
 import { Tags } from "../Misc/tags";
 import type { DataBuffer } from "../Buffers/dataBuffer";
@@ -42,7 +42,7 @@ export class Geometry implements IGetSetVerticesData {
     /**
      * Gets the delay loading state of the geometry (none by default which means not delayed)
      */
-    public delayLoadState = Constants.DELAYLOADSTATE_NONE;
+    public delayLoadState = DELAYLOADSTATE_NONE;
     /**
      * Gets the file containing the data to load when running in delay load state
      */
@@ -200,7 +200,7 @@ export class Geometry implements IGetSetVerticesData {
      * @returns true if the geometry is ready to be used
      */
     public isReady(): boolean {
-        return this.delayLoadState === Constants.DELAYLOADSTATE_LOADED || this.delayLoadState === Constants.DELAYLOADSTATE_NONE;
+        return this.delayLoadState === DELAYLOADSTATE_LOADED || this.delayLoadState === DELAYLOADSTATE_NONE;
     }
 
     /**
@@ -828,7 +828,7 @@ export class Geometry implements IGetSetVerticesData {
      * @param onLoaded defines a callback called when the geometry is loaded
      */
     public load(scene: Scene, onLoaded?: () => void): void {
-        if (this.delayLoadState === Constants.DELAYLOADSTATE_LOADING) {
+        if (this.delayLoadState === DELAYLOADSTATE_LOADING) {
             return;
         }
 
@@ -839,7 +839,7 @@ export class Geometry implements IGetSetVerticesData {
             return;
         }
 
-        this.delayLoadState = Constants.DELAYLOADSTATE_LOADING;
+        this.delayLoadState = DELAYLOADSTATE_LOADING;
 
         this._queueLoad(scene, onLoaded);
     }
@@ -859,7 +859,7 @@ export class Geometry implements IGetSetVerticesData {
 
                 this._delayLoadingFunction(JSON.parse(data as string), this);
 
-                this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
+                this.delayLoadState = DELAYLOADSTATE_LOADED;
                 this._delayInfo = [];
 
                 scene.removePendingData(this);
@@ -996,7 +996,7 @@ export class Geometry implements IGetSetVerticesData {
         this._indexBuffer = null;
         this._indices = [];
 
-        this.delayLoadState = Constants.DELAYLOADSTATE_NONE;
+        this.delayLoadState = DELAYLOADSTATE_NONE;
         this.delayLoadingFile = null;
         this._delayLoadingFunction = null;
         this._delayInfo = [];
@@ -1606,7 +1606,7 @@ export class Geometry implements IGetSetVerticesData {
         }
 
         if (parsedVertexData.delayLoadingFile) {
-            geometry.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
+            geometry.delayLoadState = DELAYLOADSTATE_NOTLOADED;
             geometry.delayLoadingFile = rootUrl + parsedVertexData.delayLoadingFile;
             geometry._boundingInfo = new BoundingInfo(Vector3.FromArray(parsedVertexData.boundingBoxMinimum), Vector3.FromArray(parsedVertexData.boundingBoxMaximum));
 

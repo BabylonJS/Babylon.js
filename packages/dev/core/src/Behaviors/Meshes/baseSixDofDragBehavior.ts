@@ -12,7 +12,7 @@ import type { Observer } from "../../Misc/observable";
 import { Observable } from "../../Misc/observable";
 import { TransformNode } from "../../Meshes/transformNode";
 import type { PickingInfo } from "../../Collisions/pickingInfo";
-import { Camera } from "../../Cameras/camera";
+import { RigMode } from "../../Engines/constants";
 import type { Ray } from "../../Culling/ray";
 import type { IPointerEvent } from "../../Events/deviceInputEvents";
 import type { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
@@ -198,7 +198,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
     }
 
     private _pointerUpdate2D(ray: Ray, pointerId: number, zDragFactor: number) {
-        if (this._pointerCamera && this._pointerCamera.cameraRigMode == Camera.RIG_MODE_NONE && !this._pointerCamera._isLeftCamera && !this._pointerCamera._isRightCamera) {
+        if (this._pointerCamera && this._pointerCamera.cameraRigMode == RigMode.NONE && !this._pointerCamera._isLeftCamera && !this._pointerCamera._isRightCamera) {
             ray.origin.copyFrom(this._pointerCamera!.globalPosition);
             zDragFactor = 0;
         }
@@ -314,12 +314,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                         return;
                     }
 
-                    if (
-                        this._pointerCamera &&
-                        this._pointerCamera.cameraRigMode === Camera.RIG_MODE_NONE &&
-                        !this._pointerCamera._isLeftCamera &&
-                        !this._pointerCamera._isRightCamera
-                    ) {
+                    if (this._pointerCamera && this._pointerCamera.cameraRigMode === RigMode.NONE && !this._pointerCamera._isLeftCamera && !this._pointerCamera._isRightCamera) {
                         pointerInfo.pickInfo.ray.origin.copyFrom(this._pointerCamera!.globalPosition);
                     }
 

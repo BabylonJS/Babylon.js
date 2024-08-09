@@ -1,5 +1,5 @@
 import { VertexBuffer } from "core/Buffers/buffer";
-import { Constants } from "core/Engines/constants";
+import { MATERIAL_TriangleStripDrawMode, MATERIAL_TriangleFillMode } from "core/Engines/constants";
 import { EffectWrapper } from "core/Materials/effectRenderer";
 import type { Scene } from "core/scene";
 import type { FloatArray, Nullable } from "core/types";
@@ -135,9 +135,9 @@ export class FluidRenderingObjectCustomParticles extends FluidRenderingObject {
         }
 
         if (this.useInstancing) {
-            this._engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, numParticles);
+            this._engine.drawArraysType(MATERIAL_TriangleStripDrawMode, 0, 4, numParticles);
         } else {
-            this._engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, numParticles);
+            this._engine.drawElementsType(MATERIAL_TriangleFillMode, 0, numParticles);
         }
     }
 

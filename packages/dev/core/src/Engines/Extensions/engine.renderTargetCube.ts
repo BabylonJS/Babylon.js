@@ -1,6 +1,6 @@
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { Logger } from "../../Misc/logger";
-import { Constants } from "../constants";
+import { TextureType, TEXTURE_TRILINEAR_SAMPLINGMODE, TextureFormat, TEXTURE_NEAREST_SAMPLINGMODE } from "../constants";
 import { ThinEngine } from "../thinEngine";
 import type { RenderTargetWrapper } from "../renderTargetWrapper";
 import type { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
@@ -25,19 +25,19 @@ ThinEngine.prototype.createRenderTargetCubeTexture = function (size: number, opt
         generateMipMaps: true,
         generateDepthBuffer: true,
         generateStencilBuffer: false,
-        type: Constants.TEXTURETYPE_UNSIGNED_INT,
-        samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-        format: Constants.TEXTUREFORMAT_RGBA,
+        type: TextureType.UNSIGNED_INT,
+        samplingMode: TEXTURE_TRILINEAR_SAMPLINGMODE,
+        format: TextureFormat.RGBA,
         ...options,
     };
     fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && fullOptions.generateStencilBuffer;
 
-    if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+    if (fullOptions.type === TextureType.FLOAT && !this._caps.textureFloatLinearFiltering) {
         // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
-        fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-    } else if (fullOptions.type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+        fullOptions.samplingMode = TEXTURE_NEAREST_SAMPLINGMODE;
+    } else if (fullOptions.type === TextureType.HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
         // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
-        fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        fullOptions.samplingMode = TEXTURE_NEAREST_SAMPLINGMODE;
     }
     const gl = this._gl;
 
@@ -46,9 +46,9 @@ ThinEngine.prototype.createRenderTargetCubeTexture = function (size: number, opt
 
     const filters = this._getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps);
 
-    if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-        fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
-        Logger.Warn("Float textures are not supported. Cube render target forced to TEXTURETYPE_UNESIGNED_BYTE type");
+    if (fullOptions.type === TextureType.FLOAT && !this._caps.textureFloat) {
+        fullOptions.type = TextureType.UNSIGNED_INT;
+        Logger.Warn("Float textures are not supported. Cube render target forced to TextureType.UNESIGNED_BYTE type");
     }
 
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, filters.mag);

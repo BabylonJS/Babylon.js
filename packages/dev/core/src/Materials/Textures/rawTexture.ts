@@ -1,5 +1,12 @@
 import { Texture } from "./texture";
-import { Constants } from "../../Engines/constants";
+import {
+    TEXTURE_TRILINEAR_SAMPLINGMODE,
+    TEXTURE_NEAREST_SAMPLINGMODE,
+    TextureType,
+    TextureFormat,
+    TEXTURE_CREATIONFLAG_STORAGE,
+    TextureAddressMode,
+} from "../../Engines/constants";
 import "../../Engines/Extensions/engine.rawTexture";
 import type { Nullable } from "../../types";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
@@ -20,12 +27,12 @@ export class RawTexture extends Texture {
      * @param data define the array of data to use to create the texture (null to create an empty texture)
      * @param width define the width of the texture
      * @param height define the height of the texture
-     * @param format define the format of the data (RGB, RGBA... Engine.TEXTUREFORMAT_xxx)
+     * @param format define the format of the data (RGB, RGBA... Engine.TextureFormat.xxx)
      * @param sceneOrEngine defines the scene or engine the texture will belong to
      * @param generateMipMaps define whether mip maps should be generated or not
      * @param invertY define if the data should be flipped on Y when uploaded to the GPU
      * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
-     * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
+     * @param type define the format of the data (int, float... Engine.TextureType.xxx)
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
      */
@@ -34,14 +41,14 @@ export class RawTexture extends Texture {
         width: number,
         height: number,
         /**
-         * Define the format of the data (RGB, RGBA... Engine.TEXTUREFORMAT_xxx)
+         * Define the format of the data (RGB, RGBA... Engine.TextureFormat.xxx)
          */
         public format: number,
         sceneOrEngine: Nullable<Scene | AbstractEngine>,
         generateMipMaps: boolean = true,
         invertY: boolean = false,
-        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE,
+        type: number = TextureType.UNSIGNED_INT,
         creationFlags?: number,
         useSRGBBuffer?: boolean
     ) {
@@ -51,17 +58,17 @@ export class RawTexture extends Texture {
             return;
         }
 
-        if (!this._engine._caps.textureFloatLinearFiltering && type === Constants.TEXTURETYPE_FLOAT) {
-            samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        if (!this._engine._caps.textureFloatLinearFiltering && type === TextureType.FLOAT) {
+            samplingMode = TEXTURE_NEAREST_SAMPLINGMODE;
         }
-        if (!this._engine._caps.textureHalfFloatLinearFiltering && type === Constants.TEXTURETYPE_HALF_FLOAT) {
-            samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        if (!this._engine._caps.textureHalfFloatLinearFiltering && type === TextureType.HALF_FLOAT) {
+            samplingMode = TEXTURE_NEAREST_SAMPLINGMODE;
         }
 
         this._texture = this._engine.createRawTexture(data, width, height, format, generateMipMaps, invertY, samplingMode, null, type, creationFlags ?? 0, useSRGBBuffer ?? false);
 
-        this.wrapU = Texture.CLAMP_ADDRESSMODE;
-        this.wrapV = Texture.CLAMP_ADDRESSMODE;
+        this.wrapU = TextureAddressMode.CLAMP;
+        this.wrapV = TextureAddressMode.CLAMP;
     }
 
     /**
@@ -119,9 +126,9 @@ export class RawTexture extends Texture {
         sceneOrEngine: Nullable<Scene | AbstractEngine>,
         generateMipMaps: boolean = true,
         invertY: boolean = false,
-        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE
+        samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE
     ): RawTexture {
-        return new RawTexture(data, width, height, Constants.TEXTUREFORMAT_LUMINANCE, sceneOrEngine, generateMipMaps, invertY, samplingMode);
+        return new RawTexture(data, width, height, TextureFormat.LUMINANCE, sceneOrEngine, generateMipMaps, invertY, samplingMode);
     }
 
     /**
@@ -142,9 +149,9 @@ export class RawTexture extends Texture {
         sceneOrEngine: Nullable<Scene | AbstractEngine>,
         generateMipMaps: boolean = true,
         invertY: boolean = false,
-        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE
+        samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE
     ): RawTexture {
-        return new RawTexture(data, width, height, Constants.TEXTUREFORMAT_LUMINANCE_ALPHA, sceneOrEngine, generateMipMaps, invertY, samplingMode);
+        return new RawTexture(data, width, height, TextureFormat.LUMINANCE_ALPHA, sceneOrEngine, generateMipMaps, invertY, samplingMode);
     }
 
     /**
@@ -165,9 +172,9 @@ export class RawTexture extends Texture {
         sceneOrEngine: Nullable<Scene | AbstractEngine>,
         generateMipMaps: boolean = true,
         invertY: boolean = false,
-        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE
+        samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE
     ): RawTexture {
-        return new RawTexture(data, width, height, Constants.TEXTUREFORMAT_ALPHA, sceneOrEngine, generateMipMaps, invertY, samplingMode);
+        return new RawTexture(data, width, height, TextureFormat.ALPHA, sceneOrEngine, generateMipMaps, invertY, samplingMode);
     }
 
     /**
@@ -179,7 +186,7 @@ export class RawTexture extends Texture {
      * @param generateMipMaps Define whether or not to create mip maps for the texture
      * @param invertY define if the data should be flipped on Y when uploaded to the GPU
      * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
-     * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
+     * @param type define the format of the data (int, float... Engine.TextureType.xxx)
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
      * @returns the RGB alpha texture
@@ -191,12 +198,12 @@ export class RawTexture extends Texture {
         sceneOrEngine: Nullable<Scene | AbstractEngine>,
         generateMipMaps: boolean = true,
         invertY: boolean = false,
-        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE,
+        type: number = TextureType.UNSIGNED_INT,
         creationFlags: number = 0,
         useSRGBBuffer: boolean = false
     ): RawTexture {
-        return new RawTexture(data, width, height, Constants.TEXTUREFORMAT_RGB, sceneOrEngine, generateMipMaps, invertY, samplingMode, type, creationFlags, useSRGBBuffer);
+        return new RawTexture(data, width, height, TextureFormat.RGB, sceneOrEngine, generateMipMaps, invertY, samplingMode, type, creationFlags, useSRGBBuffer);
     }
 
     /**
@@ -208,7 +215,7 @@ export class RawTexture extends Texture {
      * @param generateMipMaps Define whether or not to create mip maps for the texture
      * @param invertY define if the data should be flipped on Y when uploaded to the GPU
      * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
-     * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
+     * @param type define the format of the data (int, float... Engine.TextureType.xxx)
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
      * @returns the RGBA texture
@@ -220,12 +227,12 @@ export class RawTexture extends Texture {
         sceneOrEngine: Nullable<Scene | AbstractEngine>,
         generateMipMaps: boolean = true,
         invertY: boolean = false,
-        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE,
+        type: number = TextureType.UNSIGNED_INT,
         creationFlags: number = 0,
         useSRGBBuffer: boolean = false
     ): RawTexture {
-        return new RawTexture(data, width, height, Constants.TEXTUREFORMAT_RGBA, sceneOrEngine, generateMipMaps, invertY, samplingMode, type, creationFlags, useSRGBBuffer);
+        return new RawTexture(data, width, height, TextureFormat.RGBA, sceneOrEngine, generateMipMaps, invertY, samplingMode, type, creationFlags, useSRGBBuffer);
     }
 
     /**
@@ -237,7 +244,7 @@ export class RawTexture extends Texture {
      * @param generateMipMaps Define whether or not to create mip maps for the texture
      * @param invertY define if the data should be flipped on Y when uploaded to the GPU
      * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
-     * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
+     * @param type define the format of the data (int, float... Engine.TextureType.xxx)
      * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
      * @returns the RGBA texture
      */
@@ -248,23 +255,11 @@ export class RawTexture extends Texture {
         sceneOrEngine: Nullable<Scene | AbstractEngine>,
         generateMipMaps: boolean = true,
         invertY: boolean = false,
-        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE,
+        type: number = TextureType.UNSIGNED_INT,
         useSRGBBuffer: boolean = false
     ): RawTexture {
-        return new RawTexture(
-            data,
-            width,
-            height,
-            Constants.TEXTUREFORMAT_RGBA,
-            sceneOrEngine,
-            generateMipMaps,
-            invertY,
-            samplingMode,
-            type,
-            Constants.TEXTURE_CREATIONFLAG_STORAGE,
-            useSRGBBuffer
-        );
+        return new RawTexture(data, width, height, TextureFormat.RGBA, sceneOrEngine, generateMipMaps, invertY, samplingMode, type, TEXTURE_CREATIONFLAG_STORAGE, useSRGBBuffer);
     }
 
     /**
@@ -276,7 +271,7 @@ export class RawTexture extends Texture {
      * @param generateMipMaps Define whether or not to create mip maps for the texture
      * @param invertY define if the data should be flipped on Y when uploaded to the GPU
      * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
-     * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
+     * @param type define the format of the data (int, float... Engine.TextureType.xxx)
      * @returns the R texture
      */
     public static CreateRTexture(
@@ -287,9 +282,9 @@ export class RawTexture extends Texture {
         generateMipMaps: boolean = true,
         invertY: boolean = false,
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
-        type: number = Constants.TEXTURETYPE_FLOAT
+        type: number = TextureType.FLOAT
     ): RawTexture {
-        return new RawTexture(data, width, height, Constants.TEXTUREFORMAT_R, sceneOrEngine, generateMipMaps, invertY, samplingMode, type);
+        return new RawTexture(data, width, height, TextureFormat.R, sceneOrEngine, generateMipMaps, invertY, samplingMode, type);
     }
 
     /**
@@ -301,7 +296,7 @@ export class RawTexture extends Texture {
      * @param generateMipMaps Define whether or not to create mip maps for the texture
      * @param invertY define if the data should be flipped on Y when uploaded to the GPU
      * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
-     * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
+     * @param type define the format of the data (int, float... Engine.TextureType.xxx)
      * @returns the R texture
      */
     public static CreateRStorageTexture(
@@ -312,8 +307,8 @@ export class RawTexture extends Texture {
         generateMipMaps: boolean = true,
         invertY: boolean = false,
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
-        type: number = Constants.TEXTURETYPE_FLOAT
+        type: number = TextureType.FLOAT
     ): RawTexture {
-        return new RawTexture(data, width, height, Constants.TEXTUREFORMAT_R, sceneOrEngine, generateMipMaps, invertY, samplingMode, type, Constants.TEXTURE_CREATIONFLAG_STORAGE);
+        return new RawTexture(data, width, height, TextureFormat.R, sceneOrEngine, generateMipMaps, invertY, samplingMode, type, TEXTURE_CREATIONFLAG_STORAGE);
     }
 }

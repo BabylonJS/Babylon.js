@@ -48,7 +48,18 @@ import { AlphaState } from "../States/alphaCullingState";
 import { _WarnImport } from "../Misc/devTools";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { IsDocumentAvailable, IsNavigatorAvailable, IsWindowObjectExist } from "../Misc/domManagement";
-import { Constants } from "./constants";
+import {
+    ALPHA_ADD,
+    ALPHA_DISABLE,
+    RENDERPASS_MAIN,
+    GEQUAL,
+    LEQUAL,
+    SnapshotRendering,
+    TextureFormat,
+    TEXTURE_NEAREST_SAMPLINGMODE,
+    TextureType,
+    TEXTURE_TRILINEAR_SAMPLINGMODE,
+} from "./constants";
 import { Observable } from "../Misc/observable";
 import { EngineFunctionContext, _loadFile } from "./abstractEngine.functions";
 
@@ -212,9 +223,9 @@ export abstract class AbstractEngine {
     /** @internal */
     public _alphaState = new AlphaState();
     /** @internal */
-    public _alphaMode = Constants.ALPHA_ADD;
+    public _alphaMode = ALPHA_ADD;
     /** @internal */
-    public _alphaEquation = Constants.ALPHA_DISABLE;
+    public _alphaEquation = ALPHA_DISABLE;
 
     protected _activeRequests: IFileRequest[] = [];
 
@@ -433,7 +444,7 @@ export abstract class AbstractEngine {
     /**
      * Gets or sets the current render pass id
      */
-    public currentRenderPassId = Constants.RENDERPASS_MAIN;
+    public currentRenderPassId = RENDERPASS_MAIN;
 
     /**
      * Gets a boolean indicating if the pointer is currently locked
@@ -486,9 +497,9 @@ export abstract class AbstractEngine {
         this._useReverseDepthBuffer = useReverse;
 
         if (useReverse) {
-            this._depthCullingState.depthFunc = Constants.GEQUAL;
+            this._depthCullingState.depthFunc = GEQUAL;
         } else {
-            this._depthCullingState.depthFunc = Constants.LEQUAL;
+            this._depthCullingState.depthFunc = LEQUAL;
         }
     }
 
@@ -715,7 +726,7 @@ export abstract class AbstractEngine {
      * Gets or sets the snapshot rendering mode
      */
     public get snapshotRenderingMode(): number {
-        return Constants.SNAPSHOTRENDERING_STANDARD;
+        return SnapshotRendering.STANDARD;
     }
 
     public set snapshotRenderingMode(mode: number) {}
@@ -748,7 +759,7 @@ export abstract class AbstractEngine {
      */
     public get emptyTexture(): InternalTexture {
         if (!this._emptyTexture) {
-            this._emptyTexture = this.createRawTexture(new Uint8Array(4), 1, 1, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+            this._emptyTexture = this.createRawTexture(new Uint8Array(4), 1, 1, TextureFormat.RGBA, false, false, TEXTURE_NEAREST_SAMPLINGMODE);
         }
 
         return this._emptyTexture;
@@ -759,7 +770,7 @@ export abstract class AbstractEngine {
      */
     public get emptyTexture3D(): InternalTexture {
         if (!this._emptyTexture3D) {
-            this._emptyTexture3D = this.createRawTexture3D(new Uint8Array(4), 1, 1, 1, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+            this._emptyTexture3D = this.createRawTexture3D(new Uint8Array(4), 1, 1, 1, TextureFormat.RGBA, false, false, TEXTURE_NEAREST_SAMPLINGMODE);
         }
 
         return this._emptyTexture3D;
@@ -770,16 +781,7 @@ export abstract class AbstractEngine {
      */
     public get emptyTexture2DArray(): InternalTexture {
         if (!this._emptyTexture2DArray) {
-            this._emptyTexture2DArray = this.createRawTexture2DArray(
-                new Uint8Array(4),
-                1,
-                1,
-                1,
-                Constants.TEXTUREFORMAT_RGBA,
-                false,
-                false,
-                Constants.TEXTURE_NEAREST_SAMPLINGMODE
-            );
+            this._emptyTexture2DArray = this.createRawTexture2DArray(new Uint8Array(4), 1, 1, 1, TextureFormat.RGBA, false, false, TEXTURE_NEAREST_SAMPLINGMODE);
         }
 
         return this._emptyTexture2DArray;
@@ -792,15 +794,7 @@ export abstract class AbstractEngine {
         if (!this._emptyCubeTexture) {
             const faceData = new Uint8Array(4);
             const cubeData = [faceData, faceData, faceData, faceData, faceData, faceData];
-            this._emptyCubeTexture = this.createRawCubeTexture(
-                cubeData,
-                1,
-                Constants.TEXTUREFORMAT_RGBA,
-                Constants.TEXTURETYPE_UNSIGNED_INT,
-                false,
-                false,
-                Constants.TEXTURE_NEAREST_SAMPLINGMODE
-            );
+            this._emptyCubeTexture = this.createRawCubeTexture(cubeData, 1, TextureFormat.RGBA, TextureType.UNSIGNED_INT, false, false, TEXTURE_NEAREST_SAMPLINGMODE);
         }
 
         return this._emptyCubeTexture;
@@ -1416,7 +1410,7 @@ export abstract class AbstractEngine {
         noMipmap: boolean,
         invertY: boolean,
         scene: Nullable<ISceneLike>,
-        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+        samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<(texture: InternalTexture) => void> = null,
         onError: Nullable<(message: string, exception: any) => void> = null,
         prepareTexture: PrepareTextureFunction,
@@ -2149,7 +2143,7 @@ export abstract class AbstractEngine {
      * @param invertY defines if data must be stored with Y axis inverted
      * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
      * @param compression defines the compression used (null by default)
-     * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+     * @param type defines the type fo the data (Engine.TextureType.UNSIGNED_INT by default)
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
      * @returns the raw texture inside an InternalTexture
@@ -2176,7 +2170,7 @@ export abstract class AbstractEngine {
      * @param data defines the array of data to use to create each face
      * @param size defines the size of the textures
      * @param format defines the format of the data
-     * @param type defines the type of the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
+     * @param type defines the type of the data (like Engine.TextureType.UNSIGNED_INT)
      * @param generateMipMaps  defines if the engine should generate the mip levels
      * @param invertY defines if data must be stored with Y axis inverted
      * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)

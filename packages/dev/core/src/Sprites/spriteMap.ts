@@ -1,4 +1,4 @@
-import { Engine } from "../Engines/engine";
+import { TextureType } from "../Engines/constants";
 import type { IDisposable, Scene } from "../scene";
 import type { Nullable } from "../types";
 import { Vector2, Vector3 } from "../Maths/math.vector";
@@ -385,7 +385,7 @@ export class SpriteMap implements ISpriteMap {
 
         const floatArray = new Float32Array(data);
 
-        const t = RawTexture.CreateRGBATexture(floatArray, this.spriteCount, 4, this._scene, false, false, Texture.NEAREST_NEAREST, Engine.TEXTURETYPE_FLOAT);
+        const t = RawTexture.CreateRGBATexture(floatArray, this.spriteCount, 4, this._scene, false, false, Texture.NEAREST_NEAREST, TextureType.FLOAT);
 
         return t;
     }
@@ -417,7 +417,7 @@ export class SpriteMap implements ISpriteMap {
         }
 
         const floatArray = new Float32Array(data);
-        const t = RawTexture.CreateRGBATexture(floatArray, _tx, _ty, this._scene, false, false, Texture.NEAREST_NEAREST, Engine.TEXTURETYPE_FLOAT);
+        const t = RawTexture.CreateRGBATexture(floatArray, _tx, _ty, this._scene, false, false, Texture.NEAREST_NEAREST, TextureType.FLOAT);
 
         return t;
     }
@@ -487,7 +487,7 @@ export class SpriteMap implements ISpriteMap {
             false,
             false,
             Texture.NEAREST_NEAREST,
-            Engine.TEXTURETYPE_FLOAT
+            TextureType.FLOAT
         );
 
         return t;

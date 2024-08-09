@@ -10,7 +10,7 @@ import type { Camera } from "../../../Cameras/camera";
 import type { ImageProcessingConfiguration } from "../../../Materials/imageProcessingConfiguration";
 import { Texture } from "../../../Materials/Textures/texture";
 import type { AbstractEngine } from "../../../Engines/abstractEngine";
-import { Constants } from "../../../Engines/constants";
+import { TextureType } from "../../../Engines/constants";
 import type { IDisposable, Scene } from "../../../scene";
 import { GlowLayer } from "../../../Layers/glowLayer";
 
@@ -444,12 +444,12 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
         // Misc
         if (this._hdr) {
             if (caps.textureHalfFloatRender) {
-                this._defaultPipelineTextureType = Constants.TEXTURETYPE_HALF_FLOAT;
+                this._defaultPipelineTextureType = TextureType.HALF_FLOAT;
             } else if (caps.textureFloatRender) {
-                this._defaultPipelineTextureType = Constants.TEXTURETYPE_FLOAT;
+                this._defaultPipelineTextureType = TextureType.FLOAT;
             }
         } else {
-            this._defaultPipelineTextureType = Constants.TEXTURETYPE_UNSIGNED_INT;
+            this._defaultPipelineTextureType = TextureType.UNSIGNED_INT;
         }
 
         // Attach

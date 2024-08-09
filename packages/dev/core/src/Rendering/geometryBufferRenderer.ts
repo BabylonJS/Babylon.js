@@ -2,9 +2,8 @@ import { Matrix } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
 import type { SubMesh } from "../Meshes/subMesh";
 import type { Mesh } from "../Meshes/mesh";
-import { Constants } from "../Engines/constants";
+import { TextureAddressMode, TextureFormat, TextureType } from "../Engines/constants";
 import type { SmartArray } from "../Misc/smartArray";
-import { Texture } from "../Materials/Textures/texture";
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import { MultiRenderTarget } from "../Materials/Textures/multiRenderTarget";
 import type { PrePassRenderer } from "../Rendering/prePassRenderer";
@@ -371,13 +370,13 @@ export class GeometryBufferRenderer {
      * Creates a new G Buffer for the scene
      * @param scene The scene the buffer belongs to
      * @param ratioOrDimensions How big is the buffer related to the main canvas (default: 1). You can also directly pass a width and height for the generated textures
-     * @param depthFormat Format of the depth texture (default: Constants.TEXTUREFORMAT_DEPTH16)
+     * @param depthFormat Format of the depth texture (default: Constants.TextureFormat.DEPTH16)
      * @param textureTypesAndFormats The types and formats of textures to create as render targets. If not provided, all textures will be RGBA and float or half float, depending on the engine capabilities.
      */
     constructor(
         scene: Scene,
         ratioOrDimensions: number | { width: number; height: number } = 1,
-        depthFormat = Constants.TEXTUREFORMAT_DEPTH16,
+        depthFormat = TextureFormat.DEPTH16,
         textureTypesAndFormats?: { [key: number]: { textureType: number; textureFormat: number } }
     ) {
         this._scene = scene;
@@ -752,11 +751,11 @@ export class GeometryBufferRenderer {
         const engine = this._scene.getEngine();
         const [count, textureNames, textureTypesAndFormat] = this._assignRenderTargetIndices();
 
-        let type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        let type = TextureType.UNSIGNED_BYTE;
         if (engine._caps.textureFloat && engine._caps.textureFloatLinearFiltering) {
-            type = Constants.TEXTURETYPE_FLOAT;
+            type = TextureType.FLOAT;
         } else if (engine._caps.textureHalfFloat && engine._caps.textureHalfFloatLinearFiltering) {
-            type = Constants.TEXTURETYPE_HALF_FLOAT;
+            type = TextureType.HALF_FLOAT;
         }
 
         const dimensions =
@@ -773,13 +772,13 @@ export class GeometryBufferRenderer {
                 textureFormats.push(typeAndFormat.textureFormat);
             } else {
                 textureTypes.push(type);
-                textureFormats.push(Constants.TEXTUREFORMAT_RGBA);
+                textureFormats.push(TextureFormat.RGBA);
             }
         }
 
         this._normalsAreUnsigned =
-            textureTypes[GeometryBufferRenderer.NORMAL_TEXTURE_TYPE] === Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV ||
-            textureTypes[GeometryBufferRenderer.NORMAL_TEXTURE_TYPE] === Constants.TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV;
+            textureTypes[GeometryBufferRenderer.NORMAL_TEXTURE_TYPE] === TextureType.UNSIGNED_INT_2_10_10_10_REV ||
+            textureTypes[GeometryBufferRenderer.NORMAL_TEXTURE_TYPE] === TextureType.UNSIGNED_INT_10F_11F_11F_REV;
 
         this._multiRenderTarget = new MultiRenderTarget(
             "gBuffer",
@@ -792,8 +791,8 @@ export class GeometryBufferRenderer {
         if (!this.isSupported) {
             return;
         }
-        this._multiRenderTarget.wrapU = Texture.CLAMP_ADDRESSMODE;
-        this._multiRenderTarget.wrapV = Texture.CLAMP_ADDRESSMODE;
+        this._multiRenderTarget.wrapU = TextureAddressMode.CLAMP;
+        this._multiRenderTarget.wrapV = TextureAddressMode.CLAMP;
         this._multiRenderTarget.refreshRate = 1;
         this._multiRenderTarget.renderParticles = false;
         this._multiRenderTarget.renderList = null;

@@ -24,7 +24,7 @@
 // SOFTWARE.
 import * as WebGPUConstants from "./webgpuConstants";
 import type { WebGPUBufferManager } from "./webgpuBufferManager";
-import { Constants } from "../constants";
+import { TEXTURE_CREATIONFLAG_STORAGE } from "../constants";
 import type { Nullable } from "../../types";
 import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { InternalTextureSource } from "../../Materials/Textures/internalTexture";
@@ -1018,7 +1018,7 @@ export class WebGPUTextureManager {
         }
 
         const gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
-        const isStorageTexture = ((creationFlags ?? 0) & Constants.TEXTURE_CREATIONFLAG_STORAGE) !== 0;
+        const isStorageTexture = ((creationFlags ?? 0) & TEXTURE_CREATIONFLAG_STORAGE) !== 0;
 
         gpuTextureWrapper.format = WebGPUTextureHelper.GetWebGPUTextureFormat(texture.type, texture.format, texture._useSRGBBuffer);
 

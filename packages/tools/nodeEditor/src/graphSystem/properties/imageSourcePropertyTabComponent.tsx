@@ -5,6 +5,7 @@ import { Tools } from "core/Misc/tools";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import { Texture } from "core/Materials/Textures/texture";
+import { TextureAddressMode } from "core/Engines/constants";
 import type { ImageSourceBlock } from "core/Materials/Node/Blocks/Dual/imageSourceBlock";
 import { GeneralPropertyTabComponent, GenericPropertyTabComponent } from "./genericNodePropertyComponent";
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
@@ -168,9 +169,9 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                     {texture && (
                         <CheckBoxLineComponent
                             label="Clamp U"
-                            isSelected={() => texture.wrapU === Texture.CLAMP_ADDRESSMODE}
+                            isSelected={() => texture.wrapU === TextureAddressMode.CLAMP}
                             onSelect={(value) => {
-                                texture.wrapU = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE;
+                                texture.wrapU = value ? TextureAddressMode.CLAMP : TextureAddressMode.WRAP;
                                 this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                             }}
                         />
@@ -178,9 +179,9 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                     {texture && (
                         <CheckBoxLineComponent
                             label="Clamp V"
-                            isSelected={() => texture.wrapV === Texture.CLAMP_ADDRESSMODE}
+                            isSelected={() => texture.wrapV === TextureAddressMode.CLAMP}
                             onSelect={(value) => {
-                                texture.wrapV = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE;
+                                texture.wrapV = value ? TextureAddressMode.CLAMP : TextureAddressMode.WRAP;
                                 this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                             }}
                         />
