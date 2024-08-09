@@ -3,7 +3,7 @@ import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnection
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { Vector3 } from "../../../Maths/math.vector";
-import { Scalar } from "../../../Maths/math.scalar";
+import { Clamp } from "../../../Maths/math.scalar.functions";
 import { NodeGeometryContextualSources } from "../Enums/nodeGeometryContextualSources";
 
 /**
@@ -175,14 +175,14 @@ export class NoiseBlock extends NodeGeometryBlock {
         let amp = 1.0;
         let maxamp = 0.0;
         let sum = 0.0;
-        octaves = Scalar.Clamp(octaves, 0, 15.0);
+        octaves = Clamp(octaves, 0, 15.0);
         const step = octaves | 0;
 
         for (let i = 0; i <= step; i++) {
             const t = this._perlin(position.scale(fscale));
             sum += t * amp;
             maxamp += amp;
-            amp *= Scalar.Clamp(roughness, 0.0, 1.0);
+            amp *= Clamp(roughness, 0.0, 1.0);
             fscale *= 2.0;
         }
 

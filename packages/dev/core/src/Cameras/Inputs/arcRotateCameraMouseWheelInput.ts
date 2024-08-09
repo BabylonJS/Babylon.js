@@ -11,7 +11,7 @@ import { Vector3, Matrix, TmpVectors } from "../../Maths/math.vector";
 import { Epsilon } from "../../Maths/math.constants";
 import type { IWheelEvent } from "../../Events/deviceInputEvents";
 import { EventConstants } from "../../Events/deviceInputEvents";
-import { Scalar } from "../../Maths/math.scalar";
+import { Clamp } from "../../Maths/math.scalar.functions";
 import { Tools } from "../../Misc/tools";
 
 /**
@@ -107,7 +107,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
                             estimatedTargetRadius -= targetInertia;
                             targetInertia *= this.camera.inertia;
                         }
-                        estimatedTargetRadius = Scalar.Clamp(estimatedTargetRadius, 0, Number.MAX_VALUE);
+                        estimatedTargetRadius = Clamp(estimatedTargetRadius, 0, Number.MAX_VALUE);
                         delta = this._computeDeltaFromMouseWheelLegacyEvent(wheelDelta, estimatedTargetRadius);
                     }
                 } else {

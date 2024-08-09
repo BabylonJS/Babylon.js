@@ -1,7 +1,7 @@
 /* eslint-disable babylonjs/available */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import * as WebGPUConstants from "./webgpuConstants";
-import { Scalar } from "../../Maths/math.scalar";
+import { ILog2 } from "../../Maths/math.scalar.functions";
 import { Constants } from "../constants";
 import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import type { HardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
@@ -9,7 +9,7 @@ import type { HardwareTextureWrapper } from "../../Materials/Textures/hardwareTe
 /** @internal */
 export class WebGPUTextureHelper {
     public static ComputeNumMipmapLevels(width: number, height: number) {
-        return Scalar.ILog2(Math.max(width, height)) + 1;
+        return ILog2(Math.max(width, height)) + 1;
     }
 
     public static GetTextureTypeFromFormat(format: GPUTextureFormat): number {

@@ -5,7 +5,7 @@ import { SerializationHelper } from "../../../Misc/decorators.serialization";
 import type { IAnimatable } from "../../../Animations/animatable.interface";
 import { Logger } from "../../../Misc/logger";
 import { Vector2, Vector3, Matrix, Vector4 } from "../../../Maths/math.vector";
-import { Scalar } from "../../../Maths/math.scalar";
+import { Clamp } from "../../../Maths/math.scalar.functions";
 import type { Camera } from "../../../Cameras/camera";
 import type { Effect } from "../../../Materials/effect";
 import { Texture } from "../../../Materials/Textures/texture";
@@ -1279,7 +1279,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
             if (this.hdrAutoExposure) {
                 this._currentExposure = this._fixedExposure / outputLiminance;
             } else {
-                outputLiminance = Scalar.Clamp(outputLiminance, this.hdrMinimumLuminance, 1e20);
+                outputLiminance = Clamp(outputLiminance, this.hdrMinimumLuminance, 1e20);
                 effect.setFloat("averageLuminance", outputLiminance);
             }
 

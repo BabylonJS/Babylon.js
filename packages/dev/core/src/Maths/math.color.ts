@@ -3,8 +3,7 @@ import { RegisterClass } from "../Misc/typeStore";
 import type { DeepImmutable, FloatArray, Tuple } from "../types";
 import { Epsilon, ToGammaSpace, ToLinearSpace } from "./math.constants";
 import type { IColor3Like, IColor4Like } from "./math.like";
-import { Scalar } from "./math.scalar";
-import { Clamp, ToHex } from "./math.scalar.functions";
+import { Clamp, ToHex, WithinEpsilon } from "./math.scalar.functions";
 import type { Tensor } from "./tensor";
 
 function colorChannelToLinearSpace(color: number): number {
@@ -328,7 +327,7 @@ export class Color3 implements Tensor<Tuple<number, 3>, IColor3Like>, IColor3Lik
      * @returns true if both colors are distant less than epsilon
      */
     public equalsWithEpsilon(otherColor: DeepImmutable<IColor3Like>, epsilon: number = Epsilon): boolean {
-        return Scalar.WithinEpsilon(this.r, otherColor.r, epsilon) && Scalar.WithinEpsilon(this.g, otherColor.g, epsilon) && Scalar.WithinEpsilon(this.b, otherColor.b, epsilon);
+        return WithinEpsilon(this.r, otherColor.r, epsilon) && WithinEpsilon(this.g, otherColor.g, epsilon) && WithinEpsilon(this.b, otherColor.b, epsilon);
     }
 
     /**
@@ -1459,10 +1458,10 @@ export class Color4 implements Tensor<Tuple<number, 4>, IColor4Like>, IColor4Lik
      */
     public equalsWithEpsilon(otherColor: DeepImmutable<IColor4Like>, epsilon: number = Epsilon): boolean {
         return (
-            Scalar.WithinEpsilon(this.r, otherColor.r, epsilon) &&
-            Scalar.WithinEpsilon(this.g, otherColor.g, epsilon) &&
-            Scalar.WithinEpsilon(this.b, otherColor.b, epsilon) &&
-            Scalar.WithinEpsilon(this.a, otherColor.a, epsilon)
+            WithinEpsilon(this.r, otherColor.r, epsilon) &&
+            WithinEpsilon(this.g, otherColor.g, epsilon) &&
+            WithinEpsilon(this.b, otherColor.b, epsilon) &&
+            WithinEpsilon(this.a, otherColor.a, epsilon)
         );
     }
 

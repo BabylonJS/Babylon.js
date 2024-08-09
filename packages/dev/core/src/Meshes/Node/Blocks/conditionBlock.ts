@@ -4,7 +4,7 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
-import { Scalar } from "../../../Maths/math.scalar";
+import { WithinEpsilon } from "../../../Maths/math.scalar.functions";
 import { Epsilon } from "../../../Maths/math.constants";
 
 /**
@@ -132,7 +132,7 @@ export class ConditionBlock extends NodeGeometryBlock {
 
             switch (this.test) {
                 case ConditionBlockTests.Equal:
-                    condition = Scalar.WithinEpsilon(left, right, Epsilon);
+                    condition = WithinEpsilon(left, right, Epsilon);
                     break;
                 case ConditionBlockTests.NotEqual:
                     condition = left !== right;

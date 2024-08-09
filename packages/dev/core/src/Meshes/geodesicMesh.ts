@@ -1,5 +1,5 @@
 import { Vector3, TmpVectors } from "../Maths/math.vector";
-import { Scalar } from "../Maths/math.scalar";
+import { HighestCommonFactor } from "../Maths/math.scalar.functions";
 import { PHI } from "../Maths/math.constants";
 import { _IsoVector } from "../Maths/math.isovector";
 
@@ -90,7 +90,7 @@ export class _PrimaryIsoTriangle {
         let m1 = 1;
         let n1 = 0;
         if (n !== 0) {
-            g = Scalar.HCF(m, n);
+            g = HighestCommonFactor(m, n);
         }
         m1 = m / g;
         n1 = n / g;
@@ -409,7 +409,7 @@ export class _PrimaryIsoTriangle {
 
         //shared vertices along edges when needed
         if (n > 0) {
-            const g = Scalar.HCF(m, n);
+            const g = HighestCommonFactor(m, n);
             const m1 = m / g;
             const n1 = n / g;
 

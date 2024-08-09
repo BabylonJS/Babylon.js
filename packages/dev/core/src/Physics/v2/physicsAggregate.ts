@@ -5,7 +5,7 @@ import { Logger } from "../../Misc/logger";
 import type { Scene } from "../../scene";
 import type { TransformNode } from "../../Meshes/transformNode";
 import { Quaternion, TmpVectors, Vector3 } from "../../Maths/math.vector";
-import { Scalar } from "../../Maths/math.scalar";
+import { WithinEpsilon } from "../../Maths/math.scalar.functions";
 import { PhysicsMotionType, PhysicsShapeType } from "./IPhysicsEnginePlugin";
 import type { Mesh } from "../../Meshes/mesh";
 import type { Observer } from "../../Misc/observable";
@@ -206,7 +206,7 @@ export class PhysicsAggregate {
 
         switch (this.type) {
             case PhysicsShapeType.SPHERE:
-                if (!this._options.radius && Scalar.WithinEpsilon(extents.x, extents.y, 0.0001) && Scalar.WithinEpsilon(extents.x, extents.z, 0.0001)) {
+                if (!this._options.radius && WithinEpsilon(extents.x, extents.y, 0.0001) && WithinEpsilon(extents.x, extents.z, 0.0001)) {
                     this._options.radius = extents.x / 2;
                 } else if (!this._options.radius) {
                     Logger.Warn("Non uniform scaling is unsupported for sphere shapes. Setting the radius to the biggest bounding box extent.");

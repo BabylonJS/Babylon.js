@@ -12,7 +12,7 @@ import { Ray } from "../Culling/ray";
 import type { PickingInfo } from "../Collisions/pickingInfo";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { BaseTexture } from "./../Materials/Textures/baseTexture";
-import { Scalar } from "../Maths/math.scalar";
+import { RandomRange } from "../Maths/math.scalar.functions";
 import type { Material } from "../Materials/material";
 
 /** Defines the 4 color options */
@@ -398,16 +398,16 @@ export class PointsCloudSystem implements IDisposable {
                 this._addParticle(idxPoints, pointsGroup, this._groupCounter, index + i);
                 particle = this.particles[idxPoints];
                 //form a point inside the facet v0, v1, v2;
-                lamda = Math.sqrt(Scalar.RandomRange(0, 1));
-                mu = Scalar.RandomRange(0, 1);
+                lamda = Math.sqrt(RandomRange(0, 1));
+                mu = RandomRange(0, 1);
                 facetPoint = vertex0.add(vec0.scale(lamda)).add(vec1.scale(lamda * mu));
                 if (isVolume) {
                     norm = mesh.getFacetNormal(index).normalize().scale(-1);
                     tang = vec0.clone().normalize();
                     biNorm = Vector3.Cross(norm, tang);
-                    angle = Scalar.RandomRange(0, 2 * Math.PI);
+                    angle = RandomRange(0, 2 * Math.PI);
                     facetPlaneVec = tang.scale(Math.cos(angle)).add(biNorm.scale(Math.sin(angle)));
-                    angle = Scalar.RandomRange(0.1, Math.PI / 2);
+                    angle = RandomRange(0.1, Math.PI / 2);
                     direction = facetPlaneVec.scale(Math.cos(angle)).add(norm.scale(Math.sin(angle)));
 
                     ray.origin = facetPoint.add(direction.scale(0.00001));
@@ -416,7 +416,7 @@ export class PointsCloudSystem implements IDisposable {
                     pickInfo = ray.intersectsMesh(mesh);
                     if (pickInfo.hit) {
                         distance = pickInfo.pickedPoint!.subtract(facetPoint).length();
-                        gap = Scalar.RandomRange(0, 1) * distance;
+                        gap = RandomRange(0, 1) * distance;
                         facetPoint.addInPlace(direction.scale(gap));
                     }
                 }
@@ -454,8 +454,8 @@ export class PointsCloudSystem implements IDisposable {
                 } else {
                     if (color) {
                         statedColor.set(color.r, color.g, color.b);
-                        deltaS = Scalar.RandomRange(-range, range);
-                        deltaV = Scalar.RandomRange(-range, range);
+                        deltaS = RandomRange(-range, range);
+                        deltaV = RandomRange(-range, range);
                         hsvCol = statedColor.toHSV();
                         h = hsvCol.r;
                         s = hsvCol.g + deltaS;

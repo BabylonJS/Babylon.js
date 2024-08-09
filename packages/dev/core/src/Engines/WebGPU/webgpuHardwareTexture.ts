@@ -1,7 +1,7 @@
 /* eslint-disable jsdoc/require-jsdoc */
 /* eslint-disable babylonjs/available */
 import type { HardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
-import { Scalar } from "../../Maths/math.scalar";
+import { ILog2 } from "../../Maths/math.scalar.functions";
 import type { Nullable } from "../../types";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import * as WebGPUConstants from "./webgpuConstants";
@@ -106,7 +106,7 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
             }_${viewDimension}`,
             format,
             dimension: viewDimension,
-            mipLevelCount: generateMipMaps ? Scalar.ILog2(Math.max(width, height)) + 1 : 1,
+            mipLevelCount: generateMipMaps ? ILog2(Math.max(width, height)) + 1 : 1,
             baseArrayLayer: 0,
             baseMipLevel: 0,
             arrayLayerCount,

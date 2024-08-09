@@ -1,7 +1,7 @@
 import type { IEasingFunction, EasingFunction } from "./easing";
 import { Vector3, Quaternion, Vector2, Matrix, TmpVectors } from "../Maths/math.vector";
 import { Color3, Color4 } from "../Maths/math.color";
-import { Scalar } from "../Maths/math.scalar";
+import { Hermite, Lerp } from "../Maths/math.scalar.functions";
 import type { DeepImmutable, Nullable } from "../types";
 import type { Scene } from "../scene";
 import { RegisterClass } from "../Misc/typeStore";
@@ -784,7 +784,7 @@ export class Animation {
      * @returns Interpolated scalar value
      */
     public floatInterpolateFunction(startValue: number, endValue: number, gradient: number): number {
-        return Scalar.Lerp(startValue, endValue, gradient);
+        return Lerp(startValue, endValue, gradient);
     }
 
     /**
@@ -797,7 +797,7 @@ export class Animation {
      * @returns Interpolated scalar value
      */
     public floatInterpolateFunctionWithTangents(startValue: number, outTangent: number, endValue: number, inTangent: number, gradient: number): number {
-        return Scalar.Hermite(startValue, outTangent, endValue, inTangent, gradient);
+        return Hermite(startValue, outTangent, endValue, inTangent, gradient);
     }
 
     /**
