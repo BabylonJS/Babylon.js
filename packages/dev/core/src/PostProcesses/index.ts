@@ -51,6 +51,7 @@ export * from "../ShadersWGSL/passCube.fragment";
 
 // vrDFistortionCorrection postprocess
 export * from "../Shaders/vrDistortionCorrection.fragment";
+export * from "../ShadersWGSL/vrDistortionCorrection.fragment";
 
 // Image processing postprocess
 export * from "../ShadersWGSL/imageProcessing.fragment";
