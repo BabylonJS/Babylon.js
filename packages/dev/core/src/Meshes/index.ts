@@ -34,3 +34,7 @@ import "./thinInstanceMesh";
 export * from "./thinInstanceMesh";
 export * from "./Node/index";
 export * from "./GaussianSplatting/gaussianSplattingMesh";
+
+// LineMesh
+export * from "../Shaders/color.fragment";
+export * from "../Shaders/color.vertex";

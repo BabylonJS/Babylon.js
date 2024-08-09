@@ -620,7 +620,7 @@ export class PostProcess {
         blockCompilation?: boolean,
         textureFormat?: number,
         shaderLanguage?: ShaderLanguage,
-        dealyLoadShaders?: boolean
+        delayLoadShaders?: boolean
     );
 
     /** @internal */
@@ -641,7 +641,7 @@ export class PostProcess {
         blockCompilation = false,
         textureFormat = Constants.TEXTUREFORMAT_RGBA,
         shaderLanguage = ShaderLanguage.GLSL,
-        dealyLoadShaders = false
+        delayLoadShaders = false
     ) {
         this.name = name;
         let size: number | { width: number; height: number } = 1;
@@ -704,14 +704,14 @@ export class PostProcess {
         this._indexParameters = indexParameters;
         this._drawWrapper = new DrawWrapper(this._engine);
 
-        this._postConstructor(blockCompilation, defines, dealyLoadShaders);
+        this._postConstructor(blockCompilation, defines, delayLoadShaders);
     }
 
     protected async _initShaderSourceAsync(_forceGLSL = false) {}
 
     private _onInitShadersDone: Nullable<() => void> = null;
-    private async _postConstructor(blockCompilation: boolean, defines: Nullable<string> = null, dealyLoadShaders: boolean = false) {
-        if (dealyLoadShaders) {
+    private async _postConstructor(blockCompilation: boolean, defines: Nullable<string> = null, delayLoadShaders: boolean = false) {
+        if (delayLoadShaders) {
             await this._initShaderSourceAsync(PostProcess.ForceGLSL);
             if (this._onInitShadersDone) {
                 this._onInitShadersDone();
