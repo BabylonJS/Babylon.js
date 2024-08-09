@@ -7,6 +7,8 @@ import { PostProcess } from "./postProcess";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import { Constants } from "../Engines/constants";
 
+import "../Shaders/fxaa.fragment";
+import "../Shaders/fxaa.vertex";
 import { RegisterClass } from "../Misc/typeStore";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 
@@ -42,16 +44,6 @@ export class FxaaPostProcess extends PostProcess {
             const texelSize = this.texelSize;
             effect.setFloat2("texelSize", texelSize.x, texelSize.y);
         });
-    }
-
-    protected override async _initShaderSourceAsync(useWebGPU: boolean) {
-        if (useWebGPU) {
-            await Promise.all([import("../ShadersWGSL/fxaa.fragment"), import("../ShadersWGSL/fxaa.vertex")]);
-        } else {
-            await Promise.all([import("../Shaders/fxaa.fragment"), import("../Shaders/fxaa.vertex")]);
-        }
-
-        super._initShaderSourceAsync(useWebGPU);
     }
 
     private _getDefines(): Nullable<string> {

@@ -59,6 +59,8 @@ import type { WebGPURenderTargetWrapper } from "./WebGPU/webgpuRenderTargetWrapp
 
 import "../Buffers/buffer.align";
 
+import "../ShadersWGSL/postprocess.vertex";
+
 import type { VideoTexture } from "../Materials/Textures/videoTexture";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { RenderTargetWrapper } from "./renderTargetWrapper";

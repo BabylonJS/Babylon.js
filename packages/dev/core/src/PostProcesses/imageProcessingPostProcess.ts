@@ -15,6 +15,9 @@ import type { AbstractEngine } from "../Engines/abstractEngine";
 import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
 
+import "../Shaders/imageProcessing.fragment";
+import "../Shaders/postprocess.vertex";
+
 /**
  * ImageProcessingPostProcess
  * @see https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/usePostProcesses#imageprocessing
@@ -441,17 +444,6 @@ export class ImageProcessingPostProcess extends PostProcess {
             this.imageProcessingConfiguration.bind(effect, this.aspectRatio);
         };
     }
-
-    protected override async _initShaderSourceAsync(useWebGPU: boolean) {
-        if (useWebGPU) {
-            await import("../ShadersWGSL/imageProcessing.fragment");
-        } else {
-            await import("../Shaders/imageProcessing.fragment");
-        }
-
-        super._initShaderSourceAsync(useWebGPU);
-    }
-
     /**
      *  "ImageProcessingPostProcess"
      * @returns "ImageProcessingPostProcess"

@@ -70,7 +70,25 @@ class GlowBlurPostProcess extends PostProcess {
         engine?: AbstractEngine,
         reusable?: boolean
     ) {
-        super(name, "glowBlurPostProcess", ["screenSize", "direction", "blurWidth"], null, options, camera, samplingMode, engine, reusable);
+        super(
+            name,
+            "glowBlurPostProcess",
+            ["screenSize", "direction", "blurWidth"],
+            null,
+            options,
+            camera,
+            samplingMode,
+            engine,
+            reusable,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            true
+        );
 
         this.onApplyObservable.add((effect: Effect) => {
             effect.setFloat2("screenSize", this.width, this.height);
@@ -79,14 +97,18 @@ class GlowBlurPostProcess extends PostProcess {
         });
     }
 
-    protected override async _initShaderSourceAsync(useWebGPU: boolean) {
-        if (useWebGPU) {
+    protected override async _initShaderSourceAsync(forceGLSL = false) {
+        const engine = this.getEngine();
+
+        if (engine.isWebGPU && !forceGLSL) {
+            this._shaderLanguage = ShaderLanguage.WGSL;
+
             await import("../ShadersWGSL/glowBlurPostProcess.fragment");
         } else {
             await import("../Shaders/glowBlurPostProcess.fragment");
         }
 
-        super._initShaderSourceAsync(useWebGPU);
+        this._shadersLoaded = true;
     }
 }
 

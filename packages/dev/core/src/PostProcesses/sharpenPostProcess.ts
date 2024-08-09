@@ -66,16 +66,6 @@ export class SharpenPostProcess extends PostProcess {
         };
     }
 
-    protected override async _initShaderSourceAsync(useWebGPU: boolean) {
-        if (useWebGPU) {
-            await Promise.all([import("../ShadersWGSL/sharpen.fragment")]);
-        } else {
-            await Promise.all([import("../Shaders/sharpen.fragment")]);
-        }
-
-        await super._initShaderSourceAsync(useWebGPU);
-    }
-
     /**
      * @internal
      */
