@@ -7,14 +7,14 @@
 // node folderSizeFlameChart.js [pattern=**/*] [outputFile=FoldersSizes]
 // Example: node folderSizeFlameChart.js . "**/*.ts,!**/*.d.ts,!**/test/**"
 
-const child_process = require("child_process");
-const fs = require("fs");
-const path = require("path");
-const os = require("os");
-const https = require("https");
-const glob = require("glob");
-const chalk = require("chalk");
-const open = require("open");
+import child_process from "child_process";
+import fs from "fs";
+import path from "path";
+import os from "os";
+import https from "https";
+import { glob } from "glob";
+import chalk from "chalk";
+import open from "open";
 
 async function downloadFlameGraphScript() {
     // This is the temp path where the flamegraph.pl script will be downloaded
@@ -56,7 +56,7 @@ async function downloadFlameGraphScript() {
  * @param {function} coerceSize A function to coerce the size of a file. If not provided, the actual size is used.
  * @returns {Promise<void>} A promise that resolves when the flame chart has been generated.
  */
-async function generateFlameChart(folder, pattern, outputFile, chartSubtitle, coerceSize) {
+export async function generateFlameChart(folder, pattern, outputFile, chartSubtitle, coerceSize) {
     const flameGraphScriptPath = await downloadFlameGraphScript();
 
     // Resolve to an absolute path
@@ -103,7 +103,7 @@ async function generateFlameChart(folder, pattern, outputFile, chartSubtitle, co
     child_process.execSync(flameGraphCommand);
 }
 
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
     const [scriptPath, folder = ".", pattern = "**", outputFile = "FoldersSizes"] = process.argv.slice(1);
 
     console.log(chalk.bold(`${path.basename(scriptPath)} ${folder} ${pattern} ${outputFile}`));
@@ -113,7 +113,3 @@ if (require.main === module) {
         open(`${outputFile}.svg`);
     });
 }
-
-module.exports = {
-    generateFlameChart,
-};
