@@ -98,3 +98,7 @@ export * from "../ShadersWGSL/blackAndWhite.fragment";
 // Anaglyph
 export * from "../Shaders/anaglyph.fragment";
 export * from "../ShadersWGSL/anaglyph.fragment";
+
+// Convolution
+export * from "../Shaders/convolution.fragment";
+export * from "../ShadersWGSL/convolution.fragment";
