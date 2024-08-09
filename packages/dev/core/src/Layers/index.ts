@@ -18,3 +18,9 @@ export * from "../Shaders/glowBlurPostProcess.fragment";
 export * from "../ShadersWGSL/glowMapMerge.fragment";
 export * from "../ShadersWGSL/glowMapMerge.vertex";
 export * from "../ShadersWGSL/glowBlurPostProcess.fragment";
+
+// Layers shaders
+export * from "../Shaders/layer.fragment";
+export * from "../Shaders/layer.vertex";
+export * from "../ShadersWGSL/layer.fragment";
+export * from "../ShadersWGSL/layer.vertex";
