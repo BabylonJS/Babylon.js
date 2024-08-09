@@ -1719,7 +1719,7 @@
             "title": "Fluid rendering box sphere",
             "playgroundId": "#PCMH7A#2",
             "referenceImage": "fluidBoxSphere.png",
-            "renderCount": 120,
+            "renderCount": 480,
             "excludedEngines": ["webgl1"]
         },
         {

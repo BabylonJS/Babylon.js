@@ -132,11 +132,6 @@ export class LinesMesh extends Mesh {
         const engine = this.getScene().getEngine();
 
         if (engine.isWebGPU && !LinesMesh.ForceGLSL) {
-            // Switch main UBO to non UBO to connect to leftovers UBO in webgpu
-            if (this._uniformBuffer) {
-                this._uniformBuffer.dispose();
-            }
-            this._uniformBuffer = new UniformBuffer(engine, undefined, undefined, this.name, true);
             this._shaderLanguage = ShaderLanguage.WGSL;
 
             await Promise.all([import("../ShadersWGSL/color.vertex"), import("../ShadersWGSL/color.fragment")]);
