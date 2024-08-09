@@ -7,11 +7,10 @@ import type { SubMesh } from "../Meshes/subMesh";
 import { Mesh } from "../Meshes/mesh";
 import { InstancedMesh } from "../Meshes/instancedMesh";
 import { Material } from "../Materials/material";
+import type { IShaderMaterialOptions } from "../Materials/shaderMaterial";
 import { ShaderMaterial } from "../Materials/shaderMaterial";
 import type { Effect } from "../Materials/effect";
-
-import "../Shaders/color.fragment";
-import "../Shaders/color.vertex";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 Mesh._LinesMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
     return LinesMesh.Parse(parsedMesh, scene);
@@ -22,6 +21,12 @@ Mesh._LinesMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param
  */
 export class LinesMesh extends Mesh {
+    /**
+     * Force all the LineMeshes to compile their default color material to glsl even on WebGPU engines.
+     * False by default. This is mostly meant for backward compatibility.
+     */
+    public static ForceGLSL = false;
+
     /**
      * Color of the line (Default: White)
      */
@@ -46,6 +51,9 @@ export class LinesMesh extends Mesh {
     }
 
     private _color4: Color4;
+
+    /** Shader language used by the material */
+    protected _shaderLanguage = ShaderLanguage.GLSL;
 
     /**
      * Creates a new LinesMesh
@@ -112,13 +120,35 @@ export class LinesMesh extends Mesh {
 
         if (material) {
             this.material = material;
+            this._shadersLoaded = true;
         } else {
-            this.material = new ShaderMaterial("colorShader", this.getScene(), "color", options, false);
-            this.material.doNotSerialize = true;
+            this._initShaderSourceAsync(options);
         }
     }
 
+    private _shadersLoaded = false;
+    private async _initShaderSourceAsync(options: Partial<IShaderMaterialOptions>) {
+        const engine = this.getScene().getEngine();
+
+        if (engine.isWebGPU && !LinesMesh.ForceGLSL) {
+            this._shaderLanguage = ShaderLanguage.WGSL;
+
+            await Promise.all([import("../ShadersWGSL/color.vertex"), import("../ShadersWGSL/color.fragment")]);
+        } else {
+            await Promise.all([import("../Shaders/color.vertex"), import("../Shaders/color.fragment")]);
+        }
+
+        this._shadersLoaded = true;
+        options.shaderLanguage = this._shaderLanguage;
+
+        this.material = new ShaderMaterial("colorShader", this.getScene(), "color", options, false);
+        this.material.doNotSerialize = true;
+    }
+
     public override isReady() {
+        if (!this._shadersLoaded) {
+            return false;
+        }
         if (!this._lineMaterial.isReady(this, !!this._userInstancedBuffersStorage || this.hasThinInstances)) {
             return false;
         }

@@ -21,6 +21,7 @@ import "../Materials/Textures/baseTexture.polynomial";
 import "../Shaders/rgbdEncode.fragment";
 import "../Shaders/rgbdDecode.fragment";
 import { DumpDataAsync } from "../Misc/dumpTools";
+import { ShaderLanguage } from "core/Materials";
 
 const DefaultEnvironmentTextureImageType = "image/png";
 const CurrentVersion = 2;
@@ -531,7 +532,7 @@ function _OnImageReadyAsync(
  * @param imageType the mime type of the image data
  * @returns a promise
  */
-export function UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBufferView[][], imageType: string = DefaultEnvironmentTextureImageType): Promise<void> {
+export async function UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBufferView[][], imageType: string = DefaultEnvironmentTextureImageType): Promise<void> {
     if (!Tools.IsExponentOfTwo(texture.width)) {
         throw new Error("Texture size must be a power of two");
     }
@@ -575,7 +576,15 @@ export function UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBuff
     }
 
     // Expand the texture if possible
+    let shaderLanguage = ShaderLanguage.GLSL;
     if (expandTexture) {
+        if (engine.isWebGPU) {
+            shaderLanguage = ShaderLanguage.WGSL;
+            await import("../ShadersWGSL/rgbdDecode.fragment");
+        } else {
+            await import("../Shaders/rgbdDecode.fragment");
+        }
+
         // Simply run through the decode PP
         rgbdPostProcess = new PostProcess(
             "rgbdDecode",
@@ -591,7 +600,9 @@ export function UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBuff
             texture.type,
             undefined,
             null,
-            false
+            false,
+            undefined,
+            shaderLanguage
         );
 
         texture._isRGBD = false;

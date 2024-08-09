@@ -5,8 +5,8 @@ import type { Effect } from "../Materials/effect";
 import { Texture } from "../Materials/Textures/texture";
 import { PostProcess } from "./postProcess";
 
-import "../Shaders/vrDistortionCorrection.fragment";
 import type { Nullable } from "../types";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * VRDistortionCorrectionPostProcess used for mobile VR
@@ -36,7 +36,25 @@ export class VRDistortionCorrectionPostProcess extends PostProcess {
      * @param vrMetrics All the required metrics for the VR camera
      */
     constructor(name: string, camera: Nullable<Camera>, isRightEye: boolean, vrMetrics: VRCameraMetrics) {
-        super(name, "vrDistortionCorrection", ["LensCenter", "Scale", "ScaleIn", "HmdWarpParam"], null, vrMetrics.postProcessScaleFactor, camera, Texture.BILINEAR_SAMPLINGMODE);
+        super(
+            name,
+            "vrDistortionCorrection",
+            ["LensCenter", "Scale", "ScaleIn", "HmdWarpParam"],
+            null,
+            vrMetrics.postProcessScaleFactor,
+            camera,
+            Texture.BILINEAR_SAMPLINGMODE,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            true
+        );
 
         this._isRightEye = isRightEye;
         this._distortionFactors = vrMetrics.distortionK;
@@ -55,5 +73,19 @@ export class VRDistortionCorrectionPostProcess extends PostProcess {
             effect.setFloat2("ScaleIn", this._scaleIn.x, this._scaleIn.y);
             effect.setFloat4("HmdWarpParam", this._distortionFactors[0], this._distortionFactors[1], this._distortionFactors[2], this._distortionFactors[3]);
         });
+    }
+
+    protected override async _initShaderSourceAsync(forceGLSL = false) {
+        const engine = this.getEngine();
+
+        if (engine.isWebGPU && !forceGLSL) {
+            this._shaderLanguage = ShaderLanguage.WGSL;
+
+            await import("../ShadersWGSL/vrDistortionCorrection.fragment");
+        } else {
+            await import("../Shaders/vrDistortionCorrection.fragment");
+        }
+
+        this._shadersLoaded = true;
     }
 }
