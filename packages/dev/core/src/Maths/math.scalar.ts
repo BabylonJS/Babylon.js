@@ -26,13 +26,5 @@ export const Scalar = {
      * @returns the log2 of value.
      */
     Log2: Math.log2,
-
-    /**
-     * Returns the highest common factor of two integers.
-     * @param a first parameter
-     * @param b second parameter
-     * @returns HCF of a and b
-     */
-    HCF: functions.HighestCommonFactor,
 };
 /* eslint-enable @typescript-eslint/naming-convention */

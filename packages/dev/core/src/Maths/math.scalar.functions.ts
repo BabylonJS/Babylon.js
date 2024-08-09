@@ -350,3 +350,8 @@ export function HighestCommonFactor(a: number, b: number): number {
     }
     return HighestCommonFactor(b, r);
 }
+
+/**
+ * @deprecated use HighestCommonFactor
+ */
+export { HighestCommonFactor as HCF };
