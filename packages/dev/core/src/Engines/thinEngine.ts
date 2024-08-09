@@ -1007,6 +1007,7 @@ export class ThinEngine extends AbstractEngine {
         if (!rtWrapper.isMulti) {
             if (rtWrapper.is2DArray || rtWrapper.is3D) {
                 gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, rtWrapper.texture!._hardwareTexture?.underlyingResource, lodLevel, layer);
+                webglRTWrapper._currentLOD = lodLevel;
             } else if (rtWrapper.isCube) {
                 gl.framebufferTexture2D(
                     gl.FRAMEBUFFER,

@@ -803,9 +803,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
 
     private _updateBeforeRender() {
         this._updateDebugPasses();
-        // this._voxelTracingPass?.update();
-        // this._spatialBlurPass?.update();
-        // this._accumulationPass?.update();
     }
 
     private _listenForCameraChanges() {

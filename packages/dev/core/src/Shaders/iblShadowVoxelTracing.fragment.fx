@@ -433,7 +433,7 @@ bool anyHitVoxels(const Ray ray_vs) {
   vec3 O = ray_vs.orig;
   ivec3 negD = ivec3(lessThan(D, vec3(0, 0, 0)));
   int voxel0 = negD.x | negD.y << 1 | negD.z << 2;
-  vec3 t0 = -O * invD, t1 = (1.0 - O) * invD;
+  vec3 t0 = -O * invD, t1 = (vec3(1.0) - O) * invD;
   int maxLod = int(highestMipLevel);
   int stackLevel = 0;
 #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION

@@ -57,6 +57,5 @@ void main(void) {
       glFragColor.rgb = mix(background.rgb, voxelSlab.rgb, voxelSlab.a) + voxel;
 
       glFragColor.a = 1.0;
-      // glFragColor.rgb += texture(textureSampler, vUV.xy).rgb;
     }
 }

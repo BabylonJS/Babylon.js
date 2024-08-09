@@ -26,6 +26,7 @@ import type { PostProcessOptions } from "../../PostProcesses/postProcess";
 import { ProceduralTexture } from "../../Materials/Textures/Procedurals/proceduralTexture";
 import { EffectRenderer, EffectWrapper } from "../../Materials/effectRenderer";
 import type { IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
+import { Effect } from "../../Materials/effect";
 
 /**
  * Voxel-based shadow rendering for IBL's.
@@ -106,7 +107,7 @@ export class _IblShadowsVoxelRenderer {
         if (this._voxelResolutionExp === resolutionExp && this._voxelGridZaxis) {
             return;
         }
-        this._voxelResolutionExp = Math.round(Math.min(Math.max(resolutionExp, 4), 9));
+        this._voxelResolutionExp = Math.round(Math.min(Math.max(resolutionExp, 3), 9));
         this._voxelResolution = Math.pow(2.0, this._voxelResolutionExp);
         this._disposeVoxelTextures();
         this._createTextures();
@@ -225,6 +226,7 @@ export class _IblShadowsVoxelRenderer {
             engine: this._engine,
             fragmentShader: "pass",
             useShaderStore: true,
+            uniformNames: [],
             samplerNames: ["textureSampler"],
         });
 
@@ -246,22 +248,36 @@ export class _IblShadowsVoxelRenderer {
         }
         mipTarget.setTexture("srcMip", lodLevel === 1 ? this.getVoxelGrid() : this._mipArray[lodLevel - 2]);
         mipTarget.render();
+    }
 
+    private _copyMipMaps() {
+        const iterations = Math.ceil(Math.log2(this._voxelResolution));
+        for (let i = 1; i < iterations + 1; i++) {
+            this._copyMipMap(i);
+        }
+    }
+
+    private _copyMipMap(lodLevel: number) {
         // Now, copy this mip into the mip chain of the voxel grid.
         // TODO - this currently isn't working. "textureSampler" isn't being properly set to mipTarget.
+        const mipTarget = this._mipArray[lodLevel - 1];
+        if (!mipTarget) {
+            return;
+        }
         const rt = (this.getVoxelGrid() as any)._rtWrapper;
         if (rt) {
             this._copyMipEffectRenderer.saveStates();
             const bindSize = mipTarget.getSize().width;
+
             // Render to each layer of the voxel grid.
             for (let layer = 0; layer < bindSize; layer++) {
-                this._copyMipEffectWrapper.effect.setTexture("textureSampler", mipTarget);
                 this._engine.bindFramebuffer(rt, 0, bindSize, bindSize, true, lodLevel, layer);
                 this._copyMipEffectRenderer.applyEffectWrapper(this._copyMipEffectWrapper);
+                this._copyMipEffectWrapper.effect.setTexture("textureSampler", mipTarget);
                 this._copyMipEffectRenderer.draw();
+                this._engine.unBindFramebuffer(rt, true);
             }
             this._copyMipEffectRenderer.restoreStates();
-            this._engine.unBindFramebuffer(rt, true);
         }
     }
 
@@ -303,6 +319,7 @@ export class _IblShadowsVoxelRenderer {
             this._voxelMrtsZaxis = this._createVoxelMRTs("z_axis_", this._voxelGridZaxis, numSlabs);
 
             this._voxelGridRT = new ProceduralTexture("combinedVoxelGrid", size, "combineVoxelGrids", this._scene, voxelCombinedOptions, true);
+            this._voxelGridRT.isRenderTarget = true;
             this._voxelGridRT.setFloat("layer", 0.0);
             this._voxelGridRT.setTexture("voxelXaxisSampler", this._voxelGridXaxis);
             this._voxelGridRT.setTexture("voxelYaxisSampler", this._voxelGridYaxis);
@@ -324,6 +341,7 @@ export class _IblShadowsVoxelRenderer {
             this._mipArray[mipIdx - 1] = new ProceduralTexture("voxelMip" + mipIdx, mipSize, "generateVoxelMip", this._scene, voxelAxisOptions);
 
             const mipTarget = this._mipArray[mipIdx - 1];
+            mipTarget._noMipmap = true;
             mipTarget.refreshRate = 0;
             mipTarget.autoClear = false;
             mipTarget.wrapU = Texture.CLAMP_ADDRESSMODE;
@@ -513,7 +531,7 @@ export class _IblShadowsVoxelRenderer {
                     this._voxelGridRT.render();
                 }
                 this._generateMipMaps();
-
+                this._copyMipMaps();
                 this._voxelizationInProgress = false;
                 this._scene.onAfterRenderTargetsRenderObservable.removeCallback((this as any).boundVoxelGridRenderFn);
             }
