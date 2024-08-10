@@ -16,7 +16,7 @@ import type {
     ISceneLoaderPluginExtensions,
     ISceneLoaderAsyncResult,
 } from "core/Loading/sceneLoader";
-import { SceneLoader } from "core/Loading/sceneLoader";
+import { registerSceneLoaderPlugin } from "core/Loading/sceneLoader";
 import type { SceneLoaderPluginOptions } from "core/Loading/sceneLoader";
 import { AssetContainer } from "core/assetContainer";
 import type { Scene, IDisposable } from "core/scene";
@@ -1303,6 +1303,4 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
     private _endPerformanceCounterDisabled(counterName: string): void {}
 }
 
-if (SceneLoader) {
-    SceneLoader.RegisterPlugin(new GLTFFileLoader());
-}
+registerSceneLoaderPlugin(new GLTFFileLoader());

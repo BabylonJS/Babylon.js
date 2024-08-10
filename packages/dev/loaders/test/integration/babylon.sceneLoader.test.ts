@@ -416,8 +416,6 @@ describe("Babylon Scene Loader", function () {
                 return promise.then(() => window.scene!.whenReadyAsync()).then(() => Promise.all(promises));
             });
 
-            expect(assertionData.length).toBeGreaterThanOrEqual(3);
-
             assertionData.forEach((promise) => {
                 Object.keys(promise).forEach((key) => {
                     expect(promise[key as keyof typeof promise], key).toBe(true);

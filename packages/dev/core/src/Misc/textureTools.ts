@@ -139,30 +139,32 @@ export function ApplyPostProcess(
             }
         );
 
-        postProcess.getEffect().executeWhenCompiled(() => {
-            // PP Render Pass
-            postProcess.onApply = (effect) => {
-                effect._bindTexture("textureSampler", internalTexture);
-                effect.setFloat2("scale", 1, 1);
-            };
-            scene.postProcessManager.directRender([postProcess!], encodedTexture, true);
+        postProcess.onEffectCreatedObservable.addOnce(() => {
+            postProcess.getEffect().executeWhenCompiled(() => {
+                // PP Render Pass
+                postProcess.onApply = (effect) => {
+                    effect._bindTexture("textureSampler", internalTexture);
+                    effect.setFloat2("scale", 1, 1);
+                };
+                scene.postProcessManager.directRender([postProcess!], encodedTexture, true);
 
-            // Cleanup
-            engine.restoreDefaultFramebuffer();
-            engine._releaseTexture(internalTexture);
-            if (postProcess) {
-                postProcess.dispose();
-            }
+                // Cleanup
+                engine.restoreDefaultFramebuffer();
+                engine._releaseTexture(internalTexture);
+                if (postProcess) {
+                    postProcess.dispose();
+                }
 
-            // Internal Swap
-            encodedTexture._swapAndDie(internalTexture);
+                // Internal Swap
+                encodedTexture._swapAndDie(internalTexture);
 
-            // Ready to get rolling again.
-            internalTexture.type = type!;
-            internalTexture.format = Constants.TEXTUREFORMAT_RGBA;
-            internalTexture.isReady = true;
+                // Ready to get rolling again.
+                internalTexture.type = type!;
+                internalTexture.format = Constants.TEXTUREFORMAT_RGBA;
+                internalTexture.isReady = true;
 
-            resolve(internalTexture);
+                resolve(internalTexture);
+            });
         });
     });
 }

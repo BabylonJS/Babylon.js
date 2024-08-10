@@ -7,7 +7,6 @@ import type { Camera } from "../Cameras/camera";
 import { Logger } from "../Misc/logger";
 import { Constants } from "../Engines/constants";
 
-import "../Shaders/circleOfConfusion.fragment";
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
@@ -102,6 +101,17 @@ export class CircleOfConfusionPostProcess extends PostProcess {
             const activeCamera = this._depthTexture.activeCamera!;
             effect.setFloat2("cameraMinMaxZ", activeCamera.minZ, activeCamera.maxZ - activeCamera.minZ);
         });
+    }
+
+    protected override async _initShaderSourceAsync(useWebGPU: boolean) {
+        if (useWebGPU) {
+            this._webGPUReady = true;
+            await import("../ShadersWGSL/circleOfConfusion.fragment");
+        } else {
+            await import("../Shaders/circleOfConfusion.fragment");
+        }
+
+        super._initShaderSourceAsync(useWebGPU);
     }
 
     /**
