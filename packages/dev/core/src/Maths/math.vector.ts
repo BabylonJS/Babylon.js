@@ -5623,12 +5623,10 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
      */
     public static RotationQuaternionFromAxisToRef<T extends Quaternion>(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>, ref: T): T {
         const rotMat = MathTmp.Matrix[0];
-        Matrix.FromXYZAxesToRef(
-            axis1.normalizeToRef(MathTmp.Vector3[0]),
-            axis2.normalizeToRef(MathTmp.Vector3[1]),
-            axis3.normalizeToRef(MathTmp.Vector3[2]),
-            rotMat
-        );
+        axis1 = axis1.normalizeToRef(MathTmp.Vector3[0]);
+        axis2 = axis2.normalizeToRef(MathTmp.Vector3[1]);
+        axis3 = axis3.normalizeToRef(MathTmp.Vector3[2]);
+        Matrix.FromXYZAxesToRef(axis1, axis2, axis3, rotMat);
         Quaternion.FromRotationMatrixToRef(rotMat, ref);
         return ref;
     }
