@@ -14,26 +14,10 @@ import { Color3, Color4 } from "core/Maths/math";
 
 import "./scss/main.scss";
 import fullScreenLogo from "./img/logo-fullscreen.svg";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
 
 interface ISandboxProps {}
 
-/**
- * Sandbox component
- */
-export class Sandbox extends React.Component<
-    ISandboxProps,
-    {
-        /**
-         * is the footer visible?
-         */
-        isFooterVisible: boolean;
-        /**
-         * error message
-         */
-        errorMessage: string;
-    }
-> {
+export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: boolean; errorMessage: string }> {
     private _globalState: GlobalState;
     private _assetUrl?: string;
     private _autoRotate?: boolean;
@@ -43,7 +27,6 @@ export class Sandbox extends React.Component<
     private _clickInterceptorRef: React.RefObject<HTMLDivElement>;
     private _clearColor?: string;
     private _camera?: number;
-    private _engine?: AbstractEngine;
 
     public constructor(props: ISandboxProps) {
         super(props);
@@ -88,20 +71,13 @@ export class Sandbox extends React.Component<
         });
 
         this._globalState.onError.add((error) => {
-            setTimeout(() => {
-                this._logoRef.current!.parentElement!.className = "hidden";
-                this._logoRef.current!.className = "hidden";
-            }, 100);
-
             if (error.scene) {
                 this._globalState.showDebugLayer();
             }
 
             if (error.message) {
-                this.setState({ errorMessage: "Unable to load scene. Check the developer console." });
+                this.setState({ errorMessage: error.message });
             }
-
-            this._engine && this._engine.hideLoadingUI();
 
             Sandbox._SceneLoadedDeferred.reject(new Error(error.message));
         });
@@ -123,29 +99,7 @@ export class Sandbox extends React.Component<
                 this.setState({ isFooterVisible: !this.state.isFooterVisible });
             }
         });
-
-        //
-
-        window.onerror = (error: any) => {
-            this._globalState.onError.notifyObservers({ message: `${error}` });
-            return true;
-        };
-
-        window.onunhandledrejection = (event) => {
-            // eslint-disable-next-line no-console
-            console.error("Unhandled promise rejection:", event.reason);
-
-            return true;
-        };
     }
-
-    /**
-     * Stores the engine
-     * @param engine the Engine
-     */
-    onEngineCreated = (engine: AbstractEngine) => {
-        this._engine = engine;
-    };
 
     checkUrl() {
         const set3DCommerceMode = () => {
@@ -255,7 +209,6 @@ export class Sandbox extends React.Component<
                             autoRotate={this._autoRotate}
                             cameraPosition={this._cameraPosition}
                             expanded={!this.state.isFooterVisible}
-                            onEngineCreated={this.onEngineCreated}
                         />
                     )}
                 </span>

@@ -1,4 +1,3 @@
-/* eslint-disable no-debugger */
 import * as React from "react";
 import type { GlobalState } from "../globalState";
 import { FooterButton } from "./footerButton";
@@ -22,9 +21,6 @@ interface IFooterProps {
     globalState: GlobalState;
 }
 
-/**
- * Footer component
- */
 export class Footer extends React.Component<IFooterProps> {
     private _cameraNames: string[] = [];
 
@@ -115,11 +111,6 @@ export class Footer extends React.Component<IFooterProps> {
 
         const hasCameras = this._cameraNames.length > 1;
 
-        const onFilesPicked = (evt: Event) => {
-            this.props.globalState.currentScene?.getEngine().clearInternalTexturesCache();
-            this.props.globalState.filesInput.loadFiles(evt);
-        };
-
         return (
             <div id="footer" className={"footer" + (hasCameras || hasVariants ? " long" : hasCameras && hasVariants ? " longer" : "")}>
                 <div className="footerLeft">
@@ -131,7 +122,10 @@ export class Footer extends React.Component<IFooterProps> {
                         globalState={this.props.globalState}
                         enabled={true}
                         icon={iconOpen}
-                        onFilesPicked={onFilesPicked}
+                        onFilesPicked={(evt) => {
+                            this.props.globalState.currentScene?.getEngine().clearInternalTexturesCache();
+                            this.props.globalState.filesInput.loadFiles(evt);
+                        }}
                         label="Open your scene from your hard drive (.babylon, .gltf, .glb, .obj)"
                     />
                     <DropUpButton
