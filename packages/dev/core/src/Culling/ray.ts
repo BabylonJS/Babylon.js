@@ -1,5 +1,5 @@
 import type { DeepImmutable, Nullable, float } from "../types";
-import { ArrayTools } from "../Misc/arrayTools";
+import { BuildArray } from "../Misc/arrayTools";
 import { Matrix, Vector3, TmpVectors } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { PickingInfo } from "../Collisions/pickingInfo";
@@ -18,7 +18,7 @@ import { Epsilon } from "core/Maths/math.constants";
  * Class representing a ray with position and direction
  */
 export class Ray {
-    private static readonly _TmpVector3 = ArrayTools.BuildArray(6, Vector3.Zero);
+    private static readonly _TmpVector3 = BuildArray(6, Vector3.Zero);
     private static _RayDistant = Ray.Zero();
     private _tmpRay: Ray;
 

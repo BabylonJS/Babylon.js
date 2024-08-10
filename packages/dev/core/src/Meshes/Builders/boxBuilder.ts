@@ -4,7 +4,7 @@ import { Matrix, Vector4 } from "../../Maths/math.vector";
 import { Color4 } from "../../Maths/math.color";
 import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
-import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
+import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
 import { CreateGroundVertexData } from "./groundBuilder";
 
 /**
@@ -115,10 +115,10 @@ export function CreateBoxVertexData(options: {
 
     // Create each face in turn.
     for (let index = 0; index < nbFaces; index++) {
-        uvs.push(faceUV[index].z, CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 - faceUV[index].w : faceUV[index].w);
-        uvs.push(faceUV[index].x, CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 - faceUV[index].w : faceUV[index].w);
-        uvs.push(faceUV[index].x, CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 - faceUV[index].y : faceUV[index].y);
-        uvs.push(faceUV[index].z, CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 - faceUV[index].y : faceUV[index].y);
+        uvs.push(faceUV[index].z, useOpenGLOrientationForUV ? 1.0 - faceUV[index].w : faceUV[index].w);
+        uvs.push(faceUV[index].x, useOpenGLOrientationForUV ? 1.0 - faceUV[index].w : faceUV[index].w);
+        uvs.push(faceUV[index].x, useOpenGLOrientationForUV ? 1.0 - faceUV[index].y : faceUV[index].y);
+        uvs.push(faceUV[index].z, useOpenGLOrientationForUV ? 1.0 - faceUV[index].y : faceUV[index].y);
         if (faceColors) {
             for (let c = 0; c < 4; c++) {
                 colors.push(faceColors[index].r, faceColors[index].g, faceColors[index].b, faceColors[index].a);
