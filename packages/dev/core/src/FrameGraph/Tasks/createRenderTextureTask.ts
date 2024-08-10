@@ -9,6 +9,8 @@ export interface IFrameGraphCreateRenderTextureInputData extends IFrameGraphInpu
 export class FrameGraphCreateRenderTextureTask implements IFrameGraphTask {
     private _options: FrameGraphTextureCreationOptions;
 
+    public disabledFromGraph = false;
+
     constructor(
         public name: string,
         options: FrameGraphTextureCreationOptions
@@ -17,7 +19,7 @@ export class FrameGraphCreateRenderTextureTask implements IFrameGraphTask {
     }
 
     public recordFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphCreateRenderTextureInputData) {
-        const pass = frameGraph.addPass("create " + inputData.textureName);
+        const pass = frameGraph.addPass(this.name);
 
         frameGraph.createRenderTargetTexture(inputData.textureName, this._options);
 

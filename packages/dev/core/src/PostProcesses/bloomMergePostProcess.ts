@@ -89,11 +89,22 @@ export class BloomMergePostProcess extends PostProcess {
         pass.setExecuteFunc((context) => {
             context.applyFullScreenEffect(this._drawWrapper, () => {
                 this._bind();
-                this._drawWrapper.effect!._bindTexture("textureSampler", context.getTextureFromHandle(sourceTextureHandle)?.texture!);
-                this._drawWrapper.effect!._bindTexture("bloomBlur", context.getTextureFromHandle(sourceBlurTextureHandle)?.texture!);
+                this._drawWrapper.effect!._bindTexture("textureSampler", context.getTextureFromHandle(sourceTextureHandle)!.texture!);
+                this._drawWrapper.effect!._bindTexture("bloomBlur", context.getTextureFromHandle(sourceBlurTextureHandle)!.texture!);
                 this._drawWrapper.effect!.setFloat("bloomWeight", this.weight);
             });
         });
+
+        if (!inputData.skipCreationOfDisabledPasses) {
+            const passDisabled = frameGraph.addRenderPass(this.name + "_disabled", true);
+
+            passDisabled.setRenderTarget(sourceTextureHandle);
+            passDisabled.setExecuteFunc((_context) => {
+                if (_context.isBackbufferColor(outputTextureHandle)) {
+                    _context.copyTexture(_context.getTextureFromHandle(sourceTextureHandle)!.texture!, true);
+                }
+            });
+        }
     }
 }
 

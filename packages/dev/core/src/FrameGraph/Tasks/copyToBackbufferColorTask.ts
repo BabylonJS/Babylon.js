@@ -3,14 +3,16 @@ import type { TextureHandle } from "../frameGraphTextureManager";
 import { backbufferColorTextureHandle } from "../frameGraphTextureManager";
 import type { FrameGraphTaskTexture, IFrameGraphInputData, IFrameGraphTask } from "./IFrameGraphTask";
 
-export interface IFrameGraphCopyToBackbufferInputData extends IFrameGraphInputData {
+export interface IFrameGraphCopyToBackbufferColorInputData extends IFrameGraphInputData {
     sourceTexture: FrameGraphTaskTexture | TextureHandle;
 }
 
 export class FrameGraphCopyToBackbufferColorTask implements IFrameGraphTask {
+    public disabledFromGraph = false;
+
     constructor(public name: string) {}
 
-    public recordFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphCopyToBackbufferInputData) {
+    public recordFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphCopyToBackbufferColorInputData) {
         const copyPass = frameGraph.addRenderPass("copy to framebuffer");
 
         const sourceTextureHandle = frameGraph.getTextureHandle(inputData.sourceTexture);

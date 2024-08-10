@@ -5,11 +5,10 @@ import { Constants } from "../Engines/constants";
 import { BlackAndWhitePostProcess } from "core/PostProcesses/blackAndWhitePostProcess";
 import { PassPostProcess } from "core/PostProcesses/passPostProcess";
 import type { FrameGraphTaskTexture, IFrameGraphInputData, IFrameGraphTask } from "./Tasks/IFrameGraphTask";
-import type { IFrameGraphPostProcessInputData, PostProcess } from "core/PostProcesses/postProcess";
-import type { Observer } from "core/Misc";
+import type { IFrameGraphPostProcessInputData } from "core/PostProcesses/postProcess";
 import { FrameGraphPassBuilder } from "./Passes/passBuilder";
 import { FrameGraphRenderPassBuilder } from "./Passes/renderPassBuilder";
-import type { IFrameGraphCopyToBackbufferInputData } from "./Tasks/copyToBackbufferColorTask";
+import type { IFrameGraphCopyToBackbufferColorInputData } from "./Tasks/copyToBackbufferColorTask";
 import { FrameGraphCopyToBackbufferColorTask } from "./Tasks/copyToBackbufferColorTask";
 import type { IFrameGraphCreateRenderTextureInputData } from "./Tasks/createRenderTextureTask";
 import { FrameGraphCreateRenderTextureTask } from "./Tasks/createRenderTextureTask";
@@ -19,6 +18,9 @@ import { FrameGraphRenderContext } from "./frameGraphRenderContext";
 import { FrameGraphContext } from "./frameGraphContext";
 import type { TextureHandle, FrameGraphTextureCreationOptions, FrameGraphTextureDescription } from "./frameGraphTextureManager";
 import { backbufferColorTextureHandle, FrameGraphTextureManager, FrameGraphTextureNamespace, textureNamespaceExternalPrefix } from "./frameGraphTextureManager";
+import type { IFrameGraphPass } from "./Passes/IFrameGraphPass";
+import type { IFrameGraphCopyToTextureInputData } from "./Tasks/copyToTextureTask";
+import { FrameGraphCopyToTextureTask } from "./Tasks/copyToTextureTask";
 
 export function testRenderGraph(engine: AbstractEngine, scene: Scene) {
     const pp0 = new PassPostProcess("pass", 1, scene.activeCamera, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, undefined, undefined, Constants.TEXTURETYPE_HALF_FLOAT);
@@ -36,32 +38,37 @@ export function testRenderGraph(engine: AbstractEngine, scene: Scene) {
         sizeIsPercentage: true,
     };
 
+    const copyTask = new FrameGraphCopyToTextureTask("copy");
     const bnwTask = new BlackAndWhitePostProcess("bnw", 1, null, undefined, engine);
-    const copyTask = new FrameGraphCopyToBackbufferColorTask("copytobackbuffer");
+    const copyToBackbufferTask = new FrameGraphCopyToBackbufferColorTask("copytobackbuffer");
     const createRTTask = new FrameGraphCreateRenderTextureTask("createRT", creationOptions);
     const bloomTask = new BloomEffect(engine, 0.5, 0.5, 128, Constants.TEXTURETYPE_HALF_FLOAT, false);
+
     bloomTask.name = "bloom";
-
     bloomTask.threshold = 0.1;
-
-    let obs: Observer<Scene> | null = null;
-    let obs2: Observer<PostProcess> | null = null;
 
     const frameGraph = new FrameGraph(engine, true, scene);
 
     const pp0Handle = frameGraph.importTexture("pp0", pp0.inputTexture);
 
-    const bnwFirst = false;
+    const bnwFirst = true;
     if (bnwFirst) {
         const destinationTexture = frameGraph.createRenderTargetTexture("destination", creationOptions);
 
-        frameGraph.addTask<IFrameGraphPostProcessInputData>(bnwTask, {
+        frameGraph.addTask<IFrameGraphCopyToTextureInputData>(copyTask, {
             sourceTexture: pp0Handle,
             outputTexture: destinationTexture,
         });
 
+        copyTask.disabledFromGraph = true;
+
+        frameGraph.addTask<IFrameGraphPostProcessInputData>(bnwTask, {
+            sourceTexture: ["copy", "output"],
+            outputTexture: destinationTexture,
+        });
+
         frameGraph.addTask<IFrameGraphBloomEffectInputData>(bloomTask, {
-            sourceTexture: destinationTexture,
+            sourceTexture: ["bnw", "output"],
             outputTexture: backbufferColorTextureHandle,
         });
     } else {
@@ -81,20 +88,18 @@ export function testRenderGraph(engine: AbstractEngine, scene: Scene) {
             outputTexture: ["createRT", "output"],
         });
 
-        frameGraph.addTask<IFrameGraphCopyToBackbufferInputData>(copyTask, { sourceTexture: ["createRT", "output"] });
+        frameGraph.addTask<IFrameGraphCopyToBackbufferColorInputData>(copyToBackbufferTask, { sourceTexture: ["bnw", "output"] });
     }
 
     frameGraph.build();
 
     (window as any).fg = frameGraph;
 
-    scene.onAfterRenderObservable.remove(obs);
-    obs = scene.onAfterRenderObservable.add(() => {
+    scene.onAfterRenderObservable.add(() => {
         frameGraph.execute();
     });
 
-    pp0.onSizeChangedObservable.remove(obs2);
-    obs2 = pp0.onSizeChangedObservable.add(() => {
+    pp0.onSizeChangedObservable.add(() => {
         frameGraph.importTexture("pp0", pp0.inputTexture);
         frameGraph.build();
     });
@@ -108,9 +113,13 @@ export class FrameGraph {
     private _passContext: FrameGraphContext;
     private _renderContext: FrameGraphRenderContext;
 
-    private _tasks: { task: IFrameGraphTask; inputData?: IFrameGraphInputData }[] = [];
+    private _tasks: IFrameGraphTask[] = [];
     private _mapNameToTask: Map<string, IFrameGraphTask> = new Map();
     private _currentProcessedTask: IFrameGraphTask | null = null;
+
+    private static _IsRenderPassBuilder(pass: IFrameGraphPass): pass is FrameGraphRenderPassBuilder {
+        return (pass as FrameGraphRenderPassBuilder).setRenderTarget !== undefined;
+    }
 
     /**
      * Constructs the frame graph
@@ -129,68 +138,134 @@ export class FrameGraph {
             throw new Error(`Can't add the task "${task.name}" while another task is currently building (task: ${this._currentProcessedTask.name}).`);
         }
 
-        for (const taskBlock of this._tasks) {
-            if (taskBlock.task.name === task.name) {
-                throw new Error(`Task with name "${taskBlock.task.name}" already exists.`);
+        for (const t of this._tasks) {
+            if (t.name === task.name) {
+                throw new Error(`Task with name "${task.name}" already exists.`);
             }
         }
 
-        task._passes = task._passes || [];
+        task._frameGraphInternals = {
+            passes: [],
+            passesDisabled: [],
+            inputData,
+            wasDisabled: task.disabledFromGraph,
+        };
 
-        this._tasks.push({ task, inputData });
+        this._tasks.push(task);
         this._mapNameToTask.set(task.name, task);
     }
 
-    public addPass(name: string): FrameGraphPassBuilder<FrameGraphContext> {
+    public addPass(name: string, whenTaskDisabled = false): FrameGraphPassBuilder<FrameGraphContext> {
         if (!this._currentProcessedTask) {
             throw new Error("A pass must be created during a Task.addToFrameGraph execution.");
         }
 
         const pass = new FrameGraphPassBuilder(name, this._textureManager, this._currentProcessedTask, this._passContext);
 
-        this._currentProcessedTask._passes!.push(pass);
+        if (whenTaskDisabled) {
+            this._currentProcessedTask._frameGraphInternals!.passesDisabled.push(pass);
+        } else {
+            this._currentProcessedTask._frameGraphInternals!.passes.push(pass);
+        }
 
         return pass;
     }
 
-    public addRenderPass(name: string): FrameGraphRenderPassBuilder {
+    public addRenderPass(name: string, whenTaskDisabled = false): FrameGraphRenderPassBuilder {
         if (!this._currentProcessedTask) {
             throw new Error("A pass must be created during a Task.addToFrameGraph execution.");
         }
 
         const pass = new FrameGraphRenderPassBuilder(name, this._textureManager, this._currentProcessedTask, this._renderContext);
 
-        this._currentProcessedTask._passes!.push(pass);
+        if (whenTaskDisabled) {
+            this._currentProcessedTask._frameGraphInternals!.passesDisabled.push(pass);
+        } else {
+            this._currentProcessedTask._frameGraphInternals!.passes.push(pass);
+        }
 
         return pass;
     }
 
     public build(): void {
         this._textureManager.reset();
-        for (const { task, inputData } of this._tasks) {
-            task._passes!.length = 0;
+
+        for (const task of this._tasks) {
+            const internals = task._frameGraphInternals!;
+
+            internals.passes.length = 0;
+            internals.passesDisabled.length = 0;
 
             this._currentProcessedTask = task;
 
             task.onBeforeTaskRecordFrameGraphObservable?.notifyObservers(this);
-            task.recordFrameGraph(this, inputData);
+            task.recordFrameGraph(this, internals.inputData);
             task.onAfterTaskRecordFrameGraphObservable?.notifyObservers(this);
 
-            for (const pass of task._passes!) {
+            for (const pass of internals.passes!) {
                 const errMsg = pass._isValid();
                 if (errMsg) {
                     throw new Error(`Pass "${pass.name}" is not valid. ${errMsg}`);
                 }
+                if (FrameGraph._IsRenderPassBuilder(pass)) {
+                    internals.outputTextureWhenEnabled = pass.renderTarget;
+                }
+            }
+
+            for (const pass of internals.passesDisabled!) {
+                const errMsg = pass._isValid();
+                if (errMsg) {
+                    throw new Error(`Pass "${pass.name}" is not valid. ${errMsg}`);
+                }
+                if (FrameGraph._IsRenderPassBuilder(pass)) {
+                    internals.outputTextureWhenDisabled = pass.renderTarget;
+                }
+            }
+
+            if (internals.outputTextureWhenEnabled !== undefined || internals.outputTextureWhenDisabled !== undefined) {
+                internals.outputTextureWhenEnabled = internals.outputTextureWhenEnabled ?? internals.outputTextureWhenDisabled;
+                internals.outputTextureWhenDisabled = internals.outputTextureWhenDisabled ?? internals.outputTextureWhenEnabled;
+                internals.outputTexture = this._textureManager._createProxyHandle();
+                this._textureManager._registerTextureHandleForTask(task, "output", internals.outputTexture);
+                this._setTextureOutputForTask(task, true);
             }
 
             this._currentProcessedTask = null;
         }
     }
 
+    private _setTextureOutputForTask(task: IFrameGraphTask, force = false): void {
+        const internals = task._frameGraphInternals!;
+
+        if (!force && task.disabledFromGraph === internals.wasDisabled) {
+            return;
+        }
+
+        internals.wasDisabled = task.disabledFromGraph;
+
+        if (internals.outputTexture !== undefined) {
+            if (task.disabledFromGraph) {
+                this._textureManager._textures[internals.outputTexture]!.texture = this._textureManager._textures[internals.outputTextureWhenDisabled!]!.texture;
+                this._textureManager._textures[internals.outputTexture]!.systemType = this._textureManager._textures[internals.outputTextureWhenDisabled!]!.systemType;
+                this._textureManager._textureDescriptions[internals.outputTexture] = this._textureManager._textureDescriptions[internals.outputTextureWhenDisabled!];
+            } else {
+                this._textureManager._textures[internals.outputTexture]!.texture = this._textureManager._textures[internals.outputTextureWhenEnabled!]!.texture;
+                this._textureManager._textures[internals.outputTexture]!.systemType = this._textureManager._textures[internals.outputTextureWhenEnabled!]!.systemType;
+                this._textureManager._textureDescriptions[internals.outputTexture] = this._textureManager._textureDescriptions[internals.outputTextureWhenEnabled!];
+            }
+        }
+    }
+
     public execute(): void {
         this._renderContext._bindRenderTarget();
-        for (const taskBlock of this._tasks) {
-            for (const pass of taskBlock.task._passes!) {
+
+        for (const task of this._tasks) {
+            this._setTextureOutputForTask(task);
+
+            const internals = task._frameGraphInternals!;
+            const passes = task.disabledFromGraph ? internals.passesDisabled : internals.passes;
+
+            for (const pass of passes) {
                 pass._execute();
             }
         }

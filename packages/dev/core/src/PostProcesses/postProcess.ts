@@ -72,6 +72,7 @@ AbstractEngine.prototype.setTextureFromPostProcessOutput = function (channel: nu
 export interface IFrameGraphPostProcessInputData extends IFrameGraphInputData {
     sourceTexture: FrameGraphTaskTexture | TextureHandle;
     outputTexture: FrameGraphTaskTexture | TextureHandle;
+    skipCreationOfDisabledPasses?: boolean;
 }
 
 declare module "../Materials/effect" {
@@ -227,6 +228,8 @@ export class PostProcess implements IFrameGraphTask {
     public _parentContainer: Nullable<AbstractScene> = null;
 
     private static _CustomShaderCodeProcessing: { [postProcessName: string]: PostProcessCustomShaderCodeProcessing } = {};
+
+    public disabledFromGraph = false;
 
     public onBeforeTaskRecordFrameGraphObservable = new Observable<FrameGraph>();
 
@@ -1122,6 +1125,17 @@ export class PostProcess implements IFrameGraphTask {
             this.inputTexture = context.getTextureFromHandle(sourceTextureHandle)!;
             context.applyFullScreenEffect(this._drawWrapper, () => this._bind());
         });
+
+        if (!inputData.skipCreationOfDisabledPasses) {
+            const passDisabled = frameGraph.addRenderPass(this.name + "_disabled", true);
+
+            passDisabled.setRenderTarget(sourceTextureHandle);
+            passDisabled.setExecuteFunc((_context) => {
+                if (_context.isBackbufferColor(outputTextureHandle)) {
+                    _context.copyTexture(_context.getTextureFromHandle(sourceTextureHandle)!.texture!, true);
+                }
+            });
+        }
     }
 
     private _disposeTextures() {

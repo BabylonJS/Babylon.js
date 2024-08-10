@@ -10,6 +10,11 @@ export class FrameGraphRenderPassBuilder extends FrameGraphPassBuilder<FrameGrap
     protected _usedTextures: TextureHandle[] = [];
 
     /** @internal */
+    public get renderTarget(): TextureHandle {
+        return this._renderTarget;
+    }
+
+    /** @internal */
     constructor(name: string, textureManager: FrameGraphTextureManager, parentTask: IFrameGraphTask, context: FrameGraphRenderContext) {
         super(name, textureManager, parentTask, context);
     }
@@ -19,7 +24,6 @@ export class FrameGraphRenderPassBuilder extends FrameGraphPassBuilder<FrameGrap
     }
     public setRenderTarget(renderTargetHandle: TextureHandle) {
         this._renderTarget = renderTargetHandle;
-        this._textureManager.registerTextureHandleForTask(this._parentTask, "output", this._renderTarget);
     }
 
     /** @internal */

@@ -30,6 +30,8 @@ export interface IFrameGraphBloomEffectInputData extends IFrameGraphInputData {
 export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphTask {
     public name = "Bloom";
 
+    public disabledFromGraph = false;
+
     public onBeforeTaskRecordFrameGraphObservable = new Observable<FrameGraph>();
 
     public onAfterTaskRecordFrameGraphObservable = new Observable<FrameGraph>();
@@ -165,7 +167,7 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
         this._effects.push(this._merge);
     }
 
-    public recordFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphBloomEffectInputData) {
+    public recordFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphBloomEffectInputData): void {
         const sourceTextureDescription = frameGraph.getTextureDescription(inputData.sourceTexture);
 
         const textureCreationOptions = {
@@ -195,6 +197,7 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
         this._downscale.recordFrameGraph(frameGraph, {
             sourceTexture: inputData.sourceTexture,
             outputTexture: downscaleTextureHandle,
+            skipCreationOfDisabledPasses: true,
         });
 
         textureCreationOptions.options.label = "Bloom Blur X";
@@ -203,6 +206,7 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
         this._blurX.recordFrameGraph(frameGraph, {
             sourceTexture: downscaleTextureHandle,
             outputTexture: blurXTextureHandle,
+            skipCreationOfDisabledPasses: true,
         });
 
         textureCreationOptions.options.label = "Bloom Blur Y";
@@ -211,12 +215,26 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
         this._blurY.recordFrameGraph(frameGraph, {
             sourceTexture: blurXTextureHandle,
             outputTexture: blurYTextureHandle,
+            skipCreationOfDisabledPasses: true,
         });
 
         this._merge.recordFrameGraph(frameGraph, {
             sourceTexture: inputData.sourceTexture,
             sourceBlurTexture: blurYTextureHandle,
             outputTexture: inputData.outputTexture,
+            skipCreationOfDisabledPasses: true,
+        });
+
+        const sourceTextureHandle = frameGraph.getTextureHandle(inputData.sourceTexture);
+        const outputTextureHandle = frameGraph.getTextureHandle(inputData.outputTexture);
+
+        const passDisabled = frameGraph.addRenderPass(this.name + "_disabled", true);
+
+        passDisabled.setRenderTarget(sourceTextureHandle);
+        passDisabled.setExecuteFunc((_context) => {
+            if (_context.isBackbufferColor(outputTextureHandle)) {
+                _context.copyTexture(_context.getTextureFromHandle(sourceTextureHandle)!.texture!, true);
+            }
         });
     }
 

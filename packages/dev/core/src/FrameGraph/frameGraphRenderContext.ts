@@ -10,7 +10,7 @@ import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { IColor4Like } from "core/Maths/math.like";
 import { FrameGraphContext } from "./frameGraphContext";
 import type { TextureHandle, FrameGraphTextureManager } from "./frameGraphTextureManager";
-import { backbufferColorTextureHandle } from "./frameGraphTextureManager";
+import { backbufferColorTextureHandle, FrameGraphTextureSystemType } from "./frameGraphTextureManager";
 
 export class FrameGraphRenderContext extends FrameGraphContext {
     private _effectRenderer: EffectRenderer;
@@ -30,6 +30,10 @@ export class FrameGraphRenderContext extends FrameGraphContext {
 
     public getTextureFromHandle(handle: TextureHandle): Nullable<RenderTargetWrapper> {
         return this._textureManager._textures[handle]!.texture;
+    }
+
+    public isBackbufferColor(handle: TextureHandle) {
+        return this._textureManager._textures[handle]!.systemType === FrameGraphTextureSystemType.BackbufferColor;
     }
 
     /**
@@ -77,8 +81,12 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     /**
      * Copies a texture to the current render target
      * @param sourceTexture The source texture to copy from
+     * @param forceCopyToBackbuffer If true, the copy will be done to the back buffer regardless of the current render target
      */
-    public copyTexture(sourceTexture: InternalTexture | ThinTexture) {
+    public copyTexture(sourceTexture: InternalTexture | ThinTexture, forceCopyToBackbuffer = false) {
+        if (forceCopyToBackbuffer) {
+            this._bindRenderTarget();
+        }
         this._applyRenderTarget();
         this._copyTexture.copy(sourceTexture, this._currentRenderTargetHandle ? this.getTextureFromHandle(this._currentRenderTargetHandle) : null);
     }
@@ -103,10 +111,16 @@ export class FrameGraphRenderContext extends FrameGraphContext {
             return;
         }
 
-        const renderTarget = this.getTextureFromHandle(this._currentRenderTargetHandle);
+        const textureEntry = this._textureManager._textures[this._currentRenderTargetHandle]!;
+
+        const renderTarget = textureEntry.texture;
 
         if (!renderTarget) {
-            this._engine.restoreDefaultFramebuffer();
+            if (textureEntry.systemType === FrameGraphTextureSystemType.BackbufferColor) {
+                this._engine.restoreDefaultFramebuffer();
+            } else if (textureEntry.systemType === FrameGraphTextureSystemType.BackbufferDepthStencil) {
+                throw new Error("Depth/Stencil textures are not supported as render targets");
+            }
         } else {
             this._engine.bindFramebuffer(renderTarget);
         }
