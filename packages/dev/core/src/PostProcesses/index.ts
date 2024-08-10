@@ -106,4 +106,3 @@ export * from "../ShadersWGSL/convolution.fragment";
 // Color correction
 export * from "../Shaders/colorCorrection.fragment";
 export * from "../ShadersWGSL/colorCorrection.fragment";
-
