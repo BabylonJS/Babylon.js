@@ -529,6 +529,14 @@ export class SolidParser {
         return line.startsWith("l");
     }
 
+    private static _IsObjectElement(line: string) {
+        return line.startsWith("o");
+    }
+
+    private static _IsGroupElement(line: string) {
+        return line.startsWith("g");
+    }
+
     /**
      * Function used to parse an OBJ string
      * @param meshesNames defines the list of meshes to load (all if not defined)
@@ -551,11 +559,10 @@ export class SolidParser {
 
         // Split the file into lines
         const linesOBJ = data.split("\n");
-        const lines: string[] = [];
-        const lineLines: string[] = [];
-        // const vertexLines: string[] = [];
-        //
+        const lineLines: string[][] = [];
 
+        lineLines.push([]);
+        let currentGroup = lineLines[lineLines.length - 1];
         for (let i = 0; i < linesOBJ.length; i++) {
             const line = linesOBJ[i].trim().replace(/\s\s/g, " ");
 
@@ -564,21 +571,23 @@ export class SolidParser {
                 continue;
             }
 
+            if (SolidParser._IsGroupElement(line) || SolidParser._IsObjectElement(line)) {
+                lineLines.push([]);
+                currentGroup = lineLines[lineLines.length - 1];
+            }
+
             if (SolidParser._IsLineElement(line)) {
                 const lineValues = line.split(" ");
                 for (let i = 1; i < lineValues.length - 1; i++) {
-                    lineLines.push(`l ${lineValues[i]} ${lineValues[i + 1]}`);
+                    currentGroup.push(`l ${lineValues[i]} ${lineValues[i + 1]}`);
                 }
             } else {
-                lines.push(line);
+                currentGroup.push(line);
             }
         }
 
-        for (let i = 0; i < lineLines.length; i++) {
-            lines.push(lineLines[i]);
-        }
+        const lines = lineLines.flat();
 
-        //
         // Look at each line
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i].trim().replace(/\s\s/g, " ");
