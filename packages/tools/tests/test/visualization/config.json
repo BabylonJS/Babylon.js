@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Convolution Post Process",
+            "playgroundId": "#FBH4J7#281",
+            "referenceImage": "convolution.png"
+        },
+        {
             "title": "Color correction",
             "playgroundId": "#FBH4J7#278",
             "referenceImage": "color-correction.png"
