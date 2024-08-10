@@ -558,6 +558,7 @@ export class SolidParser {
         }
 
         // Split the file into lines
+        // Preprocess line data
         const linesOBJ = data.split("\n");
         const lineLines: string[][] = [];
 
@@ -578,6 +579,7 @@ export class SolidParser {
 
             if (SolidParser._IsLineElement(line)) {
                 const lineValues = line.split(" ");
+                // create line elements with two vertices only
                 for (let i = 1; i < lineValues.length - 1; i++) {
                     currentGroup.push(`l ${lineValues[i]} ${lineValues[i + 1]}`);
                 }

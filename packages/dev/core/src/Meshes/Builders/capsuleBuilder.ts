@@ -3,7 +3,7 @@ import { Vector2, Vector3, Matrix } from "../../Maths/math.vector";
 import { Mesh } from "../mesh";
 import type { Nullable } from "../../types";
 import type { Scene } from "../../scene";
-import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
+import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
 /**
  * Scripts based off of https://github.com/maximeq/three-js-capsule-geometry/blob/master/src/CapsuleBufferGeometry.js
  * @param options the constructors options used to shape the mesh.
@@ -94,7 +94,7 @@ export function CreateCapsuleVertexData(
             normal.set(cosA * sinTheta, sinA, cosA * cosTheta);
             normals.push(normal.x, normal.y, normal.z);
             // uv
-            uvs.push(u, CompatibilityOptions.UseOpenGLOrientationForUV ? v / vl : 1 - v / vl);
+            uvs.push(u, useOpenGLOrientationForUV ? v / vl : 1 - v / vl);
             // save index of vertex in respective row
             indexRow.push(index);
             // increase index
@@ -126,7 +126,7 @@ export function CreateCapsuleVertexData(
             normal.set(sinTheta, slope, cosTheta).normalize();
             normals.push(normal.x, normal.y, normal.z);
             // uv
-            uvs.push(u, CompatibilityOptions.UseOpenGLOrientationForUV ? v / vl : 1 - v / vl);
+            uvs.push(u, useOpenGLOrientationForUV ? v / vl : 1 - v / vl);
             // save index of vertex in respective row
             indexRow.push(index);
             // increase index
@@ -158,7 +158,7 @@ export function CreateCapsuleVertexData(
             normal.set(cosA * sinTheta, sinA, cosA * cosTheta);
             normals.push(normal.x, normal.y, normal.z);
             // uv
-            uvs.push(u, CompatibilityOptions.UseOpenGLOrientationForUV ? v / vl : 1 - v / vl);
+            uvs.push(u, useOpenGLOrientationForUV ? v / vl : 1 - v / vl);
             // save index of vertex in respective row
             indexRow.push(index);
             // increase index

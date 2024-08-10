@@ -1,4 +1,4 @@
-import { ArrayTools } from "../Misc/arrayTools";
+import { BuildArray } from "../Misc/arrayTools";
 import { RegisterClass } from "../Misc/typeStore";
 import type { DeepImmutable, FloatArray, Tuple } from "../types";
 import { Epsilon, ToGammaSpace, ToLinearSpace } from "./math.constants";
@@ -1859,8 +1859,8 @@ Object.defineProperties(Color4.prototype, {
  * @internal
  */
 export class TmpColors {
-    public static Color3: Color3[] = ArrayTools.BuildArray(3, Color3.Black);
-    public static Color4: Color4[] = ArrayTools.BuildArray(3, () => new Color4(0, 0, 0, 0));
+    public static Color3: Color3[] = BuildArray(3, Color3.Black);
+    public static Color4: Color4[] = BuildArray(3, () => new Color4(0, 0, 0, 0));
 }
 
 RegisterClass("BABYLON.Color3", Color3);
