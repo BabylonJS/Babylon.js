@@ -22,9 +22,7 @@ import { Scalar } from "../../../Maths/math.scalar";
 import { RawTexture } from "../../../Materials/Textures/rawTexture";
 
 import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
-
-import "../../../Shaders/ssao2.fragment";
-import "../../../Shaders/ssaoCombine.fragment";
+import { ShaderLanguage } from "core/Materials";
 
 /**
  * Render pipeline to produce ssao effect
@@ -565,7 +563,19 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             this._scene.getEngine(),
             false,
             defines,
-            textureType
+            textureType,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            this._scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            async (useWebGPU) => {
+                if (useWebGPU) {
+                    await Promise.all([import("../../../ShadersWGSL/ssao2.fragment"), import("../../../ShadersWGSL/ssaoCombine.fragment")]);
+                } else {
+                    await Promise.all([import("../../../Shaders/ssao2.fragment"), import("../../../Shaders/ssaoCombine.fragment")]);
+                }
+            }
         );
         this._ssaoPostProcess.autoClear = false;
 

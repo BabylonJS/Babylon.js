@@ -39,6 +39,17 @@ export class AnaglyphPostProcess extends PostProcess {
             effect.setTextureFromPostProcess("leftSampler", this._passedProcess);
         });
     }
+
+    protected override async _initShaderSourceAsync(useWebGPU: boolean) {
+        if (useWebGPU) {
+            this._webGPUReady = true;
+            await import("../ShadersWGSL/anaglyph.fragment");
+        } else {
+            await import("../Shaders/anaglyph.fragment");
+        }
+
+        super._initShaderSourceAsync(useWebGPU);
+    }
 }
 
 RegisterClass("BABYLON.AnaglyphPostProcess", AnaglyphPostProcess);
