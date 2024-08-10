@@ -38,8 +38,12 @@ interface IRenderingZoneProps {
     autoRotate?: boolean;
     cameraPosition?: Vector3;
     expanded: boolean;
+    onEngineCreated?: (engine: AbstractEngine) => void;
 }
 
+/**
+ * RenderingZone component
+ */
 export class RenderingZone extends React.Component<IRenderingZoneProps> {
     private _currentPluginName?: string;
     private _engine: AbstractEngine;
@@ -72,6 +76,8 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 forceSRGBBufferSupportState: this.props.globalState.commerceMode,
             });
         }
+
+        this.props.onEngineCreated && this.props.onEngineCreated(this._engine);
 
         this._engine.loadingUIBackgroundColor = "#2A2342";
 
