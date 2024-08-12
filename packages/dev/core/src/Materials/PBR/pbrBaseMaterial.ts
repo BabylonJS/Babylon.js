@@ -937,6 +937,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     constructor(name: string, scene?: Scene, forceGLSL = false) {
         super(name, scene);
 
+        this._initShaderSourceAsync(forceGLSL);
+
         this.brdf = new PBRBRDFConfiguration(this);
         this.clearCoat = new PBRClearCoatConfiguration(this);
         this.iridescence = new PBRIridescenceConfiguration(this);
@@ -944,8 +946,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this.sheen = new PBRSheenConfiguration(this);
         this.subSurface = new PBRSubSurfaceConfiguration(this);
         this.detailMap = new DetailMapConfiguration(this);
-
-        this._initShaderSourceAsync(forceGLSL);
 
         // Setup the default processing configuration to the scene.
         this._attachImageProcessingConfiguration(null);
