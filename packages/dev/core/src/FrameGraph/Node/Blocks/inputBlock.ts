@@ -4,8 +4,7 @@ import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
 import type { NodeRenderGraphConnectionPoint } from "../nodeRenderGraphBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
 import type { Camera } from "../../../Cameras/camera";
-import type { ThinTexture } from "../../../Materials/Textures/thinTexture";
-import type { RenderTargetCreationOptions, TextureSize } from "../../../Materials/Textures/textureCreationOptions";
+//import type { ThinTexture } from "../../../Materials/Textures/thinTexture";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
 import type { Vector3 } from "../../../Maths/math.vector";
 import type { RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
@@ -13,34 +12,27 @@ import type { InternalTexture } from "../../../Materials/Textures/internalTextur
 import type { Nullable } from "../../../types";
 import type { AbstractEngine } from "../../../Engines/abstractEngine";
 import type { NodeRenderGraphBuildState } from "../nodeRenderGraphBuildState";
+import type { FrameGraphTextureCreationOptions } from "core/FrameGraph/frameGraphTextureManager";
+import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "core/FrameGraph/frameGraphTextureManager";
 
-export type NodeRenderGraphInputType = ThinTexture | RenderTargetWrapper | Camera;
-
-export type NodeRenderGraphInputTextureCreationOptions = {
-    /** Size of the render target texture. If sizeIsPercentage is true, these are percentages relative to the screen size */
-    size: TextureSize;
-    /** Options used to create the render target texture */
-    options: RenderTargetCreationOptions;
-    /** If true, indicates that "size" is percentages relative to the screen size */
-    sizeIsPercentage: boolean;
-};
+export type NodeRenderGraphValueType = RenderTargetWrapper | Camera;
 
 export type NodeRenderGraphInputCameraCreationOptions = {
     /** TODO */
     position: Vector3;
 };
 
-export type NodeRenderGraphInputCreationOptions = NodeRenderGraphInputTextureCreationOptions | NodeRenderGraphInputCameraCreationOptions;
+export type NodeRenderGraphInputCreationOptions = FrameGraphTextureCreationOptions | NodeRenderGraphInputCameraCreationOptions;
 
 /**
  * Block used to expose an input value
  */
-export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
-    private _storedValue: Nullable<NodeRenderGraphInputType> = null;
+export class RenderGraphInputBlock extends NodeRenderGraphBlock {
+    private _storedValue: Nullable<NodeRenderGraphValueType> = null;
     private _type: NodeRenderGraphBlockConnectionPointTypes = NodeRenderGraphBlockConnectionPointTypes.Undefined;
 
     /** Gets an observable raised when the value is changed */
-    public onValueChangedObservable = new Observable<NodeRenderGraphInputBlock>();
+    public onValueChangedObservable = new Observable<RenderGraphInputBlock>();
 
     /** Indicates that the input is externally managed */
     @editableInPropertyPage("Is external", PropertyTypeForEdition.Boolean, "PROPERTIES")
@@ -57,7 +49,7 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
     }
 
     /**
-     * Creates a new NodeRenderGraphInputBlock
+     * Creates a new RenderGraphInputBlock
      * @param name defines the block name
      * @param engine defines the hosting engine
      * @param type defines the type of the input (can be set to NodeRenderGraphBlockConnectionPointTypes.Undefined)
@@ -67,17 +59,41 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
         this._type = type;
         this._isInput = true;
         this.registerOutput("output", type);
-        this.output.value = this;
+        this.setDefaultValue();
+    }
+
+    /**
+     * Set the input block to its default value (based on its type)
+     */
+    public setDefaultValue() {
+        switch (this.type) {
+            case NodeRenderGraphBlockConnectionPointTypes.Texture:
+            case NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment:
+            case NodeRenderGraphBlockConnectionPointTypes.TextureDepth:
+            case NodeRenderGraphBlockConnectionPointTypes.TextureNormal:
+            case NodeRenderGraphBlockConnectionPointTypes.TextureAlbedo:
+            case NodeRenderGraphBlockConnectionPointTypes.TextureReflectivity:
+            case NodeRenderGraphBlockConnectionPointTypes.TexturePosition:
+            case NodeRenderGraphBlockConnectionPointTypes.TextureVelocity:
+            case NodeRenderGraphBlockConnectionPointTypes.TextureIrradiance:
+            case NodeRenderGraphBlockConnectionPointTypes.TextureAlbedoSqrt:
+                this.creationOptions = {
+                    size: { width: 100, height: 100 },
+                    options: {},
+                    sizeIsPercentage: true,
+                } as FrameGraphTextureCreationOptions;
+                break;
+        }
     }
 
     /**
      * Gets or sets the value of that point.
      */
-    public get value(): Nullable<NodeRenderGraphInputType> {
+    public get value(): Nullable<NodeRenderGraphValueType> {
         return this._storedValue;
     }
 
-    public set value(value: Nullable<NodeRenderGraphInputType>) {
+    public set value(value: Nullable<NodeRenderGraphValueType>) {
         this._storedValue = value;
         this.onValueChangedObservable.notifyObservers(this);
     }
@@ -86,7 +102,7 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
      * Gets the value as a specific type
      * @returns the value as a specific type
      */
-    public getTypedValue<T extends NodeRenderGraphInputType>(): Nullable<T> {
+    public getTypedValue<T extends NodeRenderGraphValueType>(): Nullable<T> {
         return this._storedValue as T;
     }
 
@@ -108,8 +124,8 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
     public getInternalTextureFromValue(): Nullable<InternalTexture> {
         if ((this._storedValue as RenderTargetWrapper).shareDepth) {
             return (this._storedValue as RenderTargetWrapper).texture;
-        } else if ((this._storedValue as ThinTexture).getInternalTexture) {
-            return (this._storedValue as ThinTexture).getInternalTexture();
+            // } else if ((this._storedValue as ThinTexture).getInternalTexture) {
+            //     return (this._storedValue as ThinTexture).getInternalTexture();
         }
         return null;
     }
@@ -119,7 +135,7 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
      * @returns the class name
      */
     public override getClassName() {
-        return "NodeRenderGraphInputBlock";
+        return "RenderGraphInputBlock";
     }
 
     /**
@@ -158,26 +174,27 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
 
         if (this.isExternal) {
             if (this._storedValue === undefined || this._storedValue === null) {
-                throw new Error(`NodeRenderGraphInputBlock: External input "${this.name}" is not set`);
+                throw new Error(`RenderGraphInputBlock: External input "${this.name}" is not set`);
+            }
+            const texture = this.getValueAsRenderTargetWrapper();
+            if (texture) {
+                this.output.value = state.frameGraph.importTexture(this.name, texture);
             }
             return;
         }
 
         if ((this.type & NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer) !== 0) {
-            const textureCreateOptions = this.creationOptions as NodeRenderGraphInputTextureCreationOptions;
+            const textureCreateOptions = this.creationOptions as FrameGraphTextureCreationOptions;
 
             if (!textureCreateOptions) {
-                throw new Error(`NodeRenderGraphInputBlock: Creation options are missing for texture "${this.name}"`);
+                throw new Error(`RenderGraphInputBlock: Creation options are missing for texture "${this.name}"`);
             }
 
-            const size = textureCreateOptions.sizeIsPercentage
-                ? {
-                      width: (this._engine.getRenderWidth() * (textureCreateOptions.size as { width: number }).width) / 100,
-                      height: (this._engine.getRenderHeight() * (textureCreateOptions.size as { height: number }).height) / 100,
-                  }
-                : textureCreateOptions.size;
-
-            this.value = state.frameGraph.createRenderTargetTexture(this.name, size, textureCreateOptions.options);
+            this.output.value = state.frameGraph.createRenderTargetTexture(this.name, textureCreateOptions);
+        } else if (this.isBackBuffer()) {
+            this.output.value = backbufferColorTextureHandle;
+        } else if (this.isBackBufferDepthStencilAttachment()) {
+            this.output.value = backbufferDepthStencilTextureHandle;
         }
     }
 
@@ -220,4 +237,4 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
     }
 }
 
-RegisterClass("BABYLON.NodeRenderGraphInputBlock", NodeRenderGraphInputBlock);
+RegisterClass("BABYLON.RenderGraphOutputBlock", RenderGraphInputBlock);

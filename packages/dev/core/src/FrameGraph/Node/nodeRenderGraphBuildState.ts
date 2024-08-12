@@ -14,9 +14,6 @@ export class NodeRenderGraphBuildState {
     /** Gets or sets a boolean indicating that verbose mode is on */
     public verbose = false;
 
-    /** If true, the blocks whose executeCondition evaluates to false at build time will be removed from the execution list (default: false) */
-    public removeFalseBlocks = false;
-
     /**
      * Gets or sets the list of non connected mandatory inputs
      * @internal

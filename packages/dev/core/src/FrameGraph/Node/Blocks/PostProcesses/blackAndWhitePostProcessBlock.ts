@@ -1,22 +1,24 @@
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
-import type { NodeRenderGraphConnectionPoint } from "../../nodeRenderGraphBlockConnectionPoint";
+import { NodeRenderGraphConnectionPoint } from "../../nodeRenderGraphBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Enums/nodeRenderGraphBlockConnectionPointTypes";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { BlackAndWhitePostProcess } from "../../../../PostProcesses/blackAndWhitePostProcess";
-import type { Nullable } from "../../../../types";
 import type { AbstractEngine } from "../../../../Engines/abstractEngine";
 import { Constants } from "../../../../Engines/constants";
-import type { Observer } from "../../../../Misc/observable";
-import type { Effect } from "../../../../Materials/effect";
 import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
+import type { IFrameGraphPostProcessInputData } from "../../../../PostProcesses/postProcess";
 
 /**
  * Block that implements the black and white post process
  */
 export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
     private _postProcess: BlackAndWhitePostProcess;
-    private _ppObserver: Nullable<Observer<Effect>> = null;
+    private _taskParameters: IFrameGraphPostProcessInputData;
+
+    public get postProcess(): BlackAndWhitePostProcess {
+        return this._postProcess;
+    }
 
     /**
      * Create a new BlackAndWhitePostProcessBlock
@@ -27,15 +29,30 @@ export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
         super(name, engine);
 
         this.registerInput("source", NodeRenderGraphBlockConnectionPointTypes.Texture);
-        this.registerInput("destination", NodeRenderGraphBlockConnectionPointTypes.Texture);
+        this.registerInput("destination", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
 
         this.source.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer);
         this.destination.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
-        this.output._typeConnectionSource = this.destination;
+        this.output._typeConnectionSource = () => {
+            return this.destination.isConnected ? this.destination : this.source;
+        };
 
         this._postProcess = new BlackAndWhitePostProcess(this.name, 1, null, undefined, engine);
-        this._postProcess.externalTextureSamplerBinding = true;
+        this._taskParameters = {
+            sourceTexture: undefined as any,
+            sourceSamplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+        };
+    }
+
+    /** Sampling mode used to sample from the source texture */
+    @editableInPropertyPage("Source sampling mode", PropertyTypeForEdition.Int, "PROPERTIES")
+    public get sourceSamplingMode() {
+        return this._taskParameters.sourceSamplingMode!;
+    }
+
+    public set sourceSamplingMode(value: number) {
+        this._taskParameters.sourceSamplingMode = value;
     }
 
     /** Degree of conversion to black and white (default: 1 - full b&w conversion) */
@@ -47,10 +64,6 @@ export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
     public set degree(value: number) {
         this._postProcess.degree = value;
     }
-
-    /** Sampling mode used to sample from the source texture */
-    @editableInPropertyPage("Source sampling mode", PropertyTypeForEdition.Int, "PROPERTIES")
-    public sourceSamplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
 
     /**
      * Gets the current class name
@@ -80,10 +93,6 @@ export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
         return this._outputs[0];
     }
 
-    public override isReady(): boolean {
-        return this._postProcess.isReady();
-    }
-
     public override dispose() {
         this._postProcess.dispose();
         super.dispose();
@@ -92,36 +101,21 @@ export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
         super._buildBlock(state);
 
-        this._propagateInputValueToOutput(this.destination, this.output);
+        this._postProcess.name = this.name;
+
+        this.output.value = [this.name, "output"];
 
         const source = this.source.connectedPoint?.value;
-        const sourceTexture = source?.getInternalTextureFromValue();
-        if (!sourceTexture) {
-            throw new Error("BlackAndWhitePostProcessBlock: Source is not connected or is not a texture");
+        if (source && NodeRenderGraphConnectionPoint.ValueIsTexture(source)) {
+            this._taskParameters.sourceTexture = source;
         }
-
-        this._postProcess.recordFrameGraph(state.frameGraph);
-
-        this._postProcess.onApplyObservable.remove(this._ppObserver);
-        this._ppObserver = this._postProcess.onApplyObservable.add((effect) => {
-            effect._bindTexture("textureSampler", sourceTexture);
-        });
 
         const destination = this.destination.connectedPoint?.value;
-        const rtWrapper = destination?.getValueAsRenderTargetWrapper();
-        if (rtWrapper) {
-            state.frameGraph.addExecuteFunction(() => {
-                if (sourceTexture.samplingMode !== this.sourceSamplingMode) {
-                    this._engine.updateTextureSamplingMode(this.sourceSamplingMode, sourceTexture);
-                }
-
-                state.frameGraph.bindRenderTarget(rtWrapper);
-
-                this._postProcess.executeFrameGraphTask(state.frameGraph);
-
-                state.frameGraph.bindRenderTarget(null);
-            });
+        if (destination && NodeRenderGraphConnectionPoint.ValueIsTexture(destination)) {
+            this._taskParameters.outputTexture = destination;
         }
+
+        state.frameGraph.addTask(this._postProcess, this._taskParameters);
     }
 
     protected override _dumpPropertiesCode() {

@@ -36,6 +36,10 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         return this._textureManager._textures[handle]!.systemType === FrameGraphTextureSystemType.BackbufferColor;
     }
 
+    public isBackbufferDepthStencil(handle: TextureHandle) {
+        return this._textureManager._textures[handle]!.systemType === FrameGraphTextureSystemType.BackbufferDepthStencil;
+    }
+
     /**
      * Clears the current render buffer or the current render target (if any is set up)
      * @param color defines the color to use
@@ -46,6 +50,13 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil?: boolean): void {
         this._applyRenderTarget();
         this._engine.clear(color, backBuffer, depth, stencil);
+    }
+
+    public setTextureSamplingMode(handle: TextureHandle, samplingMode: number) {
+        const internalTexture = this.getTextureFromHandle(handle)?.texture!;
+        if (internalTexture && internalTexture.samplingMode !== samplingMode) {
+            this._engine.updateTextureSamplingMode(samplingMode, internalTexture);
+        }
     }
 
     /**

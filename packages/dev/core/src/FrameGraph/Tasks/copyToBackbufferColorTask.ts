@@ -17,13 +17,20 @@ export class FrameGraphCopyToBackbufferColorTask implements IFrameGraphTask {
     }
 
     public recordFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphCopyToBackbufferColorInputData) {
-        const copyPass = frameGraph.addRenderPass("copy to framebuffer");
-
         const sourceTextureHandle = frameGraph.getTextureHandle(inputData.sourceTexture);
 
-        copyPass.setRenderTarget(backbufferColorTextureHandle);
-        copyPass.setExecuteFunc((context) => {
-            context.copyTexture(context.getTextureFromHandle(sourceTextureHandle)!.texture!);
+        const pass = frameGraph.addRenderPass("copy to backbuffer color");
+
+        pass.setRenderTarget(backbufferColorTextureHandle);
+        pass.setExecuteFunc((context) => {
+            if (!context.isBackbufferColor(sourceTextureHandle)) {
+                context.copyTexture(context.getTextureFromHandle(sourceTextureHandle)!.texture!);
+            }
         });
+
+        const passDisabled = frameGraph.addRenderPass("copy to backbuffer color_disabled");
+
+        passDisabled.setRenderTarget(backbufferColorTextureHandle);
+        passDisabled.setExecuteFunc((_context) => {});
     }
 }

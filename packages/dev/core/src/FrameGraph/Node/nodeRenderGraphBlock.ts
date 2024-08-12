@@ -5,7 +5,7 @@ import { NodeRenderGraphBlockConnectionPointTypes } from "./Enums/nodeRenderGrap
 import type { NodeRenderGraphBuildState } from "./nodeRenderGraphBuildState";
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
-import type { NodeRenderGraphInputBlock } from "./Blocks/inputBlock";
+import type { RenderGraphInputBlock } from "./Blocks/inputBlock";
 import { Logger } from "../../Misc/logger";
 import { NodeRenderGraphConnectionPoint, NodeRenderGraphConnectionPointDirection } from "./nodeRenderGraphBlockConnectionPoint";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
@@ -37,11 +37,6 @@ export class NodeRenderGraphBlock {
      * Gets an observable raised after the block is executed
      */
     public onAfterExecuteObservable = new Observable<NodeRenderGraphBlock>();
-
-    /**
-     * Condition to execute the block (default: undefined - block always executed)
-     */
-    public executeCondition: (() => boolean) | undefined = undefined;
 
     /** @internal */
     public _inputs = new Array<NodeRenderGraphConnectionPoint>();
@@ -287,10 +282,6 @@ export class NodeRenderGraphBlock {
             return true;
         }
 
-        if (state.removeFalseBlocks && this.executeCondition && !this.executeCondition()) {
-            return false;
-        }
-
         this._buildId = state.buildId;
 
         // Check if "parent" blocks are compiled
@@ -316,8 +307,6 @@ export class NodeRenderGraphBlock {
             Logger.Log(`Building ${this.name} [${this.getClassName()}]`);
         }
 
-        state.frameGraph._addCondition(this.executeCondition);
-
         this._buildBlock(state);
 
         // Compile connected blocks
@@ -333,14 +322,6 @@ export class NodeRenderGraphBlock {
         this.onBuildObservable.notifyObservers(this);
 
         return false;
-    }
-
-    /**
-     * Checks if the block is ready to be executed
-     * @returns true if the block is ready to be executed
-     */
-    public isReady() {
-        return true;
     }
 
     protected _linkConnectionTypes(inputIndex0: number, inputIndex1: number, looseCoupling = false) {
@@ -529,11 +510,11 @@ export class NodeRenderGraphBlock {
             codeString += `// ${this.comments}\n`;
         }
         const className = this.getClassName();
-        if (className === "NodeRenderGraphInputBlock") {
-            const block = this as unknown as NodeRenderGraphInputBlock;
+        if (className === "RenderGraphInputBlock") {
+            const block = this as unknown as RenderGraphInputBlock;
             const blockType = block.type;
 
-            codeString += `var ${this._codeVariableName} = new BABYLON.NodeRenderGraphInputBlock("${this.name}", engine, BABYLON.NodeRenderGraphBlockConnectionPointTypes.${NodeRenderGraphBlockConnectionPointTypes[blockType]});\n`;
+            codeString += `var ${this._codeVariableName} = new BABYLON.RenderGraphInputBlock("${this.name}", engine, BABYLON.NodeRenderGraphBlockConnectionPointTypes.${NodeRenderGraphBlockConnectionPointTypes[blockType]});\n`;
         } else {
             if (this._additionalConstructionParameters) {
                 codeString += `var ${this._codeVariableName} = new BABYLON.${className}("${this.name}", engine, ...${JSON.stringify(this._additionalConstructionParameters)});\n`;

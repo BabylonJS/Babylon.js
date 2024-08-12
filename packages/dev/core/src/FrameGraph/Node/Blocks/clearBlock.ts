@@ -1,18 +1,23 @@
 import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
-import type { NodeRenderGraphConnectionPoint } from "../nodeRenderGraphBlockConnectionPoint";
+import { NodeRenderGraphConnectionPoint } from "../nodeRenderGraphBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../Enums/nodeRenderGraphBlockConnectionPointTypes";
 import { Color4 } from "../../../Maths/math.color";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
 import type { AbstractEngine } from "../../../Engines/abstractEngine";
 import type { NodeRenderGraphBuildState } from "../nodeRenderGraphBuildState";
+import type { IFrameGraphClearTextureInputData } from "core/FrameGraph/Tasks/clearTextureTask";
+import { FrameGraphClearTextureTask } from "core/FrameGraph/Tasks/clearTextureTask";
 
 /**
  * Block used to clear a texture
  */
-export class ClearBlock extends NodeRenderGraphBlock {
+export class RenderGraphClearBlock extends NodeRenderGraphBlock {
+    private _frameTask: FrameGraphClearTextureTask;
+    private _taskParameters: IFrameGraphClearTextureInputData;
+
     /**
-     * Create a new NodeRenderGraphClearBlock
+     * Create a new RenderGraphClearBlock
      * @param name defines the block name
      * @param engine defines the hosting engine
      */
@@ -24,18 +29,63 @@ export class ClearBlock extends NodeRenderGraphBlock {
 
         this.texture.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
         this.output._typeConnectionSource = this.texture;
+
+        this._frameTask = new FrameGraphClearTextureTask(name);
+        this._taskParameters = {
+            color: new Color4(0.2, 0.2, 0.3, 1),
+            clearColor: true,
+            clearDepth: false,
+            clearStencil: false,
+            destinationTexture: undefined as any, // will be set in _buildBlock
+        };
     }
 
     /** Gets or sets the clear color */
     @editableInPropertyPage("Color", PropertyTypeForEdition.Color4, "PROPERTIES")
-    public color = new Color4(0.2, 0.2, 0.3, 1);
+    public get color(): Color4 {
+        return this._taskParameters.color;
+    }
+
+    public set color(value: Color4) {
+        this._taskParameters.color = value;
+    }
+
+    /** Gets or sets a boolean indicating whether the color part of the texture should be cleared. */
+    @editableInPropertyPage("Clear color", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public get clearColor(): boolean {
+        return !!this._taskParameters.clearColor;
+    }
+
+    public set clearColor(value: boolean) {
+        this._taskParameters.clearColor = value;
+    }
+
+    /** Gets or sets a boolean indicating whether the depth part of the texture should be cleared. */
+    @editableInPropertyPage("Clear depth", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public get clearDepth(): boolean {
+        return !!this._taskParameters.clearDepth;
+    }
+
+    public set clearDepth(value: boolean) {
+        this._taskParameters.clearDepth = value;
+    }
+
+    /** Gets or sets a boolean indicating whether the stencil part of the texture should be cleared. */
+    @editableInPropertyPage("Clear stencil", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public get clearStencil(): boolean {
+        return !!this._taskParameters.clearStencil;
+    }
+
+    public set clearStencil(value: boolean) {
+        this._taskParameters.clearStencil = value;
+    }
 
     /**
      * Gets the current class name
      * @returns the class name
      */
     public override getClassName() {
-        return "ClearBlock";
+        return "RenderGraphClearBlock";
     }
     /**
      * Gets the texture input component
@@ -54,49 +104,43 @@ export class ClearBlock extends NodeRenderGraphBlock {
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
         super._buildBlock(state);
 
+        this._frameTask.name = this.name;
+
         this._propagateInputValueToOutput(this.texture, this.output);
 
         const inputTexture = this.texture.connectedPoint?.value;
-        if (!inputTexture || !inputTexture.isAnyTexture()) {
-            return;
+        if (inputTexture && NodeRenderGraphConnectionPoint.ValueIsTexture(inputTexture)) {
+            this._taskParameters.destinationTexture = inputTexture;
         }
 
-        const isBackBuffer = inputTexture.isBackBuffer();
-        const isBackBufferDepthStencilAttachment = inputTexture.isBackBufferDepthStencilAttachment();
-        const isDepthStencilAttachment = inputTexture.type === NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment || isBackBufferDepthStencilAttachment;
-
-        if (isBackBuffer || isBackBufferDepthStencilAttachment) {
-            state.frameGraph.addExecuteFunction(() => {
-                state.frameGraph.clear(this.color, !isDepthStencilAttachment, isDepthStencilAttachment, isDepthStencilAttachment);
-            });
-        } else {
-            const rtWrapper = inputTexture.getValueAsRenderTargetWrapper();
-            if (rtWrapper) {
-                state.frameGraph.addExecuteFunction(() => {
-                    state.frameGraph.bindRenderTarget(rtWrapper);
-                    state.frameGraph.clear(this.color, !isDepthStencilAttachment, isDepthStencilAttachment, isDepthStencilAttachment);
-                    state.frameGraph.bindRenderTarget(null);
-                });
-            }
-        }
+        state.frameGraph.addTask(this._frameTask, this._taskParameters);
     }
 
     protected override _dumpPropertiesCode() {
         const codes: string[] = [];
         codes.push(`${this._codeVariableName}.color = new Color4(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.color.a});`);
+        codes.push(`${this._codeVariableName}.clearColor = ${this.clearColor};`);
+        codes.push(`${this._codeVariableName}.clearDepth = ${this.clearDepth};`);
+        codes.push(`${this._codeVariableName}.clearStencil = ${this.clearStencil};`);
         return super._dumpPropertiesCode() + codes.join("\n");
     }
 
     public override serialize(): any {
         const serializationObject = super.serialize();
         serializationObject.color = this.color.asArray();
+        serializationObject.clearColor = this.clearColor;
+        serializationObject.clearDepth = this.clearDepth;
+        serializationObject.clearStencil = this.clearStencil;
         return serializationObject;
     }
 
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
         this.color = Color4.FromArray(serializationObject.color);
+        this.clearColor = serializationObject.clearColor;
+        this.clearDepth = serializationObject.clearDepth;
+        this.clearStencil = serializationObject.clearStencil;
     }
 }
 
-RegisterClass("BABYLON.ClearBlock", ClearBlock);
+RegisterClass("BABYLON.RenderGraphClearBlock", RenderGraphClearBlock);

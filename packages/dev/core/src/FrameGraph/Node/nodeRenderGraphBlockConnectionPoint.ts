@@ -2,7 +2,9 @@ import type { Nullable } from "../../types";
 import type { NodeRenderGraphBlock } from "./nodeRenderGraphBlock";
 import { Observable } from "../../Misc/observable";
 import { NodeRenderGraphBlockConnectionPointTypes } from "./Enums/nodeRenderGraphBlockConnectionPointTypes";
-import type { NodeRenderGraphInputBlock } from "./Blocks/inputBlock";
+import type { RenderGraphInputBlock } from "./Blocks/inputBlock";
+import type { FrameGraphTaskTexture } from "../Tasks/IFrameGraphTask";
+import type { TextureHandle } from "../frameGraphTextureManager";
 
 /**
  * Enum used to define the compatibility state between two connection points
@@ -26,6 +28,8 @@ export const enum NodeRenderGraphConnectionPointDirection {
     Output,
 }
 
+export type NodeRenderGraphConnectionPointValueType = FrameGraphTaskTexture | TextureHandle;
+
 /**
  * Defines a connection point for a block
  */
@@ -46,7 +50,7 @@ export class NodeRenderGraphConnectionPoint {
     public _linkedConnectionSource: Nullable<NodeRenderGraphConnectionPoint> = null;
 
     /** @internal */
-    public _typeConnectionSource: Nullable<NodeRenderGraphConnectionPoint> = null;
+    public _typeConnectionSource: Nullable<NodeRenderGraphConnectionPoint | (() => NodeRenderGraphConnectionPoint)> = null;
 
     /** @internal */
     public _defaultConnectionPointType: Nullable<NodeRenderGraphBlockConnectionPointTypes> = null;
@@ -56,10 +60,14 @@ export class NodeRenderGraphConnectionPoint {
         return this._direction;
     }
 
+    public static ValueIsTexture(value: NodeRenderGraphConnectionPointValueType): value is FrameGraphTaskTexture | TextureHandle {
+        return Array.isArray(value) || typeof value === "number";
+    }
+
     /**
      * The value stored in this connection point
      */
-    public value: NodeRenderGraphInputBlock;
+    public value: NodeRenderGraphConnectionPointValueType;
 
     /**
      * Gets or sets the additional types supported by this connection point
@@ -97,7 +105,7 @@ export class NodeRenderGraphConnectionPoint {
     public get type(): NodeRenderGraphBlockConnectionPointTypes {
         if (this._type === NodeRenderGraphBlockConnectionPointTypes.AutoDetect) {
             if (this._ownerBlock.isInput) {
-                return (this._ownerBlock as NodeRenderGraphInputBlock).type;
+                return (this._ownerBlock as RenderGraphInputBlock).type;
             }
 
             if (this._connectedPoint) {
@@ -111,10 +119,11 @@ export class NodeRenderGraphConnectionPoint {
 
         if (this._type === NodeRenderGraphBlockConnectionPointTypes.BasedOnInput) {
             if (this._typeConnectionSource) {
-                if (!this._typeConnectionSource.isConnected) {
-                    return this._defaultConnectionPointType ?? this._typeConnectionSource.type;
+                const typeConnectionSource = typeof this._typeConnectionSource === "function" ? this._typeConnectionSource() : this._typeConnectionSource;
+                if (!typeConnectionSource.isConnected) {
+                    return this._defaultConnectionPointType ?? typeConnectionSource.type;
                 }
-                return this._typeConnectionSource._connectedPoint!.type;
+                return typeConnectionSource._connectedPoint!.type;
             } else if (this._defaultConnectionPointType) {
                 return this._defaultConnectionPointType;
             }

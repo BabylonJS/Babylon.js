@@ -1,17 +1,22 @@
 import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
-import type { NodeRenderGraphConnectionPoint } from "../nodeRenderGraphBlockConnectionPoint";
+import { NodeRenderGraphConnectionPoint } from "../nodeRenderGraphBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../Enums/nodeRenderGraphBlockConnectionPointTypes";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
 import type { AbstractEngine } from "../../../Engines/abstractEngine";
 import type { NodeRenderGraphBuildState } from "../nodeRenderGraphBuildState";
+import type { IFrameGraphCopyToBackbufferColorInputData } from "core/FrameGraph/Tasks/copyToBackbufferColorTask";
+import { FrameGraphCopyToBackbufferColorTask } from "core/FrameGraph/Tasks/copyToBackbufferColorTask";
 
 /**
  * Block used to generate the final graph
  */
-export class NodeRenderGraphOutputBlock extends NodeRenderGraphBlock {
+export class RenderGraphOutputBlock extends NodeRenderGraphBlock {
+    private _frameTask: FrameGraphCopyToBackbufferColorTask;
+    private _taskParameters: IFrameGraphCopyToBackbufferColorInputData;
+
     /**
-     * Create a new NodeRenderGraphOutputBlock
+     * Create a new RenderGraphOutputBlock
      * @param name defines the block name
      * @param engine defines the hosting engine
      */
@@ -23,18 +28,29 @@ export class NodeRenderGraphOutputBlock extends NodeRenderGraphBlock {
         this.registerInput("texture", NodeRenderGraphBlockConnectionPointTypes.Texture);
 
         this.texture.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
+
+        this._frameTask = new FrameGraphCopyToBackbufferColorTask(name);
+        this._taskParameters = {
+            sourceTexture: undefined as any,
+        };
     }
 
     /** Disables the copy of the input texture to the back buffer in case the input texture is not already the back buffer texture */
     @editableInPropertyPage("Disable back buffer copy", PropertyTypeForEdition.Boolean, "PROPERTIES")
-    public disableBackBufferCopy = false;
+    public get disableBackBufferCopy() {
+        return this._frameTask.disabledFromGraph;
+    }
+
+    public set disableBackBufferCopy(value: boolean) {
+        this._frameTask.disabledFromGraph = value;
+    }
 
     /**
      * Gets the current class name
      * @returns the class name
      */
     public override getClassName() {
-        return "NodeRenderGraphOutputBlock";
+        return "RenderGraphOutputBlock";
     }
     /**
      * Gets the texture input component
@@ -46,20 +62,14 @@ export class NodeRenderGraphOutputBlock extends NodeRenderGraphBlock {
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
         super._buildBlock(state);
 
+        this._frameTask.name = this.name;
+
         const inputTexture = this.texture.connectedPoint?.value;
-        if (!inputTexture || !inputTexture.value) {
-            return;
+        if (inputTexture && NodeRenderGraphConnectionPoint.ValueIsTexture(inputTexture)) {
+            this._taskParameters.sourceTexture = inputTexture;
         }
 
-        const internalTexture = inputTexture.getInternalTextureFromValue();
-        if (this.disableBackBufferCopy || inputTexture.isBackBuffer() || !internalTexture) {
-            return;
-        }
-
-        state.frameGraph.addExecuteFunction(() => {
-            state.frameGraph.bindRenderTarget(null);
-            state.frameGraph.copyTexture(internalTexture);
-        });
+        state.frameGraph.addTask(this._frameTask, this._taskParameters);
     }
 
     protected override _dumpPropertiesCode() {
@@ -80,4 +90,4 @@ export class NodeRenderGraphOutputBlock extends NodeRenderGraphBlock {
     }
 }
 
-RegisterClass("BABYLON.NodeRenderGraphOutputBlock", NodeRenderGraphOutputBlock);
+RegisterClass("BABYLON.RenderGraphOutputBlock", RenderGraphOutputBlock);

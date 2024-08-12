@@ -12,6 +12,7 @@ import { Observable } from "../Misc/observable";
 import type { FrameGraphTaskTexture, IFrameGraphInputData, IFrameGraphTask } from "../FrameGraph/Tasks/IFrameGraphTask";
 import type { FrameGraph } from "../FrameGraph/frameGraph";
 import type { TextureHandle } from "../FrameGraph/frameGraphTextureManager";
+import { Constants } from "../Engines/constants";
 
 /**
  * Interface for the bloom effect build data
@@ -21,6 +22,7 @@ export interface IFrameGraphBloomEffectInputData extends IFrameGraphInputData {
      * The source texture for the bloom effect
      */
     sourceTexture: FrameGraphTaskTexture | TextureHandle;
+    sourceSamplingMode?: number;
     outputTexture?: FrameGraphTaskTexture | TextureHandle;
 }
 
@@ -172,6 +174,8 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
     }
 
     public recordFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphBloomEffectInputData): void {
+        inputData.sourceSamplingMode = inputData.sourceSamplingMode ?? Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
+
         const sourceTextureDescription = frameGraph.getTextureDescription(inputData.sourceTexture);
 
         const textureCreationOptions = {
@@ -224,6 +228,7 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
 
         this._merge.recordFrameGraph(frameGraph, {
             sourceTexture: inputData.sourceTexture,
+            sourceSamplingMode: inputData.sourceSamplingMode,
             sourceBlurTexture: blurYTextureHandle,
             outputTexture: inputData.outputTexture,
             skipCreationOfDisabledPasses: true,

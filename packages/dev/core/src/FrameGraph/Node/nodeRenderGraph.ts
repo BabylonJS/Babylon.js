@@ -2,7 +2,7 @@ import { Observable } from "../../Misc/observable";
 import type { Observer } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 import type { Scene } from "../../scene";
-import { NodeRenderGraphOutputBlock } from "./Blocks/outputBlock";
+import { RenderGraphOutputBlock } from "./Blocks/outputBlock";
 import type { NodeRenderGraphBlock } from "./nodeRenderGraphBlock";
 import { FrameGraph } from "../frameGraph";
 import { GetClass } from "../../Misc/typeStore";
@@ -10,14 +10,14 @@ import { serialize } from "../../Misc/decorators";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
 import { Constants } from "../../Engines/constants";
 import { WebRequest } from "../../Misc/webRequest";
-import { NodeRenderGraphInputBlock } from "./Blocks/inputBlock";
+import { RenderGraphInputBlock } from "./Blocks/inputBlock";
 import type { NodeRenderGraphTeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
 import type { NodeRenderGraphTeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
 import { Tools } from "../../Misc/tools";
 import type { Color4 } from "../../Maths/math.color";
 import { Engine } from "../../Engines/engine";
 import { NodeRenderGraphBlockConnectionPointTypes } from "./Enums/nodeRenderGraphBlockConnectionPointTypes";
-import { ClearBlock } from "./Blocks/clearBlock";
+import { RenderGraphClearBlock } from "./Blocks/clearBlock";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import { NodeRenderGraphBuildState } from "./nodeRenderGraphBuildState";
 
@@ -103,7 +103,7 @@ export class NodeRenderGraph {
     public onBuildObservable = new Observable<NodeRenderGraph>();
 
     /** Gets or sets the FrameGraphOutputBlock used to gather the final frame graph data */
-    public outputBlock: Nullable<NodeRenderGraphOutputBlock> = null;
+    public outputBlock: Nullable<RenderGraphOutputBlock> = null;
 
     /**
      * Snippet ID if the graph was created from the snippet server
@@ -122,7 +122,6 @@ export class NodeRenderGraph {
     @serialize("comment")
     public comment: string;
 
-    private _executedBlocks: NodeRenderGraphBlock[] = [];
     private _engine: AbstractEngine;
     private _resizeObserver: Nullable<Observer<AbstractEngine>> = null;
     private _frameGraph: FrameGraph;
@@ -206,10 +205,10 @@ export class NodeRenderGraph {
      * @returns an array of InputBlocks
      */
     public getInputBlocks() {
-        const blocks: NodeRenderGraphInputBlock[] = [];
+        const blocks: RenderGraphInputBlock[] = [];
         for (const block of this.attachedBlocks) {
             if (block.isInput) {
-                blocks.push(block as NodeRenderGraphInputBlock);
+                blocks.push(block as RenderGraphInputBlock);
             }
         }
 
@@ -255,23 +254,25 @@ export class NodeRenderGraph {
 
     /**
      * Build the final list of blocks that will be executed by the "execute" method
-     * @param removeFalseBlocks if true, the blocks whose executeCondition evaluates to false at build time will be removed from the execution list (default: false)
      */
-    public build(removeFalseBlocks = false) {
+    public build() {
         if (!this.outputBlock) {
             throw new Error("You must define the outputBlock property before building the frame graph");
         }
 
-        this._initializeBlock(this.outputBlock, removeFalseBlocks);
+        this._initializeBlock(this.outputBlock);
+
+        this._frameGraph.clear();
 
         const state = new NodeRenderGraphBuildState();
 
         state.buildId = this._buildId;
         state.verbose = this._options.verbose!;
-        state.removeFalseBlocks = removeFalseBlocks;
         state.frameGraph = this._frameGraph;
 
         this.outputBlock.build(state);
+
+        this._frameGraph.build();
 
         this._buildId = NodeRenderGraph._BuildIdGenerator++;
 
@@ -287,22 +288,7 @@ export class NodeRenderGraph {
      * @returns The promise that resolves when the graph is ready
      */
     public whenReadyAsync(timeout = 16): Promise<void> {
-        return new Promise((resolve) => {
-            const checkReady = () => {
-                let ready = true;
-                for (const block of this._executedBlocks) {
-                    ready &&= block.isReady();
-                }
-                if (ready) {
-                    resolve();
-                }
-                return ready;
-            };
-
-            if (!checkReady()) {
-                setTimeout(checkReady, timeout);
-            }
-        });
+        return this._frameGraph.whenReadyAsync(timeout);
     }
 
     /**
@@ -312,7 +298,7 @@ export class NodeRenderGraph {
         this._frameGraph.execute();
     }
 
-    private _initializeBlock(node: NodeRenderGraphBlock, removeFalseBlocks: boolean) {
+    private _initializeBlock(node: NodeRenderGraphBlock) {
         node.initialize();
         if (this._options.autoConfigure) {
             node.autoConfigure();
@@ -327,13 +313,9 @@ export class NodeRenderGraph {
             if (connectedPoint) {
                 const block = connectedPoint.ownerBlock;
                 if (block !== node) {
-                    this._initializeBlock(block, removeFalseBlocks);
+                    this._initializeBlock(block);
                 }
             }
-        }
-
-        if (!removeFalseBlocks || (this._executedBlocks.indexOf(node) === -1 && removeFalseBlocks && (!node.executeCondition || node.executeCondition()))) {
-            this._executedBlocks.push(node);
         }
     }
 
@@ -343,7 +325,6 @@ export class NodeRenderGraph {
     public clear() {
         this.outputBlock = null;
         this.attachedBlocks.length = 0;
-        this._executedBlocks.length = 0;
     }
 
     /**
@@ -354,11 +335,6 @@ export class NodeRenderGraph {
         const attachedBlockIndex = this.attachedBlocks.indexOf(block);
         if (attachedBlockIndex > -1) {
             this.attachedBlocks.splice(attachedBlockIndex, 1);
-        }
-
-        const executedBlockIndex = this._executedBlocks.indexOf(block);
-        if (executedBlockIndex > -1) {
-            this._executedBlocks.splice(executedBlockIndex, 1);
         }
 
         if (block === this.outputBlock) {
@@ -424,7 +400,7 @@ export class NodeRenderGraph {
 
         // Outputs
         if (source.outputNodeId) {
-            this.outputBlock = map[source.outputNodeId] as NodeRenderGraphOutputBlock;
+            this.outputBlock = map[source.outputNodeId] as RenderGraphOutputBlock;
         }
 
         // UI related info
@@ -567,15 +543,15 @@ export class NodeRenderGraph {
         this.editorData = null;
 
         // Source
-        const backBuffer = new NodeRenderGraphInputBlock("BackBuffer", this._engine, NodeRenderGraphBlockConnectionPointTypes.TextureBackBuffer);
+        const backBuffer = new RenderGraphInputBlock("BackBuffer", this._engine, NodeRenderGraphBlockConnectionPointTypes.TextureBackBuffer);
 
         // Clear texture
-        const clear = new ClearBlock("Clear", this._engine);
+        const clear = new RenderGraphClearBlock("Clear", this._engine);
 
         backBuffer.output.connectTo(clear.texture);
 
         // Final output
-        const output = new NodeRenderGraphOutputBlock("Frame graph Output", this._engine);
+        const output = new RenderGraphOutputBlock("Frame graph Output", this._engine);
         clear.output.connectTo(output.texture);
 
         this.outputBlock = output;
@@ -653,7 +629,6 @@ export class NodeRenderGraph {
         this._resizeObserver = null;
 
         this.attachedBlocks.length = 0;
-        this._executedBlocks.length = 0;
         this.onBuildObservable.clear();
     }
 

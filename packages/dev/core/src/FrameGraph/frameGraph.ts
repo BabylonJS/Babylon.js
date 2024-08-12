@@ -156,12 +156,6 @@ export class FrameGraph {
             throw new Error(`Can't add the task "${task.name}" while another task is currently building (task: ${this._currentProcessedTask.name}).`);
         }
 
-        for (const t of this._tasks) {
-            if (t.name === task.name) {
-                throw new Error(`Task with name "${task.name}" already exists.`);
-            }
-        }
-
         task._frameGraphInternals = {
             passes: [],
             passesDisabled: [],
@@ -208,7 +202,14 @@ export class FrameGraph {
     public build(): void {
         this._textureManager.reset();
 
+        const taskNames = new Set<string>();
         for (const task of this._tasks) {
+            if (taskNames.has(task.name)) {
+                throw new Error(`Task with name "${task.name}" already exists: task names must be unique in the graph.`);
+            }
+
+            taskNames.add(task.name);
+
             const internals = task._frameGraphInternals!;
 
             internals.passes.length = 0;
@@ -326,10 +327,16 @@ export class FrameGraph {
         return this._textureManager.createRenderTargetTexture(fullyQualifiedTextureName, namespace, creationOptions);
     }
 
-    public dispose(): void {
-        this._textureManager.dispose();
+    public clear(): void {
         this._tasks.length = 0;
         this._mapNameToTask.clear();
+        this._textureManager.reset();
+        this._currentProcessedTask = null;
+    }
+
+    public dispose(): void {
+        this.clear();
+        this._textureManager.dispose();
     }
 
     private _setTextureOutputForTask(task: IFrameGraphTask, force = false): void {

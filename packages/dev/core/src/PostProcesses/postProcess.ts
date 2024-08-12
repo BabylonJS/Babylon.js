@@ -71,6 +71,7 @@ AbstractEngine.prototype.setTextureFromPostProcessOutput = function (channel: nu
 
 export interface IFrameGraphPostProcessInputData extends IFrameGraphInputData {
     sourceTexture: FrameGraphTaskTexture | TextureHandle;
+    sourceSamplingMode?: number;
     outputTexture?: FrameGraphTaskTexture | TextureHandle;
     skipCreationOfDisabledPasses?: boolean;
 }
@@ -1114,6 +1115,8 @@ export class PostProcess implements IFrameGraphTask {
     }
 
     public recordFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphPostProcessInputData): void {
+        inputData.sourceSamplingMode = inputData.sourceSamplingMode ?? Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
+
         const sourceTextureHandle = frameGraph.getTextureHandle(inputData.sourceTexture);
         const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(inputData.outputTexture, "destination", frameGraph.getTextureDescription(inputData.sourceTexture));
 
@@ -1123,6 +1126,7 @@ export class PostProcess implements IFrameGraphTask {
         pass.setRenderTarget(outputTextureHandle);
         pass.setExecuteFunc((context) => {
             this.inputTexture = context.getTextureFromHandle(sourceTextureHandle)!;
+            context.setTextureSamplingMode(sourceTextureHandle, inputData.sourceSamplingMode!);
             context.applyFullScreenEffect(this._drawWrapper, () => this._bind());
         });
 
