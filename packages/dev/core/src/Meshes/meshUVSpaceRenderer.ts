@@ -12,14 +12,6 @@ import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture
 import { Color4 } from "core/Maths/math.color";
 import { PostProcess } from "core/PostProcesses/postProcess";
 
-import "../Shaders/meshUVSpaceRenderer.vertex";
-import "../Shaders/meshUVSpaceRenderer.fragment";
-
-import "../Shaders/meshUVSpaceRendererMasker.vertex";
-import "../Shaders/meshUVSpaceRendererMasker.fragment";
-
-import "../Shaders/meshUVSpaceRendererFinaliser.fragment";
-import "../Shaders/meshUVSpaceRendererFinaliser.vertex";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 declare module "../scene" {

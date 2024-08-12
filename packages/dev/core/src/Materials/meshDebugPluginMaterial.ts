@@ -155,8 +155,8 @@ varying dbg_vPass: f32;
 
 #if !defined(DBG_MULTIPLY)
     fn dbg_applyShading(color: vec3f) -> vec3f {
-        var N = input.vNormalW.xyz;
-        var L = normalize(scene.vEyePosition.xyz - input.vPositionW.xyz);
+        var N = fragmentInputs.vNormalW.xyz;
+        var L = normalize(scene.vEyePosition.xyz - fragmentInputs.vPositionW.xyz);
         var H = normalize(L + L);
         var LdotN = clamp(dot(L,N), 0., 1.);
         var HdotN = clamp(dot(H,N), 0., 1.);
@@ -232,7 +232,7 @@ var dbg_color = vec3f(1.);
     dbg_color = mix(uniforms.dbg_wireframeTrianglesColor, vec3f(1.), dbg_edgeFactor());
 #elif DBG_MODE == 2 || DBG_MODE == 3
     var dbg_cornerFactor = dbg_cornerFactor();
-    if (dbg_vPass == 0. && dbg_cornerFactor == 1.) discard;
+    if (fragmentInputs.dbg_vPass == 0. && dbg_cornerFactor == 1.) discard;
     dbg_color = mix(uniforms.dbg_vertexColor, vec3(1.), dbg_cornerFactor);
     #if DBG_MODE == 3
         dbg_color *= mix(uniforms.dbg_wireframeVerticesColor, vec3f(1.), dbg_edgeFactor());
@@ -557,7 +557,7 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
     }
 
     /**
-     * Gets a boolean indicating that the plugin is compatible with a give shader language.
+     * Gets a boolean indicating that the plugin is compatible with a given shader language.
      * @param shaderLanguage The shader language to use.
      * @returns true if the plugin is compatible with the shader language
      */
