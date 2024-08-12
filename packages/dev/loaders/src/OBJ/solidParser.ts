@@ -557,11 +557,13 @@ export class SolidParser {
             this._handednessSign = -1;
         }
 
+        debugger;
+
         // Split the file into lines
         // Preprocess line data
         const linesOBJ = data.split("\n");
         const lineLines: string[][] = [];
-        const currentGroup: string[] = [];
+        let currentGroup: string[] = [];
 
         lineLines.push(currentGroup);
 
@@ -574,6 +576,7 @@ export class SolidParser {
             }
 
             if (SolidParser._IsGroupElement(line) || SolidParser._IsObjectElement(line)) {
+                currentGroup = [];
                 lineLines.push(currentGroup);
             }
 
