@@ -51,44 +51,60 @@ export async function testRenderGraph(engine: AbstractEngine, scene: Scene) {
 
     const pp0Handle = frameGraph.importTexture("pp0", pp0.inputTexture);
 
-    const bnwFirst = true;
-    if (bnwFirst) {
-        const destinationTexture = frameGraph.createRenderTargetTexture("destination", creationOptions);
+    const testNumber: number = 2;
+    switch (testNumber) {
+        case 0: {
+            const destinationTexture = frameGraph.createRenderTargetTexture("destination", creationOptions);
 
-        frameGraph.addTask<IFrameGraphCopyToTextureInputData>(copyTask, {
-            sourceTexture: pp0Handle,
-            outputTexture: destinationTexture,
-        });
+            frameGraph.addTask<IFrameGraphCopyToTextureInputData>(copyTask, {
+                sourceTexture: pp0Handle,
+                outputTexture: destinationTexture,
+            });
 
-        copyTask.disabledFromGraph = true;
+            copyTask.disabledFromGraph = true;
 
-        frameGraph.addTask<IFrameGraphPostProcessInputData>(bnwTask, {
-            sourceTexture: ["copy", "output"],
-            outputTexture: destinationTexture,
-        });
+            frameGraph.addTask<IFrameGraphPostProcessInputData>(bnwTask, {
+                sourceTexture: ["copy", "output"],
+                outputTexture: destinationTexture,
+            });
 
-        frameGraph.addTask<IFrameGraphBloomEffectInputData>(bloomTask, {
-            sourceTexture: ["bnw", "output"],
-            outputTexture: backbufferColorTextureHandle,
-        });
-    } else {
-        bloomTask.onBeforeTaskRecordFrameGraphObservable.add((context) => {
-            context.createRenderTargetTexture("destination", creationOptions);
-        });
+            frameGraph.addTask<IFrameGraphBloomEffectInputData>(bloomTask, {
+                sourceTexture: ["bnw", "output"],
+                outputTexture: backbufferColorTextureHandle,
+            });
+            break;
+        }
+        case 1: {
+            bloomTask.onBeforeTaskRecordFrameGraphObservable.add((context) => {
+                context.createRenderTargetTexture("destination", creationOptions);
+            });
 
-        frameGraph.addTask<IFrameGraphBloomEffectInputData>(bloomTask, {
-            sourceTexture: [textureNamespaceExternalPrefix, "pp0"],
-            outputTexture: ["bloom", "destination"],
-        });
+            frameGraph.addTask<IFrameGraphBloomEffectInputData>(bloomTask, {
+                sourceTexture: [textureNamespaceExternalPrefix, "pp0"],
+                outputTexture: ["bloom", "destination"],
+            });
 
-        frameGraph.addTask<IFrameGraphCreateRenderTextureInputData>(createRTTask, { textureName: "output" });
+            frameGraph.addTask<IFrameGraphCreateRenderTextureInputData>(createRTTask, { textureName: "output" });
 
-        frameGraph.addTask<IFrameGraphPostProcessInputData>(bnwTask, {
-            sourceTexture: ["bloom", "output"],
-            outputTexture: ["createRT", "output"],
-        });
+            frameGraph.addTask<IFrameGraphPostProcessInputData>(bnwTask, {
+                sourceTexture: ["bloom", "output"],
+                outputTexture: ["createRT", "output"],
+            });
 
-        frameGraph.addTask<IFrameGraphCopyToBackbufferColorInputData>(copyToBackbufferTask, { sourceTexture: ["bnw", "output"] });
+            frameGraph.addTask<IFrameGraphCopyToBackbufferColorInputData>(copyToBackbufferTask, { sourceTexture: ["bnw", "output"] });
+            break;
+        }
+        case 2: {
+            frameGraph.addTask<IFrameGraphBloomEffectInputData>(bloomTask, {
+                sourceTexture: [textureNamespaceExternalPrefix, "pp0"],
+            });
+
+            frameGraph.addTask<IFrameGraphPostProcessInputData>(bnwTask, {
+                sourceTexture: ["bloom", "output"],
+                outputTexture: backbufferColorTextureHandle,
+            });
+            break;
+        }
     }
 
     frameGraph.build();
@@ -288,7 +304,21 @@ export class FrameGraph {
         return this._textureManager.getTextureHandle(textureId);
     }
 
-    public createRenderTargetTexture(name: string, creationOptions: FrameGraphTextureCreationOptions): TextureHandle {
+    public getTextureHandleOrCreateTexture(
+        textureId?: FrameGraphTaskTexture | TextureHandle,
+        newTextureName?: string,
+        creationOptions?: FrameGraphTextureCreationOptions | FrameGraphTextureDescription
+    ): TextureHandle {
+        if (textureId === undefined) {
+            if (newTextureName === undefined || creationOptions === undefined) {
+                throw new Error("Either textureId or newTextureName and creationOptions must be provided.");
+            }
+            return this.createRenderTargetTexture(newTextureName, creationOptions);
+        }
+        return this.getTextureHandle(textureId);
+    }
+
+    public createRenderTargetTexture(name: string, creationOptions: FrameGraphTextureCreationOptions | FrameGraphTextureDescription): TextureHandle {
         const namespace = this._currentProcessedTask ? FrameGraphTextureNamespace.Task : FrameGraphTextureNamespace.Graph;
 
         const fullyQualifiedTextureName = this._textureManager.getFullyQualifiedTextureName(name, namespace, this._currentProcessedTask);

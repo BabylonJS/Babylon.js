@@ -58,6 +58,12 @@ export class FrameGraphTextureManager {
         return !Array.isArray(textureId);
     }
 
+    private static _IsFrameGraphTextureCreationOptions(
+        creationOptions: FrameGraphTextureCreationOptions | FrameGraphTextureDescription
+    ): creationOptions is FrameGraphTextureCreationOptions {
+        return (creationOptions as FrameGraphTextureCreationOptions).sizeIsPercentage !== undefined;
+    }
+
     /**
      * Constructs the frame graph
      * @param _engine defines the hosting engine
@@ -84,7 +90,7 @@ export class FrameGraphTextureManager {
         // todo: fill this._textureDescriptions[backbufferDepthStencilTextureHandle] with backbuffer depth/stencil description
     }
 
-    public importTexture(name: string, texture: RenderTargetWrapper) {
+    public importTexture(name: string, texture: RenderTargetWrapper): TextureHandle {
         const fullQualifiedName = this.getFullyQualifiedTextureName(name, FrameGraphTextureNamespace.External);
         const handle = this._createHandleForTexture(fullQualifiedName, texture, FrameGraphTextureNamespace.External);
 
@@ -126,7 +132,7 @@ export class FrameGraphTextureManager {
         }
     }
 
-    public getTextureDescription(textureId: FrameGraphTaskTexture | TextureHandle) {
+    public getTextureDescription(textureId: FrameGraphTaskTexture | TextureHandle): FrameGraphTextureDescription {
         if (FrameGraphTextureManager._IsTextureHandle(textureId)) {
             return this._textureDescriptions[textureId];
         }
@@ -156,7 +162,11 @@ export class FrameGraphTextureManager {
         return textureHandle;
     }
 
-    public createRenderTargetTexture(fullyQualifiedTextureName: string, namespace: FrameGraphTextureNamespace, creationOptions: FrameGraphTextureCreationOptions): TextureHandle {
+    public createRenderTargetTexture(
+        fullyQualifiedTextureName: string,
+        namespace: FrameGraphTextureNamespace,
+        creationOptions: FrameGraphTextureCreationOptions | FrameGraphTextureDescription
+    ): TextureHandle {
         let width: number;
         let height: number;
 
@@ -167,11 +177,13 @@ export class FrameGraphTextureManager {
             width = height = creationOptions.size as number;
         }
 
-        const size = creationOptions.sizeIsPercentage
-            ? {
-                  width: (this._engine.getRenderWidth() * width) / 100,
-                  height: (this._engine.getRenderHeight() * height) / 100,
-              }
+        const size = FrameGraphTextureManager._IsFrameGraphTextureCreationOptions(creationOptions)
+            ? creationOptions.sizeIsPercentage
+                ? {
+                      width: (this._engine.getRenderWidth() * width) / 100,
+                      height: (this._engine.getRenderHeight() * height) / 100,
+                  }
+                : { width, height }
             : { width, height };
 
         const options = { ...creationOptions.options };
@@ -186,11 +198,11 @@ export class FrameGraphTextureManager {
         return handle;
     }
 
-    public reset() {
+    public reset(): void {
         this._releaseTextures();
     }
 
-    public dispose() {
+    public dispose(): void {
         this._releaseTextures(true);
         this._textureMap.clear();
     }
@@ -209,11 +221,11 @@ export class FrameGraphTextureManager {
     }
 
     /** @internal */
-    public _registerTextureHandleForTask(task: IFrameGraphTask, textureName: string, textureHandle: TextureHandle) {
+    public _registerTextureHandleForTask(task: IFrameGraphTask, textureName: string, textureHandle: TextureHandle): void {
         this._textureMap.set(this.getFullyQualifiedTextureName(textureName, FrameGraphTextureNamespace.Task, task), textureHandle);
     }
 
-    private _registerTextureHandle(fullyQualifiedTextureName: string, textureHandle: TextureHandle) {
+    private _registerTextureHandle(fullyQualifiedTextureName: string, textureHandle: TextureHandle): void {
         this._textureMap.set(fullyQualifiedTextureName, textureHandle);
     }
 
@@ -247,7 +259,7 @@ export class FrameGraphTextureManager {
         return handle;
     }
 
-    private _releaseTextures(disposeAll = false) {
+    private _releaseTextures(disposeAll = false): void {
         let index = -1;
         for (let i = 0; i < this._textures.length; i++) {
             const wrapper = this._textures[i];

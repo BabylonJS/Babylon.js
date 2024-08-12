@@ -71,7 +71,7 @@ AbstractEngine.prototype.setTextureFromPostProcessOutput = function (channel: nu
 
 export interface IFrameGraphPostProcessInputData extends IFrameGraphInputData {
     sourceTexture: FrameGraphTaskTexture | TextureHandle;
-    outputTexture: FrameGraphTaskTexture | TextureHandle;
+    outputTexture?: FrameGraphTaskTexture | TextureHandle;
     skipCreationOfDisabledPasses?: boolean;
 }
 
@@ -1115,7 +1115,7 @@ export class PostProcess implements IFrameGraphTask {
 
     public recordFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphPostProcessInputData): void {
         const sourceTextureHandle = frameGraph.getTextureHandle(inputData.sourceTexture);
-        const outputTextureHandle = frameGraph.getTextureHandle(inputData.outputTexture);
+        const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(inputData.outputTexture, "destination", frameGraph.getTextureDescription(inputData.sourceTexture));
 
         const pass = frameGraph.addRenderPass(this.name);
 

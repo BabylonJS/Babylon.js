@@ -21,7 +21,7 @@ export interface IFrameGraphBloomEffectInputData extends IFrameGraphInputData {
      * The source texture for the bloom effect
      */
     sourceTexture: FrameGraphTaskTexture | TextureHandle;
-    outputTexture: FrameGraphTaskTexture | TextureHandle;
+    outputTexture?: FrameGraphTaskTexture | TextureHandle;
 }
 
 /**
@@ -230,7 +230,7 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
         });
 
         const sourceTextureHandle = frameGraph.getTextureHandle(inputData.sourceTexture);
-        const outputTextureHandle = frameGraph.getTextureHandle(inputData.outputTexture);
+        const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(inputData.outputTexture, "destination", frameGraph.getTextureDescription(inputData.sourceTexture));
 
         const passDisabled = frameGraph.addRenderPass(this.name + "_disabled", true);
 
