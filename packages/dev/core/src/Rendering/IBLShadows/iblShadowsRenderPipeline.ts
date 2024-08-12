@@ -562,7 +562,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             samplers: ["sceneTexture"],
             samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
             engine: this.scene.getEngine(),
-            textureType: Constants.TEXTURETYPE_FLOAT,
+            textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             reusable: false,
         };
         this._shadowCompositePP = new PostProcess("iblShadowsCombine", "iblShadowsCombine", compositeOptions);

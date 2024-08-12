@@ -273,83 +273,6 @@ ivec3 compute_physical_voxel_texcoords(const ivec3 logical_voxel_coords,
   return logical_voxel_coords >> 1;
 }
 
-#if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-bool dda_march(Ray ray_vs,
-               out VoxelMarchDiagnosticInfo voxel_march_diagnostic_info) {
-#else
-bool dda_march(Ray ray_vs) {
-#endif
-  // March voxels using DDA: "Fast Voxel Traversal Algorithm"
-  // (http://www.cse.yorku.ca/~amana/research/grid.pdf)
-  vec3 origin_vs =
-      float(VOXEL_GRID_RESOLUTION) * (ray_vs.orig + ray_vs.dir * ray_vs.t_min);
-
-  ivec3 voxel_pos = ivec3(origin_vs);
-  ivec3 voxel_step = ivec3(sign(ray_vs.dir));
-
-  // Ray-lengths per voxel in each coordinate, ie the distances in t that you
-  // have to advance the ray to equal one voxel in each axis
-  vec3 t_delta = abs(ray_vs.dir_rcp);
-
-  float t_min = float(VOXEL_GRID_RESOLUTION) * ray_vs.t_min;
-  float t_max = float(VOXEL_GRID_RESOLUTION) * ray_vs.t_max;
-
-  // t_lengths is the ray length we have traversed by incrementing voxel_pos in
-  // each axis We use this to determine which axis we will advance voxel_pos
-  // next Initialize to t_min in all directions, plus enough such that the ray
-  // starts on a voxel boundary
-  vec3 t_lengths =
-      t_delta * abs(vec3(voxel_pos + max(voxel_step, 0)) - origin_vs) +
-      vec3(t_min);
-
-  ivec3 texel_coords = ivec3(-1);
-  uint texel_mask = 0u;
-  bool shouldExit = false;
-  uint steps = 0u;
-  // Stop marching once we've advanced enough voxels in all coordinates to
-  // extend the ray up to t_max
-  while (any(lessThanEqual(t_lengths, vec3(t_max))) && !shouldExit) {
-
-    if (voxel_pos_in_bounds(voxel_pos)) {
-      uint voxel_mask = 0u;
-      ivec3 new_texel_coords =
-          compute_physical_voxel_texcoords(voxel_pos, voxel_mask);
-
-      if (texel_coords != new_texel_coords) {
-        texel_coords = new_texel_coords;
-        texel_mask = uint(
-            texelFetch(voxelGridSampler, texel_coords, 0).r > 0.0 ? 1u : 0u);
-      }
-
-      if (bool(texel_mask & voxel_mask)) {
-#if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-        voxel_march_diagnostic_info.voxel_intersect_coords = voxel_pos;
-#endif
-
-        // return true;
-        shouldExit = true;
-      }
-    }
-    steps++;
-    // Only increment voxel_pos in the direction of the smallest distance to
-    // the next voxel boundary, which is the smallest t_lengths
-
-    // cmp holds a 1 for the axes in which to advance
-    ivec3 cmp = ivec3(step(t_lengths.xyz, t_lengths.zxy)) *
-                ivec3(step(t_lengths.xyz, t_lengths.yzx));
-
-    // Once the axes are chosen, increment the ray-distance traveled via this
-    // axis (t_lengths)
-    t_lengths += vec3(cmp) * t_delta;
-    // And increment voxel_pos along that axis
-    voxel_pos += ivec3(cmp * voxel_step);
-  }
-#if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-  voxel_march_diagnostic_info.heat = float(steps);
-#endif
-  return shouldExit;
-}
-
 uint hash(uint i) {
   i ^= i >> 16u;
   i *= 0x7FEB352Du;
@@ -397,125 +320,6 @@ void genTB(const vec3 N, out vec3 T, out vec3 B) {
   T = vec3(1.0 + s * N.x * N.x * a, s * b, -s * N.x);
   B = vec3(b, s + N.y * N.y * a, -N.y);
 }
-
-// Super simple voxel traversal. Just start at the t_min and step along the ray
-bool anyHitVoxelsSimple(const Ray ray_vs) {
-  const int maxSteps = 100;
-  float stepSize = (ray_vs.t_max - ray_vs.t_min) / float(maxSteps);
-  vec3 currentPosition = ray_vs.orig + ray_vs.dir * ray_vs.t_min;
-  vec3 step = ray_vs.dir * stepSize;
-  if (ray_vs.t_min > ray_vs.t_max || ray_vs.t_max < 0.0) {
-    return false;
-  }
-  for (int i = 0; i < maxSteps; ++i) {
-    float voxelValue = textureLod(voxelGridSampler, currentPosition, 0.0).r;
-    if (voxelValue > 0.0) {
-      return true;
-    }
-    currentPosition += step;
-  }
-  return false;
-}
-
-int stack[24];                           // Swapped dimension
-#define PUSH(i) stack[stackLevel++] = i; // order, small
-#define POP() stack[--stackLevel]        // perf improvement
-
-#ifdef VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-bool anyHitVoxels(const Ray ray_vs,
-                  out VoxelMarchDiagnosticInfo voxel_march_diagnostic_info) {
-#else
-bool anyHitVoxels(const Ray ray_vs) {
-#endif
-
-  vec3 invD = ray_vs.dir_rcp;
-  vec3 D = ray_vs.dir;
-  vec3 O = ray_vs.orig;
-  ivec3 negD = ivec3(lessThan(D, vec3(0, 0, 0)));
-  int voxel0 = negD.x | negD.y << 1 | negD.z << 2;
-  vec3 t0 = -O * invD, t1 = (vec3(1.0) - O) * invD;
-  int maxLod = int(highestMipLevel);
-  int stackLevel = 0;
-#if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-  uint steps = 0u;
-#endif
-
-  PUSH(maxLod << 24);
-  while (stackLevel > 0) {
-    int elem = POP();
-    ivec4 Coords =
-        ivec4(elem & 0xFF, elem >> 8 & 0xFF, elem >> 16 & 0xFF, elem >> 24);
-
-    if (Coords.w == 0) {
-#if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-      voxel_march_diagnostic_info.heat = float(steps) / 24.0;
-      //   voxel_march_diagnostic_info.voxel_intersect_coords = node_coords;
-#endif
-      return true;
-    }
-
-#if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-    ++steps;
-#endif
-
-    float invRes = exp2(float(Coords.w - maxLod));
-    vec3 bbmin = invRes * vec3(Coords.xyz + negD);
-    vec3 bbmax = invRes * vec3(Coords.xyz - negD + ivec3(1));
-    vec3 mint = mix(t0, t1, bbmin);
-    vec3 maxt = mix(t0, t1, bbmax);
-    vec3 midt = 0.5 * (mint + maxt);
-    mint.x = max(0.0, mint.x);
-    midt.x = max(0.0, midt.x);
-
-    ////// NEW ////// With the conversion to a R8 voxel texture, the two
-    /// following lines have been swapped
-    int nodeMask = int(
-        round(texelFetch(voxelGridSampler, Coords.xyz, Coords.w).x * 255.0));
-    Coords.w--;
-    int voxelBit = voxel0;
-    Coords.xyz = (Coords.xyz << 1) + negD;
-
-    int packedCoords =
-        Coords.x | Coords.y << 8 | Coords.z << 16 | Coords.w << 24;
-    if (max(mint.x, max(mint.y, mint.z)) < min(midt.x, min(midt.y, midt.z)) &&
-        (1 << voxelBit & nodeMask) != 0)
-      PUSH(packedCoords);
-    voxelBit ^= 0x1;
-    packedCoords ^= 0x00001;
-    if (max(midt.x, max(mint.y, mint.z)) < min(maxt.x, min(midt.y, midt.z)) &&
-        (1 << voxelBit & nodeMask) != 0)
-      PUSH(packedCoords);
-    voxelBit ^= 0x2;
-    packedCoords ^= 0x00100;
-    if (max(midt.x, max(midt.y, mint.z)) < min(maxt.x, min(maxt.y, midt.z)) &&
-        (1 << voxelBit & nodeMask) != 0)
-      PUSH(packedCoords);
-    voxelBit ^= 0x1;
-    packedCoords ^= 0x00001;
-    if (max(mint.x, max(midt.y, mint.z)) < min(midt.x, min(maxt.y, midt.z)) &&
-        (1 << voxelBit & nodeMask) != 0)
-      PUSH(packedCoords);
-    voxelBit ^= 0x4;
-    packedCoords ^= 0x10000;
-    if (max(mint.x, max(midt.y, midt.z)) < min(midt.x, min(maxt.y, maxt.z)) &&
-        (1 << voxelBit & nodeMask) != 0)
-      PUSH(packedCoords);
-    voxelBit ^= 0x1;
-    packedCoords ^= 0x00001;
-    if (max(midt.x, max(midt.y, midt.z)) < min(maxt.x, min(maxt.y, maxt.z)) &&
-        (1 << voxelBit & nodeMask) != 0)
-      PUSH(packedCoords);
-    voxelBit ^= 0x2;
-    packedCoords ^= 0x00100;
-    if (max(midt.x, max(mint.y, midt.z)) < min(maxt.x, min(midt.y, maxt.z)) &&
-        (1 << voxelBit & nodeMask) != 0)
-      PUSH(packedCoords);
-    voxelBit ^= 0x1;
-    packedCoords ^= 0x00001;
-    if (max(mint.x, max(mint.y, midt.z)) < min(midt.x, min(midt.y, maxt.z)) &&
-        (1 << voxelBit & nodeMask) != 0)
-      PUSH(packedCoords);
-  }
 
 #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
   voxel_march_diagnostic_info.heat = float(steps) / 24.0;
@@ -626,20 +430,12 @@ float voxelShadow(vec3 wsOrigin, vec3 wsDirection, vec3 wsNormal,
   ray_vs.t_min = max(ray_vs.t_min, near);
   ray_vs.t_max = min(ray_vs.t_max, far);
 
-  // #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-  //   return hierarchical_march(ray_vs, voxel_march_diagnostic_info) ? 1.0f :
-  //   0.0f;
-  // #else
-  //   return hierarchical_march(ray_vs) ? 1.0f : 0.0f;
-  // #endif
-
-#if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-  return anyHitVoxels(ray_vs, voxel_march_diagnostic_info) ? 1.0f : 0.0f;
-#else
-  return anyHitVoxels(ray_vs) ? 1.0f : 0.0f;
-#endif
-
-    // return anyHitVoxelsSimple(ray_vs) ? 1.0f : 0.0f;
+  #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
+    return hierarchical_march(ray_vs, voxel_march_diagnostic_info) ? 1.0f :
+    0.0f;
+  #else
+    return hierarchical_march(ray_vs) ? 1.0f : 0.0f;
+  #endif
 }
 
 void main(void) {
@@ -729,8 +525,6 @@ void main(void) {
                                          abs(2.0 * noise.z - 1.0));
       opacity = max(opacity, ssShadow);
       shadowAccum += min(1.0 - opacity, smoothstep(-0.1, 0.2, cosNL));
-      // } else if (linearZ_alpha.y > 0.0) {
-      //   shadowAccum += opacity / float(nbDirs);
     } else {
       shadowAccum += min(1.0 - opacity, smoothstep(-0.1, 0.2, cosNL));
     }

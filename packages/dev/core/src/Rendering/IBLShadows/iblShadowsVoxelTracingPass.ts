@@ -183,7 +183,7 @@ export class _IblShadowsVoxelTracingPass {
         const ppOptions: PostProcessOptions = {
             width: this._engine.getRenderWidth(),
             height: this._engine.getRenderHeight(),
-            textureFormat: Constants.TEXTUREFORMAT_RGBA,
+            textureFormat: Constants.TEXTUREFORMAT_RG,
             textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             uniforms: ["viewMtx", "projMtx", "invProjMtx", "invViewMtx", "wsNormalizationMtx", "shadowParameters", "offsetDataParameters", "sssParameters", "shadowOpacity"],

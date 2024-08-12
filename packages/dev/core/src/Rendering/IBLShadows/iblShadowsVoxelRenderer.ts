@@ -153,7 +153,7 @@ export class _IblShadowsVoxelRenderer {
                 generateDepthBuffer: true,
                 generateMipMaps: false,
                 type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
-                format: Constants.TEXTUREFORMAT_RGBA,
+                format: Constants.TEXTUREFORMAT_RG,
                 samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             });
         } else {
@@ -171,7 +171,7 @@ export class _IblShadowsVoxelRenderer {
             const debugOptions: PostProcessOptions = {
                 width: this._engine.getRenderWidth(),
                 height: this._engine.getRenderHeight(),
-                textureFormat: Constants.TEXTUREFORMAT_RGBA,
+                textureFormat: Constants.TEXTUREFORMAT_RG,
                 textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
                 samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
                 uniforms: ["sizeParams", "mipNumber"],
@@ -312,7 +312,7 @@ export class _IblShadowsVoxelRenderer {
             generateDepthBuffer: false,
             generateMipMaps: false,
             type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
-            format: Constants.TEXTUREFORMAT_RGBA,
+            format: Constants.TEXTUREFORMAT_R,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
         };
 
@@ -323,7 +323,7 @@ export class _IblShadowsVoxelRenderer {
             generateDepthBuffer: false,
             generateMipMaps: true,
             type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
-            format: Constants.TEXTUREFORMAT_RGBA,
+            format: Constants.TEXTUREFORMAT_R,
             samplingMode: Constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST,
         };
         if (this._triPlanarVoxelization) {

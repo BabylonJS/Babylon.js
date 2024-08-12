@@ -80,7 +80,7 @@ export class _IblShadowsAccumulationPass {
             const debugOptions: PostProcessOptions = {
                 width: this._engine.getRenderWidth(),
                 height: this._engine.getRenderHeight(),
-                textureFormat: Constants.TEXTUREFORMAT_RGBA,
+                textureFormat: Constants.TEXTUREFORMAT_RG,
                 textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
                 samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
                 uniforms: ["sizeParams"],
@@ -155,7 +155,7 @@ export class _IblShadowsAccumulationPass {
         const accumulationOptions: RenderTargetCreationOptions = {
             generateDepthBuffer: false,
             generateMipMaps: false,
-            format: Constants.TEXTUREFORMAT_RGBA,
+            format: Constants.TEXTUREFORMAT_RG,
             type: Constants.TEXTURETYPE_HALF_FLOAT,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
         };
@@ -169,7 +169,7 @@ export class _IblShadowsAccumulationPass {
         const accumulationCopyOptions: PostProcessOptions = {
             width: this._engine.getRenderWidth(),
             height: this._engine.getRenderHeight(),
-            textureFormat: Constants.TEXTUREFORMAT_RGBA,
+            textureFormat: Constants.TEXTUREFORMAT_RG,
             textureType: Constants.TEXTURETYPE_HALF_FLOAT,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             engine: this._engine,
@@ -190,7 +190,7 @@ export class _IblShadowsAccumulationPass {
         const ppOptions: PostProcessOptions = {
             width: this._engine.getRenderWidth(),
             height: this._engine.getRenderHeight(),
-            textureFormat: Constants.TEXTUREFORMAT_RGBA,
+            textureFormat: Constants.TEXTUREFORMAT_RG,
             textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             uniforms: ["accumulationParameters"],

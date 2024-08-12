@@ -63,7 +63,7 @@ export class _IblShadowsSpatialBlurPass {
             const debugOptions: PostProcessOptions = {
                 width: this._engine.getRenderWidth(),
                 height: this._engine.getRenderHeight(),
-                textureFormat: Constants.TEXTUREFORMAT_RGBA,
+                textureFormat: Constants.TEXTUREFORMAT_R,
                 textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
                 samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
                 uniforms: ["sizeParams"],
@@ -96,7 +96,7 @@ export class _IblShadowsSpatialBlurPass {
         const ppOptions: PostProcessOptions = {
             width: this._engine.getRenderWidth(),
             height: this._engine.getRenderHeight(),
-            textureFormat: Constants.TEXTUREFORMAT_RGBA,
+            textureFormat: Constants.TEXTUREFORMAT_RG,
             textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             uniforms: ["blurParameters"],

@@ -92,8 +92,8 @@ export class _IblShadowsImportanceSamplingRenderer {
     private _createTextures() {
         const size: TextureSize = this._iblSource ? this._iblSource.getSize() : { width: 1, height: 1 };
         if (!this._iblSource) {
-            this._iblSource = RawTexture.CreateRGBATexture(
-                new Uint8Array([255, 0, 0, 0]),
+            this._iblSource = RawTexture.CreateRTexture(
+                new Uint8Array([255]),
                 1,
                 1,
                 this._scene,
@@ -114,14 +114,14 @@ export class _IblShadowsImportanceSamplingRenderer {
         const cdfOptions: IProceduralTextureCreationOptions = {
             generateDepthBuffer: false,
             generateMipMaps: false,
-            format: Constants.TEXTUREFORMAT_RGBA,
+            format: Constants.TEXTUREFORMAT_R,
             type: Constants.TEXTURETYPE_FLOAT,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
         };
         const icdfOptions: IProceduralTextureCreationOptions = {
             generateDepthBuffer: false,
             generateMipMaps: false,
-            format: Constants.TEXTUREFORMAT_RGBA,
+            format: Constants.TEXTUREFORMAT_R,
             type: Constants.TEXTURETYPE_HALF_FLOAT,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
         };
