@@ -109,3 +109,4 @@ export * from "../ShadersWGSL/colorCorrection.fragment";
 
 // Motion blur
 export * from "../Shaders/motionBlur.fragment";
+export * from "../ShadersWGSL/motionBlur.fragment";
