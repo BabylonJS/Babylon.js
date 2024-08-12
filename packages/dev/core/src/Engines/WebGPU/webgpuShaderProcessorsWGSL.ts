@@ -367,6 +367,10 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
                     fragmentOutputs += ` @location(${indexLocation}) fragData${indexLocation} : vec4<f32>,\n`;
                     indexLocation++;
                 }
+                if (fragmentCode.indexOf("MRT_AND_COLOR") !== -1) {
+                    fragmentOutputs += `  @location(${indexLocation}) color : vec4<f32>,\n`;
+                    indexLocation++;
+                }
             }
         }
 
