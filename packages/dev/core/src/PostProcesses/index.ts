@@ -99,12 +99,10 @@ export * from "../ShadersWGSL/blackAndWhite.fragment";
 export * from "../Shaders/anaglyph.fragment";
 export * from "../ShadersWGSL/anaglyph.fragment";
 
-// COMMENTED OUT INTENTIONALLY TO TEST THE CI
+// Convolution
+export * from "../Shaders/convolution.fragment";
+export * from "../ShadersWGSL/convolution.fragment";
 
-// // Convolution
-// export * from "../Shaders/convolution.fragment";
-// export * from "../ShadersWGSL/convolution.fragment";
-
-// // Color correction
-// export * from "../Shaders/colorCorrection.fragment";
-// export * from "../ShadersWGSL/colorCorrection.fragment";
+// Color correction
+export * from "../Shaders/colorCorrection.fragment";
+export * from "../ShadersWGSL/colorCorrection.fragment";
