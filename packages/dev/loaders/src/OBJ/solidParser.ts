@@ -557,8 +557,6 @@ export class SolidParser {
             this._handednessSign = -1;
         }
 
-        debugger;
-
         // Split the file into lines
         // Preprocess line data
         const linesOBJ = data.split("\n");
