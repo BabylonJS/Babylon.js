@@ -12,6 +12,10 @@ export class FrameGraphCopyToTextureTask implements IFrameGraphTask {
 
     constructor(public name: string) {}
 
+    public isReady() {
+        return true;
+    }
+
     public recordFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphCopyToTextureInputData) {
         const pass = frameGraph.addRenderPass(this.name);
 

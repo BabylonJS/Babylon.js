@@ -12,6 +12,10 @@ export class FrameGraphCopyToBackbufferColorTask implements IFrameGraphTask {
 
     constructor(public name: string) {}
 
+    public isReady() {
+        return true;
+    }
+
     public recordFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphCopyToBackbufferColorInputData) {
         const copyPass = frameGraph.addRenderPass("copy to framebuffer");
 

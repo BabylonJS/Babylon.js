@@ -29,6 +29,8 @@ export interface IFrameGraphTask {
      */
     recordFrameGraph(frameGraph: FrameGraph, inputData?: IFrameGraphInputData): void;
 
+    isReady(): boolean;
+
     name: string;
 
     disabledFromGraph: boolean;

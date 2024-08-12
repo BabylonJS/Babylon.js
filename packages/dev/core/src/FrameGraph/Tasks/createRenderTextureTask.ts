@@ -18,6 +18,10 @@ export class FrameGraphCreateRenderTextureTask implements IFrameGraphTask {
         this._options = options;
     }
 
+    public isReady() {
+        return true;
+    }
+
     public recordFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphCreateRenderTextureInputData) {
         const pass = frameGraph.addPass(this.name);
 

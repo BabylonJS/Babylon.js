@@ -167,6 +167,10 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
         this._effects.push(this._merge);
     }
 
+    public isReady() {
+        return this._downscale.isReady() && this._blurX.isReady() && this._blurY.isReady() && this._merge.isReady();
+    }
+
     public recordFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphBloomEffectInputData): void {
         const sourceTextureDescription = frameGraph.getTextureDescription(inputData.sourceTexture);
 

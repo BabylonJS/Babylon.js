@@ -22,7 +22,7 @@ import type { IFrameGraphPass } from "./Passes/IFrameGraphPass";
 import type { IFrameGraphCopyToTextureInputData } from "./Tasks/copyToTextureTask";
 import { FrameGraphCopyToTextureTask } from "./Tasks/copyToTextureTask";
 
-export function testRenderGraph(engine: AbstractEngine, scene: Scene) {
+export async function testRenderGraph(engine: AbstractEngine, scene: Scene) {
     const pp0 = new PassPostProcess("pass", 1, scene.activeCamera, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, undefined, undefined, Constants.TEXTURETYPE_HALF_FLOAT);
     pp0.samples = 4;
     pp0.resize(engine.getRenderWidth(), engine.getRenderHeight(), scene.activeCamera);
@@ -94,6 +94,8 @@ export function testRenderGraph(engine: AbstractEngine, scene: Scene) {
     frameGraph.build();
 
     (window as any).fg = frameGraph;
+
+    await frameGraph.whenReadyAsync();
 
     scene.onAfterRenderObservable.add(() => {
         frameGraph.execute();
@@ -234,26 +236,29 @@ export class FrameGraph {
         }
     }
 
-    private _setTextureOutputForTask(task: IFrameGraphTask, force = false): void {
-        const internals = task._frameGraphInternals!;
+    /**
+     * Returns a promise that resolves when the frame graph is ready to be executed
+     * This method must be called after the graph has been built (FrameGraph.build called)!
+     * @param timeout Timeout in ms between retries (default is 16)
+     * @returns The promise that resolves when the graph is ready
+     */
+    public whenReadyAsync(timeout = 16): Promise<void> {
+        return new Promise((resolve) => {
+            const checkReady = () => {
+                let ready = true;
+                for (const task of this._tasks) {
+                    ready &&= task.isReady();
+                }
+                if (ready) {
+                    resolve();
+                }
+                return ready;
+            };
 
-        if (!force && task.disabledFromGraph === internals.wasDisabled) {
-            return;
-        }
-
-        internals.wasDisabled = task.disabledFromGraph;
-
-        if (internals.outputTexture !== undefined) {
-            if (task.disabledFromGraph) {
-                this._textureManager._textures[internals.outputTexture]!.texture = this._textureManager._textures[internals.outputTextureWhenDisabled!]!.texture;
-                this._textureManager._textures[internals.outputTexture]!.systemType = this._textureManager._textures[internals.outputTextureWhenDisabled!]!.systemType;
-                this._textureManager._textureDescriptions[internals.outputTexture] = this._textureManager._textureDescriptions[internals.outputTextureWhenDisabled!];
-            } else {
-                this._textureManager._textures[internals.outputTexture]!.texture = this._textureManager._textures[internals.outputTextureWhenEnabled!]!.texture;
-                this._textureManager._textures[internals.outputTexture]!.systemType = this._textureManager._textures[internals.outputTextureWhenEnabled!]!.systemType;
-                this._textureManager._textureDescriptions[internals.outputTexture] = this._textureManager._textureDescriptions[internals.outputTextureWhenEnabled!];
+            if (!checkReady()) {
+                setTimeout(checkReady, timeout);
             }
-        }
+        });
     }
 
     public execute(): void {
@@ -295,5 +300,27 @@ export class FrameGraph {
         this._textureManager.dispose();
         this._tasks.length = 0;
         this._mapNameToTask.clear();
+    }
+
+    private _setTextureOutputForTask(task: IFrameGraphTask, force = false): void {
+        const internals = task._frameGraphInternals!;
+
+        if (!force && task.disabledFromGraph === internals.wasDisabled) {
+            return;
+        }
+
+        internals.wasDisabled = task.disabledFromGraph;
+
+        if (internals.outputTexture !== undefined) {
+            if (task.disabledFromGraph) {
+                this._textureManager._textures[internals.outputTexture]!.texture = this._textureManager._textures[internals.outputTextureWhenDisabled!]!.texture;
+                this._textureManager._textures[internals.outputTexture]!.systemType = this._textureManager._textures[internals.outputTextureWhenDisabled!]!.systemType;
+                this._textureManager._textureDescriptions[internals.outputTexture] = this._textureManager._textureDescriptions[internals.outputTextureWhenDisabled!];
+            } else {
+                this._textureManager._textures[internals.outputTexture]!.texture = this._textureManager._textures[internals.outputTextureWhenEnabled!]!.texture;
+                this._textureManager._textures[internals.outputTexture]!.systemType = this._textureManager._textures[internals.outputTextureWhenEnabled!]!.systemType;
+                this._textureManager._textureDescriptions[internals.outputTexture] = this._textureManager._textureDescriptions[internals.outputTextureWhenEnabled!];
+            }
+        }
     }
 }
