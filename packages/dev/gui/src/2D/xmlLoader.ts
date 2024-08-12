@@ -88,7 +88,7 @@ export class XmlLoader {
                 } else if (node.attributes[i].value.match(/{{.*}}/)) {
                     const matches = node.attributes[i].value.match(/{{(.*)}}/);
                     let element = this._getChainElement(matches[1]);
-                    if(!(node.attributes[i].value.startsWith("{{") && node.attributes[i].value.endsWith("}}"))){
+                    if (!(node.attributes[i].value.startsWith("{{") && node.attributes[i].value.endsWith("}}"))) {
                         element = (node.attributes[i].value as string).replace(/{{.*}}/, `${element}`);
                     }
                     guiNode[node.attributes[i].name] = element;
