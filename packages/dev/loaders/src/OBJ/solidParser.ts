@@ -561,9 +561,10 @@ export class SolidParser {
         // Preprocess line data
         const linesOBJ = data.split("\n");
         const lineLines: string[][] = [];
+        const currentGroup: string[] = [];
 
-        lineLines.push([]);
-        let currentGroup = lineLines[lineLines.length - 1];
+        lineLines.push(currentGroup);
+
         for (let i = 0; i < linesOBJ.length; i++) {
             const line = linesOBJ[i].trim().replace(/\s\s/g, " ");
 
@@ -573,8 +574,7 @@ export class SolidParser {
             }
 
             if (SolidParser._IsGroupElement(line) || SolidParser._IsObjectElement(line)) {
-                lineLines.push([]);
-                currentGroup = lineLines[lineLines.length - 1];
+                lineLines.push(currentGroup);
             }
 
             if (SolidParser._IsLineElement(line)) {
