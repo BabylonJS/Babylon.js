@@ -15,6 +15,7 @@ import { PostProcess } from "core/PostProcesses/postProcess";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 declare module "../scene" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
     export interface Scene {
         /** @internal */
         _meshUVSpaceRendererShader: Nullable<ShaderMaterial>;
