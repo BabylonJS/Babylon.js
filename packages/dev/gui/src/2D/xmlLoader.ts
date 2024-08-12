@@ -87,7 +87,10 @@ export class XmlLoader {
                     }
                 } else if (node.attributes[i].value.match(/{{.*}}/)) {
                     const matches = node.attributes[i].value.match(/{{(.*)}}/);
-                    const element = (node.attributes[i].value as string).replace(/{{.*}}/, `${this._getChainElement(matches[1])}`);
+                    let element = this._getChainElement(matches[1]);
+                    if (!(node.attributes[i].value.startsWith("{{") && node.attributes[i].value.endsWith("}}"))) {
+                        element = (node.attributes[i].value as string).replace(/{{.*}}/, `${element}`);
+                    }
                     guiNode[node.attributes[i].name] = element;
                 } else if (!this._objectAttributes[node.attributes[i].name]) {
                     if (node.attributes[i].value == "true" || node.attributes[i].value == "false") {
