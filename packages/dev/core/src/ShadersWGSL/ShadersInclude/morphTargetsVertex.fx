@@ -33,7 +33,7 @@
 		#endif
 
 		#ifdef MORPHTARGETS_TANGENT
-		    tangentUpdated.xyz = tangentUpdated.xyz + (vertexInputs.tangent{X} - vertexInputs.tangent.xyz) * uniforms.morphTargetInfluences[{X}];
+		    tangentUpdated = vec4f(tangentUpdated.xyz + (vertexInputs.tangent{X} - vertexInputs.tangent.xyz) * uniforms.morphTargetInfluences[{X}], tangentUpdated.a);
 		#endif
 
 		#ifdef MORPHTARGETS_UV
