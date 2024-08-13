@@ -10,6 +10,6 @@ varying vUV: vec2f;
 
 @vertex
 fn main(input : VertexInputs) -> FragmentInputs {
-    vertexOutpus.position = uniforms.worldViewProjection *  vec4f(input.position, 1.0);
-    vertexOutpus.positionvUV = uv;
+    vertexOutputs.position = uniforms.worldViewProjection *  vec4f(input.position, 1.0);
+    vertexOutputs.positionvUV = input.uv;
 }

@@ -1,3 +1,5 @@
+#define DISABLE_UNIFORMITY_ANALYSIS
+
 // Varyings
 varying vUV: vec2f;
 
@@ -17,10 +19,10 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     } else {
         var texelSize: vec2f = 4.0 / uniforms.textureSize;
 
-        var uv_p01: vec2f = vUV +  vec2f(-1.0, 0.0) * texelSize;
-        var uv_p21: vec2f = vUV +  vec2f(1.0, 0.0) * texelSize;
-        var uv_p10: vec2f = vUV +  vec2f(0.0, -1.0) * texelSize;
-        var uv_p12: vec2f = vUV +  vec2f(0.0, 1.0) * texelSize;
+        var uv_p01: vec2f = input.vUV +  vec2f(-1.0, 0.0) * texelSize;
+        var uv_p21: vec2f = input.vUV +  vec2f(1.0, 0.0) * texelSize;
+        var uv_p10: vec2f = input.vUV +  vec2f(0.0, -1.0) * texelSize;
+        var uv_p12: vec2f = input.vUV +  vec2f(0.0, 1.0) * texelSize;
 
         var mask_p01: f32 = textureSample(maskTextureSampler, maskTextureSamplerSampler, uv_p01).r;
         var mask_p21: f32 = textureSample(maskTextureSampler, maskTextureSamplerSampler, uv_p21).r;

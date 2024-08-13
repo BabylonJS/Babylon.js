@@ -98,7 +98,7 @@ export class PBRBRDFConfiguration extends MaterialPluginBase {
     }
 
     /**
-     * Gets a boolean indicating that the plugin is compatible with a give shader language.
+     * Gets a boolean indicating that the plugin is compatible with a given shader language.
      * @returns true if the plugin is compatible with the shader language
      */
     public override isCompatible(): boolean {
