@@ -68,6 +68,5 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
     #endif
 
-    fragmentOutputs.color.rgb = computeIndirect(positionW, normalW);
-    fragmentOutputs.color.a = 1.0;
+    fragmentOutputs.color = vec4f(computeIndirect(positionW, normalW), 1.0);
 }
