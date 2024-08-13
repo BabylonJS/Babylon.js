@@ -1,5 +1,5 @@
 import type { IFrameGraphPass } from "../Passes/IFrameGraphPass";
-import { FrameGraphRenderPassBuilder } from "../Passes/renderPassBuilder";
+import { FrameGraphRenderPass } from "../Passes/renderPass";
 import type { FrameGraphTextureManager, TextureHandle } from "../frameGraphTextureManager";
 import type { IFrameGraphInputData } from "./IFrameGraphTask";
 
@@ -40,7 +40,7 @@ export class FrameGraphTaskInternals {
             if (errMsg) {
                 throw new Error(`Pass "${pass.name}" is not valid. ${errMsg}`);
             }
-            if (FrameGraphRenderPassBuilder.IsRenderPassBuilder(pass)) {
+            if (FrameGraphRenderPass.IsRenderPass(pass)) {
                 this.outputTextureWhenEnabled = pass.renderTarget;
             }
         }
@@ -50,7 +50,7 @@ export class FrameGraphTaskInternals {
             if (errMsg) {
                 throw new Error(`Pass "${pass.name}" is not valid. ${errMsg}`);
             }
-            if (FrameGraphRenderPassBuilder.IsRenderPassBuilder(pass)) {
+            if (FrameGraphRenderPass.IsRenderPass(pass)) {
                 this.outputTextureWhenDisabled = pass.renderTarget;
             }
         }

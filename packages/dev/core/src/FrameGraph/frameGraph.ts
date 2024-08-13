@@ -6,8 +6,8 @@ import { BlackAndWhitePostProcess } from "core/PostProcesses/blackAndWhitePostPr
 import { PassPostProcess } from "core/PostProcesses/passPostProcess";
 import type { FrameGraphTaskOutputTexture, IFrameGraphInputData, IFrameGraphTask } from "./Tasks/IFrameGraphTask";
 import type { IFrameGraphPostProcessInputData } from "core/PostProcesses/postProcess";
-import { FrameGraphPassBuilder } from "./Passes/passBuilder";
-import { FrameGraphRenderPassBuilder } from "./Passes/renderPassBuilder";
+import { FrameGraphPass } from "./Passes/pass";
+import { FrameGraphRenderPass } from "./Passes/renderPass";
 import type { IFrameGraphCopyToBackbufferColorInputData } from "./Tasks/copyToBackbufferColorTask";
 import { FrameGraphCopyToBackbufferColorTask } from "./Tasks/copyToBackbufferColorTask";
 import type { IFrameGraphBloomEffectInputData } from "core/PostProcesses/bloomEffect";
@@ -154,12 +154,12 @@ export class FrameGraph {
         this._mapNameToTask.set(task.name, task);
     }
 
-    public addPass(name: string, whenTaskDisabled = false): FrameGraphPassBuilder<FrameGraphContext> {
+    public addPass(name: string, whenTaskDisabled = false): FrameGraphPass<FrameGraphContext> {
         if (!this._currentProcessedTask) {
             throw new Error("A pass must be created during a Task.addToFrameGraph execution.");
         }
 
-        const pass = new FrameGraphPassBuilder(name, this._textureManager, this._currentProcessedTask, this._passContext);
+        const pass = new FrameGraphPass(name, this._textureManager, this._currentProcessedTask, this._passContext);
 
         if (whenTaskDisabled) {
             this._currentProcessedTask._frameGraphInternals!.passesDisabled.push(pass);
@@ -170,12 +170,12 @@ export class FrameGraph {
         return pass;
     }
 
-    public addRenderPass(name: string, whenTaskDisabled = false): FrameGraphRenderPassBuilder {
+    public addRenderPass(name: string, whenTaskDisabled = false): FrameGraphRenderPass {
         if (!this._currentProcessedTask) {
             throw new Error("A pass must be created during a Task.addToFrameGraph execution.");
         }
 
-        const pass = new FrameGraphRenderPassBuilder(name, this._textureManager, this._currentProcessedTask, this._renderContext);
+        const pass = new FrameGraphRenderPass(name, this._textureManager, this._currentProcessedTask, this._renderContext);
 
         if (whenTaskDisabled) {
             this._currentProcessedTask._frameGraphInternals!.passesDisabled.push(pass);

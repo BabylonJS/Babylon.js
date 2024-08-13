@@ -7,8 +7,8 @@ export * from "./Node/Enums/nodeRenderGraphBlockConnectionPointTypes";
 export * from "./Node/Blocks/index";
 
 export * from "./Passes/IFrameGraphPass";
-export * from "./Passes/passBuilder";
-export * from "./Passes/renderPassBuilder";
+export * from "./Passes/pass";
+export * from "./Passes/renderPass";
 
 export * from "./Tasks/clearTextureTask";
 export * from "./Tasks/copyToBackbufferColorTask";

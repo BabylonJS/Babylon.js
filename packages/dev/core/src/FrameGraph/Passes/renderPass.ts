@@ -1,17 +1,16 @@
 import type { Nullable } from "../../types";
-import type { TextureHandle } from "../frameGraphTextureManager";
+import type { TextureHandle, FrameGraphTextureManager } from "../frameGraphTextureManager";
 import type { FrameGraphRenderContext } from "../frameGraphRenderContext";
-import { FrameGraphPassBuilder } from "./passBuilder";
+import { FrameGraphPass } from "./pass";
 import type { IFrameGraphTask } from "../Tasks/IFrameGraphTask";
-import type { FrameGraphTextureManager } from "../frameGraphTextureManager";
 import type { IFrameGraphPass } from "./IFrameGraphPass";
 
-export class FrameGraphRenderPassBuilder extends FrameGraphPassBuilder<FrameGraphRenderContext> {
+export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext> {
     protected _renderTarget: TextureHandle;
     protected _usedTextures: TextureHandle[] = [];
 
-    public static IsRenderPassBuilder(pass: IFrameGraphPass): pass is FrameGraphRenderPassBuilder {
-        return (pass as FrameGraphRenderPassBuilder).setRenderTarget !== undefined;
+    public static IsRenderPass(pass: IFrameGraphPass): pass is FrameGraphRenderPass {
+        return (pass as FrameGraphRenderPass).setRenderTarget !== undefined;
     }
 
     /** @internal */

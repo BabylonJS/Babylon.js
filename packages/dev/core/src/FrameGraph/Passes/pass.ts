@@ -4,7 +4,7 @@ import type { FrameGraphContext } from "../frameGraphContext";
 import type { IFrameGraphTask } from "../Tasks/IFrameGraphTask";
 import type { FrameGraphTextureManager } from "../frameGraphTextureManager";
 
-export class FrameGraphPassBuilder<T extends FrameGraphContext> implements IFrameGraphPass {
+export class FrameGraphPass<T extends FrameGraphContext> implements IFrameGraphPass {
     private _executeFunc: (context: T) => void;
 
     constructor(
