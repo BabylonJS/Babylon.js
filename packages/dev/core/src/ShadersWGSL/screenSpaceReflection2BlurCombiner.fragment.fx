@@ -51,7 +51,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
     var csNormal: vec3f = textureLoad(normalSampler, vec2<i32>(input.vUV * texSize), 0).xyz;
     var depth: f32 = textureLoad(depthSampler, vec2<i32>(input.vUV * texSize), 0).r;
-    var csPosition: vec3f = computeViewPosFromUVDepth(input.vUV, depth, projection, invProjectionMatrix);
+    var csPosition: vec3f = computeViewPosFromUVDepth(input.vUV, depth, uniforms.projection, uniforms.invProjectionMatrix);
     var csViewDirection: vec3f = normalize(csPosition);
 
     var F0: vec3f = reflectivity.rgb;
