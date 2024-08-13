@@ -1,9 +1,9 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { AbstractEngine, AssetContainer, FramingBehavior, IDisposable, Mesh, Nullable } from "core/index";
+import type { AbstractEngine, AssetContainer, FramingBehavior, IDisposable, LoadAssetContainerOptions, Mesh, Nullable } from "core/index";
 
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
-import { loadAssetContainerAsync, LoadAssetContainerOptions } from "core/Loading/sceneLoader";
+import { loadAssetContainerAsync } from "core/Loading/sceneLoader";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Texture } from "core/Materials/Textures/texture";
