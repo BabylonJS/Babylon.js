@@ -30,7 +30,7 @@ import { expandToProperty, serialize } from "core/Misc/decorators";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { RegisterClass } from "core/Misc/typeStore";
 
-import { ShaderLanguage } from "core/Materials";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Class used to manage the global illumination contribution calculated from reflective shadow maps (RSM).
