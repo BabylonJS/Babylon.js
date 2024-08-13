@@ -66,7 +66,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
     var finalColor: vec3f = (color.rgb * colorMultiplier) + (SSR * reflectionMultiplier);
     #ifdef SSR_OUTPUT_IS_GAMMA_SPACE
-        finalColor = toGammaSpace(finalColor);
+        finalColor = toGammaSpaceVec3(finalColor);
     #endif
 
     fragmentOutputs.color =  vec4f(finalColor, color.a);

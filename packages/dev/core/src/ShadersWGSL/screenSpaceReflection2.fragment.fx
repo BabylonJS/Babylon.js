@@ -264,15 +264,15 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #else
         // Mix current color with SSR color
         #ifdef SSR_BLEND_WITH_FRESNEL
-            var reflectionMultiplier: vec3f = clamp(pow(fresnel * uniforms.strength,  vec3f(uniforms.reflectionSpecularFalloffExponent)), 0.0, 1.0);
+            var reflectionMultiplier: vec3f = clamp(pow(fresnel * uniforms.strength,  vec3f(uniforms.reflectionSpecularFalloffExponent)), vec3f(0.0), vec3f(1.0));
         #else
-            var reflectionMultiplier: vec3f = clamp(pow(reflectivity.rgb * uniforms.strength,  vec3f(uniforms.reflectionSpecularFalloffExponent)), 0.0, 1.0);
+            var reflectionMultiplier: vec3f = clamp(pow(reflectivity.rgb * uniforms.strength,  vec3f(uniforms.reflectionSpecularFalloffExponent)), vec3f(0.0), vec3f(1.0));
         #endif
         var colorMultiplier: vec3f = 1.0 - reflectionMultiplier;
 
         var finalColor: vec3f = (color * colorMultiplier) + (SSR * reflectionMultiplier);
         #ifdef SSR_OUTPUT_IS_GAMMA_SPACE
-            finalColor = toGammaSpace(finalColor);
+            finalColor = toGammaSpaceVec3(finalColor);
         #endif
 
         fragmentOutputs.color =  vec4f(finalColor, colorFull.a);
