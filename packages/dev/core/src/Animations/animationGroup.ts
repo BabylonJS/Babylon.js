@@ -731,8 +731,6 @@ export class AnimationGroup implements IDisposable {
             this.start(loop, this._speedRatio);
         }
 
-        this._isPaused = false;
-
         return this;
     }
 
@@ -773,6 +771,8 @@ export class AnimationGroup implements IDisposable {
         this.syncWithMask();
 
         this.onAnimationGroupPlayObservable.notifyObservers(this);
+
+        this._isPaused = false;
 
         return this;
     }
