@@ -99,10 +99,9 @@ fn main(input : VertexInputs) -> FragmentInputs {
 	var rotatedCorner: vec3f;
 
 #ifdef BILLBOARDY
-	rotatedCorner.x = cornerPos.x * cos(input.angle) - cornerPos.y * sin(input.angle);
-	rotatedCorner.z = cornerPos.x * sin(input.angle) + cornerPos.y * cos(input.angle);
+	rotatedCorner.x = cornerPos.x * cos(input.angle) - cornerPos.y * sin(input.angle) + uniforms.translationPivot.x;
+	rotatedCorner.z = cornerPos.x * sin(input.angle) + cornerPos.y * cos(input.angle) + uniforms.translationPivot.y;
 	rotatedCorner.y = 0.;
-    rotatedCorner.xz += uniforms.translationPivot;
 
 	var yaxis: vec3f = input.position - uniforms.eyePosition;
 	yaxis.y = 0.;
@@ -111,20 +110,18 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
 	var viewPos: vec3f = (uniforms.view *  vec4f(vertexOutputs.vPositionW, 1.0)).xyz;
 #elif defined(BILLBOARDSTRETCHED)
-	rotatedCorner.x = cornerPos.x * cos(input.angle) - cornerPos.y * sin(input.angle);
-	rotatedCorner.y = cornerPos.x * sin(input.angle) + cornerPos.y * cos(input.angle);
+	rotatedCorner.x = cornerPos.x * cos(input.angle) - cornerPos.y * sin(input.angle) + uniforms.translationPivot.x;
+	rotatedCorner.y = cornerPos.x * sin(input.angle) + cornerPos.y * cos(input.angle) + uniforms.translationPivot.y;
 	rotatedCorner.z = 0.;
-    rotatedCorner = vec3f(rotatedCorner.xy + uniforms.translationPivot, rotatedCorner.z);
 
 	var toCamera: vec3f = input.position - uniforms.eyePosition;
 	vertexOutputs.vPositionW = rotateAlign(toCamera, rotatedCorner);
 
 	var viewPos: vec3f = (uniforms.view *  vec4f(vertexOutputs.vPositionW, 1.0)).xyz;
 #else
-	rotatedCorner.x = cornerPos.x * cos(input.angle) - cornerPos.y * sin(input.angle);
-	rotatedCorner.y = cornerPos.x * sin(input.angle) + cornerPos.y * cos(input.angle);
+	rotatedCorner.x = cornerPos.x * cos(input.angle) - cornerPos.y * sin(input.angle) + uniforms.translationPivot.x;
+	rotatedCorner.y = cornerPos.x * sin(input.angle) + cornerPos.y * cos(input.angle) + uniforms.translationPivot.y;
 	rotatedCorner.z = 0.;
-    rotatedCorner = vec3f(rotatedCorner.xy + uniforms.translationPivot, rotatedCorner.z);
 
 	var viewPos: vec3f = (uniforms.view *  vec4f(input.position, 1.0)).xyz + rotatedCorner;
 
@@ -140,10 +137,9 @@ fn main(input : VertexInputs) -> FragmentInputs {
 #else
 	// Rotate
 	var rotatedCorner: vec3f;
-	rotatedCorner.x = cornerPos.x * cos(input.angle) - cornerPos.y * sin(input.angle);
-	rotatedCorner.z = cornerPos.x * sin(input.angle) + cornerPos.y * cos(input.angle);
+	rotatedCorner.x = cornerPos.x * cos(input.angle) - cornerPos.y * sin(input.angle) + uniforms.translationPivot.x;
+	rotatedCorner.z = cornerPos.x * sin(input.angle) + cornerPos.y * cos(input.angle) + uniforms.translationPivot.y;
 	rotatedCorner.y = 0.;
-    rotatedCorner.xz += uniforms.translationPivot;
 
 	var yaxis: vec3f = normalize(vertexInputs.direction);
 	vertexOutputs.vPositionW = rotate(yaxis, rotatedCorner);
