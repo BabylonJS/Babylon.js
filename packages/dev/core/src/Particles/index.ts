@@ -18,3 +18,8 @@ export * from "./solidParticleSystem";
 export * from "./cloudPoint";
 export * from "./pointsCloudSystem";
 export * from "./subEmitter";
+
+export * from "../Shaders/particles.fragment";
+export * from "../Shaders/particles.vertex";
+export * from "../ShadersWGSL/particles.fragment";
+export * from "../ShadersWGSL/particles.vertex";
