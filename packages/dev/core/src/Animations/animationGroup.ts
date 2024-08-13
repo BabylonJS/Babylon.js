@@ -866,6 +866,7 @@ export class AnimationGroup implements IDisposable {
 
     /**
      * Helper to get the current frame. This will return 0 if the AnimationGroup is not running, and it might return wrong results if multiple animations are running in different frames.
+     * @returns current animation frame.
      */
     public getCurrentFrame(): number {
         return this.animatables[0]?.masterFrame || 0;
