@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { AbstractEngine, AssetContainer, FramingBehavior, IDisposable, Mesh, Nullable } from "core/index";
+import type { AbstractEngine, AssetContainer, FramingBehavior, IDisposable, LoadAssetContainerOptions, Mesh, Nullable } from "core/index";
 
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
@@ -119,9 +119,10 @@ export class Viewer implements IDisposable {
      * @remarks
      * If a model is already loaded, it will be unloaded before loading the new model.
      * @param source A url or File or ArrayBufferView that points to the model to load.
+     * @param options The options to use when loading the model.
      * @param abortSignal An optional signal that can be used to abort the loading process.
      */
-    public async loadModelAsync(source: string | File | ArrayBufferView, abortSignal?: AbortSignal): Promise<void> {
+    public async loadModelAsync(source: string | File | ArrayBufferView, options?: LoadAssetContainerOptions, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
 
         this._loadModelAbortController?.abort("New model is being loaded before previous model finished loading.");
@@ -130,7 +131,7 @@ export class Viewer implements IDisposable {
         await this._loadModelLock.lockAsync(async () => {
             this._throwIfDisposedOrAborted(abortSignal, abortController.signal);
             this._details.model?.dispose();
-            this._details.model = await loadAssetContainerAsync(source, this._details.scene);
+            this._details.model = await loadAssetContainerAsync(source, this._details.scene, options);
             this._details.model.addAllToScene();
             this._reframeCamera();
         });

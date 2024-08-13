@@ -451,7 +451,7 @@ export class PostProcess {
      * Executed when the effect was created
      * @returns effect that was created for this post process
      */
-    public onEffectCreatedObservable = new Observable<Effect>();
+    public onEffectCreatedObservable = new Observable<Effect>(undefined, true);
 
     // Events
 
