@@ -221,7 +221,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 			refractionColor = refractionLookup;
 		}
 	#else
-		var vRefractionUVW: vec3f =  vec3f(uniforms.refractionMatrix * (scene.view *  vec4f(fragmentInputs.vPositionW + refractionVector * uniforms.vRefractionInfos.z, 1.0)));
+		var vRefractionUVW: vec3f =  (uniforms.refractionMatrix * (scene.view *  vec4f(fragmentInputs.vPositionW + refractionVector * uniforms.vRefractionInfos.z, 1.0))).xyz;
 
 		var refractionCoords: vec2f = vRefractionUVW.xy / vRefractionUVW.z;
 
