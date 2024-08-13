@@ -172,7 +172,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
 			vertexOutputs.vBumpUV = (uniforms.bumpMatrix *  vec4f(input.uv2, 1.0, 0.0)).xy;
 			#endif
 			#ifdef REFLECTIVITY_UV2
-			vertexOutputs.vReflectivityUV = (uniforms.reflectivityMatrix *  vec4f(uv2, 1.0, 0.0)).xy;
+			vertexOutputs.vReflectivityUV = (uniforms.reflectivityMatrix *  vec4f(input.uv2, 1.0, 0.0)).xy;
 			#endif
 			#ifdef ALBEDO_UV2
 			vertexOutputs.vAlbedoUV = (uniforms.albedoMatrix *  vec4f(uv2, 1.0, 0.0)).xy;
