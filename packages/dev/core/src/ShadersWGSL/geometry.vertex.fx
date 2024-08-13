@@ -163,7 +163,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
 		#endif
 		#ifdef UV2
 			#if defined(ALPHATEST) && defined(ALPHATEST_UV2)
-			vertexOutputs.vUV = (diffuseMatrix *  vec4f(uv2, 1.0, 0.0)).xy;
+			vertexOutputs.vUV = (uniforms.diffuseMatrix *  vec4f(input.uv2, 1.0, 0.0)).xy;
 			#else
 			vertexOutputs.vUV = input.uv2;
 			#endif
