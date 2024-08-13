@@ -102,8 +102,7 @@ export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
         super._buildBlock(state);
 
         this._postProcess.name = this.name;
-
-        this.output.value = [this.name, "output"];
+        this.output.value = this.name;
 
         const source = this.source.connectedPoint?.value;
         if (source && NodeRenderGraphConnectionPoint.ValueIsTexture(source)) {

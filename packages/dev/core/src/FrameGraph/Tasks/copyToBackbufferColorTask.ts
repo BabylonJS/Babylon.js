@@ -1,10 +1,10 @@
 import type { FrameGraph } from "../frameGraph";
 import type { TextureHandle } from "../frameGraphTextureManager";
 import { backbufferColorTextureHandle } from "../frameGraphTextureManager";
-import type { FrameGraphTaskTexture, IFrameGraphInputData, IFrameGraphTask } from "./IFrameGraphTask";
+import type { FrameGraphTaskOutputTexture, IFrameGraphInputData, IFrameGraphTask } from "./IFrameGraphTask";
 
 export interface IFrameGraphCopyToBackbufferColorInputData extends IFrameGraphInputData {
-    sourceTexture: FrameGraphTaskTexture | TextureHandle;
+    sourceTexture: FrameGraphTaskOutputTexture | TextureHandle;
 }
 
 export class FrameGraphCopyToBackbufferColorTask implements IFrameGraphTask {

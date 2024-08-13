@@ -1,22 +1,9 @@
 import type { FrameGraph } from "../frameGraph";
-import type { Observable } from "core/Misc/observable";
-import type { IFrameGraphPass } from "../Passes/IFrameGraphPass";
-import type { TextureHandle } from "../frameGraphTextureManager";
+import type { FrameGraphTaskInternals } from "./taskInternals";
 
 export interface IFrameGraphInputData {}
 
-export type FrameGraphTaskTexture = [string, string];
-
-/** @internal */
-export interface IFrameGraphTaskInternals {
-    passes: IFrameGraphPass[];
-    passesDisabled: IFrameGraphPass[];
-    inputData?: IFrameGraphInputData;
-    outputTexture?: TextureHandle;
-    outputTextureWhenEnabled?: TextureHandle;
-    outputTextureWhenDisabled?: TextureHandle;
-    wasDisabled: boolean;
-}
+export type FrameGraphTaskOutputTexture = string;
 
 /**
  * Interface used to indicate that the class can be used as a task in a frame graph.
@@ -35,10 +22,6 @@ export interface IFrameGraphTask {
 
     disabledFromGraph: boolean;
 
-    onBeforeTaskRecordFrameGraphObservable?: Observable<FrameGraph>;
-
-    onAfterTaskRecordFrameGraphObservable?: Observable<FrameGraph>;
-
     /** @internal */
-    _frameGraphInternals?: IFrameGraphTaskInternals;
+    _frameGraphInternals?: FrameGraphTaskInternals;
 }

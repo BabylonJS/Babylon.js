@@ -8,8 +8,7 @@ import type { Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
 import type { Scene } from "../scene";
 import type { AbstractEngine } from "../Engines/abstractEngine";
-import { Observable } from "../Misc/observable";
-import type { FrameGraphTaskTexture, IFrameGraphInputData, IFrameGraphTask } from "../FrameGraph/Tasks/IFrameGraphTask";
+import type { FrameGraphTaskOutputTexture, IFrameGraphInputData, IFrameGraphTask } from "../FrameGraph/Tasks/IFrameGraphTask";
 import type { FrameGraph } from "../FrameGraph/frameGraph";
 import type { TextureHandle } from "../FrameGraph/frameGraphTextureManager";
 import { Constants } from "../Engines/constants";
@@ -21,9 +20,9 @@ export interface IFrameGraphBloomEffectInputData extends IFrameGraphInputData {
     /**
      * The source texture for the bloom effect
      */
-    sourceTexture: FrameGraphTaskTexture | TextureHandle;
+    sourceTexture: FrameGraphTaskOutputTexture | TextureHandle;
     sourceSamplingMode?: number;
-    outputTexture?: FrameGraphTaskTexture | TextureHandle;
+    outputTexture?: FrameGraphTaskOutputTexture | TextureHandle;
 }
 
 /**
@@ -33,10 +32,6 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
     public name = "Bloom";
 
     public disabledFromGraph = false;
-
-    public onBeforeTaskRecordFrameGraphObservable = new Observable<FrameGraph>();
-
-    public onAfterTaskRecordFrameGraphObservable = new Observable<FrameGraph>();
 
     /**
      * @internal Internal
@@ -199,8 +194,8 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
         this._blurY.width = textureCreationOptions.size.width;
         this._blurY.height = textureCreationOptions.size.height;
 
-        textureCreationOptions.options.label = "Bloom Downscale";
-        const downscaleTextureHandle = frameGraph.createRenderTargetTexture("downscale", textureCreationOptions);
+        textureCreationOptions.options.label = `${this.name} Downscale`;
+        const downscaleTextureHandle = frameGraph.createRenderTargetTexture(textureCreationOptions.options.label, textureCreationOptions);
 
         this._downscale.recordFrameGraph(frameGraph, {
             sourceTexture: inputData.sourceTexture,
@@ -208,8 +203,8 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
             skipCreationOfDisabledPasses: true,
         });
 
-        textureCreationOptions.options.label = "Bloom Blur X";
-        const blurXTextureHandle = frameGraph.createRenderTargetTexture("blurX", textureCreationOptions);
+        textureCreationOptions.options.label = `${this.name} Blur X`;
+        const blurXTextureHandle = frameGraph.createRenderTargetTexture(textureCreationOptions.options.label, textureCreationOptions);
 
         this._blurX.recordFrameGraph(frameGraph, {
             sourceTexture: downscaleTextureHandle,
@@ -217,8 +212,8 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
             skipCreationOfDisabledPasses: true,
         });
 
-        textureCreationOptions.options.label = "Bloom Blur Y";
-        const blurYTextureHandle = frameGraph.createRenderTargetTexture("blurY", textureCreationOptions);
+        textureCreationOptions.options.label = `${this.name} Blur Y`;
+        const blurYTextureHandle = frameGraph.createRenderTargetTexture(textureCreationOptions.options.label, textureCreationOptions);
 
         this._blurY.recordFrameGraph(frameGraph, {
             sourceTexture: blurXTextureHandle,
@@ -226,16 +221,20 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
             skipCreationOfDisabledPasses: true,
         });
 
+        const sourceTextureHandle = frameGraph.getTextureHandle(inputData.sourceTexture);
+        const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(
+            inputData.outputTexture,
+            `${this.name} Output`,
+            frameGraph.getTextureDescription(inputData.sourceTexture)
+        );
+
         this._merge.recordFrameGraph(frameGraph, {
             sourceTexture: inputData.sourceTexture,
             sourceSamplingMode: inputData.sourceSamplingMode,
             sourceBlurTexture: blurYTextureHandle,
-            outputTexture: inputData.outputTexture,
+            outputTexture: outputTextureHandle,
             skipCreationOfDisabledPasses: true,
         });
-
-        const sourceTextureHandle = frameGraph.getTextureHandle(inputData.sourceTexture);
-        const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(inputData.outputTexture, "destination", frameGraph.getTextureDescription(inputData.sourceTexture));
 
         const passDisabled = frameGraph.addRenderPass(this.name + "_disabled", true);
 

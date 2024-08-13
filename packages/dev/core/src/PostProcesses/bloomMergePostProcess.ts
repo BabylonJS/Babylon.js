@@ -10,11 +10,11 @@ import "../Shaders/bloomMerge.fragment";
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import type { FrameGraph } from "../FrameGraph/frameGraph";
-import type { FrameGraphTaskTexture } from "../FrameGraph/Tasks/IFrameGraphTask";
+import type { FrameGraphTaskOutputTexture } from "../FrameGraph/Tasks/IFrameGraphTask";
 import type { TextureHandle } from "../FrameGraph/frameGraphTextureManager";
 
 export interface IFrameGraphBloomMergeInputData extends IFrameGraphPostProcessInputData {
-    sourceBlurTexture: FrameGraphTaskTexture | TextureHandle;
+    sourceBlurTexture: FrameGraphTaskOutputTexture | TextureHandle;
 }
 
 /**
@@ -77,7 +77,11 @@ export class BloomMergePostProcess extends PostProcess {
     public override recordFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphBloomMergeInputData): void {
         const sourceTextureHandle = frameGraph.getTextureHandle(inputData.sourceTexture);
         const sourceBlurTextureHandle = frameGraph.getTextureHandle(inputData.sourceBlurTexture);
-        const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(inputData.outputTexture, "destination", frameGraph.getTextureDescription(inputData.sourceTexture));
+        const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(
+            inputData.outputTexture,
+            `${this.name} Output`,
+            frameGraph.getTextureDescription(inputData.sourceTexture)
+        );
 
         this.onApplyObservable.clear();
 

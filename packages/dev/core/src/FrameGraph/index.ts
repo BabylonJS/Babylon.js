@@ -13,7 +13,6 @@ export * from "./Passes/renderPassBuilder";
 export * from "./Tasks/clearTextureTask";
 export * from "./Tasks/copyToBackbufferColorTask";
 export * from "./Tasks/copyToTextureTask";
-export * from "./Tasks/createRenderTextureTask";
 export * from "./Tasks/IFrameGraphTask";
 
 export * from "./frameGraph";

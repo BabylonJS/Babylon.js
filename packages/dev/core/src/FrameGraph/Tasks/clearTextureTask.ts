@@ -1,14 +1,14 @@
 import type { Color4 } from "core/Maths/math.color";
 import type { FrameGraph } from "../frameGraph";
 import type { TextureHandle } from "../frameGraphTextureManager";
-import type { FrameGraphTaskTexture, IFrameGraphInputData, IFrameGraphTask } from "./IFrameGraphTask";
+import type { FrameGraphTaskOutputTexture, IFrameGraphInputData, IFrameGraphTask } from "./IFrameGraphTask";
 
 export interface IFrameGraphClearTextureInputData extends IFrameGraphInputData {
     color: Color4;
     clearColor?: boolean;
     clearDepth?: boolean;
     clearStencil?: boolean;
-    destinationTexture: FrameGraphTaskTexture | TextureHandle;
+    destinationTexture: FrameGraphTaskOutputTexture | TextureHandle;
 }
 
 export class FrameGraphClearTextureTask implements IFrameGraphTask {

@@ -3,7 +3,7 @@ import type { NodeRenderGraphBlock } from "./nodeRenderGraphBlock";
 import { Observable } from "../../Misc/observable";
 import { NodeRenderGraphBlockConnectionPointTypes } from "./Enums/nodeRenderGraphBlockConnectionPointTypes";
 import type { RenderGraphInputBlock } from "./Blocks/inputBlock";
-import type { FrameGraphTaskTexture } from "../Tasks/IFrameGraphTask";
+import type { FrameGraphTaskOutputTexture } from "../Tasks/IFrameGraphTask";
 import type { TextureHandle } from "../frameGraphTextureManager";
 
 /**
@@ -28,7 +28,7 @@ export const enum NodeRenderGraphConnectionPointDirection {
     Output,
 }
 
-export type NodeRenderGraphConnectionPointValueType = FrameGraphTaskTexture | TextureHandle;
+export type NodeRenderGraphConnectionPointValueType = FrameGraphTaskOutputTexture | TextureHandle;
 
 /**
  * Defines a connection point for a block
@@ -60,8 +60,8 @@ export class NodeRenderGraphConnectionPoint {
         return this._direction;
     }
 
-    public static ValueIsTexture(value: NodeRenderGraphConnectionPointValueType): value is FrameGraphTaskTexture | TextureHandle {
-        return Array.isArray(value) || typeof value === "number";
+    public static ValueIsTexture(value: NodeRenderGraphConnectionPointValueType): value is FrameGraphTaskOutputTexture | TextureHandle {
+        return typeof value === "string" || typeof value === "number";
     }
 
     /**

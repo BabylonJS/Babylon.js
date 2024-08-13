@@ -4,10 +4,15 @@ import type { FrameGraphRenderContext } from "../frameGraphRenderContext";
 import { FrameGraphPassBuilder } from "./passBuilder";
 import type { IFrameGraphTask } from "../Tasks/IFrameGraphTask";
 import type { FrameGraphTextureManager } from "../frameGraphTextureManager";
+import type { IFrameGraphPass } from "./IFrameGraphPass";
 
 export class FrameGraphRenderPassBuilder extends FrameGraphPassBuilder<FrameGraphRenderContext> {
     protected _renderTarget: TextureHandle;
     protected _usedTextures: TextureHandle[] = [];
+
+    public static IsRenderPassBuilder(pass: IFrameGraphPass): pass is FrameGraphRenderPassBuilder {
+        return (pass as FrameGraphRenderPassBuilder).setRenderTarget !== undefined;
+    }
 
     /** @internal */
     public get renderTarget(): TextureHandle {

@@ -28,7 +28,7 @@ import type { PrePassRenderer } from "../Rendering/prePassRenderer";
 import type { PrePassEffectConfiguration } from "../Rendering/prePassEffectConfiguration";
 import { AbstractEngine } from "../Engines/abstractEngine";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
-import type { FrameGraphTaskTexture, IFrameGraphInputData, IFrameGraphTask } from "../FrameGraph/Tasks/IFrameGraphTask";
+import type { FrameGraphTaskOutputTexture, IFrameGraphInputData, IFrameGraphTask } from "../FrameGraph/Tasks/IFrameGraphTask";
 import type { FrameGraph } from "../FrameGraph/frameGraph";
 import type { TextureHandle } from "../FrameGraph/frameGraphTextureManager";
 
@@ -70,9 +70,9 @@ AbstractEngine.prototype.setTextureFromPostProcessOutput = function (channel: nu
 };
 
 export interface IFrameGraphPostProcessInputData extends IFrameGraphInputData {
-    sourceTexture: FrameGraphTaskTexture | TextureHandle;
+    sourceTexture: FrameGraphTaskOutputTexture | TextureHandle;
     sourceSamplingMode?: number;
-    outputTexture?: FrameGraphTaskTexture | TextureHandle;
+    outputTexture?: FrameGraphTaskOutputTexture | TextureHandle;
     skipCreationOfDisabledPasses?: boolean;
 }
 
@@ -231,10 +231,6 @@ export class PostProcess implements IFrameGraphTask {
     private static _CustomShaderCodeProcessing: { [postProcessName: string]: PostProcessCustomShaderCodeProcessing } = {};
 
     public disabledFromGraph = false;
-
-    public onBeforeTaskRecordFrameGraphObservable = new Observable<FrameGraph>();
-
-    public onAfterTaskRecordFrameGraphObservable = new Observable<FrameGraph>();
 
     /**
      * Registers a shader code processing with a post process name.
@@ -1118,7 +1114,11 @@ export class PostProcess implements IFrameGraphTask {
         inputData.sourceSamplingMode = inputData.sourceSamplingMode ?? Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
 
         const sourceTextureHandle = frameGraph.getTextureHandle(inputData.sourceTexture);
-        const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(inputData.outputTexture, "destination", frameGraph.getTextureDescription(inputData.sourceTexture));
+        const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(
+            inputData.outputTexture,
+            `${this.name} Output`,
+            frameGraph.getTextureDescription(inputData.sourceTexture)
+        );
 
         const pass = frameGraph.addRenderPass(this.name);
 
