@@ -40,7 +40,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 		var remappedColorIndex: f32 = clamp((alpha - input.remapRanges.x) / input.remapRanges.y, 0.0, 1.0);
 
 		var rampColor: vec4f = textureSample(rampSampler, rampSamplerSampler, vec2f(1.0 - remappedColorIndex, 0.));
-		baseColor.rgb *= rampColor.rgb;
+		baseColor = vec4f(baseColor.rgb * rampColor.rgb, baseColor.a);
 
 		// Remapped alpha
 		var finalAlpha: f32 = baseColor.a;
