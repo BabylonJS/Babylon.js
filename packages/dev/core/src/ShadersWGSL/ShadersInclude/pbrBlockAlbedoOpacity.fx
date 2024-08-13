@@ -53,7 +53,7 @@ fn albedoOpacityBlock(
     #endif
 
     #ifdef DETAIL
-        var detailAlbedo: f32 = 2.0 * mix(0.5, detailColor.r, vDetailInfos.y);
+        var detailAlbedo: f32 = 2.0 * mix(0.5, detailColor.r, fragmentInputs.vDetailInfos.y);
         surfaceAlbedo = surfaceAlbedo.rgb * detailAlbedo * detailAlbedo; // should be pow(detailAlbedo, 2.2) but detailAlbedo² is close enough and cheaper to compute
     #endif
 
