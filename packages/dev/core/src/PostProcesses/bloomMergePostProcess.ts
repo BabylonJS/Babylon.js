@@ -80,7 +80,7 @@ export class BloomMergePostProcess extends PostProcess {
         const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(
             inputData.outputTexture,
             `${this.name} Output`,
-            frameGraph.getTextureDescription(inputData.sourceTexture)
+            frameGraph.getTextureCreationOptions(inputData.sourceTexture)
         );
 
         this.onApplyObservable.clear();

@@ -1117,7 +1117,7 @@ export class PostProcess implements IFrameGraphTask {
         const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(
             inputData.outputTexture,
             `${this.name} Output`,
-            frameGraph.getTextureDescription(inputData.sourceTexture)
+            frameGraph.getTextureCreationOptions(inputData.sourceTexture)
         );
 
         const pass = frameGraph.addRenderPass(this.name);

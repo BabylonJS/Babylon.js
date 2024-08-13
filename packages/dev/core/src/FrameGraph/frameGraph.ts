@@ -148,7 +148,7 @@ export class FrameGraph {
         }
 
         task._frameGraphInternals?.dispose();
-        task._frameGraphInternals = new FrameGraphTaskInternals(this._textureManager, inputData);
+        task._frameGraphInternals = new FrameGraphTaskInternals(task, this._textureManager, inputData);
 
         this._tasks.push(task);
         this._mapNameToTask.set(task.name, task);
@@ -187,7 +187,7 @@ export class FrameGraph {
     }
 
     public build(): void {
-        this._textureManager.releaseTextures();
+        this._textureManager._releaseTextures(true);
 
         const taskNames = new Set<string>();
         for (const task of this._tasks) {
@@ -205,10 +205,12 @@ export class FrameGraph {
 
             task.recordFrameGraph(this, internals.inputData);
 
-            internals.postBuildTask(task.disabledFromGraph);
+            internals.postBuildTask();
 
             this._currentProcessedTask = null;
         }
+
+        this._textureManager._allocateTextures();
     }
 
     /**
@@ -242,7 +244,7 @@ export class FrameGraph {
         for (const task of this._tasks) {
             const internals = task._frameGraphInternals!;
 
-            internals.setTextureOutputForTask(task.disabledFromGraph);
+            internals.setTextureOutputForTask();
 
             const passes = task.disabledFromGraph ? internals.passesDisabled : internals.passes;
 
@@ -256,8 +258,12 @@ export class FrameGraph {
         return this._textureManager.importTexture(name, texture, handle);
     }
 
+    public getTextureCreationOptions(textureId: FrameGraphTaskOutputTexture | TextureHandle): FrameGraphTextureCreationOptions {
+        return this._textureManager.getTextureCreationOptions(textureId);
+    }
+
     public getTextureDescription(textureId: FrameGraphTaskOutputTexture | TextureHandle): FrameGraphTextureDescription {
-        return this._textureManager.getTextureDescription(textureId);
+        return this._textureManager.convertTextureCreationOptionsToDescription(this.getTextureCreationOptions(textureId));
     }
 
     public getTextureHandle(textureId: FrameGraphTaskOutputTexture | TextureHandle): TextureHandle {
@@ -267,7 +273,7 @@ export class FrameGraph {
     public getTextureHandleOrCreateTexture(
         textureId?: FrameGraphTaskOutputTexture | TextureHandle,
         newTextureName?: string,
-        creationOptions?: FrameGraphTextureCreationOptions | FrameGraphTextureDescription
+        creationOptions?: FrameGraphTextureCreationOptions
     ): TextureHandle {
         if (textureId === undefined) {
             if (newTextureName === undefined || creationOptions === undefined) {
@@ -278,7 +284,7 @@ export class FrameGraph {
         return this.getTextureHandle(textureId);
     }
 
-    public createRenderTargetTexture(name: string, creationOptions: FrameGraphTextureCreationOptions | FrameGraphTextureDescription): TextureHandle {
+    public createRenderTargetTexture(name: string, creationOptions: FrameGraphTextureCreationOptions): TextureHandle {
         return this._textureManager.createRenderTargetTexture(
             name,
             this._currentProcessedTask ? FrameGraphTextureNamespace.Task : FrameGraphTextureNamespace.Graph,
@@ -293,7 +299,7 @@ export class FrameGraph {
 
         this._tasks.length = 0;
         this._mapNameToTask.clear();
-        this._textureManager.releaseTextures(true);
+        this._textureManager._releaseTextures(true);
         this._currentProcessedTask = null;
     }
 

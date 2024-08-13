@@ -1,7 +1,7 @@
 import type { IFrameGraphPass } from "../Passes/IFrameGraphPass";
 import { FrameGraphRenderPass } from "../Passes/renderPass";
 import type { FrameGraphTextureManager, TextureHandle } from "../frameGraphTextureManager";
-import type { IFrameGraphInputData } from "./IFrameGraphTask";
+import type { IFrameGraphInputData, IFrameGraphTask } from "./IFrameGraphTask";
 
 /** @internal */
 export class FrameGraphTaskInternals {
@@ -11,9 +11,9 @@ export class FrameGraphTaskInternals {
     public outputTexture?: TextureHandle;
     public outputTextureWhenEnabled?: TextureHandle;
     public outputTextureWhenDisabled?: TextureHandle;
-    public wasDisabled: boolean;
 
     constructor(
+        private _task: IFrameGraphTask,
         private _textureManager: FrameGraphTextureManager,
         inputData?: IFrameGraphInputData
     ) {
@@ -27,14 +27,13 @@ export class FrameGraphTaskInternals {
         this.outputTexture = undefined;
         this.outputTextureWhenEnabled = undefined;
         this.outputTextureWhenDisabled = undefined;
-        this.wasDisabled = false;
     }
 
     public dispose() {
         this.reset();
     }
 
-    public postBuildTask(taskIsDisabled: boolean) {
+    public postBuildTask() {
         for (const pass of this.passes!) {
             const errMsg = pass._isValid();
             if (errMsg) {
@@ -58,28 +57,21 @@ export class FrameGraphTaskInternals {
         if (this.outputTextureWhenEnabled !== undefined || this.outputTextureWhenDisabled !== undefined) {
             this.outputTextureWhenEnabled = this.outputTextureWhenEnabled ?? this.outputTextureWhenDisabled;
             this.outputTextureWhenDisabled = this.outputTextureWhenDisabled ?? this.outputTextureWhenEnabled;
-            this.outputTexture = this._textureManager._createProxyHandle();
-            this.setTextureOutputForTask(taskIsDisabled, true);
+            this.outputTexture = this._textureManager._createProxyHandle(`${this._task.name} Proxy`);
         }
     }
 
-    public setTextureOutputForTask(taskIsDisabled: boolean, force = false): void {
-        if (this.outputTexture === undefined || (!force && taskIsDisabled === this.wasDisabled)) {
+    public setTextureOutputForTask(): void {
+        if (this.outputTexture === undefined) {
             return;
         }
 
-        this.wasDisabled = taskIsDisabled;
-
-        if (taskIsDisabled) {
+        if (this._task.disabledFromGraph) {
             this._textureManager._textures[this.outputTexture]!.texture = this._textureManager._textures[this.outputTextureWhenDisabled!]!.texture;
             this._textureManager._textures[this.outputTexture]!.systemType = this._textureManager._textures[this.outputTextureWhenDisabled!]!.systemType;
-            this._textureManager._textures[this.outputTexture]!.namespace = this._textureManager._textures[this.outputTextureWhenDisabled!]!.namespace;
-            this._textureManager._textureDescriptions[this.outputTexture] = this._textureManager._textureDescriptions[this.outputTextureWhenDisabled!];
         } else {
             this._textureManager._textures[this.outputTexture]!.texture = this._textureManager._textures[this.outputTextureWhenEnabled!]!.texture;
             this._textureManager._textures[this.outputTexture]!.systemType = this._textureManager._textures[this.outputTextureWhenEnabled!]!.systemType;
-            this._textureManager._textures[this.outputTexture]!.namespace = this._textureManager._textures[this.outputTextureWhenEnabled!]!.namespace;
-            this._textureManager._textureDescriptions[this.outputTexture] = this._textureManager._textureDescriptions[this.outputTextureWhenEnabled!];
         }
     }
 }

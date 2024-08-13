@@ -225,7 +225,7 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
         const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(
             inputData.outputTexture,
             `${this.name} Output`,
-            frameGraph.getTextureDescription(inputData.sourceTexture)
+            frameGraph.getTextureCreationOptions(inputData.sourceTexture)
         );
 
         this._merge.recordFrameGraph(frameGraph, {
