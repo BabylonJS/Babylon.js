@@ -57,8 +57,9 @@ fn computeIndirect(p: vec3f, n: vec3f) -> vec3f {
 
 @fragment
 fn main(input: FragmentInputs) -> FragmentOutputs {
-    var positionW: vec3f = textureSample(textureSampler, textureSamplerSampler, vUV).xyz;
-    var normalW: vec3f = textureSample(normalSampler, normalSamplerSampler, vUV).xyz;
+    var positionW: vec3f = textureSample(textureSampler, textureSamplerSampler, fragmentInputs.vUV).xyz;
+    var normalW: vec3f = textureSample(normalSampler, normalSamplerSampler, fragmentInputs.vUV).xyz;
+
     #ifdef DECODE_NORMAL
         normalW = normalW * 2.0 - 1.0;
     #endif
