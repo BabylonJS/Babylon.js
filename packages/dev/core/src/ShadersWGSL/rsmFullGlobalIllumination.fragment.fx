@@ -64,7 +64,8 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         normalW = normalW * 2.0 - 1.0;
     #endif
     #ifdef TRANSFORM_NORMAL
-        normalW = (invView *  vec4f(normalW, 0.)).xyz;
+        normalW = (uniforms.invView *  vec4f(normalW, 0.)).xyz;
+
     #endif
 
     fragmentOutputs.color.rgb = computeIndirect(positionW, normalW);
