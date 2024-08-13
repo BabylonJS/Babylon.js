@@ -244,10 +244,6 @@ export class AnimationGroup implements IDisposable {
         }
     }
 
-    public get currentFrame(): number {
-        return this.animatables[0]?.masterFrame || 0;
-    }
-
     /**
      * Define if the animations are started
      */
@@ -866,6 +862,13 @@ export class AnimationGroup implements IDisposable {
         }
 
         return this;
+    }
+
+    /**
+     * Gets the current frame.
+     */
+    public getCurrentFrame(): number {
+        return this.animatables[0]?.masterFrame || 0;
     }
 
     /**
