@@ -649,7 +649,7 @@ export class PostProcess {
         indexParameters?: any,
         blockCompilation = false,
         textureFormat = Constants.TEXTUREFORMAT_RGBA,
-        shaderLanguage = ShaderLanguage.GLSL,
+        shaderLanguage?: ShaderLanguage,
         extraInitializations?: (useWebGPU: boolean) => Promise<void>
     ) {
         this.name = name;
@@ -698,7 +698,7 @@ export class PostProcess {
         this._reusable = reusable || false;
         this._textureType = textureType;
         this._textureFormat = textureFormat;
-        this._shaderLanguage = shaderLanguage;
+        this._shaderLanguage = shaderLanguage || ShaderLanguage.GLSL;
 
         this._samplers = samplers || [];
         this._samplers.push("textureSampler");

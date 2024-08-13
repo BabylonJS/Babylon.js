@@ -447,7 +447,12 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             this._scene.getEngine(),
             false,
             defines,
-            textureType
+            textureType,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            this._scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL
         );
 
         blurFilter.onApply = (effect: Effect) => {
@@ -571,9 +576,9 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             this._scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
             async (useWebGPU) => {
                 if (useWebGPU) {
-                    await Promise.all([import("../../../ShadersWGSL/ssao2.fragment"), import("../../../ShadersWGSL/ssaoCombine.fragment")]);
+                    await import("../../../ShadersWGSL/ssao2.fragment");
                 } else {
-                    await Promise.all([import("../../../Shaders/ssao2.fragment"), import("../../../Shaders/ssaoCombine.fragment")]);
+                    await import("../../../Shaders/ssao2.fragment");
                 }
             }
         );
@@ -639,7 +644,19 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             this._scene.getEngine(),
             false,
             undefined,
-            textureType
+            textureType,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            this._scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            async (useWebGPU) => {
+                if (useWebGPU) {
+                    await import("../../../ShadersWGSL/ssaoCombine.fragment");
+                } else {
+                    await import("../../../Shaders/ssaoCombine.fragment");
+                }
+            }
         );
 
         this._ssaoCombinePostProcess.onApply = (effect: Effect) => {

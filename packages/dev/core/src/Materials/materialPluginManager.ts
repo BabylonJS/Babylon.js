@@ -94,6 +94,11 @@ export class MaterialPluginManager {
             throw `The plugin "${plugin.name}" can't be added to the material "${this._material.name}" because this material has already been used for rendering! Please add plugins to materials before any rendering with this material occurs.`;
         }
 
+        if (!plugin.isCompatible(this._material.shaderLanguage)) {
+            // eslint-disable-next-line no-throw-literal
+            throw `The plugin "${plugin.name}" can't be added to the material "${this._material.name}" because the plugin is not compatible with the shader language of the material.`;
+        }
+
         const pluginClassName = plugin.getClassName();
         if (!MaterialPluginManager._MaterialPluginClassToMainDefine[pluginClassName]) {
             MaterialPluginManager._MaterialPluginClassToMainDefine[pluginClassName] = "MATERIALPLUGIN_" + ++MaterialPluginManager._MaterialPluginCounter;
@@ -114,8 +119,8 @@ export class MaterialPluginManager {
 
         for (const plugin of this._plugins) {
             plugin.collectDefines(defineNamesFromPlugins);
-            this._collectPointNames("vertex", plugin.getCustomCode("vertex"));
-            this._collectPointNames("fragment", plugin.getCustomCode("fragment"));
+            this._collectPointNames("vertex", plugin.getCustomCode("vertex", this._material.shaderLanguage));
+            this._collectPointNames("fragment", plugin.getCustomCode("fragment", this._material.shaderLanguage));
         }
 
         this._defineNamesFromPlugins = defineNamesFromPlugins;
@@ -293,7 +298,7 @@ export class MaterialPluginManager {
                 this._uboList = [];
                 const isWebGPU = this._material.shaderLanguage === ShaderLanguage.WGSL;
                 for (const plugin of this._plugins) {
-                    const uniforms = plugin.getUniforms();
+                    const uniforms = plugin.getUniforms(this._material.shaderLanguage);
                     if (uniforms) {
                         if (uniforms.ubo) {
                             for (const uniform of uniforms.ubo) {
@@ -371,7 +376,7 @@ export class MaterialPluginManager {
             for (let pointName in points) {
                 let injectedCode = "";
                 for (const plugin of this._activePlugins) {
-                    let customCode = plugin.getCustomCode(shaderType)?.[pointName];
+                    let customCode = plugin.getCustomCode(shaderType, this._material.shaderLanguage)?.[pointName];
                     if (!customCode) {
                         continue;
                     }

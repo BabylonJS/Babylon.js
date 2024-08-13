@@ -17,6 +17,7 @@ import type { BaseTexture } from "./Textures/baseTexture";
 import type { RenderTargetTexture } from "./Textures/renderTargetTexture";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { RegisterClass } from "../Misc/typeStore";
+import { ShaderLanguage } from "./shaderLanguage";
 
 /**
  * Base class for material plugins.
@@ -50,6 +51,20 @@ export class MaterialPluginBase {
     protected _material: Material;
     protected _pluginManager: MaterialPluginManager;
     protected _pluginDefineNames?: { [name: string]: any };
+
+    /**
+     * Gets a boolean indicating that the plugin is compatible with a given shader language.
+     * @param shaderLanguage The shader language to use.
+     * @returns true if the plugin is compatible with the shader language
+     */
+    public isCompatible(shaderLanguage: ShaderLanguage): boolean {
+        switch (shaderLanguage) {
+            case ShaderLanguage.GLSL:
+                return true;
+            default:
+                return false;
+        }
+    }
 
     protected _enable(enable: boolean) {
         if (enable) {
@@ -150,13 +165,14 @@ export class MaterialPluginBase {
     /**
      * Returns a list of custom shader code fragments to customize the shader.
      * @param shaderType "vertex" or "fragment"
+     * @param shaderLanguage The shader language to use.
      * @returns null if no code to be added, or a list of pointName =\> code.
      * Note that `pointName` can also be a regular expression if it starts with a `!`.
      * In that case, the string found by the regular expression (if any) will be
      * replaced by the code provided.
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public getCustomCode(shaderType: string): Nullable<{ [pointName: string]: string }> {
+    public getCustomCode(shaderType: string, shaderLanguage = ShaderLanguage.GLSL): Nullable<{ [pointName: string]: string }> {
         return null;
     }
 
@@ -274,9 +290,14 @@ export class MaterialPluginBase {
 
     /**
      * Gets the description of the uniforms to add to the ubo (if engine supports ubos) or to inject directly in the vertex/fragment shaders (if engine does not support ubos)
+     * @param shaderLanguage The shader language to use.
      * @returns the description of the uniforms
      */
-    public getUniforms(): { ubo?: Array<{ name: string; size?: number; type?: string; arraySize?: number }>; vertex?: string; fragment?: string } {
+    public getUniforms(shaderLanguage = ShaderLanguage.GLSL): {
+        ubo?: Array<{ name: string; size?: number; type?: string; arraySize?: number }>;
+        vertex?: string;
+        fragment?: string;
+    } {
         return {};
     }
 

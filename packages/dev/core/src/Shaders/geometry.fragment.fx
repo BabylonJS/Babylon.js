@@ -62,7 +62,7 @@ uniform sampler2D diffuseSampler;
 
 #include<clipPlaneFragmentDeclaration>
 
-#include<mrtFragmentDeclaration>[RENDER_TARGET_COUNT]
+#include<mrtFragmentDeclaration>[SCENE_MRT_COUNT]
 #include<bumpFragmentMainFunctions>
 #include<bumpFragmentFunctions>
 #include<helperFunctions>
