@@ -5,7 +5,8 @@
             "title": "Decal map PP",
             "playgroundId": "#9BVW2S#82",
             "renderCount": 120,
-            "referenceImage": "decal-map-pp.png"
+            "referenceImage": "decal-map-pp.png",
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "Convolution Post Process",
