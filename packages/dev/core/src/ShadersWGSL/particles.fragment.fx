@@ -49,7 +49,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
 	#ifdef BLENDMULTIPLYMODE
 		var sourceAlpha: f32 = input.vColor.a * textureColor.a;
-		baseColor.rgb = baseColor.rgb * sourceAlpha +  vec3f(1.0) * (1.0 - sourceAlpha);
+		baseColor = vec4f(baseColor.rgb * sourceAlpha +  vec3f(1.0) * (1.0 - sourceAlpha), baseColor.a);
 	#endif
 
 	#include<logDepthFragment>
