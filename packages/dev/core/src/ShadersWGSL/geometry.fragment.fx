@@ -105,7 +105,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #endif
 
     #ifdef POSITION
-        fragData[POSITION_INDEX] =  vec4f(vPositionW, 1.0);
+        fragData[POSITION_INDEX] =  vec4f(input.vPositionW, 1.0);
     #endif
 
     #ifdef VELOCITY
