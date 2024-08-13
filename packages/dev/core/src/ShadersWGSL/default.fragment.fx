@@ -148,7 +148,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #endif
 
 #ifdef DETAIL
-    baseColor = vec4f(baseColor.rgb * 2.0 * mix(0.5, detailColor.r, fragmentInputs.vDetailInfos.y), baseColor.a);
+    baseColor = vec4f(baseColor.rgb * 2.0 * mix(0.5, detailColor.r, uniforms.vDetailInfos.y), baseColor.a);
 #endif
 
 #if defined(DECAL) && defined(DECAL_AFTER_DETAIL)
