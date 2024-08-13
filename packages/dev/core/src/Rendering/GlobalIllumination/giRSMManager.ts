@@ -283,9 +283,7 @@ export class GIRSMManager {
     /** Shader language used by the material */
     protected _shaderLanguage = ShaderLanguage.GLSL;
 
-    /**
-     * Gets the shader language used in this material.
-     */
+    /** Gets the shader language used in this material. */
     public get shaderLanguage(): ShaderLanguage {
         return this._shaderLanguage;
     }
