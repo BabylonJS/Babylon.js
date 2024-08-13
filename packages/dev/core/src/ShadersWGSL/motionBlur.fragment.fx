@@ -1,5 +1,6 @@
 // Samplers
-varying input.vUV: vec2f;
+varying vUV: vec2f;
+
 
 var textureSamplerSampler: sampler;
 var textureSampler: texture_2d<f32>;
