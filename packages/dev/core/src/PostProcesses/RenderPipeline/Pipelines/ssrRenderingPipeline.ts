@@ -19,10 +19,7 @@ import { DepthRenderer } from "../../../Rendering/depthRenderer";
 import type { ISize } from "../../../Maths/math.size";
 
 import "../postProcessRenderPipelineManagerSceneComponent";
-
-import "../../../Shaders/screenSpaceReflection2.fragment";
-import "../../../Shaders/screenSpaceReflection2Blur.fragment";
-import "../../../Shaders/screenSpaceReflection2BlurCombiner.fragment";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 const trs = Matrix.Compose(new Vector3(0.5, 0.5, 0.5), Quaternion.Identity(), new Vector3(0.5, 0.5, 0.5));
 const trsWebGPU = Matrix.Compose(new Vector3(0.5, 0.5, 1), Quaternion.Identity(), new Vector3(0.5, 0.5, 0));
@@ -967,7 +964,19 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             this._scene.getEngine(),
             false,
             "",
-            this._textureType
+            this._textureType,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            this._scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            async (useWebGPU) => {
+                if (useWebGPU) {
+                    await import("../../../ShadersWGSL/screenSpaceReflection2.fragment");
+                } else {
+                    await import("../../../Shaders/screenSpaceReflection2.fragment");
+                }
+            }
         );
 
         this._updateEffectDefines();
