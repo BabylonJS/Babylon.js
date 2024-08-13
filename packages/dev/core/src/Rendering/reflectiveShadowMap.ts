@@ -466,7 +466,7 @@ export class RSMCreatePluginMaterial extends MaterialPluginBase {
                     var rsmColor = ${this._varAlbedoName} * uniforms.rsmLightColor;
                     #ifdef RSMCREATE_PROJTEXTURE
                     {
-                        var strq = rsmTextureProjectionMatrix * vec4f(fragmentInputs.vPositionW, 1.0);
+                        var strq = uniforms.rsmTextureProjectionMatrix * vec4f(fragmentInputs.vPositionW, 1.0);
                         strq /= strq.w;
                         rsmColor *= textureSample(rsmTextureProjectionSampler, rsmTextureProjectionSamplerSampler, strq.xy).rgb;
                     }
