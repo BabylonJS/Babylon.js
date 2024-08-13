@@ -16,10 +16,6 @@ export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
     private _postProcess: BlackAndWhitePostProcess;
     private _taskParameters: IFrameGraphPostProcessInputData;
 
-    public get postProcess(): BlackAndWhitePostProcess {
-        return this._postProcess;
-    }
-
     /**
      * Create a new BlackAndWhitePostProcessBlock
      * @param name defines the block name
@@ -43,6 +39,7 @@ export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
             sourceTexture: undefined as any,
             sourceSamplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
         };
+        this._frameGraphTask = this._postProcess;
     }
 
     /** Sampling mode used to sample from the source texture */

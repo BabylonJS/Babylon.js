@@ -16,10 +16,6 @@ export class BloomPostProcessBlock extends NodeRenderGraphBlock {
     private _postProcess: BloomEffect;
     private _taskParameters: IFrameGraphBloomEffectInputData;
 
-    public get postProcess(): BloomEffect {
-        return this._postProcess;
-    }
-
     /**
      * Create a new BloomPostProcessBlock
      * @param name defines the block name
@@ -56,6 +52,7 @@ export class BloomPostProcessBlock extends NodeRenderGraphBlock {
             sourceTexture: undefined as any,
             sourceSamplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
         };
+        this._frameGraphTask = this._postProcess;
     }
 
     /** Sampling mode used to sample from the source texture */

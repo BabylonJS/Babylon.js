@@ -12,7 +12,6 @@ import { FrameGraphCopyToBackbufferColorTask } from "core/FrameGraph/Tasks/copyT
  * Block used to generate the final graph
  */
 export class RenderGraphOutputBlock extends NodeRenderGraphBlock {
-    private _frameTask: FrameGraphCopyToBackbufferColorTask;
     private _taskParameters: IFrameGraphCopyToBackbufferColorInputData;
 
     /**
@@ -29,7 +28,7 @@ export class RenderGraphOutputBlock extends NodeRenderGraphBlock {
 
         this.texture.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
 
-        this._frameTask = new FrameGraphCopyToBackbufferColorTask(name);
+        this._frameGraphTask = new FrameGraphCopyToBackbufferColorTask(name);
         this._taskParameters = {
             sourceTexture: undefined as any,
         };
@@ -38,11 +37,11 @@ export class RenderGraphOutputBlock extends NodeRenderGraphBlock {
     /** Disables the copy of the input texture to the back buffer in case the input texture is not already the back buffer texture */
     @editableInPropertyPage("Disable back buffer copy", PropertyTypeForEdition.Boolean, "PROPERTIES")
     public get disableBackBufferCopy() {
-        return this._frameTask.disabledFromGraph;
+        return this._frameGraphTask.disabledFromGraph;
     }
 
     public set disableBackBufferCopy(value: boolean) {
-        this._frameTask.disabledFromGraph = value;
+        this._frameGraphTask.disabledFromGraph = value;
     }
 
     /**
@@ -62,14 +61,14 @@ export class RenderGraphOutputBlock extends NodeRenderGraphBlock {
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
         super._buildBlock(state);
 
-        this._frameTask.name = this.name;
+        this._frameGraphTask.name = this.name;
 
         const inputTexture = this.texture.connectedPoint?.value;
         if (inputTexture && NodeRenderGraphConnectionPoint.ValueIsTexture(inputTexture)) {
             this._taskParameters.sourceTexture = inputTexture;
         }
 
-        state.frameGraph.addTask(this._frameTask, this._taskParameters);
+        state.frameGraph.addTask(this._frameGraphTask, this._taskParameters);
     }
 
     protected override _dumpPropertiesCode() {

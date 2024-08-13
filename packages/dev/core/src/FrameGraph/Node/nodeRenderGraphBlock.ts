@@ -9,6 +9,7 @@ import type { RenderGraphInputBlock } from "./Blocks/inputBlock";
 import { Logger } from "../../Misc/logger";
 import { NodeRenderGraphConnectionPoint, NodeRenderGraphConnectionPointDirection } from "./nodeRenderGraphBlockConnectionPoint";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
+import type { IFrameGraphTask } from "../Tasks/IFrameGraphTask";
 
 /**
  * Defines a block that can be used inside a frame graph
@@ -22,6 +23,17 @@ export class NodeRenderGraphBlock {
     protected _isDebug = false;
     protected _isUnique = false;
     protected _engine: AbstractEngine;
+    protected _frameGraphTask: IFrameGraphTask;
+
+    public get disabledFromGraph() {
+        return this._frameGraphTask?.disabledFromGraph ?? false;
+    }
+
+    public set disabledFromGraph(value: boolean) {
+        if (this._frameGraphTask) {
+            this._frameGraphTask.disabledFromGraph = value;
+        }
+    }
 
     /**
      * Gets an observable raised when the block is built

@@ -13,7 +13,6 @@ import { FrameGraphClearTextureTask } from "core/FrameGraph/Tasks/clearTextureTa
  * Block used to clear a texture
  */
 export class RenderGraphClearBlock extends NodeRenderGraphBlock {
-    private _frameTask: FrameGraphClearTextureTask;
     private _taskParameters: IFrameGraphClearTextureInputData;
 
     /**
@@ -30,7 +29,7 @@ export class RenderGraphClearBlock extends NodeRenderGraphBlock {
         this.texture.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
         this.output._typeConnectionSource = this.texture;
 
-        this._frameTask = new FrameGraphClearTextureTask(name);
+        this._frameGraphTask = new FrameGraphClearTextureTask(name);
         this._taskParameters = {
             color: new Color4(0.2, 0.2, 0.3, 1),
             clearColor: true,
@@ -104,7 +103,7 @@ export class RenderGraphClearBlock extends NodeRenderGraphBlock {
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
         super._buildBlock(state);
 
-        this._frameTask.name = this.name;
+        this._frameGraphTask.name = this.name;
 
         this._propagateInputValueToOutput(this.texture, this.output);
 
@@ -113,7 +112,7 @@ export class RenderGraphClearBlock extends NodeRenderGraphBlock {
             this._taskParameters.destinationTexture = inputTexture;
         }
 
-        state.frameGraph.addTask(this._frameTask, this._taskParameters);
+        state.frameGraph.addTask(this._frameGraphTask, this._taskParameters);
     }
 
     protected override _dumpPropertiesCode() {
