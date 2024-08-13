@@ -843,16 +843,13 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                 for (let k = 0; k < 2; k++) {
                     const index = i * 4 + j * 2 + k;
                     if (i == 0) {
-                        rotateAnchors[index].position.set(this._boundingDimensions.x / 2, this._boundingDimensions.y * j, this._boundingDimensions.z * k);
-                        rotateAnchors[index].position.addInPlace(new Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
+                        rotateAnchors[index].position.set(0, this._boundingDimensions.y * (j - 0.5), this._boundingDimensions.z * (k - 0.5));
                     }
                     if (i == 1) {
-                        rotateAnchors[index].position.set(this._boundingDimensions.x * j, this._boundingDimensions.y / 2, this._boundingDimensions.z * k);
-                        rotateAnchors[index].position.addInPlace(new Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
+                        rotateAnchors[index].position.set(this._boundingDimensions.x * (j - 0.5), 0, this._boundingDimensions.z * (k - 0.5));
                     }
                     if (i == 2) {
-                        rotateAnchors[index].position.set(this._boundingDimensions.x * j, this._boundingDimensions.y * k, this._boundingDimensions.z / 2);
-                        rotateAnchors[index].position.addInPlace(new Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
+                        rotateAnchors[index].position.set(this._boundingDimensions.x * (j - 0.5), this._boundingDimensions.y * (k - 0.5), 0);
                     }
                     if (i == 0 && (j || k)) {
                         Quaternion.FromEulerAnglesToRef(0, Math.PI * 0.5, 0, rotateAnchors[index].rotationQuaternion!);
