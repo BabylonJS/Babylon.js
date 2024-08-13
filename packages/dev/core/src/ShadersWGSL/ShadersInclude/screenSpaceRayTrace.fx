@@ -81,7 +81,7 @@ fn traceScreenSpaceRay1(
     var csEndPoint: vec3f = csOrigin + csDirection * rayLength;
 
     // Initialize to off screen
-    hitPixel =  vec2f(-1.0, -1.0);
+    *hitPixel =  vec2f(-1.0, -1.0);
 
     // Project into screen space
     var H0: vec4f = projectToPixelMatrix *  vec4f(csOrigin, 1.0);
@@ -106,7 +106,10 @@ fn traceScreenSpaceRay1(
     var P1: vec2f = H1.xy * k1;
 
 #ifdef SSRAYTRACE_CLIP_TO_FRUSTUM
-    var xMax: f32 = csZBufferSize.x - 0.5, xMin = 0.5, yMax = csZBufferSize.y - 0.5, yMin = 0.5;
+    var xMax: f32 = csZBufferSize.x - 0.5;
+    var xMin = 0.5;
+    var yMax = csZBufferSize.y - 0.5;
+    var yMin = 0.5;
     var alpha: f32 = 0.0;
 
     // Assume P0 is in the viewport (P1 - P0 is never zero when clipping)
@@ -165,14 +168,15 @@ fn traceScreenSpaceRay1(
     var pqk: vec4f =  vec4f(P0, Q0.z, k0);
     var dPQK: vec4f =  vec4f(dP, dQ.z, dk);
 
-    startPixel = select(P0.xy, P0.yx, permute);
+    *startPixel = select(P0.xy, P0.yx, permute);
 
 	// We track the ray depth at +/- 1/2 pixel to treat pixels as clip-space solid 
 	// voxels. Because the depth at -1/2 for a given pixel will be the same as at 
 	// +1/2 for the previous iteration, we actually only have to compute one value 
 	// per iteration.
     var prevZMaxEstimate: f32 = csOrigin.z;
-    var rayZMin: f32 = prevZMaxEstimate, rayZMax = prevZMaxEstimate;
+    var rayZMin: f32 = prevZMaxEstimate;
+    var rayZMax = prevZMaxEstimate;
     var sceneZMax: f32 = rayZMax + 1e4;
 
     // P1.x is never modified after this point, so pre-scale it by 
@@ -182,14 +186,15 @@ fn traceScreenSpaceRay1(
     var hit: bool = false;
     var stepCount: f32;
     for (stepCount = 0.0;
-         stepCount <= selfCollisionNumSkip ||
-         (pqk.x * stepDirection) <= end &&
+         (stepCount <= selfCollisionNumSkip) ||
+         ((pqk.x * stepDirection) <= end &&
          stepCount < maxSteps &&
          !hit &&
-         sceneZMax != 0.0; 
-        pqk += dPQK, stepCount++)
+         sceneZMax != 0.0);
+         pqk += dPQK 
+        )
     {
-        hitPixel = select(pqk.xy, pqk.yx, permute);
+        *hitPixel = select(pqk.xy, pqk.yx, permute);
 
         // The depth range that the ray covers within this loop
         // iteration.  Assume that the ray is moving in increasing z
@@ -207,23 +212,24 @@ fn traceScreenSpaceRay1(
         }
 
         // Camera-space z of the scene
-        sceneZMax = textureLoad(csZBuffer, vec2<i32>(hitPixel), 0).r;
+        sceneZMax = textureLoad(csZBuffer, vec2<i32>(*hitPixel), 0).r;
 
     #ifdef SSRAYTRACE_RIGHT_HANDED_SCENE
         #ifdef SSRAYTRACE_USE_BACK_DEPTHBUFFER
-            var sceneBackZ: f32 = textureLoad(csZBackBuffer, vec2<i32>(hitPixel / csZBackSizeFactor), 0).r;
+            var sceneBackZ: f32 = textureLoad(csZBackBuffer, vec2<i32>(*hitPixel / csZBackSizeFactor), 0).r;
             hit = (rayZMax >= sceneBackZ - csZThickness) && (rayZMin <= sceneZMax);
         #else
             hit = (rayZMax >= sceneZMax - csZThickness) && (rayZMin <= sceneZMax);
         #endif
     #else
         #ifdef SSRAYTRACE_USE_BACK_DEPTHBUFFER
-            var sceneBackZ: f32 = textureLoad(csZBackBuffer, vec2<i32>(hitPixel / csZBackSizeFactor), 0).r;
+            var sceneBackZ: f32 = textureLoad(csZBackBuffer, vec2<i32>(*hitPixel / csZBackSizeFactor), 0).r;
             hit = (rayZMin <= sceneBackZ + csZThickness) && (rayZMax >= sceneZMax) && (sceneZMax != 0.0);
         #else
             hit = (rayZMin <= sceneZMax + csZThickness) && (rayZMax >= sceneZMax);
         #endif
     #endif
+        stepCount += 1.0;
     }
 
     // Undo the last increment, which ran after the test variables
@@ -277,8 +283,8 @@ fn traceScreenSpaceRay1(
             prevZMaxEstimate = rayZMax;
             rayZMax = max(rayZMax, rayZMin);
 
-            hitPixel = select(pqk.xy, pqk.yx, permute);
-            sceneZMax = textureLoad(csZBuffer, vec2<i32>(hitPixel), 0).r;
+            *hitPixel = select(pqk.xy, pqk.yx, permute);
+            sceneZMax = textureLoad(csZBuffer, vec2<i32>(*hitPixel), 0).r;
         }
 
         // Undo the last increment, which happened after the test variables were set up
@@ -291,26 +297,25 @@ fn traceScreenSpaceRay1(
     }
 #endif
 
-    Q0.xy += dQ.xy * stepCount;
-    Q0.z = pqk.z;
+    Q0 = vec3f(Q0.xy + dQ.xy * stepCount, pqk.z);
 
-    csHitPoint = Q0 / pqk.w;
+    *csHitPoint = Q0 / pqk.w;
 
-    numIterations = stepCount + 1.0;
+    *numIterations = stepCount + 1.0;
 
 #ifdef SSRAYTRACE_DEBUG
     if (((pqk.x + dPQK.x) * stepDirection) > end) {
         // Hit the max ray distance -> blue
-        debugColor =  vec3f(0,0,1);
+        *debugColor =  vec3f(0,0,1);
     } else if ((stepCount + 1.0) >= maxSteps) {
         // Ran out of steps -> red
-        debugColor =  vec3f(1,0,0);
+        *debugColor =  vec3f(1,0,0);
     } else if (sceneZMax == 0.0) {
         // Went off screen -> yellow
-        debugColor =  vec3f(1,1,0);
+        *debugColor =  vec3f(1,1,0);
     } else {
         // Encountered a valid hit -> green
-        debugColor =  vec3f(0, stepCount / maxSteps, 0);
+        *debugColor =  vec3f(0, stepCount / maxSteps, 0);
     }
 #endif
 
@@ -322,26 +327,26 @@ fn traceScreenSpaceRay1(
     depth: depth in view space (range [znear, zfar]])
 */
 fn computeViewPosFromUVDepth(texCoord: vec2f, depth: f32, projection: mat4x4f, invProjectionMatrix: mat4x4f) -> vec3f {
-    var ndc: vec4f;
-    
-    ndc.xy = texCoord * 2.0 - 1.0;
+    var xy = texCoord * 2.0 - 1.0;
+    var z: f32;
 #ifdef SSRAYTRACE_RIGHT_HANDED_SCENE
     #ifdef ORTHOGRAPHIC_CAMERA
-        ndc.z = -projection[2].z * depth + projection[3].z;
+        z = -projection[2].z * depth + projection[3].z;
     #else
-        ndc.z = -projection[2].z - projection[3].z / depth;
+        z = -projection[2].z - projection[3].z / depth;
     #endif
 #else
     #ifdef ORTHOGRAPHIC_CAMERA
-        ndc.z = projection[2].z * depth + projection[3].z;
+        z = projection[2].z * depth + projection[3].z;
     #else
-        ndc.z = projection[2].z + projection[3].z / depth;
+        z = projection[2].z + projection[3].z / depth;
     #endif
 #endif
-    ndc.w = 1.0;
+    var w = 1.0;
 
+    var ndc = vec4f(xy, z, w);
     var eyePos: vec4f = invProjectionMatrix * ndc;
-    eyePos.xyz /= eyePos.w;
+    var result = eyePos.xyz / eyePos.w;
 
-    return eyePos.xyz;
+    return result;
 }

@@ -51,9 +51,9 @@ uniform reflectivityThreshold: f32;
 
 fn hash(a: vec3f) -> vec3f
 {
-    a = fract(a * 0.8);
-    a += dot(a, a.yxz + 19.19);
-    return fract((a.xxy + a.yxx) * a.zyx);
+    var result = fract(a * 0.8);
+    result += dot(result, result.yxz + 19.19);
+    return fract((result.xxy + result.yxx) * result.zyx);
 }
 
 fn computeAttenuationForIntersection(ihitPixel: vec2f, hitUV: vec2f, vsRayOrigin: vec3f, vsHitPoint: vec3f, reflectionVector: vec3f, maxRayDistance: f32, numIterations: f32) -> f32 {
@@ -61,7 +61,7 @@ fn computeAttenuationForIntersection(ihitPixel: vec2f, hitUV: vec2f, vsRayOrigin
     
 #ifdef SSR_ATTENUATE_SCREEN_BORDERS
     // Attenuation against the border of the screen
-    var dCoords: vec2f = smoothstep(0.2, 0.6, abs( vec2f(0.5, 0.5) - hitUV.xy));
+    var dCoords: vec2f = smoothstep(vec2f(0.2), vec2f(0.6), abs( vec2f(0.5, 0.5) - hitUV.xy));
     
     attenuation *= clamp(1.0 - (dCoords.x + dCoords.y), 0.0, 1.0);
 #endif
@@ -72,7 +72,7 @@ fn computeAttenuationForIntersection(ihitPixel: vec2f, hitUV: vec2f, vsRayOrigin
 
 #ifdef SSR_ATTENUATE_INTERSECTION_NUMITERATIONS
     // Attenuation based on the number of iterations performed to find the intersection
-    attenuation *= 1.0 - (numIterations / maxSteps);
+    attenuation *= 1.0 - (numIterations / uniforms.maxSteps);
 #endif
 
 #ifdef SSR_ATTENUATE_BACKFACE_REFLECTION
@@ -98,34 +98,34 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     // Get color and reflectivity
     var colorFull: vec4f = textureSampleLevel(textureSampler, textureSamplerSampler, input.vUV, 0.0);
     var color: vec3f = colorFull.rgb;
-    var reflectivity: vec4f = TEXTUREFUNC(reflectivitySampler, input.vUV, 0.0);
+    var reflectivity: vec4f = textureSampleLevel(reflectivitySampler, reflectivitySamplerSampler, input.vUV, 0.0);
 #ifndef SSR_DISABLE_REFLECTIVITY_TEST
-    if (max(reflectivity.r, max(reflectivity.g, reflectivity.b)) <= reflectivityThreshold) {
+    if (max(reflectivity.r, max(reflectivity.g, reflectivity.b)) <= uniforms.reflectivityThreshold) {
         #ifdef SSR_USE_BLUR
             fragmentOutputs.color =  vec4f(0.);
         #else
             fragmentOutputs.color = colorFull;
         #endif
-        return;
+        return fragmentOutputs;
     }
 #endif
 
 #ifdef SSR_INPUT_IS_GAMMA_SPACE
-    color = toLinearSpace(color);
+    color = toLinearSpaceVec3(color);
 #endif
 
-    var texSize: vec2f =  vec2f(textureSize(depthSampler, 0));
+    var texSize: vec2f =  vec2f(textureDimensions(depthSampler, 0));
 
     // Compute the reflected vector
-    var csNormal: vec3f = textureLoad(normalSampler, i vec2<i32>(input.vUV * texSize), 0).xyz; // already normalized in the texture
+    var csNormal: vec3f = textureLoad(normalSampler, vec2<i32>(input.vUV * texSize), 0).xyz; // already normalized in the texture
     #ifdef SSR_DECODE_NORMAL
         csNormal = csNormal * 2.0 - 1.0;
     #endif
     #ifdef SSR_NORMAL_IS_IN_WORLDSPACE
-        csNormal = (view *  vec4f(csNormal, 0.0)).xyz;
+        csNormal = (uniforms.view *  vec4f(csNormal, 0.0)).xyz;
     #endif
     var depth: f32 = textureLoad(depthSampler, vec2<i32>(input.vUV * texSize), 0).r;
-    var csPosition: vec3f = computeViewPosFromUVDepth(input.vUV, depth, projection, invProjectionMatrix);
+    var csPosition: vec3f = computeViewPosFromUVDepth(input.vUV, depth, uniforms.projection, uniforms.invProjectionMatrix);
     #ifdef ORTHOGRAPHIC_CAMERA
         var csViewDirection: vec3f =  vec3f(0., 0., 1.);
     #else
@@ -136,10 +136,10 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
     // Get the environment color if an enviroment cube is defined
 #ifdef SSR_USE_ENVIRONMENT_CUBE
-    var wReflectedVector: vec3f =  vec3f(invView *  vec4f(csReflectedVector, 0.0));
+    var wReflectedVector: vec3f = (uniforms.invView *  vec4f(csReflectedVector, 0.0)).xyz;
     #ifdef SSR_USE_LOCAL_REFLECTIONMAP_CUBIC
-        var worldPos: vec4f = invView *  vec4f(csPosition, 1.0);
-	    wReflectedVector = parallaxCorrectNormal(worldPos.xyz, normalize(wReflectedVector), vReflectionSize, vReflectionPosition);
+        var worldPos: vec4f = uniforms.invView *  vec4f(csPosition, 1.0);
+	    wReflectedVector = parallaxCorrectNormal(worldPos.xyz, normalize(wReflectedVector), uniforms.vReflectionSize, uniforms.vReflectionPosition);
     #endif
     #ifdef SSR_INVERTCUBICMAP
         wReflectedVector.y *= -1.0;
@@ -179,57 +179,57 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             var jitt: vec3f =  vec3f(0.);
         #else
             var roughness: f32 = 1.0 - reflectivity.a;
-            var jitt: vec3f = mix( vec3f(0.0), hash(csPosition) -  vec3f(0.5), roughness) * roughnessFactor; // jittering of the reflection direction to simulate roughness
+            var jitt: vec3f = mix( vec3f(0.0), hash(csPosition) -  vec3f(0.5), roughness) * uniforms.roughnessFactor; // jittering of the reflection direction to simulate roughness
         #endif
 
-        var uv2: vec2f = vUV * texSize;
+        var uv2: vec2f = input.vUV * texSize;
         var c: f32 = (uv2.x + uv2.y) * 0.25;
         var jitter: f32 = ((c)%(1.0)); // jittering to hide artefacts when stepSize is > 1
 
         rayHasHit = traceScreenSpaceRay1(
             csPosition,
             normalize(csReflectedVector + jitt),
-            projectionPixel,
+            uniforms.projectionPixel,
             depthSampler,
             texSize,
         #ifdef SSRAYTRACE_USE_BACK_DEPTHBUFFER
             backDepthSampler,
-            backSizeFactor,
+            uniforms.backSizeFactor,
         #endif
-            thickness,
-            nearPlaneZ,
-            stepSize,
+            uniforms.thickness,
+            uniforms.nearPlaneZ,
+            uniforms.stepSize,
             jitter,
-            maxSteps,
-            maxDistance,
-            selfCollisionNumSkip,
-            startPixel,
-            hitPixel,
-            hitPoint,
-            numIterations
+            uniforms.maxSteps,
+            uniforms.maxDistance,
+            uniforms.selfCollisionNumSkip,
+            &startPixel,
+            &hitPixel,
+            &hitPoint,
+            &numIterations
 #ifdef SSRAYTRACE_DEBUG
-            ,debugColor
+            ,&debugColor
 #endif
             );
     }
 
 #ifdef SSRAYTRACE_DEBUG
     fragmentOutputs.color =  vec4f(debugColor, 1.);
-    return;
+    return fragmentOutputs;
 #endif
 
     // Fresnel
     var F0: vec3f = reflectivity.rgb;
-    var fresnel: vec3f = fresnelSchlickGGX(max(dot(csNormal, -csViewDirection), 0.0), F0,  vec3f(1.));
+    var fresnel: vec3f = fresnelSchlickGGXVec3(max(dot(csNormal, -csViewDirection), 0.0), F0,  vec3f(1.));
 
     // SSR color
     var SSR: vec3f = envColor;
     if (rayHasHit) {
-        var reflectedColor: vec3f = texelFetch(textureSampler, i vec2f(hitPixel), 0).rgb;
+        var reflectedColor: vec3f = textureLoad(textureSampler, vec2<i32>(hitPixel), 0).rgb;
         #ifdef SSR_INPUT_IS_GAMMA_SPACE
             reflectedColor = toLinearSpaceVec3(reflectedColor);
         #endif
-        reflectionAttenuation *= computeAttenuationForIntersection(i vec2f(hitPixel), hitPixel / texSize, csPosition, hitPoint, csReflectedVector, maxDistance, numIterations);
+        reflectionAttenuation *= computeAttenuationForIntersection(hitPixel, hitPixel / texSize, csPosition, hitPoint, csReflectedVector, uniforms.maxDistance, numIterations);
         SSR = reflectedColor * reflectionAttenuation + (1.0 - reflectionAttenuation) * envColor;
     }
 
@@ -240,7 +240,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #ifdef SSR_USE_BLUR
         // from https://github.com/godotengine/godot/blob/master/servers/rendering/renderer_rd/shaders/effects/screen_space_reflection.glsl
         var blur_radius: f32 = 0.0;
-        var roughness: f32 = 1.0 - reflectivity.a * (1.0 - roughnessFactor);
+        var roughness: f32 = 1.0 - reflectivity.a * (1.0 - uniforms.roughnessFactor);
         if (roughness > 0.001) {
             var cone_angle: f32 = min(roughness, 0.999) * 3.14159265 * 0.5;
             var cone_len: f32 = distance(startPixel, hitPixel);
@@ -264,9 +264,9 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #else
         // Mix current color with SSR color
         #ifdef SSR_BLEND_WITH_FRESNEL
-            var reflectionMultiplier: vec3f = clamp(pow(fresnel * strength,  vec3f(reflectionSpecularFalloffExponent)), 0.0, 1.0);
+            var reflectionMultiplier: vec3f = clamp(pow(fresnel * uniforms.strength,  vec3f(uniforms.reflectionSpecularFalloffExponent)), 0.0, 1.0);
         #else
-            var reflectionMultiplier: vec3f = clamp(pow(reflectivity.rgb * strength,  vec3f(reflectionSpecularFalloffExponent)), 0.0, 1.0);
+            var reflectionMultiplier: vec3f = clamp(pow(reflectivity.rgb * uniforms.strength,  vec3f(uniforms.reflectionSpecularFalloffExponent)), 0.0, 1.0);
         #endif
         var colorMultiplier: vec3f = 1.0 - reflectionMultiplier;
 

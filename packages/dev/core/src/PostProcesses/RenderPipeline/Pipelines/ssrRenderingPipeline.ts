@@ -1078,7 +1078,19 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             engine,
             false,
             "",
-            this._textureType
+            this._textureType,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            this._scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            async (useWebGPU) => {
+                if (useWebGPU) {
+                    await import("../../../ShadersWGSL/screenSpaceReflection2Blur.fragment");
+                } else {
+                    await import("../../../Shaders/screenSpaceReflection2Blur.fragment");
+                }
+            }
         );
         this._blurPostProcessX.autoClear = false;
 
@@ -1099,7 +1111,19 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             engine,
             false,
             "",
-            this._textureType
+            this._textureType,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            this._scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            async (useWebGPU) => {
+                if (useWebGPU) {
+                    await import("../../../ShadersWGSL/screenSpaceReflection2Blur.fragment");
+                } else {
+                    await import("../../../Shaders/screenSpaceReflection2Blur.fragment");
+                }
+            }
         );
         this._blurPostProcessY.autoClear = false;
 
@@ -1144,7 +1168,19 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             engine,
             false,
             defines,
-            this._textureType
+            this._textureType,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            this._scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            async (useWebGPU) => {
+                if (useWebGPU) {
+                    await import("../../../ShadersWGSL/screenSpaceReflection2BlurCombiner.fragment");
+                } else {
+                    await import("../../../Shaders/screenSpaceReflection2BlurCombiner.fragment");
+                }
+            }
         );
         this._blurCombinerPostProcess.autoClear = false;
 

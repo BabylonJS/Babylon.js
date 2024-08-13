@@ -20,46 +20,46 @@ varying vUV: vec2f;
     uniform projection: mat4x4f;
     uniform invProjectionMatrix: mat4x4f;
 
-    var normalSamplerSampler: sampler;
-var normalSampler: texture_2d<f32>;
-    var depthSamplerSampler: sampler;
-var depthSampler: texture_2d<f32>;
+    var normalSampler: texture_2d<f32>;
+    var depthSampler: texture_2d<f32>;
 #endif
 
-fn main()
-{
+
+@fragment
+fn main(input: FragmentInputs) -> FragmentOutputs {
+
 #ifdef SSRAYTRACE_DEBUG
-    fragmentOutputs.color = texture2D(textureSampler, vUV);
+    fragmentOutputs.color = textureSample(textureSampler, textureSamplerSampler, input.vUV);
 #else
-    var SSR: vec3f = texture2D(textureSampler, vUV).rgb;
-    var color: vec4f = texture2D(mainSampler, vUV);
-    var reflectivity: vec4f = texture2D(reflectivitySampler, vUV);
+    var SSR: vec3f = textureSample(textureSampler, textureSamplerSampler,input.vUV).rgb;
+    var color: vec4f = textureSample(mainSampler, textureSamplerSampler,input.vUV);
+    var reflectivity: vec4f = textureSample(reflectivitySampler, reflectivitySamplerSampler, input.vUV);
 
 #ifndef SSR_DISABLE_REFLECTIVITY_TEST
-    if (max(reflectivity.r, max(reflectivity.g, reflectivity.b)) <= reflectivityThreshold) {
+    if (max(reflectivity.r, max(reflectivity.g, reflectivity.b)) <= uniforms.reflectivityThreshold) {
         fragmentOutputs.color = color;
-        return;
+        return fragmentOutputs;
     }
 #endif
 
 #ifdef SSR_INPUT_IS_GAMMA_SPACE
-    color = toLinearSpace(color);
+    color = toLinearSpaceVec4(color);
 #endif
 
 #ifdef SSR_BLEND_WITH_FRESNEL
-    var texSize: vec2f =  vec2f(textureSize(depthSampler, 0));
+    var texSize: vec2f =  vec2f(textureDimensions(depthSampler, 0));
 
-    var csNormal: vec3f = texelFetch(normalSampler, i vec2f(vUV * texSize), 0).xyz;
-    var depth: f32 = texelFetch(depthSampler, i vec2f(vUV * texSize), 0).r;
-    var csPosition: vec3f = computeViewPosFromUVDepth(vUV, depth, projection, invProjectionMatrix);
+    var csNormal: vec3f = textureLoad(normalSampler, vec2<i32>(input.vUV * texSize), 0).xyz;
+    var depth: f32 = textureLoad(depthSampler, vec2<i32>(input.vUV * texSize), 0).r;
+    var csPosition: vec3f = computeViewPosFromUVDepth(input.vUV, depth, projection, invProjectionMatrix);
     var csViewDirection: vec3f = normalize(csPosition);
 
     var F0: vec3f = reflectivity.rgb;
-    var fresnel: vec3f = fresnelSchlickGGX(max(dot(csNormal, -csViewDirection), 0.0), F0,  vec3f(1.));
+    var fresnel: vec3f = fresnelSchlickGGXVec3(max(dot(csNormal, -csViewDirection), 0.0), F0,  vec3f(1.));
 
-    var reflectionMultiplier: vec3f = clamp(pow(fresnel * strength,  vec3f(reflectionSpecularFalloffExponent)), 0.0, 1.0);
+    var reflectionMultiplier: vec3f = clamp(pow(fresnel * uniforms.strength,  vec3f(uniforms.reflectionSpecularFalloffExponent)), vec3f(0.0), vec3f(1.0));
 #else
-    var reflectionMultiplier: vec3f = clamp(pow(reflectivity.rgb * strength,  vec3f(reflectionSpecularFalloffExponent)), 0.0, 1.0);
+    var reflectionMultiplier: vec3f = clamp(pow(reflectivity.rgb * uniforms.strength,  vec3f(uniforms.reflectionSpecularFalloffExponent)), vec3f(0.0), vec3f(1.0));
 #endif
 
     var colorMultiplier: vec3f = 1.0 - reflectionMultiplier;
