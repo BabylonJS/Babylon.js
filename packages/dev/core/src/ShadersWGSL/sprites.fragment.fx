@@ -17,12 +17,12 @@ var diffuseSampler: texture_2d<f32>;
 #ifdef PIXEL_PERFECT
 // see iq comment here: https://www.shadertoy.com/view/MllBWf
 fn uvPixelPerfect(uv: vec2f) -> vec2f {
-    var res: vec2f =  vec2f(textureSize(diffuseSampler, 0));
+    var res: vec2f =  vec2f(textureDimensions(diffuseSampler, 0));
     
-    uv = uv * res;
-    var seam: vec2f = floor(uv + 0.5);
-    uv = seam + clamp((uv-seam) / fwidth(uv), -0.5, 0.5);
-    return uv / res;
+    var uvTemp = uv * res;
+    var seam: vec2f = floor(uvTemp + 0.5);
+    uvTemp = seam + clamp((uvTemp-seam) / fwidth(uvTemp), vec2f(-0.5), vec2f(0.5));
+    return uvTemp / res;
 }
 #endif
 
