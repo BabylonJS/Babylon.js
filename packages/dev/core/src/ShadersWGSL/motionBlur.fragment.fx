@@ -54,7 +54,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                 #endif
             }
 
-            fragmentOutputs.color = vec4f(result /  f32(samplesCount), 1.0);
+            fragmentOutputs.color = vec4f(result.rgb /  f32(samplesCount), 1.0);
         #else
             var texelSize: vec2f = 1.0 / uniforms.screenSize;
             var depth: f32 = textureSample(depthSampler, depthSamplerSampler, input.vUV).r;
