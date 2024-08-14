@@ -58,6 +58,9 @@ export class FrameGraphTaskInternals {
             this.outputTextureWhenEnabled = this.outputTextureWhenEnabled ?? this.outputTextureWhenDisabled;
             this.outputTextureWhenDisabled = this.outputTextureWhenDisabled ?? this.outputTextureWhenEnabled;
             this.outputTexture = this._textureManager._createProxyHandle(`${this._task.name} Proxy`);
+            // We need to call the function at build time to ensure that the output texture is correctly defined
+            // in case another task needs to access the current task's output texture description during its own build
+            this.setTextureOutputForTask();
         }
     }
 
@@ -69,9 +72,11 @@ export class FrameGraphTaskInternals {
         if (this._task.disabledFromGraph) {
             this._textureManager._textures[this.outputTexture]!.texture = this._textureManager._textures[this.outputTextureWhenDisabled!]!.texture;
             this._textureManager._textures[this.outputTexture]!.systemType = this._textureManager._textures[this.outputTextureWhenDisabled!]!.systemType;
+            this._textureManager._textureCreationOptions[this.outputTexture] = this._textureManager._textureCreationOptions[this.outputTextureWhenDisabled!];
         } else {
             this._textureManager._textures[this.outputTexture]!.texture = this._textureManager._textures[this.outputTextureWhenEnabled!]!.texture;
             this._textureManager._textures[this.outputTexture]!.systemType = this._textureManager._textures[this.outputTextureWhenEnabled!]!.systemType;
+            this._textureManager._textureCreationOptions[this.outputTexture] = this._textureManager._textureCreationOptions[this.outputTextureWhenEnabled!];
         }
     }
 }

@@ -228,13 +228,13 @@ export class FrameGraph {
                 }
                 if (ready) {
                     resolve();
+                } else {
+                    setTimeout(checkReady, timeout);
                 }
                 return ready;
             };
 
-            if (!checkReady()) {
-                setTimeout(checkReady, timeout);
-            }
+            checkReady();
         });
     }
 
