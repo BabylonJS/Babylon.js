@@ -21,8 +21,6 @@ import type { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { Constants } from "../Engines/constants";
 
-import "../Shaders/glowMapGeneration.fragment";
-import "../Shaders/glowMapGeneration.vertex";
 import { _WarnImport } from "../Misc/devTools";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import { EffectFallbacks } from "../Materials/effectFallbacks";
