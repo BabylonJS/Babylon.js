@@ -252,8 +252,10 @@ const ProcessAsync = async (texture: BaseTexture, width: number, height: number,
     }
 
     await new Promise((resolve) => {
-        lodPostProcess.getEffect().executeWhenCompiled(() => {
-            resolve(0);
+        lodPostProcess.onEffectCreatedObservable.addOnce((e) => {
+            e.executeWhenCompiled(() => {
+                resolve(0);
+            });
         });
     });
 
