@@ -1,6 +1,6 @@
 import type { Nullable, IndicesArray } from "../../types";
 import { Logger } from "../../Misc/logger";
-import { ArrayTools } from "../../Misc/arrayTools";
+import { BuildArray } from "../../Misc/arrayTools";
 import type { Matrix } from "../../Maths/math.vector";
 import { Vector3, Quaternion } from "../../Maths/math.vector";
 import type { TransformNode } from "../../Meshes/transformNode";
@@ -242,7 +242,7 @@ export class PhysicsImpostor {
 
     private _isDisposed = false;
 
-    private static _TmpVecs: Vector3[] = ArrayTools.BuildArray(3, Vector3.Zero);
+    private static _TmpVecs: Vector3[] = BuildArray(3, Vector3.Zero);
     private static _TmpQuat: Quaternion = Quaternion.Identity();
 
     /**

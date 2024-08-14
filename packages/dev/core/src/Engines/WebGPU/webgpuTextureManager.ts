@@ -31,135 +31,130 @@ import { InternalTextureSource } from "../../Materials/Textures/internalTexture"
 import type { HardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
-import type { WebGPUTintWASM } from "./webgpuTintWASM";
 import type { ExternalTexture } from "../../Materials/Textures/externalTexture";
 import type { WebGPUEngine } from "../webgpuEngine";
 import { WebGPUTextureHelper } from "./webgpuTextureHelper";
+import type { ProcessingOptions } from "../Processors/shaderProcessingOptions";
+import { ShaderLanguage } from "core/Materials";
+import { Finalize, Initialize, Process } from "../Processors/shaderProcessor";
+import type { WebGPUShaderProcessorWGSL } from "./webgpuShaderProcessorsWGSL";
 
 // TODO WEBGPU improve mipmap generation by using compute shaders
 
-// TODO WEBGPU use WGSL instead of GLSL
 const mipmapVertexSource = `
-    const vec2 pos[4] = vec2[4](vec2(-1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(-1.0f, -1.0f), vec2(1.0f, -1.0f));
-    const vec2 tex[4] = vec2[4](vec2(0.0f, 0.0f), vec2(1.0f, 0.0f), vec2(0.0f, 1.0f), vec2(1.0f, 1.0f));
+    const pos = array<vec2<f32>, 4>( vec2f(-1.0f, 1.0f),  vec2f(1.0f, 1.0f),  vec2f(-1.0f, -1.0f),  vec2f(1.0f, -1.0f));
+    const tex = array<vec2<f32>, 4>( vec2f(0.0f, 0.0f),  vec2f(1.0f, 0.0f),  vec2f(0.0f, 1.0f),  vec2f(1.0f, 1.0f));
 
-    layout(location = 0) out vec2 vTex;
+    varying vTex: vec2f;
 
-    void main() {
-        vTex = tex[gl_VertexIndex];
-        gl_Position = vec4(pos[gl_VertexIndex], 0.0, 1.0);
+    @vertex
+    fn main(input : VertexInputs) -> FragmentInputs {
+        vertexOutputs.vTex = tex[input.vertexIndex];
+        vertexOutputs.position = vec4f(pos[input.vertexIndex], 0.0, 1.0);
     }
     `;
 
 const mipmapFragmentSource = `
-    layout(set = 0, binding = 0) uniform sampler imgSampler;
-    layout(set = 0, binding = 1) uniform texture2D img;
+    var imgSampler: sampler;
+    var img: texture_2d<f32>;
 
-    layout(location = 0) in vec2 vTex;
-    layout(location = 0) out vec4 outColor;
+    varying vTex: vec2f;
 
-    void main() {
-        outColor = texture(sampler2D(img, imgSampler), vTex);
+    @fragment
+    fn main(input: FragmentInputs) -> FragmentOutputs {
+        fragmentOutputs.color = textureSample(img, imgSampler, input.vTex);
     }
     `;
 
 const invertYPreMultiplyAlphaVertexSource = `
-    #extension GL_EXT_samplerless_texture_functions : enable
+    const pos = array<vec2<f32>, 4>( vec2f(-1.0f, 1.0f),  vec2f(1.0f, 1.0f),  vec2f(-1.0f, -1.0f),  vec2f(1.0f, -1.0f));
+    const tex = array<vec2<f32>, 4>( vec2f(0.0f, 0.0f),  vec2f(1.0f, 0.0f),  vec2f(0.0f, 1.0f),  vec2f(1.0f, 1.0f));
 
-    const vec2 pos[4] = vec2[4](vec2(-1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(-1.0f, -1.0f), vec2(1.0f, -1.0f));
-    const vec2 tex[4] = vec2[4](vec2(0.0f, 0.0f), vec2(1.0f, 0.0f), vec2(0.0f, 1.0f), vec2(1.0f, 1.0f));
-
-    layout(set = 0, binding = 0) uniform texture2D img;
+    var img: texture_2d<f32>;
 
     #ifdef INVERTY
-        layout(location = 0) out flat ivec2 vTextureSize;
+        varying vTextureSize: vec2f;
     #endif
 
-    void main() {
+    @vertex
+    fn main(input : VertexInputs) -> FragmentInputs {
         #ifdef INVERTY
-            vTextureSize = textureSize(img, 0);
+            vertexOutputs.vTextureSize = vec2f(textureDimensions(img, 0));
         #endif
-        gl_Position = vec4(pos[gl_VertexIndex], 0.0, 1.0);
+        vertexOutputs.position =  vec4f(pos[input.vertexIndex], 0.0, 1.0);
     }
     `;
 
 const invertYPreMultiplyAlphaFragmentSource = `
-    #extension GL_EXT_samplerless_texture_functions : enable
-
-    layout(set = 0, binding = 0) uniform texture2D img;
+    var img: texture_2d<f32>;
 
     #ifdef INVERTY
-        layout(location = 0) in flat ivec2 vTextureSize;
+        varying vTextureSize: vec2f;
     #endif
-    layout(location = 0) out vec4 outColor;
 
-    void main() {
+    @fragment
+    fn main(input: FragmentInputs) -> FragmentOutputs {
     #ifdef INVERTY
-        vec4 color = texelFetch(img, ivec2(gl_FragCoord.x, vTextureSize.y - gl_FragCoord.y), 0);
+        var color: vec4f = textureLoad(img, vec2i(i32(input.position.x), i32(input.vTextureSize.y - input.position.y)), 0);
     #else
-        vec4 color = texelFetch(img, ivec2(gl_FragCoord.xy), 0);
+        var color: vec4f = textureLoad(img, vec2i(input.position.xy), 0);
     #endif
     #ifdef PREMULTIPLYALPHA
-        color.rgb *= color.a;
+        fragmentOutputs.color = vec4f(color.rgb * color.a, color.a);
     #endif
-        outColor = color;
+        fragmentOutputs.color = color;
     }
     `;
 
 const invertYPreMultiplyAlphaWithOfstVertexSource = invertYPreMultiplyAlphaVertexSource;
 
 const invertYPreMultiplyAlphaWithOfstFragmentSource = `
-    #extension GL_EXT_samplerless_texture_functions : enable
-
-    layout(set = 0, binding = 0) uniform texture2D img;
-    layout(set = 0, binding = 1) uniform Params {
-        float ofstX;
-        float ofstY;
-        float width;
-        float height;
-    };
+    var img: texture_2d<f32>;
+    uniform ofstX: f32;
+    uniform ofstY: f32;
+    uniform width: f32;
+    uniform height: f32;
 
     #ifdef INVERTY
-        layout(location = 0) in flat ivec2 vTextureSize;
+        varying vTextureSize: vec2f;
     #endif
-    layout(location = 0) out vec4 outColor;
 
-    void main() {
-        if (gl_FragCoord.x < ofstX || gl_FragCoord.x >= ofstX + width) {
+    @fragment
+    fn main(input: FragmentInputs) -> FragmentOutputs {
+        if (input.position.x < uniforms.ofstX || input.position.x >= uniforms.ofstX + uniforms.width) {
             discard;
         }
-        if (gl_FragCoord.y < ofstY || gl_FragCoord.y >= ofstY + height) {
+        if (input.position.y < uniforms.ofstY || input.position.y >= uniforms.ofstY + uniforms.height) {
             discard;
         }
     #ifdef INVERTY
-        vec4 color = texelFetch(img, ivec2(gl_FragCoord.x, ofstY + height - (gl_FragCoord.y - ofstY)), 0);
+        var color: vec4f = textureLoad(img, vec2i(i32(input.position.x), i32(uniforms.ofstY + uniforms.height - (input.position.y - uniforms.ofstY))), 0);
     #else
-        vec4 color = texelFetch(img, ivec2(gl_FragCoord.xy), 0);
+        var color: vec4f = textureLoad(img, vec2i(input.position.xy), 0);
     #endif
     #ifdef PREMULTIPLYALPHA
-        color.rgb *= color.a;
+        color = vec4f(color.rgb * color.a, color.a);
     #endif
-        outColor = color;
+        fragmentOutputs.color = color;
     }
     `;
 
 const clearVertexSource = `
-    const vec2 pos[4] = vec2[4](vec2(-1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(-1.0f, -1.0f), vec2(1.0f, -1.0f));
+    const pos = array<vec2<f32>, 4>( vec2f(-1.0f, 1.0f),  vec2f(1.0f, 1.0f),  vec2f(-1.0f, -1.0f),  vec2f(1.0f, -1.0f));
 
-    void main() {
-        gl_Position = vec4(pos[gl_VertexIndex], 0.0, 1.0);
+    @vertex
+    fn main(input : VertexInputs) -> FragmentInputs {
+        vertexOutputs.position =  vec4f(pos[input.vertexIndex], 0.0, 1.0);
     }
     `;
 
 const clearFragmentSource = `
-    layout(set = 0, binding = 0) uniform Uniforms {
-        uniform vec4 color;
-    };
+    uniform color: vec4f;
 
-    layout(location = 0) out vec4 outColor;
 
-    void main() {
-        outColor = color;
+    @fragment
+    fn main(input: FragmentInputs) -> FragmentOutputs {
+        fragmentOutputs.color = uniforms.color;
     }
     `;
 
@@ -301,8 +296,6 @@ export const renderableTextureFormatToIndex: { [name: string]: number } = {
 export class WebGPUTextureManager {
     private _engine: WebGPUEngine;
     private _device: GPUDevice;
-    private _glslang: any;
-    private _tintWASM: Nullable<WebGPUTintWASM>;
     private _bufferManager: WebGPUBufferManager;
     private _mipmapSampler: GPUSampler;
     private _videoSampler: GPUSampler;
@@ -318,18 +311,9 @@ export class WebGPUTextureManager {
     //                         Initialization / Helpers
     //------------------------------------------------------------------------------
 
-    constructor(
-        engine: WebGPUEngine,
-        device: GPUDevice,
-        glslang: any,
-        tintWASM: Nullable<WebGPUTintWASM>,
-        bufferManager: WebGPUBufferManager,
-        enabledExtensions: GPUFeatureName[]
-    ) {
+    constructor(engine: WebGPUEngine, device: GPUDevice, bufferManager: WebGPUBufferManager, enabledExtensions: GPUFeatureName[]) {
         this._engine = engine;
         this._device = device;
-        this._glslang = glslang;
-        this._tintWASM = tintWASM;
         this._bufferManager = bufferManager;
 
         if (enabledExtensions.indexOf(WebGPUConstants.FeatureName.RG11B10UFloatRenderable) !== -1) {
@@ -367,7 +351,7 @@ export class WebGPUTextureManager {
 
         let pipelineAndBGL = this._pipelines[format][index];
         if (!pipelineAndBGL) {
-            let defines = "#version 450\n";
+            let defines = "";
             if (type === PipelineType.InvertYPremultiplyAlpha || type === PipelineType.InvertYPremultiplyAlphaWithOfst) {
                 if (params!.invertY) {
                     defines += "#define INVERTY\n";
@@ -379,19 +363,60 @@ export class WebGPUTextureManager {
 
             let modules = this._compiledShaders[index];
             if (!modules) {
-                let vertexCode = this._glslang.compileGLSL(defines + shadersForPipelineType[type].vertex, "vertex");
-                let fragmentCode = this._glslang.compileGLSL(defines + shadersForPipelineType[type].fragment, "fragment");
+                let vertexCode = shadersForPipelineType[type].vertex;
+                let fragmentCode = shadersForPipelineType[type].fragment;
 
-                if (this._tintWASM) {
-                    vertexCode = this._tintWASM.convertSpirV2WGSL(vertexCode);
-                    fragmentCode = this._tintWASM.convertSpirV2WGSL(fragmentCode);
-                }
+                const processorOptions: ProcessingOptions = {
+                    defines: defines.split("\n"),
+                    indexParameters: null,
+                    isFragment: false,
+                    shouldUseHighPrecisionShader: true,
+                    processor: this._engine._getShaderProcessor(ShaderLanguage.WGSL),
+                    supportsUniformBuffers: true,
+                    shadersRepository: "",
+                    includesShadersStore: {},
+                    version: (this._engine.version * 100).toString(),
+                    platformName: this._engine.shaderPlatformName,
+                    processingContext: this._engine._getShaderProcessingContext(ShaderLanguage.WGSL, true),
+                    isNDCHalfZRange: this._engine.isNDCHalfZRange,
+                    useReverseDepthBuffer: this._engine.useReverseDepthBuffer,
+                };
+
+                Initialize(processorOptions);
+
+                // Disable special additions not needed here
+                (processorOptions.processor as WebGPUShaderProcessorWGSL).pureMode = true;
+
+                Process(
+                    vertexCode,
+                    processorOptions,
+                    (migratedVertexCode) => {
+                        vertexCode = migratedVertexCode;
+                    },
+                    this._engine
+                );
+
+                processorOptions.isFragment = true;
+
+                Process(
+                    fragmentCode,
+                    processorOptions,
+                    (migratedFragmentCode) => {
+                        fragmentCode = migratedFragmentCode;
+                    },
+                    this._engine
+                );
+
+                const final = Finalize(vertexCode, fragmentCode, processorOptions);
+
+                // Restore
+                (processorOptions.processor as WebGPUShaderProcessorWGSL).pureMode = false;
 
                 const vertexModule = this._device.createShaderModule({
-                    code: vertexCode,
+                    code: final.vertexCode,
                 });
                 const fragmentModule = this._device.createShaderModule({
-                    code: fragmentCode,
+                    code: final.fragmentCode,
                 });
                 modules = this._compiledShaders[index] = [vertexModule, fragmentModule];
             }
@@ -943,10 +968,6 @@ export class WebGPUTextureManager {
                     entries: [
                         {
                             binding: 0,
-                            resource: this._mipmapSampler,
-                        },
-                        {
-                            binding: 1,
                             resource: gpuTexture.createView({
                                 format,
                                 dimension: is3D ? WebGPUConstants.TextureViewDimension.E3d : WebGPUConstants.TextureViewDimension.E2d,
@@ -955,6 +976,10 @@ export class WebGPUTextureManager {
                                 arrayLayerCount: 1,
                                 baseArrayLayer: faceIndex,
                             }),
+                        },
+                        {
+                            binding: 1,
+                            resource: this._mipmapSampler,
                         },
                     ],
                 });

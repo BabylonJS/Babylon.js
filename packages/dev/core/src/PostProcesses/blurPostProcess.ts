@@ -16,6 +16,7 @@ import { SerializationHelper } from "../Misc/decorators.serialization";
 
 import type { Scene } from "../scene";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * The Blur Post Process which blurs an image based on a kernel and direction.
@@ -143,6 +144,17 @@ export class BlurPostProcess extends PostProcess {
         this.kernel = kernel;
     }
 
+    protected override async _initShaderSourceAsync(useWebGPU: boolean) {
+        if (useWebGPU) {
+            this._webGPUReady = true;
+            await Promise.all([import("../ShadersWGSL/kernelBlur.fragment"), import("../ShadersWGSL/kernelBlur.vertex")]);
+        } else {
+            await Promise.all([import("../Shaders/kernelBlur.fragment"), import("../Shaders/kernelBlur.vertex")]);
+        }
+
+        super._initShaderSourceAsync(useWebGPU);
+    }
+
     /**
      * Updates the effect with the current post process compile time values and recompiles the shader.
      * @param defines Define statements that should be added at the beginning of the shader. (default: null)
@@ -225,7 +237,7 @@ export class BlurPostProcess extends PostProcess {
         weights = linearSamplingWeights;
 
         // Generate shaders
-        const maxVaryingRows = this.getEngine().getCaps().maxVaryingVectors;
+        const maxVaryingRows = this.getEngine().getCaps().maxVaryingVectors - (this.shaderLanguage === ShaderLanguage.WGSL ? 1 : 0); // Because of the additional builtins
         const freeVaryingVec2 = Math.max(maxVaryingRows, 0) - 1; // Because of sampleCenter
 
         let varyingCount = Math.min(offsets.length, freeVaryingVec2);

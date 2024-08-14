@@ -35,6 +35,7 @@ export const evaluateInitEngineForVisualization = async (engineName: string, use
         window.engine = engine;
 
         await engine.initAsync();
+        await engine.prepareGlslangAndTintAsync();
     } else {
         const engine = new BABYLON.Engine(window.canvas, false, {
             useHighPrecisionFloats: true,

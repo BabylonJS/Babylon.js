@@ -23,9 +23,11 @@
 
 #ifdef COLORGRADING
 	#ifdef COLORGRADING3D
-		uniform highp sampler3D txColorTransform;
+		var txColorTransformSampler: sampler;
+		var txColorTransform: texture_3d<f32>;
 	#else
-		uniform sampler2D txColorTransform;
+		var txColorTransformSampler: sampler;
+		var txColorTransform: texture_2d<f32>;
 	#endif
 	uniform colorTransformSettings: vec4f;
 #endif

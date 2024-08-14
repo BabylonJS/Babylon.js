@@ -225,6 +225,12 @@ type TextureCache = { texture: RenderTargetWrapper; postProcessChannel: number; 
  * See https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/usePostProcesses
  */
 export class PostProcess implements IFrameGraphTask {
+    /**
+     * Force all the postprocesses to compile to glsl even on WebGPU engines.
+     * False by default. This is mostly meant for backward compatibility.
+     */
+    public static ForceGLSL = false;
+
     /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
 
@@ -384,12 +390,23 @@ export class PostProcess implements IFrameGraphTask {
     protected _scene: Scene;
     private _engine: AbstractEngine;
 
+    private _shadersLoaded = false;
+    protected _webGPUReady = false;
+
     private _options: number | { width: number; height: number };
     private _reusable = false;
     private _renderId = 0;
     private _textureType: number;
     private _textureFormat: number;
+    /** @internal */
     private _shaderLanguage: ShaderLanguage;
+
+    /**
+     * Gets the shader language type used to generate vertex and fragment source code.
+     */
+    public get shaderLanguage(): ShaderLanguage {
+        return this._shaderLanguage;
+    }
 
     /**
      * if externalTextureSamplerBinding is true, the "apply" method won't bind the textureSampler texture, it is expected to be done by the "outside" (by the onApplyObservable observer most probably).
@@ -441,6 +458,12 @@ export class PostProcess implements IFrameGraphTask {
     public getEffectName(): string {
         return this._fragmentUrl;
     }
+
+    /**
+     * Executed when the effect was created
+     * @returns effect that was created for this post process
+     */
+    public onEffectCreatedObservable = new Observable<Effect>(undefined, true);
 
     // Events
 
@@ -599,6 +622,7 @@ export class PostProcess implements IFrameGraphTask {
      * @param blockCompilation If the shader should not be compiled immediatly. (default: false)
      * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
      * @param shaderLanguage The shader language of the shader. (default: GLSL)
+     * @param extraInitializations Defines additional code to call to prepare the shader code
      */
     constructor(
         name: string,
@@ -616,7 +640,8 @@ export class PostProcess implements IFrameGraphTask {
         indexParameters?: any,
         blockCompilation?: boolean,
         textureFormat?: number,
-        shaderLanguage?: ShaderLanguage
+        shaderLanguage?: ShaderLanguage,
+        extraInitializations?: (useWebGPU: boolean) => Promise<void>
     );
 
     /** @internal */
@@ -636,7 +661,8 @@ export class PostProcess implements IFrameGraphTask {
         indexParameters?: any,
         blockCompilation = false,
         textureFormat = Constants.TEXTUREFORMAT_RGBA,
-        shaderLanguage = ShaderLanguage.GLSL
+        shaderLanguage?: ShaderLanguage,
+        extraInitializations?: (useWebGPU: boolean) => Promise<void>
     ) {
         this.name = name;
         let size: number | { width: number; height: number } = 1;
@@ -684,7 +710,7 @@ export class PostProcess implements IFrameGraphTask {
         this._reusable = reusable || false;
         this._textureType = textureType;
         this._textureFormat = textureFormat;
-        this._shaderLanguage = shaderLanguage;
+        this._shaderLanguage = shaderLanguage || ShaderLanguage.GLSL;
 
         this._samplers = samplers || [];
         this._samplers.push("textureSampler");
@@ -699,6 +725,41 @@ export class PostProcess implements IFrameGraphTask {
         this._indexParameters = indexParameters;
         this._drawWrapper = new DrawWrapper(this._engine);
 
+        this._webGPUReady = this._shaderLanguage === ShaderLanguage.WGSL;
+
+        this._postConstructor(blockCompilation, defines, extraInitializations);
+    }
+
+    protected async _initShaderSourceAsync(useWebGPU = false) {
+        // this._webGPUReady is used to detect when a postprocess is intended to be used with WebGPU
+        if (useWebGPU && this._webGPUReady) {
+            await Promise.all([import("../ShadersWGSL/postprocess.vertex")]);
+        } else {
+            await Promise.all([import("../Shaders/postprocess.vertex")]);
+        }
+
+        this._shadersLoaded = true;
+    }
+
+    private _onInitShadersDone: Nullable<() => void> = null;
+    private async _postConstructor(blockCompilation: boolean, defines: Nullable<string> = null, extraInitializations?: (useWebGPU: boolean) => Promise<void>) {
+        const engine = this.getEngine();
+        const useWebGPU = engine.isWebGPU && !PostProcess.ForceGLSL;
+
+        await this._initShaderSourceAsync(useWebGPU);
+        if (extraInitializations) {
+            await extraInitializations(useWebGPU);
+        }
+
+        if (useWebGPU && this._webGPUReady) {
+            this._shaderLanguage = ShaderLanguage.WGSL;
+        }
+
+        if (this._onInitShadersDone) {
+            this._onInitShadersDone();
+            return;
+        }
+        this._shadersLoaded = true;
         if (!blockCompilation) {
             this.updateEffect(defines);
         }
@@ -774,6 +835,15 @@ export class PostProcess implements IFrameGraphTask {
         vertexUrl?: string,
         fragmentUrl?: string
     ) {
+        if (!this._shadersLoaded) {
+            this._onInitShadersDone = () => {
+                this._shadersLoaded = true;
+                this._onInitShadersDone = null;
+                this.updateEffect(defines, uniforms, samplers, indexParameters, onCompiled, onError, vertexUrl, fragmentUrl);
+            };
+            return;
+        }
+
         const customShaderCodeProcessing = PostProcess._GetShaderCodeProcessing(this.name);
         if (customShaderCodeProcessing?.defineCustomBindings) {
             const newUniforms = uniforms?.slice() ?? [];
@@ -809,6 +879,7 @@ export class PostProcess implements IFrameGraphTask {
             },
             this._engine
         );
+        this.onEffectCreatedObservable.notifyObservers(this._drawWrapper.effect);
     }
 
     /**
@@ -1036,6 +1107,9 @@ export class PostProcess implements IFrameGraphTask {
      * If the post process is supported.
      */
     public get isSupported(): boolean {
+        if (!this._shadersLoaded) {
+            return true; // Waiting for the effect to be created
+        }
         return this._drawWrapper.effect!.isSupported;
     }
 
@@ -1058,6 +1132,9 @@ export class PostProcess implements IFrameGraphTask {
      * @returns true if the post-process is ready (shader is compiled)
      */
     public isReady(): boolean {
+        if (!this._shadersLoaded) {
+            return false;
+        }
         return this._drawWrapper.effect?.isReady() ?? false;
     }
 
@@ -1223,6 +1300,7 @@ export class PostProcess implements IFrameGraphTask {
         this.onApplyObservable.clear();
         this.onBeforeRenderObservable.clear();
         this.onSizeChangedObservable.clear();
+        this.onEffectCreatedObservable.clear();
     }
 
     /**

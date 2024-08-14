@@ -9,6 +9,6 @@
     #endif
 
     #ifdef INSTANCESCOLOR
-        rtexOutputs.vColor = vec4f(vertexOutputs.vColor.rgb * vertexInputs.instanceColor, vertexOutputs.vColor.a);
+        vertexOutputs.vColor *= vertexInputs.instanceColor;
     #endif
 #endif

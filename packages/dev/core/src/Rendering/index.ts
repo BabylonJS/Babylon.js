@@ -17,3 +17,15 @@ export * from "./utilityLayerRenderer";
 export * from "./fluidRenderer/index";
 export * from "./reflectiveShadowMap";
 export * from "./GlobalIllumination/index";
+
+// Depth
+export * from "../Shaders/depth.fragment";
+export * from "../Shaders/depth.vertex";
+export * from "../ShadersWGSL/depth.fragment";
+export * from "../ShadersWGSL/depth.vertex";
+
+// Geometry
+export * from "../Shaders/geometry.fragment";
+export * from "../Shaders/geometry.vertex";
+export * from "../ShadersWGSL/geometry.fragment";
+export * from "../ShadersWGSL/geometry.vertex";

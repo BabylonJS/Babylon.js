@@ -179,7 +179,7 @@ if (vClipSpacePosition.x / vClipSpacePosition.w >= vDebugMode.x) {
     // Does Not Exist
     #else
         float stripeWidth = 30.;
-        float stripePos = floor((gl_FragCoord.x + gl_FragCoord.y) / stripeWidth);
+        float stripePos = floor(gl_FragCoord.x / stripeWidth);
         float whichColor = mod(stripePos, 2.);
         vec3 color1 = vec3(.6,.2,.2);
         vec3 color2 = vec3(.3,.1,.1);

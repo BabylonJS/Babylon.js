@@ -29,6 +29,7 @@ const reusableMatches: RegExpMatchArray[] = [];
 
 const _MoveCursorRegex = /(#ifdef)|(#else)|(#elif)|(#endif)|(#ifndef)|(#if)/;
 
+/** @internal */
 export function Initialize(options: ProcessingOptions): void {
     if (options.processor && options.processor.initializeShaders) {
         options.processor.initializeShaders(options.processingContext);

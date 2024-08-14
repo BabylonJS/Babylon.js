@@ -1,13 +1,13 @@
-    var depthSM: f32 = vDepthMetricSM;
+    var depthSM: f32 = fragmentInputs.vDepthMetricSM;
 
 #if defined(SM_DEPTHCLAMP) &&  SM_DEPTHCLAMP == 1
     #if SM_USEDISTANCE == 1
-        depthSM = (length(vPositionWSM - uniforms.lightDataSM) + uniforms.depthValuesSM.x) / uniforms.depthValuesSM.y + uniforms.biasAndScaleSM.x;
+        depthSM = (length(fragmentInputs.vPositionWSM - uniforms.lightDataSM) + uniforms.depthValuesSM.x) / uniforms.depthValuesSM.y + uniforms.biasAndScaleSM.x;
     #else
         #ifdef USE_REVERSE_DEPTHBUFFER
-            depthSM = (-zSM + uniforms.depthValuesSM.x) / uniforms.depthValuesSM.y + uniforms.biasAndScaleSM.x;
+            depthSM = (-fragmentInputs.zSM + uniforms.depthValuesSM.x) / uniforms.depthValuesSM.y + uniforms.biasAndScaleSM.x;
         #else
-            depthSM = (zSM + uniforms.depthValuesSM.x) / uniforms.depthValuesSM.y + uniforms.biasAndScaleSM.x;
+            depthSM = (fragmentInputs.zSM + uniforms.depthValuesSM.x) / uniforms.depthValuesSM.y + uniforms.biasAndScaleSM.x;
         #endif
     #endif
     #ifdef USE_REVERSE_DEPTHBUFFER
@@ -16,7 +16,7 @@
         fragmentOutputs.fragDepth = clamp(depthSM, 0.0, 1.0); // using depthSM (linear value) for fragmentOutputs.fragDepth is ok because we are using depth clamping only for ortho projections
     #endif
 #elif SM_USEDISTANCE == 1
-    depthSM = (length(vPositionWSM - uniforms.lightDataSM) + uniforms.depthValuesSM.x) / uniforms.depthValuesSM.y + uniforms.biasAndScaleSM.x;
+    depthSM = (length(fragmentInputs.vPositionWSM - uniforms.lightDataSM) + uniforms.depthValuesSM.x) / uniforms.depthValuesSM.y + uniforms.biasAndScaleSM.x;
 #endif
 
 #if SM_ESM == 1

@@ -2067,12 +2067,13 @@ export class ThinEngine extends AbstractEngine {
         vertexSourceCode: string,
         fragmentSourceCode: string,
         createAsRaw: boolean,
-        _rawVertexSourceCode: string,
-        _rawFragmentSourceCode: string,
+        rawVertexSourceCode: string,
+        rawFragmentSourceCode: string,
         rebuildRebind: any,
         defines: Nullable<string>,
         transformFeedbackVaryings: Nullable<string[]>,
-        _key: string
+        key: string,
+        onReady: () => void
     ) {
         const stateObject = getStateObject(this._gl);
         stateObject._contextWasLost = this._contextWasLost;
@@ -2086,12 +2087,13 @@ export class ThinEngine extends AbstractEngine {
             vertexSourceCode,
             fragmentSourceCode,
             createAsRaw,
-            _rawVertexSourceCode,
-            _rawFragmentSourceCode,
+            rawVertexSourceCode,
+            rawFragmentSourceCode,
             rebuildRebind,
             defines,
             transformFeedbackVaryings,
-            _key
+            key,
+            onReady
         );
     }
 

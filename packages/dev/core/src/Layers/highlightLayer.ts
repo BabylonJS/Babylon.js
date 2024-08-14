@@ -26,12 +26,9 @@ import { Logger } from "../Misc/logger";
 import { RegisterClass } from "../Misc/typeStore";
 import { Color4, Color3 } from "../Maths/math.color";
 
-import "../Shaders/glowMapMerge.fragment";
-import "../Shaders/glowMapMerge.vertex";
-import "../Shaders/glowBlurPostProcess.fragment";
-import "../Layers/effectLayerSceneComponent";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 declare module "../abstractScene" {
     export interface AbstractScene {
@@ -53,6 +50,10 @@ AbstractScene.prototype.getHighlightLayerByName = function (name: string): Nulla
 
     return null;
 };
+
+interface IBlurPostProcess extends PostProcess {
+    kernel: number;
+}
 
 /**
  * Special Glow Blur post process only blurring the alpha channel
@@ -76,6 +77,17 @@ class GlowBlurPostProcess extends PostProcess {
             effect.setVector2("direction", this.direction);
             effect.setFloat("blurWidth", this.kernel);
         });
+    }
+
+    protected override async _initShaderSourceAsync(useWebGPU: boolean) {
+        if (useWebGPU) {
+            this._webGPUReady = true;
+            await import("../ShadersWGSL/glowBlurPostProcess.fragment");
+        } else {
+            await import("../Shaders/glowBlurPostProcess.fragment");
+        }
+
+        super._initShaderSourceAsync(useWebGPU);
     }
 }
 
@@ -135,6 +147,11 @@ export interface IHighlightLayerOptions {
      * The type of the main texture. Default: TEXTURETYPE_UNSIGNED_INT
      */
     mainTextureType: number;
+
+    /**
+     * Use the GLSL code generation for the shader (even on WebGPU). Default is false
+     */
+    forceGLSL: boolean;
 }
 
 /**
@@ -275,8 +292,8 @@ export class HighlightLayer extends EffectLayer {
     @serialize("options")
     private _options: IHighlightLayerOptions;
     private _downSamplePostprocess: PassPostProcess;
-    private _horizontalBlurPostprocess: GlowBlurPostProcess;
-    private _verticalBlurPostprocess: GlowBlurPostProcess;
+    private _horizontalBlurPostprocess: IBlurPostProcess;
+    private _verticalBlurPostprocess: IBlurPostProcess;
     private _blurTexture: RenderTargetTexture;
 
     private _meshes: Nullable<{ [id: string]: Nullable<IHighlightLayerMesh> }> = {};
@@ -293,7 +310,8 @@ export class HighlightLayer extends EffectLayer {
         scene?: Scene,
         options?: Partial<IHighlightLayerOptions>
     ) {
-        super(name, scene);
+        super(name, scene, options !== undefined ? !!options.forceGLSL : false);
+
         this.neutralColor = HighlightLayer.NeutralColor;
 
         // Warn on stencil
@@ -311,6 +329,7 @@ export class HighlightLayer extends EffectLayer {
             camera: null,
             renderingGroupId: -1,
             mainTextureType: Constants.TEXTURETYPE_UNSIGNED_INT,
+            forceGLSL: false,
             ...options,
         };
 
@@ -326,6 +345,23 @@ export class HighlightLayer extends EffectLayer {
 
         // Do not render as long as no meshes have been added
         this._shouldRender = false;
+    }
+
+    protected override async _initShaderSourceAsync(forceGLSL = false) {
+        const engine = this._scene.getEngine();
+
+        if (engine.isWebGPU && !forceGLSL && !EffectLayer.ForceGLSL) {
+            this._shaderLanguage = ShaderLanguage.WGSL;
+            await Promise.all([
+                import("../ShadersWGSL/glowMapMerge.fragment"),
+                import("../ShadersWGSL/glowMapMerge.vertex"),
+                import("../ShadersWGSL/glowBlurPostProcess.fragment"),
+            ]);
+        } else {
+            await Promise.all([import("../Shaders/glowMapMerge.fragment"), import("../Shaders/glowMapMerge.vertex"), import("../Shaders/glowBlurPostProcess.fragment")]);
+        }
+
+        await super._initShaderSourceAsync(forceGLSL);
     }
 
     /**
@@ -347,7 +383,18 @@ export class HighlightLayer extends EffectLayer {
      */
     protected _createMergeEffect(): Effect {
         // Effect
-        return this._engine.createEffect("glowMapMerge", [VertexBuffer.PositionKind], ["offset"], ["textureSampler"], this._options.isStroke ? "#define STROKE \n" : undefined);
+        return this._engine.createEffect(
+            "glowMapMerge",
+            [VertexBuffer.PositionKind],
+            ["offset"],
+            ["textureSampler"],
+            this._options.isStroke ? "#define STROKE \n" : undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            this._shaderLanguage
+        );
     }
 
     /**
@@ -441,10 +488,11 @@ export class HighlightLayer extends EffectLayer {
                 false,
                 textureType
             );
-            this._horizontalBlurPostprocess.width = blurTextureWidth;
-            this._horizontalBlurPostprocess.height = blurTextureHeight;
-            this._horizontalBlurPostprocess.externalTextureSamplerBinding = true;
-            this._horizontalBlurPostprocess.onApplyObservable.add((effect) => {
+            const horizontalBlurPostprocess = this._horizontalBlurPostprocess as BlurPostProcess;
+            horizontalBlurPostprocess.width = blurTextureWidth;
+            horizontalBlurPostprocess.height = blurTextureHeight;
+            horizontalBlurPostprocess.externalTextureSamplerBinding = true;
+            horizontalBlurPostprocess.onApplyObservable.add((effect) => {
                 effect.setTexture("textureSampler", this._mainTexture);
             });
 

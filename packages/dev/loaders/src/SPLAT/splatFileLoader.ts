@@ -6,10 +6,23 @@ import type {
     ISceneLoaderPluginExtensions,
     ISceneLoaderProgressEvent,
 } from "core/Loading/sceneLoader";
-import { SceneLoader } from "core/Loading/sceneLoader";
+import { registerSceneLoaderPlugin } from "core/Loading/sceneLoader";
 import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
 import type { AssetContainer } from "core/assetContainer";
 import type { Scene } from "core/scene";
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const PLUGIN_SPLAT = "splat";
+
+declare module "core/Loading/sceneLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface SceneLoaderPluginOptions {
+        /**
+         * Defines options for the splat loader.
+         */
+        [PLUGIN_SPLAT]?: {};
+    }
+}
 
 /**
  * @experimental
@@ -20,18 +33,18 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
     /**
      * Defines the name of the plugin.
      */
-    public name = "splat";
+    public readonly name = PLUGIN_SPLAT;
 
     /**
      * Defines the extensions the splat loader is able to load.
      * force data to come in as an ArrayBuffer
      */
-    public extensions: ISceneLoaderPluginExtensions = {
+    public readonly extensions = {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         ".splat": { isBinary: true },
         // eslint-disable-next-line @typescript-eslint/naming-convention
         ".ply": { isBinary: true },
-    };
+    } as const satisfies ISceneLoaderPluginExtensions;
 
     //private _loadingOptions: SPLATLoadingOptions;
     /**
@@ -112,7 +125,5 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
     }
 }
 
-if (SceneLoader) {
-    //Add this loader into the register plugin
-    SceneLoader.RegisterPlugin(new SPLATFileLoader());
-}
+//Add this loader into the register plugin
+registerSceneLoaderPlugin(new SPLATFileLoader());

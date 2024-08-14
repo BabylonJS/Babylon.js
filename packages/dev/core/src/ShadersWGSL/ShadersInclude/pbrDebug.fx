@@ -82,7 +82,7 @@ if (input.vClipSpacePosition.x / input.vClipSpacePosition.w >= uniforms.vDebugMo
     #elif DEBUGMODE == 31 && defined(SUBSURFACE) && defined(SS_THICKNESSANDMASK_TEXTURE)
         color = subSurfaceOut.thicknessMap.rgb;
     #elif DEBUGMODE == 32 && defined(BUMP)
-        color = texture2D(bumpSampler, vBumpUV).rgb;
+        color = textureSample(bumpSampler, bumpSamplerSampler, fragmentInputs.vBumpUV).rgb;
 // Env
     #elif DEBUGMODE == 40 && defined(SS_REFRACTION)
         // Base color.
@@ -180,7 +180,7 @@ if (input.vClipSpacePosition.x / input.vClipSpacePosition.w >= uniforms.vDebugMo
     // Does Not Exist
     #else
         var stripeWidth: f32 = 30.;
-        var stripePos: f32 = floor((input.position.x + input.position.y) / stripeWidth);
+        var stripePos: f32 = abs(floor(input.position.x / stripeWidth));
         var whichColor: f32 = ((stripePos)%(2.));
         var color1: vec3f =  vec3f(.6,.2,.2);
         var color2: vec3f =  vec3f(.3,.1,.1);

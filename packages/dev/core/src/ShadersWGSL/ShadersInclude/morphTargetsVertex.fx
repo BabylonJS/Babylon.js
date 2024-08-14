@@ -7,21 +7,21 @@
 			}
 
 			vertexID = f32(vertexInputs.vertexIndex) * uniforms.morphTargetTextureInfo.x;
-			positionUpdated = positionUpdated + (readVector3FromRawSampler({X}, vertexID) - vertexInputs.position) * uniforms.morphTargetInfluences[{X}];
+			positionUpdated = positionUpdated + (readVector3FromRawSampler(i, vertexID) - vertexInputs.position) * uniforms.morphTargetInfluences[i];
 			vertexID = vertexID + 1.0;
 		
 			#ifdef MORPHTARGETS_NORMAL
-				normalUpdated = normalUpdated + (readVector3FromRawSampler({X}, vertexID)  - vertexInputs.normal) * uniforms.morphTargetInfluences[{X}];
+				normalUpdated = normalUpdated + (readVector3FromRawSampler(i, vertexID)  - vertexInputs.normal) * uniforms.morphTargetInfluences[i];
 				vertexID = vertexID + 1.0;
 			#endif
 
 			#ifdef MORPHTARGETS_UV
-				uvUpdated = uvUpdated + (readVector3FromRawSampler({X}, vertexID).xy - vertexInputs.uv) * uniforms.morphTargetInfluences[{X}];
+				uvUpdated = uvUpdated + (readVector3FromRawSampler(i, vertexID).xy - vertexInputs.uv) * uniforms.morphTargetInfluences[i];
 				vertexID = vertexID + 1.0;
 			#endif
 
 			#ifdef MORPHTARGETS_TANGENT
-				tangentUpdated = vec4f(tangentUpdated.xyz + (readVector3FromRawSampler({X}, vertexID)  - vertexInputs.tangent.xyz) * uniforms.morphTargetInfluences[{X}], tangentUpdated.a);
+				tangentUpdated = vec4f(tangentUpdated.xyz + (readVector3FromRawSampler(i, vertexID)  - vertexInputs.tangent.xyz) * uniforms.morphTargetInfluences[i], tangentUpdated.a);
 			#endif
 		}
 		#endif
@@ -33,7 +33,7 @@
 		#endif
 
 		#ifdef MORPHTARGETS_TANGENT
-		    tangentUpdated.xyz = tangentUpdated.xyz + (vertexInputs.tangent{X} - vertexInputs.tangent.xyz) * uniforms.morphTargetInfluences[{X}];
+		    tangentUpdated = vec4f(tangentUpdated.xyz + (vertexInputs.tangent{X} - vertexInputs.tangent.xyz) * uniforms.morphTargetInfluences[{X}], tangentUpdated.a);
 		#endif
 
 		#ifdef MORPHTARGETS_UV

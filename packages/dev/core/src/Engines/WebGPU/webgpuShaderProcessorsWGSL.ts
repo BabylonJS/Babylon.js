@@ -63,6 +63,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
     public uniformRegexp = /uniform\s+(\w+)\s*:\s*(.+)\s*;/;
     public textureRegexp = /var\s+(\w+)\s*:\s*((array<\s*)?(texture_\w+)\s*(<\s*(.+)\s*>)?\s*(,\s*\w+\s*>\s*)?);/;
     public noPrecision = true;
+    public pureMode = false;
 
     public preProcessor(code: string, defines: string[], preProcessors: { [key: string]: string }, isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>) {
         // Convert defines into const
@@ -116,12 +117,14 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
     public preProcessShaderCode(code: string): string {
         // Same check as in webgpuShaderProcessorsGLSL to avoid same ubDelcaration to be injected twice.
-        const ubDeclaration = `struct ${WebGPUShaderProcessor.InternalsUBOName} {\n  yFactor_: f32,\n  textureOutputHeight_: f32,\n};\nvar<uniform> ${internalsVarName} : ${WebGPUShaderProcessor.InternalsUBOName};\n`;
+        const ubDeclaration = this.pureMode
+            ? ""
+            : `struct ${WebGPUShaderProcessor.InternalsUBOName} {\n  yFactor_: f32,\n  textureOutputHeight_: f32,\n};\nvar<uniform> ${internalsVarName} : ${WebGPUShaderProcessor.InternalsUBOName};\n`;
         const alreadyInjected = code.indexOf(ubDeclaration) !== -1;
         return alreadyInjected ? code : ubDeclaration + RemoveComments(code);
     }
 
-    public varyingCheck(varying: string, isFragment: boolean): boolean {
+    public varyingCheck(varying: string): boolean {
         const regex = /(flat|linear|perspective)?\s*(center|centroid|sample)?\s*\bvarying\b/;
 
         return regex.test(varying);
@@ -275,7 +278,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
     public finalizeShaders(vertexCode: string, fragmentCode: string): { vertexCode: string; fragmentCode: string } {
         const fragCoordCode =
-            fragmentCode.indexOf("fragmentInputs.position") >= 0
+            fragmentCode.indexOf("fragmentInputs.position") >= 0 && !this.pureMode
                 ? `
             if (internals.yFactor_ == 1.) {
                 fragmentInputs.position.y = internals.textureOutputHeight_ - fragmentInputs.position.y;
@@ -327,7 +330,9 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             vertexMainStartingCode += this._attributesConversionCodeWGSL.join("\n");
             vertexMainStartingCode += "\n";
         }
-        const vertexMainEndingCode = `  vertexOutputs.position.y = vertexOutputs.position.y * internals.yFactor_;\n  return vertexOutputs;`;
+        const vertexMainEndingCode = this.pureMode
+            ? `  return vertexOutputs;`
+            : `  vertexOutputs.position.y = vertexOutputs.position.y * internals.yFactor_;\n  return vertexOutputs;`;
         let needDiagnosticOff = vertexCode.indexOf(Constants.DISABLEUA) !== -1;
 
         vertexCode =
@@ -338,7 +343,9 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         fragmentCode = fragmentCode.replace(/#define (\w+)\s+(\d+\.?\d*)/g, "const $1 = $2;");
         fragmentCode = fragmentCode.replace(/#define /g, "//#define ");
         fragmentCode = this._processStridedUniformArrays(fragmentCode);
-        fragmentCode = fragmentCode.replace(/dpdy/g, "(-internals.yFactor_)*dpdy"); // will also handle dpdyCoarse and dpdyFine
+        if (!this.pureMode) {
+            fragmentCode = fragmentCode.replace(/dpdy/g, "(-internals.yFactor_)*dpdy"); // will also handle dpdyCoarse and dpdyFine
+        }
 
         let fragmentInputs = "struct FragmentInputs {\n  @builtin(position) position : vec4<f32>,\n  @builtin(front_facing) frontFacing : bool,\n";
         if (this._varyingsWGSL.length > 0) {
@@ -348,24 +355,41 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
         let fragmentOutputs = "struct FragmentOutputs {\n";
 
-        const regex = /const SCENE_MRT_COUNT = (\d+);/;
-        const match = fragmentCode.match(regex);
-        let mrt = false;
+        // Adding fragData output locations
+        let regex = /const SCENE_MRT_COUNT = (\d+);/;
+        let match = fragmentCode.match(regex);
+        let indexLocation = 0;
 
         if (match) {
             const number = parseInt(match[1]);
             if (number > 0) {
-                mrt = true;
                 for (let index = 0; index < number; index++) {
-                    fragmentOutputs += ` @location(${index}) fragData${index} : vec4<f32>,\n`;
+                    fragmentOutputs += ` @location(${indexLocation}) fragData${indexLocation} : vec4<f32>,\n`;
+                    indexLocation++;
+                }
+                if (fragmentCode.indexOf("MRT_AND_COLOR") !== -1) {
+                    fragmentOutputs += `  @location(${indexLocation}) color : vec4<f32>,\n`;
+                    indexLocation++;
                 }
             }
         }
 
-        if (!mrt) {
-            fragmentOutputs += "  @location(0) color : vec4<f32>,\n";
+        // Adding fragData output locations
+        regex = /oitDepthSampler/;
+        match = fragmentCode.match(regex);
+
+        if (match) {
+            fragmentOutputs += ` @location(${indexLocation++}) depth : vec2<f32>,\n`;
+            fragmentOutputs += ` @location(${indexLocation++}) frontColor : vec4<f32>,\n`;
+            fragmentOutputs += ` @location(${indexLocation++}) backColor : vec4<f32>,\n`;
         }
 
+        if (indexLocation === 0) {
+            fragmentOutputs += "  @location(0) color : vec4<f32>,\n";
+            indexLocation++;
+        }
+
+        // FragDepth
         let hasFragDepth = false;
         let idx = 0;
         while (!hasFragDepth) {

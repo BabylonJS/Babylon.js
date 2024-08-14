@@ -3,27 +3,27 @@
     // dual depth peeling
     // -------------------------
 
-    var fragDepth: f32 = gl_FragCoord.z;   // 0 - 1
+    var fragDepth: f32 = fragmentInputs.position.z;   // 0 - 1
 
 #ifdef ORDER_INDEPENDENT_TRANSPARENCY_16BITS
-    uvar halfFloat: i32 = packHalf2x16( vec2f(fragDepth));
+    var halfFloat: i32 = packHalf2x16( vec2f(fragDepth));
     var full: vec2f = unpackHalf2x16(halfFloat);
     fragDepth = full.x;
 #endif
 
-    ivar fragCoord: vec2f = i vec2f(gl_FragCoord.xy);
-    var lastDepth: vec2f = texelFetch(oitDepthSampler, fragCoord, 0).rg;
-    var lastFrontColor: vec4f = texelFetch(oitFrontColorSampler, fragCoord, 0);
+    var fragCoord: vec2i = vec2i(fragmentInputs.position.xy);
+    var lastDepth: vec2f = textureLoad(oitDepthSampler, fragCoord, 0).rg;
+    var lastFrontColor: vec4f = textureLoad(oitFrontColorSampler, fragCoord, 0);
 
     // depth value always increases
     // so we can use MAX blend equation
-    depth.rg =  vec2f(-MAX_DEPTH);
+    fragmentOutputs.depth = vec2f(-MAX_DEPTH);
     // front color always increases
     // so we can use MAX blend equation
-    frontColor = lastFrontColor;
+    fragmentOutputs.frontColor = lastFrontColor;
 
     // back color is separately blend afterwards each pass
-    backColor =  vec4f(0.0);
+    fragmentOutputs.backColor =  vec4f(0.0);
 
 #ifdef USE_REVERSE_DEPTHBUFFER
     var furthestDepth: f32 = -lastDepth.x;
@@ -42,7 +42,7 @@
     if (fragDepth < nearestDepth || fragDepth > furthestDepth) {
 #endif
         // Skip this depth since it's been peeled.
-        return;
+        return fragmentOutputs;
     }
 
 #ifdef USE_REVERSE_DEPTHBUFFER
@@ -53,8 +53,8 @@
         // This needs to be peeled.
         // The ones remaining after MAX blended for
         // all need-to-peel will be peeled next pass.
-        depth.rg =  vec2f(-fragDepth, fragDepth);
-        return;
+        fragmentOutputs.depth = vec2f(-fragDepth, fragDepth);
+        return fragmentOutputs;
     }
 
 

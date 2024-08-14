@@ -2,14 +2,14 @@
 import { Epsilon } from "./math.constants";
 import type { Viewport } from "./math.viewport";
 import type { DeepImmutable, Nullable, FloatArray, float, Tuple } from "../types";
-import { ArrayTools } from "../Misc/arrayTools";
+import { BuildTuple } from "../Misc/arrayTools";
 import { RegisterClass } from "../Misc/typeStore";
 import type { Plane } from "./math.plane";
 import { PerformanceConfigurator } from "../Engines/performanceConfigurator";
 import { EngineStore } from "../Engines/engineStore";
 import type { TransformNode } from "../Meshes/transformNode";
 import type { Dimension, Tensor, TensorLike, TensorStatic } from "./tensor";
-import type { IVector2Like, IVector3Like, IVector4Like, IQuaternionLike, IMatrixLike, IPlaneLike } from "./math.like";
+import type { IVector2Like, IVector3Like, IVector4Like, IQuaternionLike, IMatrixLike, IPlaneLike, Vector3LikeInternal } from "./math.like";
 import { Clamp, Lerp, NormalizeRadians, RandomRange, WithinEpsilon } from "./math.scalar.functions";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -1168,7 +1168,7 @@ Object.defineProperties(Vector2.prototype, {
  * Reminder: js uses a left handed forward facing system
  * Example Playground - Overview - https://playground.babylonjs.com/#R1F8YU
  */
-export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like {
+export class Vector3 implements Vector<Tuple<number, 3>, Vector3LikeInternal>, IVector3Like {
     private static _UpReadOnly = Vector3.Up() as DeepImmutable<Vector3>;
     private static _DownReadOnly = Vector3.Down() as DeepImmutable<Vector3>;
     private static _LeftHandedForwardReadOnly = Vector3.Forward(false) as DeepImmutable<Vector3>;
@@ -1358,7 +1358,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @param otherVector defines the second operand
      * @returns the resulting Vector3
      */
-    public add(otherVector: DeepImmutable<Vector3>): Vector3 {
+    public add(otherVector: DeepImmutable<Vector3LikeInternal>): Vector3 {
         return new Vector3(this._x + otherVector._x, this._y + otherVector._y, this._z + otherVector._z);
     }
 
@@ -1369,8 +1369,12 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @param result defines the Vector3 object where to store the result
      * @returns the result
      */
-    public addToRef<T extends Vector3>(otherVector: DeepImmutable<Vector3>, result: T): T {
-        return result.copyFromFloats(this._x + otherVector._x, this._y + otherVector._y, this._z + otherVector._z);
+    public addToRef<T extends Vector3LikeInternal>(otherVector: DeepImmutable<Vector3LikeInternal>, result: T): T {
+        result._x = this._x + otherVector._x;
+        result._y = this._y + otherVector._y;
+        result._z = this._z + otherVector._z;
+        result._isDirty = true;
+        return result;
     }
 
     /**
@@ -1379,7 +1383,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @param otherVector defines the second operand
      * @returns the current updated Vector3
      */
-    public subtractInPlace(otherVector: DeepImmutable<Vector3>): this {
+    public subtractInPlace(otherVector: DeepImmutable<Vector3LikeInternal>): this {
         this._x -= otherVector._x;
         this._y -= otherVector._y;
         this._z -= otherVector._z;
@@ -1393,7 +1397,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @param otherVector defines the second operand
      * @returns the resulting Vector3
      */
-    public subtract(otherVector: DeepImmutable<Vector3>): Vector3 {
+    public subtract(otherVector: DeepImmutable<Vector3LikeInternal>): Vector3 {
         return new Vector3(this._x - otherVector._x, this._y - otherVector._y, this._z - otherVector._z);
     }
 
@@ -1404,7 +1408,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @param result defines the Vector3 object where to store the result
      * @returns the result
      */
-    public subtractToRef<T extends Vector3>(otherVector: DeepImmutable<Vector3>, result: T): T {
+    public subtractToRef<T extends Vector3LikeInternal>(otherVector: DeepImmutable<Vector3LikeInternal>, result: T): T {
         return this.subtractFromFloatsToRef(otherVector._x, otherVector._y, otherVector._z, result);
     }
 
@@ -1429,8 +1433,12 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @param result defines the Vector3 object where to store the result
      * @returns the result
      */
-    public subtractFromFloatsToRef<T extends Vector3>(x: number, y: number, z: number, result: T): T {
-        return result.copyFromFloats(this._x - x, this._y - y, this._z - z);
+    public subtractFromFloatsToRef<T extends Vector3LikeInternal>(x: number, y: number, z: number, result: T): T {
+        result._x = this._x - x;
+        result._y = this._y - y;
+        result._z = this._z - z;
+        result._isDirty = true;
+        return result;
     }
 
     /**
@@ -1461,8 +1469,12 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @param result defines the Vector3 object where to store the result
      * @returns the result
      */
-    public negateToRef<T extends Vector3 = Vector3>(result: T): T {
-        return result.copyFromFloats(this._x * -1, this._y * -1, this._z * -1);
+    public negateToRef<T extends Vector3LikeInternal>(result: T): T {
+        result._x = this._x * -1;
+        result._y = this._y * -1;
+        result._z = this._z * -1;
+        result._isDirty = true;
+        return result;
     }
 
     /**
@@ -1496,8 +1508,12 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @param result defines the Vector3 object where to store the result
      * @returns the result
      */
-    public scaleToRef<T extends Vector3>(scale: number, result: T): T {
-        return result.copyFromFloats(this._x * scale, this._y * scale, this._z * scale);
+    public scaleToRef<T extends Vector3LikeInternal>(scale: number, result: T): T {
+        result._x = this._x * scale;
+        result._y = this._y * scale;
+        result._z = this._z * scale;
+        result._isDirty = true;
+        return result;
     }
 
     /**
@@ -1592,8 +1608,12 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @param result defines the Vector3 object where to store the result
      * @returns result input
      */
-    public scaleAndAddToRef<T extends Vector3>(scale: number, result: T): T {
-        return result.addInPlaceFromFloats(this._x * scale, this._y * scale, this._z * scale);
+    public scaleAndAddToRef<T extends Vector3LikeInternal>(scale: number, result: T): T {
+        result._x += this._x * scale;
+        result._y += this._y * scale;
+        result._z += this._z * scale;
+        result._isDirty = true;
+        return result;
     }
 
     /**
@@ -1681,7 +1701,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @param otherVector defines the second operand
      * @returns the current updated Vector3
      */
-    public multiplyInPlace(otherVector: DeepImmutable<Vector3>): this {
+    public multiplyInPlace(otherVector: DeepImmutable<Vector3LikeInternal>): this {
         this._x *= otherVector._x;
         this._y *= otherVector._y;
         this._z *= otherVector._z;
@@ -1695,7 +1715,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @param otherVector defines the second operand
      * @returns the new Vector3
      */
-    public multiply(otherVector: DeepImmutable<Vector3>): Vector3 {
+    public multiply(otherVector: DeepImmutable<Vector3LikeInternal>): Vector3 {
         return this.multiplyByFloats(otherVector._x, otherVector._y, otherVector._z);
     }
 
@@ -1706,8 +1726,12 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @param result defines the Vector3 object where to store the result
      * @returns the result
      */
-    public multiplyToRef<T extends Vector3>(otherVector: DeepImmutable<Vector3>, result: T): T {
-        return result.copyFromFloats(this._x * otherVector._x, this._y * otherVector._y, this._z * otherVector._z);
+    public multiplyToRef<T extends Vector3LikeInternal>(otherVector: DeepImmutable<Vector3LikeInternal>, result: T): T {
+        result._x = this._x * otherVector._x;
+        result._y = this._y * otherVector._y;
+        result._z = this._z * otherVector._z;
+        result._isDirty = true;
+        return result;
     }
 
     /**
@@ -1728,7 +1752,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @param otherVector defines the second operand
      * @returns the new Vector3
      */
-    public divide(otherVector: DeepImmutable<Vector3>): Vector3 {
+    public divide(otherVector: DeepImmutable<Vector3LikeInternal>): Vector3 {
         return new Vector3(this._x / otherVector._x, this._y / otherVector._y, this._z / otherVector._z);
     }
 
@@ -1739,8 +1763,12 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @param result defines the Vector3 object where to store the result
      * @returns the result
      */
-    public divideToRef<T extends Vector3>(otherVector: DeepImmutable<Vector3>, result: T): T {
-        return result.copyFromFloats(this._x / otherVector._x, this._y / otherVector._y, this._z / otherVector._z);
+    public divideToRef<T extends Vector3LikeInternal>(otherVector: DeepImmutable<Vector3LikeInternal>, result: T): T {
+        result._x = this._x / otherVector._x;
+        result._y = this._y / otherVector._y;
+        result._z = this._z / otherVector._z;
+        result._isDirty = true;
+        return result;
     }
 
     /**
@@ -1749,7 +1777,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @param otherVector defines the second operand
      * @returns the current updated Vector3
      */
-    public divideInPlace(otherVector: DeepImmutable<Vector3>): this {
+    public divideInPlace(otherVector: DeepImmutable<Vector3LikeInternal>): this {
         this._x = this._x / otherVector._x;
         this._y = this._y / otherVector._y;
         this._z = this._z / otherVector._z;
@@ -1763,7 +1791,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @param other defines the second operand
      * @returns the current updated Vector3
      */
-    public minimizeInPlace(other: DeepImmutable<Vector3>): this {
+    public minimizeInPlace(other: DeepImmutable<Vector3LikeInternal>): this {
         return this.minimizeInPlaceFromFloats(other._x, other._y, other._z);
     }
 
@@ -1773,7 +1801,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @param other defines the second operand
      * @returns the current updated Vector3
      */
-    public maximizeInPlace(other: DeepImmutable<Vector3>): this {
+    public maximizeInPlace(other: DeepImmutable<Vector3LikeInternal>): this {
         return this.maximizeInPlaceFromFloats(other._x, other._y, other._z);
     }
 
@@ -1867,7 +1895,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @param result the vector to store the result in
      * @returns the result vector
      */
-    public floorToRef<T extends Vector3>(result: T): T {
+    public floorToRef<T extends Vector3LikeInternal>(result: T): T {
         result._x = Math.floor(this._x);
         result._y = Math.floor(this._y);
         result._z = Math.floor(this._z);
@@ -1889,7 +1917,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @param result the vector to store the result in
      * @returns the result vector
      */
-    public fractToRef<T extends Vector3>(result: T): T {
+    public fractToRef<T extends Vector3LikeInternal>(result: T): T {
         result._x = this.x - Math.floor(this._x);
         result._y = this.y - Math.floor(this._y);
         result._z = this.z - Math.floor(this._z);
@@ -2027,16 +2055,20 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
     /**
      * Normalize the current Vector3 to the reference
      * Example Playground https://playground.babylonjs.com/#R1F8YU#125
-     * @param reference define the Vector3 to update
+     * @param result define the Vector3 to update
      * @returns the updated Vector3
      */
-    public normalizeToRef<T extends Vector3>(reference: T): T {
+    public normalizeToRef<T extends Vector3LikeInternal>(result: T): T {
         const len = this.length();
         if (len === 0 || len === 1.0) {
-            return reference.copyFrom(this);
+            result._x = this._x;
+            result._y = this._y;
+            result._z = this._z;
+            result._isDirty = true;
+            return result;
         }
 
-        return this.scaleToRef(1.0 / len, reference);
+        return this.scaleToRef(1.0 / len, result);
     }
 
     /**
@@ -3346,7 +3378,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
         return ref;
     }
 }
-Vector3 satisfies VectorStatic<Vector3, Vector3>;
+Vector3 satisfies VectorStatic<Vector3, Vector3LikeInternal>;
 Object.defineProperties(Vector3.prototype, {
     dimension: { value: [3] },
     rank: { value: 1 },
@@ -5353,12 +5385,11 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
      * @returns the target quaternion
      */
     public static RotationAxisToRef<T extends Quaternion>(axis: DeepImmutable<Vector3>, angle: number, result: T): T {
-        const sin = Math.sin(angle / 2);
-        axis.normalize();
         result._w = Math.cos(angle / 2);
-        result._x = axis._x * sin;
-        result._y = axis._y * sin;
-        result._z = axis._z * sin;
+        const sinByLength = Math.sin(angle / 2) / axis.length();
+        result._x = axis._x * sinByLength;
+        result._y = axis._y * sinByLength;
+        result._z = axis._z * sinByLength;
         result._isDirty = true;
         return result;
     }
@@ -5592,7 +5623,10 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
      */
     public static RotationQuaternionFromAxisToRef<T extends Quaternion>(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>, ref: T): T {
         const rotMat = MathTmp.Matrix[0];
-        Matrix.FromXYZAxesToRef(axis1.normalize(), axis2.normalize(), axis3.normalize(), rotMat);
+        axis1 = axis1.normalizeToRef(MathTmp.Vector3[0]);
+        axis2 = axis2.normalizeToRef(MathTmp.Vector3[1]);
+        axis3 = axis3.normalizeToRef(MathTmp.Vector3[2]);
+        Matrix.FromXYZAxesToRef(axis1, axis2, axis3, rotMat);
         Quaternion.FromRotationMatrixToRef(rotMat, ref);
         return ref;
     }
@@ -7673,7 +7707,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
         const c = Math.cos(-angle);
         const c1 = 1 - c;
 
-        axis.normalize();
+        axis = axis.normalizeToRef(MathTmp.Vector3[0]);
         const m = result._m;
         m[0] = axis._x * axis._x * c1 + c;
         m[1] = axis._x * axis._y * c1 - axis._z * s;
@@ -8839,13 +8873,13 @@ Object.defineProperties(Matrix.prototype, {
  */
 class MathTmp {
     // Temporary Vector3s
-    public static Vector3 = ArrayTools.BuildTuple(11, Vector3.Zero);
+    public static Vector3 = BuildTuple(11, Vector3.Zero);
 
     // Temporary Matricies
-    public static Matrix = ArrayTools.BuildTuple(2, Matrix.Identity);
+    public static Matrix = BuildTuple(2, Matrix.Identity);
 
     // Temporary Quaternions
-    public static Quaternion = ArrayTools.BuildTuple(3, Quaternion.Zero);
+    public static Quaternion = BuildTuple(3, Quaternion.Zero);
 }
 
 /**
@@ -8853,19 +8887,19 @@ class MathTmp {
  */
 export class TmpVectors {
     /** 3 temp Vector2 at once should be enough */
-    public static Vector2 = ArrayTools.BuildTuple(3, Vector2.Zero);
+    public static Vector2 = BuildTuple(3, Vector2.Zero);
 
     /** 13 temp Vector3 at once should be enough */
-    public static Vector3 = ArrayTools.BuildTuple(13, Vector3.Zero);
+    public static Vector3 = BuildTuple(13, Vector3.Zero);
 
     /** 3 temp Vector4 at once should be enough */
-    public static Vector4 = ArrayTools.BuildTuple(3, Vector4.Zero);
+    public static Vector4 = BuildTuple(3, Vector4.Zero);
 
     /** 3 temp Quaternion at once should be enough */
-    public static Quaternion = ArrayTools.BuildTuple(3, Quaternion.Zero);
+    public static Quaternion = BuildTuple(3, Quaternion.Zero);
 
     /** 8 temp Matrices at once should be enough */
-    public static Matrix = ArrayTools.BuildTuple(8, Matrix.Identity);
+    public static Matrix = BuildTuple(8, Matrix.Identity);
 }
 
 RegisterClass("BABYLON.Vector2", Vector2);

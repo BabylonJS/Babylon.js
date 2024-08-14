@@ -2,6 +2,28 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Decal map PP",
+            "playgroundId": "#9BVW2S#82",
+            "renderCount": 120,
+            "referenceImage": "decal-map-pp.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Convolution Post Process",
+            "playgroundId": "#FBH4J7#281",
+            "referenceImage": "convolution.png"
+        },
+        {
+            "title": "Color correction",
+            "playgroundId": "#FBH4J7#278",
+            "referenceImage": "color-correction.png"
+        },
+        {
+            "title": "NME Multi Build",
+            "playgroundId": "#D8AK3Z#104",
+            "referenceImage": "nme-multi-build.png"
+        },
+        {
             "title": "BoundingInfo Helper",
             "playgroundId": "#BCNJD4#42",
             "referenceImage": "bbhelper.png",
@@ -543,7 +565,8 @@
             "title": "Shadow depth wrappers",
             "playgroundId": "#PNQRY1#73",
             "referenceImage": "shadowDepthWrappers.png",
-            "renderCount": 20
+            "renderCount": 20,
+            "excludedEngines": ["webgpu"]
         },
         {
             "title": "Displacement map",
@@ -1643,7 +1666,8 @@
         {
             "title": "Material Plugin",
             "playgroundId": "#22HT5Z#10",
-            "referenceImage": "materialPlugin.png"
+            "referenceImage": "materialPlugin.png",
+            "excludedEngines": ["webgpu"]
         },
         {
             "title": "Serialize and Load Instanced Hierarchy",
@@ -1705,6 +1729,7 @@
         {
             "title": "Fluid rendering particle system",
             "playgroundId": "#544N0Q#67",
+            "renderCount": 120,
             "referenceImage": "fluidParticleSystem.png",
             "excludedEngines": ["webgl1"]
         },
@@ -1713,7 +1738,7 @@
             "playgroundId": "#PCMH7A#2",
             "referenceImage": "fluidBoxSphere.png",
             "renderCount": 120,
-            "excludedEngines": ["webgl1"]
+            "excludedEngines": ["webgl1", "webgpu"]
         },
         {
             "title": "Export GLTF Extension KHR_texture_transform",
@@ -2153,6 +2178,11 @@
             "playgroundId": "#M2H33B",
             "replace": "//options//, modelIndex = 5;",
             "referenceImage": "computeMaxExtents-MorphStressTest.png"
+        },
+        {
+            "title": "glTF Loader Capabilities",
+            "playgroundId": "#EBO3J1#10",
+            "referenceImage": "glTFLoaderCapabilities.png"
         }
     ]
 }

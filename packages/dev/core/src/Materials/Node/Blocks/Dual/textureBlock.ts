@@ -444,7 +444,15 @@ export class TextureBlock extends NodeMaterialBlock {
         state.compilationString += `#ifdef ${this._defineName}\n`;
         state.compilationString += `${state._getVaryingName(this._transformedUVName)} = ${vec2}(${this._textureTransformName} * ${vec4}(${uvInput.associatedVariableName}.xy, 1.0, 0.0));\n`;
         state.compilationString += `#elif defined(${this._mainUVDefineName})\n`;
-        state.compilationString += `${state._getVaryingName(this._mainUVName)} = ${uvInput.associatedVariableName}.xy;\n`;
+
+        let automaticPrefix = "";
+        if (state.shaderLanguage === ShaderLanguage.WGSL) {
+            if (uvInput.isConnectedToInputBlock && uvInput.associatedVariableName.indexOf("vertexInputs.") === -1) {
+                automaticPrefix = "vertexInputs."; // Force the prefix
+            }
+        }
+
+        state.compilationString += `${state._getVaryingName(this._mainUVName)} = ${automaticPrefix}${uvInput.associatedVariableName}.xy;\n`;
         state.compilationString += `#endif\n`;
 
         if (!this._outputs.some((o) => o.isConnectedInVertexShader)) {

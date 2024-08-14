@@ -1,6 +1,5 @@
 import { Constants } from "../Engines/constants";
 import { PostProcess } from "../PostProcesses/postProcess";
-import "../Shaders/rgbdDecode.fragment";
 import type { Engine } from "../Engines/engine";
 
 import "../Engines/Extensions/engine.renderTarget";
@@ -9,11 +8,14 @@ import { ApplyPostProcess } from "./textureTools";
 import type { Texture } from "../Materials/Textures/texture";
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import type { Scene } from "../scene";
+import { ShaderLanguage } from "core/Materials";
 
 /**
  * Class used to host RGBD texture specific utilities
  */
 export class RGBDTextureTools {
+    private static _ShaderImported = false;
+
     /**
      * Expand the RGBD Texture from RGBD to Half Float if possible.
      * @param texture the texture to expand.
@@ -48,7 +50,20 @@ export class RGBDTextureTools {
             internalTexture.invertY = false;
         }
 
-        const expandRGBDTexture = () => {
+        const expandRGBDTexture = async () => {
+            const isWebGPU = engine.isWebGPU;
+            const shaderLanguage = isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
+            internalTexture.isReady = false;
+
+            if (!this._ShaderImported) {
+                this._ShaderImported = true;
+                if (isWebGPU) {
+                    await Promise.all([import("../ShadersWGSL/rgbdDecode.fragment"), import("../ShadersWGSL/rgbdEncode.fragment")]);
+                } else {
+                    await Promise.all([import("../Shaders/rgbdDecode.fragment"), import("../Shaders/rgbdEncode.fragment")]);
+                }
+            }
+
             // Expand the texture if possible
             // Simply run through the decode PP.
             const rgbdPostProcess = new PostProcess(
@@ -65,7 +80,9 @@ export class RGBDTextureTools {
                 internalTexture.type,
                 undefined,
                 null,
-                false
+                false,
+                undefined,
+                shaderLanguage
             );
             rgbdPostProcess.externalTextureSamplerBinding = true;
 
@@ -79,26 +96,28 @@ export class RGBDTextureTools {
                 format: Constants.TEXTUREFORMAT_RGBA,
             });
 
-            rgbdPostProcess.getEffect().executeWhenCompiled(() => {
-                // PP Render Pass
-                rgbdPostProcess.onApply = (effect) => {
-                    effect._bindTexture("textureSampler", internalTexture);
-                    effect.setFloat2("scale", 1, 1);
-                };
-                texture.getScene()!.postProcessManager.directRender([rgbdPostProcess!], expandedTexture, true);
+            rgbdPostProcess.onEffectCreatedObservable.addOnce(() => {
+                rgbdPostProcess.getEffect().executeWhenCompiled(() => {
+                    // PP Render Pass
+                    rgbdPostProcess.onApply = (effect) => {
+                        effect._bindTexture("textureSampler", internalTexture);
+                        effect.setFloat2("scale", 1, 1);
+                    };
+                    texture.getScene()!.postProcessManager.directRender([rgbdPostProcess!], expandedTexture, true);
 
-                // Cleanup
-                engine.restoreDefaultFramebuffer();
-                engine._releaseTexture(internalTexture);
-                if (rgbdPostProcess) {
-                    rgbdPostProcess.dispose();
-                }
+                    // Cleanup
+                    engine.restoreDefaultFramebuffer();
+                    engine._releaseTexture(internalTexture);
+                    if (rgbdPostProcess) {
+                        rgbdPostProcess.dispose();
+                    }
 
-                // Internal Swap
-                expandedTexture._swapAndDie(internalTexture);
+                    // Internal Swap
+                    expandedTexture._swapAndDie(internalTexture);
 
-                // Ready to get rolling again.
-                internalTexture.isReady = true;
+                    // Ready to get rolling again.
+                    internalTexture.isReady = true;
+                });
             });
         };
 

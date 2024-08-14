@@ -5,8 +5,6 @@ import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
 import { AbstractEngine } from "../Engines/abstractEngine";
 
-import "../Shaders/pass.fragment";
-import "../Shaders/passCube.fragment";
 import { RegisterClass } from "../Misc/typeStore";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 
@@ -46,6 +44,17 @@ export class PassPostProcess extends PostProcess {
         blockCompilation = false
     ) {
         super(name, "pass", null, null, options, camera, samplingMode, engine, reusable, undefined, textureType, undefined, null, blockCompilation);
+    }
+
+    protected override async _initShaderSourceAsync(useWebGPU: boolean) {
+        if (useWebGPU) {
+            this._webGPUReady = true;
+            await Promise.all([import("../ShadersWGSL/pass.fragment")]);
+        } else {
+            await Promise.all([import("../Shaders/pass.fragment")]);
+        }
+
+        await super._initShaderSourceAsync(useWebGPU);
     }
 
     /**
@@ -149,6 +158,17 @@ export class PassCubePostProcess extends PostProcess {
         blockCompilation = false
     ) {
         super(name, "passCube", null, null, options, camera, samplingMode, engine, reusable, "#define POSITIVEX", textureType, undefined, null, blockCompilation);
+    }
+
+    protected override async _initShaderSourceAsync(useWebGPU: boolean) {
+        if (useWebGPU) {
+            this._webGPUReady = true;
+            await Promise.all([import("../ShadersWGSL/passCube.fragment")]);
+        } else {
+            await Promise.all([import("../Shaders/passCube.fragment")]);
+        }
+
+        await super._initShaderSourceAsync(useWebGPU);
     }
 
     /**

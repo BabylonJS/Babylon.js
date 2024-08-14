@@ -6,7 +6,7 @@ import type { Color4 } from "../../Maths/math.color";
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { VertexData } from "../mesh.vertexData";
-import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
+import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
 
 /**
  * Creates the VertexData for a Ribbon
@@ -147,7 +147,7 @@ export function CreateRibbonVertexData(options: {
     let v: number;
     if (customUV) {
         for (p = 0; p < customUV.length; p++) {
-            uvs.push(customUV[p].x, CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 - customUV[p].y : customUV[p].y);
+            uvs.push(customUV[p].x, useOpenGLOrientationForUV ? 1.0 - customUV[p].y : customUV[p].y);
         }
     } else {
         for (p = 0; p < pathArray.length + closeArrayCorr; p++) {
@@ -157,7 +157,7 @@ export function CreateRibbonVertexData(options: {
                 if (invertUV) {
                     uvs.push(v, u);
                 } else {
-                    uvs.push(u, CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 - v : v);
+                    uvs.push(u, useOpenGLOrientationForUV ? 1.0 - v : v);
                 }
             }
         }
@@ -378,7 +378,7 @@ export function CreateRibbon(
             const uvs = <FloatArray>instance.getVerticesData(VertexBuffer.UVKind);
             for (let i = 0; i < options.uvs.length; i++) {
                 uvs[i * 2] = options.uvs[i].x;
-                uvs[i * 2 + 1] = CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 - options.uvs[i].y : options.uvs[i].y;
+                uvs[i * 2 + 1] = useOpenGLOrientationForUV ? 1.0 - options.uvs[i].y : options.uvs[i].y;
             }
             instance.updateVerticesData(VertexBuffer.UVKind, uvs, false, false);
         }

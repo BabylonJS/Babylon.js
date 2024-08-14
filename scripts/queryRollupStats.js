@@ -27,25 +27,34 @@ function stringToColorHash(str) {
     return color;
 }
 
-function queryRollupStats(filter, statsFilePath) {
+function queryRollupStats(filter, maxDepth, statsFilePath) {
+    if (!maxDepth) {
+        maxDepth = Number.POSITIVE_INFINITY;
+    }
     const { nodeMetas } = JSON.parse(fs.readFileSync(statsFilePath, "utf8"));
     const referenceStack = [];
+    const seenStacks = new Set();
 
-    function traverse(uid) {
+    function traverse(uid, depth) {
         const node = nodeMetas[uid];
         referenceStack.push(node.id);
 
-        if (node.importedBy.length === 0) {
-            for (let reference of referenceStack) {
-                const folder = path.dirname(reference);
-                const file = path.basename(reference);
-                reference = chalk.hex(stringToColorHash(reference))(`${folder}/${chalk.bold(file)}`);
-                console.log(reference);
+        if (node.importedBy.length === 0 || depth >= maxDepth) {
+            const stack = referenceStack.join(" -> ");
+            if (!seenStacks.has(stack)) {
+                seenStacks.add(stack);
+
+                for (let reference of referenceStack) {
+                    const folder = path.dirname(reference);
+                    const file = path.basename(reference);
+                    reference = chalk.hex(stringToColorHash(reference))(`${folder}/${chalk.bold(file)}`);
+                    console.log(reference);
+                }
+                console.log();
             }
-            console.log();
         } else {
             for (const importedBy of node.importedBy) {
-                traverse(importedBy.uid);
+                traverse(importedBy.uid, depth + 1);
             }
         }
 
@@ -56,12 +65,12 @@ function queryRollupStats(filter, statsFilePath) {
         .filter(([key, value]) => value.id.toLowerCase().includes(filter.toLocaleLowerCase()))
         .map(([key, value]) => key);
 
-    matches.forEach(traverse);
+    matches.forEach((match) => traverse(match, 1));
 }
 
 if (require.main === module) {
-    const [scriptPath, filter, statsFilePath = "stats.json"] = process.argv.slice(1);
-    queryRollupStats(filter, statsFilePath);
+    const [scriptPath, filter, maxDepth, statsFilePath = "stats.json"] = process.argv.slice(1);
+    queryRollupStats(filter, maxDepth, statsFilePath);
 }
 
 module.exports = {

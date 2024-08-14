@@ -1,5 +1,5 @@
 #if SM_USEDISTANCE == 1
-    vPositionWSM = worldPos.xyz;
+    vertexOutputs.vPositionWSM = worldPos.xyz;
 #endif
 
 #if SM_DEPTHTEXTURE == 1
@@ -18,13 +18,13 @@
 #endif
 
 #if defined(SM_DEPTHCLAMP) &&  SM_DEPTHCLAMP == 1
-    zSM = vertexOutputs.position.z;
+    vertexOutputs.zSM = vertexOutputs.position.z;
     vertexOutputs.position.z = 0.0;
 #elif SM_USEDISTANCE == 0
     // Color Texture Linear bias.
     #ifdef USE_REVERSE_DEPTHBUFFER
-        vDepthMetricSM = (-vertexOutputs.position.z + uniforms.depthValuesSM.x) / uniforms.depthValuesSM.y + uniforms.biasAndScaleSM.x;
+        vertexOutputs.vDepthMetricSM = (-vertexOutputs.position.z + uniforms.depthValuesSM.x) / uniforms.depthValuesSM.y + uniforms.biasAndScaleSM.x;
     #else
-        vDepthMetricSM = (vertexOutputs.position.z + uniforms.depthValuesSM.x) / uniforms.depthValuesSM.y + uniforms.biasAndScaleSM.x;
+        vertexOutputs.vDepthMetricSM = (vertexOutputs.position.z + uniforms.depthValuesSM.x) / uniforms.depthValuesSM.y + uniforms.biasAndScaleSM.x;
     #endif
 #endif

@@ -129,7 +129,7 @@ export function CreateGreasedLineMaterial(name: string, options: GreasedLineMate
             material = new GreasedLineSimpleMaterial(name, scene, options);
             break;
         default:
-            material = new StandardMaterial(name, scene);
+            material = new StandardMaterial(name, scene, true); // Forcing glsl for now
             new GreasedLinePluginMaterial(material, scene, options);
             break;
     }

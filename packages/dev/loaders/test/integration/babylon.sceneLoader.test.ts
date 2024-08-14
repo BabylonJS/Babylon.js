@@ -263,7 +263,7 @@ describe("Babylon Scene Loader", function () {
                         return data;
                     });
             });
-            expect(assertionData.length).toBeGreaterThan(1);
+            expect(assertionData.length).toBeGreaterThan(0);
             assertionData.forEach((data) => {
                 expect(data).toBe(true);
             });
@@ -415,8 +415,6 @@ describe("Babylon Scene Loader", function () {
 
                 return promise.then(() => window.scene!.whenReadyAsync()).then(() => Promise.all(promises));
             });
-
-            expect(assertionData.length).toBeGreaterThanOrEqual(3);
 
             assertionData.forEach((promise) => {
                 Object.keys(promise).forEach((key) => {

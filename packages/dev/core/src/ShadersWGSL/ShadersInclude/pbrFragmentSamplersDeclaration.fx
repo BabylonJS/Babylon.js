@@ -93,13 +93,11 @@
 #ifdef SUBSURFACE
     #ifdef SS_REFRACTION
         #ifdef SS_REFRACTIONMAP_3D
-            #define sampleRefraction(s, c) textureCube(s, c)
             
             var refractionSamplerSampler: sampler;
             var refractionSampler: texture_cube<f32>;
 
             #ifdef LODBASEDMICROSFURACE
-                #define sampleRefractionLod(s, c, l) textureCubeLodEXT(s, c, l)
             #else
                 var refractionLowSamplerSampler: sampler;
                 var refractionLowSampler: texture_cube<f32>;
@@ -107,13 +105,11 @@
                 var refractionHighSampler: texture_cube<f32>;
             #endif
         #else
-            #define sampleRefraction(s, c) texture2D(s, c)
             
             var refractionSamplerSampler: sampler;
             var refractionSampler: texture_2d<f32>;
 
             #ifdef LODBASEDMICROSFURACE
-                #define sampleRefractionLod(s, c, l) texture2DLodEXT(s, c, l)
             #else
                 var refractionLowSamplerSampler: sampler;
                 var refractionLowSampler: texture_2d<f32>;
