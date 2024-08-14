@@ -16,7 +16,7 @@ import type { DataBuffer } from "../Buffers/dataBuffer";
 import { Color3 } from "../Maths/math.color";
 import type { Viewport } from "../Maths/math.viewport";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { Observable } from "core/Misc";
+import { Observable } from "core/Misc/observable";
 
 /**
  * This represents a Lens Flare System or the shiny effect created by the light reflection on the  camera lenses.
