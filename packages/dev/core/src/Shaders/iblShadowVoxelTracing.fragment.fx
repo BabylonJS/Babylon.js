@@ -321,6 +321,106 @@ void genTB(const vec3 N, out vec3 T, out vec3 B) {
   B = vec3(b, s + N.y * N.y * a, -N.y);
 }
 
+int stack[24];                           // Swapped dimension
+#define PUSH(i) stack[stackLevel++] = i; // order, small
+#define POP() stack[--stackLevel]        // perf improvement
+
+#ifdef VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
+bool anyHitVoxels(const Ray ray_vs,
+                  out VoxelMarchDiagnosticInfo voxel_march_diagnostic_info) {
+#else
+bool anyHitVoxels(const Ray ray_vs) {
+#endif
+
+  vec3 invD = ray_vs.dir_rcp;
+  vec3 D = ray_vs.dir;
+  vec3 O = ray_vs.orig;
+  ivec3 negD = ivec3(lessThan(D, vec3(0, 0, 0)));
+  int voxel0 = negD.x | negD.y << 1 | negD.z << 2;
+  vec3 t0 = -O * invD, t1 = (vec3(1.0) - O) * invD;
+  int maxLod = int(highestMipLevel);
+  int stackLevel = 0;
+#if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
+  uint steps = 0u;
+#endif
+
+  PUSH(maxLod << 24);
+  while (stackLevel > 0) {
+    int elem = POP();
+    ivec4 Coords =
+        ivec4(elem & 0xFF, elem >> 8 & 0xFF, elem >> 16 & 0xFF, elem >> 24);
+
+    if (Coords.w == 0) {
+#if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
+      voxel_march_diagnostic_info.heat = float(steps) / 24.0;
+      //   voxel_march_diagnostic_info.voxel_intersect_coords = node_coords;
+#endif
+      return true;
+    }
+
+#if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
+    ++steps;
+#endif
+
+    float invRes = exp2(float(Coords.w - maxLod));
+    vec3 bbmin = invRes * vec3(Coords.xyz + negD);
+    vec3 bbmax = invRes * vec3(Coords.xyz - negD + ivec3(1));
+    vec3 mint = mix(t0, t1, bbmin);
+    vec3 maxt = mix(t0, t1, bbmax);
+    vec3 midt = 0.5 * (mint + maxt);
+    mint.x = max(0.0, mint.x);
+    midt.x = max(0.0, midt.x);
+
+    ////// NEW ////// With the conversion to a R8 voxel texture, the two
+    /// following lines have been swapped
+    int nodeMask = int(
+        round(texelFetch(voxelGridSampler, Coords.xyz, Coords.w).x * 255.0));
+    Coords.w--;
+    int voxelBit = voxel0;
+    Coords.xyz = (Coords.xyz << 1) + negD;
+
+    int packedCoords =
+        Coords.x | Coords.y << 8 | Coords.z << 16 | Coords.w << 24;
+    if (max(mint.x, max(mint.y, mint.z)) < min(midt.x, min(midt.y, midt.z)) &&
+        (1 << voxelBit & nodeMask) != 0)
+      PUSH(packedCoords);
+    voxelBit ^= 0x1;
+    packedCoords ^= 0x00001;
+    if (max(midt.x, max(mint.y, mint.z)) < min(maxt.x, min(midt.y, midt.z)) &&
+        (1 << voxelBit & nodeMask) != 0)
+      PUSH(packedCoords);
+    voxelBit ^= 0x2;
+    packedCoords ^= 0x00100;
+    if (max(midt.x, max(midt.y, mint.z)) < min(maxt.x, min(maxt.y, midt.z)) &&
+        (1 << voxelBit & nodeMask) != 0)
+      PUSH(packedCoords);
+    voxelBit ^= 0x1;
+    packedCoords ^= 0x00001;
+    if (max(mint.x, max(midt.y, mint.z)) < min(midt.x, min(maxt.y, midt.z)) &&
+        (1 << voxelBit & nodeMask) != 0)
+      PUSH(packedCoords);
+    voxelBit ^= 0x4;
+    packedCoords ^= 0x10000;
+    if (max(mint.x, max(midt.y, midt.z)) < min(midt.x, min(maxt.y, maxt.z)) &&
+        (1 << voxelBit & nodeMask) != 0)
+      PUSH(packedCoords);
+    voxelBit ^= 0x1;
+    packedCoords ^= 0x00001;
+    if (max(midt.x, max(midt.y, midt.z)) < min(maxt.x, min(maxt.y, maxt.z)) &&
+        (1 << voxelBit & nodeMask) != 0)
+      PUSH(packedCoords);
+    voxelBit ^= 0x2;
+    packedCoords ^= 0x00100;
+    if (max(midt.x, max(mint.y, midt.z)) < min(maxt.x, min(midt.y, maxt.z)) &&
+        (1 << voxelBit & nodeMask) != 0)
+      PUSH(packedCoords);
+    voxelBit ^= 0x1;
+    packedCoords ^= 0x00001;
+    if (max(mint.x, max(mint.y, midt.z)) < min(midt.x, min(midt.y, maxt.z)) &&
+        (1 << voxelBit & nodeMask) != 0)
+      PUSH(packedCoords);
+  }
+
 #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
   voxel_march_diagnostic_info.heat = float(steps) / 24.0;
 #endif
@@ -430,12 +530,11 @@ float voxelShadow(vec3 wsOrigin, vec3 wsDirection, vec3 wsNormal,
   ray_vs.t_min = max(ray_vs.t_min, near);
   ray_vs.t_max = min(ray_vs.t_max, far);
 
-  #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-    return hierarchical_march(ray_vs, voxel_march_diagnostic_info) ? 1.0f :
-    0.0f;
-  #else
-    return hierarchical_march(ray_vs) ? 1.0f : 0.0f;
-  #endif
+#if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
+  return anyHitVoxels(ray_vs, voxel_march_diagnostic_info) ? 1.0f : 0.0f;
+#else
+  return anyHitVoxels(ray_vs) ? 1.0f : 0.0f;
+#endif
 }
 
 void main(void) {

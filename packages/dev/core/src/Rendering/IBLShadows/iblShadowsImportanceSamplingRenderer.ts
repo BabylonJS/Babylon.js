@@ -169,7 +169,9 @@ export class _IblShadowsImportanceSamplingRenderer {
             defines: this._iblSource?.isCube ? "#define IBL_USE_CUBE_MAP\n" : "",
         };
         this._debugPass = new PostProcess(this._debugPassName, "iblShadowsImportanceSamplingDebug", debugOptions);
-        this._debugPass.getEffect().defines = this._iblSource?.isCube ? "#define IBL_USE_CUBE_MAP\n" : "";
+        if (this._debugPass.getEffect()) {
+            this._debugPass.getEffect().defines = this._iblSource?.isCube ? "#define IBL_USE_CUBE_MAP\n" : "";
+        }
         if (this._iblSource?.isCube) {
             this._debugPass.updateEffect("#define IBL_USE_CUBE_MAP\n");
         }

@@ -568,6 +568,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._shadowCompositePP = new PostProcess("iblShadowsCombine", "iblShadowsCombine", compositeOptions);
         this._shadowCompositePP.autoClear = false;
         this._shadowCompositePP.onApply = (effect) => {
+            // Setting the input of the tracing pass because this is the scene RT that we want to apply the shadows to.
             effect.setTextureFromPostProcess("sceneTexture", this._voxelTracingPass.getPassPP());
             effect.setFloat("shadowOpacity", this._shadowOpacity);
             if (
