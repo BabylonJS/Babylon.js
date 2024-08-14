@@ -50,7 +50,7 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
 
     private _screenOrientationAngle: number = 0;
 
-    private _constantTranform: Quaternion;
+    private _constantTransform: Quaternion;
     private _screenQuaternion: Quaternion = new Quaternion();
 
     private _alpha: number = 0;
@@ -112,7 +112,7 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
      * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
      */
     constructor() {
-        this._constantTranform = new Quaternion(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5));
+        this._constantTransform = new Quaternion(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5));
         this._orientationChanged();
     }
 
@@ -209,16 +209,19 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
      * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
      */
     public checkInputs(): void {
-        //if no device orientation provided, don't update the rotation.
-        //Only testing against alpha under the assumption thatnorientation will never be so exact when set.
+        // if no device orientation provided, don't update the rotation.
+        // Only testing against alpha under the assumption that orientation will never be so exact when set.
         if (!this._alpha) {
             return;
         }
         Quaternion.RotationYawPitchRollToRef(Tools.ToRadians(this._alpha), Tools.ToRadians(this._beta), -Tools.ToRadians(this._gamma), this.camera.rotationQuaternion);
         this._camera.rotationQuaternion.multiplyInPlace(this._screenQuaternion);
-        this._camera.rotationQuaternion.multiplyInPlace(this._constantTranform);
-        //Mirror on XY Plane
-        this._camera.rotationQuaternion.z *= -1;
+        this._camera.rotationQuaternion.multiplyInPlace(this._constantTransform);
+        if (this._camera.getScene().useRightHandedSystem) {
+            this._camera.rotationQuaternion.y *= -1;
+        } else {
+            this._camera.rotationQuaternion.z *= -1;
+        }
         this._camera.rotationQuaternion.w *= -1;
     }
 
