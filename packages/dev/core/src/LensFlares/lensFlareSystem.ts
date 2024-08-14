@@ -152,7 +152,6 @@ export class LensFlareSystem {
         }
 
         this._shadersLoaded = true;
-
         this._onShadersLoaded.notifyObservers();
     }
 
