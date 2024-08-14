@@ -4,7 +4,6 @@ import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
 import type { NodeRenderGraphConnectionPoint } from "../nodeRenderGraphBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
 import type { Camera } from "../../../Cameras/camera";
-//import type { ThinTexture } from "../../../Materials/Textures/thinTexture";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
 import type { Vector3 } from "../../../Maths/math.vector";
 import type { RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
@@ -95,6 +94,7 @@ export class RenderGraphInputBlock extends NodeRenderGraphBlock {
 
     public set value(value: Nullable<NodeRenderGraphValueType>) {
         this._storedValue = value;
+        this.output.value = undefined as any;
         this.onValueChangedObservable.notifyObservers(this);
     }
 
@@ -124,8 +124,6 @@ export class RenderGraphInputBlock extends NodeRenderGraphBlock {
     public getInternalTextureFromValue(): Nullable<InternalTexture> {
         if ((this._storedValue as RenderTargetWrapper).shareDepth) {
             return (this._storedValue as RenderTargetWrapper).texture;
-            // } else if ((this._storedValue as ThinTexture).getInternalTexture) {
-            //     return (this._storedValue as ThinTexture).getInternalTexture();
         }
         return null;
     }

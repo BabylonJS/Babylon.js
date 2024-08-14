@@ -16,7 +16,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     private _effectRenderer: EffectRenderer;
     private _currentRenderTargetHandle: TextureHandle;
     private _renderTargetIsBound = true;
-    private _copyTexture: CopyTextureToTexture; // todo: remove
+    private _copyTexture: CopyTextureToTexture;
 
     constructor(
         private _engine: AbstractEngine,

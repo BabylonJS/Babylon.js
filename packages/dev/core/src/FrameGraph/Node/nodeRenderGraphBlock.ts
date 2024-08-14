@@ -12,7 +12,7 @@ import type { AbstractEngine } from "../../Engines/abstractEngine";
 import type { IFrameGraphTask } from "../Tasks/IFrameGraphTask";
 
 /**
- * Defines a block that can be used inside a frame graph
+ * Defines a block that can be used inside a node render graph
  */
 export class NodeRenderGraphBlock {
     private _name = "";
@@ -25,11 +25,11 @@ export class NodeRenderGraphBlock {
     protected _engine: AbstractEngine;
     protected _frameGraphTask: IFrameGraphTask;
 
-    public get disabledFromGraph() {
+    public get disabled() {
         return this._frameGraphTask?.disabledFromGraph ?? false;
     }
 
-    public set disabledFromGraph(value: boolean) {
+    public set disabled(value: boolean) {
         if (this._frameGraphTask) {
             this._frameGraphTask.disabledFromGraph = value;
         }
@@ -119,7 +119,7 @@ export class NodeRenderGraphBlock {
     }
 
     /**
-     * Gets a boolean indicating that this block can only be used once per frame graph
+     * Gets a boolean indicating that this block can only be used once per node render graph
      */
     public get isUnique() {
         return this._isUnique;

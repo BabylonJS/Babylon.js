@@ -2,7 +2,7 @@ import type { FrameGraph } from "../frameGraph";
 import type { NodeRenderGraphConnectionPoint } from "./nodeRenderGraphBlockConnectionPoint";
 
 /**
- * Class used to store node based frame graph build state
+ * Class used to store node based render graph build state
  */
 export class NodeRenderGraphBuildState {
     /** Gets or sets the build identifier */

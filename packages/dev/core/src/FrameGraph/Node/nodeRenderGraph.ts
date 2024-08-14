@@ -26,7 +26,7 @@ declare let NODERENDERGRAPHEDITOR: any;
 declare let BABYLON: any;
 
 /**
- * Interface used to configure the frame graph editor
+ * Interface used to configure the node render graph editor
  */
 export interface INodeRenderGraphEditorOptions {
     /** Define the URL to load node editor script from */
@@ -39,14 +39,14 @@ export interface INodeRenderGraphEditorOptions {
 }
 
 /**
- * Options that can be passed to the frame graph build method
+ * Options that can be passed to the node render graph build method
  */
 export interface INodeRenderGraphCreateOptions {
-    /** if true, textures created by the frame graph will be visible in the inspector, for easier debugging (default: false) */
+    /** if true, textures created by the node render graph will be visible in the inspector, for easier debugging (default: false) */
     debugTextures?: boolean;
     /** Scene in which debugging textures are to be created */
     scene?: Scene;
-    /** Rebuild the frame graph when the screen is resized (default: true) */
+    /** Rebuild the node render graph when the screen is resized (default: true) */
     rebuildGraphOnEngineResize?: boolean;
     /** defines if the build should log activity (default: false) */
     verbose?: boolean;
@@ -98,11 +98,11 @@ export class NodeRenderGraph {
     public attachedBlocks: NodeRenderGraphBlock[] = [];
 
     /**
-     * Observable raised when the frame graph is built
+     * Observable raised when the node render graph is built
      */
     public onBuildObservable = new Observable<NodeRenderGraph>();
 
-    /** Gets or sets the FrameGraphOutputBlock used to gather the final frame graph data */
+    /** Gets or sets the RenderGraphOutputBlock used to gather the final node render graph data */
     public outputBlock: Nullable<RenderGraphOutputBlock> = null;
 
     /**
@@ -111,7 +111,7 @@ export class NodeRenderGraph {
     public snippetId: string;
 
     /**
-     * The name of the frame graph
+     * The name of the node render graph
      */
     @serialize()
     public name: string;
@@ -127,9 +127,13 @@ export class NodeRenderGraph {
     private _frameGraph: FrameGraph;
     private _options: INodeRenderGraphCreateOptions;
 
+    public get frameGraph() {
+        return this._frameGraph;
+    }
+
     /**
-     * Creates a new frame graph
-     * @param name defines the name of the frame graph
+     * Creates a new node render graph
+     * @param name defines the name of the node render graph
      * @param engine defines the engine to use to execute the graph
      * @param options defines the options to use when creating the graph
      */
@@ -216,7 +220,7 @@ export class NodeRenderGraph {
     }
 
     /**
-     * Launch the frame graph editor
+     * Launch the node render graph editor
      * @param config Define the configuration of the editor
      * @returns a promise fulfilled when the node editor is visible
      */
@@ -246,10 +250,10 @@ export class NodeRenderGraph {
      */
     private _createNodeEditor(additionalConfig?: any) {
         const nodeEditorConfig: any = {
-            frameGraph: this,
+            nodeRenderGraph: this,
             ...additionalConfig,
         };
-        this.BJSNODERENDERGRAPHEDITOR.FrameGraphEditor.Show(nodeEditorConfig);
+        this.BJSNODERENDERGRAPHEDITOR.NodeRenderGraphEditor.Show(nodeEditorConfig);
     }
 
     /**
@@ -257,7 +261,7 @@ export class NodeRenderGraph {
      */
     public build() {
         if (!this.outputBlock) {
-            throw new Error("You must define the outputBlock property before building the frame graph");
+            throw new Error("You must define the outputBlock property before building the node render graph");
         }
 
         this._initializeBlock(this.outputBlock);
@@ -282,8 +286,8 @@ export class NodeRenderGraph {
     }
 
     /**
-     * Returns a promise that resolves when the frame graph is ready to be executed
-     * This method must be called after the graph has been built (FrameGraph.build called)!
+     * Returns a promise that resolves when the node render graph is ready to be executed
+     * This method must be called after the graph has been built (NodeRenderGraph.build called)!
      * @param timeout Timeout in ms between retries (default is 16)
      * @returns The promise that resolves when the graph is ready
      */
@@ -468,7 +472,7 @@ export class NodeRenderGraph {
     }
 
     /**
-     * Generate a string containing the code declaration required to create an equivalent of this frame graph
+     * Generate a string containing the code declaration required to create an equivalent of this node render graph
      * @returns a string
      */
     public generateCode() {
@@ -487,7 +491,7 @@ export class NodeRenderGraph {
             }
             return value;
         });
-        let codeString = `let frameGraph = new BABYLON.FrameGraph("${this.name || "frame graph"}", engine, ${options.replace('"#scene#"', "scene")});\n`;
+        let codeString = `let nodeRenderGraph = new BABYLON.NodeRenderGraph("${this.name || "render graph"}", engine, ${options.replace('"#scene#"', "scene")});\n`;
         for (const node of blocks) {
             if (node.isInput && alreadyDumped.indexOf(node) === -1) {
                 codeString += node._dumpCode(uniqueNames, alreadyDumped) + "\n";
@@ -502,8 +506,8 @@ export class NodeRenderGraph {
 
             // Output nodes
             codeString += "// Output nodes\n";
-            codeString += `frameGraph.outputBlock = ${this.outputBlock._codeVariableName};\n`;
-            codeString += `frameGraph.build();\n`;
+            codeString += `nodeRenderGraph.outputBlock = ${this.outputBlock._codeVariableName};\n`;
+            codeString += `nodeRenderGraph.build();\n`;
         }
 
         return codeString;
@@ -551,16 +555,16 @@ export class NodeRenderGraph {
         backBuffer.output.connectTo(clear.texture);
 
         // Final output
-        const output = new RenderGraphOutputBlock("Frame graph Output", this._engine);
+        const output = new RenderGraphOutputBlock("Output", this._engine);
         clear.output.connectTo(output.texture);
 
         this.outputBlock = output;
     }
 
     /**
-     * Makes a duplicate of the current frame graph.
-     * @param name defines the name to use for the new frame graph
-     * @returns the new frame graph
+     * Makes a duplicate of the current node render graph.
+     * @param name defines the name to use for the new node render graph
+     * @returns the new node render graph
      */
     public clone(name: string): NodeRenderGraph {
         const serializationObject = this.serialize();
@@ -576,9 +580,9 @@ export class NodeRenderGraph {
     }
 
     /**
-     * Serializes this frame graph in a JSON representation
-     * @param selectedBlocks defines the list of blocks to save (if null the whole frame graph will be saved)
-     * @returns the serialized frame graph object
+     * Serializes this node render graph in a JSON representation
+     * @param selectedBlocks defines the list of blocks to save (if null the whole node render graph will be saved)
+     * @returns the serialized node render graph object
      */
     public serialize(selectedBlocks?: NodeRenderGraphBlock[]): any {
         const serializationObject = selectedBlocks ? {} : SerializationHelper.Serialize(this);
@@ -589,7 +593,7 @@ export class NodeRenderGraph {
         if (selectedBlocks) {
             blocks = selectedBlocks;
         } else {
-            serializationObject.customType = "BABYLON.FrameGraph";
+            serializationObject.customType = "BABYLON.NodeRenderGraph";
             if (this.outputBlock) {
                 serializationObject.outputNodeId = this.outputBlock.uniqueId;
             }
@@ -633,58 +637,58 @@ export class NodeRenderGraph {
     }
 
     /**
-     * Creates a new frame graph set to default basic configuration
-     * @param name defines the name of the frame graph
+     * Creates a new node render graph set to default basic configuration
+     * @param name defines the name of the node render graph
      * @param engine defines the engine to use
-     * @param frameGraphOptions defines options to use when creating the frame graph
-     * @returns a new FrameGraph
+     * @param nodeRenderGraphOptions defines options to use when creating the node render graph
+     * @returns a new NodeRenderGraph
      */
-    public static CreateDefault(name: string, engine: AbstractEngine, frameGraphOptions?: INodeRenderGraphCreateOptions): NodeRenderGraph {
-        const frameGraph = new NodeRenderGraph(name, engine, frameGraphOptions);
+    public static CreateDefault(name: string, engine: AbstractEngine, nodeRenderGraphOptions?: INodeRenderGraphCreateOptions): NodeRenderGraph {
+        const renderGraph = new NodeRenderGraph(name, engine, nodeRenderGraphOptions);
 
-        frameGraph.setToDefault();
-        frameGraph.build();
+        renderGraph.setToDefault();
+        renderGraph.build();
 
-        return frameGraph;
+        return renderGraph;
     }
 
     /**
-     * Creates a frame graph from parsed graph data
-     * @param source defines the JSON representation of the frame graph
+     * Creates a node render graph from parsed graph data
+     * @param source defines the JSON representation of the node render graph
      * @param engine defines the engine to use
-     * @param frameGraphOptions defines options to use when creating the frame graph
-     * @param skipBuild defines whether to skip building the frame graph (default is true)
-     * @returns a new frame graph
+     * @param nodeRenderGraphOptions defines options to use when creating the node render
+     * @param skipBuild defines whether to skip building the node render graph (default is true)
+     * @returns a new node render graph
      */
-    public static Parse(source: any, engine: AbstractEngine, frameGraphOptions?: INodeRenderGraphCreateOptions, skipBuild: boolean = true): NodeRenderGraph {
-        const frameGraph = SerializationHelper.Parse(() => new NodeRenderGraph(source.name, engine, frameGraphOptions), source, null);
+    public static Parse(source: any, engine: AbstractEngine, nodeRenderGraphOptions?: INodeRenderGraphCreateOptions, skipBuild: boolean = true): NodeRenderGraph {
+        const renderGraph = SerializationHelper.Parse(() => new NodeRenderGraph(source.name, engine, nodeRenderGraphOptions), source, null);
 
-        frameGraph.parseSerializedObject(source);
+        renderGraph.parseSerializedObject(source);
         if (!skipBuild) {
-            frameGraph.build();
+            renderGraph.build();
         }
 
-        return frameGraph;
+        return renderGraph;
     }
 
     /**
-     * Creates a frame graph from a snippet saved by the frame graph editor
+     * Creates a node render graph from a snippet saved by the node render graph editor
      * @param snippetId defines the snippet to load
      * @param engine defines the engine to use
-     * @param frameGraphOptions defines options to use when creating the frame graph
-     * @param frameGraph defines a frame graph to update (instead of creating a new one)
-     * @param skipBuild defines whether to skip building the frame graph (default is true)
-     * @returns a promise that will resolve to the new frame graph
+     * @param nodeRenderGraphOptions defines options to use when creating the node render graph
+     * @param nodeRenderGraph defines a node render graph to update (instead of creating a new one)
+     * @param skipBuild defines whether to skip building the node render graph (default is true)
+     * @returns a promise that will resolve to the new node render graph
      */
     public static ParseFromSnippetAsync(
         snippetId: string,
         engine: AbstractEngine,
-        frameGraphOptions?: INodeRenderGraphCreateOptions,
-        frameGraph?: NodeRenderGraph,
+        nodeRenderGraphOptions?: INodeRenderGraphCreateOptions,
+        nodeRenderGraph?: NodeRenderGraph,
         skipBuild: boolean = true
     ): Promise<NodeRenderGraph> {
         if (snippetId === "_BLANK") {
-            return Promise.resolve(NodeRenderGraph.CreateDefault("blank", engine, frameGraphOptions));
+            return Promise.resolve(NodeRenderGraph.CreateDefault("blank", engine, nodeRenderGraphOptions));
         }
 
         return new Promise((resolve, reject) => {
@@ -693,20 +697,20 @@ export class NodeRenderGraph {
                 if (request.readyState == 4) {
                     if (request.status == 200) {
                         const snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
-                        const serializationObject = JSON.parse(snippet.FrameGraph);
+                        const serializationObject = JSON.parse(snippet.NodeRenderGraph);
 
-                        if (!frameGraph) {
-                            frameGraph = SerializationHelper.Parse(() => new NodeRenderGraph(snippetId, engine, frameGraphOptions), serializationObject, null);
+                        if (!nodeRenderGraph) {
+                            nodeRenderGraph = SerializationHelper.Parse(() => new NodeRenderGraph(snippetId, engine, nodeRenderGraphOptions), serializationObject, null);
                         }
 
-                        frameGraph.parseSerializedObject(serializationObject);
-                        frameGraph.snippetId = snippetId;
+                        nodeRenderGraph.parseSerializedObject(serializationObject);
+                        nodeRenderGraph.snippetId = snippetId;
 
                         try {
                             if (!skipBuild) {
-                                frameGraph.build();
+                                nodeRenderGraph.build();
                             }
-                            resolve(frameGraph);
+                            resolve(nodeRenderGraph);
                         } catch (err) {
                             reject(err);
                         }

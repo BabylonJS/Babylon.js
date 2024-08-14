@@ -1,5 +1,5 @@
 /**
- * Defines the kind of connection point for frame graph node
+ * Defines the kind of connection point for node render graph nodes
  */
 export enum NodeRenderGraphBlockConnectionPointTypes {
     /** General purpose texture */
