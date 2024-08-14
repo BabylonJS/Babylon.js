@@ -173,12 +173,12 @@ export class NodeRenderGraph {
      * @param name defines the name of the block to retrieve
      * @returns the required block or null if not found
      */
-    public getBlockByName(name: string) {
-        let result = null;
+    public getBlockByName<T extends NodeRenderGraphBlock>(name: string): Nullable<T> {
+        let result: Nullable<T> = null;
         for (const block of this.attachedBlocks) {
             if (block.name === name) {
                 if (!result) {
-                    result = block;
+                    result = block as T;
                 } else {
                     Tools.Warn("More than one block was found with the name `" + name + "`");
                     return result;

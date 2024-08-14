@@ -235,4 +235,4 @@ export class RenderGraphInputBlock extends NodeRenderGraphBlock {
     }
 }
 
-RegisterClass("BABYLON.RenderGraphOutputBlock", RenderGraphInputBlock);
+RegisterClass("BABYLON.RenderGraphInputBlock", RenderGraphInputBlock);

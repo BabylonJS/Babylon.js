@@ -35,7 +35,7 @@ export class RenderGraphClearBlock extends NodeRenderGraphBlock {
             clearColor: true,
             clearDepth: false,
             clearStencil: false,
-            destinationTexture: undefined as any, // will be set in _buildBlock
+            outputTexture: undefined as any, // will be set in _buildBlock
         };
     }
 
@@ -108,8 +108,8 @@ export class RenderGraphClearBlock extends NodeRenderGraphBlock {
         this._propagateInputValueToOutput(this.texture, this.output);
 
         const inputTexture = this.texture.connectedPoint?.value;
-        if (inputTexture && NodeRenderGraphConnectionPoint.ValueIsTexture(inputTexture)) {
-            this._taskParameters.destinationTexture = inputTexture;
+        if (NodeRenderGraphConnectionPoint.ValueIsTexture(inputTexture)) {
+            this._taskParameters.outputTexture = inputTexture;
         }
 
         state.frameGraph.addTask(this._frameGraphTask, this._taskParameters);

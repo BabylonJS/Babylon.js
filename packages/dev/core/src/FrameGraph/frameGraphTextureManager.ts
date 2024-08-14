@@ -62,22 +62,7 @@ export class FrameGraphTextureManager {
         private _scene?: Scene
     ) {
         this._engine = _engine;
-
-        this._textures[backbufferColorTextureHandle] = {
-            texture: null,
-            name: "backbuffer color",
-            namespace: FrameGraphTextureNamespace.External,
-            systemType: FrameGraphTextureSystemType.BackbufferColor,
-        };
-        // todo: fill this._textureCreationOptions[backbufferColorTextureHandle] with backbuffer color description
-
-        this._textures[backbufferDepthStencilTextureHandle] = {
-            texture: null,
-            name: "backbuffer depth/stencil",
-            namespace: FrameGraphTextureNamespace.External,
-            systemType: FrameGraphTextureSystemType.BackbufferDepthStencil,
-        };
-        // todo: fill this._textureCreationOptions[backbufferDepthStencilTextureHandle] with backbuffer depth/stencil description
+        this._setSystemTextures();
     }
 
     public importTexture(name: string, texture: RenderTargetWrapper, handle?: TextureHandle): TextureHandle {
@@ -196,7 +181,7 @@ export class FrameGraphTextureManager {
     }
 
     /** @internal */
-    public _releaseTextures(keepTextureEntries = false): void {
+    public _releaseTextures(releaseAll = true): void {
         let index = -1;
         for (let i = 0; i < this._textures.length; i++) {
             const wrapper = this._textures[i];
@@ -204,39 +189,42 @@ export class FrameGraphTextureManager {
                 continue;
             }
 
-            if (
-                wrapper.namespace === FrameGraphTextureNamespace.Task ||
-                wrapper.namespace === FrameGraphTextureNamespace.Proxy ||
-                wrapper.namespace === FrameGraphTextureNamespace.Graph
-            ) {
-                if (wrapper.namespace !== FrameGraphTextureNamespace.Proxy) {
-                    wrapper.texture?.dispose();
-                    wrapper.debug?.dispose();
-                }
-                if (keepTextureEntries && wrapper.namespace === FrameGraphTextureNamespace.Graph) {
-                    wrapper.texture = null;
-                    wrapper.debug = undefined;
-                    index = i;
-                } else {
-                    this._textures[i] = undefined;
-                    this._textureCreationOptions[i] = undefined;
-                }
-            } else {
+            if (releaseAll || wrapper.namespace !== FrameGraphTextureNamespace.External) {
+                wrapper.debug?.dispose();
+                wrapper.debug = undefined;
+            }
+
+            if (wrapper.namespace === FrameGraphTextureNamespace.External) {
                 index = i;
+                continue;
+            }
+
+            if (wrapper.namespace !== FrameGraphTextureNamespace.Proxy) {
+                wrapper.texture?.dispose();
+            }
+
+            if (!releaseAll && wrapper.namespace === FrameGraphTextureNamespace.Graph) {
+                wrapper.texture = null;
+                index = i;
+            } else {
+                this._textures[i] = undefined;
+                this._textureCreationOptions[i] = undefined;
             }
         }
 
         index++;
 
-        this._textures.length = index;
-        this._textureCreationOptions.length = index;
+        this._textures.length = releaseAll ? 0 : index;
+        this._textureCreationOptions.length = releaseAll ? 0 : index;
         this._texturesIndex = 0;
+
+        if (releaseAll) {
+            this._setSystemTextures();
+        }
     }
 
     public dispose(): void {
         this._releaseTextures();
-        this._textures.length = 0;
-        this._textureCreationOptions.length = 0;
     }
 
     /** @internal */
@@ -250,6 +238,24 @@ export class FrameGraphTextureManager {
         this._textures[handle] = { texture: null, name, namespace: FrameGraphTextureNamespace.Proxy };
 
         return handle;
+    }
+
+    private _setSystemTextures(): void {
+        this._textures[backbufferColorTextureHandle] = {
+            texture: null,
+            name: "backbuffer color",
+            namespace: FrameGraphTextureNamespace.External,
+            systemType: FrameGraphTextureSystemType.BackbufferColor,
+        };
+        // todo: fill this._textureCreationOptions[backbufferColorTextureHandle] with backbuffer color description
+
+        this._textures[backbufferDepthStencilTextureHandle] = {
+            texture: null,
+            name: "backbuffer depth/stencil",
+            namespace: FrameGraphTextureNamespace.External,
+            systemType: FrameGraphTextureSystemType.BackbufferDepthStencil,
+        };
+        // todo: fill this._textureCreationOptions[backbufferDepthStencilTextureHandle] with backbuffer depth/stencil description
     }
 
     private _createHandleForTexture(name: string, texture: Nullable<RenderTargetWrapper>, namespace: FrameGraphTextureNamespace, handle?: TextureHandle): TextureHandle {

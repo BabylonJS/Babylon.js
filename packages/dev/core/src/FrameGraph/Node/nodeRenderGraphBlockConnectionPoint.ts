@@ -60,8 +60,8 @@ export class NodeRenderGraphConnectionPoint {
         return this._direction;
     }
 
-    public static ValueIsTexture(value: NodeRenderGraphConnectionPointValueType): value is FrameGraphTaskOutputTexture | TextureHandle {
-        return typeof value === "string" || typeof value === "number";
+    public static ValueIsTexture(value: NodeRenderGraphConnectionPointValueType | undefined): value is FrameGraphTaskOutputTexture | TextureHandle {
+        return value !== undefined && (typeof value === "string" || typeof value === "number");
     }
 
     /**

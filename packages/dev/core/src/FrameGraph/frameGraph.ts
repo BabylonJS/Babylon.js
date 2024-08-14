@@ -156,7 +156,7 @@ export class FrameGraph {
 
     public addPass(name: string, whenTaskDisabled = false): FrameGraphPass<FrameGraphContext> {
         if (!this._currentProcessedTask) {
-            throw new Error("A pass must be created during a Task.addToFrameGraph execution.");
+            throw new Error("A pass must be created during a Task.recordFrameGraph execution.");
         }
 
         const pass = new FrameGraphPass(name, this._textureManager, this._currentProcessedTask, this._passContext);
@@ -172,7 +172,7 @@ export class FrameGraph {
 
     public addRenderPass(name: string, whenTaskDisabled = false): FrameGraphRenderPass {
         if (!this._currentProcessedTask) {
-            throw new Error("A pass must be created during a Task.addToFrameGraph execution.");
+            throw new Error("A pass must be created during a Task.recordFrameGraph execution.");
         }
 
         const pass = new FrameGraphRenderPass(name, this._textureManager, this._currentProcessedTask, this._renderContext);
@@ -187,7 +187,7 @@ export class FrameGraph {
     }
 
     public build(): void {
-        this._textureManager._releaseTextures(true);
+        this._textureManager._releaseTextures(false);
 
         const taskNames = new Set<string>();
         for (const task of this._tasks) {
@@ -299,7 +299,7 @@ export class FrameGraph {
 
         this._tasks.length = 0;
         this._mapNameToTask.clear();
-        this._textureManager._releaseTextures(true);
+        this._textureManager._releaseTextures();
         this._currentProcessedTask = null;
     }
 

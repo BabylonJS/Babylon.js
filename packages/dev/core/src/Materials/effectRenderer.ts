@@ -343,9 +343,9 @@ export class EffectWrapper {
 
     /**
      * Disposes of the effect wrapper
-     * @param disposeEffect defines if the underlying effect should also be disposed (true by default)
+     * @param disposeEffect defines if the underlying effect should also be disposed (false by default)
      */
-    public dispose(disposeEffect = true) {
+    public dispose(disposeEffect = false) {
         if (this._onContextRestoredObserver) {
             this.effect.getEngine().onContextRestoredObservable.remove(this._onContextRestoredObserver);
             this._onContextRestoredObserver = null;

@@ -102,12 +102,12 @@ export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
         this.output.value = this.name;
 
         const source = this.source.connectedPoint?.value;
-        if (source && NodeRenderGraphConnectionPoint.ValueIsTexture(source)) {
+        if (NodeRenderGraphConnectionPoint.ValueIsTexture(source)) {
             this._taskParameters.sourceTexture = source;
         }
 
         const destination = this.destination.connectedPoint?.value;
-        if (destination && NodeRenderGraphConnectionPoint.ValueIsTexture(destination)) {
+        if (NodeRenderGraphConnectionPoint.ValueIsTexture(destination)) {
             this._taskParameters.outputTexture = destination;
         }
 

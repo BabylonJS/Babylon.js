@@ -2,7 +2,6 @@ import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
 import { NodeRenderGraphConnectionPoint } from "../nodeRenderGraphBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../Enums/nodeRenderGraphBlockConnectionPointTypes";
-import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
 import type { AbstractEngine } from "../../../Engines/abstractEngine";
 import type { NodeRenderGraphBuildState } from "../nodeRenderGraphBuildState";
 import type { IFrameGraphCopyToBackbufferColorInputData } from "core/FrameGraph/Tasks/copyToBackbufferColorTask";
@@ -34,16 +33,6 @@ export class RenderGraphOutputBlock extends NodeRenderGraphBlock {
         };
     }
 
-    /** Disables the copy of the input texture to the back buffer in case the input texture is not already the back buffer texture */
-    @editableInPropertyPage("Disable back buffer copy", PropertyTypeForEdition.Boolean, "PROPERTIES")
-    public get disableBackBufferCopy() {
-        return this._frameGraphTask.disabledFromGraph;
-    }
-
-    public set disableBackBufferCopy(value: boolean) {
-        this._frameGraphTask.disabledFromGraph = value;
-    }
-
     /**
      * Gets the current class name
      * @returns the class name
@@ -64,28 +53,11 @@ export class RenderGraphOutputBlock extends NodeRenderGraphBlock {
         this._frameGraphTask.name = this.name;
 
         const inputTexture = this.texture.connectedPoint?.value;
-        if (inputTexture && NodeRenderGraphConnectionPoint.ValueIsTexture(inputTexture)) {
+        if (NodeRenderGraphConnectionPoint.ValueIsTexture(inputTexture)) {
             this._taskParameters.sourceTexture = inputTexture;
         }
 
         state.frameGraph.addTask(this._frameGraphTask, this._taskParameters);
-    }
-
-    protected override _dumpPropertiesCode() {
-        const codes: string[] = [];
-        codes.push(`${this._codeVariableName}.disableBackBufferCopy = ${this.disableBackBufferCopy};`);
-        return super._dumpPropertiesCode() + codes.join("\n");
-    }
-
-    public override serialize(): any {
-        const serializationObject = super.serialize();
-        serializationObject.disableBackBufferCopy = this.disableBackBufferCopy;
-        return serializationObject;
-    }
-
-    public override _deserialize(serializationObject: any) {
-        super._deserialize(serializationObject);
-        this.disableBackBufferCopy = serializationObject.disableBackBufferCopy;
     }
 }
 

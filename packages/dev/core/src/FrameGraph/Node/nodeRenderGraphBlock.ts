@@ -401,6 +401,7 @@ export class NodeRenderGraphBlock {
         serializationObject.id = this.uniqueId;
         serializationObject.name = this.name;
         serializationObject.visibleOnFrame = this.visibleOnFrame;
+        serializationObject.disabled = this.disabled;
         if (this._additionalConstructionParameters) {
             serializationObject.additionalConstructionParameters = this._additionalConstructionParameters;
         }
@@ -424,7 +425,8 @@ export class NodeRenderGraphBlock {
     public _deserialize(serializationObject: any) {
         this._name = serializationObject.name;
         this.comments = serializationObject.comments;
-        this.visibleOnFrame = !!serializationObject.visibleOnFrame;
+        this.visibleOnFrame = serializationObject.visibleOnFrame;
+        this.disabled = serializationObject.disabled;
 
         this._deserializePortDisplayNamesAndExposedOnFrame(serializationObject);
     }

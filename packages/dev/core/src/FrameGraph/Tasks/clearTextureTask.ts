@@ -8,7 +8,7 @@ export interface IFrameGraphClearTextureInputData extends IFrameGraphInputData {
     clearColor?: boolean;
     clearDepth?: boolean;
     clearStencil?: boolean;
-    destinationTexture: FrameGraphTaskOutputTexture | TextureHandle;
+    outputTexture: FrameGraphTaskOutputTexture | TextureHandle;
 }
 
 export class FrameGraphClearTextureTask implements IFrameGraphTask {
@@ -21,18 +21,18 @@ export class FrameGraphClearTextureTask implements IFrameGraphTask {
     }
 
     public recordFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphClearTextureInputData) {
-        const destinationTextureHandle = frameGraph.getTextureHandle(inputData.destinationTexture);
+        const outputTextureHandle = frameGraph.getTextureHandle(inputData.outputTexture);
 
         const pass = frameGraph.addRenderPass("clear texture");
 
-        pass.setRenderTarget(destinationTextureHandle);
+        pass.setRenderTarget(outputTextureHandle);
         pass.setExecuteFunc((context) => {
             context.clear(inputData.color, !!inputData.clearColor, !!inputData.clearDepth, !!inputData.clearStencil);
         });
 
         const passDisabled = frameGraph.addRenderPass("clear texture_disabled", true);
 
-        passDisabled.setRenderTarget(destinationTextureHandle);
+        passDisabled.setRenderTarget(outputTextureHandle);
         passDisabled.setExecuteFunc((_context) => {});
     }
 }
