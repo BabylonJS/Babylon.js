@@ -1947,7 +1947,7 @@ export class WebGPUEngine extends AbstractEngine {
             if (onCompiled && compiledEffect.isReady()) {
                 onCompiled(compiledEffect);
             }
-
+            compiledEffect._refCount++;
             return compiledEffect;
         }
         const effect = new Effect(

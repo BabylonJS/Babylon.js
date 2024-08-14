@@ -184,6 +184,9 @@ export class Effect implements IDisposable {
 
     private _isDisposed = false;
 
+    /** @internal */
+    public _refCount = 0;
+
     /**
      * Observable that will be called when effect is bound.
      */
@@ -293,6 +296,7 @@ export class Effect implements IDisposable {
         key: string = "",
         shaderLanguage = ShaderLanguage.GLSL
     ) {
+        this._refCount = 1;
         this.name = baseName;
         this._key = key;
         const pipelineName = this._key.replace(/\r/g, "").replace(/\n/g, "|");
@@ -1434,6 +1438,13 @@ export class Effect implements IDisposable {
      * Release all associated resources.
      **/
     public dispose() {
+        this._refCount--;
+
+        if (this._refCount > 0) {
+            // Others are still using the effect
+            return;
+        }
+
         if (this._pipelineContext) {
             resetCachedPipeline(this._pipelineContext);
         }
