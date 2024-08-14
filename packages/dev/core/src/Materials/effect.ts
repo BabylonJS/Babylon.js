@@ -184,6 +184,9 @@ export class Effect implements IDisposable {
 
     private _isDisposed = false;
 
+    /** @internal */
+    public _refCount = 1;
+
     /**
      * Observable that will be called when effect is bound.
      */
@@ -1434,6 +1437,13 @@ export class Effect implements IDisposable {
      * Release all associated resources.
      **/
     public dispose() {
+        this._refCount--;
+
+        if (this._refCount > 0) {
+            // Others are still using the effect
+            return;
+        }
+
         if (this._pipelineContext) {
             resetCachedPipeline(this._pipelineContext);
         }

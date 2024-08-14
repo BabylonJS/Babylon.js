@@ -12,7 +12,10 @@ export class HTML3DElement extends HTMLElement {
     // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
     public static readonly observedAttributes = Object.freeze(["src", "env"] as const);
 
-    private readonly _viewer: Viewer;
+    /**
+     * Gets the underlying Viewer object.
+     */
+    public readonly viewer: Viewer;
 
     /**
      * Creates an instance of HTML3DElement.
@@ -48,7 +51,7 @@ export class HTML3DElement extends HTMLElement {
         `;
 
         const canvas = shadowRoot.querySelector("#renderCanvas") as HTMLCanvasElement;
-        this._viewer = createViewerForCanvas(canvas);
+        this.viewer = createViewerForCanvas(canvas);
     }
 
     /**
@@ -87,10 +90,10 @@ export class HTML3DElement extends HTMLElement {
     public attributeChangedCallback(name: (typeof HTML3DElement.observedAttributes)[number], oldValue: string, newValue: string) {
         switch (name) {
             case "src":
-                this._viewer.loadModelAsync(newValue).catch(Logger.Log);
+                this.viewer.loadModelAsync(newValue).catch(Logger.Log);
                 break;
             case "env":
-                this._viewer.loadEnvironmentAsync(newValue).catch(Logger.Log);
+                this.viewer.loadEnvironmentAsync(newValue).catch(Logger.Log);
                 break;
         }
     }
