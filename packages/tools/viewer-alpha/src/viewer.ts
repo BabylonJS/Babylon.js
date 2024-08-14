@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { AbstractEngine, AssetContainer, FramingBehavior, IDisposable, LoadAssetContainerOptions, Mesh, Nullable } from "core/index";
+import type { AbstractEngine, AssetContainer, Camera, FramingBehavior, IDisposable, LoadAssetContainerOptions, Mesh, Nullable } from "core/index";
 
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
@@ -19,8 +19,8 @@ import "core/Materials/Textures/Loaders/envTextureLoader";
 // eslint-disable-next-line import/no-internal-modules
 import "loaders/glTF/2.0/index";
 
-function createSkybox(scene: Scene, environmentTexture: CubeTexture, scale: number, blur: number): Nullable<Mesh> {
-    const hdrSkybox = CreateBox("hdrSkyBox", { size: scale }, scene);
+function createSkybox(scene: Scene, camera: Camera, environmentTexture: CubeTexture, blur: number): Mesh {
+    const hdrSkybox = CreateBox("hdrSkyBox", undefined, scene);
     const hdrSkyboxMaterial = new PBRMaterial("skyBox", scene);
     hdrSkyboxMaterial.backFaceCulling = false;
     hdrSkyboxMaterial.reflectionTexture = environmentTexture.clone();
@@ -34,7 +34,14 @@ function createSkybox(scene: Scene, environmentTexture: CubeTexture, scale: numb
     hdrSkybox.isPickable = false;
     hdrSkybox.infiniteDistance = true;
     hdrSkybox.ignoreCameraMaxZ = true;
+
+    updateSkybox(hdrSkybox, camera);
+
     return hdrSkybox;
+}
+
+function updateSkybox(skybox: Nullable<Mesh>, camera: Camera): void {
+    skybox?.scaling.setAll((camera.maxZ - camera.minZ) / 2);
 }
 
 const defaultViewerOptions = {
@@ -79,6 +86,7 @@ export type ViewerOptions = Partial<
 export class Viewer implements IDisposable {
     private readonly _details: ViewerDetails;
     private readonly _camera: ArcRotateCamera;
+    private _skybox: Nullable<Mesh> = null;
 
     private _isDisposed = false;
 
@@ -101,7 +109,7 @@ export class Viewer implements IDisposable {
         this._details.scene.clearColor = finalOptions.backgroundColor;
         this._camera = new ArcRotateCamera("camera1", 0, 0, 1, Vector3.Zero(), this._details.scene);
         this._camera.attachControl();
-        this._reframeCamera(); // set default camera values
+        this._updateCamera(); // set default camera values
 
         // Load a default light, but ignore errors as the user might be immediately loading their own environment.
         this.loadEnvironmentAsync(undefined).catch(() => {});
@@ -133,7 +141,7 @@ export class Viewer implements IDisposable {
             this._details.model?.dispose();
             this._details.model = await loadAssetContainerAsync(source, this._details.scene, options);
             this._details.model.addAllToScene();
-            this._reframeCamera();
+            this._updateCamera();
         });
     }
 
@@ -162,17 +170,23 @@ export class Viewer implements IDisposable {
                 } else {
                     const cubeTexture = CubeTexture.CreateFromPrefilteredData(url, this._details.scene);
                     this._details.scene.environmentTexture = cubeTexture;
-                    const skybox = createSkybox(this._details.scene, cubeTexture, (this._camera.maxZ - this._camera.minZ) / 2, 0.3);
+
+                    const skybox = createSkybox(this._details.scene, this._camera, cubeTexture, 0.3);
+                    this._skybox = skybox;
+
                     this._details.scene.autoClear = false;
+
+                    const dispose = () => {
+                        cubeTexture.dispose();
+                        skybox.dispose();
+                        this._skybox = null;
+                    };
 
                     const successObserver = cubeTexture.onLoadObservable.addOnce(() => {
                         successObserver.remove();
                         errorObserver.remove();
                         resolve({
-                            dispose() {
-                                cubeTexture.dispose();
-                                skybox?.dispose();
-                            },
+                            dispose,
                         });
                     });
 
@@ -180,6 +194,7 @@ export class Viewer implements IDisposable {
                         if (texture === cubeTexture) {
                             successObserver.remove();
                             errorObserver.remove();
+                            dispose();
                             reject(new Error("Failed to load environment texture."));
                         }
                     });
@@ -197,7 +212,7 @@ export class Viewer implements IDisposable {
     }
 
     // copy/paste from sandbox and scene helpers
-    private _reframeCamera(): void {
+    private _updateCamera(): void {
         // Enable camera's behaviors
         this._camera.useFramingBehavior = true;
         const framingBehavior = this._camera.getBehaviorByName("Framing") as FramingBehavior;
@@ -240,6 +255,8 @@ export class Viewer implements IDisposable {
         this._camera.wheelDeltaPercentage = 0.01;
         this._camera.pinchDeltaPercentage = 0.01;
         this._camera.restoreStateInterpolationFactor = 0.1;
+
+        updateSkybox(this._skybox, this._camera);
     }
 
     /**
