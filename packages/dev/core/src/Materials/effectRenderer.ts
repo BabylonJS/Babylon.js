@@ -343,8 +343,9 @@ export class EffectWrapper {
 
     /**
      * Disposes of the effect wrapper
+     * @param _ignored kept for backward compatibility
      */
-    public dispose() {
+    public dispose(_ignored: boolean) {
         if (this._onContextRestoredObserver) {
             this.effect.getEngine().onContextRestoredObservable.remove(this._onContextRestoredObserver);
             this._onContextRestoredObserver = null;
