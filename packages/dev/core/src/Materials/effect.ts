@@ -185,7 +185,7 @@ export class Effect implements IDisposable {
     private _isDisposed = false;
 
     /** @internal */
-    public _refCount = 0;
+    public _refCount = 1;
 
     /**
      * Observable that will be called when effect is bound.
@@ -296,7 +296,6 @@ export class Effect implements IDisposable {
         key: string = "",
         shaderLanguage = ShaderLanguage.GLSL
     ) {
-        this._refCount = 1;
         this.name = baseName;
         this._key = key;
         const pipelineName = this._key.replace(/\r/g, "").replace(/\n/g, "|");
