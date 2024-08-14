@@ -96,8 +96,8 @@ export class RGBDTextureTools {
                 format: Constants.TEXTUREFORMAT_RGBA,
             });
 
-            rgbdPostProcess.onEffectCreatedObservable.addOnce((e) => {
-                e.executeWhenCompiled(() => {
+            rgbdPostProcess.onEffectCreatedObservable.addOnce(() => {
+                rgbdPostProcess.getEffect().executeWhenCompiled(() => {
                     // PP Render Pass
                     rgbdPostProcess.onApply = (effect) => {
                         effect._bindTexture("textureSampler", internalTexture);

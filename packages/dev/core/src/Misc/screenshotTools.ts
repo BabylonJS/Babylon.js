@@ -302,17 +302,15 @@ export function CreateScreenshotUsingRenderTarget(
         const fxaaPostProcess = new FxaaPostProcess("antialiasing", 1.0, scene.activeCamera);
         texture.addPostProcess(fxaaPostProcess);
         // Async Shader Compilation can lead to none ready effects in synchronous code
-        fxaaPostProcess.onEffectCreatedObservable.addOnce((e) => {
-            if (!e.isReady()) {
-                e.onCompiled = () => {
-                    renderToTexture();
-                };
-            }
-            // The effect is ready we can render
-            else {
+        if (!fxaaPostProcess.getEffect().isReady()) {
+            fxaaPostProcess.getEffect().onCompiled = () => {
                 renderToTexture();
-            }
-        });
+            };
+        }
+        // The effect is ready we can render
+        else {
+            renderToTexture();
+        }
     } else {
         // No need to wait for extra resources to be ready
         renderToTexture();
