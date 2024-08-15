@@ -153,9 +153,10 @@ export class _IblShadowsVoxelRenderer {
                 generateDepthBuffer: true,
                 generateMipMaps: false,
                 type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
-                format: Constants.TEXTUREFORMAT_RG,
+                format: Constants.TEXTUREFORMAT_R,
                 samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             });
+            this._voxelSlabDebugRT.noPrePassRenderer = true;
         } else {
             if (this._voxelSlabDebugRT) {
                 this._removeVoxelRTs([this._voxelSlabDebugRT]);
@@ -171,7 +172,7 @@ export class _IblShadowsVoxelRenderer {
             const debugOptions: PostProcessOptions = {
                 width: this._engine.getRenderWidth(),
                 height: this._engine.getRenderHeight(),
-                textureFormat: Constants.TEXTUREFORMAT_RG,
+                textureFormat: Constants.TEXTUREFORMAT_R,
                 textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
                 samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
                 uniforms: ["sizeParams", "mipNumber"],
@@ -371,9 +372,9 @@ export class _IblShadowsVoxelRenderer {
     }
 
     private _createVoxelMRTs(name: string, voxelRT: RenderTargetTexture, numSlabs: number): MultiRenderTarget[] {
+        voxelRT.noPrePassRenderer = true;
         const mrtArray: MultiRenderTarget[] = [];
-        const targetTypes = new Array(this._maxDrawBuffers).fill(-1);
-        targetTypes[0] = this._isVoxelGrid3D ? Constants.TEXTURE_3D : Constants.TEXTURE_2D_ARRAY;
+        const targetTypes = new Array(this._maxDrawBuffers).fill(this._isVoxelGrid3D ? Constants.TEXTURE_3D : Constants.TEXTURE_2D_ARRAY);
 
         for (let mrt_index = 0; mrt_index < numSlabs; mrt_index++) {
             let layerIndices = new Array(this._maxDrawBuffers).fill(0);
@@ -403,7 +404,7 @@ export class _IblShadowsVoxelRenderer {
             );
 
             mrt.clearColor = new Color4(0, 0, 0, 1);
-
+            mrt.noPrePassRenderer = true;
             for (let i = 0; i < this._maxDrawBuffers; i++) {
                 mrt.setInternalTexture(voxelRT.getInternalTexture()!, i);
             }
@@ -453,23 +454,8 @@ export class _IblShadowsVoxelRenderer {
      * @returns true if the voxel renderer is ready to voxelize scene
      */
     public isReady() {
-        if (this._triPlanarVoxelization) {
-            if (!this._voxelMrtsXaxis.every((rt) => rt.isReadyForRendering())) {
-                return false;
-            }
-            if (!this._voxelMrtsYaxis.every((rt) => rt.isReadyForRendering())) {
-                return false;
-            }
-            if (!this._voxelMrtsZaxis.every((rt) => rt.isReadyForRendering())) {
-                return false;
-            }
-            if (!this._voxelGridRT.isReady()) {
-                return false;
-            }
-        } else {
-            if (!this._voxelMrtsZaxis.every((rt) => rt.isReadyForRendering())) {
-                return false;
-            }
+        if (!this.getVoxelGrid().isReady()) {
+            return false;
         }
 
         return true;
@@ -536,6 +522,7 @@ export class _IblShadowsVoxelRenderer {
         if (this._voxelizationInProgress) {
             const allRTsReady = this._renderTargets.every((rt) => rt.isReadyForRendering());
             if (allRTsReady) {
+                (this._scene.prePassRenderer as any)._setEnabled(false);
                 this._renderTargets.forEach((rt) => {
                     rt.render();
                 });
@@ -550,6 +537,7 @@ export class _IblShadowsVoxelRenderer {
                 this._copyMipMaps();
                 this._voxelizationInProgress = false;
                 this._scene.onAfterRenderTargetsRenderObservable.removeCallback((this as any).boundVoxelGridRenderFn);
+                (this._scene.prePassRenderer as any)._setEnabled(true);
             }
         }
     }

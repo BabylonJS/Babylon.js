@@ -54,7 +54,7 @@ class IblShadowsSettings {
      * Render the voxel grid from 3 different axis. This will result in better quality shadows with fewer
      * bits of missing geometry.
      */
-    public triplanarVoxelization: boolean = true;
+    public triPlanarVoxelization: boolean = true;
 
     /**
      * Include screen-space shadows in the IBL shadow pipeline. This adds sharp shadows to small details
@@ -516,7 +516,12 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         }
         this.shadowOpacity = options.shadowOpacity || 1.0;
         this._prePassEffectConfiguration = new IblShadowsPrepassConfiguration();
-        this._voxelRenderer = new _IblShadowsVoxelRenderer(this.scene, this, options ? options.resolutionExp : 6, options.triplanarVoxelization || true);
+        this._voxelRenderer = new _IblShadowsVoxelRenderer(
+            this.scene,
+            this,
+            options ? options.resolutionExp : 6,
+            options.triPlanarVoxelization !== undefined ? options.triPlanarVoxelization : true
+        );
         this._importanceSamplingRenderer = new _IblShadowsImportanceSamplingRenderer(this.scene);
         this._voxelTracingPass = new _IblShadowsVoxelTracingPass(this.scene, this);
         this.sampleDirections = options.sampleDirections || 1;
