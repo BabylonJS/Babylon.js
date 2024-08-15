@@ -87,10 +87,11 @@ export function checkNonFloatVertexBuffers(vertexBuffers: { [key: string]: Nulla
 
     if (shaderProcessingContext) {
         // We temporarily disable parallel compilation of shaders because we want new shaders to be compiled after the _processShaderCode call, so that they are in effect for the rest of the frame.
+        // There is no additional call to async so the _processShaderCodeAsync will execute synchronously.
         const parallelShaderCompile = engine._caps.parallelShaderCompile;
         engine._caps.parallelShaderCompile = undefined;
 
-        effect._processShaderCode(null, engine._features._checkNonFloatVertexBuffersDontRecreatePipelineContext, shaderProcessingContext);
+        effect._processShaderCodeAsync(null, engine._features._checkNonFloatVertexBuffersDontRecreatePipelineContext, shaderProcessingContext);
 
         engine._caps.parallelShaderCompile = parallelShaderCompile;
     }
