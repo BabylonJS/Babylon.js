@@ -11,7 +11,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #if defined(INSTANCES)
     fragmentOutputs.color = vMeshID;
 #else
-	fragmentOutputs.color = meshID;
+	fragmentOutputs.color = uniforms.meshID;
 #endif
 
 }
