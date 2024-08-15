@@ -152,6 +152,11 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * Defaults to false.
      */
     public disableTabNavigation = false;
+
+    /**
+     * If set to true, the POINTERTAP event type will be used for "click", instead of POINTERUP
+     */
+    public usePointerTapForClickEvent = false;
     /**
      * Gets or sets a number used to scale rendering size (2 means that the texture will be twice bigger).
      * Useful when you want more antialiasing
@@ -984,7 +989,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 pi.type !== PointerEventTypes.POINTERMOVE &&
                 pi.type !== PointerEventTypes.POINTERUP &&
                 pi.type !== PointerEventTypes.POINTERDOWN &&
-                pi.type !== PointerEventTypes.POINTERWHEEL
+                pi.type !== PointerEventTypes.POINTERWHEEL &&
+                pi.type !== PointerEventTypes.POINTERTAP
             ) {
                 return;
             }
