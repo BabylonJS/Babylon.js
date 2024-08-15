@@ -48,7 +48,7 @@ export class AnaglyphPostProcess extends PostProcess {
             await import("../Shaders/anaglyph.fragment");
         }
 
-        super._initShaderSourceAsync(useWebGPU);
+        await super._initShaderSourceAsync(useWebGPU);
     }
 }
 
