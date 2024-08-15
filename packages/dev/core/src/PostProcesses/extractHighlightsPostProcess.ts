@@ -66,7 +66,7 @@ export class ExtractHighlightsPostProcess extends PostProcess {
             await import("../Shaders/extractHighlights.fragment");
         }
 
-        super._initShaderSourceAsync(useWebGPU);
+        await super._initShaderSourceAsync(useWebGPU);
     }
 }
 

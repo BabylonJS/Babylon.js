@@ -87,7 +87,7 @@ class GlowBlurPostProcess extends PostProcess {
             await import("../Shaders/glowBlurPostProcess.fragment");
         }
 
-        super._initShaderSourceAsync(useWebGPU);
+        await super._initShaderSourceAsync(useWebGPU);
     }
 }
 

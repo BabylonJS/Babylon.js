@@ -450,7 +450,7 @@ export class ImageProcessingPostProcess extends PostProcess {
             await import("../Shaders/imageProcessing.fragment");
         }
 
-        super._initShaderSourceAsync(useWebGPU);
+        await super._initShaderSourceAsync(useWebGPU);
     }
 
     /**
