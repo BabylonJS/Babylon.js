@@ -26,12 +26,12 @@ export class NodeRenderGraphBlock {
     protected _frameGraphTask: IFrameGraphTask;
 
     public get disabled() {
-        return this._frameGraphTask?.disabled ?? false;
+        return this._frameGraphTask?.disabledFrameGraph ?? false;
     }
 
     public set disabled(value: boolean) {
         if (this._frameGraphTask) {
-            this._frameGraphTask.disabled = value;
+            this._frameGraphTask.disabledFrameGraph = value;
         }
     }
 

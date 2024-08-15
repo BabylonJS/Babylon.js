@@ -8,11 +8,11 @@ export interface IFrameGraphCopyToTextureInputData extends IFrameGraphInputData 
 }
 
 export class FrameGraphCopyToTextureTask implements IFrameGraphTask {
-    public disabled = false;
+    public disabledFrameGraph = false;
 
     constructor(public name: string) {}
 
-    public isReady() {
+    public isReadyFrameGraph() {
         return true;
     }
 

@@ -31,17 +31,24 @@ import { DecodeBase64ToBinary } from "core/Misc/stringTools";
 
 import type { StandardMaterial } from "core/Materials/standardMaterial";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
+import type { FrameGraph, FrameGraphTaskTexture, IFrameGraphInputData, IFrameGraphTask, TextureHandle } from "core/FrameGraph";
+
+export interface IFrameGraphADTInputData extends IFrameGraphInputData {
+    outputTexture: FrameGraphTaskTexture | TextureHandle;
+}
 
 /**
  * Class used to create texture to support 2D GUI elements
  * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui
  */
-export class AdvancedDynamicTexture extends DynamicTexture {
+export class AdvancedDynamicTexture extends DynamicTexture implements IFrameGraphTask {
     /** Define the url to load snippets */
     public static SnippetUrl = Constants.SnippetUrl;
 
     /** Indicates if some optimizations can be performed in GUI GPU management (the downside is additional memory/GPU texture memory used) */
     public static AllowGPUOptimizations = true;
+
+    public disabledFrameGraph = false;
 
     /** Snippet ID if the content was created from the snippet server */
     public snippetId: string;
@@ -711,8 +718,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         return new Vector3(projectedPosition.x, projectedPosition.y, projectedPosition.z);
     }
 
-    private _checkUpdate(camera: Camera, skipUpdate?: boolean): void {
-        if (this._layerToDispose) {
+    private _checkUpdate(camera: Nullable<Camera>, skipUpdate?: boolean): void {
+        if (this._layerToDispose && camera) {
             if ((camera.layerMask & this._layerToDispose.layerMask) === 0) {
                 return;
             }
@@ -1633,5 +1640,40 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      */
     public guiIsReady(): boolean {
         return this._rootContainer.isReady();
+    }
+
+    public initializeFrameGraph(_frameGraph: FrameGraph) {
+        const scene = this.getScene();
+        if (!scene) {
+            return;
+        }
+
+        scene.onBeforeCameraRenderObservable.remove(this._renderObserver);
+        this._renderObserver = null;
+
+        if (this._layerToDispose) {
+            this._layerToDispose.layerMask = 0;
+        }
+    }
+
+    public isReadyFrameGraph(): boolean {
+        return this.guiIsReady() && this._layerToDispose!.isReady();
+    }
+
+    public recordFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphADTInputData): void {
+        const outputTextureHandle = frameGraph.getTextureHandle(inputData.outputTexture);
+
+        const pass = frameGraph.addRenderPass(this.name);
+
+        pass.setRenderTarget(outputTextureHandle);
+        pass.setExecuteFunc((context) => {
+            this._checkUpdate(null);
+            context.renderLayer(this._layerToDispose!);
+        });
+
+        const passDisabled = frameGraph.addRenderPass(this.name + "_disabled", true);
+
+        passDisabled.setRenderTarget(outputTextureHandle);
+        passDisabled.setExecuteFunc((_context) => {});
     }
 }

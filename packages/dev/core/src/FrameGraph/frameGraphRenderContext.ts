@@ -11,6 +11,7 @@ import type { IColor4Like } from "core/Maths/math.like";
 import { FrameGraphContext } from "./frameGraphContext";
 import type { TextureHandle, FrameGraphTextureManager } from "./frameGraphTextureManager";
 import { backbufferColorTextureHandle, FrameGraphTextureSystemType } from "./frameGraphTextureManager";
+import type { Layer } from "../Layers/layer";
 
 export class FrameGraphRenderContext extends FrameGraphContext {
     private _effectRenderer: EffectRenderer;
@@ -32,11 +33,11 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         return this._textureManager._textures[handle]!.texture;
     }
 
-    public isBackbufferColor(handle: TextureHandle) {
+    public isBackbufferColor(handle: TextureHandle): boolean {
         return this._textureManager._textures[handle]!.systemType === FrameGraphTextureSystemType.BackbufferColor;
     }
 
-    public isBackbufferDepthStencil(handle: TextureHandle) {
+    public isBackbufferDepthStencil(handle: TextureHandle): boolean {
         return this._textureManager._textures[handle]!.systemType === FrameGraphTextureSystemType.BackbufferDepthStencil;
     }
 
@@ -52,7 +53,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         this._engine.clear(color, backBuffer, depth, stencil);
     }
 
-    public setTextureSamplingMode(handle: TextureHandle, samplingMode: number) {
+    public setTextureSamplingMode(handle: TextureHandle, samplingMode: number): void {
         const internalTexture = this.getTextureFromHandle(handle)?.texture!;
         if (internalTexture && internalTexture.samplingMode !== samplingMode) {
             this._engine.updateTextureSamplingMode(samplingMode, internalTexture);
@@ -65,7 +66,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      * @param customBindings The custom bindings to use when applying the effect
      * @returns True if the effect was applied, otherwise false (effect not ready)
      */
-    public applyFullScreenEffect(drawWrapper: DrawWrapper, customBindings?: () => void) {
+    public applyFullScreenEffect(drawWrapper: DrawWrapper, customBindings?: () => void): boolean {
         if (!drawWrapper.effect?.isReady()) {
             return false;
         }
@@ -94,12 +95,21 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      * @param sourceTexture The source texture to copy from
      * @param forceCopyToBackbuffer If true, the copy will be done to the back buffer regardless of the current render target
      */
-    public copyTexture(sourceTexture: InternalTexture | ThinTexture, forceCopyToBackbuffer = false) {
+    public copyTexture(sourceTexture: InternalTexture | ThinTexture, forceCopyToBackbuffer = false): void {
         if (forceCopyToBackbuffer) {
             this._bindRenderTarget();
         }
         this._applyRenderTarget();
         this._copyTexture.copy(sourceTexture, this._currentRenderTargetHandle ? this.getTextureFromHandle(this._currentRenderTargetHandle) : null);
+    }
+
+    /**
+     * Renders a layer
+     * @param layer The layer to render
+     */
+    public renderLayer(layer: Layer): void {
+        this._applyRenderTarget();
+        layer.render();
     }
 
     /**

@@ -8,11 +8,11 @@ export interface IFrameGraphCopyToBackbufferColorInputData extends IFrameGraphIn
 }
 
 export class FrameGraphCopyToBackbufferColorTask implements IFrameGraphTask {
-    public disabled = false;
+    public disabledFrameGraph = false;
 
     constructor(public name: string) {}
 
-    public isReady() {
+    public isReadyFrameGraph() {
         return true;
     }
 

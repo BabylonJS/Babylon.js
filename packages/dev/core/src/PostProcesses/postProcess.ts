@@ -236,7 +236,7 @@ export class PostProcess implements IFrameGraphTask {
 
     private static _CustomShaderCodeProcessing: { [postProcessName: string]: PostProcessCustomShaderCodeProcessing } = {};
 
-    public disabled = false;
+    public disabledFrameGraph = false;
 
     /**
      * Registers a shader code processing with a post process name.
@@ -1185,6 +1185,10 @@ export class PostProcess implements IFrameGraphTask {
         this._bind();
 
         return this._drawWrapper.effect;
+    }
+
+    public isReadyFrameGraph(): boolean {
+        return this.isReady();
     }
 
     public recordFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphPostProcessInputData): void {

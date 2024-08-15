@@ -31,7 +31,7 @@ export interface IFrameGraphBloomEffectInputData extends IFrameGraphInputData {
 export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphTask {
     public name = "Bloom";
 
-    public disabled = false;
+    public disabledFrameGraph = false;
 
     /**
      * @internal Internal
@@ -164,7 +164,7 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
         this._effects.push(this._merge);
     }
 
-    public isReady() {
+    public isReadyFrameGraph() {
         return this._downscale.isReady() && this._blurX.isReady() && this._blurY.isReady() && this._merge.isReady();
     }
 

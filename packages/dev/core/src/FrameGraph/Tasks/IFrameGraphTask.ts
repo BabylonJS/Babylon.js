@@ -9,6 +9,8 @@ export type FrameGraphTaskTexture = string;
  * Interface used to indicate that the class can be used as a task in a frame graph.
  */
 export interface IFrameGraphTask {
+    initializeFrameGraph?(frameGraph: FrameGraph): void;
+
     /**
      * Use this function to add content (render passes, ...) to the task
      * @param frameGraph The frame graph
@@ -16,11 +18,13 @@ export interface IFrameGraphTask {
      */
     recordFrameGraph(frameGraph: FrameGraph, inputData?: IFrameGraphInputData): void;
 
-    isReady(): boolean;
+    disposeFrameGraph?(frameGraph: FrameGraph): void;
+
+    isReadyFrameGraph(): boolean;
 
     name: string;
 
-    disabled: boolean;
+    disabledFrameGraph: boolean;
 
     /** @internal */
     _frameGraphInternals?: FrameGraphTaskInternals;

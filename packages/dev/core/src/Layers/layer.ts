@@ -267,7 +267,7 @@ export class Layer {
      * Checks if the layer is ready to be rendered
      * @returns true if the layer is ready. False otherwise.
      */
-    public isReady() {
+    public isReady(): boolean {
         if (!this._shadersLoaded) {
             return false;
         }
@@ -301,7 +301,7 @@ export class Layer {
 
         const currentEffect = this._drawWrapper.effect;
 
-        return currentEffect?.isReady() && (!this.texture || this.texture.isReady());
+        return !!currentEffect?.isReady() && (!this.texture || this.texture.isReady());
     }
 
     /**

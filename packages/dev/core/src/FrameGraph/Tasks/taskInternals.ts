@@ -69,7 +69,7 @@ export class FrameGraphTaskInternals {
             return;
         }
 
-        if (this._task.disabled) {
+        if (this._task.disabledFrameGraph) {
             this._textureManager._textures[this.outputTexture]!.texture = this._textureManager._textures[this.outputTextureWhenDisabled!]!.texture;
             this._textureManager._textures[this.outputTexture]!.systemType = this._textureManager._textures[this.outputTextureWhenDisabled!]!.systemType;
             this._textureManager._textureCreationOptions[this.outputTexture] = this._textureManager._textureCreationOptions[this.outputTextureWhenDisabled!];

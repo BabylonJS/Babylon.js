@@ -41,6 +41,7 @@ export class FrameGraph {
 
         task._frameGraphInternals?.dispose();
         task._frameGraphInternals = new FrameGraphTaskInternals(task, this._textureManager, inputData);
+        task.initializeFrameGraph?.(this);
 
         this._tasks.push(task);
         this._mapNameToTask.set(task.name, task);
@@ -116,7 +117,7 @@ export class FrameGraph {
             const checkReady = () => {
                 let ready = true;
                 for (const task of this._tasks) {
-                    ready &&= task.isReady();
+                    ready &&= task.isReadyFrameGraph();
                 }
                 if (ready) {
                     resolve();
@@ -137,7 +138,7 @@ export class FrameGraph {
 
             internals.setTextureOutputForTask();
 
-            const passes = task.disabled ? internals.passesDisabled : internals.passes;
+            const passes = task.disabledFrameGraph ? internals.passesDisabled : internals.passes;
 
             for (const pass of passes) {
                 pass._execute();
@@ -186,6 +187,7 @@ export class FrameGraph {
     public clear(): void {
         for (const task of this._tasks) {
             task._frameGraphInternals?.dispose();
+            task.disposeFrameGraph?.(this);
         }
 
         this._tasks.length = 0;

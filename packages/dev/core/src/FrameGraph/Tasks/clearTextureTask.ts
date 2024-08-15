@@ -12,11 +12,11 @@ export interface IFrameGraphClearTextureInputData extends IFrameGraphInputData {
 }
 
 export class FrameGraphClearTextureTask implements IFrameGraphTask {
-    public disabled = false;
+    public disabledFrameGraph = false;
 
     constructor(public name: string) {}
 
-    public isReady() {
+    public isReadyFrameGraph() {
         return true;
     }
 
