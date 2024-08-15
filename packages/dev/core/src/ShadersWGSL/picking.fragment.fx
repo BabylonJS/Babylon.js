@@ -9,7 +9,7 @@ uniform meshID: vec4f;
 fn main(input: FragmentInputs) -> FragmentOutputs {
 
 #if defined(INSTANCES)
-    fragmentOutputs.color = vMeshID;
+    fragmentOutputs.color = input.vMeshID;
 #else
 	fragmentOutputs.color = uniforms.meshID;
 #endif
