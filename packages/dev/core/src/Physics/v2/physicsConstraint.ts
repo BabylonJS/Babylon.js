@@ -327,16 +327,14 @@ export class Physics6DoFConstraint extends PhysicsConstraint {
 
 /**
  * Represents a Ball and Socket Constraint, used to simulate a joint
- *
+ * This class is useful for simulating a joint between two bodies in a physics engine.
+ * It allows for the two bodies to move relative to each other in a way that mimics a ball and socket joint, such as a shoulder or hip joint.
  * @param pivotA - The first pivot, defined locally in the first body frame
  * @param pivotB - The second pivot, defined locally in the second body frame
  * @param axisA - The axis of the first body
  * @param axisB - The axis of the second body
  * @param scene - The scene the constraint is applied to
  * @returns The Ball and Socket Constraint
- *
- * This class is useful for simulating a joint between two bodies in a physics engine.
- * It allows for the two bodies to move relative to each other in a way that mimics a ball and socket joint, such as a shoulder or hip joint.
  */
 export class BallAndSocketConstraint extends PhysicsConstraint {
     constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene) {
@@ -346,13 +344,13 @@ export class BallAndSocketConstraint extends PhysicsConstraint {
 
 /**
  * Creates a distance constraint.
- * @param maxDistance distance between bodies
- * @param scene The scene the constraint belongs to
- * @returns DistanceConstraint
  *
  * This code is useful for creating a distance constraint in a physics engine.
  * A distance constraint is a type of constraint that keeps two objects at a certain distance from each other.
  * The scene is used to add the constraint to the physics engine.
+ * @param maxDistance distance between bodies
+ * @param scene The scene the constraint belongs to
+ * @returns DistanceConstraint
  */
 export class DistanceConstraint extends PhysicsConstraint {
     constructor(maxDistance: number, scene: Scene) {
@@ -363,13 +361,12 @@ export class DistanceConstraint extends PhysicsConstraint {
 /**
  * Creates a HingeConstraint, which is a type of PhysicsConstraint.
  *
+ * This code is useful for creating a HingeConstraint, which is a type of PhysicsConstraint.
+ * This constraint is used to simulate a hinge joint between two rigid bodies, allowing them to rotate around a single axis.
  * @param pivotA - The first pivot point, in world space.
  * @param pivotB - The second pivot point, in world space.
  * @param scene - The scene the constraint is used in.
  * @returns The new HingeConstraint.
- *
- * This code is useful for creating a HingeConstraint, which is a type of PhysicsConstraint.
- * This constraint is used to simulate a hinge joint between two rigid bodies, allowing them to rotate around a single axis.
  */
 export class HingeConstraint extends PhysicsConstraint {
     constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene) {
@@ -380,16 +377,15 @@ export class HingeConstraint extends PhysicsConstraint {
 /**
  * Creates a SliderConstraint, which is a type of PhysicsConstraint.
  *
+ * This code is useful for creating a SliderConstraint, which is a type of PhysicsConstraint.
+ * It allows the user to specify the two pivots and two axes of the constraint in world space, as well as the scene the constraint belongs to.
+ * This is useful for creating a constraint between two rigid bodies that allows them to move along a certain axis.
  * @param pivotA - The first pivot of the constraint, in world space.
  * @param pivotB - The second pivot of the constraint, in world space.
  * @param axisA - The first axis of the constraint, in world space.
  * @param axisB - The second axis of the constraint, in world space.
  * @param scene - The scene the constraint belongs to.
  * @returns The created SliderConstraint.
- *
- * This code is useful for creating a SliderConstraint, which is a type of PhysicsConstraint.
- * It allows the user to specify the two pivots and two axes of the constraint in world space, as well as the scene the constraint belongs to.
- * This is useful for creating a constraint between two rigid bodies that allows them to move along a certain axis.
  */
 export class SliderConstraint extends PhysicsConstraint {
     constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene) {
@@ -400,15 +396,14 @@ export class SliderConstraint extends PhysicsConstraint {
 /**
  * Creates a LockConstraint, which is a type of PhysicsConstraint.
  *
+ * This code is useful for creating a LockConstraint, which is a type of PhysicsConstraint.
+ * It takes in two pivots and two axes in local space, as well as the scene the constraint belongs to, and creates a LockConstraint.
  * @param pivotA - The first pivot of the constraint in local space.
  * @param pivotB - The second pivot of the constraint in local space.
  * @param axisA - The first axis of the constraint in local space.
  * @param axisB - The second axis of the constraint in local space.
  * @param scene - The scene the constraint belongs to.
  * @returns The created LockConstraint.
- *
- * This code is useful for creating a LockConstraint, which is a type of PhysicsConstraint.
- * It takes in two pivots and two axes in local space, as well as the scene the constraint belongs to, and creates a LockConstraint.
  */
 export class LockConstraint extends PhysicsConstraint {
     constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene) {
@@ -419,15 +414,14 @@ export class LockConstraint extends PhysicsConstraint {
 /**
  * Creates a PrismaticConstraint, which is a type of PhysicsConstraint.
  *
+ * This code is useful for creating a PrismaticConstraint, which is a type of PhysicsConstraint.
+ * It takes in two pivots and two axes in local space, as well as the scene the constraint belongs to, and creates a PrismaticConstraint.
  * @param pivotA - The first pivot of the constraint in local space.
  * @param pivotB - The second pivot of the constraint in local space.
  * @param axisA - The first axis of the constraint in local space.
  * @param axisB - The second axis of the constraint in local space.
  * @param scene - The scene the constraint belongs to.
  * @returns The created LockConstraint.
- *
- * This code is useful for creating a PrismaticConstraint, which is a type of PhysicsConstraint.
- * It takes in two pivots and two axes in local space, as well as the scene the constraint belongs to, and creates a PrismaticConstraint.
  */
 export class PrismaticConstraint extends PhysicsConstraint {
     constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene) {
