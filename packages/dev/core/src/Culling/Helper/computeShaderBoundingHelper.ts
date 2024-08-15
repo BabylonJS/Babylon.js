@@ -316,10 +316,6 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
                         }
 
                         mesh._refreshBoundingInfoDirect(minmax);
-
-                        if (i === 0) {
-                            //console.log("Q", j, minimum + "", maximum + "");
-                        }
                     }
 
                     resultDataOffset += 8 * this._processedMeshes.length;
