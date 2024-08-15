@@ -16,7 +16,6 @@ import type { DirectionalLight } from "../directionalLight";
 import { BoundingInfo } from "../../Culling/boundingInfo";
 import type { DepthRenderer } from "../../Rendering/depthRenderer";
 import { DepthReducer } from "../../Misc/depthReducer";
-
 import { Logger } from "../../Misc/logger";
 import { EngineStore } from "../../Engines/engineStore";
 import type { Camera } from "../../Cameras/camera";
