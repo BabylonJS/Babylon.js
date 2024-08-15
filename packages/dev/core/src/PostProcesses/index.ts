@@ -115,6 +115,10 @@ export * from "../ShadersWGSL/motionBlur.fragment";
 export * from "../Shaders/filter.fragment";
 export * from "../ShadersWGSL/filter.fragment";
 
-// Filter
+// Highlights
 export * from "../Shaders/highlights.fragment";
 export * from "../ShadersWGSL/highlights.fragment";
+
+// Display
+export * from "../Shaders/displayPass.fragment";
+export * from "../ShadersWGSL/displayPass.fragment";
