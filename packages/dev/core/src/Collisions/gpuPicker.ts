@@ -210,6 +210,8 @@ export class GPUPicker {
             return;
         }
 
+        this._pickableMeshes = list as Array<AbstractMesh>;
+
         // Prepare target
         const scene = ("mesh" in list[0] ? list[0].mesh : list[0]).getScene();
         const engine = scene.getEngine();
@@ -229,6 +231,8 @@ export class GPUPicker {
             this._createColorMaterialAsync(scene);
         }
 
+        this._cachedScene = scene;
+
         this._onMaterialReady.addOnce(() => {
             for (let i = 0; i < list.length; i++) {
                 const item = list[i];
@@ -239,9 +243,7 @@ export class GPUPicker {
                     this._meshMaterialMap.set(item, this._defaultRenderMaterial!);
                 }
             }
-            this._pickableMeshes = list as Array<AbstractMesh>;
 
-            this._cachedScene = scene;
             this._pickingTexture!.renderList = [];
 
             // We will affect colors and create vertex color buffers
