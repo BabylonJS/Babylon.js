@@ -55,7 +55,7 @@ export class BlackAndWhitePostProcess extends PostProcess {
             await import("../Shaders/blackAndWhite.fragment");
         }
 
-        super._initShaderSourceAsync(useWebGPU);
+        await super._initShaderSourceAsync(useWebGPU);
     }
 
     /**
