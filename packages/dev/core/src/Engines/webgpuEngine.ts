@@ -223,6 +223,7 @@ export class WebGPUEngine extends AbstractEngine {
     public _options: WebGPUEngineOptions;
     private _glslang: any = null;
     private _tintWASM: Nullable<WebGPUTintWASM> = null;
+    private _glslangAndTintAreFullyLoaded = false;
     private _adapter: GPUAdapter;
     private _adapterSupportedExtensions: GPUFeatureName[];
     private _adapterInfo: GPUAdapterInfo = {
@@ -662,6 +663,7 @@ export class WebGPUEngine extends AbstractEngine {
                     this._glslang = glslang;
                     this._tintWASM = new WebGPUTintWASM();
                     this._tintWASM.initTwgsl(this._twgslOptions ?? this._options?.twgslOptions).then(() => {
+                        this._glslangAndTintAreFullyLoaded = true;
                         resolve();
                     });
                 });
@@ -2124,7 +2126,7 @@ export class WebGPUEngine extends AbstractEngine {
         const webGpuContext = pipelineContext as WebGPUPipelineContext;
         const shaderLanguage = webGpuContext.shaderProcessingContext.shaderLanguage;
 
-        if (shaderLanguage === ShaderLanguage.GLSL && (!this._glslang || !this._tintWASM)) {
+        if (shaderLanguage === ShaderLanguage.GLSL && !this._glslangAndTintAreFullyLoaded) {
             await this.prepareGlslangAndTintAsync();
         }
 
