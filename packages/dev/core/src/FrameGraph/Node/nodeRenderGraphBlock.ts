@@ -467,7 +467,7 @@ export class NodeRenderGraphBlock {
 
     protected _dumpPropertiesCode() {
         const variableName = this._codeVariableName;
-        return `${variableName}.visibleOnFrame = ${this.visibleOnFrame};\n`;
+        return `${variableName}.visibleOnFrame = ${this.visibleOnFrame};\n${variableName}.disabled = ${this.disabled};\n`;
     }
 
     /**

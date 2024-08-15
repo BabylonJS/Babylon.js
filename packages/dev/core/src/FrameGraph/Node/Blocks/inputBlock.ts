@@ -214,7 +214,7 @@ export class RenderGraphInputBlock extends NodeRenderGraphBlock {
             if (!this.isExternal) {
                 codes.push(`${this._codeVariableName}.creationOptions = ${JSON.stringify(this.creationOptions)};`);
             } else {
-                codes.push(`${this._codeVariableName}.value = external_texture; // TODO: set the external texture`);
+                codes.push(`${this._codeVariableName}.value = EXTERNAL_TEXTURE; // TODO: set the external texture`);
             }
         }
         return super._dumpPropertiesCode() + codes.join("\n");

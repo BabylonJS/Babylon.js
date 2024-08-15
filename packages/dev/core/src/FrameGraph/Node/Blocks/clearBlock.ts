@@ -117,7 +117,7 @@ export class RenderGraphClearBlock extends NodeRenderGraphBlock {
 
     protected override _dumpPropertiesCode() {
         const codes: string[] = [];
-        codes.push(`${this._codeVariableName}.color = new Color4(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.color.a});`);
+        codes.push(`${this._codeVariableName}.color = new BABYLON.Color4(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.color.a});`);
         codes.push(`${this._codeVariableName}.clearColor = ${this.clearColor};`);
         codes.push(`${this._codeVariableName}.clearDepth = ${this.clearDepth};`);
         codes.push(`${this._codeVariableName}.clearStencil = ${this.clearStencil};`);
