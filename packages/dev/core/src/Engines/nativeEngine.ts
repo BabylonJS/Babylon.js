@@ -2366,10 +2366,6 @@ export class NativeEngine extends Engine {
             throw new Error("Required width/height for frame buffers not yet supported in NativeEngine.");
         }
 
-        if (forceFullscreenViewport) {
-            //Not supported yet but don't stop rendering
-        }
-
         if (nativeRTWrapper._framebufferDepthStencil) {
             this._bindUnboundFramebuffer(nativeRTWrapper._framebufferDepthStencil);
         } else {

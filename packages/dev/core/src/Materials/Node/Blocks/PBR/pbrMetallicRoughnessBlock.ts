@@ -1077,11 +1077,9 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         let worldNormalVarName = this.worldNormal.associatedVariableName;
         if (this.generateOnlyFragmentCode) {
             worldPosVarName = state._getFreeVariableName("globalWorldPos");
-            state._emitFunction("pbr_globalworldpos", `vec3${state.fSuffix} ${worldPosVarName};\n`, comments);
             state.compilationString += `${worldPosVarName} = ${this.worldPosition.associatedVariableName}.xyz;\n`;
 
             worldNormalVarName = state._getFreeVariableName("globalWorldNormal");
-            state._emitFunction("pbr_globalworldnorm", `vec3${state.fSuffix} ${worldNormalVarName};\n`, comments);
             state.compilationString += `${worldNormalVarName} = ${this.worldNormal.associatedVariableName}.xyz;\n`;
 
             state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {

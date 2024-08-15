@@ -785,8 +785,8 @@ export class PostProcess implements IFrameGraphTask {
      * The effect that is created when initializing the post process.
      * @returns The created effect corresponding to the postprocess.
      */
-    public getEffect(): Effect {
-        return this._drawWrapper.effect!;
+    public getEffect(): Nullable<Effect> {
+        return this._drawWrapper.effect;
     }
 
     /**
