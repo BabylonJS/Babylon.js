@@ -4,8 +4,6 @@ import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
 import type { Camera } from "../Cameras/camera";
 import type { Effect } from "../Materials/effect";
-
-import "../Shaders/anaglyph.fragment";
 import { RegisterClass } from "../Misc/typeStore";
 
 /**

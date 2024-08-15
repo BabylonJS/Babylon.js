@@ -6,7 +6,6 @@ import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 
-import "../Shaders/filter.fragment";
 import { RegisterClass } from "../Misc/typeStore";
 import { serializeAsMatrix } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
@@ -54,6 +53,17 @@ export class FilterPostProcess extends PostProcess {
         this.onApply = (effect: Effect) => {
             effect.setMatrix("kernelMatrix", this.kernelMatrix);
         };
+    }
+
+    protected override async _initShaderSourceAsync(useWebGPU: boolean) {
+        if (useWebGPU) {
+            this._webGPUReady = true;
+            await Promise.all([import("../ShadersWGSL/filter.fragment")]);
+        } else {
+            await Promise.all([import("../Shaders/filter.fragment")]);
+        }
+
+        await super._initShaderSourceAsync(useWebGPU);
     }
 
     /**

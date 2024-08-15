@@ -7,9 +7,6 @@ import type { Camera } from "../Cameras/camera";
 import type { Effect } from "../Materials/effect";
 import { Texture } from "../Materials/Textures/texture";
 import { Constants } from "../Engines/constants";
-
-import "../Shaders/kernelBlur.fragment";
-import "../Shaders/kernelBlur.vertex";
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize, serializeAsVector2 } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
