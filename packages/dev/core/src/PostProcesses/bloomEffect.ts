@@ -8,7 +8,7 @@ import type { Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
 import type { Scene } from "../scene";
 import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { FrameGraphTaskOutputTexture, IFrameGraphInputData, IFrameGraphTask } from "../FrameGraph/Tasks/IFrameGraphTask";
+import type { FrameGraphTaskTexture, IFrameGraphInputData, IFrameGraphTask } from "../FrameGraph/Tasks/IFrameGraphTask";
 import type { FrameGraph } from "../FrameGraph/frameGraph";
 import type { TextureHandle } from "../FrameGraph/frameGraphTextureManager";
 import { Constants } from "../Engines/constants";
@@ -20,9 +20,9 @@ export interface IFrameGraphBloomEffectInputData extends IFrameGraphInputData {
     /**
      * The source texture for the bloom effect
      */
-    sourceTexture: FrameGraphTaskOutputTexture | TextureHandle;
+    sourceTexture: FrameGraphTaskTexture | TextureHandle;
     sourceSamplingMode?: number;
-    outputTexture?: FrameGraphTaskOutputTexture | TextureHandle;
+    outputTexture?: FrameGraphTaskTexture | TextureHandle;
 }
 
 /**
@@ -31,7 +31,7 @@ export interface IFrameGraphBloomEffectInputData extends IFrameGraphInputData {
 export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphTask {
     public name = "Bloom";
 
-    public disabledFromGraph = false;
+    public disabled = false;
 
     /**
      * @internal Internal

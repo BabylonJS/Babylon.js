@@ -4,7 +4,7 @@ import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import type { RenderTargetCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
 import { Texture } from "core/Materials/Textures/texture";
-import type { FrameGraphTaskOutputTexture, IFrameGraphTask } from "./Tasks/IFrameGraphTask";
+import type { FrameGraphTaskTexture, IFrameGraphTask } from "./Tasks/IFrameGraphTask";
 
 export type TextureHandle = number;
 
@@ -48,7 +48,7 @@ export class FrameGraphTextureManager {
     public _textureCreationOptions: (FrameGraphTextureCreationOptions | undefined)[] = [];
     private _texturesIndex = 0;
 
-    private static _IsTextureHandle(textureId: FrameGraphTaskOutputTexture | TextureHandle): textureId is TextureHandle {
+    private static _IsTextureHandle(textureId: FrameGraphTaskTexture | TextureHandle): textureId is TextureHandle {
         return typeof textureId !== "string";
     }
 
@@ -91,7 +91,7 @@ export class FrameGraphTextureManager {
         return handle;
     }
 
-    public getTextureCreationOptions(textureId: FrameGraphTaskOutputTexture | TextureHandle): FrameGraphTextureCreationOptions {
+    public getTextureCreationOptions(textureId: FrameGraphTaskTexture | TextureHandle): FrameGraphTextureCreationOptions {
         if (FrameGraphTextureManager._IsTextureHandle(textureId)) {
             return this._textureCreationOptions[textureId]!;
         }
@@ -105,7 +105,7 @@ export class FrameGraphTextureManager {
         return this._textureCreationOptions[textureHandle]!;
     }
 
-    public getTextureHandle(textureId: FrameGraphTaskOutputTexture | TextureHandle): TextureHandle {
+    public getTextureHandle(textureId: FrameGraphTaskTexture | TextureHandle): TextureHandle {
         if (FrameGraphTextureManager._IsTextureHandle(textureId)) {
             return textureId;
         }
@@ -149,6 +149,10 @@ export class FrameGraphTextureManager {
             size,
             options: { ...creationOptions.options },
         };
+    }
+
+    public dispose(): void {
+        this._releaseTextures();
     }
 
     /** @internal */
@@ -221,10 +225,6 @@ export class FrameGraphTextureManager {
         if (releaseAll) {
             this._setSystemTextures();
         }
-    }
-
-    public dispose(): void {
-        this._releaseTextures();
     }
 
     /** @internal */

@@ -1,34 +1,13 @@
 import type { Nullable } from "../../types";
 import type { NodeRenderGraphBlock } from "./nodeRenderGraphBlock";
 import { Observable } from "../../Misc/observable";
-import { NodeRenderGraphBlockConnectionPointTypes } from "./Enums/nodeRenderGraphBlockConnectionPointTypes";
+import type { NodeRenderGraphBlockConnectionPointValueType, NodeRenderGraphBlockConnectionPointValueTypes } from "./Types/nodeRenderGraphBlockConnectionPointTypes";
+import {
+    NodeRenderGraphBlockConnectionPointTypes,
+    NodeRenderGraphConnectionPointCompatibilityStates,
+    NodeRenderGraphConnectionPointDirection,
+} from "./Types/nodeRenderGraphBlockConnectionPointTypes";
 import type { RenderGraphInputBlock } from "./Blocks/inputBlock";
-import type { FrameGraphTaskOutputTexture } from "../Tasks/IFrameGraphTask";
-import type { TextureHandle } from "../frameGraphTextureManager";
-
-/**
- * Enum used to define the compatibility state between two connection points
- */
-export const enum NodeRenderGraphConnectionPointCompatibilityStates {
-    /** Points are compatibles */
-    Compatible,
-    /** Points are incompatible because of their types */
-    TypeIncompatible,
-    /** Points are incompatible because they are in the same hierarchy **/
-    HierarchyIssue,
-}
-
-/**
- * Defines the direction of a connection point
- */
-export const enum NodeRenderGraphConnectionPointDirection {
-    /** Input */
-    Input,
-    /** Output */
-    Output,
-}
-
-export type NodeRenderGraphConnectionPointValueType = FrameGraphTaskOutputTexture | TextureHandle;
 
 /**
  * Defines a connection point for a block
@@ -60,14 +39,15 @@ export class NodeRenderGraphConnectionPoint {
         return this._direction;
     }
 
-    public static ValueIsTexture(value: NodeRenderGraphConnectionPointValueType | undefined): value is FrameGraphTaskOutputTexture | TextureHandle {
-        return value !== undefined && (typeof value === "string" || typeof value === "number");
-    }
-
     /**
      * The value stored in this connection point
      */
-    public value: NodeRenderGraphConnectionPointValueType;
+    public value: NodeRenderGraphBlockConnectionPointValueType | undefined;
+
+    /**
+     * The type of the value stored in this connection point
+     */
+    public valueType: NodeRenderGraphBlockConnectionPointValueTypes | undefined;
 
     /**
      * Gets or sets the additional types supported by this connection point

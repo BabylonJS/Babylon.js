@@ -1,14 +1,14 @@
 import type { FrameGraph } from "../frameGraph";
 import type { TextureHandle } from "../frameGraphTextureManager";
-import type { FrameGraphTaskOutputTexture, IFrameGraphInputData, IFrameGraphTask } from "./IFrameGraphTask";
+import type { FrameGraphTaskTexture, IFrameGraphInputData, IFrameGraphTask } from "./IFrameGraphTask";
 
 export interface IFrameGraphCopyToTextureInputData extends IFrameGraphInputData {
-    sourceTexture: FrameGraphTaskOutputTexture | TextureHandle;
-    outputTexture: FrameGraphTaskOutputTexture | TextureHandle;
+    sourceTexture: FrameGraphTaskTexture | TextureHandle;
+    outputTexture: FrameGraphTaskTexture | TextureHandle;
 }
 
 export class FrameGraphCopyToTextureTask implements IFrameGraphTask {
-    public disabledFromGraph = false;
+    public disabled = false;
 
     constructor(public name: string) {}
 

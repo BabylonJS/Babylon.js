@@ -1,7 +1,7 @@
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
-import { NodeRenderGraphConnectionPoint } from "../../nodeRenderGraphBlockConnectionPoint";
+import type { NodeRenderGraphConnectionPoint } from "../../nodeRenderGraphBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import { NodeRenderGraphBlockConnectionPointTypes } from "../../Enums/nodeRenderGraphBlockConnectionPointTypes";
+import { NodeRenderGraphBlockConnectionPointTypes, NodeRenderGraphBlockConnectionPointValueTypes } from "../../Types/nodeRenderGraphBlockConnectionPointTypes";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { BlackAndWhitePostProcess } from "../../../../PostProcesses/blackAndWhitePostProcess";
 import type { AbstractEngine } from "../../../../Engines/abstractEngine";
@@ -98,17 +98,18 @@ export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
         super._buildBlock(state);
 
-        this._postProcess.name = this.name;
-        this.output.value = this.name;
+        this._frameGraphTask.name = this.name; // sets the task name
+        this.output.value = this._frameGraphTask.name; // the value of the output connection point is the "output" texture of the task
+        this.output.valueType = NodeRenderGraphBlockConnectionPointValueTypes.Texture;
 
-        const source = this.source.connectedPoint?.value;
-        if (NodeRenderGraphConnectionPoint.ValueIsTexture(source)) {
-            this._taskParameters.sourceTexture = source;
+        const sourceConnectedPoint = this.source.connectedPoint;
+        if (sourceConnectedPoint && sourceConnectedPoint.valueType === NodeRenderGraphBlockConnectionPointValueTypes.Texture) {
+            this._taskParameters.sourceTexture = sourceConnectedPoint.value!;
         }
 
-        const destination = this.destination.connectedPoint?.value;
-        if (NodeRenderGraphConnectionPoint.ValueIsTexture(destination)) {
-            this._taskParameters.outputTexture = destination;
+        const destinationConnectedPoint = this.destination.connectedPoint;
+        if (destinationConnectedPoint && destinationConnectedPoint.valueType === NodeRenderGraphBlockConnectionPointValueTypes.Texture) {
+            this._taskParameters.outputTexture = destinationConnectedPoint.value;
         }
 
         state.frameGraph.addTask(this._postProcess, this._taskParameters);

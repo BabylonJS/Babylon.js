@@ -9,11 +9,11 @@ import { Constants } from "../Engines/constants";
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import type { FrameGraph } from "../FrameGraph/frameGraph";
-import type { FrameGraphTaskOutputTexture } from "../FrameGraph/Tasks/IFrameGraphTask";
+import type { FrameGraphTaskTexture } from "../FrameGraph/Tasks/IFrameGraphTask";
 import type { TextureHandle } from "../FrameGraph/frameGraphTextureManager";
 
 export interface IFrameGraphBloomMergeInputData extends IFrameGraphPostProcessInputData {
-    sourceBlurTexture: FrameGraphTaskOutputTexture | TextureHandle;
+    sourceBlurTexture: FrameGraphTaskTexture | TextureHandle;
 }
 
 /**

@@ -28,7 +28,7 @@ import type { PrePassRenderer } from "../Rendering/prePassRenderer";
 import type { PrePassEffectConfiguration } from "../Rendering/prePassEffectConfiguration";
 import { AbstractEngine } from "../Engines/abstractEngine";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
-import type { FrameGraphTaskOutputTexture, IFrameGraphInputData, IFrameGraphTask } from "../FrameGraph/Tasks/IFrameGraphTask";
+import type { FrameGraphTaskTexture, IFrameGraphInputData, IFrameGraphTask } from "../FrameGraph/Tasks/IFrameGraphTask";
 import type { FrameGraph } from "../FrameGraph/frameGraph";
 import type { TextureHandle } from "../FrameGraph/frameGraphTextureManager";
 
@@ -70,9 +70,9 @@ AbstractEngine.prototype.setTextureFromPostProcessOutput = function (channel: nu
 };
 
 export interface IFrameGraphPostProcessInputData extends IFrameGraphInputData {
-    sourceTexture: FrameGraphTaskOutputTexture | TextureHandle;
+    sourceTexture: FrameGraphTaskTexture | TextureHandle;
     sourceSamplingMode?: number;
-    outputTexture?: FrameGraphTaskOutputTexture | TextureHandle;
+    outputTexture?: FrameGraphTaskTexture | TextureHandle;
     skipCreationOfDisabledPasses?: boolean;
 }
 
@@ -236,7 +236,7 @@ export class PostProcess implements IFrameGraphTask {
 
     private static _CustomShaderCodeProcessing: { [postProcessName: string]: PostProcessCustomShaderCodeProcessing } = {};
 
-    public disabledFromGraph = false;
+    public disabled = false;
 
     /**
      * Registers a shader code processing with a post process name.

@@ -1,7 +1,7 @@
 import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
-import { NodeRenderGraphConnectionPoint } from "../nodeRenderGraphBlockConnectionPoint";
+import type { NodeRenderGraphConnectionPoint } from "../nodeRenderGraphBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
-import { NodeRenderGraphBlockConnectionPointTypes } from "../Enums/nodeRenderGraphBlockConnectionPointTypes";
+import { NodeRenderGraphBlockConnectionPointTypes, NodeRenderGraphBlockConnectionPointValueTypes } from "../Types/nodeRenderGraphBlockConnectionPointTypes";
 import { Color4 } from "../../../Maths/math.color";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
 import type { AbstractEngine } from "../../../Engines/abstractEngine";
@@ -107,9 +107,9 @@ export class RenderGraphClearBlock extends NodeRenderGraphBlock {
 
         this._propagateInputValueToOutput(this.texture, this.output);
 
-        const inputTexture = this.texture.connectedPoint?.value;
-        if (NodeRenderGraphConnectionPoint.ValueIsTexture(inputTexture)) {
-            this._taskParameters.outputTexture = inputTexture;
+        const textureConnectedPoint = this.texture.connectedPoint;
+        if (textureConnectedPoint && textureConnectedPoint.valueType === NodeRenderGraphBlockConnectionPointValueTypes.Texture) {
+            this._taskParameters.outputTexture = textureConnectedPoint.value!;
         }
 
         state.frameGraph.addTask(this._frameGraphTask, this._taskParameters);

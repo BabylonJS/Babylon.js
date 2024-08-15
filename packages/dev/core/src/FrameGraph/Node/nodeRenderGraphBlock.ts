@@ -1,13 +1,13 @@
 import { GetClass } from "../../Misc/typeStore";
 import { serialize } from "../../Misc/decorators";
 import { UniqueIdGenerator } from "../../Misc/uniqueIdGenerator";
-import { NodeRenderGraphBlockConnectionPointTypes } from "./Enums/nodeRenderGraphBlockConnectionPointTypes";
+import { NodeRenderGraphBlockConnectionPointTypes, NodeRenderGraphConnectionPointDirection } from "./Types/nodeRenderGraphBlockConnectionPointTypes";
 import type { NodeRenderGraphBuildState } from "./nodeRenderGraphBuildState";
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 import type { RenderGraphInputBlock } from "./Blocks/inputBlock";
 import { Logger } from "../../Misc/logger";
-import { NodeRenderGraphConnectionPoint, NodeRenderGraphConnectionPointDirection } from "./nodeRenderGraphBlockConnectionPoint";
+import { NodeRenderGraphConnectionPoint } from "./nodeRenderGraphBlockConnectionPoint";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import type { IFrameGraphTask } from "../Tasks/IFrameGraphTask";
 
@@ -26,12 +26,12 @@ export class NodeRenderGraphBlock {
     protected _frameGraphTask: IFrameGraphTask;
 
     public get disabled() {
-        return this._frameGraphTask?.disabledFromGraph ?? false;
+        return this._frameGraphTask?.disabled ?? false;
     }
 
     public set disabled(value: boolean) {
         if (this._frameGraphTask) {
-            this._frameGraphTask.disabledFromGraph = value;
+            this._frameGraphTask.disabled = value;
         }
     }
 
@@ -281,6 +281,7 @@ export class NodeRenderGraphBlock {
     protected _propagateInputValueToOutput(inputConnectionPoint: NodeRenderGraphConnectionPoint, outputConnectionPoint: NodeRenderGraphConnectionPoint) {
         if (inputConnectionPoint.connectedPoint) {
             outputConnectionPoint.value = inputConnectionPoint.connectedPoint.value;
+            outputConnectionPoint.valueType = inputConnectionPoint.connectedPoint.valueType;
         }
     }
 

@@ -1,7 +1,6 @@
 import { Observable } from "../../Misc/observable";
 import type { Observer } from "../../Misc/observable";
 import type { Nullable } from "../../types";
-import type { Scene } from "../../scene";
 import { RenderGraphOutputBlock } from "./Blocks/outputBlock";
 import type { NodeRenderGraphBlock } from "./nodeRenderGraphBlock";
 import { FrameGraph } from "../frameGraph";
@@ -14,45 +13,16 @@ import { RenderGraphInputBlock } from "./Blocks/inputBlock";
 import type { NodeRenderGraphTeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
 import type { NodeRenderGraphTeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
 import { Tools } from "../../Misc/tools";
-import type { Color4 } from "../../Maths/math.color";
 import { Engine } from "../../Engines/engine";
-import { NodeRenderGraphBlockConnectionPointTypes } from "./Enums/nodeRenderGraphBlockConnectionPointTypes";
+import { NodeRenderGraphBlockConnectionPointTypes } from "./Types/nodeRenderGraphBlockConnectionPointTypes";
 import { RenderGraphClearBlock } from "./Blocks/clearBlock";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import { NodeRenderGraphBuildState } from "./nodeRenderGraphBuildState";
+import type { INodeRenderGraphCreateOptions, INodeRenderGraphEditorOptions } from "./Types/nodeRenderGraphTypes";
 
 // declare NODERENDERGRAPHEDITOR namespace for compilation issue
 declare let NODERENDERGRAPHEDITOR: any;
 declare let BABYLON: any;
-
-/**
- * Interface used to configure the node render graph editor
- */
-export interface INodeRenderGraphEditorOptions {
-    /** Define the URL to load node editor script from */
-    editorURL?: string;
-    /** Additional configuration for the FGE */
-    nodeRenderGraphEditorConfig?: {
-        backgroundColor?: Color4;
-        hostScene?: Scene;
-    };
-}
-
-/**
- * Options that can be passed to the node render graph build method
- */
-export interface INodeRenderGraphCreateOptions {
-    /** if true, textures created by the node render graph will be visible in the inspector, for easier debugging (default: false) */
-    debugTextures?: boolean;
-    /** Scene in which debugging textures are to be created */
-    scene?: Scene;
-    /** Rebuild the node render graph when the screen is resized (default: true) */
-    rebuildGraphOnEngineResize?: boolean;
-    /** defines if the build should log activity (default: false) */
-    verbose?: boolean;
-    /** defines if the autoConfigure method should be called when initializing blocks (default: false) */
-    autoConfigure?: boolean;
-}
 
 /**
  * Defines a node render graph

@@ -1,3 +1,6 @@
+import type { TextureHandle } from "../../frameGraphTextureManager";
+import type { FrameGraphTaskTexture } from "../../Tasks/IFrameGraphTask";
+
 /**
  * Defines the kind of connection point for node render graph nodes
  */
@@ -32,4 +35,33 @@ export enum NodeRenderGraphBlockConnectionPointTypes {
     Undefined = 0x04000000,
     /** Bitmask of all types */
     All = 0x0fffffff,
+}
+
+/**
+ * Enum used to define the compatibility state between two connection points
+ */
+export const enum NodeRenderGraphConnectionPointCompatibilityStates {
+    /** Points are compatibles */
+    Compatible,
+    /** Points are incompatible because of their types */
+    TypeIncompatible,
+    /** Points are incompatible because they are in the same hierarchy **/
+    HierarchyIssue,
+}
+
+/**
+ * Defines the direction of a connection point
+ */
+export const enum NodeRenderGraphConnectionPointDirection {
+    /** Input */
+    Input,
+    /** Output */
+    Output,
+}
+
+export type NodeRenderGraphBlockConnectionPointValueType = FrameGraphTaskTexture | TextureHandle;
+
+export const enum NodeRenderGraphBlockConnectionPointValueTypes {
+    Texture = 0,
+    RenderableList = 1,
 }

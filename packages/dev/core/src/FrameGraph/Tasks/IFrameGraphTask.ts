@@ -3,7 +3,7 @@ import type { FrameGraphTaskInternals } from "./taskInternals";
 
 export interface IFrameGraphInputData {}
 
-export type FrameGraphTaskOutputTexture = string;
+export type FrameGraphTaskTexture = string;
 
 /**
  * Interface used to indicate that the class can be used as a task in a frame graph.
@@ -20,7 +20,7 @@ export interface IFrameGraphTask {
 
     name: string;
 
-    disabledFromGraph: boolean;
+    disabled: boolean;
 
     /** @internal */
     _frameGraphInternals?: FrameGraphTaskInternals;

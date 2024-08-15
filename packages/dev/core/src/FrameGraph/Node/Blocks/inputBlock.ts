@@ -1,5 +1,5 @@
 import { Observable } from "../../../Misc/observable";
-import { NodeRenderGraphBlockConnectionPointTypes } from "../Enums/nodeRenderGraphBlockConnectionPointTypes";
+import { NodeRenderGraphBlockConnectionPointTypes, NodeRenderGraphBlockConnectionPointValueTypes } from "../Types/nodeRenderGraphBlockConnectionPointTypes";
 import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
 import type { NodeRenderGraphConnectionPoint } from "../nodeRenderGraphBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
@@ -94,7 +94,8 @@ export class RenderGraphInputBlock extends NodeRenderGraphBlock {
 
     public set value(value: Nullable<NodeRenderGraphValueType>) {
         this._storedValue = value;
-        this.output.value = undefined as any;
+        this.output.value = undefined;
+        this.output.valueType = undefined;
         this.onValueChangedObservable.notifyObservers(this);
     }
 
@@ -177,6 +178,7 @@ export class RenderGraphInputBlock extends NodeRenderGraphBlock {
             const texture = this.getValueAsRenderTargetWrapper();
             if (texture) {
                 this.output.value = state.frameGraph.importTexture(this.name, texture, this.output.value as TextureHandle);
+                this.output.valueType = NodeRenderGraphBlockConnectionPointValueTypes.Texture;
             }
             return;
         }
@@ -189,10 +191,13 @@ export class RenderGraphInputBlock extends NodeRenderGraphBlock {
             }
 
             this.output.value = state.frameGraph.createRenderTargetTexture(this.name, textureCreateOptions);
+            this.output.valueType = NodeRenderGraphBlockConnectionPointValueTypes.Texture;
         } else if (this.isBackBuffer()) {
             this.output.value = backbufferColorTextureHandle;
+            this.output.valueType = NodeRenderGraphBlockConnectionPointValueTypes.Texture;
         } else if (this.isBackBufferDepthStencilAttachment()) {
             this.output.value = backbufferDepthStencilTextureHandle;
+            this.output.valueType = NodeRenderGraphBlockConnectionPointValueTypes.Texture;
         }
     }
 
