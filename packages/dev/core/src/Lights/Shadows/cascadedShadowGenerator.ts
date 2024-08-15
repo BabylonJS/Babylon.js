@@ -8,10 +8,6 @@ import type { Effect } from "../../Materials/effect";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 
 import { Constants } from "../../Engines/constants";
-
-import "../../Shaders/shadowMap.fragment";
-import "../../Shaders/shadowMap.vertex";
-import "../../Shaders/depthBoxBlur.fragment";
 import type { Observer } from "../../Misc/observable";
 import { _WarnImport } from "../../Misc/devTools";
 import { ShadowGenerator } from "./shadowGenerator";
