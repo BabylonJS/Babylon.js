@@ -1,8 +1,8 @@
 import { GetEnvInfo, UploadEnvLevelsAsync, UploadEnvSpherical } from "../../../Misc/environmentTextureTools";
 import type { Nullable } from "../../../types";
-import { Engine } from "../../../Engines/engine";
 import type { InternalTexture } from "../../../Materials/Textures/internalTexture";
 import type { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
+import { AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
  * Implementation of the ENV Texture Loader.
@@ -81,4 +81,4 @@ export class _ENVTextureLoader implements IInternalTextureLoader {
 }
 
 // Register the loader.
-Engine._TextureLoaders.push(new _ENVTextureLoader());
+AbstractEngine._TextureLoaders.push(new _ENVTextureLoader());

@@ -2,12 +2,12 @@ import type { Nullable } from "../types";
 import { Tools } from "../Misc/tools";
 import { Logger } from "../Misc/logger";
 import { GetTGAHeader } from "../Misc/tga";
-import { Engine } from "../Engines/engine";
 import type { IOfflineProvider } from "./IOfflineProvider";
 import { WebRequest } from "../Misc/webRequest";
+import { AbstractEngine } from "core/Engines/abstractEngine";
 
 // Sets the default offline provider to Babylon.js
-Engine.OfflineProviderFactory = (urlToScene: string, callbackManifestChecked: (checked: boolean) => any, disableManifestCheck = false) => {
+AbstractEngine.OfflineProviderFactory = (urlToScene: string, callbackManifestChecked: (checked: boolean) => any, disableManifestCheck = false) => {
     return new Database(urlToScene, callbackManifestChecked, disableManifestCheck);
 };
 

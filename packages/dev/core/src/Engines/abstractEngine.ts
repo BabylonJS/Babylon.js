@@ -51,6 +51,8 @@ import { IsDocumentAvailable, IsNavigatorAvailable, IsWindowObjectExist } from "
 import { Constants } from "./constants";
 import { Observable } from "../Misc/observable";
 import { EngineFunctionContext, _loadFile } from "./abstractEngine.functions";
+import { CeilingPOT, FloorPOT, GetExponentOfTwo, NearestPOT } from "core/Misc/tools.functions";
+import type { Material } from "core/Materials/material";
 
 /**
  * Defines the interface used by objects working like Scene
@@ -2655,4 +2657,64 @@ export abstract class AbstractEngine {
      * By default, this will create a Database object if the workload has been embedded.
      */
     public static OfflineProviderFactory: (urlToScene: string, callbackManifestChecked: (checked: boolean) => any, disableManifestCheck: boolean) => IOfflineProvider;
+
+    /**
+     * Will flag all materials in all scenes in all engines as dirty to trigger new shader compilation
+     * @param flag defines which part of the materials must be marked as dirty
+     * @param predicate defines a predicate used to filter which materials should be affected
+     */
+    public static MarkAllMaterialsAsDirty(flag: number, predicate?: (mat: Material) => boolean): void {
+        for (let engineIndex = 0; engineIndex < EngineStore.Instances.length; engineIndex++) {
+            const engine = EngineStore.Instances[engineIndex];
+
+            for (let sceneIndex = 0; sceneIndex < engine.scenes.length; sceneIndex++) {
+                engine.scenes[sceneIndex].markAllMaterialsAsDirty(flag, predicate);
+            }
+        }
+    }
+
+    // Updatable statics so stick with vars here
+
+    /**
+     * Gets or sets the epsilon value used by collision engine
+     */
+    public static CollisionsEpsilon = 0.001;
+
+    /**
+     * Find the next highest power of two.
+     * @param x Number to start search from.
+     * @returns Next highest power of two.
+     */
+    public static CeilingPOT: (x: number) => number = CeilingPOT;
+
+    /**
+     * Find the next lowest power of two.
+     * @param x Number to start search from.
+     * @returns Next lowest power of two.
+     */
+    public static FloorPOT: (x: number) => number = FloorPOT;
+
+    /**
+     * Find the nearest power of two.
+     * @param x Number to start search from.
+     * @returns Next nearest power of two.
+     */
+    public static NearestPOT: (x: number) => number = NearestPOT;
+
+    /**
+     * Get the closest exponent of two
+     * @param value defines the value to approximate
+     * @param max defines the maximum value to return
+     * @param mode defines how to define the closest value
+     * @returns closest exponent of two of the given value
+     */
+    public static GetExponentOfTwo: (value: number, max: number, mode: number) => number = GetExponentOfTwo;
+
+    /**
+     * Queue a new function into the requested animation frame pool (ie. this function will be executed by the browser (or the javascript engine) for the next frame)
+     * @param func - the function to be called
+     * @param requester - the object that will request the next frame. Falls back to window.
+     * @returns frame number
+     */
+    public static QueueNewFrame: (func: () => void, requester?: any) => number = QueueNewFrame;
 }

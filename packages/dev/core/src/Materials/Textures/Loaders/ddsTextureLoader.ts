@@ -1,12 +1,12 @@
 import type { Nullable } from "../../../types";
 import { SphericalPolynomial } from "../../../Maths/sphericalPolynomial";
-import { Engine } from "../../../Engines/engine";
 import type { InternalTexture } from "../../../Materials/Textures/internalTexture";
 import type { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
 import type { DDSInfo } from "../../../Misc/dds";
 import { DDSTools } from "../../../Misc/dds";
 
 import "../../../Engines/Extensions/engine.cubeTexture";
+import { AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
  * Implementation of the DDS Texture Loader.
@@ -114,4 +114,4 @@ export class _DDSTextureLoader implements IInternalTextureLoader {
 }
 
 // Register the loader.
-Engine._TextureLoaders.push(new _DDSTextureLoader());
+AbstractEngine._TextureLoaders.push(new _DDSTextureLoader());

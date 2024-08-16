@@ -5,7 +5,6 @@ import type { Scene, IDisposable } from "../scene";
 import { ScenePerformancePriority } from "../scene";
 import type { Vector2 } from "../Maths/math.vector";
 import { Quaternion, Matrix, Vector3, TmpVectors } from "../Maths/math.vector";
-import { Engine } from "../Engines/engine";
 import type { Node } from "../node";
 import { VertexBuffer } from "../Buffers/buffer";
 import type { IGetSetVerticesData } from "../Meshes/mesh.vertexData";
@@ -45,6 +44,7 @@ import type { RenderingGroup } from "../Rendering/renderingGroup";
 import type { IEdgesRendererOptions } from "../Rendering/edgesRenderer";
 import type { MorphTarget } from "../Morph/morphTarget";
 import { nativeOverride } from "../Misc/decorators";
+import { AbstractEngine } from "core/Engines/abstractEngine";
 
 function applyMorph(data: FloatArray, kind: string, morphTargetManager: MorphTargetManager): void {
     let getTargetData: Nullable<(target: MorphTarget) => Nullable<FloatArray>> = null;
@@ -1934,7 +1934,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
             this._internalAbstractMeshDataInfo._meshCollisionData._diffPositionForCollisions
         );
 
-        if (this._internalAbstractMeshDataInfo._meshCollisionData._diffPositionForCollisions.length() > Engine.CollisionsEpsilon) {
+        if (this._internalAbstractMeshDataInfo._meshCollisionData._diffPositionForCollisions.length() > AbstractEngine.CollisionsEpsilon) {
             this.position.addInPlace(this._internalAbstractMeshDataInfo._meshCollisionData._diffPositionForCollisions);
         }
 

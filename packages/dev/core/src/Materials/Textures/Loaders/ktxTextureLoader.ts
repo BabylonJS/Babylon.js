@@ -1,13 +1,13 @@
 import { KhronosTextureContainer } from "../../../Misc/khronosTextureContainer";
 import { KhronosTextureContainer2 } from "../../../Misc/khronosTextureContainer2";
 import type { Nullable } from "../../../types";
-import { Engine } from "../../../Engines/engine";
 import type { InternalTexture } from "../../../Materials/Textures/internalTexture";
 import type { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
 import { Logger } from "../../../Misc/logger";
 import { Constants } from "../../../Engines/constants";
 
 import "../../../Engines/Extensions/engine.cubeTexture";
+import { AbstractEngine } from "core/Engines/abstractEngine";
 
 function mapSRGBToLinear(format: number): Nullable<number> {
     switch (format) {
@@ -146,4 +146,4 @@ export class _KTXTextureLoader implements IInternalTextureLoader {
 }
 
 // Register the loader.
-Engine._TextureLoaders.push(new _KTXTextureLoader());
+AbstractEngine._TextureLoaders.push(new _KTXTextureLoader());
