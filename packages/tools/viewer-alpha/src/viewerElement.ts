@@ -1,45 +1,30 @@
-import { LitElement, PropertyValues, css, html } from "lit";
+import type { PropertyValues } from "lit";
+import type { Viewer } from "./viewer";
+
+import { LitElement, css, html } from "lit";
 import { customElement, property, query } from "lit/decorators.js";
 
 import { Logger } from "core/Misc/logger";
-import type { Nullable } from "core/types";
-import type { Viewer } from "./viewer";
 import { createViewerForCanvas } from "./viewerFactory";
-
-// TODO: Use https://lit.dev/ to simplify this code and ease maintenance.
 
 /**
  * Represents a custom element that displays a 3D model using the Babylon.js Viewer.
  */
 @customElement("babylon-viewer")
 export class HTML3DElement extends LitElement {
-    // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
-    //public static readonly observedAttributes = Object.freeze(["src", "env"] as const);
-
     /**
      * Gets the underlying Viewer object.
      */
     public viewer?: Viewer;
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+    // eslint-disable-next-line @typescript-eslint/naming-convention, jsdoc/require-jsdoc
     static override styles = css`
-        :host {
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
-
-        #container {
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
-
+        :host,
+        #container,
         #renderCanvas {
+            display: block;
             width: 100%;
             height: 100%;
-            display: block;
-            font-size: 0;
         }
     `;
 
