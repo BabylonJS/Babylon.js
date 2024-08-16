@@ -99,6 +99,11 @@ export interface IShaderMaterialOptions {
      * The language the shader is written in (default: GLSL)
      */
     shaderLanguage?: ShaderLanguage;
+
+    /**
+     * Defines additional code to call to prepare the shader code
+     */
+    extraInitializations?: () => Promise<void>;
 }
 
 /**
