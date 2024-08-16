@@ -8,7 +8,8 @@ var passSampler: texture_2d<f32>;
 
 #define CUSTOM_FRAGMENT_DEFINITIONS
 
-fn main(void)
-{
+@fragment
+fn main(input: FragmentInputs) -> FragmentOutputs {
+
     fragmentOutputs.color = textureSample(passSampler, passSamplerSampler, input.vUV);
 }

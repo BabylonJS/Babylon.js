@@ -8,8 +8,8 @@ const RGBLuminanceCoefficients: vec3f =  vec3f(0.2126, 0.7152, 0.0722);
 
 #define CUSTOM_FRAGMENT_DEFINITIONS
 
-fn main(void) 
-{
+@fragment
+fn main(input: FragmentInputs) -> FragmentOutputs {
 	var tex: vec4f = textureSample(textureSampler, textureSamplerSampler, input.vUV);
 	var c: vec3f = tex.rgb;
 	var luma: f32 = dot(c.rgb, RGBLuminanceCoefficients);

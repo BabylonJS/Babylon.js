@@ -34,15 +34,15 @@ export class DisplayPassPostProcess extends PostProcess {
         super(name, "displayPass", ["passSampler"], ["passSampler"], options, camera, samplingMode, engine, reusable);
     }
 
-    protected override async _initShaderSourceAsync(useWebGPU: boolean) {
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
-            await Promise.all([import("../ShadersWGSL/displayPass.fragment")]);
+            list.push(Promise.all([import("../ShadersWGSL/displayPass.fragment")]));
         } else {
-            await Promise.all([import("../Shaders/displayPass.fragment")]);
+            list.push(Promise.all([import("../Shaders/displayPass.fragment")]));
         }
 
-        await super._initShaderSourceAsync(useWebGPU);
+        super._gatherImports(useWebGPU, list);
     }
 
     /**

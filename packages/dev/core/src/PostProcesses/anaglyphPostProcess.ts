@@ -38,15 +38,15 @@ export class AnaglyphPostProcess extends PostProcess {
         });
     }
 
-    protected override async _initShaderSourceAsync(useWebGPU: boolean) {
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
-            await import("../ShadersWGSL/anaglyph.fragment");
+            list.push(import("../ShadersWGSL/anaglyph.fragment"));
         } else {
-            await import("../Shaders/anaglyph.fragment");
+            list.push(import("../Shaders/anaglyph.fragment"));
         }
 
-        await super._initShaderSourceAsync(useWebGPU);
+        super._gatherImports(useWebGPU, list);
     }
 }
 

@@ -8,8 +8,8 @@ uniform kernelMatrix: mat4x4f;
 
 #define CUSTOM_FRAGMENT_DEFINITIONS
 
-fn main(void)
-{
+@fragment
+fn main(input: FragmentInputs) -> FragmentOutputs {
 	var baseColor: vec3f = textureSample(textureSampler, textureSamplerSampler, input.vUV).rgb;
 	var updatedColor: vec3f = (uniforms.kernelMatrix *  vec4f(baseColor, 1.0)).rgb;
 

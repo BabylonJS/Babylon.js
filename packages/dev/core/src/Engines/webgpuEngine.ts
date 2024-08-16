@@ -1919,7 +1919,7 @@ export class WebGPUEngine extends AbstractEngine {
      * @param onError defines a function to call when the effect creation has failed
      * @param indexParameters defines an object containing the index values to use to compile shaders (like the maximum number of simultaneous lights)
      * @param shaderLanguage the language the shader is written in (default: GLSL)
-     * @param extraInitializations additional async code to run before preparing the effect
+     * @param extraInitializationsAsync additional async code to run before preparing the effect
      * @returns the new Effect
      */
     public createEffect(
@@ -1933,7 +1933,7 @@ export class WebGPUEngine extends AbstractEngine {
         onError?: Nullable<(effect: Effect, errors: string) => void>,
         indexParameters?: any,
         shaderLanguage = ShaderLanguage.GLSL,
-        extraInitializations?: (shaderLanguage: ShaderLanguage) => Promise<void>
+        extraInitializationsAsync?: () => Promise<void>
     ): Effect {
         const vertex = typeof baseName === "string" ? baseName : baseName.vertexToken || baseName.vertexSource || baseName.vertexElement || baseName.vertex;
         const fragment = typeof baseName === "string" ? baseName : baseName.fragmentToken || baseName.fragmentSource || baseName.fragmentElement || baseName.fragment;
@@ -1967,7 +1967,7 @@ export class WebGPUEngine extends AbstractEngine {
             indexParameters,
             name,
             (<IEffectCreationOptions>attributesNamesOrOptions).shaderLanguage ?? shaderLanguage,
-            extraInitializations
+            (<IEffectCreationOptions>attributesNamesOrOptions).extraInitializationsAsync ?? extraInitializationsAsync
         );
         this._compiledEffects[name] = effect;
 

@@ -55,15 +55,15 @@ export class FilterPostProcess extends PostProcess {
         };
     }
 
-    protected override async _initShaderSourceAsync(useWebGPU: boolean) {
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
-            await Promise.all([import("../ShadersWGSL/filter.fragment")]);
+            list.push(Promise.all([import("../ShadersWGSL/filter.fragment")]));
         } else {
-            await Promise.all([import("../Shaders/filter.fragment")]);
+            list.push(Promise.all([import("../Shaders/filter.fragment")]));
         }
 
-        await super._initShaderSourceAsync(useWebGPU);
+        super._gatherImports(useWebGPU, list);
     }
 
     /**

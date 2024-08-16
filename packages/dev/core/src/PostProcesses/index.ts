@@ -122,3 +122,7 @@ export * from "../ShadersWGSL/highlights.fragment";
 // Display
 export * from "../Shaders/displayPass.fragment";
 export * from "../ShadersWGSL/displayPass.fragment";
+
+// Tonemap
+export * from "../Shaders/tonemap.fragment";
+export * from "../ShadersWGSL/tonemap.fragment";

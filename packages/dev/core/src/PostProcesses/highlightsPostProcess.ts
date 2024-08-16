@@ -41,14 +41,14 @@ export class HighlightsPostProcess extends PostProcess {
         super(name, "highlights", null, null, options, camera, samplingMode, engine, reusable, null, textureType);
     }
 
-    protected override async _initShaderSourceAsync(useWebGPU: boolean) {
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
-            await Promise.all([import("../ShadersWGSL/highlights.fragment")]);
+            list.push(Promise.all([import("../ShadersWGSL/highlights.fragment")]));
         } else {
-            await Promise.all([import("../Shaders/highlights.fragment")]);
+            list.push(Promise.all([import("../Shaders/highlights.fragment")]));
         }
 
-        await super._initShaderSourceAsync(useWebGPU);
+        super._gatherImports(useWebGPU, list);
     }
 }
