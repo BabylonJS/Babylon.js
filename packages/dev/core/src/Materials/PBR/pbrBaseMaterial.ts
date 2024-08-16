@@ -937,7 +937,16 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     constructor(name: string, scene?: Scene, forceGLSL = false) {
         super(name, scene);
 
-        this._initShaderSourceAsync(forceGLSL);
+        const engine = this.getScene().getEngine();
+
+        if (engine.isWebGPU && !forceGLSL && !PBRBaseMaterial.ForceGLSL) {
+            // Switch main UBO to non UBO to connect to leftovers UBO in webgpu
+            if (this._uniformBuffer) {
+                this._uniformBuffer.dispose();
+            }
+            this._uniformBuffer = new UniformBuffer(engine, undefined, undefined, this.name, true);
+            this._shaderLanguage = ShaderLanguage.WGSL;
+        }
 
         this.brdf = new PBRBRDFConfiguration(this);
         this.clearCoat = new PBRClearCoatConfiguration(this);
@@ -965,25 +974,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         this._environmentBRDFTexture = GetEnvironmentBRDFTexture(this.getScene());
         this.prePassConfiguration = new PrePassConfiguration();
-    }
-
-    private async _initShaderSourceAsync(forceGLSL = false) {
-        const engine = this.getScene().getEngine();
-
-        if (engine.isWebGPU && !forceGLSL && !PBRBaseMaterial.ForceGLSL) {
-            // Switch main UBO to non UBO to connect to leftovers UBO in webgpu
-            if (this._uniformBuffer) {
-                this._uniformBuffer.dispose();
-            }
-            this._uniformBuffer = new UniformBuffer(engine, undefined, undefined, this.name, true);
-            this._shaderLanguage = ShaderLanguage.WGSL;
-
-            await Promise.all([import("../../ShadersWGSL/pbr.vertex"), import("../../ShadersWGSL/pbr.fragment")]);
-        } else {
-            await Promise.all([import("../../Shaders/pbr.vertex"), import("../../Shaders/pbr.fragment")]);
-        }
-
-        this._shadersLoaded = true;
     }
 
     /**
@@ -1077,10 +1067,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * @returns - boolean indicating that the submesh is ready or not.
      */
     public override isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
-        if (!this._shadersLoaded) {
-            return false;
-        }
-
         if (!this._uniformBufferLayoutBuilt) {
             this.buildUniformLayout();
         }
@@ -1560,6 +1546,17 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 processCodeAfterIncludes: this._eventInfo.customCode,
                 multiTarget: defines.PREPASS,
                 shaderLanguage: this._shaderLanguage,
+                extraInitializationsAsync: this._shadersLoaded
+                    ? undefined
+                    : async () => {
+                          if (this.shaderLanguage === ShaderLanguage.WGSL) {
+                              await Promise.all([import("../../ShadersWGSL/pbr.vertex"), import("../../ShadersWGSL/pbr.fragment")]);
+                          } else {
+                              await Promise.all([import("../../Shaders/pbr.vertex"), import("../../Shaders/pbr.fragment")]);
+                          }
+
+                          this._shadersLoaded = true;
+                      },
             },
             engine
         );
@@ -1938,27 +1935,23 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             if (this._breakShaderLoadedCheck) {
                 return;
             }
-            if (this._shadersLoaded) {
-                const defines = new PBRMaterialDefines(this._eventInfo.defineNames);
-                const effect = this._prepareEffect(mesh, defines, undefined, undefined, localOptions.useInstances, localOptions.clipPlane, mesh.hasThinInstances)!;
-                if (this._onEffectCreatedObservable) {
-                    onCreatedEffectParameters.effect = effect;
-                    onCreatedEffectParameters.subMesh = null;
-                    this._onEffectCreatedObservable.notifyObservers(onCreatedEffectParameters);
+            const defines = new PBRMaterialDefines(this._eventInfo.defineNames);
+            const effect = this._prepareEffect(mesh, defines, undefined, undefined, localOptions.useInstances, localOptions.clipPlane, mesh.hasThinInstances)!;
+            if (this._onEffectCreatedObservable) {
+                onCreatedEffectParameters.effect = effect;
+                onCreatedEffectParameters.subMesh = null;
+                this._onEffectCreatedObservable.notifyObservers(onCreatedEffectParameters);
+            }
+            if (effect.isReady()) {
+                if (onCompiled) {
+                    onCompiled(this);
                 }
-                if (effect.isReady()) {
+            } else {
+                effect.onCompileObservable.add(() => {
                     if (onCompiled) {
                         onCompiled(this);
                     }
-                } else {
-                    effect.onCompileObservable.add(() => {
-                        if (onCompiled) {
-                            onCompiled(this);
-                        }
-                    });
-                }
-            } else {
-                setTimeout(checkReady, 16);
+                });
             }
         };
         checkReady();
