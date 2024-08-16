@@ -347,11 +347,8 @@ export class HighlightLayer extends EffectLayer {
         this._shouldRender = false;
     }
 
-    protected override async _initShaderSourceAsync(forceGLSL = false) {
-        const engine = this._scene.getEngine();
-
-        if (engine.isWebGPU && !forceGLSL && !EffectLayer.ForceGLSL) {
-            this._shaderLanguage = ShaderLanguage.WGSL;
+    protected override async _importShadersAsync() {
+        if (this._shaderLanguage === ShaderLanguage.WGSL) {
             await Promise.all([
                 import("../ShadersWGSL/glowMapMerge.fragment"),
                 import("../ShadersWGSL/glowMapMerge.vertex"),
@@ -361,7 +358,7 @@ export class HighlightLayer extends EffectLayer {
             await Promise.all([import("../Shaders/glowMapMerge.fragment"), import("../Shaders/glowMapMerge.vertex"), import("../Shaders/glowBlurPostProcess.fragment")]);
         }
 
-        await super._initShaderSourceAsync(forceGLSL);
+        await super._importShadersAsync();
     }
 
     /**
