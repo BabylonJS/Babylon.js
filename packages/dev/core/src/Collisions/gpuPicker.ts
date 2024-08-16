@@ -2,14 +2,13 @@ import { Constants } from "core/Engines/constants";
 import type { Engine } from "core/Engines/engine";
 import type { WebGPUEngine } from "core/Engines/webgpuEngine";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
-import type { Material } from "core/Materials/material";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import type { IShaderMaterialOptions } from "core/Materials/shaderMaterial";
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import { Color3, Color4 } from "core/Maths/math.color";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { VertexBuffer } from "core/Meshes/buffer";
 import type { Mesh } from "core/Meshes/mesh";
-import { Observable } from "core/Misc/observable";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 
@@ -54,23 +53,6 @@ export class GPUPicker {
         return this._shaderLanguage;
     }
 
-    private _shadersLoaded = false;
-    private _onMaterialReady = new Observable<Material>(undefined, true);
-
-    private async _initShaderSourceAsync(scene: Scene) {
-        const engine = scene.getEngine();
-
-        if (engine.isWebGPU) {
-            this._shaderLanguage = ShaderLanguage.WGSL;
-
-            await Promise.all([import("../ShadersWGSL/picking.fragment"), import("../ShadersWGSL/picking.vertex")]);
-        } else {
-            await Promise.all([import("../Shaders/picking.fragment"), import("../Shaders/picking.vertex")]);
-        }
-
-        this._shadersLoaded = true;
-    }
-
     private _createRenderTarget(scene: Scene, width: number, height: number) {
         if (this._pickingTexture) {
             this._pickingTexture.dispose();
@@ -94,24 +76,32 @@ export class GPUPicker {
 
         this._defaultRenderMaterial = null;
 
-        if (!this._shadersLoaded) {
-            await this._initShaderSourceAsync(scene);
+        const engine = scene.getEngine();
+
+        if (engine.isWebGPU) {
+            this._shaderLanguage = ShaderLanguage.WGSL;
         }
 
         const defines: string[] = [];
-        const options = {
+        const options: Partial<IShaderMaterialOptions> = {
             attributes: [VertexBuffer.PositionKind, this._attributeName, "bakedVertexAnimationSettingsInstanced"],
             uniforms: ["world", "viewProjection", "meshID"],
             needAlphaBlending: false,
             defines: defines,
             useClipPlane: null,
+            shaderLanguage: this._shaderLanguage,
+            extraInitializationsAsync: async () => {
+                if (this.shaderLanguage === ShaderLanguage.WGSL) {
+                    await Promise.all([import("../ShadersWGSL/picking.fragment"), import("../ShadersWGSL/picking.vertex")]);
+                } else {
+                    await Promise.all([import("../Shaders/picking.fragment"), import("../Shaders/picking.vertex")]);
+                }
+            },
         };
 
         this._defaultRenderMaterial = new ShaderMaterial("pickingShader", scene, "picking", options, false);
 
         this._defaultRenderMaterial.onBindObservable.add(this._materialBindCallback, undefined, undefined, this);
-
-        this._onMaterialReady.notifyObservers(this._defaultRenderMaterial);
     }
 
     private _materialBindCallback(mesh: AbstractMesh | undefined) {
@@ -233,66 +223,64 @@ export class GPUPicker {
 
         this._cachedScene = scene;
 
-        this._onMaterialReady.addOnce(() => {
-            for (let i = 0; i < list.length; i++) {
-                const item = list[i];
-                if ("mesh" in item) {
-                    this._meshMaterialMap.set(item.mesh, item.material);
-                    list[i] = item.mesh;
-                } else {
-                    this._meshMaterialMap.set(item, this._defaultRenderMaterial!);
-                }
+        for (let i = 0; i < list.length; i++) {
+            const item = list[i];
+            if ("mesh" in item) {
+                this._meshMaterialMap.set(item.mesh, item.material);
+                list[i] = item.mesh;
+            } else {
+                this._meshMaterialMap.set(item, this._defaultRenderMaterial!);
+            }
+        }
+
+        this._pickingTexture!.renderList = [];
+
+        // We will affect colors and create vertex color buffers
+        let id = 1;
+        for (let index = 0; index < this._pickableMeshes.length; index++) {
+            const mesh = this._pickableMeshes[index];
+            const material = this._meshMaterialMap.get(mesh)!;
+
+            if (material !== this._defaultRenderMaterial) {
+                material.onBindObservable.add(this._materialBindCallback, undefined, undefined, this);
+            }
+            this._pickingTexture!.setMaterialForRendering(mesh, material);
+            this._pickingTexture!.renderList.push(mesh);
+
+            if (mesh.isAnInstance) {
+                continue; // This will be handled by the source mesh
             }
 
-            this._pickingTexture!.renderList = [];
+            const r = (id & 0xff0000) >> 16;
+            const g = (id & 0x00ff00) >> 8;
+            const b = (id & 0x0000ff) >> 0;
 
-            // We will affect colors and create vertex color buffers
-            let id = 1;
-            for (let index = 0; index < this._pickableMeshes.length; index++) {
-                const mesh = this._pickableMeshes[index];
-                const material = this._meshMaterialMap.get(mesh)!;
+            if (mesh.hasThinInstances) {
+                const colorData = this._generateThinInstanceColorData((mesh as Mesh).thinInstanceCount, id, (i, id) => {
+                    this._thinIdMap[id] = { meshId: index, thinId: i };
+                });
+                id += (mesh as Mesh).thinInstanceCount;
+                (mesh as Mesh).thinInstanceSetBuffer(this._attributeName, colorData, 4);
+            } else {
+                this._idMap[id] = index;
+                id++;
 
-                if (material !== this._defaultRenderMaterial) {
-                    material.onBindObservable.add(this._materialBindCallback, undefined, undefined, this);
-                }
-                this._pickingTexture!.setMaterialForRendering(mesh, material);
-                this._pickingTexture!.renderList.push(mesh);
-
-                if (mesh.isAnInstance) {
-                    continue; // This will be handled by the source mesh
-                }
-
-                const r = (id & 0xff0000) >> 16;
-                const g = (id & 0x00ff00) >> 8;
-                const b = (id & 0x0000ff) >> 0;
-
-                if (mesh.hasThinInstances) {
-                    const colorData = this._generateThinInstanceColorData((mesh as Mesh).thinInstanceCount, id, (i, id) => {
-                        this._thinIdMap[id] = { meshId: index, thinId: i };
+                if (mesh.hasInstances) {
+                    const instances = (mesh as Mesh).instances;
+                    const colorData = this._generateColorData(instances.length, id, index, r, g, b, (i, id) => {
+                        const instance = instances[i];
+                        this._idMap[id] = this._pickableMeshes.indexOf(instance);
                     });
-                    id += (mesh as Mesh).thinInstanceCount;
-                    (mesh as Mesh).thinInstanceSetBuffer(this._attributeName, colorData, 4);
+                    id += instances.length;
+                    const engine = mesh.getEngine();
+
+                    const buffer = new VertexBuffer(engine, colorData, this._attributeName, false, false, 4, true);
+                    (mesh as Mesh).setVerticesBuffer(buffer, true);
                 } else {
-                    this._idMap[id] = index;
-                    id++;
-
-                    if (mesh.hasInstances) {
-                        const instances = (mesh as Mesh).instances;
-                        const colorData = this._generateColorData(instances.length, id, index, r, g, b, (i, id) => {
-                            const instance = instances[i];
-                            this._idMap[id] = this._pickableMeshes.indexOf(instance);
-                        });
-                        id += instances.length;
-                        const engine = mesh.getEngine();
-
-                        const buffer = new VertexBuffer(engine, colorData, this._attributeName, false, false, 4, true);
-                        (mesh as Mesh).setVerticesBuffer(buffer, true);
-                    } else {
-                        this._idColors[mesh.uniqueId] = Color3.FromInts(r, g, b);
-                    }
+                    this._idColors[mesh.uniqueId] = Color3.FromInts(r, g, b);
                 }
             }
-        });
+        }
     }
 
     /**
@@ -339,78 +327,76 @@ export class GPUPicker {
             }
         };
 
+        scene.customRenderTargets.push(this._pickingTexture!);
+
+        // Do we need to rebuild the RTT?
+        const size = this._pickingTexture!.getSize();
+
+        if (size.width !== rttSizeW || size.height !== rttSizeH) {
+            this._createRenderTarget(scene, rttSizeW, rttSizeH);
+
+            this._pickingTexture!.renderList = [];
+            for (let index = 0; index < this._pickableMeshes.length; index++) {
+                const mesh = this._pickableMeshes[index];
+                this._pickingTexture!.setMaterialForRendering(mesh, this._meshMaterialMap.get(mesh)!);
+                this._pickingTexture!.renderList.push(mesh);
+            }
+        }
+
         return new Promise((resolve, reject) => {
-            this._onMaterialReady.addOnce(() => {
-                scene.customRenderTargets.push(this._pickingTexture!);
+            this._pickingTexture!.onAfterRender = async () => {
+                // Disable scissor
+                if ((engine as WebGPUEngine | Engine).disableScissor) {
+                    (engine as WebGPUEngine | Engine).disableScissor();
+                }
 
-                // Do we need to rebuild the RTT?
-                const size = this._pickingTexture!.getSize();
+                if (!this._pickingTexture) {
+                    reject();
+                }
 
-                if (size.width !== rttSizeW || size.height !== rttSizeH) {
-                    this._createRenderTarget(scene, rttSizeW, rttSizeH);
+                let pickedMesh: Nullable<AbstractMesh> = null;
+                let thinInstanceIndex: number | undefined = undefined;
+                const wasSuccessfull = this._meshRenderingCount > 0;
 
-                    this._pickingTexture!.renderList = [];
-                    for (let index = 0; index < this._pickableMeshes.length; index++) {
-                        const mesh = this._pickableMeshes[index];
-                        this._pickingTexture!.setMaterialForRendering(mesh, this._meshMaterialMap.get(mesh)!);
-                        this._pickingTexture!.renderList.push(mesh);
+                if (wasSuccessfull) {
+                    // Remove from the active RTTs
+                    const index = scene.customRenderTargets.indexOf(this._pickingTexture!);
+                    if (index > -1) {
+                        scene.customRenderTargets.splice(index, 1);
+                    }
+
+                    // Do the actual picking
+                    if (await this._readTexturePixelsAsync(x, y)) {
+                        const r = this._readbuffer[0];
+                        const g = this._readbuffer[1];
+                        const b = this._readbuffer[2];
+                        const colorId = (r << 16) + (g << 8) + b;
+
+                        // Thin?
+                        if (this._thinIdMap[colorId]) {
+                            pickedMesh = this._pickableMeshes[this._thinIdMap[colorId].meshId];
+                            thinInstanceIndex = this._thinIdMap[colorId].thinId;
+                        } else {
+                            pickedMesh = this._pickableMeshes[this._idMap[colorId]];
+                        }
                     }
                 }
 
-                this._pickingTexture!.onAfterRender = async () => {
-                    // Disable scissor
-                    if ((engine as WebGPUEngine | Engine).disableScissor) {
-                        (engine as WebGPUEngine | Engine).disableScissor();
+                // Clean-up
+                if (!wasSuccessfull) {
+                    this._meshRenderingCount = 0;
+                    return; // We need to wait for the shaders to be ready
+                } else {
+                    if (disposeWhenDone) {
+                        this.dispose();
                     }
-
-                    if (!this._pickingTexture) {
-                        reject();
-                    }
-
-                    let pickedMesh: Nullable<AbstractMesh> = null;
-                    let thinInstanceIndex: number | undefined = undefined;
-                    const wasSuccessfull = this._meshRenderingCount > 0;
-
-                    if (wasSuccessfull) {
-                        // Remove from the active RTTs
-                        const index = scene.customRenderTargets.indexOf(this._pickingTexture!);
-                        if (index > -1) {
-                            scene.customRenderTargets.splice(index, 1);
-                        }
-
-                        // Do the actual picking
-                        if (await this._readTexturePixelsAsync(x, y)) {
-                            const r = this._readbuffer[0];
-                            const g = this._readbuffer[1];
-                            const b = this._readbuffer[2];
-                            const colorId = (r << 16) + (g << 8) + b;
-
-                            // Thin?
-                            if (this._thinIdMap[colorId]) {
-                                pickedMesh = this._pickableMeshes[this._thinIdMap[colorId].meshId];
-                                thinInstanceIndex = this._thinIdMap[colorId].thinId;
-                            } else {
-                                pickedMesh = this._pickableMeshes[this._idMap[colorId]];
-                            }
-                        }
-                    }
-
-                    // Clean-up
-                    if (!wasSuccessfull) {
-                        this._meshRenderingCount = 0;
-                        return; // We need to wait for the shaders to be ready
+                    if (pickedMesh) {
+                        resolve({ mesh: pickedMesh, thinInstanceIndex: thinInstanceIndex });
                     } else {
-                        if (disposeWhenDone) {
-                            this.dispose();
-                        }
-                        if (pickedMesh) {
-                            resolve({ mesh: pickedMesh, thinInstanceIndex: thinInstanceIndex });
-                        } else {
-                            resolve(null);
-                        }
+                        resolve(null);
                     }
-                };
-            });
+                }
+            };
         });
     }
 
@@ -426,7 +412,6 @@ export class GPUPicker {
 
     /** Release the resources */
     public dispose() {
-        this._onMaterialReady.clear();
         this.setPickingList(null);
         this._cachedScene = null;
 

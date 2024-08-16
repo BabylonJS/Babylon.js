@@ -119,7 +119,7 @@ AbstractEngine.prototype.createEffectForParticles = function (
         onError,
         undefined,
         shaderLanguage,
-        async (shaderLanguage) => {
+        async () => {
             if (shaderLanguage === ShaderLanguage.GLSL) {
                 await import("../Shaders/particles.vertex");
             } else {

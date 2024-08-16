@@ -1277,7 +1277,7 @@ export abstract class AbstractEngine {
      * @param onError defines a function to call when the effect creation has failed
      * @param indexParameters defines an object containing the index values to use to compile shaders (like the maximum number of simultaneous lights)
      * @param shaderLanguage the language the shader is written in (default: GLSL)
-     * @param extraInitializations additional async code to run before preparing the effect
+     * @param extraInitializationsAsync additional async code to run before preparing the effect
      * @returns the new Effect
      */
     public abstract createEffect(
@@ -1291,7 +1291,7 @@ export abstract class AbstractEngine {
         onError?: Nullable<(effect: Effect, errors: string) => void>,
         indexParameters?: any,
         shaderLanguage?: ShaderLanguage,
-        extraInitializations?: (shaderLanguage: ShaderLanguage) => Promise<void>
+        extraInitializationsAsync?: () => Promise<void>
     ): Effect;
 
     /**

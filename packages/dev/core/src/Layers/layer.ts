@@ -194,16 +194,17 @@ export class Layer {
         this.color = color === undefined ? new Color4(1, 1, 1, 1) : color;
 
         this._scene = <Scene>(scene || EngineStore.LastCreatedScene);
+        const engine = this._scene.getEngine();
+        if (engine.isWebGPU && !forceGLSL && !Layer.ForceGLSL) {
+            this._shaderLanguage = ShaderLanguage.WGSL;
+        }
 
-        this._initShaderSourceAsync(forceGLSL);
         let layerComponent = this._scene._getComponent(SceneComponentConstants.NAME_LAYER) as LayerSceneComponent;
         if (!layerComponent) {
             layerComponent = new LayerSceneComponent(this._scene);
             this._scene._addComponent(layerComponent);
         }
         this._scene.layers.push(this);
-
-        const engine = this._scene.getEngine();
 
         this._drawWrapper = new DrawWrapper(engine);
 
@@ -221,20 +222,6 @@ export class Layer {
     }
 
     private _shadersLoaded = false;
-
-    private async _initShaderSourceAsync(forceGLSL = false) {
-        const engine = this._scene.getEngine();
-
-        if (engine.isWebGPU && !forceGLSL && !Layer.ForceGLSL) {
-            this._shaderLanguage = ShaderLanguage.WGSL;
-
-            await Promise.all([import("../ShadersWGSL/layer.vertex"), import("../ShadersWGSL/layer.fragment")]);
-        } else {
-            await Promise.all([import("../Shaders/layer.vertex"), import("../Shaders/layer.fragment")]);
-        }
-
-        this._shadersLoaded = true;
-    }
 
     private _createIndexBuffer(): void {
         const engine = this._scene.getEngine();
@@ -268,9 +255,6 @@ export class Layer {
      * @returns true if the layer is ready. False otherwise.
      */
     public isReady() {
-        if (!this._shadersLoaded) {
-            return false;
-        }
         const engine = this._scene.getEngine();
 
         let defines = "";
@@ -295,7 +279,17 @@ export class Layer {
                 undefined,
                 undefined,
                 undefined,
-                this._shaderLanguage
+                this._shaderLanguage,
+                this._shadersLoaded
+                    ? undefined
+                    : async () => {
+                          if (this._shaderLanguage === ShaderLanguage.WGSL) {
+                              await Promise.all([import("../ShadersWGSL/layer.vertex"), import("../ShadersWGSL/layer.fragment")]);
+                          } else {
+                              await Promise.all([import("../Shaders/layer.vertex"), import("../Shaders/layer.fragment")]);
+                          }
+                          this._shadersLoaded = true;
+                      }
             );
         }
 

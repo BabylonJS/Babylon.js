@@ -110,3 +110,19 @@ export * from "../ShadersWGSL/colorCorrection.fragment";
 // Motion blur
 export * from "../Shaders/motionBlur.fragment";
 export * from "../ShadersWGSL/motionBlur.fragment";
+
+// Filter
+export * from "../Shaders/filter.fragment";
+export * from "../ShadersWGSL/filter.fragment";
+
+// Highlights
+export * from "../Shaders/highlights.fragment";
+export * from "../ShadersWGSL/highlights.fragment";
+
+// Display
+export * from "../Shaders/displayPass.fragment";
+export * from "../ShadersWGSL/displayPass.fragment";
+
+// Tonemap
+export * from "../Shaders/tonemap.fragment";
+export * from "../ShadersWGSL/tonemap.fragment";

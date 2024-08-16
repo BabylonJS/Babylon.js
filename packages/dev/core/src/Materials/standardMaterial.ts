@@ -805,8 +805,15 @@ export class StandardMaterial extends PushMaterial {
      */
     constructor(name: string, scene?: Scene, forceGLSL = false) {
         super(name, scene);
-
-        this._initShaderSourceAsync(forceGLSL);
+        const engine = this.getScene().getEngine();
+        if (engine.isWebGPU && !forceGLSL && !StandardMaterial.ForceGLSL) {
+            // Switch main UBO to non UBO to connect to leftovers UBO in webgpu
+            if (this._uniformBuffer) {
+                this._uniformBuffer.dispose();
+            }
+            this._uniformBuffer = new UniformBuffer(engine, undefined, undefined, this.name, true);
+            this._shaderLanguage = ShaderLanguage.WGSL;
+        }
 
         this.detailMap = new DetailMapConfiguration(this);
 
@@ -830,25 +837,6 @@ export class StandardMaterial extends PushMaterial {
 
             return this._renderTargets;
         };
-    }
-
-    private async _initShaderSourceAsync(forceGLSL = false) {
-        const engine = this.getScene().getEngine();
-
-        if (engine.isWebGPU && !forceGLSL && !StandardMaterial.ForceGLSL) {
-            // Switch main UBO to non UBO to connect to leftovers UBO in webgpu
-            if (this._uniformBuffer) {
-                this._uniformBuffer.dispose();
-            }
-            this._uniformBuffer = new UniformBuffer(engine, undefined, undefined, this.name, true);
-            this._shaderLanguage = ShaderLanguage.WGSL;
-
-            await Promise.all([import("../ShadersWGSL/default.vertex"), import("../ShadersWGSL/default.fragment")]);
-        } else {
-            await Promise.all([import("../Shaders/default.vertex"), import("../Shaders/default.fragment")]);
-        }
-
-        this._shadersLoaded = true;
     }
 
     /**
@@ -935,10 +923,6 @@ export class StandardMaterial extends PushMaterial {
      * @returns a boolean indicating that the submesh is ready or not
      */
     public override isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances: boolean = false): boolean {
-        if (!this._shadersLoaded) {
-            return false;
-        }
-
         if (!this._uniformBufferLayoutBuilt) {
             this.buildUniformLayout();
         }
@@ -1490,6 +1474,16 @@ export class StandardMaterial extends PushMaterial {
                     processCodeAfterIncludes: this._eventInfo.customCode,
                     multiTarget: defines.PREPASS,
                     shaderLanguage: this._shaderLanguage,
+                    extraInitializationsAsync: this._shadersLoaded
+                        ? undefined
+                        : async () => {
+                              if (this._shaderLanguage === ShaderLanguage.WGSL) {
+                                  await Promise.all([import("../ShadersWGSL/default.vertex"), import("../ShadersWGSL/default.fragment")]);
+                              } else {
+                                  await Promise.all([import("../Shaders/default.vertex"), import("../Shaders/default.fragment")]);
+                              }
+                              this._shadersLoaded = true;
+                          },
                 },
                 engine
             );
