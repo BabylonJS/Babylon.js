@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.21.3
+
+### Core
+
+- BoundingBox Renderer to WebGPU - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15448](https://github.com/BabylonJS/Babylon.js/pull/15448))
+
 ## 7.21.2
 
 ### Core

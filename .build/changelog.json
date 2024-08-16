@@ -1,6 +1,40 @@
 {
-    "fromTag": "7.21.1",
+    "fromTag": "7.21.2",
     "changelog": {
+        "7.21.3": [
+            {
+                "pr": "15450",
+                "title": "Path transform for cross-package declarations",
+                "description": "ES6-only - \n\nPath transform was skipped when declaring a module that exists in a different package. This processes module declarations in ts files as well. It will be ignored if it is relative and will be transformed corectly if not.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/pathTransform.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15448",
+                "title": "BoundingBox Renderer to WebGPU",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/boundingBoxRenderer.ts",
+                    "packages/dev/core/src/Rendering/index.ts",
+                    "packages/dev/core/src/ShadersWGSL/boundingBoxRenderer.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/boundingBoxRenderer.vertex.fx"
+                ],
+                "tags": [
+                    "new feature",
+                    "WebGPU"
+                ]
+            }
+        ],
         "7.21.2": [
             {
                 "pr": "15447",
