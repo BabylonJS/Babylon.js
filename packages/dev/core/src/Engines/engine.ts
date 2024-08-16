@@ -27,7 +27,6 @@ import "./AbstractEngine/abstractEngine.states";
 import "./AbstractEngine/abstractEngine.renderPass";
 import "./AbstractEngine/abstractEngine.texture";
 
-import type { Material } from "../Materials/material";
 import type { PostProcess } from "../PostProcesses/postProcess";
 import { AbstractEngine } from "./abstractEngine";
 import {
