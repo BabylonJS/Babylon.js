@@ -1,6 +1,78 @@
 {
-    "fromTag": "7.21.2",
+    "fromTag": "7.21.3",
     "changelog": {
+        "7.21.4": [
+            {
+                "pr": "15455",
+                "title": "Fix missing transfer",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssrRenderingPipeline.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15453",
+                "title": "Fix webgpu SSR, reflectionmap shader compliation error",
+                "description": null,
+                "author": {
+                    "name": "noname0310",
+                    "url": "https://github.com/noname0310"
+                },
+                "files": [
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/screenSpaceRayTrace.fx",
+                    "packages/dev/core/src/ShadersWGSL/default.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/screenSpaceReflection2.fragment.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15454",
+                "title": "Filter out instance attributes in _convertToUnIndexedMesh",
+                "description": "Forum issue: https://forum.babylonjs.com/t/for-compressed-textures-meshdebugpluginmaterial-cannot-be-used/52827\r\n\r\n`_convertToUnIndexedMesh` should only process normal per vertex attribute data. Without filtering, it can end up including things like instance matrices (not per vertex data). In this case, this also leads to things blowing up because `getVerticesData` assumes that all attribute data is per vertex. Possibly this should also be fixed so it is possible to call `getVerticesData` on an attribute that is not per vertex, but won't affect this particular issue.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15451",
+                "title": "make sure radius is always positive or 0",
+                "description": "Fixes https://forum.babylonjs.com/t/the-gui-editor-loses-all-color-when-the-slider-width-is-adjusted/52797?u=raananw",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/sliders/slider.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15449",
+                "title": "Run on progress once when using offline support",
+                "description": "See https://forum.babylonjs.com/t/loading-resources-from-indexeddb-will-not-fire-isceneloaderprogressevent/52809?u=raananw",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Offline/database.ts"
+                ],
+                "tags": []
+            }
+        ],
         "7.21.3": [
             {
                 "pr": "15450",
