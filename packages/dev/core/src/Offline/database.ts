@@ -525,7 +525,7 @@ export class Database implements IOfflineProvider {
         this._checkVersionFromDB(completeUrl, (version) => {
             if (version !== -1) {
                 if (!this._mustUpdateRessources) {
-                    this._loadFileAsync(completeUrl, sceneLoaded, saveAndLoadFile);
+                    this._loadFileAsync(completeUrl, sceneLoaded, saveAndLoadFile, progressCallBack);
                 } else {
                     this._saveFileAsync(completeUrl, sceneLoaded, progressCallBack, useArrayBuffer, errorCallback);
                 }
@@ -537,7 +537,7 @@ export class Database implements IOfflineProvider {
         });
     }
 
-    private _loadFileAsync(url: string, callback: (data?: any) => void, notInDBCallback: () => void) {
+    private _loadFileAsync(url: string, callback: (data?: any) => void, notInDBCallback: () => void, progressCallBack?: (data: any) => void) {
         if (this._isSupported && this._db) {
             let targetStore: string;
             if (url.indexOf(".babylon") !== -1) {
@@ -551,6 +551,14 @@ export class Database implements IOfflineProvider {
 
             transaction.oncomplete = () => {
                 if (file) {
+                    if (progressCallBack) {
+                        const numberToLoad = file.data?.byteLength || 0;
+                        progressCallBack({
+                            total: numberToLoad,
+                            loaded: numberToLoad,
+                            lengthComputable: true,
+                        });
+                    }
                     callback(file.data);
                 }
                 // file was not found in DB
