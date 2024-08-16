@@ -184,7 +184,7 @@ export class PrePassRenderer {
         },
         {
             purpose: Constants.PREPASS_NDC_DEPTH_TEXTURE_TYPE,
-            type: Constants.TEXTURETYPE_HALF_FLOAT,
+            type: Constants.TEXTURETYPE_FLOAT,
             format: Constants.TEXTUREFORMAT_R,
             name: "prePass_NdcDepth",
         },
