@@ -18,7 +18,7 @@ import type { TeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
 import type { TeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
 import { Tools } from "../../Misc/tools";
 import type { Color4 } from "../../Maths/math.color";
-import { Engine } from "../../Engines/engine";
+import { AbstractEngine } from "core/Engines/abstractEngine";
 
 // declare NODEGEOMETRYEDITOR namespace for compilation issue
 declare let NODEGEOMETRYEDITOR: any;
@@ -50,7 +50,7 @@ export class NodeGeometry {
     private _buildExecutionTime: number = 0;
 
     /** Define the Url to load node editor script */
-    public static EditorURL = `${Tools._DefaultCdnUrl}/v${Engine.Version}/nodeGeometryEditor/babylon.nodeGeometryEditor.js`;
+    public static EditorURL = `${Tools._DefaultCdnUrl}/v${AbstractEngine.Version}/nodeGeometryEditor/babylon.nodeGeometryEditor.js`;
 
     /** Define the Url to load snippets */
     public static SnippetUrl = Constants.SnippetUrl;

@@ -2,7 +2,6 @@
 import { Logger } from "../Misc/logger";
 import type { Nullable, DataArray, IndicesArray, Immutable, FloatArray } from "../types";
 import { Color4 } from "../Maths/math";
-import { Engine } from "../Engines/engine";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import type { IEffectCreationOptions, IShaderPath } from "../Materials/effect";
 import { Effect } from "../Materials/effect";
@@ -621,7 +620,7 @@ export class WebGPUEngine extends AbstractEngine {
         options.deviceDescriptor = options.deviceDescriptor || {};
         options.enableGPUDebugMarkers = options.enableGPUDebugMarkers ?? false;
 
-        Logger.Log(`Babylon.js v${Engine.Version} - ${this.description} engine`);
+        Logger.Log(`Babylon.js v${AbstractEngine.Version} - ${this.description} engine`);
         if (!navigator.gpu) {
             Logger.Error("WebGPU is not supported by your browser.");
             return;
