@@ -138,11 +138,11 @@ export class BoundingBoxRenderer implements ISceneComponent {
      */
     public enabled = true;
 
-    /** Shader language used by the material */
+    /** Shader language used by the renderer */
     protected _shaderLanguage = ShaderLanguage.GLSL;
 
     /**
-     * Gets the shader language used in this material.
+     * Gets the shader language used in this renderer.
      */
     public get shaderLanguage(): ShaderLanguage {
         return this._shaderLanguage;
