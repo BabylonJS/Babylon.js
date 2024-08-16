@@ -1,5 +1,12 @@
 # Changelog
 
+## 7.21.2
+
+### Core
+
+- More Postprocesses ported to webgpu - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15447](https://github.com/BabylonJS/Babylon.js/pull/15447))
+- Adding an option to load last minute async at Effect level - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15446](https://github.com/BabylonJS/Babylon.js/pull/15446))
+
 ## 7.21.1
 
 ### Core

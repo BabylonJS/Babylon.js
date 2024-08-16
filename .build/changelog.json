@@ -1,6 +1,101 @@
 {
-    "fromTag": "7.21.0",
+    "fromTag": "7.21.1",
     "changelog": {
+        "7.21.2": [
+            {
+                "pr": "15447",
+                "title": "More Postprocesses ported to webgpu",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts",
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/Layers/glowLayer.ts",
+                    "packages/dev/core/src/Layers/highlightLayer.ts",
+                    "packages/dev/core/src/Layers/layer.ts",
+                    "packages/dev/core/src/Materials/Background/backgroundMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Meshes/linesMesh.ts",
+                    "packages/dev/core/src/Particles/particleSystemComponent.ts",
+                    "packages/dev/core/src/PostProcesses/anaglyphPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/blackAndWhitePostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/bloomMergePostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/blurPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/chromaticAberrationPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/circleOfConfusionPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/colorCorrectionPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/convolutionPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/depthOfFieldMergePostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/displayPassPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/extractHighlightsPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/filterPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/fxaaPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/grainPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/highlightsPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/imageProcessingPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/index.ts",
+                    "packages/dev/core/src/PostProcesses/motionBlurPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/passPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/postProcess.ts",
+                    "packages/dev/core/src/PostProcesses/sharpenPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/tonemapPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/vrDistortionCorrectionPostProcess.ts",
+                    "packages/dev/core/src/ShadersWGSL/displayPass.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/filter.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/highlights.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/tonemap.fragment.fx"
+                ],
+                "tags": [
+                    "new feature",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "15437",
+                "title": "Process module declarations correctly",
+                "description": "this will also process module declarations at the top level of a file and will route them to the right place.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/generateDeclaration.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15446",
+                "title": "Adding an option to load last minute async at Effect level",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Buffers/buffer.nonFloatVertexBuffers.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts",
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Particles/particleSystemComponent.ts",
+                    "packages/dev/core/src/Particles/thinParticleSystem.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "WebGPU"
+                ]
+            }
+        ],
         "7.21.1": [
             {
                 "pr": "15445",
