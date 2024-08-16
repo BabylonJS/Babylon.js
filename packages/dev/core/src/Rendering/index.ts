@@ -29,3 +29,9 @@ export * from "../Shaders/geometry.fragment";
 export * from "../Shaders/geometry.vertex";
 export * from "../ShadersWGSL/geometry.fragment";
 export * from "../ShadersWGSL/geometry.vertex";
+
+// Bounding Box Renderer
+import "../Shaders/boundingBoxRenderer.fragment";
+import "../Shaders/boundingBoxRenderer.vertex";
+import "../ShadersWGSL/boundingBoxRenderer.fragment";
+import "../ShadersWGSL/boundingBoxRenderer.vertex";
