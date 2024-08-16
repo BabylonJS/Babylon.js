@@ -103,7 +103,7 @@ export interface IShaderMaterialOptions {
     /**
      * Defines additional code to call to prepare the shader code
      */
-    extraInitializations?: () => Promise<void>;
+    extraInitializationsAsync?: () => Promise<void>;
 }
 
 /**
@@ -907,6 +907,7 @@ export class ShaderMaterial extends PushMaterial {
                     onError: this.onError,
                     indexParameters: { maxSimultaneousMorphTargets: numInfluencers },
                     shaderLanguage: this._options.shaderLanguage,
+                    extraInitializationsAsync: this._options.extraInitializationsAsync,
                 },
                 engine
             );

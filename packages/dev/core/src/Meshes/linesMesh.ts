@@ -129,7 +129,7 @@ export class LinesMesh extends Mesh {
             }
 
             options.shaderLanguage = this._shaderLanguage;
-            options.extraInitializations = async () => {
+            options.extraInitializationsAsync = async () => {
                 if (this._shaderLanguage === ShaderLanguage.WGSL) {
                     await Promise.all([import("../ShadersWGSL/color.vertex"), import("../ShadersWGSL/color.fragment")]);
                 } else {

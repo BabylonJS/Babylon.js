@@ -3,7 +3,7 @@ import type { Engine } from "core/Engines/engine";
 import type { WebGPUEngine } from "core/Engines/webgpuEngine";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { ShaderMaterial } from "core/Materials/shaderMaterial";
+import { IShaderMaterialOptions, ShaderMaterial } from "core/Materials/shaderMaterial";
 import { Color3, Color4 } from "core/Maths/math.color";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { VertexBuffer } from "core/Meshes/buffer";
@@ -82,14 +82,14 @@ export class GPUPicker {
         }
 
         const defines: string[] = [];
-        const options = {
+        const options: Partial<IShaderMaterialOptions> = {
             attributes: [VertexBuffer.PositionKind, this._attributeName, "bakedVertexAnimationSettingsInstanced"],
             uniforms: ["world", "viewProjection", "meshID"],
             needAlphaBlending: false,
             defines: defines,
             useClipPlane: null,
             shaderLanguage: this._shaderLanguage,
-            extraInitializations: async () => {
+            extraInitializationsAsync: async () => {
                 if (this.shaderLanguage === ShaderLanguage.WGSL) {
                     await Promise.all([import("../ShadersWGSL/picking.fragment"), import("../ShadersWGSL/picking.vertex")]);
                 } else {
