@@ -1,3 +1,6 @@
+import { LitElement, PropertyValues, css, html } from "lit";
+import { customElement, property, query } from "lit/decorators.js";
+
 import { Logger } from "core/Misc/logger";
 import type { Nullable } from "core/types";
 import type { Viewer } from "./viewer";
@@ -8,95 +11,117 @@ import { createViewerForCanvas } from "./viewerFactory";
 /**
  * Represents a custom element that displays a 3D model using the Babylon.js Viewer.
  */
-export class HTML3DElement extends HTMLElement {
+@customElement("babylon-viewer")
+export class HTML3DElement extends LitElement {
     // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
-    public static readonly observedAttributes = Object.freeze(["src", "env"] as const);
+    //public static readonly observedAttributes = Object.freeze(["src", "env"] as const);
 
     /**
      * Gets the underlying Viewer object.
      */
-    public readonly viewer: Viewer;
+    public viewer?: Viewer;
+
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    static override styles = css`
+        :host {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #container {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #renderCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            font-size: 0;
+        }
+    `;
 
     /**
-     * Creates an instance of HTML3DElement.
+     * The model URL.
      */
-    public constructor() {
-        super();
+    @property()
+    public src = "";
 
-        const shadowRoot = this.attachShadow({ mode: "open" });
-        shadowRoot.innerHTML = `
-          <style>
-            :host {
-              display: block;
-              width: 100%;
-              height: 100%;
-            }
+    /**
+     * The environment URL.
+     */
+    @property()
+    public env = "";
 
-            #container {
-              display: block;
-              width: 100%;
-              height: 100%;
-            }
+    @query("#renderCanvas")
+    private _canvas: HTMLCanvasElement;
 
-            #renderCanvas {
-              width: 100%;
-              height: 100%;
-              display: block;
-              font-size: 0;
-            }
-          </style>
-          <div id="container">
-            <canvas id="renderCanvas" touch-action="none"></canvas>
-          </div>
+    // eslint-disable-next-line babylonjs/available
+    override connectedCallback(): void {
+        super.connectedCallback();
+        this._setupViewer();
+    }
+
+    // eslint-disable-next-line babylonjs/available
+    override firstUpdated(_changedProperties: PropertyValues): void {
+        super.firstUpdated(_changedProperties);
+        this._setupViewer();
+    }
+
+    // eslint-disable-next-line babylonjs/available
+    override disconnectedCallback(): void {
+        super.disconnectedCallback();
+        this._tearDownViewer();
+    }
+
+    // eslint-disable-next-line babylonjs/available
+    override update(changedProperties: PropertyValues): void {
+        super.update(changedProperties);
+
+        if (changedProperties.has("src")) {
+            this._updateModel();
+        }
+
+        if (changedProperties.has("env")) {
+            this._updateEnv();
+        }
+    }
+
+    // eslint-disable-next-line babylonjs/available
+    override render() {
+        return html`
+            <div id="container">
+                <canvas id="renderCanvas" touch-action="none"></canvas>
+            </div>
         `;
-
-        const canvas = shadowRoot.querySelector("#renderCanvas") as HTMLCanvasElement;
-        this.viewer = createViewerForCanvas(canvas);
     }
 
-    /**
-     * Gets the model URL.
-     */
-    public get src() {
-        return this.getAttribute("src");
+    private _setupViewer() {
+        if (this._canvas && !this.viewer) {
+            this.viewer = createViewerForCanvas(this._canvas);
+            this._updateModel();
+            this._updateEnv();
+        }
     }
 
-    /**
-     * Sets the model URL.
-     */
-    public set src(value: Nullable<string>) {
-        if (value === null) {
-            this.removeAttribute("src");
+    private _tearDownViewer() {
+        if (this.viewer) {
+            this.viewer.dispose();
+            this.viewer = undefined;
+        }
+    }
+
+    private _updateModel() {
+        if (this.src) {
+            this.viewer?.loadModelAsync(this.src).catch(Logger.Log);
         } else {
-            this.setAttribute("src", value);
+            // TODO: Unload model?
         }
     }
 
-    /**
-     * Called each time the element is added to the document.
-     * @remarks
-     * See https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_custom_elements#custom_element_lifecycle_callbacks
-     */
-    public connectedCallback() {}
-
-    /**
-     * Called when attributes are changed, added, removed, or replaced.
-     * @remarks
-     * See https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_custom_elements#custom_element_lifecycle_callbacks
-     * @param name The name of the attribute that changed.
-     * @param oldValue The old value of the attribute.
-     * @param newValue The new value of the attribute.
-     */
-    public attributeChangedCallback(name: (typeof HTML3DElement.observedAttributes)[number], oldValue: string, newValue: string) {
-        switch (name) {
-            case "src":
-                this.viewer.loadModelAsync(newValue).catch(Logger.Log);
-                break;
-            case "env":
-                this.viewer.loadEnvironmentAsync(newValue).catch(Logger.Log);
-                break;
-        }
+    private _updateEnv() {
+        this.viewer?.loadEnvironmentAsync(this.env || undefined).catch(Logger.Log);
     }
 }
-
-globalThis.customElements.define("babylon-viewer", HTML3DElement);
