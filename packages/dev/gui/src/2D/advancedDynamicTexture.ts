@@ -11,6 +11,7 @@ import type { KeyboardInfoPre } from "core/Events/keyboardEvents";
 import { KeyboardEventTypes } from "core/Events/keyboardEvents";
 import type { Camera } from "core/Cameras/camera";
 import { Texture } from "core/Materials/Textures/texture";
+import type { IDynamicTextureOptions } from "core/Materials/Textures/dynamicTexture";
 import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { Layer } from "core/Layers/layer";
@@ -31,10 +32,17 @@ import { DecodeBase64ToBinary } from "core/Misc/stringTools";
 
 import type { StandardMaterial } from "core/Materials/standardMaterial";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
-import type { FrameGraph, FrameGraphTaskTexture, IFrameGraphInputData, IFrameGraphTask, TextureHandle } from "core/FrameGraph";
+import type { FrameGraph, FrameGraphTaskTexture, IFrameGraphTask, TextureHandle } from "core/FrameGraph";
 
-export interface IFrameGraphADTInputData extends IFrameGraphInputData {
+export type FrameGraphADTParameters = {
     outputTexture: FrameGraphTaskTexture | TextureHandle;
+};
+
+export interface IAdvancedDynamicTextureOptions extends IDynamicTextureOptions {
+    /** indicates that the ADT will be used as a frame graph task (default: false) */
+    useAsFrameGraphTask?: boolean;
+    /** Specific parameters for using the ADT as a frame graph task */
+    frameGraphParameters?: FrameGraphADTParameters;
 }
 
 /**
@@ -48,7 +56,11 @@ export class AdvancedDynamicTexture extends DynamicTexture implements IFrameGrap
     /** Indicates if some optimizations can be performed in GUI GPU management (the downside is additional memory/GPU texture memory used) */
     public static AllowGPUOptimizations = true;
 
-    public disabledFrameGraph = false;
+    protected _useAsFrameGraphTask = false;
+
+    public disabled = false;
+
+    public outputTexture?: FrameGraphTaskTexture | TextureHandle;
 
     /** Snippet ID if the content was created from the snippet server */
     public snippetId: string;
@@ -391,25 +403,57 @@ export class AdvancedDynamicTexture extends DynamicTexture implements IFrameGrap
      * but it has a performance cost.
      */
     public checkPointerEveryFrame = false;
+
     /**
      * Creates a new AdvancedDynamicTexture
      * @param name defines the name of the texture
-     * @param width defines the width of the texture
-     * @param height defines the height of the texture
-     * @param scene defines the hosting scene
-     * @param generateMipMaps defines a boolean indicating if mipmaps must be generated (false by default)
-     * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
-     * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
+     * @param options The options to be used when constructing the ADT
      */
-    constructor(name: string, width = 0, height = 0, scene?: Nullable<Scene>, generateMipMaps = false, samplingMode = Texture.NEAREST_SAMPLINGMODE, invertY = true) {
-        super(name, { width: width, height: height }, scene, generateMipMaps, samplingMode, Constants.TEXTUREFORMAT_RGBA, invertY);
+    constructor(name: string, options?: IAdvancedDynamicTextureOptions);
+
+    constructor(name: string, width?: number, height?: number, scene?: Nullable<Scene>, generateMipMaps?: boolean, samplingMode?: number, invertY?: boolean);
+
+    /** @internal */
+    constructor(
+        name: string,
+        widthOrOptions?: number | IAdvancedDynamicTextureOptions,
+        _height = 0,
+        scene?: Nullable<Scene>,
+        generateMipMaps = false,
+        samplingMode = Texture.NEAREST_SAMPLINGMODE,
+        invertY = true
+    ) {
+        widthOrOptions = widthOrOptions ?? 0;
+
+        const width = typeof widthOrOptions === "object" && widthOrOptions !== undefined ? (widthOrOptions.width ?? 0) : (widthOrOptions ?? 0);
+        const height = typeof widthOrOptions === "object" && widthOrOptions !== undefined ? (widthOrOptions.height ?? 0) : _height;
+
+        super(
+            name,
+            { width, height },
+            typeof widthOrOptions === "object" && widthOrOptions !== undefined ? widthOrOptions : scene,
+            generateMipMaps,
+            samplingMode,
+            Constants.TEXTUREFORMAT_RGBA,
+            invertY
+        );
+
         scene = this.getScene();
         if (!scene || !this._texture) {
             return;
         }
         this.applyYInversionOnUpdate = invertY;
         this._rootElement = scene.getEngine().getInputElement();
-        this._renderObserver = scene.onBeforeCameraRenderObservable.add((camera: Camera) => this._checkUpdate(camera));
+
+        const adtOptions = widthOrOptions as IAdvancedDynamicTextureOptions;
+
+        this._useAsFrameGraphTask = !!adtOptions?.useAsFrameGraphTask;
+
+        if (!this._useAsFrameGraphTask) {
+            this._renderObserver = scene.onBeforeCameraRenderObservable.add((camera: Camera) => this._checkUpdate(camera));
+        } else {
+            this.outputTexture = adtOptions?.frameGraphParameters?.outputTexture;
+        }
 
         /** Whenever a control is added or removed to the root, we have to recheck the camera projection as it can have changed  */
         this._controlAddedObserver = this._rootContainer.onControlAddedObservable.add((control) => {
@@ -1577,7 +1621,7 @@ export class AdvancedDynamicTexture extends DynamicTexture implements IFrameGrap
      * LayerMask is set through advancedTexture.layer.layerMask
      * @param name defines name for the texture
      * @param foreground defines a boolean indicating if the texture must be rendered in foreground (default is true)
-     * @param scene defines the hosting scene
+     * @param sceneOrOptions defines the hosting scene or options (IAdvancedDynamicTextureOptions)
      * @param sampling defines the texture sampling mode (Texture.BILINEAR_SAMPLINGMODE by default)
      * @param adaptiveScaling defines whether to automatically scale root to match hardwarescaling (false by default)
      * @returns a new AdvancedDynamicTexture
@@ -1585,17 +1629,26 @@ export class AdvancedDynamicTexture extends DynamicTexture implements IFrameGrap
     public static CreateFullscreenUI(
         name: string,
         foreground: boolean = true,
-        scene: Nullable<Scene> = null,
+        sceneOrOptions: Nullable<Scene> | IAdvancedDynamicTextureOptions = null,
         sampling = Texture.BILINEAR_SAMPLINGMODE,
         adaptiveScaling: boolean = false
     ): AdvancedDynamicTexture {
-        const result = new AdvancedDynamicTexture(name, 0, 0, scene, false, sampling);
+        const isScene = !sceneOrOptions || (sceneOrOptions as Scene)._isScene;
+        const result = isScene
+            ? new AdvancedDynamicTexture(name, 0, 0, sceneOrOptions as Scene, false, sampling)
+            : new AdvancedDynamicTexture(name, sceneOrOptions as IAdvancedDynamicTextureOptions);
         // Display
         const resultScene = result.getScene();
         const layer = new Layer(name + "_layer", null, resultScene, !foreground);
         layer.texture = result;
         result._layerToDispose = layer;
         result._isFullscreen = true;
+
+        if (result._useAsFrameGraphTask) {
+            // Make sure the layer is not rendered by the layer component!
+            // We will render it ourselves in the frame graph render pass
+            layer.layerMask = 0;
+        }
 
         if (adaptiveScaling && resultScene) {
             const newScale = 1 / resultScene.getEngine().getHardwareScalingLevel();
@@ -1642,26 +1695,16 @@ export class AdvancedDynamicTexture extends DynamicTexture implements IFrameGrap
         return this._rootContainer.isReady();
     }
 
-    public initializeFrameGraph(_frameGraph: FrameGraph) {
-        const scene = this.getScene();
-        if (!scene) {
-            return;
-        }
-
-        scene.onBeforeCameraRenderObservable.remove(this._renderObserver);
-        this._renderObserver = null;
-
-        if (this._layerToDispose) {
-            this._layerToDispose.layerMask = 0;
-        }
-    }
-
     public isReadyFrameGraph(): boolean {
         return this.guiIsReady() && this._layerToDispose!.isReady();
     }
 
-    public recordFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphADTInputData): void {
-        const outputTextureHandle = frameGraph.getTextureHandle(inputData.outputTexture);
+    public recordFrameGraph(frameGraph: FrameGraph): void {
+        if (this.outputTexture === undefined) {
+            throw new Error("outputTexture is required");
+        }
+
+        const outputTextureHandle = frameGraph.getTextureHandle(this.outputTexture);
 
         const pass = frameGraph.addRenderPass(this.name);
 

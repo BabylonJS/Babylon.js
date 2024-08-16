@@ -5,7 +5,6 @@ import { NodeRenderGraphBlockConnectionPointTypes, NodeRenderGraphBlockConnectio
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import type { AbstractEngine } from "../../../../Engines/abstractEngine";
 import { Constants } from "../../../../Engines/constants";
-import type { IFrameGraphBloomEffectInputData } from "../../../../PostProcesses/bloomEffect";
 import { BloomEffect } from "../../../../PostProcesses/bloomEffect";
 import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
 
@@ -13,19 +12,19 @@ import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState"
  * Block that implements the bloom post process
  */
 export class BloomPostProcessBlock extends NodeRenderGraphBlock {
-    private _postProcess: BloomEffect;
-    private _taskParameters: IFrameGraphBloomEffectInputData;
+    protected override _frameGraphTask: BloomEffect;
 
     /**
      * Create a new BloomPostProcessBlock
      * @param name defines the block name
      * @param engine defines the hosting engine
      * @param hdr If high dynamic range textures should be used (default: false)
+     * @param bloomScale The scale of the bloom effect (default: 0.5)
      */
-    public constructor(name: string, engine: AbstractEngine, hdr = false) {
+    public constructor(name: string, engine: AbstractEngine, hdr = false, bloomScale = 0.5) {
         super(name, engine);
 
-        this._additionalConstructionParameters = [hdr];
+        this._additionalConstructionParameters = [hdr, bloomScale];
 
         this.registerInput("source", NodeRenderGraphBlockConnectionPointTypes.Texture);
         this.registerInput("destination", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
@@ -47,52 +46,49 @@ export class BloomPostProcessBlock extends NodeRenderGraphBlock {
             }
         }
 
-        this._postProcess = new BloomEffect(engine, 0.5, 0.15, 64, defaultPipelineTextureType, false);
-        this._taskParameters = {
-            sourceTexture: undefined as any,
+        this._frameGraphTask = new BloomEffect(engine, bloomScale, 0.15, 64, defaultPipelineTextureType, false, true, {
             sourceSamplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-        };
-        this._frameGraphTask = this._postProcess;
+        });
     }
 
     /** Sampling mode used to sample from the source texture */
     @editableInPropertyPage("Source sampling mode", PropertyTypeForEdition.Int, "PROPERTIES")
     public get sourceSamplingMode() {
-        return this._taskParameters.sourceSamplingMode!;
+        return this._frameGraphTask.sourceSamplingMode;
     }
 
     public set sourceSamplingMode(value: number) {
-        this._taskParameters.sourceSamplingMode = value;
+        this._frameGraphTask.sourceSamplingMode = value;
     }
 
     /** The luminance threshold to find bright areas of the image to bloom. */
     @editableInPropertyPage("Threshold", PropertyTypeForEdition.Float, "PROPERTIES")
     public get threshold(): number {
-        return this._postProcess.threshold;
+        return this._frameGraphTask.threshold;
     }
 
     public set threshold(value: number) {
-        this._postProcess.threshold = value;
+        this._frameGraphTask.threshold = value;
     }
 
     /** The strength of the bloom. */
     @editableInPropertyPage("Weight", PropertyTypeForEdition.Float, "PROPERTIES")
     public get weight(): number {
-        return this._postProcess.weight;
+        return this._frameGraphTask.weight;
     }
 
     public set weight(value: number) {
-        this._postProcess.weight = value;
+        this._frameGraphTask.weight = value;
     }
 
     /** Specifies the size of the bloom blur kernel, relative to the final output size */
     @editableInPropertyPage("Kernel", PropertyTypeForEdition.Float, "PROPERTIES")
     public get kernel(): number {
-        return this._postProcess.kernel;
+        return this._frameGraphTask.kernel;
     }
 
     public set kernel(value: number) {
-        this._postProcess.kernel = value;
+        this._frameGraphTask.kernel = value;
     }
 
     /**
@@ -124,7 +120,7 @@ export class BloomPostProcessBlock extends NodeRenderGraphBlock {
     }
 
     public override dispose() {
-        this._postProcess.disposeEffects();
+        this._frameGraphTask.disposeEffects();
         super.dispose();
     }
 
@@ -137,15 +133,15 @@ export class BloomPostProcessBlock extends NodeRenderGraphBlock {
 
         const sourceConnectedPoint = this.source.connectedPoint;
         if (sourceConnectedPoint && sourceConnectedPoint.valueType === NodeRenderGraphBlockConnectionPointValueTypes.Texture) {
-            this._taskParameters.sourceTexture = sourceConnectedPoint.value!;
+            this._frameGraphTask.sourceTexture = sourceConnectedPoint.value!;
         }
 
         const destinationConnectedPoint = this.destination.connectedPoint;
         if (destinationConnectedPoint && destinationConnectedPoint.valueType === NodeRenderGraphBlockConnectionPointValueTypes.Texture) {
-            this._taskParameters.outputTexture = destinationConnectedPoint.value;
+            this._frameGraphTask.outputTexture = destinationConnectedPoint.value;
         }
 
-        state.frameGraph.addTask(this._postProcess, this._taskParameters);
+        state.frameGraph.addTask(this._frameGraphTask);
     }
 
     protected override _dumpPropertiesCode() {

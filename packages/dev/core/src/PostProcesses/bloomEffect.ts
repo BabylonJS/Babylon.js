@@ -8,7 +8,7 @@ import type { Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
 import type { Scene } from "../scene";
 import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { FrameGraphTaskTexture, IFrameGraphInputData, IFrameGraphTask } from "../FrameGraph/Tasks/IFrameGraphTask";
+import type { FrameGraphTaskTexture, IFrameGraphTask } from "../FrameGraph/Tasks/IFrameGraphTask";
 import type { FrameGraph } from "../FrameGraph/frameGraph";
 import type { TextureHandle } from "../FrameGraph/frameGraphTextureManager";
 import { Constants } from "../Engines/constants";
@@ -16,22 +16,30 @@ import { Constants } from "../Engines/constants";
 /**
  * Interface for the bloom effect build data
  */
-export interface IFrameGraphBloomEffectInputData extends IFrameGraphInputData {
+export type FrameGraphBloomEffectParameters = {
     /**
      * The source texture for the bloom effect
      */
-    sourceTexture: FrameGraphTaskTexture | TextureHandle;
+    sourceTexture?: FrameGraphTaskTexture | TextureHandle;
     sourceSamplingMode?: number;
     outputTexture?: FrameGraphTaskTexture | TextureHandle;
-}
+};
 
 /**
  * The bloom effect spreads bright areas of an image to simulate artifacts seen in cameras
  */
 export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphTask {
+    protected _useAsFrameGraphTask = false;
+
     public name = "Bloom";
 
-    public disabledFrameGraph = false;
+    public disabled = false;
+
+    public sourceTexture?: FrameGraphTaskTexture | TextureHandle;
+
+    public sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
+
+    public outputTexture?: FrameGraphTaskTexture | TextureHandle;
 
     /**
      * @internal Internal
@@ -88,6 +96,8 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
      * @param bloomKernel The size of the kernel to be used when applying the blur.
      * @param pipelineTextureType The type of texture to be used when performing the post processing.
      * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
+     * @param useAsFrameGraphTask If the effect should be used as a frame graph task
+     * @param frameGraphParameters The frame graph options to use when building the effect, if the effect is to be built using the frame graph system
      */
     constructor(
         sceneOrEngine: Scene | AbstractEngine,
@@ -95,7 +105,9 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
         bloomWeight: number,
         bloomKernel: number,
         pipelineTextureType = 0,
-        blockCompilation = false
+        blockCompilation = false,
+        useAsFrameGraphTask = false,
+        frameGraphParameters?: FrameGraphBloomEffectParameters
     ) {
         const engine = (sceneOrEngine as Scene)._renderForCamera ? (sceneOrEngine as Scene).getEngine() : (sceneOrEngine as AbstractEngine);
         super(
@@ -108,59 +120,63 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
         );
 
         this._pipelineTextureType = pipelineTextureType;
+        this._useAsFrameGraphTask = useAsFrameGraphTask;
+        this.sourceTexture = frameGraphParameters?.sourceTexture;
+        this.sourceSamplingMode = frameGraphParameters?.sourceSamplingMode ?? this.sourceSamplingMode;
+        this.outputTexture = frameGraphParameters?.outputTexture;
 
-        this._downscale = new ExtractHighlightsPostProcess("highlights", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, pipelineTextureType, blockCompilation);
-
-        this._blurX = new BlurPostProcess(
-            "horizontal blur",
-            new Vector2(1.0, 0),
-            10.0,
-            _bloomScale,
-            null,
-            Texture.BILINEAR_SAMPLINGMODE,
+        this._downscale = new ExtractHighlightsPostProcess("highlights", {
+            size: 1.0,
+            samplingMode: Texture.BILINEAR_SAMPLINGMODE,
             engine,
-            false,
-            pipelineTextureType,
-            undefined,
-            blockCompilation
-        );
+            textureType: pipelineTextureType,
+            blockCompilation,
+            useAsFrameGraphTask: this._useAsFrameGraphTask,
+            frameGraphParameters: frameGraphParameters,
+        });
+        this._downscale.skipCreationOfDisabledPasses = true;
+
+        this._blurX = new BlurPostProcess("horizontal blur", new Vector2(1.0, 0), 10.0, {
+            size: _bloomScale,
+            samplingMode: Texture.BILINEAR_SAMPLINGMODE,
+            engine,
+            textureType: pipelineTextureType,
+            blockCompilation,
+            useAsFrameGraphTask: this._useAsFrameGraphTask,
+            frameGraphParameters: frameGraphParameters,
+        });
         this._blurX.alwaysForcePOT = true;
         this._blurX.autoClear = false;
+        this._blurX.skipCreationOfDisabledPasses = true;
 
-        this._blurY = new BlurPostProcess(
-            "vertical blur",
-            new Vector2(0, 1.0),
-            10.0,
-            _bloomScale,
-            null,
-            Texture.BILINEAR_SAMPLINGMODE,
+        this._blurY = new BlurPostProcess("vertical blur", new Vector2(0, 1.0), 10.0, {
+            size: _bloomScale,
+            samplingMode: Texture.BILINEAR_SAMPLINGMODE,
             engine,
-            false,
-            pipelineTextureType,
-            undefined,
-            blockCompilation
-        );
+            textureType: pipelineTextureType,
+            blockCompilation,
+            useAsFrameGraphTask: this._useAsFrameGraphTask,
+            frameGraphParameters: frameGraphParameters,
+        });
         this._blurY.alwaysForcePOT = true;
         this._blurY.autoClear = false;
+        this._blurY.skipCreationOfDisabledPasses = true;
 
         this.kernel = bloomKernel;
 
         this._effects = [this._downscale, this._blurX, this._blurY];
 
-        this._merge = new BloomMergePostProcess(
-            "bloomMerge",
-            this._downscale,
-            this._blurY,
-            bloomWeight,
-            _bloomScale,
-            null,
-            Texture.BILINEAR_SAMPLINGMODE,
+        this._merge = new BloomMergePostProcess("bloomMerge", this._downscale, this._blurY, bloomWeight, {
+            size: _bloomScale,
+            samplingMode: Texture.BILINEAR_SAMPLINGMODE,
             engine,
-            false,
-            pipelineTextureType,
-            blockCompilation
-        );
+            textureType: pipelineTextureType,
+            blockCompilation,
+            useAsFrameGraphTask: this._useAsFrameGraphTask,
+            frameGraphParameters: frameGraphParameters,
+        });
         this._merge.autoClear = false;
+        this._merge.skipCreationOfDisabledPasses = true;
         this._effects.push(this._merge);
     }
 
@@ -168,10 +184,12 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
         return this._downscale.isReady() && this._blurX.isReady() && this._blurY.isReady() && this._merge.isReady();
     }
 
-    public recordFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphBloomEffectInputData): void {
-        inputData.sourceSamplingMode = inputData.sourceSamplingMode ?? Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
+    public recordFrameGraph(frameGraph: FrameGraph): void {
+        if (this.sourceTexture === undefined) {
+            throw new Error("sourceTexture is required");
+        }
 
-        const sourceTextureDescription = frameGraph.getTextureDescription(inputData.sourceTexture);
+        const sourceTextureDescription = frameGraph.getTextureDescription(this.sourceTexture);
 
         const textureCreationOptions = {
             size: { width: Math.floor(sourceTextureDescription.size.width * this._bloomScale), height: Math.floor(sourceTextureDescription.size.height * this._bloomScale) },
@@ -197,44 +215,32 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
         textureCreationOptions.options.label = `${this.name} Downscale`;
         const downscaleTextureHandle = frameGraph.createRenderTargetTexture(textureCreationOptions.options.label, textureCreationOptions);
 
-        this._downscale.recordFrameGraph(frameGraph, {
-            sourceTexture: inputData.sourceTexture,
-            outputTexture: downscaleTextureHandle,
-            skipCreationOfDisabledPasses: true,
-        });
+        this._downscale.sourceTexture = this.sourceTexture;
+        this._downscale.outputTexture = downscaleTextureHandle;
+        this._downscale.recordFrameGraph(frameGraph);
 
         textureCreationOptions.options.label = `${this.name} Blur X`;
         const blurXTextureHandle = frameGraph.createRenderTargetTexture(textureCreationOptions.options.label, textureCreationOptions);
 
-        this._blurX.recordFrameGraph(frameGraph, {
-            sourceTexture: downscaleTextureHandle,
-            outputTexture: blurXTextureHandle,
-            skipCreationOfDisabledPasses: true,
-        });
+        this._blurX.sourceTexture = downscaleTextureHandle;
+        this._blurX.outputTexture = blurXTextureHandle;
+        this._blurX.recordFrameGraph(frameGraph);
 
         textureCreationOptions.options.label = `${this.name} Blur Y`;
         const blurYTextureHandle = frameGraph.createRenderTargetTexture(textureCreationOptions.options.label, textureCreationOptions);
 
-        this._blurY.recordFrameGraph(frameGraph, {
-            sourceTexture: blurXTextureHandle,
-            outputTexture: blurYTextureHandle,
-            skipCreationOfDisabledPasses: true,
-        });
+        this._blurY.sourceTexture = blurXTextureHandle;
+        this._blurY.outputTexture = blurYTextureHandle;
+        this._blurY.recordFrameGraph(frameGraph);
 
-        const sourceTextureHandle = frameGraph.getTextureHandle(inputData.sourceTexture);
-        const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(
-            inputData.outputTexture,
-            `${this.name} Output`,
-            frameGraph.getTextureCreationOptions(inputData.sourceTexture)
-        );
+        const sourceTextureHandle = frameGraph.getTextureHandle(this.sourceTexture);
+        const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(this.outputTexture, `${this.name} Output`, frameGraph.getTextureCreationOptions(this.sourceTexture));
 
-        this._merge.recordFrameGraph(frameGraph, {
-            sourceTexture: inputData.sourceTexture,
-            sourceSamplingMode: inputData.sourceSamplingMode,
-            sourceBlurTexture: blurYTextureHandle,
-            outputTexture: outputTextureHandle,
-            skipCreationOfDisabledPasses: true,
-        });
+        this._merge.sourceTexture = this.sourceTexture;
+        this._merge.sourceSamplingMode = this.sourceSamplingMode;
+        this._merge.sourceBlurTexture = blurYTextureHandle;
+        this._merge.outputTexture = outputTextureHandle;
+        this._merge.recordFrameGraph(frameGraph);
 
         const passDisabled = frameGraph.addRenderPass(this.name + "_disabled", true);
 

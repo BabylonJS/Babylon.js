@@ -97,6 +97,9 @@ export class NodeRenderGraph {
     private _frameGraph: FrameGraph;
     private _options: INodeRenderGraphCreateOptions;
 
+    /**
+     * Gets the frame graph used by this node render graph
+     */
     public get frameGraph() {
         return this._frameGraph;
     }

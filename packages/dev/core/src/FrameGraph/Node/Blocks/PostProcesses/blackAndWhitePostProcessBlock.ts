@@ -7,14 +7,12 @@ import { BlackAndWhitePostProcess } from "../../../../PostProcesses/blackAndWhit
 import type { AbstractEngine } from "../../../../Engines/abstractEngine";
 import { Constants } from "../../../../Engines/constants";
 import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
-import type { IFrameGraphPostProcessInputData } from "../../../../PostProcesses/postProcess";
 
 /**
  * Block that implements the black and white post process
  */
 export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
-    private _postProcess: BlackAndWhitePostProcess;
-    private _taskParameters: IFrameGraphPostProcessInputData;
+    protected override _frameGraphTask: BlackAndWhitePostProcess;
 
     /**
      * Create a new BlackAndWhitePostProcessBlock
@@ -34,32 +32,36 @@ export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
             return this.destination.isConnected ? this.destination : this.source;
         };
 
-        this._postProcess = new BlackAndWhitePostProcess(this.name, 1, null, undefined, engine);
-        this._taskParameters = {
-            sourceTexture: undefined as any,
-            sourceSamplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-        };
-        this._frameGraphTask = this._postProcess;
+        this._frameGraphTask = new BlackAndWhitePostProcess(
+            this.name,
+            {
+                useAsFrameGraphTask: true,
+                frameGraphParameters: { sourceSamplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE },
+            },
+            null,
+            undefined,
+            engine
+        );
     }
 
     /** Sampling mode used to sample from the source texture */
     @editableInPropertyPage("Source sampling mode", PropertyTypeForEdition.Int, "PROPERTIES")
     public get sourceSamplingMode() {
-        return this._taskParameters.sourceSamplingMode!;
+        return this._frameGraphTask.sourceSamplingMode;
     }
 
     public set sourceSamplingMode(value: number) {
-        this._taskParameters.sourceSamplingMode = value;
+        this._frameGraphTask.sourceSamplingMode = value;
     }
 
     /** Degree of conversion to black and white (default: 1 - full b&w conversion) */
     @editableInPropertyPage("Degree", PropertyTypeForEdition.Float, "PROPERTIES")
     public get degree(): number {
-        return this._postProcess.degree;
+        return this._frameGraphTask.degree;
     }
 
     public set degree(value: number) {
-        this._postProcess.degree = value;
+        this._frameGraphTask.degree = value;
     }
 
     /**
@@ -91,7 +93,7 @@ export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
     }
 
     public override dispose() {
-        this._postProcess.dispose();
+        this._frameGraphTask.dispose();
         super.dispose();
     }
 
@@ -104,15 +106,15 @@ export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
 
         const sourceConnectedPoint = this.source.connectedPoint;
         if (sourceConnectedPoint && sourceConnectedPoint.valueType === NodeRenderGraphBlockConnectionPointValueTypes.Texture) {
-            this._taskParameters.sourceTexture = sourceConnectedPoint.value!;
+            this._frameGraphTask.sourceTexture = sourceConnectedPoint.value!;
         }
 
         const destinationConnectedPoint = this.destination.connectedPoint;
         if (destinationConnectedPoint && destinationConnectedPoint.valueType === NodeRenderGraphBlockConnectionPointValueTypes.Texture) {
-            this._taskParameters.outputTexture = destinationConnectedPoint.value;
+            this._frameGraphTask.outputTexture = destinationConnectedPoint.value;
         }
 
-        state.frameGraph.addTask(this._postProcess, this._taskParameters);
+        state.frameGraph.addTask(this._frameGraphTask);
     }
 
     protected override _dumpPropertiesCode() {

@@ -40,14 +40,24 @@ export class ExtractHighlightsPostProcess extends PostProcess {
     constructor(
         name: string,
         options: number | PostProcessOptions,
-        camera: Nullable<Camera>,
+        camera: Nullable<Camera> = null,
         samplingMode?: number,
         engine?: AbstractEngine,
         reusable?: boolean,
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false
     ) {
-        super(name, "extractHighlights", ["threshold", "exposure"], null, options, camera, samplingMode, engine, reusable, null, textureType, undefined, null, blockCompilation);
+        super(name, "extractHighlights", {
+            uniforms: ["threshold", "exposure"],
+            size: typeof options === "number" ? options : undefined,
+            camera,
+            samplingMode,
+            engine,
+            reusable,
+            textureType,
+            blockCompilation,
+            ...(options as PostProcessOptions),
+        });
         this.onApplyObservable.add((effect: Effect) => {
             this.externalTextureSamplerBinding = !!this._inputPostProcess;
             if (this._inputPostProcess) {

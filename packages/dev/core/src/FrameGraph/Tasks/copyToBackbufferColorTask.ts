@@ -1,23 +1,34 @@
 import type { FrameGraph } from "../frameGraph";
 import type { TextureHandle } from "../frameGraphTextureManager";
 import { backbufferColorTextureHandle } from "../frameGraphTextureManager";
-import type { FrameGraphTaskTexture, IFrameGraphInputData, IFrameGraphTask } from "./IFrameGraphTask";
+import type { FrameGraphTaskTexture, IFrameGraphTask } from "./IFrameGraphTask";
 
-export interface IFrameGraphCopyToBackbufferColorInputData extends IFrameGraphInputData {
+export type FrameGraphCopyToBackbufferColorTaskParameters = {
     sourceTexture: FrameGraphTaskTexture | TextureHandle;
-}
+};
 
 export class FrameGraphCopyToBackbufferColorTask implements IFrameGraphTask {
-    public disabledFrameGraph = false;
+    public disabled = false;
 
-    constructor(public name: string) {}
+    public sourceTexture?: FrameGraphTaskTexture | TextureHandle;
+
+    constructor(
+        public name: string,
+        options?: FrameGraphCopyToBackbufferColorTaskParameters
+    ) {
+        this.sourceTexture = options?.sourceTexture;
+    }
 
     public isReadyFrameGraph() {
         return true;
     }
 
-    public recordFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphCopyToBackbufferColorInputData) {
-        const sourceTextureHandle = frameGraph.getTextureHandle(inputData.sourceTexture);
+    public recordFrameGraph(frameGraph: FrameGraph) {
+        if (this.sourceTexture === undefined) {
+            throw new Error("sourceTexture is required");
+        }
+
+        const sourceTextureHandle = frameGraph.getTextureHandle(this.sourceTexture);
 
         const pass = frameGraph.addRenderPass("copy to backbuffer color");
 

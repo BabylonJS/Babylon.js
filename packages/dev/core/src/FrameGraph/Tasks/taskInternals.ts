@@ -1,23 +1,20 @@
 import type { IFrameGraphPass } from "../Passes/IFrameGraphPass";
 import { FrameGraphRenderPass } from "../Passes/renderPass";
 import type { FrameGraphTextureManager, TextureHandle } from "../frameGraphTextureManager";
-import type { IFrameGraphInputData, IFrameGraphTask } from "./IFrameGraphTask";
+import type { IFrameGraphTask } from "./IFrameGraphTask";
 
 /** @internal */
 export class FrameGraphTaskInternals {
     public passes: IFrameGraphPass[] = [];
     public passesDisabled: IFrameGraphPass[] = [];
-    public inputData?: IFrameGraphInputData;
     public outputTexture?: TextureHandle;
     public outputTextureWhenEnabled?: TextureHandle;
     public outputTextureWhenDisabled?: TextureHandle;
 
     constructor(
         private _task: IFrameGraphTask,
-        private _textureManager: FrameGraphTextureManager,
-        inputData?: IFrameGraphInputData
+        private _textureManager: FrameGraphTextureManager
     ) {
-        this.inputData = inputData;
         this.reset();
     }
 
@@ -69,7 +66,7 @@ export class FrameGraphTaskInternals {
             return;
         }
 
-        if (this._task.disabledFrameGraph) {
+        if (this._task.disabled) {
             this._textureManager._textures[this.outputTexture]!.texture = this._textureManager._textures[this.outputTextureWhenDisabled!]!.texture;
             this._textureManager._textures[this.outputTexture]!.systemType = this._textureManager._textures[this.outputTextureWhenDisabled!]!.systemType;
             this._textureManager._textureCreationOptions[this.outputTexture] = this._textureManager._textureCreationOptions[this.outputTextureWhenDisabled!];

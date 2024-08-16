@@ -96,7 +96,7 @@ export class FrameGraphTextureManager {
             return this._textureCreationOptions[textureId]!;
         }
 
-        const textureHandle = this._mapNameToTask.get(textureId)?._frameGraphInternals!.outputTexture;
+        const textureHandle = this._mapNameToTask.get(textureId)?._fgInternals!.outputTexture;
 
         if (textureHandle === undefined) {
             throw new Error(`Task "${textureId}" does not have an output texture.`);
@@ -110,7 +110,7 @@ export class FrameGraphTextureManager {
             return textureId;
         }
 
-        const textureHandle = this._mapNameToTask.get(textureId)?._frameGraphInternals!.outputTexture;
+        const textureHandle = this._mapNameToTask.get(textureId)?._fgInternals!.outputTexture;
 
         if (textureHandle === undefined) {
             throw new Error(`Task "${textureId}" does not have an output texture.`);

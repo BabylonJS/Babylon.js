@@ -25,13 +25,16 @@ export class NodeRenderGraphBlock {
     protected _engine: AbstractEngine;
     protected _frameGraphTask: IFrameGraphTask;
 
+    /**
+     * Gets or sets the disable flag of the task associated with this block
+     */
     public get disabled() {
-        return this._frameGraphTask?.disabledFrameGraph ?? false;
+        return this._frameGraphTask?.disabled ?? false;
     }
 
     public set disabled(value: boolean) {
         if (this._frameGraphTask) {
-            this._frameGraphTask.disabledFrameGraph = value;
+            this._frameGraphTask.disabled = value;
         }
     }
 

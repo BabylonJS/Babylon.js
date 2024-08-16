@@ -28,7 +28,7 @@ import type { PrePassRenderer } from "../Rendering/prePassRenderer";
 import type { PrePassEffectConfiguration } from "../Rendering/prePassEffectConfiguration";
 import { AbstractEngine } from "../Engines/abstractEngine";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
-import type { FrameGraphTaskTexture, IFrameGraphInputData, IFrameGraphTask } from "../FrameGraph/Tasks/IFrameGraphTask";
+import type { FrameGraphTaskTexture, IFrameGraphTask } from "../FrameGraph/Tasks/IFrameGraphTask";
 import type { FrameGraph } from "../FrameGraph/frameGraph";
 import type { TextureHandle } from "../FrameGraph/frameGraphTextureManager";
 
@@ -68,13 +68,6 @@ AbstractEngine.prototype.setTextureFromPostProcess = function (channel: number, 
 AbstractEngine.prototype.setTextureFromPostProcessOutput = function (channel: number, postProcess: Nullable<PostProcess>, name: string): void {
     this._bindTexture(channel, postProcess?._outputTexture?.texture ?? null, name);
 };
-
-export interface IFrameGraphPostProcessInputData extends IFrameGraphInputData {
-    sourceTexture: FrameGraphTaskTexture | TextureHandle;
-    sourceSamplingMode?: number;
-    outputTexture?: FrameGraphTaskTexture | TextureHandle;
-    skipCreationOfDisabledPasses?: boolean;
-}
 
 declare module "../Materials/effect" {
     export interface Effect {
@@ -134,6 +127,13 @@ export type PostProcessCustomShaderCodeProcessing = {
      * If provided, will be called when binding inputs to the shader code to allow the user to add custom bindings
      */
     bindCustomBindings?: (postProcessName: string, effect: Effect) => void;
+};
+
+export type FrameGraphPostProcessParameters = {
+    sourceTexture?: FrameGraphTaskTexture | TextureHandle;
+    sourceSamplingMode?: number;
+    outputTexture?: FrameGraphTaskTexture | TextureHandle;
+    skipCreationOfDisabledPasses?: boolean;
 };
 
 /**
@@ -216,6 +216,14 @@ export type PostProcessOptions = {
      * The shader language of the shader. (default: GLSL)
      */
     shaderLanguage?: ShaderLanguage;
+    /**
+     * Indicates that the post process will be used as a frame graph task. (default: false)
+     */
+    useAsFrameGraphTask?: boolean;
+    /**
+     * Specific parameters for using the post-process as a frame graph task
+     */
+    frameGraphParameters?: FrameGraphPostProcessParameters;
 };
 
 type TextureCache = { texture: RenderTargetWrapper; postProcessChannel: number; lastUsedRenderId: number };
@@ -236,7 +244,17 @@ export class PostProcess implements IFrameGraphTask {
 
     private static _CustomShaderCodeProcessing: { [postProcessName: string]: PostProcessCustomShaderCodeProcessing } = {};
 
-    public disabledFrameGraph = false;
+    protected _useAsFrameGraphTask = false;
+
+    public disabled = false;
+
+    public sourceTexture?: FrameGraphTaskTexture | TextureHandle;
+
+    public sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
+
+    public outputTexture?: FrameGraphTaskTexture | TextureHandle;
+
+    public skipCreationOfDisabledPasses = false;
 
     /**
      * Registers a shader code processing with a post process name.
@@ -684,6 +702,13 @@ export class PostProcess implements IFrameGraphTask {
             textureFormat = options.textureFormat ?? Constants.TEXTUREFORMAT_RGBA;
             shaderLanguage = options.shaderLanguage ?? ShaderLanguage.GLSL;
             uniformBuffers = options.uniformBuffers ?? null;
+            this._useAsFrameGraphTask = options.useAsFrameGraphTask ?? false;
+            if (this._useAsFrameGraphTask && options.frameGraphParameters) {
+                this.sourceTexture = options.frameGraphParameters.sourceTexture;
+                this.sourceSamplingMode = options.frameGraphParameters.sourceSamplingMode ?? this.sourceSamplingMode;
+                this.outputTexture = options.frameGraphParameters.outputTexture;
+                this.skipCreationOfDisabledPasses = options.frameGraphParameters.skipCreationOfDisabledPasses ?? this.skipCreationOfDisabledPasses;
+            }
         } else if (_size) {
             if (typeof _size === "number") {
                 size = _size;
@@ -1191,15 +1216,13 @@ export class PostProcess implements IFrameGraphTask {
         return this.isReady();
     }
 
-    public recordFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphPostProcessInputData): void {
-        inputData.sourceSamplingMode = inputData.sourceSamplingMode ?? Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
+    public recordFrameGraph(frameGraph: FrameGraph): void {
+        if (this.sourceTexture === undefined) {
+            throw new Error("sourceTexture is required");
+        }
 
-        const sourceTextureHandle = frameGraph.getTextureHandle(inputData.sourceTexture);
-        const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(
-            inputData.outputTexture,
-            `${this.name} Output`,
-            frameGraph.getTextureCreationOptions(inputData.sourceTexture)
-        );
+        const sourceTextureHandle = frameGraph.getTextureHandle(this.sourceTexture);
+        const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(this.outputTexture, `${this.name} Output`, frameGraph.getTextureCreationOptions(this.sourceTexture));
 
         const pass = frameGraph.addRenderPass(this.name);
 
@@ -1207,11 +1230,11 @@ export class PostProcess implements IFrameGraphTask {
         pass.setRenderTarget(outputTextureHandle);
         pass.setExecuteFunc((context) => {
             this.inputTexture = context.getTextureFromHandle(sourceTextureHandle)!;
-            context.setTextureSamplingMode(sourceTextureHandle, inputData.sourceSamplingMode!);
+            context.setTextureSamplingMode(sourceTextureHandle, this!.sourceSamplingMode!);
             context.applyFullScreenEffect(this._drawWrapper, () => this._bind());
         });
 
-        if (!inputData.skipCreationOfDisabledPasses) {
+        if (!this.skipCreationOfDisabledPasses) {
             const passDisabled = frameGraph.addRenderPass(this.name + "_disabled", true);
 
             passDisabled.setRenderTarget(sourceTextureHandle);

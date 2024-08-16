@@ -1,7 +1,7 @@
 import type { Scene } from "../scene";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
-import type { FrameGraphTaskTexture, IFrameGraphInputData, IFrameGraphTask } from "./Tasks/IFrameGraphTask";
+import type { FrameGraphTaskTexture, IFrameGraphTask } from "./Tasks/IFrameGraphTask";
 import { FrameGraphPass } from "./Passes/pass";
 import { FrameGraphRenderPass } from "./Passes/renderPass";
 import { FrameGraphRenderContext } from "./frameGraphRenderContext";
@@ -34,14 +34,13 @@ export class FrameGraph {
         this._renderContext = new FrameGraphRenderContext(engine, this._textureManager);
     }
 
-    public addTask<T>(task: IFrameGraphTask, inputData?: T extends IFrameGraphInputData ? T : never): void {
+    public addTask(task: IFrameGraphTask): void {
         if (this._currentProcessedTask !== null) {
             throw new Error(`Can't add the task "${task.name}" while another task is currently building (task: ${this._currentProcessedTask.name}).`);
         }
 
-        task._frameGraphInternals?.dispose();
-        task._frameGraphInternals = new FrameGraphTaskInternals(task, this._textureManager, inputData);
-        task.initializeFrameGraph?.(this);
+        task._fgInternals?.dispose();
+        task._fgInternals = new FrameGraphTaskInternals(task, this._textureManager);
 
         this._tasks.push(task);
         this._mapNameToTask.set(task.name, task);
@@ -55,9 +54,9 @@ export class FrameGraph {
         const pass = new FrameGraphPass(name, this._textureManager, this._currentProcessedTask, this._passContext);
 
         if (whenTaskDisabled) {
-            this._currentProcessedTask._frameGraphInternals!.passesDisabled.push(pass);
+            this._currentProcessedTask._fgInternals!.passesDisabled.push(pass);
         } else {
-            this._currentProcessedTask._frameGraphInternals!.passes.push(pass);
+            this._currentProcessedTask._fgInternals!.passes.push(pass);
         }
 
         return pass;
@@ -71,9 +70,9 @@ export class FrameGraph {
         const pass = new FrameGraphRenderPass(name, this._textureManager, this._currentProcessedTask, this._renderContext);
 
         if (whenTaskDisabled) {
-            this._currentProcessedTask._frameGraphInternals!.passesDisabled.push(pass);
+            this._currentProcessedTask._fgInternals!.passesDisabled.push(pass);
         } else {
-            this._currentProcessedTask._frameGraphInternals!.passes.push(pass);
+            this._currentProcessedTask._fgInternals!.passes.push(pass);
         }
 
         return pass;
@@ -90,13 +89,13 @@ export class FrameGraph {
 
             taskNames.add(task.name);
 
-            const internals = task._frameGraphInternals!;
+            const internals = task._fgInternals!;
 
             internals.reset();
 
             this._currentProcessedTask = task;
 
-            task.recordFrameGraph(this, internals.inputData);
+            task.recordFrameGraph(this);
 
             internals.postBuildTask();
 
@@ -134,11 +133,11 @@ export class FrameGraph {
         this._renderContext._bindRenderTarget();
 
         for (const task of this._tasks) {
-            const internals = task._frameGraphInternals!;
+            const internals = task._fgInternals!;
 
             internals.setTextureOutputForTask();
 
-            const passes = task.disabledFrameGraph ? internals.passesDisabled : internals.passes;
+            const passes = task.disabled ? internals.passesDisabled : internals.passes;
 
             for (const pass of passes) {
                 pass._execute();
@@ -186,8 +185,7 @@ export class FrameGraph {
 
     public clear(): void {
         for (const task of this._tasks) {
-            task._frameGraphInternals?.dispose();
-            task.disposeFrameGraph?.(this);
+            task._fgInternals?.dispose();
         }
 
         this._tasks.length = 0;

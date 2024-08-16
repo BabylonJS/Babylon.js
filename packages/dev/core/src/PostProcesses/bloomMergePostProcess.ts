@@ -1,4 +1,4 @@
-import type { IFrameGraphPostProcessInputData, PostProcessOptions } from "./postProcess";
+import type { FrameGraphPostProcessParameters, PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
 import type { Nullable } from "../types";
 import type { AbstractEngine } from "../Engines/abstractEngine";
@@ -12,8 +12,8 @@ import type { FrameGraph } from "../FrameGraph/frameGraph";
 import type { FrameGraphTaskTexture } from "../FrameGraph/Tasks/IFrameGraphTask";
 import type { TextureHandle } from "../FrameGraph/frameGraphTextureManager";
 
-export interface IFrameGraphBloomMergeInputData extends IFrameGraphPostProcessInputData {
-    sourceBlurTexture: FrameGraphTaskTexture | TextureHandle;
+export interface FrameGraphBloomMergePostProcessParameters extends FrameGraphPostProcessParameters {
+    sourceBlurTexture?: FrameGraphTaskTexture | TextureHandle;
 }
 
 /**
@@ -23,6 +23,8 @@ export class BloomMergePostProcess extends PostProcess {
     /** Weight of the bloom to be added to the original input. */
     @serialize()
     public weight = 1;
+
+    public sourceBlurTexture?: FrameGraphTaskTexture | TextureHandle;
 
     /**
      * Gets a string identifying the name of the class
@@ -52,37 +54,49 @@ export class BloomMergePostProcess extends PostProcess {
         blurred: PostProcess,
         weight: number,
         options: number | PostProcessOptions,
-        camera: Nullable<Camera>,
+        camera: Nullable<Camera> = null,
         samplingMode?: number,
         engine?: AbstractEngine,
         reusable?: boolean,
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false
     ) {
-        super(name, "bloomMerge", ["bloomWeight"], ["bloomBlur"], options, camera, samplingMode, engine, reusable, null, textureType, undefined, null, true);
+        super(name, "bloomMerge", {
+            uniforms: ["bloomWeight"],
+            samplers: ["bloomBlur"],
+            size: typeof options === "number" ? options : undefined,
+            camera,
+            samplingMode,
+            engine,
+            reusable,
+            textureType,
+            blockCompilation: true,
+            ...(options as PostProcessOptions),
+        });
+
         this.weight = weight;
         this.externalTextureSamplerBinding = true;
-        this.onApplyObservable.add((effect: Effect) => {
-            effect.setTextureFromPostProcess("textureSampler", originalFromInput);
-            effect.setTextureFromPostProcessOutput("bloomBlur", blurred);
-            effect.setFloat("bloomWeight", this.weight);
-        });
+        if (!this._useAsFrameGraphTask) {
+            this.onApplyObservable.add((effect: Effect) => {
+                effect.setTextureFromPostProcess("textureSampler", originalFromInput);
+                effect.setTextureFromPostProcessOutput("bloomBlur", blurred);
+                effect.setFloat("bloomWeight", this.weight);
+            });
+        }
 
         if (!blockCompilation) {
             this.updateEffect();
         }
     }
 
-    public override recordFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphBloomMergeInputData): void {
-        const sourceTextureHandle = frameGraph.getTextureHandle(inputData.sourceTexture);
-        const sourceBlurTextureHandle = frameGraph.getTextureHandle(inputData.sourceBlurTexture);
-        const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(
-            inputData.outputTexture,
-            `${this.name} Output`,
-            frameGraph.getTextureCreationOptions(inputData.sourceTexture)
-        );
+    public override recordFrameGraph(frameGraph: FrameGraph): void {
+        if (this.sourceTexture === undefined || this.sourceBlurTexture === undefined) {
+            throw new Error("sourceTexture and sourceBlurTexture are required");
+        }
 
-        this.onApplyObservable.clear();
+        const sourceTextureHandle = frameGraph.getTextureHandle(this.sourceTexture);
+        const sourceBlurTextureHandle = frameGraph.getTextureHandle(this.sourceBlurTexture);
+        const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(this.outputTexture, `${this.name} Output`, frameGraph.getTextureCreationOptions(this.sourceTexture));
 
         const pass = frameGraph.addRenderPass(this.name);
 
@@ -98,7 +112,7 @@ export class BloomMergePostProcess extends PostProcess {
             });
         });
 
-        if (!inputData.skipCreationOfDisabledPasses) {
+        if (!this.skipCreationOfDisabledPasses) {
             const passDisabled = frameGraph.addRenderPass(this.name + "_disabled", true);
 
             passDisabled.setRenderTarget(sourceTextureHandle);

@@ -4,14 +4,13 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes, NodeRenderGraphBlockConnectionPointValueTypes } from "../Types/nodeRenderGraphBlockConnectionPointTypes";
 import type { AbstractEngine } from "../../../Engines/abstractEngine";
 import type { NodeRenderGraphBuildState } from "../nodeRenderGraphBuildState";
-import type { IFrameGraphCopyToBackbufferColorInputData } from "core/FrameGraph/Tasks/copyToBackbufferColorTask";
 import { FrameGraphCopyToBackbufferColorTask } from "core/FrameGraph/Tasks/copyToBackbufferColorTask";
 
 /**
  * Block used to generate the final graph
  */
 export class RenderGraphOutputBlock extends NodeRenderGraphBlock {
-    private _taskParameters: IFrameGraphCopyToBackbufferColorInputData;
+    protected override _frameGraphTask: FrameGraphCopyToBackbufferColorTask;
 
     /**
      * Create a new RenderGraphOutputBlock
@@ -28,9 +27,6 @@ export class RenderGraphOutputBlock extends NodeRenderGraphBlock {
         this.texture.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
 
         this._frameGraphTask = new FrameGraphCopyToBackbufferColorTask(name);
-        this._taskParameters = {
-            sourceTexture: undefined as any,
-        };
     }
 
     /**
@@ -54,10 +50,10 @@ export class RenderGraphOutputBlock extends NodeRenderGraphBlock {
 
         const textureConnectedPoint = this.texture.connectedPoint;
         if (textureConnectedPoint && textureConnectedPoint.valueType === NodeRenderGraphBlockConnectionPointValueTypes.Texture) {
-            this._taskParameters.sourceTexture = textureConnectedPoint.value!;
+            this._frameGraphTask.sourceTexture = textureConnectedPoint.value!;
         }
 
-        state.frameGraph.addTask(this._frameGraphTask, this._taskParameters);
+        state.frameGraph.addTask(this._frameGraphTask);
     }
 }
 

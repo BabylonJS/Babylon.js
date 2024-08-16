@@ -6,14 +6,13 @@ import { Color4 } from "../../../Maths/math.color";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
 import type { AbstractEngine } from "../../../Engines/abstractEngine";
 import type { NodeRenderGraphBuildState } from "../nodeRenderGraphBuildState";
-import type { IFrameGraphClearTextureInputData } from "core/FrameGraph/Tasks/clearTextureTask";
 import { FrameGraphClearTextureTask } from "core/FrameGraph/Tasks/clearTextureTask";
 
 /**
  * Block used to clear a texture
  */
 export class RenderGraphClearBlock extends NodeRenderGraphBlock {
-    private _taskParameters: IFrameGraphClearTextureInputData;
+    protected override _frameGraphTask: FrameGraphClearTextureTask;
 
     /**
      * Create a new RenderGraphClearBlock
@@ -30,53 +29,46 @@ export class RenderGraphClearBlock extends NodeRenderGraphBlock {
         this.output._typeConnectionSource = this.texture;
 
         this._frameGraphTask = new FrameGraphClearTextureTask(name);
-        this._taskParameters = {
-            color: new Color4(0.2, 0.2, 0.3, 1),
-            clearColor: true,
-            clearDepth: false,
-            clearStencil: false,
-            outputTexture: undefined as any, // will be set in _buildBlock
-        };
     }
 
     /** Gets or sets the clear color */
     @editableInPropertyPage("Color", PropertyTypeForEdition.Color4, "PROPERTIES")
     public get color(): Color4 {
-        return this._taskParameters.color;
+        return this._frameGraphTask.color;
     }
 
     public set color(value: Color4) {
-        this._taskParameters.color = value;
+        this._frameGraphTask.color = value;
     }
 
     /** Gets or sets a boolean indicating whether the color part of the texture should be cleared. */
     @editableInPropertyPage("Clear color", PropertyTypeForEdition.Boolean, "PROPERTIES")
     public get clearColor(): boolean {
-        return !!this._taskParameters.clearColor;
+        return !!this._frameGraphTask.clearColor;
     }
 
     public set clearColor(value: boolean) {
-        this._taskParameters.clearColor = value;
+        this._frameGraphTask.clearColor = value;
     }
 
     /** Gets or sets a boolean indicating whether the depth part of the texture should be cleared. */
     @editableInPropertyPage("Clear depth", PropertyTypeForEdition.Boolean, "PROPERTIES")
     public get clearDepth(): boolean {
-        return !!this._taskParameters.clearDepth;
+        return !!this._frameGraphTask.clearDepth;
     }
 
     public set clearDepth(value: boolean) {
-        this._taskParameters.clearDepth = value;
+        this._frameGraphTask.clearDepth = value;
     }
 
     /** Gets or sets a boolean indicating whether the stencil part of the texture should be cleared. */
     @editableInPropertyPage("Clear stencil", PropertyTypeForEdition.Boolean, "PROPERTIES")
     public get clearStencil(): boolean {
-        return !!this._taskParameters.clearStencil;
+        return !!this._frameGraphTask.clearStencil;
     }
 
     public set clearStencil(value: boolean) {
-        this._taskParameters.clearStencil = value;
+        this._frameGraphTask.clearStencil = value;
     }
 
     /**
@@ -109,10 +101,10 @@ export class RenderGraphClearBlock extends NodeRenderGraphBlock {
 
         const textureConnectedPoint = this.texture.connectedPoint;
         if (textureConnectedPoint && textureConnectedPoint.valueType === NodeRenderGraphBlockConnectionPointValueTypes.Texture) {
-            this._taskParameters.outputTexture = textureConnectedPoint.value!;
+            this._frameGraphTask.outputTexture = textureConnectedPoint.value!;
         }
 
-        state.frameGraph.addTask(this._frameGraphTask, this._taskParameters);
+        state.frameGraph.addTask(this._frameGraphTask);
     }
 
     protected override _dumpPropertiesCode() {
