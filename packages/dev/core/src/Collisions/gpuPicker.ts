@@ -2,14 +2,12 @@ import { Constants } from "core/Engines/constants";
 import type { Engine } from "core/Engines/engine";
 import type { WebGPUEngine } from "core/Engines/webgpuEngine";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
-import type { Material } from "core/Materials/material";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import { Color3, Color4 } from "core/Maths/math.color";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { VertexBuffer } from "core/Meshes/buffer";
 import type { Mesh } from "core/Meshes/mesh";
-import { Observable } from "core/Misc/observable";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 
@@ -53,8 +51,6 @@ export class GPUPicker {
     public get shaderLanguage(): ShaderLanguage {
         return this._shaderLanguage;
     }
-
-    private async _initShaderSourceAsync(scene: Scene) {}
 
     private _createRenderTarget(scene: Scene, width: number, height: number) {
         if (this._pickingTexture) {
