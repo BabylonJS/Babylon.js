@@ -31,13 +31,7 @@ export * from "../ShadersWGSL/geometry.fragment";
 export * from "../ShadersWGSL/geometry.vertex";
 
 // Bounding Box Renderer
-export * from "../Shaders/boundingBoxRenderer.fragment";
-export * from "../Shaders/boundingBoxRenderer.vertex";
-export * from "../ShadersWGSL/boundingBoxRenderer.fragment";
-export * from "../ShadersWGSL/boundingBoxRenderer.vertex";
-
-// Edges Renderer
-export * from "../Shaders/line.fragment";
-export * from "../Shaders/line.vertex";
-export * from "../ShadersWGSL/line.fragment";
-export * from "../ShadersWGSL/line.vertex";
+import "../Shaders/boundingBoxRenderer.fragment";
+import "../Shaders/boundingBoxRenderer.vertex";
+import "../ShadersWGSL/boundingBoxRenderer.fragment";
+import "../ShadersWGSL/boundingBoxRenderer.vertex";
