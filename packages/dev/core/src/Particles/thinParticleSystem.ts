@@ -17,6 +17,7 @@ import { Particle } from "./particle";
 import { Constants } from "../Engines/constants";
 import type { IAnimatable } from "../Animations/animatable.interface";
 import { DrawWrapper } from "../Materials/drawWrapper";
+
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import { Color4, Color3, TmpColors } from "../Maths/math.color";
 import type { ISize } from "../Maths/math.size";
