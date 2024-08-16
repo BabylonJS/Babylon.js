@@ -111,7 +111,7 @@ export class CircleOfConfusionPostProcess extends PostProcess {
             await import("../Shaders/circleOfConfusion.fragment");
         }
 
-        super._initShaderSourceAsync(useWebGPU);
+        await super._initShaderSourceAsync(useWebGPU);
     }
 
     /**

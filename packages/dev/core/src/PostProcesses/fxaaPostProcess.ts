@@ -52,7 +52,7 @@ export class FxaaPostProcess extends PostProcess {
             await Promise.all([import("../Shaders/fxaa.fragment"), import("../Shaders/fxaa.vertex")]);
         }
 
-        super._initShaderSourceAsync(useWebGPU);
+        await super._initShaderSourceAsync(useWebGPU);
     }
 
     private _getDefines(): Nullable<string> {

@@ -742,11 +742,11 @@ export class TextureAssetTask extends AbstractAssetTask implements ITextureAsset
          */
         public noMipmap?: boolean,
         /**
-         * Defines if texture must be inverted on Y axis (default is true)
+         * [true] Defines if texture must be inverted on Y axis (default is true)
          */
         public invertY: boolean = true,
         /**
-         * Defines the sampling mode to use (default is Texture.TRILINEAR_SAMPLINGMODE)
+         * [3] Defines the sampling mode to use (default is Texture.TRILINEAR_SAMPLINGMODE)
          */
         public samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE
     ) {
@@ -889,19 +889,19 @@ export class HDRCubeTextureAssetTask extends AbstractAssetTask implements ITextu
          */
         public size: number,
         /**
-         * Defines if mipmaps should not be generated (default is false)
+         * [false] Defines if mipmaps should not be generated (default is false)
          */
         public noMipmap = false,
         /**
-         * Specifies whether you want to extract the polynomial harmonics during the generation process (default is true)
+         * [true] Specifies whether you want to extract the polynomial harmonics during the generation process (default is true)
          */
         public generateHarmonics = true,
         /**
-         * Specifies if the texture will be use in gamma or linear space (the PBR material requires those texture in linear space, but the standard material would require them in Gamma space) (default is false)
+         * [false] Specifies if the texture will be use in gamma or linear space (the PBR material requires those texture in linear space, but the standard material would require them in Gamma space) (default is false)
          */
         public gammaSpace = false,
         /**
-         * Internal Use Only
+         * [false] Internal Use Only
          */
         public reserved = false
     ) {
@@ -970,11 +970,11 @@ export class EquiRectangularCubeTextureAssetTask extends AbstractAssetTask imple
          */
         public size: number,
         /**
-         * Defines if mipmaps should not be generated (default is false)
+         * [false] Defines if mipmaps should not be generated (default is false)
          */
         public noMipmap: boolean = false,
         /**
-         * Specifies if the texture will be use in gamma or linear space (the PBR material requires those texture in linear space,
+         * [true] Specifies if the texture will be use in gamma or linear space (the PBR material requires those texture in linear space,
          * but the standard material would require them in Gamma space) (default is true)
          */
         public gammaSpace: boolean = true

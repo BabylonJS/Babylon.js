@@ -64,6 +64,6 @@ export class VRDistortionCorrectionPostProcess extends PostProcess {
             await import("../Shaders/vrDistortionCorrection.fragment");
         }
 
-        super._initShaderSourceAsync(useWebGPU);
+        await super._initShaderSourceAsync(useWebGPU);
     }
 }

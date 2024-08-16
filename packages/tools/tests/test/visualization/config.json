@@ -2,6 +2,21 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Simple refraction",
+            "playgroundId": "#22KZUW#652",
+            "referenceImage": "simple-refraction.png"
+        },
+        {
+            "title": "Detail map",
+            "playgroundId": "#F8FDYT#2",
+            "referenceImage": "detail-map.png"
+        },
+        {
+            "title": "needDepthPrePass",
+            "playgroundId": "#7A66KI#1",
+            "referenceImage": "needDepthPrePass.png"
+        },
+        {
             "title": "Decal map PP",
             "playgroundId": "#9BVW2S#82",
             "renderCount": 120,
