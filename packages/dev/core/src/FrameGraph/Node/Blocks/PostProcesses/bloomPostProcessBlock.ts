@@ -98,6 +98,7 @@ export class BloomPostProcessBlock extends NodeRenderGraphBlock {
     public override getClassName() {
         return "BloomPostProcessBlock";
     }
+
     /**
      * Gets the source input component
      */

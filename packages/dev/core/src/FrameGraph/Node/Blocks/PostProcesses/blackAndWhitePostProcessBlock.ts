@@ -71,6 +71,7 @@ export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
     public override getClassName() {
         return "BlackAndWhitePostProcessBlock";
     }
+
     /**
      * Gets the source input component
      */
