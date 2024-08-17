@@ -1,4 +1,4 @@
-import type { FrameGraphPostProcessParameters, PostProcessOptions } from "./postProcess";
+import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
 import type { Nullable } from "../types";
 import type { AbstractEngine } from "../Engines/abstractEngine";
@@ -11,10 +11,6 @@ import { serialize } from "../Misc/decorators";
 import type { FrameGraph } from "../FrameGraph/frameGraph";
 import type { FrameGraphTaskTexture } from "../FrameGraph/Tasks/IFrameGraphTask";
 import type { TextureHandle } from "../FrameGraph/frameGraphTextureManager";
-
-export interface FrameGraphBloomMergePostProcessParameters extends FrameGraphPostProcessParameters {
-    sourceBlurTexture?: FrameGraphTaskTexture | TextureHandle;
-}
 
 /**
  * The BloomMergePostProcess merges blurred images with the original based on the values of the circle of confusion.

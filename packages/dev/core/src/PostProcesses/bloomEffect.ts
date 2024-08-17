@@ -97,7 +97,6 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
      * @param pipelineTextureType The type of texture to be used when performing the post processing.
      * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
      * @param useAsFrameGraphTask If the effect should be used as a frame graph task
-     * @param frameGraphParameters The frame graph options to use when building the effect, if the effect is to be built using the frame graph system
      */
     constructor(
         sceneOrEngine: Scene | AbstractEngine,
@@ -106,8 +105,7 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
         bloomKernel: number,
         pipelineTextureType = 0,
         blockCompilation = false,
-        useAsFrameGraphTask = false,
-        frameGraphParameters?: FrameGraphBloomEffectParameters
+        useAsFrameGraphTask = false
     ) {
         const engine = (sceneOrEngine as Scene)._renderForCamera ? (sceneOrEngine as Scene).getEngine() : (sceneOrEngine as AbstractEngine);
         super(
@@ -121,9 +119,6 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
 
         this._pipelineTextureType = pipelineTextureType;
         this._useAsFrameGraphTask = useAsFrameGraphTask;
-        this.sourceTexture = frameGraphParameters?.sourceTexture;
-        this.sourceSamplingMode = frameGraphParameters?.sourceSamplingMode ?? this.sourceSamplingMode;
-        this.outputTexture = frameGraphParameters?.outputTexture;
 
         this._downscale = new ExtractHighlightsPostProcess("highlights", {
             size: 1.0,
@@ -132,7 +127,6 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
             textureType: pipelineTextureType,
             blockCompilation,
             useAsFrameGraphTask: this._useAsFrameGraphTask,
-            frameGraphParameters: frameGraphParameters,
         });
         this._downscale.skipCreationOfDisabledPasses = true;
 
@@ -143,7 +137,6 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
             textureType: pipelineTextureType,
             blockCompilation,
             useAsFrameGraphTask: this._useAsFrameGraphTask,
-            frameGraphParameters: frameGraphParameters,
         });
         this._blurX.alwaysForcePOT = true;
         this._blurX.autoClear = false;
@@ -156,7 +149,6 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
             textureType: pipelineTextureType,
             blockCompilation,
             useAsFrameGraphTask: this._useAsFrameGraphTask,
-            frameGraphParameters: frameGraphParameters,
         });
         this._blurY.alwaysForcePOT = true;
         this._blurY.autoClear = false;
@@ -173,7 +165,6 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
             textureType: pipelineTextureType,
             blockCompilation,
             useAsFrameGraphTask: this._useAsFrameGraphTask,
-            frameGraphParameters: frameGraphParameters,
         });
         this._merge.autoClear = false;
         this._merge.skipCreationOfDisabledPasses = true;

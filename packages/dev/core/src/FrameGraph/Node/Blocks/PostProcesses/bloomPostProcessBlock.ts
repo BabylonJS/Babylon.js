@@ -46,9 +46,7 @@ export class BloomPostProcessBlock extends NodeRenderGraphBlock {
             }
         }
 
-        this._frameGraphTask = new BloomEffect(engine, bloomScale, 0.15, 64, defaultPipelineTextureType, false, true, {
-            sourceSamplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-        });
+        this._frameGraphTask = new BloomEffect(engine, bloomScale, 0.15, 64, defaultPipelineTextureType, false, true);
     }
 
     /** Sampling mode used to sample from the source texture */

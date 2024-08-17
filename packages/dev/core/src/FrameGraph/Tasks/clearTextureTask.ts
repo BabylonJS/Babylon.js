@@ -3,14 +3,6 @@ import type { FrameGraph } from "../frameGraph";
 import type { TextureHandle } from "../frameGraphTextureManager";
 import type { FrameGraphTaskTexture, IFrameGraphTask } from "./IFrameGraphTask";
 
-export type FrameGraphClearTextureTaskParameters = {
-    color?: Color4;
-    clearColor?: boolean;
-    clearDepth?: boolean;
-    clearStencil?: boolean;
-    outputTexture?: FrameGraphTaskTexture | TextureHandle;
-};
-
 export class FrameGraphClearTextureTask implements IFrameGraphTask {
     public disabled = false;
 
@@ -24,16 +16,7 @@ export class FrameGraphClearTextureTask implements IFrameGraphTask {
 
     public outputTexture?: FrameGraphTaskTexture | TextureHandle;
 
-    constructor(
-        public name: string,
-        options?: FrameGraphClearTextureTaskParameters
-    ) {
-        this.color = options?.color ?? this.color;
-        this.clearColor = options?.clearColor ?? this.clearColor;
-        this.clearDepth = options?.clearDepth ?? this.clearDepth;
-        this.clearStencil = options?.clearStencil ?? this.clearStencil;
-        this.outputTexture = options?.outputTexture;
-    }
+    constructor(public name: string) {}
 
     public isReadyFrameGraph() {
         return true;

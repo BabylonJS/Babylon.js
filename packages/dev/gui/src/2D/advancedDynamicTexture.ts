@@ -34,15 +34,9 @@ import type { StandardMaterial } from "core/Materials/standardMaterial";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { FrameGraph, FrameGraphTaskTexture, IFrameGraphTask, TextureHandle } from "core/FrameGraph";
 
-export type FrameGraphADTParameters = {
-    outputTexture: FrameGraphTaskTexture | TextureHandle;
-};
-
 export interface IAdvancedDynamicTextureOptions extends IDynamicTextureOptions {
     /** indicates that the ADT will be used as a frame graph task (default: false) */
     useAsFrameGraphTask?: boolean;
-    /** Specific parameters for using the ADT as a frame graph task */
-    frameGraphParameters?: FrameGraphADTParameters;
 }
 
 /**
@@ -451,8 +445,6 @@ export class AdvancedDynamicTexture extends DynamicTexture implements IFrameGrap
 
         if (!this._useAsFrameGraphTask) {
             this._renderObserver = scene.onBeforeCameraRenderObservable.add((camera: Camera) => this._checkUpdate(camera));
-        } else {
-            this.outputTexture = adtOptions?.frameGraphParameters?.outputTexture;
         }
 
         /** Whenever a control is added or removed to the root, we have to recheck the camera projection as it can have changed  */

@@ -2,11 +2,6 @@ import type { FrameGraph } from "../frameGraph";
 import type { TextureHandle } from "../frameGraphTextureManager";
 import type { FrameGraphTaskTexture, IFrameGraphTask } from "./IFrameGraphTask";
 
-export type FrameGraphCopyToTextureTaskParameters = {
-    sourceTexture: FrameGraphTaskTexture | TextureHandle;
-    outputTexture: FrameGraphTaskTexture | TextureHandle;
-};
-
 export class FrameGraphCopyToTextureTask implements IFrameGraphTask {
     public disabled = false;
 
@@ -14,13 +9,7 @@ export class FrameGraphCopyToTextureTask implements IFrameGraphTask {
 
     public outputTexture?: FrameGraphTaskTexture | TextureHandle;
 
-    constructor(
-        public name: string,
-        options?: FrameGraphCopyToTextureTaskParameters
-    ) {
-        this.sourceTexture = options?.sourceTexture;
-        this.outputTexture = options?.outputTexture;
-    }
+    constructor(public name: string) {}
 
     public isReadyFrameGraph() {
         return true;

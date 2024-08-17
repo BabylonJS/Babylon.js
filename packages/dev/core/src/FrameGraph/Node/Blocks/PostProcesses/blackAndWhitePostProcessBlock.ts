@@ -5,7 +5,6 @@ import { NodeRenderGraphBlockConnectionPointTypes, NodeRenderGraphBlockConnectio
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { BlackAndWhitePostProcess } from "../../../../PostProcesses/blackAndWhitePostProcess";
 import type { AbstractEngine } from "../../../../Engines/abstractEngine";
-import { Constants } from "../../../../Engines/constants";
 import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
 
 /**
@@ -36,7 +35,6 @@ export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
             this.name,
             {
                 useAsFrameGraphTask: true,
-                frameGraphParameters: { sourceSamplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE },
             },
             null,
             undefined,

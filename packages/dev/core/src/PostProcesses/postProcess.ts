@@ -129,13 +129,6 @@ export type PostProcessCustomShaderCodeProcessing = {
     bindCustomBindings?: (postProcessName: string, effect: Effect) => void;
 };
 
-export type FrameGraphPostProcessParameters = {
-    sourceTexture?: FrameGraphTaskTexture | TextureHandle;
-    sourceSamplingMode?: number;
-    outputTexture?: FrameGraphTaskTexture | TextureHandle;
-    skipCreationOfDisabledPasses?: boolean;
-};
-
 /**
  * Options for the PostProcess constructor
  */
@@ -220,10 +213,6 @@ export type PostProcessOptions = {
      * Indicates that the post process will be used as a frame graph task. (default: false)
      */
     useAsFrameGraphTask?: boolean;
-    /**
-     * Specific parameters for using the post-process as a frame graph task
-     */
-    frameGraphParameters?: FrameGraphPostProcessParameters;
 };
 
 type TextureCache = { texture: RenderTargetWrapper; postProcessChannel: number; lastUsedRenderId: number };
@@ -255,6 +244,8 @@ export class PostProcess implements IFrameGraphTask {
     public outputTexture?: FrameGraphTaskTexture | TextureHandle;
 
     public skipCreationOfDisabledPasses = false;
+
+    public readonly outOutputTexture: [IFrameGraphTask, string] = [this, "output"];
 
     /**
      * Registers a shader code processing with a post process name.
@@ -703,12 +694,6 @@ export class PostProcess implements IFrameGraphTask {
             shaderLanguage = options.shaderLanguage ?? ShaderLanguage.GLSL;
             uniformBuffers = options.uniformBuffers ?? null;
             this._useAsFrameGraphTask = options.useAsFrameGraphTask ?? false;
-            if (this._useAsFrameGraphTask && options.frameGraphParameters) {
-                this.sourceTexture = options.frameGraphParameters.sourceTexture;
-                this.sourceSamplingMode = options.frameGraphParameters.sourceSamplingMode ?? this.sourceSamplingMode;
-                this.outputTexture = options.frameGraphParameters.outputTexture;
-                this.skipCreationOfDisabledPasses = options.frameGraphParameters.skipCreationOfDisabledPasses ?? this.skipCreationOfDisabledPasses;
-            }
         } else if (_size) {
             if (typeof _size === "number") {
                 size = _size;

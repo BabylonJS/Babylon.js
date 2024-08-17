@@ -3,21 +3,12 @@ import type { TextureHandle } from "../frameGraphTextureManager";
 import { backbufferColorTextureHandle } from "../frameGraphTextureManager";
 import type { FrameGraphTaskTexture, IFrameGraphTask } from "./IFrameGraphTask";
 
-export type FrameGraphCopyToBackbufferColorTaskParameters = {
-    sourceTexture: FrameGraphTaskTexture | TextureHandle;
-};
-
 export class FrameGraphCopyToBackbufferColorTask implements IFrameGraphTask {
     public disabled = false;
 
     public sourceTexture?: FrameGraphTaskTexture | TextureHandle;
 
-    constructor(
-        public name: string,
-        options?: FrameGraphCopyToBackbufferColorTaskParameters
-    ) {
-        this.sourceTexture = options?.sourceTexture;
-    }
+    constructor(public name: string) {}
 
     public isReadyFrameGraph() {
         return true;
