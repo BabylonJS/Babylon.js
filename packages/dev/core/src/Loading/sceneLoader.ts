@@ -423,7 +423,7 @@ interface SceneLoaderOptions {
         // NOTE: This type is doing two things:
         // 1. Adding an implicit 'enabled' property to the options for each plugin.
         // 2. Creating a mapped type of all the options of all the plugins to make it just look like a consolidated plain object in intellisense for the user.
-        [Plugin in keyof SceneLoaderPluginOptions]: {
+        [Plugin in keyof SceneLoaderPluginOptions]?: {
             [Option in keyof DefaultPluginOptions<SceneLoaderPluginOptions[Plugin]>]: DefaultPluginOptions<SceneLoaderPluginOptions[Plugin]>[Option];
         };
     };
