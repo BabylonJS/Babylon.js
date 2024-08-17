@@ -1,7 +1,7 @@
 import { Color4 } from "core/Maths/math.color";
 import type { FrameGraph } from "../frameGraph";
 import type { TextureHandle } from "../frameGraphTextureManager";
-import type { FrameGraphTaskTexture, IFrameGraphTask } from "./IFrameGraphTask";
+import type { FrameGraphTaskOutputReference, IFrameGraphTask } from "./IFrameGraphTask";
 
 export class FrameGraphClearTextureTask implements IFrameGraphTask {
     public disabled = false;
@@ -14,7 +14,9 @@ export class FrameGraphClearTextureTask implements IFrameGraphTask {
 
     public clearStencil = false;
 
-    public outputTexture?: FrameGraphTaskTexture | TextureHandle;
+    public outputTexture?: FrameGraphTaskOutputReference | TextureHandle;
+
+    public readonly outputTextureReference: FrameGraphTaskOutputReference = [this, "output"];
 
     constructor(public name: string) {}
 

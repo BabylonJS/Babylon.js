@@ -1,7 +1,7 @@
 import type { FrameGraph } from "../frameGraph";
 import type { FrameGraphTaskInternals } from "./taskInternals";
 
-export type FrameGraphTaskTexture = string;
+export type FrameGraphTaskOutputReference = [IFrameGraphTask, string];
 
 /**
  * Interface used to indicate that the class can be used as a task in a frame graph.

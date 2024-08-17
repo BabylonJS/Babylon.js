@@ -28,7 +28,7 @@ import type { PrePassRenderer } from "../Rendering/prePassRenderer";
 import type { PrePassEffectConfiguration } from "../Rendering/prePassEffectConfiguration";
 import { AbstractEngine } from "../Engines/abstractEngine";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
-import type { FrameGraphTaskTexture, IFrameGraphTask } from "../FrameGraph/Tasks/IFrameGraphTask";
+import type { FrameGraphTaskOutputReference, IFrameGraphTask } from "../FrameGraph/Tasks/IFrameGraphTask";
 import type { FrameGraph } from "../FrameGraph/frameGraph";
 import type { TextureHandle } from "../FrameGraph/frameGraphTextureManager";
 
@@ -237,15 +237,15 @@ export class PostProcess implements IFrameGraphTask {
 
     public disabled = false;
 
-    public sourceTexture?: FrameGraphTaskTexture | TextureHandle;
+    public sourceTexture?: FrameGraphTaskOutputReference | TextureHandle;
 
     public sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
 
-    public outputTexture?: FrameGraphTaskTexture | TextureHandle;
+    public outputTexture?: FrameGraphTaskOutputReference | TextureHandle;
 
     public skipCreationOfDisabledPasses = false;
 
-    public readonly outOutputTexture: [IFrameGraphTask, string] = [this, "output"];
+    public readonly outputTextureReference: FrameGraphTaskOutputReference = [this, "output"];
 
     /**
      * Registers a shader code processing with a post process name.

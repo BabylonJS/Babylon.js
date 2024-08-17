@@ -11,6 +11,8 @@ export class FrameGraphTaskInternals {
     public outputTextureWhenEnabled?: TextureHandle;
     public outputTextureWhenDisabled?: TextureHandle;
 
+    public mapNameToTextureHandle: { [name: string]: TextureHandle } = {};
+
     constructor(
         private _task: IFrameGraphTask,
         private _textureManager: FrameGraphTextureManager
@@ -24,6 +26,7 @@ export class FrameGraphTaskInternals {
         this.outputTexture = undefined;
         this.outputTextureWhenEnabled = undefined;
         this.outputTextureWhenDisabled = undefined;
+        this.mapNameToTextureHandle = {};
     }
 
     public dispose() {
@@ -55,6 +58,7 @@ export class FrameGraphTaskInternals {
             this.outputTextureWhenEnabled = this.outputTextureWhenEnabled ?? this.outputTextureWhenDisabled;
             this.outputTextureWhenDisabled = this.outputTextureWhenDisabled ?? this.outputTextureWhenEnabled;
             this.outputTexture = this._textureManager._createProxyHandle(`${this._task.name} Proxy`);
+            this.mapNameToTextureHandle["output"] = this.outputTexture;
             // We need to call the function at build time to ensure that the output texture is correctly defined
             // in case another task needs to access the current task's output texture description during its own build
             this.setTextureOutputForTask();

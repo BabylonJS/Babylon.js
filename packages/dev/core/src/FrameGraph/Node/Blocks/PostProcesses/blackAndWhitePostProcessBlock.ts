@@ -99,8 +99,9 @@ export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
         super._buildBlock(state);
 
-        this._frameGraphTask.name = this.name; // sets the task name
-        this.output.value = this._frameGraphTask.name; // the value of the output connection point is the "output" texture of the task
+        this._frameGraphTask.name = this.name;
+
+        this.output.value = this._frameGraphTask.outputTextureReference; // the value of the output connection point is the "output" texture of the task
         this.output.valueType = NodeRenderGraphBlockConnectionPointValueTypes.Texture;
 
         const sourceConnectedPoint = this.source.connectedPoint;

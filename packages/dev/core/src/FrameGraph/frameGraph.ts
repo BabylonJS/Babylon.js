@@ -1,7 +1,7 @@
 import type { Scene } from "../scene";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
-import type { FrameGraphTaskTexture, IFrameGraphTask } from "./Tasks/IFrameGraphTask";
+import type { FrameGraphTaskOutputReference, IFrameGraphTask } from "./Tasks/IFrameGraphTask";
 import { FrameGraphPass } from "./Passes/pass";
 import { FrameGraphRenderPass } from "./Passes/renderPass";
 import { FrameGraphRenderContext } from "./frameGraphRenderContext";
@@ -19,7 +19,6 @@ export class FrameGraph {
     private _renderContext: FrameGraphRenderContext;
 
     private _tasks: IFrameGraphTask[] = [];
-    private _mapNameToTask: Map<string, IFrameGraphTask> = new Map();
     private _currentProcessedTask: IFrameGraphTask | null = null;
 
     /**
@@ -29,7 +28,7 @@ export class FrameGraph {
      * @param scene defines the scene in which debugging textures are to be created
      */
     constructor(engine: AbstractEngine, debugTextures = false, scene?: Scene) {
-        this._textureManager = new FrameGraphTextureManager(engine, this._mapNameToTask, debugTextures, scene);
+        this._textureManager = new FrameGraphTextureManager(engine, debugTextures, scene);
         this._passContext = new FrameGraphContext();
         this._renderContext = new FrameGraphRenderContext(engine, this._textureManager);
     }
@@ -43,7 +42,6 @@ export class FrameGraph {
         task._fgInternals = new FrameGraphTaskInternals(task, this._textureManager);
 
         this._tasks.push(task);
-        this._mapNameToTask.set(task.name, task);
     }
 
     public addPass(name: string, whenTaskDisabled = false): FrameGraphPass<FrameGraphContext> {
@@ -81,14 +79,7 @@ export class FrameGraph {
     public build(): void {
         this._textureManager._releaseTextures(false);
 
-        const taskNames = new Set<string>();
         for (const task of this._tasks) {
-            if (taskNames.has(task.name)) {
-                throw new Error(`Task with the name "${task.name}" already exists: task names must be unique in the graph.`);
-            }
-
-            taskNames.add(task.name);
-
             const internals = task._fgInternals!;
 
             internals.reset();
@@ -149,20 +140,20 @@ export class FrameGraph {
         return this._textureManager.importTexture(name, texture, handle);
     }
 
-    public getTextureCreationOptions(textureId: FrameGraphTaskTexture | TextureHandle): FrameGraphTextureCreationOptions {
+    public getTextureCreationOptions(textureId: FrameGraphTaskOutputReference | TextureHandle): FrameGraphTextureCreationOptions {
         return this._textureManager.getTextureCreationOptions(textureId);
     }
 
-    public getTextureDescription(textureId: FrameGraphTaskTexture | TextureHandle): FrameGraphTextureDescription {
+    public getTextureDescription(textureId: FrameGraphTaskOutputReference | TextureHandle): FrameGraphTextureDescription {
         return this._textureManager.convertTextureCreationOptionsToDescription(this.getTextureCreationOptions(textureId));
     }
 
-    public getTextureHandle(textureId: FrameGraphTaskTexture | TextureHandle): TextureHandle {
+    public getTextureHandle(textureId: FrameGraphTaskOutputReference | TextureHandle): TextureHandle {
         return this._textureManager.getTextureHandle(textureId);
     }
 
     public getTextureHandleOrCreateTexture(
-        textureId?: FrameGraphTaskTexture | TextureHandle,
+        textureId?: FrameGraphTaskOutputReference | TextureHandle,
         newTextureName?: string,
         creationOptions?: FrameGraphTextureCreationOptions
     ): TextureHandle {
@@ -189,7 +180,6 @@ export class FrameGraph {
         }
 
         this._tasks.length = 0;
-        this._mapNameToTask.clear();
         this._textureManager._releaseTextures();
         this._currentProcessedTask = null;
     }

@@ -8,22 +8,10 @@ import type { Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
 import type { Scene } from "../scene";
 import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { FrameGraphTaskTexture, IFrameGraphTask } from "../FrameGraph/Tasks/IFrameGraphTask";
+import type { FrameGraphTaskOutputReference, IFrameGraphTask } from "../FrameGraph/Tasks/IFrameGraphTask";
 import type { FrameGraph } from "../FrameGraph/frameGraph";
 import type { TextureHandle } from "../FrameGraph/frameGraphTextureManager";
 import { Constants } from "../Engines/constants";
-
-/**
- * Interface for the bloom effect build data
- */
-export type FrameGraphBloomEffectParameters = {
-    /**
-     * The source texture for the bloom effect
-     */
-    sourceTexture?: FrameGraphTaskTexture | TextureHandle;
-    sourceSamplingMode?: number;
-    outputTexture?: FrameGraphTaskTexture | TextureHandle;
-};
 
 /**
  * The bloom effect spreads bright areas of an image to simulate artifacts seen in cameras
@@ -35,11 +23,13 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
 
     public disabled = false;
 
-    public sourceTexture?: FrameGraphTaskTexture | TextureHandle;
+    public sourceTexture?: FrameGraphTaskOutputReference | TextureHandle;
 
     public sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
 
-    public outputTexture?: FrameGraphTaskTexture | TextureHandle;
+    public outputTexture?: FrameGraphTaskOutputReference | TextureHandle;
+
+    public readonly outputTextureReference: FrameGraphTaskOutputReference = [this, "output"];
 
     /**
      * @internal Internal

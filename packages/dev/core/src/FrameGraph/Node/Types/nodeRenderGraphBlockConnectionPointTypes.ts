@@ -1,5 +1,5 @@
 import type { TextureHandle } from "../../frameGraphTextureManager";
-import type { FrameGraphTaskTexture } from "../../Tasks/IFrameGraphTask";
+import type { FrameGraphTaskOutputReference } from "../../Tasks/IFrameGraphTask";
 
 /**
  * Defines the kind of connection point for node render graph nodes
@@ -59,7 +59,7 @@ export const enum NodeRenderGraphConnectionPointDirection {
     Output,
 }
 
-export type NodeRenderGraphBlockConnectionPointValueType = FrameGraphTaskTexture | TextureHandle;
+export type NodeRenderGraphBlockConnectionPointValueType = FrameGraphTaskOutputReference | TextureHandle;
 
 export const enum NodeRenderGraphBlockConnectionPointValueTypes {
     Texture = 0,

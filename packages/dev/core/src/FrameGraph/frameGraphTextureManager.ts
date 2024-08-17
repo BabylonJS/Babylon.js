@@ -4,7 +4,7 @@ import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import type { RenderTargetCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
 import { Texture } from "core/Materials/Textures/texture";
-import type { FrameGraphTaskTexture, IFrameGraphTask } from "./Tasks/IFrameGraphTask";
+import type { FrameGraphTaskOutputReference } from "./Tasks/IFrameGraphTask";
 
 export type TextureHandle = number;
 
@@ -48,8 +48,8 @@ export class FrameGraphTextureManager {
     public _textureCreationOptions: (FrameGraphTextureCreationOptions | undefined)[] = [];
     private _texturesIndex = 0;
 
-    private static _IsTextureHandle(textureId: FrameGraphTaskTexture | TextureHandle): textureId is TextureHandle {
-        return typeof textureId !== "string";
+    private static _IsTextureHandle(textureId: FrameGraphTaskOutputReference | TextureHandle): textureId is TextureHandle {
+        return typeof textureId === "number";
     }
 
     /**
@@ -57,7 +57,6 @@ export class FrameGraphTextureManager {
      */
     constructor(
         private _engine: AbstractEngine,
-        private _mapNameToTask: Map<string, IFrameGraphTask>,
         private _debugTextures = false,
         private _scene?: Scene
     ) {
@@ -91,29 +90,29 @@ export class FrameGraphTextureManager {
         return handle;
     }
 
-    public getTextureCreationOptions(textureId: FrameGraphTaskTexture | TextureHandle): FrameGraphTextureCreationOptions {
+    public getTextureCreationOptions(textureId: FrameGraphTaskOutputReference | TextureHandle): FrameGraphTextureCreationOptions {
         if (FrameGraphTextureManager._IsTextureHandle(textureId)) {
             return this._textureCreationOptions[textureId]!;
         }
 
-        const textureHandle = this._mapNameToTask.get(textureId)?._fgInternals!.outputTexture;
+        const textureHandle = textureId[0]._fgInternals!.mapNameToTextureHandle[textureId[1]];
 
         if (textureHandle === undefined) {
-            throw new Error(`Task "${textureId}" does not have an output texture.`);
+            throw new Error(`Task "${textureId}" does not have a "${textureId[1]}" texture.`);
         }
 
         return this._textureCreationOptions[textureHandle]!;
     }
 
-    public getTextureHandle(textureId: FrameGraphTaskTexture | TextureHandle): TextureHandle {
+    public getTextureHandle(textureId: FrameGraphTaskOutputReference | TextureHandle): TextureHandle {
         if (FrameGraphTextureManager._IsTextureHandle(textureId)) {
             return textureId;
         }
 
-        const textureHandle = this._mapNameToTask.get(textureId)?._fgInternals!.outputTexture;
+        const textureHandle = textureId[0]._fgInternals!.mapNameToTextureHandle[textureId[1]];
 
         if (textureHandle === undefined) {
-            throw new Error(`Task "${textureId}" does not have an output texture.`);
+            throw new Error(`Task "${textureId}" does not have a "${textureId[1]}" texture.`);
         }
 
         return textureHandle;

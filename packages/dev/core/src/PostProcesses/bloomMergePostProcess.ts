@@ -9,7 +9,7 @@ import { Constants } from "../Engines/constants";
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import type { FrameGraph } from "../FrameGraph/frameGraph";
-import type { FrameGraphTaskTexture } from "../FrameGraph/Tasks/IFrameGraphTask";
+import type { FrameGraphTaskOutputReference } from "../FrameGraph/Tasks/IFrameGraphTask";
 import type { TextureHandle } from "../FrameGraph/frameGraphTextureManager";
 
 /**
@@ -20,7 +20,7 @@ export class BloomMergePostProcess extends PostProcess {
     @serialize()
     public weight = 1;
 
-    public sourceBlurTexture?: FrameGraphTaskTexture | TextureHandle;
+    public sourceBlurTexture?: FrameGraphTaskOutputReference | TextureHandle;
 
     /**
      * Gets a string identifying the name of the class
