@@ -136,6 +136,27 @@ export class Viewer implements IDisposable {
         this._loadModelAbortController?.abort("New model is being loaded before previous model finished loading.");
         const abortController = (this._loadModelAbortController = new AbortController());
 
+        options = {
+            ...options,
+            pluginOptions: {
+                ...options?.pluginOptions,
+                gltf: {
+                    ...options?.pluginOptions?.gltf,
+                    extensionOptions: {
+                        ...options?.pluginOptions?.gltf?.extensionOptions,
+                        // eslint-disable-next-line @typescript-eslint/naming-convention
+                        KHR_audio: {
+                            enabled: false,
+                        },
+                        // eslint-disable-next-line @typescript-eslint/naming-convention
+                        MSFT_audio_emitter: {
+                            enabled: false,
+                        },
+                    },
+                },
+            },
+        };
+
         await this._loadModelLock.lockAsync(async () => {
             this._throwIfDisposedOrAborted(abortSignal, abortController.signal);
             this._details.model?.dispose();
