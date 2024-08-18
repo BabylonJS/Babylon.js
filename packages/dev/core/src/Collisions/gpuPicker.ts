@@ -550,12 +550,12 @@ export class GPUPicker {
         });
     }
 
-    private async _readTexturePixelsAsync(x1: number, y1: number, w = 1, h = 1) {
+    private async _readTexturePixelsAsync(x: number, y: number, w = 1, h = 1) {
         if (!this._cachedScene || !this._pickingTexure?._texture) {
             return false;
         }
         const engine = this._cachedScene.getEngine();
-        await engine._readTexturePixels(this._pickingTexure._texture, w, h, -1, 0, this._readbuffer, true, true, x1, y1);
+        await engine._readTexturePixels(this._pickingTexure._texture, w, h, -1, 0, this._readbuffer, true, true, x, y);
 
         return true;
     }
