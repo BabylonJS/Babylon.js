@@ -3,14 +3,14 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphBlockConnectionPointTypes";
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import type { NodeRenderGraphConnectionPoint } from "../../nodeRenderGraphBlockConnectionPoint";
-import type { NodeRenderGraphTeleportOutBlock } from "./teleportOutBlock";
+import type { RenderGraphTeleportOutBlock } from "./teleportOutBlock";
 import type { AbstractEngine } from "../../../../Engines/abstractEngine";
 
 /**
  * Defines a block used to teleport a value to an endpoint
  */
-export class NodeRenderGraphTeleportInBlock extends NodeRenderGraphBlock {
-    private _endpoints: NodeRenderGraphTeleportOutBlock[] = [];
+export class RenderGraphTeleportInBlock extends NodeRenderGraphBlock {
+    private _endpoints: RenderGraphTeleportOutBlock[] = [];
 
     /** Gets the list of attached endpoints */
     public get endpoints() {
@@ -18,7 +18,7 @@ export class NodeRenderGraphTeleportInBlock extends NodeRenderGraphBlock {
     }
 
     /**
-     * Create a new NodeRenderGraphTeleportInBlock
+     * Create a new RenderGraphTeleportInBlock
      * @param name defines the block name
      * @param engine defines the hosting engine
      */
@@ -35,7 +35,7 @@ export class NodeRenderGraphTeleportInBlock extends NodeRenderGraphBlock {
      * @returns the class name
      */
     public override getClassName() {
-        return "NodeRenderGraphTeleportInBlock";
+        return "RenderGraphTeleportInBlock";
     }
 
     /**
@@ -120,7 +120,7 @@ export class NodeRenderGraphTeleportInBlock extends NodeRenderGraphBlock {
      * Add an enpoint to this block
      * @param endpoint define the endpoint to attach to
      */
-    public attachToEndpoint(endpoint: NodeRenderGraphTeleportOutBlock) {
+    public attachToEndpoint(endpoint: RenderGraphTeleportOutBlock) {
         endpoint.detach();
 
         this._endpoints.push(endpoint);
@@ -134,7 +134,7 @@ export class NodeRenderGraphTeleportInBlock extends NodeRenderGraphBlock {
      * Remove enpoint from this block
      * @param endpoint define the endpoint to remove
      */
-    public detachFromEndpoint(endpoint: NodeRenderGraphTeleportOutBlock) {
+    public detachFromEndpoint(endpoint: RenderGraphTeleportOutBlock) {
         const index = this._endpoints.indexOf(endpoint);
 
         if (index !== -1) {
@@ -158,4 +158,4 @@ export class NodeRenderGraphTeleportInBlock extends NodeRenderGraphBlock {
     }
 }
 
-RegisterClass("BABYLON.NodeRenderGraphTeleportInBlock", NodeRenderGraphTeleportInBlock);
+RegisterClass("BABYLON.RenderGraphTeleportInBlock", RenderGraphTeleportInBlock);

@@ -3,21 +3,21 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphBlockConnectionPointTypes";
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import type { NodeRenderGraphConnectionPoint } from "../../nodeRenderGraphBlockConnectionPoint";
-import type { NodeRenderGraphTeleportInBlock } from "./teleportInBlock";
+import type { RenderGraphTeleportInBlock } from "./teleportInBlock";
 import type { AbstractEngine } from "../../../../Engines/abstractEngine";
 import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
 
 /**
  * Defines a block used to receive a value from a teleport entry point
  */
-export class NodeRenderGraphTeleportOutBlock extends NodeRenderGraphBlock {
+export class RenderGraphTeleportOutBlock extends NodeRenderGraphBlock {
     /** @internal */
-    public _entryPoint: Nullable<NodeRenderGraphTeleportInBlock> = null;
+    public _entryPoint: Nullable<RenderGraphTeleportInBlock> = null;
     /** @internal */
     public _tempEntryPointUniqueId: Nullable<number> = null;
 
     /**
-     * Create a new NodeRenderGraphTeleportOutBlock
+     * Create a new RenderGraphTeleportOutBlock
      * @param name defines the block name
      * @param engine defines the hosting engine
      */
@@ -41,7 +41,7 @@ export class NodeRenderGraphTeleportOutBlock extends NodeRenderGraphBlock {
      * @returns the class name
      */
     public override getClassName() {
-        return "NodeRenderGraphTeleportOutBlock";
+        return "RenderGraphTeleportOutBlock";
     }
 
     /**
@@ -99,7 +99,7 @@ export class NodeRenderGraphTeleportOutBlock extends NodeRenderGraphBlock {
         const clone = super.clone();
 
         if (this.entryPoint) {
-            this.entryPoint.attachToEndpoint(clone as NodeRenderGraphTeleportOutBlock);
+            this.entryPoint.attachToEndpoint(clone as RenderGraphTeleportOutBlock);
         }
 
         return clone;
@@ -132,4 +132,4 @@ export class NodeRenderGraphTeleportOutBlock extends NodeRenderGraphBlock {
     }
 }
 
-RegisterClass("BABYLON.NodeRenderGraphTeleportOutBlock", NodeRenderGraphTeleportOutBlock);
+RegisterClass("BABYLON.RenderGraphTeleportOutBlock", RenderGraphTeleportOutBlock);

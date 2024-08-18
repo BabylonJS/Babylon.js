@@ -41,6 +41,9 @@
             "path": "packages/tools/nodeGeometryEditor/tsconfig.build.json"
         },
         {
+            "path": "packages/tools/nodeRenderGraphEditor/tsconfig.build.json"
+        },
+        {
             "path": "packages/dev/inspector/tsconfig.build.json"
         },
         {

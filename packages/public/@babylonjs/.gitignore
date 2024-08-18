@@ -13,5 +13,6 @@ node_modules
 !inspector/**/*.*
 !node-editor/**/*.*
 !node-geometry-editor/**/*.*
+!node-render-graph-editor/**/*.*
 !gui-editor/**/*.*
 !accessibility/**/*.*

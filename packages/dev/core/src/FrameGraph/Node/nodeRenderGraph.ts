@@ -10,8 +10,8 @@ import { SerializationHelper } from "../../Misc/decorators.serialization";
 import { Constants } from "../../Engines/constants";
 import { WebRequest } from "../../Misc/webRequest";
 import { RenderGraphInputBlock } from "./Blocks/inputBlock";
-import type { NodeRenderGraphTeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
-import type { NodeRenderGraphTeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
+import type { RenderGraphTeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
+import type { RenderGraphTeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
 import { Tools } from "../../Misc/tools";
 import { Engine } from "../../Engines/engine";
 import { NodeRenderGraphBlockConnectionPointTypes } from "./Types/nodeRenderGraphBlockConnectionPointTypes";
@@ -58,7 +58,7 @@ export class NodeRenderGraph {
 
     /**
      * Gets or sets data used by visual editor
-     * @see https://fge.babylonjs.com
+     * @see https://nrge.babylonjs.com
      */
     public editorData: any = null;
 
@@ -102,6 +102,14 @@ export class NodeRenderGraph {
      */
     public get frameGraph() {
         return this._frameGraph;
+    }
+
+    /**
+     * Gets the engine used by this node render graph
+     * @returns the engine used by this node render graph
+     */
+    public getEngine() {
+        return this._engine;
     }
 
     /**
@@ -349,10 +357,10 @@ export class NodeRenderGraph {
         // Reconnect teleportation
         for (const block of this.attachedBlocks) {
             if (block.isTeleportOut) {
-                const teleportOut = block as NodeRenderGraphTeleportOutBlock;
+                const teleportOut = block as RenderGraphTeleportOutBlock;
                 const id = teleportOut._tempEntryPointUniqueId;
                 if (id) {
-                    const source = map[id] as NodeRenderGraphTeleportInBlock;
+                    const source = map[id] as RenderGraphTeleportInBlock;
                     if (source) {
                         source.attachToEndpoint(teleportOut);
                     }
@@ -504,7 +512,7 @@ export class NodeRenderGraph {
 
         // Teleportation
         if (rootNode.isTeleportOut) {
-            const block = rootNode as NodeRenderGraphTeleportOutBlock;
+            const block = rootNode as RenderGraphTeleportOutBlock;
             if (block.entryPoint) {
                 this._gatherBlocks(block.entryPoint, list);
             }

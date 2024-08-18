@@ -1,0 +1,26 @@
+{
+    "extends": "../../../tsconfig.build.json",
+    "compilerOptions": {
+        "composite": true,
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "paths": {
+            "core/*": ["dev/core/dist/*"],
+            "gui/*": ["dev/gui/dist/*"],
+            "materials/*": ["dev/materials/dist/*"],
+            "post-processes/*": ["dev/postProcesses/dist/*"],
+            "procedural-textures/*": ["dev/proceduralTextures/dist/*"],
+            "loaders/*": ["dev/loaders/dist/*"],
+            "serializers/*": ["dev/serializers/dist/*"],
+            "inspector/*": ["dev/inspector/dist/*"],
+            "shared-ui-components/*": ["dev/sharedUiComponents/dist/*"],
+            "node-editor/*": ["tools/nodeEditor/src/*"],
+            "node-render-graph-editor/*": ["tools/nodeRenderGraphEditor/src/*"],
+            "gui-editor/*": ["tools/guiEditor/dist/*"],
+            "viewer/*": ["tools/viewer/dist/*"],
+            "ktx2decoder/*": ["tools/ktx2Decoder/dist/*"]
+        }
+    },
+    "include": ["./src/**/*.ts", "./src/**/*.tsx"],
+    "exclude": ["**/node_modules", "**/dist"]
+}
