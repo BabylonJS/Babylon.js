@@ -6,7 +6,6 @@ import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Effect } from "../Materials/effect";
 import { Constants } from "../Engines/constants";
 
-import "../Shaders/convolution.fragment";
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
@@ -58,6 +57,17 @@ export class ConvolutionPostProcess extends PostProcess {
             effect.setFloat2("screenSize", this.width, this.height);
             effect.setArray("kernel", this.kernel);
         };
+    }
+
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
+        if (useWebGPU) {
+            this._webGPUReady = true;
+            list.push(Promise.all([import("../ShadersWGSL/convolution.fragment")]));
+        } else {
+            list.push(Promise.all([import("../Shaders/convolution.fragment")]));
+        }
+
+        super._gatherImports(useWebGPU, list);
     }
 
     /**

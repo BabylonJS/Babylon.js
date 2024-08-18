@@ -96,26 +96,28 @@ export class RGBDTextureTools {
                 format: Constants.TEXTUREFORMAT_RGBA,
             });
 
-            rgbdPostProcess.getEffect().executeWhenCompiled(() => {
-                // PP Render Pass
-                rgbdPostProcess.onApply = (effect) => {
-                    effect._bindTexture("textureSampler", internalTexture);
-                    effect.setFloat2("scale", 1, 1);
-                };
-                texture.getScene()!.postProcessManager.directRender([rgbdPostProcess!], expandedTexture, true);
+            rgbdPostProcess.onEffectCreatedObservable.addOnce((e) => {
+                e.executeWhenCompiled(() => {
+                    // PP Render Pass
+                    rgbdPostProcess.onApply = (effect) => {
+                        effect._bindTexture("textureSampler", internalTexture);
+                        effect.setFloat2("scale", 1, 1);
+                    };
+                    texture.getScene()!.postProcessManager.directRender([rgbdPostProcess!], expandedTexture, true);
 
-                // Cleanup
-                engine.restoreDefaultFramebuffer();
-                engine._releaseTexture(internalTexture);
-                if (rgbdPostProcess) {
-                    rgbdPostProcess.dispose();
-                }
+                    // Cleanup
+                    engine.restoreDefaultFramebuffer();
+                    engine._releaseTexture(internalTexture);
+                    if (rgbdPostProcess) {
+                        rgbdPostProcess.dispose();
+                    }
 
-                // Internal Swap
-                expandedTexture._swapAndDie(internalTexture);
+                    // Internal Swap
+                    expandedTexture._swapAndDie(internalTexture);
 
-                // Ready to get rolling again.
-                internalTexture.isReady = true;
+                    // Ready to get rolling again.
+                    internalTexture.isReady = true;
+                });
             });
         };
 

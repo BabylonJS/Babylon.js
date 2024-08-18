@@ -70,25 +70,7 @@ class GlowBlurPostProcess extends PostProcess {
         engine?: AbstractEngine,
         reusable?: boolean
     ) {
-        super(
-            name,
-            "glowBlurPostProcess",
-            ["screenSize", "direction", "blurWidth"],
-            null,
-            options,
-            camera,
-            samplingMode,
-            engine,
-            reusable,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            true
-        );
+        super(name, "glowBlurPostProcess", ["screenSize", "direction", "blurWidth"], null, options, camera, samplingMode, engine, reusable);
 
         this.onApplyObservable.add((effect: Effect) => {
             effect.setFloat2("screenSize", this.width, this.height);
@@ -97,18 +79,15 @@ class GlowBlurPostProcess extends PostProcess {
         });
     }
 
-    protected override async _initShaderSourceAsync(forceGLSL = false) {
-        const engine = this.getEngine();
-
-        if (engine.isWebGPU && !forceGLSL) {
-            this._shaderLanguage = ShaderLanguage.WGSL;
-
-            await import("../ShadersWGSL/glowBlurPostProcess.fragment");
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
+        if (useWebGPU) {
+            this._webGPUReady = true;
+            list.push(import("../ShadersWGSL/glowBlurPostProcess.fragment"));
         } else {
-            await import("../Shaders/glowBlurPostProcess.fragment");
+            list.push(import("../Shaders/glowBlurPostProcess.fragment"));
         }
 
-        this._shadersLoaded = true;
+        super._gatherImports(useWebGPU, list);
     }
 }
 
@@ -368,11 +347,8 @@ export class HighlightLayer extends EffectLayer {
         this._shouldRender = false;
     }
 
-    protected override async _initShaderSourceAsync(forceGLSL = false) {
-        const engine = this._scene.getEngine();
-
-        if (engine.isWebGPU && !forceGLSL && !EffectLayer.ForceGLSL) {
-            this._shaderLanguage = ShaderLanguage.WGSL;
+    protected override async _importShadersAsync() {
+        if (this._shaderLanguage === ShaderLanguage.WGSL) {
             await Promise.all([
                 import("../ShadersWGSL/glowMapMerge.fragment"),
                 import("../ShadersWGSL/glowMapMerge.vertex"),
@@ -382,7 +358,7 @@ export class HighlightLayer extends EffectLayer {
             await Promise.all([import("../Shaders/glowMapMerge.fragment"), import("../Shaders/glowMapMerge.vertex"), import("../Shaders/glowBlurPostProcess.fragment")]);
         }
 
-        await super._initShaderSourceAsync(forceGLSL);
+        await super._importShadersAsync();
     }
 
     /**

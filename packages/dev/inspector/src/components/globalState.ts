@@ -33,6 +33,7 @@ export class GlobalState {
 
     public onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
 
+    public glTFLoaderOverrideExtensionsConfig = false;
     public glTFLoaderExtensionDefaults: { [name: string]: { [key: string]: any } } = {
         MSFT_lod: { enabled: true, maxLODsToLoad: 10 },
         MSFT_minecraftMesh: { enabled: true },
@@ -64,6 +65,7 @@ export class GlobalState {
         EXT_texture_avif: { enabled: true },
     };
 
+    public glTFLoaderOverrideConfig = false;
     public glTFLoaderDefaults: { [key: string]: any } = {
         alwaysComputeBoundingBox: false,
         alwaysComputeSkeletonRootNode: false,
@@ -131,18 +133,23 @@ export class GlobalState {
 
     public prepareGLTFPlugin(loader: GLTFFileLoader) {
         this.glTFLoaderExtensions = {};
-        const loaderState = this.glTFLoaderDefaults;
-        if (loaderState !== undefined) {
-            for (const key in loaderState) {
-                (loader as any)[key] = loaderState[key];
+
+        if (this.glTFLoaderOverrideConfig) {
+            const loaderState = this.glTFLoaderDefaults;
+            if (loaderState !== undefined) {
+                for (const key in loaderState) {
+                    (loader as any)[key] = loaderState[key];
+                }
             }
         }
 
         loader.onExtensionLoadedObservable.add((extension: import("loaders/glTF/index").IGLTFLoaderExtension) => {
-            const extensionState = this.glTFLoaderExtensionDefaults[extension.name];
-            if (extensionState !== undefined) {
-                for (const key in extensionState) {
-                    (extension as any)[key] = extensionState[key];
+            if (this.glTFLoaderOverrideExtensionsConfig) {
+                const extensionState = this.glTFLoaderExtensionDefaults[extension.name];
+                if (extensionState !== undefined) {
+                    for (const key in extensionState) {
+                        (extension as any)[key] = extensionState[key];
+                    }
                 }
             }
 

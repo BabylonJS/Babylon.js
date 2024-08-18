@@ -521,7 +521,7 @@ export class VRExperienceHelper {
      */
     constructor(
         scene: Scene,
-        /** Options to modify the vr experience helper's behavior. */
+        /** [Empty object] Options to modify the vr experience helper's behavior. */
         public webVROptions: VRExperienceHelperOptions = {}
     ) {
         Logger.Warn("WebVR is deprecated. Please avoid using this experience helper and use the WebXR experience helper instead");

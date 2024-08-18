@@ -7,7 +7,6 @@ import type { AbstractEngine } from "../Engines/abstractEngine";
 import { ToGammaSpace } from "../Maths/math.constants";
 import { Constants } from "../Engines/constants";
 
-import "../Shaders/extractHighlights.fragment";
 import { serialize } from "../Misc/decorators";
 import { RegisterClass } from "../Misc/typeStore";
 
@@ -57,6 +56,17 @@ export class ExtractHighlightsPostProcess extends PostProcess {
             effect.setFloat("threshold", Math.pow(this.threshold, ToGammaSpace));
             effect.setFloat("exposure", this._exposure);
         });
+    }
+
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
+        if (useWebGPU) {
+            this._webGPUReady = true;
+            list.push(import("../ShadersWGSL/extractHighlights.fragment"));
+        } else {
+            list.push(import("../Shaders/extractHighlights.fragment"));
+        }
+
+        super._gatherImports(useWebGPU, list);
     }
 }
 

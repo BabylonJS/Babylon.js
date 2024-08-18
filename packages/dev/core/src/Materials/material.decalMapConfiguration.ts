@@ -55,6 +55,14 @@ export class DecalMapConfiguration extends MaterialPluginBase {
     }
 
     /**
+     * Gets a boolean indicating that the plugin is compatible with a given shader language.
+     * @returns true if the plugin is compatible with the shader language
+     */
+    public override isCompatible(): boolean {
+        return true;
+    }
+
+    /**
      * Creates a new DecalMapConfiguration
      * @param material The material to attach the decal map plugin to
      * @param addToPluginList If the plugin should be added to the material plugin list

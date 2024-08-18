@@ -109,6 +109,14 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
         this._internalMarkAllSubMeshesAsTexturesDirty();
     }
 
+    /**
+     * Gets a boolean indicating that the plugin is compatible with a given shader language.
+     * @returns true if the plugin is compatible with the shader language
+     */
+    public override isCompatible(): boolean {
+        return true;
+    }
+
     constructor(material: PBRBaseMaterial, addToPluginList = true) {
         super(material, "PBRIridescence", 110, new MaterialIridescenceDefines(), addToPluginList);
 

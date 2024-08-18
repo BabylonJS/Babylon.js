@@ -63,22 +63,24 @@ export function CreateResizedCopy(texture: Texture, width: number, height: numbe
         Constants.TEXTURETYPE_UNSIGNED_INT
     );
     passPostProcess.externalTextureSamplerBinding = true;
-    passPostProcess.getEffect().executeWhenCompiled(() => {
-        passPostProcess.onApply = function (effect) {
-            effect.setTexture("textureSampler", texture);
-        };
+    passPostProcess.onEffectCreatedObservable.addOnce((e) => {
+        e.executeWhenCompiled(() => {
+            passPostProcess.onApply = function (effect) {
+                effect.setTexture("textureSampler", texture);
+            };
 
-        const internalTexture = rtt.renderTarget;
+            const internalTexture = rtt.renderTarget;
 
-        if (internalTexture) {
-            scene.postProcessManager.directRender([passPostProcess], internalTexture);
+            if (internalTexture) {
+                scene.postProcessManager.directRender([passPostProcess], internalTexture);
 
-            engine.unBindFramebuffer(internalTexture);
-            rtt.disposeFramebufferObjects();
-            passPostProcess.dispose();
+                engine.unBindFramebuffer(internalTexture);
+                rtt.disposeFramebufferObjects();
+                passPostProcess.dispose();
 
-            rtt.getInternalTexture()!.isReady = true;
-        }
+                rtt.getInternalTexture()!.isReady = true;
+            }
+        });
     });
 
     return rtt;
@@ -139,30 +141,32 @@ export function ApplyPostProcess(
             }
         );
 
-        postProcess.getEffect().executeWhenCompiled(() => {
-            // PP Render Pass
-            postProcess.onApply = (effect) => {
-                effect._bindTexture("textureSampler", internalTexture);
-                effect.setFloat2("scale", 1, 1);
-            };
-            scene.postProcessManager.directRender([postProcess!], encodedTexture, true);
+        postProcess.onEffectCreatedObservable.addOnce((e) => {
+            e.executeWhenCompiled(() => {
+                // PP Render Pass
+                postProcess.onApply = (effect) => {
+                    effect._bindTexture("textureSampler", internalTexture);
+                    effect.setFloat2("scale", 1, 1);
+                };
+                scene.postProcessManager.directRender([postProcess!], encodedTexture, true);
 
-            // Cleanup
-            engine.restoreDefaultFramebuffer();
-            engine._releaseTexture(internalTexture);
-            if (postProcess) {
-                postProcess.dispose();
-            }
+                // Cleanup
+                engine.restoreDefaultFramebuffer();
+                engine._releaseTexture(internalTexture);
+                if (postProcess) {
+                    postProcess.dispose();
+                }
 
-            // Internal Swap
-            encodedTexture._swapAndDie(internalTexture);
+                // Internal Swap
+                encodedTexture._swapAndDie(internalTexture);
 
-            // Ready to get rolling again.
-            internalTexture.type = type!;
-            internalTexture.format = Constants.TEXTUREFORMAT_RGBA;
-            internalTexture.isReady = true;
+                // Ready to get rolling again.
+                internalTexture.type = type!;
+                internalTexture.format = Constants.TEXTUREFORMAT_RGBA;
+                internalTexture.isReady = true;
 
-            resolve(internalTexture);
+                resolve(internalTexture);
+            });
         });
     });
 }
@@ -250,8 +254,10 @@ const ProcessAsync = async (texture: BaseTexture, width: number, height: number,
     }
 
     await new Promise((resolve) => {
-        lodPostProcess.getEffect().executeWhenCompiled(() => {
-            resolve(0);
+        lodPostProcess.onEffectCreatedObservable.addOnce((e) => {
+            e.executeWhenCompiled(() => {
+                resolve(0);
+            });
         });
     });
 

@@ -70,10 +70,6 @@ export class PhysicsJoint {
      * Sets the physics joint
      */
     public set physicsJoint(newJoint: any) {
-        if (this._physicsJoint) {
-            //remove from the world
-        }
-
         this._physicsJoint = newJoint;
     }
 

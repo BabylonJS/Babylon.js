@@ -12,12 +12,20 @@ import type { Mesh } from "core/Meshes/mesh";
 import { Logger } from "core/Misc/logger";
 import { expandToProperty, serialize, serializeAsColor3 } from "core/Misc/decorators";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import { ShaderLanguage } from "./shaderLanguage";
 
 const vertexDefinitions = `#if defined(DBG_ENABLED)
 attribute float dbg_initialPass;
 varying vec3 dbg_vBarycentric;
 flat varying vec3 dbg_vVertexWorldPos;
 flat varying float dbg_vPass;
+#endif`;
+
+const vertexDefinitionsWebGPU = `#if defined(DBG_ENABLED)
+attribute dbg_initialPass: f32;
+varying dbg_vBarycentric: vec3f;
+varying dbg_vVertexWorldPos: vec3f;
+varying dbg_vPass: f32;
 #endif`;
 
 const vertexMainEnd = `#if defined(DBG_ENABLED)
@@ -34,6 +42,22 @@ else {
 
 dbg_vVertexWorldPos = vPositionW;
 dbg_vPass = dbg_initialPass;
+#endif`;
+
+const vertexMainEndWebGPU = `#if defined(DBG_ENABLED)
+var dbg_vertexIndex = f32(input.vertexIndex) % 3.;
+if (dbg_vertexIndex == 0.0) { 
+    vertexOutputs.dbg_vBarycentric = vec3f(1.,0.,0.); 
+}
+else if (dbg_vertexIndex == 1.0) { 
+    vertexOutputs.dbg_vBarycentric = vec3f(0.,1.,0.); 
+}
+else { 
+    vertexOutputs.dbg_vBarycentric = vec3f(0.,0.,1.); 
+}
+
+vertexOutputs.dbg_vVertexWorldPos = vertexOutputs.vPositionW;
+vertexOutputs.dbg_vPass = input.dbg_initialPass;
 #endif`;
 
 const fragmentUniforms = `#if defined(DBG_ENABLED)
@@ -54,6 +78,27 @@ uniform vec3 dbg_thicknessRadiusScale;
     uniform vec3 dbg_uvSecondaryColor;
 #elif DBG_MODE == 7
     uniform vec3 dbg_materialColor;
+#endif
+#endif`;
+
+const fragmentUniformsWebGPU = `#if defined(DBG_ENABLED)
+uniform dbg_shadedDiffuseColor: vec3f;
+uniform dbg_shadedSpecularColorPower: vec4f;
+uniform dbg_thicknessRadiusScale: vec3f;
+
+#if DBG_MODE == 2 || DBG_MODE == 3
+    uniform dbg_vertexColor: vec3f;
+#endif
+
+#if DBG_MODE == 1
+    uniform dbg_wireframeTrianglesColor: vec3f;
+#elif DBG_MODE == 3
+    uniform  dbg_wireframeVerticesColor: vec3f;
+#elif DBG_MODE == 4 || DBG_MODE == 5
+    uniform dbg_uvPrimaryColor: vec3f;
+    uniform dbg_uvSecondaryColor: vec3f;
+#elif DBG_MODE == 7
+    uniform dbg_materialColor: vec3f;
 #endif
 #endif`;
 
@@ -103,6 +148,52 @@ flat varying float dbg_vPass;
 #endif
 #endif`;
 
+const fragmentDefinitionsWebGPU = `#if defined(DBG_ENABLED)
+varying dbg_vBarycentric: vec3f;
+varying dbg_vVertexWorldPos: vec3f;
+varying dbg_vPass: f32;
+
+#if !defined(DBG_MULTIPLY)
+    fn dbg_applyShading(color: vec3f) -> vec3f {
+        var N = fragmentInputs.vNormalW.xyz;
+        var L = normalize(scene.vEyePosition.xyz - fragmentInputs.vPositionW.xyz);
+        var H = normalize(L + L);
+        var LdotN = clamp(dot(L,N), 0., 1.);
+        var HdotN = clamp(dot(H,N), 0., 1.);
+        var specTerm = pow(HdotN, uniforms.dbg_shadedSpecularColorPower.w);
+        var result = color * (LdotN / PI);
+        result += uniforms.dbg_shadedSpecularColorPower.rgb * (specTerm / PI);
+        return result;
+    }
+#endif
+
+#if DBG_MODE == 1 || DBG_MODE == 3
+    fn dbg_edgeFactor() -> f32 {
+        var d = fwidth(fragmentInputs.dbg_vBarycentric);
+        var a3 = smoothstep(vec3f(0.), d * uniforms.dbg_thicknessRadiusScale.x, fragmentInputs.dbg_vBarycentric);
+        return min(min(a3.x, a3.y), a3.z);
+    }
+#endif
+
+#if DBG_MODE == 2 || DBG_MODE == 3
+    fn dbg_cornerFactor() -> f32 {
+        var worldPos = fragmentInputs.vPositionW;
+        float dist = length(worldPos - fragmentInputs.dbg_vVertexWorldPos);
+        float camDist = length(worldPos - scene.vEyePosition.xyz);
+        float d = sqrt(camDist) * .001;
+        return smoothstep((uniforms.dbg_thicknessRadiusScale.y * d), ((uniforms.dbg_thicknessRadiusScale.y * 1.01) * d), dist);
+    }
+#endif
+
+#if (DBG_MODE == 4 && defined(UV1)) || (DBG_MODE == 5 && defined(UV2))
+    fn dbg_checkerboardFactor(uv: vec2f) -> f32 {
+        var f = fract(uv * uniforms.dbg_thicknessRadiusScale.z);
+        f -= .5;
+        return (f.x * f.y) > 0. ? 1. : 0.;
+    }
+#endif
+#endif`;
+
 const fragmentMainEnd = `#if defined(DBG_ENABLED)
 vec3 dbg_color = vec3(1.);
 #if DBG_MODE == 1
@@ -131,6 +222,38 @@ vec3 dbg_color = vec3(1.);
         gl_FragColor = vec4(dbg_applyShading(dbg_shadedDiffuseColor) * dbg_color, 1.);
     #else
         gl_FragColor = vec4(dbg_color, 1.);
+    #endif
+#endif
+#endif`;
+
+const fragmentMainEndWebGPU = `#if defined(DBG_ENABLED)
+var dbg_color = vec3f(1.);
+#if DBG_MODE == 1
+    dbg_color = mix(uniforms.dbg_wireframeTrianglesColor, vec3f(1.), dbg_edgeFactor());
+#elif DBG_MODE == 2 || DBG_MODE == 3
+    var dbg_cornerFactor = dbg_cornerFactor();
+    if (fragmentInputs.dbg_vPass == 0. && dbg_cornerFactor == 1.) discard;
+    dbg_color = mix(uniforms.dbg_vertexColor, vec3(1.), dbg_cornerFactor);
+    #if DBG_MODE == 3
+        dbg_color *= mix(uniforms.dbg_wireframeVerticesColor, vec3f(1.), dbg_edgeFactor());
+    #endif
+#elif DBG_MODE == 4 && defined(MAINUV1)
+    dbg_color = mix(uniforms.dbg_uvPrimaryColor, uniforms.dbg_uvSecondaryColor, dbg_checkerboardFactor(fragmentInputs.vMainUV1));
+#elif DBG_MODE == 5 && defined(MAINUV2)
+    dbg_color = mix(uniforms.dbg_uvPrimaryColor, uniforms.dbg_uvSecondaryColor, dbg_checkerboardFactor(fragmentInputs.vMainUV2));
+#elif DBG_MODE == 6 && defined(VERTEXCOLOR)
+    dbg_color = fragmentInputs.vColor.rgb;
+#elif DBG_MODE == 7
+    dbg_color = uniforms.dbg_materialColor;
+#endif
+
+#if defined(DBG_MULTIPLY)
+    fragmentOutputs.color *= vec4f(dbg_color, 1.);
+#else
+    #if DBG_MODE != 6
+        fragmentOutputs.color = vec4f(dbg_applyShading(dbg_shadedDiffuseColor) * dbg_color, 1.);
+    #else
+        fragmentOutputs.color = vec4f(dbg_color, 1.);
     #endif
 #endif
 #endif`;
@@ -434,6 +557,21 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
     }
 
     /**
+     * Gets a boolean indicating that the plugin is compatible with a given shader language.
+     * @param shaderLanguage The shader language to use.
+     * @returns true if the plugin is compatible with the shader language
+     */
+    public override isCompatible(shaderLanguage: ShaderLanguage): boolean {
+        switch (shaderLanguage) {
+            case ShaderLanguage.GLSL:
+            case ShaderLanguage.WGSL:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /**
      * Creates a new MeshDebugPluginMaterial
      * @param material Material to attach the mesh debug plugin to
      * @param options Options for the mesh debug plugin
@@ -525,9 +663,10 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
 
     /**
      * Get the shader uniforms
+     * @param shaderLanguage The shader language to use.
      * @returns Uniforms
      */
-    public override getUniforms() {
+    public override getUniforms(shaderLanguage = ShaderLanguage.GLSL) {
         return {
             ubo: [
                 { name: "dbg_shadedDiffuseColor", size: 3, type: "vec3" },
@@ -540,7 +679,7 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
                 { name: "dbg_uvSecondaryColor", size: 3, type: "vec3" },
                 { name: "dbg_materialColor", size: 3, type: "vec3" },
             ],
-            fragment: fragmentUniforms,
+            fragment: shaderLanguage === ShaderLanguage.GLSL ? fragmentUniforms : fragmentUniformsWebGPU,
         };
     }
 
@@ -566,9 +705,22 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
     /**
      * Get shader code
      * @param shaderType "vertex" or "fragment"
+     * @param shaderLanguage The shader language to use.
      * @returns Shader code
      */
-    public override getCustomCode(shaderType: string): Nullable<{ [pointName: string]: string }> {
+    public override getCustomCode(shaderType: string, shaderLanguage = ShaderLanguage.GLSL): Nullable<{ [pointName: string]: string }> {
+        if (shaderLanguage === ShaderLanguage.WGSL) {
+            return shaderType === "vertex"
+                ? {
+                      CUSTOM_VERTEX_DEFINITIONS: vertexDefinitionsWebGPU,
+                      CUSTOM_VERTEX_MAIN_END: vertexMainEndWebGPU,
+                  }
+                : {
+                      CUSTOM_FRAGMENT_DEFINITIONS: fragmentDefinitionsWebGPU,
+                      CUSTOM_FRAGMENT_MAIN_END: fragmentMainEndWebGPU,
+                  };
+        }
+
         return shaderType === "vertex"
             ? {
                   CUSTOM_VERTEX_DEFINITIONS: vertexDefinitions,

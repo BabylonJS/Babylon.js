@@ -4,7 +4,6 @@ import type { Camera } from "../Cameras/camera";
 import type { Effect } from "../Materials/effect";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 
-import "../Shaders/blackAndWhite.fragment";
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
@@ -46,6 +45,17 @@ export class BlackAndWhitePostProcess extends PostProcess {
         this.onApplyObservable.add((effect: Effect) => {
             effect.setFloat("degree", this.degree);
         });
+    }
+
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
+        if (useWebGPU) {
+            this._webGPUReady = true;
+            list.push(import("../ShadersWGSL/blackAndWhite.fragment"));
+        } else {
+            list.push(import("../Shaders/blackAndWhite.fragment"));
+        }
+
+        super._gatherImports(useWebGPU, list);
     }
 
     /**

@@ -2,8 +2,8 @@ import type { Sound } from "./sound";
 import type { Analyser } from "./analyser";
 import type { Nullable } from "../types";
 import type { Scene } from "../scene";
-import { Engine } from "../Engines/engine";
 import { EngineStore } from "../Engines/engineStore";
+import { AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
  * Options allowed during the creation of a sound track.
@@ -62,9 +62,9 @@ export class SoundTrack {
     }
 
     private _initializeSoundTrackAudioGraph() {
-        if (Engine.audioEngine?.canUseWebAudio && Engine.audioEngine.audioContext) {
-            this._outputAudioNode = Engine.audioEngine.audioContext.createGain();
-            this._outputAudioNode.connect(Engine.audioEngine.masterGain);
+        if (AbstractEngine.audioEngine?.canUseWebAudio && AbstractEngine.audioEngine.audioContext) {
+            this._outputAudioNode = AbstractEngine.audioEngine.audioContext.createGain();
+            this._outputAudioNode.connect(AbstractEngine.audioEngine.masterGain);
 
             if (this._options) {
                 if (this._options.volume) {
@@ -80,7 +80,7 @@ export class SoundTrack {
      * Release the sound track and its associated resources
      */
     public dispose(): void {
-        if (Engine.audioEngine && Engine.audioEngine.canUseWebAudio) {
+        if (AbstractEngine.audioEngine && AbstractEngine.audioEngine.canUseWebAudio) {
             if (this._connectedAnalyser) {
                 this._connectedAnalyser.stopDebugCanvas();
             }
@@ -103,7 +103,7 @@ export class SoundTrack {
         if (!this._isInitialized) {
             this._initializeSoundTrackAudioGraph();
         }
-        if (Engine.audioEngine?.canUseWebAudio && this._outputAudioNode) {
+        if (AbstractEngine.audioEngine?.canUseWebAudio && this._outputAudioNode) {
             sound.connectToSoundTrackAudioNode(this._outputAudioNode);
         }
         if (sound.soundTrackId !== undefined) {
@@ -135,7 +135,7 @@ export class SoundTrack {
      * @param newVolume Define the new volume of the sound track
      */
     public setVolume(newVolume: number): void {
-        if (Engine.audioEngine?.canUseWebAudio && this._outputAudioNode) {
+        if (AbstractEngine.audioEngine?.canUseWebAudio && this._outputAudioNode) {
             this._outputAudioNode.gain.value = newVolume;
         }
     }
@@ -146,7 +146,7 @@ export class SoundTrack {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic#creating-a-spatial-3d-sound
      */
     public switchPanningModelToHRTF(): void {
-        if (Engine.audioEngine?.canUseWebAudio) {
+        if (AbstractEngine.audioEngine?.canUseWebAudio) {
             for (let i = 0; i < this.soundCollection.length; i++) {
                 this.soundCollection[i].switchPanningModelToHRTF();
             }
@@ -159,7 +159,7 @@ export class SoundTrack {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic#creating-a-spatial-3d-sound
      */
     public switchPanningModelToEqualPower(): void {
-        if (Engine.audioEngine?.canUseWebAudio) {
+        if (AbstractEngine.audioEngine?.canUseWebAudio) {
             for (let i = 0; i < this.soundCollection.length; i++) {
                 this.soundCollection[i].switchPanningModelToEqualPower();
             }
@@ -177,9 +177,9 @@ export class SoundTrack {
             this._connectedAnalyser.stopDebugCanvas();
         }
         this._connectedAnalyser = analyser;
-        if (Engine.audioEngine?.canUseWebAudio && this._outputAudioNode) {
+        if (AbstractEngine.audioEngine?.canUseWebAudio && this._outputAudioNode) {
             this._outputAudioNode.disconnect();
-            this._connectedAnalyser.connectAudioNodes(this._outputAudioNode, Engine.audioEngine.masterGain);
+            this._connectedAnalyser.connectAudioNodes(this._outputAudioNode, AbstractEngine.audioEngine.masterGain);
         }
     }
 }

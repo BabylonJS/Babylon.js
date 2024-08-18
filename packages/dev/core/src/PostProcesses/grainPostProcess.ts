@@ -6,7 +6,6 @@ import { PostProcess } from "./postProcess";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import { Constants } from "../Engines/constants";
 
-import "../Shaders/grain.fragment";
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
@@ -62,6 +61,17 @@ export class GrainPostProcess extends PostProcess {
             effect.setFloat("intensity", this.intensity);
             effect.setFloat("animatedSeed", this.animated ? Math.random() + 1 : 1);
         });
+    }
+
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
+        if (useWebGPU) {
+            this._webGPUReady = true;
+            list.push(Promise.all([import("../ShadersWGSL/grain.fragment")]));
+        } else {
+            list.push(Promise.all([import("../Shaders/grain.fragment")]));
+        }
+
+        super._gatherImports(useWebGPU, list);
     }
 
     /**

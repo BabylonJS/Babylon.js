@@ -6,7 +6,6 @@ import type { Effect } from "../Materials/effect";
 import type { Camera } from "../Cameras/camera";
 import { Constants } from "../Engines/constants";
 
-import "../Shaders/bloomMerge.fragment";
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 
@@ -66,6 +65,17 @@ export class BloomMergePostProcess extends PostProcess {
         if (!blockCompilation) {
             this.updateEffect();
         }
+    }
+
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
+        if (useWebGPU) {
+            this._webGPUReady = true;
+            list.push(import("../ShadersWGSL/bloomMerge.fragment"));
+        } else {
+            list.push(import("../Shaders/bloomMerge.fragment"));
+        }
+
+        super._gatherImports(useWebGPU, list);
     }
 }
 

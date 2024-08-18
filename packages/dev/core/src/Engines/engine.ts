@@ -27,7 +27,6 @@ import "./AbstractEngine/abstractEngine.states";
 import "./AbstractEngine/abstractEngine.renderPass";
 import "./AbstractEngine/abstractEngine.texture";
 
-import type { Material } from "../Materials/material";
 import type { PostProcess } from "../PostProcesses/postProcess";
 import { AbstractEngine } from "./abstractEngine";
 import {
@@ -286,21 +285,6 @@ export class Engine extends ThinEngine {
     }
 
     /** @internal */
-
-    /**
-     * Will flag all materials in all scenes in all engines as dirty to trigger new shader compilation
-     * @param flag defines which part of the materials must be marked as dirty
-     * @param predicate defines a predicate used to filter which materials should be affected
-     */
-    public static MarkAllMaterialsAsDirty(flag: number, predicate?: (mat: Material) => boolean): void {
-        for (let engineIndex = 0; engineIndex < Engine.Instances.length; engineIndex++) {
-            const engine = Engine.Instances[engineIndex];
-
-            for (let sceneIndex = 0; sceneIndex < engine.scenes.length; sceneIndex++) {
-                engine.scenes[sceneIndex].markAllMaterialsAsDirty(flag, predicate);
-            }
-        }
-    }
 
     // eslint-disable-next-line jsdoc/require-returns-check
     /**

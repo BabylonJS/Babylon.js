@@ -5,8 +5,6 @@ import { PostProcess } from "./postProcess";
 import type { Engine } from "../Engines/engine";
 import { Constants } from "../Engines/constants";
 
-import "../Shaders/highlights.fragment";
-
 /**
  * Extracts highlights from the image
  * @see https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/usePostProcesses
@@ -41,5 +39,16 @@ export class HighlightsPostProcess extends PostProcess {
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT
     ) {
         super(name, "highlights", null, null, options, camera, samplingMode, engine, reusable, null, textureType);
+    }
+
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
+        if (useWebGPU) {
+            this._webGPUReady = true;
+            list.push(Promise.all([import("../ShadersWGSL/highlights.fragment")]));
+        } else {
+            list.push(Promise.all([import("../Shaders/highlights.fragment")]));
+        }
+
+        super._gatherImports(useWebGPU, list);
     }
 }

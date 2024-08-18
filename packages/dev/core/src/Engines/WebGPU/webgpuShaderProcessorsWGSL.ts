@@ -22,7 +22,6 @@ import "../../ShadersWGSL/ShadersInclude/fresnelFunction";
 import "../../ShadersWGSL/ShadersInclude/meshUboDeclaration";
 import "../../ShadersWGSL/ShadersInclude/sceneUboDeclaration";
 import "../../ShadersWGSL/ShadersInclude/decalFragment";
-import "../../ShadersWGSL/particles.vertex";
 
 const builtInName_frag_depth = "fragmentOutputs.fragDepth";
 
@@ -365,6 +364,10 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             if (number > 0) {
                 for (let index = 0; index < number; index++) {
                     fragmentOutputs += ` @location(${indexLocation}) fragData${indexLocation} : vec4<f32>,\n`;
+                    indexLocation++;
+                }
+                if (fragmentCode.indexOf("MRT_AND_COLOR") !== -1) {
+                    fragmentOutputs += `  @location(${indexLocation}) color : vec4<f32>,\n`;
                     indexLocation++;
                 }
             }

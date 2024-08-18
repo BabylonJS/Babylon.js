@@ -2,6 +2,38 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Simple refraction",
+            "playgroundId": "#22KZUW#652",
+            "referenceImage": "simple-refraction.png"
+        },
+        {
+            "title": "Detail map",
+            "playgroundId": "#F8FDYT#2",
+            "referenceImage": "detail-map.png"
+        },
+        {
+            "title": "needDepthPrePass",
+            "playgroundId": "#7A66KI#1",
+            "referenceImage": "needDepthPrePass.png"
+        },
+        {
+            "title": "Decal map PP",
+            "playgroundId": "#9BVW2S#82",
+            "renderCount": 120,
+            "referenceImage": "decal-map-pp.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Convolution Post Process",
+            "playgroundId": "#FBH4J7#281",
+            "referenceImage": "convolution.png"
+        },
+        {
+            "title": "Color correction",
+            "playgroundId": "#FBH4J7#278",
+            "referenceImage": "color-correction.png"
+        },
+        {
             "title": "NME Multi Build",
             "playgroundId": "#D8AK3Z#104",
             "referenceImage": "nme-multi-build.png"
@@ -1712,6 +1744,7 @@
         {
             "title": "Fluid rendering particle system",
             "playgroundId": "#544N0Q#67",
+            "renderCount": 120,
             "referenceImage": "fluidParticleSystem.png",
             "excludedEngines": ["webgl1"]
         },

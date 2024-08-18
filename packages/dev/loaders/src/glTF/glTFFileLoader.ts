@@ -16,7 +16,7 @@ import type {
     ISceneLoaderPluginExtensions,
     ISceneLoaderAsyncResult,
 } from "core/Loading/sceneLoader";
-import { SceneLoader } from "core/Loading/sceneLoader";
+import { registerSceneLoaderPlugin } from "core/Loading/sceneLoader";
 import type { SceneLoaderPluginOptions } from "core/Loading/sceneLoader";
 import { AssetContainer } from "core/assetContainer";
 import type { Scene, IDisposable } from "core/scene";
@@ -194,16 +194,35 @@ type DefaultExtensionOptions<BaseExtensionOptions> = {
     enabled?: boolean;
 } & BaseExtensionOptions;
 
-class GLTFLoaderOptions {
+abstract class GLTFLoaderOptions {
     // eslint-disable-next-line babylonjs/available
-    public constructor(options?: Partial<Readonly<GLTFLoaderOptions>>) {
+    protected copyFrom(options?: Partial<Readonly<GLTFLoaderOptions>>) {
         if (options) {
-            for (const key in this) {
-                const typedKey = key as keyof GLTFLoaderOptions;
+            const copyOption = (option: string) => {
+                const typedKey = option as keyof GLTFLoaderOptions;
                 (this as Record<keyof GLTFLoaderOptions, unknown>)[typedKey] = options[typedKey] ?? this[typedKey];
+            };
+
+            // Copy concrete properties
+            for (const option in this) {
+                copyOption(option);
+            }
+
+            // Copy abstract properties
+            for (const option of ["onParsed", "onMeshLoaded", "onSkinLoaded", "onTextureLoaded", "onMaterialLoaded", "onCameraLoaded"] satisfies (keyof GLTFLoaderOptions)[]) {
+                copyOption(option);
             }
         }
     }
+
+    // --------------
+    // Common options
+    // --------------
+
+    /**
+     * Raised when the asset has been parsed
+     */
+    public abstract onParsed: (loaderData: IGLTFLoaderData) => void;
 
     // ----------
     // V2 options
@@ -319,6 +338,33 @@ class GLTFLoaderOptions {
     public customRootNode?: Nullable<TransformNode>;
 
     /**
+     * Callback raised when the loader creates a mesh after parsing the glTF properties of the mesh.
+     * Note that the callback is called as soon as the mesh object is created, meaning some data may not have been setup yet for this mesh (vertex data, morph targets, material, ...)
+     */
+    public abstract onMeshLoaded: (mesh: AbstractMesh) => void;
+
+    /**
+     * Callback raised when the loader creates a skin after parsing the glTF properties of the skin node.
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/importers/glTF/glTFSkinning#ignoring-the-transform-of-the-skinned-mesh
+     */
+    public abstract onSkinLoaded: (node: TransformNode, skinnedNode: TransformNode) => void;
+
+    /**
+     * Callback raised when the loader creates a texture after parsing the glTF properties of the texture.
+     */
+    public abstract onTextureLoaded: (texture: BaseTexture) => void;
+
+    /**
+     * Callback raised when the loader creates a material after parsing the glTF properties of the material.
+     */
+    public abstract onMaterialLoaded: (material: Material) => void;
+
+    /**
+     * Callback raised when the loader creates a camera after parsing the glTF properties of the camera.
+     */
+    public abstract onCameraLoaded: (camera: Camera) => void;
+
+    /**
      * Defines options for glTF extensions.
      */
     public extensionOptions: {
@@ -341,9 +387,18 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
     /** @internal */
     public static _CreateGLTF2Loader: (parent: GLTFFileLoader) => IGLTFLoader;
 
-    // --------------
-    // Common options
-    // --------------
+    /**
+     * Creates a new glTF file loader.
+     * @param options The options for the loader
+     */
+    public constructor(options?: Partial<Readonly<GLTFLoaderOptions>>) {
+        super();
+        this.copyFrom(options);
+    }
+
+    // --------------------
+    // Begin Common options
+    // --------------------
 
     /**
      * Raised when the asset has been parsed
@@ -362,9 +417,13 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
         this._onParsedObserver = this.onParsedObservable.add(callback);
     }
 
-    // ----------
-    // V1 options
-    // ----------
+    // ------------------
+    // End Common options
+    // ------------------
+
+    // ----------------
+    // Begin V1 options
+    // ----------------
 
     /**
      * Set this property to false to disable incremental loading which delays the loader from calling the success callback until after loading the meshes and shaders.
@@ -380,6 +439,10 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
      * @internal
      */
     public static HomogeneousCoordinates = false;
+
+    // --------------
+    // End V1 options
+    // --------------
 
     /**
      * Observable raised when the loader creates a mesh after parsing the glTF properties of the mesh.
@@ -401,12 +464,25 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
     }
 
     /**
-     * Callback raised when the loader creates a skin after parsing the glTF properties of the skin node.
+     * Observable raised when the loader creates a skin after parsing the glTF properties of the skin node.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/importers/glTF/glTFSkinning#ignoring-the-transform-of-the-skinned-mesh
      * @param node - the transform node that corresponds to the original glTF skin node used for animations
      * @param skinnedNode - the transform node that is the skinned mesh itself or the parent of the skinned meshes
      */
     public readonly onSkinLoadedObservable = new Observable<{ node: TransformNode; skinnedNode: TransformNode }>();
+
+    private _onSkinLoadedObserver: Nullable<Observer<{ node: TransformNode; skinnedNode: TransformNode }>>;
+
+    /**
+     * Callback raised when the loader creates a skin after parsing the glTF properties of the skin node.
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/importers/glTF/glTFSkinning#ignoring-the-transform-of-the-skinned-mesh
+     */
+    public set onSkinLoaded(callback: (node: TransformNode, skinnedNode: TransformNode) => void) {
+        if (this._onSkinLoadedObserver) {
+            this.onSkinLoadedObservable.remove(this._onSkinLoadedObserver);
+        }
+        this._onSkinLoadedObserver = this.onSkinLoadedObservable.add((data) => callback(data.node, data.skinnedNode));
+    }
 
     /**
      * Observable raised when the loader creates a texture after parsing the glTF properties of the texture.
@@ -1303,6 +1379,4 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
     private _endPerformanceCounterDisabled(counterName: string): void {}
 }
 
-if (SceneLoader) {
-    SceneLoader.RegisterPlugin(new GLTFFileLoader());
-}
+registerSceneLoaderPlugin(new GLTFFileLoader());

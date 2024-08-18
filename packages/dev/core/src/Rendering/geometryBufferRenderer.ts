@@ -24,6 +24,7 @@ import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes 
 import { BindMorphTargetParameters, BindSceneUniformBuffer, PrepareAttributesForMorphTargetsInfluencers, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 
 import "../Engines/Extensions/engine.multiRender";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /** @internal */
 interface ISavedTransformationMatrix {
@@ -62,6 +63,11 @@ addClipPlaneUniforms(uniforms);
  * This renderer is helpful to fill one of the render target with a geometry buffer.
  */
 export class GeometryBufferRenderer {
+    /**
+     * Force all the standard materials to compile to glsl even on WebGPU engines.
+     * False by default. This is mostly meant for backward compatibility.
+     */
+    public static ForceGLSL = false;
     /**
      * Constant used to retrieve the depth texture index in the G-Buffer textures array
      * using getIndex(GeometryBufferRenderer.DEPTH_TEXTURE_INDEX)
@@ -360,6 +366,16 @@ export class GeometryBufferRenderer {
         return typeof this._ratioOrDimensions === "object" ? 1 : this._ratioOrDimensions;
     }
 
+    /** Shader language used by the material */
+    protected _shaderLanguage = ShaderLanguage.GLSL;
+
+    /**
+     * Gets the shader language used in this material.
+     */
+    public get shaderLanguage(): ShaderLanguage {
+        return this._shaderLanguage;
+    }
+
     /**
      * @internal
      */
@@ -386,10 +402,28 @@ export class GeometryBufferRenderer {
         this._depthFormat = depthFormat;
         this._textureTypesAndFormats = textureTypesAndFormats || {};
 
+        this._initShaderSourceAsync();
+
         GeometryBufferRenderer._SceneComponentInitialization(this._scene);
 
         // Render target
         this._createRenderTargets();
+    }
+
+    private _shadersLoaded = false;
+
+    private async _initShaderSourceAsync() {
+        const engine = this._scene.getEngine();
+
+        if (engine.isWebGPU && !GeometryBufferRenderer.ForceGLSL) {
+            this._shaderLanguage = ShaderLanguage.WGSL;
+
+            await Promise.all([import("../ShadersWGSL/geometry.vertex"), import("../ShadersWGSL/geometry.fragment")]);
+        } else {
+            await Promise.all([import("../Shaders/geometry.vertex"), import("../Shaders/geometry.fragment")]);
+        }
+
+        this._shadersLoaded = true;
     }
 
     /**
@@ -399,6 +433,10 @@ export class GeometryBufferRenderer {
      * @returns true if ready otherwise false
      */
     public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
+        if (!this._shadersLoaded) {
+            return false;
+        }
+
         const material = <any>subMesh.getMaterial();
 
         if (material && material.disableDepthWrite) {
@@ -644,9 +682,9 @@ export class GeometryBufferRenderer {
 
         // Setup textures count
         if (this._linkedWithPrePass) {
-            defines.push("#define RENDER_TARGET_COUNT " + this._attachmentsFromPrePass.length);
+            defines.push("#define SCENE_MRT_COUNT " + this._attachmentsFromPrePass.length);
         } else {
-            defines.push("#define RENDER_TARGET_COUNT " + this._multiRenderTarget.textures.length);
+            defines.push("#define SCENE_MRT_COUNT " + this._multiRenderTarget.textures.length);
         }
 
         prepareStringDefinesForClipPlanes(material, this._scene, defines);
@@ -670,6 +708,7 @@ export class GeometryBufferRenderer {
                         onError: null,
                         uniformBuffersNames: ["Scene"],
                         indexParameters: { buffersCount: this._multiRenderTarget.textures.length - 1, maxSimultaneousMorphTargets: numMorphInfluencers },
+                        shaderLanguage: this.shaderLanguage,
                     },
                     engine
                 ),
