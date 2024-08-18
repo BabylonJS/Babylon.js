@@ -442,15 +442,15 @@ export class ImageProcessingPostProcess extends PostProcess {
         };
     }
 
-    protected override async _initShaderSourceAsync(useWebGPU: boolean) {
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
-            await import("../ShadersWGSL/imageProcessing.fragment");
+            list.push(import("../ShadersWGSL/imageProcessing.fragment"));
         } else {
-            await import("../Shaders/imageProcessing.fragment");
+            list.push(import("../Shaders/imageProcessing.fragment"));
         }
 
-        super._initShaderSourceAsync(useWebGPU);
+        super._gatherImports(useWebGPU, list);
     }
 
     /**

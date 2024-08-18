@@ -21,8 +21,7 @@ import type { Light } from "../Lights/light";
 import { RuntimeError, ErrorCodes } from "../Misc/error";
 import type { ISpriteManager } from "../Sprites/spriteManager";
 import { RandomGUID } from "../Misc/guid";
-import { Engine } from "../Engines/engine";
-import type { AbstractEngine } from "../Engines/abstractEngine";
+import { AbstractEngine } from "../Engines/abstractEngine";
 
 /**
  * Type used for the success callback of ImportMesh
@@ -669,9 +668,9 @@ function loadData(
         canUseOfflineSupport = !exceptionFound;
     }
 
-    if (canUseOfflineSupport && Engine.OfflineProviderFactory) {
+    if (canUseOfflineSupport && AbstractEngine.OfflineProviderFactory) {
         // Checking if a manifest file has been set for this scene and if offline mode has been requested
-        scene.offlineProvider = Engine.OfflineProviderFactory(fileInfo.url, manifestChecked, engine.disableManifestCheck);
+        scene.offlineProvider = AbstractEngine.OfflineProviderFactory(fileInfo.url, manifestChecked, engine.disableManifestCheck);
     } else {
         manifestChecked();
     }

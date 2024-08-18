@@ -574,11 +574,11 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             undefined,
             undefined,
             this._scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            async (useWebGPU) => {
+            (useWebGPU, list) => {
                 if (useWebGPU) {
-                    await import("../../../ShadersWGSL/ssao2.fragment");
+                    list.push(import("../../../ShadersWGSL/ssao2.fragment"));
                 } else {
-                    await import("../../../Shaders/ssao2.fragment");
+                    list.push(import("../../../Shaders/ssao2.fragment"));
                 }
             }
         );
@@ -650,11 +650,11 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             undefined,
             undefined,
             this._scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            async (useWebGPU) => {
+            (useWebGPU, list) => {
                 if (useWebGPU) {
-                    await import("../../../ShadersWGSL/ssaoCombine.fragment");
+                    list.push(import("../../../ShadersWGSL/ssaoCombine.fragment"));
                 } else {
-                    await import("../../../Shaders/ssaoCombine.fragment");
+                    list.push(import("../../../Shaders/ssaoCombine.fragment"));
                 }
             }
         );

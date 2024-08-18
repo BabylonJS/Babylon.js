@@ -343,15 +343,13 @@ export class EffectWrapper {
 
     /**
      * Disposes of the effect wrapper
-     * @param disposeEffect defines if the underlying effect should also be disposed (true by default)
+     * @param _ignored kept for backward compatibility
      */
-    public dispose(disposeEffect = true) {
+    public dispose(_ignored: boolean = false) {
         if (this._onContextRestoredObserver) {
             this.effect.getEngine().onContextRestoredObservable.remove(this._onContextRestoredObserver);
             this._onContextRestoredObserver = null;
         }
-        if (disposeEffect) {
-            this.effect.dispose();
-        }
+        this.effect.dispose();
     }
 }

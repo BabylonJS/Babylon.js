@@ -96,59 +96,53 @@ export class LinesMesh extends Mesh {
         this.intersectionThreshold = 0.1;
 
         const defines: string[] = [];
-        const options = {
+        const options: Partial<IShaderMaterialOptions> = {
             attributes: [VertexBuffer.PositionKind],
             uniforms: ["world", "viewProjection"],
             needAlphaBlending: true,
             defines: defines,
             useClipPlane: null,
+            shaderLanguage: ShaderLanguage.GLSL,
         };
 
         if (useVertexAlpha === false) {
             options.needAlphaBlending = false;
         } else {
-            options.defines.push("#define VERTEXALPHA");
+            options.defines!.push("#define VERTEXALPHA");
         }
 
         if (!useVertexColor) {
-            options.uniforms.push("color");
+            options.uniforms!.push("color");
             this._color4 = new Color4();
         } else {
-            options.defines.push("#define VERTEXCOLOR");
-            options.attributes.push(VertexBuffer.ColorKind);
+            options.defines!.push("#define VERTEXCOLOR");
+            options.attributes!.push(VertexBuffer.ColorKind);
         }
 
         if (material) {
             this.material = material;
-            this._shadersLoaded = true;
         } else {
-            this._initShaderSourceAsync(options);
+            const engine = this.getScene().getEngine();
+
+            if (engine.isWebGPU && !LinesMesh.ForceGLSL) {
+                this._shaderLanguage = ShaderLanguage.WGSL;
+            }
+
+            options.shaderLanguage = this._shaderLanguage;
+            options.extraInitializationsAsync = async () => {
+                if (this._shaderLanguage === ShaderLanguage.WGSL) {
+                    await Promise.all([import("../ShadersWGSL/color.vertex"), import("../ShadersWGSL/color.fragment")]);
+                } else {
+                    await Promise.all([import("../Shaders/color.vertex"), import("../Shaders/color.fragment")]);
+                }
+            };
+
+            this.material = new ShaderMaterial("colorShader", this.getScene(), "color", options, false);
+            this.material.doNotSerialize = true;
         }
-    }
-
-    private _shadersLoaded = false;
-    private async _initShaderSourceAsync(options: Partial<IShaderMaterialOptions>) {
-        const engine = this.getScene().getEngine();
-
-        if (engine.isWebGPU && !LinesMesh.ForceGLSL) {
-            this._shaderLanguage = ShaderLanguage.WGSL;
-
-            await Promise.all([import("../ShadersWGSL/color.vertex"), import("../ShadersWGSL/color.fragment")]);
-        } else {
-            await Promise.all([import("../Shaders/color.vertex"), import("../Shaders/color.fragment")]);
-        }
-
-        this._shadersLoaded = true;
-        options.shaderLanguage = this._shaderLanguage;
-
-        this.material = new ShaderMaterial("colorShader", this.getScene(), "color", options, false);
-        this.material.doNotSerialize = true;
     }
 
     public override isReady() {
-        if (!this._shadersLoaded) {
-            return false;
-        }
         if (!this._lineMaterial.isReady(this, !!this._userInstancedBuffersStorage || this.hasThinInstances)) {
             return false;
         }
