@@ -315,10 +315,8 @@ export class GPUPicker {
             return Promise.resolve(null);
         }
 
-        console.log("single, x,", x, "y", y);
         // Invert Y
         y = rttSizeH - y - 1;
-        console.log("single-inv, x,", x, "y", y);
 
         this._pickingTexure!.clearColor = new Color4(0, 0, 0, 0);
 
@@ -495,7 +493,6 @@ export class GPUPicker {
                     // Do the actual picking
                     if (await this._readTexturePixelsAsync(minX, partialCutH, w, h)) {
                         // if (await this._readTexturePixelsAsync(0, 0, rttSizeW, rttSizeH)) {
-                        // eslint-disable-next-line no-console
                         const idxs = [];
                         for (let i = 0; i < this._readbuffer.length; i++) {
                             if (this._readbuffer[i] > 0) {
@@ -518,7 +515,6 @@ export class GPUPicker {
                             let offsetX = x - minX - 1;
                             offsetX = offsetX < 0 ? 0 : offsetX;
                             const offset = offsetX * 4 + (maxY - y) * w * 4;
-                            // eslint-disable-next-line no-console
 
                             const r = this._readbuffer[offset];
                             const g = this._readbuffer[offset + 1];
