@@ -34,7 +34,7 @@ export interface IGPUMultiPickingInfo {
     /**
      * Picked mesh
      */
-    meshes: AbstractMesh[];
+    meshes: Nullable<AbstractMesh>[];
     /**
      * Picked thin instance index
      */
@@ -315,8 +315,10 @@ export class GPUPicker {
             return Promise.resolve(null);
         }
 
+        console.log("single, x,", x, "y", y);
         // Invert Y
-        y = rttSizeH - y;
+        y = rttSizeH - y - 1;
+        console.log("single-inv, x,", x, "y", y);
 
         this._pickingTexure!.clearColor = new Color4(0, 0, 0, 0);
 
@@ -386,10 +388,10 @@ export class GPUPicker {
     }
 
     /**
-     * Execute a picking operation
+     * Execute a picking operation on multiple coordinates
      * @param xy defines the X,Y coordinates where to run the pick
      * @param disposeWhenDone defines a boolean indicating we do not want to keep resources alive (false by default)
-     * @returns A promise with the picking results
+     * @returns A promise with the picking results. Always returns an array with the same length as the number of coordinates. The mesh or null at the the index where no mesh was picked.
      */
     public async multiPickAsync(xy: { x: number; y: number }[], disposeWhenDone = false): Promise<Nullable<IGPUMultiPickingInfo>> {
         if (!this._pickableMeshes || this._pickableMeshes.length === 0) {
@@ -404,6 +406,7 @@ export class GPUPicker {
             Promise.resolve([await this.pickAsync(xy[0].x, xy[0].y, disposeWhenDone)]);
         }
 
+        // get min, max to do a partial cut
         let minX = xy[0].x;
         let maxX = xy[0].x;
         let minY = xy[0].y;
@@ -426,15 +429,21 @@ export class GPUPicker {
         maxX = (devicePixelRatio * maxX) >> 0;
         minY = (devicePixelRatio * minY) >> 0;
         maxY = (devicePixelRatio * maxY) >> 0;
-        const w = maxX - minX;
-        const h = maxY - minY;
+
+        let w = maxX - minX;
+        let h = maxY - minY;
+        w = w === 0 ? 1 : w;
+        h = h === 0 ? 1 : h;
 
         const rttSizeW = engine.getRenderWidth();
         const rttSizeH = engine.getRenderHeight();
 
-        // if (!this._readbuffer) {
-        this._readbuffer = new Uint8Array(engine.isWebGPU ? 256 : 4 * w * h); // Because of block alignment in WebGPU
-        // }
+        const partialCutH = rttSizeH - maxY - 1;
+
+        if (!this._readbuffer || this._readbuffer.length < 4 * w * h) {
+            // TODO: calc webgpu Math.ceil(bytesPerRow / 256) * 256
+            this._readbuffer = new Uint8Array(engine.isWebGPU ? 256 : 4 * w * h); // Because of block alignment in WebGPU
+        }
 
         // Do we need to rebuild the RTT?
         const size = this._pickingTexure!.getSize();
@@ -451,22 +460,13 @@ export class GPUPicker {
         }
 
         this._meshRenderingCount = 0;
-
-        // if (x < 0 || y < 0 || x >= rttSizeW || y >= rttSizeH) {
-        //     return Promise.resolve(null);
-        // }
-
-        // Invert Y
-        minY = rttSizeH - maxY;
-        maxY = rttSizeH - minY;
-
         this._pickingTexure!.clearColor = new Color4(0, 0, 0, 0);
 
         scene.customRenderTargets.push(this._pickingTexure!);
         this._pickingTexure!.onBeforeRender = () => {
             // Enable scissor
             if ((engine as WebGPUEngine | Engine).enableScissor) {
-                (engine as WebGPUEngine | Engine).enableScissor(minX, minY, w, h);
+                (engine as WebGPUEngine | Engine).enableScissor(minX, partialCutH, w, h);
             }
         };
 
@@ -481,7 +481,7 @@ export class GPUPicker {
                     reject();
                 }
 
-                const pickedMeshes: AbstractMesh[] = [];
+                const pickedMeshes: Nullable<AbstractMesh>[] = [];
                 const thinInstanceIndexes: number[] = [];
                 const wasSuccessfull = this._meshRenderingCount > 0;
 
@@ -493,7 +493,16 @@ export class GPUPicker {
                     }
 
                     // Do the actual picking
-                    if (await this._readTexturePixelsAsync(minX, minY, w, h)) {
+                    if (await this._readTexturePixelsAsync(minX, partialCutH, w, h)) {
+                        // if (await this._readTexturePixelsAsync(0, 0, rttSizeW, rttSizeH)) {
+                        // eslint-disable-next-line no-console
+                        const idxs = [];
+                        for (let i = 0; i < this._readbuffer.length; i++) {
+                            if (this._readbuffer[i] > 0) {
+                                idxs.push(i);
+                            }
+                        }
+
                         for (let i = 0; i < xy.length; i++) {
                             let x = xy[i].x;
                             let y = xy[i].y;
@@ -506,9 +515,10 @@ export class GPUPicker {
                                 continue;
                             }
 
-                            // Invert Y
-                            y = rttSizeH - y;
-                            const offset = (x - minX + w * (y - minY)) * 3;
+                            let offsetX = x - minX - 1;
+                            offsetX = offsetX < 0 ? 0 : offsetX;
+                            const offset = offsetX * 4 + (maxY - y) * w * 4;
+                            // eslint-disable-next-line no-console
 
                             const r = this._readbuffer[offset];
                             const g = this._readbuffer[offset + 1];
@@ -516,11 +526,15 @@ export class GPUPicker {
                             const colorId = (r << 16) + (g << 8) + b;
 
                             // Thin?
-                            if (this._thinIdMap[colorId]) {
-                                pickedMeshes.push(this._pickableMeshes[this._thinIdMap[colorId].meshId]);
-                                thinInstanceIndexes.push(this._thinIdMap[colorId].thinId);
+                            if (colorId > 0) {
+                                if (this._thinIdMap[colorId]) {
+                                    pickedMeshes.push(this._pickableMeshes[this._thinIdMap[colorId].meshId]);
+                                    thinInstanceIndexes.push(this._thinIdMap[colorId].thinId);
+                                } else {
+                                    pickedMeshes.push(this._pickableMeshes[this._idMap[colorId]]);
+                                }
                             } else {
-                                pickedMeshes.push(this._pickableMeshes[this._idMap[colorId]]);
+                                pickedMeshes.push(null);
                             }
                         }
                     }
