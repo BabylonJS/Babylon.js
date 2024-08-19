@@ -9,6 +9,17 @@ import { InteractivityPathToObjectConverter } from "./interactivityPathToObjectC
 
 const NAME = "KHR_interactivity";
 
+declare module "../../glTFFileLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface GLTFLoaderExtensionOptions {
+        /**
+         * Defines options for the KHR_interactivity extension.
+         */
+        // NOTE: Don't use NAME here as it will break the UMD type declarations.
+        ["KHR_interactivity"]: {};
+    }
+}
+
 /**
  * Loader extension for KHR_interactivity
  */

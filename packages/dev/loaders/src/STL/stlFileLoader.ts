@@ -17,7 +17,7 @@ declare module "core/Loading/sceneLoader" {
         /**
          * Defines options for the stl loader.
          */
-        [PLUGIN_STL]?: {};
+        [PLUGIN_STL]: {};
     }
 }
 
