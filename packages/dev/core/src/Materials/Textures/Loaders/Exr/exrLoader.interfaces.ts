@@ -72,9 +72,9 @@ export interface IEXRDecoder {
     type: number;
     uncompress: Nullable<(decoder: IEXRDecoder) => DataView>;
     getter: (dataView: DataView, offset: DataCursor) => number;
-    format: null;
+    format: number;
     outputChannels: number;
     decodeChannels: IDecodeChannel;
     blockCount: Nullable<number>;
-    //   colorSpace: LinearSRGBColorSpace;
+    linearSpace: boolean;
 }

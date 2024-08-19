@@ -9,9 +9,11 @@ import { Constants } from "core/Engines";
 
 /* Inspired by https://github.com/sciecode/three.js/blob/dev/examples/jsm/loaders/EXRLoader.js */
 
+const DefaultOutputType: OutputType = OutputType.HalfFloatType;
+
 /**
  * Loader for .exr file format
- * #4RN0VF#141: 2d exr
+ * #4RN0VF#143: 2d EXR
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class _ExrTextureLoader implements IInternalTextureLoader {
@@ -51,7 +53,7 @@ export class _ExrTextureLoader implements IInternalTextureLoader {
 
         const offset = { value: 0 };
         const header = GetExrHeader(dataView, offset);
-        const decoder = CreateDecoder(header, dataView, offset, OutputType.FloatType);
+        const decoder = CreateDecoder(header, dataView, offset, DefaultOutputType);
 
         const tmpOffset = { value: 0 };
 
@@ -101,10 +103,19 @@ export class _ExrTextureLoader implements IInternalTextureLoader {
         const height = header.dataWindow.yMax - header.dataWindow.yMin + 1;
         callback(width, height, texture.generateMipMaps, false, () => {
             const engine = texture.getEngine();
-            texture.format = Constants.TEXTUREFORMAT_RGBA;
-            texture.type = Constants.TEXTURETYPE_FLOAT;
+            texture.format = header.format;
+            switch (DefaultOutputType) {
+                case OutputType.FloatType:
+                    texture.type = Constants.TEXTURETYPE_FLOAT;
+                    break;
+                case OutputType.HalfFloatType:
+                    texture.type = Constants.TEXTURETYPE_HALF_FLOAT;
+                    break;
+            }
+            texture.invertY = false;
+            texture._gammaSpace = !header.linearSpace;
             if (decoder.byteArray) {
-                engine._uploadDataToTextureDirectly(texture, decoder.byteArray);
+                engine._uploadDataToTextureDirectly(texture, decoder.byteArray, 0, 0, undefined, true);
             }
         });
     }

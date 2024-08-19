@@ -2,6 +2,7 @@ import type { DataCursor } from "./exrLoader.core";
 import { CompressionCodes, DecodeFloat32, ParseFloat16, ParseFloat32, ParseInt64, ParseUint16 } from "./exrLoader.core";
 import { UncompressPIZ, UncompressRAW } from "./exrLoader.compression";
 import { FLOAT32_SIZE, INT16_SIZE, type IEXRDecoder, type IEXRHeader } from "./exrLoader.interfaces";
+import { Constants } from "core/Engines/constants";
 
 export enum OutputType {
     FloatType,
@@ -27,12 +28,12 @@ export function CreateDecoder(header: IEXRHeader, dataView: DataView, offset: Da
         type: 0,
         uncompress: null,
         getter: () => 0,
-        format: null,
+        format: Constants.TEXTUREFORMAT_RGBA,
         outputChannels: 0,
         decodeChannels: {},
         blockCount: null,
         byteArray: null,
-        //  colorSpace: LinearSRGBColorSpace,
+        linearSpace: false,
     };
 
     switch (header.compression) {
@@ -155,7 +156,7 @@ export function CreateDecoder(header: IEXRHeader, dataView: DataView, offset: Da
 
             // Fill initially with 1s for the alpha value if the texture is not RGBA, RGB values will be overwritten
             if (fillAlpha) {
-                decoder.byteArray.fill(1, 0, size);
+                // decoder.byteArray.fill(1, 0, size);
             }
 
             break;
@@ -190,11 +191,11 @@ export function CreateDecoder(header: IEXRHeader, dataView: DataView, offset: Da
     }
 
     if (decoder.outputChannels == 4) {
-        // decoder.format = RGBAFormat;
-        // decoder.colorSpace = LinearSRGBColorSpace;
+        decoder.format = Constants.TEXTUREFORMAT_RGBA;
+        decoder.linearSpace = true;
     } else {
-        // decoder.format = RedFormat;
-        //decoder.colorSpace = NoColorSpace;
+        decoder.format = Constants.TEXTUREFORMAT_R;
+        decoder.linearSpace = false;
     }
 
     return decoder;
