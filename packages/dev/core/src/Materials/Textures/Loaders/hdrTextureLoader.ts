@@ -2,7 +2,6 @@ import { RGBE_ReadHeader, RGBE_ReadPixels } from "../../../Misc/HighDynamicRange
 import type { InternalTexture } from "../../../Materials/Textures/internalTexture";
 import type { IInternalTextureLoader } from "./internalTextureLoader";
 import { Constants } from "../../../Engines/constants";
-import { AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
  * Implementation of the HDR Texture Loader.

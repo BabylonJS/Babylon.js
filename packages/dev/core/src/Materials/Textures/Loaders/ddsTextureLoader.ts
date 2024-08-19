@@ -6,7 +6,6 @@ import type { DDSInfo } from "../../../Misc/dds";
 import { DDSTools } from "../../../Misc/dds";
 
 import "../../../Engines/Extensions/engine.cubeTexture";
-import { AbstractEngine } from "core/Engines/abstractEngine";
 import type { Engine } from "core/Engines/engine";
 
 /**

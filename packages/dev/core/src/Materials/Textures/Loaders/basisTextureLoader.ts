@@ -3,7 +3,6 @@ import type { InternalTexture } from "../../../Materials/Textures/internalTextur
 import type { IInternalTextureLoader } from "./internalTextureLoader";
 import { LoadTextureFromTranscodeResult, TranscodeAsync } from "../../../Misc/basis";
 import { Tools } from "../../../Misc/tools";
-import { AbstractEngine } from "../../../Engines/abstractEngine";
 
 import "../../../Engines/Extensions/engine.cubeTexture";
 

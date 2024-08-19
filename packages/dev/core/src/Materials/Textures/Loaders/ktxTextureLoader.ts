@@ -7,7 +7,6 @@ import { Logger } from "../../../Misc/logger";
 import { Constants } from "../../../Engines/constants";
 
 import "../../../Engines/Extensions/engine.cubeTexture";
-import { AbstractEngine } from "core/Engines/abstractEngine";
 import type { Engine } from "core/Engines/engine";
 
 function mapSRGBToLinear(format: number): Nullable<number> {
