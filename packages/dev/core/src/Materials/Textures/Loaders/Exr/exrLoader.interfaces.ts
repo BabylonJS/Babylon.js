@@ -77,4 +77,5 @@ export interface IEXRDecoder {
     decodeChannels: IDecodeChannel;
     blockCount: Nullable<number>;
     linearSpace: boolean;
+    textureType: number;
 }

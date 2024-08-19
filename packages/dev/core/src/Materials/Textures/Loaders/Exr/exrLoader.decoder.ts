@@ -1,5 +1,5 @@
 import type { DataCursor } from "./exrLoader.core";
-import { CompressionCodes, DecodeFloat32, ParseFloat16, ParseFloat32, ParseInt64, ParseUint16 } from "./exrLoader.core";
+import { CompressionCodes, DecodeFloat32, ParseFloat16, ParseFloat32, ParseInt32, ParseInt64, ParseUint16, ParseUint32 } from "./exrLoader.core";
 import { UncompressPIZ, UncompressRAW } from "./exrLoader.compression";
 import { FLOAT32_SIZE, INT16_SIZE, type IEXRDecoder, type IEXRHeader } from "./exrLoader.interfaces";
 import { Constants } from "core/Engines/constants";
@@ -34,6 +34,7 @@ export function CreateDecoder(header: IEXRHeader, dataView: DataView, offset: Da
         blockCount: null,
         byteArray: null,
         linearSpace: false,
+        textureType: 0,
     };
 
     switch (header.compression) {
@@ -153,6 +154,7 @@ export function CreateDecoder(header: IEXRHeader, dataView: DataView, offset: Da
     switch (outputType) {
         case OutputType.FloatType:
             decoder.byteArray = new Float32Array(size);
+            decoder.textureType = Constants.TEXTURETYPE_FLOAT;
 
             // Fill initially with 1s for the alpha value if the texture is not RGBA, RGB values will be overwritten
             if (fillAlpha) {
@@ -163,6 +165,7 @@ export function CreateDecoder(header: IEXRHeader, dataView: DataView, offset: Da
 
         case OutputType.HalfFloatType:
             decoder.byteArray = new Uint16Array(size);
+            decoder.textureType = Constants.TEXTURETYPE_HALF_FLOAT;
 
             if (fillAlpha) decoder.byteArray.fill(0x3c00, 0, size); // Uint16Array holds half float data, 0x3C00 is 1
 
@@ -199,4 +202,49 @@ export function CreateDecoder(header: IEXRHeader, dataView: DataView, offset: Da
     }
 
     return decoder;
+}
+
+export function ScanData(decoder: IEXRDecoder, header: IEXRHeader, dataView: DataView, offset: DataCursor): void {
+    const tmpOffset = { value: 0 };
+
+    for (let scanlineBlockIdx = 0; scanlineBlockIdx < decoder.height / decoder.scanlineBlockSize; scanlineBlockIdx++) {
+        const line = ParseInt32(dataView, offset) - header.dataWindow.yMin; // line_no
+        decoder.size = ParseUint32(dataView, offset); // data_len
+        decoder.lines = line + decoder.scanlineBlockSize > decoder.height ? decoder.height - line : decoder.scanlineBlockSize;
+
+        const isCompressed = decoder.size < decoder.lines * decoder.bytesPerLine;
+        const viewer = isCompressed && decoder.uncompress ? decoder.uncompress(decoder) : UncompressRAW(decoder);
+
+        offset.value += decoder.size;
+
+        for (let line_y = 0; line_y < decoder.scanlineBlockSize; line_y++) {
+            const scan_y = scanlineBlockIdx * decoder.scanlineBlockSize;
+            const true_y = line_y + decoder.scanOrder(scan_y);
+            if (true_y >= decoder.height) {
+                continue;
+            }
+
+            const lineOffset = line_y * decoder.bytesPerLine;
+            const outLineOffset = (decoder.height - 1 - true_y) * decoder.outLineWidth;
+
+            for (let channelID = 0; channelID < decoder.channels; channelID++) {
+                const name = header.channels[channelID].name;
+                const lOff = decoder.channelLineOffsets[name];
+                const cOff = decoder.decodeChannels[name];
+
+                if (cOff === undefined) {
+                    continue;
+                }
+
+                tmpOffset.value = lineOffset + lOff;
+
+                for (let x = 0; x < decoder.width; x++) {
+                    const outIndex = outLineOffset + x * decoder.outputChannels + cOff;
+                    if (decoder.byteArray) {
+                        decoder.byteArray[outIndex] = decoder.getter(viewer, tmpOffset);
+                    }
+                }
+            }
+        }
+    }
 }
