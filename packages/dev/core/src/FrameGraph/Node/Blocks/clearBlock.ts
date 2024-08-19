@@ -32,7 +32,7 @@ export class RenderGraphClearBlock extends NodeRenderGraphBlock {
     }
 
     /** Gets or sets the clear color */
-    @editableInPropertyPage("Color", PropertyTypeForEdition.Color4, "PROPERTIES")
+    @editableInPropertyPage("Color", PropertyTypeForEdition.Color4, "PROPERTIES", { notifiers: { update: false } })
     public get color(): Color4 {
         return this._frameGraphTask.color;
     }
@@ -42,7 +42,7 @@ export class RenderGraphClearBlock extends NodeRenderGraphBlock {
     }
 
     /** Gets or sets a boolean indicating whether the color part of the texture should be cleared. */
-    @editableInPropertyPage("Clear color", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    @editableInPropertyPage("Clear color", PropertyTypeForEdition.Boolean, "PROPERTIES", { notifiers: { update: false } })
     public get clearColor(): boolean {
         return !!this._frameGraphTask.clearColor;
     }
@@ -52,7 +52,7 @@ export class RenderGraphClearBlock extends NodeRenderGraphBlock {
     }
 
     /** Gets or sets a boolean indicating whether the depth part of the texture should be cleared. */
-    @editableInPropertyPage("Clear depth", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    @editableInPropertyPage("Clear depth", PropertyTypeForEdition.Boolean, "PROPERTIES", { notifiers: { update: false } })
     public get clearDepth(): boolean {
         return !!this._frameGraphTask.clearDepth;
     }
@@ -62,7 +62,7 @@ export class RenderGraphClearBlock extends NodeRenderGraphBlock {
     }
 
     /** Gets or sets a boolean indicating whether the stencil part of the texture should be cleared. */
-    @editableInPropertyPage("Clear stencil", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    @editableInPropertyPage("Clear stencil", PropertyTypeForEdition.Boolean, "PROPERTIES", { notifiers: { update: false } })
     public get clearStencil(): boolean {
         return !!this._frameGraphTask.clearStencil;
     }

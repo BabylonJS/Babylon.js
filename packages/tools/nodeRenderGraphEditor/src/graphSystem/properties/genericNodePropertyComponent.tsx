@@ -8,6 +8,7 @@ import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
+import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
 import type { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
 import type { IEditablePropertyListOption } from "core/Decorators/nodeDecorator";
 import { PropertyTypeForEdition, type IEditablePropertyOption, type IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
@@ -194,6 +195,19 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                             target={block}
                             propertyName={propertyName}
                             onSelect={() => this.forceRebuild(propertyName, options.notifiers)}
+                        />
+                    );
+                    break;
+                }
+                case PropertyTypeForEdition.Color4: {
+                    components.push(
+                        <Color4LineComponent
+                            key={`color4-${propertyName}`}
+                            lockObject={this.props.stateManager.lockObject}
+                            label={displayName}
+                            propertyName={propertyName}
+                            target={block}
+                            onChange={() => this.forceRebuild(propertyName, options.notifiers)}
                         />
                     );
                     break;
