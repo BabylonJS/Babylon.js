@@ -1,9 +1,17 @@
 import type { Nullable } from "core/types";
 import type { InternalTexture } from "../internalTexture";
 import type { IInternalTextureLoader } from "./internalTextureLoader";
+import { GetExrHeader } from "./Exr/exrLoader.header";
+import { CreateDecoder, OutputType } from "./Exr/exrLoader.decoder";
+import { ParseInt32, ParseUint32 } from "./Exr/exrLoader.core";
+import { UncompressRAW } from "./Exr/exrLoader.compression";
+import { Constants } from "core/Engines";
+
+/* Inspired by https://github.com/sciecode/three.js/blob/dev/examples/jsm/loaders/EXRLoader.js */
 
 /**
  * Loader for .exr file format
+ * #4RN0VF#141: 2d exr
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class _ExrTextureLoader implements IInternalTextureLoader {
@@ -38,5 +46,66 @@ export class _ExrTextureLoader implements IInternalTextureLoader {
         data: ArrayBufferView,
         texture: InternalTexture,
         callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, failedLoading?: boolean) => void
-    ): void {}
+    ): void {
+        const dataView = new DataView(data.buffer);
+
+        const offset = { value: 0 };
+        const header = GetExrHeader(dataView, offset);
+        const decoder = CreateDecoder(header, dataView, offset, OutputType.FloatType);
+
+        const tmpOffset = { value: 0 };
+
+        for (let scanlineBlockIdx = 0; scanlineBlockIdx < decoder.height / decoder.scanlineBlockSize; scanlineBlockIdx++) {
+            const line = ParseInt32(dataView, offset) - header.dataWindow.yMin; // line_no
+            decoder.size = ParseUint32(dataView, offset); // data_len
+            decoder.lines = line + decoder.scanlineBlockSize > decoder.height ? decoder.height - line : decoder.scanlineBlockSize;
+
+            const isCompressed = decoder.size < decoder.lines * decoder.bytesPerLine;
+            const viewer = isCompressed && decoder.uncompress ? decoder.uncompress(decoder) : UncompressRAW(decoder);
+
+            offset.value += decoder.size;
+
+            for (let line_y = 0; line_y < decoder.scanlineBlockSize; line_y++) {
+                const scan_y = scanlineBlockIdx * decoder.scanlineBlockSize;
+                const true_y = line_y + decoder.scanOrder(scan_y);
+                if (true_y >= decoder.height) {
+                    continue;
+                }
+
+                const lineOffset = line_y * decoder.bytesPerLine;
+                const outLineOffset = (decoder.height - 1 - true_y) * decoder.outLineWidth;
+
+                for (let channelID = 0; channelID < decoder.channels; channelID++) {
+                    const name = header.channels[channelID].name;
+                    const lOff = decoder.channelLineOffsets[name];
+                    const cOff = decoder.decodeChannels[name];
+
+                    if (cOff === undefined) {
+                        continue;
+                    }
+
+                    tmpOffset.value = lineOffset + lOff;
+
+                    for (let x = 0; x < decoder.width; x++) {
+                        const outIndex = outLineOffset + x * decoder.outputChannels + cOff;
+                        if (decoder.byteArray) {
+                            decoder.byteArray[outIndex] = decoder.getter(viewer, tmpOffset);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Updating texture
+        const width = header.dataWindow.xMax - header.dataWindow.xMin + 1;
+        const height = header.dataWindow.yMax - header.dataWindow.yMin + 1;
+        callback(width, height, texture.generateMipMaps, false, () => {
+            const engine = texture.getEngine();
+            texture.format = Constants.TEXTUREFORMAT_RGBA;
+            texture.type = Constants.TEXTURETYPE_FLOAT;
+            if (decoder.byteArray) {
+                engine._uploadDataToTextureDirectly(texture, decoder.byteArray);
+            }
+        });
+    }
 }
