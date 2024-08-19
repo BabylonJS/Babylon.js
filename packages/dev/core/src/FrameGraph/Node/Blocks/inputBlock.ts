@@ -233,6 +233,7 @@ export class RenderGraphInputBlock extends NodeRenderGraphBlock {
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
         this._type = serializationObject.type;
+        this.output.type = this._type;
         this.isExternal = serializationObject.isExternal;
         if (serializationObject.creationOptions) {
             this.creationOptions = serializationObject.creationOptions;

@@ -77,6 +77,8 @@ export class BlockTools {
             // case NodeRenderGraphBlockConnectionPointTypes.:
             //     color = "#f28e0a";
             //     break;
+            default:
+                throw new Error("Unknown connection point type: " + type);
         }
 
         return color;
