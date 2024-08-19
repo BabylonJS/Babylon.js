@@ -521,6 +521,21 @@ export class GPUPicker {
 
                     // Do the actual picking
                     if (await this._readTexturePixelsAsync(minX, partialCutH, w, h)) {
+                        const idxs = [];
+                        for (let i = 0; i < this._readbuffer.length; i += 4) {
+                            const r = this._readbuffer[i];
+                            const g = this._readbuffer[i + 1];
+                            const b = this._readbuffer[i + 2];
+                            const colorId = (r << 16) + (g << 8) + b;
+                            if (colorId > 0) {
+                                idxs.push({
+                                    i,
+                                    colorId,
+                                });
+                            }
+                        }
+                        // eslint-disable-next-line no-console
+                        console.log("idxs", idxs, "buffer", w, "x", h, this._readbuffer);
                         for (let i = 0; i < xy.length; i++) {
                             let x = xy[i].x;
                             let y = xy[i].y;
@@ -534,14 +549,19 @@ export class GPUPicker {
                                 continue;
                             }
 
-                            let offsetX = x - minX - 1;
+                            let offsetX = x - minX;
                             offsetX = offsetX < 0 ? 0 : offsetX;
-                            const offset = offsetX * 4 + (maxY - y) * w * 4;
+                            let offsetY = maxY - y - 1;
+                            offsetY = offsetY < 0 ? 0 : offsetY;
+                            const offset = offsetX * 4 + offsetY * w * 4;
 
                             const r = this._readbuffer[offset];
                             const g = this._readbuffer[offset + 1];
                             const b = this._readbuffer[offset + 2];
                             const colorId = (r << 16) + (g << 8) + b;
+
+                            // eslint-disable-next-line no-console
+                            console.log("i", i, "colorId", colorId, "rgb", r, g, b, "x", x, "y", y, "min-max-X", minX, maxX, "min-max-Y", minY, maxY, "offset", offset);
 
                             // Thin?
                             if (colorId > 0) {
@@ -554,7 +574,7 @@ export class GPUPicker {
                                         // eslint-disable-next-line no-console
                                         console.warn("No pickableMesh for colorId", colorId);
                                     }
-                                    pickedMeshes.push();
+                                    pickedMeshes.push(pm);
                                 }
                             } else {
                                 pickedMeshes.push(null);
