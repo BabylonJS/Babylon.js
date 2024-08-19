@@ -549,7 +549,12 @@ export class GPUPicker {
                                     pickedMeshes.push(this._pickableMeshes[this._thinIdMap[colorId].meshId]);
                                     thinInstanceIndexes.push(this._thinIdMap[colorId].thinId);
                                 } else {
-                                    pickedMeshes.push(this._pickableMeshes[this._idMap[colorId]]);
+                                    const pm = this._pickableMeshes[this._idMap[colorId]];
+                                    if (!pm) {
+                                        // eslint-disable-next-line no-console
+                                        console.warn("No pickableMesh for colorId", colorId);
+                                    }
+                                    pickedMeshes.push();
                                 }
                             } else {
                                 pickedMeshes.push(null);
