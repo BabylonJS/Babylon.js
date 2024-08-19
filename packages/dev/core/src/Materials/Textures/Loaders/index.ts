@@ -1,3 +1,4 @@
+export * from "./internalTextureLoader";
 export * from "./ddsTextureLoader";
 export * from "./envTextureLoader";
 export * from "./ktxTextureLoader";
