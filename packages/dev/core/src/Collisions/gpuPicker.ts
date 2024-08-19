@@ -468,8 +468,7 @@ export class GPUPicker {
         const partialCutH = rttSizeH - maxY - 1;
 
         if (!this._readbuffer || this._readbuffer.length < 4 * w * h) {
-            // TODO: calc webgpu Math.ceil(bytesPerRow / 256) * 256
-            this._readbuffer = new Uint8Array(engine.isWebGPU ? 256 : 4 * w * h); // Because of block alignment in WebGPU
+            this._readbuffer = new Uint8Array(engine.isWebGPU ? (4 * rttSizeW * rttSizeH + 255) & ~255 : 4 * rttSizeW * rttSizeH); // Because of block alignment in WebGPU
         }
 
         // Do we need to rebuild the RTT?
@@ -521,21 +520,6 @@ export class GPUPicker {
 
                     // Do the actual picking
                     if (await this._readTexturePixelsAsync(minX, partialCutH, w, h)) {
-                        const idxs = [];
-                        for (let i = 0; i < this._readbuffer.length; i += 4) {
-                            const r = this._readbuffer[i];
-                            const g = this._readbuffer[i + 1];
-                            const b = this._readbuffer[i + 2];
-                            const colorId = (r << 16) + (g << 8) + b;
-                            if (colorId > 0) {
-                                idxs.push({
-                                    i,
-                                    colorId,
-                                });
-                            }
-                        }
-                        // eslint-disable-next-line no-console
-                        console.log("idxs", idxs, "buffer", w, "x", h, this._readbuffer);
                         for (let i = 0; i < xy.length; i++) {
                             let x = xy[i].x;
                             let y = xy[i].y;
@@ -560,21 +544,13 @@ export class GPUPicker {
                             const b = this._readbuffer[offset + 2];
                             const colorId = (r << 16) + (g << 8) + b;
 
-                            // eslint-disable-next-line no-console
-                            console.log("i", i, "colorId", colorId, "rgb", r, g, b, "x", x, "y", y, "min-max-X", minX, maxX, "min-max-Y", minY, maxY, "offset", offset);
-
                             // Thin?
                             if (colorId > 0) {
                                 if (this._thinIdMap[colorId]) {
                                     pickedMeshes.push(this._pickableMeshes[this._thinIdMap[colorId].meshId]);
                                     thinInstanceIndexes.push(this._thinIdMap[colorId].thinId);
                                 } else {
-                                    const pm = this._pickableMeshes[this._idMap[colorId]];
-                                    if (!pm) {
-                                        // eslint-disable-next-line no-console
-                                        console.warn("No pickableMesh for colorId", colorId);
-                                    }
-                                    pickedMeshes.push(pm);
+                                    pickedMeshes.push(this._pickableMeshes[this._idMap[colorId]]);
                                 }
                             } else {
                                 pickedMeshes.push(null);
