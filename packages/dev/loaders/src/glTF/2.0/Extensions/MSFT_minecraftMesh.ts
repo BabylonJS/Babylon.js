@@ -8,6 +8,17 @@ import { GLTFLoader } from "../glTFLoader";
 
 const NAME = "MSFT_minecraftMesh";
 
+declare module "../../glTFFileLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface GLTFLoaderExtensionOptions {
+        /**
+         * Defines options for the MSFT_minecraftMesh extension.
+         */
+        // NOTE: Don't use NAME here as it will break the UMD type declarations.
+        ["MSFT_minecraftMesh"]: {};
+    }
+}
+
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class MSFT_minecraftMesh implements IGLTFLoaderExtension {
