@@ -1,4 +1,5 @@
 export * from "./clearBlock";
+export * from "./copyTextureBlock";
 export * from "./elbowBlock";
 export * from "./inputBlock";
 export * from "./outputBlock";

@@ -8,6 +8,7 @@ import { RenderGraphTeleportOutBlock } from "core/FrameGraph/Node/Blocks/Telepor
 import { BlackAndWhitePostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/blackAndWhitePostProcessBlock";
 import { BloomPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/bloomPostProcessBlock";
 import { RenderGraphClearBlock } from "core/FrameGraph/Node/Blocks/clearBlock";
+import { RenderGraphCopyTextureBlock } from "core/FrameGraph/Node/Blocks/copyTextureBlock";
 
 /**
  * Static class for BlockTools
@@ -34,6 +35,9 @@ export class BlockTools {
             }
             case "ClearBlock": {
                 return new RenderGraphClearBlock("Clear", engine);
+            }
+            case "CopyTextureBlock": {
+                return new RenderGraphCopyTextureBlock("Copy texture", engine);
             }
             case "BlackAndWhitePostProcessBlock": {
                 return new BlackAndWhitePostProcessBlock("Black and White", engine);

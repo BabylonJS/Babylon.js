@@ -6,7 +6,7 @@ import { Color4 } from "../../../Maths/math.color";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
 import type { AbstractEngine } from "../../../Engines/abstractEngine";
 import type { NodeRenderGraphBuildState } from "../nodeRenderGraphBuildState";
-import { FrameGraphClearTextureTask } from "core/FrameGraph/Tasks/clearTextureTask";
+import { FrameGraphClearTextureTask } from "../../../FrameGraph/Tasks/clearTextureTask";
 
 /**
  * Block used to clear a texture

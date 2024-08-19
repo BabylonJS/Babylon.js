@@ -528,7 +528,7 @@ export class NodeRenderGraph {
         this.editorData = null;
 
         // Source
-        const backBuffer = new RenderGraphInputBlock("BackBuffer", this._engine, NodeRenderGraphBlockConnectionPointTypes.TextureBackBuffer);
+        const backBuffer = new RenderGraphInputBlock("BackBuffer color", this._engine, NodeRenderGraphBlockConnectionPointTypes.TextureBackBuffer);
 
         // Clear texture
         const clear = new RenderGraphClearBlock("Clear", this._engine);

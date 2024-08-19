@@ -30,6 +30,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         TeleportOutBlock: "Endpoint for a TeleportInBlock.",
         RenderGraphOutputBlock: "Output block used to gather the final render graph",
         ClearBlock: "Clears a texture",
+        CopyTextureBlock: "Copy a texture to another texture",
         BlackAndWhitePostProcessBlock: "Applies a black and white post process",
         BloomPostProcessBlock: "Apply a bloom post process",
     };
@@ -119,7 +120,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Inputs: ["TextureBlock", "TextureBackBufferBlock", "TextureBackBufferDepthStencilBlock"],
             Post_Processes: ["BlackAndWhitePostProcessBlock", "BloomPostProcessBlock"],
             Misc: ["ElbowBlock", "TeleportInBlock", "TeleportOutBlock"],
-            Textures: ["ClearBlock"],
+            Textures: ["ClearBlock", "CopyTextureBlock"],
             Output_Nodes: ["RenderGraphOutputBlock"],
         };
 
