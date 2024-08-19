@@ -521,14 +521,6 @@ export class GPUPicker {
 
                     // Do the actual picking
                     if (await this._readTexturePixelsAsync(minX, partialCutH, w, h)) {
-                        // if (await this._readTexturePixelsAsync(0, 0, rttSizeW, rttSizeH)) {
-                        const idxs = [];
-                        for (let i = 0; i < this._readbuffer.length; i++) {
-                            if (this._readbuffer[i] > 0) {
-                                idxs.push(i);
-                            }
-                        }
-
                         for (let i = 0; i < xy.length; i++) {
                             let x = xy[i].x;
                             let y = xy[i].y;
@@ -538,6 +530,7 @@ export class GPUPicker {
                             y = (devicePixelRatio * y) >> 0;
 
                             if (x < 0 || y < 0 || x >= rttSizeW || y >= rttSizeH) {
+                                pickedMeshes.push(null);
                                 continue;
                             }
 
