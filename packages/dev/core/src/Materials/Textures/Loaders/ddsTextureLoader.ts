@@ -104,6 +104,3 @@ export class _DDSTextureLoader implements IInternalTextureLoader {
         });
     }
 }
-
-// Register the loader.
-AbstractEngine._TextureLoaders.push(new _DDSTextureLoader());

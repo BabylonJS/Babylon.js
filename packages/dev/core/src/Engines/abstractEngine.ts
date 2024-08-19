@@ -197,9 +197,6 @@ export type PrepareTextureFunction = (
  * The parent class for specialized engines (WebGL, WebGPU)
  */
 export abstract class AbstractEngine {
-    /** @internal */
-    public static _TextureLoaders: IInternalTextureLoader[] = [];
-
     // States
     /** @internal */
     protected _colorWrite = true;

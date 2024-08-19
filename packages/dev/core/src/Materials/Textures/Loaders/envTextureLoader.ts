@@ -70,6 +70,3 @@ export class _ENVTextureLoader implements IInternalTextureLoader {
         throw ".env not supported in 2d.";
     }
 }
-
-// Register the loader.
-AbstractEngine._TextureLoaders.push(new _ENVTextureLoader());

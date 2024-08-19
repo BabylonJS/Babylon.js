@@ -56,6 +56,3 @@ export class _HDRTextureLoader implements IInternalTextureLoader {
         });
     }
 }
-
-// Register the loader.
-AbstractEngine._TextureLoaders.push(new _HDRTextureLoader());

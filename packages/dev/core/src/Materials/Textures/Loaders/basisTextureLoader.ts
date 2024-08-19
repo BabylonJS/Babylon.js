@@ -105,6 +105,3 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
             });
     }
 }
-
-// Register the loader.
-AbstractEngine._TextureLoaders.push(new _BasisTextureLoader());
