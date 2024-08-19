@@ -241,7 +241,7 @@ export class PostProcess implements IFrameGraphTask {
 
     public sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
 
-    public outputTexture?: FrameGraphTaskOutputReference | TextureHandle;
+    public destinationTexture?: FrameGraphTaskOutputReference | TextureHandle;
 
     public skipCreationOfDisabledPasses = false;
 
@@ -1203,11 +1203,15 @@ export class PostProcess implements IFrameGraphTask {
 
     public recordFrameGraph(frameGraph: FrameGraph): void {
         if (this.sourceTexture === undefined) {
-            throw new Error("sourceTexture is required");
+            throw new Error("PostProcess: sourceTexture is required");
         }
 
         const sourceTextureHandle = frameGraph.getTextureHandle(this.sourceTexture);
-        const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(this.outputTexture, `${this.name} Output`, frameGraph.getTextureCreationOptions(this.sourceTexture));
+        const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(
+            this.destinationTexture,
+            `${this.name} Destination`,
+            frameGraph.getTextureCreationOptions(this.sourceTexture)
+        );
 
         const pass = frameGraph.addRenderPass(this.name);
 

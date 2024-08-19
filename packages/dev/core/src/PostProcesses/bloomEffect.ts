@@ -27,7 +27,7 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
 
     public sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
 
-    public outputTexture?: FrameGraphTaskOutputReference | TextureHandle;
+    public destinationTexture?: FrameGraphTaskOutputReference | TextureHandle;
 
     public readonly outputTextureReference: FrameGraphTaskOutputReference = [this, "output"];
 
@@ -167,7 +167,7 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
 
     public recordFrameGraph(frameGraph: FrameGraph): void {
         if (this.sourceTexture === undefined) {
-            throw new Error("sourceTexture is required");
+            throw new Error("BloomEffect: sourceTexture is required");
         }
 
         const sourceTextureDescription = frameGraph.getTextureDescription(this.sourceTexture);
@@ -197,30 +197,34 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
         const downscaleTextureHandle = frameGraph.createRenderTargetTexture(textureCreationOptions.options.label, textureCreationOptions);
 
         this._downscale.sourceTexture = this.sourceTexture;
-        this._downscale.outputTexture = downscaleTextureHandle;
+        this._downscale.destinationTexture = downscaleTextureHandle;
         this._downscale.recordFrameGraph(frameGraph);
 
         textureCreationOptions.options.label = `${this.name} Blur X`;
         const blurXTextureHandle = frameGraph.createRenderTargetTexture(textureCreationOptions.options.label, textureCreationOptions);
 
         this._blurX.sourceTexture = downscaleTextureHandle;
-        this._blurX.outputTexture = blurXTextureHandle;
+        this._blurX.destinationTexture = blurXTextureHandle;
         this._blurX.recordFrameGraph(frameGraph);
 
         textureCreationOptions.options.label = `${this.name} Blur Y`;
         const blurYTextureHandle = frameGraph.createRenderTargetTexture(textureCreationOptions.options.label, textureCreationOptions);
 
         this._blurY.sourceTexture = blurXTextureHandle;
-        this._blurY.outputTexture = blurYTextureHandle;
+        this._blurY.destinationTexture = blurYTextureHandle;
         this._blurY.recordFrameGraph(frameGraph);
 
         const sourceTextureHandle = frameGraph.getTextureHandle(this.sourceTexture);
-        const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(this.outputTexture, `${this.name} Output`, frameGraph.getTextureCreationOptions(this.sourceTexture));
+        const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(
+            this.destinationTexture,
+            `${this.name} Output`,
+            frameGraph.getTextureCreationOptions(this.sourceTexture)
+        );
 
         this._merge.sourceTexture = this.sourceTexture;
         this._merge.sourceSamplingMode = this.sourceSamplingMode;
         this._merge.sourceBlurTexture = blurYTextureHandle;
-        this._merge.outputTexture = outputTextureHandle;
+        this._merge.destinationTexture = outputTextureHandle;
         this._merge.recordFrameGraph(frameGraph);
 
         const passDisabled = frameGraph.addRenderPass(this.name + "_disabled", true);

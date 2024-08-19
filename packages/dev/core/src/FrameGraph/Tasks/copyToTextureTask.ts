@@ -7,7 +7,7 @@ export class FrameGraphCopyToTextureTask implements IFrameGraphTask {
 
     public sourceTexture?: FrameGraphTaskOutputReference | TextureHandle;
 
-    public outputTexture?: FrameGraphTaskOutputReference | TextureHandle;
+    public destinationTexture?: FrameGraphTaskOutputReference | TextureHandle;
 
     public readonly outputTextureReference: FrameGraphTaskOutputReference = [this, "output"];
 
@@ -18,14 +18,14 @@ export class FrameGraphCopyToTextureTask implements IFrameGraphTask {
     }
 
     public recordFrameGraph(frameGraph: FrameGraph) {
-        if (this.sourceTexture === undefined || this.outputTexture === undefined) {
-            throw new Error("sourceTexture and outputTexture are required");
+        if (this.sourceTexture === undefined || this.destinationTexture === undefined) {
+            throw new Error("FrameGraphCopyToTextureTask: sourceTexture and destinationTexture are required");
         }
 
         const pass = frameGraph.addRenderPass(this.name);
 
         const sourceTextureHandle = frameGraph.getTextureHandle(this.sourceTexture);
-        const outputTextureHandle = frameGraph.getTextureHandle(this.outputTexture);
+        const outputTextureHandle = frameGraph.getTextureHandle(this.destinationTexture);
 
         pass.useTexture(sourceTextureHandle);
         pass.setRenderTarget(outputTextureHandle);

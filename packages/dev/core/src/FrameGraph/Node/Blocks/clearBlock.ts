@@ -101,7 +101,7 @@ export class RenderGraphClearBlock extends NodeRenderGraphBlock {
 
         const textureConnectedPoint = this.texture.connectedPoint;
         if (textureConnectedPoint && textureConnectedPoint.valueType === NodeRenderGraphBlockConnectionPointValueTypes.Texture) {
-            this._frameGraphTask.outputTexture = textureConnectedPoint.value!;
+            this._frameGraphTask.destinationTexture = textureConnectedPoint.value!;
         }
 
         state.frameGraph.addTask(this._frameGraphTask);

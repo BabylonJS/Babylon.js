@@ -111,7 +111,7 @@ export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
 
         const destinationConnectedPoint = this.destination.connectedPoint;
         if (destinationConnectedPoint && destinationConnectedPoint.valueType === NodeRenderGraphBlockConnectionPointValueTypes.Texture) {
-            this._frameGraphTask.outputTexture = destinationConnectedPoint.value;
+            this._frameGraphTask.destinationTexture = destinationConnectedPoint.value;
         }
 
         state.frameGraph.addTask(this._frameGraphTask);

@@ -14,7 +14,7 @@ export class FrameGraphClearTextureTask implements IFrameGraphTask {
 
     public clearStencil = false;
 
-    public outputTexture?: FrameGraphTaskOutputReference | TextureHandle;
+    public destinationTexture?: FrameGraphTaskOutputReference | TextureHandle;
 
     public readonly outputTextureReference: FrameGraphTaskOutputReference = [this, "output"];
 
@@ -25,11 +25,11 @@ export class FrameGraphClearTextureTask implements IFrameGraphTask {
     }
 
     public recordFrameGraph(frameGraph: FrameGraph) {
-        if (this.outputTexture === undefined) {
-            throw new Error("outputTexture is required");
+        if (this.destinationTexture === undefined) {
+            throw new Error("FrameGraphClearTextureTask: destinationTexture is required");
         }
 
-        const outputTextureHandle = frameGraph.getTextureHandle(this.outputTexture);
+        const outputTextureHandle = frameGraph.getTextureHandle(this.destinationTexture);
 
         const pass = frameGraph.addRenderPass("clear texture");
 

@@ -54,7 +54,7 @@ export class AdvancedDynamicTexture extends DynamicTexture implements IFrameGrap
 
     public disabled = false;
 
-    public outputTexture?: FrameGraphTaskOutputReference | TextureHandle;
+    public destinationTexture?: FrameGraphTaskOutputReference | TextureHandle;
 
     public readonly outputTextureReference: FrameGraphTaskOutputReference = [this, "output"];
 
@@ -1694,11 +1694,11 @@ export class AdvancedDynamicTexture extends DynamicTexture implements IFrameGrap
     }
 
     public recordFrameGraph(frameGraph: FrameGraph): void {
-        if (this.outputTexture === undefined) {
-            throw new Error("outputTexture is required");
+        if (this.destinationTexture === undefined) {
+            throw new Error("AdvancedDynamicTexture: outputTexture is required");
         }
 
-        const outputTextureHandle = frameGraph.getTextureHandle(this.outputTexture);
+        const outputTextureHandle = frameGraph.getTextureHandle(this.destinationTexture);
 
         const pass = frameGraph.addRenderPass(this.name);
 

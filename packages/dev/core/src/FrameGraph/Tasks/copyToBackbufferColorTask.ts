@@ -16,7 +16,7 @@ export class FrameGraphCopyToBackbufferColorTask implements IFrameGraphTask {
 
     public recordFrameGraph(frameGraph: FrameGraph) {
         if (this.sourceTexture === undefined) {
-            throw new Error("sourceTexture is required");
+            throw new Error("FrameGraphCopyToBackbufferColorTask: sourceTexture is required");
         }
 
         const sourceTextureHandle = frameGraph.getTextureHandle(this.sourceTexture);
