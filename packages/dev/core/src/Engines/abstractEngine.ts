@@ -24,7 +24,6 @@ import type { LoadFileError } from "../Misc/fileTools";
 import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import type { IPipelineContext } from "./IPipelineContext";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
-import type { IInternalTextureLoader } from "../Materials/Textures/Loaders/internalTextureLoader";
 import type { InternalTextureCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
 import type { EffectFallbacks } from "../Materials/effectFallbacks";
 import type { IMaterialContext } from "./IMaterialContext";
