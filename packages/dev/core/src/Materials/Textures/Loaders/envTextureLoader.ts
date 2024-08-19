@@ -1,7 +1,7 @@
 import { GetEnvInfo, UploadEnvLevelsAsync, UploadEnvSpherical } from "../../../Misc/environmentTextureTools";
 import type { Nullable } from "../../../types";
 import type { InternalTexture } from "../../../Materials/Textures/internalTexture";
-import type { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
+import type { IInternalTextureLoader } from "./internalTextureLoader";
 import { AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
@@ -14,15 +14,6 @@ export class _ENVTextureLoader implements IInternalTextureLoader {
      * Defines whether the loader supports cascade loading the different faces.
      */
     public readonly supportCascades = false;
-
-    /**
-     * This returns if the loader support the current file information.
-     * @param extension defines the file extension of the file being loaded
-     * @returns true if the loader can load the specified file
-     */
-    public canLoad(extension: string): boolean {
-        return extension.endsWith(".env");
-    }
 
     /**
      * Uploads the cube texture data to the WebGL texture. It has already been bound.
