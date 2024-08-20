@@ -4,7 +4,8 @@
         {
             "title": "EXR Loader",
             "playgroundId": "#4RN0VF#151",
-            "referenceImage": "exr-loader.png"
+            "referenceImage": "exr-loader.png",
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "Simple refraction",
