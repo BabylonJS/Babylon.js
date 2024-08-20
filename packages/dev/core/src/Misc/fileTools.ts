@@ -171,12 +171,16 @@ export const SetCorsBehavior = (url: string | string[], element: { crossOrigin: 
 };
 
 /**
- * Configuration used to load SVG files
+ * Configuration used to load images
+ * @see #DKMEZK#1
  */
-export const SVGSizeConfiguration: Nullable<{
+export const LoadImageConfiguration: {
     width: number;
     height: number;
-}> = null;
+} = {
+    width: 0,
+    height: 0,
+};
 
 /**
  * Loads an image as an HTMLImageElement.
@@ -258,8 +262,12 @@ export const LoadImage = (
     }
 
     const img = new Image();
-    img.width = 1024;
-    img.height = 1024;
+    if (LoadImageConfiguration.width) {
+        img.width = LoadImageConfiguration.width;
+    }
+    if (LoadImageConfiguration.height) {
+        img.height = LoadImageConfiguration.height;
+    }
     SetCorsBehavior(url, img);
 
     const handlersList: { target: any; name: string; handler: any }[] = [];
