@@ -171,6 +171,18 @@ export const SetCorsBehavior = (url: string | string[], element: { crossOrigin: 
 };
 
 /**
+ * Configuration used to load images
+ * @see #DKMEZK#1
+ */
+export const LoadImageConfiguration: {
+    width: number;
+    height: number;
+} = {
+    width: 0,
+    height: 0,
+};
+
+/**
  * Loads an image as an HTMLImageElement.
  * @param input url string, ArrayBuffer, or Blob to load
  * @param onLoad callback called when the image successfully loads
@@ -250,6 +262,12 @@ export const LoadImage = (
     }
 
     const img = new Image();
+    if (LoadImageConfiguration.width) {
+        img.width = LoadImageConfiguration.width;
+    }
+    if (LoadImageConfiguration.height) {
+        img.height = LoadImageConfiguration.height;
+    }
     SetCorsBehavior(url, img);
 
     const handlersList: { target: any; name: string; handler: any }[] = [];
