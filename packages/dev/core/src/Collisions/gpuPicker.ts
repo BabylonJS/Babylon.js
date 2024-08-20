@@ -322,8 +322,6 @@ export class GPUPicker {
             return Promise.resolve(null);
         }
 
-        debugger;
-
         const { x: adjustedX, y: adjustedY, rttSizeW, rttSizeH } = this._prepareForPicking(x, y);
         if (adjustedX < 0 || adjustedY < 0 || adjustedX >= rttSizeW || adjustedY >= rttSizeH) {
             return Promise.resolve(null);
