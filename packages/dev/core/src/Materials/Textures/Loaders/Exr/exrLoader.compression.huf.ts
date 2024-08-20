@@ -19,6 +19,7 @@ interface IGetChar {
     lc: number;
 }
 
+/** @internal */
 export function ReverseLutFromBitmap(bitmap: Uint8Array, lut: Uint16Array) {
     let k = 0;
 
@@ -137,7 +138,7 @@ function HufUnpackEncTable(array: Uint8Array, offset: DataCursor, ni: number, im
 
     for (; im <= iM; im++) {
         if (p.value - offset.value > ni) {
-            return false;
+            return;
         }
 
         let gb = GetBits(6, c, lc, array, p);
@@ -339,6 +340,7 @@ function HufDecode(
     return true;
 }
 
+/** @internal */
 export function HufUncompress(array: Uint8Array, dataView: DataView, offset: DataCursor, nCompressed: number, outBuffer: Uint16Array, nRaw: number) {
     const outOffset: DataCursor = { value: 0 };
     const initialInOffset = offset.value;
@@ -406,6 +408,7 @@ function Wdec16(l: number, h: number) {
     return { a: aa, b: bb };
 }
 
+/** @internal */
 export function Wav2Decode(buffer: Uint16Array, j: number, nx: number, ox: number, ny: number, oy: number, mx: number) {
     const w14 = mx < 1 << 14;
     const n = nx > ny ? ny : nx;
@@ -524,6 +527,7 @@ export function Wav2Decode(buffer: Uint16Array, j: number, nx: number, ox: numbe
     return py;
 }
 
+/** @internal */
 export function ApplyLut(lut: Uint16Array, data: Uint16Array, nData: number) {
     for (let i = 0; i < nData; ++i) {
         data[i] = lut[data[i]];

@@ -1,6 +1,10 @@
 import { ApplyLut, HufUncompress, ReverseLutFromBitmap, Wav2Decode } from "./exrLoader.compression.huf";
-import { ParseUint16, ParseUint32, ParseUint8 } from "./exrLoader.core";
+import { DecodeRunLength } from "./exrLoader.compression.rle";
+import { InterleaveScalar, ParseUint16, ParseUint32, ParseUint8, Predictor } from "./exrLoader.core";
 import { BITMAP_SIZE, INT16_SIZE, USHORT_RANGE, type IEXRDecoder } from "./exrLoader.interfaces";
+
+// FFlate access
+declare const fflate: any;
 
 /**
  * No compression
@@ -9,6 +13,103 @@ import { BITMAP_SIZE, INT16_SIZE, USHORT_RANGE, type IEXRDecoder } from "./exrLo
  */
 export function UncompressRAW(decoder: IEXRDecoder): DataView {
     return new DataView(decoder.array.buffer, decoder.offset.value, decoder.size);
+}
+
+/**
+ * RLE compression
+ * @param decoder defines the decoder to use
+ * @returns a decompressed data view
+ */
+export function UncompressRLE(decoder: IEXRDecoder): DataView {
+    const compressed = decoder.viewer.buffer.slice(decoder.offset.value, decoder.offset.value + decoder.size);
+
+    const rawBuffer = new Uint8Array(DecodeRunLength(compressed));
+    const tmpBuffer = new Uint8Array(rawBuffer.length);
+
+    Predictor(rawBuffer);
+
+    InterleaveScalar(rawBuffer, tmpBuffer);
+
+    return new DataView(tmpBuffer.buffer);
+}
+
+/**
+ * Zip compression
+ * @param decoder defines the decoder to use
+ * @returns a decompressed data view
+ */
+export function UncompressZIP(decoder: IEXRDecoder): DataView {
+    const compressed = decoder.array.slice(decoder.offset.value, decoder.offset.value + decoder.size);
+
+    const rawBuffer = fflate.unzlibSync(compressed);
+    const tmpBuffer = new Uint8Array(rawBuffer.length);
+
+    Predictor(rawBuffer);
+
+    InterleaveScalar(rawBuffer, tmpBuffer);
+
+    return new DataView(tmpBuffer.buffer);
+}
+
+/**
+ * PXR compression
+ * @param decoder defines the decoder to use
+ * @returns a decompressed data view
+ */
+export function UncompressPXR(decoder: IEXRDecoder): DataView {
+    const compressed = decoder.array.slice(decoder.offset.value, decoder.offset.value + decoder.size);
+
+    const rawBuffer = fflate.unzlibSync(compressed);
+
+    const sz = decoder.lines * decoder.channels * decoder.width;
+    const tmpBuffer = decoder.type == 1 ? new Uint16Array(sz) : new Uint32Array(sz);
+
+    let tmpBufferEnd = 0;
+    let writePtr = 0;
+    const ptr = new Array(4);
+
+    for (let y = 0; y < decoder.lines; y++) {
+        for (let c = 0; c < decoder.channels; c++) {
+            let pixel = 0;
+
+            switch (decoder.type) {
+                case 1:
+                    ptr[0] = tmpBufferEnd;
+                    ptr[1] = ptr[0] + decoder.width;
+                    tmpBufferEnd = ptr[1] + decoder.width;
+
+                    for (let j = 0; j < decoder.width; ++j) {
+                        const diff = (rawBuffer[ptr[0]++] << 8) | rawBuffer[ptr[1]++];
+
+                        pixel += diff;
+
+                        tmpBuffer[writePtr] = pixel;
+                        writePtr++;
+                    }
+
+                    break;
+
+                case 2:
+                    ptr[0] = tmpBufferEnd;
+                    ptr[1] = ptr[0] + decoder.width;
+                    ptr[2] = ptr[1] + decoder.width;
+                    tmpBufferEnd = ptr[2] + decoder.width;
+
+                    for (let j = 0; j < decoder.width; ++j) {
+                        const diff = (rawBuffer[ptr[0]++] << 24) | (rawBuffer[ptr[1]++] << 16) | (rawBuffer[ptr[2]++] << 8);
+
+                        pixel += diff;
+
+                        tmpBuffer[writePtr] = pixel;
+                        writePtr++;
+                    }
+
+                    break;
+            }
+        }
+    }
+
+    return new DataView(tmpBuffer.buffer);
 }
 
 /**

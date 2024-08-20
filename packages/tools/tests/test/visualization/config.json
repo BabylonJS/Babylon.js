@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "EXR Loader",
+            "playgroundId": "#4RN0VF#145",
+            "referenceImage": "exr-loader.png"
+        },
+        {
             "title": "Simple refraction",
             "playgroundId": "#22KZUW#652",
             "referenceImage": "simple-refraction.png"

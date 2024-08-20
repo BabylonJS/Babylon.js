@@ -7,3 +7,4 @@ export * from "./hdrTextureLoader";
 export * from "./basisTextureLoader";
 export * from "./exrTextureLoader";
 export * from "./textureLoaderManager";
+export * from "./EXR";

@@ -1,15 +1,20 @@
 import type { DataCursor } from "./exrLoader.core";
 import { CompressionCodes, DecodeFloat32, ParseFloat16, ParseFloat32, ParseInt32, ParseInt64, ParseUint16, ParseUint32 } from "./exrLoader.core";
-import { UncompressPIZ, UncompressRAW } from "./exrLoader.compression";
+import { UncompressPIZ, UncompressPXR, UncompressRAW, UncompressRLE, UncompressZIP } from "./exrLoader.compression";
 import { FLOAT32_SIZE, INT16_SIZE, type IEXRDecoder, type IEXRHeader } from "./exrLoader.interfaces";
 import { Constants } from "core/Engines/constants";
+import { Tools } from "core/Misc/tools";
+import { ExrLoaderGlobalConfiguration, EXROutputType } from "./exrLoader.configuration";
 
-export enum OutputType {
-    FloatType,
-    HalfFloatType,
-}
-
-export function CreateDecoder(header: IEXRHeader, dataView: DataView, offset: DataCursor, outputType: OutputType): IEXRDecoder {
+/**
+ * Create a decoder for the exr file
+ * @param header header of the exr file
+ * @param dataView dataview of the exr file
+ * @param offset current offset
+ * @param outputType expected output type (float or half float)
+ * @returns a promise that resolves with the decoder
+ */
+export async function CreateDecoderAsync(header: IEXRHeader, dataView: DataView, offset: DataCursor, outputType: EXROutputType): Promise<IEXRDecoder> {
     const decoder: IEXRDecoder = {
         size: 0,
         viewer: dataView,
@@ -43,43 +48,36 @@ export function CreateDecoder(header: IEXRHeader, dataView: DataView, offset: Da
             decoder.uncompress = UncompressRAW;
             break;
 
-        // case "RLE_COMPRESSION":
-        //     EXRDecoder.lines = 1;
-        //     EXRDecoder.uncompress = uncompressRLE;
-        //     break;
+        case CompressionCodes.RLE_COMPRESSION:
+            decoder.lines = 1;
+            decoder.uncompress = UncompressRLE;
+            break;
 
-        // case "ZIPS_COMPRESSION":
-        //     EXRDecoder.lines = 1;
-        //     EXRDecoder.uncompress = uncompressZIP;
-        //     break;
+        case CompressionCodes.ZIPS_COMPRESSION:
+            decoder.lines = 1;
+            decoder.uncompress = UncompressZIP;
+            await Tools.LoadScriptAsync(ExrLoaderGlobalConfiguration.FFLATEUrl);
+            break;
 
-        // case "ZIP_COMPRESSION":
-        //     EXRDecoder.lines = 16;
-        //     EXRDecoder.uncompress = uncompressZIP;
-        //     break;
+        case CompressionCodes.ZIP_COMPRESSION:
+            decoder.lines = 16;
+            decoder.uncompress = UncompressZIP;
+            await Tools.LoadScriptAsync(ExrLoaderGlobalConfiguration.FFLATEUrl);
+            break;
 
-        case "PIZ_COMPRESSION":
+        case CompressionCodes.PIZ_COMPRESSION:
             decoder.lines = 32;
             decoder.uncompress = UncompressPIZ;
             break;
 
-        // case "PXR24_COMPRESSION":
-        //     EXRDecoder.lines = 16;
-        //     EXRDecoder.uncompress = uncompressPXR;
-        //     break;
-
-        // case "DWAA_COMPRESSION":
-        //     EXRDecoder.lines = 32;
-        //     EXRDecoder.uncompress = uncompressDWA;
-        //     break;
-
-        // case "DWAB_COMPRESSION":
-        //     EXRDecoder.lines = 256;
-        //     EXRDecoder.uncompress = uncompressDWA;
-        //     break;
+        case CompressionCodes.PXR24_COMPRESSION:
+            decoder.lines = 16;
+            decoder.uncompress = UncompressPXR;
+            await Tools.LoadScriptAsync(ExrLoaderGlobalConfiguration.FFLATEUrl);
+            break;
 
         default:
-            throw new Error(header.compression + " is unsupported");
+            throw new Error(CompressionCodes[header.compression] + " is unsupported");
     }
 
     decoder.scanlineBlockSize = decoder.lines;
@@ -116,12 +114,12 @@ export function CreateDecoder(header: IEXRHeader, dataView: DataView, offset: Da
     if (decoder.type === 1) {
         // half
         switch (outputType) {
-            case OutputType.FloatType:
+            case EXROutputType.Float:
                 decoder.getter = ParseFloat16;
                 decoder.inputSize = INT16_SIZE;
                 break;
 
-            case OutputType.HalfFloatType:
+            case EXROutputType.HalfFloat:
                 decoder.getter = ParseUint16;
                 decoder.inputSize = INT16_SIZE;
                 break;
@@ -129,12 +127,12 @@ export function CreateDecoder(header: IEXRHeader, dataView: DataView, offset: Da
     } else if (decoder.type === 2) {
         // float
         switch (outputType) {
-            case OutputType.FloatType:
+            case EXROutputType.Float:
                 decoder.getter = ParseFloat32;
                 decoder.inputSize = FLOAT32_SIZE;
                 break;
 
-            case OutputType.HalfFloatType:
+            case EXROutputType.HalfFloat:
                 decoder.getter = DecodeFloat32;
                 decoder.inputSize = FLOAT32_SIZE;
         }
@@ -152,22 +150,24 @@ export function CreateDecoder(header: IEXRHeader, dataView: DataView, offset: Da
     const size = decoder.width * decoder.height * decoder.outputChannels;
 
     switch (outputType) {
-        case OutputType.FloatType:
+        case EXROutputType.Float:
             decoder.byteArray = new Float32Array(size);
             decoder.textureType = Constants.TEXTURETYPE_FLOAT;
 
             // Fill initially with 1s for the alpha value if the texture is not RGBA, RGB values will be overwritten
             if (fillAlpha) {
-                // decoder.byteArray.fill(1, 0, size);
+                decoder.byteArray.fill(1, 0, size);
             }
 
             break;
 
-        case OutputType.HalfFloatType:
+        case EXROutputType.HalfFloat:
             decoder.byteArray = new Uint16Array(size);
             decoder.textureType = Constants.TEXTURETYPE_HALF_FLOAT;
 
-            if (fillAlpha) decoder.byteArray.fill(0x3c00, 0, size); // Uint16Array holds half float data, 0x3C00 is 1
+            if (fillAlpha) {
+                decoder.byteArray.fill(0x3c00, 0, size); // Uint16Array holds half float data, 0x3C00 is 1
+            }
 
             break;
 
@@ -204,6 +204,13 @@ export function CreateDecoder(header: IEXRHeader, dataView: DataView, offset: Da
     return decoder;
 }
 
+/**
+ * Scan the data of the exr file
+ * @param decoder decoder to use
+ * @param header header of the exr file
+ * @param dataView dataview of the exr file
+ * @param offset current offset
+ */
 export function ScanData(decoder: IEXRDecoder, header: IEXRHeader, dataView: DataView, offset: DataCursor): void {
     const tmpOffset = { value: 0 };
 

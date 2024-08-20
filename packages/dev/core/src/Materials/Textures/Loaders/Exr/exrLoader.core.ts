@@ -8,10 +8,6 @@ export enum CompressionCodes {
     ZIP_COMPRESSION,
     PIZ_COMPRESSION,
     PXR24_COMPRESSION,
-    B44_COMPRESSION,
-    B44A_COMPRESSION,
-    DWAA_COMPRESSION,
-    DWAB_COMPRESSION,
 }
 
 enum LineOrders {
@@ -157,6 +153,12 @@ export function ParseNullTerminatedString(buffer: ArrayBuffer, offset: DataCurso
     return stringValue;
 }
 
+/**
+ * Parse an int32 from the buffer
+ * @param dataView dataview on the data
+ * @param offset current offset in the data view
+ * @returns an int32
+ */
 export function ParseInt32(dataView: DataView, offset: DataCursor) {
     const value = dataView.getInt32(offset.value, true);
 
@@ -166,7 +168,7 @@ export function ParseInt32(dataView: DataView, offset: DataCursor) {
 }
 
 /**
- * Parse a uint32 from the buffer
+ * Parse an uint32 from the buffer
  * @param dataView data view to read from
  * @param offset offset in the data view
  * @returns an uint32
@@ -179,6 +181,12 @@ export function ParseUint32(dataView: DataView, offset: DataCursor) {
     return value;
 }
 
+/**
+ * Parse an uint8 from the buffer
+ * @param dataView dataview on the data
+ * @param offset current offset in the data view
+ * @returns an uint8
+ */
 export function ParseUint8(dataView: DataView, offset: DataCursor) {
     const value = dataView.getUint8(offset.value);
 
@@ -187,6 +195,12 @@ export function ParseUint8(dataView: DataView, offset: DataCursor) {
     return value;
 }
 
+/**
+ * Parse an uint16 from the buffer
+ * @param dataView dataview on the data
+ * @param offset current offset in the data view
+ * @returns an uint16
+ */
 export function ParseUint16(dataView: DataView, offset: DataCursor) {
     const value = dataView.getUint16(offset.value, true);
 
@@ -195,6 +209,12 @@ export function ParseUint16(dataView: DataView, offset: DataCursor) {
     return value;
 }
 
+/**
+ * Parse an uint8 from an array buffer
+ * @param array array buffer
+ * @param offset current offset in the data view
+ * @returns an uint16
+ */
 export function ParseUint8Array(array: Uint8Array, offset: DataCursor) {
     const value = array[offset.value];
 
@@ -203,6 +223,12 @@ export function ParseUint8Array(array: Uint8Array, offset: DataCursor) {
     return value;
 }
 
+/**
+ * Parse an int64 from the buffer
+ * @param dataView dataview on the data
+ * @param offset current offset in the data view
+ * @returns an int64
+ */
 export function ParseInt64(dataView: DataView, offset: DataCursor) {
     let int;
 
@@ -217,6 +243,12 @@ export function ParseInt64(dataView: DataView, offset: DataCursor) {
     return int;
 }
 
+/**
+ * Parse a float32 from the buffer
+ * @param dataView dataview on the data
+ * @param offset current offset in the data view
+ * @returns a float32
+ */
 export function ParseFloat32(dataView: DataView, offset: DataCursor) {
     const value = dataView.getFloat32(offset.value, true);
 
@@ -225,6 +257,12 @@ export function ParseFloat32(dataView: DataView, offset: DataCursor) {
     return value;
 }
 
+/**
+ * Parse a float16 from the buffer
+ * @param dataView dataview on the data
+ * @param offset current offset in the data view
+ * @returns a float16
+ */
 export function ParseFloat16(dataView: DataView, offset: DataCursor) {
     return DecodeFloat16(ParseUint16(dataView, offset));
 }
@@ -241,7 +279,7 @@ function DecodeFloat16(binary: number) {
 
 function ToHalfFloat(value: number) {
     if (Math.abs(value) > 65504) {
-        throw new Error("Value out of range");
+        throw new Error("Value out of range.Consider using float instead of half-float.");
     }
 
     value = Clamp(value, -65504, 65504);
@@ -252,6 +290,12 @@ function ToHalfFloat(value: number) {
     return _tables.baseTable[e] + ((f & 0x007fffff) >> _tables.shiftTable[e]);
 }
 
+/**
+ * Decode a float32 from the buffer
+ * @param dataView dataview on the data
+ * @param offset current offset in the data view
+ * @returns a float32
+ */
 export function DecodeFloat32(dataView: DataView, offset: DataCursor) {
     return ToHalfFloat(ParseFloat32(dataView, offset));
 }
@@ -333,9 +377,7 @@ function ParseChromaticities(dataView: DataView, offset: DataCursor) {
 }
 
 function ParseCompression(dataView: DataView, offset: DataCursor) {
-    const compression = ParseUint8(dataView, offset);
-
-    return CompressionCodes[compression];
+    return ParseUint8(dataView, offset);
 }
 
 function ParseBox2i(dataView: DataView, offset: DataCursor) {
@@ -395,5 +437,41 @@ export function ParseValue(dataView: DataView, offset: DataCursor, type: string,
         default:
             offset.value += size;
             return undefined;
+    }
+}
+
+/**
+ * Revert the endianness of the data
+ * @param source defines the source
+ */
+export function Predictor(source: Uint8Array) {
+    for (let t = 1; t < source.length; t++) {
+        const d = source[t - 1] + source[t] - 128;
+        source[t] = d;
+    }
+}
+
+/**
+ * Interleave pixels
+ * @param source defines the data source
+ * @param out defines the output
+ */
+export function InterleaveScalar(source: Uint8Array, out: Uint8Array) {
+    let t1 = 0;
+    let t2 = Math.floor((source.length + 1) / 2);
+    let s = 0;
+    const stop = source.length - 1;
+
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+        if (s > stop) {
+            break;
+        }
+        out[s++] = source[t1++];
+
+        if (s > stop) {
+            break;
+        }
+        out[s++] = source[t2++];
     }
 }
