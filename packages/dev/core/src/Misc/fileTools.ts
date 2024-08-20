@@ -171,6 +171,14 @@ export const SetCorsBehavior = (url: string | string[], element: { crossOrigin: 
 };
 
 /**
+ * Configuration used to load SVG files
+ */
+export const SVGSizeConfiguration: Nullable<{
+    width: number;
+    height: number;
+}> = null;
+
+/**
  * Loads an image as an HTMLImageElement.
  * @param input url string, ArrayBuffer, or Blob to load
  * @param onLoad callback called when the image successfully loads
@@ -250,6 +258,8 @@ export const LoadImage = (
     }
 
     const img = new Image();
+    img.width = 1024;
+    img.height = 1024;
     SetCorsBehavior(url, img);
 
     const handlersList: { target: any; name: string; handler: any }[] = [];
