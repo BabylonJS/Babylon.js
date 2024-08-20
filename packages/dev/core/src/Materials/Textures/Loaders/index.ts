@@ -7,4 +7,5 @@ export * from "./hdrTextureLoader";
 export * from "./basisTextureLoader";
 export * from "./exrTextureLoader";
 export * from "./textureLoaderManager";
-export * from "./EXR";
+// eslint-disable-next-line import/no-internal-modules
+export * from "./EXR/index";
