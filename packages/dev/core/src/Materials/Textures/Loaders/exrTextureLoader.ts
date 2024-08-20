@@ -9,7 +9,7 @@ import { ExrLoaderGlobalConfiguration } from "./EXR/exrLoader.configuration";
 
 /**
  * Loader for .exr file format
- * #4RN0VF#143: PIZ compression
+ * #4RN0VF#151: PIZ compression
  * #4RN0VF#146: ZIP compression
  * #4RN0VF#149: RLE compression
  * #4RN0VF#150: PXR24 compression
