@@ -433,42 +433,49 @@ export class GPUPicker {
             Promise.resolve([await this.pickAsync(xy[0].x, xy[0].y, disposeWhenDone)]);
         }
 
-        // get min, max to do a partial cut
-        let minX = xy[0].x;
-        let maxX = xy[0].x;
-        let minY = xy[0].y;
-        let maxY = xy[0].y;
-
-        for (let i = 1; i < xy.length; i++) {
-            const point = xy[i];
-            if (point.x < minX) minX = point.x;
-            if (point.x > maxX) maxX = point.x;
-            if (point.y < minY) minY = point.y;
-            if (point.y > maxY) maxY = point.y;
-        }
-
         const scene = this._cachedScene!;
         const engine = scene.getEngine();
         const devicePixelRatio = 1 / engine._hardwareScalingLevel;
 
-        // Ensure ints and adapt to screen resolution
-        minX = (devicePixelRatio * minX) >> 0;
-        maxX = (devicePixelRatio * maxX) >> 0;
-        minY = (devicePixelRatio * minY) >> 0;
-        maxY = (devicePixelRatio * maxY) >> 0;
-
-        let w = maxX - minX;
-        let h = maxY - minY;
-        w = w === 0 ? 1 : w;
-        h = h === 0 ? 1 : h;
-
         const rttSizeW = engine.getRenderWidth();
         const rttSizeH = engine.getRenderHeight();
 
-        const partialCutH = rttSizeH - maxY - 1;
+        // get min, max to do a partial cut
 
-        if (!this._readbuffer || this._readbuffer.length < 4 * w * h) {
-            this._readbuffer = new Uint8Array(engine.isWebGPU ? (4 * rttSizeW * rttSizeH + 255) & ~255 : 4 * rttSizeW * rttSizeH); // Because of block alignment in WebGPU
+        const xy0 = xy[0];
+        let minX = xy0.x,
+            maxX = xy0.x,
+            minY = xy0.y,
+            maxY = xy0.y;
+
+        for (let i = 1; i < xy.length; i++) {
+            const { x, y } = xy[i];
+            minX = x < minX ? x : minX;
+            maxX = x > maxX ? x : maxX;
+            minY = y < minY ? y : minY;
+            maxY = y > maxY ? y : maxY;
+        }
+
+        // Ensure ints and adapt to screen resolution
+        minX = (devicePixelRatio * minX) | 0;
+        maxX = (devicePixelRatio * maxX) | 0;
+        minY = (devicePixelRatio * minY) | 0;
+        maxY = (devicePixelRatio * maxY) | 0;
+
+        // bounds check
+        minX = minX < 0 ? 0 : minX;
+        minY = minY < 0 ? 0 : minY;
+        maxX = maxX >= rttSizeW ? rttSizeW - 1 : maxX;
+        maxY = maxY >= rttSizeH ? rttSizeH - 1 : maxY;
+
+        const w = Math.max(maxX - minX, 1);
+        const h = Math.max(maxY - minY, 1);
+
+        const partialCutH = rttSizeH - maxY - 1;
+        // Because of block alignment 256 bytes in WebGPU
+        const requiredBufferSize = engine.isWebGPU ? (4 * rttSizeW * rttSizeH + 255) & ~255 : 4 * rttSizeW * rttSizeH;
+        if (!this._readbuffer || this._readbuffer.length < requiredBufferSize) {
+            this._readbuffer = new Uint8Array(requiredBufferSize);
         }
 
         // Do we need to rebuild the RTT?
@@ -525,8 +532,8 @@ export class GPUPicker {
                             let y = xy[i].y;
 
                             // Ensure ints and adapt to screen resolution
-                            x = (devicePixelRatio * x) >> 0;
-                            y = (devicePixelRatio * y) >> 0;
+                            x = (devicePixelRatio * x) | 0;
+                            y = (devicePixelRatio * y) | 0;
 
                             if (x < 0 || y < 0 || x >= rttSizeW || y >= rttSizeH) {
                                 pickedMeshes.push(null);
