@@ -2467,8 +2467,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         const index = this.meshes.indexOf(toRemove);
         if (index !== -1) {
             // Remove from the scene if mesh found
-            this.meshes[index] = this.meshes[this.meshes.length - 1];
-            this.meshes.pop();
+            this.meshes.splice(index, index);
 
             if (!toRemove.parent) {
                 toRemove._removeFromSceneRootNodes();
