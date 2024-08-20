@@ -63,15 +63,15 @@ export class TextureOptimization extends SceneOptimization {
      */
     constructor(
         /**
-         * Defines the priority of this optimization (0 by default which means first in the list)
+         * [0] Defines the priority of this optimization (0 by default which means first in the list)
          */
         public override priority: number = 0,
         /**
-         * Defines the maximum sized allowed for textures (1024 is the default value). If a texture is bigger, it will be scaled down using a factor defined by the step parameter
+         * [1024] Defines the maximum sized allowed for textures (1024 is the default value). If a texture is bigger, it will be scaled down using a factor defined by the step parameter
          */
         public maximumSize: number = 1024,
         /**
-         * Defines the factor (0.5 by default) used to scale down textures bigger than maximum sized allowed.
+         * [0.5] Defines the factor (0.5 by default) used to scale down textures bigger than maximum sized allowed.
          */
         public step = 0.5
     ) {
@@ -130,15 +130,15 @@ export class HardwareScalingOptimization extends SceneOptimization {
      */
     constructor(
         /**
-         * Defines the priority of this optimization (0 by default which means first in the list)
+         * [0] Defines the priority of this optimization (0 by default which means first in the list)
          */
         public override priority: number = 0,
         /**
-         * Defines the maximum scale to use (2 by default)
+         * [2] Defines the maximum scale to use (2 by default)
          */
         public maximumScale: number = 2,
         /**
-         * Defines the step to use between two passes (0.5 by default)
+         * [0.25] Defines the step to use between two passes (0.5 by default)
          */
         public step: number = 0.25
     ) {
@@ -479,11 +479,11 @@ export class SceneOptimizerOptions {
      */
     constructor(
         /**
-         * Defines the target frame rate to reach (60 by default)
+         * [60] Defines the target frame rate to reach (60 by default)
          */
         public targetFrameRate: number = 60,
         /**
-         * Defines the interval between two checks (2000ms by default)
+         * [2000] Defines the interval between two checks (2000ms by default)
          */
         public trackerDuration: number = 2000
     ) {}

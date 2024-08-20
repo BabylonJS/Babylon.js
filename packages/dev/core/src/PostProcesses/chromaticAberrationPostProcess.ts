@@ -112,15 +112,15 @@ export class ChromaticAberrationPostProcess extends PostProcess {
         });
     }
 
-    protected override async _initShaderSourceAsync(useWebGPU: boolean) {
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
-            await Promise.all([import("../ShadersWGSL/chromaticAberration.fragment")]);
+            list.push(Promise.all([import("../ShadersWGSL/chromaticAberration.fragment")]));
         } else {
-            await Promise.all([import("../Shaders/chromaticAberration.fragment")]);
+            list.push(Promise.all([import("../Shaders/chromaticAberration.fragment")]));
         }
 
-        await super._initShaderSourceAsync(useWebGPU);
+        super._gatherImports(useWebGPU, list);
     }
 
     /**

@@ -146,6 +146,7 @@ export class Slider extends BaseSlider {
         } else {
             radius = (this._effectiveThumbThickness - this._effectiveBarOffset) / 2;
         }
+        radius = Math.max(0, radius);
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
             context.shadowColor = this.shadowColor;

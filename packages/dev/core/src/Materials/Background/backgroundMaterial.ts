@@ -664,7 +664,17 @@ export class BackgroundMaterial extends PushMaterial {
     constructor(name: string, scene?: Scene, forceGLSL = false) {
         super(name, scene);
 
-        this._initShaderSourceAsync(forceGLSL);
+        const engine = this.getScene().getEngine();
+
+        if (engine.isWebGPU && !forceGLSL) {
+            // Switch main UBO to non UBO to connect to leftovers UBO in webgpu
+            if (this._uniformBuffer) {
+                this._uniformBuffer.dispose();
+            }
+            this._uniformBuffer = new UniformBuffer(engine, undefined, undefined, this.name, true);
+
+            this._shaderLanguage = ShaderLanguage.WGSL;
+        }
 
         // Setup the default processing configuration to the scene.
         this._attachImageProcessingConfiguration(null);
@@ -682,25 +692,6 @@ export class BackgroundMaterial extends PushMaterial {
 
             return this._renderTargets;
         };
-    }
-
-    private async _initShaderSourceAsync(forceGLSL = false) {
-        const engine = this.getScene().getEngine();
-
-        if (engine.isWebGPU && !forceGLSL) {
-            // Switch main UBO to non UBO to connect to leftovers UBO in webgpu
-            if (this._uniformBuffer) {
-                this._uniformBuffer.dispose();
-            }
-            this._uniformBuffer = new UniformBuffer(engine, undefined, undefined, this.name, true);
-
-            this._shaderLanguage = ShaderLanguage.WGSL;
-            await Promise.all([import("../../ShadersWGSL/background.vertex"), import("../../ShadersWGSL/background.fragment")]);
-        } else {
-            await Promise.all([import("../../Shaders/background.vertex"), import("../../Shaders/background.fragment")]);
-        }
-
-        this._shadersLoaded = true;
     }
 
     /**
@@ -742,10 +733,6 @@ export class BackgroundMaterial extends PushMaterial {
      * @returns true if all the dependencies are ready (Textures, Effects...)
      */
     public override isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances: boolean = false): boolean {
-        if (!this._shadersLoaded) {
-            return false;
-        }
-
         const drawWrapper = subMesh._drawWrapper;
 
         if (drawWrapper.effect && this.isFrozen) {
@@ -1031,6 +1018,17 @@ export class BackgroundMaterial extends PushMaterial {
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights },
                     shaderLanguage: this._shaderLanguage,
+                    extraInitializationsAsync: this._shadersLoaded
+                        ? undefined
+                        : async () => {
+                              if (this.shaderLanguage === ShaderLanguage.WGSL) {
+                                  await Promise.all([import("../../ShadersWGSL/background.vertex"), import("../../ShadersWGSL/background.fragment")]);
+                              } else {
+                                  await Promise.all([import("../../Shaders/background.vertex"), import("../../Shaders/background.fragment")]);
+                              }
+
+                              this._shadersLoaded = true;
+                          },
                 },
                 engine
             );

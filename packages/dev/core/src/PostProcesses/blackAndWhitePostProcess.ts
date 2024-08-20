@@ -47,15 +47,15 @@ export class BlackAndWhitePostProcess extends PostProcess {
         });
     }
 
-    protected override async _initShaderSourceAsync(useWebGPU: boolean) {
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
-            await import("../ShadersWGSL/blackAndWhite.fragment");
+            list.push(import("../ShadersWGSL/blackAndWhite.fragment"));
         } else {
-            await import("../Shaders/blackAndWhite.fragment");
+            list.push(import("../Shaders/blackAndWhite.fragment"));
         }
 
-        super._initShaderSourceAsync(useWebGPU);
+        super._gatherImports(useWebGPU, list);
     }
 
     /**

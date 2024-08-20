@@ -3,7 +3,6 @@ import type { Nullable, IndicesArray, DataArray, FloatArray, DeepImmutable } fro
 import { Engine } from "../Engines/engine";
 import type { VertexBuffer } from "../Buffers/buffer";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
-import type { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
 import { Texture } from "../Materials/Textures/texture";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import type { VideoTexture } from "../Materials/Textures/videoTexture";
@@ -50,7 +49,6 @@ import {
     getNativeStencilOpFail,
     getNativeAddressMode,
 } from "./Native/nativeHelpers";
-import { AbstractEngine } from "./abstractEngine";
 import { checkNonFloatVertexBuffers } from "../Buffers/buffer.nonFloatVertexBuffers";
 import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { NativeShaderProcessingContext } from "./Native/nativeShaderProcessingContext";
@@ -58,6 +56,7 @@ import type { ShaderLanguage } from "../Materials/shaderLanguage";
 import type { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 
 import "../Buffers/buffer.align";
+import { _GetCompatibleTextureLoader } from "core/Materials/Textures/Loaders/textureLoaderManager";
 
 // REVIEW: add a flag to effect to prevent multiple compilations of the same shader.
 declare module "../Materials/effect" {
@@ -1812,13 +1811,7 @@ export class NativeEngine extends Engine {
         const lastDot = url.lastIndexOf(".");
         const extension = forcedExtension ? forcedExtension : lastDot > -1 ? url.substring(lastDot).toLowerCase() : "";
 
-        let loader: Nullable<IInternalTextureLoader> = null;
-        for (const availableLoader of AbstractEngine._TextureLoaders) {
-            if (availableLoader.canLoad(extension)) {
-                loader = availableLoader;
-                break;
-            }
-        }
+        const loaderPromise = _GetCompatibleTextureLoader(extension);
 
         if (scene) {
             scene.addPendingData(texture);
@@ -1868,7 +1861,7 @@ export class NativeEngine extends Engine {
         };
 
         // processing for non-image formats
-        if (loader) {
+        if (loaderPromise) {
             throw new Error("Loading textures from IInternalTextureLoader not yet implemented.");
         } else {
             const onload = (data: ArrayBufferView) => {
@@ -2365,10 +2358,6 @@ export class NativeEngine extends Engine {
 
         if (requiredWidth || requiredHeight) {
             throw new Error("Required width/height for frame buffers not yet supported in NativeEngine.");
-        }
-
-        if (forceFullscreenViewport) {
-            //Not supported yet but don't stop rendering
         }
 
         if (nativeRTWrapper._framebufferDepthStencil) {

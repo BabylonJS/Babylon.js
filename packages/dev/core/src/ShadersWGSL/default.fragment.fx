@@ -259,7 +259,7 @@ var reflectionColor: vec4f =  vec4f(0., 0., 0., 1.);
 				#endif
 			#endif
 
-			reflectionColor = textureSample(reflectionCubeSampler, reflectionCubeSamplerSampler,vReflectionUVW, bias);
+			reflectionColor = textureSampleLevel(reflectionCubeSampler, reflectionCubeSamplerSampler,vReflectionUVW, bias);
 		#else
 			reflectionColor = textureSample(reflectionCubeSampler, reflectionCubeSamplerSampler, vReflectionUVW);
 		#endif

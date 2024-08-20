@@ -4,7 +4,6 @@ import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 
-import "../Shaders/displayPass.fragment";
 import { RegisterClass } from "../Misc/typeStore";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 
@@ -33,6 +32,17 @@ export class DisplayPassPostProcess extends PostProcess {
      */
     constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: AbstractEngine, reusable?: boolean) {
         super(name, "displayPass", ["passSampler"], ["passSampler"], options, camera, samplingMode, engine, reusable);
+    }
+
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
+        if (useWebGPU) {
+            this._webGPUReady = true;
+            list.push(Promise.all([import("../ShadersWGSL/displayPass.fragment")]));
+        } else {
+            list.push(Promise.all([import("../Shaders/displayPass.fragment")]));
+        }
+
+        super._gatherImports(useWebGPU, list);
     }
 
     /**

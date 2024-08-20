@@ -22,7 +22,6 @@ import "../../ShadersWGSL/ShadersInclude/fresnelFunction";
 import "../../ShadersWGSL/ShadersInclude/meshUboDeclaration";
 import "../../ShadersWGSL/ShadersInclude/sceneUboDeclaration";
 import "../../ShadersWGSL/ShadersInclude/decalFragment";
-import "../../ShadersWGSL/particles.vertex";
 
 const builtInName_frag_depth = "fragmentOutputs.fragDepth";
 
