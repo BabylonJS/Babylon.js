@@ -322,14 +322,18 @@ export class GPUPicker {
             return Promise.resolve(null);
         }
 
+        debugger;
+
         const { x: adjustedX, y: adjustedY, rttSizeW, rttSizeH } = this._prepareForPicking(x, y);
         if (adjustedX < 0 || adjustedY < 0 || adjustedX >= rttSizeW || adjustedY >= rttSizeH) {
             return Promise.resolve(null);
         }
 
-        this._preparePickingBuffer(this._engine!, rttSizeW, rttSizeH, x, y);
+        // Invert Y
+        const invertedY = rttSizeH - y - 1;
+        this._preparePickingBuffer(this._engine!, rttSizeW, rttSizeH, x, invertedY);
 
-        return await this._executePicking(adjustedX, adjustedY, rttSizeW, rttSizeH, disposeWhenDone);
+        return await this._executePicking(x, invertedY, disposeWhenDone);
     }
 
     /**
@@ -387,7 +391,7 @@ export class GPUPicker {
     }
 
     private _preparePickingBuffer(engine: AbstractEngine, rttSizeW: number, rttSizeH: number, x: number, y: number, w = 1, h = 1) {
-        const requiredBufferSize = engine.isWebGPU ? (4 * rttSizeW * rttSizeH + 255) & ~255 : 4 * rttSizeW * rttSizeH;
+        const requiredBufferSize = engine.isWebGPU ? (4 * w * h + 255) & ~255 : 4 * w * h;
         if (!this._readbuffer || this._readbuffer.length < requiredBufferSize) {
             this._readbuffer = new Uint8Array(requiredBufferSize);
         }
@@ -407,13 +411,12 @@ export class GPUPicker {
         };
     }
 
-    private _executePicking(x: number, y: number, rttSizeW: number, rttSizeH: number, disposeWhenDone: boolean): Promise<Nullable<IGPUPickingInfo>> {
+    private _executePicking(x: number, y: number, disposeWhenDone: boolean): Promise<Nullable<IGPUPickingInfo>> {
         return new Promise((resolve) => {
             this._pickingTexture!.onAfterRender = async () => {
                 this._disableScissor();
 
-                const result = this._processPickingResult(x, y, rttSizeW, rttSizeH, disposeWhenDone);
-                resolve(result);
+                resolve(this._processPickingResult(x, y, disposeWhenDone));
             };
         });
     }
@@ -448,7 +451,7 @@ export class GPUPicker {
         }
     }
 
-    private async _processPickingResult(x: number, y: number, rttSizeW: number, rttSizeH: number, disposeWhenDone: boolean): Promise<Nullable<IGPUPickingInfo>> {
+    private async _processPickingResult(x: number, y: number, disposeWhenDone: boolean): Promise<Nullable<IGPUPickingInfo>> {
         if (!this._pickingTexture) {
             return null;
         }
@@ -462,7 +465,7 @@ export class GPUPicker {
             }
         }
 
-        if (await this._readTexturePixelsAsync(x, rttSizeH - y - 1)) {
+        if (await this._readTexturePixelsAsync(x, y)) {
             const { pickedMesh, thinInstanceIndex } = this._getPickedMeshFromBuffer();
             if (pickedMesh || thinInstanceIndex) {
                 if (pickedMesh) {
