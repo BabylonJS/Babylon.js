@@ -172,14 +172,20 @@ export const SetCorsBehavior = (url: string | string[], element: { crossOrigin: 
 
 /**
  * Configuration used to load images
- * @see #DKMEZK#1
+ * @see #DKMEZK#2
  */
 export const LoadImageConfiguration: {
-    width: number;
-    height: number;
+    /**
+     * Use this callback if you want to provide the required size of an image before loading it.
+     */
+    getRequiredSize: Nullable<
+        (input: string | ArrayBuffer | ArrayBufferView | Blob) => {
+            width: number;
+            height: number;
+        }
+    >;
 } = {
-    width: 0,
-    height: 0,
+    getRequiredSize: null,
 };
 
 /**
@@ -262,11 +268,14 @@ export const LoadImage = (
     }
 
     const img = new Image();
-    if (LoadImageConfiguration.width) {
-        img.width = LoadImageConfiguration.width;
-    }
-    if (LoadImageConfiguration.height) {
-        img.height = LoadImageConfiguration.height;
+    if (LoadImageConfiguration.getRequiredSize) {
+        const size = LoadImageConfiguration.getRequiredSize(input);
+        if (size.width) {
+            img.width = size.width;
+        }
+        if (size.height) {
+            img.height = size.height;
+        }
     }
     SetCorsBehavior(url, img);
 
