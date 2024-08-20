@@ -81,8 +81,7 @@ export class GPUPicker {
         const r = this._readbuffer[offset];
         const g = this._readbuffer[offset + 1];
         const b = this._readbuffer[offset + 2];
-        const colorId = (r << 16) + (g << 8) + b;
-        return colorId;
+        return (r << 16) + (g << 8) + b;
     }
 
     private _createRenderTarget(scene: Scene, width: number, height: number) {
@@ -180,10 +179,10 @@ export class GPUPicker {
             const { r, g, b } = GPUPicker._IdToRgb(id);
             onInstance(i, id);
 
-            colorData[i * 4] = r / 255.0;
-            colorData[i * 4 + 1] = g / 255.0;
-            colorData[i * 4 + 2] = b / 255.0;
-            colorData[i * 4 + 3] = 1.0;
+            colorData[i * 4] = r / 255;
+            colorData[i * 4 + 1] = g / 255;
+            colorData[i * 4 + 2] = b / 255;
+            colorData[i * 4 + 3] = 1;
             id++;
         }
 
@@ -330,8 +329,7 @@ export class GPUPicker {
 
         this._preparePickingBuffer(this._engine!, rttSizeW, rttSizeH, x, y);
 
-        const result = await this._executePicking(adjustedX, adjustedY, rttSizeW, rttSizeH, disposeWhenDone);
-        return result;
+        return await this._executePicking(adjustedX, adjustedY, rttSizeW, rttSizeH, disposeWhenDone);
     }
 
     /**
@@ -353,7 +351,18 @@ export class GPUPicker {
             });
         }
 
-        const { minX, minY, maxX, maxY } = this._getBoundingBox(xy);
+        let minX = xy[0].x,
+            maxX = xy[0].x,
+            minY = xy[0].y,
+            maxY = xy[0].y;
+
+        for (let i = 1; i < xy.length; i++) {
+            const { x, y } = xy[i];
+            minX = Math.min(minX, x);
+            maxX = Math.max(maxX, x);
+            minY = Math.min(minY, y);
+            maxY = Math.max(maxY, y);
+        }
         const { rttSizeW, rttSizeH } = this._prepareForPicking(minX, minY);
         const w = Math.max(maxX - minX, 1);
         const h = Math.max(maxY - minY, 1);
@@ -361,8 +370,7 @@ export class GPUPicker {
 
         this._preparePickingBuffer(this._engine!, rttSizeW, rttSizeH, minX, partialCutH, w, h);
 
-        const result = await this._executeMultiPicking(xy, minX, maxY, rttSizeW, rttSizeH, w, h, disposeWhenDone);
-        return result;
+        return await this._executeMultiPicking(xy, minX, maxY, rttSizeW, rttSizeH, w, h, disposeWhenDone);
     }
 
     private _prepareForPicking(x: number, y: number) {
@@ -424,8 +432,7 @@ export class GPUPicker {
             this._pickingTexture!.onAfterRender = async () => {
                 this._disableScissor();
 
-                const result = this._processMultiPickingResult(xy, minX, maxY, rttSizeW, rttSizeH, w, h, disposeWhenDone);
-                resolve(result);
+                resolve(this._processMultiPickingResult(xy, minX, maxY, rttSizeW, rttSizeH, w, h, disposeWhenDone));
             };
         });
     }
@@ -519,23 +526,6 @@ export class GPUPicker {
         }
 
         return { meshes: pickedMeshes, thinInstanceIndexes: thinInstanceIndexes };
-    }
-
-    private _getBoundingBox(xy: { x: number; y: number }[]) {
-        let minX = xy[0].x,
-            maxX = xy[0].x,
-            minY = xy[0].y,
-            maxY = xy[0].y;
-
-        for (let i = 1; i < xy.length; i++) {
-            const { x, y } = xy[i];
-            minX = Math.min(minX, x);
-            maxX = Math.max(maxX, x);
-            minY = Math.min(minY, y);
-            maxY = Math.max(maxY, y);
-        }
-
-        return { minX, minY, maxX, maxY };
     }
 
     private _getPickedMeshFromBuffer(): { pickedMesh: Nullable<AbstractMesh>; thinInstanceIndex: number | undefined } {
