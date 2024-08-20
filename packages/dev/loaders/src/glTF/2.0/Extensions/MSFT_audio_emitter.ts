@@ -15,6 +15,17 @@ import { IMSFTAudioEmitter_AnimationEventAction } from "babylonjs-gltf2interface
 
 const NAME = "MSFT_audio_emitter";
 
+declare module "../../glTFFileLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface GLTFLoaderExtensionOptions {
+        /**
+         * Defines options for the MSFT_audio_emitter extension.
+         */
+        // NOTE: Don't use NAME here as it will break the UMD type declarations.
+        ["MSFT_audio_emitter"]: {};
+    }
+}
+
 interface ILoaderClip extends IMSFTAudioEmitter_Clip, IArrayItem {
     _objectURL?: Promise<string>;
 }
