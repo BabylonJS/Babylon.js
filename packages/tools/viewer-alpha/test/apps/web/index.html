@@ -38,12 +38,10 @@
                 await customElements.whenDefined("babylon-viewer");
                 // "BabylonViewer" is defined as the "library" in webpack.config.js and can be used to access the Viewer as needed.
                 await new Promise((resolve) => setTimeout(resolve, 2000));
-                // document.body.removeChild(viewerElement);
                 //viewerElement.src = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/BrainStem/glTF-Binary/BrainStem.glb";
                 // error case
                 //viewerElement.src = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/BrainStem/glTF-Binary/BrainStem2.glb';
                 await new Promise((resolve) => setTimeout(resolve, 2000));
-                // document.body.appendChild(viewerElement);
                 //viewerElement.src = "https://playground.babylonjs.com/scenes/BoomBox.glb";
             })();
 
@@ -52,9 +50,7 @@
                 if (file) {
                     event.preventDefault();
                     await customElements.whenDefined("babylon-viewer");
-                    //const objUrl = URL.createObjectURL(file);
                     await viewerElement.viewer.loadModelAsync(file);
-                    //URL.revokeObjectURL(objUrl);
                 }
             }
 

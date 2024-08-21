@@ -86,11 +86,14 @@ export type ViewerOptions = Partial<
  */
 export class Viewer implements IDisposable {
     public readonly onModelLoaded = new Observable<void>();
+    public readonly onSelectedAnimationChanged = new Observable<void>();
+    public readonly onAnimationSpeedChanged = new Observable<void>();
     public readonly onIsAnimationPlayingChanged = new Observable<void>();
     public readonly onAnimationProgressChanged = new Observable<void>();
 
     private readonly _details: ViewerDetails;
     private readonly _camera: ArcRotateCamera;
+    private readonly _renderLoop: IDisposable;
     private _skybox: Nullable<Mesh> = null;
 
     private _isDisposed = false;
@@ -125,12 +128,17 @@ export class Viewer implements IDisposable {
         this.loadEnvironmentAsync(undefined).catch(() => {});
 
         // TODO: render at least back ground. Maybe we can only run renderloop when a mesh is loaded. What to render until then?
-        this._engine.runRenderLoop(() => {
+        const render = () => {
             this._details.scene.render();
             if (this._activeAnimation?.isPlaying) {
                 this.onAnimationProgressChanged.notifyObservers();
             }
-        });
+        };
+
+        this._engine.runRenderLoop(render);
+        this._renderLoop = {
+            dispose: () => this._engine.stopRenderLoop(render),
+        };
 
         options?.onInitialized?.(this._details);
     }
@@ -149,6 +157,7 @@ export class Viewer implements IDisposable {
             if (this.isAnimationPlaying) {
                 this.playAnimation();
             }
+            this.onSelectedAnimationChanged.notifyObservers();
         }
     }
 
@@ -170,6 +179,7 @@ export class Viewer implements IDisposable {
     public set animationSpeed(value: number) {
         this._animationSpeed = value;
         this._applyAnimationSpeed();
+        this.onAnimationSpeedChanged.notifyObservers();
     }
 
     public get animationProgress(): number {
@@ -225,7 +235,7 @@ export class Viewer implements IDisposable {
             this._throwIfDisposedOrAborted(abortSignal, abortController.signal);
             this._details.model?.dispose();
             this._activeAnimation = null;
-            this._selectedAnimation = 0; // TODO: When restoring the viewer, we don't want to reset this, but when loading a new model, we do.
+            this.selectedAnimation = 0;
 
             this._details.model = await loadAssetContainerAsync(source, this._details.scene, options);
             this._details.model.animationGroups.forEach((group) => group.stop());
@@ -324,6 +334,9 @@ export class Viewer implements IDisposable {
                 this._activeAnimation.onAnimationGroupPauseObservable.add(() => {
                     this.onIsAnimationPlayingChanged.notifyObservers();
                 }),
+                this._activeAnimation.onAnimationGroupEndObservable.add(() => {
+                    this.onIsAnimationPlayingChanged.notifyObservers();
+                }),
             ];
 
             this._activeAnimation.start(true, this._animationSpeed);
@@ -341,10 +354,20 @@ export class Viewer implements IDisposable {
      * Disposes of the resources held by the Viewer.
      */
     public dispose(): void {
+        this._activeAnimation?.stop();
+        this.animationProgress = 0;
+        this.selectedAnimation = 0;
+        this.onAnimationProgressChanged.notifyObservers();
+
+        this._renderLoop.dispose();
+        this._details.scene.dispose();
+
         this.onModelLoaded.clear();
+        this.onSelectedAnimationChanged.clear();
+        this.onAnimationSpeedChanged.clear();
         this.onIsAnimationPlayingChanged.clear();
         this.onAnimationProgressChanged.clear();
-        this._details.scene.dispose();
+
         this._isDisposed = true;
     }
 

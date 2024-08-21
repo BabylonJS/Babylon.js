@@ -44,7 +44,7 @@ export class HTML3DElement extends LitElement {
     private _animations: string[] = [];
 
     @state()
-    private _currentAnimation = 0;
+    private _selectedAnimation = 0;
 
     @state()
     private _isAnimationPlaying = false;
@@ -57,6 +57,9 @@ export class HTML3DElement extends LitElement {
 
     @query("#renderCanvas")
     private _canvas: HTMLCanvasElement;
+
+    @query("#animationSelect")
+    private _animationSelect: HTMLSelectElement;
 
     // eslint-disable-next-line babylonjs/available
     override connectedCallback(): void {
@@ -84,15 +87,15 @@ export class HTML3DElement extends LitElement {
             this._updateAnimationSpeed();
         }
 
-        if (changedProperties.has("_currentAnimation")) {
-            this._updateCurrentAnimation();
+        if (changedProperties.has("_selectedAnimation")) {
+            this._updateSelectedAnimation();
         }
 
-        if (changedProperties.has("src")) {
+        if (changedProperties.has("src" satisfies keyof this)) {
             this._updateModel();
         }
 
-        if (changedProperties.has("env")) {
+        if (changedProperties.has("env" satisfies keyof this)) {
             this._updateEnv();
         }
     }
@@ -114,7 +117,7 @@ export class HTML3DElement extends LitElement {
                             <option value="1.5">1.5x</option>
                             <option value="2">2x</option>
                         </select>
-                        <select @change="${this._onSelectedAnimationChanged}">
+                        <select id="animationSelect" @change="${this._onSelectedAnimationChanged}">
                             ${this._animations.map((name, index) => html`<option value="${index}">${name}</option>`)}
                         </select>
                     </div>
@@ -133,7 +136,7 @@ export class HTML3DElement extends LitElement {
 
     private _onSelectedAnimationChanged(event: Event) {
         const selectElement = event.target as HTMLSelectElement;
-        this._currentAnimation = Number(selectElement.value);
+        this._selectedAnimation = Number(selectElement.value);
     }
 
     private _onAnimationSpeedChanged(event: Event) {
@@ -147,9 +150,14 @@ export class HTML3DElement extends LitElement {
 
             this.viewer.onModelLoaded.add(() => {
                 this._animations = [...(this.viewer?.animations ?? [])];
-                this._isAnimationPlaying = false;
-                this._currentAnimation = 0;
-                this._animationProgress = 0;
+            });
+
+            this.viewer.onSelectedAnimationChanged.add(() => {
+                this._selectedAnimation = this.viewer?.selectedAnimation ?? 0;
+            });
+
+            this.viewer.onAnimationSpeedChanged.add(() => {
+                this._animationSpeed = this.viewer?.animationSpeed ?? 1;
             });
 
             this.viewer.onIsAnimationPlayingChanged.add(() => {
@@ -160,7 +168,7 @@ export class HTML3DElement extends LitElement {
                 this._animationProgress = this.viewer?.animationProgress ?? 0;
             });
 
-            this._updateCurrentAnimation();
+            this._updateSelectedAnimation();
             this._updateAnimationSpeed();
             this._updateModel();
             this._updateEnv();
@@ -171,7 +179,6 @@ export class HTML3DElement extends LitElement {
         if (this.viewer) {
             this.viewer.dispose();
             this.viewer = undefined;
-            this._isAnimationPlaying = false;
         }
     }
 
@@ -181,9 +188,13 @@ export class HTML3DElement extends LitElement {
         }
     }
 
-    private _updateCurrentAnimation() {
+    private _updateSelectedAnimation() {
         if (this.viewer) {
-            this.viewer.selectedAnimation = this._currentAnimation;
+            this.viewer.selectedAnimation = this._selectedAnimation;
+        }
+
+        if (this._animationSelect) {
+            this._animationSelect.value = this._selectedAnimation.toString();
         }
     }
 
