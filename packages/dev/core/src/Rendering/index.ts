@@ -41,3 +41,9 @@ export * from "../Shaders/line.fragment";
 export * from "../Shaders/line.vertex";
 export * from "../ShadersWGSL/line.fragment";
 export * from "../ShadersWGSL/line.vertex";
+
+// Outline Renderer
+export * from "../Shaders/outline.fragment";
+export * from "../Shaders/outline.vertex";
+export * from "../ShadersWGSL/outline.fragment";
+export * from "../ShadersWGSL/outline.vertex";
