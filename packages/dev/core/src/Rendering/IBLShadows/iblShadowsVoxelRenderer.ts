@@ -27,7 +27,7 @@ import { ProceduralTexture } from "../../Materials/Textures/Procedurals/procedur
 import { EffectRenderer, EffectWrapper } from "../../Materials/effectRenderer";
 import type { IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
 import { Effect } from "../../Materials/effect";
-import { RenderTargetWrapper } from "core/Engines";
+import type { RenderTargetWrapper } from "core/Engines";
 
 /**
  * Voxel-based shadow rendering for IBL's.

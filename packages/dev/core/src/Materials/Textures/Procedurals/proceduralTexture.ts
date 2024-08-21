@@ -211,6 +211,10 @@ export class ProceduralTexture extends Texture {
                 type: textureType,
                 ...this._options,
             });
+            if (this._rtWrapper.is3D) {
+                this.setFloat("layer", 0);
+                this.setInt("layerNum", 0);
+            }
         }
         return this._rtWrapper;
     }
@@ -707,6 +711,9 @@ export class ProceduralTexture extends Texture {
             for (let layer = 0; layer < numLayers; layer++) {
                 engine.bindFramebuffer(this._rtWrapper, 0, undefined, undefined, true, 0, layer);
 
+                // VBOs
+                engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._drawWrapper.effect!);
+
                 if (this._rtWrapper.is3D || this._rtWrapper.is2DArray) {
                     this._drawWrapper.effect?.setFloat("layer", numLayers !== 1 ? layer / (numLayers - 1) : 0);
                     this._drawWrapper.effect?.setInt("layerNum", layer);
@@ -714,9 +721,6 @@ export class ProceduralTexture extends Texture {
                         this._drawWrapper.effect!.setTexture(name, this._textures[name]);
                     }
                 }
-
-                // VBOs
-                engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._drawWrapper.effect!);
 
                 // Clear
                 if (this.autoClear) {
