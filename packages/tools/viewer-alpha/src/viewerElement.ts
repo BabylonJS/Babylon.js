@@ -19,13 +19,148 @@ export class HTML3DElement extends LitElement {
 
     // eslint-disable-next-line @typescript-eslint/naming-convention, jsdoc/require-jsdoc
     static override styles = css`
-        :host,
-        #container,
-        #renderCanvas {
+        .full-size {
             display: block;
             width: 100%;
             height: 100%;
         }
+
+        .animation-bar-container {
+            position: absolute;
+            height: 48px;
+            width: 100%;
+            bottom: 10px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .animation-bar {
+            background-color: rgba(91, 93, 107, 0.75);
+            display: flex;
+            flex-direction: row;
+            height: 100%;
+            width: 80%;
+            max-width: 1280px;
+            border-radius: 12px;
+            justify-content: center;
+        }
+
+        .animation-bar select {
+            background: none;
+            border: 1px solid transparent;
+            border-radius: 12px;
+            color: white;
+            padding: 12px;
+            height: 100%;
+            min-width: 48px;
+            cursor: pointer;
+            outline: none;
+            appearance: none; /* Remove default styling */
+            -webkit-appearance: none; /* Remove default styling for Safari */
+            -moz-appearance: none; /* Remove default styling for Firefox */
+        }
+
+        .animation-bar select:hover {
+            background-color: rgba(22, 24, 26, 0.2);
+        }
+
+        .animation-bar select:active {
+            border: 1px solid transparent;
+        }
+
+        .animation-bar select:focus-visible {
+            border: 1px solid;
+        }
+
+        .animation-bar button {
+            background: none;
+            border: 1px solid transparent;
+            border-radius: 12px;
+            color: white;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            min-width: 48px;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .animation-bar button:hover {
+            background-color: rgba(22, 24, 26, 0.2);
+        }
+
+        .animation-bar button:focus-visible {
+            border: 1px solid;
+        }
+
+        .animation-bar button svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        .progress-control {
+            display: flex;
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            align-items: center;
+        }
+
+        .progress-wrapper {
+            -webkit-appearance: none;
+            cursor: pointer;
+            width: 100%;
+            height: 95%;
+            outline: none;
+            border: 1px solid transparent;
+            margin: 0 12px;
+            background-color: transparent;
+        }
+
+        .progress-wrapper:focus-visible {
+            border: 1px solid white;
+        }
+
+        /*Chrome -webkit */
+
+        .progress-wrapper::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid white;
+            border-radius: 50%;
+            background: rgba(91, 93, 107, 1);
+            margin-top: -10px;
+        }
+
+        .progress-wrapper::-webkit-slider-runnable-track {
+            height: 2px;
+            -webkit-appearance: none;
+            background-color: white;
+        }
+
+        /** FireFox -moz */
+
+        .progress-wrapper::-moz-range-progress {
+            background-color: white;
+            height: 2px;
+        }
+
+        .progress-wrapper::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border: 2px solid white;
+            border-radius: 50%;
+            background: rgba(91, 93, 107, 1);
+        }
+
+        .progress-wrapper::-moz-range-track {
+            background: white;
+            height: 2px;
+        }
+
+        :host(.full-size);
     `;
 
     /**
@@ -103,35 +238,51 @@ export class HTML3DElement extends LitElement {
     // eslint-disable-next-line babylonjs/available
     override render() {
         return html`
-            <div id="container">
-                <canvas id="renderCanvas" touch-action="none"></canvas>
+            <div class="full-size">
+                <canvas id="renderCanvas" class="full-size" touch-action="none"></canvas>
                 ${this._animations.length > 0 &&
                 html`
-                    <div style="position: absolute; top: 10px;">
-                        ${!this._isAnimationPlaying ? html`<button @click="${this._onPlayAnimationClicked}">Play</button>` : ""}
-                        ${this._isAnimationPlaying ? html`<button @click="${this._onPauseAnimationClicked}">Pause</button>` : ""}
-                        <p>Progress: ${Math.round(this._animationProgress * 100)}%</p>
-                        <select @change="${this._onAnimationSpeedChanged}">
-                            <option value="0.5">0.5x</option>
-                            <option value="1" selected>1x</option>
-                            <option value="1.5">1.5x</option>
-                            <option value="2">2x</option>
-                        </select>
-                        <select id="animationSelect" @change="${this._onSelectedAnimationChanged}">
-                            ${this._animations.map((name, index) => html`<option value="${index}">${name}</option>`)}
-                        </select>
+                    <div class="animation-bar-container">
+                        <div class="animation-bar">
+                            ${this._animations.length > 1
+                                ? html`<select id="animationSelect" @change="${this._onSelectedAnimationChanged}">
+                                      ${this._animations.map((name, index) => html`<option value="${index}">${name}</option>`)}
+                                  </select>`
+                                : ""}
+                            <div class="progress-control">
+                                <button @click="${this._onPlayPauseAnimationClicked}">
+                                    ${!this._isAnimationPlaying
+                                        ? html`<svg viewBox="0 0 20 20">
+                                              <path d="M17.22 8.68a1.5 1.5 0 0 1 0 2.63l-10 5.5A1.5 1.5 0 0 1 5 15.5v-11A1.5 1.5 0 0 1 7.22 3.2l10 5.5Z" fill="currentColor"></path>
+                                          </svg>`
+                                        : html`<svg viewBox="0 0 20 20">
+                                              <path
+                                                  d="M5 2a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H5Zm8 0a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-2Z"
+                                                  fill="currentColor"
+                                              ></path>
+                                          </svg>`}
+                                </button>
+                                <input class="progress-wrapper" type="range" min="0" max="100" step="0.1" value="${this._animationProgress * 100}" />
+                            </div>
+                            <select @change="${this._onAnimationSpeedChanged}">
+                                <option value="0.5">0.5x</option>
+                                <option value="1" selected>1x</option>
+                                <option value="1.5">1.5x</option>
+                                <option value="2">2x</option>
+                            </select>
+                        </div>
                     </div>
                 `}
             </div>
         `;
     }
 
-    private _onPlayAnimationClicked() {
-        this.viewer?.playAnimation();
-    }
-
-    private _onPauseAnimationClicked() {
-        this.viewer?.pauseAnimation();
+    private _onPlayPauseAnimationClicked() {
+        if (this._isAnimationPlaying) {
+            this.viewer?.pauseAnimation();
+        } else {
+            this.viewer?.playAnimation();
+        }
     }
 
     private _onSelectedAnimationChanged(event: Event) {
