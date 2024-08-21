@@ -11,7 +11,6 @@ export * from "./Filtering/hdrFiltering";
 export * from "./hdrCubeTexture";
 export * from "./htmlElementTexture";
 export * from "./internalTexture";
-export * from "./internalTextureLoader";
 export * from "./Loaders/index";
 export * from "./mirrorTexture";
 export * from "./multiRenderTarget";
