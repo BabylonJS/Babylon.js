@@ -346,7 +346,6 @@ export class Viewer implements IDisposable {
     public async pauseAnimation() {
         if (this._activeAnimation?.isPlaying) {
             this._activeAnimation.pause();
-            //this.onIsAnimationPlayingChanged.notifyObservers();
         }
     }
 
