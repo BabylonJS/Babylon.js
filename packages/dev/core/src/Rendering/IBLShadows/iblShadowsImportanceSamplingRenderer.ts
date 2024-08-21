@@ -38,6 +38,9 @@ export class _IblShadowsImportanceSamplingRenderer {
         if (this._iblSource === source) {
             return;
         }
+        if (this._debugPass) {
+            this._debugPass.dispose();
+        }
         this._disposeTextures();
         this._iblSource = source;
         this._createTextures();
@@ -152,6 +155,7 @@ export class _IblShadowsImportanceSamplingRenderer {
         this._icdfyPT.dispose();
         this._cdfxPT.dispose();
         this._icdfxPT.dispose();
+        this._iblSource.dispose();
     }
 
     private _createDebugPass() {
@@ -176,14 +180,14 @@ export class _IblShadowsImportanceSamplingRenderer {
         if (this._iblSource?.isCube) {
             this._debugPass.updateEffect("#define IBL_USE_CUBE_MAP\n");
         }
-        this._debugPass.onApply = (effect) => {
+        this._debugPass.onApplyObservable.add((effect) => {
             effect.setTexture("cdfy", this._cdfyPT);
             effect.setTexture("icdfy", this._icdfyPT);
             effect.setTexture("cdfx", this._cdfxPT);
             effect.setTexture("icdfx", this._icdfxPT);
             effect.setTexture("iblSource", this._iblSource);
             effect.setFloat4("sizeParams", this._debugSizeParams.x, this._debugSizeParams.y, this._debugSizeParams.z, this._debugSizeParams.w);
-        };
+        });
     }
 
     /**

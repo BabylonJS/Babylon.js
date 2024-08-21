@@ -90,11 +90,11 @@ export class _IblShadowsAccumulationPass {
             };
             this._debugPassPP = new PostProcess(this.debugPassName, "iblShadowDebug", debugOptions);
             this._debugPassPP.autoClear = false;
-            this._debugPassPP.onApply = (effect) => {
+            this._debugPassPP.onApplyObservable.add((effect) => {
                 // update the caustic texture with what we just rendered.
                 effect.setTextureFromPostProcessOutput("debugSampler", this._outputPP);
                 effect.setVector4("sizeParams", this._debugSizeParams);
-            };
+            });
         }
     }
 
@@ -139,11 +139,11 @@ export class _IblShadowsAccumulationPass {
         };
         const localPositionCopyPP = new PostProcess("Copy Local Position Texture", "pass", localPositionCopyOptions);
         localPositionCopyPP.autoClear = false;
-        localPositionCopyPP.onApply = (effect) => {
+        localPositionCopyPP.onApplyObservable.add((effect) => {
             const prePassRenderer = this._scene!.prePassRenderer;
             const index = prePassRenderer!.getIndex(Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE);
             if (index >= 0) effect.setTexture("textureSampler", prePassRenderer!.getRenderTarget().textures[index]);
-        };
+        });
         this._oldLocalPositionRT.addPostProcess(localPositionCopyPP);
         this._oldLocalPositionRT.skipInitialClear = true;
         this._oldLocalPositionRT.noPrePassRenderer = true;
@@ -178,9 +178,9 @@ export class _IblShadowsAccumulationPass {
         };
         const accumulationCopyPP = new PostProcess("Copy Accumulation Texture", "pass", accumulationCopyOptions);
         accumulationCopyPP.autoClear = false;
-        accumulationCopyPP.onApply = (effect) => {
+        accumulationCopyPP.onApplyObservable.add((effect) => {
             effect.setTextureFromPostProcessOutput("textureSampler", this._outputPP);
-        };
+        });
         this._oldAccumulationRT.addPostProcess(accumulationCopyPP);
         this._oldAccumulationRT.skipInitialClear = true;
         this._oldAccumulationRT.noPrePassRenderer = true;
@@ -200,9 +200,9 @@ export class _IblShadowsAccumulationPass {
         };
         this._outputPP = new PostProcess("accumulationPassPP", "iblShadowAccumulation", ppOptions);
         this._outputPP.autoClear = false;
-        this._outputPP.onApply = (effect) => {
+        this._outputPP.onApplyObservable.add((effect) => {
             this._updatePostProcess(effect);
-        };
+        });
     }
 
     public _updatePostProcess(effect: Effect) {

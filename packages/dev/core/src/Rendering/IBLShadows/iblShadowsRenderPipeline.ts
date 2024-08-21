@@ -140,13 +140,14 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * How dark the voxel shadows appear. 1.0 is full opacity, 0.0 is no shadows.
      */
     public get voxelShadowOpacity() {
-        return this._voxelTracingPass.voxelShadowOpacity;
+        return this._voxelTracingPass?.voxelShadowOpacity;
     }
 
     /**
      * How dark the voxel shadows appear. 1.0 is full opacity, 0.0 is no shadows.
      */
     public set voxelShadowOpacity(value: number) {
+        if (!this._voxelTracingPass) return;
         this._voxelTracingPass.voxelShadowOpacity = value;
     }
 
@@ -154,46 +155,57 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * How dark the screen-space shadows appear. 1.0 is full opacity, 0.0 is no shadows.
      */
     public get ssShadowOpacity(): number {
-        return this._voxelTracingPass.ssShadowOpacity;
+        return this._voxelTracingPass?.ssShadowOpacity;
     }
 
     public set ssShadowOpacity(value: number) {
+        if (!this._voxelTracingPass) return;
         this._voxelTracingPass.ssShadowOpacity = value;
     }
 
     public get ssShadowSamples(): number {
-        return this._voxelTracingPass.sssSamples;
+        return this._voxelTracingPass?.sssSamples;
     }
 
     public set ssShadowSamples(value: number) {
+        if (!this._voxelTracingPass) return;
         this._voxelTracingPass.sssSamples = value;
     }
 
     public get ssShadowStride(): number {
-        return this._voxelTracingPass.sssStride;
+        return this._voxelTracingPass?.sssStride;
     }
 
     public set ssShadowStride(value: number) {
+        if (!this._voxelTracingPass) return;
         this._voxelTracingPass.sssStride = value;
     }
 
     public get ssShadowMaxDist(): number {
-        return this._voxelTracingPass.sssMaxDist;
+        return this._voxelTracingPass?.sssMaxDist;
     }
 
     public set ssShadowMaxDist(value: number) {
+        if (!this._voxelTracingPass) return;
         this._voxelTracingPass.sssMaxDist = value;
     }
 
     public get ssShadowThickness(): number {
-        return this._voxelTracingPass.sssThickness;
+        return this._voxelTracingPass?.sssThickness;
     }
 
     public set ssShadowThickness(value: number) {
+        if (!this._voxelTracingPass) return;
         this._voxelTracingPass.sssThickness = value;
     }
 
+    /**
+     * Set the IBL image to be used for shadowing. It can be either a cubemap
+     * or a 2D equirectangular texture.
+     * @param iblSource The texture to use for IBL shadowing
+     */
     public setIblTexture(iblSource: BaseTexture) {
+        if (!this._importanceSamplingRenderer) return;
         this._importanceSamplingRenderer.iblSource = iblSource;
     }
 
@@ -202,7 +214,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * @returns The texture containing the voxel grid data
      */
     public getVoxelGridTexture(): Texture {
-        return this._voxelRenderer.getVoxelGrid();
+        return this._voxelRenderer?.getVoxelGrid();
     }
 
     /**
@@ -246,13 +258,14 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * Turn on or off the debug view of the CDF importance sampling data
      */
     public get importanceSamplingDebugEnabled(): boolean {
-        return this._importanceSamplingRenderer.debugEnabled;
+        return this._importanceSamplingRenderer?.debugEnabled;
     }
 
     /**
      * Turn on or off the debug view of the CDF importance sampling data
      */
     public set importanceSamplingDebugEnabled(enabled: boolean) {
+        if (!this._importanceSamplingRenderer) return;
         if (enabled && !this.allowDebugPasses) {
             Logger.Warn("Can't enable importance sampling debug view without setting allowDebugPasses to true.");
             return;
@@ -270,13 +283,14 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * Turn on or off the debug view of the voxel grid
      */
     public get voxelDebugEnabled(): boolean {
-        return this._voxelRenderer.voxelDebugEnabled;
+        return this._voxelRenderer?.voxelDebugEnabled;
     }
 
     /**
      * Turn on or off the debug view of the voxel grid
      */
     public set voxelDebugEnabled(enabled: boolean) {
+        if (!this._voxelRenderer) return;
         if (enabled && !this.allowDebugPasses) {
             Logger.Warn("Can't enable voxel debug view without setting allowDebugPasses to true.");
             return;
@@ -294,7 +308,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * When using tri-axis voxelization, this will display the voxel grid for the specified axis
      */
     public get voxelDebugAxis(): number {
-        return this._voxelRenderer.voxelDebugAxis;
+        return this._voxelRenderer?.voxelDebugAxis;
     }
 
     /**
@@ -302,6 +316,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * When using tri-axis voxelization, this will display the voxel grid for the specified axis
      */
     public set voxelDebugAxis(axisNum: number) {
+        if (!this._voxelRenderer) return;
         this._voxelRenderer.voxelDebugAxis = axisNum;
     }
 
@@ -309,6 +324,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * Set the mip level to display for the voxel grid debug view
      */
     public set voxelDebugDisplayMip(mipNum: number) {
+        if (!this._voxelRenderer) return;
         this._voxelRenderer.setDebugMipNumber(mipNum);
     }
 
@@ -323,6 +339,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * Display the debug view for the voxel tracing pass
      */
     public set voxelTracingDebugEnabled(enabled: boolean) {
+        if (!this._voxelTracingPass) return;
         if (enabled && !this.allowDebugPasses) {
             Logger.Warn("Can't enable voxel tracing debug view without setting allowDebugPasses to true.");
             return;
@@ -340,13 +357,14 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * Display the debug view for the spatial blur pass
      */
     public get spatialBlurPassDebugEnabled(): boolean {
-        return this._spatialBlurPass.debugEnabled;
+        return this._spatialBlurPass?.debugEnabled;
     }
 
     /**
      * Display the debug view for the spatial blur pass
      */
     public set spatialBlurPassDebugEnabled(enabled: boolean) {
+        if (!this._spatialBlurPass) return;
         if (enabled && !this.allowDebugPasses) {
             Logger.Warn("Can't enable spatial blur debug view without setting allowDebugPasses to true.");
             return;
@@ -364,13 +382,14 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * Display the debug view for the accumulation pass
      */
     public get accumulationPassDebugEnabled(): boolean {
-        return this._accumulationPass.debugEnabled;
+        return this._accumulationPass?.debugEnabled;
     }
 
     /**
      * Display the debug view for the accumulation pass
      */
     public set accumulationPassDebugEnabled(enabled: boolean) {
+        if (!this._accumulationPass) return;
         if (enabled && !this.allowDebugPasses) {
             Logger.Warn("Can't enable accumulation pass debug view without setting allowDebugPasses to true.");
             return;
@@ -444,6 +463,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * The number of different directions to sample during the voxel tracing pass
      */
     public set sampleDirections(value: number) {
+        if (!this._voxelTracingPass) return;
         this._voxelTracingPass.sampleDirections = value;
     }
 
@@ -451,13 +471,14 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * The decree to which the shadows persist between frames. 0.0 is no persistence, 1.0 is full persistence.
      **/
     public get shadowRemenance(): number {
-        return this._accumulationPass.remenance;
+        return this._accumulationPass?.remenance;
     }
 
     /**
      * The decree to which the shadows persist between frames. 0.0 is no persistence, 1.0 is full persistence.
      **/
     public set shadowRemenance(value: number) {
+        if (!this._accumulationPass) return;
         this._accumulationPass.remenance = value;
     }
 
@@ -472,6 +493,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * The global rotation of the IBL for shadows
      */
     public set envRotation(value: number) {
+        if (!this._voxelTracingPass) return;
         this._voxelTracingPass.envRotation = value;
     }
 
@@ -572,20 +594,20 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         };
         this._shadowCompositePP = new PostProcess("iblShadowsCombine", "iblShadowsCombine", compositeOptions);
         this._shadowCompositePP.autoClear = false;
-        this._shadowCompositePP.onApply = (effect) => {
+        this._shadowCompositePP.onApplyObservable.add((effect) => {
             // Setting the input of the tracing pass because this is the scene RT that we want to apply the shadows to.
             effect.setTextureFromPostProcess("sceneTexture", this._voxelTracingPass.getPassPP());
             effect.setFloat("shadowOpacity", this._shadowOpacity);
             if (
-                this._importanceSamplingRenderer.isReady() &&
-                this._voxelRenderer.isReady() &&
-                this._voxelTracingPass.isReady() &&
-                this._spatialBlurPass.isReady() &&
-                this._accumulationPass.isReady()
+                this._importanceSamplingRenderer?.isReady() &&
+                this._voxelRenderer?.isReady() &&
+                this._voxelTracingPass?.isReady() &&
+                this._spatialBlurPass?.isReady() &&
+                this._accumulationPass?.isReady()
             ) {
                 this.update();
             }
-        };
+        });
         this._shadowCompositePP._prePassEffectConfiguration = this._prePassEffectConfiguration;
         setTimeout(() => {
             this._voxelizationDirty = true;
@@ -662,7 +684,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         };
         this._gbufferDebugPass = new PostProcess("iblShadowGBufferDebug", "iblShadowGBufferDebug", options);
         this._gbufferDebugPass.autoClear = false;
-        this._gbufferDebugPass.onApply = (effect) => {
+        this._gbufferDebugPass.onApplyObservable.add((effect) => {
             this._prePassEffectConfiguration.texturesRequired.forEach((type) => {
                 const prePassRenderer = this.scene.prePassRenderer;
                 if (!prePassRenderer) {
@@ -676,20 +698,21 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             if (this.scene.activeCamera) {
                 effect.setFloat("maxDepth", this.scene.activeCamera.maxZ);
             }
-        };
+        });
         return this._gbufferDebugPass;
     }
 
     private _createDebugPasses() {
         this._debugPasses = [
-            this._importanceSamplingRenderer.getDebugPassPP(),
-            this._voxelRenderer.getDebugPassPP(),
-            this._voxelTracingPass.getDebugPassPP(),
-            this._spatialBlurPass.getDebugPassPP(),
-            this._accumulationPass.getDebugPassPP(),
+            this._importanceSamplingRenderer?.getDebugPassPP(),
+            this._voxelRenderer?.getDebugPassPP(),
+            this._voxelTracingPass?.getDebugPassPP(),
+            this._spatialBlurPass?.getDebugPassPP(),
+            this._accumulationPass?.getDebugPassPP(),
             this._getGBufferDebugPass(),
         ];
         for (let i = 0; i < this._debugPasses.length; i++) {
+            if (!this._debugPasses[i]) continue;
             this.addEffect(
                 new PostProcessRenderEffect(
                     this.scene.getEngine(),
@@ -705,6 +728,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this.scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this.name, this.cameras);
         this.scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this.name, cameras);
         for (let i = 0; i < this._debugPasses.length; i++) {
+            if (!this._debugPasses[i]) continue;
             this._disableEffect(this._debugPasses[i].name, this.cameras);
         }
     }

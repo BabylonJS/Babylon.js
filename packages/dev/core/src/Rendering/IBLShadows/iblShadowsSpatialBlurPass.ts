@@ -73,11 +73,11 @@ export class _IblShadowsSpatialBlurPass {
             };
             this._debugPassPP = new PostProcess(this.debugPassName, "iblShadowDebug", debugOptions);
             this._debugPassPP.autoClear = false;
-            this._debugPassPP.onApply = (effect) => {
+            this._debugPassPP.onApplyObservable.add((effect) => {
                 // update the caustic texture with what we just rendered.
                 effect.setTextureFromPostProcessOutput("debugSampler", this._outputPP);
                 effect.setVector4("sizeParams", this._debugSizeParams);
-            };
+            });
         }
     }
 
@@ -106,9 +106,9 @@ export class _IblShadowsSpatialBlurPass {
         };
         this._outputPP = new PostProcess("spacialBlurPP", "iblShadowSpatialBlur", ppOptions);
         this._outputPP.autoClear = false;
-        this._outputPP.onApply = (effect) => {
+        this._outputPP.onApplyObservable.add((effect) => {
             this._updatePostProcess(effect);
-        };
+        });
     }
 
     private _updatePostProcess(effect: Effect) {

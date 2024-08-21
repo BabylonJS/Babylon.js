@@ -27,6 +27,7 @@ import { ProceduralTexture } from "../../Materials/Textures/Procedurals/procedur
 import { EffectRenderer, EffectWrapper } from "../../Materials/effectRenderer";
 import type { IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
 import { Effect } from "../../Materials/effect";
+import { RenderTargetWrapper } from "core/Engines";
 
 /**
  * Voxel-based shadow rendering for IBL's.
@@ -181,7 +182,7 @@ export class _IblShadowsVoxelRenderer {
                 reusable: false,
             };
             this._voxelDebugPass = new PostProcess(this.debugPassName, this._isVoxelGrid3D ? "voxelGrid3dDebug" : "voxelGrid2dArrayDebug", debugOptions);
-            this._voxelDebugPass.onApply = (effect) => {
+            this._voxelDebugPass.onApplyObservable.add((effect) => {
                 // update the caustic texture with what we just rendered.
                 if (this._voxelDebugAxis === 0) {
                     effect.setTexture("voxelTexture", this._voxelGridXaxis);
@@ -195,7 +196,7 @@ export class _IblShadowsVoxelRenderer {
                 effect.setTexture("voxelSlabTexture", this._voxelSlabDebugRT);
                 effect.setVector4("sizeParams", this._debugSizeParams);
                 effect.setFloat("mipNumber", this._debugMipNumber);
-            };
+            });
         }
     }
 
@@ -280,7 +281,13 @@ export class _IblShadowsVoxelRenderer {
         if (!mipTarget) {
             return;
         }
-        const rt = (this.getVoxelGrid() as any)._rtWrapper;
+        const voxelGrid = this.getVoxelGrid();
+        let rt: RenderTargetWrapper;
+        if (voxelGrid instanceof RenderTargetTexture && voxelGrid.renderTarget) {
+            rt = voxelGrid.renderTarget;
+        } else {
+            rt = (voxelGrid as any)._rtWrapper;
+        }
         if (rt) {
             this._copyMipEffectRenderer.saveStates();
             const bindSize = mipTarget.getSize().width;
@@ -363,7 +370,7 @@ export class _IblShadowsVoxelRenderer {
             mipTarget.autoClear = false;
             mipTarget.wrapU = Texture.CLAMP_ADDRESSMODE;
             mipTarget.wrapV = Texture.CLAMP_ADDRESSMODE;
-            mipTarget.setTexture("srcMip", mipIdx > 1 ? this._mipArray[mipIdx - 2] : this._voxelGridRT);
+            mipTarget.setTexture("srcMip", mipIdx > 1 ? this._mipArray[mipIdx - 2] : this.getVoxelGrid());
             mipTarget.setInt("layerNum", 0);
         }
         // this._voxelGridRT.onGeneratedObservable.add(() => {
