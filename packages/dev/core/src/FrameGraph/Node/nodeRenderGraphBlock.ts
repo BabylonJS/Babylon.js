@@ -43,16 +43,6 @@ export class NodeRenderGraphBlock {
      */
     public onBuildObservable = new Observable<NodeRenderGraphBlock>();
 
-    /**
-     * Gets an observable raised before the block is executed
-     */
-    public onBeforeExecuteObservable = new Observable<NodeRenderGraphBlock>();
-
-    /**
-     * Gets an observable raised after the block is executed
-     */
-    public onAfterExecuteObservable = new Observable<NodeRenderGraphBlock>();
-
     /** @internal */
     public _inputs = new Array<NodeRenderGraphConnectionPoint>();
 
@@ -325,15 +315,17 @@ export class NodeRenderGraphBlock {
 
         this._buildBlock(state);
 
-        // Compile connected blocks
-        for (const output of this._outputs) {
-            for (const endpoint of output.endpoints) {
-                const block = endpoint.ownerBlock;
-                if (block) {
-                    block.build(state);
-                }
-            }
-        }
+        // Note: I don't know why we have the code bloew in the node frameworks.
+        // Apparently this isn't necessary; we'll collect/build all the required blocks by simply calling “build” on the output block.
+        // The loop below will potentially call "build" for blocks that are not connected to the output block, adding unwanted tasks to the frame graph.
+        // for (const output of this._outputs) {
+        //     for (const endpoint of output.endpoints) {
+        //         const block = endpoint.ownerBlock;
+        //         if (block) {
+        //             block.build(state);
+        //         }
+        //     }
+        // }
 
         this.onBuildObservable.notifyObservers(this);
 

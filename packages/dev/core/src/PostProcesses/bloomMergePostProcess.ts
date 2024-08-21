@@ -87,7 +87,7 @@ export class BloomMergePostProcess extends PostProcess {
 
     public override recordFrameGraph(frameGraph: FrameGraph): void {
         if (this.sourceTexture === undefined || this.sourceBlurTexture === undefined) {
-            throw new Error("BloomMergePostProcess: sourceTexture and sourceBlurTexture are required");
+            throw new Error(`BloomMergePostProcess "${this.name}": sourceTexture and sourceBlurTexture are required`);
         }
 
         const sourceTextureHandle = frameGraph.getTextureHandle(this.sourceTexture);

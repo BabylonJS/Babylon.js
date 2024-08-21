@@ -46,11 +46,12 @@ export class BloomPostProcessBlock extends NodeRenderGraphBlock {
             }
         }
 
-        this._frameGraphTask = new BloomEffect(engine, bloomScale, 0.15, 64, defaultPipelineTextureType, false, true);
+        this._frameGraphTask = new BloomEffect(engine, bloomScale, 0.75, 64, defaultPipelineTextureType, false, true);
+        this._frameGraphTask.threshold = 0.2;
     }
 
     /** Sampling mode used to sample from the source texture */
-    @editableInPropertyPage("Source sampling mode", PropertyTypeForEdition.Int, "PROPERTIES", { notifiers: { update: false } })
+    @editableInPropertyPage("Source sampling mode", PropertyTypeForEdition.Int)
     public get sourceSamplingMode() {
         return this._frameGraphTask.sourceSamplingMode;
     }
@@ -60,7 +61,7 @@ export class BloomPostProcessBlock extends NodeRenderGraphBlock {
     }
 
     /** The luminance threshold to find bright areas of the image to bloom. */
-    @editableInPropertyPage("Threshold", PropertyTypeForEdition.Float, "PROPERTIES", { notifiers: { update: false } })
+    @editableInPropertyPage("Threshold", PropertyTypeForEdition.Float)
     public get threshold(): number {
         return this._frameGraphTask.threshold;
     }
@@ -70,7 +71,7 @@ export class BloomPostProcessBlock extends NodeRenderGraphBlock {
     }
 
     /** The strength of the bloom. */
-    @editableInPropertyPage("Weight", PropertyTypeForEdition.Float, "PROPERTIES", { notifiers: { update: false } })
+    @editableInPropertyPage("Weight", PropertyTypeForEdition.Float)
     public get weight(): number {
         return this._frameGraphTask.weight;
     }
@@ -80,7 +81,7 @@ export class BloomPostProcessBlock extends NodeRenderGraphBlock {
     }
 
     /** Specifies the size of the bloom blur kernel, relative to the final output size */
-    @editableInPropertyPage("Kernel", PropertyTypeForEdition.Float, "PROPERTIES", { notifiers: { update: false } })
+    @editableInPropertyPage("Kernel", PropertyTypeForEdition.Float)
     public get kernel(): number {
         return this._frameGraphTask.kernel;
     }

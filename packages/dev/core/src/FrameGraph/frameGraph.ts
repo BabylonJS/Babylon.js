@@ -9,6 +9,7 @@ import { FrameGraphContext } from "./frameGraphContext";
 import type { TextureHandle, FrameGraphTextureCreationOptions, FrameGraphTextureDescription } from "./frameGraphTextureManager";
 import { FrameGraphTextureManager, FrameGraphTextureNamespace } from "./frameGraphTextureManager";
 import { FrameGraphTaskInternals } from "./Tasks/taskInternals";
+import { Observable } from "core/Misc/observable";
 
 /**
  * Class used to implement the frame graph
@@ -20,6 +21,11 @@ export class FrameGraph {
 
     private _tasks: IFrameGraphTask[] = [];
     private _currentProcessedTask: IFrameGraphTask | null = null;
+
+    /**
+     * Observable raised when the node render graph is built
+     */
+    public onBuildObservable = new Observable<FrameGraph>();
 
     /**
      * Constructs the frame graph
@@ -94,6 +100,8 @@ export class FrameGraph {
         }
 
         this._textureManager._allocateTextures();
+
+        this.onBuildObservable.notifyObservers(this);
     }
 
     /**

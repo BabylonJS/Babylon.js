@@ -14,6 +14,7 @@ import { RegisterDefaultInput } from "./graphSystem/registerDefaultInput";
 import { RegisterExportData } from "./graphSystem/registerExportData";
 import type { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
 import type { AbstractEngine } from "core/Engines";
+import { RegisterDebugSupport } from "./graphSystem/registerDebugSupport";
 
 export class GlobalState {
     nodeRenderGraph: NodeRenderGraph;
@@ -50,6 +51,7 @@ export class GlobalState {
         this.stateManager.lockObject = this.lockObject;
 
         RegisterElbowSupport(this.stateManager);
+        RegisterDebugSupport(this.stateManager);
         RegisterNodePortDesign(this.stateManager);
         RegisterDefaultInput(this.stateManager);
         RegisterExportData(this.stateManager);

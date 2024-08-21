@@ -33,10 +33,6 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
         super(props);
     }
 
-    processUpdate() {
-        this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
-    }
-
     override render() {
         const block = this.props.nodeData.data as NodeRenderGraphBlock;
 

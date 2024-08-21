@@ -75,10 +75,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this.props.globalState.onBuiltObservable.remove(this._onBuiltObserver);
     }
 
-    processInputBlockUpdate() {
-        this.props.globalState.stateManager.onRebuildRequiredObservable.notifyObservers();
-    }
-
     load(file: File) {
         Tools.ReadFile(
             file,

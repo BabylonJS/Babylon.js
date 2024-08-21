@@ -118,7 +118,7 @@ checkBabylonVersionAsync().then(() => {
                                     if (editorDisplayed) {
                                         customLoadObservable.notifyObservers(serializationObject);
                                     } else {
-                                        nodeRenderGraph.loadFromSerialization(serializationObject);
+                                        nodeRenderGraph.parseSerializedObject(serializationObject);
                                         try {
                                             nodeRenderGraph.build();
                                         } catch (err) {

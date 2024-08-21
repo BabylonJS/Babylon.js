@@ -27,6 +27,8 @@ import { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock"
 import { RenderGraphOutputBlock } from "core/FrameGraph/Node/Blocks/outputBlock";
 import type { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphBlockConnectionPointTypes";
 import { RenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
+import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
+import { Constants } from "core/Engines/constants";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -65,6 +67,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
     private _previewHost: Nullable<HTMLElement>;
     private _popUpWindow: Window;
+
+    private _externalTextures: RenderTargetWrapper[] = [];
 
     appendBlock(dataToAppend: NodeRenderGraphBlock | INodeData, recursion = true) {
         return this._graphCanvas.createNodeFromObject(
@@ -112,6 +116,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
     override componentWillUnmount() {
         window.removeEventListener("wheel", this.onWheel);
+
+        for (const texture of this._externalTextures) {
+            texture.dispose();
+        }
+        this._externalTextures.length = 0;
 
         if (this.props.globalState.hostDocument) {
             this.props.globalState.hostDocument!.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
@@ -231,10 +240,47 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this._graphCanvas.zoomToFit();
     }
 
+    private _setExternalInputs() {
+        const nodeRenderGraph = this.props.globalState.nodeRenderGraph;
+
+        let textureIndex = 0;
+
+        const allInputs = nodeRenderGraph.getInputBlocks();
+        for (const input of allInputs) {
+            if (!input.isExternal) {
+                continue;
+            }
+            if (input.isAnyTexture()) {
+                let texture: RenderTargetWrapper;
+                if (textureIndex < this._externalTextures.length) {
+                    texture = this._externalTextures[textureIndex++];
+                } else {
+                    texture = this.props.globalState.engine.createRenderTargetTexture(
+                        { width: 1, height: 1 },
+                        {
+                            generateMipMaps: false,
+                            generateDepthBuffer: false,
+                            generateStencilBuffer: false,
+                            type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
+                            format: Constants.TEXTUREFORMAT_RED,
+                            samples: 4,
+                            label: `Dummy external texture #${textureIndex} for NRGE`,
+                        }
+                    );
+                    this._externalTextures.push(texture);
+                    textureIndex++;
+                }
+                input.value = texture;
+            }
+        }
+    }
+
     buildRenderGraph() {
         if (!this.props.globalState.nodeRenderGraph) {
             return;
         }
+
+        this._setExternalInputs();
 
         try {
             this.props.globalState.nodeRenderGraph.build();

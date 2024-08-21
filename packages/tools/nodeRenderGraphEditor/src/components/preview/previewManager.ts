@@ -11,44 +11,58 @@ import { SceneLoader } from "core/Loading/sceneLoader";
 import type { FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
 import { Color3 } from "core/Maths/math.color";
 import "core/Rendering/depthRendererSceneComponent";
-import type { NodeRenderGraph } from "core/FrameGraph/Node/nodeRenderGraph";
+import { NodeRenderGraph } from "core/FrameGraph/Node/nodeRenderGraph";
 import type { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
-import { StandardMaterial } from "core/Materials/standardMaterial";
-import { Texture } from "core/Materials/Textures/texture";
 import type { TransformNode } from "core/Meshes/transformNode";
-import { MultiMaterial } from "core/Materials/multiMaterial";
+import { PassPostProcess } from "core/PostProcesses/passPostProcess";
+import { Constants } from "core/Engines/constants";
+import type { Mesh } from "core/Meshes/mesh";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import { LogEntry } from "../log/logComponent";
 
 export class PreviewManager {
     private _nodeRenderGraph: NodeRenderGraph;
-    private _onBuildObserver: Nullable<Observer<NodeRenderGraph>>;
 
     private _onFrameObserver: Nullable<Observer<void>>;
     private _onAnimationCommandActivatedObserver: Nullable<Observer<void>>;
     private _onUpdateRequiredObserver: Nullable<Observer<Nullable<NodeRenderGraphBlock>>>;
+    private _onRebuildRequiredObserver: Nullable<Observer<void>>;
+    private _onImportFrameObserver: Nullable<Observer<any>>;
+    private _onResetRequiredObserver: Nullable<Observer<boolean>>;
     private _onPreviewBackgroundChangedObserver: Nullable<Observer<void>>;
     private _engine: Engine;
     private _scene: Scene;
+    private _meshes: AbstractMesh[];
     private _camera: ArcRotateCamera;
     private _light: HemisphericLight;
     private _globalState: GlobalState;
-    private _matTexture: StandardMaterial;
-    private _matCap: StandardMaterial;
-    private _matStd: MultiMaterial;
-    private _matVertexColor: StandardMaterial;
+    private _passPostProcess: PassPostProcess;
 
     public constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState) {
-        this._nodeRenderGraph = globalState.nodeRenderGraph;
         this._globalState = globalState;
 
         this._onFrameObserver = this._globalState.onFrame.add(() => {
             this._frameCamera();
         });
 
-        this._onBuildObserver = this._nodeRenderGraph.onBuildObservable.add(() => {
-            this._refreshPreviewMesh(false);
-        });
         this._onUpdateRequiredObserver = globalState.stateManager.onUpdateRequiredObservable.add(() => {
-            this._refreshPreviewMesh(false);
+            this._createNodeRenderGraph();
+            this._buildGraph();
+        });
+
+        this._onRebuildRequiredObserver = globalState.stateManager.onRebuildRequiredObservable.add(() => {
+            this._createNodeRenderGraph();
+            this._buildGraph();
+        });
+
+        this._onImportFrameObserver = globalState.onImportFrameObservable.add(() => {
+            this._createNodeRenderGraph();
+            this._buildGraph();
+        });
+
+        this._onResetRequiredObserver = globalState.onResetRequiredObservable.add(() => {
+            this._createNodeRenderGraph();
+            this._buildGraph();
         });
 
         this._onPreviewBackgroundChangedObserver = globalState.onPreviewBackgroundChanged.add(() => {
@@ -74,37 +88,55 @@ export class PreviewManager {
         this._camera.wheelDeltaPercentage = 0.01;
         this._camera.pinchDeltaPercentage = 0.01;
 
-        this._matCap = new StandardMaterial("MatCap", this._scene);
-        this._matCap.disableLighting = true;
-        this._matCap.backFaceCulling = false;
-
-        const matCapTexture = new Texture("https://assets.babylonjs.com/skyboxes/matcap.jpg", this._scene);
-        matCapTexture.coordinatesMode = Texture.SPHERICAL_MODE;
-        this._matCap.reflectionTexture = matCapTexture;
-
-        this._matStd = new MultiMaterial("MatStd", this._scene);
-        const subMat = new StandardMaterial("ChildStdMat", this._scene);
-        subMat.backFaceCulling = false;
-        subMat.specularColor = Color3.Black();
-        this._matStd.subMaterials.push(subMat);
-
-        this._matTexture = new StandardMaterial("MatTexture", this._scene);
-        this._matTexture.backFaceCulling = false;
-        this._matTexture.emissiveTexture = new Texture("https://assets.babylonjs.com/textures/amiga.jpg", this._scene);
-        this._matTexture.disableLighting = true;
-
-        this._matVertexColor = new StandardMaterial("VertexColor", this._scene);
-        this._matVertexColor.disableLighting = true;
-        this._matVertexColor.backFaceCulling = false;
-        this._matVertexColor.emissiveColor = Color3.White();
-
         this._light = new HemisphericLight("Hemispheric light", new Vector3(0, 1, 0), this._scene);
-        this._refreshPreviewMesh(true);
+        this._refreshPreviewMesh();
+
+        this._passPostProcess = new PassPostProcess("pass", 1, this._camera, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, undefined, undefined, Constants.TEXTURETYPE_HALF_FLOAT);
+        this._passPostProcess.samples = 4;
+        this._passPostProcess.resize(this._engine.getRenderWidth(), this._engine.getRenderHeight(), this._camera);
+
+        this._createNodeRenderGraph();
+        this._buildGraph();
+
+        this._scene.onAfterRenderObservable.add(() => {
+            this._nodeRenderGraph?.execute();
+        });
+
+        this._passPostProcess.onSizeChangedObservable.add(() => {
+            this._buildGraph();
+        });
 
         this._engine.runRenderLoop(() => {
             this._engine.resize();
             this._scene.render();
         });
+    }
+
+    private _createNodeRenderGraph() {
+        const serialized = this._globalState.nodeRenderGraph.serialize();
+        this._nodeRenderGraph?.dispose();
+        this._nodeRenderGraph = NodeRenderGraph.Parse(serialized, this._engine, {
+            rebuildGraphOnEngineResize: false,
+            scene: this._scene,
+        });
+        (window as any).nrg = this._nodeRenderGraph;
+    }
+
+    private _buildGraph() {
+        const allInputs = this._nodeRenderGraph.getInputBlocks();
+        for (const input of allInputs) {
+            if (!input.isExternal) {
+                continue;
+            }
+            if (input.isAnyTexture()) {
+                input.value = this._passPostProcess.inputTexture;
+            }
+        }
+        try {
+            this._nodeRenderGraph.build();
+        } catch (err) {
+            this._globalState.onLogRequiredObservable.notifyObservers(new LogEntry("From preview manager: " + err, true));
+        }
     }
 
     private _handleAnimations() {
@@ -124,6 +156,7 @@ export class PreviewManager {
             }
         }
     }
+
     private _frameCamera() {
         const framingBehavior = this._camera.getBehaviorByName("Framing") as FramingBehavior;
 
@@ -131,15 +164,10 @@ export class PreviewManager {
         framingBehavior.elevationReturnTime = -1;
 
         if (this._scene.meshes.length) {
-            const worldExtends = this._scene.getWorldExtends((m) => m.name === "main");
+            const worldExtends = this._scene.getWorldExtends();
             this._camera.lowerRadiusLimit = null;
             this._camera.upperRadiusLimit = null;
-            if (!framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max)) {
-                setTimeout(() => {
-                    this._frameCamera();
-                });
-                return;
-            }
+            framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
         }
 
         this._camera.pinchPrecision = 200 / this._camera.radius;
@@ -147,47 +175,55 @@ export class PreviewManager {
     }
 
     private _prepareScene() {
-        // Update
-        this._updatePreview();
+        this._globalState.onIsLoadingChanged.notifyObservers(false);
 
         // Animations
         this._handleAnimations();
+
+        this._frameCamera();
     }
 
-    private _refreshPreviewMesh(first: boolean) {
+    private _refreshPreviewMesh() {
         SceneLoader.ShowLoadingScreen = false;
 
         this._globalState.onIsLoadingChanged.notifyObservers(true);
 
-        this._prepareScene();
-
-        if (first) {
-            this._frameCamera();
+        if (this._meshes && this._meshes.length) {
+            for (const mesh of this._meshes) {
+                mesh.dispose();
+            }
         }
-    }
+        this._meshes = [];
 
-    private _updatePreview() {
-        try {
-            this._globalState.onIsLoadingChanged.notifyObservers(false);
-        } catch (err) {
-            // Ignore the error
-            this._globalState.onIsLoadingChanged.notifyObservers(false);
-        }
+        const bakeTransformation = (mesh: Mesh) => {
+            mesh.bakeCurrentTransformIntoVertices();
+            mesh.refreshBoundingInfo();
+            mesh.parent = null;
+        };
+
+        SceneLoader.AppendAsync("https://assets.babylonjs.com/meshes/", "previewSphere.glb", this._scene).then(() => {
+            bakeTransformation(this._scene.getMeshByName("__root__")!.getChildMeshes(true)[0] as Mesh);
+            this._meshes.push(...this._scene.meshes);
+            this._prepareScene();
+        });
     }
 
     public dispose() {
         this._globalState.onFrame.remove(this._onFrameObserver);
-        this._nodeRenderGraph.onBuildObservable.remove(this._onBuildObserver);
         this._globalState.stateManager.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
+        this._globalState.stateManager.onRebuildRequiredObservable.remove(this._onRebuildRequiredObserver);
+        this._globalState.onImportFrameObservable.remove(this._onImportFrameObserver);
+        this._globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
         this._globalState.onAnimationCommandActivated.remove(this._onAnimationCommandActivatedObserver);
         this._globalState.onPreviewBackgroundChanged.remove(this._onPreviewBackgroundChangedObserver);
 
-        if (this._nodeRenderGraph) {
-            this._nodeRenderGraph.dispose();
-        }
+        this._nodeRenderGraph?.dispose();
 
         this._light.dispose();
         this._camera.dispose();
+        for (const mesh of this._meshes) {
+            mesh.dispose();
+        }
 
         this._scene.dispose();
         this._engine.dispose();

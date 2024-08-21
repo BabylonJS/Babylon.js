@@ -19,7 +19,7 @@ export class FrameGraphCopyToTextureTask implements IFrameGraphTask {
 
     public recordFrameGraph(frameGraph: FrameGraph) {
         if (this.sourceTexture === undefined || this.destinationTexture === undefined) {
-            throw new Error("FrameGraphCopyToTextureTask: sourceTexture and destinationTexture are required");
+            throw new Error(`FrameGraphCopyToTextureTask "${this.name}": sourceTexture and destinationTexture are required`);
         }
 
         const pass = frameGraph.addRenderPass(this.name);

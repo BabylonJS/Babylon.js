@@ -39,10 +39,10 @@ export class BlockTools {
             case "CopyTextureBlock": {
                 return new RenderGraphCopyTextureBlock("Copy texture", engine);
             }
-            case "BlackAndWhitePostProcessBlock": {
+            case "BlackAndWhiteBlock": {
                 return new BlackAndWhitePostProcessBlock("Black and White", engine);
             }
-            case "BloomPostProcessBlock": {
+            case "BloomBlock": {
                 return new BloomPostProcessBlock("Bloom", engine);
             }
         }
@@ -77,6 +77,9 @@ export class BlockTools {
             // case NodeRenderGraphBlockConnectionPointTypes.:
             //     color = "#f28e0a";
             //     break;
+            case NodeRenderGraphBlockConnectionPointTypes.AutoDetect: // Used by the elbow block
+                color = "#880000";
+                break;
             default:
                 throw new Error("Unknown connection point type: " + type);
         }

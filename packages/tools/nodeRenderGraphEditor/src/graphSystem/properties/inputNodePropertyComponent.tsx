@@ -38,7 +38,12 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
             case NodeRenderGraphBlockConnectionPointTypes.Texture: {
                 return (
                     <>
-                        <CheckBoxLineComponent label="Is external" target={inputBlock} propertyName={"isExternal"}></CheckBoxLineComponent>
+                        <CheckBoxLineComponent
+                            label="Is external"
+                            target={inputBlock}
+                            propertyName={"isExternal"}
+                            onValueChanged={() => this.props.stateManager.onRebuildRequiredObservable.notifyObservers()}
+                        ></CheckBoxLineComponent>
                     </>
                 );
             }

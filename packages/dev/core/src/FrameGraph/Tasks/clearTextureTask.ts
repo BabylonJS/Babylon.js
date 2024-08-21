@@ -26,7 +26,7 @@ export class FrameGraphClearTextureTask implements IFrameGraphTask {
 
     public recordFrameGraph(frameGraph: FrameGraph) {
         if (this.destinationTexture === undefined) {
-            throw new Error("FrameGraphClearTextureTask: destinationTexture is required");
+            throw new Error(`FrameGraphClearTextureTask ${this.name}: destinationTexture is required`);
         }
 
         const outputTextureHandle = frameGraph.getTextureHandle(this.destinationTexture);

@@ -31,8 +31,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         RenderGraphOutputBlock: "Output block used to gather the final render graph",
         ClearBlock: "Clears a texture",
         CopyTextureBlock: "Copy a texture to another texture",
-        BlackAndWhitePostProcessBlock: "Applies a black and white post process",
-        BloomPostProcessBlock: "Apply a bloom post process",
+        BlackAndWhiteBlock: "Applies a black and white post process",
+        BloomBlock: "Apply a bloom post process",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -118,7 +118,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         const allBlocks: any = {
             Custom_Frames: customFrameNames,
             Inputs: ["TextureBlock", "TextureBackBufferBlock", "TextureBackBufferDepthStencilBlock"],
-            Post_Processes: ["BlackAndWhitePostProcessBlock", "BloomPostProcessBlock"],
+            Post_Processes: ["BlackAndWhiteBlock", "BloomBlock"],
             Misc: ["ElbowBlock", "TeleportInBlock", "TeleportOutBlock"],
             Textures: ["ClearBlock", "CopyTextureBlock"],
             Output_Nodes: ["RenderGraphOutputBlock"],

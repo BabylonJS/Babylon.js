@@ -41,7 +41,7 @@ export class InputDisplayManager implements IDisplayManager {
 
         switch (inputBlock.type) {
             case NodeRenderGraphBlockConnectionPointTypes.Texture:
-                value = `${inputBlock.isExternal ? "external" : "internal"} texture`;
+                value = `${inputBlock.isExternal ? "external" : "internal"}`;
                 break;
         }
 

@@ -1203,7 +1203,7 @@ export class PostProcess implements IFrameGraphTask {
 
     public recordFrameGraph(frameGraph: FrameGraph): void {
         if (this.sourceTexture === undefined) {
-            throw new Error("PostProcess: sourceTexture is required");
+            throw new Error(`PostProcess "${this.name}": sourceTexture is required`);
         }
 
         const sourceTextureHandle = frameGraph.getTextureHandle(this.sourceTexture);
