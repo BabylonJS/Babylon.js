@@ -3,7 +3,7 @@ import type { Scene } from "../../scene";
 import type { Vector4 } from "../../Maths/math.vector";
 import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
-import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
+import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
 
 /**
  * Creates the VertexData of the Disc or regular Polygon
@@ -48,12 +48,12 @@ export function CreateDiscVertexData(options: {
         const u = (x + 1) / 2;
         const v = (1 - y) / 2;
         positions.push(radius * x, radius * y, 0);
-        uvs.push(u, CompatibilityOptions.UseOpenGLOrientationForUV ? 1 - v : v);
+        uvs.push(u, useOpenGLOrientationForUV ? 1 - v : v);
         a += step;
     }
     if (arc === 1) {
         positions.push(positions[3], positions[4], positions[5]); // close the circle
-        uvs.push(uvs[2], CompatibilityOptions.UseOpenGLOrientationForUV ? 1 - uvs[3] : uvs[3]);
+        uvs.push(uvs[2], useOpenGLOrientationForUV ? 1 - uvs[3] : uvs[3]);
     }
 
     //indices

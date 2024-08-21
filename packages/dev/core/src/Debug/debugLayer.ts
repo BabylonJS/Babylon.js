@@ -1,10 +1,10 @@
 import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
 import { Scene } from "../scene";
-import { Engine } from "../Engines/engine";
 import { EngineStore } from "../Engines/engineStore";
 import type { IInspectable } from "../Misc/iInspectable";
 import type { Camera } from "../Cameras/camera";
+import { AbstractEngine } from "core/Engines/abstractEngine";
 
 // declare INSPECTOR namespace for compilation issue
 declare let INSPECTOR: any;
@@ -227,7 +227,7 @@ export class DebugLayer {
      * By default it uses the babylonjs CDN.
      * @ignoreNaming
      */
-    public static InspectorURL = `${Tools._DefaultCdnUrl}/v${Engine.Version}/inspector/babylon.inspector.bundle.js`;
+    public static InspectorURL = `${Tools._DefaultCdnUrl}/v${AbstractEngine.Version}/inspector/babylon.inspector.bundle.js`;
 
     /**
      * The default configuration of the inspector
@@ -392,6 +392,24 @@ export class DebugLayer {
     public setAsActiveScene() {
         if (this.BJSINSPECTOR) {
             this.BJSINSPECTOR.Inspector._SetNewScene(this._scene);
+        }
+    }
+
+    public popupSceneExplorer() {
+        if (this.BJSINSPECTOR) {
+            this.BJSINSPECTOR.Inspector.PopupSceneExplorer();
+        }
+    }
+
+    public popupInspector() {
+        if (this.BJSINSPECTOR) {
+            this.BJSINSPECTOR.Inspector.PopupInspector();
+        }
+    }
+
+    public popupEmbed() {
+        if (this.BJSINSPECTOR) {
+            this.BJSINSPECTOR.Inspector.PopupEmbed();
         }
     }
 

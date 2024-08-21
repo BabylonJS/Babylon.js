@@ -18,9 +18,8 @@ import "../Engines/Extensions/engine.renderTargetCube";
 import "../Engines/Extensions/engine.readTexture";
 import "../Materials/Textures/baseTexture.polynomial";
 
-import "../Shaders/rgbdEncode.fragment";
-import "../Shaders/rgbdDecode.fragment";
-import { DumpTools } from "../Misc/dumpTools";
+import { DumpDataAsync } from "../Misc/dumpTools";
+import { ShaderLanguage } from "core/Materials";
 
 const DefaultEnvironmentTextureImageType = "image/png";
 const CurrentVersion = 2;
@@ -302,7 +301,7 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
 
             const rgbdEncodedData = await engine._readTexturePixels(tempTexture, faceWidth, faceWidth);
 
-            const imageEncodedData = await DumpTools.DumpDataAsync(faceWidth, faceWidth, rgbdEncodedData, imageType, undefined, false, true, options.imageQuality);
+            const imageEncodedData = await DumpDataAsync(faceWidth, faceWidth, rgbdEncodedData, imageType, undefined, false, true, options.imageQuality);
 
             specularTextures[i * 6 + face] = imageEncodedData as ArrayBuffer;
 
@@ -489,25 +488,27 @@ function _OnImageReadyAsync(
                 image
             );
 
-            rgbdPostProcess!.getEffect().executeWhenCompiled(() => {
-                // Uncompress the data to a RTT
-                rgbdPostProcess!.externalTextureSamplerBinding = true;
-                rgbdPostProcess!.onApply = (effect) => {
-                    effect._bindTexture("textureSampler", tempTexture);
-                    effect.setFloat2("scale", 1, engine._features.needsInvertingBitmap && image instanceof ImageBitmap ? -1 : 1);
-                };
+            rgbdPostProcess?.onEffectCreatedObservable.addOnce((effect) => {
+                effect.executeWhenCompiled(() => {
+                    // Uncompress the data to a RTT
+                    rgbdPostProcess!.externalTextureSamplerBinding = true;
+                    rgbdPostProcess!.onApply = (effect) => {
+                        effect._bindTexture("textureSampler", tempTexture);
+                        effect.setFloat2("scale", 1, engine._features.needsInvertingBitmap && image instanceof ImageBitmap ? -1 : 1);
+                    };
 
-                if (!engine.scenes.length) {
-                    return;
-                }
+                    if (!engine.scenes.length) {
+                        return;
+                    }
 
-                engine.scenes[0].postProcessManager.directRender([rgbdPostProcess!], cubeRtt, true, face, i);
+                    engine.scenes[0].postProcessManager.directRender([rgbdPostProcess!], cubeRtt, true, face, i);
 
-                // Cleanup
-                engine.restoreDefaultFramebuffer();
-                tempTexture.dispose();
-                URL.revokeObjectURL(url);
-                resolve();
+                    // Cleanup
+                    engine.restoreDefaultFramebuffer();
+                    tempTexture.dispose();
+                    URL.revokeObjectURL(url);
+                    resolve();
+                });
             });
         } else {
             engine._uploadImageToTexture(texture, image, face, i);
@@ -531,7 +532,7 @@ function _OnImageReadyAsync(
  * @param imageType the mime type of the image data
  * @returns a promise
  */
-export function UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBufferView[][], imageType: string = DefaultEnvironmentTextureImageType): Promise<void> {
+export async function UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBufferView[][], imageType: string = DefaultEnvironmentTextureImageType): Promise<void> {
     if (!Tools.IsExponentOfTwo(texture.width)) {
         throw new Error("Texture size must be a power of two");
     }
@@ -575,7 +576,15 @@ export function UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBuff
     }
 
     // Expand the texture if possible
+    let shaderLanguage = ShaderLanguage.GLSL;
     if (expandTexture) {
+        if (engine.isWebGPU) {
+            shaderLanguage = ShaderLanguage.WGSL;
+            await import("../ShadersWGSL/rgbdDecode.fragment");
+        } else {
+            await import("../Shaders/rgbdDecode.fragment");
+        }
+
         // Simply run through the decode PP
         rgbdPostProcess = new PostProcess(
             "rgbdDecode",
@@ -591,7 +600,9 @@ export function UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBuff
             texture.type,
             undefined,
             null,
-            false
+            false,
+            undefined,
+            shaderLanguage
         );
 
         texture._isRGBD = false;

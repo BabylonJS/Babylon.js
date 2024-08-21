@@ -34,3 +34,23 @@ import "./thinInstanceMesh";
 export * from "./thinInstanceMesh";
 export * from "./Node/index";
 export * from "./GaussianSplatting/gaussianSplattingMesh";
+
+// LineMesh
+export * from "../Shaders/color.fragment";
+export * from "../Shaders/color.vertex";
+export * from "../ShadersWGSL/color.fragment";
+export * from "../ShadersWGSL/color.vertex";
+
+// MeshUVSPaceRenderer
+export * from "../Shaders/meshUVSpaceRenderer.vertex";
+export * from "../Shaders/meshUVSpaceRenderer.fragment";
+export * from "../Shaders/meshUVSpaceRendererMasker.vertex";
+export * from "../Shaders/meshUVSpaceRendererMasker.fragment";
+export * from "../Shaders/meshUVSpaceRendererFinaliser.fragment";
+export * from "../Shaders/meshUVSpaceRendererFinaliser.vertex";
+export * from "../ShadersWGSL/meshUVSpaceRenderer.vertex";
+export * from "../ShadersWGSL/meshUVSpaceRenderer.fragment";
+export * from "../ShadersWGSL/meshUVSpaceRendererMasker.vertex";
+export * from "../ShadersWGSL/meshUVSpaceRendererMasker.fragment";
+export * from "../ShadersWGSL/meshUVSpaceRendererFinaliser.fragment";
+export * from "../ShadersWGSL/meshUVSpaceRendererFinaliser.vertex";

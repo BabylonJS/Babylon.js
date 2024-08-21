@@ -731,8 +731,6 @@ export class AnimationGroup implements IDisposable {
             this.start(loop, this._speedRatio);
         }
 
-        this._isPaused = false;
-
         return this;
     }
 
@@ -773,6 +771,8 @@ export class AnimationGroup implements IDisposable {
         this.syncWithMask();
 
         this.onAnimationGroupPlayObservable.notifyObservers(this);
+
+        this._isPaused = false;
 
         return this;
     }
@@ -862,6 +862,14 @@ export class AnimationGroup implements IDisposable {
         }
 
         return this;
+    }
+
+    /**
+     * Helper to get the current frame. This will return 0 if the AnimationGroup is not running, and it might return wrong results if multiple animations are running in different frames.
+     * @returns current animation frame.
+     */
+    public getCurrentFrame(): number {
+        return this.animatables[0]?.masterFrame || 0;
     }
 
     /**

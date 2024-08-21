@@ -307,12 +307,20 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         } else if (worldTangent.isConnected) {
             state.compilationString += `${state._declareLocalVar("tbnNormal", NodeMaterialBlockConnectionPointTypes.Vector3)} = normalize(${worldNormal.associatedVariableName}.xyz);\n`;
             state.compilationString += `${state._declareLocalVar("tbnTangent", NodeMaterialBlockConnectionPointTypes.Vector3)} = normalize(${worldTangent.associatedVariableName}.xyz);\n`;
-            state.compilationString += `${state._declareLocalVar("tbnBitangent", NodeMaterialBlockConnectionPointTypes.Vector3)} = cross(tbnNormal, tbnTangent) * ${this._tangentCorrectionFactorName};\n`;
+            state.compilationString += `${state._declareLocalVar("tbnBitangent", NodeMaterialBlockConnectionPointTypes.Vector3)} = cross(tbnNormal, tbnTangent) * ${isWebGPU ? "uniforms." : ""}${this._tangentCorrectionFactorName};\n`;
             state.compilationString += `${isWebGPU ? "var" : "mat3"} vTBN = ${mat3}(tbnTangent, tbnBitangent, tbnNormal);\n`;
         }
 
+        let replaceStrings = [tangentReplaceString, tbnVarying, normalMatrixReplaceString];
+
+        if (isWebGPU) {
+            replaceStrings.push({ search: /varying vTBN0: vec3f;/g, replace: "" });
+            replaceStrings.push({ search: /varying vTBN1: vec3f;/g, replace: "" });
+            replaceStrings.push({ search: /varying vTBN2: vec3f;/g, replace: "" });
+        }
+
         state._emitFunctionFromInclude("bumpFragmentMainFunctions", comments, {
-            replaceStrings: [tangentReplaceString, tbnVarying, normalMatrixReplaceString],
+            replaceStrings: replaceStrings,
         });
 
         const replaceString0 = isWebGPU
@@ -349,7 +357,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         const tempOutput = state._getFreeVariableName("tempOutput");
         state.compilationString += state._declareLocalVar(tempOutput, NodeMaterialBlockConnectionPointTypes.Vector3) + ` = vec3${fSuffix}(0.);\n`;
 
-        const replaceStrings = [
+        replaceStrings = [
             { search: new RegExp(`texture.+?bumpSampler${isWebGPU ? "Sampler,fragmentInputs." : ","}vBumpUV\\)`, "g"), replace: `${uvForPerturbNormal}` },
             {
                 search: /#define CUSTOM_FRAGMENT_BUMP_FRAGMENT/g,
@@ -391,6 +399,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
             replaceStrings.push({ search: /fragmentInputs.vBumpUV/g, replace: uv.associatedVariableName });
             replaceStrings.push({ search: /input.vPositionW/g, replace: worldPosition.associatedVariableName + ".xyz" });
             replaceStrings.push({ search: /uniforms.vTangentSpaceParams/g, replace: uniformPrefix + this._tangentSpaceParameterName });
+            replaceStrings.push({ search: /var TBN: mat3x3f=mat3x3<f32>\(input.vTBN0,input.vTBN1,input.vTBN2\);/g, replace: `var TBN = vTBN;` });
         } else {
             replaceStrings.push({ search: /vBumpUV/g, replace: uv.associatedVariableName });
             replaceStrings.push({ search: /vPositionW/g, replace: worldPosition.associatedVariableName + ".xyz" });

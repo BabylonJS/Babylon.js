@@ -5,7 +5,6 @@ import type { Effect } from "../Materials/effect";
 import { Texture } from "../Materials/Textures/texture";
 import { PostProcess } from "./postProcess";
 
-import "../Shaders/vrDistortionCorrection.fragment";
 import type { Nullable } from "../types";
 
 /**
@@ -55,5 +54,16 @@ export class VRDistortionCorrectionPostProcess extends PostProcess {
             effect.setFloat2("ScaleIn", this._scaleIn.x, this._scaleIn.y);
             effect.setFloat4("HmdWarpParam", this._distortionFactors[0], this._distortionFactors[1], this._distortionFactors[2], this._distortionFactors[3]);
         });
+    }
+
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
+        if (useWebGPU) {
+            this._webGPUReady = true;
+            list.push(import("../ShadersWGSL/vrDistortionCorrection.fragment"));
+        } else {
+            list.push(import("../Shaders/vrDistortionCorrection.fragment"));
+        }
+
+        super._gatherImports(useWebGPU, list);
     }
 }

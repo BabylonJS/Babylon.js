@@ -46,6 +46,10 @@ export class BlockNodeData implements INodeData {
         this.data.comments = value;
     }
 
+    public get executionTime() {
+        return -1;
+    }
+
     public getPortByName(name: string) {
         for (const input of this.inputs) {
             if (input.internalName === name) {
@@ -107,7 +111,7 @@ export class BlockNodeData implements INodeData {
             });
         }
 
-        if (data.outputs) {
+        if (data.outputs && !this.data.isTeleportIn) {
             this.data.outputs.forEach((output) => {
                 this._outputs.push(new ConnectionPointPortData(output, nodeContainer));
             });

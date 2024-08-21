@@ -3,7 +3,7 @@ import { Vector3 } from "../../Maths/math.vector";
 import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import type { Scene } from "../../scene";
-import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
+import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
 
 // based on http://code.google.com/p/away3d/source/browse/trunk/fp10/Away3D/src/away3d/primitives/TorusKnot.as?spec=svn2473&r=2473
 /**
@@ -95,7 +95,7 @@ export function CreateTorusKnotVertexData(options: {
             positions.push(p1.z + cx * n.z + cy * bitan.z);
 
             uvs.push(i / radialSegments);
-            uvs.push(CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 - j / tubularSegments : j / tubularSegments);
+            uvs.push(useOpenGLOrientationForUV ? 1.0 - j / tubularSegments : j / tubularSegments);
         }
     }
 

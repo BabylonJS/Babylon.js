@@ -1,6 +1,5 @@
 import { Constants } from "../Engines/constants";
 import { PostProcess } from "../PostProcesses/postProcess";
-import "../Shaders/rgbdDecode.fragment";
 import type { Engine } from "../Engines/engine";
 
 import "../Engines/Extensions/engine.renderTarget";
@@ -53,12 +52,12 @@ export class RGBDTextureTools {
 
         const expandRGBDTexture = async () => {
             const isWebGPU = engine.isWebGPU;
-            let shaderLanguage = ShaderLanguage.GLSL;
+            const shaderLanguage = isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
+            internalTexture.isReady = false;
 
             if (!this._ShaderImported) {
                 this._ShaderImported = true;
                 if (isWebGPU) {
-                    shaderLanguage = ShaderLanguage.WGSL;
                     await Promise.all([import("../ShadersWGSL/rgbdDecode.fragment"), import("../ShadersWGSL/rgbdEncode.fragment")]);
                 } else {
                     await Promise.all([import("../Shaders/rgbdDecode.fragment"), import("../Shaders/rgbdEncode.fragment")]);
@@ -97,26 +96,28 @@ export class RGBDTextureTools {
                 format: Constants.TEXTUREFORMAT_RGBA,
             });
 
-            rgbdPostProcess.getEffect().executeWhenCompiled(() => {
-                // PP Render Pass
-                rgbdPostProcess.onApply = (effect) => {
-                    effect._bindTexture("textureSampler", internalTexture);
-                    effect.setFloat2("scale", 1, 1);
-                };
-                texture.getScene()!.postProcessManager.directRender([rgbdPostProcess!], expandedTexture, true);
+            rgbdPostProcess.onEffectCreatedObservable.addOnce((e) => {
+                e.executeWhenCompiled(() => {
+                    // PP Render Pass
+                    rgbdPostProcess.onApply = (effect) => {
+                        effect._bindTexture("textureSampler", internalTexture);
+                        effect.setFloat2("scale", 1, 1);
+                    };
+                    texture.getScene()!.postProcessManager.directRender([rgbdPostProcess!], expandedTexture, true);
 
-                // Cleanup
-                engine.restoreDefaultFramebuffer();
-                engine._releaseTexture(internalTexture);
-                if (rgbdPostProcess) {
-                    rgbdPostProcess.dispose();
-                }
+                    // Cleanup
+                    engine.restoreDefaultFramebuffer();
+                    engine._releaseTexture(internalTexture);
+                    if (rgbdPostProcess) {
+                        rgbdPostProcess.dispose();
+                    }
 
-                // Internal Swap
-                expandedTexture._swapAndDie(internalTexture);
+                    // Internal Swap
+                    expandedTexture._swapAndDie(internalTexture);
 
-                // Ready to get rolling again.
-                internalTexture.isReady = true;
+                    // Ready to get rolling again.
+                    internalTexture.isReady = true;
+                });
             });
         };
 

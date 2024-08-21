@@ -16,8 +16,7 @@ import type { RenderTargetTexture } from "../Materials/Textures/renderTargetText
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import { DrawWrapper } from "../Materials/drawWrapper";
 
-import "../Shaders/layer.fragment";
-import "../Shaders/layer.vertex";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * This represents a full screen 2d layer.
@@ -25,6 +24,11 @@ import "../Shaders/layer.vertex";
  * @see https://www.babylonjs-playground.com/#08A2BS#1
  */
 export class Layer {
+    /**
+     * Force all the layers to compile to glsl even on WebGPU engines.
+     * False by default. This is mostly meant for backward compatibility.
+     */
+    public static ForceGLSL = false;
     /**
      * Define the texture the layer should display.
      */
@@ -152,6 +156,16 @@ export class Layer {
         this._onAfterRenderObserver = this.onAfterRenderObservable.add(callback);
     }
 
+    /** Shader language used by the material */
+    private _shaderLanguage = ShaderLanguage.GLSL;
+
+    /**
+     * Gets the shader language used in this material.
+     */
+    public get shaderLanguage(): ShaderLanguage {
+        return this._shaderLanguage;
+    }
+
     /**
      * Instantiates a new layer.
      * This represents a full screen 2d layer.
@@ -162,6 +176,7 @@ export class Layer {
      * @param scene Define the scene the layer belongs to
      * @param isBackground Defines whether the layer is displayed in front or behind the scene
      * @param color Defines a color for the layer
+     * @param forceGLSL Use the GLSL code generation for the shader (even on WebGPU). Default is false
      */
     constructor(
         /**
@@ -171,21 +186,25 @@ export class Layer {
         imgUrl: Nullable<string>,
         scene: Nullable<Scene>,
         isBackground?: boolean,
-        color?: Color4
+        color?: Color4,
+        forceGLSL = false
     ) {
         this.texture = imgUrl ? new Texture(imgUrl, scene, true) : null;
         this.isBackground = isBackground === undefined ? true : isBackground;
         this.color = color === undefined ? new Color4(1, 1, 1, 1) : color;
 
         this._scene = <Scene>(scene || EngineStore.LastCreatedScene);
+        const engine = this._scene.getEngine();
+        if (engine.isWebGPU && !forceGLSL && !Layer.ForceGLSL) {
+            this._shaderLanguage = ShaderLanguage.WGSL;
+        }
+
         let layerComponent = this._scene._getComponent(SceneComponentConstants.NAME_LAYER) as LayerSceneComponent;
         if (!layerComponent) {
             layerComponent = new LayerSceneComponent(this._scene);
             this._scene._addComponent(layerComponent);
         }
         this._scene.layers.push(this);
-
-        const engine = this._scene.getEngine();
 
         this._drawWrapper = new DrawWrapper(engine);
 
@@ -201,6 +220,8 @@ export class Layer {
 
         this._createIndexBuffer();
     }
+
+    private _shadersLoaded = false;
 
     private _createIndexBuffer(): void {
         const engine = this._scene.getEngine();
@@ -248,7 +269,28 @@ export class Layer {
 
         if (this._previousDefines !== defines) {
             this._previousDefines = defines;
-            this._drawWrapper.effect = engine.createEffect("layer", [VertexBuffer.PositionKind], ["textureMatrix", "color", "scale", "offset"], ["textureSampler"], defines);
+            this._drawWrapper.effect = engine.createEffect(
+                "layer",
+                [VertexBuffer.PositionKind],
+                ["textureMatrix", "color", "scale", "offset"],
+                ["textureSampler"],
+                defines,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                this._shaderLanguage,
+                this._shadersLoaded
+                    ? undefined
+                    : async () => {
+                          if (this._shaderLanguage === ShaderLanguage.WGSL) {
+                              await Promise.all([import("../ShadersWGSL/layer.vertex"), import("../ShadersWGSL/layer.fragment")]);
+                          } else {
+                              await Promise.all([import("../Shaders/layer.vertex"), import("../Shaders/layer.fragment")]);
+                          }
+                          this._shadersLoaded = true;
+                      }
+            );
         }
 
         const currentEffect = this._drawWrapper.effect;

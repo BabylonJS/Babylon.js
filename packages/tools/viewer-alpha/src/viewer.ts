@@ -1,9 +1,9 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { AbstractEngine, AssetContainer, FramingBehavior, IDisposable, Mesh, Nullable } from "core/index";
+import type { AbstractEngine, AssetContainer, Camera, FramingBehavior, IDisposable, LoadAssetContainerOptions, Mesh, Nullable } from "core/index";
 
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
-import { SceneLoader } from "core/Loading/sceneLoader";
+import { loadAssetContainerAsync } from "core/Loading/sceneLoader";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Texture } from "core/Materials/Textures/texture";
@@ -19,8 +19,8 @@ import "core/Materials/Textures/Loaders/envTextureLoader";
 // eslint-disable-next-line import/no-internal-modules
 import "loaders/glTF/2.0/index";
 
-function createSkybox(scene: Scene, environmentTexture: CubeTexture, scale: number, blur: number): Nullable<Mesh> {
-    const hdrSkybox = CreateBox("hdrSkyBox", { size: scale }, scene);
+function createSkybox(scene: Scene, camera: Camera, environmentTexture: CubeTexture, blur: number): Mesh {
+    const hdrSkybox = CreateBox("hdrSkyBox", undefined, scene);
     const hdrSkyboxMaterial = new PBRMaterial("skyBox", scene);
     hdrSkyboxMaterial.backFaceCulling = false;
     hdrSkyboxMaterial.reflectionTexture = environmentTexture.clone();
@@ -34,7 +34,14 @@ function createSkybox(scene: Scene, environmentTexture: CubeTexture, scale: numb
     hdrSkybox.isPickable = false;
     hdrSkybox.infiniteDistance = true;
     hdrSkybox.ignoreCameraMaxZ = true;
+
+    updateSkybox(hdrSkybox, camera);
+
     return hdrSkybox;
+}
+
+function updateSkybox(skybox: Nullable<Mesh>, camera: Camera): void {
+    skybox?.scaling.setAll((camera.maxZ - camera.minZ) / 2);
 }
 
 const defaultViewerOptions = {
@@ -79,6 +86,7 @@ export type ViewerOptions = Partial<
 export class Viewer implements IDisposable {
     private readonly _details: ViewerDetails;
     private readonly _camera: ArcRotateCamera;
+    private _skybox: Nullable<Mesh> = null;
 
     private _isDisposed = false;
 
@@ -101,7 +109,7 @@ export class Viewer implements IDisposable {
         this._details.scene.clearColor = finalOptions.backgroundColor;
         this._camera = new ArcRotateCamera("camera1", 0, 0, 1, Vector3.Zero(), this._details.scene);
         this._camera.attachControl();
-        this._reframeCamera(); // set default camera values
+        this._updateCamera(); // set default camera values
 
         // Load a default light, but ignore errors as the user might be immediately loading their own environment.
         this.loadEnvironmentAsync(undefined).catch(() => {});
@@ -118,35 +126,56 @@ export class Viewer implements IDisposable {
      * Loads a 3D model from the specified URL.
      * @remarks
      * If a model is already loaded, it will be unloaded before loading the new model.
-     * @param source A URL or File object that points to the model to load.
+     * @param source A url or File or ArrayBufferView that points to the model to load.
+     * @param options The options to use when loading the model.
      * @param abortSignal An optional signal that can be used to abort the loading process.
      */
-    public async loadModelAsync(source: URL | File, abortSignal?: AbortSignal): Promise<void> {
+    public async loadModelAsync(source: string | File | ArrayBufferView, options?: LoadAssetContainerOptions, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
-
-        const finalSource = source instanceof URL ? source.href : source;
 
         this._loadModelAbortController?.abort("New model is being loaded before previous model finished loading.");
         const abortController = (this._loadModelAbortController = new AbortController());
 
+        // TODO: Disable audio for now, later figure out how to re-introduce it through dynamic imports.
+        options = {
+            ...options,
+            pluginOptions: {
+                ...options?.pluginOptions,
+                gltf: {
+                    ...options?.pluginOptions?.gltf,
+                    extensionOptions: {
+                        ...options?.pluginOptions?.gltf?.extensionOptions,
+                        // eslint-disable-next-line @typescript-eslint/naming-convention
+                        KHR_audio: {
+                            enabled: false,
+                        },
+                        // eslint-disable-next-line @typescript-eslint/naming-convention
+                        MSFT_audio_emitter: {
+                            enabled: false,
+                        },
+                    },
+                },
+            },
+        };
+
         await this._loadModelLock.lockAsync(async () => {
             this._throwIfDisposedOrAborted(abortSignal, abortController.signal);
             this._details.model?.dispose();
-            this._details.model = await SceneLoader.LoadAssetContainerAsync(finalSource, this._details.scene);
+            this._details.model = await loadAssetContainerAsync(source, this._details.scene, options);
             this._details.model.addAllToScene();
-            this._reframeCamera();
+            this._updateCamera();
         });
     }
 
     /**
-     * Loads an environment texture from the specified URL and sets up a corresponding skybox.
+     * Loads an environment texture from the specified url and sets up a corresponding skybox.
      * @remarks
-     * If no URL is provided, a default hemispheric light will be created.
+     * If no url is provided, a default hemispheric light will be created.
      * If an environment is already loaded, it will be unloaded before loading the new environment.
-     * @param url The URL of the environment texture to load.
+     * @param url The url of the environment texture to load.
      * @param abortSignal An optional signal that can be used to abort the loading process.
      */
-    public async loadEnvironmentAsync(url: Nullable<URL | undefined>, abortSignal?: AbortSignal): Promise<void> {
+    public async loadEnvironmentAsync(url: Nullable<string | undefined>, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
 
         this._loadEnvironmentAbortController?.abort("New environment is being loaded before previous environment finished loading.");
@@ -161,19 +190,25 @@ export class Viewer implements IDisposable {
                     this._details.scene.autoClear = true;
                     resolve(light);
                 } else {
-                    const cubeTexture = CubeTexture.CreateFromPrefilteredData(url.href, this._details.scene);
+                    const cubeTexture = CubeTexture.CreateFromPrefilteredData(url, this._details.scene);
                     this._details.scene.environmentTexture = cubeTexture;
-                    const skybox = createSkybox(this._details.scene, cubeTexture, (this._camera.maxZ - this._camera.minZ) / 2, 0.3);
+
+                    const skybox = createSkybox(this._details.scene, this._camera, cubeTexture, 0.3);
+                    this._skybox = skybox;
+
                     this._details.scene.autoClear = false;
+
+                    const dispose = () => {
+                        cubeTexture.dispose();
+                        skybox.dispose();
+                        this._skybox = null;
+                    };
 
                     const successObserver = cubeTexture.onLoadObservable.addOnce(() => {
                         successObserver.remove();
                         errorObserver.remove();
                         resolve({
-                            dispose() {
-                                cubeTexture.dispose();
-                                skybox?.dispose();
-                            },
+                            dispose,
                         });
                     });
 
@@ -181,6 +216,7 @@ export class Viewer implements IDisposable {
                         if (texture === cubeTexture) {
                             successObserver.remove();
                             errorObserver.remove();
+                            dispose();
                             reject(new Error("Failed to load environment texture."));
                         }
                     });
@@ -198,7 +234,7 @@ export class Viewer implements IDisposable {
     }
 
     // copy/paste from sandbox and scene helpers
-    private _reframeCamera(): void {
+    private _updateCamera(): void {
         // Enable camera's behaviors
         this._camera.useFramingBehavior = true;
         const framingBehavior = this._camera.getBehaviorByName("Framing") as FramingBehavior;
@@ -241,6 +277,8 @@ export class Viewer implements IDisposable {
         this._camera.wheelDeltaPercentage = 0.01;
         this._camera.pinchDeltaPercentage = 0.01;
         this._camera.restoreStateInterpolationFactor = 0.1;
+
+        updateSkybox(this._skybox, this._camera);
     }
 
     /**

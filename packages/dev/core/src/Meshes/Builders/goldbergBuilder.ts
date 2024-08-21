@@ -8,7 +8,7 @@ import { Logger } from "../../Misc/logger";
 import type { PolyhedronData } from "../geodesicMesh";
 import { _PrimaryIsoTriangle, GeodesicData } from "../geodesicMesh";
 import { GoldbergMesh } from "../goldbergMesh";
-import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
+import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
 
 /**
  * Defines the set of data required to create goldberg vertex data.
@@ -98,7 +98,7 @@ export function CreateGoldbergVertexData(options: GoldbergVertexDataOption, gold
             const pdata = goldbergData.vertex[verts[v]];
             positions.push(pdata[0] * sizeX, pdata[1] * sizeY, pdata[2] * sizeZ);
             const vCoord = (pdata[1] * sizeY - minY) / (maxY - minY);
-            uvs.push((pdata[0] * sizeX - minX) / (maxX - minX), CompatibilityOptions.UseOpenGLOrientationForUV ? 1 - vCoord : vCoord);
+            uvs.push((pdata[0] * sizeX - minX) / (maxX - minX), useOpenGLOrientationForUV ? 1 - vCoord : vCoord);
         }
         for (let v = 0; v < verts.length - 2; v++) {
             indices.push(index, index + v + 2, index + v + 1);
@@ -132,12 +132,12 @@ export function CreateGoldberg(name: string, options: GoldbergCreationOption, sc
     const sizeZ: number = options.sizeZ || size || 1;
     let m: number = options.m || 1;
     if (m !== Math.floor(m)) {
-        m === Math.floor(m);
+        m = Math.floor(m);
         Logger.Warn("m not an integer only floor(m) used");
     }
     let n: number = options.n || 0;
     if (n !== Math.floor(n)) {
-        n === Math.floor(n);
+        n = Math.floor(n);
         Logger.Warn("n not an integer only floor(n) used");
     }
     if (n > m) {

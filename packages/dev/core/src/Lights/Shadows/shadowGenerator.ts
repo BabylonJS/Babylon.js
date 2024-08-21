@@ -1161,7 +1161,12 @@ export class ShadowGenerator implements IShadowGenerator {
                 engine,
                 false,
                 "#define OFFSET " + this._blurBoxOffset,
-                this._textureType
+                this._textureType,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                this._shaderLanguage
             );
             this._boxBlurPostprocess.externalTextureSamplerBinding = true;
             this._boxBlurPostprocess.onApplyObservable.add((effect) => {

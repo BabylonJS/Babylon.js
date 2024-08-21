@@ -7,9 +7,6 @@ import type { Camera } from "../Cameras/camera";
 import type { Effect } from "../Materials/effect";
 import { Texture } from "../Materials/Textures/texture";
 import { Constants } from "../Engines/constants";
-
-import "../Shaders/kernelBlur.fragment";
-import "../Shaders/kernelBlur.vertex";
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize, serializeAsVector2 } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
@@ -129,9 +126,7 @@ export class BlurPostProcess extends PostProcess {
             "kernelBlur",
             { varyingCount: 0, depCount: 0 },
             true,
-            textureFormat,
-            undefined,
-            true
+            textureFormat
         );
         this._staticDefines = defines;
         this.direction = direction;
@@ -146,27 +141,15 @@ export class BlurPostProcess extends PostProcess {
         this.kernel = kernel;
     }
 
-    protected override async _initShaderSourceAsync(forceGLSL = false) {
-        const engine = this.getEngine();
-
-        this._shadersLoaded = false;
-        if (engine.isWebGPU && !forceGLSL) {
-            this._shaderLanguage = ShaderLanguage.WGSL;
-
-            await Promise.all([import("../ShadersWGSL/kernelBlur.fragment"), import("../ShadersWGSL/kernelBlur.vertex")]);
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
+        if (useWebGPU) {
+            this._webGPUReady = true;
+            list.push(Promise.all([import("../ShadersWGSL/kernelBlur.fragment"), import("../ShadersWGSL/kernelBlur.vertex")]));
         } else {
-            await Promise.all([import("../Shaders/kernelBlur.fragment"), import("../Shaders/kernelBlur.vertex")]);
+            list.push(Promise.all([import("../Shaders/kernelBlur.fragment"), import("../Shaders/kernelBlur.vertex")]));
         }
 
-        this._shadersLoaded = true;
-    }
-
-    /**
-     * Get a value indicating if the post-process is ready to be used
-     * @returns true if the post-process is ready (shader is compiled)
-     */
-    public override isReady(): boolean {
-        return this._shadersLoaded && super.isReady();
+        super._gatherImports(useWebGPU, list);
     }
 
     /**
@@ -251,7 +234,7 @@ export class BlurPostProcess extends PostProcess {
         weights = linearSamplingWeights;
 
         // Generate shaders
-        const maxVaryingRows = this.getEngine().getCaps().maxVaryingVectors - (this._shaderLanguage === ShaderLanguage.WGSL ? 1 : 0); // Because of the additional builtins
+        const maxVaryingRows = this.getEngine().getCaps().maxVaryingVectors - (this.shaderLanguage === ShaderLanguage.WGSL ? 1 : 0); // Because of the additional builtins
         const freeVaryingVec2 = Math.max(maxVaryingRows, 0) - 1; // Because of sampleCenter
 
         let varyingCount = Math.min(offsets.length, freeVaryingVec2);

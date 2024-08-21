@@ -106,6 +106,26 @@
             }
         },
         {
+            "label": "Launch visualization test runner (Dev)",
+            "dependsOn": ["CDN Serve and watch (Dev)"],
+            "type": "shell",
+            "command": "npm",
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "HEADLESS": "false"
+                }
+            },
+            "args": ["run", "test:visualization:ui"],
+            "presentation": {
+                "group": "test"
+            },
+            "problemMatcher": []
+        },
+        {
             "label": "Run Dev host (Dev)",
             "dependsOn": ["Build (Dev)"],
             "type": "shell",

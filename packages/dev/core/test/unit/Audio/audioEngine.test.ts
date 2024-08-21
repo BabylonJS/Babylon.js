@@ -3,7 +3,7 @@
  */
 
 import { AudioEngine } from "core/Audio";
-import { Engine, NullEngine } from "core/Engines";
+import { AbstractEngine, NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 import { Sound } from "core/Audio/sound";
 
@@ -26,7 +26,7 @@ describe("AudioEngine", () => {
         mock = new MockedAudioObjects;
         engine = new NullEngine;
         scene = new Scene(engine);
-        audioEngine = Engine.audioEngine = new AudioEngine(null, new AudioContext, null);
+        audioEngine = AbstractEngine.audioEngine = new AudioEngine(null, new AudioContext, null);
     });
 
     afterEach(() => {

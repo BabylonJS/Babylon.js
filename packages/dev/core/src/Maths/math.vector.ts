@@ -2,7 +2,7 @@
 import { Epsilon } from "./math.constants";
 import type { Viewport } from "./math.viewport";
 import type { DeepImmutable, Nullable, FloatArray, float, Tuple } from "../types";
-import { ArrayTools } from "../Misc/arrayTools";
+import { BuildTuple } from "../Misc/arrayTools";
 import { RegisterClass } from "../Misc/typeStore";
 import type { Plane } from "./math.plane";
 import { PerformanceConfigurator } from "../Engines/performanceConfigurator";
@@ -5385,12 +5385,11 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
      * @returns the target quaternion
      */
     public static RotationAxisToRef<T extends Quaternion>(axis: DeepImmutable<Vector3>, angle: number, result: T): T {
-        const sin = Math.sin(angle / 2);
-        axis.normalize();
         result._w = Math.cos(angle / 2);
-        result._x = axis._x * sin;
-        result._y = axis._y * sin;
-        result._z = axis._z * sin;
+        const sinByLength = Math.sin(angle / 2) / axis.length();
+        result._x = axis._x * sinByLength;
+        result._y = axis._y * sinByLength;
+        result._z = axis._z * sinByLength;
         result._isDirty = true;
         return result;
     }
@@ -5624,7 +5623,10 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
      */
     public static RotationQuaternionFromAxisToRef<T extends Quaternion>(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>, ref: T): T {
         const rotMat = MathTmp.Matrix[0];
-        Matrix.FromXYZAxesToRef(axis1.normalize(), axis2.normalize(), axis3.normalize(), rotMat);
+        axis1 = axis1.normalizeToRef(MathTmp.Vector3[0]);
+        axis2 = axis2.normalizeToRef(MathTmp.Vector3[1]);
+        axis3 = axis3.normalizeToRef(MathTmp.Vector3[2]);
+        Matrix.FromXYZAxesToRef(axis1, axis2, axis3, rotMat);
         Quaternion.FromRotationMatrixToRef(rotMat, ref);
         return ref;
     }
@@ -7705,7 +7707,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
         const c = Math.cos(-angle);
         const c1 = 1 - c;
 
-        axis.normalize();
+        axis = axis.normalizeToRef(MathTmp.Vector3[0]);
         const m = result._m;
         m[0] = axis._x * axis._x * c1 + c;
         m[1] = axis._x * axis._y * c1 - axis._z * s;
@@ -8871,13 +8873,13 @@ Object.defineProperties(Matrix.prototype, {
  */
 class MathTmp {
     // Temporary Vector3s
-    public static Vector3 = ArrayTools.BuildTuple(11, Vector3.Zero);
+    public static Vector3 = BuildTuple(11, Vector3.Zero);
 
     // Temporary Matricies
-    public static Matrix = ArrayTools.BuildTuple(2, Matrix.Identity);
+    public static Matrix = BuildTuple(2, Matrix.Identity);
 
     // Temporary Quaternions
-    public static Quaternion = ArrayTools.BuildTuple(3, Quaternion.Zero);
+    public static Quaternion = BuildTuple(3, Quaternion.Zero);
 }
 
 /**
@@ -8885,19 +8887,19 @@ class MathTmp {
  */
 export class TmpVectors {
     /** 3 temp Vector2 at once should be enough */
-    public static Vector2 = ArrayTools.BuildTuple(3, Vector2.Zero);
+    public static Vector2 = BuildTuple(3, Vector2.Zero);
 
     /** 13 temp Vector3 at once should be enough */
-    public static Vector3 = ArrayTools.BuildTuple(13, Vector3.Zero);
+    public static Vector3 = BuildTuple(13, Vector3.Zero);
 
     /** 3 temp Vector4 at once should be enough */
-    public static Vector4 = ArrayTools.BuildTuple(3, Vector4.Zero);
+    public static Vector4 = BuildTuple(3, Vector4.Zero);
 
     /** 3 temp Quaternion at once should be enough */
-    public static Quaternion = ArrayTools.BuildTuple(3, Quaternion.Zero);
+    public static Quaternion = BuildTuple(3, Quaternion.Zero);
 
     /** 8 temp Matrices at once should be enough */
-    public static Matrix = ArrayTools.BuildTuple(8, Matrix.Identity);
+    public static Matrix = BuildTuple(8, Matrix.Identity);
 }
 
 RegisterClass("BABYLON.Vector2", Vector2);

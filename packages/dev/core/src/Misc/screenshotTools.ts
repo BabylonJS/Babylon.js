@@ -7,7 +7,7 @@ import { Constants } from "../Engines/constants";
 import { Logger } from "./logger";
 import { Tools } from "./tools";
 import type { IScreenshotSize } from "./interfaces/screenshotSize";
-import { DumpTools } from "./dumpTools";
+import { DumpData } from "./dumpTools";
 import type { Nullable } from "../types";
 import { ApplyPostProcess } from "./textureTools";
 
@@ -264,23 +264,13 @@ export function CreateScreenshotUsingRenderTarget(
             engine.onEndFrameObservable.addOnce(() => {
                 if (finalWidth === width && finalHeight === height) {
                     texture.readPixels(undefined, undefined, undefined, false)!.then((data) => {
-                        DumpTools.DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true, undefined, quality);
+                        DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true, undefined, quality);
                         texture.dispose();
                     });
                 } else {
                     ApplyPostProcess("pass", texture.getInternalTexture()!, scene, undefined, undefined, undefined, finalWidth, finalHeight).then((texture) => {
                         engine._readTexturePixels(texture, finalWidth, finalHeight, -1, 0, null, true, false, 0, 0).then((data) => {
-                            DumpTools.DumpData(
-                                finalWidth,
-                                finalHeight,
-                                data,
-                                successCallback as (data: string | ArrayBuffer) => void,
-                                mimeType,
-                                fileName,
-                                true,
-                                undefined,
-                                quality
-                            );
+                            DumpData(finalWidth, finalHeight, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true, undefined, quality);
                             texture.dispose();
                         });
                     });
@@ -312,15 +302,17 @@ export function CreateScreenshotUsingRenderTarget(
         const fxaaPostProcess = new FxaaPostProcess("antialiasing", 1.0, scene.activeCamera);
         texture.addPostProcess(fxaaPostProcess);
         // Async Shader Compilation can lead to none ready effects in synchronous code
-        if (!fxaaPostProcess.getEffect().isReady()) {
-            fxaaPostProcess.getEffect().onCompiled = () => {
+        fxaaPostProcess.onEffectCreatedObservable.addOnce((e) => {
+            if (!e.isReady()) {
+                e.onCompiled = () => {
+                    renderToTexture();
+                };
+            }
+            // The effect is ready we can render
+            else {
                 renderToTexture();
-            };
-        }
-        // The effect is ready we can render
-        else {
-            renderToTexture();
-        }
+            }
+        });
     } else {
         // No need to wait for extra resources to be ready
         renderToTexture();

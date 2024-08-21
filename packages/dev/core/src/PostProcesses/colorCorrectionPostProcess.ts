@@ -5,7 +5,6 @@ import { Texture } from "../Materials/Textures/texture";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Camera } from "../Cameras/camera";
 
-import "../Shaders/colorCorrection.fragment";
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
@@ -67,6 +66,17 @@ export class ColorCorrectionPostProcess extends PostProcess {
         this.onApply = (effect: Effect) => {
             effect.setTexture("colorTable", this._colorTableTexture);
         };
+    }
+
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
+        if (useWebGPU) {
+            this._webGPUReady = true;
+            list.push(Promise.all([import("../ShadersWGSL/colorCorrection.fragment")]));
+        } else {
+            list.push(Promise.all([import("../Shaders/colorCorrection.fragment")]));
+        }
+
+        super._gatherImports(useWebGPU, list);
     }
 
     /**

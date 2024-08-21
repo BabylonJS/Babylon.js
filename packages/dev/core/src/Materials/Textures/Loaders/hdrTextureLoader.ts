@@ -1,7 +1,6 @@
-import { HDRTools } from "../../../Misc/HighDynamicRange/hdr";
-import { Engine } from "../../../Engines/engine";
+import { RGBE_ReadHeader, RGBE_ReadPixels } from "../../../Misc/HighDynamicRange/hdr";
 import type { InternalTexture } from "../../../Materials/Textures/internalTexture";
-import type { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
+import type { IInternalTextureLoader } from "./internalTextureLoader";
 import { Constants } from "../../../Engines/constants";
 
 /**
@@ -14,15 +13,6 @@ export class _HDRTextureLoader implements IInternalTextureLoader {
      * Defines whether the loader supports cascade loading the different faces.
      */
     public readonly supportCascades = false;
-
-    /**
-     * This returns if the loader support the current file information.
-     * @param extension defines the file extension of the file being loaded
-     * @returns true if the loader can load the specified file
-     */
-    public canLoad(extension: string): boolean {
-        return extension.endsWith(".hdr");
-    }
 
     /**
      * Uploads the cube texture data to the WebGL texture. It has already been bound.
@@ -44,8 +34,8 @@ export class _HDRTextureLoader implements IInternalTextureLoader {
         callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void
     ): void {
         const uint8array = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
-        const hdrInfo = HDRTools.RGBE_ReadHeader(uint8array);
-        const pixelsDataRGB32 = HDRTools.RGBE_ReadPixels(uint8array, hdrInfo);
+        const hdrInfo = RGBE_ReadHeader(uint8array);
+        const pixelsDataRGB32 = RGBE_ReadPixels(uint8array, hdrInfo);
 
         const pixels = hdrInfo.width * hdrInfo.height;
         const pixelsDataRGBA32 = new Float32Array(pixels * 4);
@@ -65,6 +55,3 @@ export class _HDRTextureLoader implements IInternalTextureLoader {
         });
     }
 }
-
-// Register the loader.
-Engine._TextureLoaders.push(new _HDRTextureLoader());

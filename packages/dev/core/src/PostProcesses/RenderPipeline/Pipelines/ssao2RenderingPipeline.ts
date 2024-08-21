@@ -22,9 +22,7 @@ import { Scalar } from "../../../Maths/math.scalar";
 import { RawTexture } from "../../../Materials/Textures/rawTexture";
 
 import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
-
-import "../../../Shaders/ssao2.fragment";
-import "../../../Shaders/ssaoCombine.fragment";
+import { ShaderLanguage } from "core/Materials";
 
 /**
  * Render pipeline to produce ssao effect
@@ -449,7 +447,12 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             this._scene.getEngine(),
             false,
             defines,
-            textureType
+            textureType,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            this._scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL
         );
 
         blurFilter.onApply = (effect: Effect) => {
@@ -565,7 +568,19 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             this._scene.getEngine(),
             false,
             defines,
-            textureType
+            textureType,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            this._scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            (useWebGPU, list) => {
+                if (useWebGPU) {
+                    list.push(import("../../../ShadersWGSL/ssao2.fragment"));
+                } else {
+                    list.push(import("../../../Shaders/ssao2.fragment"));
+                }
+            }
         );
         this._ssaoPostProcess.autoClear = false;
 
@@ -629,7 +644,19 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             this._scene.getEngine(),
             false,
             undefined,
-            textureType
+            textureType,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            this._scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            (useWebGPU, list) => {
+                if (useWebGPU) {
+                    list.push(import("../../../ShadersWGSL/ssaoCombine.fragment"));
+                } else {
+                    list.push(import("../../../Shaders/ssaoCombine.fragment"));
+                }
+            }
         );
 
         this._ssaoCombinePostProcess.onApply = (effect: Effect) => {

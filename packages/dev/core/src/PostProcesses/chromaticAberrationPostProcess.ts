@@ -7,7 +7,6 @@ import type { Camera } from "../Cameras/camera";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import { Constants } from "../Engines/constants";
 
-import "../Shaders/chromaticAberration.fragment";
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
@@ -111,6 +110,17 @@ export class ChromaticAberrationPostProcess extends PostProcess {
             effect.setFloat2("direction", this.direction.x, this.direction.y);
             effect.setFloat2("centerPosition", this.centerPosition.x, this.centerPosition.y);
         });
+    }
+
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
+        if (useWebGPU) {
+            this._webGPUReady = true;
+            list.push(Promise.all([import("../ShadersWGSL/chromaticAberration.fragment")]));
+        } else {
+            list.push(Promise.all([import("../Shaders/chromaticAberration.fragment")]));
+        }
+
+        super._gatherImports(useWebGPU, list);
     }
 
     /**

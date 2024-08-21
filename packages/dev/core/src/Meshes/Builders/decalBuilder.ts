@@ -6,7 +6,7 @@ import { VertexBuffer } from "../../Buffers/buffer";
 import { VertexData } from "../mesh.vertexData";
 import type { AbstractMesh } from "../abstractMesh";
 import type { Camera } from "../../Cameras/camera";
-import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
+import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
 
 const xpAxis = new Vector3(1, 0, 0);
 const xnAxis = new Vector3(-1, 0, 0);
@@ -131,7 +131,7 @@ export function CreateDecal(
 
         if (options.captureUVS && uvs) {
             const v = uvs[vertexId * 2 + 1];
-            result.uv = new Vector2(uvs[vertexId * 2], CompatibilityOptions.UseOpenGLOrientationForUV ? 1 - v : v);
+            result.uv = new Vector2(uvs[vertexId * 2], useOpenGLOrientationForUV ? 1 - v : v);
         }
 
         return result;
@@ -479,7 +479,7 @@ export function CreateDecal(
                 if (!options.captureUVS) {
                     (<number[]>vertexData.uvs).push(0.5 + vertex.position.x / size.x);
                     const v = 0.5 + vertex.position.y / size.y;
-                    (<number[]>vertexData.uvs).push(CompatibilityOptions.UseOpenGLOrientationForUV ? 1 - v : v);
+                    (<number[]>vertexData.uvs).push(useOpenGLOrientationForUV ? 1 - v : v);
                 } else {
                     vertex.uv.toArray(vertexData.uvs, currentVertexDataIndex * 2);
                 }

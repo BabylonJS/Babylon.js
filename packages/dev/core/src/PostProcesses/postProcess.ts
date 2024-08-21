@@ -378,7 +378,8 @@ export class PostProcess {
     protected _scene: Scene;
     private _engine: AbstractEngine;
 
-    protected _shadersLoaded = true;
+    private _shadersLoaded = false;
+    protected _webGPUReady = false;
 
     private _options: number | { width: number; height: number };
     private _reusable = false;
@@ -386,7 +387,14 @@ export class PostProcess {
     private _textureType: number;
     private _textureFormat: number;
     /** @internal */
-    protected _shaderLanguage: ShaderLanguage;
+    private _shaderLanguage: ShaderLanguage;
+
+    /**
+     * Gets the shader language type used to generate vertex and fragment source code.
+     */
+    public get shaderLanguage(): ShaderLanguage {
+        return this._shaderLanguage;
+    }
 
     /**
      * if externalTextureSamplerBinding is true, the "apply" method won't bind the textureSampler texture, it is expected to be done by the "outside" (by the onApplyObservable observer most probably).
@@ -438,6 +446,12 @@ export class PostProcess {
     public getEffectName(): string {
         return this._fragmentUrl;
     }
+
+    /**
+     * Executed when the effect was created
+     * @returns effect that was created for this post process
+     */
+    public onEffectCreatedObservable = new Observable<Effect>(undefined, true);
 
     // Events
 
@@ -596,6 +610,7 @@ export class PostProcess {
      * @param blockCompilation If the shader should not be compiled immediatly. (default: false)
      * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
      * @param shaderLanguage The shader language of the shader. (default: GLSL)
+     * @param extraInitializations Defines additional code to call to prepare the shader code
      */
     constructor(
         name: string,
@@ -614,7 +629,7 @@ export class PostProcess {
         blockCompilation?: boolean,
         textureFormat?: number,
         shaderLanguage?: ShaderLanguage,
-        dealyLoadShaders?: boolean
+        extraInitializations?: (useWebGPU: boolean, list: Promise<any>[]) => void
     );
 
     /** @internal */
@@ -634,8 +649,8 @@ export class PostProcess {
         indexParameters?: any,
         blockCompilation = false,
         textureFormat = Constants.TEXTUREFORMAT_RGBA,
-        shaderLanguage = ShaderLanguage.GLSL,
-        dealyLoadShaders = false
+        shaderLanguage?: ShaderLanguage,
+        extraInitializations?: (useWebGPU: boolean, list: Promise<any>[]) => void
     ) {
         this.name = name;
         let size: number | { width: number; height: number } = 1;
@@ -683,7 +698,7 @@ export class PostProcess {
         this._reusable = reusable || false;
         this._textureType = textureType;
         this._textureFormat = textureFormat;
-        this._shaderLanguage = shaderLanguage;
+        this._shaderLanguage = shaderLanguage || ShaderLanguage.GLSL;
 
         this._samplers = samplers || [];
         this._samplers.push("textureSampler");
@@ -698,14 +713,33 @@ export class PostProcess {
         this._indexParameters = indexParameters;
         this._drawWrapper = new DrawWrapper(this._engine);
 
-        this._postConstructor(blockCompilation, defines, dealyLoadShaders);
+        this._webGPUReady = this._shaderLanguage === ShaderLanguage.WGSL;
+
+        this._postConstructor(blockCompilation, defines, extraInitializations);
     }
 
-    protected async _initShaderSourceAsync(_forceGLSL = false) {}
+    /** @internal */
+    protected _gatherImports(useWebGPU = false, list: Promise<any>[]) {
+        // this._webGPUReady is used to detect when a postprocess is intended to be used with WebGPU
+        if (useWebGPU && this._webGPUReady) {
+            list.push(Promise.all([import("../ShadersWGSL/postprocess.vertex")]));
+        } else {
+            list.push(Promise.all([import("../Shaders/postprocess.vertex")]));
+        }
+    }
 
-    private async _postConstructor(blockCompilation: boolean, defines: Nullable<string> = null, dealyLoadShaders: boolean = false) {
-        if (dealyLoadShaders) {
-            await this._initShaderSourceAsync(PostProcess.ForceGLSL);
+    private _importPromises: Array<Promise<any>> = [];
+    private _postConstructor(blockCompilation: boolean, defines: Nullable<string> = null, extraInitializations?: (useWebGPU: boolean, list: Promise<any>[]) => void) {
+        const engine = this.getEngine();
+        const useWebGPU = engine.isWebGPU && !PostProcess.ForceGLSL;
+
+        this._gatherImports(useWebGPU, this._importPromises);
+        if (extraInitializations) {
+            extraInitializations(useWebGPU, this._importPromises);
+        }
+
+        if (useWebGPU && this._webGPUReady) {
+            this._shaderLanguage = ShaderLanguage.WGSL;
         }
 
         if (!blockCompilation) {
@@ -815,9 +849,16 @@ export class PostProcess {
                     ? (shaderType: string, code: string) => customShaderCodeProcessing!.processFinalCode!(this.name, shaderType, code)
                     : null,
                 shaderLanguage: this._shaderLanguage,
+                extraInitializationsAsync: this._shadersLoaded
+                    ? undefined
+                    : async () => {
+                          await Promise.all(this._importPromises);
+                          this._shadersLoaded = true;
+                      },
             },
             this._engine
         );
+        this.onEffectCreatedObservable.notifyObservers(this._drawWrapper.effect);
     }
 
     /**
@@ -1067,9 +1108,6 @@ export class PostProcess {
      * @returns true if the post-process is ready (shader is compiled)
      */
     public isReady(): boolean {
-        if (!this._shadersLoaded) {
-            return false;
-        }
         return this._drawWrapper.effect?.isReady() ?? false;
     }
 
@@ -1199,6 +1237,7 @@ export class PostProcess {
         this.onApplyObservable.clear();
         this.onBeforeRenderObservable.clear();
         this.onSizeChangedObservable.clear();
+        this.onEffectCreatedObservable.clear();
     }
 
     /**

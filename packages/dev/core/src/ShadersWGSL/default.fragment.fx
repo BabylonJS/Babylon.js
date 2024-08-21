@@ -137,7 +137,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #endif
 
 #if defined(DECAL) && !defined(DECAL_AFTER_DETAIL)
-	var decalColor: vec4f = textureSample(decalSampler, decalSamplerSampler, vDecalUV + uvOffset);
+	var decalColor: vec4f = textureSample(decalSampler, decalSamplerSampler, fragmentInputs.vDecalUV + uvOffset);
 	#include<decalFragment>(surfaceAlbedo, baseColor, GAMMADECAL, _GAMMADECAL_NOTUSED_)
 #endif
 
@@ -148,11 +148,11 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #endif
 
 #ifdef DETAIL
-    baseColor = vec4f(baseColor.rgb * 2.0 * mix(0.5, detailColor.r, vDetailInfos.y), baseColor.a);
+    baseColor = vec4f(baseColor.rgb * 2.0 * mix(0.5, detailColor.r, uniforms.vDetailInfos.y), baseColor.a);
 #endif
 
 #if defined(DECAL) && defined(DECAL_AFTER_DETAIL)
-	var decalColor: vec4f = textureSample(decalSampler, decalSamplerSampler, vDecalUV + uvOffset);
+	var decalColor: vec4f = textureSample(decalSampler, decalSamplerSampler, fragmentInputs.vDecalUV + uvOffset);
 	#include<decalFragment>(surfaceAlbedo, baseColor, GAMMADECAL, _GAMMADECAL_NOTUSED_)
 #endif
 
@@ -221,7 +221,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 			refractionColor = refractionLookup;
 		}
 	#else
-		var vRefractionUVW: vec3f =  vec3f(refractionMatrix * (view *  vec4f(fragmentInputs.vPositionW + refractionVector * uniforms.vRefractionInfos.z, 1.0)));
+		var vRefractionUVW: vec3f =  (uniforms.refractionMatrix * (scene.view *  vec4f(fragmentInputs.vPositionW + refractionVector * uniforms.vRefractionInfos.z, 1.0))).xyz;
 
 		var refractionCoords: vec2f = vRefractionUVW.xy / vRefractionUVW.z;
 
@@ -259,7 +259,7 @@ var reflectionColor: vec4f =  vec4f(0., 0., 0., 1.);
 				#endif
 			#endif
 
-			reflectionColor = textureSample(reflectionCubeSampler, reflectionCubeSamplerSampler,vReflectionUVW, bias);
+			reflectionColor = textureSampleLevel(reflectionCubeSampler, reflectionCubeSamplerSampler,vReflectionUVW, bias);
 		#else
 			reflectionColor = textureSample(reflectionCubeSampler, reflectionCubeSamplerSampler, vReflectionUVW);
 		#endif
