@@ -489,8 +489,7 @@ float screenSpaceShadow(vec3 csOrigin, vec3 csDirection, vec2 csZBufferSize,
       break;
     float rayZMin = rayZMax;
     rayZMax = csZDir * Z.x / Z.y;
-    opacity += max(opacity, (1.0 - linearZ_alpha.y) *
-                                step(rayZMax, sceneDepth + ssThickness) *
+    opacity += max(opacity, step(rayZMax, sceneDepth + ssThickness) *
                                 step(sceneDepth, rayZMin));
   }
 

@@ -2201,7 +2201,7 @@
         },
         {
             "title": "IBL Voxel Shadowing",
-            "playgroundId": "#8R5SSE#178",
+            "playgroundId": "#8R5SSE#180",
             "referenceImage": "voxelShadows.png",
             "renderCount": 15,
             "excludedEngines": ["webgl1", "webgpu"]

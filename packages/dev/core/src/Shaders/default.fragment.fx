@@ -434,6 +434,11 @@ color.rgb = max(color.rgb, 0.);
     gl_FragData[PREPASS_POSITION_INDEX] = vec4(vPositionW, writeGeometryInfo);
     #endif
 
+#ifdef PREPASS_LOCAL_POSITION
+    gl_FragData[PREPASS_LOCAL_POSITION_INDEX] =
+        vec4(vPosition * 0.5 + 0.5, writeGeometryInfo);
+#endif
+
 #if defined(PREPASS_VELOCITY)
     vec2 a = (vCurrentPosition.xy / vCurrentPosition.w) * 0.5 + 0.5;
     vec2 b = (vPreviousPosition.xy / vPreviousPosition.w) * 0.5 + 0.5;
@@ -479,7 +484,8 @@ color.rgb = max(color.rgb, 0.);
 #endif
 
 #ifdef PREPASS_WORLD_NORMAL
-        gl_FragData[PREPASS_WORLD_NORMAL_INDEX] = vec4(normalW, writeGeometryInfo); // Normal
+        gl_FragData[PREPASS_WORLD_NORMAL_INDEX] =
+            vec4(normalW * 0.5 + 0.5, writeGeometryInfo); // Normal
 #endif
 
 #ifdef PREPASS_ALBEDO_SQRT
