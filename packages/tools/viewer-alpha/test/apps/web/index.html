@@ -14,14 +14,23 @@
                 margin: 0;
                 overflow: hidden;
             }
+
+            button {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+            }
         </style>
     </head>
 
     <body ondragover="event.preventDefault()" ondrop="onDrop(event)">
-        <babylon-viewer src="https://playground.babylonjs.com/scenes/BoomBox.glb" env="https://assets.babylonjs.com/environments/ulmerMuenster.env"> </babylon-viewer>
+        <babylon-viewer src="https://raw.githubusercontent.com/BabylonJS/Assets/master/meshes/ufo.glb" env="https://assets.babylonjs.com/environments/ulmerMuenster.env">
+        </babylon-viewer>
+        <button onclick="onToggle()">Toggle</button>
         <script type="module" src="/packages/tools/viewer-alpha/src/index.ts"></script>
         <script>
             const viewerElement = document.querySelector("babylon-viewer");
+            let isViewerConnected = true;
 
             (async () => {
                 // The module referenced in the script tag above is loaded asynchronously, so we need to wait for it to load and for the custom element to be defined.
@@ -29,11 +38,13 @@
                 await customElements.whenDefined("babylon-viewer");
                 // "BabylonViewer" is defined as the "library" in webpack.config.js and can be used to access the Viewer as needed.
                 await new Promise((resolve) => setTimeout(resolve, 2000));
-                viewerElement.src = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/BrainStem/glTF-Binary/BrainStem.glb";
+                // document.body.removeChild(viewerElement);
+                //viewerElement.src = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/BrainStem/glTF-Binary/BrainStem.glb";
                 // error case
                 //viewerElement.src = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/BrainStem/glTF-Binary/BrainStem2.glb';
                 await new Promise((resolve) => setTimeout(resolve, 2000));
-                viewerElement.src = "https://playground.babylonjs.com/scenes/BoomBox.glb";
+                // document.body.appendChild(viewerElement);
+                //viewerElement.src = "https://playground.babylonjs.com/scenes/BoomBox.glb";
             })();
 
             async function onDrop(event) {
@@ -41,8 +52,15 @@
                 if (file) {
                     event.preventDefault();
                     await customElements.whenDefined("babylon-viewer");
+                    //const objUrl = URL.createObjectURL(file);
                     await viewerElement.viewer.loadModelAsync(file);
+                    //URL.revokeObjectURL(objUrl);
                 }
+            }
+
+            function onToggle() {
+                isViewerConnected ? document.body.removeChild(viewerElement) : document.body.appendChild(viewerElement);
+                isViewerConnected = !isViewerConnected;
             }
         </script>
     </body>

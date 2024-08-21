@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { AbstractEngine, AssetContainer, Camera, FramingBehavior, IDisposable, LoadAssetContainerOptions, Mesh, Nullable } from "core/index";
+import type { AbstractEngine, AnimationGroup, AssetContainer, Camera, FramingBehavior, IDisposable, LoadAssetContainerOptions, Mesh, Nullable, Observer } from "core/index";
 
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
@@ -11,6 +11,7 @@ import { Color4 } from "core/Maths/math.color";
 import { Vector3 } from "core/Maths/math.vector";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { AsyncLock } from "core/Misc/asyncLock";
+import { Observable } from "core/Misc/observable";
 import { Scene } from "core/scene";
 
 // TODO: Dynamic imports?
@@ -84,6 +85,10 @@ export type ViewerOptions = Partial<
  * - Full screen and XR modes.
  */
 export class Viewer implements IDisposable {
+    public readonly onModelLoaded = new Observable<void>();
+    public readonly onIsAnimationPlayingChanged = new Observable<void>();
+    public readonly onAnimationProgressChanged = new Observable<void>();
+
     private readonly _details: ViewerDetails;
     private readonly _camera: ArcRotateCamera;
     private _skybox: Nullable<Mesh> = null;
@@ -96,6 +101,11 @@ export class Viewer implements IDisposable {
     private readonly _loadEnvironmentLock = new AsyncLock();
     private _environment: Nullable<IDisposable> = null;
     private _loadEnvironmentAbortController: Nullable<AbortController> = null;
+
+    private _selectedAnimation = 0;
+    private _activeAnimation: Nullable<AnimationGroup> = null;
+    private _activeAnimationObservers: Observer<AnimationGroup>[] = [];
+    private _animationSpeed = 1;
 
     public constructor(
         private readonly _engine: AbstractEngine,
@@ -117,9 +127,62 @@ export class Viewer implements IDisposable {
         // TODO: render at least back ground. Maybe we can only run renderloop when a mesh is loaded. What to render until then?
         this._engine.runRenderLoop(() => {
             this._details.scene.render();
+            if (this._activeAnimation?.isPlaying) {
+                this.onAnimationProgressChanged.notifyObservers();
+            }
         });
 
         options?.onInitialized?.(this._details);
+    }
+
+    public get animations(): readonly string[] {
+        return this._details.model?.animationGroups.map((group) => group.name) ?? [];
+    }
+
+    public get selectedAnimation(): number {
+        return this._selectedAnimation;
+    }
+
+    public set selectedAnimation(value: number) {
+        if (value !== this._selectedAnimation) {
+            this._selectedAnimation = value;
+            if (this.isAnimationPlaying) {
+                this.playAnimation();
+            }
+        }
+    }
+
+    public get isAnimationPlaying(): boolean {
+        return this._activeAnimation?.isPlaying ?? false;
+    }
+
+    // public get animationDuration(): number {
+    //     if (this._activeAnimation) {
+    //         return this._activeAnimation.getLength() / this._activeAnimation.speedRatio;
+    //     }
+    //     return 0;
+    // }
+
+    public get animationSpeed(): number {
+        return this._animationSpeed;
+    }
+
+    public set animationSpeed(value: number) {
+        this._animationSpeed = value;
+        this._applyAnimationSpeed();
+    }
+
+    public get animationProgress(): number {
+        if (this._activeAnimation) {
+            return this._activeAnimation.getCurrentFrame() / (this._activeAnimation.to - this._activeAnimation.from);
+        }
+        return 0;
+    }
+
+    public set animationProgress(value: number) {
+        if (this._activeAnimation) {
+            this._activeAnimation.goToFrame(Math.round(value * (this._activeAnimation.to - this._activeAnimation.from)));
+        }
     }
 
     /**
@@ -136,6 +199,7 @@ export class Viewer implements IDisposable {
         this._loadModelAbortController?.abort("New model is being loaded before previous model finished loading.");
         const abortController = (this._loadModelAbortController = new AbortController());
 
+        // TODO: Disable audio for now, later figure out how to re-introduce it through dynamic imports.
         options = {
             ...options,
             pluginOptions: {
@@ -160,9 +224,16 @@ export class Viewer implements IDisposable {
         await this._loadModelLock.lockAsync(async () => {
             this._throwIfDisposedOrAborted(abortSignal, abortController.signal);
             this._details.model?.dispose();
+            this._activeAnimation = null;
+            this._selectedAnimation = 0; // TODO: When restoring the viewer, we don't want to reset this, but when loading a new model, we do.
+
             this._details.model = await loadAssetContainerAsync(source, this._details.scene, options);
+            this._details.model.animationGroups.forEach((group) => group.stop());
             this._details.model.addAllToScene();
+
             this._updateCamera();
+            this._applyAnimationSpeed();
+            this.onModelLoaded.notifyObservers();
         });
     }
 
@@ -172,9 +243,10 @@ export class Viewer implements IDisposable {
      * If no url is provided, a default hemispheric light will be created.
      * If an environment is already loaded, it will be unloaded before loading the new environment.
      * @param url The url of the environment texture to load.
+     * @param options The options to use when loading the environment.
      * @param abortSignal An optional signal that can be used to abort the loading process.
      */
-    public async loadEnvironmentAsync(url: Nullable<string | undefined>, abortSignal?: AbortSignal): Promise<void> {
+    public async loadEnvironmentAsync(url: Nullable<string | undefined>, options?: {}, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
 
         this._loadEnvironmentAbortController?.abort("New environment is being loaded before previous environment finished loading.");
@@ -224,10 +296,54 @@ export class Viewer implements IDisposable {
         });
     }
 
+    public playAnimation() {
+        if (!this._details.model) {
+            throw new Error("No model loaded.");
+        }
+
+        if (this._activeAnimation === this._details.model.animationGroups[this._selectedAnimation]) {
+            if (this._activeAnimation.isStarted && !this._activeAnimation.isPlaying) {
+                this._activeAnimation.play();
+            }
+            return;
+        }
+
+        if (this._activeAnimation) {
+            this._activeAnimationObservers.forEach((observer) => observer.remove());
+            this._activeAnimationObservers = [];
+            this._activeAnimation.stop();
+        }
+
+        this._activeAnimation = this._details.model.animationGroups[this._selectedAnimation] ?? null;
+
+        if (this._activeAnimation) {
+            this._activeAnimationObservers = [
+                this._activeAnimation.onAnimationGroupPlayObservable.add(() => {
+                    this.onIsAnimationPlayingChanged.notifyObservers();
+                }),
+                this._activeAnimation.onAnimationGroupPauseObservable.add(() => {
+                    this.onIsAnimationPlayingChanged.notifyObservers();
+                }),
+            ];
+
+            this._activeAnimation.start(true, this._animationSpeed);
+        }
+    }
+
+    public async pauseAnimation() {
+        if (this._activeAnimation?.isPlaying) {
+            this._activeAnimation.pause();
+            //this.onIsAnimationPlayingChanged.notifyObservers();
+        }
+    }
+
     /**
      * Disposes of the resources held by the Viewer.
      */
     public dispose(): void {
+        this.onModelLoaded.clear();
+        this.onIsAnimationPlayingChanged.clear();
+        this.onAnimationProgressChanged.clear();
         this._details.scene.dispose();
         this._isDisposed = true;
     }
@@ -278,6 +394,10 @@ export class Viewer implements IDisposable {
         this._camera.restoreStateInterpolationFactor = 0.1;
 
         updateSkybox(this._skybox, this._camera);
+    }
+
+    private _applyAnimationSpeed() {
+        this._details.model?.animationGroups.forEach((group) => (group.speedRatio = this._animationSpeed));
     }
 
     /**
