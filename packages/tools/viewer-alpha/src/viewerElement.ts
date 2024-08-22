@@ -29,31 +29,45 @@ export class HTML3DElement extends LitElement {
             height: 100%;
         }
 
-        .animation-bar-container {
-            position: absolute;
-            height: 48px;
-            width: 100%;
-            bottom: 10px;
-            display: flex;
-            justify-content: center;
+        :host {
+            --ui-foreground-color: white;
+            --ui-background-hue: 233;
+            --ui-background-saturation: 8%;
+            --ui-background-lightness: 39%;
+            --ui-background-opacity: 0.75;
+            --ui-background-color: hsla(var(--ui-background-hue), var(--ui-background-saturation), var(--ui-background-lightness), var(--ui-background-opacity));
+            --ui-background-color-hover: hsla(
+                var(--ui-background-hue),
+                var(--ui-background-saturation),
+                calc(var(--ui-background-lightness) - 10%),
+                calc(var(--ui-background-opacity) - 0.1)
+            );
+        }
+
+        :host(.full-size) {
         }
 
         .animation-bar {
-            background-color: rgba(91, 93, 107, 0.75);
+            position: absolute;
             display: flex;
             flex-direction: row;
-            height: 100%;
+            border-radius: 12px;
+            height: 48px;
             width: 80%;
             max-width: 1280px;
-            border-radius: 12px;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
             justify-content: center;
+            background-color: var(--ui-background-color);
+            color: var(--ui-foreground-color);
         }
 
         .animation-bar select {
             background: none;
             border: 1px solid transparent;
-            border-radius: 12px;
-            color: white;
+            border-radius: inherit;
+            color: inherit;
             padding: 12px;
             height: 100%;
             min-width: 48px;
@@ -65,7 +79,7 @@ export class HTML3DElement extends LitElement {
         }
 
         .animation-bar select:hover {
-            background-color: rgba(22, 24, 26, 0.2);
+            background-color: var(--ui-background-color-hover);
         }
 
         .animation-bar select:active {
@@ -79,8 +93,8 @@ export class HTML3DElement extends LitElement {
         .animation-bar button {
             background: none;
             border: 1px solid transparent;
-            border-radius: 12px;
-            color: white;
+            border-radius: inherit;
+            color: inherit;
             margin: 0;
             padding: 0;
             height: 100%;
@@ -90,7 +104,7 @@ export class HTML3DElement extends LitElement {
         }
 
         .animation-bar button:hover {
-            background-color: rgba(22, 24, 26, 0.2);
+            background-color: var(--ui-background-color-hover);
         }
 
         .animation-bar button:focus-visible {
@@ -109,6 +123,7 @@ export class HTML3DElement extends LitElement {
             overflow: hidden;
             cursor: pointer;
             align-items: center;
+            border-radius: inherit;
         }
 
         .progress-wrapper {
@@ -118,13 +133,13 @@ export class HTML3DElement extends LitElement {
             height: 95%;
             outline: none;
             border: 1px solid transparent;
-            border-radius: 12px;
+            border-radius: inherit;
             padding: 0 12px;
             background-color: transparent;
         }
 
         .progress-wrapper:focus-visible {
-            border: 1px solid white;
+            border: 1px solid var(--ui-foreground-color);
         }
 
         /*Chrome -webkit */
@@ -133,39 +148,38 @@ export class HTML3DElement extends LitElement {
             -webkit-appearance: none;
             width: 20px;
             height: 20px;
-            border: 2px solid white;
+            border: 2px solid;
+            color: var(--ui-foreground-color);
             border-radius: 50%;
-            background: rgba(91, 93, 107, 1);
+            background: hsla(var(--ui-background-hue), var(--ui-background-saturation), var(--ui-background-lightness), 1);
             margin-top: -10px;
         }
 
         .progress-wrapper::-webkit-slider-runnable-track {
             height: 2px;
             -webkit-appearance: none;
-            background-color: white;
+            background-color: var(--ui-foreground-color);
         }
 
         /** FireFox -moz */
 
         .progress-wrapper::-moz-range-progress {
             height: 2px;
-            background-color: white;
+            background-color: var(--ui-foreground-color);
         }
 
         .progress-wrapper::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            border: 2px solid white;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--ui-foreground-color);
             border-radius: 50%;
-            background: rgba(91, 93, 107, 1);
+            background: hsla(var(--ui-background-hue), var(--ui-background-saturation), var(--ui-background-lightness), 1);
         }
 
         .progress-wrapper::-moz-range-track {
             height: 2px;
-            background: white;
+            background: var(--ui-foreground-color);
         }
-
-        :host(.full-size);
     `;
 
     /**
@@ -244,41 +258,39 @@ export class HTML3DElement extends LitElement {
                 <canvas id="renderCanvas" class="full-size" touch-action="none"></canvas>
                 ${this._animations.length > 0 &&
                 html`
-                    <div class="animation-bar-container">
-                        <div class="animation-bar">
-                            ${this._animations.length > 1
-                                ? html`<select @change="${this._onSelectedAnimationChanged}">
-                                      ${this._animations.map((name, index) => html`<option value="${index}" .selected="${this._selectedAnimation == index}">${name}</option>`)}
-                                  </select>`
-                                : ""}
-                            <div class="progress-control">
-                                <button @click="${this._onPlayPauseAnimationClicked}">
-                                    ${!this._isAnimationPlaying
-                                        ? html`<svg viewBox="0 0 20 20">
-                                              <path d="${playFilledIcon}" fill="currentColor"></path>
-                                          </svg>`
-                                        : html`<svg viewBox="-3 -2 24 24">
-                                              <path d="${pauseFilledIcon}" fill="currentColor"></path>
-                                          </svg>`}
-                                </button>
-                                <input
-                                    class="progress-wrapper"
-                                    type="range"
-                                    min="0"
-                                    max="1"
-                                    step="0.0001"
-                                    .value="${this._animationProgress}"
-                                    @input="${this._onProgressChanged}"
-                                    @pointerdown="${this._onProgressPointerDown}"
-                                />
-                            </div>
-                            <select @change="${this._onAnimationSpeedChanged}">
-                                <option value="0.5" .selected="${this._animationSpeed === 0.5}">0.5x</option>
-                                <option value="1" .selected="${this._animationSpeed === 1}">1x</option>
-                                <option value="1.5" .selected="${this._animationSpeed === 1.5}">1.5x</option>
-                                <option value="2" .selected="${this._animationSpeed === 2}">2x</option>
-                            </select>
+                    <div class="animation-bar">
+                        ${this._animations.length > 1
+                            ? html`<select @change="${this._onSelectedAnimationChanged}">
+                                  ${this._animations.map((name, index) => html`<option value="${index}" .selected="${this._selectedAnimation == index}">${name}</option>`)}
+                              </select>`
+                            : ""}
+                        <div class="progress-control">
+                            <button @click="${this._onPlayPauseAnimationClicked}">
+                                ${!this._isAnimationPlaying
+                                    ? html`<svg viewBox="0 0 20 20">
+                                          <path d="${playFilledIcon}" fill="currentColor"></path>
+                                      </svg>`
+                                    : html`<svg viewBox="-3 -2 24 24">
+                                          <path d="${pauseFilledIcon}" fill="currentColor"></path>
+                                      </svg>`}
+                            </button>
+                            <input
+                                class="progress-wrapper"
+                                type="range"
+                                min="0"
+                                max="1"
+                                step="0.0001"
+                                .value="${this._animationProgress}"
+                                @input="${this._onProgressChanged}"
+                                @pointerdown="${this._onProgressPointerDown}"
+                            />
                         </div>
+                        <select @change="${this._onAnimationSpeedChanged}">
+                            <option value="0.5" .selected="${this._animationSpeed === 0.5}">0.5x</option>
+                            <option value="1" .selected="${this._animationSpeed === 1}">1x</option>
+                            <option value="1.5" .selected="${this._animationSpeed === 1.5}">1.5x</option>
+                            <option value="2" .selected="${this._animationSpeed === 2}">2x</option>
+                        </select>
                     </div>
                 `}
             </div>
