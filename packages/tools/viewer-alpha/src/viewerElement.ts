@@ -47,7 +47,7 @@ export class HTML3DElement extends LitElement {
         :host(.full-size) {
         }
 
-        .animation-bar {
+        .tool-bar {
             position: absolute;
             display: flex;
             flex-direction: row;
@@ -63,7 +63,7 @@ export class HTML3DElement extends LitElement {
             color: var(--ui-foreground-color);
         }
 
-        .animation-bar select {
+        .tool-bar select {
             background: none;
             border: 1px solid transparent;
             border-radius: inherit;
@@ -78,19 +78,19 @@ export class HTML3DElement extends LitElement {
             -moz-appearance: none; /* Remove default styling for Firefox */
         }
 
-        .animation-bar select:hover {
+        .tool-bar select:hover {
             background-color: var(--ui-background-color-hover);
         }
 
-        .animation-bar select:active {
+        .tool-bar select:active {
             border: 1px solid transparent;
         }
 
-        .animation-bar select:focus-visible {
+        .tool-bar select:focus-visible {
             border: 1px solid;
         }
 
-        .animation-bar button {
+        .tool-bar button {
             background: none;
             border: 1px solid transparent;
             border-radius: inherit;
@@ -103,15 +103,15 @@ export class HTML3DElement extends LitElement {
             outline: none;
         }
 
-        .animation-bar button:hover {
+        .tool-bar button:hover {
             background-color: var(--ui-background-color-hover);
         }
 
-        .animation-bar button:focus-visible {
+        .tool-bar button:focus-visible {
             border: 1px solid;
         }
 
-        .animation-bar button svg {
+        .tool-bar button svg {
             width: 32px;
             height: 32px;
         }
@@ -258,7 +258,7 @@ export class HTML3DElement extends LitElement {
                 <canvas id="renderCanvas" class="full-size" touch-action="none"></canvas>
                 ${this._animations.length > 0 &&
                 html`
-                    <div class="animation-bar">
+                    <div part="tool-bar" class="tool-bar">
                         ${this._animations.length > 1
                             ? html`<select @change="${this._onSelectedAnimationChanged}">
                                   ${this._animations.map((name, index) => html`<option value="${index}" .selected="${this._selectedAnimation == index}">${name}</option>`)}
