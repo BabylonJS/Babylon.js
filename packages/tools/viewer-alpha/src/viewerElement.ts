@@ -258,40 +258,42 @@ export class HTML3DElement extends LitElement {
                 <canvas id="renderCanvas" class="full-size" touch-action="none"></canvas>
                 ${this._animations.length > 0 &&
                 html`
-                    <div part="tool-bar" class="tool-bar">
-                        ${this._animations.length > 1
-                            ? html`<select @change="${this._onSelectedAnimationChanged}">
-                                  ${this._animations.map((name, index) => html`<option value="${index}" .selected="${this._selectedAnimation == index}">${name}</option>`)}
-                              </select>`
-                            : ""}
-                        <div class="progress-control">
-                            <button @click="${this._onPlayPauseAnimationClicked}">
-                                ${!this._isAnimationPlaying
-                                    ? html`<svg viewBox="0 0 20 20">
-                                          <path d="${playFilledIcon}" fill="currentColor"></path>
-                                      </svg>`
-                                    : html`<svg viewBox="-3 -2 24 24">
-                                          <path d="${pauseFilledIcon}" fill="currentColor"></path>
-                                      </svg>`}
-                            </button>
-                            <input
-                                class="progress-wrapper"
-                                type="range"
-                                min="0"
-                                max="1"
-                                step="0.0001"
-                                .value="${this._animationProgress}"
-                                @input="${this._onProgressChanged}"
-                                @pointerdown="${this._onProgressPointerDown}"
-                            />
+                    <slot name="tool-bar">
+                        <div part="tool-bar" class="tool-bar">
+                            ${this._animations.length > 1
+                                ? html`<select @change="${this._onSelectedAnimationChanged}">
+                                      ${this._animations.map((name, index) => html`<option value="${index}" .selected="${this._selectedAnimation == index}">${name}</option>`)}
+                                  </select>`
+                                : ""}
+                            <div class="progress-control">
+                                <button @click="${this._onPlayPauseAnimationClicked}">
+                                    ${!this._isAnimationPlaying
+                                        ? html`<svg viewBox="0 0 20 20">
+                                              <path d="${playFilledIcon}" fill="currentColor"></path>
+                                          </svg>`
+                                        : html`<svg viewBox="-3 -2 24 24">
+                                              <path d="${pauseFilledIcon}" fill="currentColor"></path>
+                                          </svg>`}
+                                </button>
+                                <input
+                                    class="progress-wrapper"
+                                    type="range"
+                                    min="0"
+                                    max="1"
+                                    step="0.0001"
+                                    .value="${this._animationProgress}"
+                                    @input="${this._onProgressChanged}"
+                                    @pointerdown="${this._onProgressPointerDown}"
+                                />
+                            </div>
+                            <select @change="${this._onAnimationSpeedChanged}">
+                                <option value="0.5" .selected="${this._animationSpeed === 0.5}">0.5x</option>
+                                <option value="1" .selected="${this._animationSpeed === 1}">1x</option>
+                                <option value="1.5" .selected="${this._animationSpeed === 1.5}">1.5x</option>
+                                <option value="2" .selected="${this._animationSpeed === 2}">2x</option>
+                            </select>
                         </div>
-                        <select @change="${this._onAnimationSpeedChanged}">
-                            <option value="0.5" .selected="${this._animationSpeed === 0.5}">0.5x</option>
-                            <option value="1" .selected="${this._animationSpeed === 1}">1x</option>
-                            <option value="1.5" .selected="${this._animationSpeed === 1.5}">1.5x</option>
-                            <option value="2" .selected="${this._animationSpeed === 2}">2x</option>
-                        </select>
-                    </div>
+                    </slot>
                 `}
             </div>
         `;
