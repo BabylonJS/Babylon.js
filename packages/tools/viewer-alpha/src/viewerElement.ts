@@ -13,6 +13,14 @@ const pauseFilledIcon = "M5 2a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V4a2
 
 const allowedAnimationSpeeds = [0.5, 1, 1.5, 2] as const;
 
+interface HTML3DElementEventMap extends HTMLElementEventMap {
+    modelchange: Event;
+    selectedanimationchange: Event;
+    animationspeedchange: Event;
+    animationplayingchange: Event;
+    animationprogresschange: Event;
+}
+
 /**
  * Represents a custom element that displays a 3D model using the Babylon.js Viewer.
  */
@@ -82,10 +90,6 @@ export class HTML3DElement extends LitElement {
 
         .tool-bar select:hover {
             background-color: var(--ui-background-color-hover);
-        }
-
-        .tool-bar select:active {
-            border: 1px solid transparent;
         }
 
         .tool-bar select:focus-visible {
@@ -196,6 +200,24 @@ export class HTML3DElement extends LitElement {
     @property()
     public env = "";
 
+    public get animations(): readonly string[] {
+        return this._animations;
+    }
+
+    public get selectedAnimation(): number {
+        return this._selectedAnimation;
+    }
+
+    public get isAnimationPlaying(): boolean {
+        return this._isAnimationPlaying;
+    }
+
+    @property({ attribute: "animation-speed" })
+    public animationSpeed = 1;
+
+    @property({ attribute: false })
+    public animationProgress = 0;
+
     @state()
     private _animations: string[] = [];
 
@@ -205,14 +227,12 @@ export class HTML3DElement extends LitElement {
     @state()
     private _isAnimationPlaying = false;
 
-    @state()
-    private _animationProgress = 0;
-
-    @state()
-    private _animationSpeed = 1;
-
     @query("#renderCanvas")
     private _canvas: HTMLCanvasElement;
+
+    public toggleAnimation() {
+        this.viewer?.toggleAnimation();
+    }
 
     // eslint-disable-next-line babylonjs/available
     override connectedCallback(): void {
@@ -258,18 +278,18 @@ export class HTML3DElement extends LitElement {
         return html`
             <div class="full-size">
                 <canvas id="renderCanvas" class="full-size" touch-action="none"></canvas>
-                ${this._animations.length > 0 &&
+                ${this.animations.length > 0 &&
                 html`
                     <slot name="tool-bar">
                         <div part="tool-bar" class="tool-bar">
-                            ${this._animations.length > 1
+                            ${this.animations.length > 1
                                 ? html`<select @change="${this._onSelectedAnimationChanged}">
-                                      ${this._animations.map((name, index) => html`<option value="${index}" .selected="${this._selectedAnimation == index}">${name}</option>`)}
+                                      ${this.animations.map((name, index) => html`<option value="${index}" .selected="${this.selectedAnimation == index}">${name}</option>`)}
                                   </select>`
                                 : ""}
                             <div class="progress-control">
-                                <button @click="${this._onPlayPauseAnimationClicked}">
-                                    ${!this._isAnimationPlaying
+                                <button @click="${this.toggleAnimation}">
+                                    ${!this.isAnimationPlaying
                                         ? html`<svg viewBox="0 0 20 20">
                                               <path d="${playFilledIcon}" fill="currentColor"></path>
                                           </svg>`
@@ -283,13 +303,13 @@ export class HTML3DElement extends LitElement {
                                     min="0"
                                     max="1"
                                     step="0.0001"
-                                    .value="${this._animationProgress}"
+                                    .value="${this.animationProgress}"
                                     @input="${this._onProgressChanged}"
                                     @pointerdown="${this._onProgressPointerDown}"
                                 />
                             </div>
                             <select @change="${this._onAnimationSpeedChanged}">
-                                ${allowedAnimationSpeeds.map((speed) => html`<option value="${speed}" .selected="${this._animationSpeed === speed}">${speed}x</option>`)}
+                                ${allowedAnimationSpeeds.map((speed) => html`<option value="${speed}" .selected="${this.animationSpeed === speed}">${speed}x</option>`)}
                             </select>
                         </div>
                     </slot>
@@ -298,12 +318,18 @@ export class HTML3DElement extends LitElement {
         `;
     }
 
-    private _onPlayPauseAnimationClicked() {
-        if (this._isAnimationPlaying) {
-            this.viewer?.pauseAnimation();
-        } else {
-            this.viewer?.playAnimation();
-        }
+    override addEventListener<K extends keyof HTML3DElementEventMap>(
+        type: K,
+        listener: (this: HTMLElement, ev: HTML3DElementEventMap[K]) => any,
+        options?: boolean | AddEventListenerOptions
+    ): void;
+    override addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    override addEventListener(type: unknown, listener: unknown, options?: unknown): void {
+        super.addEventListener(type as string, listener as EventListenerOrEventListenerObject, options as boolean | AddEventListenerOptions);
+    }
+
+    private _dispatchCustomEvent(type: keyof HTML3DElementEventMap) {
+        this.dispatchEvent(new Event(type));
     }
 
     private _onSelectedAnimationChanged(event: Event) {
@@ -313,14 +339,14 @@ export class HTML3DElement extends LitElement {
 
     private _onAnimationSpeedChanged(event: Event) {
         const selectElement = event.target as HTMLSelectElement;
-        this._animationSpeed = Number(selectElement.value);
+        this.animationSpeed = Number(selectElement.value);
     }
 
     private _onProgressChanged(event: Event) {
         if (this.viewer) {
             const input = event.target as HTMLInputElement;
             const value = Number(input.value);
-            if (value !== this._animationProgress) {
+            if (value !== this.animationProgress) {
                 this.viewer.animationProgress = value;
             }
         }
@@ -340,24 +366,29 @@ export class HTML3DElement extends LitElement {
 
             this.viewer.onModelLoaded.add(() => {
                 this._animations = [...(this.viewer?.animations ?? [])];
+                this._dispatchCustomEvent("modelchange");
             });
 
             this.viewer.onSelectedAnimationChanged.add(() => {
-                this._selectedAnimation = this.viewer?.selectedAnimation ?? 0;
+                this._selectedAnimation = this.viewer?.selectedAnimation ?? -1;
+                this._dispatchCustomEvent("selectedanimationchange");
             });
 
             this.viewer.onAnimationSpeedChanged.add(() => {
                 let speed = this.viewer?.animationSpeed ?? 1;
                 speed = allowedAnimationSpeeds.reduce((prev, curr) => (Math.abs(curr - speed) < Math.abs(prev - speed) ? curr : prev));
-                this._animationSpeed = speed;
+                this.animationSpeed = speed;
+                this._dispatchCustomEvent("animationspeedchange");
             });
 
             this.viewer.onIsAnimationPlayingChanged.add(() => {
                 this._isAnimationPlaying = this.viewer?.isAnimationPlaying ?? false;
+                this._dispatchCustomEvent("animationplayingchange");
             });
 
             this.viewer.onAnimationProgressChanged.add(() => {
-                this._animationProgress = this.viewer?.animationProgress ?? 0;
+                this.animationProgress = this.viewer?.animationProgress ?? 0;
+                this._dispatchCustomEvent("animationprogresschange");
             });
 
             this._updateSelectedAnimation();
@@ -376,7 +407,7 @@ export class HTML3DElement extends LitElement {
 
     private _updateAnimationSpeed() {
         if (this.viewer) {
-            this.viewer.animationSpeed = this._animationSpeed;
+            this.viewer.animationSpeed = this.animationSpeed;
         }
     }
 

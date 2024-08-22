@@ -8,6 +8,7 @@ import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { Color4 } from "core/Maths/math.color";
+import { Scalar } from "core/Maths/math.scalar";
 import { Vector3 } from "core/Maths/math.vector";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { AsyncLock } from "core/Misc/asyncLock";
@@ -151,11 +152,11 @@ export class Viewer implements IDisposable {
     }
 
     public set selectedAnimation(value: number) {
+        value = Math.round(Scalar.Clamp(value, -1, this.animations.length - 1));
         if (value !== this._selectedAnimation) {
             const startAnimation = this.isAnimationPlaying;
             if (this._activeAnimation) {
                 this._activeAnimation?.stop();
-                this._activeAnimation?.reset();
                 this._activeAnimationObservers.forEach((observer) => observer.remove());
                 this._activeAnimationObservers = [];
             }
@@ -211,6 +212,7 @@ export class Viewer implements IDisposable {
     public set animationProgress(value: number) {
         if (this._activeAnimation) {
             this._activeAnimation.goToFrame(value * (this._activeAnimation.to - this._activeAnimation.from));
+            this.onAnimationProgressChanged.notifyObservers();
         }
     }
 
@@ -329,14 +331,20 @@ export class Viewer implements IDisposable {
         });
     }
 
+    public toggleAnimation() {
+        if (this.isAnimationPlaying) {
+            this.pauseAnimation();
+        } else {
+            this.playAnimation();
+        }
+    }
+
     public playAnimation() {
         this._activeAnimation?.play(true);
     }
 
     public async pauseAnimation() {
-        if (this._activeAnimation?.isPlaying) {
-            this._activeAnimation.pause();
-        }
+        this._activeAnimation?.pause();
     }
 
     /**
@@ -345,8 +353,6 @@ export class Viewer implements IDisposable {
     public dispose(): void {
         this.selectedAnimation = -1;
         this.animationProgress = 0;
-        this.selectedAnimation = 0;
-        this.onAnimationProgressChanged.notifyObservers();
 
         this._renderLoop.dispose();
         this._details.scene.dispose();
