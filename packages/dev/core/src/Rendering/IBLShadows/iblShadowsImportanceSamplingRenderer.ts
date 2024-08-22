@@ -16,6 +16,8 @@ import type { PostProcessOptions } from "../../PostProcesses/postProcess";
 import { Vector4 } from "../../Maths/math.vector";
 import { RawTexture } from "../../Materials/Textures/rawTexture";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
+import { Observable } from "../../Misc/observable";
+import { HDRCubeTexture } from "core/Materials";
 
 /**
  * Build cdf maps for IBL importance sampling during IBL shadow computation.
@@ -31,13 +33,38 @@ export class _IblShadowsImportanceSamplingRenderer {
     private _cdfxPT: ProceduralTexture;
     private _icdfxPT: ProceduralTexture;
     private _iblSource: BaseTexture;
+
+    /**
+     * Gets the IBL source texture being used by the importance sampling renderer
+     */
     public get iblSource(): BaseTexture {
         return this._iblSource;
     }
+
+    /**
+     * Sets the IBL source texture to be used by the importance sampling renderer.
+     * This will trigger recreation of the importance sampling assets.
+     */
     public set iblSource(source: BaseTexture) {
         if (this._iblSource === source) {
             return;
         }
+        if (source instanceof Texture) {
+            if (source.isReady()) {
+                this._recreateAssetsFromNewIbl(source);
+            } else {
+                source.onLoadObservable.addOnce(this._recreateAssetsFromNewIbl);
+            }
+        } else if (source instanceof HDRCubeTexture) {
+            if (source.isReady()) {
+                this._recreateAssetsFromNewIbl(source);
+            } else {
+                source.onLoadObservable.addOnce(this._recreateAssetsFromNewIbl.bind(this, source));
+            }
+        }
+    }
+
+    private _recreateAssetsFromNewIbl(source: BaseTexture) {
         if (this._debugPass) {
             this._debugPass.dispose();
         }
@@ -49,7 +76,13 @@ export class _IblShadowsImportanceSamplingRenderer {
             // Recreate the debug pass because of the new textures
             this._createDebugPass();
         }
+
+        // Once the textures are generated, notify that they are ready to use.
+        this._icdfxPT.onGeneratedObservable.addOnce(() => {
+            this.onReadyObservable.notifyObservers();
+        });
     }
+
     public getIcdfyTexture(): ProceduralTexture {
         return this._icdfyPT;
     }
@@ -84,13 +117,18 @@ export class _IblShadowsImportanceSamplingRenderer {
     /**
      * Instanciates the importance sampling renderer
      * @param scene Scene to attach to
+     * @param iblSource The IBL source texture
      * @returns The importance sampling renderer
      */
     constructor(scene: Scene) {
         this._scene = scene;
         this._engine = scene.getEngine();
-        this._createTextures();
     }
+
+    /**
+     * Observable that triggers when the importance sampling renderer is ready
+     */
+    public onReadyObservable: Observable<void> = new Observable<void>();
 
     private _createTextures() {
         const size: TextureSize = this._iblSource ? this._iblSource.getSize() : { width: 1, height: 1 };
@@ -151,11 +189,11 @@ export class _IblShadowsImportanceSamplingRenderer {
     }
 
     private _disposeTextures() {
-        this._cdfyPT.dispose();
-        this._icdfyPT.dispose();
-        this._cdfxPT.dispose();
-        this._icdfxPT.dispose();
-        this._iblSource.dispose();
+        this._cdfyPT?.dispose();
+        this._icdfyPT?.dispose();
+        this._cdfxPT?.dispose();
+        this._icdfxPT?.dispose();
+        this._iblSource?.dispose();
     }
 
     private _createDebugPass() {

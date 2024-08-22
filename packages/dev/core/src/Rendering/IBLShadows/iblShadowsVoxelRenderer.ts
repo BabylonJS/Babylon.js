@@ -28,6 +28,7 @@ import { EffectRenderer, EffectWrapper } from "../../Materials/effectRenderer";
 import type { IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
 import { Effect } from "../../Materials/effect";
 import type { RenderTargetWrapper } from "core/Engines";
+import { Observable } from "../../Misc/observable";
 
 /**
  * Voxel-based shadow rendering for IBL's.
@@ -46,6 +47,11 @@ export class _IblShadowsVoxelRenderer {
     private _voxelMrtsYaxis: MultiRenderTarget[] = [];
     private _voxelMrtsZaxis: MultiRenderTarget[] = [];
     private _isVoxelGrid3D: boolean = true;
+
+    /**
+     * Return the voxel grid texture.
+     * @returns The voxel grid texture.
+     */
     public getVoxelGrid(): ProceduralTexture | RenderTargetTexture {
         if (this._triPlanarVoxelization) {
             return this._voxelGridRT;
@@ -53,6 +59,7 @@ export class _IblShadowsVoxelRenderer {
             return this._voxelGridZaxis;
         }
     }
+
     public getDebugPassPP(): PostProcess {
         if (!this._voxelDebugPass) {
             this._createDebugPass();
@@ -113,6 +120,11 @@ export class _IblShadowsVoxelRenderer {
         this._disposeVoxelTextures();
         this._createTextures();
     }
+
+    /*
+     * Observable that will be triggered when the voxel grid is ready to be used
+     */
+    public onReadyObservable: Observable<void> = new Observable<void>();
 
     private _copyMipEffectRenderer: EffectRenderer;
     private _copyMipEffectWrapper: EffectWrapper;
@@ -461,7 +473,7 @@ export class _IblShadowsVoxelRenderer {
      * @returns true if the voxel renderer is ready to voxelize scene
      */
     public isReady() {
-        if (!this.getVoxelGrid().isReady()) {
+        if (!this.getVoxelGrid().isReady() || this._voxelizationInProgress) {
             return false;
         }
 
@@ -544,6 +556,7 @@ export class _IblShadowsVoxelRenderer {
                 this._copyMipMaps();
                 this._voxelizationInProgress = false;
                 this._scene.onAfterRenderTargetsRenderObservable.removeCallback((this as any).boundVoxelGridRenderFn);
+                this.onReadyObservable.notifyObservers();
                 (this._scene.prePassRenderer as any)._setEnabled(true);
             }
         }

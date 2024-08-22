@@ -574,6 +574,29 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
 
         this._listenForCameraChanges();
         this.scene.getEngine().onResizeObservable.add(this._handleResize.bind(this));
+        this._importanceSamplingRenderer.onReadyObservable.addOnce(() => {
+            if (this._voxelRenderer.isReady()) {
+                this.toggleShadow(true);
+            } else {
+                this._voxelRenderer.onReadyObservable.addOnce(() => {
+                    this.toggleShadow(true);
+                });
+            }
+        });
+    }
+
+    public toggleShadow(enabled: boolean) {
+        if (enabled) {
+            this._enableEffect("IBLShadowVoxelTracingPass", this.cameras);
+            this._enableEffect("IBLShadowSpatialBlurPass", this.cameras);
+            this._enableEffect("IBLShadowAccumulationBlurPass", this.cameras);
+            this._enableEffect("IBLShadowCompositePass", this.cameras);
+        } else {
+            this._disableEffect("IBLShadowVoxelTracingPass", null);
+            this._disableEffect("IBLShadowSpatialBlurPass", null);
+            this._disableEffect("IBLShadowAccumulationBlurPass", null);
+            this._disableEffect("IBLShadowCompositePass", null);
+        }
     }
 
     private _handleResize() {
@@ -659,6 +682,8 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         if (cameras) {
             this.scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this.name, cameras);
         }
+
+        this.toggleShadow(false);
 
         if (this.allowDebugPasses) {
             this._createDebugPasses();

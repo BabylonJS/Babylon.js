@@ -252,7 +252,13 @@ export class _IblShadowsVoxelTracingPass {
      * @returns true if the pass is ready
      */
     public isReady() {
-        return this._outputPP.isReady() && !(this._debugPassPP && !this._debugPassPP.isReady());
+        return (
+            this._outputPP.isReady() &&
+            !(this._debugPassPP && !this._debugPassPP.isReady()) &&
+            this._renderPipeline!.getIcdfyTexture().isReady() &&
+            this._renderPipeline!.getIcdfxTexture().isReady() &&
+            this._renderPipeline!.getVoxelGridTexture().isReady()
+        );
     }
 
     /**
