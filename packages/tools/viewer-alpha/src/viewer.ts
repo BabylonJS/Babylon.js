@@ -105,8 +105,7 @@ export class Viewer implements IDisposable {
     private _environment: Nullable<IDisposable> = null;
     private _loadEnvironmentAbortController: Nullable<AbortController> = null;
 
-    private _selectedAnimation = 0;
-    private _activeAnimation: Nullable<AnimationGroup> = null;
+    private _selectedAnimation = -1;
     private _activeAnimationObservers: Observer<AnimationGroup>[] = [];
     private _animationSpeed = 1;
 
@@ -130,7 +129,7 @@ export class Viewer implements IDisposable {
         // TODO: render at least back ground. Maybe we can only run renderloop when a mesh is loaded. What to render until then?
         const render = () => {
             this._details.scene.render();
-            if (this._activeAnimation?.isPlaying) {
+            if (this.isAnimationPlaying) {
                 this.onAnimationProgressChanged.notifyObservers();
             }
         };
@@ -153,10 +152,37 @@ export class Viewer implements IDisposable {
 
     public set selectedAnimation(value: number) {
         if (value !== this._selectedAnimation) {
-            this._selectedAnimation = value;
-            if (this.isAnimationPlaying) {
-                this.playAnimation();
+            const startAnimation = this.isAnimationPlaying;
+            if (this._activeAnimation) {
+                this._activeAnimation?.stop();
+                this._activeAnimation?.reset();
+                this._activeAnimationObservers.forEach((observer) => observer.remove());
+                this._activeAnimationObservers = [];
             }
+
+            this._selectedAnimation = value;
+
+            if (this._activeAnimation) {
+                this._activeAnimationObservers = [
+                    this._activeAnimation.onAnimationGroupPlayObservable.add(() => {
+                        this.onIsAnimationPlayingChanged.notifyObservers();
+                    }),
+                    this._activeAnimation.onAnimationGroupPauseObservable.add(() => {
+                        this.onIsAnimationPlayingChanged.notifyObservers();
+                    }),
+                    this._activeAnimation.onAnimationGroupEndObservable.add(() => {
+                        this.onIsAnimationPlayingChanged.notifyObservers();
+                        this.onAnimationProgressChanged.notifyObservers();
+                    }),
+                ];
+
+                this._activeAnimation.start(true, this._animationSpeed);
+
+                if (!startAnimation) {
+                    this.pauseAnimation();
+                }
+            }
+
             this.onSelectedAnimationChanged.notifyObservers();
         }
     }
@@ -191,8 +217,12 @@ export class Viewer implements IDisposable {
 
     public set animationProgress(value: number) {
         if (this._activeAnimation) {
-            this._activeAnimation.goToFrame(Math.round(value * (this._activeAnimation.to - this._activeAnimation.from)));
+            this._activeAnimation.goToFrame(value * (this._activeAnimation.to - this._activeAnimation.from));
         }
+    }
+
+    private get _activeAnimation(): Nullable<AnimationGroup> {
+        return this._details.model?.animationGroups[this._selectedAnimation] ?? null;
     }
 
     /**
@@ -234,11 +264,11 @@ export class Viewer implements IDisposable {
         await this._loadModelLock.lockAsync(async () => {
             this._throwIfDisposedOrAborted(abortSignal, abortController.signal);
             this._details.model?.dispose();
-            this._activeAnimation = null;
-            this.selectedAnimation = 0;
+            this.selectedAnimation = -1;
 
             this._details.model = await loadAssetContainerAsync(source, this._details.scene, options);
             this._details.model.animationGroups.forEach((group) => group.stop());
+            this.selectedAnimation = 0;
             this._details.model.addAllToScene();
 
             this._updateCamera();
@@ -311,36 +341,7 @@ export class Viewer implements IDisposable {
             throw new Error("No model loaded.");
         }
 
-        if (this._activeAnimation === this._details.model.animationGroups[this._selectedAnimation]) {
-            if (this._activeAnimation.isStarted && !this._activeAnimation.isPlaying) {
-                this._activeAnimation.play();
-            }
-            return;
-        }
-
-        if (this._activeAnimation) {
-            this._activeAnimationObservers.forEach((observer) => observer.remove());
-            this._activeAnimationObservers = [];
-            this._activeAnimation.stop();
-        }
-
-        this._activeAnimation = this._details.model.animationGroups[this._selectedAnimation] ?? null;
-
-        if (this._activeAnimation) {
-            this._activeAnimationObservers = [
-                this._activeAnimation.onAnimationGroupPlayObservable.add(() => {
-                    this.onIsAnimationPlayingChanged.notifyObservers();
-                }),
-                this._activeAnimation.onAnimationGroupPauseObservable.add(() => {
-                    this.onIsAnimationPlayingChanged.notifyObservers();
-                }),
-                this._activeAnimation.onAnimationGroupEndObservable.add(() => {
-                    this.onIsAnimationPlayingChanged.notifyObservers();
-                }),
-            ];
-
-            this._activeAnimation.start(true, this._animationSpeed);
-        }
+        this._activeAnimation?.play(true);
     }
 
     public async pauseAnimation() {
@@ -353,7 +354,7 @@ export class Viewer implements IDisposable {
      * Disposes of the resources held by the Viewer.
      */
     public dispose(): void {
-        this._activeAnimation?.stop();
+        this.selectedAnimation = -1;
         this.animationProgress = 0;
         this.selectedAnimation = 0;
         this.onAnimationProgressChanged.notifyObservers();

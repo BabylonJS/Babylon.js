@@ -179,7 +179,7 @@ export class HTML3DElement extends LitElement {
     private _animations: string[] = [];
 
     @state()
-    private _selectedAnimation = 0;
+    private _selectedAnimation = -1;
 
     @state()
     private _isAnimationPlaying = false;
@@ -192,9 +192,6 @@ export class HTML3DElement extends LitElement {
 
     @query("#renderCanvas")
     private _canvas: HTMLCanvasElement;
-
-    @query("#animationSelect")
-    private _animationSelect: HTMLSelectElement;
 
     // eslint-disable-next-line babylonjs/available
     override connectedCallback(): void {
@@ -245,8 +242,8 @@ export class HTML3DElement extends LitElement {
                     <div class="animation-bar-container">
                         <div class="animation-bar">
                             ${this._animations.length > 1
-                                ? html`<select id="animationSelect" @change="${this._onSelectedAnimationChanged}">
-                                      ${this._animations.map((name, index) => html`<option value="${index}">${name}</option>`)}
+                                ? html`<select @change="${this._onSelectedAnimationChanged}">
+                                      ${this._animations.map((name, index) => html`<option value="${index}" .selected="${this._selectedAnimation == index}">${name}</option>`)}
                                   </select>`
                                 : ""}
                             <div class="progress-control">
@@ -255,20 +252,29 @@ export class HTML3DElement extends LitElement {
                                         ? html`<svg viewBox="0 0 20 20">
                                               <path d="M17.22 8.68a1.5 1.5 0 0 1 0 2.63l-10 5.5A1.5 1.5 0 0 1 5 15.5v-11A1.5 1.5 0 0 1 7.22 3.2l10 5.5Z" fill="currentColor"></path>
                                           </svg>`
-                                        : html`<svg viewBox="0 0 20 20">
+                                        : html`<svg viewBox="-3 -2 24 24">
                                               <path
                                                   d="M5 2a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H5Zm8 0a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-2Z"
                                                   fill="currentColor"
                                               ></path>
                                           </svg>`}
                                 </button>
-                                <input class="progress-wrapper" type="range" min="0" max="100" step="0.1" value="${this._animationProgress * 100}" />
+                                <input
+                                    class="progress-wrapper"
+                                    type="range"
+                                    min="0"
+                                    max="1"
+                                    step="0.0001"
+                                    .value="${this._animationProgress}"
+                                    @input="${this._onProgressChanged}"
+                                    @pointerdown="${this._onProgressPointerDown}"
+                                />
                             </div>
                             <select @change="${this._onAnimationSpeedChanged}">
-                                <option value="0.5">0.5x</option>
-                                <option value="1" selected>1x</option>
-                                <option value="1.5">1.5x</option>
-                                <option value="2">2x</option>
+                                <option value="0.5" .selected="${this._animationSpeed === 0.5}">0.5x</option>
+                                <option value="1" .selected="${this._animationSpeed === 1}">1x</option>
+                                <option value="1.5" .selected="${this._animationSpeed === 1.5}">1.5x</option>
+                                <option value="2" .selected="${this._animationSpeed === 2}">2x</option>
                             </select>
                         </div>
                     </div>
@@ -293,6 +299,24 @@ export class HTML3DElement extends LitElement {
     private _onAnimationSpeedChanged(event: Event) {
         const selectElement = event.target as HTMLSelectElement;
         this._animationSpeed = Number(selectElement.value);
+    }
+
+    private _onProgressChanged(event: Event) {
+        if (this.viewer) {
+            const input = event.target as HTMLInputElement;
+            const value = Number(input.value);
+            if (value !== this._animationProgress) {
+                this.viewer.animationProgress = value;
+            }
+        }
+    }
+
+    private _onProgressPointerDown(event: Event) {
+        if (this.viewer?.isAnimationPlaying) {
+            this.viewer.pauseAnimation();
+            const input = event.target as HTMLInputElement;
+            input.addEventListener("pointerup", () => this.viewer?.playAnimation(), { once: true });
+        }
     }
 
     private _setupViewer() {
@@ -342,10 +366,6 @@ export class HTML3DElement extends LitElement {
     private _updateSelectedAnimation() {
         if (this.viewer) {
             this.viewer.selectedAnimation = this._selectedAnimation;
-        }
-
-        if (this._animationSelect) {
-            this._animationSelect.value = this._selectedAnimation.toString();
         }
     }
 
