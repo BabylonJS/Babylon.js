@@ -274,7 +274,7 @@ export class HTML3DElement extends LitElement {
     override update(changedProperties: PropertyValues): void {
         super.update(changedProperties);
 
-        if (changedProperties.has("_animationSpeed")) {
+        if (changedProperties.has("animationSpeed")) {
             this._updateAnimationSpeed();
         }
 
