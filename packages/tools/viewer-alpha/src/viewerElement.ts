@@ -27,7 +27,7 @@ interface HTML3DElementEventMap extends HTMLElementEventMap {
 @customElement("babylon-viewer")
 export class HTML3DElement extends LitElement {
     /**
-     * Gets the underlying Viewer object.
+     * Gets the underlying Viewer object. It will be undefined when the element is not connected to the DOM.
      */
     public viewer?: Viewer;
 
@@ -200,21 +200,36 @@ export class HTML3DElement extends LitElement {
     @property()
     public env = "";
 
+    /**
+     * The list of animation names for the currently loaded model.
+     */
     public get animations(): readonly string[] {
         return this._animations;
     }
 
+    /**
+     * The currently selected animation index.
+     */
     public get selectedAnimation(): number {
         return this._selectedAnimation;
     }
 
+    /**
+     * True if an animation is currently playing.
+     */
     public get isAnimationPlaying(): boolean {
         return this._isAnimationPlaying;
     }
 
+    /**
+     * The speed scale at which animations are played.
+     */
     @property({ attribute: "animation-speed" })
     public animationSpeed = 1;
 
+    /**
+     * The current point on the selected animation timeline, normalized between 0 and 1.
+     */
     @property({ attribute: false })
     public animationProgress = 0;
 
@@ -230,6 +245,9 @@ export class HTML3DElement extends LitElement {
     @query("#renderCanvas")
     private _canvas: HTMLCanvasElement;
 
+    /**
+     * Toggles the play/pause animation state if there is a selected animation.
+     */
     public toggleAnimation() {
         this.viewer?.toggleAnimation();
     }
@@ -318,6 +336,7 @@ export class HTML3DElement extends LitElement {
         `;
     }
 
+    // eslint-disable-next-line babylonjs/available
     override addEventListener<K extends keyof HTML3DElementEventMap>(
         type: K,
         listener: (this: HTMLElement, ev: HTML3DElementEventMap[K]) => any,

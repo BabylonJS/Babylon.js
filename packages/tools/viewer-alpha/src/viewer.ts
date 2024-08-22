@@ -86,10 +86,29 @@ export type ViewerOptions = Partial<
  * - Full screen and XR modes.
  */
 export class Viewer implements IDisposable {
+    /**
+     * Fired when a model is loaded into the viewer.
+     */
     public readonly onModelLoaded = new Observable<void>();
+
+    /**
+     * Fired when the selected animation changes.
+     */
     public readonly onSelectedAnimationChanged = new Observable<void>();
+
+    /**
+     * Fired when the animation speed changes.
+     */
     public readonly onAnimationSpeedChanged = new Observable<void>();
+
+    /**
+     * Fired when the selected animation is playing or paused.
+     */
     public readonly onIsAnimationPlayingChanged = new Observable<void>();
+
+    /**
+     * Fired when the current point on the selected animation timeline changes.
+     */
     public readonly onAnimationProgressChanged = new Observable<void>();
 
     private readonly _details: ViewerDetails;
@@ -143,10 +162,16 @@ export class Viewer implements IDisposable {
         options?.onInitialized?.(this._details);
     }
 
+    /**
+     * The list of animation names for the currently loaded model.
+     */
     public get animations(): readonly string[] {
         return this._details.model?.animationGroups.map((group) => group.name) ?? [];
     }
 
+    /**
+     * The currently selected animation index.
+     */
     public get selectedAnimation(): number {
         return this._selectedAnimation;
     }
@@ -188,10 +213,16 @@ export class Viewer implements IDisposable {
         }
     }
 
+    /**
+     * True if an animation is currently playing.
+     */
     public get isAnimationPlaying(): boolean {
         return this._activeAnimation?.isPlaying ?? false;
     }
 
+    /**
+     * The speed scale at which animations are played.
+     */
     public get animationSpeed(): number {
         return this._animationSpeed;
     }
@@ -202,6 +233,9 @@ export class Viewer implements IDisposable {
         this.onAnimationSpeedChanged.notifyObservers();
     }
 
+    /**
+     * The current point on the selected animation timeline, normalized between 0 and 1.
+     */
     public get animationProgress(): number {
         if (this._activeAnimation) {
             return this._activeAnimation.getCurrentFrame() / (this._activeAnimation.to - this._activeAnimation.from);
@@ -331,6 +365,9 @@ export class Viewer implements IDisposable {
         });
     }
 
+    /**
+     * Toggles the play/pause animation state if there is a selected animation.
+     */
     public toggleAnimation() {
         if (this.isAnimationPlaying) {
             this.pauseAnimation();
@@ -339,10 +376,16 @@ export class Viewer implements IDisposable {
         }
     }
 
+    /**
+     * Plays the selected animation if there is one.
+     */
     public playAnimation() {
         this._activeAnimation?.play(true);
     }
 
+    /**
+     * Pauses the selected animation if there is one.
+     */
     public async pauseAnimation() {
         this._activeAnimation?.pause();
     }
