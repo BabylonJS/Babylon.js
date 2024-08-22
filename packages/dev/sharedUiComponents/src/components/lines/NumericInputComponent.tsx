@@ -4,6 +4,7 @@ import style from "./NumericInputComponent.modules.scss";
 
 interface INumericInputComponentProps {
     label: string;
+    labelTooltip?: string;
     value: number;
     step?: number;
     onChange: (value: number) => void;
@@ -111,7 +112,7 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
             <div className={style.numeric}>
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
                 {this.props.label && (
-                    <div className={style.numericLabel} title={this.props.label}>
+                    <div className={style.numericLabel} title={this.props.labelTooltip ?? this.props.label}>
                         {`${this.props.label}: `}
                     </div>
                 )}
