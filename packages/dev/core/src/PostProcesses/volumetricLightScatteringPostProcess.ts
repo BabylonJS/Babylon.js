@@ -279,9 +279,11 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
 
         // Baked vertex animations
         const bvaManager = mesh.bakedVertexAnimationManager;
-        if (useInstances && bvaManager && bvaManager.isEnabled) {
+        if (bvaManager && bvaManager.isEnabled) {
             defines.push("#define BAKED_VERTEX_ANIMATION_TEXTURE");
-            attribs.push("bakedVertexAnimationSettingsInstanced");
+            if (useInstances) {
+                attribs.push("bakedVertexAnimationSettingsInstanced");
+            }
         }
 
         // Get correct effect
@@ -481,8 +483,8 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
 
                     // Baked vertex animations
                     const bvaManager = subMesh.getMesh().bakedVertexAnimationManager;
-                    if (hardwareInstancedRendering && bvaManager && bvaManager.isEnabled) {
-                        bvaManager.bind(effect, true);
+                    if (bvaManager && bvaManager.isEnabled) {
+                        bvaManager.bind(effect, hardwareInstancedRendering);
                     }
                 }
 
