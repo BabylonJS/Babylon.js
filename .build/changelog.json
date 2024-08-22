@@ -1,6 +1,108 @@
 {
-    "fromTag": "7.21.5",
+    "fromTag": "7.22.0",
     "changelog": {
+        "7.22.1": [
+            {
+                "pr": "15467",
+                "title": "Added optional labelTooltip to NumericInputComponent's props",
+                "description": "Also updated ColorLineComponent to make use of it.",
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/components/lines/ColorLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/lines/NumericInputComponent.tsx"
+                ],
+                "tags": []
+            }
+        ],
+        "7.22.0": [
+            {
+                "pr": "15465",
+                "title": "Fixed TinyEXR attribution and license",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/Loaders/EXR/exrLoader.compression.huf.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/EXR/exrLoader.compression.rle.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/EXR/exrLoader.compression.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/EXR/exrLoader.core.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/EXR/exrLoader.decoder.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/EXR/exrLoader.header.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/exrTextureLoader.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15464",
+                "title": "OutlineRenderer to WebGPU",
+                "description": "Add a WGSL implementation to the Outline Renderer.\r\n\r\nAlso adds support for skeletons using textures and VAT.",
+                "author": {
+                    "name": "noname0310",
+                    "url": "https://github.com/noname0310"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/index.ts",
+                    "packages/dev/core/src/Rendering/outlineRenderer.ts",
+                    "packages/dev/core/src/ShadersWGSL/outline.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/outline.vertex.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15463",
+                "title": "Enable forcing a size on svg conversion to texture in DOM",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/fileTools.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15461",
+                "title": "EXR file format support",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/Loaders/EXR/exrLoader.compression.huf.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/EXR/exrLoader.compression.rle.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/EXR/exrLoader.compression.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/EXR/exrLoader.configuration.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/EXR/exrLoader.core.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/EXR/exrLoader.decoder.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/EXR/exrLoader.header.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/EXR/exrLoader.interfaces.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/EXR/index.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/exrTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/index.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/textureLoaderManager.ts",
+                    "packages/tools/playground/public/textures/normal-pxr24.exr",
+                    "packages/tools/playground/public/textures/normal.exr",
+                    "packages/tools/playground/public/textures/rosendal_plains_1_1k.exr",
+                    "packages/tools/tests/test/visualization/ReferenceImages/exr-loader.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "loaders",
+                    "new feature"
+                ]
+            }
+        ],
         "7.21.5": [
             {
                 "pr": "15460",
@@ -168,92 +270,6 @@
                     "packages/dev/core/test/unit/Audio/sound.test.ts"
                 ],
                 "tags": []
-            }
-        ],
-        "7.22.0": [
-            {
-                "pr": "15465",
-                "title": "Fixed TinyEXR attribution and license",
-                "description": null,
-                "author": {
-                    "name": "deltakosh",
-                    "url": "https://github.com/deltakosh"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/Textures/Loaders/EXR/exrLoader.compression.huf.ts",
-                    "packages/dev/core/src/Materials/Textures/Loaders/EXR/exrLoader.compression.rle.ts",
-                    "packages/dev/core/src/Materials/Textures/Loaders/EXR/exrLoader.compression.ts",
-                    "packages/dev/core/src/Materials/Textures/Loaders/EXR/exrLoader.core.ts",
-                    "packages/dev/core/src/Materials/Textures/Loaders/EXR/exrLoader.decoder.ts",
-                    "packages/dev/core/src/Materials/Textures/Loaders/EXR/exrLoader.header.ts",
-                    "packages/dev/core/src/Materials/Textures/Loaders/exrTextureLoader.ts"
-                ],
-                "tags": [
-                    "skip changelog"
-                ]
-            },
-            {
-                "pr": "15464",
-                "title": "OutlineRenderer to WebGPU",
-                "description": "Add a WGSL implementation to the Outline Renderer.\r\n\r\nAlso adds support for skeletons using textures and VAT.",
-                "author": {
-                    "name": "noname0310",
-                    "url": "https://github.com/noname0310"
-                },
-                "files": [
-                    "packages/dev/core/src/Rendering/index.ts",
-                    "packages/dev/core/src/Rendering/outlineRenderer.ts",
-                    "packages/dev/core/src/ShadersWGSL/outline.fragment.fx",
-                    "packages/dev/core/src/ShadersWGSL/outline.vertex.fx"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "15463",
-                "title": "Enable forcing a size on svg conversion to texture in DOM",
-                "description": null,
-                "author": {
-                    "name": "deltakosh",
-                    "url": "https://github.com/deltakosh"
-                },
-                "files": [
-                    "packages/dev/core/src/Misc/fileTools.ts"
-                ],
-                "tags": [
-                    "new feature"
-                ]
-            },
-            {
-                "pr": "15461",
-                "title": "EXR file format support",
-                "description": null,
-                "author": {
-                    "name": "deltakosh",
-                    "url": "https://github.com/deltakosh"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/Textures/Loaders/EXR/exrLoader.compression.huf.ts",
-                    "packages/dev/core/src/Materials/Textures/Loaders/EXR/exrLoader.compression.rle.ts",
-                    "packages/dev/core/src/Materials/Textures/Loaders/EXR/exrLoader.compression.ts",
-                    "packages/dev/core/src/Materials/Textures/Loaders/EXR/exrLoader.configuration.ts",
-                    "packages/dev/core/src/Materials/Textures/Loaders/EXR/exrLoader.core.ts",
-                    "packages/dev/core/src/Materials/Textures/Loaders/EXR/exrLoader.decoder.ts",
-                    "packages/dev/core/src/Materials/Textures/Loaders/EXR/exrLoader.header.ts",
-                    "packages/dev/core/src/Materials/Textures/Loaders/EXR/exrLoader.interfaces.ts",
-                    "packages/dev/core/src/Materials/Textures/Loaders/EXR/index.ts",
-                    "packages/dev/core/src/Materials/Textures/Loaders/exrTextureLoader.ts",
-                    "packages/dev/core/src/Materials/Textures/Loaders/index.ts",
-                    "packages/dev/core/src/Materials/Textures/Loaders/textureLoaderManager.ts",
-                    "packages/tools/playground/public/textures/normal-pxr24.exr",
-                    "packages/tools/playground/public/textures/normal.exr",
-                    "packages/tools/playground/public/textures/rosendal_plains_1_1k.exr",
-                    "packages/tools/tests/test/visualization/ReferenceImages/exr-loader.png",
-                    "packages/tools/tests/test/visualization/config.json"
-                ],
-                "tags": [
-                    "loaders",
-                    "new feature"
-                ]
             }
         ],
         "7.21.4": [
