@@ -11,6 +11,8 @@ import { createViewerForCanvas } from "./viewerFactory";
 const playFilledIcon = "M17.22 8.68a1.5 1.5 0 0 1 0 2.63l-10 5.5A1.5 1.5 0 0 1 5 15.5v-11A1.5 1.5 0 0 1 7.22 3.2l10 5.5Z";
 const pauseFilledIcon = "M5 2a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H5Zm8 0a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-2Z";
 
+const allowedAnimationSpeeds = [0.5, 1, 1.5, 2] as const;
+
 /**
  * Represents a custom element that displays a 3D model using the Babylon.js Viewer.
  */
@@ -287,10 +289,7 @@ export class HTML3DElement extends LitElement {
                                 />
                             </div>
                             <select @change="${this._onAnimationSpeedChanged}">
-                                <option value="0.5" .selected="${this._animationSpeed === 0.5}">0.5x</option>
-                                <option value="1" .selected="${this._animationSpeed === 1}">1x</option>
-                                <option value="1.5" .selected="${this._animationSpeed === 1.5}">1.5x</option>
-                                <option value="2" .selected="${this._animationSpeed === 2}">2x</option>
+                                ${allowedAnimationSpeeds.map((speed) => html`<option value="${speed}" .selected="${this._animationSpeed === speed}">${speed}x</option>`)}
                             </select>
                         </div>
                     </slot>
@@ -348,7 +347,9 @@ export class HTML3DElement extends LitElement {
             });
 
             this.viewer.onAnimationSpeedChanged.add(() => {
-                this._animationSpeed = this.viewer?.animationSpeed ?? 1;
+                let speed = this.viewer?.animationSpeed ?? 1;
+                speed = allowedAnimationSpeeds.reduce((prev, curr) => (Math.abs(curr - speed) < Math.abs(prev - speed) ? curr : prev));
+                this._animationSpeed = speed;
             });
 
             this.viewer.onIsAnimationPlayingChanged.add(() => {
