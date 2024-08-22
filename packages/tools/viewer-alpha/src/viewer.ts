@@ -191,13 +191,6 @@ export class Viewer implements IDisposable {
         return this._activeAnimation?.isPlaying ?? false;
     }
 
-    // public get animationDuration(): number {
-    //     if (this._activeAnimation) {
-    //         return this._activeAnimation.getLength() / this._activeAnimation.speedRatio;
-    //     }
-    //     return 0;
-    // }
-
     public get animationSpeed(): number {
         return this._animationSpeed;
     }
@@ -337,10 +330,6 @@ export class Viewer implements IDisposable {
     }
 
     public playAnimation() {
-        if (!this._details.model) {
-            throw new Error("No model loaded.");
-        }
-
         this._activeAnimation?.play(true);
     }
 

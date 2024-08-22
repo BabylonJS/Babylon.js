@@ -7,6 +7,10 @@ import { customElement, property, query, state } from "lit/decorators.js";
 import { Logger } from "core/Misc/logger";
 import { createViewerForCanvas } from "./viewerFactory";
 
+// Icon SVG is pulled from https://fluentuipr.z22.web.core.windows.net/heads/master/public-docsite-v9/storybook/iframe.html?id=icons-catalog--page&viewMode=story
+const playFilledIcon = "M17.22 8.68a1.5 1.5 0 0 1 0 2.63l-10 5.5A1.5 1.5 0 0 1 5 15.5v-11A1.5 1.5 0 0 1 7.22 3.2l10 5.5Z";
+const pauseFilledIcon = "M5 2a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H5Zm8 0a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-2Z";
+
 /**
  * Represents a custom element that displays a 3D model using the Babylon.js Viewer.
  */
@@ -114,7 +118,8 @@ export class HTML3DElement extends LitElement {
             height: 95%;
             outline: none;
             border: 1px solid transparent;
-            margin: 0 12px;
+            border-radius: 12px;
+            padding: 0 12px;
             background-color: transparent;
         }
 
@@ -143,8 +148,8 @@ export class HTML3DElement extends LitElement {
         /** FireFox -moz */
 
         .progress-wrapper::-moz-range-progress {
-            background-color: white;
             height: 2px;
+            background-color: white;
         }
 
         .progress-wrapper::-moz-range-thumb {
@@ -156,8 +161,8 @@ export class HTML3DElement extends LitElement {
         }
 
         .progress-wrapper::-moz-range-track {
-            background: white;
             height: 2px;
+            background: white;
         }
 
         :host(.full-size);
@@ -250,13 +255,10 @@ export class HTML3DElement extends LitElement {
                                 <button @click="${this._onPlayPauseAnimationClicked}">
                                     ${!this._isAnimationPlaying
                                         ? html`<svg viewBox="0 0 20 20">
-                                              <path d="M17.22 8.68a1.5 1.5 0 0 1 0 2.63l-10 5.5A1.5 1.5 0 0 1 5 15.5v-11A1.5 1.5 0 0 1 7.22 3.2l10 5.5Z" fill="currentColor"></path>
+                                              <path d="${playFilledIcon}" fill="currentColor"></path>
                                           </svg>`
                                         : html`<svg viewBox="-3 -2 24 24">
-                                              <path
-                                                  d="M5 2a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H5Zm8 0a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-2Z"
-                                                  fill="currentColor"
-                                              ></path>
+                                              <path d="${pauseFilledIcon}" fill="currentColor"></path>
                                           </svg>`}
                                 </button>
                                 <input
