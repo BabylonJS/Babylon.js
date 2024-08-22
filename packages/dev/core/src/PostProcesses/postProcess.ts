@@ -235,8 +235,6 @@ export class PostProcess implements IFrameGraphTask {
 
     protected _useAsFrameGraphTask = false;
 
-    public disabled = false;
-
     public sourceTexture?: FrameGraphTaskOutputReference | TextureHandle;
 
     public sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;

@@ -4,8 +4,6 @@ import type { TextureHandle } from "../frameGraphTextureManager";
 import type { FrameGraphTaskOutputReference, IFrameGraphTask } from "./IFrameGraphTask";
 
 export class FrameGraphClearTextureTask implements IFrameGraphTask {
-    public disabled = false;
-
     public color = new Color4(0.2, 0.2, 0.3, 1);
 
     public clearColor = true;

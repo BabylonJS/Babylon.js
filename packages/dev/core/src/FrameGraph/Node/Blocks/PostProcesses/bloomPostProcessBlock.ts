@@ -51,7 +51,7 @@ export class BloomPostProcessBlock extends NodeRenderGraphBlock {
     }
 
     /** Sampling mode used to sample from the source texture */
-    @editableInPropertyPage("Source sampling mode", PropertyTypeForEdition.Int)
+    @editableInPropertyPage("Source sampling mode", PropertyTypeForEdition.SamplingMode)
     public get sourceSamplingMode() {
         return this._frameGraphTask.sourceSamplingMode;
     }
@@ -61,7 +61,7 @@ export class BloomPostProcessBlock extends NodeRenderGraphBlock {
     }
 
     /** The luminance threshold to find bright areas of the image to bloom. */
-    @editableInPropertyPage("Threshold", PropertyTypeForEdition.Float)
+    @editableInPropertyPage("Threshold", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 2 })
     public get threshold(): number {
         return this._frameGraphTask.threshold;
     }
@@ -71,7 +71,7 @@ export class BloomPostProcessBlock extends NodeRenderGraphBlock {
     }
 
     /** The strength of the bloom. */
-    @editableInPropertyPage("Weight", PropertyTypeForEdition.Float)
+    @editableInPropertyPage("Weight", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 3 })
     public get weight(): number {
         return this._frameGraphTask.weight;
     }
@@ -81,7 +81,7 @@ export class BloomPostProcessBlock extends NodeRenderGraphBlock {
     }
 
     /** Specifies the size of the bloom blur kernel, relative to the final output size */
-    @editableInPropertyPage("Kernel", PropertyTypeForEdition.Float)
+    @editableInPropertyPage("Kernel", PropertyTypeForEdition.Float, "PROPERTIES", { min: 1, max: 128 })
     public get kernel(): number {
         return this._frameGraphTask.kernel;
     }

@@ -12,7 +12,7 @@ export interface InternalTextureCreationOptions {
      * Specifies if mipmaps must be generated
      */
     generateMipMaps?: boolean;
-    /** Defines texture type (int by default) */
+    /** Defines texture type (unsigned byte by default) */
     type?: number;
     /** Defines sampling mode (trilinear by default) */
     samplingMode?: number;

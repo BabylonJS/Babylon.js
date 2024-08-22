@@ -4,8 +4,6 @@ import { backbufferColorTextureHandle } from "../frameGraphTextureManager";
 import type { FrameGraphTaskOutputReference, IFrameGraphTask } from "./IFrameGraphTask";
 
 export class FrameGraphCopyToBackbufferColorTask implements IFrameGraphTask {
-    public disabled = false;
-
     public sourceTexture?: FrameGraphTaskOutputReference | TextureHandle;
 
     constructor(public name: string) {}

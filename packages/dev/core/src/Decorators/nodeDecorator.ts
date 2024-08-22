@@ -17,6 +17,8 @@ export const enum PropertyTypeForEdition {
     List,
     /** property is a Color4 */
     Color4,
+    /** property (int) should be edited as a combo box with a list of sampling modes */
+    SamplingMode,
 }
 
 /**

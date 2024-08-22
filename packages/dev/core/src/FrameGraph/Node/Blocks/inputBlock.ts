@@ -13,6 +13,7 @@ import type { AbstractEngine } from "../../../Engines/abstractEngine";
 import type { NodeRenderGraphBuildState } from "../nodeRenderGraphBuildState";
 import type { FrameGraphTextureCreationOptions, TextureHandle } from "../../../FrameGraph/frameGraphTextureManager";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../../FrameGraph/frameGraphTextureManager";
+import { Constants } from "../../../Engines/constants";
 
 export type NodeRenderGraphValueType = RenderTargetWrapper | Camera;
 
@@ -78,7 +79,16 @@ export class RenderGraphInputBlock extends NodeRenderGraphBlock {
             case NodeRenderGraphBlockConnectionPointTypes.TextureAlbedoSqrt:
                 this.creationOptions = {
                     size: { width: 100, height: 100 },
-                    options: {},
+                    options: {
+                        createMipMaps: false,
+                        generateMipMaps: false,
+                        type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
+                        format: Constants.TEXTUREFORMAT_RGBA,
+                        samples: 1,
+                        useSRGBBuffer: false,
+                        generateDepthBuffer: false,
+                        generateStencilBuffer: false,
+                    },
                     sizeIsPercentage: true,
                 } as FrameGraphTextureCreationOptions;
                 break;

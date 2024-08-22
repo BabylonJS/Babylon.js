@@ -716,6 +716,10 @@
             }
         }
 
+        .listLine.samplingMode .options select {
+            width: 180px;
+        }
+
         .color3Line {
             padding-left: $line-padding-left;
             display: grid;

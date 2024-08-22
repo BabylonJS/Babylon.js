@@ -21,8 +21,6 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
 
     public name = "Bloom";
 
-    public disabled = false;
-
     public sourceTexture?: FrameGraphTaskOutputReference | TextureHandle;
 
     public sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;

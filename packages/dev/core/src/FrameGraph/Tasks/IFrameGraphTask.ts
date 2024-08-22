@@ -18,7 +18,12 @@ export interface IFrameGraphTask {
 
     name: string;
 
-    disabled: boolean;
+    /**
+     * Indicates whether the task should execute the disabled or normal path passes.
+     * If disabled is undefined (default), this indicates that the task is always enabled and cannot be disabled, which will allow better management of GPU memory at build time.
+     * If you wish to activate/deactivate a task at will without having to rebuild the entire frame graph, set disabled to false before building the graph.
+     */
+    disabled?: boolean;
 
     /** @internal */
     _fgInternals?: FrameGraphTaskInternals;

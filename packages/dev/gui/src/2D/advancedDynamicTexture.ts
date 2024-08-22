@@ -52,8 +52,6 @@ export class AdvancedDynamicTexture extends DynamicTexture implements IFrameGrap
 
     protected _useAsFrameGraphTask = false;
 
-    public disabled = false;
-
     public destinationTexture?: FrameGraphTaskOutputReference | TextureHandle;
 
     public readonly outputTextureReference: FrameGraphTaskOutputReference = [this, "output"];

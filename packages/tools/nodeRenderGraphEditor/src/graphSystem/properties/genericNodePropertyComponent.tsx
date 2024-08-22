@@ -12,6 +12,24 @@ import { Color4LineComponent } from "shared-ui-components/lines/color4LineCompon
 import type { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
 import type { IEditablePropertyListOption } from "core/Decorators/nodeDecorator";
 import { PropertyTypeForEdition, type IEditablePropertyOption, type IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
+import { Constants } from "core/Engines/constants";
+
+const samplingModeList = [
+    { label: "Nearest/Nearest", value: Constants.TEXTURE_NEAREST_SAMPLINGMODE }, // 1
+    { label: "Linear/Nearest", value: Constants.TEXTURE_LINEAR_NEAREST }, // 12
+    { label: "Nearest/Linear", value: Constants.TEXTURE_NEAREST_LINEAR }, // 7
+    { label: "Linear/Linear", value: Constants.TEXTURE_BILINEAR_SAMPLINGMODE }, // 2
+
+    { label: "Nearest/Nearest & nearest mip", value: Constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST }, // 4
+    { label: "Linear/Nearest & nearest mip", value: Constants.TEXTURE_LINEAR_NEAREST_MIPNEAREST }, // 9
+    { label: "Nearest/Linear & nearest mip", value: Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST }, // 5
+    { label: "Linear/Linear & nearest mip", value: Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST }, // 11
+
+    { label: "Nearest/Nearest & linear mip", value: Constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR }, // 8
+    { label: "Linear/Nearest & linear mip", value: Constants.TEXTURE_LINEAR_NEAREST_MIPLINEAR }, // 10
+    { label: "Nearest/Linear & linear mip", value: Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR }, // 6
+    { label: "Linear/Linear & linear mip", value: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE }, // 3
+];
 
 export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
@@ -204,6 +222,20 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                             propertyName={propertyName}
                             target={block}
                             onChange={() => this.forceRebuild(propertyName, options.notifiers)}
+                        />
+                    );
+                    break;
+                }
+                case PropertyTypeForEdition.SamplingMode: {
+                    components.push(
+                        <OptionsLine
+                            key={`samplingmode-${propertyName}`}
+                            className="samplingMode"
+                            label={displayName}
+                            options={samplingModeList}
+                            target={block}
+                            propertyName={propertyName}
+                            onSelect={() => this.forceRebuild(propertyName, options.notifiers)}
                         />
                     );
                     break;

@@ -43,7 +43,7 @@ export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
     }
 
     /** Sampling mode used to sample from the source texture */
-    @editableInPropertyPage("Source sampling mode", PropertyTypeForEdition.Int, "PROPERTIES")
+    @editableInPropertyPage("Source sampling mode", PropertyTypeForEdition.SamplingMode, "PROPERTIES")
     public get sourceSamplingMode() {
         return this._frameGraphTask.sourceSamplingMode;
     }
@@ -53,7 +53,7 @@ export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
     }
 
     /** Degree of conversion to black and white (default: 1 - full b&w conversion) */
-    @editableInPropertyPage("Degree", PropertyTypeForEdition.Float, "PROPERTIES")
+    @editableInPropertyPage("Degree", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 1 })
     public get degree(): number {
         return this._frameGraphTask.degree;
     }

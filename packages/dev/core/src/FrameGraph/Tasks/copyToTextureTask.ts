@@ -3,8 +3,6 @@ import type { TextureHandle } from "../frameGraphTextureManager";
 import type { FrameGraphTaskOutputReference, IFrameGraphTask } from "./IFrameGraphTask";
 
 export class FrameGraphCopyToTextureTask implements IFrameGraphTask {
-    public disabled = false;
-
     public sourceTexture?: FrameGraphTaskOutputReference | TextureHandle;
 
     public destinationTexture?: FrameGraphTaskOutputReference | TextureHandle;

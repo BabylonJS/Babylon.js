@@ -73,7 +73,7 @@ export class PreviewManager {
             this._handleAnimations();
         });
 
-        this._engine = new Engine(targetCanvas, true);
+        this._engine = new Engine(targetCanvas, true, { forceSRGBBufferSupportState: true });
         this._scene = new Scene(this._engine);
         this._scene.clearColor = this._globalState.backgroundColor;
         this._scene.ambientColor = new Color3(1, 1, 1);
