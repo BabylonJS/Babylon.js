@@ -1,5 +1,17 @@
-// eslint-disable-next-line import/no-internal-modules
-import type { AbstractEngine, AnimationGroup, AssetContainer, Camera, FramingBehavior, IDisposable, LoadAssetContainerOptions, Mesh, Nullable, Observer } from "core/index";
+import type {
+    AbstractEngine,
+    AnimationGroup,
+    AssetContainer,
+    AutoRotationBehavior,
+    Camera,
+    FramingBehavior,
+    IDisposable,
+    LoadAssetContainerOptions,
+    Mesh,
+    Nullable,
+    Observer,
+    // eslint-disable-next-line import/no-internal-modules
+} from "core/index";
 
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
@@ -113,6 +125,7 @@ export class Viewer implements IDisposable {
 
     private readonly _details: ViewerDetails;
     private readonly _camera: ArcRotateCamera;
+    private readonly _autoRotationBehavior: AutoRotationBehavior;
     private readonly _renderLoop: IDisposable;
     private _skybox: Nullable<Mesh> = null;
 
@@ -142,6 +155,7 @@ export class Viewer implements IDisposable {
         this._camera = new ArcRotateCamera("camera1", 0, 0, 1, Vector3.Zero(), this._details.scene);
         this._camera.attachControl();
         this._updateCamera(); // set default camera values
+        this._autoRotationBehavior = this._camera.getBehaviorByName("AutoRotation") as AutoRotationBehavior;
 
         // Load a default light, but ignore errors as the user might be immediately loading their own environment.
         this.loadEnvironmentAsync(undefined).catch(() => {});
@@ -151,6 +165,7 @@ export class Viewer implements IDisposable {
             this._details.scene.render();
             if (this.isAnimationPlaying) {
                 this.onAnimationProgressChanged.notifyObservers();
+                this._autoRotationBehavior.resetLastInteractionTime();
             }
         };
 
@@ -247,6 +262,7 @@ export class Viewer implements IDisposable {
         if (this._activeAnimation) {
             this._activeAnimation.goToFrame(value * (this._activeAnimation.to - this._activeAnimation.from));
             this.onAnimationProgressChanged.notifyObservers();
+            this._autoRotationBehavior.resetLastInteractionTime();
         }
     }
 
