@@ -6,10 +6,17 @@ import { FrameGraphPass } from "./Passes/pass";
 import { FrameGraphRenderPass } from "./Passes/renderPass";
 import { FrameGraphRenderContext } from "./frameGraphRenderContext";
 import { FrameGraphContext } from "./frameGraphContext";
-import type { TextureHandle, FrameGraphTextureCreationOptions, FrameGraphTextureDescription } from "./frameGraphTextureManager";
+import type { TextureHandle, FrameGraphTextureCreationOptions } from "./frameGraphTextureManager";
 import { FrameGraphTextureManager, FrameGraphTextureNamespace } from "./frameGraphTextureManager";
 import { FrameGraphTaskInternals } from "./Tasks/taskInternals";
 import { Observable } from "core/Misc/observable";
+import type { RenderTargetCreationOptions } from "core/Materials/Textures/textureCreationOptions";
+import { textureSizeIsObject } from "core/Materials/Textures/textureCreationOptions";
+
+export type FrameGraphTextureDescription = {
+    size: { width: number; height: number };
+    options: RenderTargetCreationOptions;
+};
 
 /**
  * Class used to implement the frame graph
@@ -21,6 +28,10 @@ export class FrameGraph {
 
     private _tasks: IFrameGraphTask[] = [];
     private _currentProcessedTask: IFrameGraphTask | null = null;
+
+    private static _IsTextureHandle(textureId: FrameGraphTaskOutputReference | TextureHandle): textureId is TextureHandle {
+        return typeof textureId === "number";
+    }
 
     /**
      * Observable raised when the node render graph is built
@@ -149,15 +160,48 @@ export class FrameGraph {
     }
 
     public getTextureCreationOptions(textureId: FrameGraphTaskOutputReference | TextureHandle): FrameGraphTextureCreationOptions {
-        return this._textureManager.getTextureCreationOptions(textureId);
+        let textureHandle: TextureHandle;
+
+        if (!FrameGraph._IsTextureHandle(textureId)) {
+            textureHandle = textureId[0]._fgInternals!.mapNameToTextureHandle[textureId[1]];
+
+            if (textureHandle === undefined) {
+                throw new Error(`Task "${textureId[0].name}" does not have a "${textureId[1]}" texture.`);
+            }
+        } else {
+            textureHandle = textureId;
+        }
+
+        return this._textureManager.getTextureCreationOptions(textureHandle);
     }
 
     public getTextureDescription(textureId: FrameGraphTaskOutputReference | TextureHandle): FrameGraphTextureDescription {
-        return this._textureManager.convertTextureCreationOptionsToDescription(this.getTextureCreationOptions(textureId));
+        const creationOptions = this.getTextureCreationOptions(textureId);
+
+        const size = !creationOptions.sizeIsPercentage
+            ? textureSizeIsObject(creationOptions.size)
+                ? { width: creationOptions.size.width, height: creationOptions.size.height }
+                : { width: creationOptions.size, height: creationOptions.size }
+            : this._textureManager.getAbsoluteDimensions(creationOptions.size);
+
+        return {
+            size,
+            options: { ...creationOptions.options },
+        };
     }
 
     public getTextureHandle(textureId: FrameGraphTaskOutputReference | TextureHandle): TextureHandle {
-        return this._textureManager.getTextureHandle(textureId);
+        if (FrameGraph._IsTextureHandle(textureId)) {
+            return textureId;
+        }
+
+        const textureHandle = textureId[0]._fgInternals!.mapNameToTextureHandle[textureId[1]];
+
+        if (textureHandle === undefined) {
+            throw new Error(`Task "${textureId[0].name}" does not have a "${textureId[1]}" texture.`);
+        }
+
+        return textureHandle;
     }
 
     public getTextureHandleOrCreateTexture(

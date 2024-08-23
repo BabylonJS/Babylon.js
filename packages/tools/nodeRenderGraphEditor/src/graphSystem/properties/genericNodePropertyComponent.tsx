@@ -77,6 +77,13 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                         onChange={() => this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block)}
                         throttlePropertyChangedNotification={true}
                     />
+                    <CheckBoxLineComponent
+                        key={`checkBox-disabled`}
+                        label="Disabled"
+                        target={block}
+                        propertyName="disabled"
+                        onValueChanged={() => this.props.stateManager.onRebuildRequiredObservable.notifyObservers()}
+                    />
                 </LineContainerComponent>
             </>
         );

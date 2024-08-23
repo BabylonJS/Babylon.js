@@ -44,19 +44,23 @@ export class FrameGraphTaskInternals {
             }
         }
 
-        for (const pass of this.passesDisabled!) {
-            const errMsg = pass._isValid();
-            if (errMsg) {
-                throw new Error(`Pass "${pass.name}" is not valid. ${errMsg}`);
-            }
-            if (FrameGraphRenderPass.IsRenderPass(pass)) {
-                this.outputTextureWhenDisabled = pass.renderTarget;
+        if (this._task.disabled !== undefined) {
+            for (const pass of this.passesDisabled!) {
+                const errMsg = pass._isValid();
+                if (errMsg) {
+                    throw new Error(`Pass "${pass.name}" is not valid. ${errMsg}`);
+                }
+                if (FrameGraphRenderPass.IsRenderPass(pass)) {
+                    this.outputTextureWhenDisabled = pass.renderTarget;
+                }
             }
         }
 
         if (this.outputTextureWhenEnabled !== undefined || this.outputTextureWhenDisabled !== undefined) {
             this.outputTextureWhenEnabled = this.outputTextureWhenEnabled ?? this.outputTextureWhenDisabled;
-            this.outputTextureWhenDisabled = this.outputTextureWhenDisabled ?? this.outputTextureWhenEnabled;
+            if (this._task.disabled !== undefined) {
+                this.outputTextureWhenDisabled = this.outputTextureWhenDisabled ?? this.outputTextureWhenEnabled;
+            }
             this.outputTexture = this._textureManager._createProxyHandle(`${this._task.name} Proxy`);
             this.mapNameToTextureHandle["output"] = this.outputTexture;
             // We need to call the function at build time to ensure that the output texture is correctly defined
@@ -70,7 +74,7 @@ export class FrameGraphTaskInternals {
             return;
         }
 
-        if (this._task.disabled) {
+        if (this._task.disabled && this.outputTextureWhenDisabled !== undefined) {
             this._textureManager._textures[this.outputTexture]!.texture = this._textureManager._textures[this.outputTextureWhenDisabled!]!.texture;
             this._textureManager._textures[this.outputTexture]!.systemType = this._textureManager._textures[this.outputTextureWhenDisabled!]!.systemType;
             this._textureManager._textureCreationOptions[this.outputTexture] = this._textureManager._textureCreationOptions[this.outputTextureWhenDisabled!];

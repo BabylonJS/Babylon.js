@@ -66,3 +66,13 @@ export interface DepthTextureCreationOptions {
  * Type used to define a texture size (either with a number or with a rect width and height)
  */
 export type TextureSize = number | { width: number; height: number; depth?: number; layers?: number };
+
+/**
+ * Check if a TextureSize is an object
+ * @param size The TextureSize to check
+ * @returns True if the TextureSize is an object
+ */
+export function textureSizeIsObject(size: TextureSize): size is { width: number; height: number } {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    return (size as { width: number }).width !== undefined;
+}

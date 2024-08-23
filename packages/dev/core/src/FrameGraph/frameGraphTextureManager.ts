@@ -3,8 +3,8 @@ import type { Scene } from "../scene";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import type { RenderTargetCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
+import { textureSizeIsObject } from "../Materials/Textures/textureCreationOptions";
 import { Texture } from "core/Materials/Textures/texture";
-import type { FrameGraphTaskOutputReference } from "./Tasks/IFrameGraphTask";
 
 export type TextureHandle = number;
 
@@ -20,10 +20,6 @@ export type FrameGraphTextureCreationOptions = {
     sizeIsPercentage: boolean;
 };
 
-export type FrameGraphTextureDescription = {
-    size: { width: number; height: number };
-    options: RenderTargetCreationOptions;
-};
 /** @internal */
 export enum FrameGraphTextureNamespace {
     Task,
@@ -47,10 +43,6 @@ export class FrameGraphTextureManager {
     /** @internal */
     public _textureCreationOptions: (FrameGraphTextureCreationOptions | undefined)[] = [];
     private _texturesIndex = 0;
-
-    private static _IsTextureHandle(textureId: FrameGraphTaskOutputReference | TextureHandle): textureId is TextureHandle {
-        return typeof textureId === "number";
-    }
 
     /**
      * @internal
@@ -90,32 +82,8 @@ export class FrameGraphTextureManager {
         return handle;
     }
 
-    public getTextureCreationOptions(textureId: FrameGraphTaskOutputReference | TextureHandle): FrameGraphTextureCreationOptions {
-        if (FrameGraphTextureManager._IsTextureHandle(textureId)) {
-            return this._textureCreationOptions[textureId]!;
-        }
-
-        const textureHandle = textureId[0]._fgInternals!.mapNameToTextureHandle[textureId[1]];
-
-        if (textureHandle === undefined) {
-            throw new Error(`Task "${textureId}" does not have a "${textureId[1]}" texture.`);
-        }
-
+    public getTextureCreationOptions(textureHandle: TextureHandle): FrameGraphTextureCreationOptions {
         return this._textureCreationOptions[textureHandle]!;
-    }
-
-    public getTextureHandle(textureId: FrameGraphTaskOutputReference | TextureHandle): TextureHandle {
-        if (FrameGraphTextureManager._IsTextureHandle(textureId)) {
-            return textureId;
-        }
-
-        const textureHandle = textureId[0]._fgInternals!.mapNameToTextureHandle[textureId[1]];
-
-        if (textureHandle === undefined) {
-            throw new Error(`Task "${textureId}" does not have a "${textureId[1]}" texture.`);
-        }
-
-        return textureHandle;
     }
 
     public createRenderTargetTexture(name: string, namespace: FrameGraphTextureNamespace, creationOptions: FrameGraphTextureCreationOptions): TextureHandle {
@@ -126,27 +94,24 @@ export class FrameGraphTextureManager {
         return handle;
     }
 
-    public convertTextureCreationOptionsToDescription(creationOptions: FrameGraphTextureCreationOptions): FrameGraphTextureDescription {
+    public getAbsoluteDimensions(
+        size: TextureSize,
+        screenWidth = this._engine.getRenderWidth(true),
+        screenHeight = this._engine.getRenderHeight(true)
+    ): { width: number; height: number } {
         let width: number;
         let height: number;
 
-        if ((creationOptions.size as { width: number }).width !== undefined) {
-            width = (creationOptions.size as { width: number }).width;
-            height = (creationOptions.size as { height: number }).height;
+        if (textureSizeIsObject(size)) {
+            width = size.width;
+            height = size.height;
         } else {
-            width = height = creationOptions.size as number;
+            width = height = size;
         }
 
-        const size = creationOptions.sizeIsPercentage
-            ? {
-                  width: (this._engine.getRenderWidth() * width) / 100,
-                  height: (this._engine.getRenderHeight() * height) / 100,
-              }
-            : { width, height };
-
         return {
-            size,
-            options: { ...creationOptions.options },
+            width: Math.floor((width * screenWidth) / 100),
+            height: Math.floor((height * screenHeight) / 100),
         };
     }
 
@@ -164,9 +129,11 @@ export class FrameGraphTextureManager {
 
             if ((wrapper.namespace === FrameGraphTextureNamespace.Task || wrapper.namespace === FrameGraphTextureNamespace.Graph) && !wrapper.texture) {
                 const creationOptions = this._textureCreationOptions[i]!;
-                const description = this.convertTextureCreationOptionsToDescription(creationOptions);
 
-                wrapper.texture = this._engine.createRenderTargetTexture(description.size, description.options);
+                wrapper.texture = this._engine.createRenderTargetTexture(
+                    creationOptions.sizeIsPercentage ? this.getAbsoluteDimensions(creationOptions.size) : creationOptions.size,
+                    creationOptions.options
+                );
             }
 
             if (this._debugTextures && this._scene) {
