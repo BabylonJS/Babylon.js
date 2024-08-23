@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.22.2
+
+### Core
+
+- fix VAT with non instanced mesh - by [noname0310](https://github.com/noname0310) ([#15469](https://github.com/BabylonJS/Babylon.js/pull/15469))
+
 ## 7.22.1
 
 ## 7.22.0
