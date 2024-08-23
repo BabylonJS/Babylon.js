@@ -104,6 +104,11 @@ export class Viewer implements IDisposable {
     public readonly onModelLoaded = new Observable<void>();
 
     /**
+     * Fired when an error occurs while loading a model.
+     */
+    public readonly onModelError = new Observable<unknown>();
+
+    /**
      * Fired when the selected animation changes.
      */
     public readonly onSelectedAnimationChanged = new Observable<void>();
@@ -311,14 +316,19 @@ export class Viewer implements IDisposable {
             this._details.model?.dispose();
             this.selectedAnimation = -1;
 
-            this._details.model = await loadAssetContainerAsync(source, this._details.scene, options);
-            this._details.model.animationGroups.forEach((group) => group.stop());
-            this.selectedAnimation = 0;
-            this._details.model.addAllToScene();
+            try {
+                this._details.model = await loadAssetContainerAsync(source, this._details.scene, options);
+                this._details.model.animationGroups.forEach((group) => group.stop());
+                this.selectedAnimation = 0;
+                this._details.model.addAllToScene();
 
-            this._updateCamera();
-            this._applyAnimationSpeed();
-            this.onModelLoaded.notifyObservers();
+                this._updateCamera();
+                this._applyAnimationSpeed();
+                this.onModelLoaded.notifyObservers();
+            } catch (e) {
+                this.onModelError.notifyObservers(e);
+                throw e;
+            }
         });
     }
 
@@ -417,6 +427,7 @@ export class Viewer implements IDisposable {
         this._details.scene.dispose();
 
         this.onModelLoaded.clear();
+        this.onModelError.clear();
         this.onSelectedAnimationChanged.clear();
         this.onAnimationSpeedChanged.clear();
         this.onIsAnimationPlayingChanged.clear();

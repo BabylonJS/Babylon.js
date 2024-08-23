@@ -15,6 +15,7 @@ const allowedAnimationSpeeds = [0.5, 1, 1.5, 2] as const;
 
 interface HTML3DElementEventMap extends HTMLElementEventMap {
     modelchange: Event;
+    modelerror: Event;
     selectedanimationchange: Event;
     animationspeedchange: Event;
     animationplayingchange: Event;
@@ -386,6 +387,10 @@ export class HTML3DElement extends LitElement {
             this.viewer.onModelLoaded.add(() => {
                 this._animations = [...(this.viewer?.animations ?? [])];
                 this._dispatchCustomEvent("modelchange");
+            });
+
+            this.viewer.onModelError.add(() => {
+                this._dispatchCustomEvent("modelerror");
             });
 
             this.viewer.onSelectedAnimationChanged.add(() => {
