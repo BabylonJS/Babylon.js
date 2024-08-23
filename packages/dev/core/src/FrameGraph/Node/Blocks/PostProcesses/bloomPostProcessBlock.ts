@@ -81,7 +81,7 @@ export class BloomPostProcessBlock extends NodeRenderGraphBlock {
     }
 
     /** Specifies the size of the bloom blur kernel, relative to the final output size */
-    @editableInPropertyPage("Kernel", PropertyTypeForEdition.Float, "PROPERTIES", { min: 1, max: 128 })
+    @editableInPropertyPage("Kernel", PropertyTypeForEdition.Int, "PROPERTIES", { min: 1, max: 128 })
     public get kernel(): number {
         return this._frameGraphTask.kernel;
     }
