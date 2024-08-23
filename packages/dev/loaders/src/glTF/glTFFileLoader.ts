@@ -222,7 +222,7 @@ abstract class GLTFLoaderOptions {
     /**
      * Raised when the asset has been parsed
      */
-    public abstract onParsed?: (loaderData: IGLTFLoaderData) => void;
+    public abstract onParsed?: ((loaderData: IGLTFLoaderData) => void) | undefined;
 
     // ----------
     // V2 options
@@ -341,28 +341,28 @@ abstract class GLTFLoaderOptions {
      * Callback raised when the loader creates a mesh after parsing the glTF properties of the mesh.
      * Note that the callback is called as soon as the mesh object is created, meaning some data may not have been setup yet for this mesh (vertex data, morph targets, material, ...)
      */
-    public abstract onMeshLoaded?: (mesh: AbstractMesh) => void;
+    public abstract onMeshLoaded?: ((mesh: AbstractMesh) => void) | undefined;
 
     /**
      * Callback raised when the loader creates a skin after parsing the glTF properties of the skin node.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/importers/glTF/glTFSkinning#ignoring-the-transform-of-the-skinned-mesh
      */
-    public abstract onSkinLoaded?: (node: TransformNode, skinnedNode: TransformNode) => void;
+    public abstract onSkinLoaded?: ((node: TransformNode, skinnedNode: TransformNode) => void) | undefined;
 
     /**
      * Callback raised when the loader creates a texture after parsing the glTF properties of the texture.
      */
-    public abstract onTextureLoaded?: (texture: BaseTexture) => void;
+    public abstract onTextureLoaded?: ((texture: BaseTexture) => void) | undefined;
 
     /**
      * Callback raised when the loader creates a material after parsing the glTF properties of the material.
      */
-    public abstract onMaterialLoaded?: (material: Material) => void;
+    public abstract onMaterialLoaded?: ((material: Material) => void) | undefined;
 
     /**
      * Callback raised when the loader creates a camera after parsing the glTF properties of the camera.
      */
-    public abstract onCameraLoaded?: (camera: Camera) => void;
+    public abstract onCameraLoaded?: ((camera: Camera) => void) | undefined;
 
     /**
      * Defines options for glTF extensions.
