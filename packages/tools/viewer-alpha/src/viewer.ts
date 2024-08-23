@@ -131,7 +131,7 @@ export class Viewer implements IDisposable {
     private readonly _details: ViewerDetails;
     private readonly _camera: ArcRotateCamera;
     private readonly _autoRotationBehavior: AutoRotationBehavior;
-    private readonly _renderLoop: IDisposable;
+    private readonly _renderLoopController: IDisposable;
     private _skybox: Nullable<Mesh> = null;
 
     private _isDisposed = false;
@@ -175,7 +175,7 @@ export class Viewer implements IDisposable {
         };
 
         this._engine.runRenderLoop(render);
-        this._renderLoop = {
+        this._renderLoopController = {
             dispose: () => this._engine.stopRenderLoop(render),
         };
 
@@ -423,7 +423,7 @@ export class Viewer implements IDisposable {
         this.selectedAnimation = -1;
         this.animationProgress = 0;
 
-        this._renderLoop.dispose();
+        this._renderLoopController.dispose();
         this._details.scene.dispose();
 
         this.onModelLoaded.clear();
