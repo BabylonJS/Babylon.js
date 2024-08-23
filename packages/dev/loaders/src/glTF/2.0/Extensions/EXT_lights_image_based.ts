@@ -12,6 +12,17 @@ import { GLTFLoader, ArrayItem } from "../glTFLoader";
 
 const NAME = "EXT_lights_image_based";
 
+declare module "../../glTFFileLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface GLTFLoaderExtensionOptions {
+        /**
+         * Defines options for the EXT_lights_image_based extension.
+         */
+        // NOTE: Don't use NAME here as it will break the UMD type declarations.
+        ["EXT_lights_image_based"]: {};
+    }
+}
+
 declare module "babylonjs-gltf2interface" {
     /** @internal */
     // eslint-disable-next-line @typescript-eslint/naming-convention

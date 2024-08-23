@@ -10,6 +10,17 @@ import { Color3 } from "core/Maths/math.color";
 
 const NAME = "KHR_materials_diffuse_transmission";
 
+declare module "../../glTFFileLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface GLTFLoaderExtensionOptions {
+        /**
+         * Defines options for the KHR_materials_diffuse_transmission extension.
+         */
+        // NOTE: Don't use NAME here as it will break the UMD type declarations.
+        ["KHR_materials_diffuse_transmission"]: {};
+    }
+}
+
 /**
  * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1825)
  * !!! Experimental Extension Subject to Changes !!!

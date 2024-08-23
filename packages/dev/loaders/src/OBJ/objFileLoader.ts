@@ -22,7 +22,7 @@ declare module "core/Loading/sceneLoader" {
         /**
          * Defines options for the obj loader.
          */
-        [PLUGIN_OBJ]?: {};
+        [PLUGIN_OBJ]: {};
     }
 }
 

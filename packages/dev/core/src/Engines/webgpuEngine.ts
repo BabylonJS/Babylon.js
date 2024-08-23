@@ -2,7 +2,6 @@
 import { Logger } from "../Misc/logger";
 import type { Nullable, DataArray, IndicesArray, Immutable, FloatArray } from "../types";
 import { Color4 } from "../Maths/math";
-import { Engine } from "../Engines/engine";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import type { IEffectCreationOptions, IShaderPath } from "../Materials/effect";
 import { Effect } from "../Materials/effect";
@@ -621,7 +620,7 @@ export class WebGPUEngine extends AbstractEngine {
         options.deviceDescriptor = options.deviceDescriptor || {};
         options.enableGPUDebugMarkers = options.enableGPUDebugMarkers ?? false;
 
-        Logger.Log(`Babylon.js v${Engine.Version} - ${this.description} engine`);
+        Logger.Log(`Babylon.js v${AbstractEngine.Version} - ${this.description} engine`);
         if (!navigator.gpu) {
             Logger.Error("WebGPU is not supported by your browser.");
             return;
@@ -1919,7 +1918,7 @@ export class WebGPUEngine extends AbstractEngine {
      * @param onError defines a function to call when the effect creation has failed
      * @param indexParameters defines an object containing the index values to use to compile shaders (like the maximum number of simultaneous lights)
      * @param shaderLanguage the language the shader is written in (default: GLSL)
-     * @param extraInitializations additional async code to run before preparing the effect
+     * @param extraInitializationsAsync additional async code to run before preparing the effect
      * @returns the new Effect
      */
     public createEffect(
@@ -1933,7 +1932,7 @@ export class WebGPUEngine extends AbstractEngine {
         onError?: Nullable<(effect: Effect, errors: string) => void>,
         indexParameters?: any,
         shaderLanguage = ShaderLanguage.GLSL,
-        extraInitializations?: (shaderLanguage: ShaderLanguage) => Promise<void>
+        extraInitializationsAsync?: () => Promise<void>
     ): Effect {
         const vertex = typeof baseName === "string" ? baseName : baseName.vertexToken || baseName.vertexSource || baseName.vertexElement || baseName.vertex;
         const fragment = typeof baseName === "string" ? baseName : baseName.fragmentToken || baseName.fragmentSource || baseName.fragmentElement || baseName.fragment;
@@ -1967,7 +1966,7 @@ export class WebGPUEngine extends AbstractEngine {
             indexParameters,
             name,
             (<IEffectCreationOptions>attributesNamesOrOptions).shaderLanguage ?? shaderLanguage,
-            extraInitializations
+            (<IEffectCreationOptions>attributesNamesOrOptions).extraInitializationsAsync ?? extraInitializationsAsync
         );
         this._compiledEffects[name] = effect;
 

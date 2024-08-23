@@ -20,7 +20,7 @@ declare module "core/Loading/sceneLoader" {
         /**
          * Defines options for the splat loader.
          */
-        [PLUGIN_SPLAT]?: {};
+        [PLUGIN_SPLAT]: {};
     }
 }
 
