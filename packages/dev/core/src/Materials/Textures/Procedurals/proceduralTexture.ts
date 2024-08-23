@@ -699,7 +699,7 @@ export class ProceduralTexture extends Texture {
                 // Draw order
                 engine.drawElementsType(Material.TriangleFillMode, 0, 6);
                 // Unbind and restore viewport
-                engine.unBindFramebuffer(this._rtWrapper, this.isCube || !this._generateMipMaps);
+                engine.unBindFramebuffer(this._rtWrapper, true);
             }
         } else {
             let numLayers = 1;
@@ -730,7 +730,7 @@ export class ProceduralTexture extends Texture {
                 // Draw order
                 engine.drawElementsType(Material.TriangleFillMode, 0, 6);
                 // Unbind and restore viewport
-                engine.unBindFramebuffer(this._rtWrapper, this.isCube || !this._generateMipMaps);
+                engine.unBindFramebuffer(this._rtWrapper, !this._generateMipMaps);
             }
         }
 

@@ -26,48 +26,62 @@ import { PostProcessRenderPipeline } from "../../PostProcesses/RenderPipeline/po
 import { PostProcessRenderEffect } from "core/PostProcesses/RenderPipeline/postProcessRenderEffect";
 import type { Camera } from "core/Cameras/camera";
 
-class IblShadowsSettings {
+interface IblShadowsSettings {
     /**
      * The exponent of the resolution of the voxel shadow grid. Higher resolutions will result in sharper
      * shadows but are more expensive to compute and require more memory.
      * The resolution is calculated as 2 to the power of this number.
      */
-    public resolutionExp: number = 6;
+    resolutionExp: number;
 
     /**
      * The number of different directions to sample during the voxel tracing pass. Higher
      * values will result in better quality, more stable shadows but are more expensive to compute.
      */
-    public sampleDirections: number = 1;
+    sampleDirections: number;
 
     /**
      * How dark the shadows are. 1.0 is full opacity, 0.0 is no shadows.
      */
-    public shadowOpacity: number = 1.0;
+    shadowOpacity: number;
 
     /**
      * How long the shadows remain in the scene. 0.0 is no persistence, 1.0 is full persistence.
      */
-    public shadowRemenance: number = 0.9;
+    shadowRemenance: number;
 
     /**
      * Render the voxel grid from 3 different axis. This will result in better quality shadows with fewer
      * bits of missing geometry.
      */
-    public triPlanarVoxelization: boolean = true;
+    triPlanarVoxelization: boolean;
 
     /**
      * Include screen-space shadows in the IBL shadow pipeline. This adds sharp shadows to small details
      * but only applies close to a shadow-casting object.
      */
-    public ssShadowsEnabled: boolean = true;
+    ssShadowsEnabled: boolean;
+
     /**
      * The number of samples used in the screen space shadow pass.
      */
-    public ssShadowSampleCount: number = 16;
-    public ssShadowStride: number = 8;
-    public ssShadowMaxDist: number = 0.05;
-    public ssShadowThickness: number = 0.01;
+    ssShadowSampleCount: number;
+
+    /**
+     * The stride of the screen-space shadow pass. This controls the distance between samples.
+     */
+    ssShadowStride: number;
+
+    /**
+     * The maximum distance a shadow can be cast in screen space. This should usually be kept small
+     * as screenspace shadows are mostly useful for small details.
+     */
+    ssShadowMaxDist: number;
+
+    /**
+     * Screen-space shadow thickness. This value controls the perceived thickness of the SS shadows.
+     */
+    ssShadowThickness: number;
 }
 
 class IblShadowsPrepassConfiguration implements PrePassEffectConfiguration {
@@ -101,7 +115,7 @@ class IblShadowsPrepassConfiguration implements PrePassEffectConfiguration {
  * This should not be instanciated directly, as it is part of a scene component
  */
 export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
-    public scene: Scene;
+    private _scene: Scene;
 
     private _voxelizationDirty: boolean = true;
     private _boundsNeedUpdate: boolean = true;
@@ -158,42 +172,71 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         return this._voxelTracingPass?.ssShadowOpacity;
     }
 
+    /**
+     * How dark the screen-space shadows appear. 1.0 is full opacity, 0.0 is no shadows.
+     */
     public set ssShadowOpacity(value: number) {
         if (!this._voxelTracingPass) return;
         this._voxelTracingPass.ssShadowOpacity = value;
     }
 
+    /**
+     * The number of samples used in the screen space shadow pass.
+     */
     public get ssShadowSamples(): number {
         return this._voxelTracingPass?.sssSamples;
     }
 
+    /**
+     * The number of samples used in the screen space shadow pass.
+     */
     public set ssShadowSamples(value: number) {
         if (!this._voxelTracingPass) return;
         this._voxelTracingPass.sssSamples = value;
     }
 
+    /**
+     * The stride of the screen-space shadow pass. This controls the distance between samples.
+     */
     public get ssShadowStride(): number {
         return this._voxelTracingPass?.sssStride;
     }
 
+    /**
+     * The stride of the screen-space shadow pass. This controls the distance between samples.
+     */
     public set ssShadowStride(value: number) {
         if (!this._voxelTracingPass) return;
         this._voxelTracingPass.sssStride = value;
     }
 
+    /**
+     * The maximum distance a shadow can be cast in screen space. This should usually be kept small
+     * as screenspace shadows are mostly useful for small details.
+     */
     public get ssShadowMaxDist(): number {
         return this._voxelTracingPass?.sssMaxDist;
     }
 
+    /**
+     * The maximum distance a shadow can be cast in screen space. This should usually be kept small
+     * as screenspace shadows are mostly useful for small details.
+     */
     public set ssShadowMaxDist(value: number) {
         if (!this._voxelTracingPass) return;
         this._voxelTracingPass.sssMaxDist = value;
     }
 
+    /**
+     * Screen-space shadow thickness. This value controls the perceived thickness of the SS shadows.
+     */
     public get ssShadowThickness(): number {
         return this._voxelTracingPass?.sssThickness;
     }
 
+    /**
+     * Screen-space shadow thickness. This value controls the perceived thickness of the SS shadows.
+     */
     public set ssShadowThickness(value: number) {
         if (!this._voxelTracingPass) return;
         this._voxelTracingPass.sssThickness = value;
@@ -237,10 +280,16 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     private _gbufferDebugEnabled: boolean = false;
     private _gBufferDebugSizeParams: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
 
+    /**
+     * Is the debug view of the G-Buffer enabled?
+     */
     public get gbufferDebugEnabled(): boolean {
         return this._gbufferDebugEnabled;
     }
 
+    /**
+     * Turn on or off the debug view of the G-Buffer
+     */
     public set gbufferDebugEnabled(enabled: boolean) {
         if (enabled && !this.allowDebugPasses) {
             Logger.Warn("Can't enable G-Buffer debug view without setting allowDebugPasses to true.");
@@ -497,10 +546,16 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._voxelTracingPass.envRotation = value;
     }
 
+    /**
+     * Allow debug passes to be enabled. Default is false.
+     */
     public get allowDebugPasses(): boolean {
         return this._allowDebugPasses;
     }
 
+    /**
+     * Allow debug passes to be enabled. Default is false.
+     */
     public set allowDebugPasses(value: boolean) {
         if (this._allowDebugPasses === value) return;
         this._allowDebugPasses = value;
@@ -530,7 +585,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      */
     constructor(name: string, scene: Scene, options: Partial<IblShadowsSettings> = {}, cameras?: Camera[]) {
         super(scene.getEngine(), name);
-        this.scene = scene;
+        this._scene = scene;
         //  We need a depth texture for opaque
         if (!scene.enablePrePassRenderer()) {
             Logger.Warn("IBL Shadows Render Pipeline could not enable PrePass, aborting.");
@@ -539,25 +594,25 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this.shadowOpacity = options.shadowOpacity || 1.0;
         this._prePassEffectConfiguration = new IblShadowsPrepassConfiguration();
         this._voxelRenderer = new _IblShadowsVoxelRenderer(
-            this.scene,
+            this._scene,
             this,
             options ? options.resolutionExp : 6,
             options.triPlanarVoxelization !== undefined ? options.triPlanarVoxelization : true
         );
-        this._importanceSamplingRenderer = new _IblShadowsImportanceSamplingRenderer(this.scene);
-        this._voxelTracingPass = new _IblShadowsVoxelTracingPass(this.scene, this);
-        this.sampleDirections = options.sampleDirections || 1;
+        this._importanceSamplingRenderer = new _IblShadowsImportanceSamplingRenderer(this._scene);
+        this._voxelTracingPass = new _IblShadowsVoxelTracingPass(this._scene, this);
+        this.sampleDirections = options.sampleDirections || 2;
         this.ssShadowOpacity = options.ssShadowsEnabled === undefined || options.ssShadowsEnabled ? 1.0 : 0.0;
         this.ssShadowMaxDist = options.ssShadowMaxDist || 0.05;
         this.ssShadowSamples = options.ssShadowSampleCount || 16;
         this.ssShadowStride = options.ssShadowStride || 8;
         this.ssShadowThickness = options.ssShadowThickness || 0.01;
-        this._spatialBlurPass = new _IblShadowsSpatialBlurPass(this.scene);
-        this._accumulationPass = new _IblShadowsAccumulationPass(this.scene);
-        this.shadowRemenance = options.shadowRemenance || 0.9;
-        this._noiseTexture = new Texture("https://assets.babylonjs.com/textures/blue_noise/blue_noise_rgb.png", this.scene, false, true, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
-        if (this.scene.environmentTexture) {
-            this._importanceSamplingRenderer.iblSource = this.scene.environmentTexture;
+        this._spatialBlurPass = new _IblShadowsSpatialBlurPass(this._scene);
+        this._accumulationPass = new _IblShadowsAccumulationPass(this._scene);
+        this.shadowRemenance = options.shadowRemenance || 0.75;
+        this._noiseTexture = new Texture("https://assets.babylonjs.com/textures/blue_noise/blue_noise_rgb.png", this._scene, false, true, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+        if (this._scene.environmentTexture) {
+            this._importanceSamplingRenderer.iblSource = this._scene.environmentTexture;
         }
 
         // Create post process that applies the shadows to the scene
@@ -567,13 +622,13 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
 
         this._createEffectPasses(cameras);
 
-        this.scene.onNewMeshAddedObservable.add(this.updateSceneBounds.bind(this));
-        this.scene.onMeshRemovedObservable.add(this.updateSceneBounds.bind(this));
-        this.scene.onActiveCameraChanged.add(this._listenForCameraChanges.bind(this));
-        this.scene.onBeforeRenderObservable.add(this._updateBeforeRender.bind(this));
+        this._scene.onNewMeshAddedObservable.add(this.updateSceneBounds.bind(this));
+        this._scene.onMeshRemovedObservable.add(this.updateSceneBounds.bind(this));
+        this._scene.onActiveCameraChanged.add(this._listenForCameraChanges.bind(this));
+        this._scene.onBeforeRenderObservable.add(this._updateBeforeRender.bind(this));
 
         this._listenForCameraChanges();
-        this.scene.getEngine().onResizeObservable.add(this._handleResize.bind(this));
+        this._scene.getEngine().onResizeObservable.add(this._handleResize.bind(this));
         this._importanceSamplingRenderer.onReadyObservable.addOnce(() => {
             if (this._voxelRenderer.isReady()) {
                 this.toggleShadow(true);
@@ -585,6 +640,10 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         });
     }
 
+    /**
+     * Toggle the shadow tracing on or off
+     * @param enabled Toggle the shadow tracing on or off
+     */
     public toggleShadow(enabled: boolean) {
         if (enabled) {
             this._enableEffect("IBLShadowVoxelTracingPass", this.cameras);
@@ -606,12 +665,12 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
 
     private _createShadowCombinePostProcess() {
         const compositeOptions: PostProcessOptions = {
-            width: this.scene.getEngine().getRenderWidth(),
-            height: this.scene.getEngine().getRenderHeight(),
+            width: this._scene.getEngine().getRenderWidth(),
+            height: this._scene.getEngine().getRenderHeight(),
             uniforms: ["shadowOpacity"],
             samplers: ["sceneTexture"],
             samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
-            engine: this.scene.getEngine(),
+            engine: this._scene.getEngine(),
             textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             reusable: false,
         };
@@ -640,7 +699,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     private _createEffectPasses(cameras: Camera[] | undefined) {
         this.addEffect(
             new PostProcessRenderEffect(
-                this.scene.getEngine(),
+                this._scene.getEngine(),
                 "IBLShadowVoxelTracingPass",
                 () => {
                     return this._voxelTracingPass.getPassPP();
@@ -650,7 +709,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         );
         this.addEffect(
             new PostProcessRenderEffect(
-                this.scene.getEngine(),
+                this._scene.getEngine(),
                 "IBLShadowSpatialBlurPass",
                 () => {
                     return this._spatialBlurPass.getPassPP();
@@ -660,7 +719,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         );
         this.addEffect(
             new PostProcessRenderEffect(
-                this.scene.getEngine(),
+                this._scene.getEngine(),
                 "IBLShadowAccumulationBlurPass",
                 () => {
                     return this._accumulationPass.getPassPP();
@@ -670,7 +729,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         );
         this.addEffect(
             new PostProcessRenderEffect(
-                this.scene.getEngine(),
+                this._scene.getEngine(),
                 "IBLShadowCompositePass",
                 () => {
                     return this._shadowCompositePP;
@@ -680,7 +739,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         );
 
         if (cameras) {
-            this.scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this.name, cameras);
+            this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this.name, cameras);
         }
 
         this.toggleShadow(false);
@@ -697,10 +756,10 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         const textureNames: string[] = this._prePassEffectConfiguration.texturesRequired.map((type) => PrePassRenderer.TextureFormats[type].name.toString());
 
         const options: PostProcessOptions = {
-            width: this.scene.getEngine().getRenderWidth(),
-            height: this.scene.getEngine().getRenderHeight(),
+            width: this._scene.getEngine().getRenderWidth(),
+            height: this._scene.getEngine().getRenderHeight(),
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-            engine: this.scene.getEngine(),
+            engine: this._scene.getEngine(),
             textureType: Constants.TEXTURETYPE_UNSIGNED_INT,
             textureFormat: Constants.TEXTUREFORMAT_RGBA,
             uniforms: ["sizeParams"],
@@ -711,7 +770,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._gbufferDebugPass.autoClear = false;
         this._gbufferDebugPass.onApplyObservable.add((effect) => {
             this._prePassEffectConfiguration.texturesRequired.forEach((type) => {
-                const prePassRenderer = this.scene.prePassRenderer;
+                const prePassRenderer = this._scene.prePassRenderer;
                 if (!prePassRenderer) {
                     Logger.Error("Can't enable G-Buffer debug rendering since prepassRenderer doesn't exist.");
                     return;
@@ -720,8 +779,8 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
                 if (index >= 0) effect.setTexture(PrePassRenderer.TextureFormats[type].name, prePassRenderer.getRenderTarget().textures[index]);
             });
             effect.setVector4("sizeParams", this._gBufferDebugSizeParams);
-            if (this.scene.activeCamera) {
-                effect.setFloat("maxDepth", this.scene.activeCamera.maxZ);
+            if (this._scene.activeCamera) {
+                effect.setFloat("maxDepth", this._scene.activeCamera.maxZ);
             }
         });
         return this._gbufferDebugPass;
@@ -740,7 +799,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             if (!this._debugPasses[i]) continue;
             this.addEffect(
                 new PostProcessRenderEffect(
-                    this.scene.getEngine(),
+                    this._scene.getEngine(),
                     this._debugPasses[i].name,
                     () => {
                         return this._debugPasses[i];
@@ -750,8 +809,8 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             );
         }
         const cameras = this.cameras.slice();
-        this.scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this.name, this.cameras);
-        this.scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this.name, cameras);
+        this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this.name, this.cameras);
+        this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this.name, cameras);
         for (let i = 0; i < this._debugPasses.length; i++) {
             if (!this._debugPasses[i]) continue;
             this._disableEffect(this._debugPasses[i].name, this.cameras);
@@ -759,7 +818,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     }
 
     private _disposeEffectPasses() {
-        this.scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this.name, this.cameras);
+        this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this.name, this.cameras);
         this._disableEffect("IBLShadowVoxelTracingPass", this.cameras);
         this._disableEffect("IBLShadowSpatialBlurPass", this.cameras);
         this._disableEffect("IBLShadowAccumulationBlurPass", this.cameras);
@@ -792,7 +851,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         let x = 0;
         let y = 0;
         if (this.gbufferDebugEnabled) {
-            const prePassRenderer = this.scene!.prePassRenderer;
+            const prePassRenderer = this._scene!.prePassRenderer;
             if (!prePassRenderer) {
                 Logger.Error("Can't enable G-Buffer debug rendering since prepassRenderer doesn't exist.");
                 return;
@@ -847,10 +906,17 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         }
     }
 
+    /**
+     * Trigger the scene to be re-voxelized. This is useful when the scene has changed and the voxel grid needs to be updated.
+     */
     public updateVoxelization() {
         this._voxelizationDirty = true;
     }
 
+    /**
+     * Trigger the scene bounds of shadow-casters to be updated. This is useful when the scene has changed and the bounds need
+     * to be recalculated. This will also trigger a re-voxelization.
+     */
     public updateSceneBounds() {
         this._voxelizationDirty = true;
         this._boundsNeedUpdate = true;
@@ -862,8 +928,8 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
 
     private _listenForCameraChanges() {
         // We want to listen for camera changes and change settings while the camera is moving.
-        if (this.scene.activeCamera instanceof ArcRotateCamera) {
-            this.scene.onBeforeCameraRenderObservable.add((camera) => {
+        if (this._scene.activeCamera instanceof ArcRotateCamera) {
+            this._scene.onBeforeCameraRenderObservable.add((camera) => {
                 let isMoving: boolean = false;
                 if (camera instanceof ArcRotateCamera) {
                     isMoving =
@@ -929,7 +995,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         }
 
         if (this._boundsNeedUpdate) {
-            const bounds = this.scene.getWorldExtends((mesh) => {
+            const bounds = this._scene.getWorldExtends((mesh) => {
                 return mesh instanceof Mesh && this._excludedMeshes.indexOf(mesh.uniqueId) === -1;
             });
             const size = bounds.max.subtract(bounds.min);

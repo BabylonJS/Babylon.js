@@ -2,7 +2,6 @@ import { Constants } from "../../Engines/constants";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import type { Scene } from "../../scene";
 import { Vector4 } from "../../Maths/math.vector";
-// import { Logger } from "../Misc/logger";
 import "../../Shaders/iblShadowAccumulation.fragment";
 import "../../Shaders/iblShadowDebug.fragment";
 import { PostProcess } from "../../PostProcesses/postProcess";
@@ -47,27 +46,55 @@ export class _IblShadowsAccumulationPass {
     }
 
     private _debugPassName: string = "Shadow Accumulation Debug Pass";
+
+    /**
+     * Gets the name of the debug pass
+     * @returns The name of the debug pass
+     */
     public get debugPassName(): string {
         return this._debugPassName;
     }
 
-    private _remenance: number = 0.9;
+    /**
+     * A value that controls how much of the previous frame's accumulation to keep.
+     * The higher the value, the faster the shadows accumulate but the more potential ghosting you'll see.
+     */
     public get remenance(): number {
         return this._remenance;
     }
+
+    /**
+     * A value that controls how much of the previous frame's accumulation to keep.
+     * The higher the value, the faster the shadows accumulate but the more potential ghosting you'll see.
+     */
     public set remenance(value: number) {
         this._remenance = value;
     }
-    private _reset: boolean = true;
+    private _remenance: number = 0.9;
+
+    /**
+     * Reset the accumulation.
+     */
     public get reset(): boolean {
         return this._reset;
     }
+    /**
+     * Reset the accumulation.
+     */
     public set reset(value: boolean) {
         this._reset = value;
     }
-
+    private _reset: boolean = true;
     private _debugPassPP: PostProcess;
     private _debugSizeParams: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
+
+    /**
+     * Sets params that control the position and scaling of the debug display on the screen.
+     * @param x Screen X offset of the debug display (0-1)
+     * @param y Screen Y offset of the debug display (0-1)
+     * @param widthScale X scale of the debug display (0-1)
+     * @param heightScale Y scale of the debug display (0-1)
+     */
     public setDebugDisplayParams(x: number, y: number, widthScale: number, heightScale: number) {
         this._debugSizeParams.set(x, y, widthScale, heightScale);
     }
@@ -209,11 +236,9 @@ export class _IblShadowsAccumulationPass {
         effect.setVector4("accumulationParameters", new Vector4(this.remenance, this.reset ? 1.0 : 0.0, 0.0, 0.0));
         effect.setTexture("oldAccumulationSampler", this._oldAccumulationRT);
         effect.setTexture("prevLocalPositionSampler", this._oldLocalPositionRT);
-        // effect.setTexture("shadowSampler", this._renderPipeline.getBlurShadowTexture()!);
 
         const prePassRenderer = this._scene.prePassRenderer;
         if (prePassRenderer) {
-            // prePassRenderer.getRenderTarget().skipInitialClear = true;
             const localPositionIndex = prePassRenderer.getIndex(Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE);
             if (localPositionIndex >= 0) effect.setTexture("localPositionSampler", prePassRenderer.getRenderTarget().textures[localPositionIndex]);
             const velocityIndex = prePassRenderer.getIndex(Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE);

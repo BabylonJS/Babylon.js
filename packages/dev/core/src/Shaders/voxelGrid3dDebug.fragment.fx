@@ -32,11 +32,7 @@ void main(void) {
     }
     bool outBounds = sampleIndex > size.z - 1 ? true : false;
     sampleIndex = clamp(sampleIndex, 0, size.z - 1);
-    // vec3 voxel =
-    //     textureLod(voxelTexture,
-    //                vec3(samplePos.xy, float(sampleIndex) / float(size.z)),
-    //                mipNumber)
-    //         .rgb;
+
     ivec2 samplePosInt = ivec2(samplePos.xy * vec2(size.xy));
     vec3 voxel = texelFetch(voxelTexture,
                             ivec3(samplePosInt.x, samplePosInt.y, sampleIndex),

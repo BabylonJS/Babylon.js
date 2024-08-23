@@ -17,7 +17,7 @@ import { Vector4 } from "../../Maths/math.vector";
 import { RawTexture } from "../../Materials/Textures/rawTexture";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Observable } from "../../Misc/observable";
-import { HDRCubeTexture } from "core/Materials";
+import { HDRCubeTexture } from "../../Materials/Textures/hdrCubeTexture";
 
 /**
  * Build cdf maps for IBL importance sampling during IBL shadow computation.
@@ -83,9 +83,18 @@ export class _IblShadowsImportanceSamplingRenderer {
         });
     }
 
+    /**
+     * Return the cumulative distribution function (CDF) Y texture
+     * @returns Return the cumulative distribution function (CDF) Y texture
+     */
     public getIcdfyTexture(): ProceduralTexture {
         return this._icdfyPT;
     }
+
+    /**
+     * Return the cumulative distribution function (CDF) X texture
+     * @returns Return the cumulative distribution function (CDF) X texture
+     */
     public getIcdfxTexture(): ProceduralTexture {
         return this._icdfxPT;
     }
@@ -94,14 +103,25 @@ export class _IblShadowsImportanceSamplingRenderer {
     public debugEnabled: boolean = false;
     private _debugPass: PostProcess;
     private _debugSizeParams: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
+
+    /**
+     * Sets params that control the position and scaling of the debug display on the screen.
+     * @param x Screen X offset of the debug display (0-1)
+     * @param y Screen Y offset of the debug display (0-1)
+     * @param widthScale X scale of the debug display (0-1)
+     * @param heightScale Y scale of the debug display (0-1)
+     */
     public setDebugDisplayParams(x: number, y: number, widthScale: number, heightScale: number) {
         this._debugSizeParams.set(x, y, widthScale, heightScale);
     }
 
-    private _debugPassName: string = "Importance Sample Debug";
+    /**
+     * The name of the debug pass post process
+     */
     public get debugPassName(): string {
         return this._debugPassName;
     }
+    private _debugPassName: string = "Importance Sample Debug";
 
     /**
      * Gets the debug pass post process
@@ -117,7 +137,6 @@ export class _IblShadowsImportanceSamplingRenderer {
     /**
      * Instanciates the importance sampling renderer
      * @param scene Scene to attach to
-     * @param iblSource The IBL source texture
      * @returns The importance sampling renderer
      */
     constructor(scene: Scene) {

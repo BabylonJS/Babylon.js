@@ -60,6 +60,10 @@ export class _IblShadowsVoxelRenderer {
         }
     }
 
+    /**
+     * The debug pass post process
+     * @returns The debug pass post process
+     */
     public getDebugPassPP(): PostProcess {
         if (!this._voxelDebugPass) {
             this._createDebugPass();
@@ -94,6 +98,11 @@ export class _IblShadowsVoxelRenderer {
 
     private _voxelizationInProgress: boolean = false;
     private _invWorldScaleMatrix: Matrix;
+
+    /**
+     * Set the matrix to use for scaling the world space to voxel space
+     * @param matrix The matrix to use for scaling the world space to voxel space
+     */
     public setWorldScaleMatrix(matrix: Matrix) {
         this._invWorldScaleMatrix = matrix;
     }
@@ -107,10 +116,16 @@ export class _IblShadowsVoxelRenderer {
     private _voxelResolution: number = 64;
     private _voxelResolutionExp: number = 6;
 
+    /**
+     * Resolution of the voxel grid. The final resolution will be 2^resolutionExp.
+     */
     public get voxelResolutionExp(): number {
         return this._voxelResolutionExp;
     }
 
+    /**
+     * Resolution of the voxel grid. The final resolution will be 2^resolutionExp.
+     */
     public set voxelResolutionExp(resolutionExp: number) {
         if (this._voxelResolutionExp === resolutionExp && this._voxelGridZaxis) {
             return;
@@ -121,7 +136,7 @@ export class _IblShadowsVoxelRenderer {
         this._createTextures();
     }
 
-    /*
+    /**
      * Observable that will be triggered when the voxel grid is ready to be used
      */
     public onReadyObservable: Observable<void> = new Observable<void>();
@@ -133,25 +148,52 @@ export class _IblShadowsVoxelRenderer {
     private _voxelSlabDebugRT: RenderTargetTexture;
     private _voxelDebugPass: PostProcess;
     private _voxelDebugEnabled: boolean = false;
-    private _voxelDebugAxis: number = -1;
+
+    /**
+     * Shows only the voxels that were rendered along a particular axis (while using triPlanarVoxelization).
+     * If not set, the combined voxel grid will be shown.
+     * Note: This only works when the debugMipNumber is set to 0 because we don't generate mips for each axis.
+     * @param axis The axis to show (0 = x, 1 = y, 2 = z)
+     */
     public set voxelDebugAxis(axis: number) {
         this._voxelDebugAxis = axis;
     }
+
     public get voxelDebugAxis(): number {
         return this._voxelDebugAxis;
     }
+    private _voxelDebugAxis: number = -1;
     private _debugSizeParams: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
+
+    /**
+     * Sets params that control the position and scaling of the debug display on the screen.
+     * @param x Screen X offset of the debug display (0-1)
+     * @param y Screen Y offset of the debug display (0-1)
+     * @param widthScale X scale of the debug display (0-1)
+     * @param heightScale Y scale of the debug display (0-1)
+     */
     public setDebugDisplayParams(x: number, y: number, widthScale: number, heightScale: number) {
         this._debugSizeParams.set(x, y, widthScale, heightScale);
     }
     private _debugMipNumber: number = 0;
+    /**
+     * The mip level to show in the debug display
+     * @param mipNum The mip level to show in the debug display
+     */
     public setDebugMipNumber(mipNum: number) {
         this._debugMipNumber = mipNum;
     }
     private _debugPassName: string = "Voxelization Debug Pass";
+    /**
+     * Sets the name of the debug pass
+     */
     public get debugPassName(): string {
         return this._debugPassName;
     }
+
+    /**
+     * Enable or disable the debug view for this pass
+     */
     public get voxelDebugEnabled(): boolean {
         return this._voxelDebugEnabled;
     }
@@ -195,7 +237,6 @@ export class _IblShadowsVoxelRenderer {
             };
             this._voxelDebugPass = new PostProcess(this.debugPassName, this._isVoxelGrid3D ? "voxelGrid3dDebug" : "voxelGrid2dArrayDebug", debugOptions);
             this._voxelDebugPass.onApplyObservable.add((effect) => {
-                // update the caustic texture with what we just rendered.
                 if (this._voxelDebugAxis === 0) {
                     effect.setTexture("voxelTexture", this._voxelGridXaxis);
                 } else if (this._voxelDebugAxis === 1) {
@@ -236,19 +277,19 @@ export class _IblShadowsVoxelRenderer {
         }
 
         Effect.ShadersStore["copyLayerFragmentShader"] = `
-        precision highp sampler3D;
-        
-        uniform sampler3D textureSampler;
-        uniform int layerNum;
-        varying vec2 vUV;
+            precision highp sampler3D;
+            
+            uniform sampler3D textureSampler;
+            uniform int layerNum;
+            varying vec2 vUV;
 
-        void main(void) {
-            vec3 coord = vec3(0.0, 0.0, float(layerNum));
-            coord.xy = vec2(vUV.x, vUV.y) * vec2(textureSize(textureSampler, 0).xy);
-            vec3 color = texelFetch(textureSampler, ivec3(coord), 0).rgb;
-            gl_FragColor = vec4(color, 1);
-        }
-    `;
+            void main(void) {
+                vec3 coord = vec3(0.0, 0.0, float(layerNum));
+                coord.xy = vec2(vUV.x, vUV.y) * vec2(textureSize(textureSampler, 0).xy);
+                vec3 color = texelFetch(textureSampler, ivec3(coord), 0).rgb;
+                gl_FragColor = vec4(color, 1);
+            }
+        `;
 
         this._copyMipEffectRenderer = new EffectRenderer(this._engine);
         this._copyMipEffectWrapper = new EffectWrapper({
@@ -581,7 +622,7 @@ export class _IblShadowsVoxelRenderer {
                     uniforms: ["world", "viewMatrix", "cameraViewMatrix", "projection", "invWorldScale", "nearPlane", "farPlane", "stepSize"],
                     defines: ["MAX_DRAW_BUFFERS " + this._maxDrawBuffers],
                 });
-                this._scene.onBeforeRenderObservable.add((effect) => {
+                this._scene.onBeforeRenderObservable.add(() => {
                     voxelMaterial.setMatrix("projection", this._scene.activeCamera!.getProjectionMatrix());
                     voxelMaterial.setMatrix("cameraViewMatrix", this._scene.activeCamera!.getViewMatrix());
                 });

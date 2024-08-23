@@ -101,9 +101,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
 #include<instancesVertex>
 
-#if defined(PREPASS) &&                                                        \
-    (defined(PREPASS_VELOCITY) && !defined(BONES_VELOCITY_ENABLED) ||          \
-     defined(PREPASS_VELOCITY_LINEAR))
+#if defined(PREPASS) && (defined(PREPASS_VELOCITY) && !defined(BONES_VELOCITY_ENABLED) || defined(PREPASS_VELOCITY_LINEAR))
         // Compute velocity before bones computation
         vertexOutputs.vCurrentPosition =
             scene.viewProjection * finalWorld * vec4f(positionUpdated, 1.0);

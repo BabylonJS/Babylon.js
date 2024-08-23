@@ -2,7 +2,6 @@ import { Constants } from "../../Engines/constants";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import type { Scene } from "../../scene";
 import { Vector4 } from "../../Maths/math.vector";
-// import { Logger } from "../Misc/logger";
 import "../../Shaders/iblShadowSpatialBlur.fragment";
 import "../../Shaders/iblShadowDebug.fragment";
 import { PostProcess } from "../../PostProcesses/postProcess";
@@ -39,10 +38,17 @@ export class _IblShadowsSpatialBlurPass {
         return this._debugPassPP;
     }
     private _debugPassName: string = "Spatial Blur Debug Pass";
+    /**
+     * Sets the name of the debug pass
+     */
     public get debugPassName(): string {
         return this._debugPassName;
     }
 
+    /**
+     * The scale of the voxel grid in world space. This is used to scale the blur radius in world space.
+     * @param scale The scale of the voxel grid in world space.
+     */
     public setWorldScale(scale: number) {
         this._worldScale = scale;
     }
@@ -51,6 +57,14 @@ export class _IblShadowsSpatialBlurPass {
     public debugEnabled: boolean = false;
     private _debugPassPP: PostProcess;
     private _debugSizeParams: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
+
+    /**
+     * Sets params that control the position and scaling of the debug display on the screen.
+     * @param x Screen X offset of the debug display (0-1)
+     * @param y Screen Y offset of the debug display (0-1)
+     * @param widthScale X scale of the debug display (0-1)
+     * @param heightScale Y scale of the debug display (0-1)
+     */
     public setDebugDisplayParams(x: number, y: number, widthScale: number, heightScale: number) {
         this._debugSizeParams.set(x, y, widthScale, heightScale);
     }
