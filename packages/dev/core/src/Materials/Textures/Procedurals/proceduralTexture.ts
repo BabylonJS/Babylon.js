@@ -75,6 +75,9 @@ export class ProceduralTexture extends Texture {
      */
     public nodeMaterialSource: Nullable<NodeMaterial> = null;
 
+    /**
+     * Define the list of custom preprocessor defines used in the shader
+     */
     public defines: string = "";
 
     /** @internal */

@@ -20,13 +20,13 @@ import "../../Shaders/voxelSlabDebug.vertex";
 import "../../Shaders/voxelSlabDebug.fragment";
 import "../../Shaders/combineVoxelGrids.fragment";
 import "../../Shaders/generateVoxelMip.fragment";
+import "../../Shaders/copyTexture3DLayerToTexture.fragment";
 
 import { PostProcess } from "../../PostProcesses/postProcess";
 import type { PostProcessOptions } from "../../PostProcesses/postProcess";
 import { ProceduralTexture } from "../../Materials/Textures/Procedurals/proceduralTexture";
 import { EffectRenderer, EffectWrapper } from "../../Materials/effectRenderer";
 import type { IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
-import { Effect } from "../../Materials/effect";
 import type { RenderTargetWrapper } from "core/Engines";
 import { Observable } from "../../Misc/observable";
 
@@ -276,25 +276,10 @@ export class _IblShadowsVoxelRenderer {
             this._maxDrawBuffers = (this._engine as Engine)._gl.getParameter((this._engine as Engine)._gl.MAX_DRAW_BUFFERS);
         }
 
-        Effect.ShadersStore["copyLayerFragmentShader"] = `
-            precision highp sampler3D;
-            
-            uniform sampler3D textureSampler;
-            uniform int layerNum;
-            varying vec2 vUV;
-
-            void main(void) {
-                vec3 coord = vec3(0.0, 0.0, float(layerNum));
-                coord.xy = vec2(vUV.x, vUV.y) * vec2(textureSize(textureSampler, 0).xy);
-                vec3 color = texelFetch(textureSampler, ivec3(coord), 0).rgb;
-                gl_FragColor = vec4(color, 1);
-            }
-        `;
-
         this._copyMipEffectRenderer = new EffectRenderer(this._engine);
         this._copyMipEffectWrapper = new EffectWrapper({
             engine: this._engine,
-            fragmentShader: "copyLayer",
+            fragmentShader: "copyTexture3DLayerToTexture",
             useShaderStore: true,
             uniformNames: ["layerNum"],
             samplerNames: ["textureSampler"],
@@ -426,9 +411,6 @@ export class _IblShadowsVoxelRenderer {
             mipTarget.setTexture("srcMip", mipIdx > 1 ? this._mipArray[mipIdx - 2] : this.getVoxelGrid());
             mipTarget.setInt("layerNum", 0);
         }
-        // this._voxelGridRT.onGeneratedObservable.add(() => {
-        //     this._generateMipMaps();
-        // });
     }
 
     private _createVoxelMRTs(name: string, voxelRT: RenderTargetTexture, numSlabs: number): MultiRenderTarget[] {
@@ -589,7 +571,7 @@ export class _IblShadowsVoxelRenderer {
                 this._stopVoxelization();
 
                 if (this._triPlanarVoxelization) {
-                    // TODO - is this actually preventing WebGL from generating mipmaps? It doesn't seem to be.
+                    // This hack is to prevent the procedural texture from auto-generating mips while unbinding the framebuffer.
                     this._voxelGridRT._generateMipMaps = false;
                     this._voxelGridRT.render();
                 }
