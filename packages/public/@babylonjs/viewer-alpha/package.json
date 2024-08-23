@@ -24,6 +24,9 @@
         "bundle:dist:esm": "rollup -c rollup.config.dist.esm.mjs",
         "pack": "npm run build && npm pack"
     },
+    "dependencies": {
+        "lit": "^3.2.0"
+    },
     "peerDependencies": {
         "@babylonjs/core": "^7.13.2",
         "@babylonjs/loaders": "^7.0.0"
