@@ -36,12 +36,12 @@
         },
         {
             "title": "Volumetric Light Scattering Post Process with Skeleton",
-            "playgroundId": "#5E318S#1",
+            "playgroundId": "#5E318S#4",
             "referenceImage": "volumetricLightScatteringSkeleton.png"
         },
         {
             "title": "Volumetric Light Scattering Post Process with Morph Targets",
-            "playgroundId": "#5E318S#3",
+            "playgroundId": "#5E318S#5",
             "referenceImage": "volumetricLightScatteringMorphTargets.png"
         },
         {
@@ -1684,7 +1684,7 @@
         {
             "title": "Baked Vertex Animation with Volumetric Light Scattering Post Process",
             "renderCount": 20,
-            "playgroundId": "#1LF9GK#1",
+            "playgroundId": "#1LF9GK#2",
             "referenceImage": "bakedVertexAnimationVLS.png"
         },
         {
