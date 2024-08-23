@@ -1,6 +1,23 @@
 {
-    "fromTag": "7.22.1",
+    "fromTag": "7.22.2",
     "changelog": {
+        "7.22.3": [
+            {
+                "pr": "15472",
+                "title": "Native Texture Loaders",
+                "description": "Use native (bimg) texture loaders for tga, exr, hdr, dds",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
         "7.22.2": [
             {
                 "pr": "15471",
