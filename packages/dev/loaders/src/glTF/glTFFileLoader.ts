@@ -198,20 +198,32 @@ abstract class GLTFLoaderOptions {
     // eslint-disable-next-line babylonjs/available
     protected copyFrom(options?: Partial<Readonly<GLTFLoaderOptions>>) {
         if (options) {
-            const copyOption = (option: string) => {
-                const typedKey = option as keyof GLTFLoaderOptions;
-                (this as Record<keyof GLTFLoaderOptions, unknown>)[typedKey] = options[typedKey] ?? this[typedKey];
-            };
-
-            // Copy concrete properties
-            for (const option in this) {
-                copyOption(option);
-            }
-
-            // Copy abstract properties
-            for (const option of ["onParsed", "onMeshLoaded", "onSkinLoaded", "onTextureLoaded", "onMaterialLoaded", "onCameraLoaded"] satisfies (keyof GLTFLoaderOptions)[]) {
-                copyOption(option);
-            }
+            this.onParsed = options.onParsed;
+            this.coordinateSystemMode = options.coordinateSystemMode ?? this.coordinateSystemMode;
+            this.animationStartMode = options.animationStartMode ?? this.animationStartMode;
+            this.loadNodeAnimations = options.loadNodeAnimations ?? this.loadNodeAnimations;
+            this.loadSkins = options.loadSkins ?? this.loadSkins;
+            this.loadMorphTargets = options.loadMorphTargets ?? this.loadMorphTargets;
+            this.compileMaterials = options.compileMaterials ?? this.compileMaterials;
+            this.useClipPlane = options.useClipPlane ?? this.useClipPlane;
+            this.compileShadowGenerators = options.compileShadowGenerators ?? this.compileShadowGenerators;
+            this.transparencyAsCoverage = options.transparencyAsCoverage ?? this.transparencyAsCoverage;
+            this.useRangeRequests = options.useRangeRequests ?? this.useRangeRequests;
+            this.createInstances = options.createInstances ?? this.createInstances;
+            this.alwaysComputeBoundingBox = options.alwaysComputeBoundingBox ?? this.alwaysComputeBoundingBox;
+            this.loadAllMaterials = options.loadAllMaterials ?? this.loadAllMaterials;
+            this.loadOnlyMaterials = options.loadOnlyMaterials ?? this.loadOnlyMaterials;
+            this.skipMaterials = options.skipMaterials ?? this.skipMaterials;
+            this.useSRGBBuffers = options.useSRGBBuffers ?? this.useSRGBBuffers;
+            this.targetFps = options.targetFps ?? this.targetFps;
+            this.alwaysComputeSkeletonRootNode = options.alwaysComputeSkeletonRootNode ?? this.alwaysComputeSkeletonRootNode;
+            this.preprocessUrlAsync = options.preprocessUrlAsync ?? this.preprocessUrlAsync;
+            this.customRootNode = options.customRootNode;
+            this.onMeshLoaded = options.onMeshLoaded;
+            this.onSkinLoaded = options.onSkinLoaded;
+            this.onTextureLoaded = options.onTextureLoaded;
+            this.onMaterialLoaded = options.onMaterialLoaded;
+            this.onCameraLoaded = options.onCameraLoaded;
         }
     }
 
