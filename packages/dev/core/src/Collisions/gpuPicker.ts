@@ -374,7 +374,7 @@ export class GPUPicker {
 
         this._preparePickingBuffer(this._engine!, rttSizeW, rttSizeH, minX, partialCutH, w, h);
 
-        return await this._executeMultiPicking(xy, minX, maxY, rttSizeW, rttSizeH, w, h, disposeWhenDone);
+        return await this._executeMultiPicking(xy, minX, maxY, rttSizeH, w, h, disposeWhenDone);
     }
 
     private _prepareForPicking(x: number, y: number) {
@@ -465,7 +465,6 @@ export class GPUPicker {
         xy: { x: number; y: number }[],
         minX: number,
         maxY: number,
-        rttSizeW: number,
         rttSizeH: number,
         w: number,
         h: number,
@@ -531,14 +530,13 @@ export class GPUPicker {
     }
 
     private _getMeshFromMultiplePoints(x: number, y: number, minX: number, maxY: number, w: number): { pickedMesh: Nullable<AbstractMesh>; thinInstanceIndex: number | undefined } {
-        let offsetX = (x - minX) * 4;
+        let offsetX = (x - minX - 1) * 4;
         let offsetY = (maxY - y - 1) * w * 4;
 
         offsetX = Math.max(offsetX, 0);
         offsetY = Math.max(offsetY, 0);
 
-        const offset = offsetX + offsetY;
-        const colorId = this._getColorIdFromReadBuffer(offset);
+        const colorId = this._getColorIdFromReadBuffer(offsetX + offsetY);
 
         let pickedMesh: Nullable<AbstractMesh> = null;
         let thinInstanceIndex: number | undefined;
@@ -586,289 +584,5 @@ export class GPUPicker {
         this._pickingTexture = null;
         this._defaultRenderMaterial?.dispose();
         this._defaultRenderMaterial = null;
-    }
-
-    /**
-     * Execute a picking operation
-     * @param x defines the X coordinates where to run the pick
-     * @param y defines the Y coordinates where to run the pick
-     * @param disposeWhenDone defines a boolean indicating we do not want to keep resources alive (false by default)
-     * @returns A promise with the picking results
-     */
-    public async pickAsync2(x: number, y: number, disposeWhenDone = false): Promise<Nullable<IGPUPickingInfo>> {
-        if (!this._pickableMeshes || this._pickableMeshes.length === 0) {
-            return Promise.resolve(null);
-        }
-
-        const scene = this._cachedScene!;
-        const engine = scene.getEngine();
-        const rttSizeW = engine.getRenderWidth();
-        const rttSizeH = engine.getRenderHeight();
-        const devicePixelRatio = 1 / engine._hardwareScalingLevel;
-
-        this._meshRenderingCount = 0;
-
-        // Ensure ints and adapt to screen resolution
-        x = (devicePixelRatio * x) >> 0;
-        y = (devicePixelRatio * y) >> 0;
-
-        if (x < 0 || y < 0 || x >= rttSizeW || y >= rttSizeH) {
-            return Promise.resolve(null);
-        }
-
-        if (!this._readbuffer) {
-            this._readbuffer = new Uint8Array(engine.isWebGPU ? 256 : 4); // Because of block alignment in WebGPU
-        }
-
-        // Invert Y
-        y = rttSizeH - y - 1;
-
-        this._pickingTexture!.clearColor = new Color4(0, 0, 0, 0);
-
-        this._pickingTexture!.onBeforeRender = () => {
-            // Enable scissor
-            if ((engine as WebGPUEngine | Engine).enableScissor) {
-                (engine as WebGPUEngine | Engine).enableScissor(x, y, 1, 1);
-            }
-        };
-
-        scene.customRenderTargets.push(this._pickingTexture!);
-
-        // Do we need to rebuild the RTT?
-        const size = this._pickingTexture!.getSize();
-
-        if (size.width !== rttSizeW || size.height !== rttSizeH) {
-            this._createRenderTarget(scene, rttSizeW, rttSizeH);
-
-            this._pickingTexture!.renderList = [];
-            for (let index = 0; index < this._pickableMeshes.length; index++) {
-                const mesh = this._pickableMeshes[index];
-                this._pickingTexture!.setMaterialForRendering(mesh, this._meshMaterialMap.get(mesh)!);
-                this._pickingTexture!.renderList.push(mesh);
-            }
-        }
-
-        return new Promise((resolve, reject) => {
-            this._pickingTexture!.onAfterRender = async () => {
-                // Disable scissor
-                if ((engine as WebGPUEngine | Engine).disableScissor) {
-                    (engine as WebGPUEngine | Engine).disableScissor();
-                }
-
-                if (!this._pickingTexture) {
-                    reject();
-                }
-
-                let pickedMesh: Nullable<AbstractMesh> = null;
-                let thinInstanceIndex: number | undefined = undefined;
-                const wasSuccessfull = this._meshRenderingCount > 0;
-
-                if (wasSuccessfull) {
-                    // Remove from the active RTTs
-                    const index = scene.customRenderTargets.indexOf(this._pickingTexture!);
-                    if (index > -1) {
-                        scene.customRenderTargets.splice(index, 1);
-                    }
-
-                    // Do the actual picking
-                    if (await this._readTexturePixelsAsync(x, y)) {
-                        const r = this._readbuffer[0];
-                        const g = this._readbuffer[1];
-                        const b = this._readbuffer[2];
-                        const colorId = (r << 16) + (g << 8) + b;
-
-                        // Thin?
-                        if (this._thinIdMap[colorId]) {
-                            pickedMesh = this._pickableMeshes[this._thinIdMap[colorId].meshId];
-                            thinInstanceIndex = this._thinIdMap[colorId].thinId;
-                        } else {
-                            pickedMesh = this._pickableMeshes[this._idMap[colorId]];
-                        }
-                    }
-                }
-
-                // Clean-up
-                if (!wasSuccessfull) {
-                    this._meshRenderingCount = 0;
-                    return; // We need to wait for the shaders to be ready
-                } else {
-                    if (disposeWhenDone) {
-                        this.dispose();
-                    }
-                    if (pickedMesh) {
-                        resolve({ mesh: pickedMesh, thinInstanceIndex: thinInstanceIndex });
-                    } else {
-                        resolve(null);
-                    }
-                }
-            };
-        });
-    }
-
-    /**
-     * Execute a picking operation on multiple coordinates
-     * @param xy defines the X,Y coordinates where to run the pick
-     * @param disposeWhenDone defines a boolean indicating we do not want to keep resources alive (false by default)
-     * @returns A promise with the picking results. Always returns an array with the same length as the number of coordinates. The mesh or null at the the index where no mesh was picked.
-     */
-    public async multiPickAsync2(xy: { x: number; y: number }[], disposeWhenDone = false): Promise<Nullable<IGPUMultiPickingInfo>> {
-        if (!this._pickableMeshes || this._pickableMeshes.length === 0) {
-            return Promise.resolve(null);
-        }
-
-        if (xy.length === 0) {
-            Promise.resolve(null);
-        }
-
-        if (xy.length === 1) {
-            Promise.resolve([await this.pickAsync(xy[0].x, xy[0].y, disposeWhenDone)]);
-        }
-
-        const scene = this._cachedScene!;
-        const engine = scene.getEngine();
-        const devicePixelRatio = 1 / engine._hardwareScalingLevel;
-
-        const rttSizeW = engine.getRenderWidth();
-        const rttSizeH = engine.getRenderHeight();
-
-        // get min, max to do a partial cut
-
-        const xy0 = xy[0];
-        let minX = xy0.x,
-            maxX = xy0.x,
-            minY = xy0.y,
-            maxY = xy0.y;
-
-        for (let i = 1; i < xy.length; i++) {
-            const { x, y } = xy[i];
-            minX = x < minX ? x : minX;
-            maxX = x > maxX ? x : maxX;
-            minY = y < minY ? y : minY;
-            maxY = y > maxY ? y : maxY;
-        }
-
-        // Ensure ints and adapt to screen resolution
-        minX = (devicePixelRatio * minX) >> 0;
-        maxX = (devicePixelRatio * maxX) >> 0;
-        minY = (devicePixelRatio * minY) >> 0;
-        maxY = (devicePixelRatio * maxY) >> 0;
-
-        // bounds check
-        minX = minX < 0 ? 0 : minX;
-        minY = minY < 0 ? 0 : minY;
-        maxX = maxX >= rttSizeW ? rttSizeW - 1 : maxX;
-        maxY = maxY >= rttSizeH ? rttSizeH - 1 : maxY;
-
-        const w = Math.max(maxX - minX, 1);
-        const h = Math.max(maxY - minY, 1);
-
-        const partialCutH = rttSizeH - maxY - 1;
-        // Because of block alignment 256 bytes in WebGPU
-        const requiredBufferSize = engine.isWebGPU ? (4 * rttSizeW * rttSizeH + 255) & ~255 : 4 * rttSizeW * rttSizeH;
-        if (!this._readbuffer || this._readbuffer.length < requiredBufferSize) {
-            this._readbuffer = new Uint8Array(requiredBufferSize);
-        }
-
-        // Do we need to rebuild the RTT?
-        const size = this._pickingTexture!.getSize();
-
-        if (size.width !== rttSizeW || size.height !== rttSizeH) {
-            this._createRenderTarget(scene, rttSizeW, rttSizeH);
-
-            this._pickingTexture!.renderList = [];
-            for (let index = 0; index < this._pickableMeshes.length; index++) {
-                const mesh = this._pickableMeshes[index];
-                this._pickingTexture!.setMaterialForRendering(mesh, this._meshMaterialMap.get(mesh)!);
-                this._pickingTexture!.renderList.push(mesh);
-            }
-        }
-
-        this._meshRenderingCount = 0;
-        this._pickingTexture!.clearColor = new Color4(0, 0, 0, 0);
-
-        scene.customRenderTargets.push(this._pickingTexture!);
-        this._pickingTexture!.onBeforeRender = () => {
-            // Enable scissor
-            if ((engine as WebGPUEngine | Engine).enableScissor) {
-                (engine as WebGPUEngine | Engine).enableScissor(minX, partialCutH, w, h);
-            }
-        };
-
-        return new Promise((resolve, reject) => {
-            this._pickingTexture!.onAfterRender = async () => {
-                console.log(this._meshRenderingCount);
-                // Disable scissor
-                if ((engine as WebGPUEngine | Engine).disableScissor) {
-                    (engine as WebGPUEngine | Engine).disableScissor();
-                }
-
-                if (!this._pickingTexture) {
-                    reject();
-                }
-
-                const pickedMeshes: Nullable<AbstractMesh>[] = [];
-                const thinInstanceIndexes: number[] = [];
-                const wasSuccessfull = this._meshRenderingCount > 0;
-
-                if (wasSuccessfull) {
-                    // Remove from the active RTTs
-                    const index = scene.customRenderTargets.indexOf(this._pickingTexture!);
-                    if (index > -1) {
-                        scene.customRenderTargets.splice(index, 1);
-                    }
-
-                    // Do the actual picking
-                    if (await this._readTexturePixelsAsync(minX, partialCutH, w, h)) {
-                        for (let i = 0; i < xy.length; i++) {
-                            let x = xy[i].x;
-                            let y = xy[i].y;
-
-                            // Ensure ints and adapt to screen resolution
-                            x = (devicePixelRatio * x) >> 0;
-                            y = (devicePixelRatio * y) >> 0;
-
-                            if (x < 0 || y < 0 || x >= rttSizeW || y >= rttSizeH) {
-                                pickedMeshes.push(null);
-                                continue;
-                            }
-
-                            let offsetX = x - minX;
-                            offsetX = offsetX < 0 ? 0 : offsetX;
-                            let offsetY = maxY - y - 1;
-                            offsetY = offsetY < 0 ? 0 : offsetY;
-                            const offset = offsetX * 4 + offsetY * w * 4;
-
-                            const r = this._readbuffer[offset];
-                            const g = this._readbuffer[offset + 1];
-                            const b = this._readbuffer[offset + 2];
-                            const colorId = (r << 16) + (g << 8) + b;
-
-                            // Thin?
-                            if (colorId > 0) {
-                                if (this._thinIdMap[colorId]) {
-                                    pickedMeshes.push(this._pickableMeshes[this._thinIdMap[colorId].meshId]);
-                                    thinInstanceIndexes.push(this._thinIdMap[colorId].thinId);
-                                } else {
-                                    pickedMeshes.push(this._pickableMeshes[this._idMap[colorId]]);
-                                }
-                            } else {
-                                pickedMeshes.push(null);
-                            }
-                        }
-                    }
-                }
-
-                // Clean-up
-                if (!wasSuccessfull) {
-                    this._meshRenderingCount = 0;
-                    return; // We need to wait for the shaders to be ready
-                } else {
-                    if (disposeWhenDone) {
-                        this.dispose();
-                    }
-                    resolve({ meshes: pickedMeshes, thinInstanceIndexes: thinInstanceIndexes });
-                }
-            };
-        });
     }
 }
