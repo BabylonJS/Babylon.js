@@ -27,6 +27,9 @@ export function _GetCompatibleTextureLoader(extension: string, mimeType?: string
     if (extension.endsWith(".tga")) {
         return import("./tgaTextureLoader").then((module) => new module._TGATextureLoader());
     }
+    if (extension.endsWith(".exr")) {
+        return import("./exrTextureLoader").then((module) => new module._ExrTextureLoader());
+    }
 
     return null;
 }
