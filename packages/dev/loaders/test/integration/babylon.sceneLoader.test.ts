@@ -1265,6 +1265,7 @@ describe("Babylon Scene Loader", function () {
                     useClipPlane: !gltfFileLoader.useClipPlane,
                     useRangeRequests: !gltfFileLoader.useRangeRequests,
                     useSRGBBuffers: !gltfFileLoader.useSRGBBuffers,
+                    customRootNode: null,
                 } satisfies GLTFOptions;
 
                 const loaderPromise = new Promise<GLTFFileLoader>((resolve) => {
