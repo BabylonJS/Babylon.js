@@ -34,12 +34,6 @@ export class HTML3DElement extends LitElement {
 
     // eslint-disable-next-line @typescript-eslint/naming-convention, jsdoc/require-jsdoc
     static override styles = css`
-        .full-size {
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
-
         :host {
             --ui-foreground-color: white;
             --ui-background-hue: 233;
@@ -55,7 +49,14 @@ export class HTML3DElement extends LitElement {
             );
         }
 
-        :host(.full-size) {
+        * {
+            box-sizing: border-box;
+        }
+
+        .full-size {
+            display: block;
+            width: 100%;
+            height: 100%;
         }
 
         .tool-bar {
@@ -63,15 +64,20 @@ export class HTML3DElement extends LitElement {
             display: flex;
             flex-direction: row;
             border-radius: 12px;
+            border-color: var(--ui-foreground-color);
             height: 48px;
             width: 80%;
             max-width: 1280px;
             bottom: 12px;
             left: 50%;
             transform: translateX(-50%);
-            justify-content: center;
             background-color: var(--ui-background-color);
             color: var(--ui-foreground-color);
+        }
+
+        .tool-bar * {
+            height: 100%;
+            min-width: 48px;
         }
 
         .tool-bar select {
@@ -80,8 +86,6 @@ export class HTML3DElement extends LitElement {
             border-radius: inherit;
             color: inherit;
             padding: 12px;
-            height: 100%;
-            min-width: 48px;
             cursor: pointer;
             outline: none;
             appearance: none; /* Remove default styling */
@@ -94,7 +98,7 @@ export class HTML3DElement extends LitElement {
         }
 
         .tool-bar select:focus-visible {
-            border: 1px solid;
+            border-color: inherit;
         }
 
         .tool-bar button {
@@ -102,10 +106,7 @@ export class HTML3DElement extends LitElement {
             border: 1px solid transparent;
             border-radius: inherit;
             color: inherit;
-            margin: 0;
             padding: 0;
-            height: 100%;
-            min-width: 48px;
             cursor: pointer;
             outline: none;
         }
@@ -115,7 +116,7 @@ export class HTML3DElement extends LitElement {
         }
 
         .tool-bar button:focus-visible {
-            border: 1px solid;
+            border-color: inherit;
         }
 
         .tool-bar button svg {
@@ -131,13 +132,14 @@ export class HTML3DElement extends LitElement {
             cursor: pointer;
             align-items: center;
             border-radius: inherit;
+            border-color: inherit;
         }
 
         .progress-wrapper {
             -webkit-appearance: none;
             cursor: pointer;
             width: 100%;
-            height: 95%;
+            height: 100%;
             outline: none;
             border: 1px solid transparent;
             border-radius: inherit;
@@ -146,7 +148,7 @@ export class HTML3DElement extends LitElement {
         }
 
         .progress-wrapper:focus-visible {
-            border: 1px solid var(--ui-foreground-color);
+            border-color: inherit;
         }
 
         /*Chrome -webkit */
@@ -302,12 +304,12 @@ export class HTML3DElement extends LitElement {
                     <slot name="tool-bar">
                         <div part="tool-bar" class="tool-bar">
                             ${this.animations.length > 1
-                                ? html`<select @change="${this._onSelectedAnimationChanged}">
+                                ? html`<select aria-label="Select Animation" @change="${this._onSelectedAnimationChanged}">
                                       ${this.animations.map((name, index) => html`<option value="${index}" .selected="${this.selectedAnimation == index}">${name}</option>`)}
                                   </select>`
                                 : ""}
                             <div class="progress-control">
-                                <button @click="${this.toggleAnimation}">
+                                <button aria-label="${this.isAnimationPlaying ? "Pause" : "Play"}" @click="${this.toggleAnimation}">
                                     ${!this.isAnimationPlaying
                                         ? html`<svg viewBox="0 0 20 20">
                                               <path d="${playFilledIcon}" fill="currentColor"></path>
@@ -317,6 +319,7 @@ export class HTML3DElement extends LitElement {
                                           </svg>`}
                                 </button>
                                 <input
+                                    aria-label="Animation Progress"
                                     class="progress-wrapper"
                                     type="range"
                                     min="0"
@@ -327,7 +330,7 @@ export class HTML3DElement extends LitElement {
                                     @pointerdown="${this._onProgressPointerDown}"
                                 />
                             </div>
-                            <select @change="${this._onAnimationSpeedChanged}">
+                            <select aria-label="Select Animation Speed" @change="${this._onAnimationSpeedChanged}">
                                 ${allowedAnimationSpeeds.map((speed) => html`<option value="${speed}" .selected="${this.animationSpeed === speed}">${speed}x</option>`)}
                             </select>
                         </div>
