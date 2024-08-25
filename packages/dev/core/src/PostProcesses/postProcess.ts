@@ -1233,6 +1233,10 @@ export class PostProcess implements IFrameGraphTask {
         }
     }
 
+    public disposeFrameGraph(): void {
+        this.dispose();
+    }
+
     private _disposeTextures() {
         if (this._shareOutputWithPostProcess || this._forcedOutputTexture) {
             this._disposeTextureCache();

@@ -19,6 +19,9 @@ import { Constants } from "core/Engines/constants";
 import type { Mesh } from "core/Meshes/mesh";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { LogEntry } from "../log/logComponent";
+import type { RenderGraphGUIBlock } from "gui/2D/renderGraphGUIBlock";
+import { Button } from "gui/2D/controls/button";
+import { Control } from "gui/2D/controls/control";
 
 export class PreviewManager {
     private _nodeRenderGraph: NodeRenderGraph;
@@ -123,6 +126,7 @@ export class PreviewManager {
     }
 
     private _buildGraph() {
+        // Set a default texture for external input textures
         const allInputs = this._nodeRenderGraph.getInputBlocks();
         for (const input of allInputs) {
             if (!input.isExternal) {
@@ -132,6 +136,26 @@ export class PreviewManager {
                 input.value = this._passPostProcess.inputTexture;
             }
         }
+
+        // Set a default control in GUI blocks
+        const guiBlocks = this._nodeRenderGraph.getBlocksByPredicate<RenderGraphGUIBlock>((block) => block.getClassName() === "GUI.RenderGraphGUIBlock");
+        guiBlocks.forEach((block, i) => {
+            const gui = block.guiTask;
+
+            const button = Button.CreateSimpleButton("but" + i, `GUI #${i + 1} button`);
+
+            button.width = "30%";
+            button.height = "10%";
+            button.color = "white";
+            button.fontSize = 20;
+            button.background = "green";
+            button.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+            button.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+            button.top = i * 0.1 * 100 + "%";
+
+            gui.addControl(button);
+        });
+
         try {
             this._nodeRenderGraph.build();
         } catch (err) {

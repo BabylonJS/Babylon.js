@@ -175,14 +175,30 @@ export class NodeRenderGraph {
      * @param predicate defines the predicate used to find the good candidate
      * @returns the required block or null if not found
      */
-    public getBlockByPredicate(predicate: (block: NodeRenderGraphBlock) => boolean) {
+    public getBlockByPredicate<T extends NodeRenderGraphBlock>(predicate: (block: NodeRenderGraphBlock) => boolean): Nullable<T> {
         for (const block of this.attachedBlocks) {
             if (predicate(block)) {
-                return block;
+                return block as T;
             }
         }
 
         return null;
+    }
+
+    /**
+     * Get all blocks that match a predicate
+     * @param predicate defines the predicate used to find the good candidate(s)
+     * @returns the list of blocks found
+     */
+    public getBlocksByPredicate<T extends NodeRenderGraphBlock>(predicate: (block: NodeRenderGraphBlock) => boolean): T[] {
+        const blocks: T[] = [];
+        for (const block of this.attachedBlocks) {
+            if (predicate(block)) {
+                blocks.push(block as T);
+            }
+        }
+
+        return blocks;
     }
 
     /**

@@ -53,8 +53,8 @@ export class FrameGraph {
         this._renderContext = new FrameGraphRenderContext(engine);
     }
 
-    public getTaskByName(name: string): IFrameGraphTask | undefined {
-        return this._tasks.find((t) => t.name === name);
+    public getTaskByName<T extends IFrameGraphTask>(name: string): T | undefined {
+        return this._tasks.find((t) => t.name === name) as T;
     }
 
     public addTask(task: IFrameGraphTask): void {

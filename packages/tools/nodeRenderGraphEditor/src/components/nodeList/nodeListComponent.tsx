@@ -33,6 +33,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         CopyTextureBlock: "Copy a texture to another texture",
         BlackAndWhiteBlock: "Applies a black and white post process",
         BloomBlock: "Apply a bloom post process",
+        GUIBlock: "Used to render a GUI",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -119,7 +120,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Custom_Frames: customFrameNames,
             Inputs: ["TextureBlock", "TextureBackBufferBlock", "TextureBackBufferDepthStencilBlock"],
             Post_Processes: ["BlackAndWhiteBlock", "BloomBlock"],
-            Misc: ["ElbowBlock", "TeleportInBlock", "TeleportOutBlock"],
+            Misc: ["ElbowBlock", "TeleportInBlock", "TeleportOutBlock", "GUIBlock"],
             Textures: ["ClearBlock", "CopyTextureBlock"],
             Output_Nodes: ["RenderGraphOutputBlock"],
         };

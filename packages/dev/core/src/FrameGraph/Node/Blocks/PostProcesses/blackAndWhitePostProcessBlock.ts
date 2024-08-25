@@ -91,11 +91,6 @@ export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
         return this._outputs[0];
     }
 
-    public override dispose() {
-        this._frameGraphTask.dispose();
-        super.dispose();
-    }
-
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
         super._buildBlock(state);
 

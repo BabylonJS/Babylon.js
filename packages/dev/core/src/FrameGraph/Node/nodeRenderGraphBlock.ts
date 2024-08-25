@@ -599,6 +599,9 @@ export class NodeRenderGraphBlock {
             output.dispose();
         }
 
+        this._frameGraphTask?.disposeFrameGraph();
+        this._frameGraphTask = undefined as any;
+
         this.onBuildObservable.clear();
     }
 }

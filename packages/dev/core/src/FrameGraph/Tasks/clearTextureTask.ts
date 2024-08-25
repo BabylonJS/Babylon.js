@@ -43,4 +43,6 @@ export class FrameGraphClearTextureTask implements IFrameGraphTask {
         passDisabled.setRenderTarget(outputTextureHandle);
         passDisabled.setExecuteFunc((_context) => {});
     }
+
+    public disposeFrameGraph(): void {}
 }

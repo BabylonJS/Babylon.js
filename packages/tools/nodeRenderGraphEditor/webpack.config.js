@@ -21,6 +21,7 @@ module.exports = (env) => {
             alias: {
                 "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
                 serializers: path.resolve("../../dev/serializers/dist"),
+                gui: path.resolve("../../dev/gui/dist"),
             },
         },
         externals: [

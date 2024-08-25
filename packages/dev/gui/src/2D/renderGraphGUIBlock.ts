@@ -9,7 +9,7 @@ import { RegisterClass } from "core/Misc/typeStore";
 /**
  * Block that implements a fullscreen GUI for render graph
  */
-export class NodeRenderGraphGUIBlock extends NodeRenderGraphBlock {
+export class RenderGraphGUIBlock extends NodeRenderGraphBlock {
     protected override _frameGraphTask: AdvancedDynamicTexture;
 
     /**
@@ -43,7 +43,7 @@ export class NodeRenderGraphGUIBlock extends NodeRenderGraphBlock {
      * @returns the class name
      */
     public override getClassName() {
-        return "GUI.NodeRenderGraphGUIBlock";
+        return "GUI.RenderGraphGUIBlock";
     }
 
     /**
@@ -82,4 +82,4 @@ export class NodeRenderGraphGUIBlock extends NodeRenderGraphBlock {
     }
 }
 
-RegisterClass("BABYLON.GUI.NodeRenderGraphGUIBlock", NodeRenderGraphGUIBlock);
+RegisterClass("BABYLON.GUI.RenderGraphGUIBlock", RenderGraphGUIBlock);

@@ -15,6 +15,8 @@ export interface IFrameGraphTask {
 
     isReadyFrameGraph(): boolean;
 
+    disposeFrameGraph(): void;
+
     name: string;
 
     disabled: boolean;

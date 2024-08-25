@@ -38,4 +38,6 @@ export class FrameGraphCopyToTextureTask implements IFrameGraphTask {
         passDisabled.setRenderTarget(outputTextureHandle);
         passDisabled.setExecuteFunc((_context) => {});
     }
+
+    public disposeFrameGraph(): void {}
 }

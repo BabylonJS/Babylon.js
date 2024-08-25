@@ -38,4 +38,6 @@ export class FrameGraphCopyToBackbufferColorTask implements IFrameGraphTask {
         passDisabled.setRenderTarget(this._engine.textureHandleManager.backbufferColorTextureHandle);
         passDisabled.setExecuteFunc((_context) => {});
     }
+
+    public disposeFrameGraph(): void {}
 }

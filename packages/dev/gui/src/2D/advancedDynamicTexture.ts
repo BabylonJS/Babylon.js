@@ -1714,4 +1714,8 @@ export class AdvancedDynamicTexture extends DynamicTexture implements IFrameGrap
         passDisabled.setRenderTarget(outputTextureHandle);
         passDisabled.setExecuteFunc((_context) => {});
     }
+
+    public disposeFrameGraph(): void {
+        this.dispose();
+    }
 }

@@ -9,6 +9,7 @@ import { BlackAndWhitePostProcessBlock } from "core/FrameGraph/Node/Blocks/PostP
 import { BloomPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/bloomPostProcessBlock";
 import { RenderGraphClearBlock } from "core/FrameGraph/Node/Blocks/clearBlock";
 import { RenderGraphCopyTextureBlock } from "core/FrameGraph/Node/Blocks/copyTextureBlock";
+import { RenderGraphGUIBlock } from "gui/2D/renderGraphGUIBlock";
 
 /**
  * Static class for BlockTools
@@ -44,6 +45,9 @@ export class BlockTools {
             }
             case "BloomBlock": {
                 return new BloomPostProcessBlock("Bloom", engine);
+            }
+            case "GUIBlock": {
+                return new RenderGraphGUIBlock("GUI", engine);
             }
         }
 

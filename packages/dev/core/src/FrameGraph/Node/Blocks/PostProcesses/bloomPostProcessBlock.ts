@@ -119,11 +119,6 @@ export class BloomPostProcessBlock extends NodeRenderGraphBlock {
         return this._outputs[0];
     }
 
-    public override dispose() {
-        this._frameGraphTask.disposeEffects();
-        super.dispose();
-    }
-
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
         super._buildBlock(state);
 
