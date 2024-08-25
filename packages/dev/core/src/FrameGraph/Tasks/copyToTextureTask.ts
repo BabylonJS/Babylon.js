@@ -1,5 +1,5 @@
 import type { FrameGraph } from "../frameGraph";
-import type { TextureHandle } from "../frameGraphTextureManager";
+import type { TextureHandle } from "../../Engines/textureHandlerManager";
 import type { FrameGraphTaskOutputReference, IFrameGraphTask } from "./IFrameGraphTask";
 
 export class FrameGraphCopyToTextureTask implements IFrameGraphTask {
@@ -8,6 +8,8 @@ export class FrameGraphCopyToTextureTask implements IFrameGraphTask {
     public destinationTexture?: FrameGraphTaskOutputReference | TextureHandle;
 
     public readonly outputTextureReference: FrameGraphTaskOutputReference = [this, "output"];
+
+    public disabled?: boolean;
 
     constructor(public name: string) {}
 
@@ -28,7 +30,7 @@ export class FrameGraphCopyToTextureTask implements IFrameGraphTask {
         pass.useTexture(sourceTextureHandle);
         pass.setRenderTarget(outputTextureHandle);
         pass.setExecuteFunc((context) => {
-            context.copyTexture(context.getTextureFromHandle(sourceTextureHandle)!.texture!);
+            context.copyTexture(sourceTextureHandle);
         });
 
         const passDisabled = frameGraph.addRenderPass(this.name + "_disabled", true);

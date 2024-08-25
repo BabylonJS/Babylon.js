@@ -32,7 +32,8 @@ import { DecodeBase64ToBinary } from "core/Misc/stringTools";
 
 import type { StandardMaterial } from "core/Materials/standardMaterial";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
-import type { FrameGraph, FrameGraphTaskOutputReference, IFrameGraphTask, TextureHandle } from "core/FrameGraph";
+import type { FrameGraph, FrameGraphTaskOutputReference, IFrameGraphTask } from "core/FrameGraph";
+import type { TextureHandle } from "core/Engines/textureHandlerManager";
 
 export interface IAdvancedDynamicTextureOptions extends IDynamicTextureOptions {
     /** indicates that the ADT will be used as a frame graph task (default: false) */
@@ -55,6 +56,8 @@ export class AdvancedDynamicTexture extends DynamicTexture implements IFrameGrap
     public destinationTexture?: FrameGraphTaskOutputReference | TextureHandle;
 
     public readonly outputTextureReference: FrameGraphTaskOutputReference = [this, "output"];
+
+    public disabled?: boolean;
 
     /** Snippet ID if the content was created from the snippet server */
     public snippetId: string;

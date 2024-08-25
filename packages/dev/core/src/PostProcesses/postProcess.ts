@@ -30,7 +30,7 @@ import { AbstractEngine } from "../Engines/abstractEngine";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
 import type { FrameGraphTaskOutputReference, IFrameGraphTask } from "../FrameGraph/Tasks/IFrameGraphTask";
 import type { FrameGraph } from "../FrameGraph/frameGraph";
-import type { TextureHandle } from "../FrameGraph/frameGraphTextureManager";
+import type { TextureHandle } from "../Engines/textureHandlerManager";
 
 declare module "../Engines/abstractEngine" {
     export interface AbstractEngine {
@@ -244,6 +244,8 @@ export class PostProcess implements IFrameGraphTask {
     public skipCreationOfDisabledPasses = false;
 
     public readonly outputTextureReference: FrameGraphTaskOutputReference = [this, "output"];
+
+    public disabled?: boolean;
 
     /**
      * Registers a shader code processing with a post process name.
@@ -1153,7 +1155,7 @@ export class PostProcess implements IFrameGraphTask {
             this.getEngine().setAlphaConstants(this.alphaConstants.r, this.alphaConstants.g, this.alphaConstants.b, this.alphaConstants.a);
         }
 
-        if (!this.externalTextureSamplerBinding) {
+        if (!this.externalTextureSamplerBinding && !this._useAsFrameGraphTask) {
             // Bind the output texture of the previous post process as the input to this post process.
             let source: RenderTargetWrapper;
             if (this._shareOutputWithPostProcess) {
@@ -1216,9 +1218,11 @@ export class PostProcess implements IFrameGraphTask {
         pass.useTexture(sourceTextureHandle);
         pass.setRenderTarget(outputTextureHandle);
         pass.setExecuteFunc((context) => {
-            this.inputTexture = context.getTextureFromHandle(sourceTextureHandle)!;
             context.setTextureSamplingMode(sourceTextureHandle, this!.sourceSamplingMode!);
-            context.applyFullScreenEffect(this._drawWrapper, () => this._bind());
+            context.applyFullScreenEffect(this._drawWrapper, () => {
+                this._bind();
+                this._drawWrapper.effect!.setTextureHandle("textureSampler", sourceTextureHandle);
+            });
         });
 
         if (!this.skipCreationOfDisabledPasses) {
@@ -1227,7 +1231,7 @@ export class PostProcess implements IFrameGraphTask {
             passDisabled.setRenderTarget(sourceTextureHandle);
             passDisabled.setExecuteFunc((_context) => {
                 if (_context.isBackbufferColor(outputTextureHandle)) {
-                    _context.copyTexture(_context.getTextureFromHandle(sourceTextureHandle)!.texture!, true);
+                    _context.copyTexture(sourceTextureHandle, true);
                 }
             });
         }

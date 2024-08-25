@@ -1,9 +1,9 @@
 import type { Nullable } from "../../types";
-import type { TextureHandle, FrameGraphTextureManager } from "../frameGraphTextureManager";
 import type { FrameGraphRenderContext } from "../frameGraphRenderContext";
 import { FrameGraphPass } from "./pass";
 import type { IFrameGraphTask } from "../Tasks/IFrameGraphTask";
 import type { IFrameGraphPass } from "./IFrameGraphPass";
+import type { TextureHandle } from "core/Engines/textureHandlerManager";
 
 export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext> {
     protected _renderTarget: TextureHandle;
@@ -19,8 +19,8 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
     }
 
     /** @internal */
-    constructor(name: string, textureManager: FrameGraphTextureManager, parentTask: IFrameGraphTask, context: FrameGraphRenderContext) {
-        super(name, textureManager, parentTask, context);
+    constructor(name: string, parentTask: IFrameGraphTask, context: FrameGraphRenderContext) {
+        super(name, parentTask, context);
     }
 
     public useTexture(texture: TextureHandle) {

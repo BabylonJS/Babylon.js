@@ -1,10 +1,12 @@
 import type { FrameGraph } from "../frameGraph";
-import type { TextureHandle } from "../frameGraphTextureManager";
-import { backbufferColorTextureHandle } from "../frameGraphTextureManager";
+import type { TextureHandle } from "../../Engines/textureHandlerManager";
+import { backbufferColorTextureHandle } from "../../Engines/textureHandlerManager";
 import type { FrameGraphTaskOutputReference, IFrameGraphTask } from "./IFrameGraphTask";
 
 export class FrameGraphCopyToBackbufferColorTask implements IFrameGraphTask {
     public sourceTexture?: FrameGraphTaskOutputReference | TextureHandle;
+
+    public disabled?: boolean;
 
     constructor(public name: string) {}
 
@@ -24,7 +26,7 @@ export class FrameGraphCopyToBackbufferColorTask implements IFrameGraphTask {
         pass.setRenderTarget(backbufferColorTextureHandle);
         pass.setExecuteFunc((context) => {
             if (!context.isBackbufferColor(sourceTextureHandle)) {
-                context.copyTexture(context.getTextureFromHandle(sourceTextureHandle)!.texture!);
+                context.copyTexture(sourceTextureHandle);
             }
         });
 

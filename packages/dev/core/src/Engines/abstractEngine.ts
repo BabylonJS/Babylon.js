@@ -51,6 +51,8 @@ import { IsDocumentAvailable, IsNavigatorAvailable, IsWindowObjectExist } from "
 import { Constants } from "./constants";
 import { Observable } from "../Misc/observable";
 import { EngineFunctionContext, _loadFile } from "./abstractEngine.functions";
+import type { TextureHandle } from "./textureHandlerManager";
+import { TextureHandleManager } from "./textureHandlerManager";
 
 /**
  * Defines the interface used by objects working like Scene
@@ -215,6 +217,8 @@ export abstract class AbstractEngine {
     public _alphaMode = Constants.ALPHA_ADD;
     /** @internal */
     public _alphaEquation = Constants.ALPHA_DISABLE;
+    /** @internal */
+    public _textureHandleManager = new TextureHandleManager();
 
     protected _activeRequests: IFileRequest[] = [];
 
@@ -360,6 +364,14 @@ export abstract class AbstractEngine {
      * @param name The name of the uniform in the effect
      */
     public abstract setTexture(channel: number, unused: Nullable<WebGLUniformLocation>, texture: Nullable<ThinTexture>, name: string): void;
+
+    /**
+     * Sets a texture to the according handle.
+     * @param channel The texture channel
+     * @param handle The handle of the texture
+     * @param name The name of the uniform in the effect
+     */
+    public abstract setTextureHandle(channel: number, handle: TextureHandle, name: string): void;
 
     /**
      * Binds an effect to the webGL context
@@ -2540,6 +2552,8 @@ export abstract class AbstractEngine {
 
         this._isDisposed = true;
         this.stopRenderLoop();
+
+        this._textureHandleManager.dispose();
 
         // Empty texture
         if (this._emptyTexture) {

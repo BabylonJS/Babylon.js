@@ -1,17 +1,14 @@
 import type { Nullable } from "../types";
 import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import { Constants } from "../Engines/constants";
 import { EffectRenderer } from "../Materials/effectRenderer";
 import type { DrawWrapper } from "../Materials/drawWrapper";
 import { CopyTextureToTexture } from "../Misc/copyTextureToTexture";
-import type { InternalTexture } from "../Materials/Textures/internalTexture";
-import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { IColor4Like } from "core/Maths/math.like";
 import { FrameGraphContext } from "./frameGraphContext";
-import type { TextureHandle, FrameGraphTextureManager } from "./frameGraphTextureManager";
-import { backbufferColorTextureHandle, FrameGraphTextureSystemType } from "./frameGraphTextureManager";
 import type { Layer } from "../Layers/layer";
+import type { TextureHandle } from "../Engines/textureHandlerManager";
+import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../Engines/textureHandlerManager";
 
 export class FrameGraphRenderContext extends FrameGraphContext {
     private _effectRenderer: EffectRenderer;
@@ -19,26 +16,19 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     private _renderTargetIsBound = true;
     private _copyTexture: CopyTextureToTexture;
 
-    constructor(
-        private _engine: AbstractEngine,
-        private _textureManager: FrameGraphTextureManager
-    ) {
+    constructor(private _engine: AbstractEngine) {
         super();
         this._effectRenderer = new EffectRenderer(this._engine);
         this._copyTexture = new CopyTextureToTexture(this._engine);
         this._currentRenderTargetHandle = backbufferColorTextureHandle;
     }
 
-    public getTextureFromHandle(handle: TextureHandle): Nullable<RenderTargetWrapper> {
-        return this._textureManager._textures[handle]!.texture;
-    }
-
     public isBackbufferColor(handle: TextureHandle): boolean {
-        return this._textureManager._textures[handle]!.systemType === FrameGraphTextureSystemType.BackbufferColor;
+        return this._engine._textureHandleManager.isBackbufferColor(handle);
     }
 
     public isBackbufferDepthStencil(handle: TextureHandle): boolean {
-        return this._textureManager._textures[handle]!.systemType === FrameGraphTextureSystemType.BackbufferDepthStencil;
+        return this._engine._textureHandleManager.isBackbufferDepthStencil(handle);
     }
 
     /**
@@ -54,7 +44,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     }
 
     public setTextureSamplingMode(handle: TextureHandle, samplingMode: number): void {
-        const internalTexture = this.getTextureFromHandle(handle)?.texture!;
+        const internalTexture = this._engine._textureHandleManager.getTextureFromHandle(handle)?.texture!;
         if (internalTexture && internalTexture.samplingMode !== samplingMode) {
             this._engine.updateTextureSamplingMode(samplingMode, internalTexture);
         }
@@ -95,12 +85,15 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      * @param sourceTexture The source texture to copy from
      * @param forceCopyToBackbuffer If true, the copy will be done to the back buffer regardless of the current render target
      */
-    public copyTexture(sourceTexture: InternalTexture | ThinTexture, forceCopyToBackbuffer = false): void {
+    public copyTexture(sourceTexture: TextureHandle, forceCopyToBackbuffer = false): void {
         if (forceCopyToBackbuffer) {
             this._bindRenderTarget();
         }
         this._applyRenderTarget();
-        this._copyTexture.copy(sourceTexture, this._currentRenderTargetHandle ? this.getTextureFromHandle(this._currentRenderTargetHandle) : null);
+        this._copyTexture.copy(
+            this._engine._textureHandleManager.getTextureFromHandle(sourceTexture)!.texture!,
+            this._currentRenderTargetHandle ? this._engine._textureHandleManager.getTextureFromHandle(this._currentRenderTargetHandle) : null
+        );
     }
 
     /**
@@ -132,14 +125,15 @@ export class FrameGraphRenderContext extends FrameGraphContext {
             return;
         }
 
-        const textureEntry = this._textureManager._textures[this._currentRenderTargetHandle]!;
+        const handle = this._engine._textureHandleManager._resolveProxy(this._currentRenderTargetHandle);
+        const textureSlot = this._engine._textureHandleManager._textures[handle]!;
 
-        const renderTarget = textureEntry.texture;
+        const renderTarget = textureSlot.texture;
 
         if (!renderTarget) {
-            if (textureEntry.systemType === FrameGraphTextureSystemType.BackbufferColor) {
+            if (handle === backbufferColorTextureHandle) {
                 this._engine.restoreDefaultFramebuffer();
-            } else if (textureEntry.systemType === FrameGraphTextureSystemType.BackbufferDepthStencil) {
+            } else if (handle === backbufferDepthStencilTextureHandle) {
                 throw new Error("Depth/Stencil textures are not supported as render targets");
             }
         } else {

@@ -6,12 +6,13 @@ import { FrameGraphPass } from "./Passes/pass";
 import { FrameGraphRenderPass } from "./Passes/renderPass";
 import { FrameGraphRenderContext } from "./frameGraphRenderContext";
 import { FrameGraphContext } from "./frameGraphContext";
-import type { TextureHandle, FrameGraphTextureCreationOptions } from "./frameGraphTextureManager";
+import type { FrameGraphTextureCreationOptions } from "./frameGraphTextureManager";
 import { FrameGraphTextureManager, FrameGraphTextureNamespace } from "./frameGraphTextureManager";
 import { FrameGraphTaskInternals } from "./Tasks/taskInternals";
 import { Observable } from "core/Misc/observable";
 import type { RenderTargetCreationOptions } from "core/Materials/Textures/textureCreationOptions";
 import { textureSizeIsObject } from "core/Materials/Textures/textureCreationOptions";
+import type { TextureHandle } from "../Engines/textureHandlerManager";
 
 export type FrameGraphTextureDescription = {
     size: { width: number; height: number };
@@ -22,6 +23,7 @@ export type FrameGraphTextureDescription = {
  * Class used to implement the frame graph
  */
 export class FrameGraph {
+    private _engine: AbstractEngine;
     private _textureManager: FrameGraphTextureManager;
     private _passContext: FrameGraphContext;
     private _renderContext: FrameGraphRenderContext;
@@ -45,9 +47,14 @@ export class FrameGraph {
      * @param scene defines the scene in which debugging textures are to be created
      */
     constructor(engine: AbstractEngine, debugTextures = false, scene?: Scene) {
+        this._engine = engine;
         this._textureManager = new FrameGraphTextureManager(engine, debugTextures, scene);
         this._passContext = new FrameGraphContext();
-        this._renderContext = new FrameGraphRenderContext(engine, this._textureManager);
+        this._renderContext = new FrameGraphRenderContext(engine);
+    }
+
+    public getTaskByName(name: string): IFrameGraphTask | undefined {
+        return this._tasks.find((t) => t.name === name);
     }
 
     public addTask(task: IFrameGraphTask): void {
@@ -56,7 +63,7 @@ export class FrameGraph {
         }
 
         task._fgInternals?.dispose();
-        task._fgInternals = new FrameGraphTaskInternals(task, this._textureManager);
+        task._fgInternals = new FrameGraphTaskInternals(this._engine, task);
 
         this._tasks.push(task);
     }
@@ -66,13 +73,9 @@ export class FrameGraph {
             throw new Error("A pass must be created during a Task.recordFrameGraph execution.");
         }
 
-        const pass = new FrameGraphPass(name, this._textureManager, this._currentProcessedTask, this._passContext);
+        const pass = new FrameGraphPass(name, this._currentProcessedTask, this._passContext);
 
-        if (whenTaskDisabled) {
-            this._currentProcessedTask._fgInternals!.passesDisabled.push(pass);
-        } else {
-            this._currentProcessedTask._fgInternals!.passes.push(pass);
-        }
+        this._currentProcessedTask._fgInternals!.addPass(pass, whenTaskDisabled);
 
         return pass;
     }
@@ -82,13 +85,9 @@ export class FrameGraph {
             throw new Error("A pass must be created during a Task.recordFrameGraph execution.");
         }
 
-        const pass = new FrameGraphRenderPass(name, this._textureManager, this._currentProcessedTask, this._renderContext);
+        const pass = new FrameGraphRenderPass(name, this._currentProcessedTask, this._renderContext);
 
-        if (whenTaskDisabled) {
-            this._currentProcessedTask._fgInternals!.passesDisabled.push(pass);
-        } else {
-            this._currentProcessedTask._fgInternals!.passes.push(pass);
-        }
+        this._currentProcessedTask._fgInternals!.addPass(pass, whenTaskDisabled);
 
         return pass;
     }
@@ -143,11 +142,7 @@ export class FrameGraph {
         this._renderContext._bindRenderTarget();
 
         for (const task of this._tasks) {
-            const internals = task._fgInternals!;
-
-            internals.setTextureOutputForTask();
-
-            const passes = task.disabled ? internals.passesDisabled : internals.passes;
+            const passes = task._fgInternals!.getPasses();
 
             for (const pass of passes) {
                 pass._execute();
@@ -172,7 +167,7 @@ export class FrameGraph {
             textureHandle = textureId;
         }
 
-        return this._textureManager.getTextureCreationOptions(textureHandle);
+        return this._engine._textureHandleManager.getTextureCreationOptions(textureHandle);
     }
 
     public getTextureDescription(textureId: FrameGraphTaskOutputReference | TextureHandle): FrameGraphTextureDescription {

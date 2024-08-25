@@ -10,7 +10,7 @@ import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import type { FrameGraph } from "../FrameGraph/frameGraph";
 import type { FrameGraphTaskOutputReference } from "../FrameGraph/Tasks/IFrameGraphTask";
-import type { TextureHandle } from "../FrameGraph/frameGraphTextureManager";
+import type { TextureHandle } from "../Engines/textureHandlerManager";
 
 /**
  * The BloomMergePostProcess merges blurred images with the original based on the values of the circle of confusion.
@@ -106,8 +106,8 @@ export class BloomMergePostProcess extends PostProcess {
         pass.setExecuteFunc((context) => {
             context.applyFullScreenEffect(this._drawWrapper, () => {
                 this._bind();
-                this._drawWrapper.effect!._bindTexture("textureSampler", context.getTextureFromHandle(sourceTextureHandle)!.texture!);
-                this._drawWrapper.effect!._bindTexture("bloomBlur", context.getTextureFromHandle(sourceBlurTextureHandle)!.texture!);
+                this._drawWrapper.effect!.setTextureHandle("textureSampler", sourceTextureHandle);
+                this._drawWrapper.effect!.setTextureHandle("bloomBlur", sourceBlurTextureHandle);
                 this._drawWrapper.effect!.setFloat("bloomWeight", this.weight);
             });
         });
@@ -118,7 +118,7 @@ export class BloomMergePostProcess extends PostProcess {
             passDisabled.setRenderTarget(sourceTextureHandle);
             passDisabled.setExecuteFunc((_context) => {
                 if (_context.isBackbufferColor(outputTextureHandle)) {
-                    _context.copyTexture(_context.getTextureFromHandle(sourceTextureHandle)!.texture!, true);
+                    _context.copyTexture(sourceTextureHandle, true);
                 }
             });
         }

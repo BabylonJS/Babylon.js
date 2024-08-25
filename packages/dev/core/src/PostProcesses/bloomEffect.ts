@@ -10,8 +10,8 @@ import type { Scene } from "../scene";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { FrameGraphTaskOutputReference, IFrameGraphTask } from "../FrameGraph/Tasks/IFrameGraphTask";
 import type { FrameGraph } from "../FrameGraph/frameGraph";
-import type { TextureHandle } from "../FrameGraph/frameGraphTextureManager";
 import { Constants } from "../Engines/constants";
+import type { TextureHandle } from "../Engines/textureHandlerManager";
 
 /**
  * The bloom effect spreads bright areas of an image to simulate artifacts seen in cameras
@@ -28,6 +28,8 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
     public destinationTexture?: FrameGraphTaskOutputReference | TextureHandle;
 
     public readonly outputTextureReference: FrameGraphTaskOutputReference = [this, "output"];
+
+    public disabled?: boolean;
 
     /**
      * @internal Internal
@@ -230,7 +232,7 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
         passDisabled.setRenderTarget(sourceTextureHandle);
         passDisabled.setExecuteFunc((_context) => {
             if (_context.isBackbufferColor(outputTextureHandle)) {
-                _context.copyTexture(_context.getTextureFromHandle(sourceTextureHandle)!.texture!, true);
+                _context.copyTexture(sourceTextureHandle, true);
             }
         });
     }
