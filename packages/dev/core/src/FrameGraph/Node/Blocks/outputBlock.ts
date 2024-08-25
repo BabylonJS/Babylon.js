@@ -26,7 +26,7 @@ export class RenderGraphOutputBlock extends NodeRenderGraphBlock {
 
         this.texture.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
 
-        this._frameGraphTask = new FrameGraphCopyToBackbufferColorTask(name);
+        this._frameGraphTask = new FrameGraphCopyToBackbufferColorTask(name, engine);
     }
 
     /**

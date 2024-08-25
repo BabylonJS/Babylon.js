@@ -16,7 +16,7 @@ export class FrameGraphClearTextureTask implements IFrameGraphTask {
 
     public readonly outputTextureReference: FrameGraphTaskOutputReference = [this, "output"];
 
-    public disabled?: boolean;
+    public disabled = false;
 
     constructor(public name: string) {}
 

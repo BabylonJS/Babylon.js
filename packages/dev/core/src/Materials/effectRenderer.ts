@@ -139,7 +139,7 @@ export class EffectRenderer {
     /**
      * renders one or more effects to a specified texture
      * @param effectWrapper the effect to renderer
-     * @param outputTexture texture to draw to, if null it will render to the screen.
+     * @param outputTexture texture to draw to, if null it will render to the currently bound frame buffer
      */
     public render(effectWrapper: EffectWrapper, outputTexture: Nullable<RenderTargetWrapper | IRenderTargetTexture> = null) {
         // Ensure effect is ready

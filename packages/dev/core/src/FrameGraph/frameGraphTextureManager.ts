@@ -24,7 +24,7 @@ export enum FrameGraphTextureNamespace {
 
 /** @internal */
 export class FrameGraphTextureManager {
-    private _textures: ({ debug?: Texture; namespace: FrameGraphTextureNamespace } | undefined)[] = [];
+    private _textures: Map<TextureHandle, { debug?: Texture; namespace: FrameGraphTextureNamespace }> = new Map();
 
     private _textureHandleManager: TextureHandleManager;
 
@@ -36,14 +36,15 @@ export class FrameGraphTextureManager {
         private _debugTextures = false,
         private _scene?: Scene
     ) {
-        this._textureHandleManager = this._engine._textureHandleManager;
+        this._textureHandleManager = this._engine.textureHandleManager;
     }
 
     public importTexture(name: string, texture: RenderTargetWrapper, handle?: TextureHandle): TextureHandle {
         handle = this._textureHandleManager.importTexture(name, texture, handle);
 
-        this._freeTextureEntry(handle);
-        this._textures[handle] = { debug: this._createDebugTexture(name, texture), namespace: FrameGraphTextureNamespace.External };
+        this._freeEntry(handle);
+
+        this._textures.set(handle, { namespace: FrameGraphTextureNamespace.External });
 
         return handle;
     }
@@ -51,7 +52,7 @@ export class FrameGraphTextureManager {
     public createRenderTargetTexture(name: string, namespace: FrameGraphTextureNamespace, creationOptions: FrameGraphTextureCreationOptions): TextureHandle {
         const handle = this._textureHandleManager.createRenderTargetTexture(name, creationOptions);
 
-        this._textures[handle] = { namespace };
+        this._textures.set(handle, { namespace });
 
         return handle;
     }
@@ -83,17 +84,16 @@ export class FrameGraphTextureManager {
 
     /** @internal */
     public _allocateTextures() {
-        for (let i = 0; i < this._textures.length; i++) {
-            const wrapper = this._textures[i];
-            const textureSlot = this._textureHandleManager._textures[i];
+        this._textures.forEach((entry, handle) => {
+            const textureSlot = this._textureHandleManager._textures.get(handle);
 
-            if (wrapper === undefined || textureSlot === undefined || textureSlot.proxyHandle !== undefined) {
-                continue;
+            if (!textureSlot) {
+                return;
             }
 
             // external textures will already have a texture defined
             if (!textureSlot.texture) {
-                const creationOptions = this._textureHandleManager._textureCreationOptions[i]!;
+                const creationOptions = textureSlot.creationOptions;
 
                 textureSlot.texture = this._engine.createRenderTargetTexture(
                     creationOptions.sizeIsPercentage ? this.getAbsoluteDimensions(creationOptions.size) : creationOptions.size,
@@ -101,40 +101,40 @@ export class FrameGraphTextureManager {
                 );
             }
 
-            wrapper.debug?.dispose();
-
-            this._createDebugTexture(textureSlot.name, textureSlot.texture!);
-        }
+            entry.debug?.dispose();
+            entry.debug = this._createDebugTexture(textureSlot.name, textureSlot.texture!);
+        });
     }
 
     /** @internal */
     public _releaseTextures(releaseAll = true): void {
-        for (let handle = 0; handle < this._textures.length; handle++) {
-            const wrapper = this._textures[handle];
-            const textureSlot = this._textureHandleManager._textures[handle];
+        this._textures.forEach((entry, handle) => {
+            const textureSlot = this._textureHandleManager._textures.get(handle);
 
-            if (wrapper === undefined || textureSlot === undefined) {
-                continue;
+            if (!textureSlot) {
+                return;
             }
 
-            if (releaseAll || wrapper.namespace !== FrameGraphTextureNamespace.External) {
-                wrapper.debug?.dispose();
-                wrapper.debug = undefined;
+            if (releaseAll || entry.namespace !== FrameGraphTextureNamespace.External) {
+                entry.debug?.dispose();
+                entry.debug = undefined;
             }
 
-            if (wrapper.namespace === FrameGraphTextureNamespace.External) {
-                continue;
+            if (entry.namespace === FrameGraphTextureNamespace.External) {
+                return;
             }
 
-            if (textureSlot.proxyHandle === undefined) {
-                textureSlot.texture?.dispose();
-                textureSlot.texture = null;
-            }
+            textureSlot.texture?.dispose();
+            textureSlot.texture = null;
 
-            if (releaseAll || wrapper.namespace !== FrameGraphTextureNamespace.Graph) {
+            if (releaseAll || entry.namespace === FrameGraphTextureNamespace.Task) {
                 this._textureHandleManager.releaseTexture(handle);
-                this._textures[handle] = undefined;
+                this._textures.delete(handle);
             }
+        });
+
+        if (releaseAll) {
+            this._textures.clear();
         }
     }
 
@@ -152,8 +152,12 @@ export class FrameGraphTextureManager {
         return textureDebug;
     }
 
-    private _freeTextureEntry(handle: number): void {
-        this._textures[handle]?.debug?.dispose();
-        this._textures[handle] = undefined;
+    private _freeEntry(handle: number): void {
+        const entry = this._textures.get(handle);
+
+        if (entry) {
+            entry.debug?.dispose();
+            this._textures.delete(handle);
+        }
     }
 }

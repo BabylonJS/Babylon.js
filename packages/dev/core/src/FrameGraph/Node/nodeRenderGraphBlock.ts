@@ -29,10 +29,10 @@ export class NodeRenderGraphBlock {
      * Gets or sets the disable flag of the task associated with this block
      */
     public get disabled() {
-        return this._frameGraphTask?.disabled;
+        return !!this._frameGraphTask?.disabled;
     }
 
-    public set disabled(value: boolean | undefined) {
+    public set disabled(value: boolean) {
         if (this._frameGraphTask) {
             this._frameGraphTask.disabled = value;
         }

@@ -1,11 +1,9 @@
 import type { RenderTargetCreationOptions, TextureSize } from "core/Materials/Textures/textureCreationOptions";
 import type { RenderTargetWrapper } from "./renderTargetWrapper";
 import type { Nullable } from "../types";
+import type { AbstractEngine } from "./abstractEngine";
 
 export type TextureHandle = number;
-
-export const backbufferColorTextureHandle: TextureHandle = 0;
-export const backbufferDepthStencilTextureHandle: TextureHandle = 1;
 
 export type THMTextureCreationOptions = {
     /** Size of the render target texture. If sizeIsPercentage is true, these are percentages relative to the screen size */
@@ -19,37 +17,61 @@ export type THMTextureCreationOptions = {
 /**
  * @internal
  */
+export type TextureHandleEntry = {
+    texture: Nullable<RenderTargetWrapper>;
+    name: string;
+    creationOptions: THMTextureCreationOptions;
+    isExternal?: boolean;
+};
+
+/**
+ * @internal
+ */
 export class TextureHandleManager {
-    public _textures: ({ texture: Nullable<RenderTargetWrapper>; name: string; proxyHandle?: TextureHandle } | undefined)[] = [];
+    private static _Counter = 0;
 
-    public _textureCreationOptions: (THMTextureCreationOptions | undefined)[] = [];
+    public readonly backbufferColorTextureHandle: TextureHandle;
 
-    constructor() {
-        this._setSystemTextures();
-    }
+    public readonly backbufferDepthStencilTextureHandle: TextureHandle;
 
-    public isBackbufferColor(handle: TextureHandle): boolean {
-        return this._resolveProxy(handle) === backbufferColorTextureHandle;
-    }
+    public _textures: Map<TextureHandle, TextureHandleEntry> = new Map();
 
-    public isBackbufferDepthStencil(handle: TextureHandle): boolean {
-        return this._resolveProxy(handle) === backbufferDepthStencilTextureHandle;
+    /** @internal */
+    public _initialize(engine: AbstractEngine): void {
+        const size = { width: engine.getRenderWidth(true), height: engine.getRenderHeight(true) };
+
+        (this.backbufferColorTextureHandle as number) = this._createHandleForTexture("backbuffer color", null, {
+            size,
+            options: {},
+            sizeIsPercentage: false,
+        });
+
+        (this.backbufferDepthStencilTextureHandle as number) = this._createHandleForTexture("backbuffer depth/stencil", null, {
+            size,
+            options: {},
+            sizeIsPercentage: false,
+        });
     }
 
     public getTextureCreationOptions(handle: TextureHandle): THMTextureCreationOptions {
-        return this._textureCreationOptions[this._resolveProxy(handle)]!;
+        return this._textures.get(handle)!.creationOptions;
     }
 
     public getTextureFromHandle(handle: TextureHandle): Nullable<RenderTargetWrapper> {
-        return this._textures[this._resolveProxy(handle)]!.texture;
+        return this._textures.get(handle)!.texture;
     }
 
     public importTexture(name: string, texture: RenderTargetWrapper, handle?: TextureHandle): TextureHandle {
-        handle = this._createHandleForTexture(name, texture, handle);
-
         const internalTexture = texture.texture;
-        if (internalTexture) {
-            this._textureCreationOptions[handle] = {
+
+        if (!internalTexture) {
+            throw new Error("Texture must have an internal texture to be imported");
+        }
+
+        handle = this._createHandleForTexture(
+            name,
+            texture,
+            {
                 size: { width: texture.width, height: texture.height },
                 options: {
                     generateMipMaps: internalTexture.generateMipMaps,
@@ -64,93 +86,52 @@ export class TextureHandleManager {
                     noColorAttachment: !texture.textures,
                 },
                 sizeIsPercentage: false,
-            };
-        }
+            },
+            true,
+            handle
+        );
 
         return handle;
     }
 
     public createRenderTargetTexture(name: string, creationOptions: THMTextureCreationOptions): TextureHandle {
-        const handle = this._createHandleForTexture(name, null);
-
-        this._textureCreationOptions[handle] = { ...creationOptions };
-
-        return handle;
-    }
-
-    public createHandleAsProxy(name: string, targetHandle: TextureHandle): TextureHandle {
-        this._textures.push({ texture: null, name, proxyHandle: targetHandle });
-
-        return this._textures.length - 1;
-    }
-
-    public setTargetHandleForProxy(proxyHandle: TextureHandle, targetHandle: TextureHandle): void {
-        this._textures[proxyHandle]!.proxyHandle = targetHandle;
+        return this._createHandleForTexture(name, null, creationOptions);
     }
 
     public releaseTexture(handle: TextureHandle): void {
-        const wrapper = this._textures[handle];
-        if (wrapper === undefined) {
+        const entry = this._textures.get(handle);
+        if (!entry) {
             return;
         }
 
-        if (wrapper.proxyHandle === undefined) {
-            wrapper.texture?.dispose();
+        if (!entry.isExternal) {
+            entry.texture?.dispose();
         }
 
-        this._textures[handle] = undefined;
-        this._textureCreationOptions[handle] = undefined;
+        this._textures.delete(handle);
     }
 
     public dispose(): void {
-        this._releaseTextures();
+        this._textures.forEach((entry) => {
+            if (!entry.isExternal) {
+                entry.texture?.dispose();
+            }
+        });
+
+        this._textures.clear();
     }
 
-    private _createHandleForTexture(name: string, texture: Nullable<RenderTargetWrapper>, handle?: TextureHandle): TextureHandle {
-        if (handle === undefined) {
-            handle = this._textures.length;
-        }
+    private _createHandleForTexture(
+        name: string,
+        texture: Nullable<RenderTargetWrapper>,
+        creationOptions: THMTextureCreationOptions,
+        isExternal?: boolean,
+        handle?: TextureHandle
+    ): TextureHandle {
+        handle = handle ?? TextureHandleManager._Counter++;
 
-        this._textures[handle] = { texture, name };
+        this._textures.set(handle, { texture, name, creationOptions, isExternal });
 
         return handle;
-    }
-
-    /** @internal */
-    public _resolveProxy(handle: TextureHandle): TextureHandle {
-        while (this._textures[handle]!.proxyHandle !== undefined) {
-            handle = this._textures[handle]!.proxyHandle!;
-        }
-        return handle;
-    }
-
-    private _releaseTextures(): void {
-        for (let i = 0; i < this._textures.length; i++) {
-            const wrapper = this._textures[i];
-            if (wrapper === undefined) {
-                continue;
-            }
-
-            if (wrapper.proxyHandle === undefined) {
-                wrapper.texture?.dispose();
-            }
-        }
-
-        this._textures.length = 0;
-        this._textureCreationOptions.length = 0;
-    }
-
-    private _setSystemTextures(): void {
-        this._textures[backbufferColorTextureHandle] = {
-            texture: null,
-            name: "backbuffer color",
-        };
-        // todo?: fill this._textureCreationOptions[backbufferColorTextureHandle] with backbuffer color description
-
-        this._textures[backbufferDepthStencilTextureHandle] = {
-            texture: null,
-            name: "backbuffer depth/stencil",
-        };
-        // todo?: fill this._textureCreationOptions[backbufferDepthStencilTextureHandle] with backbuffer depth/stencil description
     }
 }

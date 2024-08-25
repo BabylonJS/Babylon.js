@@ -241,11 +241,9 @@ export class PostProcess implements IFrameGraphTask {
 
     public destinationTexture?: FrameGraphTaskOutputReference | TextureHandle;
 
-    public skipCreationOfDisabledPasses = false;
-
     public readonly outputTextureReference: FrameGraphTaskOutputReference = [this, "output"];
 
-    public disabled?: boolean;
+    public disabled = false;
 
     /**
      * Registers a shader code processing with a post process name.
@@ -1201,7 +1199,7 @@ export class PostProcess implements IFrameGraphTask {
         return this.isReady();
     }
 
-    public recordFrameGraph(frameGraph: FrameGraph): void {
+    public recordFrameGraph(frameGraph: FrameGraph, skipCreationOfDisabledPasses = false): void {
         if (this.sourceTexture === undefined) {
             throw new Error(`PostProcess "${this.name}": sourceTexture is required`);
         }
@@ -1225,14 +1223,12 @@ export class PostProcess implements IFrameGraphTask {
             });
         });
 
-        if (!this.skipCreationOfDisabledPasses) {
+        if (!skipCreationOfDisabledPasses) {
             const passDisabled = frameGraph.addRenderPass(this.name + "_disabled", true);
 
-            passDisabled.setRenderTarget(sourceTextureHandle);
-            passDisabled.setExecuteFunc((_context) => {
-                if (_context.isBackbufferColor(outputTextureHandle)) {
-                    _context.copyTexture(sourceTextureHandle, true);
-                }
+            passDisabled.setRenderTarget(outputTextureHandle);
+            passDisabled.setExecuteFunc((context) => {
+                context.copyTexture(sourceTextureHandle);
             });
         }
     }

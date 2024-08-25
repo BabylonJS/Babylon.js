@@ -85,7 +85,7 @@ export class BloomMergePostProcess extends PostProcess {
         }
     }
 
-    public override recordFrameGraph(frameGraph: FrameGraph): void {
+    public override recordFrameGraph(frameGraph: FrameGraph, skipCreationOfDisabledPasses = false): void {
         if (this.sourceTexture === undefined || this.sourceBlurTexture === undefined) {
             throw new Error(`BloomMergePostProcess "${this.name}": sourceTexture and sourceBlurTexture are required`);
         }
@@ -112,14 +112,12 @@ export class BloomMergePostProcess extends PostProcess {
             });
         });
 
-        if (!this.skipCreationOfDisabledPasses) {
+        if (!skipCreationOfDisabledPasses) {
             const passDisabled = frameGraph.addRenderPass(this.name + "_disabled", true);
 
-            passDisabled.setRenderTarget(sourceTextureHandle);
-            passDisabled.setExecuteFunc((_context) => {
-                if (_context.isBackbufferColor(outputTextureHandle)) {
-                    _context.copyTexture(sourceTextureHandle, true);
-                }
+            passDisabled.setRenderTarget(outputTextureHandle);
+            passDisabled.setExecuteFunc((context) => {
+                context.copyTexture(sourceTextureHandle);
             });
         }
     }

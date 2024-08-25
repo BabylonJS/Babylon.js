@@ -81,11 +81,11 @@ export class CopyTextureToTexture {
     /**
      * Copy one texture into another
      * @param source The source texture
-     * @param destination The destination texture. If null, copy the source to the screen
+     * @param destination The destination texture. If null, copy the source to the currently bound framebuffer
      * @param conversion The conversion mode that should be applied when copying
      * @returns
      */
-    public copy(source: InternalTexture | ThinTexture, destination: Nullable<RenderTargetWrapper | IRenderTargetTexture>, conversion = ConversionMode.None): boolean {
+    public copy(source: InternalTexture | ThinTexture, destination: Nullable<RenderTargetWrapper | IRenderTargetTexture> = null, conversion = ConversionMode.None): boolean {
         if (!this.isReady()) {
             return false;
         }

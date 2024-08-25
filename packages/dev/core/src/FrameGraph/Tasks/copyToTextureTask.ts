@@ -9,7 +9,7 @@ export class FrameGraphCopyToTextureTask implements IFrameGraphTask {
 
     public readonly outputTextureReference: FrameGraphTaskOutputReference = [this, "output"];
 
-    public disabled?: boolean;
+    public disabled = false;
 
     constructor(public name: string) {}
 
@@ -35,7 +35,7 @@ export class FrameGraphCopyToTextureTask implements IFrameGraphTask {
 
         const passDisabled = frameGraph.addRenderPass(this.name + "_disabled", true);
 
-        passDisabled.setRenderTarget(sourceTextureHandle);
+        passDisabled.setRenderTarget(outputTextureHandle);
         passDisabled.setExecuteFunc((_context) => {});
     }
 }

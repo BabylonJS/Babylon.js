@@ -29,7 +29,7 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
 
     public readonly outputTextureReference: FrameGraphTaskOutputReference = [this, "output"];
 
-    public disabled?: boolean;
+    public disabled = false;
 
     /**
      * @internal Internal
@@ -118,7 +118,6 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
             blockCompilation,
             useAsFrameGraphTask: this._useAsFrameGraphTask,
         });
-        this._downscale.skipCreationOfDisabledPasses = true;
 
         this._blurX = new BlurPostProcess("horizontal blur", new Vector2(1.0, 0), 10.0, {
             size: _bloomScale,
@@ -130,7 +129,6 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
         });
         this._blurX.alwaysForcePOT = true;
         this._blurX.autoClear = false;
-        this._blurX.skipCreationOfDisabledPasses = true;
 
         this._blurY = new BlurPostProcess("vertical blur", new Vector2(0, 1.0), 10.0, {
             size: _bloomScale,
@@ -142,7 +140,6 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
         });
         this._blurY.alwaysForcePOT = true;
         this._blurY.autoClear = false;
-        this._blurY.skipCreationOfDisabledPasses = true;
 
         this.kernel = bloomKernel;
 
@@ -157,7 +154,6 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
             useAsFrameGraphTask: this._useAsFrameGraphTask,
         });
         this._merge.autoClear = false;
-        this._merge.skipCreationOfDisabledPasses = true;
         this._effects.push(this._merge);
     }
 
@@ -198,21 +194,21 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
 
         this._downscale.sourceTexture = this.sourceTexture;
         this._downscale.destinationTexture = downscaleTextureHandle;
-        this._downscale.recordFrameGraph(frameGraph);
+        this._downscale.recordFrameGraph(frameGraph, true);
 
         textureCreationOptions.options.label = `${this.name} Blur X`;
         const blurXTextureHandle = frameGraph.createRenderTargetTexture(textureCreationOptions.options.label, textureCreationOptions);
 
         this._blurX.sourceTexture = downscaleTextureHandle;
         this._blurX.destinationTexture = blurXTextureHandle;
-        this._blurX.recordFrameGraph(frameGraph);
+        this._blurX.recordFrameGraph(frameGraph, true);
 
         textureCreationOptions.options.label = `${this.name} Blur Y`;
         const blurYTextureHandle = frameGraph.createRenderTargetTexture(textureCreationOptions.options.label, textureCreationOptions);
 
         this._blurY.sourceTexture = blurXTextureHandle;
         this._blurY.destinationTexture = blurYTextureHandle;
-        this._blurY.recordFrameGraph(frameGraph);
+        this._blurY.recordFrameGraph(frameGraph, true);
 
         const sourceTextureHandle = frameGraph.getTextureHandle(this.sourceTexture);
         const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(
@@ -225,15 +221,13 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
         this._merge.sourceSamplingMode = this.sourceSamplingMode;
         this._merge.sourceBlurTexture = blurYTextureHandle;
         this._merge.destinationTexture = outputTextureHandle;
-        this._merge.recordFrameGraph(frameGraph);
+        this._merge.recordFrameGraph(frameGraph, true);
 
         const passDisabled = frameGraph.addRenderPass(this.name + "_disabled", true);
 
-        passDisabled.setRenderTarget(sourceTextureHandle);
-        passDisabled.setExecuteFunc((_context) => {
-            if (_context.isBackbufferColor(outputTextureHandle)) {
-                _context.copyTexture(sourceTextureHandle, true);
-            }
+        passDisabled.setRenderTarget(outputTextureHandle);
+        passDisabled.setExecuteFunc((context) => {
+            context.copyTexture(sourceTextureHandle);
         });
     }
 

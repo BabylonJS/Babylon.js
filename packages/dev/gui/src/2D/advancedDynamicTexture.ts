@@ -57,7 +57,7 @@ export class AdvancedDynamicTexture extends DynamicTexture implements IFrameGrap
 
     public readonly outputTextureReference: FrameGraphTaskOutputReference = [this, "output"];
 
-    public disabled?: boolean;
+    public disabled = false;
 
     /** Snippet ID if the content was created from the snippet server */
     public snippetId: string;

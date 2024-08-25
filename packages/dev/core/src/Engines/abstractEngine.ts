@@ -217,8 +217,8 @@ export abstract class AbstractEngine {
     public _alphaMode = Constants.ALPHA_ADD;
     /** @internal */
     public _alphaEquation = Constants.ALPHA_DISABLE;
-    /** @internal */
-    public _textureHandleManager = new TextureHandleManager();
+
+    public textureHandleManager = new TextureHandleManager();
 
     protected _activeRequests: IFileRequest[] = [];
 
@@ -2553,7 +2553,7 @@ export abstract class AbstractEngine {
         this._isDisposed = true;
         this.stopRenderLoop();
 
-        this._textureHandleManager.dispose();
+        this.textureHandleManager.dispose();
 
         // Empty texture
         if (this._emptyTexture) {

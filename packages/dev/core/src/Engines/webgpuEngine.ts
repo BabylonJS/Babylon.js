@@ -646,6 +646,8 @@ export class WebGPUEngine extends AbstractEngine {
 
         this._shaderProcessor = new WebGPUShaderProcessorGLSL();
         this._shaderProcessorWGSL = new WebGPUShaderProcessorWGSL();
+
+        this.textureHandleManager._initialize(this);
     }
 
     //------------------------------------------------------------------------------
@@ -2684,7 +2686,7 @@ export class WebGPUEngine extends AbstractEngine {
      * @param name The name of the uniform in the effect
      */
     public setTextureHandle(channel: number, handle: TextureHandle, name: string): void {
-        this._setInternalTexture(name, this._textureHandleManager.getTextureFromHandle(handle)!.texture);
+        this._setInternalTexture(name, this.textureHandleManager.getTextureFromHandle(handle)!.texture);
     }
 
     /**

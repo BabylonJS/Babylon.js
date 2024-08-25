@@ -63,7 +63,7 @@ export class FrameGraph {
         }
 
         task._fgInternals?.dispose();
-        task._fgInternals = new FrameGraphTaskInternals(this._engine, task);
+        task._fgInternals = new FrameGraphTaskInternals(task);
 
         this._tasks.push(task);
     }
@@ -167,7 +167,7 @@ export class FrameGraph {
             textureHandle = textureId;
         }
 
-        return this._engine._textureHandleManager.getTextureCreationOptions(textureHandle);
+        return this._engine.textureHandleManager.getTextureCreationOptions(textureHandle);
     }
 
     public getTextureDescription(textureId: FrameGraphTaskOutputReference | TextureHandle): FrameGraphTextureDescription {

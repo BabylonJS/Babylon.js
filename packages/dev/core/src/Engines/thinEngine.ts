@@ -460,6 +460,8 @@ export class ThinEngine extends AbstractEngine {
         // update state object with the current engine state
         stateObject.validateShaderPrograms = this.validateShaderPrograms;
         stateObject.parallelShaderCompile = this._caps.parallelShaderCompile;
+
+        this.textureHandleManager._initialize(this);
     }
 
     protected override _clearEmptyResources(): void {
@@ -3672,7 +3674,7 @@ export class ThinEngine extends AbstractEngine {
      * @param name The name of the uniform in the effect
      */
     public setTextureHandle(channel: number, handle: TextureHandle, name: string): void {
-        this._bindTexture(channel, this._textureHandleManager.getTextureFromHandle(handle)!.texture, name);
+        this._bindTexture(channel, this.textureHandleManager.getTextureFromHandle(handle)!.texture, name);
     }
 
     private _bindSamplerUniformToChannel(sourceSlot: number, destination: number) {
