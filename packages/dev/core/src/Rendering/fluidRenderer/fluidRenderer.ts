@@ -17,16 +17,6 @@ import { FluidRenderingTargetRenderer } from "./fluidRenderingTargetRenderer";
 import { FluidRenderingObjectCustomParticles } from "./fluidRenderingObjectCustomParticles";
 import { FluidRenderingDepthTextureCopy } from "./fluidRenderingDepthTextureCopy";
 
-import "../../Shaders/fluidRenderingParticleDepth.vertex";
-import "../../Shaders/fluidRenderingParticleDepth.fragment";
-import "../../Shaders/fluidRenderingParticleThickness.vertex";
-import "../../Shaders/fluidRenderingParticleThickness.fragment";
-import "../../Shaders/fluidRenderingParticleDiffuse.vertex";
-import "../../Shaders/fluidRenderingParticleDiffuse.fragment";
-import "../../Shaders/fluidRenderingBilateralBlur.fragment";
-import "../../Shaders/fluidRenderingStandardBlur.fragment";
-import "../../Shaders/fluidRenderingRender.fragment";
-
 declare module "../../abstractScene" {
     export interface AbstractScene {
         /** @internal (Backing field) */

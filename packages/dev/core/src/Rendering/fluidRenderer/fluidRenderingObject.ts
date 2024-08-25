@@ -7,6 +7,11 @@ import { Observable } from "core/Misc/observable";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 
+import "../../Shaders/fluidRenderingParticleDepth.vertex";
+import "../../Shaders/fluidRenderingParticleDepth.fragment";
+import "../../Shaders/fluidRenderingParticleThickness.vertex";
+import "../../Shaders/fluidRenderingParticleThickness.fragment";
+
 /**
  * Defines the base object used for fluid rendering.
  * It is based on a list of vertices (particles)

@@ -6,6 +6,9 @@ import type { FloatArray, Nullable } from "core/types";
 
 import { FluidRenderingObject } from "./fluidRenderingObject";
 
+import "../../Shaders/fluidRenderingParticleDiffuse.vertex";
+import "../../Shaders/fluidRenderingParticleDiffuse.fragment";
+
 /**
  * Defines a rendering object based on a list of custom buffers
  * The list must contain at least a "position" buffer!

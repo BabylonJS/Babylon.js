@@ -10,6 +10,9 @@ import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
 
+import "../../Shaders/fluidRenderingBilateralBlur.fragment";
+import "../../Shaders/fluidRenderingStandardBlur.fragment";
+
 /** @internal */
 export class FluidRenderingTextures {
     protected _name: string;

@@ -15,6 +15,8 @@ import type { FluidRenderingObject } from "./fluidRenderingObject";
 import { FluidRenderingTextures } from "./fluidRenderingTextures";
 import type { WebGPUEngine } from "core/Engines/webgpuEngine";
 
+import "../../Shaders/fluidRenderingRender.fragment";
+
 /**
  * Textures that can be displayed as a debugging tool
  */
