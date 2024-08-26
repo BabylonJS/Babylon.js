@@ -63,7 +63,12 @@ export class GPUPicker {
     /** Shader language used by the generator */
     protected _shaderLanguage = ShaderLanguage.GLSL;
 
-    private static _TempColor: IColor3Like;
+    private static _TempColor: IColor3Like = {
+        r: 0,
+        g: 0,
+        b: 0,
+    };
+
     /**
      * Gets the shader language used in this generator.
      */
