@@ -3,7 +3,7 @@ import type { FrameGraphRenderContext } from "../frameGraphRenderContext";
 import { FrameGraphPass } from "./pass";
 import type { IFrameGraphTask } from "../Tasks/IFrameGraphTask";
 import type { IFrameGraphPass } from "./IFrameGraphPass";
-import type { TextureHandle } from "core/Engines/textureHandlerManager";
+import type { TextureHandle } from "../../Engines/textureHandleManager";
 
 export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext> {
     protected _renderTarget: TextureHandle;

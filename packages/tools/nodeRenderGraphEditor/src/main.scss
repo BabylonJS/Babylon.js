@@ -105,7 +105,7 @@
         grid-row: 2;
         grid-column: 1;
         display: grid;
-        grid-template-columns: auto 1fr 40px 40px 40px;
+        grid-template-columns: auto 1fr 40px;
         align-items: center;
         font-size: 18px;
         background-color: #555555;
@@ -133,6 +133,7 @@
                 display: flex;
                 align-items: center;
                 margin-left: 5px;
+                height: 40px;
 
                 select {
                     width: 115px;
@@ -212,7 +213,7 @@
         grid-row: 4;
         grid-column: 1;
         display: grid;
-        grid-template-columns: 1fr 40px 40px 40px 40px 40px;
+        grid-template-columns: 40px 40px 40px;
         color: white;
         align-items: center;
         font-size: 18px;

@@ -10,9 +10,10 @@ import type { FrameGraphTextureCreationOptions } from "./frameGraphTextureManage
 import { FrameGraphTextureManager } from "./frameGraphTextureManager";
 import { FrameGraphTaskInternals } from "./Tasks/taskInternals";
 import { Observable } from "core/Misc/observable";
-import type { RenderTargetCreationOptions } from "core/Materials/Textures/textureCreationOptions";
-import { textureSizeIsObject } from "core/Materials/Textures/textureCreationOptions";
+import type { RenderTargetCreationOptions } from "../Materials/Textures/textureCreationOptions";
+import { textureSizeIsObject } from "../Materials/Textures/textureCreationOptions";
 import type { TextureHandle } from "../Engines/textureHandleManager";
+import type { Nullable } from "../types";
 
 export type FrameGraphTextureDescription = {
     size: { width: number; height: number };
@@ -211,6 +212,10 @@ export class FrameGraph {
             return this.createRenderTargetTexture(newTextureName, creationOptions);
         }
         return this.getTextureHandle(textureId);
+    }
+
+    public getTextureFromHandle(handle: TextureHandle): Nullable<RenderTargetWrapper> {
+        return this._engine._textureHandleManager.getTextureFromHandle(handle);
     }
 
     public createRenderTargetTexture(name: string, creationOptions: FrameGraphTextureCreationOptions): TextureHandle {

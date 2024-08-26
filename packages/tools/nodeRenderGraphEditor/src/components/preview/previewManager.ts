@@ -5,15 +5,14 @@ import { Engine } from "core/Engines/engine";
 import { Scene } from "core/scene";
 import { Vector3 } from "core/Maths/math.vector";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
+import { DirectionalLight } from "core/Lights/directionalLight";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
-import { Animation } from "core/Animations/animation";
 import { SceneLoader } from "core/Loading/sceneLoader";
+import { TransformNode } from "core/Meshes/transformNode";
 import type { FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
-import { Color3 } from "core/Maths/math.color";
 import "core/Rendering/depthRendererSceneComponent";
 import { NodeRenderGraph } from "core/FrameGraph/Node/nodeRenderGraph";
 import type { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
-import type { TransformNode } from "core/Meshes/transformNode";
 import { PassPostProcess } from "core/PostProcesses/passPostProcess";
 import { Constants } from "core/Engines/constants";
 import type { Mesh } from "core/Meshes/mesh";
@@ -22,30 +21,50 @@ import { LogEntry } from "../log/logComponent";
 import type { RenderGraphGUIBlock } from "gui/2D/renderGraphGUIBlock";
 import { Button } from "gui/2D/controls/button";
 import { Control } from "gui/2D/controls/control";
+import { PreviewType } from "./previewType";
+import { CubeTexture } from "core/Materials/Textures/cubeTexture";
+import { FilesInput } from "core/Misc/filesInput";
+import { Color3 } from "core/Maths/math.color";
+import { WebGPUEngine } from "core/Engines/webgpuEngine";
+
+const useWebGPU = false;
 
 export class PreviewManager {
     private _nodeRenderGraph: NodeRenderGraph;
 
     private _onFrameObserver: Nullable<Observer<void>>;
-    private _onAnimationCommandActivatedObserver: Nullable<Observer<void>>;
+    private _onPreviewCommandActivatedObserver: Nullable<Observer<boolean>>;
     private _onUpdateRequiredObserver: Nullable<Observer<Nullable<NodeRenderGraphBlock>>>;
     private _onRebuildRequiredObserver: Nullable<Observer<void>>;
     private _onImportFrameObserver: Nullable<Observer<any>>;
     private _onResetRequiredObserver: Nullable<Observer<boolean>>;
-    private _onPreviewBackgroundChangedObserver: Nullable<Observer<void>>;
-    private _engine: Engine;
+    private _onLightUpdatedObserver: Nullable<Observer<void>>;
+    private _engine: Engine | WebGPUEngine;
     private _scene: Scene;
-    private _meshes: AbstractMesh[];
+    private _meshes: AbstractMesh[] = [];
     private _camera: ArcRotateCamera;
-    private _light: HemisphericLight;
     private _globalState: GlobalState;
+    private _currentType: number;
+    private _lightParent: TransformNode;
     private _passPostProcess: PassPostProcess;
+    private _hdrTexture: CubeTexture;
 
     public constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState) {
         this._globalState = globalState;
 
         this._onFrameObserver = this._globalState.onFrame.add(() => {
             this._frameCamera();
+        });
+
+        this._onPreviewCommandActivatedObserver = globalState.onPreviewCommandActivated.add((forceRefresh: boolean) => {
+            if (forceRefresh) {
+                this._currentType = -1;
+            }
+            this._refreshPreviewMesh();
+        });
+
+        this._onLightUpdatedObserver = globalState.onLightUpdated.add(() => {
+            this._prepareLights();
         });
 
         this._onUpdateRequiredObserver = globalState.stateManager.onUpdateRequiredObservable.add(() => {
@@ -68,18 +87,18 @@ export class PreviewManager {
             this._buildGraph();
         });
 
-        this._onPreviewBackgroundChangedObserver = globalState.onPreviewBackgroundChanged.add(() => {
-            this._scene.clearColor = this._globalState.backgroundColor;
-        });
+        this._initAsync(targetCanvas);
+    }
 
-        this._onAnimationCommandActivatedObserver = globalState.onAnimationCommandActivated.add(() => {
-            this._handleAnimations();
-        });
+    public async _initAsync(targetCanvas: HTMLCanvasElement) {
+        if (useWebGPU) {
+            this._engine = new WebGPUEngine(targetCanvas);
+            await (this._engine as WebGPUEngine).initAsync();
+        } else {
+            this._engine = new Engine(targetCanvas, true, { forceSRGBBufferSupportState: true });
+        }
 
-        this._engine = new Engine(targetCanvas, true, { forceSRGBBufferSupportState: true });
         this._scene = new Scene(this._engine);
-        this._scene.clearColor = this._globalState.backgroundColor;
-        this._scene.ambientColor = new Color3(1, 1, 1);
         this._camera = new ArcRotateCamera("Camera", 0, 0.8, 4, Vector3.Zero(), this._scene);
 
         this._camera.lowerRadiusLimit = 3;
@@ -91,7 +110,42 @@ export class PreviewManager {
         this._camera.wheelDeltaPercentage = 0.01;
         this._camera.pinchDeltaPercentage = 0.01;
 
-        this._light = new HemisphericLight("Hemispheric light", new Vector3(0, 1, 0), this._scene);
+        this._lightParent = new TransformNode("LightParent", this._scene);
+
+        this._globalState.filesInput = new FilesInput(
+            this._engine,
+            this._scene,
+            (_, scene) => {
+                this._meshes.push(...scene.meshes);
+                this._prepareScene();
+            },
+            null,
+            null,
+            null,
+            null,
+            null,
+            () => {
+                this._reset();
+            },
+            true
+        );
+
+        const canvas = this._engine.getRenderingCanvas();
+        if (canvas) {
+            const onDrag = (evt: DragEvent) => {
+                evt.stopPropagation();
+                evt.preventDefault();
+            };
+            canvas.addEventListener("dragenter", onDrag, false);
+            canvas.addEventListener("dragover", onDrag, false);
+
+            const onDrop = (evt: DragEvent) => {
+                evt.stopPropagation();
+                evt.preventDefault();
+                this._globalState.onDropEventReceivedObservable.notifyObservers(evt);
+            };
+            canvas.addEventListener("drop", onDrop, false);
+        }
         this._refreshPreviewMesh();
 
         this._passPostProcess = new PassPostProcess("pass", 1, this._camera, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, undefined, undefined, Constants.TEXTURETYPE_HALF_FLOAT);
@@ -115,7 +169,51 @@ export class PreviewManager {
         });
     }
 
+    private _reset() {
+        this._globalState.envType = PreviewType.Room;
+        this._globalState.previewType = PreviewType.Box;
+        this._globalState.listOfCustomPreviewFiles = [];
+        this._scene.meshes.forEach((m) => m.dispose());
+        this._globalState.onRefreshPreviewMeshControlComponentRequiredObservable.notifyObservers();
+        this._refreshPreviewMesh(true);
+    }
+
+    private _prepareLights() {
+        // Remove current lights
+        const currentLights = this._scene.lights.slice(0);
+
+        for (const light of currentLights) {
+            light.dispose();
+        }
+
+        // Create new lights based on settings
+        if (this._globalState.hemisphericLight) {
+            new HemisphericLight("Hemispheric light", new Vector3(0, 1, 0), this._scene);
+        }
+
+        if (this._globalState.directionalLight0) {
+            const dir0 = new DirectionalLight("Directional light #0", new Vector3(0.841626576496605, -0.2193391004130599, -0.49351298337996535), this._scene);
+            dir0.intensity = 0.9;
+            dir0.diffuse = new Color3(0.9294117647058824, 0.9725490196078431, 0.996078431372549);
+            dir0.specular = new Color3(0.9294117647058824, 0.9725490196078431, 0.996078431372549);
+            dir0.parent = this._lightParent;
+        }
+
+        if (this._globalState.directionalLight1) {
+            const dir1 = new DirectionalLight("Directional light #1", new Vector3(-0.9519937437504213, -0.24389315636999764, -0.1849974057546125), this._scene);
+            dir1.intensity = 1.2;
+            dir1.specular = new Color3(0.9803921568627451, 0.9529411764705882, 0.7725490196078432);
+            dir1.diffuse = new Color3(0.9803921568627451, 0.9529411764705882, 0.7725490196078432);
+            dir1.parent = this._lightParent;
+        }
+    }
+
     private _createNodeRenderGraph() {
+        if (!this._scene) {
+            // The initialization is not done yet
+            return;
+        }
+
         const serialized = this._globalState.nodeRenderGraph.serialize();
         this._nodeRenderGraph?.dispose();
         this._nodeRenderGraph = NodeRenderGraph.Parse(serialized, this._engine, {
@@ -126,6 +224,11 @@ export class PreviewManager {
     }
 
     private _buildGraph() {
+        if (!this._scene) {
+            // The initialization is not done yet
+            return;
+        }
+
         // Set a default texture for external input textures
         const allInputs = this._nodeRenderGraph.getInputBlocks();
         for (const input of allInputs) {
@@ -163,24 +266,6 @@ export class PreviewManager {
         }
     }
 
-    private _handleAnimations() {
-        this._scene.stopAllAnimations();
-
-        if (this._globalState.rotatePreview) {
-            for (const root of this._scene.rootNodes) {
-                const transformNode = root as TransformNode;
-
-                if (transformNode.getClassName() === "TransformNode" || transformNode.getClassName() === "Mesh" || transformNode.getClassName() === "GroundMesh") {
-                    if (transformNode.rotationQuaternion) {
-                        transformNode.rotation = transformNode.rotationQuaternion.toEulerAngles();
-                        transformNode.rotationQuaternion = null;
-                    }
-                    Animation.CreateAndStartAnimation("turnTable", root, "rotation.y", 60, 1200, transformNode.rotation.y, transformNode.rotation.y + 2 * Math.PI, 1);
-                }
-            }
-        }
-    }
-
     private _frameCamera() {
         const framingBehavior = this._camera.getBehaviorByName("Framing") as FramingBehavior;
 
@@ -198,26 +283,65 @@ export class PreviewManager {
         this._camera.upperRadiusLimit = 5 * this._camera.radius;
     }
 
+    private _prepareBackgroundHDR() {
+        this._scene.environmentTexture = this._hdrTexture;
+    }
+
     private _prepareScene() {
         this._globalState.onIsLoadingChanged.notifyObservers(false);
 
-        // Animations
-        this._handleAnimations();
+        this._prepareLights();
 
         this._frameCamera();
+        this._prepareBackgroundHDR();
     }
 
-    private _refreshPreviewMesh() {
-        SceneLoader.ShowLoadingScreen = false;
+    public static DefaultEnvironmentURL = "https://assets.babylonjs.com/environments/environmentSpecular.env";
 
-        this._globalState.onIsLoadingChanged.notifyObservers(true);
+    private _refreshPreviewMesh(force?: boolean) {
+        switch (this._globalState.envType) {
+            case PreviewType.Room:
+                this._hdrTexture = new CubeTexture(PreviewManager.DefaultEnvironmentURL, this._scene);
+                if (this._hdrTexture) {
+                    this._prepareBackgroundHDR();
+                }
+                break;
+            case PreviewType.Custom: {
+                const blob = new Blob([this._globalState.envFile], { type: "octet/stream" });
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    const dataurl = evt.target!.result as string;
+                    this._hdrTexture = new CubeTexture(dataurl, this._scene, undefined, false, undefined, undefined, undefined, undefined, undefined, ".env");
+                    this._prepareBackgroundHDR();
+                };
+                reader.readAsDataURL(blob);
+                break;
+            }
+        }
+
+        if (this._currentType === this._globalState.previewType && this._currentType !== PreviewType.Custom && !force) {
+            return;
+        }
+
+        this._currentType = this._globalState.previewType;
 
         if (this._meshes && this._meshes.length) {
             for (const mesh of this._meshes) {
                 mesh.dispose();
             }
         }
-        this._meshes = [];
+        this._meshes.length = 0;
+
+        const lights = this._scene.lights.slice(0);
+        for (const light of lights) {
+            light.dispose();
+        }
+
+        this._engine.releaseEffects();
+
+        SceneLoader.ShowLoadingScreen = false;
+
+        this._globalState.onIsLoadingChanged.notifyObservers(true);
 
         const bakeTransformation = (mesh: Mesh) => {
             mesh.bakeCurrentTransformIntoVertices();
@@ -225,25 +349,58 @@ export class PreviewManager {
             mesh.parent = null;
         };
 
-        SceneLoader.AppendAsync("https://assets.babylonjs.com/meshes/", "previewSphere.glb", this._scene).then(() => {
-            bakeTransformation(this._scene.getMeshByName("__root__")!.getChildMeshes(true)[0] as Mesh);
-            this._meshes.push(...this._scene.meshes);
-            this._prepareScene();
-        });
+        switch (this._globalState.previewType) {
+            case PreviewType.Box:
+                SceneLoader.AppendAsync("https://assets.babylonjs.com/meshes/", "roundedCube.glb", this._scene).then(() => {
+                    bakeTransformation(this._scene.getMeshByName("__root__")!.getChildMeshes(true)[0] as Mesh);
+                    this._meshes.push(...this._scene.meshes);
+                    this._prepareScene();
+                });
+                return;
+            case PreviewType.Sphere:
+                SceneLoader.AppendAsync("https://assets.babylonjs.com/meshes/", "previewSphere.glb", this._scene).then(() => {
+                    bakeTransformation(this._scene.getMeshByName("__root__")!.getChildMeshes(true)[0] as Mesh);
+                    this._meshes.push(...this._scene.meshes);
+                    this._prepareScene();
+                });
+                break;
+            case PreviewType.Cylinder:
+                SceneLoader.AppendAsync("https://assets.babylonjs.com/meshes/", "roundedCylinder.glb", this._scene).then(() => {
+                    this._meshes.push(...this._scene.meshes);
+                    this._prepareScene();
+                });
+                return;
+            case PreviewType.Plane: {
+                SceneLoader.AppendAsync("https://assets.babylonjs.com/meshes/", "highPolyPlane.glb", this._scene).then(() => {
+                    bakeTransformation(this._scene.getMeshByName("__root__")!.getChildMeshes(true)[0] as Mesh);
+                    this._meshes.push(...this._scene.meshes);
+                    this._prepareScene();
+                });
+                break;
+            }
+            case PreviewType.ShaderBall:
+                SceneLoader.AppendAsync("https://assets.babylonjs.com/meshes/", "shaderBall.glb", this._scene).then(() => {
+                    this._meshes.push(...this._scene.meshes);
+                    this._prepareScene();
+                });
+                return;
+            case PreviewType.Custom:
+                this._globalState.filesInput.loadFiles({ target: { files: this._globalState.listOfCustomPreviewFiles } });
+                return;
+        }
     }
 
     public dispose() {
         this._globalState.onFrame.remove(this._onFrameObserver);
+        this._globalState.onPreviewCommandActivated.remove(this._onPreviewCommandActivatedObserver);
         this._globalState.stateManager.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
         this._globalState.stateManager.onRebuildRequiredObservable.remove(this._onRebuildRequiredObserver);
         this._globalState.onImportFrameObservable.remove(this._onImportFrameObserver);
         this._globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
-        this._globalState.onAnimationCommandActivated.remove(this._onAnimationCommandActivatedObserver);
-        this._globalState.onPreviewBackgroundChanged.remove(this._onPreviewBackgroundChangedObserver);
+        this._globalState.onLightUpdated.remove(this._onLightUpdatedObserver);
 
         this._nodeRenderGraph?.dispose();
 
-        this._light.dispose();
         this._camera.dispose();
         for (const mesh of this._meshes) {
             mesh.dispose();

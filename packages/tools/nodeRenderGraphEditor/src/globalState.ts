@@ -2,7 +2,6 @@ import type { NodeRenderGraph } from "core/FrameGraph/Node/nodeRenderGraph";
 import { Observable } from "core/Misc/observable";
 import type { LogEntry } from "./components/log/logComponent";
 import { DataStorage } from "core/Misc/dataStorage";
-import { Color4 } from "core/Maths/math.color";
 import { RegisterElbowSupport } from "./graphSystem/registerElbowSupport";
 import { RegisterNodePortDesign } from "./graphSystem/registerNodePortDesign";
 import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
@@ -14,7 +13,9 @@ import { RegisterDefaultInput } from "./graphSystem/registerDefaultInput";
 import { RegisterExportData } from "./graphSystem/registerExportData";
 import type { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
 import type { AbstractEngine } from "core/Engines";
+import type { FilesInput } from "core/Misc/filesInput";
 import { RegisterDebugSupport } from "./graphSystem/registerDebugSupport";
+import { PreviewType } from "./components/preview/previewType";
 
 export class GlobalState {
     nodeRenderGraph: NodeRenderGraph;
@@ -28,18 +29,27 @@ export class GlobalState {
     onReOrganizedRequiredObservable = new Observable<void>();
     onLogRequiredObservable = new Observable<LogEntry>();
     onIsLoadingChanged = new Observable<boolean>();
-    onPreviewBackgroundChanged = new Observable<void>();
+    onPreviewCommandActivated = new Observable<boolean>();
+    onLightUpdated = new Observable<void>();
     onFrame = new Observable<void>();
     onAnimationCommandActivated = new Observable<void>();
     onImportFrameObservable = new Observable<any>();
     onPopupClosedObservable = new Observable<void>();
     onGetNodeFromBlock: (block: NodeRenderGraphBlock) => GraphNode;
+    onDropEventReceivedObservable = new Observable<DragEvent>();
+    previewType: PreviewType;
+    previewFile: File;
+    envType: PreviewType;
+    envFile: File;
     listOfCustomPreviewFiles: File[] = [];
     rotatePreview: boolean;
-    backgroundColor: Color4;
     lockObject = new LockObject();
+    hemisphericLight: boolean;
+    directionalLight0: boolean;
+    directionalLight1: boolean;
     pointerOverCanvas: boolean = false;
     onRefreshPreviewMeshControlComponentRequiredObservable = new Observable<void>();
+    filesInput: FilesInput;
     engine: AbstractEngine;
 
     customSave?: { label: string; action: (data: string) => Promise<void> };
@@ -50,16 +60,17 @@ export class GlobalState {
         this.stateManager.data = this;
         this.stateManager.lockObject = this.lockObject;
 
+        this.previewType = DataStorage.ReadNumber("PreviewType", PreviewType.Box);
+        this.envType = DataStorage.ReadNumber("EnvType", PreviewType.Room);
+        this.hemisphericLight = DataStorage.ReadBoolean("HemisphericLight", false);
+        this.directionalLight0 = DataStorage.ReadBoolean("DirectionalLight0", false);
+        this.directionalLight1 = DataStorage.ReadBoolean("DirectionalLight1", false);
+
         RegisterElbowSupport(this.stateManager);
         RegisterDebugSupport(this.stateManager);
         RegisterNodePortDesign(this.stateManager);
         RegisterDefaultInput(this.stateManager);
         RegisterExportData(this.stateManager);
-
-        const r = DataStorage.ReadNumber("BackgroundColorR", 0.12549019607843137);
-        const g = DataStorage.ReadNumber("BackgroundColorG", 0.09803921568627451);
-        const b = DataStorage.ReadNumber("BackgroundColorB", 0.25098039215686274);
-        this.backgroundColor = new Color4(r, g, b, 1.0);
     }
 
     storeEditorData(serializationObject: any, frame?: Nullable<GraphFrame>) {

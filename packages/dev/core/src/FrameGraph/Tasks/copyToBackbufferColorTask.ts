@@ -30,7 +30,7 @@ export class FrameGraphCopyToBackbufferColorTask implements IFrameGraphTask {
             }
         });
 
-        const passDisabled = frameGraph.addRenderPass("copy to backbuffer color_disabled");
+        const passDisabled = frameGraph.addRenderPass("copy to backbuffer color_disabled", true);
 
         passDisabled.setRenderTarget(backbufferColorTextureHandle);
         passDisabled.setExecuteFunc((_context) => {});
