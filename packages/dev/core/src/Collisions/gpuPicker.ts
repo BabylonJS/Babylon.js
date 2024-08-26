@@ -7,6 +7,7 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import type { IShaderMaterialOptions } from "core/Materials/shaderMaterial";
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import { Color3, Color4 } from "core/Maths/math.color";
+import type { IColor3Like, IVector2Like } from "core/Maths/math.like";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { VertexBuffer } from "core/Meshes/buffer";
 import type { Mesh } from "core/Meshes/mesh";
@@ -28,7 +29,7 @@ export interface IGPUPickingInfo {
 }
 
 /**
- *
+ * Stores the result of a multi GPU piciking operation
  */
 export interface IGPUMultiPickingInfo {
     /**
@@ -62,6 +63,7 @@ export class GPUPicker {
     /** Shader language used by the generator */
     protected _shaderLanguage = ShaderLanguage.GLSL;
 
+    private static _TempColor: IColor3Like;
     /**
      * Gets the shader language used in this generator.
      */
@@ -70,11 +72,9 @@ export class GPUPicker {
     }
 
     private static _IdToRgb(id: number) {
-        return {
-            r: (id & 0xff0000) >> 16,
-            g: (id & 0x00ff00) >> 8,
-            b: (id & 0x0000ff) >> 0,
-        };
+        GPUPicker._TempColor.r = (id & 0xff0000) >> 16;
+        GPUPicker._TempColor.g = (id & 0x00ff00) >> 8;
+        GPUPicker._TempColor.b = (id & 0x0000ff) >> 0;
     }
 
     private _getColorIdFromReadBuffer(offset: number) {
@@ -163,11 +163,10 @@ export class GPUPicker {
         GPUPicker._SetColorData(colorData, 0, r, g, b);
 
         for (let i = 0; i < instanceCount; i++) {
-            const { r, g, b } = GPUPicker._IdToRgb(id);
+            GPUPicker._IdToRgb(id);
 
             onInstance(i, id);
-            GPUPicker._SetColorData(colorData, (i + 1) * 4, r, g, b);
-
+            GPUPicker._SetColorData(colorData, (i + 1) * 4, GPUPicker._TempColor.r, GPUPicker._TempColor.g, GPUPicker._TempColor.b);
             id++;
         }
 
@@ -178,10 +177,10 @@ export class GPUPicker {
         const colorData = new Float32Array(4 * instanceCount);
 
         for (let i = 0; i < instanceCount; i++) {
-            const { r, g, b } = GPUPicker._IdToRgb(id);
+            GPUPicker._IdToRgb(id);
 
             onInstance(i, id);
-            GPUPicker._SetColorData(colorData, i * 4, r, g, b);
+            GPUPicker._SetColorData(colorData, i * 4, GPUPicker._TempColor.r, GPUPicker._TempColor.g, GPUPicker._TempColor.b);
 
             id++;
         }
@@ -280,7 +279,7 @@ export class GPUPicker {
                 continue; // This will be handled by the source mesh
             }
 
-            const { r, g, b } = GPUPicker._IdToRgb(id);
+            GPUPicker._IdToRgb(id);
 
             if (mesh.hasThinInstances) {
                 const colorData = this._generateThinInstanceColorData((mesh as Mesh).thinInstanceCount, id, (i, id) => {
@@ -294,7 +293,7 @@ export class GPUPicker {
 
                 if (mesh.hasInstances) {
                     const instances = (mesh as Mesh).instances;
-                    const colorData = this._generateColorData(instances.length, id, index, r, g, b, (i, id) => {
+                    const colorData = this._generateColorData(instances.length, id, index, GPUPicker._TempColor.r, GPUPicker._TempColor.g, GPUPicker._TempColor.b, (i, id) => {
                         const instance = instances[i];
                         this._idMap[id] = this._pickableMeshes.indexOf(instance);
                     });
@@ -305,7 +304,7 @@ export class GPUPicker {
                     const buffer = new VertexBuffer(engine, colorData, this._attributeName, false, false, 4, true);
                     (mesh as Mesh).setVerticesBuffer(buffer, true);
                 } else {
-                    this._idColors[mesh.uniqueId] = Color3.FromInts(r, g, b);
+                    this._idColors[mesh.uniqueId] = Color3.FromInts(GPUPicker._TempColor.r, GPUPicker._TempColor.g, GPUPicker._TempColor.b);
                 }
             }
         }
@@ -341,7 +340,7 @@ export class GPUPicker {
      * @param disposeWhenDone defines a boolean indicating we do not want to keep resources alive (false by default)
      * @returns A promise with the picking results. Always returns an array with the same length as the number of coordinates. The mesh or null at the index where no mesh was picked.
      */
-    public async multiPickAsync(xy: { x: number; y: number }[], disposeWhenDone = false): Promise<Nullable<IGPUMultiPickingInfo>> {
+    public async multiPickAsync(xy: IVector2Like[], disposeWhenDone = false): Promise<Nullable<IGPUMultiPickingInfo>> {
         if (!this._pickableMeshes || this._pickableMeshes.length === 0 || xy.length === 0) {
             return null;
         }
