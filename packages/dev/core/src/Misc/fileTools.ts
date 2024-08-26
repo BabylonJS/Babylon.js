@@ -317,7 +317,7 @@ export const LoadImage = (
     };
 
     const cspHandler = (err: any) => {
-        if (err.blockedURI !== img.src) {
+        if (err.blockedURI !== img.src || err.disposition === "report") {
             return;
         }
 
