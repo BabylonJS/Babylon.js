@@ -224,6 +224,7 @@ abstract class GLTFLoaderOptions {
             this.onTextureLoaded = options.onTextureLoaded;
             this.onMaterialLoaded = options.onMaterialLoaded;
             this.onCameraLoaded = options.onCameraLoaded;
+            this.extensionOptions = options.extensionOptions ?? this.extensionOptions;
         }
     }
 
