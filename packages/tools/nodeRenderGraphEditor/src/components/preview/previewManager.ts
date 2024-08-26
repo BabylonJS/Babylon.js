@@ -15,8 +15,6 @@ import { NodeRenderGraph } from "core/FrameGraph/Node/nodeRenderGraph";
 import type { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
 import { PassPostProcess } from "core/PostProcesses/passPostProcess";
 import { Constants } from "core/Engines/constants";
-import type { Mesh } from "core/Meshes/mesh";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { LogEntry } from "../log/logComponent";
 import type { RenderGraphGUIBlock } from "gui/2D/renderGraphGUIBlock";
 import { Button } from "gui/2D/controls/button";
@@ -41,7 +39,6 @@ export class PreviewManager {
     private _onLightUpdatedObserver: Nullable<Observer<void>>;
     private _engine: Engine | WebGPUEngine;
     private _scene: Scene;
-    private _meshes: AbstractMesh[] = [];
     private _camera: ArcRotateCamera;
     private _globalState: GlobalState;
     private _currentType: number;
@@ -90,45 +87,13 @@ export class PreviewManager {
         this._initAsync(targetCanvas);
     }
 
-    public async _initAsync(targetCanvas: HTMLCanvasElement) {
+    private async _initAsync(targetCanvas: HTMLCanvasElement) {
         if (useWebGPU) {
             this._engine = new WebGPUEngine(targetCanvas);
             await (this._engine as WebGPUEngine).initAsync();
         } else {
             this._engine = new Engine(targetCanvas, true, { forceSRGBBufferSupportState: true });
         }
-
-        this._scene = new Scene(this._engine);
-        this._camera = new ArcRotateCamera("Camera", 0, 0.8, 4, Vector3.Zero(), this._scene);
-
-        this._camera.lowerRadiusLimit = 3;
-        this._camera.upperRadiusLimit = 10;
-        this._camera.wheelPrecision = 20;
-        this._camera.minZ = 0.001;
-        this._camera.attachControl(false);
-        this._camera.useFramingBehavior = true;
-        this._camera.wheelDeltaPercentage = 0.01;
-        this._camera.pinchDeltaPercentage = 0.01;
-
-        this._lightParent = new TransformNode("LightParent", this._scene);
-
-        this._globalState.filesInput = new FilesInput(
-            this._engine,
-            this._scene,
-            (_, scene) => {
-                this._meshes.push(...scene.meshes);
-                this._prepareScene();
-            },
-            null,
-            null,
-            null,
-            null,
-            null,
-            () => {
-                this._reset();
-            },
-            true
-        );
 
         const canvas = this._engine.getRenderingCanvas();
         if (canvas) {
@@ -146,14 +111,52 @@ export class PreviewManager {
             };
             canvas.addEventListener("drop", onDrop, false);
         }
+
+        this._initScene(new Scene(this._engine));
+
         this._refreshPreviewMesh();
+    }
+
+    private _initScene(scene: Scene) {
+        (window as any).scene = scene;
+
+        this._scene = scene;
+
+        this._globalState.filesInput?.dispose();
+        this._globalState.filesInput = new FilesInput(
+            this._engine,
+            null,
+            (_, scene) => {
+                this._initScene(scene);
+                this._prepareScene();
+            },
+            null,
+            null,
+            null,
+            null,
+            null,
+            () => {
+                this._reset();
+            },
+            false
+        );
+
+        this._camera = new ArcRotateCamera("Camera", 0, 0.8, 4, Vector3.Zero(), this._scene);
+
+        this._camera.lowerRadiusLimit = 3;
+        this._camera.upperRadiusLimit = 10;
+        this._camera.wheelPrecision = 20;
+        this._camera.minZ = 0.001;
+        this._camera.attachControl(false);
+        this._camera.useFramingBehavior = true;
+        this._camera.wheelDeltaPercentage = 0.01;
+        this._camera.pinchDeltaPercentage = 0.01;
+
+        this._lightParent = new TransformNode("LightParent", this._scene);
 
         this._passPostProcess = new PassPostProcess("pass", 1, this._camera, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, undefined, undefined, Constants.TEXTURETYPE_HALF_FLOAT);
         this._passPostProcess.samples = 4;
         this._passPostProcess.resize(this._engine.getRenderWidth(), this._engine.getRenderHeight(), this._camera);
-
-        this._createNodeRenderGraph();
-        this._buildGraph();
 
         this._scene.onAfterRenderObservable.add(() => {
             this._nodeRenderGraph?.execute();
@@ -163,10 +166,15 @@ export class PreviewManager {
             this._buildGraph();
         });
 
+        this._engine.stopRenderLoop();
+
         this._engine.runRenderLoop(() => {
             this._engine.resize();
             this._scene.render();
         });
+
+        this._createNodeRenderGraph();
+        this._buildGraph();
     }
 
     private _reset() {
@@ -325,62 +333,39 @@ export class PreviewManager {
 
         this._currentType = this._globalState.previewType;
 
-        if (this._meshes && this._meshes.length) {
-            for (const mesh of this._meshes) {
-                mesh.dispose();
-            }
-        }
-        this._meshes.length = 0;
-
-        const lights = this._scene.lights.slice(0);
-        for (const light of lights) {
-            light.dispose();
-        }
-
-        this._engine.releaseEffects();
-
         SceneLoader.ShowLoadingScreen = false;
 
         this._globalState.onIsLoadingChanged.notifyObservers(true);
 
-        const bakeTransformation = (mesh: Mesh) => {
-            mesh.bakeCurrentTransformIntoVertices();
-            mesh.refreshBoundingInfo();
-            mesh.parent = null;
-        };
-
         switch (this._globalState.previewType) {
             case PreviewType.Box:
-                SceneLoader.AppendAsync("https://assets.babylonjs.com/meshes/", "roundedCube.glb", this._scene).then(() => {
-                    bakeTransformation(this._scene.getMeshByName("__root__")!.getChildMeshes(true)[0] as Mesh);
-                    this._meshes.push(...this._scene.meshes);
+                SceneLoader.LoadAsync("https://assets.babylonjs.com/meshes/", "roundedCube.glb").then((scene) => {
+                    this._initScene(scene);
                     this._prepareScene();
                 });
                 return;
             case PreviewType.Sphere:
-                SceneLoader.AppendAsync("https://assets.babylonjs.com/meshes/", "previewSphere.glb", this._scene).then(() => {
-                    bakeTransformation(this._scene.getMeshByName("__root__")!.getChildMeshes(true)[0] as Mesh);
-                    this._meshes.push(...this._scene.meshes);
+                SceneLoader.LoadAsync("https://assets.babylonjs.com/meshes/", "previewSphere.glb").then((scene) => {
+                    this._initScene(scene);
                     this._prepareScene();
                 });
                 break;
             case PreviewType.Cylinder:
-                SceneLoader.AppendAsync("https://assets.babylonjs.com/meshes/", "roundedCylinder.glb", this._scene).then(() => {
-                    this._meshes.push(...this._scene.meshes);
+                SceneLoader.LoadAsync("https://assets.babylonjs.com/meshes/", "roundedCylinder.glb").then((scene) => {
+                    this._initScene(scene);
                     this._prepareScene();
                 });
                 return;
             case PreviewType.Plane: {
-                SceneLoader.AppendAsync("https://assets.babylonjs.com/meshes/", "highPolyPlane.glb", this._scene).then(() => {
-                    bakeTransformation(this._scene.getMeshByName("__root__")!.getChildMeshes(true)[0] as Mesh);
-                    this._meshes.push(...this._scene.meshes);
+                SceneLoader.LoadAsync("https://assets.babylonjs.com/meshes/", "highPolyPlane.glb").then((scene) => {
+                    this._initScene(scene);
                     this._prepareScene();
                 });
                 break;
             }
             case PreviewType.ShaderBall:
-                SceneLoader.AppendAsync("https://assets.babylonjs.com/meshes/", "shaderBall.glb", this._scene).then(() => {
-                    this._meshes.push(...this._scene.meshes);
+                SceneLoader.LoadAsync("https://assets.babylonjs.com/meshes/", "shaderBall.glb").then((scene) => {
+                    this._initScene(scene);
                     this._prepareScene();
                 });
                 return;
@@ -400,11 +385,6 @@ export class PreviewManager {
         this._globalState.onLightUpdated.remove(this._onLightUpdatedObserver);
 
         this._nodeRenderGraph?.dispose();
-
-        this._camera.dispose();
-        for (const mesh of this._meshes) {
-            mesh.dispose();
-        }
 
         this._scene.dispose();
         this._engine.dispose();
