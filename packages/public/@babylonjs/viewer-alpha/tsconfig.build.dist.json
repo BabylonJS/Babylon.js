@@ -1,6 +1,7 @@
 {
     "extends": "../../../tools/viewer-alpha/tsconfig.build.json",
     "compilerOptions": {
-        "declaration": false,
+        "outDir": "dist",
+        "declaration": false
     }
 }

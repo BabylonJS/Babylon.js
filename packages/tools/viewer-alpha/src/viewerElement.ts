@@ -304,43 +304,44 @@ export class HTML3DElement extends LitElement {
         return html`
             <div class="full-size">
                 <canvas id="renderCanvas" class="full-size" touch-action="none"></canvas>
-                ${this.animations.length > 0 &&
-                html`
-                    <slot name="tool-bar">
-                        <div part="tool-bar" class="tool-bar">
-                            <div class="progress-control">
-                                <button aria-label="${this.isAnimationPlaying ? "Pause" : "Play"}" @click="${this.toggleAnimation}">
-                                    ${!this.isAnimationPlaying
-                                        ? html`<svg viewBox="0 0 20 20">
-                                              <path d="${playFilledIcon}" fill="currentColor"></path>
-                                          </svg>`
-                                        : html`<svg viewBox="-3 -2 24 24">
-                                              <path d="${pauseFilledIcon}" fill="currentColor"></path>
-                                          </svg>`}
-                                </button>
-                                <input
-                                    aria-label="Animation Progress"
-                                    class="progress-wrapper"
-                                    type="range"
-                                    min="0"
-                                    max="1"
-                                    step="0.0001"
-                                    .value="${this.animationProgress}"
-                                    @input="${this._onProgressChanged}"
-                                    @pointerdown="${this._onProgressPointerDown}"
-                                />
-                            </div>
-                            <select aria-label="Select Animation Speed" @change="${this._onAnimationSpeedChanged}">
-                                ${allowedAnimationSpeeds.map((speed) => html`<option value="${speed}" .selected="${this.animationSpeed === speed}">${speed}x</option>`)}
-                            </select>
-                            ${this.animations.length > 1
-                                ? html`<select aria-label="Select Animation" @change="${this._onSelectedAnimationChanged}">
-                                      ${this.animations.map((name, index) => html`<option value="${index}" .selected="${this.selectedAnimation == index}">${name}</option>`)}
-                                  </select>`
-                                : ""}
-                        </div>
-                    </slot>
-                `}
+                ${this.animations.length === 0
+                    ? ""
+                    : html`
+                          <slot name="tool-bar">
+                              <div part="tool-bar" class="tool-bar">
+                                  <div class="progress-control">
+                                      <button aria-label="${this.isAnimationPlaying ? "Pause" : "Play"}" @click="${this.toggleAnimation}">
+                                          ${!this.isAnimationPlaying
+                                              ? html`<svg viewBox="0 0 20 20">
+                                                    <path d="${playFilledIcon}" fill="currentColor"></path>
+                                                </svg>`
+                                              : html`<svg viewBox="-3 -2 24 24">
+                                                    <path d="${pauseFilledIcon}" fill="currentColor"></path>
+                                                </svg>`}
+                                      </button>
+                                      <input
+                                          aria-label="Animation Progress"
+                                          class="progress-wrapper"
+                                          type="range"
+                                          min="0"
+                                          max="1"
+                                          step="0.0001"
+                                          .value="${this.animationProgress}"
+                                          @input="${this._onProgressChanged}"
+                                          @pointerdown="${this._onProgressPointerDown}"
+                                      />
+                                  </div>
+                                  <select aria-label="Select Animation Speed" @change="${this._onAnimationSpeedChanged}">
+                                      ${allowedAnimationSpeeds.map((speed) => html`<option value="${speed}" .selected="${this.animationSpeed === speed}">${speed}x</option>`)}
+                                  </select>
+                                  ${this.animations.length > 1
+                                      ? html`<select aria-label="Select Animation" @change="${this._onSelectedAnimationChanged}">
+                                            ${this.animations.map((name, index) => html`<option value="${index}" .selected="${this.selectedAnimation == index}">${name}</option>`)}
+                                        </select>`
+                                      : ""}
+                              </div>
+                          </slot>
+                      `}
             </div>
         `;
     }
