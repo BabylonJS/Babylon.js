@@ -59,7 +59,10 @@ export class PrePassConfiguration {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public bindForSubMesh(effect: Effect, scene: Scene, mesh: Mesh, world: Matrix, isFrozen: boolean): void {
         if (scene.prePassRenderer && scene.prePassRenderer.enabled && scene.prePassRenderer.currentRTisSceneRT) {
-            if (scene.prePassRenderer.getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE) !== -1) {
+            if (
+                scene.prePassRenderer.getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE) !== -1 ||
+                scene.prePassRenderer.getIndex(Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE) !== -1
+            ) {
                 if (!this.previousWorldMatrices[mesh.uniqueId]) {
                     this.previousWorldMatrices[mesh.uniqueId] = world.clone();
                 }

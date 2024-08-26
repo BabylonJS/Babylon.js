@@ -1,6 +1,55 @@
 {
-    "fromTag": "7.22.0",
+    "fromTag": "7.22.2",
     "changelog": {
+        "7.22.3": [
+            {
+                "pr": "15472",
+                "title": "Native Texture Loaders",
+                "description": "Use native (bimg) texture loaders for tga, exr, hdr, dds",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
+        "7.22.2": [
+            {
+                "pr": "15471",
+                "title": "Add labelTooltip to NumericInput",
+                "description": null,
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/lines/colorLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/numericInputComponent.tsx"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "15469",
+                "title": "fix VAT with non instanced mesh",
+                "description": "The implementation of VAT supports both meshes that use instancing and those that don't,\r\n\r\nbut the binding code was only working for meshes that only instanced. fixed this.\r\n\r\n*I recently added VAT support to the Outline Renderer, but when I did so, I copied the code from the shadowGenerator, which has the problem.*",
+                "author": {
+                    "name": "noname0310",
+                    "url": "https://github.com/noname0310"
+                },
+                "files": [
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
+                    "packages/dev/core/src/Rendering/outlineRenderer.ts"
+                ],
+                "tags": []
+            }
+        ],
         "7.22.1": [
             {
                 "pr": "15467",
