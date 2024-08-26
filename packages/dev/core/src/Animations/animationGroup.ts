@@ -770,9 +770,9 @@ export class AnimationGroup implements IDisposable {
 
         this.syncWithMask();
 
-        this.onAnimationGroupPlayObservable.notifyObservers(this);
-
         this._isPaused = false;
+
+        this.onAnimationGroupPlayObservable.notifyObservers(this);
 
         return this;
     }
