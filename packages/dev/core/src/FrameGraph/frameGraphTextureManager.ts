@@ -78,11 +78,10 @@ export class FrameGraphTextureManager {
     }
 
     public dispose(): void {
-        this._releaseTextures();
+        this.releaseTextures();
     }
 
-    /** @internal */
-    public _allocateTextures() {
+    public allocateTextures() {
         this._textures.forEach((entry, handle) => {
             const textureSlot = this._textureHandleManager._textures.get(handle);
 
@@ -105,8 +104,7 @@ export class FrameGraphTextureManager {
         });
     }
 
-    /** @internal */
-    public _releaseTextures(releaseAll = true): void {
+    public releaseTextures(releaseAll = true): void {
         this._textures.forEach((entry, handle) => {
             const textureSlot = this._textureHandleManager._textures.get(handle);
 

@@ -94,7 +94,7 @@ export class FrameGraph {
     }
 
     public build(): void {
-        this._textureManager._releaseTextures(false);
+        this._textureManager.releaseTextures(false);
 
         for (const task of this._tasks) {
             const internals = task._fgInternals!;
@@ -110,7 +110,7 @@ export class FrameGraph {
             this._currentProcessedTask = null;
         }
 
-        this._textureManager._allocateTextures();
+        this._textureManager.allocateTextures();
 
         this.onBuildObservable.notifyObservers(this);
     }
@@ -228,7 +228,7 @@ export class FrameGraph {
         }
 
         this._tasks.length = 0;
-        this._textureManager._releaseTextures();
+        this._textureManager.releaseTextures();
         this._currentProcessedTask = null;
     }
 
