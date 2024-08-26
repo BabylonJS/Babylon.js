@@ -178,6 +178,8 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
                 format: sourceTextureDescription.options.format,
                 samples: 1,
                 useSRGBBuffer: false,
+                generateDepthBuffer: false,
+                generateStencilBuffer: false,
                 label: "",
             },
             sizeIsPercentage: false,
