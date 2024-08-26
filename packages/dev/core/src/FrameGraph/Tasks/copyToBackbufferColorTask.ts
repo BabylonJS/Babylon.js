@@ -25,7 +25,7 @@ export class FrameGraphCopyToBackbufferColorTask implements IFrameGraphTask {
 
         pass.setRenderTarget(backbufferColorTextureHandle);
         pass.setExecuteFunc((context) => {
-            if (!context.isBackbufferColor(sourceTextureHandle)) {
+            if (!context.isBackbuffer(sourceTextureHandle)) {
                 context.copyTexture(sourceTextureHandle);
             }
         });

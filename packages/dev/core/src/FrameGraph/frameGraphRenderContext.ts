@@ -23,6 +23,10 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         this._currentRenderTargetHandle = backbufferColorTextureHandle;
     }
 
+    public isBackbuffer(handle: TextureHandle): boolean {
+        return handle === backbufferColorTextureHandle || handle === backbufferDepthStencilTextureHandle;
+    }
+
     public isBackbufferColor(handle: TextureHandle): boolean {
         return handle === backbufferColorTextureHandle;
     }
@@ -131,7 +135,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
             if (handle === backbufferColorTextureHandle) {
                 this._engine.restoreDefaultFramebuffer();
             } else if (handle === backbufferDepthStencilTextureHandle) {
-                throw new Error("Depth/Stencil textures are not supported as render targets");
+                this._engine.restoreDefaultFramebuffer();
             }
         } else {
             this._engine.bindFramebuffer(renderTarget);
