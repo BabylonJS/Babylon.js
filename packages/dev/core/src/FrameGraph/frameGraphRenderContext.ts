@@ -7,7 +7,8 @@ import { CopyTextureToTexture } from "../Misc/copyTextureToTexture";
 import type { IColor4Like } from "core/Maths/math.like";
 import { FrameGraphContext } from "./frameGraphContext";
 import type { Layer } from "../Layers/layer";
-import type { TextureHandle } from "../Engines/textureHandlerManager";
+import type { TextureHandle } from "../Engines/textureHandleManager";
+import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../Engines/textureHandleManager";
 
 export class FrameGraphRenderContext extends FrameGraphContext {
     private _effectRenderer: EffectRenderer;
@@ -19,15 +20,15 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         super();
         this._effectRenderer = new EffectRenderer(this._engine);
         this._copyTexture = new CopyTextureToTexture(this._engine);
-        this._currentRenderTargetHandle = this._engine.textureHandleManager.backbufferColorTextureHandle;
+        this._currentRenderTargetHandle = backbufferColorTextureHandle;
     }
 
     public isBackbufferColor(handle: TextureHandle): boolean {
-        return handle === this._engine.textureHandleManager.backbufferColorTextureHandle;
+        return handle === backbufferColorTextureHandle;
     }
 
     public isBackbufferDepthStencil(handle: TextureHandle): boolean {
-        return handle === this._engine.textureHandleManager.backbufferDepthStencilTextureHandle;
+        return handle === backbufferDepthStencilTextureHandle;
     }
 
     /**
@@ -43,7 +44,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     }
 
     public setTextureSamplingMode(handle: TextureHandle, samplingMode: number): void {
-        const internalTexture = this._engine.textureHandleManager.getTextureFromHandle(handle)?.texture!;
+        const internalTexture = this._engine._textureHandleManager.getTextureFromHandle(handle)?.texture!;
         if (internalTexture && internalTexture.samplingMode !== samplingMode) {
             this._engine.updateTextureSamplingMode(samplingMode, internalTexture);
         }
@@ -89,7 +90,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
             this._bindRenderTarget();
         }
         this._applyRenderTarget();
-        this._copyTexture.copy(this._engine.textureHandleManager.getTextureFromHandle(sourceTexture)!.texture!);
+        this._copyTexture.copy(this._engine._textureHandleManager.getTextureFromHandle(sourceTexture)!.texture!);
     }
 
     /**
@@ -108,7 +109,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      * @param renderTargetHandle The render target texture to bind
      * @internal
      */
-    public _bindRenderTarget(renderTargetHandle: TextureHandle = this._engine.textureHandleManager.backbufferColorTextureHandle) {
+    public _bindRenderTarget(renderTargetHandle: TextureHandle = backbufferColorTextureHandle) {
         if (renderTargetHandle === this._currentRenderTargetHandle) {
             return;
         }
@@ -122,14 +123,14 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         }
 
         const handle = this._currentRenderTargetHandle;
-        const textureSlot = this._engine.textureHandleManager._textures.get(handle)!;
+        const textureSlot = this._engine._textureHandleManager._textures.get(handle)!;
 
         const renderTarget = textureSlot.texture;
 
         if (!renderTarget) {
-            if (handle === this._engine.textureHandleManager.backbufferColorTextureHandle) {
+            if (handle === backbufferColorTextureHandle) {
                 this._engine.restoreDefaultFramebuffer();
-            } else if (handle === this._engine.textureHandleManager.backbufferDepthStencilTextureHandle) {
+            } else if (handle === backbufferDepthStencilTextureHandle) {
                 throw new Error("Depth/Stencil textures are not supported as render targets");
             }
         } else {

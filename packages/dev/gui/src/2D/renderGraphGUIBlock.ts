@@ -13,9 +13,9 @@ export class RenderGraphGUIBlock extends NodeRenderGraphBlock {
     protected override _frameGraphTask: AdvancedDynamicTexture;
 
     /**
-     * Gets the GUI task
+     * Gets the frame graph task associated with this block
      */
-    public get guiTask() {
+    public override get task() {
         return this._frameGraphTask;
     }
 

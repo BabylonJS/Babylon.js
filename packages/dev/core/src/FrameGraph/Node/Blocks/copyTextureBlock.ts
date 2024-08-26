@@ -13,6 +13,13 @@ export class RenderGraphCopyTextureBlock extends NodeRenderGraphBlock {
     protected override _frameGraphTask: FrameGraphCopyToTextureTask;
 
     /**
+     * Gets the frame graph task associated with this block
+     */
+    public override get task() {
+        return this._frameGraphTask;
+    }
+
+    /**
      * Create a new RenderGraphCopyTextureBlock
      * @param name defines the block name
      * @param engine defines the hosting engine

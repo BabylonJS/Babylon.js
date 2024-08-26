@@ -7,12 +7,12 @@ import { FrameGraphRenderPass } from "./Passes/renderPass";
 import { FrameGraphRenderContext } from "./frameGraphRenderContext";
 import { FrameGraphContext } from "./frameGraphContext";
 import type { FrameGraphTextureCreationOptions } from "./frameGraphTextureManager";
-import { FrameGraphTextureManager, FrameGraphTextureNamespace } from "./frameGraphTextureManager";
+import { FrameGraphTextureManager } from "./frameGraphTextureManager";
 import { FrameGraphTaskInternals } from "./Tasks/taskInternals";
 import { Observable } from "core/Misc/observable";
 import type { RenderTargetCreationOptions } from "core/Materials/Textures/textureCreationOptions";
 import { textureSizeIsObject } from "core/Materials/Textures/textureCreationOptions";
-import type { TextureHandle } from "../Engines/textureHandlerManager";
+import type { TextureHandle } from "../Engines/textureHandleManager";
 
 export type FrameGraphTextureDescription = {
     size: { width: number; height: number };
@@ -167,7 +167,7 @@ export class FrameGraph {
             textureHandle = textureId;
         }
 
-        return this._engine.textureHandleManager.getTextureCreationOptions(textureHandle);
+        return this._engine._textureHandleManager.getTextureCreationOptions(textureHandle);
     }
 
     public getTextureDescription(textureId: FrameGraphTaskOutputReference | TextureHandle): FrameGraphTextureDescription {
@@ -214,11 +214,7 @@ export class FrameGraph {
     }
 
     public createRenderTargetTexture(name: string, creationOptions: FrameGraphTextureCreationOptions): TextureHandle {
-        return this._textureManager.createRenderTargetTexture(
-            name,
-            this._currentProcessedTask ? FrameGraphTextureNamespace.Task : FrameGraphTextureNamespace.Graph,
-            creationOptions
-        );
+        return this._textureManager.createRenderTargetTexture(name, !!this._currentProcessedTask, creationOptions);
     }
 
     public clear(): void {

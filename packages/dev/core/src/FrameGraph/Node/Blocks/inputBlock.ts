@@ -12,7 +12,8 @@ import type { Nullable } from "../../../types";
 import type { AbstractEngine } from "../../../Engines/abstractEngine";
 import type { NodeRenderGraphBuildState } from "../nodeRenderGraphBuildState";
 import type { FrameGraphTextureCreationOptions } from "../../../FrameGraph/frameGraphTextureManager";
-import type { TextureHandle } from "../../../Engines/textureHandlerManager";
+import type { TextureHandle } from "../../../Engines/textureHandleManager";
+import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../../Engines/textureHandleManager";
 import { Constants } from "../../../Engines/constants";
 
 export type NodeRenderGraphValueType = RenderTargetWrapper | Camera;
@@ -203,10 +204,10 @@ export class RenderGraphInputBlock extends NodeRenderGraphBlock {
             this.output.value = state.frameGraph.createRenderTargetTexture(this.name, textureCreateOptions);
             this.output.valueType = NodeRenderGraphBlockConnectionPointValueTypes.Texture;
         } else if (this.isBackBuffer()) {
-            this.output.value = this._engine.textureHandleManager.backbufferColorTextureHandle;
+            this.output.value = backbufferColorTextureHandle;
             this.output.valueType = NodeRenderGraphBlockConnectionPointValueTypes.Texture;
         } else if (this.isBackBufferDepthStencilAttachment()) {
-            this.output.value = this._engine.textureHandleManager.backbufferDepthStencilTextureHandle;
+            this.output.value = backbufferDepthStencilTextureHandle;
             this.output.valueType = NodeRenderGraphBlockConnectionPointValueTypes.Texture;
         }
     }

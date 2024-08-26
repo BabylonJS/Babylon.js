@@ -51,7 +51,7 @@ import { InternalTexture, InternalTextureSource } from "../Materials/Textures/in
 import { Effect } from "../Materials/effect";
 import { _ConcatenateShader, _getGlobalDefines } from "./abstractEngine.functions";
 import { resetCachedPipeline } from "core/Materials/effect.functions";
-import type { TextureHandle } from "./textureHandlerManager";
+import type { TextureHandle } from "./textureHandleManager";
 
 /**
  * Keeps track of all the buffer info used in engine.
@@ -461,7 +461,7 @@ export class ThinEngine extends AbstractEngine {
         stateObject.validateShaderPrograms = this.validateShaderPrograms;
         stateObject.parallelShaderCompile = this._caps.parallelShaderCompile;
 
-        this.textureHandleManager._initialize(this);
+        this._textureHandleManager._initialize(this);
     }
 
     protected override _clearEmptyResources(): void {
@@ -3674,7 +3674,7 @@ export class ThinEngine extends AbstractEngine {
      * @param name The name of the uniform in the effect
      */
     public setTextureHandle(channel: number, handle: TextureHandle, name: string): void {
-        this._bindTexture(channel, this.textureHandleManager.getTextureFromHandle(handle)!.texture, name);
+        this._bindTexture(channel, this._textureHandleManager.getTextureFromHandle(handle)!.texture, name);
     }
 
     private _bindSamplerUniformToChannel(sourceSlot: number, destination: number) {

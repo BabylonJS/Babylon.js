@@ -3,6 +3,10 @@ import type { RenderTargetWrapper } from "./renderTargetWrapper";
 import type { Nullable } from "../types";
 import type { AbstractEngine } from "./abstractEngine";
 
+export const backbufferColorTextureHandle: TextureHandle = 0;
+
+export const backbufferDepthStencilTextureHandle: TextureHandle = 1;
+
 export type TextureHandle = number;
 
 export type THMTextureCreationOptions = {
@@ -28,11 +32,7 @@ export type TextureHandleEntry = {
  * @internal
  */
 export class TextureHandleManager {
-    private static _Counter = 0;
-
-    public readonly backbufferColorTextureHandle: TextureHandle;
-
-    public readonly backbufferDepthStencilTextureHandle: TextureHandle;
+    private static _Counter = 2;
 
     public _textures: Map<TextureHandle, TextureHandleEntry> = new Map();
 
@@ -40,16 +40,24 @@ export class TextureHandleManager {
     public _initialize(engine: AbstractEngine): void {
         const size = { width: engine.getRenderWidth(true), height: engine.getRenderHeight(true) };
 
-        (this.backbufferColorTextureHandle as number) = this._createHandleForTexture("backbuffer color", null, {
-            size,
-            options: {},
-            sizeIsPercentage: false,
+        this._textures.set(backbufferColorTextureHandle, {
+            name: "backbuffer color",
+            texture: null,
+            creationOptions: {
+                size,
+                options: {},
+                sizeIsPercentage: false,
+            },
         });
 
-        (this.backbufferDepthStencilTextureHandle as number) = this._createHandleForTexture("backbuffer depth/stencil", null, {
-            size,
-            options: {},
-            sizeIsPercentage: false,
+        this._textures.set(backbufferDepthStencilTextureHandle, {
+            name: "backbuffer depth/stencil",
+            texture: null,
+            creationOptions: {
+                size,
+                options: {},
+                sizeIsPercentage: false,
+            },
         });
     }
 

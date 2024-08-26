@@ -140,7 +140,7 @@ export class PreviewManager {
         // Set a default control in GUI blocks
         const guiBlocks = this._nodeRenderGraph.getBlocksByPredicate<RenderGraphGUIBlock>((block) => block.getClassName() === "GUI.RenderGraphGUIBlock");
         guiBlocks.forEach((block, i) => {
-            const gui = block.guiTask;
+            const gui = block.task;
 
             const button = Button.CreateSimpleButton("but" + i, `GUI #${i + 1} button`);
 

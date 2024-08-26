@@ -1,7 +1,7 @@
 import { Color4 } from "core/Maths/math.color";
 import type { FrameGraph } from "../frameGraph";
 import type { FrameGraphTaskOutputReference, IFrameGraphTask } from "./IFrameGraphTask";
-import type { TextureHandle } from "../../Engines/textureHandlerManager";
+import type { TextureHandle } from "../../Engines/textureHandleManager";
 
 export class FrameGraphClearTextureTask implements IFrameGraphTask {
     public color = new Color4(0.2, 0.2, 0.3, 1);

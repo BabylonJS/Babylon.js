@@ -15,6 +15,13 @@ export class BloomPostProcessBlock extends NodeRenderGraphBlock {
     protected override _frameGraphTask: BloomEffect;
 
     /**
+     * Gets the frame graph task associated with this block
+     */
+    public override get task() {
+        return this._frameGraphTask;
+    }
+
+    /**
      * Create a new BloomPostProcessBlock
      * @param name defines the block name
      * @param engine defines the hosting engine

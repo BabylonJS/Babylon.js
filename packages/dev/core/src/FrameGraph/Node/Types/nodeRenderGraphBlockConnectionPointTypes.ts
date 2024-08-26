@@ -1,4 +1,4 @@
-import type { TextureHandle } from "../../../Engines/textureHandlerManager";
+import type { TextureHandle } from "../../../Engines/textureHandleManager";
 import type { FrameGraphTaskOutputReference } from "../../Tasks/IFrameGraphTask";
 
 /**

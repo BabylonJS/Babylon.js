@@ -51,8 +51,8 @@ import { IsDocumentAvailable, IsNavigatorAvailable, IsWindowObjectExist } from "
 import { Constants } from "./constants";
 import { Observable } from "../Misc/observable";
 import { EngineFunctionContext, _loadFile } from "./abstractEngine.functions";
-import type { TextureHandle } from "./textureHandlerManager";
-import { TextureHandleManager } from "./textureHandlerManager";
+import type { TextureHandle } from "./textureHandleManager";
+import { TextureHandleManager } from "./textureHandleManager";
 
 /**
  * Defines the interface used by objects working like Scene
@@ -217,8 +217,8 @@ export abstract class AbstractEngine {
     public _alphaMode = Constants.ALPHA_ADD;
     /** @internal */
     public _alphaEquation = Constants.ALPHA_DISABLE;
-
-    public textureHandleManager = new TextureHandleManager();
+    /** @internal */
+    public _textureHandleManager = new TextureHandleManager();
 
     protected _activeRequests: IFileRequest[] = [];
 
@@ -2553,7 +2553,7 @@ export abstract class AbstractEngine {
         this._isDisposed = true;
         this.stopRenderLoop();
 
-        this.textureHandleManager.dispose();
+        this._textureHandleManager.dispose();
 
         // Empty texture
         if (this._emptyTexture) {

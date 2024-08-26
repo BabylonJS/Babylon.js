@@ -16,7 +16,7 @@ import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { IPipelineGenerationOptions } from "./effect.functions";
 import { _processShaderCode, getCachedPipeline, createAndPreparePipelineContext, resetCachedPipeline } from "./effect.functions";
-import type { TextureHandle } from "../Engines/textureHandlerManager";
+import type { TextureHandle } from "../Engines/textureHandleManager";
 
 /**
  * Defines the route to the shader code. The priority is as follows:

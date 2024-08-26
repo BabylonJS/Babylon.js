@@ -4,7 +4,7 @@ import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import type { RenderTargetCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
 import { textureSizeIsObject } from "../Materials/Textures/textureCreationOptions";
 import { Texture } from "../Materials/Textures/texture";
-import type { TextureHandle, TextureHandleManager } from "../Engines/textureHandlerManager";
+import type { TextureHandle, TextureHandleManager } from "../Engines/textureHandleManager";
 
 export type FrameGraphTextureCreationOptions = {
     /** Size of the render target texture. If sizeIsPercentage is true, these are percentages relative to the screen size */
@@ -15,8 +15,7 @@ export type FrameGraphTextureCreationOptions = {
     sizeIsPercentage: boolean;
 };
 
-/** @internal */
-export enum FrameGraphTextureNamespace {
+enum FrameGraphTextureNamespace {
     Task,
     Graph,
     External,
@@ -36,7 +35,7 @@ export class FrameGraphTextureManager {
         private _debugTextures = false,
         private _scene?: Scene
     ) {
-        this._textureHandleManager = this._engine.textureHandleManager;
+        this._textureHandleManager = this._engine._textureHandleManager;
     }
 
     public importTexture(name: string, texture: RenderTargetWrapper, handle?: TextureHandle): TextureHandle {
@@ -49,10 +48,10 @@ export class FrameGraphTextureManager {
         return handle;
     }
 
-    public createRenderTargetTexture(name: string, namespace: FrameGraphTextureNamespace, creationOptions: FrameGraphTextureCreationOptions): TextureHandle {
+    public createRenderTargetTexture(name: string, taskNamespace: boolean, creationOptions: FrameGraphTextureCreationOptions): TextureHandle {
         const handle = this._textureHandleManager.createRenderTargetTexture(name, creationOptions);
 
-        this._textures.set(handle, { namespace });
+        this._textures.set(handle, { namespace: taskNamespace ? FrameGraphTextureNamespace.Task : FrameGraphTextureNamespace.Graph });
 
         return handle;
     }

@@ -36,4 +36,4 @@ export * from "./shaderStore";
 export * from "./renderTargetWrapper";
 export * from "./Processors/iShaderProcessor";
 export * from "./engine.common";
-export * from "./textureHandlerManager";
+export * from "./textureHandleManager";

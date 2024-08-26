@@ -1,7 +1,7 @@
 import type { IFrameGraphPass } from "../Passes/IFrameGraphPass";
 import { FrameGraphRenderPass } from "../Passes/renderPass";
 import type { IFrameGraphTask } from "./IFrameGraphTask";
-import type { TextureHandle } from "../../Engines/textureHandlerManager";
+import type { TextureHandle } from "../../Engines/textureHandleManager";
 
 /** @internal */
 export class FrameGraphTaskInternals {

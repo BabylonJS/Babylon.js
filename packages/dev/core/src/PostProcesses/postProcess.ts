@@ -30,7 +30,7 @@ import { AbstractEngine } from "../Engines/abstractEngine";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
 import type { FrameGraphTaskOutputReference, IFrameGraphTask } from "../FrameGraph/Tasks/IFrameGraphTask";
 import type { FrameGraph } from "../FrameGraph/frameGraph";
-import type { TextureHandle } from "../Engines/textureHandlerManager";
+import type { TextureHandle } from "../Engines/textureHandleManager";
 
 declare module "../Engines/abstractEngine" {
     export interface AbstractEngine {

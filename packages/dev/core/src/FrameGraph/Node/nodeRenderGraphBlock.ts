@@ -39,6 +39,13 @@ export class NodeRenderGraphBlock {
     }
 
     /**
+     * Gets the frame graph task associated with this block
+     */
+    public get task() {
+        return this._frameGraphTask;
+    }
+
+    /**
      * Gets an observable raised when the block is built
      */
     public onBuildObservable = new Observable<NodeRenderGraphBlock>();

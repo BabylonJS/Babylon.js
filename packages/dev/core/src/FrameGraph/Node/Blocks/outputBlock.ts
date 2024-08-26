@@ -13,6 +13,13 @@ export class RenderGraphOutputBlock extends NodeRenderGraphBlock {
     protected override _frameGraphTask: FrameGraphCopyToBackbufferColorTask;
 
     /**
+     * Gets the frame graph task associated with this block
+     */
+    public override get task() {
+        return this._frameGraphTask;
+    }
+
+    /**
      * Create a new RenderGraphOutputBlock
      * @param name defines the block name
      * @param engine defines the hosting engine
@@ -26,7 +33,7 @@ export class RenderGraphOutputBlock extends NodeRenderGraphBlock {
 
         this.texture.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
 
-        this._frameGraphTask = new FrameGraphCopyToBackbufferColorTask(name, engine);
+        this._frameGraphTask = new FrameGraphCopyToBackbufferColorTask(name);
     }
 
     /**

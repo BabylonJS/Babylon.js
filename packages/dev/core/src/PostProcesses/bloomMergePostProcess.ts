@@ -10,7 +10,7 @@ import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import type { FrameGraph } from "../FrameGraph/frameGraph";
 import type { FrameGraphTaskOutputReference } from "../FrameGraph/Tasks/IFrameGraphTask";
-import type { TextureHandle } from "../Engines/textureHandlerManager";
+import type { TextureHandle } from "../Engines/textureHandleManager";
 
 /**
  * The BloomMergePostProcess merges blurred images with the original based on the values of the circle of confusion.

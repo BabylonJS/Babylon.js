@@ -11,7 +11,7 @@ import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { FrameGraphTaskOutputReference, IFrameGraphTask } from "../FrameGraph/Tasks/IFrameGraphTask";
 import type { FrameGraph } from "../FrameGraph/frameGraph";
 import { Constants } from "../Engines/constants";
-import type { TextureHandle } from "../Engines/textureHandlerManager";
+import type { TextureHandle } from "../Engines/textureHandleManager";
 
 /**
  * The bloom effect spreads bright areas of an image to simulate artifacts seen in cameras
