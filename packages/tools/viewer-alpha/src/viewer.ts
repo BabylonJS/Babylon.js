@@ -201,6 +201,7 @@ export class Viewer implements IDisposable {
         if (value !== this._selectedAnimation) {
             const startAnimation = this.isAnimationPlaying;
             if (this._activeAnimation) {
+                this._activeAnimation.goToFrame(0);
                 this._activeAnimation.stop();
                 this._activeAnimationObservers.forEach((observer) => observer.remove());
                 this._activeAnimationObservers = [];

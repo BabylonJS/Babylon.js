@@ -66,13 +66,15 @@ export class HTML3DElement extends LitElement {
             border-radius: 12px;
             border-color: var(--ui-foreground-color);
             height: 48px;
-            width: 80%;
+            width: calc(100% - 24px);
+            min-width: 150px;
             max-width: 1280px;
             bottom: 12px;
             left: 50%;
             transform: translateX(-50%);
             background-color: var(--ui-background-color);
             color: var(--ui-foreground-color);
+            -webkit-tap-highlight-color: transparent;
         }
 
         .tool-bar * {
@@ -82,9 +84,12 @@ export class HTML3DElement extends LitElement {
 
         .tool-bar select {
             background: none;
+            min-width: 52px;
+            max-width: 128px;
             border: 1px solid transparent;
             border-radius: inherit;
             color: inherit;
+            font-size: 14px;
             padding: 12px;
             cursor: pointer;
             outline: none;
@@ -303,11 +308,6 @@ export class HTML3DElement extends LitElement {
                 html`
                     <slot name="tool-bar">
                         <div part="tool-bar" class="tool-bar">
-                            ${this.animations.length > 1
-                                ? html`<select aria-label="Select Animation" @change="${this._onSelectedAnimationChanged}">
-                                      ${this.animations.map((name, index) => html`<option value="${index}" .selected="${this.selectedAnimation == index}">${name}</option>`)}
-                                  </select>`
-                                : ""}
                             <div class="progress-control">
                                 <button aria-label="${this.isAnimationPlaying ? "Pause" : "Play"}" @click="${this.toggleAnimation}">
                                     ${!this.isAnimationPlaying
@@ -333,6 +333,11 @@ export class HTML3DElement extends LitElement {
                             <select aria-label="Select Animation Speed" @change="${this._onAnimationSpeedChanged}">
                                 ${allowedAnimationSpeeds.map((speed) => html`<option value="${speed}" .selected="${this.animationSpeed === speed}">${speed}x</option>`)}
                             </select>
+                            ${this.animations.length > 1
+                                ? html`<select aria-label="Select Animation" @change="${this._onSelectedAnimationChanged}">
+                                      ${this.animations.map((name, index) => html`<option value="${index}" .selected="${this.selectedAnimation == index}">${name}</option>`)}
+                                  </select>`
+                                : ""}
                         </div>
                     </slot>
                 `}
