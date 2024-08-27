@@ -1,21 +1,33 @@
 {
-    "fromTag": "7.22.3",
+    "fromTag": "7.22.4",
     "changelog": {
-        "7.22.3": [
+        "7.22.5": [
             {
-                "pr": "15472",
-                "title": "Native Texture Loaders",
-                "description": "Use native (bimg) texture loaders for tga, exr, hdr, dds",
+                "pr": "15481",
+                "title": "Add back copy of extensionOptions",
+                "description": "Accidentally lost this with a previous change to fix a different bug.",
                 "author": {
-                    "name": "CedricGuillemet",
-                    "url": "https://github.com/CedricGuillemet"
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
                 },
                 "files": [
-                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                    "packages/dev/loaders/src/glTF/glTFFileLoader.ts",
+                    "packages/dev/loaders/test/integration/babylon.sceneLoader.test.ts"
                 ],
-                "tags": [
-                    "skip changelog"
-                ]
+                "tags": []
+            },
+            {
+                "pr": "15480",
+                "title": "Add extraInitializationsAsync to EffectWrapper Option",
+                "description": "Add the extraInitializationsAsync option to the EffectWrapper.\r\n\r\nThis is needed to make it easier to add wgsl support to rendering logic that uses EffectWrapper.\r\n\r\n\r\n#### Additional Context:\r\nI'm currently trying to add wgsl support to FluidRenderer, but after looking at the source, I decided that EffectWrapper should support async shader loading first, so I created this PR.\r\n",
+                "author": {
+                    "name": "noname0310",
+                    "url": "https://github.com/noname0310"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/effectRenderer.ts"
+                ],
+                "tags": []
             }
         ],
         "7.22.4": [
@@ -199,6 +211,23 @@
                     "packages/dev/loaders/src/glTF/glTFFileLoader.ts"
                 ],
                 "tags": []
+            }
+        ],
+        "7.22.3": [
+            {
+                "pr": "15472",
+                "title": "Native Texture Loaders",
+                "description": "Use native (bimg) texture loaders for tga, exr, hdr, dds",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
             }
         ],
         "7.22.2": [

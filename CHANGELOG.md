@@ -1,5 +1,15 @@
 # Changelog
 
+## 7.22.5
+
+### Core
+
+- Add extraInitializationsAsync to EffectWrapper Option - by [noname0310](https://github.com/noname0310) ([#15480](https://github.com/BabylonJS/Babylon.js/pull/15480))
+
+### Loaders
+
+- Add back copy of extensionOptions - by [ryantrem](https://github.com/ryantrem) ([#15481](https://github.com/BabylonJS/Babylon.js/pull/15481))
+
 ## 7.22.4
 
 ### Core
