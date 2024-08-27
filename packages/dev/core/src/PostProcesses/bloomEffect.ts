@@ -212,12 +212,12 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
         this._blurY.destinationTexture = blurYTextureHandle;
         this._blurY.recordFrameGraph(frameGraph, true);
 
+        const sourceTextureCreationOptions = frameGraph.getTextureCreationOptions(this.sourceTexture, true);
+        sourceTextureCreationOptions.options.generateDepthBuffer = false;
+        sourceTextureCreationOptions.options.generateStencilBuffer = false;
+
         const sourceTextureHandle = frameGraph.getTextureHandle(this.sourceTexture);
-        const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(
-            this.destinationTexture,
-            `${this.name} Output`,
-            frameGraph.getTextureCreationOptions(this.sourceTexture)
-        );
+        const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(this.destinationTexture, `${this.name} Merge`, sourceTextureCreationOptions);
 
         this._merge.sourceTexture = this.sourceTexture;
         this._merge.sourceSamplingMode = this.sourceSamplingMode;

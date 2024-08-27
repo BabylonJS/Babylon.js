@@ -1204,12 +1204,12 @@ export class PostProcess implements IFrameGraphTask {
             throw new Error(`PostProcess "${this.name}": sourceTexture is required`);
         }
 
+        const sourceTextureCreationOptions = frameGraph.getTextureCreationOptions(this.sourceTexture, true);
+        sourceTextureCreationOptions.options.generateDepthBuffer = false;
+        sourceTextureCreationOptions.options.generateStencilBuffer = false;
+
         const sourceTextureHandle = frameGraph.getTextureHandle(this.sourceTexture);
-        const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(
-            this.destinationTexture,
-            `${this.name} Destination`,
-            frameGraph.getTextureCreationOptions(this.sourceTexture)
-        );
+        const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(this.destinationTexture, this.name, sourceTextureCreationOptions);
 
         const pass = frameGraph.addRenderPass(this.name);
 

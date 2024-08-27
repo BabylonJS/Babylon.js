@@ -90,13 +90,13 @@ export class BloomMergePostProcess extends PostProcess {
             throw new Error(`BloomMergePostProcess "${this.name}": sourceTexture and sourceBlurTexture are required`);
         }
 
+        const sourceTextureCreationOptions = frameGraph.getTextureCreationOptions(this.sourceTexture, true);
+        sourceTextureCreationOptions.options.generateDepthBuffer = false;
+        sourceTextureCreationOptions.options.generateStencilBuffer = false;
+
         const sourceTextureHandle = frameGraph.getTextureHandle(this.sourceTexture);
         const sourceBlurTextureHandle = frameGraph.getTextureHandle(this.sourceBlurTexture);
-        const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(
-            this.destinationTexture,
-            `${this.name} Destination`,
-            frameGraph.getTextureCreationOptions(this.sourceTexture)
-        );
+        const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(this.destinationTexture, this.name, sourceTextureCreationOptions);
 
         const pass = frameGraph.addRenderPass(this.name);
 
