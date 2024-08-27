@@ -78,6 +78,8 @@ export class FrameGraphRenderContext extends FrameGraphContext {
 
         this._applyRenderTarget();
 
+        const engineDepthMask = this._engine.getDepthWrite(); // for some reasons, depthWrite is not restored by EffectRenderer.restoreStates
+
         this._effectRenderer.saveStates();
         this._effectRenderer.setViewport();
 
@@ -90,6 +92,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         customBindings?.();
         this._effectRenderer.draw();
         this._effectRenderer.restoreStates();
+        this._engine.setDepthWrite(engineDepthMask);
         this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
 
         return true;

@@ -59,6 +59,9 @@ export class CopyTextureToTexture {
                 engine.setDepthBuffer(true);
                 engine.depthCullingState.depthMask = true;
                 engine.depthCullingState.depthFunc = Constants.ALWAYS;
+            } else {
+                engine.depthCullingState.depthMask = false;
+                // other states are already set by EffectRenderer.applyEffectWrapper
             }
 
             if (this._textureIsInternal(this._source)) {
@@ -93,12 +96,15 @@ export class CopyTextureToTexture {
         this._source = source;
         this._conversion = conversion;
 
-        const engineDepthFunc = this._engine.depthCullingState.depthFunc;
+        const engineDepthFunc = this._engine.getDepthFunction();
+        const engineDepthMask = this._engine.getDepthWrite(); // for some reasons, depthWrite is not restored by EffectRenderer.restoreStates
 
         this._renderer.render(this._effectWrapper, destination);
 
+        this._engine.setDepthWrite(engineDepthMask);
+
         if (this._isDepthTexture && engineDepthFunc) {
-            this._engine.depthCullingState.depthFunc = engineDepthFunc;
+            this._engine.setDepthFunction(engineDepthFunc);
         }
 
         return true;
