@@ -309,7 +309,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * Define the clear color of the Render Target if it should be different from the scene.
      */
     public clearColor: Color4;
-    protected _size: TextureSize;
+    /** @internal */
+    public _size: TextureSize;
     protected _initialSizeParameter: TextureSize | { ratio: number };
     protected _sizeRatio: Nullable<number>;
     /** @internal */

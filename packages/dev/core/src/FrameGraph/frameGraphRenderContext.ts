@@ -153,6 +153,15 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         }
     }
 
+    /** @internal */
+    public _shareDepth(srcRenderTargetHandle: TextureHandle, dstRenderTargetHandle: TextureHandle) {
+        const srcTexture = this._textureManager.getTextureFromHandle(srcRenderTargetHandle);
+        const dstTexture = this._textureManager.getTextureFromHandle(dstRenderTargetHandle);
+
+        if (srcTexture && dstTexture) {
+            srcTexture.shareDepth(dstTexture);
+        }
+    }
 
     private _applyRenderTarget() {
         if (this._renderTargetIsBound) {

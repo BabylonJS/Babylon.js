@@ -15,6 +15,7 @@ export * from "./Tasks/clearTextureTask";
 export * from "./Tasks/copyToBackbufferColorTask";
 export * from "./Tasks/copyToTextureTask";
 export * from "./Tasks/IFrameGraphTask";
+export * from "./Tasks/renderObjectsTask";
 
 export * from "./frameGraph";
 export * from "./frameGraphContext";

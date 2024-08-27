@@ -9,7 +9,9 @@ import type { AbstractEngine } from "../../Engines/abstractEngine";
 export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext> {
     protected _engine: AbstractEngine;
     protected _renderTarget: TextureHandle;
+    protected _renderTargetDepth: TextureHandle | undefined;
     protected _usedTextures: TextureHandle[] = [];
+    protected _depthShared = false;
 
     public static IsRenderPass(pass: IFrameGraphPass): pass is FrameGraphRenderPass {
         return (pass as FrameGraphRenderPass).setRenderTarget !== undefined;
@@ -34,8 +36,16 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
         this._renderTarget = renderTargetHandle;
     }
 
+    public setRenderTargetDepth(renderTargetHandle?: TextureHandle) {
+        this._renderTargetDepth = renderTargetHandle;
+    }
+
     /** @internal */
     public override _execute() {
+        if (this._renderTargetDepth && !this._depthShared) {
+            this._context._shareDepth(this._renderTargetDepth, this._renderTarget);
+            this._depthShared = true;
+        }
         this._context._bindRenderTarget(this._renderTarget, `frame graph - render pass '${this.name}'`);
         super._execute();
         this._context._unbindRenderTarget();
