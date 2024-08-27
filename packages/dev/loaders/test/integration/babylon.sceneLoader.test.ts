@@ -1266,6 +1266,14 @@ describe("Babylon Scene Loader", function () {
                     useRangeRequests: !gltfFileLoader.useRangeRequests,
                     useSRGBBuffers: !gltfFileLoader.useSRGBBuffers,
                     customRootNode: null,
+                    extensionOptions: {
+                        MSFT_lod: {
+                            maxLODsToLoad: 1,
+                        },
+                        KHR_audio: {
+                            enabled: false,
+                        },
+                    },
                 } satisfies GLTFOptions;
 
                 const loaderPromise = new Promise<GLTFFileLoader>((resolve) => {
