@@ -90,7 +90,6 @@ import { resetCachedPipeline } from "../Materials/effect.functions";
 import { WebGPUExternalTexture } from "./WebGPU/webgpuExternalTexture";
 import type { TextureSampler } from "../Materials/Textures/textureSampler";
 import type { StorageBuffer } from "../Buffers/storageBuffer";
-import type { TextureHandle } from "./textureHandleManager";
 
 const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
     label: `TextureView_SwapChain_ResolveTarget`,
@@ -2677,16 +2676,6 @@ export class WebGPUEngine extends AbstractEngine {
      */
     public setTexture(channel: number, unused: Nullable<WebGLUniformLocation>, texture: Nullable<BaseTexture>, name: string): void {
         this._setTexture(channel, texture, false, false, name, name);
-    }
-
-    /**
-     * Sets a texture to the according handle.
-     * @param channel The texture channel
-     * @param handle The handle of the texture
-     * @param name The name of the uniform in the effect
-     */
-    public setTextureHandle(channel: number, handle: TextureHandle, name: string): void {
-        this._setInternalTexture(name, this._textureHandleManager.getTextureFromHandle(handle)!.texture);
     }
 
     /**

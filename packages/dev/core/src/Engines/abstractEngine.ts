@@ -51,7 +51,6 @@ import { IsDocumentAvailable, IsNavigatorAvailable, IsWindowObjectExist } from "
 import { Constants } from "./constants";
 import { Observable } from "../Misc/observable";
 import { EngineFunctionContext, _loadFile } from "./abstractEngine.functions";
-import type { TextureHandle } from "./textureHandleManager";
 import { TextureHandleManager } from "./textureHandleManager";
 
 /**
@@ -364,14 +363,6 @@ export abstract class AbstractEngine {
      * @param name The name of the uniform in the effect
      */
     public abstract setTexture(channel: number, unused: Nullable<WebGLUniformLocation>, texture: Nullable<ThinTexture>, name: string): void;
-
-    /**
-     * Sets a texture to the according handle.
-     * @param channel The texture channel
-     * @param handle The handle of the texture
-     * @param name The name of the uniform in the effect
-     */
-    public abstract setTextureHandle(channel: number, handle: TextureHandle, name: string): void;
 
     /**
      * Binds an effect to the webGL context

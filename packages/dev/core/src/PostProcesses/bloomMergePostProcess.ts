@@ -106,8 +106,8 @@ export class BloomMergePostProcess extends PostProcess {
         pass.setExecuteFunc((context) => {
             context.applyFullScreenEffect(this._drawWrapper, () => {
                 this._bind();
-                this._drawWrapper.effect!.setTextureHandle("textureSampler", sourceTextureHandle);
-                this._drawWrapper.effect!.setTextureHandle("bloomBlur", sourceBlurTextureHandle);
+                context.bindTextureHandle(this._drawWrapper.effect!, "textureSampler", sourceTextureHandle);
+                context.bindTextureHandle(this._drawWrapper.effect!, "bloomBlur", sourceBlurTextureHandle);
                 this._drawWrapper.effect!.setFloat("bloomWeight", this.weight);
             });
         });

@@ -4,11 +4,12 @@ import { Constants } from "../Engines/constants";
 import { EffectRenderer } from "../Materials/effectRenderer";
 import type { DrawWrapper } from "../Materials/drawWrapper";
 import { CopyTextureToTexture } from "../Misc/copyTextureToTexture";
-import type { IColor4Like } from "core/Maths/math.like";
+import type { IColor4Like } from "../Maths/math.like";
 import { FrameGraphContext } from "./frameGraphContext";
 import type { Layer } from "../Layers/layer";
 import type { TextureHandle } from "../Engines/textureHandleManager";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../Engines/textureHandleManager";
+import type { Effect } from "../Materials/effect";
 
 export class FrameGraphRenderContext extends FrameGraphContext {
     private _effectRenderer: EffectRenderer;
@@ -51,6 +52,13 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         const internalTexture = this._engine._textureHandleManager.getTextureFromHandle(handle)?.texture!;
         if (internalTexture && internalTexture.samplingMode !== samplingMode) {
             this._engine.updateTextureSamplingMode(samplingMode, internalTexture);
+        }
+    }
+
+    public bindTextureHandle(effect: Effect, name: string, handle: TextureHandle): void {
+        const texture = this._engine._textureHandleManager.getTextureFromHandle(handle);
+        if (texture) {
+            effect._bindTexture(name, texture.texture!);
         }
     }
 

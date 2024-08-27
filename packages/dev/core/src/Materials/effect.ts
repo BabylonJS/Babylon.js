@@ -16,7 +16,6 @@ import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { IPipelineGenerationOptions } from "./effect.functions";
 import { _processShaderCode, getCachedPipeline, createAndPreparePipelineContext, resetCachedPipeline } from "./effect.functions";
-import type { TextureHandle } from "../Engines/textureHandleManager";
 
 /**
  * Defines the route to the shader code. The priority is as follows:
@@ -923,15 +922,6 @@ export class Effect implements IDisposable {
      */
     public setTexture(channel: string, texture: Nullable<ThinTexture>): void {
         this._engine.setTexture(this._samplers[channel], this._uniforms[channel], texture, channel);
-    }
-
-    /**
-     * Sets a texture on the engine to be used in the shader.
-     * @param channel Name of the sampler variable.
-     * @param handle Handle to the texture to set.
-     */
-    public setTextureHandle(channel: string, handle: TextureHandle): void {
-        this._engine.setTextureHandle(this._samplers[channel], handle, channel);
     }
 
     /**
