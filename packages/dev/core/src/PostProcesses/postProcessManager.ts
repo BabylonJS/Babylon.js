@@ -5,7 +5,7 @@ import { VertexBuffer } from "../Buffers/buffer";
 import { Constants } from "../Engines/constants";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
-
+import { Observable } from "../Misc/observable";
 import type { Scene } from "../scene";
 
 /**
@@ -55,6 +55,8 @@ export class PostProcessManager {
 
         this._indexBuffer = this._scene.getEngine().createIndexBuffer(indices);
     }
+
+    public onBeforeRenderObservable = new Observable<PostProcessManager>();
 
     /**
      * Rebuilds the vertex buffers of the manager.
@@ -171,6 +173,8 @@ export class PostProcessManager {
         if (!camera) {
             return;
         }
+
+        this.onBeforeRenderObservable.notifyObservers(this);
 
         postProcesses = postProcesses || <Array<PostProcess>>camera._postProcesses.filter((pp) => {
                 return pp != null;

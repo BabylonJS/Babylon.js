@@ -2226,6 +2226,13 @@
             "title": "glTF Loader Capabilities",
             "playgroundId": "#EBO3J1#10",
             "referenceImage": "glTFLoaderCapabilities.png"
+        },
+        {
+            "title": "IBL Voxel Shadowing",
+            "playgroundId": "#8R5SSE#180",
+            "referenceImage": "voxelShadows.png",
+            "renderCount": 15,
+            "excludedEngines": ["webgl1", "webgpu"]
         }
     ]
 }
