@@ -14,6 +14,8 @@ import type { Effect } from "../Materials/effect";
 export class FrameGraphRenderContext extends FrameGraphContext {
     private _effectRenderer: EffectRenderer;
     private _currentRenderTargetHandle: TextureHandle;
+    private _debugMessageWhenTargetBound: string | undefined;
+    private _debugMessageHasBeenPushed = false;
     private _renderTargetIsBound = true;
     private _copyTexture: CopyTextureToTexture;
 
@@ -124,16 +126,33 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      * Binds a render target texture so that upcoming draw calls will render to it
      * Note: it is a lazy operation, so the render target will only be bound when needed. This way, it is possible to call
      *   this method several times with different render targets without incurring the cost of binding if no draw calls are made
-     * @param renderTargetHandle The render target texture to bind
      * @internal
      */
-    public _bindRenderTarget(renderTargetHandle: TextureHandle = backbufferColorTextureHandle) {
+    public _bindRenderTarget(renderTargetHandle: TextureHandle = backbufferColorTextureHandle, debugMessage?: string) {
         if (renderTargetHandle === this._currentRenderTargetHandle) {
+            this._unbindRenderTarget();
+            if (debugMessage !== undefined) {
+                this._engine._debugPushGroup?.(debugMessage, 2);
+                this._debugMessageWhenTargetBound = undefined;
+                this._debugMessageHasBeenPushed = true;
+            }
             return;
         }
         this._currentRenderTargetHandle = renderTargetHandle;
+        this._debugMessageWhenTargetBound = debugMessage;
         this._renderTargetIsBound = false;
     }
+
+    /**
+     * @internal
+     */
+    public _unbindRenderTarget() {
+        if (this._debugMessageHasBeenPushed) {
+            this._engine._debugPopGroup?.(2);
+            this._debugMessageHasBeenPushed = false;
+        }
+    }
+
 
     private _applyRenderTarget() {
         if (this._renderTargetIsBound) {
@@ -145,6 +164,8 @@ export class FrameGraphRenderContext extends FrameGraphContext {
 
         const renderTarget = textureSlot.texture;
 
+        this._unbindRenderTarget();
+
         if (!renderTarget) {
             if (handle === backbufferColorTextureHandle) {
                 this._engine.restoreDefaultFramebuffer();
@@ -153,6 +174,12 @@ export class FrameGraphRenderContext extends FrameGraphContext {
             }
         } else {
             this._engine.bindFramebuffer(renderTarget);
+        }
+
+        if (this._debugMessageWhenTargetBound !== undefined) {
+            this._engine._debugPushGroup?.(this._debugMessageWhenTargetBound, 2);
+            this._debugMessageWhenTargetBound = undefined;
+            this._debugMessageHasBeenPushed = true;
         }
 
         this._renderTargetIsBound = true;

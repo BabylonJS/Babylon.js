@@ -1209,10 +1209,10 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
         const engine = scene.getEngine();
 
-        engine._debugPushGroup?.(`render to face #${faceIndex} layer #${layer}`, 1);
-
         // Bind
         this._prepareFrame(scene, faceIndex, layer, useCameraPostProcess);
+
+        engine._debugPushGroup?.(`render to face #${faceIndex} layer #${layer}`, 2);
 
         if (this.is2DArray || this.is3D) {
             engine.currentRenderPassId = this._renderPassIds[layer];
@@ -1317,14 +1317,14 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             }
         }
 
+        engine._debugPopGroup?.(2);
+
         // Unbind
         this._unbindFrameBuffer(engine, faceIndex);
 
         if (this._texture && this.isCube && faceIndex === 5) {
             engine.generateMipMapsForCubemap(this._texture, true);
         }
-
-        engine._debugPopGroup?.(1);
     }
 
     /**
