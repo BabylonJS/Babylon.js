@@ -11,9 +11,8 @@ import type { InternalTexture } from "../../../Materials/Textures/internalTextur
 import type { Nullable } from "../../../types";
 import type { AbstractEngine } from "../../../Engines/abstractEngine";
 import type { NodeRenderGraphBuildState } from "../nodeRenderGraphBuildState";
-import type { FrameGraphTextureCreationOptions } from "../../../FrameGraph/frameGraphTextureManager";
-import type { TextureHandle } from "../../../Engines/textureHandleManager";
-import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../../Engines/textureHandleManager";
+import type { FrameGraphTextureCreationOptions, TextureHandle } from "../../../FrameGraph/frameGraphTextureManager";
+import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../../FrameGraph/frameGraphTextureManager";
 import { Constants } from "../../../Engines/constants";
 
 export type NodeRenderGraphValueType = RenderTargetWrapper | Camera;

@@ -76,3 +76,15 @@ export function textureSizeIsObject(size: TextureSize): size is { width: number;
     // eslint-disable-next-line jsdoc/require-jsdoc
     return (size as { width: number }).width !== undefined;
 }
+
+/**
+ * Get the width/height dimensions from a TextureSize
+ * @param size The TextureSize to get the dimensions from
+ * @returns The width and height as an object
+ */
+export function getDimensionsFromTextureSize(size: TextureSize): { width: number; height: number } {
+    if (textureSizeIsObject(size)) {
+        return { width: size.width, height: size.height };
+    }
+    return { width: size, height: size };
+}

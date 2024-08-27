@@ -7,8 +7,8 @@ import { CopyTextureToTexture } from "../Misc/copyTextureToTexture";
 import type { IColor4Like } from "../Maths/math.like";
 import { FrameGraphContext } from "./frameGraphContext";
 import type { Layer } from "../Layers/layer";
-import type { TextureHandle } from "../Engines/textureHandleManager";
-import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../Engines/textureHandleManager";
+import type { TextureHandle, FrameGraphTextureManager } from "./frameGraphTextureManager";
+import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "./frameGraphTextureManager";
 import type { Effect } from "../Materials/effect";
 
 export class FrameGraphRenderContext extends FrameGraphContext {
@@ -17,7 +17,10 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     private _renderTargetIsBound = true;
     private _copyTexture: CopyTextureToTexture;
 
-    constructor(private _engine: AbstractEngine) {
+    constructor(
+        private _engine: AbstractEngine,
+        private _textureManager: FrameGraphTextureManager
+    ) {
         super();
         this._effectRenderer = new EffectRenderer(this._engine);
         this._copyTexture = new CopyTextureToTexture(this._engine);
@@ -49,14 +52,14 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     }
 
     public setTextureSamplingMode(handle: TextureHandle, samplingMode: number): void {
-        const internalTexture = this._engine._textureHandleManager.getTextureFromHandle(handle)?.texture!;
+        const internalTexture = this._textureManager.getTextureFromHandle(handle)?.texture!;
         if (internalTexture && internalTexture.samplingMode !== samplingMode) {
             this._engine.updateTextureSamplingMode(samplingMode, internalTexture);
         }
     }
 
     public bindTextureHandle(effect: Effect, name: string, handle: TextureHandle): void {
-        const texture = this._engine._textureHandleManager.getTextureFromHandle(handle);
+        const texture = this._textureManager.getTextureFromHandle(handle);
         if (texture) {
             effect._bindTexture(name, texture.texture!);
         }
@@ -102,7 +105,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
             this._bindRenderTarget();
         }
         this._applyRenderTarget();
-        this._copyTexture.copy(this._engine._textureHandleManager.getTextureFromHandle(sourceTexture)!.texture!);
+        this._copyTexture.copy(this._textureManager.getTextureFromHandle(sourceTexture)!.texture!);
     }
 
     /**
@@ -135,7 +138,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         }
 
         const handle = this._currentRenderTargetHandle;
-        const textureSlot = this._engine._textureHandleManager._textures.get(handle)!;
+        const textureSlot = this._textureManager._textures.get(handle)!;
 
         const renderTarget = textureSlot.texture;
 

@@ -1,5 +1,5 @@
 import type { FrameGraph } from "../frameGraph";
-import type { TextureHandle } from "../../Engines/textureHandleManager";
+import type { TextureHandle } from "../frameGraphTextureManager";
 import type { FrameGraphTaskOutputReference, IFrameGraphTask } from "./IFrameGraphTask";
 
 export class FrameGraphCopyToTextureTask implements IFrameGraphTask {

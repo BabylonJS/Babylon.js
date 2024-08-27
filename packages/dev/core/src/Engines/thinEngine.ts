@@ -459,8 +459,6 @@ export class ThinEngine extends AbstractEngine {
         // update state object with the current engine state
         stateObject.validateShaderPrograms = this.validateShaderPrograms;
         stateObject.parallelShaderCompile = this._caps.parallelShaderCompile;
-
-        this._textureHandleManager._initialize(this);
     }
 
     protected override _clearEmptyResources(): void {

@@ -645,8 +645,6 @@ export class WebGPUEngine extends AbstractEngine {
 
         this._shaderProcessor = new WebGPUShaderProcessorGLSL();
         this._shaderProcessorWGSL = new WebGPUShaderProcessorWGSL();
-
-        this._textureHandleManager._initialize(this);
     }
 
     //------------------------------------------------------------------------------

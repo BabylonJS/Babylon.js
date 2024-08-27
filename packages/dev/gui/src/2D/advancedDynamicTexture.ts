@@ -32,8 +32,9 @@ import { DecodeBase64ToBinary } from "core/Misc/stringTools";
 
 import type { StandardMaterial } from "core/Materials/standardMaterial";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
-import type { FrameGraph, FrameGraphTaskOutputReference, IFrameGraphTask } from "core/FrameGraph";
-import type { TextureHandle } from "core/Engines/textureHandleManager";
+import type { FrameGraphTaskOutputReference, IFrameGraphTask } from "core/FrameGraph/Tasks/IFrameGraphTask";
+import type { TextureHandle } from "core/FrameGraph/frameGraphTextureManager";
+import type { FrameGraph } from "core/FrameGraph/frameGraph";
 
 export interface IAdvancedDynamicTextureOptions extends IDynamicTextureOptions {
     /** indicates that the ADT will be used as a frame graph task (default: false) */

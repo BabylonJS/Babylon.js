@@ -1,6 +1,6 @@
 import type { FrameGraph } from "../frameGraph";
-import type { TextureHandle } from "../../Engines/textureHandleManager";
-import { backbufferColorTextureHandle } from "../../Engines/textureHandleManager";
+import type { TextureHandle } from "../frameGraphTextureManager";
+import { backbufferColorTextureHandle } from "../frameGraphTextureManager";
 import type { FrameGraphTaskOutputReference, IFrameGraphTask } from "./IFrameGraphTask";
 
 export class FrameGraphCopyToBackbufferColorTask implements IFrameGraphTask {
@@ -21,7 +21,7 @@ export class FrameGraphCopyToBackbufferColorTask implements IFrameGraphTask {
 
         const sourceTextureHandle = frameGraph.getTextureHandle(this.sourceTexture);
 
-        const pass = frameGraph.addRenderPass("copy to backbuffer color");
+        const pass = frameGraph.addRenderPass(this.name);
 
         pass.setRenderTarget(backbufferColorTextureHandle);
         pass.setExecuteFunc((context) => {
@@ -30,7 +30,7 @@ export class FrameGraphCopyToBackbufferColorTask implements IFrameGraphTask {
             }
         });
 
-        const passDisabled = frameGraph.addRenderPass("copy to backbuffer color_disabled", true);
+        const passDisabled = frameGraph.addRenderPass(this.name + "_disabled", true);
 
         passDisabled.setRenderTarget(backbufferColorTextureHandle);
         passDisabled.setExecuteFunc((_context) => {});

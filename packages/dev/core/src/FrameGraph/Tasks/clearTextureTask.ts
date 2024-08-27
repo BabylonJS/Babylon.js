@@ -1,7 +1,7 @@
 import { Color4 } from "core/Maths/math.color";
 import type { FrameGraph } from "../frameGraph";
 import type { FrameGraphTaskOutputReference, IFrameGraphTask } from "./IFrameGraphTask";
-import type { TextureHandle } from "../../Engines/textureHandleManager";
+import type { TextureHandle } from "../frameGraphTextureManager";
 
 export class FrameGraphClearTextureTask implements IFrameGraphTask {
     public color = new Color4(0.2, 0.2, 0.3, 1);
@@ -31,14 +31,14 @@ export class FrameGraphClearTextureTask implements IFrameGraphTask {
 
         const outputTextureHandle = frameGraph.getTextureHandle(this.destinationTexture);
 
-        const pass = frameGraph.addRenderPass("clear texture");
+        const pass = frameGraph.addRenderPass(this.name);
 
         pass.setRenderTarget(outputTextureHandle);
         pass.setExecuteFunc((context) => {
             context.clear(this.color, !!this.clearColor, !!this.clearDepth, !!this.clearStencil);
         });
 
-        const passDisabled = frameGraph.addRenderPass("clear texture_disabled", true);
+        const passDisabled = frameGraph.addRenderPass(this.name + "_disabled", true);
 
         passDisabled.setRenderTarget(outputTextureHandle);
         passDisabled.setExecuteFunc((_context) => {});

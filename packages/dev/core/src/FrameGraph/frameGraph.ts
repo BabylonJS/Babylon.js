@@ -6,13 +6,12 @@ import { FrameGraphPass } from "./Passes/pass";
 import { FrameGraphRenderPass } from "./Passes/renderPass";
 import { FrameGraphRenderContext } from "./frameGraphRenderContext";
 import { FrameGraphContext } from "./frameGraphContext";
-import type { FrameGraphTextureCreationOptions } from "./frameGraphTextureManager";
+import type { FrameGraphTextureCreationOptions, TextureHandle } from "./frameGraphTextureManager";
 import { FrameGraphTextureManager } from "./frameGraphTextureManager";
 import { FrameGraphTaskInternals } from "./Tasks/taskInternals";
 import { Observable } from "core/Misc/observable";
 import type { RenderTargetCreationOptions } from "../Materials/Textures/textureCreationOptions";
-import { textureSizeIsObject } from "../Materials/Textures/textureCreationOptions";
-import type { TextureHandle } from "../Engines/textureHandleManager";
+import { getDimensionsFromTextureSize, textureSizeIsObject } from "../Materials/Textures/textureCreationOptions";
 import type { Nullable } from "../types";
 
 export type FrameGraphTextureDescription = {
@@ -49,9 +48,9 @@ export class FrameGraph {
      */
     constructor(engine: AbstractEngine, debugTextures = false, scene?: Scene) {
         this._engine = engine;
-        this._textureManager = new FrameGraphTextureManager(engine, debugTextures, scene);
+        this._textureManager = new FrameGraphTextureManager(this._engine, debugTextures, scene);
         this._passContext = new FrameGraphContext();
-        this._renderContext = new FrameGraphRenderContext(engine);
+        this._renderContext = new FrameGraphRenderContext(this._engine, this._textureManager);
     }
 
     public getTaskByName<T extends IFrameGraphTask>(name: string): T | undefined {
@@ -86,7 +85,7 @@ export class FrameGraph {
             throw new Error("A pass must be created during a Task.recordFrameGraph execution.");
         }
 
-        const pass = new FrameGraphRenderPass(name, this._currentProcessedTask, this._renderContext);
+        const pass = new FrameGraphRenderPass(name, this._currentProcessedTask, this._renderContext, this._engine);
 
         this._currentProcessedTask._fgInternals!.addPass(pass, whenTaskDisabled);
 
@@ -155,7 +154,7 @@ export class FrameGraph {
         return this._textureManager.importTexture(name, texture, handle);
     }
 
-    public getTextureCreationOptions(textureId: FrameGraphTaskOutputReference | TextureHandle): FrameGraphTextureCreationOptions {
+    public getTextureCreationOptions(textureId: FrameGraphTaskOutputReference | TextureHandle, cloneOptions = false): FrameGraphTextureCreationOptions {
         let textureHandle: TextureHandle;
 
         if (!FrameGraph._IsTextureHandle(textureId)) {
@@ -168,7 +167,15 @@ export class FrameGraph {
             textureHandle = textureId;
         }
 
-        return this._engine._textureHandleManager.getTextureCreationOptions(textureHandle);
+        const creationOptions = this._textureManager.getTextureCreationOptions(textureHandle);
+
+        return cloneOptions
+            ? {
+                  size: getDimensionsFromTextureSize(creationOptions.size),
+                  options: { ...creationOptions.options },
+                  sizeIsPercentage: creationOptions.sizeIsPercentage,
+              }
+            : creationOptions;
     }
 
     public getTextureDescription(textureId: FrameGraphTaskOutputReference | TextureHandle): FrameGraphTextureDescription {
@@ -215,7 +222,7 @@ export class FrameGraph {
     }
 
     public getTextureFromHandle(handle: TextureHandle): Nullable<RenderTargetWrapper> {
-        return this._engine._textureHandleManager.getTextureFromHandle(handle);
+        return this._textureManager.getTextureFromHandle(handle);
     }
 
     public createRenderTargetTexture(name: string, creationOptions: FrameGraphTextureCreationOptions): TextureHandle {
