@@ -1148,7 +1148,7 @@ export class PostProcess implements IFrameGraphTask {
 
     protected _bind() {
         // Alpha
-        this._engine.setAlphaMode(this.alphaMode);
+        this._engine.setAlphaMode(this.alphaMode, true);
         if (this.alphaConstants) {
             this.getEngine().setAlphaConstants(this.alphaConstants.r, this.alphaConstants.g, this.alphaConstants.b, this.alphaConstants.a);
         }
@@ -1219,7 +1219,7 @@ export class PostProcess implements IFrameGraphTask {
             context.setTextureSamplingMode(sourceTextureHandle, this!.sourceSamplingMode!);
             context.applyFullScreenEffect(this._drawWrapper, () => {
                 this._bind();
-                this._drawWrapper.effect!.setTextureHandle("textureSampler", sourceTextureHandle);
+                context.bindTextureHandle(this._drawWrapper.effect!, "textureSampler", sourceTextureHandle);
             });
         });
 
