@@ -2,7 +2,7 @@
 /* eslint-disable jsdoc/require-jsdoc */
 
 import type { AbstractAudioEngine } from "./abstractAudioEngine";
-import type { IAudioNodeParent } from "./IAudioNodeParent";
+import { AbstractAudioNodeParent } from "./abstractAudioNodeParent";
 import type { Nullable } from "../../types";
 
 export enum AudioNodeType {
@@ -22,15 +22,19 @@ export enum AudioNodeType {
     InputOutput = 3,
 }
 
-export abstract class AbstractAudioNode implements IAudioNodeParent {
+export abstract class AbstractAudioNode extends AbstractAudioNodeParent {
     /**
      * Creates a new audio node.
      * @param engine - The audio engine this node will be added to
      * @param nodeType - The type of audio node
+     * @param parent - The parent audio node. Defaults to `null` to make the the audio engine the parent
      */
-    public constructor(engine: AbstractAudioEngine, nodeType: AudioNodeType) {
+    public constructor(engine: AbstractAudioEngine, nodeType: AudioNodeType, parent: Nullable<AbstractAudioNodeParent> = null) {
+        super();
+
         this.engine = engine;
-        engine._addChildNode(this);
+
+        this._setParent(parent);
 
         if (nodeType | AudioNodeType.Input) {
             this._connectedDownstreamNodes = new Array<AbstractAudioNode>();
@@ -44,7 +48,7 @@ export abstract class AbstractAudioNode implements IAudioNodeParent {
     /**
      * Releases associated resources.
      */
-    public dispose(): void {
+    public override dispose(): void {
         if (this._connectedDownstreamNodes) {
             for (const node of this._connectedDownstreamNodes) {
                 this._disconnect(node);
@@ -59,58 +63,28 @@ export abstract class AbstractAudioNode implements IAudioNodeParent {
             this._connectedUpstreamNodes.length = 0;
         }
 
-        if (this._childNodes) {
-            for (const node of this._childNodes) {
-                node.dispose();
-            }
-            this._childNodes.length = 0;
-        }
+        AbstractAudioNodeParent._RemoveChildNode(this._getParent(), this);
 
-        this.parent._removeChildNode(this);
+        super.dispose();
     }
 
     public engine: AbstractAudioEngine;
 
     // If parent is null, node is owned by audio engine.
-    protected _parent: Nullable<IAudioNodeParent> = null;
+    private _parent: Nullable<AbstractAudioNodeParent> = null;
 
-    public get parent(): IAudioNodeParent {
+    protected _getParent(): AbstractAudioNodeParent {
         return this._parent ?? this.engine;
     }
 
-    public setParent(parent: Nullable<IAudioNodeParent>) {
+    private _setParent(parent: Nullable<AbstractAudioNodeParent>) {
         if (this._parent === parent) {
             return;
         }
 
-        this.parent._removeChildNode(this);
+        AbstractAudioNodeParent._RemoveChildNode(this._getParent(), this);
         this._parent = parent;
-        this.parent._addChildNode(this);
-    }
-
-    protected _childNodes: Nullable<Array<AbstractAudioNode>> = null;
-
-    public _addChildNode(node: AbstractAudioNode): void {
-        if (!this._childNodes) {
-            this._childNodes = new Array<AbstractAudioNode>();
-        } else if (this._childNodes.includes(node)) {
-            return;
-        }
-
-        this._childNodes.push(node);
-    }
-
-    public _removeChildNode(node: AbstractAudioNode): void {
-        if (!this._childNodes) {
-            return;
-        }
-
-        const index = this._childNodes.indexOf(node);
-        if (index < 0) {
-            return;
-        }
-
-        this._childNodes.splice(index, 1);
+        AbstractAudioNodeParent._AddChildNode(this._getParent(), this);
     }
 
     /**
@@ -145,7 +119,7 @@ export abstract class AbstractAudioNode implements IAudioNodeParent {
     }
 
     /**
-     * Connects to a downstream audio input node.
+     * Connect to a downstream audio input node.
      * @param node - The downstream audio node to connect
      */
     protected _connect(node: AbstractAudioNode): void {
@@ -165,7 +139,7 @@ export abstract class AbstractAudioNode implements IAudioNodeParent {
     }
 
     /**
-     * Disconnects from a downstream audio input node.
+     * Disconnect from a downstream audio input node.
      * @param node - The downstream audio node to disconnect
      */
     protected _disconnect(node: AbstractAudioNode): void {

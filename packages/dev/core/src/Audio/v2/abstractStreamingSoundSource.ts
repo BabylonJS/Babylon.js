@@ -2,6 +2,7 @@
 /* eslint-disable jsdoc/require-jsdoc */
 
 import type { AbstractAudioEngine } from "./abstractAudioEngine";
+import type { AbstractAudioNode } from "./abstractAudioNode";
 import type { AbstractSoundInstance } from "./abstractSoundInstance";
 import type { ISoundSourceOptions } from "./abstractSoundSource";
 import { AbstractSoundSource } from "./abstractSoundSource";
@@ -33,7 +34,7 @@ export abstract class AbstractStreamingSoundSource extends AbstractSoundSource {
         this._preload = preload;
     }
 
-    protected _createSoundInstance(): AbstractSoundInstance {
-        return this.engine.createStreamingSoundInstance(this);
+    protected _createSoundInstance(inputNode: AbstractAudioNode): AbstractSoundInstance {
+        return this.engine.createStreamingSoundInstance(this, inputNode);
     }
 }

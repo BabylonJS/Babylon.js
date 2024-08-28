@@ -2,9 +2,10 @@
 /* eslint-disable jsdoc/require-jsdoc */
 
 import type { AbstractAudioEngine } from "./abstractAudioEngine";
+import type { AbstractAudioNode } from "./abstractAudioNode";
 import type { AbstractSoundInstance } from "./abstractSoundInstance";
-import type { AbstractSoundObject } from "./abstractSoundObject";
 import type { Nullable } from "../../types";
+import type { IDisposable } from "../../scene";
 
 export interface ISoundSourceOptions {
     autoplay?: boolean;
@@ -15,7 +16,10 @@ export interface ISoundSourceOptions {
     volume?: number;
 }
 
-export abstract class AbstractSoundSource {
+/**
+ * Owned by AbstractAudioEngine.
+ */
+export abstract class AbstractSoundSource implements IDisposable {
     public constructor(name: string, engine: AbstractAudioEngine, options: Nullable<ISoundSourceOptions> = null) {
         this.name = name;
         this.engine = engine;
@@ -26,6 +30,18 @@ export abstract class AbstractSoundSource {
         this.startTime = options?.startTime ?? 0;
         this.stopTime = options?.stopTime ?? 0;
         this.volume = options?.volume ?? 1;
+
+        this.engine._addSoundSource(this);
+    }
+
+    public dispose(): void {
+        this.stop();
+
+        if (this._soundInstances) {
+            this._soundInstances.length = 0;
+        }
+
+        this.engine._removeSoundSource(this);
     }
 
     public name: string;
@@ -40,16 +56,15 @@ export abstract class AbstractSoundSource {
 
     public abstract get currentTime(): number;
 
-    protected _parent: Nullable<AbstractSoundObject> = null;
-
+    // Does not indicate ownership.
     protected _soundInstances: Nullable<Array<AbstractSoundInstance>> = null;
 
     public get soundInstances(): Nullable<ReadonlyArray<AbstractSoundInstance>> {
         return this._soundInstances;
     }
 
-    public play(): AbstractSoundInstance {
-        const instance = this._createSoundInstance();
+    public play(inputNode: AbstractAudioNode): AbstractSoundInstance {
+        const instance = this._createSoundInstance(inputNode);
         this._getSoundInstances().push(instance);
 
         instance.play();
@@ -87,7 +102,7 @@ export abstract class AbstractSoundSource {
         }
     }
 
-    protected abstract _createSoundInstance(): AbstractSoundInstance;
+    protected abstract _createSoundInstance(inputNode: AbstractAudioNode): AbstractSoundInstance;
 
     public _onSoundInstanceEnded(instance: AbstractSoundInstance): void {
         const index = this._getSoundInstances().indexOf(instance);

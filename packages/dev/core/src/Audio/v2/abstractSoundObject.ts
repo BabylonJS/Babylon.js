@@ -39,6 +39,17 @@ export abstract class AbstractSoundObject extends AbstractNamedAudioNode {
         this.sender = engine.createSender(this);
     }
 
+    public override dispose(): void {
+        this.stop();
+
+        this._outputBus = null;
+
+        this._positioner?.dispose();
+        this._positioner = null;
+
+        this._soundSources.length = 0;
+    }
+
     public readonly autoplay: boolean;
     public loop: boolean;
     public pitch: number;
@@ -90,6 +101,23 @@ export abstract class AbstractSoundObject extends AbstractNamedAudioNode {
         return this._soundSources;
     }
 
+    public addSoundSource(soundSource: AbstractSoundSource): void {
+        if (this._soundSources.includes(soundSource)) {
+            return;
+        }
+
+        this._soundSources.push(soundSource);
+    }
+
+    public removeSoundSource(soundSource: AbstractSoundSource): void {
+        const index = this._soundSources.indexOf(soundSource);
+        if (index === -1) {
+            return;
+        }
+
+        this._soundSources.splice(index, 1);
+    }
+
     private _state: SoundState = SoundState.Stopped;
 
     public play(): void {
@@ -102,7 +130,7 @@ export abstract class AbstractSoundObject extends AbstractNamedAudioNode {
         }
 
         for (const source of this._soundSources) {
-            source.play();
+            source.play(this);
         }
 
         this._state = SoundState.Playing;

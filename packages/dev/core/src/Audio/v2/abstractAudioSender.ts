@@ -6,9 +6,7 @@ import type { AbstractAudioSend } from "./abstractAudioSend";
 
 export abstract class AbstractAudioSender extends AbstractAudioNode {
     public constructor(parent: AbstractAudioNode) {
-        super(parent.engine, AudioNodeType.InputOutput);
-
-        this.setParent(parent);
+        super(parent.engine, AudioNodeType.InputOutput, parent);
     }
 
     private _sends = new Array<AbstractAudioSend>();

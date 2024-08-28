@@ -8,9 +8,7 @@ import type { Nullable } from "../../types";
 
 export abstract class AbstractAudioPositioner extends AbstractAudioNode {
     public constructor(parent: AbstractAudioNode) {
-        super(parent.engine, AudioNodeType.InputOutput);
-
-        this.setParent(parent);
+        super(parent.engine, AudioNodeType.InputOutput, parent);
     }
 
     private _spatializerGain: number = 1;

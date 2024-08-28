@@ -15,6 +15,9 @@ export interface IAudioSendOptions {
     sendType?: AudioSendType;
 }
 
+/**
+ * Owned by AbstractAudioEngine.
+ */
 export abstract class AbstractAudioSend extends AbstractAudioNode {
     public constructor(engine: AbstractAudioEngine, options?: IAudioSendOptions) {
         super(engine, AudioNodeType.InputOutput);
