@@ -11,6 +11,7 @@ import type { FrameGraphTextureHandle } from "./frameGraphTypes";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "./frameGraphTypes";
 import type { Effect } from "../Materials/effect";
 import type { FrameGraphTextureManager } from "./frameGraphTextureManager";
+import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 
 export class FrameGraphRenderContext extends FrameGraphContext {
     private _effectRenderer: EffectRenderer;
@@ -120,12 +121,12 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     }
 
     /**
-     * Renders a layer
-     * @param layer The layer to render
+     * Renders a RenderTargetTexture or a layer
+     * @param object The RenderTargetTexture/Layer to render
      */
-    public renderLayer(layer: Layer): void {
+    public render(object: Layer | RenderTargetTexture): void {
         this._applyRenderTarget();
-        layer.render();
+        object.render();
     }
 
     /**

@@ -16,9 +16,27 @@ export class FrameGraphRenderObjectsTask implements IFrameGraphTask {
 
     public depthTexture?: FrameGraphTextureId;
 
-    public camera: Camera;
+    private _camera: Camera;
 
-    public objectList: FrameGraphObjectList;
+    public get camera() {
+        return this._camera;
+    }
+
+    public set camera(camera: Camera) {
+        this._camera = camera;
+        this._rtt.activeCamera = this.camera;
+    }
+
+    private _objectList: FrameGraphObjectList;
+
+    public get objectList() {
+        return this._objectList;
+    }
+
+    public set objectList(objectList: FrameGraphObjectList) {
+        this._objectList = objectList;
+        this._rtt.renderList = this.objectList.meshes;
+    }
 
     public depthTest = true;
 
@@ -30,7 +48,6 @@ export class FrameGraphRenderObjectsTask implements IFrameGraphTask {
 
     public disabled = false;
 
-    private _scene: Scene;
     private _rtt: RenderTargetTexture;
 
     public get renderTargetTexture() {
@@ -41,7 +58,6 @@ export class FrameGraphRenderObjectsTask implements IFrameGraphTask {
         public name: string,
         scene: Scene
     ) {
-        this._scene = scene;
         this._rtt = new RenderTargetTexture(name, 1, scene, {
             delayAllocation: true,
         });
@@ -83,13 +99,8 @@ export class FrameGraphRenderObjectsTask implements IFrameGraphTask {
             pass.setRenderTargetDepth(frameGraph.getTextureHandle(this.depthTexture));
         }
         pass.setExecuteFunc((_context) => {
-            this._scene.resetCachedMaterial();
-
             _context.setDepthStates(this.depthTest, this.depthWrite);
-
-            this._rtt.activeCamera = this.camera;
-            this._rtt.renderList = this.objectList.meshes;
-            this._rtt.render();
+            _context.render(this._rtt);
         });
 
         const passDisabled = frameGraph.addRenderPass(this.name + "_disabled", true);

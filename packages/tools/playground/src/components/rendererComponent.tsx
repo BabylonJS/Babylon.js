@@ -145,6 +145,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                         const engine = new WebGPUEngine(canvas, {
                             enableAllFeatures: true,
                             setMaximumLimits: true,
+                            enableGPUDebugMarkers: true,
                         });
                         await engine.initAsync();
                         return engine;

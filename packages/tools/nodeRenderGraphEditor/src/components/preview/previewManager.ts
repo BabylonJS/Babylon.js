@@ -151,6 +151,9 @@ export class PreviewManager {
         this._camera.pinchDeltaPercentage = 0.01;
 
         this._scene.activeCamera = null;
+        this._scene.cameraToUseForPointers = this._camera;
+
+        (window as any).camera = this._camera;
 
         this._lightParent = new TransformNode("LightParent", this._scene);
 

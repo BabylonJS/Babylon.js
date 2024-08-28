@@ -1057,12 +1057,12 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
         engine.currentRenderPassId = currentRenderPassId;
 
+        scene.activeCamera = sceneCamera;
         if (sceneCamera) {
-            scene.activeCamera = sceneCamera;
             if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
-                scene.setTransformMatrix(scene.activeCamera.getViewMatrix(), scene.activeCamera.getProjectionMatrix(true));
+                scene.setTransformMatrix(sceneCamera.getViewMatrix(), sceneCamera.getProjectionMatrix(true));
             }
-            engine.setViewport(scene.activeCamera.viewport);
+            engine.setViewport(sceneCamera.viewport);
         }
 
         scene.resetCachedMaterial();
