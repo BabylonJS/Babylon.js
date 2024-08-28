@@ -1,16 +1,19 @@
 import { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
-import { AdvancedDynamicTexture } from "./advancedDynamicTexture";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
-import { NodeRenderGraphBlockConnectionPointTypes, NodeRenderGraphBlockConnectionPointValueTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphBlockConnectionPointTypes";
+import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
+import type { Scene } from "core/scene";
+import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphBlockConnectionPointTypes";
 import type { NodeRenderGraphConnectionPoint } from "core/FrameGraph/Node/nodeRenderGraphBlockConnectionPoint";
 import type { NodeRenderGraphBuildState } from "core/FrameGraph/Node/nodeRenderGraphBuildState";
 import { RegisterClass } from "core/Misc/typeStore";
+import type { FrameGraphTextureId } from "core/FrameGraph/frameGraphTypes";
+import { FrameGraphGUITask } from "./guiTask";
 
 /**
  * Block that implements a fullscreen GUI for render graph
  */
 export class RenderGraphGUIBlock extends NodeRenderGraphBlock {
-    protected override _frameGraphTask: AdvancedDynamicTexture;
+    protected override _frameGraphTask: FrameGraphGUITask;
+    protected _gui: AdvancedDynamicTexture;
 
     /**
      * Gets the frame graph task associated with this block
@@ -20,12 +23,19 @@ export class RenderGraphGUIBlock extends NodeRenderGraphBlock {
     }
 
     /**
-     * Create a new BlackAndWhitePostProcessBlock
-     * @param name defines the block name
-     * @param engine defines the hosting engine
+     * Gets the GUI texture used by this block
      */
-    public constructor(name: string, engine: AbstractEngine) {
-        super(name, engine);
+    public get gui() {
+        return this._frameGraphTask.gui;
+    }
+
+    /**
+     * Create a new RenderGraphGUIBlock
+     * @param name defines the block name
+     * @param scene defines the hosting scene
+     */
+    public constructor(name: string, scene: Scene) {
+        super(name, scene);
 
         this.registerInput("destination", NodeRenderGraphBlockConnectionPointTypes.Texture);
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
@@ -33,9 +43,10 @@ export class RenderGraphGUIBlock extends NodeRenderGraphBlock {
         this.destination.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
         this.output._typeConnectionSource = this.destination;
 
-        this._frameGraphTask = AdvancedDynamicTexture.CreateFullscreenUI(this.name, undefined, {
+        this._gui = AdvancedDynamicTexture.CreateFullscreenUI(this.name, undefined, {
             useAsFrameGraphTask: true,
         });
+        this._frameGraphTask = new FrameGraphGUITask(this.name, this._gui);
     }
 
     /**
@@ -60,22 +71,16 @@ export class RenderGraphGUIBlock extends NodeRenderGraphBlock {
         return this._outputs[0];
     }
 
-    public override dispose() {
-        this._frameGraphTask.dispose();
-        super.dispose();
-    }
-
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
         super._buildBlock(state);
 
         this._frameGraphTask.name = this.name;
 
         this.output.value = this._frameGraphTask.outputTextureReference; // the value of the output connection point is the "output" texture of the task
-        this.output.valueType = NodeRenderGraphBlockConnectionPointValueTypes.Texture;
 
         const destinationConnectedPoint = this.destination.connectedPoint;
-        if (destinationConnectedPoint && destinationConnectedPoint.valueType === NodeRenderGraphBlockConnectionPointValueTypes.Texture) {
-            this._frameGraphTask.destinationTexture = destinationConnectedPoint.value;
+        if (destinationConnectedPoint) {
+            this._frameGraphTask.destinationTexture = destinationConnectedPoint.value as FrameGraphTextureId;
         }
 
         state.frameGraph.addTask(this._frameGraphTask);

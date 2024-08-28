@@ -1,28 +1,22 @@
 import { Observable } from "../../../Misc/observable";
-import { NodeRenderGraphBlockConnectionPointTypes, NodeRenderGraphBlockConnectionPointValueTypes } from "../Types/nodeRenderGraphBlockConnectionPointTypes";
+import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGraphBlockConnectionPointTypes";
 import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
 import type { NodeRenderGraphConnectionPoint } from "../nodeRenderGraphBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
 import type { Camera } from "../../../Cameras/camera";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
-import type { Vector3 } from "../../../Maths/math.vector";
 import type { RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
 import type { InternalTexture } from "../../../Materials/Textures/internalTexture";
 import type { Nullable } from "../../../types";
-import type { AbstractEngine } from "../../../Engines/abstractEngine";
+import type { Scene } from "../../../scene";
 import type { NodeRenderGraphBuildState } from "../nodeRenderGraphBuildState";
-import type { FrameGraphTextureCreationOptions, TextureHandle } from "../../../FrameGraph/frameGraphTextureManager";
-import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../../FrameGraph/frameGraphTextureManager";
+import type { FrameGraphTextureCreationOptions, FrameGraphTextureHandle, FrameGraphObjectList } from "../../../FrameGraph/frameGraphTypes";
+import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../../FrameGraph/frameGraphTypes";
 import { Constants } from "../../../Engines/constants";
 
-export type NodeRenderGraphValueType = RenderTargetWrapper | Camera;
+export type NodeRenderGraphValueType = RenderTargetWrapper | Camera | FrameGraphObjectList;
 
-export type NodeRenderGraphInputCameraCreationOptions = {
-    /** TODO */
-    position: Vector3;
-};
-
-export type NodeRenderGraphInputCreationOptions = FrameGraphTextureCreationOptions | NodeRenderGraphInputCameraCreationOptions;
+export type NodeRenderGraphInputCreationOptions = FrameGraphTextureCreationOptions;
 
 /**
  * Block used to expose an input value
@@ -51,11 +45,12 @@ export class RenderGraphInputBlock extends NodeRenderGraphBlock {
     /**
      * Creates a new RenderGraphInputBlock
      * @param name defines the block name
-     * @param engine defines the hosting engine
+     * @param scene defines the hosting scene
      * @param type defines the type of the input (can be set to NodeRenderGraphBlockConnectionPointTypes.Undefined)
      */
-    public constructor(name: string, engine: AbstractEngine, type: NodeRenderGraphBlockConnectionPointTypes = NodeRenderGraphBlockConnectionPointTypes.Undefined) {
-        super(name, engine);
+    public constructor(name: string, scene: Scene, type: NodeRenderGraphBlockConnectionPointTypes = NodeRenderGraphBlockConnectionPointTypes.Undefined) {
+        super(name, scene);
+
         this._type = type;
         this._isInput = true;
         this.registerOutput("output", type);
@@ -92,6 +87,8 @@ export class RenderGraphInputBlock extends NodeRenderGraphBlock {
                     sizeIsPercentage: true,
                 } as FrameGraphTextureCreationOptions;
                 break;
+            default:
+                this.isExternal = true;
         }
     }
 
@@ -105,7 +102,6 @@ export class RenderGraphInputBlock extends NodeRenderGraphBlock {
     public set value(value: Nullable<NodeRenderGraphValueType>) {
         this._storedValue = value;
         this.output.value = undefined;
-        this.output.valueType = undefined;
         this.onValueChangedObservable.notifyObservers(this);
     }
 
@@ -113,7 +109,7 @@ export class RenderGraphInputBlock extends NodeRenderGraphBlock {
      * Gets the value as a specific type
      * @returns the value as a specific type
      */
-    public getTypedValue<T extends NodeRenderGraphValueType>(): Nullable<T> {
+    public getTypedValue<T extends NodeRenderGraphValueType>(): T {
         return this._storedValue as T;
     }
 
@@ -178,17 +174,42 @@ export class RenderGraphInputBlock extends NodeRenderGraphBlock {
         return (this.type & NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment) !== 0;
     }
 
+    /**
+     * Check if the block is a camera
+     * @returns true if the block is a camera
+     */
+    public isCamera(): boolean {
+        return (this.type & NodeRenderGraphBlockConnectionPointTypes.Camera) !== 0;
+    }
+
+    /**
+     * Check if the block is an object list
+     * @returns true if the block is an object list
+     */
+    public isObjectList(): boolean {
+        return (this.type & NodeRenderGraphBlockConnectionPointTypes.ObjectList) !== 0;
+    }
+
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
         super._buildBlock(state);
 
         if (this.isExternal) {
-            if (this._storedValue === undefined || this._storedValue === null) {
-                throw new Error(`RenderGraphInputBlock: External input "${this.name}" is not set`);
-            }
-            const texture = this.getValueAsRenderTargetWrapper();
-            if (texture) {
-                this.output.value = state.frameGraph.importTexture(this.name, texture, this.output.value as TextureHandle);
-                this.output.valueType = NodeRenderGraphBlockConnectionPointValueTypes.Texture;
+            if (this.isBackBuffer()) {
+                this.output.value = backbufferColorTextureHandle;
+            } else if (this.isBackBufferDepthStencilAttachment()) {
+                this.output.value = backbufferDepthStencilTextureHandle;
+            } else if (this.type & NodeRenderGraphBlockConnectionPointTypes.Camera) {
+                this.output.value = this.getTypedValue<Camera>();
+            } else if (this.type & NodeRenderGraphBlockConnectionPointTypes.ObjectList) {
+                this.output.value = this.getTypedValue<FrameGraphObjectList>();
+            } else {
+                if (this._storedValue === undefined || this._storedValue === null) {
+                    throw new Error(`RenderGraphInputBlock: External input "${this.name}" is not set`);
+                }
+                const texture = this.getValueAsRenderTargetWrapper();
+                if (texture) {
+                    this.output.value = state.frameGraph.importTexture(this.name, texture, this.output.value as FrameGraphTextureHandle);
+                }
             }
             return;
         }
@@ -201,13 +222,6 @@ export class RenderGraphInputBlock extends NodeRenderGraphBlock {
             }
 
             this.output.value = state.frameGraph.createRenderTargetTexture(this.name, textureCreateOptions);
-            this.output.valueType = NodeRenderGraphBlockConnectionPointValueTypes.Texture;
-        } else if (this.isBackBuffer()) {
-            this.output.value = backbufferColorTextureHandle;
-            this.output.valueType = NodeRenderGraphBlockConnectionPointValueTypes.Texture;
-        } else if (this.isBackBufferDepthStencilAttachment()) {
-            this.output.value = backbufferDepthStencilTextureHandle;
-            this.output.valueType = NodeRenderGraphBlockConnectionPointValueTypes.Texture;
         }
     }
 

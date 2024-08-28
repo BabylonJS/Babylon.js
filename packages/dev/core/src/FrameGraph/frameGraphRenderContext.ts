@@ -7,13 +7,14 @@ import { CopyTextureToTexture } from "../Misc/copyTextureToTexture";
 import type { IColor4Like } from "../Maths/math.like";
 import { FrameGraphContext } from "./frameGraphContext";
 import type { Layer } from "../Layers/layer";
-import type { TextureHandle, FrameGraphTextureManager } from "./frameGraphTextureManager";
-import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "./frameGraphTextureManager";
+import type { FrameGraphTextureHandle } from "./frameGraphTypes";
+import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "./frameGraphTypes";
 import type { Effect } from "../Materials/effect";
+import type { FrameGraphTextureManager } from "./frameGraphTextureManager";
 
 export class FrameGraphRenderContext extends FrameGraphContext {
     private _effectRenderer: EffectRenderer;
-    private _currentRenderTargetHandle: TextureHandle;
+    private _currentRenderTargetHandle: FrameGraphTextureHandle;
     private _debugMessageWhenTargetBound: string | undefined;
     private _debugMessageHasBeenPushed = false;
     private _renderTargetIsBound = true;
@@ -29,15 +30,15 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         this._currentRenderTargetHandle = backbufferColorTextureHandle;
     }
 
-    public isBackbuffer(handle: TextureHandle): boolean {
+    public isBackbuffer(handle: FrameGraphTextureHandle): boolean {
         return handle === backbufferColorTextureHandle || handle === backbufferDepthStencilTextureHandle;
     }
 
-    public isBackbufferColor(handle: TextureHandle): boolean {
+    public isBackbufferColor(handle: FrameGraphTextureHandle): boolean {
         return handle === backbufferColorTextureHandle;
     }
 
-    public isBackbufferDepthStencil(handle: TextureHandle): boolean {
+    public isBackbufferDepthStencil(handle: FrameGraphTextureHandle): boolean {
         return handle === backbufferDepthStencilTextureHandle;
     }
 
@@ -53,18 +54,23 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         this._engine.clear(color, backBuffer, depth, stencil);
     }
 
-    public setTextureSamplingMode(handle: TextureHandle, samplingMode: number): void {
+    public setTextureSamplingMode(handle: FrameGraphTextureHandle, samplingMode: number): void {
         const internalTexture = this._textureManager.getTextureFromHandle(handle)?.texture!;
         if (internalTexture && internalTexture.samplingMode !== samplingMode) {
             this._engine.updateTextureSamplingMode(samplingMode, internalTexture);
         }
     }
 
-    public bindTextureHandle(effect: Effect, name: string, handle: TextureHandle): void {
+    public bindTextureHandle(effect: Effect, name: string, handle: FrameGraphTextureHandle): void {
         const texture = this._textureManager.getTextureFromHandle(handle);
         if (texture) {
             effect._bindTexture(name, texture.texture!);
         }
+    }
+
+    public setDepthStates(depthTest: boolean, depthWrite: boolean): void {
+        this._engine.setDepthBuffer(depthTest);
+        this._engine.setDepthWrite(depthWrite);
     }
 
     /**
@@ -105,7 +111,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      * @param sourceTexture The source texture to copy from
      * @param forceCopyToBackbuffer If true, the copy will be done to the back buffer regardless of the current render target
      */
-    public copyTexture(sourceTexture: TextureHandle, forceCopyToBackbuffer = false): void {
+    public copyTexture(sourceTexture: FrameGraphTextureHandle, forceCopyToBackbuffer = false): void {
         if (forceCopyToBackbuffer) {
             this._bindRenderTarget();
         }
@@ -128,7 +134,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      *   this method several times with different render targets without incurring the cost of binding if no draw calls are made
      * @internal
      */
-    public _bindRenderTarget(renderTargetHandle: TextureHandle = backbufferColorTextureHandle, debugMessage?: string) {
+    public _bindRenderTarget(renderTargetHandle: FrameGraphTextureHandle = backbufferColorTextureHandle, debugMessage?: string) {
         if (renderTargetHandle === this._currentRenderTargetHandle) {
             this._unbindRenderTarget();
             if (debugMessage !== undefined) {
@@ -154,7 +160,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     }
 
     /** @internal */
-    public _shareDepth(srcRenderTargetHandle: TextureHandle, dstRenderTargetHandle: TextureHandle) {
+    public _shareDepth(srcRenderTargetHandle: FrameGraphTextureHandle, dstRenderTargetHandle: FrameGraphTextureHandle) {
         const srcTexture = this._textureManager.getTextureFromHandle(srcRenderTargetHandle);
         const dstTexture = this._textureManager.getTextureFromHandle(dstRenderTargetHandle);
 

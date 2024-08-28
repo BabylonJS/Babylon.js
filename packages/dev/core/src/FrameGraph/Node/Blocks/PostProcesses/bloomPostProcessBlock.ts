@@ -1,18 +1,21 @@
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import type { NodeRenderGraphConnectionPoint } from "../../nodeRenderGraphBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import { NodeRenderGraphBlockConnectionPointTypes, NodeRenderGraphBlockConnectionPointValueTypes } from "../../Types/nodeRenderGraphBlockConnectionPointTypes";
+import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphBlockConnectionPointTypes";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
-import type { AbstractEngine } from "../../../../Engines/abstractEngine";
+import type { Scene } from "../../../../scene";
 import { Constants } from "../../../../Engines/constants";
 import { BloomEffect } from "../../../../PostProcesses/bloomEffect";
 import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
+import type { FrameGraphTextureId } from "../../../frameGraphTypes";
+import { FrameGraphBloomTask } from "../../../Tasks/PostProcesses/bloomTask";
 
 /**
  * Block that implements the bloom post process
  */
 export class BloomPostProcessBlock extends NodeRenderGraphBlock {
-    protected override _frameGraphTask: BloomEffect;
+    protected override _frameGraphTask: FrameGraphBloomTask;
+    protected _postProcess: BloomEffect;
 
     /**
      * Gets the frame graph task associated with this block
@@ -22,14 +25,21 @@ export class BloomPostProcessBlock extends NodeRenderGraphBlock {
     }
 
     /**
+     * Gets the post process used by this block
+     */
+    public get postProcess() {
+        return this._postProcess;
+    }
+
+    /**
      * Create a new BloomPostProcessBlock
      * @param name defines the block name
-     * @param engine defines the hosting engine
+     * @param scene defines the hosting scene
      * @param hdr If high dynamic range textures should be used (default: false)
      * @param bloomScale The scale of the bloom effect (default: 0.5)
      */
-    public constructor(name: string, engine: AbstractEngine, hdr = false, bloomScale = 0.5) {
-        super(name, engine);
+    public constructor(name: string, scene: Scene, hdr = false, bloomScale = 0.5) {
+        super(name, scene);
 
         this._additionalConstructionParameters = [hdr, bloomScale];
 
@@ -45,7 +55,7 @@ export class BloomPostProcessBlock extends NodeRenderGraphBlock {
 
         let defaultPipelineTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         if (hdr) {
-            const caps = engine.getCaps();
+            const caps = this._engine.getCaps();
             if (caps.textureHalfFloatRender) {
                 defaultPipelineTextureType = Constants.TEXTURETYPE_HALF_FLOAT;
             } else if (caps.textureFloatRender) {
@@ -53,8 +63,10 @@ export class BloomPostProcessBlock extends NodeRenderGraphBlock {
             }
         }
 
-        this._frameGraphTask = new BloomEffect(engine, bloomScale, 0.75, 64, defaultPipelineTextureType, false, true);
-        this._frameGraphTask.threshold = 0.2;
+        this._postProcess = new BloomEffect(this._engine, bloomScale, 0.75, 64, defaultPipelineTextureType, false, true);
+        this._postProcess.threshold = 0.2;
+
+        this._frameGraphTask = new FrameGraphBloomTask(this.name, this._postProcess);
     }
 
     /** Sampling mode used to sample from the source texture */
@@ -70,31 +82,31 @@ export class BloomPostProcessBlock extends NodeRenderGraphBlock {
     /** The luminance threshold to find bright areas of the image to bloom. */
     @editableInPropertyPage("Threshold", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 2 })
     public get threshold(): number {
-        return this._frameGraphTask.threshold;
+        return this._postProcess.threshold;
     }
 
     public set threshold(value: number) {
-        this._frameGraphTask.threshold = value;
+        this._postProcess.threshold = value;
     }
 
     /** The strength of the bloom. */
     @editableInPropertyPage("Weight", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 3 })
     public get weight(): number {
-        return this._frameGraphTask.weight;
+        return this._postProcess.weight;
     }
 
     public set weight(value: number) {
-        this._frameGraphTask.weight = value;
+        this._postProcess.weight = value;
     }
 
     /** Specifies the size of the bloom blur kernel, relative to the final output size */
     @editableInPropertyPage("Kernel", PropertyTypeForEdition.Int, "PROPERTIES", { min: 1, max: 128 })
     public get kernel(): number {
-        return this._frameGraphTask.kernel;
+        return this._postProcess.kernel;
     }
 
     public set kernel(value: number) {
-        this._frameGraphTask.kernel = value;
+        this._postProcess.kernel = value;
     }
 
     /**
@@ -132,16 +144,15 @@ export class BloomPostProcessBlock extends NodeRenderGraphBlock {
         this._frameGraphTask.name = this.name;
 
         this.output.value = this._frameGraphTask.outputTextureReference; // the value of the output connection point is the "output" texture of the task
-        this.output.valueType = NodeRenderGraphBlockConnectionPointValueTypes.Texture;
 
         const sourceConnectedPoint = this.source.connectedPoint;
-        if (sourceConnectedPoint && sourceConnectedPoint.valueType === NodeRenderGraphBlockConnectionPointValueTypes.Texture) {
-            this._frameGraphTask.sourceTexture = sourceConnectedPoint.value!;
+        if (sourceConnectedPoint) {
+            this._frameGraphTask.sourceTexture = sourceConnectedPoint.value as FrameGraphTextureId;
         }
 
         const destinationConnectedPoint = this.destination.connectedPoint;
-        if (destinationConnectedPoint && destinationConnectedPoint.valueType === NodeRenderGraphBlockConnectionPointValueTypes.Texture) {
-            this._frameGraphTask.destinationTexture = destinationConnectedPoint.value;
+        if (destinationConnectedPoint) {
+            this._frameGraphTask.destinationTexture = destinationConnectedPoint.value as FrameGraphTextureId;
         }
 
         state.frameGraph.addTask(this._frameGraphTask);

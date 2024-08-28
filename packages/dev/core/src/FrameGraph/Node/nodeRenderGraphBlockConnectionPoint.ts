@@ -1,7 +1,7 @@
 import type { Nullable } from "../../types";
 import type { NodeRenderGraphBlock } from "./nodeRenderGraphBlock";
 import { Observable } from "../../Misc/observable";
-import type { NodeRenderGraphBlockConnectionPointValueType, NodeRenderGraphBlockConnectionPointValueTypes } from "./Types/nodeRenderGraphBlockConnectionPointTypes";
+import type { NodeRenderGraphBlockConnectionPointValueType } from "./Types/nodeRenderGraphBlockConnectionPointTypes";
 import {
     NodeRenderGraphBlockConnectionPointTypes,
     NodeRenderGraphConnectionPointCompatibilityStates,
@@ -43,11 +43,6 @@ export class NodeRenderGraphConnectionPoint {
      * The value stored in this connection point
      */
     public value: NodeRenderGraphBlockConnectionPointValueType | undefined;
-
-    /**
-     * The type of the value stored in this connection point
-     */
-    public valueType: NodeRenderGraphBlockConnectionPointValueTypes | undefined;
 
     /**
      * Gets or sets the additional types supported by this connection point

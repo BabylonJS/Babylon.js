@@ -5,5 +5,6 @@ export * from "./inputBlock";
 export * from "./outputBlock";
 export * from "./PostProcesses/blackAndWhitePostProcessBlock";
 export * from "./PostProcesses/bloomPostProcessBlock";
+export * from "./Rendering/renderObjectsBlock";
 export * from "./Teleport/teleportInBlock";
 export * from "./Teleport/teleportOutBlock";

@@ -1,5 +1,5 @@
-import type { TextureHandle } from "../../../FrameGraph/frameGraphTextureManager";
-import type { FrameGraphTaskOutputReference } from "../../Tasks/IFrameGraphTask";
+import type { FrameGraphObjectList, FrameGraphTextureId } from "../../../FrameGraph/frameGraphTypes";
+import type { Camera } from "core/Cameras/camera";
 
 /**
  * Defines the kind of connection point for node render graph nodes
@@ -19,13 +19,14 @@ export enum NodeRenderGraphBlockConnectionPointTypes {
     TextureVelocity = 0x00000200,
     TextureIrradiance = 0x00000400,
     TextureAlbedoSqrt = 0x00000800,
+    TextureAllButBackBufferDepthStencil = 0x0000fffb,
     TextureAllButBackBuffer = 0x0000fff9,
     TextureAll = 0x0000ffff,
 
     /** Camera */
     Camera = 0x00010000,
-    /** List of renderables (meshes, particle systems, sprites) */
-    RenderableList = 0x00020000,
+    /** List of objects (meshes, particle systems, sprites) */
+    ObjectList = 0x00020000,
 
     /** Detect type based on connection */
     AutoDetect = 0x01000000,
@@ -59,9 +60,4 @@ export const enum NodeRenderGraphConnectionPointDirection {
     Output,
 }
 
-export type NodeRenderGraphBlockConnectionPointValueType = FrameGraphTaskOutputReference | TextureHandle;
-
-export const enum NodeRenderGraphBlockConnectionPointValueTypes {
-    Texture = 0,
-    RenderableList = 1,
-}
+export type NodeRenderGraphBlockConnectionPointValueType = FrameGraphTextureId | Camera | FrameGraphObjectList;

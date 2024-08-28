@@ -12,10 +12,10 @@ import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager"
 import { RegisterDefaultInput } from "./graphSystem/registerDefaultInput";
 import { RegisterExportData } from "./graphSystem/registerExportData";
 import type { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
-import type { AbstractEngine } from "core/Engines";
 import type { FilesInput } from "core/Misc/filesInput";
 import { RegisterDebugSupport } from "./graphSystem/registerDebugSupport";
 import { PreviewType } from "./components/preview/previewType";
+import type { Scene } from "core/scene";
 
 export class GlobalState {
     nodeRenderGraph: NodeRenderGraph;
@@ -50,12 +50,12 @@ export class GlobalState {
     pointerOverCanvas: boolean = false;
     onRefreshPreviewMeshControlComponentRequiredObservable = new Observable<void>();
     filesInput: FilesInput;
-    engine: AbstractEngine;
+    scene: Scene;
 
     customSave?: { label: string; action: (data: string) => Promise<void> };
 
-    public constructor(engine: AbstractEngine) {
-        this.engine = engine;
+    public constructor(scene: Scene) {
+        this.scene = scene;
         this.stateManager = new StateManager();
         this.stateManager.data = this;
         this.stateManager.lockObject = this.lockObject;

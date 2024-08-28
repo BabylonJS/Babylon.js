@@ -1,16 +1,14 @@
 import type { Nullable } from "../../types";
 import type { FrameGraphRenderContext } from "../frameGraphRenderContext";
 import { FrameGraphPass } from "./pass";
-import type { IFrameGraphTask } from "../Tasks/IFrameGraphTask";
-import type { IFrameGraphPass } from "./IFrameGraphPass";
-import type { TextureHandle } from "../frameGraphTextureManager";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
+import type { IFrameGraphPass, IFrameGraphTask, FrameGraphTextureHandle } from "../frameGraphTypes";
 
 export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext> {
     protected _engine: AbstractEngine;
-    protected _renderTarget: TextureHandle;
-    protected _renderTargetDepth: TextureHandle | undefined;
-    protected _usedTextures: TextureHandle[] = [];
+    protected _renderTarget: FrameGraphTextureHandle;
+    protected _renderTargetDepth: FrameGraphTextureHandle | undefined;
+    protected _usedTextures: FrameGraphTextureHandle[] = [];
     protected _depthShared = false;
 
     public static IsRenderPass(pass: IFrameGraphPass): pass is FrameGraphRenderPass {
@@ -18,12 +16,12 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
     }
 
     /** @internal */
-    public get renderTarget(): TextureHandle {
+    public get renderTarget(): FrameGraphTextureHandle {
         return this._renderTarget;
     }
 
     /** @internal */
-    public get renderTargetDepth(): TextureHandle | undefined {
+    public get renderTargetDepth(): FrameGraphTextureHandle | undefined {
         return this._renderTargetDepth;
     }
 
@@ -33,15 +31,15 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
         this._engine = engine;
     }
 
-    public useTexture(texture: TextureHandle) {
+    public useTexture(texture: FrameGraphTextureHandle) {
         this._usedTextures.push(texture);
     }
 
-    public setRenderTarget(renderTargetHandle: TextureHandle) {
+    public setRenderTarget(renderTargetHandle: FrameGraphTextureHandle) {
         this._renderTarget = renderTargetHandle;
     }
 
-    public setRenderTargetDepth(renderTargetHandle?: TextureHandle) {
+    public setRenderTargetDepth(renderTargetHandle?: FrameGraphTextureHandle) {
         this._renderTargetDepth = renderTargetHandle;
     }
 
@@ -51,8 +49,11 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
             this._context._shareDepth(this._renderTargetDepth, this._renderTarget);
             this._depthShared = true;
         }
+
         this._context._bindRenderTarget(this._renderTarget, `frame graph - render pass '${this.name}'`);
+
         super._execute();
+
         this._context._unbindRenderTarget();
     }
 

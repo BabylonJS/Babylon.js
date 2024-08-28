@@ -1,4 +1,4 @@
-import type { AbstractEngine } from "core/Engines";
+import type { Scene } from "../../../scene";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGraphBlockConnectionPointTypes";
 import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
@@ -11,10 +11,10 @@ export class RenderGraphElbowBlock extends NodeRenderGraphBlock {
     /**
      * Creates a new RenderGraphElbowBlock
      * @param name defines the block name
-     * @param engine defines the hosting engine
+     * @param scene defines the hosting scene
      */
-    public constructor(name: string, engine: AbstractEngine) {
-        super(name, engine);
+    public constructor(name: string, scene: Scene) {
+        super(name, scene);
 
         this.registerInput("input", NodeRenderGraphBlockConnectionPointTypes.AutoDetect);
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);

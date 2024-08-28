@@ -1,11 +1,10 @@
-import type { FrameGraph } from "../frameGraph";
-import type { TextureHandle } from "../frameGraphTextureManager";
-import type { FrameGraphTaskOutputReference, IFrameGraphTask } from "./IFrameGraphTask";
+import type { FrameGraph } from "../../frameGraph";
+import type { FrameGraphTaskOutputReference, FrameGraphTextureId, IFrameGraphTask } from "../../frameGraphTypes";
 
 export class FrameGraphCopyToTextureTask implements IFrameGraphTask {
-    public sourceTexture?: FrameGraphTaskOutputReference | TextureHandle;
+    public sourceTexture?: FrameGraphTextureId;
 
-    public destinationTexture?: FrameGraphTaskOutputReference | TextureHandle;
+    public destinationTexture?: FrameGraphTextureId;
 
     public readonly outputTextureReference: FrameGraphTaskOutputReference = [this, "output"];
 

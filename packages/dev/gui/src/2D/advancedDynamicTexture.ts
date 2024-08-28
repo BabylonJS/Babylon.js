@@ -32,9 +32,6 @@ import { DecodeBase64ToBinary } from "core/Misc/stringTools";
 
 import type { StandardMaterial } from "core/Materials/standardMaterial";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
-import type { FrameGraphTaskOutputReference, IFrameGraphTask } from "core/FrameGraph/Tasks/IFrameGraphTask";
-import type { TextureHandle } from "core/FrameGraph/frameGraphTextureManager";
-import type { FrameGraph } from "core/FrameGraph/frameGraph";
 
 export interface IAdvancedDynamicTextureOptions extends IDynamicTextureOptions {
     /** indicates that the ADT will be used as a frame graph task (default: false) */
@@ -45,20 +42,14 @@ export interface IAdvancedDynamicTextureOptions extends IDynamicTextureOptions {
  * Class used to create texture to support 2D GUI elements
  * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui
  */
-export class AdvancedDynamicTexture extends DynamicTexture implements IFrameGraphTask {
+export class AdvancedDynamicTexture extends DynamicTexture {
     /** Define the url to load snippets */
     public static SnippetUrl = Constants.SnippetUrl;
 
     /** Indicates if some optimizations can be performed in GUI GPU management (the downside is additional memory/GPU texture memory used) */
     public static AllowGPUOptimizations = true;
 
-    protected _useAsFrameGraphTask = false;
-
-    public destinationTexture?: FrameGraphTaskOutputReference | TextureHandle;
-
-    public readonly outputTextureReference: FrameGraphTaskOutputReference = [this, "output"];
-
-    public disabled = false;
+    public readonly useAsFrameGraphTask: boolean = false;
 
     /** Snippet ID if the content was created from the snippet server */
     public snippetId: string;
@@ -445,9 +436,9 @@ export class AdvancedDynamicTexture extends DynamicTexture implements IFrameGrap
 
         const adtOptions = widthOrOptions as IAdvancedDynamicTextureOptions;
 
-        this._useAsFrameGraphTask = !!adtOptions?.useAsFrameGraphTask;
+        this.useAsFrameGraphTask = !!adtOptions?.useAsFrameGraphTask;
 
-        if (!this._useAsFrameGraphTask) {
+        if (!this.useAsFrameGraphTask) {
             this._renderObserver = scene.onBeforeCameraRenderObservable.add((camera: Camera) => this._checkUpdate(camera));
         }
 
@@ -758,7 +749,8 @@ export class AdvancedDynamicTexture extends DynamicTexture implements IFrameGrap
         return new Vector3(projectedPosition.x, projectedPosition.y, projectedPosition.z);
     }
 
-    private _checkUpdate(camera: Nullable<Camera>, skipUpdate?: boolean): void {
+    /** @internal */
+    public _checkUpdate(camera: Nullable<Camera>, skipUpdate?: boolean): void {
         if (this._layerToDispose && camera) {
             if ((camera.layerMask & this._layerToDispose.layerMask) === 0) {
                 return;
@@ -1640,7 +1632,7 @@ export class AdvancedDynamicTexture extends DynamicTexture implements IFrameGrap
         result._layerToDispose = layer;
         result._isFullscreen = true;
 
-        if (result._useAsFrameGraphTask) {
+        if (result.useAsFrameGraphTask) {
             // Make sure the layer is not rendered by the layer component!
             // We will render it ourselves in the frame graph render pass
             layer.layerMask = 0;
@@ -1689,34 +1681,5 @@ export class AdvancedDynamicTexture extends DynamicTexture implements IFrameGrap
      */
     public guiIsReady(): boolean {
         return this._rootContainer.isReady();
-    }
-
-    public isReadyFrameGraph(): boolean {
-        return this.guiIsReady() && this._layerToDispose!.isReady();
-    }
-
-    public recordFrameGraph(frameGraph: FrameGraph): void {
-        if (this.destinationTexture === undefined) {
-            throw new Error("AdvancedDynamicTexture: outputTexture is required");
-        }
-
-        const outputTextureHandle = frameGraph.getTextureHandle(this.destinationTexture);
-
-        const pass = frameGraph.addRenderPass(this.name);
-
-        pass.setRenderTarget(outputTextureHandle);
-        pass.setExecuteFunc((context) => {
-            this._checkUpdate(null);
-            context.renderLayer(this._layerToDispose!);
-        });
-
-        const passDisabled = frameGraph.addRenderPass(this.name + "_disabled", true);
-
-        passDisabled.setRenderTarget(outputTextureHandle);
-        passDisabled.setExecuteFunc((_context) => {});
-    }
-
-    public disposeFrameGraph(): void {
-        this.dispose();
     }
 }

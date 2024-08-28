@@ -1,17 +1,20 @@
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import type { NodeRenderGraphConnectionPoint } from "../../nodeRenderGraphBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import { NodeRenderGraphBlockConnectionPointTypes, NodeRenderGraphBlockConnectionPointValueTypes } from "../../Types/nodeRenderGraphBlockConnectionPointTypes";
+import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphBlockConnectionPointTypes";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { BlackAndWhitePostProcess } from "../../../../PostProcesses/blackAndWhitePostProcess";
-import type { AbstractEngine } from "../../../../Engines/abstractEngine";
+import type { Scene } from "../../../../scene";
 import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
+import type { FrameGraphTextureId } from "../../../frameGraphTypes";
+import { FrameGraphPostProcessTask } from "../../../Tasks/PostProcesses/postProcessTask";
 
 /**
  * Block that implements the black and white post process
  */
 export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
-    protected override _frameGraphTask: BlackAndWhitePostProcess;
+    protected override _frameGraphTask: FrameGraphPostProcessTask;
+    protected _postProcess: BlackAndWhitePostProcess;
 
     /**
      * Gets the frame graph task associated with this block
@@ -21,12 +24,19 @@ export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
     }
 
     /**
+     * Gets the post process used by this block
+     */
+    public get postProcess() {
+        return this._postProcess;
+    }
+
+    /**
      * Create a new BlackAndWhitePostProcessBlock
      * @param name defines the block name
-     * @param engine defines the hosting engine
+     * @param scene defines the hosting scene
      */
-    public constructor(name: string, engine: AbstractEngine) {
-        super(name, engine);
+    public constructor(name: string, scene: Scene) {
+        super(name, scene);
 
         this.registerInput("source", NodeRenderGraphBlockConnectionPointTypes.Texture);
         this.registerInput("destination", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
@@ -38,15 +48,17 @@ export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
             return this.destination.isConnected ? this.destination : this.source;
         };
 
-        this._frameGraphTask = new BlackAndWhitePostProcess(
+        this._postProcess = new BlackAndWhitePostProcess(
             this.name,
             {
                 useAsFrameGraphTask: true,
             },
             null,
             undefined,
-            engine
+            this._engine
         );
+
+        this._frameGraphTask = new FrameGraphPostProcessTask(this.name, this._postProcess);
     }
 
     /** Sampling mode used to sample from the source texture */
@@ -62,11 +74,11 @@ export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
     /** Degree of conversion to black and white (default: 1 - full b&w conversion) */
     @editableInPropertyPage("Degree", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 1 })
     public get degree(): number {
-        return this._frameGraphTask.degree;
+        return this._postProcess.degree;
     }
 
     public set degree(value: number) {
-        this._frameGraphTask.degree = value;
+        this._postProcess.degree = value;
     }
 
     /**
@@ -104,16 +116,15 @@ export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
         this._frameGraphTask.name = this.name;
 
         this.output.value = this._frameGraphTask.outputTextureReference; // the value of the output connection point is the "output" texture of the task
-        this.output.valueType = NodeRenderGraphBlockConnectionPointValueTypes.Texture;
 
         const sourceConnectedPoint = this.source.connectedPoint;
-        if (sourceConnectedPoint && sourceConnectedPoint.valueType === NodeRenderGraphBlockConnectionPointValueTypes.Texture) {
-            this._frameGraphTask.sourceTexture = sourceConnectedPoint.value!;
+        if (sourceConnectedPoint) {
+            this._frameGraphTask.sourceTexture = sourceConnectedPoint.value as FrameGraphTextureId;
         }
 
         const destinationConnectedPoint = this.destination.connectedPoint;
-        if (destinationConnectedPoint && destinationConnectedPoint.valueType === NodeRenderGraphBlockConnectionPointValueTypes.Texture) {
-            this._frameGraphTask.destinationTexture = destinationConnectedPoint.value;
+        if (destinationConnectedPoint) {
+            this._frameGraphTask.destinationTexture = destinationConnectedPoint.value as FrameGraphTextureId;
         }
 
         state.frameGraph.addTask(this._frameGraphTask);

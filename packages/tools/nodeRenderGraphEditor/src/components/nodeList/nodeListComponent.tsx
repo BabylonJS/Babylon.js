@@ -34,6 +34,9 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         BlackAndWhiteBlock: "Applies a black and white post process",
         BloomBlock: "Apply a bloom post process",
         GUIBlock: "Used to render a GUI",
+        RenderObjectsBlock: "Render objects to a render target",
+        ObjectListBlock: "List of objects (meshes, particle systems, sprites)",
+        CameraBlock: "Camera",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -118,11 +121,12 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         // Block types used to create the menu from
         const allBlocks: any = {
             Custom_Frames: customFrameNames,
-            Inputs: ["TextureBlock", "TextureBackBufferBlock", "TextureBackBufferDepthStencilBlock"],
+            Inputs: ["TextureBlock", "TextureBackBufferBlock", "TextureBackBufferDepthStencilBlock", "ObjectListBlock", "CameraBlock"],
             Post_Processes: ["BlackAndWhiteBlock", "BloomBlock"],
             Misc: ["ElbowBlock", "TeleportInBlock", "TeleportOutBlock", "GUIBlock"],
             Textures: ["ClearBlock", "CopyTextureBlock"],
             Output_Nodes: ["RenderGraphOutputBlock"],
+            Rendering: ["RenderObjectsBlock"],
         };
 
         // Create node menu

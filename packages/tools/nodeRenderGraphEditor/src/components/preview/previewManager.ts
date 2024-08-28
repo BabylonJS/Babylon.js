@@ -13,10 +13,8 @@ import type { FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
 import "core/Rendering/depthRendererSceneComponent";
 import { NodeRenderGraph } from "core/FrameGraph/Node/nodeRenderGraph";
 import type { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
-import { PassPostProcess } from "core/PostProcesses/passPostProcess";
-import { Constants } from "core/Engines/constants";
 import { LogEntry } from "../log/logComponent";
-import type { RenderGraphGUIBlock } from "gui/2D/renderGraphGUIBlock";
+import type { RenderGraphGUIBlock } from "gui/2D/FrameGraph/renderGraphGUIBlock";
 import { Button } from "gui/2D/controls/button";
 import { Control } from "gui/2D/controls/control";
 import { PreviewType } from "./previewType";
@@ -24,6 +22,7 @@ import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { FilesInput } from "core/Misc/filesInput";
 import { Color3 } from "core/Maths/math.color";
 import { WebGPUEngine } from "core/Engines/webgpuEngine";
+import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphBlockConnectionPointTypes";
 
 const useWebGPU = false;
 
@@ -43,7 +42,6 @@ export class PreviewManager {
     private _globalState: GlobalState;
     private _currentType: number;
     private _lightParent: TransformNode;
-    private _passPostProcess: PassPostProcess;
     private _hdrTexture: CubeTexture;
 
     public constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState) {
@@ -141,7 +139,7 @@ export class PreviewManager {
             false
         );
 
-        this._camera = new ArcRotateCamera("Camera", 0, 0.8, 4, Vector3.Zero(), this._scene);
+        this._camera = new ArcRotateCamera("PreviewCamera", 0, 0.8, 4, Vector3.Zero(), this._scene);
 
         this._camera.lowerRadiusLimit = 3;
         this._camera.upperRadiusLimit = 10;
@@ -152,25 +150,19 @@ export class PreviewManager {
         this._camera.wheelDeltaPercentage = 0.01;
         this._camera.pinchDeltaPercentage = 0.01;
 
+        this._scene.activeCamera = null;
+
         this._lightParent = new TransformNode("LightParent", this._scene);
-
-        this._passPostProcess = new PassPostProcess("pass", 1, this._camera, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, undefined, undefined, Constants.TEXTURETYPE_HALF_FLOAT);
-        this._passPostProcess.samples = 4;
-        this._passPostProcess.resize(this._engine.getRenderWidth(), this._engine.getRenderHeight(), this._camera);
-
-        this._scene.onAfterRenderObservable.add(() => {
-            this._nodeRenderGraph?.execute();
-        });
-
-        this._passPostProcess.onSizeChangedObservable.add(() => {
-            this._buildGraph();
-        });
 
         this._engine.stopRenderLoop();
 
         this._engine.runRenderLoop(() => {
             this._engine.resize();
-            this._scene.render();
+            (this._scene as any)._frameId++;
+            this._scene.resetCachedMaterial();
+            this._scene.animate();
+            this._camera.update();
+            this._nodeRenderGraph?.execute();
         });
 
         this._createNodeRenderGraph();
@@ -224,9 +216,8 @@ export class PreviewManager {
 
         const serialized = this._globalState.nodeRenderGraph.serialize();
         this._nodeRenderGraph?.dispose();
-        this._nodeRenderGraph = NodeRenderGraph.Parse(serialized, this._engine, {
+        this._nodeRenderGraph = NodeRenderGraph.Parse(serialized, this._scene, {
             rebuildGraphOnEngineResize: false,
-            scene: this._scene,
         });
         (window as any).nrg = this._nodeRenderGraph;
     }
@@ -243,15 +234,19 @@ export class PreviewManager {
             if (!input.isExternal) {
                 continue;
             }
-            if (input.isAnyTexture()) {
-                input.value = this._passPostProcess.inputTexture;
+            if ((input.type & NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer) !== 0) {
+                // TODO: Implement this
+            } else if (input.isCamera()) {
+                input.value = this._camera;
+            } else if (input.isObjectList()) {
+                input.value = { meshes: this._scene.meshes, particleSystems: this._scene.particleSystems };
             }
         }
 
         // Set a default control in GUI blocks
         const guiBlocks = this._nodeRenderGraph.getBlocksByPredicate<RenderGraphGUIBlock>((block) => block.getClassName() === "GUI.RenderGraphGUIBlock");
         guiBlocks.forEach((block, i) => {
-            const gui = block.task;
+            const gui = block.gui;
 
             const button = Button.CreateSimpleButton("but" + i, `GUI #${i + 1} button`);
 

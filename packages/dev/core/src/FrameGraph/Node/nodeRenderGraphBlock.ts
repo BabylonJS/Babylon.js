@@ -9,7 +9,8 @@ import type { RenderGraphInputBlock } from "./Blocks/inputBlock";
 import { Logger } from "../../Misc/logger";
 import { NodeRenderGraphConnectionPoint } from "./nodeRenderGraphBlockConnectionPoint";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
-import type { IFrameGraphTask } from "../Tasks/IFrameGraphTask";
+import type { IFrameGraphTask } from "../frameGraphTypes";
+import type { Scene } from "../../scene";
 
 /**
  * Defines a block that can be used inside a node render graph
@@ -22,6 +23,7 @@ export class NodeRenderGraphBlock {
     protected _isTeleportIn = false;
     protected _isDebug = false;
     protected _isUnique = false;
+    protected _scene: Scene;
     protected _engine: AbstractEngine;
     protected _frameGraphTask: IFrameGraphTask;
 
@@ -228,11 +230,12 @@ export class NodeRenderGraphBlock {
     /**
      * Creates a new NodeRenderGraphBlock
      * @param name defines the block name
-     * @param engine defines the hosting engine
+     * @param scene defines the hosting scene
      */
-    public constructor(name: string, engine: AbstractEngine) {
+    public constructor(name: string, scene: Scene) {
         this._name = name;
-        this._engine = engine;
+        this._scene = scene;
+        this._engine = scene.getEngine();
         this.uniqueId = UniqueIdGenerator.UniqueId;
     }
 
@@ -281,7 +284,6 @@ export class NodeRenderGraphBlock {
     protected _propagateInputValueToOutput(inputConnectionPoint: NodeRenderGraphConnectionPoint, outputConnectionPoint: NodeRenderGraphConnectionPoint) {
         if (inputConnectionPoint.connectedPoint) {
             outputConnectionPoint.value = inputConnectionPoint.connectedPoint.value;
-            outputConnectionPoint.valueType = inputConnectionPoint.connectedPoint.valueType;
         }
     }
 
@@ -322,7 +324,7 @@ export class NodeRenderGraphBlock {
 
         this._buildBlock(state);
 
-        // Note: I don't know why we have the code bloew in the node frameworks.
+        // Note: I don't know why we have the code below in the node frameworks.
         // Apparently this isn't necessary; we'll collect/build all the required blocks by simply calling “build” on the output block.
         // The loop below will potentially call "build" for blocks that are not connected to the output block, adding unwanted tasks to the frame graph.
         // for (const output of this._outputs) {
@@ -531,12 +533,12 @@ export class NodeRenderGraphBlock {
             const block = this as unknown as RenderGraphInputBlock;
             const blockType = block.type;
 
-            codeString += `var ${this._codeVariableName} = new BABYLON.RenderGraphInputBlock("${this.name}", engine, BABYLON.NodeRenderGraphBlockConnectionPointTypes.${NodeRenderGraphBlockConnectionPointTypes[blockType]});\n`;
+            codeString += `var ${this._codeVariableName} = new BABYLON.RenderGraphInputBlock("${this.name}", scene, BABYLON.NodeRenderGraphBlockConnectionPointTypes.${NodeRenderGraphBlockConnectionPointTypes[blockType]});\n`;
         } else {
             if (this._additionalConstructionParameters) {
-                codeString += `var ${this._codeVariableName} = new BABYLON.${className}("${this.name}", engine, ...${JSON.stringify(this._additionalConstructionParameters)});\n`;
+                codeString += `var ${this._codeVariableName} = new BABYLON.${className}("${this.name}", scene, ...${JSON.stringify(this._additionalConstructionParameters)});\n`;
             } else {
-                codeString += `var ${this._codeVariableName} = new BABYLON.${className}("${this.name}", engine);\n`;
+                codeString += `var ${this._codeVariableName} = new BABYLON.${className}("${this.name}", scene);\n`;
             }
         }
 

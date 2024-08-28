@@ -20,8 +20,6 @@ export interface INodeRenderGraphEditorOptions {
 export interface INodeRenderGraphCreateOptions {
     /** if true, textures created by the node render graph will be visible in the inspector, for easier debugging (default: false) */
     debugTextures?: boolean;
-    /** Scene in which debugging textures are to be created */
-    scene?: Scene;
     /** Rebuild the node render graph when the screen is resized (default: true) */
     rebuildGraphOnEngineResize?: boolean;
     /** defines if the build should log activity (default: false) */

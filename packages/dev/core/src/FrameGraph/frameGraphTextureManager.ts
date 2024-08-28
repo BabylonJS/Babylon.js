@@ -1,25 +1,12 @@
 import type { Scene } from "../scene";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
-import type { RenderTargetCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
+import type { TextureSize } from "../Materials/Textures/textureCreationOptions";
 import { getDimensionsFromTextureSize } from "../Materials/Textures/textureCreationOptions";
 import { Texture } from "../Materials/Textures/texture";
 import type { Nullable } from "core/types";
-
-export const backbufferColorTextureHandle: TextureHandle = 0;
-
-export const backbufferDepthStencilTextureHandle: TextureHandle = 1;
-
-export type TextureHandle = number;
-
-export type FrameGraphTextureCreationOptions = {
-    /** Size of the render target texture. If sizeIsPercentage is true, these are percentages relative to the screen size */
-    size: TextureSize;
-    /** Options used to create the render target texture */
-    options: RenderTargetCreationOptions;
-    /** If true, indicates that "size" is percentages relative to the screen size */
-    sizeIsPercentage: boolean;
-};
+import type { FrameGraphTextureCreationOptions, FrameGraphTextureHandle } from "./frameGraphTypes";
+import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "./frameGraphTypes";
 
 type TextureEntry = {
     texture: Nullable<RenderTargetWrapper>;
@@ -40,7 +27,7 @@ export class FrameGraphTextureManager {
     private static _Counter = 2; // 0 and 1 are reserved for backbuffer textures
 
     /** @internal */
-    public _textures: Map<TextureHandle, TextureEntry> = new Map();
+    public _textures: Map<FrameGraphTextureHandle, TextureEntry> = new Map();
 
     /**
      * @internal
@@ -50,40 +37,18 @@ export class FrameGraphTextureManager {
         private _debugTextures = false,
         private _scene?: Scene
     ) {
-        const size = { width: this._engine.getRenderWidth(true), height: this._engine.getRenderHeight(true) };
-
-        this._textures.set(backbufferColorTextureHandle, {
-            name: "backbuffer color",
-            texture: null,
-            creationOptions: {
-                size,
-                options: {},
-                sizeIsPercentage: false,
-            },
-            namespace: FrameGraphTextureNamespace.External,
-        });
-
-        this._textures.set(backbufferDepthStencilTextureHandle, {
-            name: "backbuffer depth/stencil",
-            texture: null,
-            creationOptions: {
-                size,
-                options: {},
-                sizeIsPercentage: false,
-            },
-            namespace: FrameGraphTextureNamespace.External,
-        });
+        this._addSystemTextures();
     }
 
-    public getTextureCreationOptions(handle: TextureHandle): FrameGraphTextureCreationOptions {
+    public getTextureCreationOptions(handle: FrameGraphTextureHandle): FrameGraphTextureCreationOptions {
         return this._textures.get(handle)!.creationOptions;
     }
 
-    public getTextureFromHandle(handle: TextureHandle): Nullable<RenderTargetWrapper> {
+    public getTextureFromHandle(handle: FrameGraphTextureHandle): Nullable<RenderTargetWrapper> {
         return this._textures.get(handle)!.texture;
     }
 
-    public importTexture(name: string, texture: RenderTargetWrapper, handle?: TextureHandle): TextureHandle {
+    public importTexture(name: string, texture: RenderTargetWrapper, handle?: FrameGraphTextureHandle): FrameGraphTextureHandle {
         const internalTexture = texture.texture;
 
         if (!internalTexture) {
@@ -118,7 +83,7 @@ export class FrameGraphTextureManager {
         );
     }
 
-    public createRenderTargetTexture(name: string, taskNamespace: boolean, creationOptions: FrameGraphTextureCreationOptions): TextureHandle {
+    public createRenderTargetTexture(name: string, taskNamespace: boolean, creationOptions: FrameGraphTextureCreationOptions): FrameGraphTextureHandle {
         return this._createHandleForTexture(name, null, creationOptions, taskNamespace ? FrameGraphTextureNamespace.Task : FrameGraphTextureNamespace.Graph);
     }
 
@@ -178,7 +143,34 @@ export class FrameGraphTextureManager {
 
         if (releaseAll) {
             this._textures.clear();
+            this._addSystemTextures();
         }
+    }
+
+    private _addSystemTextures() {
+        const size = { width: this._engine.getRenderWidth(true), height: this._engine.getRenderHeight(true) };
+
+        this._textures.set(backbufferColorTextureHandle, {
+            name: "backbuffer color",
+            texture: null,
+            creationOptions: {
+                size,
+                options: {},
+                sizeIsPercentage: false,
+            },
+            namespace: FrameGraphTextureNamespace.External,
+        });
+
+        this._textures.set(backbufferDepthStencilTextureHandle, {
+            name: "backbuffer depth/stencil",
+            texture: null,
+            creationOptions: {
+                size,
+                options: {},
+                sizeIsPercentage: false,
+            },
+            namespace: FrameGraphTextureNamespace.External,
+        });
     }
 
     private _createDebugTexture(name: string, texture: RenderTargetWrapper): Texture | undefined {
@@ -209,8 +201,8 @@ export class FrameGraphTextureManager {
         texture: Nullable<RenderTargetWrapper>,
         creationOptions: FrameGraphTextureCreationOptions,
         namespace: FrameGraphTextureNamespace,
-        handle?: TextureHandle
-    ): TextureHandle {
+        handle?: FrameGraphTextureHandle
+    ): FrameGraphTextureHandle {
         handle = handle ?? FrameGraphTextureManager._Counter++;
 
         this._textures.set(handle, {

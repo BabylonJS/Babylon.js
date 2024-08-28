@@ -16,7 +16,7 @@ export const RegisterDefaultInput = (stateManager: StateManager) => {
         if (point.type === NodeRenderGraphBlockConnectionPointTypes.AutoDetect) {
             return null;
         }
-        const emittedBlock = new RenderGraphInputBlock(NodeRenderGraphBlockConnectionPointTypes[point.type], globalState.engine, point.type);
+        const emittedBlock = new RenderGraphInputBlock(NodeRenderGraphBlockConnectionPointTypes[point.type], globalState.scene, point.type);
 
         const nodeRenderGraph = globalState.nodeRenderGraph;
         nodeRenderGraph.attachedBlocks.push(emittedBlock);

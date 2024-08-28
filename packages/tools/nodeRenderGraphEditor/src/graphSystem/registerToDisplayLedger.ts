@@ -16,4 +16,5 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["BlackAndWhitePostProcessBlock"] = PostProcessDisplayManager;
     DisplayLedger.RegisteredControls["BloomPostProcessBlock"] = PostProcessDisplayManager;
     DisplayLedger.RegisteredControls["ClearBlock"] = TextureDisplayManager;
+    DisplayLedger.RegisteredControls["RenderObjectsBlock"] = TextureDisplayManager;
 };

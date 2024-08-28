@@ -1,23 +1,16 @@
 import type { Scene } from "../scene";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
-import type { FrameGraphTaskOutputReference, IFrameGraphTask } from "./Tasks/IFrameGraphTask";
+import type { IFrameGraphTask, FrameGraphTextureCreationOptions, FrameGraphTextureHandle, FrameGraphTextureDescription, FrameGraphTextureId } from "./frameGraphTypes";
 import { FrameGraphPass } from "./Passes/pass";
 import { FrameGraphRenderPass } from "./Passes/renderPass";
 import { FrameGraphRenderContext } from "./frameGraphRenderContext";
 import { FrameGraphContext } from "./frameGraphContext";
-import type { FrameGraphTextureCreationOptions, TextureHandle } from "./frameGraphTextureManager";
 import { FrameGraphTextureManager } from "./frameGraphTextureManager";
 import { FrameGraphTaskInternals } from "./Tasks/taskInternals";
 import { Observable } from "core/Misc/observable";
-import type { RenderTargetCreationOptions } from "../Materials/Textures/textureCreationOptions";
 import { getDimensionsFromTextureSize, textureSizeIsObject } from "../Materials/Textures/textureCreationOptions";
 import type { Nullable } from "../types";
-
-export type FrameGraphTextureDescription = {
-    size: { width: number; height: number };
-    options: RenderTargetCreationOptions;
-};
 
 /**
  * Class used to implement the frame graph
@@ -31,7 +24,7 @@ export class FrameGraph {
     private _tasks: IFrameGraphTask[] = [];
     private _currentProcessedTask: IFrameGraphTask | null = null;
 
-    private static _IsTextureHandle(textureId: FrameGraphTaskOutputReference | TextureHandle): textureId is TextureHandle {
+    private static _IsTextureHandle(textureId: FrameGraphTextureId): textureId is FrameGraphTextureHandle {
         return typeof textureId === "number";
     }
 
@@ -150,12 +143,12 @@ export class FrameGraph {
         }
     }
 
-    public importTexture(name: string, texture: RenderTargetWrapper, handle?: TextureHandle): TextureHandle {
+    public importTexture(name: string, texture: RenderTargetWrapper, handle?: FrameGraphTextureHandle): FrameGraphTextureHandle {
         return this._textureManager.importTexture(name, texture, handle);
     }
 
-    public getTextureCreationOptions(textureId: FrameGraphTaskOutputReference | TextureHandle, cloneOptions = false): FrameGraphTextureCreationOptions {
-        let textureHandle: TextureHandle;
+    public getTextureCreationOptions(textureId: FrameGraphTextureId, cloneOptions = false): FrameGraphTextureCreationOptions {
+        let textureHandle: FrameGraphTextureHandle;
 
         if (!FrameGraph._IsTextureHandle(textureId)) {
             textureHandle = textureId[0]._fgInternals!.mapNameToTextureHandle[textureId[1]];
@@ -178,7 +171,7 @@ export class FrameGraph {
             : creationOptions;
     }
 
-    public getTextureDescription(textureId: FrameGraphTaskOutputReference | TextureHandle): FrameGraphTextureDescription {
+    public getTextureDescription(textureId: FrameGraphTextureId): FrameGraphTextureDescription {
         const creationOptions = this.getTextureCreationOptions(textureId);
 
         const size = !creationOptions.sizeIsPercentage
@@ -193,7 +186,7 @@ export class FrameGraph {
         };
     }
 
-    public getTextureHandle(textureId: FrameGraphTaskOutputReference | TextureHandle): TextureHandle {
+    public getTextureHandle(textureId: FrameGraphTextureId): FrameGraphTextureHandle {
         if (FrameGraph._IsTextureHandle(textureId)) {
             return textureId;
         }
@@ -207,11 +200,7 @@ export class FrameGraph {
         return textureHandle;
     }
 
-    public getTextureHandleOrCreateTexture(
-        textureId?: FrameGraphTaskOutputReference | TextureHandle,
-        newTextureName?: string,
-        creationOptions?: FrameGraphTextureCreationOptions
-    ): TextureHandle {
+    public getTextureHandleOrCreateTexture(textureId?: FrameGraphTextureId, newTextureName?: string, creationOptions?: FrameGraphTextureCreationOptions): FrameGraphTextureHandle {
         if (textureId === undefined) {
             if (newTextureName === undefined || creationOptions === undefined) {
                 throw new Error("Either textureId or newTextureName and creationOptions must be provided.");
@@ -221,11 +210,11 @@ export class FrameGraph {
         return this.getTextureHandle(textureId);
     }
 
-    public getTextureFromHandle(handle: TextureHandle): Nullable<RenderTargetWrapper> {
+    public getTextureFromHandle(handle: FrameGraphTextureHandle): Nullable<RenderTargetWrapper> {
         return this._textureManager.getTextureFromHandle(handle);
     }
 
-    public createRenderTargetTexture(name: string, creationOptions: FrameGraphTextureCreationOptions): TextureHandle {
+    public createRenderTargetTexture(name: string, creationOptions: FrameGraphTextureCreationOptions): FrameGraphTextureHandle {
         return this._textureManager.createRenderTargetTexture(name, !!this._currentProcessedTask, creationOptions);
     }
 

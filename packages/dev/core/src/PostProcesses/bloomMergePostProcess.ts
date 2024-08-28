@@ -8,9 +8,6 @@ import { Constants } from "../Engines/constants";
 
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
-import type { FrameGraph } from "../FrameGraph/frameGraph";
-import type { FrameGraphTaskOutputReference } from "../FrameGraph/Tasks/IFrameGraphTask";
-import type { TextureHandle } from "../FrameGraph/frameGraphTextureManager";
 
 /**
  * The BloomMergePostProcess merges blurred images with the original based on the values of the circle of confusion.
@@ -19,8 +16,6 @@ export class BloomMergePostProcess extends PostProcess {
     /** Weight of the bloom to be added to the original input. */
     @serialize()
     public weight = 1;
-
-    public sourceBlurTexture?: FrameGraphTaskOutputReference | TextureHandle;
 
     /**
      * Gets a string identifying the name of the class
@@ -72,7 +67,7 @@ export class BloomMergePostProcess extends PostProcess {
 
         this.weight = weight;
         this.externalTextureSamplerBinding = true;
-        if (!this._useAsFrameGraphTask) {
+        if (!this.useAsFrameGraphTask) {
             this.onApplyObservable.add((effect: Effect) => {
                 effect.setTextureFromPostProcess("textureSampler", originalFromInput);
                 effect.setTextureFromPostProcessOutput("bloomBlur", blurred);
@@ -82,43 +77,6 @@ export class BloomMergePostProcess extends PostProcess {
 
         if (!blockCompilation) {
             this.updateEffect();
-        }
-    }
-
-    public override recordFrameGraph(frameGraph: FrameGraph, skipCreationOfDisabledPasses = false): void {
-        if (this.sourceTexture === undefined || this.sourceBlurTexture === undefined) {
-            throw new Error(`BloomMergePostProcess "${this.name}": sourceTexture and sourceBlurTexture are required`);
-        }
-
-        const sourceTextureCreationOptions = frameGraph.getTextureCreationOptions(this.sourceTexture, true);
-        sourceTextureCreationOptions.options.generateDepthBuffer = false;
-        sourceTextureCreationOptions.options.generateStencilBuffer = false;
-
-        const sourceTextureHandle = frameGraph.getTextureHandle(this.sourceTexture);
-        const sourceBlurTextureHandle = frameGraph.getTextureHandle(this.sourceBlurTexture);
-        const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(this.destinationTexture, this.name, sourceTextureCreationOptions);
-
-        const pass = frameGraph.addRenderPass(this.name);
-
-        pass.useTexture(sourceTextureHandle);
-        pass.useTexture(sourceBlurTextureHandle);
-        pass.setRenderTarget(outputTextureHandle);
-        pass.setExecuteFunc((context) => {
-            context.applyFullScreenEffect(this._drawWrapper, () => {
-                this._bind();
-                context.bindTextureHandle(this._drawWrapper.effect!, "textureSampler", sourceTextureHandle);
-                context.bindTextureHandle(this._drawWrapper.effect!, "bloomBlur", sourceBlurTextureHandle);
-                this._drawWrapper.effect!.setFloat("bloomWeight", this.weight);
-            });
-        });
-
-        if (!skipCreationOfDisabledPasses) {
-            const passDisabled = frameGraph.addRenderPass(this.name + "_disabled", true);
-
-            passDisabled.setRenderTarget(outputTextureHandle);
-            passDisabled.setExecuteFunc((context) => {
-                context.copyTexture(sourceTextureHandle);
-            });
         }
     }
 

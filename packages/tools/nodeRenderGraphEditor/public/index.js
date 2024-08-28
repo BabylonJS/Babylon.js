@@ -195,9 +195,10 @@ checkBabylonVersionAsync().then(() => {
             let canvas = document.createElement("canvas");
             let engine = new BABYLON.Engine(canvas, false, { disableWebGL2Support: false });
             let scene = new BABYLON.Scene(engine);
+            new BABYLON.Camera("camera", new BABYLON.Vector3(0, 0, 0), scene);
             new BABYLON.HemisphericLight("light #0", new BABYLON.Vector3(0, 1, 0), scene);
 
-            nodeRenderGraph = new BABYLON.NodeRenderGraph("node", engine);
+            nodeRenderGraph = new BABYLON.NodeRenderGraph("node", scene);
             nodeRenderGraph.setToDefault();
             nodeRenderGraph.build();
 

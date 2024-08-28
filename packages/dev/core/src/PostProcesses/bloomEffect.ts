@@ -8,28 +8,12 @@ import type { Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
 import type { Scene } from "../scene";
 import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { FrameGraphTaskOutputReference, IFrameGraphTask } from "../FrameGraph/Tasks/IFrameGraphTask";
-import type { FrameGraph } from "../FrameGraph/frameGraph";
-import { Constants } from "../Engines/constants";
-import type { TextureHandle } from "../FrameGraph/frameGraphTextureManager";
 
 /**
  * The bloom effect spreads bright areas of an image to simulate artifacts seen in cameras
  */
-export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphTask {
-    protected _useAsFrameGraphTask = false;
-
-    public name = "Bloom";
-
-    public sourceTexture?: FrameGraphTaskOutputReference | TextureHandle;
-
-    public sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
-
-    public destinationTexture?: FrameGraphTaskOutputReference | TextureHandle;
-
-    public readonly outputTextureReference: FrameGraphTaskOutputReference = [this, "output"];
-
-    public disabled = false;
+export class BloomEffect extends PostProcessRenderEffect {
+    public readonly useAsFrameGraphTask: boolean = false;
 
     /**
      * @internal Internal
@@ -45,7 +29,8 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
     private _blurY: BlurPostProcess;
     private _merge: BloomMergePostProcess;
 
-    private _pipelineTextureType: number;
+    /** @internal */
+    public _pipelineTextureType: number;
 
     /**
      * The luminance threshold to find bright areas of the image to bloom.
@@ -78,6 +63,10 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
         this._blurY.kernel = value * this._bloomScale;
     }
 
+    public get bloomScale() {
+        return this._bloomScale;
+    }
+
     /**
      * Creates a new instance of @see BloomEffect
      * @param sceneOrEngine The scene or engine the effect belongs to.
@@ -108,7 +97,7 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
         );
 
         this._pipelineTextureType = pipelineTextureType;
-        this._useAsFrameGraphTask = useAsFrameGraphTask;
+        this.useAsFrameGraphTask = useAsFrameGraphTask;
 
         this._downscale = new ExtractHighlightsPostProcess("highlights", {
             size: 1.0,
@@ -116,7 +105,7 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
             engine,
             textureType: pipelineTextureType,
             blockCompilation,
-            useAsFrameGraphTask: this._useAsFrameGraphTask,
+            useAsFrameGraphTask: this.useAsFrameGraphTask,
         });
 
         this._blurX = new BlurPostProcess("horizontal blur", new Vector2(1.0, 0), 10.0, {
@@ -125,7 +114,7 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
             engine,
             textureType: pipelineTextureType,
             blockCompilation,
-            useAsFrameGraphTask: this._useAsFrameGraphTask,
+            useAsFrameGraphTask: this.useAsFrameGraphTask,
         });
         this._blurX.alwaysForcePOT = true;
         this._blurX.autoClear = false;
@@ -136,7 +125,7 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
             engine,
             textureType: pipelineTextureType,
             blockCompilation,
-            useAsFrameGraphTask: this._useAsFrameGraphTask,
+            useAsFrameGraphTask: this.useAsFrameGraphTask,
         });
         this._blurY.alwaysForcePOT = true;
         this._blurY.autoClear = false;
@@ -151,86 +140,10 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
             engine,
             textureType: pipelineTextureType,
             blockCompilation,
-            useAsFrameGraphTask: this._useAsFrameGraphTask,
+            useAsFrameGraphTask: this.useAsFrameGraphTask,
         });
         this._merge.autoClear = false;
         this._effects.push(this._merge);
-    }
-
-    public isReadyFrameGraph() {
-        return this._downscale.isReady() && this._blurX.isReady() && this._blurY.isReady() && this._merge.isReady();
-    }
-
-    public recordFrameGraph(frameGraph: FrameGraph): void {
-        if (this.sourceTexture === undefined) {
-            throw new Error("BloomEffect: sourceTexture is required");
-        }
-
-        const sourceTextureDescription = frameGraph.getTextureDescription(this.sourceTexture);
-
-        const textureCreationOptions = {
-            size: { width: Math.floor(sourceTextureDescription.size.width * this._bloomScale), height: Math.floor(sourceTextureDescription.size.height * this._bloomScale) },
-            options: {
-                createMipMaps: false,
-                generateMipMaps: false,
-                type: this._pipelineTextureType,
-                samplingMode: Texture.BILINEAR_SAMPLINGMODE,
-                format: sourceTextureDescription.options.format,
-                samples: 1,
-                useSRGBBuffer: false,
-                generateDepthBuffer: false,
-                generateStencilBuffer: false,
-                label: "",
-            },
-            sizeIsPercentage: false,
-        };
-
-        // We need to set the texture size so that texel size is calculated correctly
-        this._blurX.width = textureCreationOptions.size.width;
-        this._blurX.height = textureCreationOptions.size.height;
-        this._blurY.width = textureCreationOptions.size.width;
-        this._blurY.height = textureCreationOptions.size.height;
-
-        textureCreationOptions.options.label = `${this.name} Downscale`;
-        const downscaleTextureHandle = frameGraph.createRenderTargetTexture(textureCreationOptions.options.label, textureCreationOptions);
-
-        this._downscale.sourceTexture = this.sourceTexture;
-        this._downscale.destinationTexture = downscaleTextureHandle;
-        this._downscale.recordFrameGraph(frameGraph, true);
-
-        textureCreationOptions.options.label = `${this.name} Blur X`;
-        const blurXTextureHandle = frameGraph.createRenderTargetTexture(textureCreationOptions.options.label, textureCreationOptions);
-
-        this._blurX.sourceTexture = downscaleTextureHandle;
-        this._blurX.destinationTexture = blurXTextureHandle;
-        this._blurX.recordFrameGraph(frameGraph, true);
-
-        textureCreationOptions.options.label = `${this.name} Blur Y`;
-        const blurYTextureHandle = frameGraph.createRenderTargetTexture(textureCreationOptions.options.label, textureCreationOptions);
-
-        this._blurY.sourceTexture = blurXTextureHandle;
-        this._blurY.destinationTexture = blurYTextureHandle;
-        this._blurY.recordFrameGraph(frameGraph, true);
-
-        const sourceTextureCreationOptions = frameGraph.getTextureCreationOptions(this.sourceTexture, true);
-        sourceTextureCreationOptions.options.generateDepthBuffer = false;
-        sourceTextureCreationOptions.options.generateStencilBuffer = false;
-
-        const sourceTextureHandle = frameGraph.getTextureHandle(this.sourceTexture);
-        const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(this.destinationTexture, `${this.name} Merge`, sourceTextureCreationOptions);
-
-        this._merge.sourceTexture = this.sourceTexture;
-        this._merge.sourceSamplingMode = this.sourceSamplingMode;
-        this._merge.sourceBlurTexture = blurYTextureHandle;
-        this._merge.destinationTexture = outputTextureHandle;
-        this._merge.recordFrameGraph(frameGraph, true);
-
-        const passDisabled = frameGraph.addRenderPass(this.name + "_disabled", true);
-
-        passDisabled.setRenderTarget(outputTextureHandle);
-        passDisabled.setExecuteFunc((context) => {
-            context.copyTexture(sourceTextureHandle);
-        });
     }
 
     public disposeFrameGraph(): void {

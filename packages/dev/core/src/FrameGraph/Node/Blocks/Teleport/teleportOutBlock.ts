@@ -4,7 +4,7 @@ import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRender
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import type { NodeRenderGraphConnectionPoint } from "../../nodeRenderGraphBlockConnectionPoint";
 import type { RenderGraphTeleportInBlock } from "./teleportInBlock";
-import type { AbstractEngine } from "../../../../Engines/abstractEngine";
+import type { Scene } from "../../../../scene";
 import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
 
 /**
@@ -19,10 +19,10 @@ export class RenderGraphTeleportOutBlock extends NodeRenderGraphBlock {
     /**
      * Create a new RenderGraphTeleportOutBlock
      * @param name defines the block name
-     * @param engine defines the hosting engine
+     * @param scene defines the hosting scene
      */
-    public constructor(name: string, engine: AbstractEngine) {
-        super(name, engine);
+    public constructor(name: string, scene: Scene) {
+        super(name, scene);
 
         this._isTeleportOut = true;
 

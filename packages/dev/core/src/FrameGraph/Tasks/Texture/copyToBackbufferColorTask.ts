@@ -1,10 +1,9 @@
-import type { FrameGraph } from "../frameGraph";
-import type { TextureHandle } from "../frameGraphTextureManager";
-import { backbufferColorTextureHandle } from "../frameGraphTextureManager";
-import type { FrameGraphTaskOutputReference, IFrameGraphTask } from "./IFrameGraphTask";
+import type { FrameGraph } from "../../frameGraph";
+import type { IFrameGraphTask, FrameGraphTextureId } from "../../frameGraphTypes";
+import { backbufferColorTextureHandle } from "../../frameGraphTypes";
 
 export class FrameGraphCopyToBackbufferColorTask implements IFrameGraphTask {
-    public sourceTexture?: FrameGraphTaskOutputReference | TextureHandle;
+    public sourceTexture?: FrameGraphTextureId;
 
     public disabled = false;
 

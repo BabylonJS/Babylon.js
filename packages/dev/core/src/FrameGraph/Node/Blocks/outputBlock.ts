@@ -1,10 +1,11 @@
 import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
 import type { NodeRenderGraphConnectionPoint } from "../nodeRenderGraphBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
-import { NodeRenderGraphBlockConnectionPointTypes, NodeRenderGraphBlockConnectionPointValueTypes } from "../Types/nodeRenderGraphBlockConnectionPointTypes";
-import type { AbstractEngine } from "../../../Engines/abstractEngine";
+import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGraphBlockConnectionPointTypes";
+import type { Scene } from "../../../scene";
 import type { NodeRenderGraphBuildState } from "../nodeRenderGraphBuildState";
-import { FrameGraphCopyToBackbufferColorTask } from "core/FrameGraph/Tasks/copyToBackbufferColorTask";
+import { FrameGraphCopyToBackbufferColorTask } from "../../Tasks/Texture/copyToBackbufferColorTask";
+import type { FrameGraphTextureId } from "../../frameGraphTypes";
 
 /**
  * Block used to generate the final graph
@@ -22,10 +23,10 @@ export class RenderGraphOutputBlock extends NodeRenderGraphBlock {
     /**
      * Create a new RenderGraphOutputBlock
      * @param name defines the block name
-     * @param engine defines the hosting engine
+     * @param scene defines the hosting scene
      */
-    public constructor(name: string, engine: AbstractEngine) {
-        super(name, engine);
+    public constructor(name: string, scene: Scene) {
+        super(name, scene);
 
         this._isUnique = true;
 
@@ -56,8 +57,8 @@ export class RenderGraphOutputBlock extends NodeRenderGraphBlock {
         this._frameGraphTask.name = this.name;
 
         const textureConnectedPoint = this.texture.connectedPoint;
-        if (textureConnectedPoint && textureConnectedPoint.valueType === NodeRenderGraphBlockConnectionPointValueTypes.Texture) {
-            this._frameGraphTask.sourceTexture = textureConnectedPoint.value!;
+        if (textureConnectedPoint) {
+            this._frameGraphTask.sourceTexture = textureConnectedPoint.value as FrameGraphTextureId;
         }
 
         state.frameGraph.addTask(this._frameGraphTask);

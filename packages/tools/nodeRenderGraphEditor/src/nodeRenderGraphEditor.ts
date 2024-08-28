@@ -51,7 +51,7 @@ export class NodeRenderGraphEditor {
             hostElement = Popup.CreatePopup("BABYLON.JS NODE RENDER GRAPH EDITOR", "node-render-graph-editor", 1000, 800)!;
         }
 
-        const globalState = new GlobalState(options.nodeRenderGraph.getEngine());
+        const globalState = new GlobalState(options.nodeRenderGraph.getScene());
         globalState.nodeRenderGraph = options.nodeRenderGraph;
         globalState.hostElement = hostElement;
         globalState.hostDocument = hostElement.ownerDocument!;

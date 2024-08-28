@@ -1,12 +1,13 @@
 import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
 import type { NodeRenderGraphConnectionPoint } from "../nodeRenderGraphBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
-import { NodeRenderGraphBlockConnectionPointTypes, NodeRenderGraphBlockConnectionPointValueTypes } from "../Types/nodeRenderGraphBlockConnectionPointTypes";
+import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGraphBlockConnectionPointTypes";
 import { Color4 } from "../../../Maths/math.color";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
-import type { AbstractEngine } from "../../../Engines/abstractEngine";
+import type { Scene } from "../../../scene";
 import type { NodeRenderGraphBuildState } from "../nodeRenderGraphBuildState";
-import { FrameGraphClearTextureTask } from "../../../FrameGraph/Tasks/clearTextureTask";
+import { FrameGraphClearTextureTask } from "../../Tasks/Texture/clearTextureTask";
+import type { FrameGraphTextureId } from "../../frameGraphTypes";
 
 /**
  * Block used to clear a texture
@@ -24,10 +25,10 @@ export class RenderGraphClearBlock extends NodeRenderGraphBlock {
     /**
      * Create a new RenderGraphClearBlock
      * @param name defines the block name
-     * @param engine defines the hosting engine
+     * @param scene defines the hosting scene
      */
-    public constructor(name: string, engine: AbstractEngine) {
-        super(name, engine);
+    public constructor(name: string, scene: Scene) {
+        super(name, scene);
 
         this.registerInput("texture", NodeRenderGraphBlockConnectionPointTypes.Texture);
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
@@ -107,8 +108,8 @@ export class RenderGraphClearBlock extends NodeRenderGraphBlock {
         this._propagateInputValueToOutput(this.texture, this.output);
 
         const textureConnectedPoint = this.texture.connectedPoint;
-        if (textureConnectedPoint && textureConnectedPoint.valueType === NodeRenderGraphBlockConnectionPointValueTypes.Texture) {
-            this._frameGraphTask.destinationTexture = textureConnectedPoint.value!;
+        if (textureConnectedPoint) {
+            this._frameGraphTask.destinationTexture = textureConnectedPoint.value as FrameGraphTextureId;
         }
 
         state.frameGraph.addTask(this._frameGraphTask);

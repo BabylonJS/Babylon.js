@@ -19,6 +19,7 @@ import { RenderGraphClearBlock } from "./Blocks/clearBlock";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import { NodeRenderGraphBuildState } from "./nodeRenderGraphBuildState";
 import type { INodeRenderGraphCreateOptions, INodeRenderGraphEditorOptions } from "./Types/nodeRenderGraphTypes";
+import type { Scene } from "../../scene";
 
 // declare NODERENDERGRAPHEDITOR namespace for compilation issue
 declare let NODERENDERGRAPHEDITOR: any;
@@ -93,6 +94,7 @@ export class NodeRenderGraph {
     public comment: string;
 
     private _engine: AbstractEngine;
+    private _scene: Scene;
     private _resizeObserver: Nullable<Observer<AbstractEngine>> = null;
     private _frameGraph: FrameGraph;
     private _options: INodeRenderGraphCreateOptions;
@@ -105,26 +107,26 @@ export class NodeRenderGraph {
     }
 
     /**
-     * Gets the engine used by this node render graph
-     * @returns the engine used by this node render graph
+     * Gets the scene used by this node render graph
+     * @returns the scene used by this node render graph
      */
-    public getEngine() {
-        return this._engine;
+    public getScene() {
+        return this._scene;
     }
 
     /**
      * Creates a new node render graph
      * @param name defines the name of the node render graph
-     * @param engine defines the engine to use to execute the graph
+     * @param scene defines the scene to use to execute the graph
      * @param options defines the options to use when creating the graph
      */
-    public constructor(name: string, engine: AbstractEngine, options?: INodeRenderGraphCreateOptions) {
+    public constructor(name: string, scene: Scene, options?: INodeRenderGraphCreateOptions) {
         this.name = name;
-        this._engine = engine;
+        this._scene = scene;
+        this._engine = scene.getEngine();
 
         options = {
             debugTextures: false,
-            scene: undefined,
             autoConfigure: false,
             verbose: false,
             ...options,
@@ -132,7 +134,7 @@ export class NodeRenderGraph {
 
         this._options = options;
 
-        this._frameGraph = new FrameGraph(engine, options.debugTextures, options.scene);
+        this._frameGraph = new FrameGraph(this._engine, options.debugTextures, this._scene);
 
         if (options.rebuildGraphOnEngineResize) {
             this._resizeObserver = this._engine.onResizeObservable.add(() => {
@@ -361,8 +363,8 @@ export class NodeRenderGraph {
             if (blockType) {
                 const additionalConstructionParameters = parsedBlock.additionalConstructionParameters;
                 const block: NodeRenderGraphBlock = additionalConstructionParameters
-                    ? new blockType("", this._engine, ...additionalConstructionParameters)
-                    : new blockType("", this._engine);
+                    ? new blockType("", this._scene, ...additionalConstructionParameters)
+                    : new blockType("", this._scene);
                 block._deserialize(parsedBlock);
                 map[parsedBlock.id] = block;
 
@@ -482,13 +484,8 @@ export class NodeRenderGraph {
         }
 
         // Generate
-        const options = JSON.stringify(this._options, (key, value) => {
-            if (key === "scene") {
-                return "#scene#";
-            }
-            return value;
-        });
-        let codeString = `let nodeRenderGraph = new BABYLON.NodeRenderGraph("${this.name || "render graph"}", engine, ${options.replace('"#scene#"', "scene")});\n`;
+        const options = JSON.stringify(this._options);
+        let codeString = `let nodeRenderGraph = new BABYLON.NodeRenderGraph("${this.name || "render graph"}", scene, ${options});\n`;
         for (const node of blocks) {
             if (node.isInput && alreadyDumped.indexOf(node) === -1) {
                 codeString += node._dumpCode(uniqueNames, alreadyDumped) + "\n";
@@ -544,15 +541,15 @@ export class NodeRenderGraph {
         this.editorData = null;
 
         // Source
-        const backBuffer = new RenderGraphInputBlock("BackBuffer color", this._engine, NodeRenderGraphBlockConnectionPointTypes.TextureBackBuffer);
+        const backBuffer = new RenderGraphInputBlock("BackBuffer color", this._scene, NodeRenderGraphBlockConnectionPointTypes.TextureBackBuffer);
 
         // Clear texture
-        const clear = new RenderGraphClearBlock("Clear", this._engine);
+        const clear = new RenderGraphClearBlock("Clear", this._scene);
 
         backBuffer.output.connectTo(clear.texture);
 
         // Final output
-        const output = new RenderGraphOutputBlock("Output", this._engine);
+        const output = new RenderGraphOutputBlock("Output", this._scene);
         clear.output.connectTo(output.texture);
 
         this.outputBlock = output;
@@ -566,7 +563,7 @@ export class NodeRenderGraph {
     public clone(name: string): NodeRenderGraph {
         const serializationObject = this.serialize();
 
-        const clone = SerializationHelper.Clone(() => new NodeRenderGraph(name, this._engine), this);
+        const clone = SerializationHelper.Clone(() => new NodeRenderGraph(name, this._scene), this);
         clone.name = name;
 
         clone.parseSerializedObject(serializationObject);
@@ -636,12 +633,12 @@ export class NodeRenderGraph {
     /**
      * Creates a new node render graph set to default basic configuration
      * @param name defines the name of the node render graph
-     * @param engine defines the engine to use
+     * @param scene defines the scene to use
      * @param nodeRenderGraphOptions defines options to use when creating the node render graph
      * @returns a new NodeRenderGraph
      */
-    public static CreateDefault(name: string, engine: AbstractEngine, nodeRenderGraphOptions?: INodeRenderGraphCreateOptions): NodeRenderGraph {
-        const renderGraph = new NodeRenderGraph(name, engine, nodeRenderGraphOptions);
+    public static CreateDefault(name: string, scene: Scene, nodeRenderGraphOptions?: INodeRenderGraphCreateOptions): NodeRenderGraph {
+        const renderGraph = new NodeRenderGraph(name, scene, nodeRenderGraphOptions);
 
         renderGraph.setToDefault();
         renderGraph.build();
@@ -652,13 +649,13 @@ export class NodeRenderGraph {
     /**
      * Creates a node render graph from parsed graph data
      * @param source defines the JSON representation of the node render graph
-     * @param engine defines the engine to use
+     * @param scene defines the scene to use
      * @param nodeRenderGraphOptions defines options to use when creating the node render
      * @param skipBuild defines whether to skip building the node render graph (default is true)
      * @returns a new node render graph
      */
-    public static Parse(source: any, engine: AbstractEngine, nodeRenderGraphOptions?: INodeRenderGraphCreateOptions, skipBuild: boolean = true): NodeRenderGraph {
-        const renderGraph = SerializationHelper.Parse(() => new NodeRenderGraph(source.name, engine, nodeRenderGraphOptions), source, null);
+    public static Parse(source: any, scene: Scene, nodeRenderGraphOptions?: INodeRenderGraphCreateOptions, skipBuild: boolean = true): NodeRenderGraph {
+        const renderGraph = SerializationHelper.Parse(() => new NodeRenderGraph(source.name, scene, nodeRenderGraphOptions), source, null);
 
         renderGraph.parseSerializedObject(source);
         if (!skipBuild) {
@@ -671,7 +668,7 @@ export class NodeRenderGraph {
     /**
      * Creates a node render graph from a snippet saved by the node render graph editor
      * @param snippetId defines the snippet to load
-     * @param engine defines the engine to use
+     * @param scene defines the scene to use
      * @param nodeRenderGraphOptions defines options to use when creating the node render graph
      * @param nodeRenderGraph defines a node render graph to update (instead of creating a new one)
      * @param skipBuild defines whether to skip building the node render graph (default is true)
@@ -679,13 +676,13 @@ export class NodeRenderGraph {
      */
     public static ParseFromSnippetAsync(
         snippetId: string,
-        engine: AbstractEngine,
+        scene: Scene,
         nodeRenderGraphOptions?: INodeRenderGraphCreateOptions,
         nodeRenderGraph?: NodeRenderGraph,
         skipBuild: boolean = true
     ): Promise<NodeRenderGraph> {
         if (snippetId === "_BLANK") {
-            return Promise.resolve(NodeRenderGraph.CreateDefault("blank", engine, nodeRenderGraphOptions));
+            return Promise.resolve(NodeRenderGraph.CreateDefault("blank", scene, nodeRenderGraphOptions));
         }
 
         return new Promise((resolve, reject) => {
@@ -697,7 +694,7 @@ export class NodeRenderGraph {
                         const serializationObject = JSON.parse(snippet.NodeRenderGraph);
 
                         if (!nodeRenderGraph) {
-                            nodeRenderGraph = SerializationHelper.Parse(() => new NodeRenderGraph(snippetId, engine, nodeRenderGraphOptions), serializationObject, null);
+                            nodeRenderGraph = SerializationHelper.Parse(() => new NodeRenderGraph(snippetId, scene, nodeRenderGraphOptions), serializationObject, null);
                         }
 
                         nodeRenderGraph.parseSerializedObject(serializationObject);

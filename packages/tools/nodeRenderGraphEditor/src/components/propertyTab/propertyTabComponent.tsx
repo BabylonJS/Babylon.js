@@ -192,7 +192,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
         this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
 
-        NodeRenderGraph.ParseFromSnippetAsync(snippedId, this.props.globalState.engine, undefined, renderGraph)
+        NodeRenderGraph.ParseFromSnippetAsync(snippedId, this.props.globalState.scene, undefined, renderGraph)
             .then(() => {
                 renderGraph.build();
                 this.props.globalState.onFrame.notifyObservers();

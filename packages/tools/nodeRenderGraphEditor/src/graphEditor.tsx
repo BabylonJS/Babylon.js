@@ -89,7 +89,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     addValueNode(type: string) {
         const nodeType: NodeRenderGraphBlockConnectionPointTypes = BlockTools.GetConnectionNodeTypeFromString(type);
 
-        const newInputBlock = new RenderGraphInputBlock(type, this.props.globalState.engine, nodeType);
+        const newInputBlock = new RenderGraphInputBlock(type, this.props.globalState.scene, nodeType);
         return this.appendBlock(newInputBlock);
     }
 
@@ -255,7 +255,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 if (textureIndex < this._externalTextures.length) {
                     texture = this._externalTextures[textureIndex++];
                 } else {
-                    texture = this.props.globalState.engine.createRenderTargetTexture(
+                    texture = this.props.globalState.scene.getEngine().createRenderTargetTexture(
                         { width: 1, height: 1 },
                         {
                             generateMipMaps: false,
@@ -271,6 +271,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     textureIndex++;
                 }
                 input.value = texture;
+            } else if (input.isCamera()) {
+                input.value = this.props.globalState.scene.activeCamera;
+            } else if (input.isObjectList()) {
+                input.value = { meshes: [], particleSystems: [] };
             }
         }
     }
@@ -463,7 +467,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         if (blockType.indexOf("Block") === -1) {
             newNode = this.addValueNode(blockType);
         } else {
-            const block = BlockTools.GetBlockFromString(blockType, this.props.globalState.engine)!;
+            const block = BlockTools.GetBlockFromString(blockType, this.props.globalState.scene)!;
 
             if (block.isUnique) {
                 const className = block.getClassName();

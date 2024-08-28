@@ -1,7 +1,6 @@
 import type { Nullable } from "../../types";
-import type { IFrameGraphPass } from "./IFrameGraphPass";
 import type { FrameGraphContext } from "../frameGraphContext";
-import type { IFrameGraphTask } from "../Tasks/IFrameGraphTask";
+import type { IFrameGraphPass, IFrameGraphTask } from "../frameGraphTypes";
 
 export class FrameGraphPass<T extends FrameGraphContext> implements IFrameGraphPass {
     private _executeFunc: (context: T) => void;

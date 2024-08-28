@@ -10,7 +10,7 @@ import type { Observer } from "core/Misc/observable";
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import type { RenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
 import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphBlockConnectionPointTypes";
-import type { FrameGraphTextureCreationOptions } from "core/FrameGraph/frameGraphTextureManager";
+import type { FrameGraphTextureCreationOptions } from "core/FrameGraph/frameGraphTypes";
 import { Constants } from "core/Engines/constants";
 
 const textureFormatList = [

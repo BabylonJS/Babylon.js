@@ -28,9 +28,6 @@ import type { PrePassRenderer } from "../Rendering/prePassRenderer";
 import type { PrePassEffectConfiguration } from "../Rendering/prePassEffectConfiguration";
 import { AbstractEngine } from "../Engines/abstractEngine";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
-import type { FrameGraphTaskOutputReference, IFrameGraphTask } from "../FrameGraph/Tasks/IFrameGraphTask";
-import type { FrameGraph } from "../FrameGraph/frameGraph";
-import type { TextureHandle } from "../FrameGraph/frameGraphTextureManager";
 
 declare module "../Engines/abstractEngine" {
     export interface AbstractEngine {
@@ -221,7 +218,7 @@ type TextureCache = { texture: RenderTargetWrapper; postProcessChannel: number; 
  * PostProcess can be used to apply a shader to a texture after it has been rendered
  * See https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/usePostProcesses
  */
-export class PostProcess implements IFrameGraphTask {
+export class PostProcess {
     /**
      * Force all the postprocesses to compile to glsl even on WebGPU engines.
      * False by default. This is mostly meant for backward compatibility.
@@ -233,17 +230,17 @@ export class PostProcess implements IFrameGraphTask {
 
     private static _CustomShaderCodeProcessing: { [postProcessName: string]: PostProcessCustomShaderCodeProcessing } = {};
 
-    protected _useAsFrameGraphTask = false;
+    public readonly useAsFrameGraphTask: boolean = false;
 
-    public sourceTexture?: FrameGraphTaskOutputReference | TextureHandle;
+    // public sourceTexture?: FrameGraphTextureId;
 
-    public sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
+    // public sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
 
-    public destinationTexture?: FrameGraphTaskOutputReference | TextureHandle;
+    // public destinationTexture?: FrameGraphTextureId;
 
-    public readonly outputTextureReference: FrameGraphTaskOutputReference = [this, "output"];
+    // public readonly outputTextureReference: FrameGraphTaskOutputReference = [this, "output"];
 
-    public disabled = false;
+    // public disabled = false;
 
     /**
      * Registers a shader code processing with a post process name.
@@ -691,7 +688,7 @@ export class PostProcess implements IFrameGraphTask {
             textureFormat = options.textureFormat ?? Constants.TEXTUREFORMAT_RGBA;
             shaderLanguage = options.shaderLanguage ?? ShaderLanguage.GLSL;
             uniformBuffers = options.uniformBuffers ?? null;
-            this._useAsFrameGraphTask = options.useAsFrameGraphTask ?? false;
+            this.useAsFrameGraphTask = options.useAsFrameGraphTask ?? false;
         } else if (_size) {
             if (typeof _size === "number") {
                 size = _size;
@@ -795,6 +792,14 @@ export class PostProcess implements IFrameGraphTask {
      */
     public getEffect(): Nullable<Effect> {
         return this._drawWrapper.effect;
+    }
+
+    /**
+     * The drawWrapper that is created when initializing the post process.
+     * @returns The created drawWrapper corresponding to the postprocess.
+     */
+    public getDrawWrapper(): DrawWrapper {
+        return this._drawWrapper;
     }
 
     /**
@@ -1146,14 +1151,17 @@ export class PostProcess implements IFrameGraphTask {
         return this._drawWrapper.effect?.isReady() ?? false;
     }
 
-    protected _bind() {
+    /**
+     * @internal
+     */
+    public _bind() {
         // Alpha
         this._engine.setAlphaMode(this.alphaMode, true);
         if (this.alphaConstants) {
             this.getEngine().setAlphaConstants(this.alphaConstants.r, this.alphaConstants.g, this.alphaConstants.b, this.alphaConstants.a);
         }
 
-        if (!this.externalTextureSamplerBinding && !this._useAsFrameGraphTask) {
+        if (!this.externalTextureSamplerBinding && !this.useAsFrameGraphTask) {
             // Bind the output texture of the previous post process as the input to this post process.
             let source: RenderTargetWrapper;
             if (this._shareOutputWithPostProcess) {
@@ -1195,47 +1203,47 @@ export class PostProcess implements IFrameGraphTask {
         return this._drawWrapper.effect;
     }
 
-    public isReadyFrameGraph(): boolean {
-        return this.isReady();
-    }
+    // public isReadyFrameGraph(): boolean {
+    //     return this.isReady();
+    // }
 
-    public recordFrameGraph(frameGraph: FrameGraph, skipCreationOfDisabledPasses = false): void {
-        if (this.sourceTexture === undefined) {
-            throw new Error(`PostProcess "${this.name}": sourceTexture is required`);
-        }
+    // public recordFrameGraph(frameGraph: FrameGraph, skipCreationOfDisabledPasses = false): void {
+    //     if (this.sourceTexture === undefined) {
+    //         throw new Error(`PostProcess "${this.name}": sourceTexture is required`);
+    //     }
 
-        const sourceTextureCreationOptions = frameGraph.getTextureCreationOptions(this.sourceTexture, true);
-        sourceTextureCreationOptions.options.generateDepthBuffer = false;
-        sourceTextureCreationOptions.options.generateStencilBuffer = false;
+    //     const sourceTextureCreationOptions = frameGraph.getTextureCreationOptions(this.sourceTexture, true);
+    //     sourceTextureCreationOptions.options.generateDepthBuffer = false;
+    //     sourceTextureCreationOptions.options.generateStencilBuffer = false;
 
-        const sourceTextureHandle = frameGraph.getTextureHandle(this.sourceTexture);
-        const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(this.destinationTexture, this.name, sourceTextureCreationOptions);
+    //     const sourceTextureHandle = frameGraph.getTextureHandle(this.sourceTexture);
+    //     const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(this.destinationTexture, this.name, sourceTextureCreationOptions);
 
-        const pass = frameGraph.addRenderPass(this.name);
+    //     const pass = frameGraph.addRenderPass(this.name);
 
-        pass.useTexture(sourceTextureHandle);
-        pass.setRenderTarget(outputTextureHandle);
-        pass.setExecuteFunc((context) => {
-            context.setTextureSamplingMode(sourceTextureHandle, this!.sourceSamplingMode!);
-            context.applyFullScreenEffect(this._drawWrapper, () => {
-                this._bind();
-                context.bindTextureHandle(this._drawWrapper.effect!, "textureSampler", sourceTextureHandle);
-            });
-        });
+    //     pass.useTexture(sourceTextureHandle);
+    //     pass.setRenderTarget(outputTextureHandle);
+    //     pass.setExecuteFunc((context) => {
+    //         context.setTextureSamplingMode(sourceTextureHandle, this!.sourceSamplingMode!);
+    //         context.applyFullScreenEffect(this._drawWrapper, () => {
+    //             this._bind();
+    //             context.bindTextureHandle(this._drawWrapper.effect!, "textureSampler", sourceTextureHandle);
+    //         });
+    //     });
 
-        if (!skipCreationOfDisabledPasses) {
-            const passDisabled = frameGraph.addRenderPass(this.name + "_disabled", true);
+    //     if (!skipCreationOfDisabledPasses) {
+    //         const passDisabled = frameGraph.addRenderPass(this.name + "_disabled", true);
 
-            passDisabled.setRenderTarget(outputTextureHandle);
-            passDisabled.setExecuteFunc((context) => {
-                context.copyTexture(sourceTextureHandle);
-            });
-        }
-    }
+    //         passDisabled.setRenderTarget(outputTextureHandle);
+    //         passDisabled.setExecuteFunc((context) => {
+    //             context.copyTexture(sourceTextureHandle);
+    //         });
+    //     }
+    // }
 
-    public disposeFrameGraph(): void {
-        this.dispose();
-    }
+    // public disposeFrameGraph(): void {
+    //     this.dispose();
+    // }
 
     private _disposeTextures() {
         if (this._shareOutputWithPostProcess || this._forcedOutputTexture) {

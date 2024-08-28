@@ -1,14 +1,12 @@
-import type { IFrameGraphPass } from "../Passes/IFrameGraphPass";
+import type { FrameGraphTextureHandle, IFrameGraphPass, IFrameGraphTask } from "../frameGraphTypes";
 import { FrameGraphRenderPass } from "../Passes/renderPass";
-import type { IFrameGraphTask } from "./IFrameGraphTask";
-import type { TextureHandle } from "../frameGraphTextureManager";
 
 /** @internal */
 export class FrameGraphTaskInternals {
     private _passes: IFrameGraphPass[] = [];
     private _passesDisabled: IFrameGraphPass[] = [];
 
-    public mapNameToTextureHandle: { [name: string]: TextureHandle } = {};
+    public mapNameToTextureHandle: { [name: string]: FrameGraphTextureHandle } = {};
 
     constructor(private _task: IFrameGraphTask) {
         this.reset();
@@ -33,8 +31,8 @@ export class FrameGraphTaskInternals {
     }
 
     public postBuildTask() {
-        let outputTexture: TextureHandle | undefined;
-        let outputDepthTexture: TextureHandle | undefined;
+        let outputTexture: FrameGraphTextureHandle | undefined;
+        let outputDepthTexture: FrameGraphTextureHandle | undefined;
 
         for (const pass of this._passes!) {
             const errMsg = pass._isValid();
@@ -47,8 +45,8 @@ export class FrameGraphTaskInternals {
             }
         }
 
-        let disabledOutputTexture: TextureHandle | undefined;
-        let disabledOutputDepthTexture: TextureHandle | undefined;
+        let disabledOutputTexture: FrameGraphTextureHandle | undefined;
+        let disabledOutputDepthTexture: FrameGraphTextureHandle | undefined;
 
         for (const pass of this._passesDisabled!) {
             const errMsg = pass._isValid();
