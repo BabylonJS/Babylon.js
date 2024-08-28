@@ -477,11 +477,11 @@ const onPluginActivatedObservable = new Observable<ISceneLoaderPlugin | ISceneLo
 const registeredPlugins: { [extension: string]: IRegisteredPlugin } = {};
 let showingLoadingScreen = false;
 
-function getDefaultPlugin(): IRegisteredPlugin {
+function getDefaultPlugin(): IRegisteredPlugin | undefined {
     return registeredPlugins[".babylon"];
 }
 
-function getPluginForExtension(extension: string): IRegisteredPlugin {
+function getPluginForExtension(extension: string): IRegisteredPlugin | undefined {
     const registeredPlugin = registeredPlugins[extension];
     if (registeredPlugin) {
         return registeredPlugin;
@@ -498,7 +498,7 @@ function isPluginForExtensionAvailable(extension: string): boolean {
     return !!registeredPlugins[extension];
 }
 
-function getPluginForDirectLoad(data: string): IRegisteredPlugin {
+function getPluginForDirectLoad(data: string): IRegisteredPlugin | undefined {
     for (const extension in registeredPlugins) {
         const plugin = registeredPlugins[extension].plugin;
 
@@ -510,7 +510,7 @@ function getPluginForDirectLoad(data: string): IRegisteredPlugin {
     return getDefaultPlugin();
 }
 
-function getPluginForFilename(sceneFilename: string): IRegisteredPlugin {
+function getPluginForFilename(sceneFilename: string): IRegisteredPlugin | undefined {
     const queryStringPosition = sceneFilename.indexOf("?");
 
     if (queryStringPosition !== -1) {
@@ -563,6 +563,10 @@ function loadData(
     }
 
     const registeredPlugin = pluginExtension ? getPluginForExtension(pluginExtension) : directLoad ? getPluginForDirectLoad(fileInfo.url) : getPluginForFilename(fileInfo.url);
+
+    if (!registeredPlugin) {
+        throw new Error(`No plugin or fallback for ${pluginExtension ?? fileInfo.url}`);
+    }
 
     if (pluginOptions?.[registeredPlugin.plugin.name]?.enabled === false) {
         throw new Error(`The '${registeredPlugin.plugin.name}' plugin is disabled via the loader options passed to the loading operation.`);
@@ -1464,7 +1468,7 @@ export class SceneLoader {
      * Gets the default plugin (used to load Babylon files)
      * @returns the .babylon plugin
      */
-    public static GetDefaultPlugin(): IRegisteredPlugin {
+    public static GetDefaultPlugin(): IRegisteredPlugin | undefined {
         return getDefaultPlugin();
     }
 
@@ -1475,8 +1479,8 @@ export class SceneLoader {
      * @param extension defines the extension to load
      * @returns a plugin or null if none works
      */
-    public static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory {
-        return getPluginForExtension(extension).plugin;
+    public static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory | undefined {
+        return getPluginForExtension(extension)?.plugin;
     }
 
     /**
