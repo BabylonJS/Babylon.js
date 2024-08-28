@@ -8,6 +8,7 @@ import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 
 import { FluidRenderingObject } from "./fluidRenderingObject";
+import type { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Defines a rendering object based on a particle system
@@ -79,9 +80,10 @@ export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
      * Creates a new instance of the class
      * @param scene The scene the particle system is part of
      * @param ps The particle system
+     * @param shaderLanguage The shader language to use
      */
-    constructor(scene: Scene, ps: IParticleSystem) {
-        super(scene);
+    constructor(scene: Scene, ps: IParticleSystem, shaderLanguage?: ShaderLanguage) {
+        super(scene, shaderLanguage);
 
         this._particleSystem = ps;
 

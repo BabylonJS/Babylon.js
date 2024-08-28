@@ -9,9 +9,7 @@ import { PostProcess } from "core/PostProcesses/postProcess";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
-
-import "../../Shaders/fluidRenderingBilateralBlur.fragment";
-import "../../Shaders/fluidRenderingStandardBlur.fragment";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /** @internal */
 export class FluidRenderingTextures {
@@ -91,6 +89,16 @@ export class FluidRenderingTextures {
         return this._textureBlurred;
     }
 
+    /** Shader language used by the texture */
+    protected _shaderLanguage = ShaderLanguage.GLSL;
+
+    /**
+     * Gets the shader language used in the texture
+     */
+    public get shaderLanguage(): ShaderLanguage {
+        return this._shaderLanguage;
+    }
+
     constructor(
         name: string,
         scene: Scene,
@@ -105,7 +113,8 @@ export class FluidRenderingTextures {
         useStandardBlur = false,
         camera: Nullable<Camera> = null,
         generateDepthBuffer = true,
-        samples = 1
+        samples = 1,
+        shaderLanguage?: ShaderLanguage
     ) {
         this._name = name;
         this._scene = scene;
@@ -130,6 +139,8 @@ export class FluidRenderingTextures {
         this._rtBlur = null;
         this._textureBlurred = null;
         this._blurPostProcesses = null;
+
+        this._shaderLanguage = shaderLanguage ?? (this._engine.isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
     }
 
     public initialize(): void {
@@ -242,7 +253,15 @@ export class FluidRenderingTextures {
                 undefined,
                 undefined,
                 undefined,
-                textureFormat
+                textureFormat,
+                this._shaderLanguage,
+                async () => {
+                    if (this.shaderLanguage === ShaderLanguage.WGSL) {
+                        await import("../../ShadersWGSL/fluidRenderingStandardBlur.fragment");
+                    } else {
+                        await import("../../Shaders/fluidRenderingStandardBlur.fragment");
+                    }
+                }
             );
             kernelBlurXPostprocess.samples = this._samples;
             kernelBlurXPostprocess.externalTextureSamplerBinding = true;
@@ -279,7 +298,15 @@ export class FluidRenderingTextures {
                 undefined,
                 undefined,
                 undefined,
-                textureFormat
+                textureFormat,
+                this._shaderLanguage,
+                async () => {
+                    if (this.shaderLanguage === ShaderLanguage.WGSL) {
+                        await import("../../ShadersWGSL/fluidRenderingStandardBlur.fragment");
+                    } else {
+                        await import("../../Shaders/fluidRenderingStandardBlur.fragment");
+                    }
+                }
             );
             kernelBlurYPostprocess.samples = this._samples;
             kernelBlurYPostprocess.onApplyObservable.add((effect) => {
@@ -322,7 +349,15 @@ export class FluidRenderingTextures {
                 undefined,
                 undefined,
                 undefined,
-                textureFormat
+                textureFormat,
+                this._shaderLanguage,
+                async () => {
+                    if (this.shaderLanguage === ShaderLanguage.WGSL) {
+                        await import("../../ShadersWGSL/fluidRenderingBilateralBlur.fragment");
+                    } else {
+                        await import("../../Shaders/fluidRenderingBilateralBlur.fragment");
+                    }
+                }
             );
             kernelBlurXPostprocess.samples = this._samples;
             kernelBlurXPostprocess.externalTextureSamplerBinding = true;
@@ -361,7 +396,15 @@ export class FluidRenderingTextures {
                 undefined,
                 undefined,
                 undefined,
-                textureFormat
+                textureFormat,
+                this._shaderLanguage,
+                async () => {
+                    if (this.shaderLanguage === ShaderLanguage.WGSL) {
+                        await import("../../ShadersWGSL/fluidRenderingBilateralBlur.fragment");
+                    } else {
+                        await import("../../Shaders/fluidRenderingBilateralBlur.fragment");
+                    }
+                }
             );
             kernelBlurYPostprocess.samples = this._samples;
             kernelBlurYPostprocess.onApplyObservable.add((effect) => {
