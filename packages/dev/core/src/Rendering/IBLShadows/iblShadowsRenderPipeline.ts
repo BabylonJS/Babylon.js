@@ -138,7 +138,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     private _accumulationPass: _IblShadowsAccumulationPass;
     private _noiseTexture: Texture;
     private _shadowOpacity: number = 1.0;
-
+    private _enabled: boolean = true;
     /**
      * How dark the shadows appear. 1.0 is full opacity, 0.0 is no shadows.
      */
@@ -498,10 +498,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         }
         this._voxelRenderer.voxelResolutionExp = newResolution;
         this.updateVoxelization();
-        setTimeout(() => {
-            // TODO - why do we need to run this a second time to get the voxel grid to update?
-            this.updateVoxelization();
-        }, 0);
+        this._accumulationPass.reset = true;
     }
 
     /**
@@ -632,12 +629,14 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
 
         this._listenForCameraChanges();
         this.scene.getEngine().onResizeObservable.add(this._handleResize.bind(this));
-        this._importanceSamplingRenderer.onReadyObservable.addOnce(() => {
+
+        // Only turn on the pipeline if the importance sampling RT's are ready
+        this._importanceSamplingRenderer.onReadyObservable.add(() => {
             if (this._voxelRenderer.isReady()) {
-                this.toggleShadow(true);
+                this.toggleShadow(this._enabled);
             } else {
                 this._voxelRenderer.onReadyObservable.addOnce(() => {
-                    this.toggleShadow(true);
+                    this.toggleShadow(this._enabled);
                 });
             }
         });
@@ -648,6 +647,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * @param enabled Toggle the shadow tracing on or off
      */
     public toggleShadow(enabled: boolean) {
+        this._enabled = enabled;
         if (enabled) {
             this._enableEffect("IBLShadowVoxelTracingPass", this.cameras);
             this._enableEffect("IBLShadowSpatialBlurPass", this.cameras);
@@ -746,6 +746,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         }
 
         this.toggleShadow(false);
+        this._enabled = true;
 
         if (this.allowDebugPasses) {
             this._createDebugPasses();
