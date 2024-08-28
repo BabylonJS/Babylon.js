@@ -114,21 +114,16 @@ export interface ISceneLoaderPluginExtensions {
     };
 }
 
-/**
- * Interface used by SceneLoader plugin factory
- */
-export interface ISceneLoaderPluginFactory {
+interface ISceneLoaderPluginMetadata {
     /**
-     * Defines the name of the factory
+     * The friendly name of the plugin.
      */
     readonly name: string;
 
     /**
-     * Function called to create a new plugin
-     * @param options plugin options that were passed to the SceneLoader operation
-     * @returns the new plugin
+     * The file extensions supported by the plugin.
      */
-    createPlugin(options: SceneLoaderPluginOptions): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
+    readonly extensions: string | ISceneLoaderPluginExtensions;
 
     /**
      * The callback that returns true if the data can be directly loaded.
@@ -138,20 +133,24 @@ export interface ISceneLoaderPluginFactory {
     canDirectLoad?(data: string): boolean;
 }
 
+type OptionalMetadata<T extends ISceneLoaderPluginMetadata> = Omit<T, keyof ISceneLoaderPluginMetadata> & Partial<ISceneLoaderPluginMetadata>;
+
+/**
+ * Interface used by SceneLoader plugin factory
+ */
+export interface ISceneLoaderPluginFactory extends ISceneLoaderPluginMetadata {
+    /**
+     * Function called to create a new plugin
+     * @param options plugin options that were passed to the SceneLoader operation
+     * @returns the new plugin
+     */
+    createPlugin(options: SceneLoaderPluginOptions): OptionalMetadata<ISceneLoaderPlugin> | OptionalMetadata<ISceneLoaderPluginAsync>;
+}
+
 /**
  * Interface used to define the base of ISceneLoaderPlugin and ISceneLoaderPluginAsync
  */
-export interface ISceneLoaderPluginBase {
-    /**
-     * The friendly name of this plugin.
-     */
-    readonly name: string;
-
-    /**
-     * The file extensions supported by this plugin.
-     */
-    readonly extensions: string | ISceneLoaderPluginExtensions;
-
+export interface ISceneLoaderPluginBase extends ISceneLoaderPluginMetadata {
     /**
      * The callback called when loading from a url.
      * @param scene scene loading this url
@@ -174,13 +173,6 @@ export interface ISceneLoaderPluginBase {
         onError?: (request?: WebRequest, exception?: LoadFileError) => void,
         name?: string
     ): Nullable<IFileRequest>;
-
-    /**
-     * The callback that returns true if the data can be directly loaded.
-     * @param data string containing the file data
-     * @returns if the data can be loaded directly
-     */
-    canDirectLoad?(data: string): boolean;
 
     /**
      * The callback that returns the data to pass to the plugin if the data can be directly loaded.
@@ -335,11 +327,15 @@ interface IRegisteredPlugin {
     /**
      * Defines the plugin to use
      */
-    plugin: (ISceneLoaderPlugin | ISceneLoaderPluginAsync) & Partial<ISceneLoaderPluginFactory> & Partial<ISceneLoaderPluginInternal>;
+    plugin: ((ISceneLoaderPlugin | ISceneLoaderPluginAsync) & Partial<ISceneLoaderPluginInternal>) | ISceneLoaderPluginFactory;
     /**
      * Defines if the plugin supports binary data
      */
     isBinary: boolean;
+}
+
+function isFactory(pluginOrFactory: IRegisteredPlugin["plugin"]): pluginOrFactory is ISceneLoaderPluginFactory {
+    return !!(pluginOrFactory as ISceneLoaderPluginFactory).createPlugin;
 }
 
 /**
@@ -580,7 +576,19 @@ function loadData(
     // For plugin factories, the plugin is instantiated on each SceneLoader operation. This makes options handling
     // much simpler as we can just pass the options to the factory, rather than passing options through to every possible
     // plugin call. Given this, options are only supported for plugins that provide a factory function.
-    const plugin: IRegisteredPlugin["plugin"] = registeredPlugin.plugin.createPlugin?.(pluginOptions ?? {}) ?? registeredPlugin.plugin;
+    let plugin: (ISceneLoaderPlugin | ISceneLoaderPluginAsync) & Partial<ISceneLoaderPluginInternal>;
+    if (isFactory(registeredPlugin.plugin)) {
+        const pluginFactory = registeredPlugin.plugin;
+        const partialPlugin = pluginFactory.createPlugin(pluginOptions ?? {});
+        plugin = Object.assign(partialPlugin, {
+            name: partialPlugin.name ?? pluginFactory.name,
+            extensions: partialPlugin.extensions ?? pluginFactory.extensions,
+        });
+    } else {
+        plugin = registeredPlugin.plugin;
+    }
+
+    //const plugin: IRegisteredPlugin["plugin"] = registeredPlugin.plugin.createPlugin?.(pluginOptions ?? {}) ?? registeredPlugin.plugin;
     if (!plugin) {
         // eslint-disable-next-line no-throw-literal
         throw `The loader plugin corresponding to the '${pluginExtension}' file type has not been found. If using es6, please import the plugin you wish to use before.`;
@@ -727,7 +735,7 @@ function getFileInfo(rootUrl: string, sceneSource: SceneSource): Nullable<IFileI
  * Adds a new plugin to the list of registered plugins
  * @param plugin defines the plugin to add
  */
-export function registerSceneLoaderPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void {
+export function registerSceneLoaderPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory): void {
     if (typeof plugin.extensions === "string") {
         const extension = plugin.extensions;
         registeredPlugins[extension.toLowerCase()] = {
@@ -1484,7 +1492,7 @@ export class SceneLoader {
      * Adds a new plugin to the list of registered plugins
      * @param plugin defines the plugin to add
      */
-    public static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void {
+    public static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory): void {
         registerSceneLoaderPlugin(plugin);
     }
 
