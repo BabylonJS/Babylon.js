@@ -34,6 +34,7 @@ export class FrameGraphTaskInternals {
 
     public postBuildTask() {
         let outputTexture: TextureHandle | undefined;
+        let outputDepthTexture: TextureHandle | undefined;
 
         for (const pass of this._passes!) {
             const errMsg = pass._isValid();
@@ -42,10 +43,12 @@ export class FrameGraphTaskInternals {
             }
             if (FrameGraphRenderPass.IsRenderPass(pass)) {
                 outputTexture = pass.renderTarget;
+                outputDepthTexture = pass.renderTargetDepth;
             }
         }
 
         let disabledOutputTexture: TextureHandle | undefined;
+        let disabledOutputDepthTexture: TextureHandle | undefined;
 
         for (const pass of this._passesDisabled!) {
             const errMsg = pass._isValid();
@@ -54,15 +57,24 @@ export class FrameGraphTaskInternals {
             }
             if (FrameGraphRenderPass.IsRenderPass(pass)) {
                 disabledOutputTexture = pass.renderTarget;
+                disabledOutputDepthTexture = pass.renderTargetDepth;
             }
         }
 
-        if (outputTexture !== disabledOutputTexture && this._passesDisabled.length > 0) {
-            throw new Error(`The output texture of the task "${this._task.name}" is different when it is enabled or disabled.`);
+        if (this._passesDisabled.length > 0) {
+            if (outputTexture !== disabledOutputTexture) {
+                throw new Error(`The output texture of the task "${this._task.name}" is different when it is enabled or disabled.`);
+            }
+            if (outputDepthTexture !== disabledOutputDepthTexture) {
+                throw new Error(`The output depth texture of the task "${this._task.name}" is different when it is enabled or disabled.`);
+            }
         }
 
         if (outputTexture !== undefined) {
             this.mapNameToTextureHandle["output"] = outputTexture;
+        }
+        if (outputDepthTexture !== undefined) {
+            this.mapNameToTextureHandle["outputDepth"] = outputDepthTexture;
         }
     }
 

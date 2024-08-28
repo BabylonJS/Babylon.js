@@ -23,6 +23,11 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
     }
 
     /** @internal */
+    public get renderTargetDepth(): TextureHandle | undefined {
+        return this._renderTargetDepth;
+    }
+
+    /** @internal */
     constructor(name: string, parentTask: IFrameGraphTask, context: FrameGraphRenderContext, engine: AbstractEngine) {
         super(name, parentTask, context);
         this._engine = engine;

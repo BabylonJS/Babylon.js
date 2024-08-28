@@ -7,7 +7,7 @@ import type { Camera } from "../../Cameras/camera";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { IParticleSystem } from "../../Particles/IParticleSystem";
 
-export type FrameGraphRenderableList = {
+export type FrameGraphObjectList = {
     meshes: AbstractMesh[];
     particleSystems: IParticleSystem[];
 };
@@ -19,14 +19,20 @@ export class FrameGraphRenderObjectsTask implements IFrameGraphTask {
 
     public camera: Camera;
 
-    public renderableList: FrameGraphRenderableList;
+    public objectList: FrameGraphObjectList;
 
     public readonly outputTextureReference: FrameGraphTaskOutputReference = [this, "output"];
+
+    public readonly outputDepthTextureReference: FrameGraphTaskOutputReference = [this, "outputDepth"];
 
     public disabled = false;
 
     private _scene: Scene;
     private _rtt: RenderTargetTexture;
+
+    public get renderTargetTexture() {
+        return this._rtt;
+    }
 
     constructor(
         public name: string,
@@ -63,7 +69,7 @@ export class FrameGraphRenderObjectsTask implements IFrameGraphTask {
             this._scene.resetCachedMaterial();
 
             this._rtt.activeCamera = this.camera;
-            this._rtt.renderList = this.renderableList.meshes;
+            this._rtt.renderList = this.objectList.meshes;
             this._rtt.render();
         });
 
