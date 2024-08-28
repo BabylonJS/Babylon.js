@@ -1,17 +1,10 @@
-import type { Nullable } from "core/types";
-import { Vector2 } from "core/Maths/math.vector";
-import { Tools } from "core/Misc/tools";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, ISceneLoaderPlugin, ISceneLoaderAsyncResult } from "core/Loading/sceneLoader";
-import { registerSceneLoaderPlugin } from "core/Loading/sceneLoader";
-import { AssetContainer } from "core/assetContainer";
-import type { Scene } from "core/scene";
-import type { WebRequest } from "core/Misc/webRequest";
-import { MTLFileLoader } from "./mtlFileLoader";
+// eslint-disable-next-line import/no-internal-modules
+import type { AssetContainer, ISceneLoaderAsyncResult, ISceneLoaderPlugin, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, Scene } from "core/index";
 import type { OBJLoadingOptions } from "./objLoadingOptions";
-import { SolidParser } from "./solidParser";
-import type { Mesh } from "core/Meshes/mesh";
-import { StandardMaterial } from "core/Materials/standardMaterial";
+
+import { registerSceneLoaderPlugin } from "core/Loading/sceneLoader";
+import { Vector2 } from "core/Maths/math.vector";
+import { ObjLoadingFlags } from "./objLoadingFlags";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const PLUGIN_OBJ = "obj";
@@ -43,11 +36,11 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * Invert Y-Axis of referenced textures on load
      */
     public static get INVERT_TEXTURE_Y() {
-        return MTLFileLoader.INVERT_TEXTURE_Y;
+        return ObjLoadingFlags.INVERT_TEXTURE_Y;
     }
 
     public static set INVERT_TEXTURE_Y(value: boolean) {
-        MTLFileLoader.INVERT_TEXTURE_Y = value;
+        ObjLoadingFlags.INVERT_TEXTURE_Y = value;
     }
 
     /**
@@ -93,8 +86,6 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      */
     public readonly extensions = ".obj";
 
-    private _assetContainer: Nullable<AssetContainer> = null;
-
     private _loadingOptions: OBJLoadingOptions;
 
     /**
@@ -123,32 +114,6 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     }
 
     /**
-     * Calls synchronously the MTL file attached to this obj.
-     * Load function or importMesh function don't enable to load 2 files in the same time asynchronously.
-     * Without this function materials are not displayed in the first frame (but displayed after).
-     * In consequence it is impossible to get material information in your HTML file
-     *
-     * @param url The URL of the MTL file
-     * @param rootUrl defines where to load data from
-     * @param onSuccess Callback function to be called when the MTL file is loaded
-     * @param onFailure
-     */
-    private _loadMTL(
-        url: string,
-        rootUrl: string,
-        onSuccess: (response: string | ArrayBuffer, responseUrl?: string) => any,
-        onFailure: (pathOfFile: string, exception?: any) => void
-    ) {
-        //The complete path to the mtl file
-        const pathOfFile = rootUrl + url;
-
-        // Loads through the babylon tools to allow fileInput search.
-        Tools.LoadFile(pathOfFile, onSuccess, undefined, undefined, false, (request?: WebRequest | undefined, exception?: any) => {
-            onFailure(pathOfFile, exception);
-        });
-    }
-
-    /**
      * Instantiates a OBJ file loader plugin.
      * @returns the created plugin
      */
@@ -172,20 +137,10 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param rootUrl root url to load from
      * @returns a promise containing the loaded meshes, particles, skeletons and animations
      */
-    public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string): Promise<ISceneLoaderAsyncResult> {
-        //get the meshes from OBJ file
-        return this._parseSolid(meshesNames, scene, data, rootUrl).then((meshes) => {
-            return {
-                meshes: meshes,
-                particleSystems: [],
-                skeletons: [],
-                animationGroups: [],
-                transformNodes: [],
-                geometries: [],
-                lights: [],
-                spriteManagers: [],
-            };
-        });
+    public async importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string): Promise<ISceneLoaderAsyncResult> {
+        // Dynamically import the bulk of the implementation
+        const impl = await import("./objFileLoader.impl");
+        return await impl.importMeshAsync(meshesNames, scene, null, this._loadingOptions, data, rootUrl);
     }
 
     /**
@@ -209,156 +164,10 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param rootUrl The root url for scene and resources
      * @returns The loaded asset container
      */
-    public loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string): Promise<AssetContainer> {
-        const container = new AssetContainer(scene);
-        this._assetContainer = container;
-
-        return this.importMeshAsync(null, scene, data, rootUrl)
-            .then((result) => {
-                result.meshes.forEach((mesh) => container.meshes.push(mesh));
-                result.meshes.forEach((mesh) => {
-                    const material = mesh.material;
-                    if (material) {
-                        // Materials
-                        if (container.materials.indexOf(material) == -1) {
-                            container.materials.push(material);
-
-                            // Textures
-                            const textures = material.getActiveTextures();
-                            textures.forEach((t) => {
-                                if (container.textures.indexOf(t) == -1) {
-                                    container.textures.push(t);
-                                }
-                            });
-                        }
-                    }
-                });
-                this._assetContainer = null;
-                return container;
-            })
-            .catch((ex) => {
-                this._assetContainer = null;
-                throw ex;
-            });
-    }
-
-    /**
-     * Read the OBJ file and create an Array of meshes.
-     * Each mesh contains all information given by the OBJ and the MTL file.
-     * i.e. vertices positions and indices, optional normals values, optional UV values, optional material
-     * @param meshesNames defines a string or array of strings of the mesh names that should be loaded from the file
-     * @param scene defines the scene where are displayed the data
-     * @param data defines the content of the obj file
-     * @param rootUrl defines the path to the folder
-     * @returns the list of loaded meshes
-     */
-    private _parseSolid(meshesNames: any, scene: Scene, data: string, rootUrl: string): Promise<Array<AbstractMesh>> {
-        let fileToLoad: string = ""; //The name of the mtlFile to load
-        const materialsFromMTLFile: MTLFileLoader = new MTLFileLoader();
-        const materialToUse: string[] = [];
-        const babylonMeshesArray: Array<Mesh> = []; //The mesh for babylon
-
-        // Sanitize data
-        data = data.replace(/#.*$/gm, "").trim();
-
-        // Main function
-        const solidParser = new SolidParser(materialToUse, babylonMeshesArray, this._loadingOptions);
-
-        solidParser.parse(meshesNames, data, scene, this._assetContainer, (fileName: string) => {
-            fileToLoad = fileName;
-        });
-
-        // load the materials
-        const mtlPromises: Array<Promise<void>> = [];
-        // Check if we have a file to load
-        if (fileToLoad !== "" && !this._loadingOptions.skipMaterials) {
-            //Load the file synchronously
-            mtlPromises.push(
-                new Promise((resolve, reject) => {
-                    this._loadMTL(
-                        fileToLoad,
-                        rootUrl,
-                        (dataLoaded) => {
-                            try {
-                                //Create materials thanks MTLLoader function
-                                materialsFromMTLFile.parseMTL(scene, dataLoaded, rootUrl, this._assetContainer);
-                                //Look at each material loaded in the mtl file
-                                for (let n = 0; n < materialsFromMTLFile.materials.length; n++) {
-                                    //Three variables to get all meshes with the same material
-                                    let startIndex = 0;
-                                    const _indices = [];
-                                    let _index;
-
-                                    //The material from MTL file is used in the meshes loaded
-                                    //Push the indice in an array
-                                    //Check if the material is not used for another mesh
-                                    while ((_index = materialToUse.indexOf(materialsFromMTLFile.materials[n].name, startIndex)) > -1) {
-                                        _indices.push(_index);
-                                        startIndex = _index + 1;
-                                    }
-                                    //If the material is not used dispose it
-                                    if (_index === -1 && _indices.length === 0) {
-                                        //If the material is not needed, remove it
-                                        materialsFromMTLFile.materials[n].dispose();
-                                    } else {
-                                        for (let o = 0; o < _indices.length; o++) {
-                                            //Apply the material to the Mesh for each mesh with the material
-                                            const mesh = babylonMeshesArray[_indices[o]];
-                                            const material = materialsFromMTLFile.materials[n];
-                                            mesh.material = material;
-
-                                            if (!mesh.getTotalIndices()) {
-                                                // No indices, we need to turn on point cloud
-                                                material.pointsCloud = true;
-                                            }
-                                        }
-                                    }
-                                }
-                                resolve();
-                            } catch (e) {
-                                Tools.Warn(`Error processing MTL file: '${fileToLoad}'`);
-                                if (this._loadingOptions.materialLoadingFailsSilently) {
-                                    resolve();
-                                } else {
-                                    reject(e);
-                                }
-                            }
-                        },
-                        (pathOfFile: string, exception?: any) => {
-                            Tools.Warn(`Error downloading MTL file: '${fileToLoad}'`);
-                            if (this._loadingOptions.materialLoadingFailsSilently) {
-                                resolve();
-                            } else {
-                                reject(exception);
-                            }
-                        }
-                    );
-                })
-            );
-        }
-        //Return an array with all Mesh
-        return Promise.all(mtlPromises).then(() => {
-            const isLine = (mesh: AbstractMesh) => Boolean(mesh._internalMetadata?.["_isLine"] ?? false);
-
-            // Iterate over the mesh, determine if it is a line mesh, clone or modify the material to line rendering.
-            babylonMeshesArray.forEach((mesh) => {
-                if (isLine(mesh)) {
-                    let mat = mesh.material ?? new StandardMaterial(mesh.name + "_line", scene);
-                    // If another mesh is using this material and it is not a line then we need to clone it.
-                    const needClone = mat.getBindedMeshes().filter((e) => !isLine(e)).length > 0;
-                    if (needClone) {
-                        mat = mat.clone(mat.name + "_line") ?? mat;
-                    }
-                    mat.wireframe = true;
-                    mesh.material = mat;
-                    if (mesh._internalMetadata) {
-                        mesh._internalMetadata["_isLine"] = undefined;
-                    }
-                }
-            });
-
-            return babylonMeshesArray;
-        });
+    public async loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string): Promise<AssetContainer> {
+        // Dynamically import the bulk of the implementation
+        const impl = await import("./objFileLoader.impl");
+        return await impl.loadAssetContainerAsync(scene, this._loadingOptions, data, rootUrl);
     }
 }
 

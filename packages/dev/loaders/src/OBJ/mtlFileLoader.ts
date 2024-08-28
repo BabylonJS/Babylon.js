@@ -2,6 +2,7 @@ import type { Nullable } from "core/types";
 import { Color3 } from "core/Maths/math.color";
 import { Texture } from "core/Materials/Textures/texture";
 import { StandardMaterial } from "core/Materials/standardMaterial";
+import { ObjLoadingFlags } from "./objLoadingFlags";
 
 import type { Scene } from "core/scene";
 import type { AssetContainer } from "core/assetContainer";
@@ -12,7 +13,13 @@ export class MTLFileLoader {
     /**
      * Invert Y-Axis of referenced textures on load
      */
-    public static INVERT_TEXTURE_Y = true;
+    public static get INVERT_TEXTURE_Y() {
+        return ObjLoadingFlags.INVERT_TEXTURE_Y;
+    }
+
+    public static set INVERT_TEXTURE_Y(value: boolean) {
+        ObjLoadingFlags.INVERT_TEXTURE_Y = value;
+    }
 
     /**
      * All material loaded from the mtl will be set here
