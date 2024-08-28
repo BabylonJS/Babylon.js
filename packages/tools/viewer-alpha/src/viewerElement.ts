@@ -98,8 +98,14 @@ export class HTML3DElement extends LitElement {
             -moz-appearance: none; /* Remove default styling for Firefox */
         }
 
-        .tool-bar select:hover {
+        .tool-bar select:hover,
+        .tool-bar select:focus {
             background-color: var(--ui-background-color-hover);
+        }
+
+        .tool-bar select option {
+            background-color: var(--ui-background-color);
+            color: var(--ui-foreground-color);
         }
 
         .tool-bar select:focus-visible {
