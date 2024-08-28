@@ -851,9 +851,9 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                     if (i == 2) {
                         rotateAnchors[index].position.set(this._boundingDimensions.x * (j - 0.5), this._boundingDimensions.y * (k - 0.5), 0);
                     }
-                    if (i == 0 && (j || k)) {
+                    if (i === 0) {
                         Quaternion.FromEulerAnglesToRef(0, Math.PI * 0.5, 0, rotateAnchors[index].rotationQuaternion!);
-                    } else if (i == 1) {
+                    } else if (i === 1) {
                         Quaternion.FromEulerAnglesToRef(Math.PI * 0.5, 0, 0, rotateAnchors[index].rotationQuaternion!);
                     }
                     if (this.fixedDragMeshScreenSize && this.gizmoLayer.utilityLayerScene.activeCamera) {
