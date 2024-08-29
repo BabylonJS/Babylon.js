@@ -133,9 +133,6 @@ interface ISceneLoaderPluginMetadata {
     canDirectLoad?(data: string): boolean;
 }
 
-type OptionalMetadata<T extends ISceneLoaderPluginMetadata> = Omit<T, keyof ISceneLoaderPluginMetadata> & Partial<ISceneLoaderPluginMetadata>;
-type SceneLoaderPluginFactoryResult = OptionalMetadata<ISceneLoaderPlugin> | OptionalMetadata<ISceneLoaderPluginAsync>;
-
 /**
  * Interface used by SceneLoader plugin factory
  */
@@ -145,7 +142,7 @@ export interface ISceneLoaderPluginFactory extends ISceneLoaderPluginMetadata {
      * @param options plugin options that were passed to the SceneLoader operation
      * @returns the new plugin
      */
-    createPlugin(options: SceneLoaderPluginOptions): SceneLoaderPluginFactoryResult | Promise<SceneLoaderPluginFactoryResult>;
+    createPlugin(options: SceneLoaderPluginOptions): ISceneLoaderPlugin | ISceneLoaderPluginAsync | Promise<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
 }
 
 /**
@@ -584,34 +581,21 @@ function loadData(
         // plugin call. Given this, options are only supported for plugins that provide a factory function.
         if (isFactory(registeredPlugin.plugin)) {
             const pluginFactory = registeredPlugin.plugin;
-            const coercePlugin = (partialPlugin: SceneLoaderPluginFactoryResult) => {
-                return Object.assign(partialPlugin, {
-                    name: partialPlugin.name ?? pluginFactory.name,
-                    extensions: partialPlugin.extensions ?? pluginFactory.extensions,
-                    canDirectLoad: partialPlugin.canDirectLoad ?? pluginFactory.canDirectLoad,
-                } satisfies ISceneLoaderPluginMetadata);
-            };
             const partialPlugin = pluginFactory.createPlugin(pluginOptions ?? {});
             if (partialPlugin instanceof Promise) {
-                partialPlugin
-                    .then((plugin) => {
-                        callback(coercePlugin(plugin));
-                    })
-                    .catch((error) => {
-                        onError("Error instantiating plugin instance.", error);
-                    });
+                partialPlugin.then(callback).catch((error) => {
+                    onError("Error instantiating plugin.", error);
+                });
                 // When async factories are used, the plugin instance cannot be returned synchronously.
-                // In this case, the legacy loader functions will return null;
+                // In this case, the legacy loader functions will return null.
                 return null;
             } else {
-                const plugin = coercePlugin(partialPlugin);
-                callback(plugin);
-                return plugin;
+                callback(partialPlugin);
+                return partialPlugin;
             }
         } else {
-            const plugin = registeredPlugin.plugin;
-            callback(plugin);
-            return plugin;
+            callback(registeredPlugin.plugin);
+            return registeredPlugin.plugin;
         }
     };
 
