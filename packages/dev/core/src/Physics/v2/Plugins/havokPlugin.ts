@@ -2108,10 +2108,10 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     public raycast(from: Vector3, to: Vector3, result: PhysicsRaycastResult, query?: IRaycastQuery): void {
         const queryMembership = query?.membership ?? ~0;
         const queryCollideWith = query?.collideWith ?? ~0;
+        const shouldHitTriggers = query?.shouldHitTriggers ?? false;
 
         result.reset(from, to);
 
-        const shouldHitTriggers = false;
         const bodyToIgnore = [BigInt(0)];
         const hkQuery = [this._bVecToV3(from), this._bVecToV3(to), [queryMembership, queryCollideWith], shouldHitTriggers, bodyToIgnore];
         this._hknp.HP_World_CastRayWithCollector(this.world, this._queryCollector, hkQuery);
