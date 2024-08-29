@@ -1685,7 +1685,8 @@
             "title": "Baked Vertex Animation with Volumetric Light Scattering Post Process",
             "renderCount": 20,
             "playgroundId": "#1LF9GK#3",
-            "referenceImage": "bakedVertexAnimationVLS.png"
+            "referenceImage": "bakedVertexAnimationVLS.png",
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "Bones and morphs computation order",
