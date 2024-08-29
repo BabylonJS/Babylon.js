@@ -466,7 +466,7 @@ export class GPUPicker {
 
     // pick multiple pixels
     private _executeMultiPicking(
-        xy: { x: number; y: number }[],
+        xy: IVector2Like[],
         minX: number,
         maxY: number,
         rttSizeH: number,
