@@ -555,7 +555,7 @@ function loadData(
     pluginExtension: Nullable<string>,
     name: string,
     pluginOptions: PluginOptions
-): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
+): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> | Promise<Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>> {
     const directLoad = getDirectLoad(fileInfo.url);
 
     if (fileInfo.rawData && !pluginExtension) {
@@ -592,22 +592,24 @@ function loadData(
             };
             const partialPlugin = pluginFactory.createPlugin(pluginOptions ?? {});
             if (partialPlugin instanceof Promise) {
-                partialPlugin
-                    .then((plugin) => {
-                        callback(coercePlugin(plugin));
-                    })
-                    .catch((error) => {
-                        onError("Error instantiating plugin instance.", error);
-                    });
+                return partialPlugin.then((partialPlugin) => {
+                    const plugin = coercePlugin(partialPlugin);
+                    callback(plugin);
+                    return plugin;
+                });
             } else {
-                callback(coercePlugin(partialPlugin));
+                const plugin = coercePlugin(partialPlugin);
+                callback(plugin);
+                return plugin;
             }
         } else {
-            callback(registeredPlugin.plugin);
+            const plugin = registeredPlugin.plugin;
+            callback(plugin);
+            return plugin;
         }
     };
 
-    getPluginInstance((plugin) => {
+    return getPluginInstance((plugin) => {
         if (!plugin) {
             // eslint-disable-next-line no-throw-literal
             throw `The loader plugin corresponding to the '${pluginExtension}' file type has not been found. If using es6, please import the plugin you wish to use before.`;
@@ -634,7 +636,7 @@ function loadData(
             } else {
                 onSuccess(plugin, directLoad);
             }
-            return plugin;
+            return;
         }
 
         const useArrayBuffer = registeredPlugin.isBinary;
@@ -702,9 +704,6 @@ function loadData(
             manifestChecked();
         }
     });
-
-    // TODO: This function must synchronously return the plugin instance because the old SceneLoader contract (callback based functions) synchronously returned the plugin.
-    return plugin;
 }
 
 function getFileInfo(rootUrl: string, sceneSource: SceneSource): Nullable<IFileInfo> {
@@ -785,7 +784,7 @@ function importMesh(
     pluginExtension: Nullable<string> = null,
     name = "",
     pluginOptions: PluginOptions = {}
-): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
+): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> | Promise<Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>> {
     if (!scene) {
         Logger.Error("No scene available to import mesh to");
         return null;
@@ -940,7 +939,7 @@ function loadScene(
     pluginExtension: Nullable<string> = null,
     name = "",
     pluginOptions: PluginOptions = {}
-): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
+): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> | Promise<Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>> {
     if (!engine) {
         Tools.Error("No engine available");
         return null;
@@ -1000,7 +999,7 @@ function append(
     pluginExtension: Nullable<string> = null,
     name = "",
     pluginOptions: PluginOptions = {}
-): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
+): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> | Promise<Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>> {
     if (!scene) {
         Logger.Error("No scene available to append to");
         return null;
@@ -1146,7 +1145,7 @@ function loadAssetContainer(
     pluginExtension: Nullable<string> = null,
     name = "",
     pluginOptions: PluginOptions = {}
-): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
+): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> | Promise<Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>> {
     if (!scene) {
         Logger.Error("No scene available to load asset container to");
         return null;
@@ -1541,7 +1540,11 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
-        return importMesh(meshNames, rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name);
+        const result = importMesh(meshNames, rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name);
+        if (result instanceof Promise) {
+            throw new Error(`ImportMesh cannot be used with dynamic plugin factories. Use loadAssetContainerAsync instead.`);
+        }
+        return result;
     }
 
     /**
@@ -1589,7 +1592,11 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
-        return loadScene(rootUrl, sceneFilename, engine, onSuccess, onProgress, onError, pluginExtension, name);
+        const result = loadScene(rootUrl, sceneFilename, engine, onSuccess, onProgress, onError, pluginExtension, name);
+        if (result instanceof Promise) {
+            throw new Error(`Load cannot be used with dynamic plugin factories. Use loadSceneAsync instead.`);
+        }
+        return result;
     }
 
     /**
@@ -1635,7 +1642,11 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
-        return append(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name);
+        const result = append(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name);
+        if (result instanceof Promise) {
+            throw new Error(`Append cannot be used with dynamic plugin factories. Use appendSceneAsync instead.`);
+        }
+        return result;
     }
 
     /**
@@ -1681,7 +1692,11 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
-        return loadAssetContainer(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name);
+        const result = loadAssetContainer(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name);
+        if (result instanceof Promise) {
+            throw new Error(`LoadAssetContainer cannot be used with dynamic plugin factories. Use loadAssetContainerAsync instead.`);
+        }
+        return result;
     }
 
     /**
