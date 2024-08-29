@@ -15,8 +15,8 @@ export abstract class SPLATFileLoaderMetadata {
      */
     public static readonly Extensions = Object.freeze({
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        ".splat": Object.freeze({ isBinary: false }),
+        ".splat": Object.freeze({ isBinary: true }),
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        ".glb": Object.freeze({ isBinary: true }),
+        ".ply": Object.freeze({ isBinary: true }),
     }) satisfies ISceneLoaderPluginExtensions;
 }
