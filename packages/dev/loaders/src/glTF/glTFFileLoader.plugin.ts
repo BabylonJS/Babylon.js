@@ -1384,5 +1384,3 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
 
     private _endPerformanceCounterDisabled(counterName: string): void {}
 }
-
-registerSceneLoaderPlugin(new GLTFFileLoader());
