@@ -48,6 +48,7 @@ export class FrameGraphRenderObjectsTask implements IFrameGraphTask {
 
     public disabled = false;
 
+    private _scene: Scene;
     private _rtt: RenderTargetTexture;
 
     public get renderTargetTexture() {
@@ -58,6 +59,7 @@ export class FrameGraphRenderObjectsTask implements IFrameGraphTask {
         public name: string,
         scene: Scene
     ) {
+        this._scene = scene;
         this._rtt = new RenderTargetTexture(name, 1, scene, {
             delayAllocation: true,
         });
@@ -76,6 +78,8 @@ export class FrameGraphRenderObjectsTask implements IFrameGraphTask {
         const outputTextureHandle = frameGraph.getTextureHandle(this.destinationTexture);
         const textureDescription = frameGraph.getTextureDescription(outputTextureHandle);
 
+        let depthEnabled = false;
+
         if (this.depthTexture !== undefined) {
             const depthTextureHandle = frameGraph.getTextureHandle(this.depthTexture);
             if (depthTextureHandle === backbufferDepthStencilTextureHandle && outputTextureHandle !== backbufferColorTextureHandle) {
@@ -88,6 +92,7 @@ export class FrameGraphRenderObjectsTask implements IFrameGraphTask {
                     `FrameGraphRenderObjectsTask ${this.name}: the back buffer depth/stencil texture is the only depth texture allowed when the destination is the back buffer color`
                 );
             }
+            depthEnabled = true;
         }
 
         this._rtt._size = textureDescription.size;
@@ -99,7 +104,8 @@ export class FrameGraphRenderObjectsTask implements IFrameGraphTask {
             pass.setRenderTargetDepth(frameGraph.getTextureHandle(this.depthTexture));
         }
         pass.setExecuteFunc((_context) => {
-            _context.setDepthStates(this.depthTest, this.depthWrite);
+            this._scene.incrementRenderId();
+            _context.setDepthStates(this.depthTest && depthEnabled, this.depthWrite && depthEnabled);
             _context.render(this._rtt);
         });
 

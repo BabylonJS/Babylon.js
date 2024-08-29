@@ -91,6 +91,7 @@ import { PointerPickingConfiguration } from "./Inputs/pointerPickingConfiguratio
 import { Logger } from "./Misc/logger";
 import type { AbstractEngine } from "./Engines/abstractEngine";
 import { RegisterClass } from "./Misc/typeStore";
+import type { FrameGraph } from "./FrameGraph";
 
 /**
  * Define an interface for all classes that will hold resources
@@ -1223,6 +1224,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public get texturesEnabled(): boolean {
         return this._texturesEnabled;
     }
+
+    public useFrameGraph = false;
+
+    public frameGraph: Nullable<FrameGraph> = null;
 
     // Physics
     /**
@@ -4549,6 +4554,110 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             return;
         }
 
+        if (this.useFrameGraph) {
+            this._renderWithFrameGraph(updateCameras, ignoreAnimations);
+        } else {
+            this._render(updateCameras, ignoreAnimations);
+        }
+    }
+
+    private _renderWithFrameGraph(updateCameras = true, ignoreAnimations = false): void {
+        this._frameId++;
+
+        // Register components that have been associated lately to the scene.
+        this._registerTransientComponents();
+
+        this._activeParticles.fetchNewFrame();
+        this._totalVertices.fetchNewFrame();
+        this._activeIndices.fetchNewFrame();
+        this._activeBones.fetchNewFrame();
+        this._meshesForIntersections.reset();
+        this.resetCachedMaterial();
+
+        this.onBeforeAnimationsObservable.notifyObservers(this);
+
+        // Actions
+        if (this.actionManager) {
+            this.actionManager.processTrigger(Constants.ACTION_OnEveryFrameTrigger);
+        }
+
+        // Animations
+        if (!ignoreAnimations) {
+            this.animate();
+        }
+
+        // Before camera update steps
+        // We must keep these steps because gamepad and mesh simplification components rely on them.
+        for (const step of this._beforeCameraUpdateStage) {
+            step.action();
+        }
+
+        // Update Cameras
+        if (updateCameras) {
+            for (const camera of this.cameras) {
+                camera.update();
+                if (camera.cameraRigMode !== Constants.RIG_MODE_NONE) {
+                    // rig cameras
+                    for (let index = 0; index < camera._rigCameras.length; index++) {
+                        camera._rigCameras[index].update();
+                    }
+                }
+            }
+        }
+
+        // Before render
+        this.onBeforeRenderObservable.notifyObservers(this);
+
+        // We must keep these steps because the procedural texture component relies on them.
+        // TODO: move the procedural texture component to the frame graph.
+        for (const step of this._beforeClearStage) {
+            step.action();
+        }
+
+        // Render the graph
+        this.frameGraph?.execute();
+
+        // Intersection checks
+        this._checkIntersections();
+
+        // Executes the after render stage actions.
+        // We must keep these steps because the audio component relies on them.
+        for (const step of this._afterRenderStage) {
+            step.action();
+        }
+
+        // After render
+        if (this.afterRender) {
+            this.afterRender();
+        }
+
+        this.onAfterRenderObservable.notifyObservers(this);
+
+        // Cleaning
+        if (this._toBeDisposed.length) {
+            for (let index = 0; index < this._toBeDisposed.length; index++) {
+                const data = this._toBeDisposed[index];
+                if (data) {
+                    data.dispose();
+                }
+            }
+
+            this._toBeDisposed.length = 0;
+        }
+
+        this._activeBones.addCount(0, true);
+        this._activeIndices.addCount(0, true);
+        this._activeParticles.addCount(0, true);
+
+        this._engine.restoreDefaultFramebuffer();
+    }
+
+    /**
+     * Render the scene
+     * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)
+     * @param ignoreAnimations defines a boolean indicating if animations should not be executed (false by default)
+     */
+    private _render(updateCameras = true, ignoreAnimations = false): void {
         if (this.onReadyObservable.hasObservers() && this._executeWhenReadyTimeoutId === null) {
             this._checkIsReady();
         }

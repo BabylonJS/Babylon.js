@@ -152,6 +152,7 @@ export class PreviewManager {
 
         this._scene.activeCamera = null;
         this._scene.cameraToUseForPointers = this._camera;
+        this._scene.useFrameGraph = true;
 
         (window as any).camera = this._camera;
 
@@ -161,11 +162,7 @@ export class PreviewManager {
 
         this._engine.runRenderLoop(() => {
             this._engine.resize();
-            (this._scene as any)._frameId++;
-            this._scene.resetCachedMaterial();
-            this._scene.animate();
-            this._camera.update();
-            this._nodeRenderGraph?.execute();
+            this._scene.render();
         });
 
         this._createNodeRenderGraph();
@@ -267,6 +264,7 @@ export class PreviewManager {
 
         try {
             this._nodeRenderGraph.build();
+            this._scene.frameGraph = this._nodeRenderGraph.frameGraph;
         } catch (err) {
             this._globalState.onLogRequiredObservable.notifyObservers(new LogEntry("From preview manager: " + err, true));
         }
