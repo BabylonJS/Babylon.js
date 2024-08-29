@@ -41,7 +41,7 @@ export class FrameGraphGUITask implements IFrameGraphTask {
         pass.setRenderTarget(outputTextureHandle);
         pass.setExecuteFunc((context) => {
             this._adt._checkUpdate(null);
-            context.renderLayer(this._adt._layerToDispose!);
+            context.render(this._adt._layerToDispose!);
         });
 
         const passDisabled = frameGraph.addRenderPass(this.name + "_disabled", true);
