@@ -767,6 +767,7 @@ export class ThinEngine extends AbstractEngine {
             needTypeSuffixInShaderConstants: this._webGLVersion !== 1,
             supportMSAA: this._webGLVersion !== 1,
             supportSSAO2: this._webGLVersion !== 1,
+            supportIBLShadows: this._webGLVersion !== 1,
             supportExtendedTextureFormats: this._webGLVersion !== 1,
             supportSwitchCaseInShader: this._webGLVersion !== 1,
             supportSyncTextureRead: true,
@@ -999,6 +1000,7 @@ export class ThinEngine extends AbstractEngine {
         if (!rtWrapper.isMulti) {
             if (rtWrapper.is2DArray || rtWrapper.is3D) {
                 gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, rtWrapper.texture!._hardwareTexture?.underlyingResource, lodLevel, layer);
+                webglRTWrapper._currentLOD = lodLevel;
             } else if (rtWrapper.isCube) {
                 gl.framebufferTexture2D(
                     gl.FRAMEBUFFER,

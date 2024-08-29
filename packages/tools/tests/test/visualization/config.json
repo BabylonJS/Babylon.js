@@ -36,7 +36,7 @@
         },
         {
             "title": "Volumetric Light Scattering Post Process with Skeleton",
-            "playgroundId": "#5E318S#4",
+            "playgroundId": "#5E318S#6",
             "referenceImage": "volumetricLightScatteringSkeleton.png"
         },
         {
@@ -1678,13 +1678,13 @@
         {
             "title": "Baked Vertex Animation with Depth Of Field",
             "renderCount": 20,
-            "playgroundId": "#JWO4R0#7",
+            "playgroundId": "#JWO4R0#8",
             "referenceImage": "bakedVertexAnimationDOF.png"
         },
         {
             "title": "Baked Vertex Animation with Volumetric Light Scattering Post Process",
             "renderCount": 20,
-            "playgroundId": "#1LF9GK#2",
+            "playgroundId": "#1LF9GK#3",
             "referenceImage": "bakedVertexAnimationVLS.png"
         },
         {
@@ -2226,6 +2226,13 @@
             "title": "glTF Loader Capabilities",
             "playgroundId": "#EBO3J1#10",
             "referenceImage": "glTFLoaderCapabilities.png"
+        },
+        {
+            "title": "IBL Voxel Shadowing",
+            "playgroundId": "#8R5SSE#180",
+            "referenceImage": "voxelShadows.png",
+            "renderCount": 15,
+            "excludedEngines": ["webgl1", "webgpu"]
         }
     ]
 }

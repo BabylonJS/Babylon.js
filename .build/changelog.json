@@ -1,6 +1,218 @@
 {
-    "fromTag": "7.22.2",
+    "fromTag": "7.22.4",
     "changelog": {
+        "7.22.5": [
+            {
+                "pr": "15481",
+                "title": "Add back copy of extensionOptions",
+                "description": "Accidentally lost this with a previous change to fix a different bug.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/glTFFileLoader.ts",
+                    "packages/dev/loaders/test/integration/babylon.sceneLoader.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15480",
+                "title": "Add extraInitializationsAsync to EffectWrapper Option",
+                "description": "Add the extraInitializationsAsync option to the EffectWrapper.\r\n\r\nThis is needed to make it easier to add wgsl support to rendering logic that uses EffectWrapper.\r\n\r\n\r\n#### Additional Context:\r\nI'm currently trying to add wgsl support to FluidRenderer, but after looking at the source, I decided that EffectWrapper should support async shader loading first, so I created this PR.\r\n",
+                "author": {
+                    "name": "noname0310",
+                    "url": "https://github.com/noname0310"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/effectRenderer.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "7.22.4": [
+            {
+                "pr": "15479",
+                "title": "Bump micromatch from 4.0.7 to 4.0.8",
+                "description": "Bumps [micromatch](https://github.com/micromatch/micromatch) from 4.0.7 to 4.0.8.\n<details>\n<summary>Changelog</summary>\n<p><em>Sourced from <a href=\"https://github.com/micromatch/micromatch/blob/4.0.8/CHANGELOG.md\">micromatch's changelog</a>.</em></p>\n<blockquote>\n<h2>[4.0.8] - 2024-08-22</h2>\n<ul>\n<li>backported CVE-2024-4067 fix (from v4.0.6) over to 4.x branch</li>\n</ul>\n</blockquote>\n</details>\n<details>\n<summary>Commits</summary>\n<ul>\n<li><a href=\"https://github.com/micromatch/micromatch/commit/8bd704ec0d9894693d35da425d827819916be920\"><code>8bd704e</code></a> 4.0.8</li>\n<li><a href=\"https://github.com/micromatch/micromatch/commit/a0e68416a44da10f3e4e30845ab95af4fd286d5a\"><code>a0e6841</code></a> run verb to generate README documentation</li>\n<li><a href=\"https://github.com/micromatch/micromatch/commit/4ec288484f6e8cccf597ad3d43529c31d0f7a02a\"><code>4ec2884</code></a> Merge branch 'v4' into hauserkristof-feature/v4.0.8</li>\n<li><a href=\"https://github.com/micromatch/micromatch/commit/03aa8052171e878897eee5d7bb2ae0ae83ec2ade\"><code>03aa805</code></a> Merge pull request <a href=\"https://redirect.github.com/micromatch/micromatch/issues/266\">#266</a> from hauserkristof/feature/v4.0.8</li>\n<li><a href=\"https://github.com/micromatch/micromatch/commit/814f5f70efcd100ca9d29198867812a3d6ab91a8\"><code>814f5f7</code></a> lint</li>\n<li><a href=\"https://github.com/micromatch/micromatch/commit/67fcce6a1077c2faf5ad0c5f998fa70202cc5dae\"><code>67fcce6</code></a> fix: CHANGELOG about braces &amp; CVE-2024-4068, v4.0.5</li>\n<li><a href=\"https://github.com/micromatch/micromatch/commit/113f2e3fa7cb30b429eda7c4c38475a8e8ba1b30\"><code>113f2e3</code></a> fix: CVE numbers in CHANGELOG</li>\n<li><a href=\"https://github.com/micromatch/micromatch/commit/d9dbd9a266686f44afb38da26fe016f96d1ec04f\"><code>d9dbd9a</code></a> feat: updated CHANGELOG</li>\n<li><a href=\"https://github.com/micromatch/micromatch/commit/2ab13157f416679f54e3a32b1425e184bd16749e\"><code>2ab1315</code></a> fix: use actions/setup-node@v4</li>\n<li><a href=\"https://github.com/micromatch/micromatch/commit/1406ea38f3e24b29f4d4f46908d5cffcb3e6c4ce\"><code>1406ea3</code></a> feat: rework test to work on macos with node 10,12 and 14</li>\n<li>Additional commits viewable in <a href=\"https://github.com/micromatch/micromatch/compare/4.0.7...4.0.8\">compare view</a></li>\n</ul>\n</details>\n<br />\n\n\n[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=micromatch&package-manager=npm_and_yarn&previous-version=4.0.7&new-version=4.0.8)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)\n\nDependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.\n\n[//]: # (dependabot-automerge-start)\n[//]: # (dependabot-automerge-end)\n\n---\n\n<details>\n<summary>Dependabot commands and options</summary>\n<br />\n\nYou can trigger Dependabot actions by commenting on this PR:\n- `@dependabot rebase` will rebase this PR\n- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it\n- `@dependabot merge` will merge this PR after your CI passes on it\n- `@dependabot squash and merge` will squash and merge this PR after your CI passes on it\n- `@dependabot cancel merge` will cancel a previously requested merge and block automerging\n- `@dependabot reopen` will reopen this PR if it is closed\n- `@dependabot close` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually\n- `@dependabot show <dependency name> ignore conditions` will show all of the ignore conditions of the specified dependency\n- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)\nYou can disable automated security fix PRs for this repo from the [Security Alerts page](https://github.com/BabylonJS/Babylon.js/network/alerts).\n\n</details>",
+                "author": {
+                    "name": "dependabot[bot]",
+                    "url": "https://github.com/apps/dependabot"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": [
+                    "dependencies"
+                ]
+            },
+            {
+                "pr": "15475",
+                "title": "First pass at animation controls in viewer alpha",
+                "description": "This is a first pass at adding animation state, logic, and default UI to the viewer alpha. Addresses #15470 \r\n\r\nhttps://github.com/user-attachments/assets/5c9bedc1-2e01-417d-aa9e-ce5c8b9d18b7\r\n\r\nAs seen above, this includes:\r\n- Animation toolbar if there are any animations (otherwise it is not shown)\r\n- Drop down of animations if there are more than one (otherwise it is not shown)\r\n- Play/pause button\r\n- Animation timeline/progress (shows current state and can be manually scrubbed)\r\n- Drop down to select animation speed (0.5x, 1x, 1.5x, 2x)\r\n- Camera auto rotation timeout is reset any time an animation runs (including scrubbing)\r\n\r\nThis change adds new state and logic to the Viewer layer to deal with animations, and exposes some state and observables.\r\n\r\nIt also changes the ViewerElement (DOM) layer significantly because I moved it to use [Lit](https://lit.dev/). This was the plan from the beginning, once we had complex enough UI requirements to make it useful. Lit builds on top of Web Components Custom Elements and provides React-like functionality (properties, state, auto attributes, efficient batched updates, etc.). It does add about 15k to the bundle, but also significantly simplifies the custom element implementation. It is a popular library commonly used when implementing custom elements. Another benefit of Lit is that it uses html/css template literals (e.g. ```html`<div>...</div>` ```), and there are bundler plugins to minify these strings, which ultimately helps offset the size impact of bringing in Lit in the first place.\r\n\r\nThe ViewerElement includes the following changes:\r\n- Leverages Lit as mentioned above\r\n- Binds state and props to the Viewer layer\r\n- Publicly exposes some new attributes, properties, functions, and events dealing with animation\r\n- Provides default UI for controlling animations (a fair bit of this was lifted from the legacy viewer, but converted from handlebars syntax to template literal syntax)\r\n  -  I also did some accessibility testing for keyboard navigation, screen reader, and contrast ratio using Accessibility Insights and Lighthouse.\r\n- Introduces a few custom CSS variables for simple customization (e.g. changing the color of the toolbar)\r\n- Introduces the toolbar as a *part* for moderate customization (e.g. changing the style of the toolbar to change its size, position, etc.)\r\n- Introduces the toolbar within a *slot* for total customization (e.g. completely replace it with your own UI, where your own UI is bound to the public properties, events, and functions related to animation)\r\n\r\nThe bundler configuration is also updated to use `rollup-plugin-minify-html-literals` to minify the html and css template literals.\r\n\r\nI also made one small change to `animationGroup`, where for some reason in one place it was firing the `onAnimationGroupPlayObservable` before actually changing the play/pause state. This means if a handler checks the play/pause state, it can be wrong.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/dev/core/src/Animations/animationGroup.ts",
+                    "packages/public/@babylonjs/viewer-alpha/package.json",
+                    "packages/public/@babylonjs/viewer-alpha/rollup.config.dist.esm.mjs",
+                    "packages/tools/viewer-alpha/package.json",
+                    "packages/tools/viewer-alpha/rollup.config.analyze.mjs",
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts",
+                    "packages/tools/viewer-alpha/test/apps/web/analyze.html",
+                    "packages/tools/viewer-alpha/test/apps/web/coverage.html",
+                    "packages/tools/viewer-alpha/test/apps/web/index.html"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15106",
+                "title": "IBL shadowing",
+                "description": "This PR adds an `IblShadowsRenderPipeline` that adds shadowing for image-based lighting (IBL). It's applied as a post process after rendering your scene.\r\n\r\nAll control over the shadows will be done through the `IblShadowsRenderPipeline` object. After creating the pipeline, the first things that the user needs to do are:\r\n\r\n1. Assign an IBL image with setIblTexture . This function can take either a cube map or an equirectangular map.\r\n2. Add any meshes that you don't want casting shadows with addExcludedMesh . The apparent resolution of the shadows is directly tied to the size of the scene so you want to only include meshes that are important for shadows. e.g. a skybox should be excluded to avoid making the shadow-casting world huge as well as casting a shadow over everything.\r\n3. Update the scene bounds whenever a shadow-casting object moves using updateSceneBounds. This will recalculate the size of the scene and trigger voxelization. This is a pretty expensive operation in WebGL 2.0 so animated shadow-casters are probably not practical.\r\n\r\nThere are several pieces to how the effect is created. First, there are two passes that are only run when needed:\r\n\r\n* `_IblShadowsVoxelRenderer` - Responsible for building a voxel grid of the geometry in the scene as a 3D texture. This texture is used when tracing rays to the IBL and determining what is in shadow and what isn't. The voxelization only needs to be done when some geometry in the scene moves or is added/removed.\r\n* `_IblShadowsImportanceSamplingRenderer` - Responsible for building the CDF (cumulative distribution function) maps that will make it easy to pick the most important ray directions while sampling. This is only run when the IBL changes.\r\n\r\nThe `IblShadowsRenderPipeline` also requires several maps to be output from the prepass renderer, including world normals, world positions, velocity and depth. We should change this logic to render these per camera because, right now, the prepass renderer only supports a single camera.\r\n\r\nThe `IblShadowsRenderPipeline` creates four post process passes that do the per-frame shadow calculations and apply them to the scene:\r\n\r\n1. `_IblShadowsVoxelTracingPass` - this full-screen pass traces rays through the voxel grid using several of the prepass targets and the IBL CDF. In addition to voxel tracing, it also calculates screen-space shadows to catch small details and combines this with the lower-res shadows from the voxel tracing. This pass outputs a pretty noisy, greyscale approximation of the scene's shadows.\r\n2. `_IblShadowsSpatialBlurPass` - this full-screen pass blurs the shadow texture.\r\n3. `_IblShadowsAccumulationPass` - this full-screen pass accumulates the shadows over multiple frames. It copies both the accumulation and position buffers from the previous frame and uses them (in conjunction with the velocity buffer) to do this.\r\n\r\nThe output of the accumulation pass is composited onto the scene with another post-process effect.\r\n\r\nHere's a PG to test with:\r\nhttps://playground.babylonjs.com/#8R5SSE#197\r\n\r\n**Some important exposed settings:**\r\n* voxel resolution - the dimension of the voxel grid, in voxels. This directly affects how sharp the shadows are. Must be power-of-two.\r\n* sample directions - how many samples of the voxel grid per pixel. Increasing this results in less noise but adds significantly to the per-frame cost of shadows\r\n* toggling screen-space shadows - SS shadows add small shadow detail close to the shadow caster but may not be needed in all scenes so this is togglable and has various settings to control how they behave.\r\n\r\n**Updating the voxel grid:**\r\n* When a mesh is added or removed from a scene, the voxelization of the scene is automatically rebuilt.\r\n* When a mesh moves in the scene, you must call `updateSceneBounds` to get the shadows to rebuild. Is there some place that I could do this automatically for users?\r\n\r\n**Things that still need work:**\r\n* The shadows are greyscale and are an approximation of the light intensity blocked by an object. They often over-darken surfaces because of this. I have plans to improve this and also add better support for coloured lighting.\r\n* IBL shadows don't currently work with multiple cameras (mostly due to this issue https://forum.babylonjs.com/t/viewport-issue-when-using-prepassrenderer/51276)\r\n* WebGPU is not yet fully supported. When WebGPU is working, I should be able to make use of compute shaders to significantly speed up voxel grid generation. This should make dynamic scene much more practical.\r\n* Various performance and quality tweaks. e.g. support downsizing the buffers for faster speed.\r\n![IBL Shadows](https://github.com/BabylonJS/Babylon.js/assets/1069125/7fb09b3f-93f2-40c2-aa8a-3e5161bed46e)\r\n",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/constants.ts",
+                    "packages/dev/core/src/Engines/engineFeatures.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/nullEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/prePassOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Input/prePassTextureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/Textures/Procedurals/proceduralTexture.ts",
+                    "packages/dev/core/src/Materials/materialHelper.functions.ts",
+                    "packages/dev/core/src/Materials/prePassConfiguration.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/PostProcesses/postProcessManager.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsAccumulationPass.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsImportanceSamplingRenderer.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsRenderPipeline.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsSpatialBlurPass.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelRenderer.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelTracingPass.ts",
+                    "packages/dev/core/src/Rendering/index.ts",
+                    "packages/dev/core/src/Rendering/prePassRenderer.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/instancesDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/instancesVertex.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/prePassDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/prePassVertex.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/prePassVertexDeclaration.fx",
+                    "packages/dev/core/src/Shaders/combineVoxelGrids.fragment.fx",
+                    "packages/dev/core/src/Shaders/copyTexture3DLayerToTexture.fragment.fx",
+                    "packages/dev/core/src/Shaders/default.fragment.fx",
+                    "packages/dev/core/src/Shaders/default.vertex.fx",
+                    "packages/dev/core/src/Shaders/generateVoxelMip.fragment.fx",
+                    "packages/dev/core/src/Shaders/geometry.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblShadowAccumulation.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblShadowDebug.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblShadowGBufferDebug.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblShadowSpatialBlur.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblShadowVoxelTracing.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblShadowsCdfx.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblShadowsCdfy.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblShadowsCombine.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblShadowsIcdfx.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblShadowsIcdfy.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblShadowsImportanceSamplingDebug.fragment.fx",
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx",
+                    "packages/dev/core/src/Shaders/pbr.vertex.fx",
+                    "packages/dev/core/src/Shaders/voxelGrid.fragment.fx",
+                    "packages/dev/core/src/Shaders/voxelGrid.vertex.fx",
+                    "packages/dev/core/src/Shaders/voxelGrid2dArrayDebug.fragment.fx",
+                    "packages/dev/core/src/Shaders/voxelGrid3dDebug.fragment.fx",
+                    "packages/dev/core/src/Shaders/voxelSlabDebug.fragment.fx",
+                    "packages/dev/core/src/Shaders/voxelSlabDebug.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/instancesDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/instancesVertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/prePassDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/prePassVertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/prePassVertexDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/default.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/default.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/geometry.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/pbr.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/pbr.vertex.fx",
+                    "packages/dev/core/src/sceneComponent.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGridTabComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/iblShadowsRenderPipelinePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/sceneExplorerComponent.tsx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/voxelShadows.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15468",
+                "title": "Adds VAT, Texture Bone capabilities to the VolumetricLightScatteringPostProcess and DepthRenderer",
+                "description": "Added morphtarget, skeleton and VAT support to VolumetricLightScatteringPostProcess.\r\n\r\nAdded VAT and CPU Skinning fallback support to DepthRenderer.\r\n\r\nOther minor refactoring included.",
+                "author": {
+                    "name": "noname0310",
+                    "url": "https://github.com/noname0310"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/volumetricLightScatteringPostProcess.ts",
+                    "packages/dev/core/src/Rendering/depthRenderer.ts",
+                    "packages/dev/core/src/Rendering/outlineRenderer.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/bakedVertexAnimationDOF.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/bakedVertexAnimationVLS.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/volumetricLightScatteringMorphTargets.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/volumetricLightScatteringSkeleton.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15476",
+                "title": "Don't enforce ContentSecurityPolicy for image loading if the disposition is \"report\"",
+                "description": "Content-Security-Policy-Report-Only headers should not actually block the loading of content - the browser will just report violations as warnings in the console.  With this check, Babylon will no longer to refuse to load image content if the CSP is in report only mode but will still abort requests if the CSP is being enforced (using the regular Content-Security-Policy header).",
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/fileTools.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15474",
+                "title": "Don't overwrite null root node with undefined default",
+                "description": "Addresses forum issue: https://forum.babylonjs.com/t/customrootnode-null-does-not-work/52971\r\n\r\nEffectively the previous code did something like:\r\n```ts\r\nconst finalOption = passedInOption ?? defaultOption;\r\n```\r\n\r\nThis logic is incorrect when `null` is a valid value for `passedInOption` and `defaultOption` is `undefined`. This is the case for `customRootNode`.\r\n\r\nI started to fix this in the current code, but in doing so realized that in a later revision of the original loader options PR, I also introduced a different issue. Specifically, the generic option copying logic is trying to iterate over the keys of the base class only, but since it uses `key in this`, it picks up all the properties of the derived `GLTFFileLoader` class and copies everything, which I don't think technically hurts anything but definitely not the intention. In an earlier iteration of that original PR, there was an instance of `GLTFLoaderOptions` used for default values, and I used to iterate over the keys in that object, which was correct. At some point, I ended up removing the default options instance, and since later I made `GLTFLoaderOptions` abstract to deal with callbacks in a backward compatible way, it's no longer even possible to instantiate the base class. I tried a bunch of different things to keep the generic copy logic while fixing these problems, but it just kept getting more and more complicated, so I just switched to to explicitly copy each property. If we add new options in the future, we'll just need to be careful to add a line to copy them.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/glTFFileLoader.ts",
+                    "packages/dev/loaders/test/integration/babylon.sceneLoader.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15473",
+                "title": "Fix `GLTFLoaderOptions` type",
+                "description": "Same as #14306 and #14848, so that `skipLibCheck: false` and `exactOptionalPropertyTypes: true` pass.",
+                "author": {
+                    "name": "alecmev",
+                    "url": "https://github.com/alecmev"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/glTFFileLoader.ts"
+                ],
+                "tags": []
+            }
+        ],
         "7.22.3": [
             {
                 "pr": "15472",
