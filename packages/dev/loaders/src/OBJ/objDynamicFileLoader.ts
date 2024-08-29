@@ -1,5 +1,5 @@
 import type { ISceneLoaderPluginFactory } from "core/Loading/sceneLoader";
-import type { OBJFileLoader } from "./objFileLoader.plugin";
+import { OBJFileLoaderMetadata } from "./objFileLoaderMetadata";
 import { registerSceneLoaderPlugin } from "core/Loading/sceneLoader";
 
 /**
@@ -7,9 +7,8 @@ import { registerSceneLoaderPlugin } from "core/Loading/sceneLoader";
  */
 export function registerOBJLoader() {
     registerSceneLoaderPlugin({
-        name: "obj" satisfies OBJFileLoader["name"],
-        extensions: ".obj" satisfies OBJFileLoader["extensions"],
-        canDirectLoad: () => false,
+        name: OBJFileLoaderMetadata.Name,
+        extensions: OBJFileLoaderMetadata.Extensions,
         createPlugin: async () => {
             // eslint-disable-next-line @typescript-eslint/naming-convention
             const { OBJFileLoader } = await import("./objFileLoader.plugin");

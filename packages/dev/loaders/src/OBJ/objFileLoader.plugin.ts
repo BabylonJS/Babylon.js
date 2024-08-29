@@ -6,15 +6,12 @@ import type { ISceneLoaderPluginAsync, ISceneLoaderAsyncResult } from "core/Load
 import { AssetContainer } from "core/assetContainer";
 import type { Scene } from "core/scene";
 import type { WebRequest } from "core/Misc/webRequest";
+import { OBJFileLoaderMetadata } from "./objFileLoaderMetadata";
 import { MTLFileLoader } from "./mtlFileLoader";
 import type { OBJLoadingOptions } from "./objLoadingOptions";
 import { SolidParser } from "./solidParser";
 import type { Mesh } from "core/Meshes/mesh";
 import { StandardMaterial } from "core/Materials/standardMaterial";
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const PLUGIN_OBJ = "obj";
-const objExtensions = ".obj";
 
 declare module "core/Loading/sceneLoader" {
     // eslint-disable-next-line jsdoc/require-jsdoc
@@ -22,7 +19,7 @@ declare module "core/Loading/sceneLoader" {
         /**
          * Defines options for the obj loader.
          */
-        [PLUGIN_OBJ]: {};
+        [OBJFileLoaderMetadata.Name]: {};
     }
 }
 
@@ -87,11 +84,11 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
     /**
      * Defines the name of the plugin.
      */
-    public readonly name = PLUGIN_OBJ;
+    public readonly name = OBJFileLoaderMetadata.Name;
     /**
      * Defines the extension the plugin is able to load.
      */
-    public readonly extensions = objExtensions;
+    public readonly extensions = OBJFileLoaderMetadata.Extensions;
 
     private _assetContainer: Nullable<AssetContainer> = null;
 
