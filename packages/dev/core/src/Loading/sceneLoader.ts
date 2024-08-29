@@ -110,7 +110,7 @@ export interface ISceneLoaderPluginExtensions {
      * Defines the list of supported extensions
      */
     readonly [extension: string]: {
-        isBinary: boolean;
+        readonly isBinary: boolean;
     };
 }
 
@@ -588,7 +588,8 @@ function loadData(
                 return Object.assign(partialPlugin, {
                     name: partialPlugin.name ?? pluginFactory.name,
                     extensions: partialPlugin.extensions ?? pluginFactory.extensions,
-                });
+                    canDirectLoad: partialPlugin.canDirectLoad ?? pluginFactory.canDirectLoad,
+                } satisfies ISceneLoaderPluginMetadata);
             };
             const partialPlugin = pluginFactory.createPlugin(pluginOptions ?? {});
             if (partialPlugin instanceof Promise) {

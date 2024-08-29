@@ -65,8 +65,8 @@ import type {
     _IAnimationSamplerData,
 } from "./glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "./glTFLoaderExtension";
-import type { IGLTFLoader, IGLTFLoaderData } from "../glTFFileLoader";
-import { GLTFFileLoader, GLTFLoaderState, GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "../glTFFileLoader";
+import type { IGLTFLoader, IGLTFLoaderData } from "../glTFFileLoader.plugin";
+import { GLTFFileLoader, GLTFLoaderState, GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "../glTFFileLoader.plugin";
 import type { IDataBuffer } from "core/Misc/dataReader";
 import { DecodeBase64UrlToBinary, IsBase64DataUrl, LoadFileError } from "core/Misc/fileTools";
 import { Logger } from "core/Misc/logger";
@@ -76,6 +76,7 @@ import type { AssetContainer } from "core/assetContainer";
 import type { AnimationPropertyInfo } from "./glTFLoaderAnimation";
 import { nodeAnimationData } from "./glTFLoaderAnimation";
 import type { IObjectInfo } from "core/ObjectModel/objectModelInterfaces";
+export { GLTFFileLoader };
 
 interface TypedArrayLike extends ArrayBufferView {
     readonly length: number;

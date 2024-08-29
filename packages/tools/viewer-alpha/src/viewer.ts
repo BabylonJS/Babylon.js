@@ -31,8 +31,8 @@ import { Scene } from "core/scene";
 import "core/Animations/animatable";
 import "core/Materials/Textures/Loaders/envTextureLoader";
 // eslint-disable-next-line import/no-internal-modules
-import "loaders/glTF/2.0/index";
-import { registerDynamicLoaders } from "loaders/dynamic";
+import "loaders/glTF/2.0/Extensions/index";
+import { registerLoaders } from "loaders/dynamic";
 
 function createSkybox(scene: Scene, camera: Camera, environmentTexture: CubeTexture, blur: number): Mesh {
     const hdrSkybox = CreateBox("hdrSkyBox", undefined, scene);
@@ -100,7 +100,7 @@ export type ViewerOptions = Partial<
  */
 export class Viewer implements IDisposable {
     static {
-        registerDynamicLoaders();
+        registerLoaders();
     }
 
     /**
