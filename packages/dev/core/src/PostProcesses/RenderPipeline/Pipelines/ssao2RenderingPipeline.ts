@@ -452,7 +452,14 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             undefined,
             undefined,
             undefined,
-            this._scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL
+            this._scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            (useWebGPU, list) => {
+                if (useWebGPU) {
+                    list.push(import("../../../ShadersWGSL/ssao2.fragment"));
+                } else {
+                    list.push(import("../../../Shaders/ssao2.fragment"));
+                }
+            }
         );
 
         blurFilter.onApply = (effect: Effect) => {
