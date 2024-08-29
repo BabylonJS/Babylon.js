@@ -49,14 +49,16 @@ export class _IblShadowsImportanceSamplingRenderer {
         if (this._iblSource === source) {
             return;
         }
+        this._disposeTextures();
+        this._iblSource = source;
         if (source instanceof Texture) {
-            if (source.isReady()) {
+            if (source.isReadyOrNotBlocking()) {
                 this._recreateAssetsFromNewIbl(source);
             } else {
-                source.onLoadObservable.addOnce(this._recreateAssetsFromNewIbl);
+                source.onLoadObservable.addOnce(this._recreateAssetsFromNewIbl.bind(this, source));
             }
         } else if (source instanceof HDRCubeTexture) {
-            if (source.isReady()) {
+            if (source.isReadyOrNotBlocking()) {
                 this._recreateAssetsFromNewIbl(source);
             } else {
                 source.onLoadObservable.addOnce(this._recreateAssetsFromNewIbl.bind(this, source));
@@ -68,8 +70,7 @@ export class _IblShadowsImportanceSamplingRenderer {
         if (this._debugPass) {
             this._debugPass.dispose();
         }
-        this._disposeTextures();
-        this._iblSource = source;
+
         this._createTextures();
 
         if (this._debugPass) {
