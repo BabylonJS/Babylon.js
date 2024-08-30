@@ -1148,12 +1148,21 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     }
 
     /**
+     * Specifies whether or not this material should be rendered in alpha test mode when used with the given mesh.
+     * @param mesh defines the mesh to check
+     * @returns a boolean specifying if an alpha test is needed.
+     */
+    public needAlphaTestingForMesh(mesh: AbstractMesh): boolean {
+        return mesh.hasVertexAlpha || this.needAlphaTesting();
+    }
+
+    /**
      * Specifies if material alpha testing should be turned on for the mesh
      * @param mesh defines the mesh to check
      * @returns a boolean specifying if alpha testing should be turned on for the mesh
      */
     protected _shouldTurnAlphaTestOn(mesh: AbstractMesh): boolean {
-        return !this.needAlphaBlendingForMesh(mesh) && this.needAlphaTesting();
+        return !this.needAlphaBlendingForMesh(mesh) && this.needAlphaTestingForMesh(mesh);
     }
 
     /**
