@@ -474,7 +474,10 @@ export class HolographicSlate extends ContentDisplay3D {
             this.origin.setAll(0);
             this._gizmo.updateBoundingBox();
             const pivot = this.node.getAbsolutePivotPoint();
-            this.node.position.copyFrom(camera.position).subtractInPlace(backward).subtractInPlace(pivot);
+            // only if position was not yet set!
+            if (this.node.position.equalsToFloats(0, 0, 0)) {
+                this.node.position.copyFrom(camera.position).subtractInPlace(backward).subtractInPlace(pivot);
+            }
             this.node.rotationQuaternion = Quaternion.FromLookDirectionLH(backward, new Vector3(0, 1, 0));
 
             if (resetAspect) {
