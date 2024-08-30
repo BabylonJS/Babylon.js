@@ -551,7 +551,7 @@ export class GLTFLoader implements IGLTFLoader {
     private async _loadExtensionsAsync() {
         const extensionPromises: Promise<IGLTFLoaderExtension>[] = [];
 
-        for (const [name, registeredExtension] of GLTFLoaderExtensionRegistry.RegisteredExtensions) {
+        GLTFLoaderExtensionRegistry.RegisteredExtensions.forEach((registeredExtension, name) => {
             // Don't load explicitly disabled extensions.
             if (this.parent.extensionOptions[name]?.enabled === false) {
                 // But warn if the disabled extension is used by the model.
@@ -573,7 +573,7 @@ export class GLTFLoader implements IGLTFLoader {
                     })()
                 );
             }
-        }
+        });
 
         this._extensions.push(...(await Promise.all(extensionPromises)));
 
