@@ -31,7 +31,7 @@ import { Scene } from "core/scene";
 import "core/Animations/animatable";
 import "core/Materials/Textures/Loaders/envTextureLoader";
 // eslint-disable-next-line import/no-internal-modules
-import { registerDefaultLoaders } from "loaders/dynamic";
+import { registerBuiltInLoaders } from "loaders/dynamic";
 
 function createSkybox(scene: Scene, camera: Camera, environmentTexture: CubeTexture, blur: number): Mesh {
     const hdrSkybox = CreateBox("hdrSkyBox", undefined, scene);
@@ -99,7 +99,7 @@ export type ViewerOptions = Partial<
  */
 export class Viewer implements IDisposable {
     static {
-        registerDefaultLoaders();
+        registerBuiltInLoaders();
     }
 
     /**
