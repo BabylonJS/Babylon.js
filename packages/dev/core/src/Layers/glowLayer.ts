@@ -274,7 +274,13 @@ export class GlowLayer extends EffectLayer {
             undefined,
             undefined,
             undefined,
-            this.shaderLanguage
+            this.shaderLanguage,
+            this._shadersLoaded
+                ? undefined
+                : async () => {
+                      await this._importShadersAsync();
+                      this._shadersLoaded = true;
+                  }
         );
     }
 
