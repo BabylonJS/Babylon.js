@@ -2419,6 +2419,10 @@ export class Control implements IAnimatable, IFocusableControl {
         if (pi && this.uniqueId !== this._host.rootContainer.uniqueId) {
             this._host._capturedPointerIds.delete((pi.event as IPointerEvent).pointerId);
         }
+
+        if (this._host.usePointerTapForClickEvent && this.isPointerBlocker) {
+            this._host._shouldBlockPointer = false;
+        }
     }
 
     public _onPointerPick(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi: Nullable<PointerInfoBase>): boolean {
@@ -2434,6 +2438,10 @@ export class Control implements IAnimatable, IFocusableControl {
 
         if (canNotify && this.parent != null && !this.isPointerBlocker) {
             this.parent._onPointerPick(target, coordinates, pointerId, buttonIndex, canNotifyClick, pi);
+        }
+
+        if (this._host.usePointerTapForClickEvent && this.isPointerBlocker) {
+            this._host._shouldBlockPointer = true;
         }
         return true;
     }
