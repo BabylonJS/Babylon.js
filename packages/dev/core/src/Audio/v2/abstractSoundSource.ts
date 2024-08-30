@@ -31,7 +31,7 @@ export abstract class AbstractSoundSource implements IDisposable {
         this.stopTime = options?.stopTime ?? 0;
         this.volume = options?.volume ?? 1;
 
-        this.engine._addSoundSource(this);
+        this.engine.soundSources.add(this);
     }
 
     public dispose(): void {
@@ -39,7 +39,7 @@ export abstract class AbstractSoundSource implements IDisposable {
 
         this._soundInstances?.clear();
 
-        this.engine._removeSoundSource(this);
+        this.engine.soundSources.delete(this);
     }
 
     public name: string;

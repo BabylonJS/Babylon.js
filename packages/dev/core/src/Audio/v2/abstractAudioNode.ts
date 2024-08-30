@@ -34,7 +34,7 @@ export abstract class AbstractAudioNode extends AbstractAudioNodeParent {
 
         this.engine = engine;
 
-        this._setParent(parent);
+        this._parent = parent;
 
         if (nodeType | AudioNodeType.Input) {
             this._connectedDownstreamNodes = new Set<AbstractAudioNode>();
@@ -63,7 +63,7 @@ export abstract class AbstractAudioNode extends AbstractAudioNodeParent {
             this._connectedUpstreamNodes.clear();
         }
 
-        AbstractAudioNodeParent._RemoveChildNode(this._getParent(), this);
+        this.parent.children.delete(this);
 
         super.dispose();
     }
@@ -73,18 +73,18 @@ export abstract class AbstractAudioNode extends AbstractAudioNodeParent {
     // If parent is null, node is owned by audio engine.
     private _parent: Nullable<AbstractAudioNodeParent> = null;
 
-    protected _getParent(): AbstractAudioNodeParent {
+    public get parent(): AbstractAudioNodeParent {
         return this._parent ?? this.engine;
     }
 
-    private _setParent(parent: Nullable<AbstractAudioNodeParent>) {
+    public set parent(parent: Nullable<AbstractAudioNodeParent>) {
         if (this._parent === parent) {
             return;
         }
 
-        AbstractAudioNodeParent._RemoveChildNode(this._getParent(), this);
+        this.parent.children.delete(this);
         this._parent = parent;
-        AbstractAudioNodeParent._AddChildNode(this._getParent(), this);
+        this.parent.children.add(this);
     }
 
     /**

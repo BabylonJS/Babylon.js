@@ -21,7 +21,7 @@ import type { Nullable } from "../../types";
  */
 export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
     public override dispose(): void {
-        this._soundInstances.length = 0;
+        this.soundInstances.clear();
 
         if (this._listeners) {
             for (const listener of this._listeners) {
@@ -30,62 +30,29 @@ export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
             this._listeners.clear();
         }
 
-        for (const source of this._soundSources) {
+        for (const source of this.soundSources) {
             source.dispose();
         }
-        this._soundSources.clear();
+        this.soundSources.clear();
 
         super.dispose();
     }
 
-    // Not owned, but all items should be in child nodes array, too, which is owned.
-    //
-    // TODO: Figure out if a Set would be better here. It would be more efficient for lookups, but we need to be able
-    // to sort sound instances by priority as fast as possible when the advanced audio engine is implemented. Is an
-    // array faster in that case?
-    private _soundInstances = new Array<AbstractStaticSoundInstance>();
-
-    public _addSoundInstance(instance: AbstractStaticSoundInstance): void {
-        if (this._soundInstances.includes(instance)) {
-            return;
-        }
-
-        this._soundInstances.push(instance);
-    }
-
-    public _removeSoundInstance(instance: AbstractStaticSoundInstance): void {
-        const index = this._soundInstances.indexOf(instance);
-        if (index < 0) {
-            return;
-        }
-
-        this._soundInstances.splice(index, 1);
-    }
+    // Not owned, but all items should in parent's `children` container, too, which is owned.
+    public readonly soundInstances = new Set<AbstractStaticSoundInstance>();
 
     // Owned
-    private _soundSources = new Set<AbstractSoundSource>();
-
-    public _addSoundSource(soundSource: AbstractSoundSource): void {
-        this._soundSources.add(soundSource);
-    }
-
-    public _removeSoundSource(soundSource: AbstractSoundSource): void {
-        this._soundSources.delete(soundSource);
-    }
+    public readonly soundSources = new Set<AbstractSoundSource>();
 
     // Owned
     private _listeners: Nullable<Set<SpatialAudioListener>> = null;
 
-    public _addListener(listener: SpatialAudioListener): void {
+    public get listeners(): Set<SpatialAudioListener> {
         if (!this._listeners) {
             this._listeners = new Set();
         }
 
-        this._listeners.add(listener);
-    }
-
-    public _removeListener(listener: SpatialAudioListener): void {
-        this._listeners?.delete(listener);
+        return this._listeners;
     }
 
     public abstract createDevice(name: string): AbstractAudioDevice;

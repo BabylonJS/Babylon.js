@@ -12,7 +12,7 @@ export abstract class AbstractSoundInstance extends AbstractAudioNode {
     public constructor(source: AbstractSoundSource, inputNode: AbstractAudioNode) {
         super(source.engine, AudioNodeType.Output);
 
-        this.engine._addSoundInstance(this);
+        this.engine.soundInstances.add(this);
 
         this._source = source;
 
@@ -22,7 +22,7 @@ export abstract class AbstractSoundInstance extends AbstractAudioNode {
     public override dispose(): void {
         this.stop();
 
-        this.engine._removeSoundInstance(this);
+        this.engine.soundInstances.delete(this);
 
         super.dispose();
     }

@@ -14,11 +14,11 @@ export class SpatialAudioListener implements IDisposable {
         this._engine = engine;
         this._spatialTransform = new SpatialAudioTransform(options);
 
-        this._engine._addListener(this);
+        this._engine.listeners.add(this);
     }
 
     public dispose(): void {
-        this._engine._removeListener(this);
+        this._engine.listeners.delete(this);
 
         this._spatialTransform.dispose();
     }
