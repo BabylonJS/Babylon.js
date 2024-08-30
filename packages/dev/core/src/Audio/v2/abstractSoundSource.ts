@@ -37,9 +37,7 @@ export abstract class AbstractSoundSource implements IDisposable {
     public dispose(): void {
         this.stop();
 
-        if (this._soundInstances) {
-            this._soundInstances.length = 0;
-        }
+        this._soundInstances?.clear();
 
         this.engine._removeSoundSource(this);
     }
@@ -56,18 +54,19 @@ export abstract class AbstractSoundSource implements IDisposable {
 
     public abstract get currentTime(): number;
 
-    // Does not indicate ownership.
-    protected _soundInstances: Nullable<Array<AbstractSoundInstance>> = null;
+    // Non-owning.
+    protected _soundInstances: Nullable<Set<AbstractSoundInstance>> = null;
 
-    public get soundInstances(): Nullable<ReadonlyArray<AbstractSoundInstance>> {
-        return this._soundInstances;
+    public get soundInstances(): Nullable<IterableIterator<AbstractSoundInstance>> {
+        return this._soundInstances?.values() ?? null;
     }
 
     public play(inputNode: AbstractAudioNode): AbstractSoundInstance {
         const instance = this._createSoundInstance(inputNode);
-        this._getSoundInstances().push(instance);
 
         instance.play();
+
+        this._getSoundInstances().add(instance);
 
         return instance;
     }
@@ -105,17 +104,12 @@ export abstract class AbstractSoundSource implements IDisposable {
     protected abstract _createSoundInstance(inputNode: AbstractAudioNode): AbstractSoundInstance;
 
     public _onSoundInstanceEnded(instance: AbstractSoundInstance): void {
-        const index = this._getSoundInstances().indexOf(instance);
-        if (index < 0) {
-            return;
-        }
-
-        this._getSoundInstances().splice(index, 1);
+        this._getSoundInstances().delete(instance);
     }
 
-    private _getSoundInstances(): Array<AbstractSoundInstance> {
+    private _getSoundInstances(): Set<AbstractSoundInstance> {
         if (!this._soundInstances) {
-            this._soundInstances = new Array<AbstractSoundInstance>();
+            this._soundInstances = new Set<AbstractSoundInstance>();
         }
 
         return this._soundInstances;

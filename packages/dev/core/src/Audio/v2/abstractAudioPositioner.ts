@@ -2,19 +2,71 @@
 /* eslint-disable jsdoc/require-jsdoc */
 
 import { AbstractAudioNode, AudioNodeType } from "./abstractAudioNode";
-import type { Vector3 } from "../../Maths/math.vector";
-import type { AbstractMesh } from "../../Meshes";
+import type { SpatialAudioListener } from "./spatialAudioListener";
+import type { ISpatialAudioTransformOptions } from "./spatialAudioTransform";
+import { SpatialAudioTransform } from "./spatialAudioTransform";
+import type { Quaternion, Vector3 } from "../../Maths/math.vector";
+import type { TransformNode } from "../../Meshes";
 import type { Nullable } from "../../types";
 
+export interface IAudioPositionerOptions extends ISpatialAudioTransformOptions {}
+
 export abstract class AbstractAudioPositioner extends AbstractAudioNode {
-    public constructor(parent: AbstractAudioNode) {
+    public constructor(parent: AbstractAudioNode, options?: ISpatialAudioTransformOptions) {
         super(parent.engine, AudioNodeType.InputOutput, parent);
+
+        this._spatialTransform = new SpatialAudioTransform(options);
+    }
+
+    public override dispose(): void {
+        this._spatialTransform.dispose();
+
+        super.dispose();
+    }
+
+    // Not owned
+    private _listeners: Nullable<Set<SpatialAudioListener>> = null;
+
+    public _addListener(listener: SpatialAudioListener): void {
+        if (!this._listeners) {
+            this._listeners = new Set();
+        }
+
+        this._listeners.add(listener);
+    }
+
+    public _removeListener(listener: SpatialAudioListener): void {
+        this._listeners?.delete(listener);
+    }
+
+    private _spatialTransform: SpatialAudioTransform;
+
+    public get position(): Vector3 {
+        return this._spatialTransform.position;
+    }
+
+    public set position(position: Vector3) {
+        this._spatialTransform.position = position;
+    }
+
+    public get rotation(): Quaternion {
+        return this._spatialTransform.rotation;
+    }
+
+    public set rotation(rotation: Quaternion) {
+        this._spatialTransform.rotation = rotation;
+    }
+
+    public get attachedTransformNode(): Nullable<TransformNode> {
+        return this._spatialTransform.attachedTransformNode;
+    }
+
+    public set attachedTransformNode(node: Nullable<TransformNode>) {
+        this._spatialTransform.attachedTransformNode = node;
     }
 
     private _spatializerGain: number = 1;
-    private _spatializerPosition: Nullable<Vector3> = null;
-    private _spatializerDirection: Nullable<Vector3> = null;
-    // Cone angles and volumes, etc ...
+    // TODO: Add spatializer cone angles/volumes, etc ...
 
     public get spatializerGain(): number {
         return this._spatializerGain;
@@ -22,32 +74,6 @@ export abstract class AbstractAudioPositioner extends AbstractAudioNode {
 
     public set spatializerGain(value: number) {
         this._spatializerGain = value;
-    }
-
-    public get spatializerPosition(): Nullable<Vector3> {
-        return this._spatializerPosition;
-    }
-
-    public set spatializerPosition(value: Nullable<Vector3>) {
-        this._spatializerPosition = value;
-    }
-
-    public get spatializerDirection(): Nullable<Vector3> {
-        return this._spatializerDirection;
-    }
-
-    public set spatializerDirection(value: Nullable<Vector3>) {
-        this._spatializerDirection = value;
-    }
-
-    private _attachedMesh: Nullable<AbstractMesh> = null;
-
-    public get attachedMesh(): Nullable<AbstractMesh> {
-        return this._attachedMesh;
-    }
-
-    public attachToMesh(mesh: AbstractMesh) {
-        this._attachedMesh = mesh;
     }
 
     private _pannerGain: number = 1;

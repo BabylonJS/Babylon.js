@@ -9,23 +9,17 @@ export abstract class AbstractAudioSender extends AbstractAudioNode {
         super(parent.engine, AudioNodeType.InputOutput, parent);
     }
 
-    private _sends = new Array<AbstractAudioSend>();
+    private _sends = new Set<AbstractAudioSend>();
 
-    public get sends(): ReadonlyArray<AbstractAudioSend> {
-        return this._sends;
+    public get sends(): IterableIterator<AbstractAudioSend> {
+        return this._sends.values();
     }
 
     public addSend(send: AbstractAudioSend): void {
-        if (this._sends.includes(send)) {
-            return;
-        }
-        this._sends.push(send);
+        this._sends.add(send);
     }
 
     public removeSend(send: AbstractAudioSend): void {
-        const index = this._sends.indexOf(send);
-        if (index !== -1) {
-            this._sends.splice(index, 1);
-        }
+        this._sends.delete(send);
     }
 }

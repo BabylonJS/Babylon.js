@@ -11,33 +11,22 @@ export class AbstractAudioNodeParent implements IDisposable {
             for (const node of this._childNodes) {
                 node.dispose();
             }
-            this._childNodes.length = 0;
+            this._childNodes.clear();
         }
     }
 
-    private _childNodes: Nullable<Array<AbstractAudioNode>>;
+    private _childNodes: Nullable<Set<AbstractAudioNode>>;
 
     protected _addChildNode(node: AbstractAudioNode): void {
         if (!this._childNodes) {
-            this._childNodes = new Array<AbstractAudioNode>();
-        } else if (this._childNodes.includes(node)) {
-            return;
+            this._childNodes = new Set<AbstractAudioNode>();
         }
 
-        this._childNodes.push(node);
+        this._childNodes.add(node);
     }
 
     protected _removeChildNode(node: AbstractAudioNode): void {
-        if (!this._childNodes) {
-            return;
-        }
-
-        const index = this._childNodes.indexOf(node);
-        if (index < 0) {
-            return;
-        }
-
-        this._childNodes.splice(index, 1);
+        this._childNodes?.delete(node);
     }
 
     protected static _AddChildNode(parent: Nullable<AbstractAudioNodeParent>, node: AbstractAudioNode): void {

@@ -47,7 +47,7 @@ export abstract class AbstractSoundObject extends AbstractNamedAudioNode {
         this._positioner?.dispose();
         this._positioner = null;
 
-        this._soundSources.length = 0;
+        this._soundSources.clear();
     }
 
     public readonly autoplay: boolean;
@@ -95,27 +95,18 @@ export abstract class AbstractSoundObject extends AbstractNamedAudioNode {
         }
     }
 
-    private _soundSources = new Array<AbstractSoundSource>();
+    private _soundSources = new Set<AbstractSoundSource>();
 
-    public get soundSources(): ReadonlyArray<AbstractSoundSource> {
-        return this._soundSources;
+    public get soundSources(): IterableIterator<AbstractSoundSource> {
+        return this._soundSources.values();
     }
 
     public addSoundSource(soundSource: AbstractSoundSource): void {
-        if (this._soundSources.includes(soundSource)) {
-            return;
-        }
-
-        this._soundSources.push(soundSource);
+        this._soundSources.add(soundSource);
     }
 
     public removeSoundSource(soundSource: AbstractSoundSource): void {
-        const index = this._soundSources.indexOf(soundSource);
-        if (index === -1) {
-            return;
-        }
-
-        this._soundSources.splice(index, 1);
+        this._soundSources.delete(soundSource);
     }
 
     private _state: SoundState = SoundState.Stopped;
