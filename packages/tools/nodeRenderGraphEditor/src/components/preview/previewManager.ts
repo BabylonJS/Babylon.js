@@ -38,7 +38,6 @@ export class PreviewManager {
     private _onLightUpdatedObserver: Nullable<Observer<void>>;
     private _engine: Engine | WebGPUEngine;
     private _scene: Scene;
-    private _camera: ArcRotateCamera;
     private _globalState: GlobalState;
     private _currentType: number;
     private _lightParent: TransformNode;
@@ -139,22 +138,8 @@ export class PreviewManager {
             false
         );
 
-        this._camera = new ArcRotateCamera("PreviewCamera", 0, 0.8, 4, Vector3.Zero(), this._scene);
-
-        this._camera.lowerRadiusLimit = 3;
-        this._camera.upperRadiusLimit = 10;
-        this._camera.wheelPrecision = 20;
-        this._camera.minZ = 0.001;
-        this._camera.attachControl(false);
-        this._camera.useFramingBehavior = true;
-        this._camera.wheelDeltaPercentage = 0.01;
-        this._camera.pinchDeltaPercentage = 0.01;
-
         this._scene.activeCamera = null;
-        this._scene.cameraToUseForPointers = this._camera;
         this._scene.useFrameGraph = true;
-
-        (window as any).camera = this._camera;
 
         this._lightParent = new TransformNode("LightParent", this._scene);
 
@@ -228,6 +213,12 @@ export class PreviewManager {
             return;
         }
 
+        for (const camera of this._scene.cameras.slice()) {
+            camera.dispose();
+        }
+        this._scene.cameras.length = 0;
+        this._scene.cameraToUseForPointers = null;
+
         // Set a default texture for external input textures
         const allInputs = this._nodeRenderGraph.getInputBlocks();
         for (const input of allInputs) {
@@ -237,11 +228,30 @@ export class PreviewManager {
             if ((input.type & NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer) !== 0) {
                 // TODO: Implement this
             } else if (input.isCamera()) {
-                input.value = this._camera;
+                const camera = new ArcRotateCamera("PreviewCamera", 0, 0.8, 4, Vector3.Zero(), this._scene);
+
+                camera.lowerRadiusLimit = 3;
+                camera.upperRadiusLimit = 10;
+                camera.wheelPrecision = 20;
+                camera.minZ = 0.001;
+                camera.attachControl(false);
+                camera.useFramingBehavior = true;
+                camera.wheelDeltaPercentage = 0.01;
+                camera.pinchDeltaPercentage = 0.01;
+
+                if (!this._scene.cameraToUseForPointers) {
+                    this._scene.cameraToUseForPointers = camera;
+                }
+
+                input.value = camera;
             } else if (input.isObjectList()) {
                 input.value = { meshes: this._scene.meshes, particleSystems: this._scene.particleSystems };
             }
         }
+
+        this._scene.activeCamera = null;
+
+        this._frameCamera();
 
         // Set a default control in GUI blocks
         const guiBlocks = this._nodeRenderGraph.getBlocksByPredicate<RenderGraphGUIBlock>((block) => block.getClassName() === "GUI.RenderGraphGUIBlock");
@@ -250,14 +260,21 @@ export class PreviewManager {
 
             const button = Button.CreateSimpleButton("but" + i, `GUI #${i + 1} button`);
 
+            const left = i % 4 === 0 || i % 4 === 3;
+            const top = i % 4 < 2;
+
             button.width = "30%";
             button.height = "10%";
             button.color = "white";
             button.fontSize = 20;
             button.background = "green";
-            button.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-            button.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
-            button.top = i * 0.1 * 100 + "%";
+            button.horizontalAlignment = left ? Control.HORIZONTAL_ALIGNMENT_LEFT : Control.HORIZONTAL_ALIGNMENT_RIGHT;
+            button.verticalAlignment = top ? Control.VERTICAL_ALIGNMENT_TOP : Control.VERTICAL_ALIGNMENT_BOTTOM;
+            if (top) {
+                button.top = Math.floor(i / 2) * 0.1 * 100 + "%";
+            } else {
+                button.top = -Math.floor((i - 2) / 2) * 0.1 * 100 + "%";
+            }
 
             gui.addControl(button);
         });
@@ -271,20 +288,28 @@ export class PreviewManager {
     }
 
     private _frameCamera() {
-        const framingBehavior = this._camera.getBehaviorByName("Framing") as FramingBehavior;
+        let alpha = 0;
 
-        framingBehavior.framingTime = 0;
-        framingBehavior.elevationReturnTime = -1;
+        for (const camera of this._scene.cameras) {
+            const arcRotateCamera = camera as ArcRotateCamera;
+            const framingBehavior = arcRotateCamera.getBehaviorByName("Framing") as FramingBehavior;
 
-        if (this._scene.meshes.length) {
-            const worldExtends = this._scene.getWorldExtends();
-            this._camera.lowerRadiusLimit = null;
-            this._camera.upperRadiusLimit = null;
-            framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
+            framingBehavior.framingTime = 0;
+            framingBehavior.elevationReturnTime = -1;
+
+            if (this._scene.meshes.length) {
+                const worldExtends = this._scene.getWorldExtends();
+                arcRotateCamera.lowerRadiusLimit = null;
+                arcRotateCamera.upperRadiusLimit = null;
+                framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
+            }
+
+            arcRotateCamera.pinchPrecision = 200 / arcRotateCamera.radius;
+            arcRotateCamera.upperRadiusLimit = 5 * arcRotateCamera.radius;
+            arcRotateCamera.alpha = alpha;
+
+            alpha += Math.PI / 2;
         }
-
-        this._camera.pinchPrecision = 200 / this._camera.radius;
-        this._camera.upperRadiusLimit = 5 * this._camera.radius;
     }
 
     private _prepareBackgroundHDR() {
