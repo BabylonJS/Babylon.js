@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { ISceneLoaderPluginExtensions } from "core/index";
+import type { ISceneLoaderPluginExtensions, ISceneLoaderPluginMetadata } from "core/index";
 
 export const GLTFMagicBase64Encoded = "Z2xURg"; // "glTF" base64 encoded (without the quotes!)
 
@@ -22,4 +22,4 @@ export const GLTFFileLoaderMetadata = {
             data.startsWith("data:model/gltf-binary;base64," + GLTFMagicBase64Encoded)
         );
     },
-} as const;
+} as const satisfies ISceneLoaderPluginMetadata;

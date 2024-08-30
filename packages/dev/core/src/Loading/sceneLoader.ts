@@ -114,7 +114,7 @@ export interface ISceneLoaderPluginExtensions {
     };
 }
 
-interface ISceneLoaderPluginMetadata {
+export interface ISceneLoaderPluginMetadata {
     /**
      * The friendly name of the plugin.
      */
