@@ -1,5 +1,5 @@
 import type { ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, ISceneLoaderPlugin, ISceneLoaderAsyncResult, ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
-import { SPLATFileLoaderMetadata } from "./splatFileLoaderMetadata";
+import { SPLATFileLoaderMetadata } from "./splatFileLoader.metadata";
 import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
 import type { AssetContainer } from "core/assetContainer";
 import type { Scene } from "core/scene";

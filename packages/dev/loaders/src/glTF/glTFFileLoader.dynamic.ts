@@ -1,5 +1,5 @@
 import type { ISceneLoaderPluginFactory, SceneLoaderPluginOptions } from "core/Loading/sceneLoader";
-import { GLTFFileLoaderMetadata } from "./glTFFileLoaderMetadata";
+import { GLTFFileLoaderMetadata } from "./glTFFileLoader.metadata";
 import { registerSceneLoaderPlugin } from "core/Loading/sceneLoader";
 
 /**

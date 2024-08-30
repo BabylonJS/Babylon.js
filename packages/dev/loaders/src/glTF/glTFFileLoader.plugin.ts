@@ -18,7 +18,7 @@ import { Logger } from "core/Misc/logger";
 import type { IDataBuffer } from "core/Misc/dataReader";
 import { DataReader } from "core/Misc/dataReader";
 import { GLTFValidation } from "./glTFValidation";
-import { GLTFFileLoaderMetadata } from "./glTFFileLoaderMetadata";
+import { GLTFFileLoaderMetadata } from "./glTFFileLoader.metadata";
 import type { LoadFileError } from "core/Misc/fileTools";
 import { DecodeBase64UrlToBinary } from "core/Misc/fileTools";
 import { RuntimeError, ErrorCodes } from "core/Misc/error";

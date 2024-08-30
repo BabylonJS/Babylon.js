@@ -1,5 +1,5 @@
 import type { ISceneLoaderPluginFactory } from "core/Loading/sceneLoader";
-import { STLFileLoaderMetadata } from "./stlFileLoaderMetadata";
+import { STLFileLoaderMetadata } from "./stlFileLoader.metadata";
 import { registerSceneLoaderPlugin } from "core/Loading/sceneLoader";
 
 /**

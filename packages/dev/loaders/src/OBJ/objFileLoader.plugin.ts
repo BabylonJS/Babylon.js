@@ -6,7 +6,7 @@ import type { ISceneLoaderPluginAsync, ISceneLoaderAsyncResult } from "core/Load
 import { AssetContainer } from "core/assetContainer";
 import type { Scene } from "core/scene";
 import type { WebRequest } from "core/Misc/webRequest";
-import { OBJFileLoaderMetadata } from "./objFileLoaderMetadata";
+import { OBJFileLoaderMetadata } from "./objFileLoader.metadata";
 import { MTLFileLoader } from "./mtlFileLoader";
 import type { OBJLoadingOptions } from "./objLoadingOptions";
 import { SolidParser } from "./solidParser";

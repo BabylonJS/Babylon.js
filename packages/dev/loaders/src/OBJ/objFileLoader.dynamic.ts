@@ -1,5 +1,5 @@
 import type { ISceneLoaderPluginFactory } from "core/Loading/sceneLoader";
-import { OBJFileLoaderMetadata } from "./objFileLoaderMetadata";
+import { OBJFileLoaderMetadata } from "./objFileLoader.metadata";
 import { registerSceneLoaderPlugin } from "core/Loading/sceneLoader";
 
 /**

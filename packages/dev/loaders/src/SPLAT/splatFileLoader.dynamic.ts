@@ -1,5 +1,5 @@
 import type { ISceneLoaderPluginFactory } from "core/Loading/sceneLoader";
-import { SPLATFileLoaderMetadata } from "./splatFileLoaderMetadata";
+import { SPLATFileLoaderMetadata } from "./splatFileLoader.metadata";
 import { registerSceneLoaderPlugin } from "core/Loading/sceneLoader";
 
 /**

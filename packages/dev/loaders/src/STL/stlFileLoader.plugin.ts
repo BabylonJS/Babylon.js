@@ -7,7 +7,7 @@ import { Mesh } from "core/Meshes/mesh";
 import type { ISceneLoaderPlugin } from "core/Loading/sceneLoader";
 import { AssetContainer } from "core/assetContainer";
 import type { Scene } from "core/scene";
-import { STLFileLoaderMetadata } from "./stlFileLoaderMetadata";
+import { STLFileLoaderMetadata } from "./stlFileLoader.metadata";
 
 declare module "core/Loading/sceneLoader" {
     // eslint-disable-next-line jsdoc/require-jsdoc
