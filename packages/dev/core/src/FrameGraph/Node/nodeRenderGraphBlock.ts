@@ -231,8 +231,9 @@ export class NodeRenderGraphBlock {
      * Creates a new NodeRenderGraphBlock
      * @param name defines the block name
      * @param scene defines the hosting scene
+     * @param _additionalConstructionParameters defines additional parameters to pass to the block constructor
      */
-    public constructor(name: string, scene: Scene) {
+    public constructor(name: string, scene: Scene, ..._additionalConstructionParameters: unknown[]) {
         this._name = name;
         this._scene = scene;
         this._engine = scene.getEngine();
@@ -582,13 +583,13 @@ export class NodeRenderGraphBlock {
      */
     public clone() {
         const serializationObject = this.serialize();
-        const blockType = GetClass(serializationObject.customType);
+        const blockType: typeof NodeRenderGraphBlock = GetClass(serializationObject.customType);
 
         if (blockType) {
             const additionalConstructionParameters = serializationObject.additionalConstructionParameters;
             const block: NodeRenderGraphBlock = additionalConstructionParameters
-                ? new blockType("", this._engine, ...additionalConstructionParameters)
-                : new blockType("", this._engine);
+                ? new blockType("", this._scene, ...additionalConstructionParameters)
+                : new blockType("", this._scene);
             block._deserialize(serializationObject);
             return block;
         }
