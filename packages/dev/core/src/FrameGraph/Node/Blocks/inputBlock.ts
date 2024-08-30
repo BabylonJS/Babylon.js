@@ -71,22 +71,24 @@ export class RenderGraphInputBlock extends NodeRenderGraphBlock {
             case NodeRenderGraphBlockConnectionPointTypes.TexturePosition:
             case NodeRenderGraphBlockConnectionPointTypes.TextureVelocity:
             case NodeRenderGraphBlockConnectionPointTypes.TextureIrradiance:
-            case NodeRenderGraphBlockConnectionPointTypes.TextureAlbedoSqrt:
+            case NodeRenderGraphBlockConnectionPointTypes.TextureAlbedoSqrt: {
+                const depthStencil = this.type === NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment;
                 this.creationOptions = {
                     size: { width: 100, height: 100 },
                     options: {
                         createMipMaps: false,
                         generateMipMaps: false,
                         type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
-                        format: Constants.TEXTUREFORMAT_RGBA,
+                        format: depthStencil ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_RGBA,
                         samples: 1,
                         useSRGBBuffer: false,
-                        generateDepthBuffer: false,
-                        generateStencilBuffer: false,
+                        generateDepthBuffer: depthStencil,
+                        generateStencilBuffer: depthStencil,
                     },
                     sizeIsPercentage: true,
                 } as FrameGraphTextureCreationOptions;
                 break;
+            }
             default:
                 this.isExternal = true;
         }

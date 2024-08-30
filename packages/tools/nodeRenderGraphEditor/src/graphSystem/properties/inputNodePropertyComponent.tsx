@@ -34,6 +34,15 @@ const textureTypeList = [
     { label: "Half Float", value: Constants.TEXTURETYPE_HALF_FLOAT },
 ];
 
+const textureDepthStencilFormatList = [
+    { label: "Depth 24/Stencil 8", value: Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 },
+    { label: "Depth 24 Unorm/Stencil 8", value: Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 },
+    { label: "Depth 32 float/Stencil 8", value: Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8 },
+    { label: "Depth 16", value: Constants.TEXTUREFORMAT_DEPTH16 },
+    { label: "Depth 24", value: Constants.TEXTUREFORMAT_DEPTH24 },
+    { label: "Depth 32 float", value: Constants.TEXTUREFORMAT_DEPTH32_FLOAT },
+];
+
 export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     private _onValueChangedObserver: Nullable<Observer<RenderGraphInputBlock>>;
 
@@ -133,6 +142,72 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                     target={creationOptions.options}
                                     propertyName="useSRGBBuffer"
                                     onValueChanged={() => this.props.stateManager.onRebuildRequiredObservable.notifyObservers()}
+                                />
+                            </>
+                        )}
+                    </>
+                );
+            }
+            case NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment: {
+                const creationOptions = inputBlock.creationOptions as FrameGraphTextureCreationOptions;
+                const isExternal = inputBlock.isExternal;
+                if (!isExternal && !inputBlock.creationOptions) {
+                    inputBlock.setDefaultValue();
+                }
+                return (
+                    <>
+                        <CheckBoxLineComponent
+                            label="Is external"
+                            target={inputBlock}
+                            propertyName="isExternal"
+                            onValueChanged={() => this.props.stateManager.onRebuildRequiredObservable.notifyObservers()}
+                        ></CheckBoxLineComponent>
+                        {!isExternal && (
+                            <>
+                                <CheckBoxLineComponent
+                                    label="Size is in percentage"
+                                    target={creationOptions}
+                                    propertyName="sizeIsPercentage"
+                                    onValueChanged={() => this.props.stateManager.onRebuildRequiredObservable.notifyObservers()}
+                                />
+                                <FloatLineComponent
+                                    lockObject={this.props.stateManager.lockObject}
+                                    digits={0}
+                                    step={"1"}
+                                    isInteger={true}
+                                    label="Width"
+                                    propertyName="width"
+                                    target={creationOptions.size}
+                                    onChange={() => this.props.stateManager.onRebuildRequiredObservable.notifyObservers()}
+                                />
+                                <FloatLineComponent
+                                    lockObject={this.props.stateManager.lockObject}
+                                    digits={0}
+                                    step={"1"}
+                                    isInteger={true}
+                                    label="Height"
+                                    propertyName="height"
+                                    target={creationOptions.size}
+                                    onChange={() => this.props.stateManager.onRebuildRequiredObservable.notifyObservers()}
+                                />
+                                <OptionsLine
+                                    label="Format"
+                                    options={textureDepthStencilFormatList}
+                                    target={creationOptions.options}
+                                    propertyName="format"
+                                    onSelect={() => this.props.stateManager.onRebuildRequiredObservable.notifyObservers()}
+                                />
+                                <FloatLineComponent
+                                    lockObject={this.props.stateManager.lockObject}
+                                    digits={0}
+                                    step={"1"}
+                                    isInteger={true}
+                                    label="Samples"
+                                    propertyName="samples"
+                                    target={creationOptions.options}
+                                    min={1}
+                                    max={8}
+                                    onChange={() => this.props.stateManager.onRebuildRequiredObservable.notifyObservers()}
                                 />
                                 <CheckBoxLineComponent
                                     label="Generate depth buffer"

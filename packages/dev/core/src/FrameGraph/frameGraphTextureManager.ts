@@ -108,11 +108,24 @@ export class FrameGraphTextureManager {
         this._textures.forEach((entry) => {
             if (!entry.texture && entry.namespace !== FrameGraphTextureNamespace.External) {
                 const creationOptions = entry.creationOptions;
+                const size = creationOptions.sizeIsPercentage ? this.getAbsoluteDimensions(creationOptions.size) : creationOptions.size;
 
-                entry.texture = this._engine.createRenderTargetTexture(
-                    creationOptions.sizeIsPercentage ? this.getAbsoluteDimensions(creationOptions.size) : creationOptions.size,
-                    creationOptions.options
-                );
+                const isDepthStencil = creationOptions.options.generateDepthBuffer || creationOptions.options.generateStencilBuffer;
+
+                creationOptions.options.noColorAttachment = isDepthStencil;
+
+                entry.texture = this._engine.createRenderTargetTexture(size, creationOptions.options);
+
+                if (isDepthStencil) {
+                    entry.texture.createDepthStencilTexture(
+                        undefined,
+                        undefined,
+                        creationOptions.options.generateStencilBuffer,
+                        creationOptions.options.samples,
+                        creationOptions.options.format,
+                        creationOptions.options.label
+                    );
+                }
             }
 
             if (entry.texture) {

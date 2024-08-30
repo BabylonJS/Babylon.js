@@ -35,6 +35,9 @@ export class BlockTools {
             case "TextureBackBufferDepthStencilBlock": {
                 return new RenderGraphInputBlock("Backbuffer depth/stencil", scene, NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment);
             }
+            case "TextureDepthStencilBlock": {
+                return new RenderGraphInputBlock("Depth/stencil texture", scene, NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment);
+            }
             case "CameraBlock": {
                 return new RenderGraphInputBlock("Camera", scene, NodeRenderGraphBlockConnectionPointTypes.Camera);
             }
@@ -82,9 +85,9 @@ export class BlockTools {
             case NodeRenderGraphBlockConnectionPointTypes.Camera:
                 color = "#be5126";
                 break;
-            // case NodeRenderGraphBlockConnectionPointTypes.:
-            //     color = "#591990";
-            //     break;
+            case NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment:
+                color = "#591990";
+                break;
             // case NodeRenderGraphBlockConnectionPointTypes.:
             //     color = "#84995c";
             //     break;
@@ -109,6 +112,12 @@ export class BlockTools {
                 return NodeRenderGraphBlockConnectionPointTypes.TextureBackBuffer;
             case "TextureBackBufferDepthStencilAttachment":
                 return NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment;
+            case "TextureDepthStencilAttachment":
+                return NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment;
+            case "Camera":
+                return NodeRenderGraphBlockConnectionPointTypes.Camera;
+            case "ObjectList":
+                return NodeRenderGraphBlockConnectionPointTypes.ObjectList;
         }
 
         return NodeRenderGraphBlockConnectionPointTypes.AutoDetect;
@@ -122,6 +131,12 @@ export class BlockTools {
                 return "TextureBackBuffer";
             case NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment:
                 return "TextureBackBufferDepthStencilAttachment";
+            case NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment:
+                return "TextureDepthStencilAttachment";
+            case NodeRenderGraphBlockConnectionPointTypes.Camera:
+                return "Camera";
+            case NodeRenderGraphBlockConnectionPointTypes.ObjectList:
+                return "ObjectList";
         }
 
         return "";
