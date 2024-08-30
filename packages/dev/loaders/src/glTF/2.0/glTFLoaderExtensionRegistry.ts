@@ -10,11 +10,17 @@ interface IRegisteredExtension {
 
 export type ExtensionFactory = (loader: GLTFLoader) => IGLTFLoaderExtension | Promise<IGLTFLoaderExtension>;
 
+/**
+ * Contains all registered glTF 2.0 loader extensions.
+ */
 export class GLTFLoaderExtensionRegistry {
     private constructor() {}
 
     private static readonly _RegisteredExtensions = new Map<string, IRegisteredExtension>();
 
+    /**
+     * Gets all currently registered glTF 2.0 loader extensions.
+     */
     public static get RegisteredExtensions(): ReadonlyMap<string, Readonly<IRegisteredExtension>> {
         return GLTFLoaderExtensionRegistry._RegisteredExtensions;
     }

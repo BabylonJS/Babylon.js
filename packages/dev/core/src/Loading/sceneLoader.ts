@@ -114,6 +114,9 @@ export interface ISceneLoaderPluginExtensions {
     };
 }
 
+/**
+ * Metadata for a SceneLoader plugin that must also be provided by a plugin factory
+ */
 export interface ISceneLoaderPluginMetadata {
     /**
      * The friendly name of the plugin.
