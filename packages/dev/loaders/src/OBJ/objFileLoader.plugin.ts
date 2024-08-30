@@ -2,7 +2,7 @@ import type { Nullable } from "core/types";
 import { Vector2 } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { ISceneLoaderPluginAsync, ISceneLoaderAsyncResult } from "core/Loading/sceneLoader";
+import type { ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, ISceneLoaderPlugin, ISceneLoaderAsyncResult } from "core/Loading/sceneLoader";
 import { AssetContainer } from "core/assetContainer";
 import type { Scene } from "core/scene";
 import type { WebRequest } from "core/Misc/webRequest";
@@ -27,7 +27,7 @@ declare module "core/Loading/sceneLoader" {
  * OBJ file type loader.
  * This is a babylon scene loader plugin.
  */
-export class OBJFileLoader implements ISceneLoaderPluginAsync {
+export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
     /**
      * Defines if UVs are optimized by default during load.
      */
@@ -100,7 +100,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
      * @param loadingOptions options for loading and parsing OBJ/MTL files.
      */
     constructor(loadingOptions?: OBJLoadingOptions) {
-        this._loadingOptions = loadingOptions ?? OBJFileLoader._DefaultLoadingOptions;
+        this._loadingOptions = loadingOptions || OBJFileLoader._DefaultLoadingOptions;
     }
 
     private static get _DefaultLoadingOptions(): OBJLoadingOptions {
@@ -143,6 +143,14 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
         Tools.LoadFile(pathOfFile, onSuccess, undefined, undefined, false, (request?: WebRequest | undefined, exception?: any) => {
             onFailure(pathOfFile, exception);
         });
+    }
+
+    /**
+     * Instantiates a OBJ file loader plugin.
+     * @returns the created plugin
+     */
+    createPlugin(): ISceneLoaderPluginAsync | ISceneLoaderPlugin {
+        return new OBJFileLoader(OBJFileLoader._DefaultLoadingOptions);
     }
 
     /**
