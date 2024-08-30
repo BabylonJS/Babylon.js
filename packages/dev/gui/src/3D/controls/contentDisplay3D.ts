@@ -9,8 +9,8 @@ import { Texture } from "core/Materials/Textures/texture";
  */
 export class ContentDisplay3D extends Control3D {
     private _content: Control;
-    private _facadeTexture: Nullable<AdvancedDynamicTexture>;
-    protected _contentResolution = 512;
+    protected _facadeTexture: Nullable<AdvancedDynamicTexture>;
+    protected _contentResolution: number | { width: number; height: number } = 512;
     protected _contentScaleRatio = 2;
     protected _contentScaleRatioY?: number;
 
@@ -29,14 +29,9 @@ export class ContentDisplay3D extends Control3D {
         }
 
         if (!this._facadeTexture) {
-            this._facadeTexture = new AdvancedDynamicTexture(
-                "Facade",
-                this._contentResolution,
-                this._contentResolution,
-                this._host.utilityLayer.utilityLayerScene,
-                true,
-                Texture.TRILINEAR_SAMPLINGMODE
-            );
+            const width = typeof this._contentResolution === "number" ? this._contentResolution : this._contentResolution.width;
+            const height = typeof this._contentResolution === "number" ? this._contentResolution : this._contentResolution.height;
+            this._facadeTexture = new AdvancedDynamicTexture("Facade", width, height, this._host.utilityLayer.utilityLayerScene, true, Texture.TRILINEAR_SAMPLINGMODE);
             this._setFacadeTextureScaling();
             this._facadeTexture.premulAlpha = true;
         } else {
@@ -50,6 +45,9 @@ export class ContentDisplay3D extends Control3D {
 
     protected _setFacadeTextureScaling() {
         if (this._facadeTexture) {
+            if (typeof this._contentResolution !== "number") {
+                this._contentScaleRatioY = (this._contentResolution.height / this._contentResolution.width) * this._contentScaleRatio;
+            }
             this._facadeTexture.rootContainer.scaleX = this._contentScaleRatio;
             this._facadeTexture.rootContainer.scaleY = this._contentScaleRatioY ?? this._contentScaleRatio;
         }
@@ -58,12 +56,16 @@ export class ContentDisplay3D extends Control3D {
     /**
      * Gets or sets the texture resolution used to render content (512 by default)
      */
-    public get contentResolution(): number {
+    public get contentResolution(): number | { width: number; height: number } {
         return this._contentResolution;
     }
 
-    public set contentResolution(value: number) {
-        if (this._contentResolution === value) {
+    public set contentResolution(value: number | { width: number; height: number }) {
+        const incomingWidth = typeof value === "number" ? value : value.width;
+        const incomingHeight = typeof value === "number" ? value : value.height;
+        const currentWidth = typeof this._contentResolution === "number" ? this._contentResolution : this._contentResolution.width;
+        const currentHeight = typeof this._contentResolution === "number" ? this._contentResolution : this._contentResolution.height;
+        if (incomingWidth === currentWidth && incomingHeight === currentHeight) {
             return;
         }
 
