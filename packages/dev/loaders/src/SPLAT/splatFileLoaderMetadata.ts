@@ -13,10 +13,10 @@ export abstract class SPLATFileLoaderMetadata {
     /**
      * @internal
      */
-    public static readonly Extensions = Object.freeze({
+    public static readonly Extensions = {
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        ".splat": Object.freeze({ isBinary: true }),
+        ".splat": { isBinary: true },
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        ".ply": Object.freeze({ isBinary: true }),
-    }) satisfies ISceneLoaderPluginExtensions;
+        ".ply": { isBinary: true },
+    } as const satisfies ISceneLoaderPluginExtensions;
 }

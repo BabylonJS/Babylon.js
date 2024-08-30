@@ -13,8 +13,8 @@ export abstract class STLFileLoaderMetadata {
     /**
      * @internal
      */
-    public static readonly Extensions = Object.freeze({
+    public static readonly Extensions = {
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        ".stl": Object.freeze({ isBinary: true }),
-    }) satisfies ISceneLoaderPluginExtensions;
+        ".stl": { isBinary: true },
+    } as const satisfies ISceneLoaderPluginExtensions;
 }

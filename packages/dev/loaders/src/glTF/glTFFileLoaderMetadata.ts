@@ -18,12 +18,12 @@ export abstract class GLTFFileLoaderMetadata {
     /**
      * @internal
      */
-    public static readonly Extensions = Object.freeze({
+    public static readonly Extensions = {
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        ".gltf": Object.freeze({ isBinary: false }),
+        ".gltf": { isBinary: false },
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        ".glb": Object.freeze({ isBinary: true }),
-    }) satisfies ISceneLoaderPluginExtensions;
+        ".glb": { isBinary: true },
+    } as const satisfies ISceneLoaderPluginExtensions;
 
     /**
      * @internal
