@@ -15,7 +15,7 @@ declare module "core/Loading/sceneLoader" {
         /**
          * Defines options for the stl loader.
          */
-        [STLFileLoaderMetadata.Name]: {};
+        [STLFileLoaderMetadata.name]: {};
     }
 }
 
@@ -37,14 +37,14 @@ export class STLFileLoader implements ISceneLoaderPlugin {
     /**
      * Defines the name of the plugin.
      */
-    public readonly name = STLFileLoaderMetadata.Name;
+    public readonly name = STLFileLoaderMetadata.name;
 
     /**
      * Defines the extensions the stl loader is able to load.
      * force data to come in as an ArrayBuffer
      * we'll convert to string if it looks like it's an ASCII .stl
      */
-    public readonly extensions = STLFileLoaderMetadata.Extensions;
+    public readonly extensions = STLFileLoaderMetadata.extensions;
 
     /**
      * Defines if Y and Z axes are swapped or not when loading an STL file.

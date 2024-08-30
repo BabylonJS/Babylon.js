@@ -9,13 +9,11 @@ import { registerBuiltInGLTFExtensions } from "./2.0/Extensions/dynamic";
 export function registerGLTFLoader() {
     // Register the GLTF loader (2.0) specifically/only.
     registerSceneLoaderPlugin({
-        name: GLTFFileLoaderMetadata.Name,
-        extensions: GLTFFileLoaderMetadata.Extensions,
-        canDirectLoad: GLTFFileLoaderMetadata.CanDirectLoad,
+        ...GLTFFileLoaderMetadata,
         createPlugin: async (options: SceneLoaderPluginOptions) => {
             // eslint-disable-next-line @typescript-eslint/naming-convention
             const { GLTFFileLoader } = await import("./2.0/glTFLoader");
-            return new GLTFFileLoader(options[GLTFFileLoaderMetadata.Name]);
+            return new GLTFFileLoader(options[GLTFFileLoaderMetadata.name]);
         },
     } satisfies ISceneLoaderPluginFactory);
 

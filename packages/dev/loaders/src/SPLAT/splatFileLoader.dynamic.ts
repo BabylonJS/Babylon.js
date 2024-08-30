@@ -7,8 +7,7 @@ import { registerSceneLoaderPlugin } from "core/Loading/sceneLoader";
  */
 export function registerSPLATLoader() {
     registerSceneLoaderPlugin({
-        name: SPLATFileLoaderMetadata.Name,
-        extensions: SPLATFileLoaderMetadata.Extensions,
+        ...SPLATFileLoaderMetadata,
         createPlugin: async () => {
             // eslint-disable-next-line @typescript-eslint/naming-convention
             const { SPLATFileLoader } = await import("./splatFileLoader.plugin");

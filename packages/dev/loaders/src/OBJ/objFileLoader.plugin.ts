@@ -19,7 +19,7 @@ declare module "core/Loading/sceneLoader" {
         /**
          * Defines options for the obj loader.
          */
-        [OBJFileLoaderMetadata.Name]: {};
+        [OBJFileLoaderMetadata.name]: {};
     }
 }
 
@@ -84,11 +84,11 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync {
     /**
      * Defines the name of the plugin.
      */
-    public readonly name = OBJFileLoaderMetadata.Name;
+    public readonly name = OBJFileLoaderMetadata.name;
     /**
      * Defines the extension the plugin is able to load.
      */
-    public readonly extensions = OBJFileLoaderMetadata.Extensions;
+    public readonly extensions = OBJFileLoaderMetadata.extensions;
 
     private _assetContainer: Nullable<AssetContainer> = null;
 

@@ -18,7 +18,7 @@ import { Logger } from "core/Misc/logger";
 import type { IDataBuffer } from "core/Misc/dataReader";
 import { DataReader } from "core/Misc/dataReader";
 import { GLTFValidation } from "./glTFValidation";
-import { GLTFFileLoaderMetadata } from "./glTFFileLoader.metadata";
+import { GLTFFileLoaderMetadata, GLTFMagicBase64Encoded } from "./glTFFileLoader.metadata";
 import type { LoadFileError } from "core/Misc/fileTools";
 import { DecodeBase64UrlToBinary } from "core/Misc/fileTools";
 import { RuntimeError, ErrorCodes } from "core/Misc/error";
@@ -36,7 +36,7 @@ declare module "core/Loading/sceneLoader" {
         /**
          * Defines options for the glTF loader.
          */
-        [GLTFFileLoaderMetadata.Name]: Partial<GLTFLoaderOptions>;
+        [GLTFFileLoaderMetadata.name]: Partial<GLTFLoaderOptions>;
     }
 }
 
@@ -698,10 +698,10 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
     /**
      * Name of the loader ("gltf")
      */
-    public readonly name = GLTFFileLoaderMetadata.Name;
+    public readonly name = GLTFFileLoaderMetadata.name;
 
     /** @internal */
-    public readonly extensions = GLTFFileLoaderMetadata.Extensions;
+    public readonly extensions = GLTFFileLoaderMetadata.extensions;
 
     /**
      * Disposes the loader, releases resources during load, and cancels any outstanding requests.
@@ -959,7 +959,7 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
      * @internal
      */
     public canDirectLoad(data: string): boolean {
-        return GLTFFileLoaderMetadata.CanDirectLoad(data);
+        return GLTFFileLoaderMetadata.canDirectLoad(data);
     }
 
     /**
@@ -967,10 +967,10 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
      */
     public directLoad(scene: Scene, data: string): Promise<Object> {
         if (
-            data.startsWith("base64," + GLTFFileLoaderMetadata.MagicBase64Encoded) || // this is technically incorrect, but will continue to support for backcompat.
-            data.startsWith(";base64," + GLTFFileLoaderMetadata.MagicBase64Encoded) ||
-            data.startsWith("application/octet-stream;base64," + GLTFFileLoaderMetadata.MagicBase64Encoded) ||
-            data.startsWith("model/gltf-binary;base64," + GLTFFileLoaderMetadata.MagicBase64Encoded)
+            data.startsWith("base64," + GLTFMagicBase64Encoded) || // this is technically incorrect, but will continue to support for backcompat.
+            data.startsWith(";base64," + GLTFMagicBase64Encoded) ||
+            data.startsWith("application/octet-stream;base64," + GLTFMagicBase64Encoded) ||
+            data.startsWith("model/gltf-binary;base64," + GLTFMagicBase64Encoded)
         ) {
             const arrayBuffer = DecodeBase64UrlToBinary(data);
 
@@ -997,7 +997,7 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
 
     /** @internal */
     public createPlugin(options: SceneLoaderPluginOptions): ISceneLoaderPluginAsync {
-        return new GLTFFileLoader(options[GLTFFileLoaderMetadata.Name]);
+        return new GLTFFileLoader(options[GLTFFileLoaderMetadata.name]);
     }
 
     /**

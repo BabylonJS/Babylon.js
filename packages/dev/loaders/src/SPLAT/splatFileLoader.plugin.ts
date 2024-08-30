@@ -10,7 +10,7 @@ declare module "core/Loading/sceneLoader" {
         /**
          * Defines options for the splat loader.
          */
-        [SPLATFileLoaderMetadata.Name]: {};
+        [SPLATFileLoaderMetadata.name]: {};
     }
 }
 
@@ -23,13 +23,13 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
     /**
      * Defines the name of the plugin.
      */
-    public readonly name = SPLATFileLoaderMetadata.Name;
+    public readonly name = SPLATFileLoaderMetadata.name;
 
     /**
      * Defines the extensions the splat loader is able to load.
      * force data to come in as an ArrayBuffer
      */
-    public readonly extensions = SPLATFileLoaderMetadata.Extensions;
+    public readonly extensions = SPLATFileLoaderMetadata.extensions;
 
     //private _loadingOptions: SPLATLoadingOptions;
     /**

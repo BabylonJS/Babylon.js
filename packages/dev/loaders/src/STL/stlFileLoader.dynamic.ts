@@ -7,8 +7,7 @@ import { registerSceneLoaderPlugin } from "core/Loading/sceneLoader";
  */
 export function registerSTLLoader() {
     registerSceneLoaderPlugin({
-        name: STLFileLoaderMetadata.Name,
-        extensions: STLFileLoaderMetadata.Extensions,
+        ...STLFileLoaderMetadata,
         createPlugin: async () => {
             // eslint-disable-next-line @typescript-eslint/naming-convention
             const { STLFileLoader } = await import("./stlFileLoader.plugin");
