@@ -31,8 +31,7 @@ import { Scene } from "core/scene";
 import "core/Animations/animatable";
 import "core/Materials/Textures/Loaders/envTextureLoader";
 // eslint-disable-next-line import/no-internal-modules
-import "loaders/glTF/2.0/Extensions/index";
-import { registerLoaders } from "loaders/dynamic";
+import { registerDefaultLoaders } from "loaders/dynamic";
 
 function createSkybox(scene: Scene, camera: Camera, environmentTexture: CubeTexture, blur: number): Mesh {
     const hdrSkybox = CreateBox("hdrSkyBox", undefined, scene);
@@ -100,7 +99,7 @@ export type ViewerOptions = Partial<
  */
 export class Viewer implements IDisposable {
     static {
-        registerLoaders();
+        registerDefaultLoaders();
     }
 
     /**
@@ -297,13 +296,13 @@ export class Viewer implements IDisposable {
 
         // TODO: Disable audio for now, later figure out how to re-introduce it through dynamic imports.
         options = {
-            ...options,
+            ...(options ?? {}),
             pluginOptions: {
-                ...options?.pluginOptions,
+                ...(options?.pluginOptions ?? {}),
                 gltf: {
-                    ...options?.pluginOptions?.gltf,
+                    ...(options?.pluginOptions?.gltf ?? {}),
                     extensionOptions: {
-                        ...options?.pluginOptions?.gltf?.extensionOptions,
+                        ...(options?.pluginOptions?.gltf?.extensionOptions ?? {}),
                         // eslint-disable-next-line @typescript-eslint/naming-convention
                         KHR_audio: {
                             enabled: false,
