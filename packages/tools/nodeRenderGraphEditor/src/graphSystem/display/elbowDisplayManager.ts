@@ -3,7 +3,7 @@ import type { IDisplayManager, VisualContentDescription } from "shared-ui-compon
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import styles from "./elbowDisplayManager.modules.scss";
 import type { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
-import type { RenderGraphElbowBlock } from "core/FrameGraph/Node/Blocks/elbowBlock";
+import type { NodeRenderGraphElbowBlock } from "core/FrameGraph/Node/Blocks/elbowBlock";
 
 export class ElbowDisplayManager implements IDisplayManager {
     public getHeaderClass() {
@@ -19,7 +19,7 @@ export class ElbowDisplayManager implements IDisplayManager {
     }
 
     public getBackgroundColor(nodeData: INodeData): string {
-        const elbowBlock = nodeData.data as RenderGraphElbowBlock;
+        const elbowBlock = nodeData.data as NodeRenderGraphElbowBlock;
 
         return BlockTools.GetColorFromConnectionNodeType(elbowBlock.input.type);
     }

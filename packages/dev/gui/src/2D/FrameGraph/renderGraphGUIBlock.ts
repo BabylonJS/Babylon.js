@@ -1,7 +1,7 @@
 import { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import type { Scene } from "core/scene";
-import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphBlockConnectionPointTypes";
+import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
 import type { NodeRenderGraphConnectionPoint } from "core/FrameGraph/Node/nodeRenderGraphBlockConnectionPoint";
 import type { NodeRenderGraphBuildState } from "core/FrameGraph/Node/nodeRenderGraphBuildState";
 import { RegisterClass } from "core/Misc/typeStore";
@@ -11,7 +11,7 @@ import { FrameGraphGUITask } from "./guiTask";
 /**
  * Block that implements a fullscreen GUI for render graph
  */
-export class RenderGraphGUIBlock extends NodeRenderGraphBlock {
+export class NodeRenderGraphGUIBlock extends NodeRenderGraphBlock {
     protected override _frameGraphTask: FrameGraphGUITask;
     protected _gui: AdvancedDynamicTexture;
 
@@ -30,7 +30,7 @@ export class RenderGraphGUIBlock extends NodeRenderGraphBlock {
     }
 
     /**
-     * Create a new RenderGraphGUIBlock
+     * Create a new NodeRenderGraphGUIBlock
      * @param name defines the block name
      * @param scene defines the hosting scene
      */
@@ -54,7 +54,7 @@ export class RenderGraphGUIBlock extends NodeRenderGraphBlock {
      * @returns the class name
      */
     public override getClassName() {
-        return "GUI.RenderGraphGUIBlock";
+        return "GUI.NodeRenderGraphGUIBlock";
     }
 
     /**
@@ -87,4 +87,4 @@ export class RenderGraphGUIBlock extends NodeRenderGraphBlock {
     }
 }
 
-RegisterClass("BABYLON.GUI.RenderGraphGUIBlock", RenderGraphGUIBlock);
+RegisterClass("BABYLON.GUI.NodeRenderGraphGUIBlock", NodeRenderGraphGUIBlock);

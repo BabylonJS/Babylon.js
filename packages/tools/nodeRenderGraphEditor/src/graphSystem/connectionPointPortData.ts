@@ -1,6 +1,6 @@
 import type { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
 import type { NodeRenderGraphConnectionPoint } from "core/FrameGraph/Node/nodeRenderGraphBlockConnectionPoint";
-import { NodeRenderGraphConnectionPointDirection, NodeRenderGraphConnectionPointCompatibilityStates } from "core/FrameGraph/Node/Types/nodeRenderGraphBlockConnectionPointTypes";
+import { NodeRenderGraphConnectionPointDirection, NodeRenderGraphConnectionPointCompatibilityStates } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
 import type { Nullable } from "core/types";
 import type { GlobalState } from "node-render-graph-editor/globalState";
 import type { GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/graphCanvas";

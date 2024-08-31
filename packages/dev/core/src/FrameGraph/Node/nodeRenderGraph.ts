@@ -1,7 +1,7 @@
 import { Observable } from "../../Misc/observable";
 import type { Observer } from "../../Misc/observable";
 import type { Nullable } from "../../types";
-import { RenderGraphOutputBlock } from "./Blocks/outputBlock";
+import { NodeRenderGraphOutputBlock } from "./Blocks/outputBlock";
 import type { NodeRenderGraphBlock } from "./nodeRenderGraphBlock";
 import { FrameGraph } from "../frameGraph";
 import { GetClass } from "../../Misc/typeStore";
@@ -9,13 +9,13 @@ import { serialize } from "../../Misc/decorators";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
 import { Constants } from "../../Engines/constants";
 import { WebRequest } from "../../Misc/webRequest";
-import { RenderGraphInputBlock } from "./Blocks/inputBlock";
-import type { RenderGraphTeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
-import type { RenderGraphTeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
+import { NodeRenderGraphInputBlock } from "./Blocks/inputBlock";
+import type { NodeRenderGraphTeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
+import type { NodeRenderGraphTeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
 import { Tools } from "../../Misc/tools";
 import { Engine } from "../../Engines/engine";
-import { NodeRenderGraphBlockConnectionPointTypes } from "./Types/nodeRenderGraphBlockConnectionPointTypes";
-import { RenderGraphClearBlock } from "./Blocks/clearBlock";
+import { NodeRenderGraphBlockConnectionPointTypes } from "./Types/nodeRenderGraphTypes";
+import { NodeRenderGraphClearBlock } from "./Blocks/clearBlock";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import { NodeRenderGraphBuildState } from "./nodeRenderGraphBuildState";
 import type { INodeRenderGraphCreateOptions, INodeRenderGraphEditorOptions } from "./Types/nodeRenderGraphTypes";
@@ -74,7 +74,7 @@ export class NodeRenderGraph {
     public onBuildObservable = new Observable<NodeRenderGraph>();
 
     /** Gets or sets the RenderGraphOutputBlock used to gather the final node render graph data */
-    public outputBlock: Nullable<RenderGraphOutputBlock> = null;
+    public outputBlock: Nullable<NodeRenderGraphOutputBlock> = null;
 
     /**
      * Snippet ID if the graph was created from the snippet server
@@ -208,10 +208,10 @@ export class NodeRenderGraph {
      * @returns an array of InputBlocks
      */
     public getInputBlocks() {
-        const blocks: RenderGraphInputBlock[] = [];
+        const blocks: NodeRenderGraphInputBlock[] = [];
         for (const block of this.attachedBlocks) {
             if (block.isInput) {
-                blocks.push(block as RenderGraphInputBlock);
+                blocks.push(block as NodeRenderGraphInputBlock);
             }
         }
 
@@ -375,10 +375,10 @@ export class NodeRenderGraph {
         // Reconnect teleportation
         for (const block of this.attachedBlocks) {
             if (block.isTeleportOut) {
-                const teleportOut = block as RenderGraphTeleportOutBlock;
+                const teleportOut = block as NodeRenderGraphTeleportOutBlock;
                 const id = teleportOut._tempEntryPointUniqueId;
                 if (id) {
-                    const source = map[id] as RenderGraphTeleportInBlock;
+                    const source = map[id] as NodeRenderGraphTeleportInBlock;
                     if (source) {
                         source.attachToEndpoint(teleportOut);
                     }
@@ -403,7 +403,7 @@ export class NodeRenderGraph {
 
         // Outputs
         if (source.outputNodeId) {
-            this.outputBlock = map[source.outputNodeId] as RenderGraphOutputBlock;
+            this.outputBlock = map[source.outputNodeId] as NodeRenderGraphOutputBlock;
         }
 
         // UI related info
@@ -525,7 +525,7 @@ export class NodeRenderGraph {
 
         // Teleportation
         if (rootNode.isTeleportOut) {
-            const block = rootNode as RenderGraphTeleportOutBlock;
+            const block = rootNode as NodeRenderGraphTeleportOutBlock;
             if (block.entryPoint) {
                 this._gatherBlocks(block.entryPoint, list);
             }
@@ -541,15 +541,15 @@ export class NodeRenderGraph {
         this.editorData = null;
 
         // Source
-        const backBuffer = new RenderGraphInputBlock("BackBuffer color", this._scene, NodeRenderGraphBlockConnectionPointTypes.TextureBackBuffer);
+        const backBuffer = new NodeRenderGraphInputBlock("BackBuffer color", this._scene, NodeRenderGraphBlockConnectionPointTypes.TextureBackBuffer);
 
         // Clear texture
-        const clear = new RenderGraphClearBlock("Clear", this._scene);
+        const clear = new NodeRenderGraphClearBlock("Clear", this._scene);
 
         backBuffer.output.connectTo(clear.texture);
 
         // Final output
-        const output = new RenderGraphOutputBlock("Output", this._scene);
+        const output = new NodeRenderGraphOutputBlock("Output", this._scene);
         clear.output.connectTo(output.texture);
 
         this.outputBlock = output;

@@ -6,8 +6,8 @@ import styles from "./blockNodeData.modules.scss";
 import type { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
-import type { RenderGraphTeleportInBlock } from "core/FrameGraph/Node/Blocks/Teleport/teleportInBlock";
-import type { RenderGraphTeleportOutBlock } from "core/FrameGraph/Node/Blocks/Teleport/teleportOutBlock";
+import type { NodeRenderGraphTeleportInBlock } from "core/FrameGraph/Node/Blocks/Teleport/teleportInBlock";
+import type { NodeRenderGraphTeleportOutBlock } from "core/FrameGraph/Node/Blocks/Teleport/teleportOutBlock";
 
 export class BlockNodeData implements INodeData {
     private _inputs: IPortData[] = [];
@@ -73,7 +73,7 @@ export class BlockNodeData implements INodeData {
     public isConnectedToOutput() {
         const block = this.data;
 
-        return block.isDebug || block.isAnAncestorOfType("RenderGraphOutputBlock");
+        return block.isDebug || block.isAnAncestorOfType("NodeRenderGraphOutputBlock");
     }
 
     public dispose() {
@@ -82,7 +82,7 @@ export class BlockNodeData implements INodeData {
     }
 
     public prepareHeaderIcon(iconDiv: HTMLDivElement, img: HTMLImageElement) {
-        if (this.data.getClassName() === "ElbowBlock") {
+        if (this.data.getClassName() === "NodeRenderGraphElbowBlock") {
             iconDiv.classList.add(styles.hidden);
             return;
         }
@@ -90,9 +90,9 @@ export class BlockNodeData implements INodeData {
         iconDiv.classList.add(styles.hidden);
     }
 
-    public get invisibleEndpoints(): RenderGraphTeleportOutBlock[] | null {
+    public get invisibleEndpoints(): NodeRenderGraphTeleportOutBlock[] | null {
         if (this.data.isTeleportIn) {
-            const teleportIn = this.data as RenderGraphTeleportInBlock;
+            const teleportIn = this.data as NodeRenderGraphTeleportInBlock;
             return teleportIn.endpoints;
         }
 

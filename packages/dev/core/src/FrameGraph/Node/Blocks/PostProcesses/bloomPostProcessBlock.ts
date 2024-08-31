@@ -1,7 +1,7 @@
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import type { NodeRenderGraphConnectionPoint } from "../../nodeRenderGraphBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphBlockConnectionPointTypes";
+import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import type { Scene } from "../../../../scene";
 import { Constants } from "../../../../Engines/constants";
@@ -13,7 +13,7 @@ import { FrameGraphBloomTask } from "../../../Tasks/PostProcesses/bloomTask";
 /**
  * Block that implements the bloom post process
  */
-export class BloomPostProcessBlock extends NodeRenderGraphBlock {
+export class NodeRenderGraphBloomPostProcessBlock extends NodeRenderGraphBlock {
     protected override _frameGraphTask: FrameGraphBloomTask;
     protected _postProcess: BloomEffect;
 
@@ -32,7 +32,7 @@ export class BloomPostProcessBlock extends NodeRenderGraphBlock {
     }
 
     /**
-     * Create a new BloomPostProcessBlock
+     * Create a new NodeRenderGraphBloomPostProcessBlock
      * @param name defines the block name
      * @param scene defines the hosting scene
      * @param hdr If high dynamic range textures should be used (default: false)
@@ -114,7 +114,7 @@ export class BloomPostProcessBlock extends NodeRenderGraphBlock {
      * @returns the class name
      */
     public override getClassName() {
-        return "BloomPostProcessBlock";
+        return "NodeRenderGraphBloomPostProcessBlock";
     }
 
     /**
@@ -185,4 +185,4 @@ export class BloomPostProcessBlock extends NodeRenderGraphBlock {
     }
 }
 
-RegisterClass("BABYLON.BloomPostProcessBlock", BloomPostProcessBlock);
+RegisterClass("BABYLON.NodeRenderGraphBloomPostProcessBlock", NodeRenderGraphBloomPostProcessBlock);

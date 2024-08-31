@@ -1,7 +1,7 @@
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import type { NodeRenderGraphConnectionPoint } from "../../nodeRenderGraphBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphBlockConnectionPointTypes";
+import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { BlackAndWhitePostProcess } from "../../../../PostProcesses/blackAndWhitePostProcess";
 import type { Scene } from "../../../../scene";
@@ -12,7 +12,7 @@ import { FrameGraphPostProcessTask } from "../../../Tasks/PostProcesses/postProc
 /**
  * Block that implements the black and white post process
  */
-export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
+export class NodeRenderGraphBlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
     protected override _frameGraphTask: FrameGraphPostProcessTask;
     protected _postProcess: BlackAndWhitePostProcess;
 
@@ -86,7 +86,7 @@ export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
      * @returns the class name
      */
     public override getClassName() {
-        return "BlackAndWhitePostProcessBlock";
+        return "NodeRenderGraphBlackAndWhitePostProcessBlock";
     }
 
     /**
@@ -151,4 +151,4 @@ export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
     }
 }
 
-RegisterClass("BABYLON.BlackAndWhitePostProcessBlock", BlackAndWhitePostProcessBlock);
+RegisterClass("BABYLON.NodeRenderGraphBlackAndWhitePostProcessBlock", NodeRenderGraphBlackAndWhitePostProcessBlock);

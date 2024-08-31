@@ -8,7 +8,7 @@ import { TextInputLineComponent } from "shared-ui-components/lines/textInputLine
 import type { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
-import type { RenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
+import type { NodeRenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
 import type { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
 
 export interface IFramePropertyTabComponentProps {
@@ -35,11 +35,11 @@ export class FramePropertyTabComponent extends React.Component<IFramePropertyTab
     }
 
     override render() {
-        let configurableInputBlocks: RenderGraphInputBlock[] = [];
+        let configurableInputBlocks: NodeRenderGraphInputBlock[] = [];
         this.props.frame.nodes.forEach((node) => {
             const block = node.content.data as NodeRenderGraphBlock;
             if (block.isInput && block.visibleOnFrame) {
-                configurableInputBlocks.push(block as RenderGraphInputBlock);
+                configurableInputBlocks.push(block as NodeRenderGraphInputBlock);
             }
         });
 

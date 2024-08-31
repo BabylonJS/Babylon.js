@@ -8,13 +8,13 @@ import { TeleportOutDisplayManager } from "./display/teleportOutDisplayManager";
 import { TextureDisplayManager } from "./display/textureDisplayManager";
 
 export const RegisterToDisplayManagers = () => {
-    DisplayLedger.RegisteredControls["RenderGraphInputBlock"] = InputDisplayManager;
-    DisplayLedger.RegisteredControls["RenderGraphOutputBlock"] = OutputDisplayManager;
-    DisplayLedger.RegisteredControls["RenderGraphElbowBlock"] = ElbowDisplayManager;
-    DisplayLedger.RegisteredControls["TeleportInBlock"] = TeleportInDisplayManager;
-    DisplayLedger.RegisteredControls["TeleportOutBlock"] = TeleportOutDisplayManager;
-    DisplayLedger.RegisteredControls["BlackAndWhitePostProcessBlock"] = PostProcessDisplayManager;
-    DisplayLedger.RegisteredControls["BloomPostProcessBlock"] = PostProcessDisplayManager;
-    DisplayLedger.RegisteredControls["ClearBlock"] = TextureDisplayManager;
-    DisplayLedger.RegisteredControls["RenderObjectsBlock"] = TextureDisplayManager;
+    DisplayLedger.RegisteredControls["NodeRenderGraphInputBlock"] = InputDisplayManager;
+    DisplayLedger.RegisteredControls["NodeRenderGraphOutputBlock"] = OutputDisplayManager;
+    DisplayLedger.RegisteredControls["NodeRenderGraphElbowBlock"] = ElbowDisplayManager;
+    DisplayLedger.RegisteredControls["NodeRenderGraphTeleportInBlock"] = TeleportInDisplayManager;
+    DisplayLedger.RegisteredControls["NodeRenderGraphTeleportOutBlock"] = TeleportOutDisplayManager;
+    DisplayLedger.RegisteredControls["NodeRenderGraphBlackAndWhitePostProcessBlock"] = PostProcessDisplayManager;
+    DisplayLedger.RegisteredControls["NodeRenderGraphBloomPostProcessBlock"] = PostProcessDisplayManager;
+    DisplayLedger.RegisteredControls["NodeRenderGraphClearBlock"] = TextureDisplayManager;
+    DisplayLedger.RegisteredControls["NodeRenderGraphCopyTextureBlock"] = TextureDisplayManager;
 };

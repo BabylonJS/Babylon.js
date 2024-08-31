@@ -4,10 +4,10 @@ import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSyst
 import type { Observer } from "core/Misc/observable";
 import type { Nullable } from "core/types";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import type { RenderGraphTeleportOutBlock } from "core/FrameGraph/Node/Blocks/Teleport/teleportOutBlock";
+import type { NodeRenderGraphTeleportOutBlock } from "core/FrameGraph/Node/Blocks/Teleport/teleportOutBlock";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import type { GlobalState } from "node-render-graph-editor/globalState";
-import type { RenderGraphTeleportInBlock } from "core/FrameGraph/Node/Blocks/Teleport/teleportInBlock";
+import type { NodeRenderGraphTeleportInBlock } from "core/FrameGraph/Node/Blocks/Teleport/teleportInBlock";
 
 export class TeleportOutPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     private _onUpdateRequiredObserver: Nullable<Observer<any>>;
@@ -27,16 +27,16 @@ export class TeleportOutPropertyTabComponent extends React.Component<IPropertyCo
     }
 
     override render() {
-        const block = this.props.nodeData.data as RenderGraphTeleportOutBlock;
+        const block = this.props.nodeData.data as NodeRenderGraphTeleportOutBlock;
 
         const options = [{ label: "None", value: -1 }];
-        const teleporters: RenderGraphTeleportInBlock[] = [];
+        const teleporters: NodeRenderGraphTeleportInBlock[] = [];
 
         const nodeRenderGraph = (this.props.stateManager.data as GlobalState).nodeRenderGraph;
 
         for (const block of nodeRenderGraph.attachedBlocks) {
-            if (block.getClassName() === "RenderGraphTeleportInBlock") {
-                teleporters.push(block as RenderGraphTeleportInBlock);
+            if (block.getClassName() === "NodeRenderGraphTeleportInBlock") {
+                teleporters.push(block as NodeRenderGraphTeleportInBlock);
             }
         }
 

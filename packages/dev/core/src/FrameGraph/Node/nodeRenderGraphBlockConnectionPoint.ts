@@ -1,13 +1,9 @@
 import type { Nullable } from "../../types";
 import type { NodeRenderGraphBlock } from "./nodeRenderGraphBlock";
 import { Observable } from "../../Misc/observable";
-import type { NodeRenderGraphBlockConnectionPointValueType } from "./Types/nodeRenderGraphBlockConnectionPointTypes";
-import {
-    NodeRenderGraphBlockConnectionPointTypes,
-    NodeRenderGraphConnectionPointCompatibilityStates,
-    NodeRenderGraphConnectionPointDirection,
-} from "./Types/nodeRenderGraphBlockConnectionPointTypes";
-import type { RenderGraphInputBlock } from "./Blocks/inputBlock";
+import type { NodeRenderGraphBlockConnectionPointValueType } from "./Types/nodeRenderGraphTypes";
+import { NodeRenderGraphBlockConnectionPointTypes, NodeRenderGraphConnectionPointCompatibilityStates, NodeRenderGraphConnectionPointDirection } from "./Types/nodeRenderGraphTypes";
+import type { NodeRenderGraphInputBlock } from "./Blocks/inputBlock";
 
 /**
  * Defines a connection point for a block
@@ -80,7 +76,7 @@ export class NodeRenderGraphConnectionPoint {
     public get type(): NodeRenderGraphBlockConnectionPointTypes {
         if (this._type === NodeRenderGraphBlockConnectionPointTypes.AutoDetect) {
             if (this._ownerBlock.isInput) {
-                return (this._ownerBlock as RenderGraphInputBlock).type;
+                return (this._ownerBlock as NodeRenderGraphInputBlock).type;
             }
 
             if (this._connectedPoint) {

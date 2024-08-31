@@ -4,8 +4,8 @@ import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/
 import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 import { BlockNodeData } from "./blockNodeData";
 import type { NodeRenderGraphConnectionPoint } from "core/FrameGraph/Node/nodeRenderGraphBlockConnectionPoint";
-import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphBlockConnectionPointTypes";
-import { RenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
+import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
+import { NodeRenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
 
 export const RegisterDefaultInput = (stateManager: StateManager) => {
     stateManager.createDefaultInputData = (rootData: any, portData: IPortData, nodeContainer: INodeContainer) => {
@@ -16,7 +16,7 @@ export const RegisterDefaultInput = (stateManager: StateManager) => {
         if (point.type === NodeRenderGraphBlockConnectionPointTypes.AutoDetect) {
             return null;
         }
-        const emittedBlock = new RenderGraphInputBlock(NodeRenderGraphBlockConnectionPointTypes[point.type], globalState.scene, point.type);
+        const emittedBlock = new NodeRenderGraphInputBlock(NodeRenderGraphBlockConnectionPointTypes[point.type], globalState.scene, point.type);
 
         const nodeRenderGraph = globalState.nodeRenderGraph;
         nodeRenderGraph.attachedBlocks.push(emittedBlock);

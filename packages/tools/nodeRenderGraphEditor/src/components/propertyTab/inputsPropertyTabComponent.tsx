@@ -4,12 +4,12 @@ import { LineContainerComponent } from "../../sharedComponents/lineContainerComp
 
 import "./propertyTab.scss";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import type { RenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
-import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphBlockConnectionPointTypes";
+import type { NodeRenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
+import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
 
 interface IInputsPropertyTabComponentProps {
     globalState: GlobalState;
-    inputs: RenderGraphInputBlock[];
+    inputs: NodeRenderGraphInputBlock[];
     lockObject: LockObject;
 }
 
@@ -22,7 +22,7 @@ export class InputsPropertyTabComponent extends React.Component<IInputsPropertyT
         this.props.globalState.stateManager.onRebuildRequiredObservable.notifyObservers();
     }
 
-    renderInputBlock(block: RenderGraphInputBlock) {
+    renderInputBlock(block: NodeRenderGraphInputBlock) {
         switch (block.type) {
             case NodeRenderGraphBlockConnectionPointTypes.Texture: {
                 return <div key={block.uniqueId}></div>;

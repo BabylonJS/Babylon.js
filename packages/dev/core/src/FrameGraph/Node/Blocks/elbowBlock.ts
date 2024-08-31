@@ -1,15 +1,15 @@
 import type { Scene } from "../../../scene";
 import { RegisterClass } from "../../../Misc/typeStore";
-import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGraphBlockConnectionPointTypes";
+import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGraphTypes";
 import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
 import type { NodeRenderGraphConnectionPoint } from "../nodeRenderGraphBlockConnectionPoint";
 import type { NodeRenderGraphBuildState } from "../nodeRenderGraphBuildState";
 /**
  * Block used as a pass through
  */
-export class RenderGraphElbowBlock extends NodeRenderGraphBlock {
+export class NodeRenderGraphElbowBlock extends NodeRenderGraphBlock {
     /**
-     * Creates a new RenderGraphElbowBlock
+     * Creates a new NodeRenderGraphElbowBlock
      * @param name defines the block name
      * @param scene defines the hosting scene
      */
@@ -27,7 +27,7 @@ export class RenderGraphElbowBlock extends NodeRenderGraphBlock {
      * @returns the class name
      */
     public override getClassName() {
-        return "RenderGraphElbowBlock";
+        return "NodeRenderGraphElbowBlock";
     }
 
     /**
@@ -54,4 +54,4 @@ export class RenderGraphElbowBlock extends NodeRenderGraphBlock {
     }
 }
 
-RegisterClass("BABYLON.RenderGraphElbowBlock", RenderGraphElbowBlock);
+RegisterClass("BABYLON.NodeRenderGraphElbowBlock", NodeRenderGraphElbowBlock);

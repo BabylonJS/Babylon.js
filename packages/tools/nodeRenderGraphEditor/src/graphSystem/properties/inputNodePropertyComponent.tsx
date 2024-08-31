@@ -8,8 +8,8 @@ import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
-import type { RenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
-import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphBlockConnectionPointTypes";
+import type { NodeRenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
+import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
 import type { FrameGraphTextureCreationOptions } from "core/FrameGraph/frameGraphTypes";
 import { Constants } from "core/Engines/constants";
 
@@ -44,14 +44,14 @@ const textureDepthStencilFormatList = [
 ];
 
 export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-    private _onValueChangedObserver: Nullable<Observer<RenderGraphInputBlock>>;
+    private _onValueChangedObserver: Nullable<Observer<NodeRenderGraphInputBlock>>;
 
     constructor(props: IPropertyComponentProps) {
         super(props);
     }
 
     override componentDidMount() {
-        const inputBlock = this.props.nodeData.data as RenderGraphInputBlock;
+        const inputBlock = this.props.nodeData.data as NodeRenderGraphInputBlock;
         this._onValueChangedObserver = inputBlock.onValueChangedObservable.add(() => {
             this.forceUpdate();
             this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
@@ -59,7 +59,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
     }
 
     override componentWillUnmount() {
-        const inputBlock = this.props.nodeData.data as RenderGraphInputBlock;
+        const inputBlock = this.props.nodeData.data as NodeRenderGraphInputBlock;
         if (this._onValueChangedObserver) {
             inputBlock.onValueChangedObservable.remove(this._onValueChangedObserver);
             this._onValueChangedObserver = null;
@@ -67,7 +67,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
     }
 
     renderValue(_globalState: GlobalState) {
-        const inputBlock = this.props.nodeData.data as RenderGraphInputBlock;
+        const inputBlock = this.props.nodeData.data as NodeRenderGraphInputBlock;
         switch (inputBlock.type) {
             case NodeRenderGraphBlockConnectionPointTypes.Texture: {
                 const isExternal = inputBlock.isExternal;
@@ -232,12 +232,12 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
     }
 
     setDefaultValue() {
-        const inputBlock = this.props.nodeData.data as RenderGraphInputBlock;
+        const inputBlock = this.props.nodeData.data as NodeRenderGraphInputBlock;
         inputBlock.setDefaultValue();
     }
 
     override render() {
-        const inputBlock = this.props.nodeData.data as RenderGraphInputBlock;
+        const inputBlock = this.props.nodeData.data as NodeRenderGraphInputBlock;
 
         return (
             <div>

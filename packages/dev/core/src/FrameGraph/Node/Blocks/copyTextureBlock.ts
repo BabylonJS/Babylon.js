@@ -1,7 +1,7 @@
 import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
 import type { NodeRenderGraphConnectionPoint } from "../nodeRenderGraphBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
-import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGraphBlockConnectionPointTypes";
+import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGraphTypes";
 import type { Scene } from "../../../scene";
 import type { NodeRenderGraphBuildState } from "../nodeRenderGraphBuildState";
 import { FrameGraphCopyToTextureTask } from "../../Tasks/Texture/copyToTextureTask";
@@ -10,7 +10,7 @@ import type { FrameGraphTextureId } from "../../frameGraphTypes";
 /**
  * Block used to copy a texture
  */
-export class RenderGraphCopyTextureBlock extends NodeRenderGraphBlock {
+export class NodeRenderGraphCopyTextureBlock extends NodeRenderGraphBlock {
     protected override _frameGraphTask: FrameGraphCopyToTextureTask;
 
     /**
@@ -21,7 +21,7 @@ export class RenderGraphCopyTextureBlock extends NodeRenderGraphBlock {
     }
 
     /**
-     * Create a new RenderGraphCopyTextureBlock
+     * Create a new NodeRenderGraphCopyTextureBlock
      * @param name defines the block name
      * @param scene defines the hosting scene
      */
@@ -44,7 +44,7 @@ export class RenderGraphCopyTextureBlock extends NodeRenderGraphBlock {
      * @returns the class name
      */
     public override getClassName() {
-        return "RenderGraphCopyTextureBlock";
+        return "NodeRenderGraphCopyTextureBlock";
     }
     /**
      * Gets the source input component
@@ -88,4 +88,4 @@ export class RenderGraphCopyTextureBlock extends NodeRenderGraphBlock {
     }
 }
 
-RegisterClass("BABYLON.RenderGraphCopyTextureBlock", RenderGraphCopyTextureBlock);
+RegisterClass("BABYLON.NodeRenderGraphCopyTextureBlock", NodeRenderGraphCopyTextureBlock);

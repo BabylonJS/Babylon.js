@@ -1,7 +1,7 @@
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import type { NodeRenderGraphConnectionPoint } from "../../nodeRenderGraphBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphBlockConnectionPointTypes";
+import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import type { Scene } from "../../../../scene";
 import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
@@ -12,7 +12,7 @@ import type { Camera } from "../../../../Cameras/camera";
 /**
  * Block that render objects to a render target
  */
-export class RenderObjectsBlock extends NodeRenderGraphBlock {
+export class NodeRenderGraphRenderObjectsBlock extends NodeRenderGraphBlock {
     protected override _frameGraphTask: FrameGraphRenderObjectsTask;
 
     /**
@@ -23,7 +23,7 @@ export class RenderObjectsBlock extends NodeRenderGraphBlock {
     }
 
     /**
-     * Create a new RenderObjectsBlock
+     * Create a new NodeRenderGraphRenderObjectsBlock
      * @param name defines the block name
      * @param scene defines the hosting scene
      */
@@ -72,7 +72,7 @@ export class RenderObjectsBlock extends NodeRenderGraphBlock {
      * @returns the class name
      */
     public override getClassName() {
-        return "RenderObjectsBlock";
+        return "NodeRenderGraphRenderObjectsBlock";
     }
 
     /**
@@ -170,4 +170,4 @@ export class RenderObjectsBlock extends NodeRenderGraphBlock {
     }
 }
 
-RegisterClass("BABYLON.RenderObjectsBlock", RenderObjectsBlock);
+RegisterClass("BABYLON.NodeRenderGraphRenderObjectsBlock", NodeRenderGraphRenderObjectsBlock);

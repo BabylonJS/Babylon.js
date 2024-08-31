@@ -5,6 +5,6 @@ import { TeleportOutPropertyTabComponent } from "./properties/teleportOutNodePro
 
 export const RegisterToPropertyTabManagers = () => {
     PropertyLedger.DefaultControl = GenericPropertyComponent;
-    PropertyLedger.RegisteredControls["RenderGraphInputBlock"] = InputPropertyTabComponent;
-    PropertyLedger.RegisteredControls["RenderGraphTeleportOutBlock"] = TeleportOutPropertyTabComponent;
+    PropertyLedger.RegisteredControls["NodeRenderGraphInputBlock"] = InputPropertyTabComponent;
+    PropertyLedger.RegisteredControls["NodeRenderGraphTeleportOutBlock"] = TeleportOutPropertyTabComponent;
 };

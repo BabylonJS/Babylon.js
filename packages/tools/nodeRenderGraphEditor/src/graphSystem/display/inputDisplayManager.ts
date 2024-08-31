@@ -2,8 +2,8 @@ import { BlockTools } from "../../blockTools";
 import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import styles from "./inputDisplayManager.modules.scss";
-import type { RenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
-import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphBlockConnectionPointTypes";
+import type { NodeRenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
+import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
 
 export class InputDisplayManager implements IDisplayManager {
     public getHeaderClass(_nodeData: INodeData) {
@@ -24,7 +24,7 @@ export class InputDisplayManager implements IDisplayManager {
 
     public getBackgroundColor(nodeData: INodeData): string {
         let color = "";
-        const inputBlock = nodeData.data as RenderGraphInputBlock;
+        const inputBlock = nodeData.data as NodeRenderGraphInputBlock;
 
         switch (inputBlock.type) {
             default:
@@ -37,7 +37,7 @@ export class InputDisplayManager implements IDisplayManager {
 
     public updatePreviewContent(nodeData: INodeData, contentArea: HTMLDivElement): void {
         let value = "";
-        const inputBlock = nodeData.data as RenderGraphInputBlock;
+        const inputBlock = nodeData.data as NodeRenderGraphInputBlock;
 
         switch (inputBlock.type) {
             case NodeRenderGraphBlockConnectionPointTypes.Texture:

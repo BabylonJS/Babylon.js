@@ -1,7 +1,7 @@
 import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
 import type { NodeRenderGraphConnectionPoint } from "../nodeRenderGraphBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
-import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGraphBlockConnectionPointTypes";
+import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGraphTypes";
 import type { Scene } from "../../../scene";
 import type { NodeRenderGraphBuildState } from "../nodeRenderGraphBuildState";
 import { FrameGraphCopyToBackbufferColorTask } from "../../Tasks/Texture/copyToBackbufferColorTask";
@@ -10,7 +10,7 @@ import type { FrameGraphTextureId } from "../../frameGraphTypes";
 /**
  * Block used to generate the final graph
  */
-export class RenderGraphOutputBlock extends NodeRenderGraphBlock {
+export class NodeRenderGraphOutputBlock extends NodeRenderGraphBlock {
     protected override _frameGraphTask: FrameGraphCopyToBackbufferColorTask;
 
     /**
@@ -21,7 +21,7 @@ export class RenderGraphOutputBlock extends NodeRenderGraphBlock {
     }
 
     /**
-     * Create a new RenderGraphOutputBlock
+     * Create a new NodeRenderGraphOutputBlock
      * @param name defines the block name
      * @param scene defines the hosting scene
      */
@@ -42,7 +42,7 @@ export class RenderGraphOutputBlock extends NodeRenderGraphBlock {
      * @returns the class name
      */
     public override getClassName() {
-        return "RenderGraphOutputBlock";
+        return "NodeRenderGraphOutputBlock";
     }
     /**
      * Gets the texture input component
@@ -65,4 +65,4 @@ export class RenderGraphOutputBlock extends NodeRenderGraphBlock {
     }
 }
 
-RegisterClass("BABYLON.RenderGraphOutputBlock", RenderGraphOutputBlock);
+RegisterClass("BABYLON.NodeRenderGraphOutputBlock", NodeRenderGraphOutputBlock);

@@ -1,5 +1,5 @@
 import { Observable } from "../../../Misc/observable";
-import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGraphBlockConnectionPointTypes";
+import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGraphTypes";
 import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
 import type { NodeRenderGraphConnectionPoint } from "../nodeRenderGraphBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
@@ -21,12 +21,12 @@ export type NodeRenderGraphInputCreationOptions = FrameGraphTextureCreationOptio
 /**
  * Block used to expose an input value
  */
-export class RenderGraphInputBlock extends NodeRenderGraphBlock {
+export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
     private _storedValue: Nullable<NodeRenderGraphValueType> = null;
     private _type: NodeRenderGraphBlockConnectionPointTypes = NodeRenderGraphBlockConnectionPointTypes.Undefined;
 
     /** Gets an observable raised when the value is changed */
-    public onValueChangedObservable = new Observable<RenderGraphInputBlock>();
+    public onValueChangedObservable = new Observable<NodeRenderGraphInputBlock>();
 
     /** Indicates that the input is externally managed */
     @editableInPropertyPage("Is external", PropertyTypeForEdition.Boolean, "PROPERTIES")
@@ -43,7 +43,7 @@ export class RenderGraphInputBlock extends NodeRenderGraphBlock {
     }
 
     /**
-     * Creates a new RenderGraphInputBlock
+     * Creates a new NodeRenderGraphInputBlock
      * @param name defines the block name
      * @param scene defines the hosting scene
      * @param type defines the type of the input (can be set to NodeRenderGraphBlockConnectionPointTypes.Undefined)
@@ -142,7 +142,7 @@ export class RenderGraphInputBlock extends NodeRenderGraphBlock {
      * @returns the class name
      */
     public override getClassName() {
-        return "RenderGraphInputBlock";
+        return "NodeRenderGraphInputBlock";
     }
 
     /**
@@ -206,7 +206,7 @@ export class RenderGraphInputBlock extends NodeRenderGraphBlock {
                 this.output.value = this.getTypedValue<FrameGraphObjectList>();
             } else {
                 if (this._storedValue === undefined || this._storedValue === null) {
-                    throw new Error(`RenderGraphInputBlock: External input "${this.name}" is not set`);
+                    throw new Error(`NodeRenderGraphInputBlock: External input "${this.name}" is not set`);
                 }
                 const texture = this.getValueAsRenderTargetWrapper();
                 if (texture) {
@@ -220,7 +220,7 @@ export class RenderGraphInputBlock extends NodeRenderGraphBlock {
             const textureCreateOptions = this.creationOptions as FrameGraphTextureCreationOptions;
 
             if (!textureCreateOptions) {
-                throw new Error(`RenderGraphInputBlock: Creation options are missing for texture "${this.name}"`);
+                throw new Error(`NodeRenderGraphInputBlock: Creation options are missing for texture "${this.name}"`);
             }
 
             this.output.value = state.frameGraph.createRenderTargetTexture(this.name, textureCreateOptions);
@@ -267,4 +267,4 @@ export class RenderGraphInputBlock extends NodeRenderGraphBlock {
     }
 }
 
-RegisterClass("BABYLON.RenderGraphInputBlock", RenderGraphInputBlock);
+RegisterClass("BABYLON.NodeRenderGraphInputBlock", NodeRenderGraphInputBlock);

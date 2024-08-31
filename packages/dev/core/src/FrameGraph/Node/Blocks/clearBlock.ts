@@ -1,7 +1,7 @@
 import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
 import type { NodeRenderGraphConnectionPoint } from "../nodeRenderGraphBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
-import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGraphBlockConnectionPointTypes";
+import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGraphTypes";
 import { Color4 } from "../../../Maths/math.color";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
 import type { Scene } from "../../../scene";
@@ -12,7 +12,7 @@ import type { FrameGraphTextureId } from "../../frameGraphTypes";
 /**
  * Block used to clear a texture
  */
-export class RenderGraphClearBlock extends NodeRenderGraphBlock {
+export class NodeRenderGraphClearBlock extends NodeRenderGraphBlock {
     protected override _frameGraphTask: FrameGraphClearTextureTask;
 
     /**
@@ -23,7 +23,7 @@ export class RenderGraphClearBlock extends NodeRenderGraphBlock {
     }
 
     /**
-     * Create a new RenderGraphClearBlock
+     * Create a new NodeRenderGraphClearBlock
      * @param name defines the block name
      * @param scene defines the hosting scene
      */
@@ -84,7 +84,7 @@ export class RenderGraphClearBlock extends NodeRenderGraphBlock {
      * @returns the class name
      */
     public override getClassName() {
-        return "RenderGraphClearBlock";
+        return "NodeRenderGraphClearBlock";
     }
     /**
      * Gets the texture input component
@@ -142,4 +142,4 @@ export class RenderGraphClearBlock extends NodeRenderGraphBlock {
     }
 }
 
-RegisterClass("BABYLON.RenderGraphClearBlock", RenderGraphClearBlock);
+RegisterClass("BABYLON.NodeRenderGraphClearBlock", NodeRenderGraphClearBlock);

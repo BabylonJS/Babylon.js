@@ -1,11 +1,11 @@
 import { GetClass } from "../../Misc/typeStore";
 import { serialize } from "../../Misc/decorators";
 import { UniqueIdGenerator } from "../../Misc/uniqueIdGenerator";
-import { NodeRenderGraphBlockConnectionPointTypes, NodeRenderGraphConnectionPointDirection } from "./Types/nodeRenderGraphBlockConnectionPointTypes";
+import { NodeRenderGraphBlockConnectionPointTypes, NodeRenderGraphConnectionPointDirection } from "./Types/nodeRenderGraphTypes";
 import type { NodeRenderGraphBuildState } from "./nodeRenderGraphBuildState";
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
-import type { RenderGraphInputBlock } from "./Blocks/inputBlock";
+import type { NodeRenderGraphInputBlock } from "./Blocks/inputBlock";
 import { Logger } from "../../Misc/logger";
 import { NodeRenderGraphConnectionPoint } from "./nodeRenderGraphBlockConnectionPoint";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
@@ -531,10 +531,10 @@ export class NodeRenderGraphBlock {
         }
         const className = this.getClassName();
         if (className === "RenderGraphInputBlock") {
-            const block = this as unknown as RenderGraphInputBlock;
+            const block = this as unknown as NodeRenderGraphInputBlock;
             const blockType = block.type;
 
-            codeString += `var ${this._codeVariableName} = new BABYLON.RenderGraphInputBlock("${this.name}", scene, BABYLON.NodeRenderGraphBlockConnectionPointTypes.${NodeRenderGraphBlockConnectionPointTypes[blockType]});\n`;
+            codeString += `var ${this._codeVariableName} = new BABYLON.NodeRenderGraphInputBlock("${this.name}", scene, BABYLON.NodeRenderGraphBlockConnectionPointTypes.${NodeRenderGraphBlockConnectionPointTypes[blockType]});\n`;
         } else {
             if (this._additionalConstructionParameters) {
                 codeString += `var ${this._codeVariableName} = new BABYLON.${className}("${this.name}", scene, ...${JSON.stringify(this._additionalConstructionParameters)});\n`;

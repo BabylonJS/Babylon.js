@@ -2,7 +2,7 @@ import { BlockTools } from "../blockTools";
 import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import type { ConnectionPointPortData } from "./connectionPointPortData";
-import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphBlockConnectionPointTypes";
+import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
 
 export const RegisterNodePortDesign = (stateManager: StateManager) => {
     stateManager.applyNodePortDesign = (portData: IPortData, element: HTMLElement, img: HTMLImageElement, _pip: HTMLDivElement) => {

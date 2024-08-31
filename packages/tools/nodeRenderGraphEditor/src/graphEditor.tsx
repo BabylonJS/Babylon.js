@@ -24,9 +24,9 @@ import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger";
 import type { IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
-import { RenderGraphOutputBlock } from "core/FrameGraph/Node/Blocks/outputBlock";
-import type { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphBlockConnectionPointTypes";
-import { RenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
+import { NodeRenderGraphOutputBlock } from "core/FrameGraph/Node/Blocks/outputBlock";
+import type { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
+import { NodeRenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
 import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import { Constants } from "core/Engines/constants";
 
@@ -78,7 +78,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     this.props.globalState.nodeRenderGraph!.attachedBlocks.push(block);
                 }
 
-                if (block instanceof RenderGraphOutputBlock) {
+                if (block instanceof NodeRenderGraphOutputBlock) {
                     this.props.globalState.nodeRenderGraph.outputBlock = block;
                 }
             },
@@ -89,7 +89,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     addValueNode(type: string) {
         const nodeType: NodeRenderGraphBlockConnectionPointTypes = BlockTools.GetConnectionNodeTypeFromString(type);
 
-        const newInputBlock = new RenderGraphInputBlock(type, this.props.globalState.scene, nodeType);
+        const newInputBlock = new NodeRenderGraphInputBlock(type, this.props.globalState.scene, nodeType);
         return this.appendBlock(newInputBlock);
     }
 

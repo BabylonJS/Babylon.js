@@ -1,16 +1,16 @@
 import type { Scene } from "core/scene";
-import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphBlockConnectionPointTypes";
-import { RenderGraphOutputBlock } from "core/FrameGraph/Node/Blocks/outputBlock";
-import { RenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
-import { RenderGraphElbowBlock } from "core/FrameGraph/Node/Blocks/elbowBlock";
-import { RenderGraphTeleportInBlock } from "core/FrameGraph/Node/Blocks/Teleport/teleportInBlock";
-import { RenderGraphTeleportOutBlock } from "core/FrameGraph/Node/Blocks/Teleport/teleportOutBlock";
-import { BlackAndWhitePostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/blackAndWhitePostProcessBlock";
-import { BloomPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/bloomPostProcessBlock";
-import { RenderGraphClearBlock } from "core/FrameGraph/Node/Blocks/clearBlock";
-import { RenderGraphCopyTextureBlock } from "core/FrameGraph/Node/Blocks/copyTextureBlock";
-import { RenderObjectsBlock } from "core/FrameGraph/Node/Blocks/Rendering/renderObjectsBlock";
-import { RenderGraphGUIBlock } from "gui/2D/FrameGraph/renderGraphGUIBlock";
+import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
+import { NodeRenderGraphOutputBlock } from "core/FrameGraph/Node/Blocks/outputBlock";
+import { NodeRenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
+import { NodeRenderGraphElbowBlock } from "core/FrameGraph/Node/Blocks/elbowBlock";
+import { NodeRenderGraphTeleportInBlock } from "core/FrameGraph/Node/Blocks/Teleport/teleportInBlock";
+import { NodeRenderGraphTeleportOutBlock } from "core/FrameGraph/Node/Blocks/Teleport/teleportOutBlock";
+import { NodeRenderGraphBlackAndWhitePostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/blackAndWhitePostProcessBlock";
+import { NodeRenderGraphBloomPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/bloomPostProcessBlock";
+import { NodeRenderGraphClearBlock } from "core/FrameGraph/Node/Blocks/clearBlock";
+import { NodeRenderGraphCopyTextureBlock } from "core/FrameGraph/Node/Blocks/copyTextureBlock";
+import { NodeRenderGraphRenderObjectsBlock } from "core/FrameGraph/Node/Blocks/Rendering/renderObjectsBlock";
+import { NodeRenderGraphGUIBlock } from "gui/2D/FrameGraph/renderGraphGUIBlock";
 
 /**
  * Static class for BlockTools
@@ -19,48 +19,48 @@ export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene) {
         switch (data) {
             case "TeleportInBlock":
-                return new RenderGraphTeleportInBlock("Teleport In", scene);
+                return new NodeRenderGraphTeleportInBlock("Teleport In", scene);
             case "TeleportOutBlock":
-                return new RenderGraphTeleportOutBlock("Teleport Out", scene);
-            case "RenderGraphOutputBlock":
-                return new RenderGraphOutputBlock("Output", scene);
+                return new NodeRenderGraphTeleportOutBlock("Teleport Out", scene);
+            case "OutputBlock":
+                return new NodeRenderGraphOutputBlock("Output", scene);
             case "ElbowBlock":
-                return new RenderGraphElbowBlock("", scene);
+                return new NodeRenderGraphElbowBlock("", scene);
             case "TextureBlock": {
-                return new RenderGraphInputBlock("Texture", scene, NodeRenderGraphBlockConnectionPointTypes.Texture);
+                return new NodeRenderGraphInputBlock("Texture", scene, NodeRenderGraphBlockConnectionPointTypes.Texture);
             }
             case "TextureBackBufferBlock": {
-                return new RenderGraphInputBlock("Backbuffer color", scene, NodeRenderGraphBlockConnectionPointTypes.TextureBackBuffer);
+                return new NodeRenderGraphInputBlock("Backbuffer color", scene, NodeRenderGraphBlockConnectionPointTypes.TextureBackBuffer);
             }
             case "TextureBackBufferDepthStencilBlock": {
-                return new RenderGraphInputBlock("Backbuffer depth/stencil", scene, NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment);
+                return new NodeRenderGraphInputBlock("Backbuffer depth/stencil", scene, NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment);
             }
             case "TextureDepthStencilBlock": {
-                return new RenderGraphInputBlock("Depth/stencil texture", scene, NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment);
+                return new NodeRenderGraphInputBlock("Depth/stencil texture", scene, NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment);
             }
             case "CameraBlock": {
-                return new RenderGraphInputBlock("Camera", scene, NodeRenderGraphBlockConnectionPointTypes.Camera);
+                return new NodeRenderGraphInputBlock("Camera", scene, NodeRenderGraphBlockConnectionPointTypes.Camera);
             }
             case "ObjectListBlock": {
-                return new RenderGraphInputBlock("Object list", scene, NodeRenderGraphBlockConnectionPointTypes.ObjectList);
+                return new NodeRenderGraphInputBlock("Object list", scene, NodeRenderGraphBlockConnectionPointTypes.ObjectList);
             }
             case "ClearBlock": {
-                return new RenderGraphClearBlock("Clear", scene);
+                return new NodeRenderGraphClearBlock("Clear", scene);
             }
             case "CopyTextureBlock": {
-                return new RenderGraphCopyTextureBlock("Copy texture", scene);
+                return new NodeRenderGraphCopyTextureBlock("Copy texture", scene);
             }
             case "BlackAndWhiteBlock": {
-                return new BlackAndWhitePostProcessBlock("Black and White", scene);
+                return new NodeRenderGraphBlackAndWhitePostProcessBlock("Black and White", scene);
             }
             case "BloomBlock": {
-                return new BloomPostProcessBlock("Bloom", scene);
+                return new NodeRenderGraphBloomPostProcessBlock("Bloom", scene);
             }
             case "GUIBlock": {
-                return new RenderGraphGUIBlock("GUI", scene);
+                return new NodeRenderGraphGUIBlock("GUI", scene);
             }
             case "RenderObjectsBlock": {
-                return new RenderObjectsBlock("Render objects", scene);
+                return new NodeRenderGraphRenderObjectsBlock("Render objects", scene);
             }
         }
 
@@ -91,9 +91,9 @@ export class BlockTools {
             // case NodeRenderGraphBlockConnectionPointTypes.:
             //     color = "#84995c";
             //     break;
-            // case NodeRenderGraphBlockConnectionPointTypes.:
-            //     color = "#f28e0a";
-            //     break;
+            case NodeRenderGraphBlockConnectionPointTypes.BasedOnInput:
+                color = "#f28e0a"; // Used by the teleport blocks
+                break;
             case NodeRenderGraphBlockConnectionPointTypes.AutoDetect: // Used by the elbow block
                 color = "#880000";
                 break;

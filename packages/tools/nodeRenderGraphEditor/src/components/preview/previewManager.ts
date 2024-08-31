@@ -14,7 +14,7 @@ import "core/Rendering/depthRendererSceneComponent";
 import { NodeRenderGraph } from "core/FrameGraph/Node/nodeRenderGraph";
 import type { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
 import { LogEntry } from "../log/logComponent";
-import type { RenderGraphGUIBlock } from "gui/2D/FrameGraph/renderGraphGUIBlock";
+import type { NodeRenderGraphGUIBlock } from "gui/2D/FrameGraph/renderGraphGUIBlock";
 import { Button } from "gui/2D/controls/button";
 import { Control } from "gui/2D/controls/control";
 import { PreviewType } from "./previewType";
@@ -22,7 +22,7 @@ import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { FilesInput } from "core/Misc/filesInput";
 import { Color3 } from "core/Maths/math.color";
 import { WebGPUEngine } from "core/Engines/webgpuEngine";
-import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphBlockConnectionPointTypes";
+import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
 
 const useWebGPU = false;
 
@@ -254,7 +254,7 @@ export class PreviewManager {
         this._frameCamera();
 
         // Set a default control in GUI blocks
-        const guiBlocks = this._nodeRenderGraph.getBlocksByPredicate<RenderGraphGUIBlock>((block) => block.getClassName() === "GUI.RenderGraphGUIBlock");
+        const guiBlocks = this._nodeRenderGraph.getBlocksByPredicate<NodeRenderGraphGUIBlock>((block) => block.getClassName() === "GUI.NodeRenderGraphGUIBlock");
         guiBlocks.forEach((block, i) => {
             const gui = block.gui;
 

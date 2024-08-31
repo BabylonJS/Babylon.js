@@ -3,7 +3,6 @@ export * from "./Node/nodeRenderGraph";
 export * from "./Node/nodeRenderGraphBlock";
 export * from "./Node/nodeRenderGraphBlockConnectionPoint";
 export * from "./Node/nodeRenderGraphBuildState";
-export * from "./Node/Types/nodeRenderGraphBlockConnectionPointTypes";
 export * from "./Node/Types/nodeRenderGraphTypes";
 export * from "./Node/Blocks/index";
 
