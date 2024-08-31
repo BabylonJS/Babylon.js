@@ -15,7 +15,8 @@ export * from "./Tasks/PostProcesses/postProcessTask";
 export * from "./Tasks/Texture/clearTextureTask";
 export * from "./Tasks/Texture/copyToBackbufferColorTask";
 export * from "./Tasks/Texture/copyToTextureTask";
-export * from "./Tasks/Rendering/renderObjectsTask";
+export * from "./Tasks/Rendering/objectRendererTask";
+export * from "./Tasks/Rendering/geometryRendererTask";
 
 export * from "./frameGraph";
 export * from "./frameGraphContext";

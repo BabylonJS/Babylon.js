@@ -9,7 +9,8 @@ import { NodeRenderGraphBlackAndWhitePostProcessBlock } from "core/FrameGraph/No
 import { NodeRenderGraphBloomPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/bloomPostProcessBlock";
 import { NodeRenderGraphClearBlock } from "core/FrameGraph/Node/Blocks/clearBlock";
 import { NodeRenderGraphCopyTextureBlock } from "core/FrameGraph/Node/Blocks/copyTextureBlock";
-import { NodeRenderGraphRenderObjectsBlock } from "core/FrameGraph/Node/Blocks/Rendering/renderObjectsBlock";
+import { NodeRenderGraphObjectRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/objectRendererBlock";
+import { NodeRenderGraphGeometryRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/geometryRendererBlock";
 import { NodeRenderGraphGUIBlock } from "gui/2D/FrameGraph/renderGraphGUIBlock";
 
 /**
@@ -59,8 +60,11 @@ export class BlockTools {
             case "GUIBlock": {
                 return new NodeRenderGraphGUIBlock("GUI", scene);
             }
-            case "RenderObjectsBlock": {
-                return new NodeRenderGraphRenderObjectsBlock("Render objects", scene);
+            case "ObjectRendererBlock": {
+                return new NodeRenderGraphObjectRendererBlock("Object renderer", scene);
+            }
+            case "GeometryRendererBlock": {
+                return new NodeRenderGraphGeometryRendererBlock("Geometry renderer", scene);
             }
         }
 
@@ -88,9 +92,24 @@ export class BlockTools {
             case NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment:
                 color = "#591990";
                 break;
-            // case NodeRenderGraphBlockConnectionPointTypes.:
-            //     color = "#84995c";
-            //     break;
+            case NodeRenderGraphBlockConnectionPointTypes.TextureDepth:
+                color = "#84995c";
+                break;
+            case NodeRenderGraphBlockConnectionPointTypes.TextureNormal:
+                color = "#84995c";
+                break;
+            case NodeRenderGraphBlockConnectionPointTypes.TextureAlbedo:
+                color = "#84995c";
+                break;
+            case NodeRenderGraphBlockConnectionPointTypes.TextureReflectivity:
+                color = "#84995c";
+                break;
+            case NodeRenderGraphBlockConnectionPointTypes.TexturePosition:
+                color = "#84995c";
+                break;
+            case NodeRenderGraphBlockConnectionPointTypes.TextureVelocity:
+                color = "#84995c";
+                break;
             case NodeRenderGraphBlockConnectionPointTypes.BasedOnInput:
                 color = "#f28e0a"; // Used by the teleport blocks
                 break;
@@ -118,6 +137,18 @@ export class BlockTools {
                 return NodeRenderGraphBlockConnectionPointTypes.Camera;
             case "ObjectList":
                 return NodeRenderGraphBlockConnectionPointTypes.ObjectList;
+            case "TextureDepth":
+                return NodeRenderGraphBlockConnectionPointTypes.TextureDepth;
+            case "TextureNormal":
+                return NodeRenderGraphBlockConnectionPointTypes.TextureNormal;
+            case "TextureAlbedo":
+                return NodeRenderGraphBlockConnectionPointTypes.TextureAlbedo;
+            case "TextureReflectivity":
+                return NodeRenderGraphBlockConnectionPointTypes.TextureReflectivity;
+            case "TexturePosition":
+                return NodeRenderGraphBlockConnectionPointTypes.TexturePosition;
+            case "TextureVelocity":
+                return NodeRenderGraphBlockConnectionPointTypes.TextureVelocity;
         }
 
         return NodeRenderGraphBlockConnectionPointTypes.AutoDetect;
@@ -137,6 +168,18 @@ export class BlockTools {
                 return "Camera";
             case NodeRenderGraphBlockConnectionPointTypes.ObjectList:
                 return "ObjectList";
+            case NodeRenderGraphBlockConnectionPointTypes.TextureDepth:
+                return "TextureDepth";
+            case NodeRenderGraphBlockConnectionPointTypes.TextureNormal:
+                return "TextureNormal";
+            case NodeRenderGraphBlockConnectionPointTypes.TextureAlbedo:
+                return "TextureAlbedo";
+            case NodeRenderGraphBlockConnectionPointTypes.TextureReflectivity:
+                return "TextureReflectivity";
+            case NodeRenderGraphBlockConnectionPointTypes.TexturePosition:
+                return "TexturePosition";
+            case NodeRenderGraphBlockConnectionPointTypes.TextureVelocity:
+                return "TextureVelocity";
         }
 
         return "";

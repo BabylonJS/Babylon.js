@@ -11,9 +11,13 @@ import { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTex
 import type { Scene } from "../../../scene";
 import type { Camera } from "../../../Cameras/camera";
 
-export class FrameGraphRenderObjectsTask implements IFrameGraphTask {
-    public destinationTexture?: FrameGraphTextureId;
+export interface IFrameGraphGeometryRendererTextureDescription {
+    type: number;
+    textureType: number;
+    textureFormat: number;
+}
 
+export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
     public depthTexture?: FrameGraphTextureId;
 
     private _camera: Camera;
@@ -42,9 +46,26 @@ export class FrameGraphRenderObjectsTask implements IFrameGraphTask {
 
     public depthWrite = true;
 
+    public geometryTextureSize: { width: number; height: number } = { width: 100, height: 100 };
+    public geometryTextureSizeIsPercentage = true;
+    public geometryTextureSamples = 1;
+    public geometryTextureDescriptions: IFrameGraphGeometryRendererTextureDescription[] = [];
+
     public readonly outputTextureReference: FrameGraphTaskOutputReference = [this, "output"];
 
     public readonly outputDepthTextureReference: FrameGraphTaskOutputReference = [this, "outputDepth"];
+
+    public readonly geometryDepthTextureReference: FrameGraphTaskOutputReference = [this, "geometryDepth"];
+
+    public readonly geometryNormalTextureReference: FrameGraphTaskOutputReference = [this, "geometryNormal"];
+
+    public readonly geometryPositionTextureReference: FrameGraphTaskOutputReference = [this, "geometryPosition"];
+
+    public readonly geometryAlbedoTextureReference: FrameGraphTaskOutputReference = [this, "geometryAlbedo"];
+
+    public readonly geometryReflectivityTextureReference: FrameGraphTaskOutputReference = [this, "geometryReflectivity"];
+
+    public readonly geometryVelocityTextureReference: FrameGraphTaskOutputReference = [this, "geometryVelocity"];
 
     public disabled = false;
 
@@ -71,12 +92,20 @@ export class FrameGraphRenderObjectsTask implements IFrameGraphTask {
     }
 
     public recordFrameGraph(frameGraph: FrameGraph) {
-        if (this.destinationTexture === undefined) {
-            throw new Error(`FrameGraphRenderObjectsTask ${this.name}: destinationTexture is required`);
+        if (this.geometryTextureDescriptions.length === 0) {
+            throw new Error(`FrameGraphGeometryRendererTask ${this.name}: at least one geometry texture description must be provided`);
         }
 
-        const outputTextureHandle = frameGraph.getTextureHandle(this.destinationTexture);
-        const textureDescription = frameGraph.getTextureDescription(outputTextureHandle);
+        // TODO: create a multi render target texture if there are more than one geometry texture
+        const outputTextureHandle = frameGraph.createRenderTargetTexture(this.name, {
+            size: this.geometryTextureSize,
+            sizeIsPercentage: this.geometryTextureSizeIsPercentage,
+            options: {
+                samples: this.geometryTextureSamples,
+                type: this.geometryTextureDescriptions[0].textureType,
+                format: this.geometryTextureDescriptions[0].textureFormat,
+            },
+        });
 
         let depthEnabled = false;
 
@@ -84,28 +113,32 @@ export class FrameGraphRenderObjectsTask implements IFrameGraphTask {
             const depthTextureHandle = frameGraph.getTextureHandle(this.depthTexture);
             if (depthTextureHandle === backbufferDepthStencilTextureHandle && outputTextureHandle !== backbufferColorTextureHandle) {
                 throw new Error(
-                    `FrameGraphRenderObjectsTask ${this.name}: the back buffer color texture is the only color texture allowed when the depth is the back buffer depth/stencil`
+                    `FrameGraphGeometryRendererTask ${this.name}: the back buffer color texture is the only color texture allowed when the depth is the back buffer depth/stencil`
                 );
             }
             if (depthTextureHandle !== backbufferDepthStencilTextureHandle && outputTextureHandle === backbufferColorTextureHandle) {
                 throw new Error(
-                    `FrameGraphRenderObjectsTask ${this.name}: the back buffer depth/stencil texture is the only depth texture allowed when the destination is the back buffer color`
+                    `FrameGraphGeometryRendererTask ${this.name}: the back buffer depth/stencil texture is the only depth texture allowed when the destination is the back buffer color`
                 );
             }
             depthEnabled = true;
         }
+
+        const textureDescription = frameGraph.getTextureDescription(outputTextureHandle);
 
         this._rtt._size = textureDescription.size;
 
         const pass = frameGraph.addRenderPass(this.name);
 
         pass.setRenderTarget(outputTextureHandle);
+        pass.setOutputTexture(outputTextureHandle, 0, "geometryDepth"); // TODO: fix this and all the other output textures
         if (this.depthTexture !== undefined) {
             pass.setRenderTargetDepth(frameGraph.getTextureHandle(this.depthTexture));
         }
         pass.setExecuteFunc((_context) => {
             this._scene.incrementRenderId();
             _context.setDepthStates(this.depthTest && depthEnabled, this.depthWrite && depthEnabled);
+            // TODO: clear all targets
             _context.render(this._rtt);
         });
 

@@ -9,6 +9,7 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
     protected _renderTarget: FrameGraphTextureHandle;
     protected _renderTargetDepth: FrameGraphTextureHandle | undefined;
     protected _usedTextures: FrameGraphTextureHandle[] = [];
+    protected _outputTextures: { handle: FrameGraphTextureHandle; index: number; name: string }[] = [];
     protected _depthShared = false;
 
     public static IsRenderPass(pass: IFrameGraphPass): pass is FrameGraphRenderPass {
@@ -26,6 +27,11 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
     }
 
     /** @internal */
+    public get outputTextures() {
+        return this._outputTextures;
+    }
+
+    /** @internal */
     constructor(name: string, parentTask: IFrameGraphTask, context: FrameGraphRenderContext, engine: AbstractEngine) {
         super(name, parentTask, context);
         this._engine = engine;
@@ -37,6 +43,10 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
 
     public setRenderTarget(renderTargetHandle: FrameGraphTextureHandle) {
         this._renderTarget = renderTargetHandle;
+    }
+
+    public setOutputTexture(renderTargetHandle: FrameGraphTextureHandle, index: number, name: string) {
+        this._outputTextures.push({ handle: renderTargetHandle, index, name });
     }
 
     public setRenderTargetDepth(renderTargetHandle?: FrameGraphTextureHandle) {

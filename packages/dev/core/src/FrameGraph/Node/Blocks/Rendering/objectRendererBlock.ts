@@ -5,15 +5,15 @@ import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRender
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import type { Scene } from "../../../../scene";
 import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
-import { FrameGraphRenderObjectsTask } from "../../../Tasks/Rendering/renderObjectsTask";
+import { FrameGraphObjectRendererTask } from "../../../Tasks/Rendering/objectRendererTask";
 import type { FrameGraphObjectList, FrameGraphTextureId } from "../../../frameGraphTypes";
 import type { Camera } from "../../../../Cameras/camera";
 
 /**
  * Block that render objects to a render target
  */
-export class NodeRenderGraphRenderObjectsBlock extends NodeRenderGraphBlock {
-    protected override _frameGraphTask: FrameGraphRenderObjectsTask;
+export class NodeRenderGraphObjectRendererBlock extends NodeRenderGraphBlock {
+    protected override _frameGraphTask: FrameGraphObjectRendererTask;
 
     /**
      * Gets the frame graph task associated with this block
@@ -23,7 +23,7 @@ export class NodeRenderGraphRenderObjectsBlock extends NodeRenderGraphBlock {
     }
 
     /**
-     * Create a new NodeRenderGraphRenderObjectsBlock
+     * Create a new NodeRenderGraphObjectRendererBlock
      * @param name defines the block name
      * @param scene defines the hosting scene
      */
@@ -44,7 +44,7 @@ export class NodeRenderGraphRenderObjectsBlock extends NodeRenderGraphBlock {
         this.output._typeConnectionSource = this.destination;
         this.outputDepth._typeConnectionSource = this.depth;
 
-        this._frameGraphTask = new FrameGraphRenderObjectsTask(this.name, scene);
+        this._frameGraphTask = new FrameGraphObjectRendererTask(this.name, scene);
     }
 
     /** Indicates if depth testing must be enabled or disabled */
@@ -72,7 +72,7 @@ export class NodeRenderGraphRenderObjectsBlock extends NodeRenderGraphBlock {
      * @returns the class name
      */
     public override getClassName() {
-        return "NodeRenderGraphRenderObjectsBlock";
+        return "NodeRenderGraphObjectRendererBlock";
     }
 
     /**
@@ -153,6 +153,8 @@ export class NodeRenderGraphRenderObjectsBlock extends NodeRenderGraphBlock {
         const codes: string[] = [];
         codes.push(`${this._codeVariableName}.depthTest = ${this.depthTest};`);
         codes.push(`${this._codeVariableName}.depthWrite = ${this.depthWrite};`);
+        codes.push(`${this._codeVariableName}.camera = CAMERA; // TODO: set camera`);
+        codes.push(`${this._codeVariableName}.objectList = OBJECT_LIST; // TODO: set object list`);
         return super._dumpPropertiesCode() + codes.join("\n");
     }
 
@@ -170,4 +172,4 @@ export class NodeRenderGraphRenderObjectsBlock extends NodeRenderGraphBlock {
     }
 }
 
-RegisterClass("BABYLON.NodeRenderGraphRenderObjectsBlock", NodeRenderGraphRenderObjectsBlock);
+RegisterClass("BABYLON.NodeRenderGraphObjectRendererBlock", NodeRenderGraphObjectRendererBlock);

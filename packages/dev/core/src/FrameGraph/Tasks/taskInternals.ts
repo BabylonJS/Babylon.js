@@ -42,6 +42,9 @@ export class FrameGraphTaskInternals {
             if (FrameGraphRenderPass.IsRenderPass(pass)) {
                 outputTexture = pass.renderTarget;
                 outputDepthTexture = pass.renderTargetDepth;
+                for (const outputTexture of pass.outputTextures) {
+                    this.mapNameToTextureHandle[outputTexture.name] = outputTexture.handle;
+                }
             }
         }
 
