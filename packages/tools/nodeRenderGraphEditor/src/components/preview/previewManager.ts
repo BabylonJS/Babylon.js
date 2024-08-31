@@ -225,6 +225,9 @@ export class PreviewManager {
             if (!input.isExternal) {
                 continue;
             }
+            if (!input.isAnAncestorOfType("NodeRenderGraphOutputBlock")) {
+                continue;
+            }
             if ((input.type & NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer) !== 0) {
                 // TODO: Implement this
             } else if (input.isCamera()) {
@@ -255,10 +258,15 @@ export class PreviewManager {
 
         // Set a default control in GUI blocks
         const guiBlocks = this._nodeRenderGraph.getBlocksByPredicate<NodeRenderGraphGUIBlock>((block) => block.getClassName() === "GUI.NodeRenderGraphGUIBlock");
+        let guiIndex = 0;
         guiBlocks.forEach((block, i) => {
             const gui = block.gui;
 
-            const button = Button.CreateSimpleButton("but" + i, `GUI #${i + 1} button`);
+            if (!block.isAnAncestorOfType("NodeRenderGraphOutputBlock")) {
+                return;
+            }
+
+            const button = Button.CreateSimpleButton("but" + guiIndex, `GUI #${guiIndex++ + 1} button`);
 
             const left = i % 4 === 0 || i % 4 === 3;
             const top = i % 4 < 2;
