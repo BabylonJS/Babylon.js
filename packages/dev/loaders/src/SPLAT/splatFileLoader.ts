@@ -12,11 +12,12 @@ import { AssetContainer } from "core/assetContainer";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { Mesh } from "core/Meshes/mesh";
+import { Mesh } from "core/Meshes/mesh";
 import { Logger } from "core/Misc/logger";
 import { Quaternion, Vector3 } from "core/Maths/math.vector";
 import { PointsCloudSystem } from "core/Particles/pointsCloudSystem";
 import { Color4 } from "core/Maths/math.color";
+import { VertexData } from "core/Meshes/mesh.vertexData";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const PLUGIN_SPLAT = "splat";
@@ -46,6 +47,8 @@ const enum Mode {
 interface ParsedPLY {
     data: ArrayBuffer;
     mode: Mode;
+    faces?: number[];
+    hasVertexColors?: boolean;
 }
 
 /**
@@ -71,7 +74,6 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         ".ply": { isBinary: true },
     } as const satisfies ISceneLoaderPluginExtensions;
 
-    //private _loadingOptions: SPLATLoadingOptions;
     /**
      * Creates loader for gaussian splatting files
      */
@@ -132,12 +134,13 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         const uBuffer = new Uint8Array(data);
         const fBuffer = new Float32Array(data);
 
+        // parsed array contains room for position(3floats), normal(3floats), color (4b), quantized quaternion (4b)
         const rowLength = 3 * 4 + 3 * 4 + 4 + 4;
         const vertexCount = uBuffer.length / rowLength;
 
         const pointcloudfunc = function (particle: any, i: number) {
             const x = fBuffer[8 * i + 0];
-            const y = -fBuffer[8 * i + 1];
+            const y = fBuffer[8 * i + 1];
             const z = fBuffer[8 * i + 2];
             particle.position = new Vector3(x, y, z);
 
@@ -149,6 +152,46 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
 
         pointcloud.addPoints(vertexCount, pointcloudfunc);
         return true;
+    }
+
+    private static _BuildMesh(scene: Scene, parsedPLY: ParsedPLY): Mesh {
+        const mesh = new Mesh("PLYMesh", scene);
+
+        const uBuffer = new Uint8Array(parsedPLY.data);
+        const fBuffer = new Float32Array(parsedPLY.data);
+
+        const rowLength = 3 * 4 + 3 * 4 + 4 + 4;
+        const vertexCount = uBuffer.length / rowLength;
+
+        const positions = [];
+
+        const vertexData = new VertexData();
+        for (let i = 0; i < vertexCount; i++) {
+            const x = fBuffer[8 * i + 0];
+            const y = fBuffer[8 * i + 1];
+            const z = fBuffer[8 * i + 2];
+            positions.push(x, y, z);
+        }
+
+        if (parsedPLY.hasVertexColors) {
+            const colors = new Float32Array(vertexCount * 4);
+            for (let i = 0; i < vertexCount; i++) {
+                const r = uBuffer[rowLength * i + 24 + 0] / 255;
+                const g = uBuffer[rowLength * i + 24 + 1] / 255;
+                const b = uBuffer[rowLength * i + 24 + 2] / 255;
+                colors[i * 4 + 0] = r;
+                colors[i * 4 + 1] = g;
+                colors[i * 4 + 2] = b;
+                colors[i * 4 + 3] = 1;
+            }
+            vertexData.colors = colors;
+        }
+
+        vertexData.positions = positions;
+        vertexData.indices = parsedPLY.faces!;
+
+        vertexData.applyToMesh(mesh);
+        return mesh;
     }
 
     private _parse(meshesNames: any, scene: Scene, data: any, rootUrl: string): Promise<Array<AbstractMesh>> {
@@ -165,7 +208,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                 break;
             case Mode.PointCloud:
                 {
-                    const pointcloud = new PointsCloudSystem("pointcloud", 1, scene);
+                    const pointcloud = new PointsCloudSystem("PointCloud", 1, scene);
                     if (SPLATFileLoader._BuildPointCloud(pointcloud, parsedPLY.data)) {
                         return Promise.all([pointcloud.buildMeshAsync()]).then((mesh) => {
                             babylonMeshesArray.push(mesh[0]);
@@ -173,6 +216,15 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                         });
                     } else {
                         pointcloud.dispose();
+                    }
+                }
+                break;
+            case Mode.Mesh:
+                {
+                    if (parsedPLY.faces) {
+                        babylonMeshesArray.push(SPLATFileLoader._BuildMesh(scene, parsedPLY));
+                    } else {
+                        throw new Error("PLY mesh doesn't contain face informations.");
                     }
                 }
                 break;
@@ -237,7 +289,11 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             return { mode: Mode.Splat, data: data };
         }
         const vertexCount = parseInt(/element vertex (\d+)\n/.exec(header)![1]);
-
+        const faceElement = /element face (\d+)\n/.exec(header);
+        let faceCount = 0;
+        if (faceElement) {
+            faceCount = parseInt(faceElement[1]);
+        }
         let rowOffset = 0;
         const offsets: Record<string, number> = {
             double: 8,
@@ -266,8 +322,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             if (offsets[type]) {
                 rowOffset += offsets[type];
             } else {
-                Logger.Error(`Unsupported property type: ${type}. Are you sure it's a valid Gaussian Splatting file?`);
-                //return new ArrayBuffer(0);
+                Logger.Warn(`Unsupported property type: ${type}.`);
             }
         }
 
@@ -382,7 +437,27 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             rot[3] = q.z * 128 + 128;
         }
 
+        // faces
+        const faces = [];
+        if (faceCount) {
+            let offset = rowOffset * vertexCount;
+            for (let i = 0; i < faceCount; i++) {
+                const faceVertexCount = dataView.getUint8(offset);
+                if (faceVertexCount != 3) {
+                    continue; // only support triangles
+                }
+                offset += 1;
+
+                for (let j = 0; j < faceVertexCount; j++) {
+                    const vertexIndex = dataView.getUint32(offset + (2 - j) * 4, true); // change face winding
+                    faces.push(vertexIndex);
+                }
+                offset += 12;
+            }
+        }
+
         // count available properties. if all necessary are present then it's a splat. Otherwise, it's a point cloud
+        // if faces are found, then it's a standard mesh
         let propertyCount = 0;
         let propertyColorCount = 0;
         const splatProperties = ["x", "y", "z", "scale_0", "scale_1", "scale_2", "opacity", "rot_0", "rot_1", "rot_2", "rot_3"];
@@ -397,9 +472,9 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             }
         }
         const hasMandatoryProperties = propertyCount == splatProperties.length && propertyColorCount == 3;
-        const currentMode = hasMandatoryProperties ? Mode.Splat : Mode.PointCloud;
+        const currentMode = faceCount ? Mode.Mesh : hasMandatoryProperties ? Mode.Splat : Mode.PointCloud;
         // parsed ready ready to be used as a splat
-        return { mode: currentMode, data: buffer };
+        return { mode: currentMode, data: buffer, faces: faces, hasVertexColors: !!propertyColorCount };
     }
 }
 
