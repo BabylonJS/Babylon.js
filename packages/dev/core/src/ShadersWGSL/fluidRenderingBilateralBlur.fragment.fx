@@ -2,7 +2,7 @@ var textureSamplerSampler: sampler;
 var textureSampler: texture_2d<f32>;
 
 uniform maxFilterSize: i32;
-uniform blurDir: vec3f;
+uniform blurDir: vec2f;
 uniform projectedParticleConstant: f32;
 uniform depthThreshold: f32;
 
