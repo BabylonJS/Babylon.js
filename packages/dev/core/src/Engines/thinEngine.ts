@@ -3446,6 +3446,8 @@ export class ThinEngine extends AbstractEngine {
             } else if (textureFormat === Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8) {
                 internalFormat = hasStencil ? gl.DEPTH32F_STENCIL8 : gl.DEPTH_COMPONENT32F;
             }
+        } else {
+            internalFormat = gl.DEPTH_COMPONENT16;
         }
 
         return internalFormat;
