@@ -175,7 +175,7 @@ export class _IblShadowsVoxelTracingPass {
     }
 
     /** The default rotation of the environment map will align the shadows with the default lighting orientation */
-    private _envRotation: number = -Math.PI / 2.0;
+    private _envRotation: number = 0.0;
     private _downscale: number = 1.0;
 
     /**
@@ -273,7 +273,8 @@ export class _IblShadowsVoxelTracingPass {
         this._frameId++;
 
         const downscaleSquared = this._downscale * this._downscale;
-        const rotation = this._scene.useRightHandedSystem ? this._envRotation : (this._envRotation + Math.PI) % (2.0 * Math.PI);
+        let rotation = this._scene.useRightHandedSystem ? -this._envRotation - 0.5 * Math.PI : -this._envRotation - Math.PI;
+        rotation = rotation % (2.0 * Math.PI);
         effect.setVector4("shadowParameters", new Vector4(this._sampleDirections, this._frameId / downscaleSquared, this._downscale, rotation));
         const offset = new Vector2(0.0, 0.0);
         const voxelGrid = this._renderPipeline!.getVoxelGridTexture();
