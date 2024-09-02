@@ -29,7 +29,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     var sumVel: f32 = 0.;
 
     for (var x: i32 = -filterSize; x <= filterSize; x++) {
-        var coords: vec2f = vec2f(x);
+        var coords: vec2f = vec2f(f32(x));
         var sampleDepthVel: vec2f = textureSampleLevel(textureSampler, textureSamplerSampler, input.vUV + coords * uniforms.blurDir, 0.).rg;
 
         var r: f32 = dot(coords, coords);

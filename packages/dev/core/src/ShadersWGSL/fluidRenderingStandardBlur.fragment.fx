@@ -21,7 +21,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     var wsum: f32 = 0.;
 
     for (var x: i32 = -uniforms.filterSize; x <= uniforms.filterSize; x++) {
-        var coords: vec2f = vec2f(x);
+        var coords: vec2f = vec2f(f32(x));
         var sampl: vec4f = textureSampleLevel(textureSampler, textureSamplerSampler, input.vUV + coords * uniforms.blurDir, 0.);
 
         var w: f32 = exp(-coords.x * coords.x / twoSigma2);
