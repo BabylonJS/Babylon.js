@@ -140,9 +140,9 @@ export class BounceEase extends EasingFunction implements IEasingFunction {
      * @param bounciness Defines the amplitude of the bounce
      */
     constructor(
-        /** Defines the number of bounces */
+        /** [3] Defines the number of bounces */
         public bounces: number = 3,
-        /** Defines the amplitude of the bounce */
+        /** [2] Defines the amplitude of the bounce */
         public bounciness: number = 2
     ) {
         super();
@@ -200,9 +200,9 @@ export class ElasticEase extends EasingFunction implements IEasingFunction {
      * @param springiness Defines the amplitude of the oscillations
      */
     constructor(
-        /** Defines the number of oscillations*/
+        /** [3] Defines the number of oscillations*/
         public oscillations: number = 3,
-        /** Defines the amplitude of the oscillations*/
+        /** [3] Defines the amplitude of the oscillations*/
         public springiness: number = 3
     ) {
         super();
@@ -237,7 +237,7 @@ export class ExponentialEase extends EasingFunction implements IEasingFunction {
      * @param exponent Defines the exponent of the function
      */
     constructor(
-        /** Defines the exponent of the function */
+        /** [3] Defines the exponent of the function */
         public exponent: number = 2
     ) {
         super();
@@ -267,7 +267,7 @@ export class PowerEase extends EasingFunction implements IEasingFunction {
      * @param power Defines the power of the function
      */
     constructor(
-        /** Defines the power of the function */
+        /** [2] Defines the power of the function */
         public power: number = 2
     ) {
         super();
@@ -353,13 +353,13 @@ export class BezierCurveEase extends EasingFunction implements IEasingFunction {
      * @param y2 Defines the y component of the end tangent in the bezier curve
      */
     constructor(
-        /** Defines the x component of the start tangent in the bezier curve */
+        /** [0] Defines the x component of the start tangent in the bezier curve */
         public x1: number = 0,
-        /** Defines the y component of the start tangent in the bezier curve */
+        /** [0] Defines the y component of the start tangent in the bezier curve */
         public y1: number = 0,
-        /** Defines the x component of the end tangent in the bezier curve */
+        /** [1] Defines the x component of the end tangent in the bezier curve */
         public x2: number = 1,
-        /** Defines the y component of the end tangent in the bezier curve */
+        /** [1] Defines the y component of the end tangent in the bezier curve */
         public y2: number = 1
     ) {
         super();

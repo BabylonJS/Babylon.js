@@ -550,7 +550,7 @@ export class SpriteRenderer {
             this.texture.dispose();
             (<any>this.texture) = null;
         }
-        this._drawWrapperBase.dispose();
-        this._drawWrapperDepth.dispose();
+        this._drawWrapperBase?.dispose();
+        this._drawWrapperDepth?.dispose();
     }
 }

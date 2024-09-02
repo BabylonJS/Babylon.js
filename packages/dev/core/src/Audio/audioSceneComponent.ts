@@ -1,6 +1,5 @@
 import { Sound } from "./sound";
 import { SoundTrack } from "./soundTrack";
-import { Engine } from "../Engines/engine";
 import type { Nullable } from "../types";
 import { Matrix, Vector3 } from "../Maths/math.vector";
 import type { ISceneSerializableComponent } from "../sceneComponent";
@@ -12,6 +11,7 @@ import type { AssetContainer } from "../assetContainer";
 import "./audioEngine";
 import { PrecisionDate } from "../Misc/precisionDate";
 import { EngineStore } from "../Engines/engineStore";
+import { AbstractEngine } from "core/Engines/abstractEngine";
 
 // Adds the parser to the scene parsers.
 AbstractScene.AddParser(SceneComponentConstants.NAME_AUDIO, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
@@ -22,7 +22,7 @@ AbstractScene.AddParser(SceneComponentConstants.NAME_AUDIO, (parsedData: any, sc
     if (parsedData.sounds !== undefined && parsedData.sounds !== null) {
         for (let index = 0, cache = parsedData.sounds.length; index < cache; index++) {
             const parsedSound = parsedData.sounds[index];
-            if (Engine.audioEngine?.canUseWebAudio) {
+            if (AbstractEngine.audioEngine?.canUseWebAudio) {
                 if (!parsedSound.url) {
                     parsedSound.url = parsedSound.name;
                 }
@@ -434,8 +434,8 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         const scene = this.scene;
         this._audioEnabled = false;
 
-        if (Engine.audioEngine && Engine.audioEngine.audioContext) {
-            Engine.audioEngine.audioContext.suspend();
+        if (AbstractEngine.audioEngine && AbstractEngine.audioEngine.audioContext) {
+            AbstractEngine.audioEngine.audioContext.suspend();
         }
 
         let i: number;
@@ -458,8 +458,8 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         const scene = this.scene;
         this._audioEnabled = true;
 
-        if (Engine.audioEngine && Engine.audioEngine.audioContext) {
-            Engine.audioEngine.audioContext.resume();
+        if (AbstractEngine.audioEngine && AbstractEngine.audioEngine.audioContext) {
+            AbstractEngine.audioEngine.audioContext.resume();
         }
 
         let i: number;
@@ -529,7 +529,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
             return;
         }
 
-        const audioEngine = Engine.audioEngine;
+        const audioEngine = AbstractEngine.audioEngine;
 
         if (!audioEngine) {
             return;

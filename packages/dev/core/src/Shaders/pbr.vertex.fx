@@ -74,6 +74,7 @@ varying vec3 vPositionW;
 #if DEBUGMODE > 0
     varying vec4 vClipSpacePosition;
 #endif
+
 #ifdef NORMAL
     varying vec3 vNormalW;
     #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
@@ -134,7 +135,9 @@ void main(void) {
 
 #include<instancesVertex>
 
-#if defined(PREPASS) && defined(PREPASS_VELOCITY) && !defined(BONES_VELOCITY_ENABLED)
+#if defined(PREPASS) &&                                                        \
+    (defined(PREPASS_VELOCITY) && !defined(BONES_VELOCITY_ENABLED) ||          \
+     defined(PREPASS_VELOCITY_LINEAR))
     // Compute velocity before bones computation
     vCurrentPosition = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
     vPreviousPosition = previousViewProjection * finalPreviousWorld * vec4(positionUpdated, 1.0);

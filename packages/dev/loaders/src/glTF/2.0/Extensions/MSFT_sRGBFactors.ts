@@ -8,6 +8,17 @@ import { GLTFLoader } from "../glTFLoader";
 
 const NAME = "MSFT_sRGBFactors";
 
+declare module "../../glTFFileLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface GLTFLoaderExtensionOptions {
+        /**
+         * Defines options for the MSFT_sRGBFactors extension.
+         */
+        // NOTE: Don't use NAME here as it will break the UMD type declarations.
+        ["MSFT_sRGBFactors"]: {};
+    }
+}
+
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class MSFT_sRGBFactors implements IGLTFLoaderExtension {

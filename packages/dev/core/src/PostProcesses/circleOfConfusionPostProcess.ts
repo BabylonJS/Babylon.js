@@ -103,15 +103,15 @@ export class CircleOfConfusionPostProcess extends PostProcess {
         });
     }
 
-    protected override async _initShaderSourceAsync(useWebGPU: boolean) {
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
-            await import("../ShadersWGSL/circleOfConfusion.fragment");
+            list.push(import("../ShadersWGSL/circleOfConfusion.fragment"));
         } else {
-            await import("../Shaders/circleOfConfusion.fragment");
+            list.push(import("../Shaders/circleOfConfusion.fragment"));
         }
 
-        super._initShaderSourceAsync(useWebGPU);
+        super._gatherImports(useWebGPU, list);
     }
 
     /**

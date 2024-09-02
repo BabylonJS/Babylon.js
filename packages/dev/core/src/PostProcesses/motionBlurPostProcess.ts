@@ -170,15 +170,15 @@ export class MotionBlurPostProcess extends PostProcess {
         this._applyMode();
     }
 
-    protected override async _initShaderSourceAsync(useWebGPU: boolean) {
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
-            await Promise.all([import("../ShadersWGSL/motionBlur.fragment")]);
+            list.push(Promise.all([import("../ShadersWGSL/motionBlur.fragment")]));
         } else {
-            await Promise.all([import("../Shaders/motionBlur.fragment")]);
+            list.push(Promise.all([import("../Shaders/motionBlur.fragment")]));
         }
 
-        await super._initShaderSourceAsync(useWebGPU);
+        super._gatherImports(useWebGPU, list);
     }
 
     /**

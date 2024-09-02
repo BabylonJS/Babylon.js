@@ -7,6 +7,17 @@ import { MeshoptCompression } from "core/Meshes/Compression/meshoptCompression";
 
 const NAME = "EXT_meshopt_compression";
 
+declare module "../../glTFFileLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface GLTFLoaderExtensionOptions {
+        /**
+         * Defines options for the EXT_meshopt_compression extension.
+         */
+        // NOTE: Don't use NAME here as it will break the UMD type declarations.
+        ["EXT_meshopt_compression"]: {};
+    }
+}
+
 interface IBufferViewMeshopt extends IBufferView {
     _meshOptData?: Promise<ArrayBufferView>;
 }

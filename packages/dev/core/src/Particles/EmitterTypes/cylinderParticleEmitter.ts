@@ -192,11 +192,11 @@ export class CylinderDirectedParticleEmitter extends CylinderParticleEmitter {
         height = 1,
         radiusRange = 1,
         /**
-         * The min limit of the emission direction.
+         * [Up vector] The min limit of the emission direction.
          */
         public direction1 = new Vector3(0, 1, 0),
         /**
-         * The max limit of the emission direction.
+         * [Up vector] The max limit of the emission direction.
          */
         public direction2 = new Vector3(0, 1, 0)
     ) {

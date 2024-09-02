@@ -3,6 +3,17 @@ import { GLTFLoader } from "../glTFLoader";
 
 const NAME = "KHR_mesh_quantization";
 
+declare module "../../glTFFileLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface GLTFLoaderExtensionOptions {
+        /**
+         * Defines options for the KHR_mesh_quantization extension.
+         */
+        // NOTE: Don't use NAME here as it will break the UMD type declarations.
+        ["KHR_mesh_quantization"]: {};
+    }
+}
+
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_mesh_quantization/README.md)
  */

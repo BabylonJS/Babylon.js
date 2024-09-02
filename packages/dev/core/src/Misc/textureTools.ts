@@ -63,22 +63,24 @@ export function CreateResizedCopy(texture: Texture, width: number, height: numbe
         Constants.TEXTURETYPE_UNSIGNED_INT
     );
     passPostProcess.externalTextureSamplerBinding = true;
-    passPostProcess.getEffect().executeWhenCompiled(() => {
-        passPostProcess.onApply = function (effect) {
-            effect.setTexture("textureSampler", texture);
-        };
+    passPostProcess.onEffectCreatedObservable.addOnce((e) => {
+        e.executeWhenCompiled(() => {
+            passPostProcess.onApply = function (effect) {
+                effect.setTexture("textureSampler", texture);
+            };
 
-        const internalTexture = rtt.renderTarget;
+            const internalTexture = rtt.renderTarget;
 
-        if (internalTexture) {
-            scene.postProcessManager.directRender([passPostProcess], internalTexture);
+            if (internalTexture) {
+                scene.postProcessManager.directRender([passPostProcess], internalTexture);
 
-            engine.unBindFramebuffer(internalTexture);
-            rtt.disposeFramebufferObjects();
-            passPostProcess.dispose();
+                engine.unBindFramebuffer(internalTexture);
+                rtt.disposeFramebufferObjects();
+                passPostProcess.dispose();
 
-            rtt.getInternalTexture()!.isReady = true;
-        }
+                rtt.getInternalTexture()!.isReady = true;
+            }
+        });
     });
 
     return rtt;
@@ -139,8 +141,8 @@ export function ApplyPostProcess(
             }
         );
 
-        postProcess.onEffectCreatedObservable.addOnce(() => {
-            postProcess.getEffect().executeWhenCompiled(() => {
+        postProcess.onEffectCreatedObservable.addOnce((e) => {
+            e.executeWhenCompiled(() => {
                 // PP Render Pass
                 postProcess.onApply = (effect) => {
                     effect._bindTexture("textureSampler", internalTexture);
@@ -252,8 +254,10 @@ const ProcessAsync = async (texture: BaseTexture, width: number, height: number,
     }
 
     await new Promise((resolve) => {
-        lodPostProcess.getEffect().executeWhenCompiled(() => {
-            resolve(0);
+        lodPostProcess.onEffectCreatedObservable.addOnce((e) => {
+            e.executeWhenCompiled(() => {
+                resolve(0);
+            });
         });
     });
 

@@ -4,13 +4,13 @@ import type { WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Tools } from "../../Misc/tools";
 import { Texture } from "../../Materials/Textures/texture";
-import { Engine } from "../../Engines/engine";
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 import { Constants } from "../../Engines/constants";
 import { WebGLHardwareTexture } from "../../Engines/WebGL/webGLHardwareTexture";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import type { ThinEngine } from "../../Engines/thinEngine";
+import type { Engine } from "core/Engines/engine";
 
 export type WebXRDepthUsage = "cpu" | "gpu";
 export type WebXRDepthDataFormat = "ushort" | "float";
@@ -263,7 +263,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
                 false,
                 true,
                 Texture.NEAREST_SAMPLINGMODE,
-                Engine.TEXTURETYPE_FLOAT
+                Constants.TEXTURETYPE_FLOAT
             );
         }
 
@@ -306,7 +306,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
                 false,
                 true,
                 Texture.NEAREST_SAMPLINGMODE,
-                dataFormat === "ushort" ? Engine.TEXTURETYPE_UNSIGNED_BYTE : Engine.TEXTURETYPE_FLOAT
+                dataFormat === "ushort" ? Constants.TEXTURETYPE_UNSIGNED_BYTE : Constants.TEXTURETYPE_FLOAT
             );
         }
 

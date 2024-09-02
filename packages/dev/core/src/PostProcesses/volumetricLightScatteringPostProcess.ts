@@ -7,7 +7,7 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import type { SubMesh } from "../Meshes/subMesh";
 import type { Mesh } from "../Meshes/mesh";
 import type { Camera } from "../Cameras/camera";
-import type { Effect } from "../Materials/effect";
+import type { Effect, IEffectCreationOptions } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { Texture } from "../Materials/Textures/texture";
@@ -27,8 +27,9 @@ import { Viewport } from "../Maths/math.viewport";
 import { RegisterClass } from "../Misc/typeStore";
 import type { Nullable } from "../types";
 
-import { PushAttributesForInstances } from "../Materials/materialHelper.functions";
+import { BindBonesParameters, BindMorphTargetParameters, PrepareAttributesForMorphTargetsInfluencers, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 import type { AbstractEngine } from "../Engines/abstractEngine";
+import { EffectFallbacks } from "core/Materials/effectFallbacks";
 
 /**
  *  Inspired by https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-13-volumetric-light-scattering-post-process
@@ -208,7 +209,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
 
         const defines = [];
         const attribs = [VertexBuffer.PositionKind];
-        const material: any = subMesh.getMaterial();
+        const material = subMesh.getMaterial();
 
         // Alpha test
         if (material) {
@@ -227,13 +228,44 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
         }
 
         // Bones
-        if (mesh.useBones && mesh.computeBonesUsingShaders) {
+        const fallbacks = new EffectFallbacks();
+        if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
             attribs.push(VertexBuffer.MatricesIndicesKind);
             attribs.push(VertexBuffer.MatricesWeightsKind);
+            if (mesh.numBoneInfluencers > 4) {
+                attribs.push(VertexBuffer.MatricesIndicesExtraKind);
+                attribs.push(VertexBuffer.MatricesWeightsExtraKind);
+            }
             defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-            defines.push("#define BonesPerMesh " + (mesh.skeleton ? mesh.skeleton.bones.length + 1 : 0));
+            if (mesh.numBoneInfluencers > 0) {
+                fallbacks.addCPUSkinningFallback(0, mesh);
+            }
+
+            const skeleton = mesh.skeleton;
+            if (skeleton.isUsingTextureForMatrices) {
+                defines.push("#define BONETEXTURE");
+            } else {
+                defines.push("#define BonesPerMesh " + (skeleton.bones.length + 1));
+            }
         } else {
             defines.push("#define NUM_BONE_INFLUENCERS 0");
+        }
+
+        // Morph targets
+        const morphTargetManager = (mesh as Mesh).morphTargetManager;
+        let numMorphInfluencers = 0;
+        if (morphTargetManager) {
+            numMorphInfluencers = morphTargetManager.numMaxInfluencers || morphTargetManager.numInfluencers;
+            if (numMorphInfluencers > 0) {
+                defines.push("#define MORPHTARGETS");
+                defines.push("#define NUM_MORPH_INFLUENCERS " + numMorphInfluencers);
+
+                if (morphTargetManager.isUsingTextureForTargets) {
+                    defines.push("#define MORPHTARGETS_TEXTURE");
+                }
+
+                PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, numMorphInfluencers);
+            }
         }
 
         // Instances
@@ -245,25 +277,55 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
             }
         }
 
+        // Baked vertex animations
+        const bvaManager = mesh.bakedVertexAnimationManager;
+        if (bvaManager && bvaManager.isEnabled) {
+            defines.push("#define BAKED_VERTEX_ANIMATION_TEXTURE");
+            if (useInstances) {
+                attribs.push("bakedVertexAnimationSettingsInstanced");
+            }
+        }
+
         // Get correct effect
         const drawWrapper = subMesh._getDrawWrapper(undefined, true)!;
         const cachedDefines = drawWrapper.defines;
         const join = defines.join("\n");
         if (cachedDefines !== join) {
+            const uniforms = [
+                "world",
+                "mBones",
+                "boneTextureWidth",
+                "viewProjection",
+                "diffuseMatrix",
+                "morphTargetInfluences",
+                "morphTargetCount",
+                "morphTargetTextureInfo",
+                "morphTargetTextureIndices",
+                "bakedVertexAnimationSettings",
+                "bakedVertexAnimationTextureSizeInverted",
+                "bakedVertexAnimationTime",
+                "bakedVertexAnimationTexture",
+            ];
+            const samplers = ["diffuseSampler", "morphTargets", "boneSampler", "bakedVertexAnimationTexture"];
+
             drawWrapper.setEffect(
                 mesh
                     .getScene()
                     .getEngine()
                     .createEffect(
                         "volumetricLightScatteringPass",
-                        attribs,
-                        ["world", "mBones", "viewProjection", "diffuseMatrix"],
-                        ["diffuseSampler"],
-                        join,
-                        undefined,
-                        undefined,
-                        undefined,
-                        { maxSimultaneousMorphTargets: mesh.numBoneInfluencers }
+                        <IEffectCreationOptions>{
+                            attributes: attribs,
+                            uniformsNames: uniforms,
+                            uniformBuffersNames: [],
+                            samplers: samplers,
+                            defines: join,
+                            fallbacks: fallbacks,
+                            onCompiled: null,
+                            onError: null,
+                            indexParameters: { maxSimultaneousMorphTargets: numMorphInfluencers },
+                        },
+                        mesh.getScene().getEngine()
                     ),
                 join
             );
@@ -401,19 +463,28 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
                     effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
                     // Alpha test
-                    if (material && material.needAlphaTesting()) {
+                    if (material.needAlphaTesting()) {
                         const alphaTexture = material.getAlphaTestTexture();
 
-                        effect.setTexture("diffuseSampler", alphaTexture);
-
                         if (alphaTexture) {
+                            effect.setTexture("diffuseSampler", alphaTexture);
                             effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
                         }
                     }
 
                     // Bones
-                    if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {
-                        effect.setMatrices("mBones", renderingMesh.skeleton.getTransformMatrices(renderingMesh));
+                    BindBonesParameters(renderingMesh, effect);
+
+                    // Morph targets
+                    BindMorphTargetParameters(renderingMesh, effect);
+                    if (renderingMesh.morphTargetManager && renderingMesh.morphTargetManager.isUsingTextureForTargets) {
+                        renderingMesh.morphTargetManager._bind(effect);
+                    }
+
+                    // Baked vertex animations
+                    const bvaManager = subMesh.getMesh().bakedVertexAnimationManager;
+                    if (bvaManager && bvaManager.isEnabled) {
+                        bvaManager.bind(effect, hardwareInstancedRendering);
                     }
                 }
 

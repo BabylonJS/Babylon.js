@@ -18,7 +18,8 @@ declare module "../../glTFFileLoader" {
         /**
          * Defines options for the MSFT_lod extension.
          */
-        ["MSFT_lod"]?: Partial<{
+        // NOTE: Don't use NAME here as it will break the UMD type declarations.
+        ["MSFT_lod"]: Partial<{
             /**
              * Maximum number of LODs to load, starting from the lowest LOD.
              */

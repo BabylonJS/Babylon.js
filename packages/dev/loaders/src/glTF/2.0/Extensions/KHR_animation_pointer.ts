@@ -13,6 +13,17 @@ import type { AnimationPropertyInfo } from "../glTFLoaderAnimation";
 
 const NAME = "KHR_animation_pointer";
 
+declare module "../../glTFFileLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface GLTFLoaderExtensionOptions {
+        /**
+         * Defines options for the KHR_animation_pointer extension.
+         */
+        // NOTE: Don't use NAME here as it will break the UMD type declarations.
+        ["KHR_animation_pointer"]: {};
+    }
+}
+
 /**
  * Class to convert an animation pointer path to a smart object that
  * gets data from the animation buffer and creates animations.

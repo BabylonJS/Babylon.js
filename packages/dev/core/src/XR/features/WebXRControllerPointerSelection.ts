@@ -522,7 +522,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                     Vector3.RotationFromAxisToRef(axis2, pickNormal, axis1, controllerData.selectionMesh.rotation);
                     controllerData.selectionMesh.position.addInPlace(pickNormal.scale(deltaFighting));
                 }
-                controllerData.selectionMesh.isVisible = true && this.displaySelectionMesh;
+                controllerData.selectionMesh.isVisible = this.displaySelectionMesh;
                 controllerData.meshUnderPointer = pick.pickedMesh;
             } else {
                 controllerData.selectionMesh.isVisible = false;

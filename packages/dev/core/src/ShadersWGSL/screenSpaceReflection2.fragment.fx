@@ -278,6 +278,6 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         fragmentOutputs.color =  vec4f(finalColor, colorFull.a);
     #endif
 #else
-    fragmentOutputs.color = textureSample(textureSampler, textureSamplerSampler, input.vUV, 0.0);
+    fragmentOutputs.color = textureSampleLevel(textureSampler, textureSamplerSampler, input.vUV, 0.0);
 #endif
 }

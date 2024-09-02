@@ -2406,7 +2406,9 @@ export class Control implements IAnimatable, IFocusableControl {
 
         let canNotifyClick: boolean = notifyClick;
         if (notifyClick && (this._enterCount > 0 || this._enterCount === -1)) {
-            canNotifyClick = this.onPointerClickObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this, pi);
+            if (!this._host.usePointerTapForClickEvent) {
+                canNotifyClick = this.onPointerClickObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this, pi);
+            }
         }
         const canNotify: boolean = this.onPointerUpObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this, pi);
 
@@ -2417,6 +2419,31 @@ export class Control implements IAnimatable, IFocusableControl {
         if (pi && this.uniqueId !== this._host.rootContainer.uniqueId) {
             this._host._capturedPointerIds.delete((pi.event as IPointerEvent).pointerId);
         }
+
+        if (this._host.usePointerTapForClickEvent && this.isPointerBlocker) {
+            this._host._shouldBlockPointer = false;
+        }
+    }
+
+    public _onPointerPick(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi: Nullable<PointerInfoBase>): boolean {
+        if (!this._host.usePointerTapForClickEvent) {
+            return false;
+        }
+
+        let canNotifyClick: boolean = notifyClick;
+        if (notifyClick && (this._enterCount > 0 || this._enterCount === -1)) {
+            canNotifyClick = this.onPointerClickObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this, pi);
+        }
+        const canNotify: boolean = this.onPointerUpObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this, pi);
+
+        if (canNotify && this.parent != null && !this.isPointerBlocker) {
+            this.parent._onPointerPick(target, coordinates, pointerId, buttonIndex, canNotifyClick, pi);
+        }
+
+        if (this._host.usePointerTapForClickEvent && this.isPointerBlocker) {
+            this._host._shouldBlockPointer = true;
+        }
+        return true;
     }
 
     /**
@@ -2480,28 +2507,30 @@ export class Control implements IAnimatable, IFocusableControl {
 
             this._host._lastControlOver[pointerId] = this;
             return true;
-        }
-
-        if (type === PointerEventTypes.POINTERDOWN) {
+        } else if (type === PointerEventTypes.POINTERDOWN) {
             this._onPointerDown(this, this._dummyVector2, pointerId, buttonIndex, pi);
             this._host._registerLastControlDown(this, pointerId);
             this._host._lastPickedControl = this;
             return true;
-        }
-
-        if (type === PointerEventTypes.POINTERUP) {
+        } else if (type === PointerEventTypes.POINTERUP) {
             if (this._host._lastControlDown[pointerId]) {
                 this._host._lastControlDown[pointerId]._onPointerUp(this, this._dummyVector2, pointerId, buttonIndex, true, pi);
             }
-            delete this._host._lastControlDown[pointerId];
+            if (!this._host.usePointerTapForClickEvent) {
+                delete this._host._lastControlDown[pointerId];
+            }
             return true;
-        }
-
-        if (type === PointerEventTypes.POINTERWHEEL) {
+        } else if (type === PointerEventTypes.POINTERWHEEL) {
             if (this._host._lastControlOver[pointerId]) {
                 this._host._lastControlOver[pointerId]._onWheelScroll(deltaX, deltaY);
                 return true;
             }
+        } else if (type === PointerEventTypes.POINTERTAP) {
+            if (this._host._lastControlDown[pointerId]) {
+                this._host._lastControlDown[pointerId]._onPointerPick(this, this._dummyVector2, pointerId, buttonIndex, true, pi);
+            }
+            delete this._host._lastControlDown[pointerId];
+            return true;
         }
 
         return false;

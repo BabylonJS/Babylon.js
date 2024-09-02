@@ -42,8 +42,8 @@ import { IsWindowObjectExist } from "../Misc/domManagement";
 import { WebGLShaderProcessor } from "./WebGL/webGLShaderProcessors";
 import { WebGL2ShaderProcessor } from "./WebGL/webGL2ShaderProcessors";
 import { WebGLDataBuffer } from "../Meshes/WebGL/webGLDataBuffer";
-import { CeilingPOT, FloorPOT, GetExponentOfTwo, NearestPOT } from "../Misc/tools.functions";
-import { AbstractEngine, QueueNewFrame } from "./abstractEngine";
+import { GetExponentOfTwo } from "../Misc/tools.functions";
+import { AbstractEngine } from "./abstractEngine";
 import { Constants } from "./constants";
 import { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
@@ -147,13 +147,6 @@ export class ThinEngine extends AbstractEngine {
     public get version(): number {
         return this._webGLVersion;
     }
-
-    // Updatable statics so stick with vars here
-
-    /**
-     * Gets or sets the epsilon value used by collision engine
-     */
-    public static CollisionsEpsilon = 0.001;
 
     /**
      * Gets or sets the relative url used to load shaders if using the engine in non-minified mode
@@ -774,6 +767,7 @@ export class ThinEngine extends AbstractEngine {
             needTypeSuffixInShaderConstants: this._webGLVersion !== 1,
             supportMSAA: this._webGLVersion !== 1,
             supportSSAO2: this._webGLVersion !== 1,
+            supportIBLShadows: this._webGLVersion !== 1,
             supportExtendedTextureFormats: this._webGLVersion !== 1,
             supportSwitchCaseInShader: this._webGLVersion !== 1,
             supportSyncTextureRead: true,
@@ -1006,6 +1000,7 @@ export class ThinEngine extends AbstractEngine {
         if (!rtWrapper.isMulti) {
             if (rtWrapper.is2DArray || rtWrapper.is3D) {
                 gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, rtWrapper.texture!._hardwareTexture?.underlyingResource, lodLevel, layer);
+                webglRTWrapper._currentLOD = lodLevel;
             } else if (rtWrapper.isCube) {
                 gl.framebufferTexture2D(
                     gl.FRAMEBUFFER,
@@ -1906,6 +1901,7 @@ export class ThinEngine extends AbstractEngine {
      * @param onError defines a function to call when the effect creation has failed
      * @param indexParameters defines an object containing the index values to use to compile shaders (like the maximum number of simultaneous lights)
      * @param shaderLanguage the language the shader is written in (default: GLSL)
+     * @param extraInitializationsAsync additional async code to run before preparing the effect
      * @returns the new Effect
      */
     public createEffect(
@@ -1918,7 +1914,8 @@ export class ThinEngine extends AbstractEngine {
         onCompiled?: Nullable<(effect: Effect) => void>,
         onError?: Nullable<(effect: Effect, errors: string) => void>,
         indexParameters?: any,
-        shaderLanguage = ShaderLanguage.GLSL
+        shaderLanguage = ShaderLanguage.GLSL,
+        extraInitializationsAsync?: () => Promise<void>
     ): Effect {
         const vertex = typeof baseName === "string" ? baseName : baseName.vertexToken || baseName.vertexSource || baseName.vertexElement || baseName.vertex;
         const fragment = typeof baseName === "string" ? baseName : baseName.fragmentToken || baseName.fragmentSource || baseName.fragmentElement || baseName.fragment;
@@ -1936,6 +1933,7 @@ export class ThinEngine extends AbstractEngine {
             if (onCompiled && compiledEffect.isReady()) {
                 onCompiled(compiledEffect);
             }
+            compiledEffect._refCount++;
             return compiledEffect;
         }
         if (this._gl) {
@@ -1953,7 +1951,8 @@ export class ThinEngine extends AbstractEngine {
             onError,
             indexParameters,
             name,
-            (<IEffectCreationOptions>attributesNamesOrOptions).shaderLanguage ?? shaderLanguage
+            (<IEffectCreationOptions>attributesNamesOrOptions).shaderLanguage ?? shaderLanguage,
+            (<IEffectCreationOptions>attributesNamesOrOptions).extraInitializationsAsync ?? extraInitializationsAsync
         );
         this._compiledEffects[name] = effect;
 
@@ -4410,44 +4409,6 @@ export class ThinEngine extends AbstractEngine {
 
         return this._HasMajorPerformanceCaveat;
     }
-
-    /**
-     * Find the next highest power of two.
-     * @param x Number to start search from.
-     * @returns Next highest power of two.
-     */
-    public static CeilingPOT: (x: number) => number = CeilingPOT;
-
-    /**
-     * Find the next lowest power of two.
-     * @param x Number to start search from.
-     * @returns Next lowest power of two.
-     */
-    public static FloorPOT: (x: number) => number = FloorPOT;
-
-    /**
-     * Find the nearest power of two.
-     * @param x Number to start search from.
-     * @returns Next nearest power of two.
-     */
-    public static NearestPOT: (x: number) => number = NearestPOT;
-
-    /**
-     * Get the closest exponent of two
-     * @param value defines the value to approximate
-     * @param max defines the maximum value to return
-     * @param mode defines how to define the closest value
-     * @returns closest exponent of two of the given value
-     */
-    public static GetExponentOfTwo: (value: number, max: number, mode: number) => number = GetExponentOfTwo;
-
-    /**
-     * Queue a new function into the requested animation frame pool (ie. this function will be executed by the browser (or the javascript engine) for the next frame)
-     * @param func - the function to be called
-     * @param requester - the object that will request the next frame. Falls back to window.
-     * @returns frame number
-     */
-    public static QueueNewFrame: (func: () => void, requester?: any) => number = QueueNewFrame;
 }
 
 interface TexImageParameters {

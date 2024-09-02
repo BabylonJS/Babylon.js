@@ -78,6 +78,7 @@ function getModuleDeclaration(
                     / from ['"](.*)['"]/,
                     // Module augmentation
                     / {4}module ['"](.*)['"]/,
+                    /^module ['"](\..*)['"]/,
                     // Inlined Import
                     /import\(['"](.*)['"]/,
                     // Side Effect Import

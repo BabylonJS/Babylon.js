@@ -46,15 +46,15 @@ export class PassPostProcess extends PostProcess {
         super(name, "pass", null, null, options, camera, samplingMode, engine, reusable, undefined, textureType, undefined, null, blockCompilation);
     }
 
-    protected override async _initShaderSourceAsync(useWebGPU: boolean) {
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
-            await Promise.all([import("../ShadersWGSL/pass.fragment")]);
+            list.push(Promise.all([import("../ShadersWGSL/pass.fragment")]));
         } else {
-            await Promise.all([import("../Shaders/pass.fragment")]);
+            list.push(Promise.all([import("../Shaders/pass.fragment")]));
         }
 
-        await super._initShaderSourceAsync(useWebGPU);
+        super._gatherImports(useWebGPU, list);
     }
 
     /**
@@ -160,15 +160,15 @@ export class PassCubePostProcess extends PostProcess {
         super(name, "passCube", null, null, options, camera, samplingMode, engine, reusable, "#define POSITIVEX", textureType, undefined, null, blockCompilation);
     }
 
-    protected override async _initShaderSourceAsync(useWebGPU: boolean) {
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
-            await Promise.all([import("../ShadersWGSL/passCube.fragment")]);
+            list.push(Promise.all([import("../ShadersWGSL/passCube.fragment")]));
         } else {
-            await Promise.all([import("../Shaders/passCube.fragment")]);
+            list.push(Promise.all([import("../Shaders/passCube.fragment")]));
         }
 
-        await super._initShaderSourceAsync(useWebGPU);
+        super._gatherImports(useWebGPU, list);
     }
 
     /**
