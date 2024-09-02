@@ -90,10 +90,10 @@ export class GPUPicker {
     }
 
     private static _SetColorData(buffer: Float32Array, i: number, r: number, g: number, b: number) {
-        buffer[i] = r / 255;
-        buffer[i + 1] = g / 255;
-        buffer[i + 2] = b / 255;
-        buffer[i + 3] = 1;
+        buffer[i] = r / 255.0;
+        buffer[i + 1] = g / 255.0;
+        buffer[i + 2] = b / 255.0;
+        buffer[i + 3] = 1.0;
     }
 
     private _createRenderTarget(scene: Scene, width: number, height: number) {
