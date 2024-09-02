@@ -34,9 +34,10 @@ declare module "core/Loading/sceneLoader" {
 /**
  * Indicator of the parsed ply buffer. A standard ready to use splat or an array of positions for a point cloud
  */
-enum Mode {
+const enum Mode {
     Splat = 0,
     PointCloud = 1,
+    Mesh = 2,
 }
 
 /**
@@ -124,12 +125,12 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         });
     }
 
-    private _buildPointCloud(pointcloud: PointsCloudSystem, data: ArrayBuffer): boolean {
+    private static _BuildPointCloud(pointcloud: PointsCloudSystem, data: ArrayBuffer): boolean {
         if (!data.byteLength) {
             return false;
         }
         const uBuffer = new Uint8Array(data);
-        const fBuffer = new Float32Array(uBuffer.buffer);
+        const fBuffer = new Float32Array(data);
 
         const rowLength = 3 * 4 + 3 * 4 + 4 + 4;
         const vertexCount = uBuffer.length / rowLength;
@@ -165,7 +166,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             case Mode.PointCloud:
                 {
                     const pointcloud = new PointsCloudSystem("pointcloud", 1, scene);
-                    if (this._buildPointCloud(pointcloud, parsedPLY.data)) {
+                    if (SPLATFileLoader._BuildPointCloud(pointcloud, parsedPLY.data)) {
                         return Promise.all([pointcloud.buildMeshAsync()]).then((mesh) => {
                             babylonMeshesArray.push(mesh[0]);
                             return babylonMeshesArray;
@@ -298,6 +299,15 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                     case "int":
                         value = dataView.getInt32(property.offset + i * rowOffset, true);
                         break;
+                    case "uint":
+                        value = dataView.getUint32(property.offset + i * rowOffset, true);
+                        break;
+                    case "double":
+                        value = dataView.getFloat64(property.offset + i * rowOffset, true);
+                        break;
+                    case "uchar":
+                        value = dataView.getUint8(property.offset + i * rowOffset);
+                        break;
                     default:
                         //throw new Error(`Unsupported property type: ${property.type}`);
                         continue;
@@ -322,12 +332,15 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                     case "scale_2":
                         scale[2] = Math.exp(value);
                         break;
+                    case "diffuse_red":
                     case "red":
                         rgba[0] = value;
                         break;
+                    case "diffuse_green":
                     case "green":
                         rgba[1] = value;
                         break;
+                    case "diffuse_blue":
                     case "blue":
                         rgba[2] = value;
                         break;
