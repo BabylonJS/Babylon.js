@@ -75,7 +75,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     var texCoord: vec2f = input.vUV;
 
 #if defined(FLUIDRENDERING_DEBUG) && defined(FLUIDRENDERING_DEBUG_TEXTURE)
-    var color: vec4f = textureSample(debugSampler, texCoord);
+    var color: vec4f = textureSample(debugSampler, debugSamplerSampler, texCoord);
     #ifdef FLUIDRENDERING_DEBUG_DEPTH
         fragmentOutputs.color = vec4f(color.rgb / vec3f(2.0), 1.);
         if (color.r > 0.999 && color.g > 0.999) {
