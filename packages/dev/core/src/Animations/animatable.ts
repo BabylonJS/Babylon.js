@@ -448,9 +448,24 @@ export class Animatable {
         const runtimeAnimations = this._runtimeAnimations;
         let index: number;
 
+        // get speed this.speedRatio, to and this.fromFrame, based on their signs
+        let speedRatio = this._speedRatio;
+        let fromFrame = this.fromFrame;
+        let toFrame = this.toFrame;
+        if (speedRatio < 0) {
+            const tmp = fromFrame;
+            fromFrame = toFrame;
+            toFrame = tmp;
+            speedRatio = -speedRatio;
+        }
+        // if from > to switch speed ratio
+        if (fromFrame > toFrame) {
+            speedRatio = -speedRatio;
+        }
+
         for (index = 0; index < runtimeAnimations.length; index++) {
             const animation = runtimeAnimations[index];
-            const isRunning = animation.animate(delay - this._localDelayOffset, this.fromFrame, this.toFrame, this.loopAnimation, this._speedRatio, this._weight);
+            const isRunning = animation.animate(delay - this._localDelayOffset, fromFrame, toFrame, this.loopAnimation, speedRatio, this._weight);
             running = running || isRunning;
         }
 
@@ -758,10 +773,6 @@ Scene.prototype.beginAnimation = function (
     onAnimationLoop?: () => void,
     isAdditive = false
 ): Animatable {
-    if (from > to && speedRatio > 0) {
-        speedRatio *= -1;
-    }
-
     if (stopCurrent) {
         this.stopAnimation(target, undefined, targetMask);
     }
@@ -820,23 +831,11 @@ Scene.prototype.beginDirectAnimation = function (
     from: number,
     to: number,
     loop?: boolean,
-    speedRatio?: number,
+    speedRatio: number = 1.0,
     onAnimationEnd?: () => void,
     onAnimationLoop?: () => void,
     isAdditive = false
 ): Animatable {
-    if (speedRatio === undefined) {
-        speedRatio = 1.0;
-    }
-
-    if (from > to && speedRatio > 0) {
-        speedRatio *= -1;
-    } else if (to > from && speedRatio < 0) {
-        const temp = to;
-        to = from;
-        from = temp;
-    }
-
     const animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd, animations, onAnimationLoop, isAdditive);
 
     return animatable;
