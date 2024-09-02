@@ -390,7 +390,13 @@ export class HighlightLayer extends EffectLayer {
             undefined,
             undefined,
             undefined,
-            this._shaderLanguage
+            this._shaderLanguage,
+            this._shadersLoaded
+                ? undefined
+                : async () => {
+                      await this._importShadersAsync();
+                      this._shadersLoaded = true;
+                  }
         );
     }
 
