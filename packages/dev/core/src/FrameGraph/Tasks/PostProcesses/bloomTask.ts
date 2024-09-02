@@ -72,12 +72,6 @@ export class FrameGraphBloomTask implements IFrameGraphTask {
             sizeIsPercentage: false,
         };
 
-        // We need to set the texture size so that texel size is calculated correctly
-        this._blurX.getPostProcess().width = textureCreationOptions.size.width;
-        this._blurX.getPostProcess().height = textureCreationOptions.size.height;
-        this._blurY.getPostProcess().width = textureCreationOptions.size.width;
-        this._blurY.getPostProcess().height = textureCreationOptions.size.height;
-
         const downscaleTextureHandle = frameGraph.createRenderTargetTexture(this._downscale.name, textureCreationOptions);
 
         this._downscale.sourceTexture = this.sourceTexture;

@@ -49,6 +49,11 @@ export class FrameGraphPostProcessTask implements IFrameGraphTask {
         const sourceTextureHandle = frameGraph.getTextureHandle(this.sourceTexture);
         const outputTextureHandle = frameGraph.getTextureHandleOrCreateTexture(this.destinationTexture, this.name, sourceTextureCreationOptions);
 
+        const outputTextureDescription = frameGraph.getTextureDescription(outputTextureHandle);
+
+        this._postProcess.width = outputTextureDescription.size.width;
+        this._postProcess.height = outputTextureDescription.size.height;
+
         const pass = frameGraph.addRenderPass(this.name);
 
         pass.useTexture(sourceTextureHandle);

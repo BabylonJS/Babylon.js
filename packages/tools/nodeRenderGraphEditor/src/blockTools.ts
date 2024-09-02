@@ -7,6 +7,7 @@ import { NodeRenderGraphTeleportInBlock } from "core/FrameGraph/Node/Blocks/Tele
 import { NodeRenderGraphTeleportOutBlock } from "core/FrameGraph/Node/Blocks/Teleport/teleportOutBlock";
 import { NodeRenderGraphBlackAndWhitePostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/blackAndWhitePostProcessBlock";
 import { NodeRenderGraphBloomPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/bloomPostProcessBlock";
+import { NodeRenderGraphBlurPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/blurPostProcessBlock";
 import { NodeRenderGraphClearBlock } from "core/FrameGraph/Node/Blocks/Textures/clearBlock";
 import { NodeRenderGraphCopyTextureBlock } from "core/FrameGraph/Node/Blocks/Textures/copyTextureBlock";
 import { NodeRenderGraphGenerateMipmapsBlock } from "core/FrameGraph/Node/Blocks/Textures/generateMipmapsBlock";
@@ -60,6 +61,9 @@ export class BlockTools {
             }
             case "BloomBlock": {
                 return new NodeRenderGraphBloomPostProcessBlock("Bloom", scene);
+            }
+            case "BlurBlock": {
+                return new NodeRenderGraphBlurPostProcessBlock("Blur", scene);
             }
             case "GUIBlock": {
                 return new NodeRenderGraphGUIBlock("GUI", scene);
