@@ -152,7 +152,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     var diffuseColor: vec3f = uniforms.diffuseColor;
 #endif
 
-    var lightDir: vec3f = normalize(vec3f(uniforms.viewMatrix * vec4f(-uniforms.dirLight, 0.)));
+    var lightDir: vec3f = normalize((uniforms.viewMatrix * vec4f(-uniforms.dirLight, 0.)).xyz);
     var H: vec3f        = normalize(lightDir - rayDir);
     var specular: f32   = pow(max(0.0, dot(H, normal)), uniforms.specularPower);
 
