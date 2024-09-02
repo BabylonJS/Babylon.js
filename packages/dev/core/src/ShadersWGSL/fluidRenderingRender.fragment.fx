@@ -166,7 +166,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     // Refraction color
     var refractionDir: vec3f = refract(rayDir, normal, ETA);
 
-    var transmitted: vec4f = textureSampleLevel(textureSampler, textureSamplerSampler vec2f(texCoord + refractionDir.xy * thickness * uniforms.refractionStrength), 0.0);
+    var transmitted: vec4f = textureSampleLevel(textureSampler, textureSamplerSampler, vec2f(texCoord + refractionDir.xy * thickness * uniforms.refractionStrength), 0.0);
 #ifdef FLUIDRENDERING_COMPOSITE_MODE
     if (transmitted.a == 0.) {
         transmitted.a = thickness;

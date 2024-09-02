@@ -8,7 +8,7 @@ varying vUV: vec2f;
 
 @fragment
 fn main(input: FragmentInputs) -> FragmentOutputs {
-    var s: vec4f = textureSampleLevel(textureSampler, textureSamplerSampler input.vUV, 0.);
+    var s: vec4f = textureSampleLevel(textureSampler, textureSamplerSampler, input.vUV, 0.);
     if (s.r == 0.) {
         fragmentOutputs.color = vec4f(0., 0., 0., 1.);
         return fragmentOutputs;
