@@ -448,7 +448,7 @@ export class Animatable {
         const runtimeAnimations = this._runtimeAnimations;
         let index: number;
 
-        // get speed this.speedRatio, to and this.fromFrame, based on their signs
+        // get speed this.speedRatio, to and this.fromFrame, based on the sign and value(s)
         let speedRatio = this._speedRatio;
         let fromFrame = this.fromFrame;
         let toFrame = this.toFrame;
