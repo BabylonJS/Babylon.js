@@ -107,6 +107,12 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                     onChange={() => this.props.stateManager.onRebuildRequiredObservable.notifyObservers()}
                                 />
                                 <CheckBoxLineComponent
+                                    label="Create mipmaps"
+                                    target={creationOptions.options}
+                                    propertyName="createMipMaps"
+                                    onValueChanged={() => this.props.stateManager.onRebuildRequiredObservable.notifyObservers()}
+                                />
+                                <CheckBoxLineComponent
                                     label="Use sRGB buffer"
                                     target={creationOptions.options}
                                     propertyName="useSRGBBuffer"

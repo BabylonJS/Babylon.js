@@ -3,7 +3,7 @@ import type { IFrameGraphTask, FrameGraphTextureId } from "../../frameGraphTypes
 import { backbufferColorTextureHandle } from "../../frameGraphTypes";
 
 export class FrameGraphCopyToBackbufferColorTask implements IFrameGraphTask {
-    public sourceTexture?: FrameGraphTextureId;
+    public sourceTexture: FrameGraphTextureId;
 
     public disabled = false;
 

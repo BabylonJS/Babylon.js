@@ -12,7 +12,7 @@ import type { Scene } from "../../../scene";
 import type { Camera } from "../../../Cameras/camera";
 
 export class FrameGraphObjectRendererTask implements IFrameGraphTask {
-    public destinationTexture?: FrameGraphTextureId;
+    public destinationTexture: FrameGraphTextureId;
 
     public depthTexture?: FrameGraphTextureId;
 

@@ -7,8 +7,9 @@ import { NodeRenderGraphTeleportInBlock } from "core/FrameGraph/Node/Blocks/Tele
 import { NodeRenderGraphTeleportOutBlock } from "core/FrameGraph/Node/Blocks/Teleport/teleportOutBlock";
 import { NodeRenderGraphBlackAndWhitePostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/blackAndWhitePostProcessBlock";
 import { NodeRenderGraphBloomPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/bloomPostProcessBlock";
-import { NodeRenderGraphClearBlock } from "core/FrameGraph/Node/Blocks/clearBlock";
-import { NodeRenderGraphCopyTextureBlock } from "core/FrameGraph/Node/Blocks/copyTextureBlock";
+import { NodeRenderGraphClearBlock } from "core/FrameGraph/Node/Blocks/Textures/clearBlock";
+import { NodeRenderGraphCopyTextureBlock } from "core/FrameGraph/Node/Blocks/Textures/copyTextureBlock";
+import { NodeRenderGraphGenerateMipmapsBlock } from "core/FrameGraph/Node/Blocks/Textures/generateMipmapsBlock";
 import { NodeRenderGraphObjectRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/objectRendererBlock";
 import { NodeRenderGraphGeometryRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/geometryRendererBlock";
 import { NodeRenderGraphGUIBlock } from "gui/2D/FrameGraph/renderGraphGUIBlock";
@@ -50,6 +51,9 @@ export class BlockTools {
             }
             case "CopyTextureBlock": {
                 return new NodeRenderGraphCopyTextureBlock("Copy texture", scene);
+            }
+            case "GenerateMipmapsBlock": {
+                return new NodeRenderGraphGenerateMipmapsBlock("Generate mipmaps", scene);
             }
             case "BlackAndWhiteBlock": {
                 return new NodeRenderGraphBlackAndWhitePostProcessBlock("Black and White", scene);

@@ -1123,7 +1123,13 @@ export abstract class AbstractEngine {
     public abstract readPixels(x: number, y: number, width: number, height: number, hasAlpha?: boolean, flushRenderer?: boolean): Promise<ArrayBufferView>;
 
     /**
-     * Force a WebGPU flush (ie. a flush of all waiting commands)
+     * Generates mipmaps for a texture
+     * @param texture The texture to generate the mipmaps for
+     */
+    public abstract generateMipmaps(texture: InternalTexture): void;
+
+    /**
+     * Force a flush (ie. a flush of all waiting commands)
      */
     public abstract flushFramebuffer(): void;
 

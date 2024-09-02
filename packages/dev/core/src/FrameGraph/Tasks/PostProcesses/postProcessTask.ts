@@ -5,7 +5,7 @@ import type { DrawWrapper } from "core/Materials/drawWrapper";
 import { Constants } from "core/Engines/constants";
 
 export class FrameGraphPostProcessTask implements IFrameGraphTask {
-    public sourceTexture?: FrameGraphTextureId;
+    public sourceTexture: FrameGraphTextureId;
 
     public sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
 

@@ -15,7 +15,7 @@ import type { NodeRenderGraphTeleportInBlock } from "./Blocks/Teleport/teleportI
 import { Tools } from "../../Misc/tools";
 import { Engine } from "../../Engines/engine";
 import { NodeRenderGraphBlockConnectionPointTypes } from "./Types/nodeRenderGraphTypes";
-import { NodeRenderGraphClearBlock } from "./Blocks/clearBlock";
+import { NodeRenderGraphClearBlock } from "./Blocks/Textures/clearBlock";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import { NodeRenderGraphBuildState } from "./nodeRenderGraphBuildState";
 import type { INodeRenderGraphCreateOptions, INodeRenderGraphEditorOptions } from "./Types/nodeRenderGraphTypes";

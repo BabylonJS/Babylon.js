@@ -64,7 +64,7 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
 
         super._execute();
 
-        this._context._unbindRenderTarget();
+        this._context._flushDebugMessages();
     }
 
     /** @internal */

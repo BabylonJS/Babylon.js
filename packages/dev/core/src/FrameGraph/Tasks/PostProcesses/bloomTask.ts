@@ -6,7 +6,7 @@ import { FrameGraphPostProcessTask } from "./postProcessTask";
 import { FrameGraphBloomMergeTask } from "./bloomMergeTask";
 
 export class FrameGraphBloomTask implements IFrameGraphTask {
-    public sourceTexture?: FrameGraphTextureId;
+    public sourceTexture: FrameGraphTextureId;
 
     public sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
 

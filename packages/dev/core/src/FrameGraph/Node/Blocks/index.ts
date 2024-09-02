@@ -1,5 +1,3 @@
-export * from "./clearBlock";
-export * from "./copyTextureBlock";
 export * from "./elbowBlock";
 export * from "./inputBlock";
 export * from "./outputBlock";
@@ -9,3 +7,6 @@ export * from "./Rendering/objectRendererBlock";
 export * from "./Rendering/geometryRendererBlock";
 export * from "./Teleport/teleportInBlock";
 export * from "./Teleport/teleportOutBlock";
+export * from "./Textures/clearBlock";
+export * from "./Textures/copyTextureBlock";
+export * from "./Textures/generateMipmapsBlock";

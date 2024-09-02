@@ -86,7 +86,11 @@ export class PreviewManager {
 
     private async _initAsync(targetCanvas: HTMLCanvasElement) {
         if (useWebGPU) {
-            this._engine = new WebGPUEngine(targetCanvas);
+            this._engine = new WebGPUEngine(targetCanvas, {
+                enableGPUDebugMarkers: true,
+                enableAllFeatures: true,
+                setMaximumLimits: true,
+            });
             await (this._engine as WebGPUEngine).initAsync();
         } else {
             this._engine = new Engine(targetCanvas, true, { forceSRGBBufferSupportState: true });

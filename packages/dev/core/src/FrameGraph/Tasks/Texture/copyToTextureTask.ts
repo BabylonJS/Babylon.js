@@ -2,9 +2,9 @@ import type { FrameGraph } from "../../frameGraph";
 import type { FrameGraphTaskOutputReference, FrameGraphTextureId, IFrameGraphTask } from "../../frameGraphTypes";
 
 export class FrameGraphCopyToTextureTask implements IFrameGraphTask {
-    public sourceTexture?: FrameGraphTextureId;
+    public sourceTexture: FrameGraphTextureId;
 
-    public destinationTexture?: FrameGraphTextureId;
+    public destinationTexture: FrameGraphTextureId;
 
     public readonly outputTextureReference: FrameGraphTaskOutputReference = [this, "output"];
 

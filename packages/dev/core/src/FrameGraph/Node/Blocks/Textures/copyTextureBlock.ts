@@ -1,11 +1,11 @@
-import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
-import type { NodeRenderGraphConnectionPoint } from "../nodeRenderGraphBlockConnectionPoint";
-import { RegisterClass } from "../../../Misc/typeStore";
-import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGraphTypes";
-import type { Scene } from "../../../scene";
-import type { NodeRenderGraphBuildState } from "../nodeRenderGraphBuildState";
-import { FrameGraphCopyToTextureTask } from "../../Tasks/Texture/copyToTextureTask";
-import type { FrameGraphTextureId } from "../../frameGraphTypes";
+import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
+import type { NodeRenderGraphConnectionPoint } from "../../nodeRenderGraphBlockConnectionPoint";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
+import type { Scene } from "../../../../scene";
+import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
+import { FrameGraphCopyToTextureTask } from "../../../Tasks/Texture/copyToTextureTask";
+import type { FrameGraphTextureId } from "../../../frameGraphTypes";
 
 /**
  * Block used to copy a texture

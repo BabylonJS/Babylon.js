@@ -193,6 +193,8 @@ checkBabylonVersionAsync().then(() => {
         // Let's start
         if (BABYLON.Engine.isSupported()) {
             let canvas = document.createElement("canvas");
+            canvas.width = 1;
+            canvas.height = 1;
             let engine = new BABYLON.Engine(canvas, false, { disableWebGL2Support: false });
             let scene = new BABYLON.Scene(engine);
             new BABYLON.Camera("camera", new BABYLON.Vector3(0, 0, 0), scene);

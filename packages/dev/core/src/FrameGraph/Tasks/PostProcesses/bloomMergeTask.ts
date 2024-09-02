@@ -5,7 +5,7 @@ import { FrameGraphPostProcessTask } from "./postProcessTask";
 import type { BloomMergePostProcess } from "../../../PostProcesses/bloomMergePostProcess";
 
 export class FrameGraphBloomMergeTask extends FrameGraphPostProcessTask {
-    public sourceBlurTexture?: FrameGraphTextureId;
+    public sourceBlurTexture: FrameGraphTextureId;
 
     protected override _postProcess: BloomMergePostProcess;
 

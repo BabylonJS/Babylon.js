@@ -55,6 +55,24 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         this._engine.clear(color, backBuffer, depth, stencil);
     }
 
+    /**
+     * Generates mipmaps for the current render target
+     */
+    public generateMipMaps(): void {
+        const texture = this._textureManager.getTextureFromHandle(this._currentRenderTargetHandle);
+        if (!texture) {
+            // Texture is backbuffer, no need to generate mipmaps
+            return;
+        }
+        if (this._renderTargetIsBound) {
+            // we can't generate the mipmaps if the texture is bound as a render target
+            this._flushDebugMessages();
+            this._engine.unBindFramebuffer(texture);
+            this._renderTargetIsBound = false;
+        }
+        this._engine.generateMipmaps(texture.texture!);
+    }
+
     public setTextureSamplingMode(handle: FrameGraphTextureHandle, samplingMode: number): void {
         const internalTexture = this._textureManager.getTextureFromHandle(handle)?.texture!;
         if (internalTexture && internalTexture.samplingMode !== samplingMode) {
@@ -137,7 +155,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      */
     public _bindRenderTarget(renderTargetHandle: FrameGraphTextureHandle = backbufferColorTextureHandle, debugMessage?: string) {
         if (renderTargetHandle === this._currentRenderTargetHandle) {
-            this._unbindRenderTarget();
+            this._flushDebugMessages();
             if (debugMessage !== undefined) {
                 this._engine._debugPushGroup?.(debugMessage, 2);
                 this._debugMessageWhenTargetBound = undefined;
@@ -153,7 +171,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     /**
      * @internal
      */
-    public _unbindRenderTarget() {
+    public _flushDebugMessages() {
         if (this._debugMessageHasBeenPushed) {
             this._engine._debugPopGroup?.(2);
             this._debugMessageHasBeenPushed = false;
@@ -180,7 +198,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
 
         const renderTarget = textureSlot.texture;
 
-        this._unbindRenderTarget();
+        this._flushDebugMessages();
 
         if (!renderTarget) {
             if (handle === backbufferColorTextureHandle) {
