@@ -1,45 +1,47 @@
-uniform sampler2D textureSampler;
+var textureSamplerSampler: sampler;
+var textureSampler: texture_2d<f32>;
 
-uniform int maxFilterSize;
-uniform vec2 blurDir;
-uniform float projectedParticleConstant;
-uniform float depthThreshold;
+uniform maxFilterSize: i32;
+uniform blurDir: vec3f;
+uniform projectedParticleConstant: f32;
+uniform depthThreshold: f32;
 
-varying vec2 vUV;
+varying vUV: vec2f;
 
-void main(void) {
-    float depth = textureLod(textureSampler, vUV, 0.).x;
+@fragment
+fn main(input: FragmentInputs) -> FragmentOutputs {
+    var depth: f32 = textureSampleLevel(textureSampler, textureSamplerSampler, input.vUV, 0.).x;
 
     if (depth >= 1e6 || depth <= 0.) {
-        glFragColor = vec4(vec3(depth), 1.);
-        return;
+        fragmentOutputs.color = vec4f(vec3f(depth), 1.);
+        return fragmentOutputs;
     }
 
-    int filterSize = min(maxFilterSize, int(ceil(projectedParticleConstant / depth)));
-    float sigma = float(filterSize) / 3.0;
-    float two_sigma2 = 2.0 * sigma * sigma;
+    var filterSize: i32 = min(uniforms.maxFilterSize, i32(ceil(uniforms.projectedParticleConstant / depth)));
+    var sigma: f32 = f32(filterSize) / 3.0;
+    var two_sigma2: f32 = 2.0 * sigma * sigma;
 
-    float sigmaDepth = depthThreshold / 3.0;
-    float two_sigmaDepth2 = 2.0 * sigmaDepth * sigmaDepth;
+    var sigmaDepth: f32 = uniforms.depthThreshold / 3.0;
+    var two_sigmaDepth2: f32 = 2.0 * sigmaDepth * sigmaDepth;
 
-    float sum = 0.;
-    float wsum = 0.;
-    float sumVel = 0.;
+    var sum: f32 = 0.;
+    var wsum: f32 = 0.;
+    var sumVel: f32 = 0.;
 
-    for (int x = -filterSize; x <= filterSize; ++x) {
-        vec2 coords = vec2(x);
-        vec2 sampleDepthVel = textureLod(textureSampler, vUV + coords * blurDir, 0.).rg;
+    for (var x: i32 = -filterSize; x <= filterSize; x++) {
+        var coords: vec2f = vec2f(x);
+        var sampleDepthVel: vec2f = textureSampleLevel(textureSampler, textureSamplerSampler, input.vUV + coords * uniforms.blurDir, 0.).rg;
 
-        float r = dot(coords, coords);
-        float w = exp(-r / two_sigma2);
+        var r: f32 = dot(coords, coords);
+        var w: f32 = exp(-r / two_sigma2);
 
-        float rDepth = sampleDepthVel.r - depth;
-        float wd = exp(-rDepth * rDepth / two_sigmaDepth2);
+        var rDepth: f32 = sampleDepthVel.r - depth;
+        var wd: f32 = exp(-rDepth * rDepth / two_sigmaDepth2);
 
         sum += sampleDepthVel.r * w * wd;
         sumVel += sampleDepthVel.g * w * wd;
         wsum += w * wd;
     }
 
-    glFragColor = vec4(sum / wsum, sumVel / wsum, 0., 1.);
+    fragmentOutputs.color = vec4f(sum / wsum, sumVel / wsum, 0., 1.);
 }

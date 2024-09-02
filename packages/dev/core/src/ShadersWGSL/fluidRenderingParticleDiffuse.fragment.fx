@@ -1,14 +1,15 @@
-uniform float particleAlpha;
+uniform particleAlpha: f32;
 
-varying vec2 uv;
-varying vec3 diffuseColor;
+varying uv: vec2f;
+varying diffuseColor: vec3f;
 
-void main(void) {
-    vec3 normal;
+@fragment
+fn main(input: FragmentInputs) -> FragmentOutputs {
+    var normalxy: vec2f = input.uv * 2.0 - 1.0;
+    var r2: f32 = dot(normalxy, normalxy);
+    if (r2 > 1.0) {
+        discard;
+    }
 
-    normal.xy = uv * 2.0 - 1.0;
-    float r2 = dot(normal.xy, normal.xy);
-    if (r2 > 1.0) discard;
-
-    glFragColor = vec4(diffuseColor, 1.0);
+    fragmentOutputs.color = vec4f(input.diffuseColor, 1.0);
 }

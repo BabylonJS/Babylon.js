@@ -1,31 +1,33 @@
-attribute vec3 position;
-attribute vec2 offset;
+attribute position: vec3f;
+attribute offset: vec2f;
 
-uniform mat4 view;
-uniform mat4 projection;
-uniform vec2 size;
+uniform view: mat4x4f;
+uniform projection: mat4x4f;
+uniform size: vec2f;
 
-varying vec2 uv;
-varying vec3 viewPos;
-varying float sphereRadius;
+varying uv: vec2f;
+varying viewPos: vec3f;
+varying sphereRadius: f32;
 
 #ifdef FLUIDRENDERING_VELOCITY
-    attribute vec3 velocity;
-    varying float velocityNorm;
+    attribute velocity: vec3f;
+    varying velocityNorm: f32;
 #endif
 
-void main(void) {
-    vec3 cornerPos;
-    cornerPos.xy = vec2(offset.x - 0.5, offset.y - 0.5) * size;
-    cornerPos.z = 0.0;
+@vertex
+fn main(input: VertexInputs) -> FragmentInputs {
+    var cornerPos: vec3f = vec3f(
+        vec2f(input.offset.x - 0.5, input.offset.y - 0.5) * uniforms.size,
+        0.0
+    );
 
-    viewPos = (view * vec4(position, 1.0)).xyz;
+    vertexOutputs.viewPos = (uniforms.view * vec4f(input.position, 1.0)).xyz;
 
-    gl_Position = projection * vec4(viewPos + cornerPos, 1.0);
+    vertexOutputs.position = uniforms.projection * vec4f(vertexOutputs.viewPos + cornerPos, 1.0);
 
-    uv = offset;
-    sphereRadius = size.x / 2.0;
+    vertexOutputs.uv = input.offset;
+    vertexOutputs.sphereRadius = uniforms.size.x / 2.0;
 #ifdef FLUIDRENDERING_VELOCITY
-    velocityNorm = length(velocity);
+    vertexOutputs.velocityNorm = length(velocity);
 #endif
 }

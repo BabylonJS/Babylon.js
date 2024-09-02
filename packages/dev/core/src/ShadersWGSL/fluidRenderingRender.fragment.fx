@@ -54,9 +54,9 @@ varying vUV: vec2f;
 fn computeViewPosFromUVDepth(texCoord: vec2f, depth: f32) -> vec3f {
     var ndc: vec4f = vec4f(texCoord * 2.0 - 1.0, 0.0, 1.0);
 #ifdef FLUIDRENDERING_RHS
-    ndc.z = -projectionMatrix[2].z + projectionMatrix[3].z / depth;
+    ndc.z = -uniforms.projectionMatrix[2].z + uniforms.projectionMatrix[3].z / depth;
 #else
-    ndc.z = projectionMatrix[2].z + projectionMatrix[3].z / depth;
+    ndc.z = uniforms.projectionMatrix[2].z + uniforms.projectionMatrix[3].z / depth;
 #endif
     ndc.w = 1.0;
 
@@ -77,7 +77,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #if defined(FLUIDRENDERING_DEBUG) && defined(FLUIDRENDERING_DEBUG_TEXTURE)
     var color: vec4f = textureSample(debugSampler, texCoord);
     #ifdef FLUIDRENDERING_DEBUG_DEPTH
-        fragmentOutputs.color = vec4f(color.rgb / vec3(2.0), 1.);
+        fragmentOutputs.color = vec4f(color.rgb / vec3f(2.0), 1.);
         if (color.r > 0.999 && color.g > 0.999) {
             fragmentOutputs.color = textureSample(textureSampler, textureSamplerSampler, texCoord);
         }
@@ -95,17 +95,18 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #ifndef FLUIDRENDERING_FIXED_THICKNESS
     var thickness: f32 = textureSample(thicknessSampler, thicknessSamplerSampler, texCoord).x;
 #else
+    var thickness: f32 = uniforms.thickness;
     var bgDepth: f32 = textureSample(bgDepthSampler, bgDepthSamplerSampler, texCoord).x;
-    var depthNonLinear: f32 = projectionMatrix[2].z + projectionMatrix[3].z / depth;
+    var depthNonLinear: f32 = uniforms.projectionMatrix[2].z + uniforms.projectionMatrix[3].z / depth;
     depthNonLinear = depthNonLinear * 0.5 + 0.5;
 #endif
 
     var backColor: vec4f = textureSample(textureSampler, textureSamplerSampler, texCoord);
 
 #ifndef FLUIDRENDERING_FIXED_THICKNESS
-    if (depth >= cameraFar || depth <= 0. || thickness <= minimumThickness) {
+    if (depth >= uniforms.cameraFar || depth <= 0. || thickness <= uniforms.minimumThickness) {
 #else
-    if (depth >= cameraFar || depth <= 0. || bgDepth <= depthNonLinear) {
+    if (depth >= uniforms.cameraFar || depth <= 0. || bgDepth <= depthNonLinear) {
 #endif
     #ifdef FLUIDRENDERING_COMPOSITE_MODE
         fragmentOutputs.color = vec4f(backColor.rgb * backColor.a, backColor.a);
@@ -119,80 +120,79 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     var viewPos: vec3f = computeViewPosFromUVDepth(texCoord, depth);
 
     // calculate normal
-    vec3 ddx = getViewPosFromTexCoord(texCoord + vec2(texelSize.x, 0.)) - viewPos;
-    vec3 ddy = getViewPosFromTexCoord(texCoord + vec2(0., texelSize.y)) - viewPos;
+    var ddx: vec3f = getViewPosFromTexCoord(texCoord + vec2f(uniforms.texelSize.x, 0.)) - viewPos;
+    var ddy: vec3f = getViewPosFromTexCoord(texCoord + vec2f(0., uniforms.texelSize.y)) - viewPos;
 
-    vec3 ddx2 = viewPos - getViewPosFromTexCoord(texCoord + vec2(-texelSize.x, 0.));
+    var ddx2: vec3f = viewPos - getViewPosFromTexCoord(texCoord + vec2f(-uniforms.texelSize.x, 0.));
     if (abs(ddx.z) > abs(ddx2.z)) {
         ddx = ddx2;
     }
 
-    vec3 ddy2 = viewPos - getViewPosFromTexCoord(texCoord + vec2(0., -texelSize.y));
+    var ddy2: vec3f = viewPos - getViewPosFromTexCoord(texCoord + vec2f(0., -uniforms.texelSize.y));
     if (abs(ddy.z) > abs(ddy2.z)) {
         ddy = ddy2;
     }
 
-    vec3 normal = normalize(cross(ddy, ddx));
+    var normal: vec3f = normalize(cross(ddy, ddx));
 #ifdef FLUIDRENDERING_RHS
     normal = -normal;
 #endif
-#ifndef WEBGPU
-    if(isnan(normal.x) || isnan(normal.y) || isnan(normal.z) || isinf(normal.x) || isinf(normal.y) || isinf(normal.z)) {
-        normal = vec3(0., 0., -1.);
-    }
-#endif
 
 #if defined(FLUIDRENDERING_DEBUG) && defined(FLUIDRENDERING_DEBUG_SHOWNORMAL)
-    glFragColor = vec4(normal * 0.5 + 0.5, 1.0);
-    return;
+    fragmentOutputs.color = vec4f(normal * 0.5 + 0.5, 1.0);
+    return fragmentOutputs;
 #endif
 
     // shading
-    vec3 rayDir = normalize(viewPos); // direction from camera position to view position
+    var rayDir: vec3f = normalize(viewPos); // direction from camera position to view position
 
 #ifdef FLUIDRENDERING_DIFFUSETEXTURE
-    vec3 diffuseColor = textureLod(diffuseSampler, texCoord, 0.0).rgb;
+    var diffuseColor: vec3f = textureSampleLevel(diffuseSampler, diffuseSamplerSampler, texCoord, 0.0).rgb;
+#else
+    var diffuseColor: vec3f = uniforms.diffuseColor;
 #endif
 
-    vec3  lightDir = normalize(vec3(viewMatrix * vec4(-dirLight, 0.)));
-    vec3  H        = normalize(lightDir - rayDir);
-    float specular = pow(max(0.0, dot(H, normal)), specularPower);
+    var lightDir: vec3f = normalize(vec3f(uniforms.viewMatrix * vec4f(-uniforms.dirLight, 0.)));
+    var H: vec3f        = normalize(lightDir - rayDir);
+    var specular: f32   = pow(max(0.0, dot(H, normal)), uniforms.specularPower);
 
 #ifdef FLUIDRENDERING_DEBUG_DIFFUSERENDERING
-    float diffuse  = max(0.0, dot(lightDir, normal)) * 1.0;
+    var diffuse: f32  = max(0.0, dot(lightDir, normal)) * 1.0;
 
-    glFragColor = vec4(vec3(0.1) /*ambient*/ + vec3(0.42, 0.50, 1.00) * diffuse + vec3(0, 0, 0.2) + specular, 1.);
-    return;
+    fragmentOutputs.color = vec4f(vec3f(0.1) /*ambient*/ + vec3f(0.42, 0.50, 1.00) * diffuse + vec3f(0, 0, 0.2) + specular, 1.);
+    return fragmentOutputs;
 #endif
 
     // Refraction color
-    vec3 refractionDir = refract(rayDir, normal, ETA);
+    var refractionDir: vec3f = refract(rayDir, normal, ETA);
 
-    vec4 transmitted = textureLod(textureSampler, vec2(texCoord + refractionDir.xy * thickness * refractionStrength), 0.0);
+    var transmitted: vec4f = textureSampleLevel(textureSampler, textureSamplerSampler vec2f(texCoord + refractionDir.xy * thickness * uniforms.refractionStrength), 0.0);
 #ifdef FLUIDRENDERING_COMPOSITE_MODE
-    if (transmitted.a == 0.) transmitted.a = thickness;
+    if (transmitted.a == 0.) {
+        transmitted.a = thickness;
+    }
 #endif
-    vec3 transmittance = exp(-density * thickness * (1.0 - diffuseColor)); // Beer law
+    var transmittance: vec3f = exp(-uniforms.density * thickness * (1.0 - diffuseColor)); // Beer law
    
-    vec3 refractionColor = transmitted.rgb * transmittance;
+    var refractionColor: vec3f = transmitted.rgb * transmittance;
 
 #ifdef FLUIDRENDERING_ENVIRONMENT
     // Reflection of the environment.
-    vec3 reflectionDir = reflect(rayDir, normal);
-    vec3 reflectionColor = (textureCube(reflectionSampler, reflectionDir).rgb);
+    var reflectionDir: vec3f = reflect(rayDir, normal);
+    var reflectionColor: vec3f = (textureSample(reflectionSampler, reflectionSamplerSampler, reflectionDir).rgb);
 
     // Combine refraction and reflection    
-    float fresnel = clamp(F0 + (1.0 - F0) * pow(1.0 - dot(normal, -rayDir), 5.0), 0., fresnelClamp);
+    var fresnel: f32 = clamp(F0 + (1.0 - F0) * pow(1.0 - dot(normal, -rayDir), 5.0), 0., uniforms.fresnelClamp);
     
-    vec3 finalColor = mix(refractionColor, reflectionColor, fresnel) + specular;
+    var finalColor: vec3f = mix(refractionColor, reflectionColor, fresnel) + specular;
 #else
-    vec3 finalColor = refractionColor + specular;
+    var finalColor: vec3f = refractionColor + specular;
 #endif
 
 #ifdef FLUIDRENDERING_VELOCITY
-    float velocity = depthVel.g;
-    finalColor = mix(finalColor, vec3(1.0), smoothstep(0.3, 1.0, velocity / 6.0));
+    var velocity: f32 = depthVel.g;
+    finalColor = mix(finalColor, vec3f(1.0), smoothstep(0.3, 1.0, velocity / 6.0));
 #endif
 
-    glFragColor = vec4(finalColor, transmitted.a);
+    fragmentOutputs.color = vec4f(finalColor, transmitted.a);
 }
