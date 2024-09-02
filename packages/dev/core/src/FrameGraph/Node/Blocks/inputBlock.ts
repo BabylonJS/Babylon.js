@@ -223,14 +223,6 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
                 throw new Error(`NodeRenderGraphInputBlock: Creation options are missing for texture "${this.name}"`);
             }
 
-            if (
-                this.type === NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment &&
-                !textureCreateOptions.options.generateDepthBuffer &&
-                !textureCreateOptions.options.generateStencilBuffer
-            ) {
-                throw new Error(`NodeRenderGraphInputBlock: Depth stencil attachment "${this.name}" must have either depth or stencil buffer enabled`);
-            }
-
             this.output.value = state.frameGraph.createRenderTargetTexture(this.name, textureCreateOptions);
         }
     }

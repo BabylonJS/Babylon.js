@@ -36,14 +36,7 @@ declare module "../../abstractEngine" {
         _createHardwareRenderTargetWrapper(isMulti: boolean, isCube: boolean, size: TextureSize): RenderTargetWrapper;
 
         /** @internal */
-        _setupDepthStencilTexture(
-            internalTexture: InternalTexture,
-            size: TextureSize,
-            generateStencil: boolean,
-            bilinearFiltering: boolean,
-            comparisonFunction: number,
-            samples?: number
-        ): void;
+        _setupDepthStencilTexture(internalTexture: InternalTexture, size: TextureSize, bilinearFiltering: boolean, comparisonFunction: number, samples?: number): void;
     }
 }
 
@@ -112,11 +105,7 @@ WebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSize, 
     return rtWrapper;
 };
 
-WebGPUEngine.prototype._createDepthStencilTexture = function (size: TextureSize, options: DepthTextureCreationOptions): InternalTexture {
-    const internalTexture = new InternalTexture(this, options.generateStencil ? InternalTextureSource.DepthStencil : InternalTextureSource.Depth);
-
-    internalTexture.label = options.label;
-
+WebGPUEngine.prototype._createDepthStencilTexture = function (size: TextureSize, options: DepthTextureCreationOptions, wrapper: WebGPURenderTargetWrapper): InternalTexture {
     const internalOptions = {
         bilinearFiltering: false,
         comparisonFunction: 0,
@@ -126,16 +115,20 @@ WebGPUEngine.prototype._createDepthStencilTexture = function (size: TextureSize,
         ...options,
     };
 
+    const hasStencil =
+        internalOptions.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 ||
+        internalOptions.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 ||
+        internalOptions.depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8;
+
+    wrapper._depthStencilTextureWithStencil = hasStencil;
+
+    const internalTexture = new InternalTexture(this, hasStencil ? InternalTextureSource.DepthStencil : InternalTextureSource.Depth);
+
+    internalTexture.label = options.label;
+
     internalTexture.format = internalOptions.depthTextureFormat;
 
-    this._setupDepthStencilTexture(
-        internalTexture,
-        size,
-        internalOptions.generateStencil,
-        internalOptions.bilinearFiltering,
-        internalOptions.comparisonFunction,
-        internalOptions.samples
-    );
+    this._setupDepthStencilTexture(internalTexture, size, internalOptions.bilinearFiltering, internalOptions.comparisonFunction, internalOptions.samples);
 
     this._textureHelper.createGPUTextureForInternalTexture(internalTexture);
 
@@ -152,7 +145,6 @@ WebGPUEngine.prototype._createDepthStencilTexture = function (size: TextureSize,
 WebGPUEngine.prototype._setupDepthStencilTexture = function (
     internalTexture: InternalTexture,
     size: TextureSize,
-    generateStencil: boolean,
     bilinearFiltering: boolean,
     comparisonFunction: number,
     samples = 1

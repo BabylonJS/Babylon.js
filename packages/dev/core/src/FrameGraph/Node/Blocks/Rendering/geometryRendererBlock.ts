@@ -97,29 +97,68 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         this._frameGraphTask.geometryTextureSizeIsPercentage = value;
     }
 
+    @editableInPropertyPage("Samples", PropertyTypeForEdition.Int, "PROPERTIES", { min: 1, max: 8 })
+    public get samples() {
+        return this._frameGraphTask.geometryTextureSamples;
+    }
+
+    public set samples(value: number) {
+        this._frameGraphTask.geometryTextureSamples = value;
+    }
+
     @editableInPropertyPage("Generate depth", PropertyTypeForEdition.Boolean, "GEOMETRY BUFFERS")
     public generateDepth = true;
 
-    @editableInPropertyPage("Depth format", PropertyTypeForEdition.Int, "GEOMETRY BUFFERS")
+    @editableInPropertyPage("Depth format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
     public depthFormat = Constants.TEXTUREFORMAT_RED;
 
-    @editableInPropertyPage("Depth type", PropertyTypeForEdition.Int, "GEOMETRY BUFFERS")
+    @editableInPropertyPage("Depth type", PropertyTypeForEdition.TextureType, "GEOMETRY BUFFERS")
     public depthType = Constants.TEXTURETYPE_FLOAT;
 
     @editableInPropertyPage("Generate normal", PropertyTypeForEdition.Boolean, "GEOMETRY BUFFERS")
     public generateNormal = false;
 
+    @editableInPropertyPage("Normal format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
+    public normalFormat = Constants.TEXTUREFORMAT_RGBA;
+
+    @editableInPropertyPage("Normal type", PropertyTypeForEdition.TextureType, "GEOMETRY BUFFERS")
+    public normalType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+
     @editableInPropertyPage("Generate position", PropertyTypeForEdition.Boolean, "GEOMETRY BUFFERS")
     public generatePosition = false;
+
+    @editableInPropertyPage("Position format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
+    public positionFormat = Constants.TEXTUREFORMAT_RGBA;
+
+    @editableInPropertyPage("Position type", PropertyTypeForEdition.TextureType, "GEOMETRY BUFFERS")
+    public positionType = Constants.TEXTURETYPE_HALF_FLOAT;
 
     @editableInPropertyPage("Generate albedo", PropertyTypeForEdition.Boolean, "GEOMETRY BUFFERS")
     public generateAlbedo = false;
 
+    @editableInPropertyPage("Albedo format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
+    public albedoFormat = Constants.TEXTUREFORMAT_RGBA;
+
+    @editableInPropertyPage("Albedo type", PropertyTypeForEdition.TextureType, "GEOMETRY BUFFERS")
+    public albedoType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+
     @editableInPropertyPage("Generate reflectivity", PropertyTypeForEdition.Boolean, "GEOMETRY BUFFERS")
     public generateReflectivity = false;
 
+    @editableInPropertyPage("Reflectivity format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
+    public reflectivityFormat = Constants.TEXTUREFORMAT_RGBA;
+
+    @editableInPropertyPage("Reflectivity type", PropertyTypeForEdition.TextureType, "GEOMETRY BUFFERS")
+    public reflectivityType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+
     @editableInPropertyPage("Generate velocity", PropertyTypeForEdition.Boolean, "GEOMETRY BUFFERS")
     public generateVelocity = false;
+
+    @editableInPropertyPage("Velocity format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
+    public velocityFormat = Constants.TEXTUREFORMAT_RGBA;
+
+    @editableInPropertyPage("Velocity type", PropertyTypeForEdition.TextureType, "GEOMETRY BUFFERS")
+    public velocityType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
 
     /**
      * Gets the current class name
@@ -250,9 +289,25 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         codes.push(`${this._codeVariableName}.depthWrite = ${this.depthWrite};`);
         codes.push(`${this._codeVariableName}.camera = CAMERA; // TODO: set camera`);
         codes.push(`${this._codeVariableName}.objectList = OBJECT_LIST; // TODO: set object list`);
+        codes.push(`${this._codeVariableName}.samples = ${this.samples};`);
         codes.push(`${this._codeVariableName}.generateDepth = ${this.generateDepth};`);
         codes.push(`${this._codeVariableName}.depthFormat = ${this.depthFormat};`);
         codes.push(`${this._codeVariableName}.depthType = ${this.depthType};`);
+        codes.push(`${this._codeVariableName}.generateDepth = ${this.generatePosition};`);
+        codes.push(`${this._codeVariableName}.depthFormat = ${this.positionFormat};`);
+        codes.push(`${this._codeVariableName}.depthType = ${this.positionType};`);
+        codes.push(`${this._codeVariableName}.generateDepth = ${this.generateNormal};`);
+        codes.push(`${this._codeVariableName}.depthFormat = ${this.normalFormat};`);
+        codes.push(`${this._codeVariableName}.depthType = ${this.normalType};`);
+        codes.push(`${this._codeVariableName}.generateDepth = ${this.generateAlbedo};`);
+        codes.push(`${this._codeVariableName}.depthFormat = ${this.albedoFormat};`);
+        codes.push(`${this._codeVariableName}.depthType = ${this.albedoType};`);
+        codes.push(`${this._codeVariableName}.generateDepth = ${this.generateReflectivity};`);
+        codes.push(`${this._codeVariableName}.depthFormat = ${this.reflectivityFormat};`);
+        codes.push(`${this._codeVariableName}.depthType = ${this.reflectivityType};`);
+        codes.push(`${this._codeVariableName}.generateDepth = ${this.generateVelocity};`);
+        codes.push(`${this._codeVariableName}.depthFormat = ${this.velocityFormat};`);
+        codes.push(`${this._codeVariableName}.depthType = ${this.velocityType};`);
         return super._dumpPropertiesCode() + codes.join("\n");
     }
 
@@ -260,9 +315,25 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         const serializationObject = super.serialize();
         serializationObject.depthTest = this.depthTest;
         serializationObject.depthWrite = this.depthWrite;
+        serializationObject.samples = this.samples;
         serializationObject.generateDepth = this.generateDepth;
         serializationObject.depthFormat = this.depthFormat;
         serializationObject.depthType = this.depthType;
+        serializationObject.generatePosition = this.generatePosition;
+        serializationObject.positionFormat = this.positionFormat;
+        serializationObject.positionType = this.positionType;
+        serializationObject.generateNormal = this.generateNormal;
+        serializationObject.normalFormat = this.normalFormat;
+        serializationObject.normalType = this.normalType;
+        serializationObject.generateAlbedo = this.generateAlbedo;
+        serializationObject.albedoFormat = this.albedoFormat;
+        serializationObject.albedoType = this.albedoType;
+        serializationObject.generateReflectivity = this.generateReflectivity;
+        serializationObject.reflectivityFormat = this.reflectivityFormat;
+        serializationObject.reflectivityType = this.reflectivityType;
+        serializationObject.generateVelocity = this.generateVelocity;
+        serializationObject.velocityFormat = this.velocityFormat;
+        serializationObject.velocityType = this.velocityType;
         return serializationObject;
     }
 
@@ -270,9 +341,25 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         super._deserialize(serializationObject);
         this.depthTest = serializationObject.depthTest;
         this.depthWrite = serializationObject.depthWrite;
+        this.samples = serializationObject.samples;
         this.generateDepth = serializationObject.generateDepth;
         this.depthFormat = serializationObject.depthFormat;
         this.depthType = serializationObject.depthType;
+        this.generatePosition = serializationObject.generatePosition;
+        this.positionFormat = serializationObject.positionFormat;
+        this.positionType = serializationObject.positionType;
+        this.generateNormal = serializationObject.generateNormal;
+        this.normalFormat = serializationObject.normalFormat;
+        this.normalType = serializationObject.normalType;
+        this.generateAlbedo = serializationObject.generateAlbedo;
+        this.albedoFormat = serializationObject.albedoFormat;
+        this.albedoType = serializationObject.albedoType;
+        this.generateReflectivity = serializationObject.generateReflectivity;
+        this.reflectivityFormat = serializationObject.reflectivityFormat;
+        this.reflectivityType = serializationObject.reflectivityType;
+        this.generateVelocity = serializationObject.generateVelocity;
+        this.velocityFormat = serializationObject.velocityFormat;
+        this.velocityType = serializationObject.velocityType;
     }
 }
 

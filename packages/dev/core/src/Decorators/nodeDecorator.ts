@@ -19,6 +19,10 @@ export const enum PropertyTypeForEdition {
     Color4,
     /** property (int) should be edited as a combo box with a list of sampling modes */
     SamplingMode,
+    /** property (int) should be edited as a combo box with a list of texture formats */
+    TextureFormat,
+    /** property (int) should be edited as a combo box with a list of texture types */
+    TextureType,
 }
 
 /**

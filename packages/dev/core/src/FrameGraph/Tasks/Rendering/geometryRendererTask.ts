@@ -107,6 +107,8 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
             },
         });
 
+        const outputTextureDescription = frameGraph.getTextureDescription(outputTextureHandle);
+
         let depthEnabled = false;
 
         if (this.depthTexture !== undefined) {
@@ -121,12 +123,16 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
                     `FrameGraphGeometryRendererTask ${this.name}: the back buffer depth/stencil texture is the only depth texture allowed when the destination is the back buffer color`
                 );
             }
+
+            const depthTextureDescription = frameGraph.getTextureDescription(depthTextureHandle);
+            if (depthTextureDescription.options.samples !== outputTextureDescription.options.samples) {
+                throw new Error(`FrameGraphGeometryRendererTask ${this.name}: the depth texture and the output texture must have the same number of samples`);
+            }
+
             depthEnabled = true;
         }
 
-        const textureDescription = frameGraph.getTextureDescription(outputTextureHandle);
-
-        this._rtt._size = textureDescription.size;
+        this._rtt._size = outputTextureDescription.size;
 
         const pass = frameGraph.addRenderPass(this.name);
 
@@ -141,14 +147,6 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
             // TODO: clear all targets
             _context.render(this._rtt);
         });
-
-        const passDisabled = frameGraph.addRenderPass(this.name + "_disabled", true);
-
-        passDisabled.setRenderTarget(outputTextureHandle);
-        if (this.depthTexture !== undefined) {
-            passDisabled.setRenderTargetDepth(frameGraph.getTextureHandle(this.depthTexture));
-        }
-        passDisabled.setExecuteFunc((_context) => {});
     }
 
     public disposeFrameGraph(): void {

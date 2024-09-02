@@ -4,9 +4,10 @@ import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import type { TextureSize } from "../Materials/Textures/textureCreationOptions";
 import { getDimensionsFromTextureSize } from "../Materials/Textures/textureCreationOptions";
 import { Texture } from "../Materials/Textures/texture";
-import type { Nullable } from "core/types";
+import type { Nullable } from "../types";
 import type { FrameGraphTextureCreationOptions, FrameGraphTextureHandle } from "./frameGraphTypes";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "./frameGraphTypes";
+import { Constants } from "../Engines/constants";
 
 type TextureEntry = {
     texture: Nullable<RenderTargetWrapper>;
@@ -110,7 +111,15 @@ export class FrameGraphTextureManager {
                 const creationOptions = entry.creationOptions;
                 const size = creationOptions.sizeIsPercentage ? this.getAbsoluteDimensions(creationOptions.size) : creationOptions.size;
 
-                const isDepthStencil = creationOptions.options.generateDepthBuffer || creationOptions.options.generateStencilBuffer;
+                const format = creationOptions.options.format;
+                const isDepthStencil =
+                    format === Constants.TEXTUREFORMAT_DEPTH16 ||
+                    format === Constants.TEXTUREFORMAT_DEPTH24 ||
+                    format === Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 ||
+                    format === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 ||
+                    format === Constants.TEXTUREFORMAT_DEPTH32_FLOAT ||
+                    format === Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8 ||
+                    format === Constants.TEXTUREFORMAT_STENCIL8;
 
                 creationOptions.options.noColorAttachment = isDepthStencil;
 
@@ -120,7 +129,7 @@ export class FrameGraphTextureManager {
                     entry.texture.createDepthStencilTexture(
                         undefined,
                         undefined,
-                        creationOptions.options.generateStencilBuffer,
+                        undefined,
                         creationOptions.options.samples,
                         creationOptions.options.format,
                         creationOptions.options.label

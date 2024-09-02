@@ -14,7 +14,7 @@ import type { IEditablePropertyListOption } from "core/Decorators/nodeDecorator"
 import { PropertyTypeForEdition, type IEditablePropertyOption, type IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
 import { Constants } from "core/Engines/constants";
 
-const samplingModeList = [
+export const samplingModeList = [
     { label: "Nearest/Nearest", value: Constants.TEXTURE_NEAREST_SAMPLINGMODE }, // 1
     { label: "Linear/Nearest", value: Constants.TEXTURE_LINEAR_NEAREST }, // 12
     { label: "Nearest/Linear", value: Constants.TEXTURE_NEAREST_LINEAR }, // 7
@@ -29,6 +29,36 @@ const samplingModeList = [
     { label: "Linear/Nearest & linear mip", value: Constants.TEXTURE_LINEAR_NEAREST_MIPLINEAR }, // 10
     { label: "Nearest/Linear & linear mip", value: Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR }, // 6
     { label: "Linear/Linear & linear mip", value: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE }, // 3
+];
+
+export const textureFormatList = [
+    { label: "rgba", value: Constants.TEXTUREFORMAT_RGBA },
+    { label: "r", value: Constants.TEXTUREFORMAT_RED },
+    { label: "rg", value: Constants.TEXTUREFORMAT_RG },
+    { label: "bgra", value: Constants.TEXTUREFORMAT_BGRA },
+    { label: "rgba integer", value: Constants.TEXTUREFORMAT_RGBA_INTEGER },
+    { label: "r integer", value: Constants.TEXTUREFORMAT_RED_INTEGER },
+    { label: "rg Integer", value: Constants.TEXTUREFORMAT_RG_INTEGER },
+];
+
+export const textureTypeList = [
+    { label: "Unsigned Byte", value: Constants.TEXTURETYPE_UNSIGNED_BYTE },
+    { label: "Signed Byte", value: Constants.TEXTURETYPE_BYTE },
+    { label: "Unsigned Short", value: Constants.TEXTURETYPE_UNSIGNED_SHORT },
+    { label: "Short", value: Constants.TEXTURETYPE_SHORT },
+    { label: "Unsigned Integer", value: Constants.TEXTURETYPE_UNSIGNED_INTEGER },
+    { label: "Integer", value: Constants.TEXTURETYPE_INT },
+    { label: "Float", value: Constants.TEXTURETYPE_FLOAT },
+    { label: "Half Float", value: Constants.TEXTURETYPE_HALF_FLOAT },
+];
+
+export const textureDepthStencilFormatList = [
+    { label: "Depth 24/Stencil 8", value: Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 },
+    { label: "Depth 24 Unorm/Stencil 8", value: Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 },
+    { label: "Depth 32 float/Stencil 8", value: Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8 },
+    { label: "Depth 16", value: Constants.TEXTUREFORMAT_DEPTH16 },
+    { label: "Depth 24", value: Constants.TEXTUREFORMAT_DEPTH24 },
+    { label: "Depth 32 float", value: Constants.TEXTUREFORMAT_DEPTH32_FLOAT },
 ];
 
 export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {
@@ -257,6 +287,32 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                             className="samplingMode"
                             label={displayName}
                             options={samplingModeList}
+                            target={block}
+                            propertyName={propertyName}
+                            onSelect={() => this.forceRebuild(propertyName, options.notifiers)}
+                        />
+                    );
+                    break;
+                }
+                case PropertyTypeForEdition.TextureFormat: {
+                    components.push(
+                        <OptionsLine
+                            key={`textureformat-${propertyName}`}
+                            label="Texture format"
+                            options={textureFormatList}
+                            target={block}
+                            propertyName={propertyName}
+                            onSelect={() => this.forceRebuild(propertyName, options.notifiers)}
+                        />
+                    );
+                    break;
+                }
+                case PropertyTypeForEdition.TextureType: {
+                    components.push(
+                        <OptionsLine
+                            key={`texturetype-${propertyName}`}
+                            label="Texture type"
+                            options={textureTypeList}
                             target={block}
                             propertyName={propertyName}
                             onSelect={() => this.forceRebuild(propertyName, options.notifiers)}

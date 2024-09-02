@@ -46,7 +46,7 @@ export interface RenderTargetCreationOptions extends InternalTextureCreationOpti
  * Define options used to create a depth texture
  */
 export interface DepthTextureCreationOptions {
-    /** Specifies whether or not a stencil should be allocated in the texture */
+    /** Specifies whether or not a stencil should be allocated in the texture. Not used if depthTextureFormat is supplied, in which case stencil creation will depend on this value. */
     generateStencil?: boolean;
     /** Specifies whether or not bilinear filtering is enable on the texture */
     bilinearFiltering?: boolean;

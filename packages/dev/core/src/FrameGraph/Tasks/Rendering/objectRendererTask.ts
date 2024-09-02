@@ -76,7 +76,7 @@ export class FrameGraphObjectRendererTask implements IFrameGraphTask {
         }
 
         const outputTextureHandle = frameGraph.getTextureHandle(this.destinationTexture);
-        const textureDescription = frameGraph.getTextureDescription(outputTextureHandle);
+        const outputTextureDescription = frameGraph.getTextureDescription(outputTextureHandle);
 
         let depthEnabled = false;
 
@@ -92,10 +92,16 @@ export class FrameGraphObjectRendererTask implements IFrameGraphTask {
                     `FrameGraphObjectRendererTask ${this.name}: the back buffer depth/stencil texture is the only depth texture allowed when the destination is the back buffer color`
                 );
             }
+
+            const depthTextureDescription = frameGraph.getTextureDescription(depthTextureHandle);
+            if (depthTextureDescription.options.samples !== outputTextureDescription.options.samples) {
+                throw new Error(`FrameGraphObjectRendererTask ${this.name}: the depth texture and the output texture must have the same number of samples`);
+            }
+
             depthEnabled = true;
         }
 
-        this._rtt._size = textureDescription.size;
+        this._rtt._size = outputTextureDescription.size;
 
         const pass = frameGraph.addRenderPass(this.name);
 

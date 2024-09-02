@@ -2,7 +2,7 @@ import * as React from "react";
 import type { GlobalState } from "../../globalState";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
-import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
+import { GeneralPropertyTabComponent, textureDepthStencilFormatList, textureFormatList, textureTypeList } from "./genericNodePropertyComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import type { Nullable } from "core/types";
@@ -11,37 +11,6 @@ import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSyst
 import type { NodeRenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
 import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
 import type { FrameGraphTextureCreationOptions } from "core/FrameGraph/frameGraphTypes";
-import { Constants } from "core/Engines/constants";
-
-const textureFormatList = [
-    { label: "rgba", value: Constants.TEXTUREFORMAT_RGBA },
-    { label: "r", value: Constants.TEXTUREFORMAT_RED },
-    { label: "rg", value: Constants.TEXTUREFORMAT_RG },
-    { label: "bgra", value: Constants.TEXTUREFORMAT_BGRA },
-    { label: "rgba integer", value: Constants.TEXTUREFORMAT_RGBA_INTEGER },
-    { label: "r integer", value: Constants.TEXTUREFORMAT_RED_INTEGER },
-    { label: "rg Integer", value: Constants.TEXTUREFORMAT_RG_INTEGER },
-];
-
-const textureTypeList = [
-    { label: "Unsigned Byte", value: Constants.TEXTURETYPE_UNSIGNED_BYTE },
-    { label: "Signed Byte", value: Constants.TEXTURETYPE_BYTE },
-    { label: "Unsigned Short", value: Constants.TEXTURETYPE_UNSIGNED_SHORT },
-    { label: "Short", value: Constants.TEXTURETYPE_SHORT },
-    { label: "Unsigned Integer", value: Constants.TEXTURETYPE_UNSIGNED_INTEGER },
-    { label: "Integer", value: Constants.TEXTURETYPE_INT },
-    { label: "Float", value: Constants.TEXTURETYPE_FLOAT },
-    { label: "Half Float", value: Constants.TEXTURETYPE_HALF_FLOAT },
-];
-
-const textureDepthStencilFormatList = [
-    { label: "Depth 24/Stencil 8", value: Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 },
-    { label: "Depth 24 Unorm/Stencil 8", value: Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 },
-    { label: "Depth 32 float/Stencil 8", value: Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8 },
-    { label: "Depth 16", value: Constants.TEXTUREFORMAT_DEPTH16 },
-    { label: "Depth 24", value: Constants.TEXTUREFORMAT_DEPTH24 },
-    { label: "Depth 32 float", value: Constants.TEXTUREFORMAT_DEPTH32_FLOAT },
-];
 
 export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     private _onValueChangedObserver: Nullable<Observer<NodeRenderGraphInputBlock>>;
@@ -208,18 +177,6 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                     min={1}
                                     max={8}
                                     onChange={() => this.props.stateManager.onRebuildRequiredObservable.notifyObservers()}
-                                />
-                                <CheckBoxLineComponent
-                                    label="Generate depth buffer"
-                                    target={creationOptions.options}
-                                    propertyName="generateDepthBuffer"
-                                    onValueChanged={() => this.props.stateManager.onRebuildRequiredObservable.notifyObservers()}
-                                />
-                                <CheckBoxLineComponent
-                                    label="Generate stencil buffer"
-                                    target={creationOptions.options}
-                                    propertyName="generateStencilBuffer"
-                                    onValueChanged={() => this.props.stateManager.onRebuildRequiredObservable.notifyObservers()}
                                 />
                             </>
                         )}
