@@ -231,6 +231,7 @@ export class TAARenderingPipeline extends PostProcessRenderPipeline {
         );
 
         this._hs.setDimensions(width / 2, height / 2);
+        this._hs.regenerate(this.samples);
         this._firstUpdate = true;
     }
 
