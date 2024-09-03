@@ -11,6 +11,7 @@ import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaus
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Constants } from "core/Engines/constants";
 import { appendSceneAsync } from "core/Loading/sceneLoader";
+import "core/Meshes/thinInstanceMesh";
 
 /**
  * Class used to render a gaussian splatting mesh
