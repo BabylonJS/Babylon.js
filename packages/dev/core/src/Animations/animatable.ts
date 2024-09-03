@@ -448,24 +448,9 @@ export class Animatable {
         const runtimeAnimations = this._runtimeAnimations;
         let index: number;
 
-        // get speed this.speedRatio, to and this.fromFrame, based on the sign and value(s)
-        let speedRatio = this._speedRatio;
-        let fromFrame = this.fromFrame;
-        let toFrame = this.toFrame;
-        if (speedRatio < 0) {
-            const tmp = fromFrame;
-            fromFrame = toFrame;
-            toFrame = tmp;
-            speedRatio = -speedRatio;
-        }
-        // if from > to switch speed ratio
-        if (fromFrame > toFrame) {
-            speedRatio = -speedRatio;
-        }
-
         for (index = 0; index < runtimeAnimations.length; index++) {
             const animation = runtimeAnimations[index];
-            const isRunning = animation.animate(delay - this._localDelayOffset, fromFrame, toFrame, this.loopAnimation, speedRatio, this._weight);
+            const isRunning = animation.animate(delay - this._localDelayOffset, this.fromFrame, this.toFrame, this.loopAnimation, this._speedRatio, this._weight);
             running = running || isRunning;
         }
 
@@ -562,6 +547,8 @@ declare module "../scene" {
 
         /**
          * Will start the animation sequence of a given target
+         *
+         * Note that it is possible that the value(s) of speedRatio from and to will be changed if the animation is inverted
          * @param target defines the target
          * @param from defines from which frame should animation start
          * @param to defines until which frame should animation run.
@@ -622,6 +609,8 @@ declare module "../scene" {
 
         /**
          * Begin a new animation on a given node
+         *
+         * Note that it is possible that the value(s) of speedRatio from and to will be changed if the animation is inverted
          * @param target defines the target where the animation will take place
          * @param animations defines the list of animations to start
          * @param from defines the initial value
@@ -773,6 +762,17 @@ Scene.prototype.beginAnimation = function (
     onAnimationLoop?: () => void,
     isAdditive = false
 ): Animatable {
+    // get speed speedRatio, to and from, based on the sign and value(s)
+    if (speedRatio < 0) {
+        const tmp = from;
+        from = to;
+        to = tmp;
+        speedRatio = -speedRatio;
+    }
+    // if from > to switch speed ratio
+    if (from > to) {
+        speedRatio = -speedRatio;
+    }
     if (stopCurrent) {
         this.stopAnimation(target, undefined, targetMask);
     }
@@ -836,6 +836,17 @@ Scene.prototype.beginDirectAnimation = function (
     onAnimationLoop?: () => void,
     isAdditive = false
 ): Animatable {
+    // get speed speedRatio, to and from, based on the sign and value(s)
+    if (speedRatio < 0) {
+        const tmp = from;
+        from = to;
+        to = tmp;
+        speedRatio = -speedRatio;
+    }
+    // if from > to switch speed ratio
+    if (from > to) {
+        speedRatio = -speedRatio;
+    }
     const animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd, animations, onAnimationLoop, isAdditive);
 
     return animatable;
