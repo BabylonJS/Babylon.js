@@ -1,12 +1,6 @@
 import type { FrameGraph } from "../../frameGraph";
-import {
-    type FrameGraphTaskOutputReference,
-    type IFrameGraphTask,
-    type FrameGraphObjectList,
-    type FrameGraphTextureId,
-    backbufferColorTextureHandle,
-    backbufferDepthStencilTextureHandle,
-} from "../../frameGraphTypes";
+import type { FrameGraphTaskOutputReference, IFrameGraphTask, FrameGraphTextureId, FrameGraphObjectListId } from "../../frameGraphTypes";
+import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
 import { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture";
 import type { Scene } from "../../../scene";
 import type { Camera } from "../../../Cameras/camera";
@@ -31,16 +25,7 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
         this._rtt.activeCamera = this.camera;
     }
 
-    private _objectList: FrameGraphObjectList;
-
-    public get objectList() {
-        return this._objectList;
-    }
-
-    public set objectList(objectList: FrameGraphObjectList) {
-        this._objectList = objectList;
-        this._rtt.renderList = this.objectList.meshes;
-    }
+    public objectList: FrameGraphObjectListId;
 
     public depthTest = true;
 
@@ -92,8 +77,8 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
     }
 
     public recordFrameGraph(frameGraph: FrameGraph) {
-        if (this.geometryTextureDescriptions.length === 0) {
-            throw new Error(`FrameGraphGeometryRendererTask ${this.name}: at least one geometry texture description must be provided`);
+        if (this.geometryTextureDescriptions.length === 0 || this.objectList === undefined) {
+            throw new Error(`FrameGraphGeometryRendererTask ${this.name}: object list and at least one geometry texture description must be provided`);
         }
 
         // TODO: create a multi render target texture if there are more than one geometry texture
@@ -133,6 +118,7 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
         }
 
         this._rtt._size = outputTextureDescription.size;
+        this._rtt.renderList = frameGraph.getObjectList(this.objectList).meshes;
 
         const pass = frameGraph.addRenderPass(this.name);
 

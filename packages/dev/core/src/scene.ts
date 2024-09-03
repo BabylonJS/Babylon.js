@@ -4614,6 +4614,31 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             step.action();
         }
 
+        // Process meshes
+        const meshes = this.getActiveMeshCandidates();
+        const len = meshes.length;
+
+        for (let i = 0; i < len; i++) {
+            const mesh = meshes.data[i];
+
+            if (mesh.isBlocked) {
+                continue;
+            }
+
+            this._totalVertices.addCount(mesh.getTotalVertices(), false);
+
+            if (!mesh.isReady() || !mesh.isEnabled() || mesh.scaling.hasAZeroComponent) {
+                continue;
+            }
+
+            mesh.computeWorldMatrix();
+
+            // Intersections
+            if (mesh.actionManager && mesh.actionManager.hasSpecificTriggers2(Constants.ACTION_OnIntersectionEnterTrigger, Constants.ACTION_OnIntersectionExitTrigger)) {
+                this._meshesForIntersections.pushNoDuplicate(mesh);
+            }
+        }
+
         // Render the graph
         this.frameGraph?.execute();
 

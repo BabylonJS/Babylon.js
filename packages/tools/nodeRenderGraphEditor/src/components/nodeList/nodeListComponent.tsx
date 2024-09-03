@@ -40,6 +40,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         ObjectRendererBlock: "Renders objects to a render target",
         GeometryRendererBlock: "Generates geometry buffers for a list of objects",
         ObjectListBlock: "List of objects (meshes, particle systems, sprites)",
+        CullBlock: "Culls a list of objects",
         CameraBlock: "Camera",
     };
 
@@ -130,7 +131,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Misc: ["ElbowBlock", "TeleportInBlock", "TeleportOutBlock", "GUIBlock"],
             Textures: ["ClearBlock", "CopyTextureBlock", "GenerateMipmapsBlock"],
             Output_Nodes: ["OutputBlock"],
-            Rendering: ["ObjectRendererBlock", "GeometryRendererBlock"],
+            Rendering: ["ObjectRendererBlock", "GeometryRendererBlock", "CullBlock"],
         };
 
         // Create node menu

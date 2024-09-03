@@ -1,9 +1,18 @@
 import type { Scene } from "../scene";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
-import type { IFrameGraphTask, FrameGraphTextureCreationOptions, FrameGraphTextureHandle, FrameGraphTextureDescription, FrameGraphTextureId } from "./frameGraphTypes";
+import type {
+    IFrameGraphTask,
+    FrameGraphTextureCreationOptions,
+    FrameGraphTextureHandle,
+    FrameGraphTextureDescription,
+    FrameGraphTextureId,
+    FrameGraphObjectList,
+    FrameGraphObjectListId,
+} from "./frameGraphTypes";
 import { FrameGraphPass } from "./Passes/pass";
 import { FrameGraphRenderPass } from "./Passes/renderPass";
+import { FrameGraphCullPass } from "./Passes/cullPass";
 import { FrameGraphRenderContext } from "./frameGraphRenderContext";
 import { FrameGraphContext } from "./frameGraphContext";
 import { FrameGraphTextureManager } from "./frameGraphTextureManager";
@@ -11,6 +20,12 @@ import { FrameGraphTaskInternals } from "./Tasks/taskInternals";
 import { Observable } from "core/Misc/observable";
 import { getDimensionsFromTextureSize, textureSizeIsObject } from "../Materials/Textures/textureCreationOptions";
 import type { Nullable } from "../types";
+
+enum FrameGraphPassType {
+    Render = 0,
+    Cull = 1,
+    Compute = 2,
+}
 
 /**
  * Class used to implement the frame graph
@@ -26,6 +41,10 @@ export class FrameGraph {
 
     private static _IsTextureHandle(textureId: FrameGraphTextureId): textureId is FrameGraphTextureHandle {
         return typeof textureId === "number";
+    }
+
+    private static _IsObjectList(objectListId: FrameGraphObjectListId): objectListId is FrameGraphObjectList {
+        return !Array.isArray(objectListId);
     }
 
     /**
@@ -61,24 +80,32 @@ export class FrameGraph {
         this._tasks.push(task);
     }
 
-    public addPass(name: string, whenTaskDisabled = false): FrameGraphPass<FrameGraphContext> {
-        if (!this._currentProcessedTask) {
-            throw new Error("A pass must be created during a Task.recordFrameGraph execution.");
-        }
-
-        const pass = new FrameGraphPass(name, this._currentProcessedTask, this._passContext);
-
-        this._currentProcessedTask._fgInternals!.addPass(pass, whenTaskDisabled);
-
-        return pass;
+    public addRenderPass(name: string, whenTaskDisabled = false): FrameGraphRenderPass {
+        return this._addPass(name, FrameGraphPassType.Render, whenTaskDisabled) as FrameGraphRenderPass;
     }
 
-    public addRenderPass(name: string, whenTaskDisabled = false): FrameGraphRenderPass {
+    public addCullPass(name: string, whenTaskDisabled = false): FrameGraphCullPass {
+        return this._addPass(name, FrameGraphPassType.Cull, whenTaskDisabled) as FrameGraphCullPass;
+    }
+
+    private _addPass(name: string, passType: FrameGraphPassType, whenTaskDisabled = false): FrameGraphPass<FrameGraphContext> | FrameGraphRenderPass {
         if (!this._currentProcessedTask) {
             throw new Error("A pass must be created during a Task.recordFrameGraph execution.");
         }
 
-        const pass = new FrameGraphRenderPass(name, this._currentProcessedTask, this._renderContext, this._engine);
+        let pass: FrameGraphPass<FrameGraphContext> | FrameGraphRenderPass;
+
+        switch (passType) {
+            case FrameGraphPassType.Render:
+                pass = new FrameGraphRenderPass(name, this._currentProcessedTask, this._renderContext, this._engine);
+                break;
+            case FrameGraphPassType.Cull:
+                pass = new FrameGraphCullPass(name, this._currentProcessedTask, this._passContext, this._engine);
+                break;
+            default:
+                pass = new FrameGraphPass(name, this._currentProcessedTask, this._passContext);
+                break;
+        }
 
         this._currentProcessedTask._fgInternals!.addPass(pass, whenTaskDisabled);
 
@@ -216,6 +243,20 @@ export class FrameGraph {
 
     public createRenderTargetTexture(name: string, creationOptions: FrameGraphTextureCreationOptions): FrameGraphTextureHandle {
         return this._textureManager.createRenderTargetTexture(name, !!this._currentProcessedTask, creationOptions);
+    }
+
+    public getObjectList(objectListId: FrameGraphObjectListId): FrameGraphObjectList {
+        if (FrameGraph._IsObjectList(objectListId)) {
+            return objectListId;
+        }
+
+        const objectList = objectListId[0]._fgInternals!.mapNameToObjectList[objectListId[1]];
+
+        if (objectList === undefined) {
+            throw new Error(`Task "${objectListId[0].name}" does not have a "${objectListId[1]}" object list.`);
+        }
+
+        return objectList;
     }
 
     public clear(): void {

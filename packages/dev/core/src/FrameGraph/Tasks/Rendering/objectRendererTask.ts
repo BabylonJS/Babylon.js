@@ -1,12 +1,6 @@
 import type { FrameGraph } from "../../frameGraph";
-import {
-    type FrameGraphTaskOutputReference,
-    type IFrameGraphTask,
-    type FrameGraphObjectList,
-    type FrameGraphTextureId,
-    backbufferColorTextureHandle,
-    backbufferDepthStencilTextureHandle,
-} from "../../frameGraphTypes";
+import type { FrameGraphTaskOutputReference, IFrameGraphTask, FrameGraphTextureId, FrameGraphObjectListId } from "../../frameGraphTypes";
+import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
 import { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture";
 import type { Scene } from "../../../scene";
 import type { Camera } from "../../../Cameras/camera";
@@ -27,16 +21,7 @@ export class FrameGraphObjectRendererTask implements IFrameGraphTask {
         this._rtt.activeCamera = this.camera;
     }
 
-    private _objectList: FrameGraphObjectList;
-
-    public get objectList() {
-        return this._objectList;
-    }
-
-    public set objectList(objectList: FrameGraphObjectList) {
-        this._objectList = objectList;
-        this._rtt.renderList = this.objectList.meshes;
-    }
+    public objectList: FrameGraphObjectListId;
 
     public depthTest = true;
 
@@ -71,8 +56,8 @@ export class FrameGraphObjectRendererTask implements IFrameGraphTask {
     }
 
     public recordFrameGraph(frameGraph: FrameGraph) {
-        if (this.destinationTexture === undefined) {
-            throw new Error(`FrameGraphObjectRendererTask ${this.name}: destinationTexture is required`);
+        if (this.destinationTexture === undefined || this.objectList === undefined) {
+            throw new Error(`FrameGraphObjectRendererTask ${this.name}: destinationTexture and objectList are required`);
         }
 
         const outputTextureHandle = frameGraph.getTextureHandle(this.destinationTexture);
@@ -103,6 +88,8 @@ export class FrameGraphObjectRendererTask implements IFrameGraphTask {
 
         this._rtt._size = outputTextureDescription.size;
 
+        const objectList = frameGraph.getObjectList(this.objectList);
+
         const pass = frameGraph.addRenderPass(this.name);
 
         pass.setRenderTarget(outputTextureHandle);
@@ -110,6 +97,7 @@ export class FrameGraphObjectRendererTask implements IFrameGraphTask {
             pass.setRenderTargetDepth(frameGraph.getTextureHandle(this.depthTexture));
         }
         pass.setExecuteFunc((_context) => {
+            this._rtt.renderList = objectList.meshes;
             this._scene.incrementRenderId();
             _context.setDepthStates(this.depthTest && depthEnabled, this.depthWrite && depthEnabled);
             _context.render(this._rtt);

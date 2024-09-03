@@ -6,6 +6,7 @@ export * from "./PostProcesses/bloomPostProcessBlock";
 export * from "./PostProcesses/blurPostProcessBlock";
 export * from "./Rendering/objectRendererBlock";
 export * from "./Rendering/geometryRendererBlock";
+export * from "./Rendering/cullObjectsBlock";
 export * from "./Teleport/teleportInBlock";
 export * from "./Teleport/teleportOutBlock";
 export * from "./Textures/clearBlock";

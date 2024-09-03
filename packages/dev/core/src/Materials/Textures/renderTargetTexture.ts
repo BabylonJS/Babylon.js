@@ -1103,10 +1103,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                     continue;
                 }
 
-                if (!mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate && scene.activeCamera) {
-                    mesh._internalAbstractMeshDataInfo._currentLOD = scene.customLODSelector
-                        ? scene.customLODSelector(mesh, this.activeCamera || scene.activeCamera)
-                        : mesh.getLOD(this.activeCamera || scene.activeCamera);
+                if (!mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate && camera) {
+                    mesh._internalAbstractMeshDataInfo._currentLOD = scene.customLODSelector ? scene.customLODSelector(mesh, camera) : mesh.getLOD(camera);
                     mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate = true;
                 }
                 if (!mesh._internalAbstractMeshDataInfo._currentLOD) {
@@ -1114,6 +1112,10 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                 }
 
                 let meshToRender = mesh._internalAbstractMeshDataInfo._currentLOD;
+
+                if (meshToRender !== mesh && meshToRender.billboardMode !== 0) {
+                    meshToRender.computeWorldMatrix(); // Compute world matrix if LOD is billboard
+                }
 
                 meshToRender._preActivateForIntermediateRendering(sceneRenderId);
 

@@ -1,4 +1,5 @@
-import type { FrameGraphTextureHandle, IFrameGraphPass, IFrameGraphTask } from "../frameGraphTypes";
+import type { FrameGraphObjectList, FrameGraphTextureHandle, IFrameGraphPass, IFrameGraphTask } from "../frameGraphTypes";
+import { FrameGraphCullPass } from "../Passes/cullPass";
 import { FrameGraphRenderPass } from "../Passes/renderPass";
 
 /** @internal */
@@ -7,6 +8,8 @@ export class FrameGraphTaskInternals {
     private _passesDisabled: IFrameGraphPass[] = [];
 
     public mapNameToTextureHandle: { [name: string]: FrameGraphTextureHandle } = {};
+
+    public mapNameToObjectList: { [name: string]: FrameGraphObjectList } = {};
 
     constructor(private _task: IFrameGraphTask) {
         this.reset();
@@ -33,6 +36,7 @@ export class FrameGraphTaskInternals {
     public postBuildTask() {
         let outputTexture: FrameGraphTextureHandle | undefined;
         let outputDepthTexture: FrameGraphTextureHandle | undefined;
+        let outputObjectList: FrameGraphObjectList | undefined;
 
         for (const pass of this._passes!) {
             const errMsg = pass._isValid();
@@ -45,11 +49,14 @@ export class FrameGraphTaskInternals {
                 for (const outputTexture of pass.outputTextures) {
                     this.mapNameToTextureHandle[outputTexture.name] = outputTexture.handle;
                 }
+            } else if (FrameGraphCullPass.IsCullPass(pass)) {
+                outputObjectList = pass.objectList;
             }
         }
 
         let disabledOutputTexture: FrameGraphTextureHandle | undefined;
         let disabledOutputDepthTexture: FrameGraphTextureHandle | undefined;
+        let disabledOutputObjectList: FrameGraphObjectList | undefined;
 
         for (const pass of this._passesDisabled!) {
             const errMsg = pass._isValid();
@@ -59,6 +66,8 @@ export class FrameGraphTaskInternals {
             if (FrameGraphRenderPass.IsRenderPass(pass)) {
                 disabledOutputTexture = pass.renderTarget;
                 disabledOutputDepthTexture = pass.renderTargetDepth;
+            } else if (FrameGraphCullPass.IsCullPass(pass)) {
+                disabledOutputObjectList = pass.objectList;
             }
         }
 
@@ -69,6 +78,9 @@ export class FrameGraphTaskInternals {
             if (outputDepthTexture !== disabledOutputDepthTexture) {
                 throw new Error(`The output depth texture of the task "${this._task.name}" is different when it is enabled or disabled.`);
             }
+            if (outputObjectList !== disabledOutputObjectList) {
+                throw new Error(`The output object list of the task "${this._task.name}" is different when it is enabled or disabled.`);
+            }
         }
 
         if (outputTexture !== undefined) {
@@ -76,6 +88,9 @@ export class FrameGraphTaskInternals {
         }
         if (outputDepthTexture !== undefined) {
             this.mapNameToTextureHandle["outputDepth"] = outputDepthTexture;
+        }
+        if (outputObjectList !== undefined) {
+            this.mapNameToObjectList["output"] = outputObjectList;
         }
     }
 

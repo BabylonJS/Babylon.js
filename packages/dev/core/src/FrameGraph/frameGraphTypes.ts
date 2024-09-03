@@ -30,6 +30,13 @@ export type FrameGraphTextureDescription = {
     options: RenderTargetCreationOptions;
 };
 
+export type FrameGraphObjectList = {
+    meshes: AbstractMesh[];
+    particleSystems: IParticleSystem[];
+};
+
+export type FrameGraphObjectListId = FrameGraphTaskOutputReference | FrameGraphObjectList;
+
 /**
  * Interface used to indicate that the class can be used as a task in a frame graph.
  */
@@ -58,8 +65,3 @@ export interface IFrameGraphPass {
     _execute(): void;
     _isValid(): Nullable<string>;
 }
-
-export type FrameGraphObjectList = {
-    meshes: AbstractMesh[];
-    particleSystems: IParticleSystem[];
-};
