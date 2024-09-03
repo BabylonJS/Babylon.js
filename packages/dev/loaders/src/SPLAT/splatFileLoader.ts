@@ -18,6 +18,7 @@ import { Quaternion, Vector3 } from "core/Maths/math.vector";
 import { PointsCloudSystem } from "core/Particles/pointsCloudSystem";
 import { Color4 } from "core/Maths/math.color";
 import { VertexData } from "core/Meshes/mesh.vertexData";
+import type { SPLATLoadingOptions } from "./splatLoadingOptions";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const PLUGIN_SPLAT = "splat";
@@ -63,6 +64,8 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
     public readonly name = PLUGIN_SPLAT;
 
     private _assetContainer: Nullable<AssetContainer> = null;
+
+    private _loadingOptions: SPLATLoadingOptions;
     /**
      * Defines the extensions the splat loader is able to load.
      * force data to come in as an ArrayBuffer
@@ -75,9 +78,23 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
     } as const satisfies ISceneLoaderPluginExtensions;
 
     /**
-     * Creates loader for gaussian splatting files
+     * Shall data stay in ram for editing/cloning
      */
-    constructor() {}
+    public static KEEP_IN_RAM = false;
+
+    /**
+     * Creates loader for gaussian splatting files
+     * @param loadingOptions options for loading and parsing splat and PLY files.
+     */
+    constructor(loadingOptions?: SPLATLoadingOptions) {
+        this._loadingOptions = loadingOptions || SPLATFileLoader._DefaultLoadingOptions;
+    }
+
+    private static get _DefaultLoadingOptions(): SPLATLoadingOptions {
+        return {
+            keepInRam: SPLATFileLoader.KEEP_IN_RAM,
+        };
+    }
 
     /**
      * Instantiates a gaussian splatting file loader plugin.
@@ -200,7 +217,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         switch (parsedPLY.mode) {
             case Mode.Splat:
                 {
-                    const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene);
+                    const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
                     gaussianSplatting._parentContainer = this._assetContainer;
                     babylonMeshesArray.push(gaussianSplatting);
                     gaussianSplatting.loadDataAsync(parsedPLY.data);

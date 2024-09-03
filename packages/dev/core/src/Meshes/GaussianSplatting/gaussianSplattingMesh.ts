@@ -29,6 +29,13 @@ export class GaussianSplattingMesh extends Mesh {
     private _centersTexture: Nullable<BaseTexture> = null;
     private _colorsTexture: Nullable<BaseTexture> = null;
     private _splatPositions: Nullable<Float32Array> = null;
+    //@ts-ignore
+    private _covariancesA: Nullable<Float32Array> = null;
+    //@ts-ignore
+    private _covariancesB: Nullable<Float32Array> = null;
+    //@ts-ignore
+    private _colors: Nullable<Float32Array> = null;
+    private _keepInRam: boolean = false;
 
     /**
      * Gets the covariancesA texture
@@ -63,8 +70,9 @@ export class GaussianSplattingMesh extends Mesh {
      * @param name defines the name of the mesh
      * @param url defines the url to load from (optional)
      * @param scene defines the hosting scene (optional)
+     * @param keepInRam keep datas in ram for editing purpose
      */
-    constructor(name: string, url: Nullable<string> = null, scene: Nullable<Scene> = null) {
+    constructor(name: string, url: Nullable<string> = null, scene: Nullable<Scene> = null, keepInRam: boolean = false) {
         super(name, scene);
 
         const vertexData = new VertexData();
@@ -79,6 +87,7 @@ export class GaussianSplattingMesh extends Mesh {
         this.setEnabled(false);
 
         this._lastModelViewMatrix = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        this._keepInRam = keepInRam;
 
         if (url) {
             this.loadFileAsync(url);
@@ -144,15 +153,6 @@ export class GaussianSplattingMesh extends Mesh {
 
     public loadDataAsync(data: ArrayBuffer): Promise<void> {
         return Promise.resolve(this._loadData(data));
-    }
-
-    /**
-     * Loads a .splat Gaussian or .ply Splatting file asynchronously
-     * @param url path to the splat file to load
-     * @returns a promise that resolves when the operation is complete
-     */
-    public loadFileAsync(url: string): Promise<void> {
-        return appendSceneAsync(url, this._scene);
     }
 
     /**
@@ -346,6 +346,11 @@ export class GaussianSplattingMesh extends Mesh {
             colorArray[i * 4 + 3] = uBuffer[32 * i + 24 + 3] / 255;
         }
 
+        if (this._keepInRam) {
+            this._covariancesA = covA;
+            this._covariancesB = covB;
+            this._colors = colorArray;
+        }
         this._covariancesATexture = createTextureFromData(convertRgbToRgba(covA), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
         this._covariancesBTexture = createTextureFromData(convertRgbToRgba(covB), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
         this._centersTexture = createTextureFromData(convertRgbToRgba(this._splatPositions), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);

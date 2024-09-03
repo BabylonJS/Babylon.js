@@ -2,6 +2,12 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Gaussian Splatting Loading",
+            "playgroundId": "#CID4NN#202",
+            "referenceImage": "gsplat-loading.png",
+            "renderCount": 10
+        },
+        {
             "title": "EXR Loader",
             "playgroundId": "#4RN0VF#151",
             "referenceImage": "exr-loader.png",
