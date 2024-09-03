@@ -69,6 +69,7 @@ export class MeshUVSpaceRenderer {
     private _maskTexture: Nullable<RenderTargetTexture> = null;
     private _finalPostProcess: Nullable<PostProcess> = null;
     private _shadersLoaded = false;
+    private _isDisposed = false;
 
     private static _GetShader(scene: Scene, shaderLanguage: ShaderLanguage): ShaderMaterial {
         if (!scene._meshUVSpaceRendererShader) {
@@ -143,7 +144,7 @@ export class MeshUVSpaceRenderer {
      * If you don't set the property, a RenderTargetTexture will be created internally given the options provided to the constructor.
      * If you provide a RenderTargetTexture, it will be used directly.
      */
-    public texture: Texture;
+    public texture: Nullable<Texture> = null;
 
     /** Shader language used by the material */
     protected _shaderLanguage = ShaderLanguage.GLSL;
@@ -201,6 +202,10 @@ export class MeshUVSpaceRenderer {
             ]);
         }
 
+        if (this._isDisposed) {
+            return;
+        }
+
         this._shadersLoaded = true;
 
         this._createDiffuseRTT();
@@ -219,7 +224,8 @@ export class MeshUVSpaceRenderer {
             this._createDiffuseRTT();
         }
 
-        const textureIsReady = MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture) ? this.texture.isReadyForRendering() : this.texture.isReady();
+        // this.texture is guaranteed to be non-null here as it is created in _createDiffuseRTT above
+        const textureIsReady = MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture!) ? this.texture.isReadyForRendering() : this.texture!.isReady();
         const maskIsReady = this._maskTexture?.isReadyForRendering() ?? true;
         const postProcessIsReady = this._finalPostProcess?.isReady() ?? true;
 
@@ -241,7 +247,8 @@ export class MeshUVSpaceRenderer {
             this._configureUserCreatedRTT();
         }
 
-        if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture)) {
+        // this.texture is guaranteed to be non-null here as it is created in _createDiffuseRTT above
+        if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture!)) {
             const matrix = this._createProjectionMatrix(position, normal, size, angle);
             const shader = MeshUVSpaceRenderer._GetShader(this._scene, this._shaderLanguage);
 
@@ -256,7 +263,7 @@ export class MeshUVSpaceRenderer {
      * Clears the texture map
      */
     public clear(): void {
-        if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture) && this.texture.renderTarget) {
+        if (this.texture && MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture) && this.texture.renderTarget) {
             const engine = this._scene.getEngine();
 
             engine.bindFramebuffer(this.texture.renderTarget);
@@ -277,7 +284,7 @@ export class MeshUVSpaceRenderer {
      */
     public dispose() {
         if (this._textureCreatedInternally) {
-            this.texture.dispose();
+            this.texture?.dispose();
             this._textureCreatedInternally = false;
         }
         this._configureUserCreatedTexture = true;
@@ -285,11 +292,12 @@ export class MeshUVSpaceRenderer {
         this._maskTexture = null;
         this._finalPostProcess?.dispose();
         this._finalPostProcess = null;
+        this._isDisposed = true;
     }
 
     private _configureUserCreatedRTT(): void {
         this._configureUserCreatedTexture = false;
-        if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture)) {
+        if (this.texture && MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture)) {
             this.texture.setMaterialForRendering(this._mesh, MeshUVSpaceRenderer._GetShader(this._scene, this._shaderLanguage));
             this.texture.onClearObservable.add(() => {});
             this.texture.renderList = [this._mesh];

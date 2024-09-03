@@ -17,7 +17,7 @@ import { Vector4 } from "../../Maths/math.vector";
 import { RawTexture } from "../../Materials/Textures/rawTexture";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Observable } from "../../Misc/observable";
-import { HDRCubeTexture } from "../../Materials/Textures/hdrCubeTexture";
+import type { CubeTexture } from "../../Materials/Textures/cubeTexture";
 
 /**
  * Build cdf maps for IBL importance sampling during IBL shadow computation.
@@ -49,17 +49,19 @@ export class _IblShadowsImportanceSamplingRenderer {
         if (this._iblSource === source) {
             return;
         }
-        if (source instanceof Texture) {
-            if (source.isReady()) {
+        this._disposeTextures();
+        this._iblSource = source;
+        if (source.isCube) {
+            if (source.isReadyOrNotBlocking()) {
                 this._recreateAssetsFromNewIbl(source);
             } else {
-                source.onLoadObservable.addOnce(this._recreateAssetsFromNewIbl);
+                (source as CubeTexture).onLoadObservable.addOnce(this._recreateAssetsFromNewIbl.bind(this, source));
             }
-        } else if (source instanceof HDRCubeTexture) {
-            if (source.isReady()) {
+        } else {
+            if (source.isReadyOrNotBlocking()) {
                 this._recreateAssetsFromNewIbl(source);
             } else {
-                source.onLoadObservable.addOnce(this._recreateAssetsFromNewIbl.bind(this, source));
+                (source as Texture).onLoadObservable.addOnce(this._recreateAssetsFromNewIbl.bind(this, source));
             }
         }
     }
@@ -68,8 +70,7 @@ export class _IblShadowsImportanceSamplingRenderer {
         if (this._debugPass) {
             this._debugPass.dispose();
         }
-        this._disposeTextures();
-        this._iblSource = source;
+
         this._createTextures();
 
         if (this._debugPass) {

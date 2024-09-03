@@ -193,14 +193,7 @@ WebGPUEngine.prototype._createDepthStencilCubeTexture = function (size: number, 
 
     internalTexture.format = internalOptions.depthTextureFormat;
 
-    this._setupDepthStencilTexture(
-        internalTexture,
-        size,
-        internalOptions.generateStencil,
-        internalOptions.bilinearFiltering,
-        internalOptions.comparisonFunction,
-        internalOptions.samples
-    );
+    this._setupDepthStencilTexture(internalTexture, size, internalOptions.bilinearFiltering, internalOptions.comparisonFunction, internalOptions.samples);
 
     this._textureHelper.createGPUTextureForInternalTexture(internalTexture);
 

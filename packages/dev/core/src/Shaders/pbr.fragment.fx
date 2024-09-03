@@ -626,7 +626,7 @@ void main(void) {
     #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
 
 #ifdef PREPASS
-    float writeGeometryInfo = finalColor.a > 0.4 ? 1.0 : 0.0;
+    float writeGeometryInfo = finalColor.a > ALPHATESTVALUE ? 1.0 : 0.0;
 
     #ifdef PREPASS_POSITION
     gl_FragData[PREPASS_POSITION_INDEX] = vec4(vPositionW, writeGeometryInfo);
