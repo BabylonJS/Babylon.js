@@ -1,10 +1,10 @@
 import type {
     ISceneLoaderPluginAsync,
     ISceneLoaderPluginFactory,
-    ISceneLoaderPlugin,
     ISceneLoaderAsyncResult,
     ISceneLoaderPluginExtensions,
     ISceneLoaderProgressEvent,
+    SceneLoaderPluginOptions,
 } from "core/Loading/sceneLoader";
 import { registerSceneLoaderPlugin } from "core/Loading/sceneLoader";
 import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
@@ -29,7 +29,7 @@ declare module "core/Loading/sceneLoader" {
         /**
          * Defines options for the splat loader.
          */
-        [PLUGIN_SPLAT]: {};
+        [PLUGIN_SPLAT]: Partial<SPLATLoadingOptions>;
     }
 }
 
@@ -65,7 +65,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
 
     private _assetContainer: Nullable<AssetContainer> = null;
 
-    private _loadingOptions: SPLATLoadingOptions;
+    private readonly _loadingOptions: Readonly<SPLATLoadingOptions>;
     /**
      * Defines the extensions the splat loader is able to load.
      * force data to come in as an ArrayBuffer
@@ -78,11 +78,6 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
     } as const satisfies ISceneLoaderPluginExtensions;
 
     /**
-     * Shall data stay in ram for editing/cloning
-     */
-    public static KEEP_IN_RAM = false;
-
-    /**
      * Creates loader for gaussian splatting files
      * @param loadingOptions options for loading and parsing splat and PLY files.
      */
@@ -92,16 +87,13 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
 
     private static get _DefaultLoadingOptions(): SPLATLoadingOptions {
         return {
-            keepInRam: SPLATFileLoader.KEEP_IN_RAM,
+            keepInRam: false,
         };
     }
 
-    /**
-     * Instantiates a gaussian splatting file loader plugin.
-     * @returns the created plugin
-     */
-    createPlugin(): ISceneLoaderPluginAsync | ISceneLoaderPlugin {
-        return new SPLATFileLoader();
+    /** @internal */
+    createPlugin(options: SceneLoaderPluginOptions): ISceneLoaderPluginAsync {
+        return new SPLATFileLoader(options[PLUGIN_SPLAT]);
     }
 
     /**
@@ -217,7 +209,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         switch (parsedPLY.mode) {
             case Mode.Splat:
                 {
-                    const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
+                    const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", scene, this._loadingOptions.keepInRam);
                     gaussianSplatting._parentContainer = this._assetContainer;
                     babylonMeshesArray.push(gaussianSplatting);
                     gaussianSplatting.loadDataAsync(parsedPLY.data);

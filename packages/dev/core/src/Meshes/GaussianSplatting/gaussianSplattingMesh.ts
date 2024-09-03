@@ -34,7 +34,7 @@ export class GaussianSplattingMesh extends Mesh {
     private _covariancesB: Nullable<Float32Array> = null;
     //@ts-ignore
     private _colors: Nullable<Float32Array> = null;
-    private _keepInRam: boolean = false;
+    private readonly _keepInRam: boolean = false;
 
     /**
      * Gets the covariancesA texture
@@ -67,7 +67,6 @@ export class GaussianSplattingMesh extends Mesh {
     /**
      * Creates a new gaussian splatting mesh
      * @param name defines the name of the mesh
-     * @param url defines the url to load from (optional)
      * @param scene defines the hosting scene (optional)
      * @param keepInRam keep datas in ram for editing purpose
      */
@@ -187,7 +186,7 @@ export class GaussianSplattingMesh extends Mesh {
      * @returns a new Gaussian Splatting Mesh
      */
     public override clone(name: string = ""): GaussianSplattingMesh {
-        const newGS = new GaussianSplattingMesh(name, undefined, this.getScene());
+        const newGS = new GaussianSplattingMesh(name, this.getScene());
         newGS._copySource(this);
         newGS.makeGeometryUnique();
         newGS._vertexCount = this._vertexCount;
