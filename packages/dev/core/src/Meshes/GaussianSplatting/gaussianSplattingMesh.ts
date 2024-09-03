@@ -10,7 +10,6 @@ import { Logger } from "core/Misc/logger";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Constants } from "core/Engines/constants";
-import { appendSceneAsync } from "core/Loading/sceneLoader";
 
 /**
  * Class used to render a gaussian splatting mesh
@@ -72,7 +71,7 @@ export class GaussianSplattingMesh extends Mesh {
      * @param scene defines the hosting scene (optional)
      * @param keepInRam keep datas in ram for editing purpose
      */
-    constructor(name: string, url: Nullable<string> = null, scene: Nullable<Scene> = null, keepInRam: boolean = false) {
+    constructor(name: string, scene: Nullable<Scene> = null, keepInRam: boolean = false) {
         super(name, scene);
 
         const vertexData = new VertexData();
@@ -88,10 +87,6 @@ export class GaussianSplattingMesh extends Mesh {
 
         this._lastModelViewMatrix = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         this._keepInRam = keepInRam;
-
-        if (url) {
-            this.loadFileAsync(url);
-        }
     }
 
     /**
