@@ -48,3 +48,9 @@ export * from "../Shaders/outline.fragment";
 export * from "../Shaders/outline.vertex";
 export * from "../ShadersWGSL/outline.fragment";
 export * from "../ShadersWGSL/outline.vertex";
+
+// IBL Shadows
+export * from "../Shaders/copyTexture3DLayerToTexture.fragment";
+export * from "../ShadersWGSL/copyTexture3DLayerToTexture.fragment";
+export * from "../Shaders/iblShadowVoxelTracing.fragment";
+export * from "../ShadersWGSL/iblShadowVoxelTracing.fragment";

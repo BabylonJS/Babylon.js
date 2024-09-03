@@ -1,6 +1,5 @@
 import { Constants } from "../../Engines/constants";
 import { Engine } from "../../Engines/engine";
-import { WebGPUEngine } from "../../Engines/webgpuEngine";
 import { ShaderMaterial } from "../../Materials/shaderMaterial";
 import { MultiRenderTarget } from "../../Materials/Textures/multiRenderTarget";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
@@ -20,7 +19,6 @@ import "../../Shaders/voxelSlabDebug.vertex";
 import "../../Shaders/voxelSlabDebug.fragment";
 import "../../Shaders/combineVoxelGrids.fragment";
 import "../../Shaders/generateVoxelMip.fragment";
-import "../../Shaders/copyTexture3DLayerToTexture.fragment";
 
 import { PostProcess } from "../../PostProcesses/postProcess";
 import type { PostProcessOptions } from "../../PostProcesses/postProcess";
@@ -29,11 +27,13 @@ import { EffectRenderer, EffectWrapper } from "../../Materials/effectRenderer";
 import type { IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
 import type { RenderTargetWrapper } from "core/Engines";
 import { Observable } from "../../Misc/observable";
+import { ShaderLanguage } from "core/Materials";
 
 /**
  * Voxel-based shadow rendering for IBL's.
  * This should not be instanciated directly, as it is part of a scene component
  * @internal
+ * #8R5SSE#222
  */
 export class _IblShadowsVoxelRenderer {
     private _scene: Scene;
@@ -270,7 +270,8 @@ export class _IblShadowsVoxelRenderer {
             Logger.Error("Can't do voxel rendering without the draw buffers extension.");
         }
 
-        if (this._engine instanceof WebGPUEngine) {
+        const isWebGPU = this._engine.isWebGPU;
+        if (isWebGPU) {
             this._maxDrawBuffers = 8; // TODO - get this from the WebGPU engine?
         } else {
             this._maxDrawBuffers = (this._engine as Engine)._gl.getParameter((this._engine as Engine)._gl.MAX_DRAW_BUFFERS);
@@ -283,6 +284,14 @@ export class _IblShadowsVoxelRenderer {
             useShaderStore: true,
             uniformNames: ["layerNum"],
             samplerNames: ["textureSampler"],
+            shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            extraInitializationsAsync: async () => {
+                if (isWebGPU) {
+                    await import("../../ShadersWGSL/copyTexture3DLayerToTexture.fragment");
+                } else {
+                    await import("../../Shaders/copyTexture3DLayerToTexture.fragment");
+                }
+            },
         });
 
         this.voxelResolutionExp = resolutionExp;
