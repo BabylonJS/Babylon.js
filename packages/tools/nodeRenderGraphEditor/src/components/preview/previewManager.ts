@@ -217,7 +217,18 @@ export class PreviewManager {
             return;
         }
 
+        const cameraInfo: { radius: number; alpha: number; beta: number; target: Vector3; position: Vector3 }[] = [];
+
         for (const camera of this._scene.cameras.slice()) {
+            const arcRotateCamera = camera as ArcRotateCamera;
+
+            cameraInfo.push({
+                radius: arcRotateCamera.radius,
+                alpha: arcRotateCamera.alpha,
+                beta: arcRotateCamera.beta,
+                target: arcRotateCamera.target.clone(),
+                position: arcRotateCamera.position.clone(),
+            });
             camera.dispose();
         }
         this._scene.cameras.length = 0;
@@ -259,6 +270,17 @@ export class PreviewManager {
         this._scene.activeCamera = null;
 
         this._frameCamera();
+
+        for (let i = 0; i < this._scene.cameras.length; i++) {
+            const camera = this._scene.cameras[i] as ArcRotateCamera;
+            if (i < cameraInfo.length) {
+                camera.alpha = cameraInfo[i].alpha;
+                camera.beta = cameraInfo[i].beta;
+                camera.radius = cameraInfo[i].radius;
+                camera.target = cameraInfo[i].target;
+                camera.position = cameraInfo[i].position;
+            }
+        }
 
         // Set a default control in GUI blocks
         const guiBlocks = this._nodeRenderGraph.getBlocksByPredicate<NodeRenderGraphGUIBlock>((block) => block.getClassName() === "GUI.NodeRenderGraphGUIBlock");
