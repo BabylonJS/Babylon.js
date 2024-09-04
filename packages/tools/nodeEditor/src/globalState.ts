@@ -112,7 +112,7 @@ export class GlobalState {
 
             this.onBuiltObservable.notifyObservers();
         });
-        nodeMaterial.onBuildErrorObservable.add((err) => {
+        nodeMaterial.onBuildErrorObservable.add((err: string) => {
             this.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
         });
     }
