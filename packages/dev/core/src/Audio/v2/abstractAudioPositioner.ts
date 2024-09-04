@@ -30,6 +30,7 @@ export abstract class AbstractAudioPositioner extends AbstractAudioNode {
     // Not owned
     private _listeners: Nullable<Set<SpatialAudioListener>> = null;
 
+    /** @internal */
     public _addListener(listener: SpatialAudioListener): void {
         if (!this._listeners) {
             this._listeners = new Set();
@@ -38,6 +39,7 @@ export abstract class AbstractAudioPositioner extends AbstractAudioNode {
         this._listeners.add(listener);
     }
 
+    /** @internal */
     public _removeListener(listener: SpatialAudioListener): void {
         this._listeners?.delete(listener);
     }

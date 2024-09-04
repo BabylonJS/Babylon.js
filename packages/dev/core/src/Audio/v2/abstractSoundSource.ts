@@ -103,6 +103,7 @@ export abstract class AbstractSoundSource implements IDisposable {
 
     protected abstract _createSoundInstance(inputNode: AbstractAudioNode): AbstractSoundInstance;
 
+    /** @internal */
     public _onSoundInstanceEnded(instance: AbstractSoundInstance): void {
         this._getSoundInstances().delete(instance);
     }
