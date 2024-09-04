@@ -158,6 +158,7 @@ export class GaussianSplattingMesh extends Mesh {
      * Loads a .splat Gaussian or .ply Splatting file asynchronously
      * @param url path to the splat file to load
      * @returns a promise that resolves when the operation is complete
+     * @deprecated Please use SceneLoader.ImportMeshAsync instead
      */
     public loadFileAsync(url: string): Promise<void> {
         return Tools.LoadFileAsync(url, true).then((data) => {
@@ -202,7 +203,7 @@ export class GaussianSplattingMesh extends Mesh {
      * @returns a new Gaussian Splatting Mesh
      */
     public override clone(name: string = ""): GaussianSplattingMesh {
-        const newGS = new GaussianSplattingMesh(name, this.getScene());
+        const newGS = new GaussianSplattingMesh(name, undefined, this.getScene());
         newGS._copySource(this);
         newGS.makeGeometryUnique();
         newGS._vertexCount = this._vertexCount;
