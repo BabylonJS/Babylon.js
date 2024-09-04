@@ -2,8 +2,9 @@ import type { NodeMaterialConnectionPoint } from "./nodeMaterialBlockConnectionP
 import type { NodeMaterialBlock } from "./nodeMaterialBlock";
 import type { InputBlock } from "./Blocks/Input/inputBlock";
 import type { Scene } from "../../scene";
-import type { Immutable } from "../../types";
+import type { Immutable, Nullable } from "../../types";
 import type { NodeMaterial, NodeMaterialTextureBlocks } from "./nodeMaterial";
+import type { Observable } from "core/Misc";
 
 /**
  * Class used to store shared data between 2 NodeMaterialBuildState
@@ -167,15 +168,18 @@ export class NodeMaterialBuildStateSharedData {
 
     /**
      * Emits console errors and exceptions if there is a failing check
+     * @param allowThrow defines if an exception can be thrown
+     * @param errorObservable defines an Observable to send the error message
+     * @returns true if all checks pass
      */
-    public emitErrors() {
+    public emitErrors(allowThrow = true, errorObservable: Nullable<Observable<string>> = null) {
         let errorMessage = "";
 
         if (!this.checks.emitVertex && !this.allowEmptyVertexProgram) {
-            errorMessage += "NodeMaterial does not have a vertex output. You need to at least add a block that generates a glPosition value.\n";
+            errorMessage += "NodeMaterial does not have a vertex output. You need to at least add a block that generates a position value.\n";
         }
         if (!this.checks.emitFragment) {
-            errorMessage += "NodeMaterial does not have a fragment output. You need to at least add a block that generates a glFragColor value.\n";
+            errorMessage += "NodeMaterial does not have a fragment output. You need to at least add a block that generates a color value.\n";
         }
         for (const notConnectedInput of this.checks.notConnectedNonOptionalInputs) {
             errorMessage += `input ${notConnectedInput.name} from block ${
@@ -184,8 +188,16 @@ export class NodeMaterialBuildStateSharedData {
         }
 
         if (errorMessage) {
-            // eslint-disable-next-line no-throw-literal
-            throw "Build of NodeMaterial failed:\n" + errorMessage;
+            if (errorObservable) {
+                errorObservable.notifyObservers(errorMessage);
+            }
+            if (allowThrow) {
+                // eslint-disable-next-line no-throw-literal
+                throw "Build of NodeMaterial failed:\n" + errorMessage;
+            }
+            return false;
         }
+
+        return true;
     }
 }
