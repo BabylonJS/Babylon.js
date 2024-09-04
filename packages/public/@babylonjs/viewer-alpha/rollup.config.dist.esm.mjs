@@ -3,9 +3,7 @@ import { nodeResolve } from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import alias from "@rollup/plugin-alias";
 import terser from "@rollup/plugin-terser";
-import minifyHTMLModule from "rollup-plugin-minify-html-literals";
-
-const minifyHTML = minifyHTMLModule.default;
+import { minifyTemplateLiterals } from "rollup-plugin-minify-template-literals";
 
 const source = "dev";
 
@@ -46,7 +44,7 @@ const minConfig = {
         entryFileNames: "babylon-viewer.esm.min.js",
         chunkFileNames: "chunks/[name]-[hash].esm.min.js",
     },
-    plugins: [...commonConfig.plugins, terser(), minifyHTML()],
+    plugins: [...commonConfig.plugins, terser(), minifyTemplateLiterals()],
 };
 
 export default [maxConfig, minConfig];
