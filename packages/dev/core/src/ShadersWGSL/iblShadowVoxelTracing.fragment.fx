@@ -19,10 +19,10 @@ var voxelGridSampler: texture_3d<f32>;
 // shadow parameters: var nbDirs: i32, var frameId: i32, var downscale: i32, var envRot: f32
 uniform shadowParameters: vec4f;
 
-#define SHADOWdirs shadowParameters.x
-#define SHADOWframe shadowParameters.y
-#define SHADOWdownscale shadowParameters.z
-#define SHADOWenvRot shadowParameters.w
+#define SHADOWdirs uniforms.shadowParameters.x
+#define SHADOWframe uniforms.shadowParameters.y
+#define SHADOWdownscale uniforms.shadowParameters.z
+#define SHADOWenvRot uniforms.shadowParameters.w
 
 // morton code offset, max voxel grid mip
 uniform offsetDataParameters: vec4f;
@@ -386,17 +386,17 @@ fn voxelShadow(wsOrigin: vec3f, wsDirection: vec3f, wsNormal: vec3f,
 
 @fragment
 fn main(input: FragmentInputs) -> FragmentOutputs {
-  var nbDirs: i32 = i32(SHADOWdirs);
-  var frameId: i32 = i32(SHADOWframe);
-  var downscale: i32 = i32(SHADOWdownscale);
+  var nbDirs = u32(SHADOWdirs);
+  var frameId = u32(SHADOWframe);
+  var downscale = i32(SHADOWdownscale);
   var envRot: f32 = SHADOWenvRot;
 
-  var Resolution: vec2f =  vec2f(textureSize(depthSampler, 0));
-  var currentPixel = vec2i(vUV * Resolution);
+  var Resolution: vec2f =  vec2f(textureDimensions(depthSampler, 0));
+  var currentPixel = vec2i(fragmentInputs.vUV * Resolution);
   var PixelCoord = vec2i( vec2f(currentPixel * downscale) + PixelOffset.xy);
-  var GlobalIndex: i32 =
-      (frameId * i32(Resolution.y) + i32(PixelCoord.y)) * i32(Resolution.x) +
-      i32(PixelCoord.x);
+  var GlobalIndex =
+      (frameId * u32(Resolution.y) + u32(PixelCoord.y)) * u32(Resolution.x) +
+      u32(PixelCoord.x);
 
   var N: vec3f = textureLoad(worldNormalSampler, PixelCoord, 0).xyz;
   N = N *  vec3f(2.0) -  vec3f(1.0);
@@ -411,12 +411,12 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
   var depth: f32 = textureLoad(depthSampler, PixelCoord, 0).x;
   depth = depth * 2.0 - 1.0;
   var temp: vec2f = ( vec2f(PixelCoord) +  vec2f(0.5)) * 2.0 / Resolution -  vec2f(1.0);
-  var temp2: vec2f = vUV *  vec2f(2.0) -  vec2f(1.0);
+  var temp2: vec2f = fragmentInputs.vUV *  vec2f(2.0) -  vec2f(1.0);
   var VP: vec4f = uniforms.invProjMtx *  vec4f(temp.x, -temp.y, depth, 1.0);
   VP /= VP.w;
 
   N = normalize(N);
-  var noise: vec3f = textureLoad(blueNoiseSampler, PixelCoord & 0xFF, 0).xyz;
+  var noise: vec3f = textureLoad(blueNoiseSampler, vec2i(PixelCoord.x & 0xFF, PixelCoord.y & 0xFF), 0).xyz;
   noise.z = fract(noise.z + goldenSequence(frameId * nbDirs));
 
   var linearZ_alpha: vec2f = textureLoad(linearDepthSampler, PixelCoord, 0).xy;
@@ -425,15 +425,15 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
   var heat: f32 = 0.0f;
 #endif
   var shadowAccum: f32 = 0.0;
-  for (var i: i32 = 0; i < nbDirs; i++) {
-    var dirId: i32 = nbDirs * GlobalIndex + i;
+  for (var i: u32 = 0; i < nbDirs; i++) {
+    var dirId: u32 = nbDirs * GlobalIndex + i;
     var L: vec4f;
     {
       var r: vec2f = plasticSequence(frameId * nbDirs + i);
       r = fract(r +  vec2f(2.0) * abs(noise.xy -  vec2f(0.5)));
       var T: vec2f;
-      T.x = textureSample(icdfxSampler, icdfxSamplerSampler, vec2f(r.x, 0.0), 0.0).x;
-      T.y = textureSample(icdfySampler, icdfySamplerSampler, vec2f(T.x, r.y), 0.0).x;
+      T.x = textureSampleLevel(icdfxSampler, icdfxSamplerSampler, vec2f(r.x, 0.0), 0.0).x;
+      T.y = textureSampleLevel(icdfySampler, icdfySamplerSampler, vec2f(T.x, r.y), 0.0).x;
       T.x -= normalizedRotation;
       L =  vec4f(uv_to_normal(T), 0);
     }
@@ -446,28 +446,28 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
       var VP2: vec4f = VP;
       VP2.y *= -1.0;
       // rte world-space normalization
-      var unormWP: vec4f = invViewMtx * VP2;
+      var unormWP: vec4f = uniforms.invViewMtx * VP2;
       // var unormWP: vec4f = texelFetch(worldPositionSampler, PixelCoord, 0);
-      var WP: vec3f = (wsNormalizationMtx * unormWP).xyz;
+      var WP: vec3f = (uniforms.wsNormalizationMtx * unormWP).xyz;
       var vxNoise: vec2f =
            vec2f(f32(hash(dirId * 2)), f32(hash(dirId * 2 + 1)));
 #ifdef VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
       VoxelMarchDiagnosticInfo voxel_march_diagnostic_info;
       opacity = max(opacity,
-                    shadowOpacity.x * voxelShadow(WP, L.xyz, N, vxNoise,
+                    uniforms.shadowOpacity.x * voxelShadow(WP, L.xyz, N, vxNoise,
                                                   voxel_march_diagnostic_info));
       heat += voxel_march_diagnostic_info.heat;
 #else
       opacity =
-          max(opacity, shadowOpacity.x * voxelShadow(WP, L.xyz, N, vxNoise));
+          max(opacity, uniforms.shadowOpacity.x * voxelShadow(WP, L.xyz, N, vxNoise));
 #endif
 
       // sss
-      var VL: vec3f = (viewMtx * L).xyz;
+      var VL: vec3f = (uniforms.viewMtx * L).xyz;
       // VL.y *= -1.0;
       var nearPlaneZ: f32 =
           -uniforms.projMtx[3][2] / uniforms.projMtx[2][2]; // retreive camera Z near value
-      var ssShadow: f32 = shadowOpacity.y *
+      var ssShadow: f32 = uniforms.shadowOpacity.y *
                        screenSpaceShadow(VP2.xyz, VL, Resolution, nearPlaneZ,
                                          abs(2.0 * noise.z - 1.0));
       opacity = max(opacity, ssShadow);

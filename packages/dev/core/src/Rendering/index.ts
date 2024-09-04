@@ -54,3 +54,10 @@ export * from "../Shaders/copyTexture3DLayerToTexture.fragment";
 export * from "../ShadersWGSL/copyTexture3DLayerToTexture.fragment";
 export * from "../Shaders/iblShadowVoxelTracing.fragment";
 export * from "../ShadersWGSL/iblShadowVoxelTracing.fragment";
+export * from "../Shaders/iblShadowDebug.fragment";
+export * from "../ShadersWGSL/iblShadowDebug.fragment";
+export * from "../ShadersWGSL/iblShadowSpatialBlur.fragment";
+export * from "../Shaders/iblShadowSpatialBlur.fragment";
+
+export * from "../ShadersWGSL/iblShadowAccumulation.fragment";
+export * from "../Shaders/iblShadowAccumulation.fragment";

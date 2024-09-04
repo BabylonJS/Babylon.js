@@ -2,13 +2,12 @@ import { Constants } from "../../Engines/constants";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import type { Scene } from "../../scene";
 import { Vector4 } from "../../Maths/math.vector";
-import "../../Shaders/iblShadowAccumulation.fragment";
-import "../../Shaders/iblShadowDebug.fragment";
 import { PostProcess } from "../../PostProcesses/postProcess";
 import type { PostProcessOptions } from "../../PostProcesses/postProcess";
 import type { Effect } from "../../Materials/effect";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import type { RenderTargetCreationOptions } from "../../Materials/Textures/textureCreationOptions";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * This should not be instanciated directly, as it is part of a scene component
@@ -104,6 +103,7 @@ export class _IblShadowsAccumulationPass {
      */
     private _createDebugPass() {
         if (!this._debugPassPP) {
+            const isWebGPU = this._engine.isWebGPU;
             const debugOptions: PostProcessOptions = {
                 width: this._engine.getRenderWidth(),
                 height: this._engine.getRenderHeight(),
@@ -114,6 +114,14 @@ export class _IblShadowsAccumulationPass {
                 samplers: ["debugSampler"],
                 engine: this._engine,
                 reusable: false,
+                shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+                extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
+                    if (useWebGPU) {
+                        list.push(import("../../ShadersWGSL/iblShadowDebug.fragment"));
+                    } else {
+                        list.push(import("../../Shaders/iblShadowDebug.fragment"));
+                    }
+                },
             };
             this._debugPassPP = new PostProcess(this.debugPassName, "iblShadowDebug", debugOptions);
             this._debugPassPP.autoClear = false;
@@ -137,6 +145,7 @@ export class _IblShadowsAccumulationPass {
     }
 
     private _createTextures() {
+        const isWebGPU = this._engine.isWebGPU;
         // Create the local position texture for the previous frame.
         // We'll copy the previous local position texture to this texture at the start of every frame.
         const localPositionOptions: RenderTargetCreationOptions = {
@@ -224,6 +233,14 @@ export class _IblShadowsAccumulationPass {
             samplers: ["oldAccumulationSampler", "prevLocalPositionSampler", "localPositionSampler", "motionSampler"],
             engine: this._engine,
             reusable: false,
+            shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
+                if (useWebGPU) {
+                    list.push(import("../../ShadersWGSL/iblShadowAccumulation.fragment"));
+                } else {
+                    list.push(import("../../Shaders/iblShadowAccumulation.fragment"));
+                }
+            },
         };
         this._outputPP = new PostProcess("accumulationPassPP", "iblShadowAccumulation", ppOptions);
         this._outputPP.autoClear = false;
