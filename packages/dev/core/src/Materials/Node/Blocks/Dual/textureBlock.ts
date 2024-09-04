@@ -327,7 +327,7 @@ export class TextureBlock extends NodeMaterialBlock {
                 if (uvInput) {
                     uvInput.connectTo(this);
                 }
-            } else {
+            } else if (material.mode !== NodeMaterialModes.ProceduralTexture) {
                 const attributeName = material.mode === NodeMaterialModes.Particle ? "particle_uv" : "uv";
 
                 let uvInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === attributeName && additionalFilteringInfo(b));

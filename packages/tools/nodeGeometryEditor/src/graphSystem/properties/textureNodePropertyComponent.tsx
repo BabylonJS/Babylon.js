@@ -34,7 +34,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
             <div>
                 <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <LineContainerComponent title="PROPERTIES">
-                    <FileButtonLineComponent label="Load" onClick={(file) => this.loadTextureData(file)} accept=".jpg, .png" />
+                    <FileButtonLineComponent label="Load" onClick={(file) => this.loadTextureData(file)} accept=".jpg, .png, .tga, .exr" />
                     {block.textureData && <ButtonLineComponent label="Remove" onClick={() => this.removeData()} />}
                 </LineContainerComponent>
                 <LineContainerComponent title="ADVANCED">

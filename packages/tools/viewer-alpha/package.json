@@ -37,7 +37,7 @@
         "nyc": "^17.0.0",
         "open": "^10.1.0",
         "rollup": "^4.18.0",
-        "rollup-plugin-minify-html-literals": "^1.2.6",
+        "rollup-plugin-minify-template-literals": "^1.1.7",
         "rollup-plugin-visualizer": "^5.12.0",
         "vite": "^5.3.3"
     }
