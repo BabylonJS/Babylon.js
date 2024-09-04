@@ -209,7 +209,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         switch (parsedPLY.mode) {
             case Mode.Splat:
                 {
-                    const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", scene, this._loadingOptions.keepInRam);
+                    const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
                     gaussianSplatting._parentContainer = this._assetContainer;
                     babylonMeshesArray.push(gaussianSplatting);
                     gaussianSplatting.loadDataAsync(parsedPLY.data);
