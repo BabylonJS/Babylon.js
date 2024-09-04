@@ -5,7 +5,7 @@
             "title": "Gaussian Splatting Loading",
             "playgroundId": "#CID4NN#204",
             "referenceImage": "gsplat-loading.png",
-            "renderCount": 20
+            "renderCount": 120
         },
         {
             "title": "EXR Loader",
