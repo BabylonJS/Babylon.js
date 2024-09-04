@@ -4,12 +4,11 @@ import { Tools } from "core/Misc/tools";
 import { VertexBuffer } from "core/Buffers/buffer";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { Mesh } from "core/Meshes/mesh";
-import type { ISceneLoaderPlugin, ISceneLoaderPluginExtensions } from "core/Loading/sceneLoader";
+import type { ISceneLoaderPlugin } from "core/Loading/sceneLoader";
 import { registerSceneLoaderPlugin } from "core/Loading/sceneLoader";
 import { AssetContainer } from "core/assetContainer";
 import type { Scene } from "core/scene";
-
-const PLUGIN_STL = "stl";
+import { STLFileLoaderMetadata } from "./stlFileLoader.metadata";
 
 declare module "core/Loading/sceneLoader" {
     // eslint-disable-next-line jsdoc/require-jsdoc
@@ -17,7 +16,7 @@ declare module "core/Loading/sceneLoader" {
         /**
          * Defines options for the stl loader.
          */
-        [PLUGIN_STL]: {};
+        [STLFileLoaderMetadata.name]: {};
     }
 }
 
@@ -39,16 +38,14 @@ export class STLFileLoader implements ISceneLoaderPlugin {
     /**
      * Defines the name of the plugin.
      */
-    public readonly name = PLUGIN_STL;
+    public readonly name = STLFileLoaderMetadata.name;
 
     /**
      * Defines the extensions the stl loader is able to load.
      * force data to come in as an ArrayBuffer
      * we'll convert to string if it looks like it's an ASCII .stl
      */
-    public readonly extensions = {
-        ".stl": { isBinary: true },
-    } as const satisfies ISceneLoaderPluginExtensions;
+    public readonly extensions = STLFileLoaderMetadata.extensions;
 
     /**
      * Defines if Y and Z axes are swapped or not when loading an STL file.
