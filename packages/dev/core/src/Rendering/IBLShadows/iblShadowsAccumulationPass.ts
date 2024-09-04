@@ -172,6 +172,14 @@ export class _IblShadowsAccumulationPass {
             engine: this._engine,
             reusable: false,
             defines: "#define PASS_SAMPLER sampler",
+            shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
+                if (useWebGPU) {
+                    list.push(import("../../ShadersWGSL/pass.fragment"));
+                } else {
+                    list.push(import("../../Shaders/pass.fragment"));
+                }
+            },
         };
         const localPositionCopyPP = new PostProcess("Copy Local Position Texture", "pass", localPositionCopyOptions);
         localPositionCopyPP.autoClear = false;
@@ -211,6 +219,14 @@ export class _IblShadowsAccumulationPass {
             engine: this._engine,
             reusable: false,
             defines: "#define PASS_SAMPLER sampler",
+            shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
+                if (useWebGPU) {
+                    list.push(import("../../ShadersWGSL/pass.fragment"));
+                } else {
+                    list.push(import("../../Shaders/pass.fragment"));
+                }
+            },
         };
         const accumulationCopyPP = new PostProcess("Copy Accumulation Texture", "pass", accumulationCopyOptions);
         accumulationCopyPP.autoClear = false;

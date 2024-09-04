@@ -26,6 +26,7 @@ import { EngineStore } from "../../../Engines/engineStore";
 import { Constants } from "../../../Engines/constants";
 import { DrawWrapper } from "../../drawWrapper";
 import type { RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Options to create a procedural texture
@@ -35,6 +36,14 @@ export interface IProceduralTextureCreationOptions extends RenderTargetTextureOp
      * Defines a fallback texture in case there were issues to create the custom texture
      */
     fallbackTexture?: Nullable<Texture>;
+    /**
+     * The shader language of the shader. (default: GLSL)
+     */
+    shaderLanguage?: ShaderLanguage;
+    /**
+     * Additional async code to run before preparing the effect
+     */
+    extraInitializationsAsync?: () => Promise<void>;
 }
 
 /**
@@ -91,6 +100,16 @@ export class ProceduralTexture extends Texture {
 
     /** @internal */
     protected _fallbackTexture: Nullable<Texture>;
+
+    /** @internal */
+    private _shaderLanguage: ShaderLanguage;
+
+    /**
+     * Gets the shader language type used to generate vertex and fragment source code.
+     */
+    public get shaderLanguage(): ShaderLanguage {
+        return this._shaderLanguage;
+    }
 
     @serialize()
     private _size: TextureSize;
@@ -161,6 +180,8 @@ export class ProceduralTexture extends Texture {
             this._options = {};
             this._fallbackTexture = fallbackTexture;
         }
+
+        this._shaderLanguage = this._options.shaderLanguage ?? ShaderLanguage.GLSL;
 
         scene = this.getScene() || EngineStore.LastCreatedScene!;
         let component = scene._getComponent(SceneComponentConstants.NAME_PROCEDURALTEXTURE);
@@ -360,20 +381,32 @@ export class ProceduralTexture extends Texture {
         if (this._cachedDefines !== defines) {
             this._cachedDefines = defines;
 
-            this._drawWrapper.effect = engine.createEffect(shaders, [VertexBuffer.PositionKind], this._uniforms, this._samplers, defines, undefined, undefined, () => {
-                this._rtWrapper?.dispose();
-                this._rtWrapper = this._texture = null;
+            this._drawWrapper.effect = engine.createEffect(
+                shaders,
+                [VertexBuffer.PositionKind],
+                this._uniforms,
+                this._samplers,
+                defines,
+                undefined,
+                undefined,
+                () => {
+                    this._rtWrapper?.dispose();
+                    this._rtWrapper = this._texture = null;
 
-                if (this._fallbackTexture) {
-                    this._texture = this._fallbackTexture._texture;
+                    if (this._fallbackTexture) {
+                        this._texture = this._fallbackTexture._texture;
 
-                    if (this._texture) {
-                        this._texture.incrementReferences();
+                        if (this._texture) {
+                            this._texture.incrementReferences();
+                        }
                     }
-                }
 
-                this._fallbackTextureUsed = true;
-            });
+                    this._fallbackTextureUsed = true;
+                },
+                undefined,
+                this._shaderLanguage,
+                this._options.extraInitializationsAsync
+            );
         }
 
         return this._drawWrapper.effect!.isReady();

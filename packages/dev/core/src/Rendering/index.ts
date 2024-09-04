@@ -58,6 +58,11 @@ export * from "../Shaders/iblShadowDebug.fragment";
 export * from "../ShadersWGSL/iblShadowDebug.fragment";
 export * from "../ShadersWGSL/iblShadowSpatialBlur.fragment";
 export * from "../Shaders/iblShadowSpatialBlur.fragment";
-
 export * from "../ShadersWGSL/iblShadowAccumulation.fragment";
 export * from "../Shaders/iblShadowAccumulation.fragment";
+export * from "../Shaders/iblShadowsCombine.fragment";
+export * from "../ShadersWGSL/iblShadowsCombine.fragment";
+export * from "../ShadersWGSL/combineVoxelGrids.fragment";
+export * from "../Shaders/combineVoxelGrids.fragment";
+export * from "../Shaders/generateVoxelMip.fragment";
+export * from "../ShadersWGSL/generateVoxelMip.fragment";

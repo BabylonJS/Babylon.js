@@ -17,12 +17,12 @@ import "../../Shaders/voxelGrid2dArrayDebug.fragment";
 import "../../Shaders/voxelGrid3dDebug.fragment";
 import "../../Shaders/voxelSlabDebug.vertex";
 import "../../Shaders/voxelSlabDebug.fragment";
-import "../../Shaders/combineVoxelGrids.fragment";
 import "../../Shaders/generateVoxelMip.fragment";
 
 import { PostProcess } from "../../PostProcesses/postProcess";
 import type { PostProcessOptions } from "../../PostProcesses/postProcess";
 import { ProceduralTexture } from "../../Materials/Textures/Procedurals/proceduralTexture";
+import type { IProceduralTextureCreationOptions } from "../../Materials/Textures/Procedurals/proceduralTexture";
 import { EffectRenderer, EffectWrapper } from "../../Materials/effectRenderer";
 import type { IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
 import type { RenderTargetWrapper } from "core/Engines";
@@ -357,6 +357,7 @@ export class _IblShadowsVoxelRenderer {
     }
 
     private _createTextures() {
+        const isWebGPU = this._engine.isWebGPU;
         const size: TextureSize = {
             width: this._voxelResolution,
             height: this._voxelResolution,
@@ -374,12 +375,20 @@ export class _IblShadowsVoxelRenderer {
         // We can render up to maxDrawBuffers voxel slices of the grid per render.
         // We call this a slab.
         const numSlabs = this._computeNumberOfSlabs();
-        const voxelCombinedOptions: RenderTargetTextureOptions = {
+        const voxelCombinedOptions: IProceduralTextureCreationOptions = {
             generateDepthBuffer: false,
             generateMipMaps: true,
             type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             format: Constants.TEXTUREFORMAT_R,
             samplingMode: Constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST,
+            shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            extraInitializationsAsync: async () => {
+                if (isWebGPU) {
+                    await import("../../ShadersWGSL/combineVoxelGrids.fragment");
+                } else {
+                    await import("../../Shaders/combineVoxelGrids.fragment");
+                }
+            },
         };
         if (this._triPlanarVoxelization) {
             this._voxelGridXaxis = new RenderTargetTexture("voxelGridXaxis", size, this._scene, voxelAxisOptions);
@@ -405,11 +414,27 @@ export class _IblShadowsVoxelRenderer {
             this._voxelMrtsZaxis = this._createVoxelMRTs("z_axis_", this._voxelGridZaxis, numSlabs);
         }
 
+        const generateVoxelMipOptions: IProceduralTextureCreationOptions = {
+            generateDepthBuffer: false,
+            generateMipMaps: false,
+            type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
+            format: Constants.TEXTUREFORMAT_R,
+            samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+            shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            extraInitializationsAsync: async () => {
+                if (isWebGPU) {
+                    await import("../../ShadersWGSL/generateVoxelMip.fragment");
+                } else {
+                    await import("../../Shaders/generateVoxelMip.fragment");
+                }
+            },
+        };
+
         this._mipArray = new Array(Math.ceil(Math.log2(this._voxelResolution)));
         for (let mipIdx = 1; mipIdx <= this._mipArray.length; mipIdx++) {
             const mipDim = this._voxelResolution >> mipIdx;
             const mipSize: TextureSize = { width: mipDim, height: mipDim, depth: mipDim };
-            this._mipArray[mipIdx - 1] = new ProceduralTexture("voxelMip" + mipIdx, mipSize, "generateVoxelMip", this._scene, voxelAxisOptions);
+            this._mipArray[mipIdx - 1] = new ProceduralTexture("voxelMip" + mipIdx, mipSize, "generateVoxelMip", this._scene, generateVoxelMipOptions);
 
             const mipTarget = this._mipArray[mipIdx - 1];
             mipTarget._noMipmap = true;
