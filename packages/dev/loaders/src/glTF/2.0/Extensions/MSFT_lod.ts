@@ -9,6 +9,7 @@ import type { INode, IMaterial, IBuffer, IScene } from "../glTFLoaderInterfaces"
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 import type { IProperty, IMSFTLOD } from "babylonjs-gltf2interface";
+import { GLTFLoaderExtensionRegistry } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "MSFT_lod";
 
@@ -433,4 +434,5 @@ export class MSFT_lod implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new MSFT_lod(loader));
+GLTFLoaderExtensionRegistry.Unregister(NAME);
+GLTFLoaderExtensionRegistry.Register(NAME, true, (loader) => new MSFT_lod(loader));

@@ -1,5 +1,6 @@
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import { GLTFLoader } from "../glTFLoader";
+import type { GLTFLoader } from "../glTFLoader";
+import { GLTFLoaderExtensionRegistry } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "KHR_mesh_quantization";
 
@@ -40,4 +41,5 @@ export class KHR_mesh_quantization implements IGLTFLoaderExtension {
     public dispose() {}
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_mesh_quantization(loader));
+GLTFLoaderExtensionRegistry.Unregister(NAME);
+GLTFLoaderExtensionRegistry.Register(NAME, true, (loader) => new KHR_mesh_quantization(loader));

@@ -6,6 +6,7 @@ import type { IMaterial } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsEmissiveStrength } from "babylonjs-gltf2interface";
+import { GLTFLoaderExtensionRegistry } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "KHR_materials_emissive_strength";
 
@@ -77,4 +78,5 @@ export class KHR_materials_emissive_strength implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_materials_emissive_strength(loader));
+GLTFLoaderExtensionRegistry.Unregister(NAME);
+GLTFLoaderExtensionRegistry.Register(NAME, true, (loader) => new KHR_materials_emissive_strength(loader));

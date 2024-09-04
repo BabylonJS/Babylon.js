@@ -9,6 +9,7 @@ import type { IEXTLightsImageBased_LightReferenceImageBased, IEXTLightsImageBase
 import type { IScene } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
+import { GLTFLoaderExtensionRegistry } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "EXT_lights_image_based";
 
@@ -169,4 +170,5 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new EXT_lights_image_based(loader));
+GLTFLoaderExtensionRegistry.Unregister(NAME);
+GLTFLoaderExtensionRegistry.Register(NAME, true, (loader) => new EXT_lights_image_based(loader));

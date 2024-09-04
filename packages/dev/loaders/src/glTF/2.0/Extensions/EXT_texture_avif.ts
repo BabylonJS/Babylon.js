@@ -4,6 +4,7 @@ import type { ITexture } from "../glTFLoaderInterfaces";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { Nullable } from "core/types";
 import type { IEXTTextureAVIF } from "babylonjs-gltf2interface";
+import { GLTFLoaderExtensionRegistry } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "EXT_texture_avif";
 
@@ -66,4 +67,5 @@ export class EXT_texture_avif implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new EXT_texture_avif(loader));
+GLTFLoaderExtensionRegistry.Unregister(NAME);
+GLTFLoaderExtensionRegistry.Register(NAME, true, (loader) => new EXT_texture_avif(loader));
