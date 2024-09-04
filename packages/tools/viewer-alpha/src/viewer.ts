@@ -26,12 +26,10 @@ import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { Observable } from "core/Misc/observable";
 import { Scene } from "core/scene";
+import { registerBuiltInLoaders } from "loaders/dynamic";
 
 // TODO: Dynamic imports?
 import "core/Animations/animatable";
-import "core/Materials/Textures/Loaders/envTextureLoader";
-// eslint-disable-next-line import/no-internal-modules
-import { registerBuiltInLoaders } from "loaders/dynamic";
 
 function createSkybox(scene: Scene, camera: Camera, environmentTexture: CubeTexture, blur: number): Mesh {
     const hdrSkybox = CreateBox("hdrSkyBox", undefined, scene);
