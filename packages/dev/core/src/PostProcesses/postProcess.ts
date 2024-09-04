@@ -676,7 +676,7 @@ export class PostProcess {
             textureFormat = options.textureFormat ?? Constants.TEXTUREFORMAT_RGBA;
             shaderLanguage = options.shaderLanguage ?? ShaderLanguage.GLSL;
             uniformBuffers = options.uniformBuffers ?? null;
-            extraInitializations = options.extraInitializations ?? undefined;
+            extraInitializations = options.extraInitializations;
         } else if (_size) {
             if (typeof _size === "number") {
                 size = _size;
