@@ -3,9 +3,9 @@
     "tests": [
         {
             "title": "Gaussian Splatting Loading",
-            "playgroundId": "#CID4NN#202",
+            "playgroundId": "#CID4NN#204",
             "referenceImage": "gsplat-loading.png",
-            "renderCount": 10
+            "renderCount": 20
         },
         {
             "title": "EXR Loader",
