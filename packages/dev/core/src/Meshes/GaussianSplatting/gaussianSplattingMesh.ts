@@ -10,6 +10,7 @@ import { Logger } from "core/Misc/logger";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Constants } from "core/Engines/constants";
+import { Tools } from "core/Misc/tools";
 
 /**
  * Class used to render a gaussian splatting mesh
@@ -67,10 +68,11 @@ export class GaussianSplattingMesh extends Mesh {
     /**
      * Creates a new gaussian splatting mesh
      * @param name defines the name of the mesh
+     * @param url defines the url to load from (optional)
      * @param scene defines the hosting scene (optional)
      * @param keepInRam keep datas in ram for editing purpose
      */
-    constructor(name: string, scene: Nullable<Scene> = null, keepInRam: boolean = false) {
+    constructor(name: string, url: Nullable<string> = null, scene: Nullable<Scene> = null, keepInRam: boolean = false) {
         super(name, scene);
 
         const vertexData = new VertexData();
@@ -86,6 +88,9 @@ export class GaussianSplattingMesh extends Mesh {
 
         this._lastModelViewMatrix = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         this._keepInRam = keepInRam;
+        if (url) {
+            this.loadFileAsync(url);
+        }
     }
 
     /**
@@ -147,6 +152,17 @@ export class GaussianSplattingMesh extends Mesh {
 
     public loadDataAsync(data: ArrayBuffer): Promise<void> {
         return Promise.resolve(this._loadData(data));
+    }
+
+    /**
+     * Loads a .splat Gaussian or .ply Splatting file asynchronously
+     * @param url path to the splat file to load
+     * @returns a promise that resolves when the operation is complete
+     */
+    public loadFileAsync(url: string): Promise<void> {
+        return Tools.LoadFileAsync(url, true).then((data) => {
+            this._loadData(GaussianSplattingMesh.ConvertPLYToSplat(data));
+        });
     }
 
     /**
