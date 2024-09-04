@@ -76,8 +76,8 @@ import type { AssetContainer } from "core/assetContainer";
 import type { AnimationPropertyInfo } from "./glTFLoaderAnimation";
 import { nodeAnimationData } from "./glTFLoaderAnimation";
 import type { IObjectInfo } from "core/ObjectModel/objectModelInterfaces";
-import { glTFRegisteredExtensions, registerGLTFExtension, unregisterGLTFExtension } from "./glTFLoaderExtensionRegistry";
-import type { ExtensionFactory } from "./glTFLoaderExtensionRegistry";
+import { registeredGLTFExtensions, registerGLTFExtension, unregisterGLTFExtension } from "./glTFLoaderExtensionRegistry";
+import type { GLTFExtensionFactory } from "./glTFLoaderExtensionRegistry";
 export { GLTFFileLoader };
 
 interface TypedArrayLike extends ArrayBufferView {
@@ -219,8 +219,9 @@ export class GLTFLoader implements IGLTFLoader {
      * Registers a loader extension.
      * @param name The name of the loader extension.
      * @param factory The factory function that creates the loader extension.
+     * @deprecated Please use registerGLTFExtension instead.
      */
-    public static RegisterExtension(name: string, factory: ExtensionFactory): void {
+    public static RegisterExtension(name: string, factory: GLTFExtensionFactory): void {
         registerGLTFExtension(name, false, factory);
     }
 
@@ -228,6 +229,7 @@ export class GLTFLoader implements IGLTFLoader {
      * Unregisters a loader extension.
      * @param name The name of the loader extension.
      * @returns A boolean indicating whether the extension has been unregistered
+     * @deprecated Please use unregisterGLTFExtension instead.
      */
     public static UnregisterExtension(name: string): boolean {
         return unregisterGLTFExtension(name);
@@ -551,7 +553,7 @@ export class GLTFLoader implements IGLTFLoader {
     private async _loadExtensionsAsync() {
         const extensionPromises: Promise<IGLTFLoaderExtension>[] = [];
 
-        glTFRegisteredExtensions.forEach((registeredExtension, name) => {
+        registeredGLTFExtensions.forEach((registeredExtension, name) => {
             // Don't load explicitly disabled extensions.
             if (this.parent.extensionOptions[name]?.enabled === false) {
                 // But warn if the disabled extension is used by the model.

@@ -39,9 +39,9 @@ export function registerBuiltInLoaders() {
     // Register the SPLAT loader.
     registerSceneLoaderPlugin({
         ...SPLATFileLoaderMetadata,
-        createPlugin: async () => {
+        createPlugin: async (options: SceneLoaderPluginOptions) => {
             const { SPLATFileLoader } = await import("./SPLAT/splatFileLoader");
-            return new SPLATFileLoader();
+            return new SPLATFileLoader(options[SPLATFileLoaderMetadata.name]);
         },
     } satisfies ISceneLoaderPluginFactory);
 
