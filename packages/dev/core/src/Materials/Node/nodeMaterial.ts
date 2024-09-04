@@ -356,6 +356,11 @@ export class NodeMaterial extends PushMaterial {
     public onBuildObservable = new Observable<NodeMaterial>();
 
     /**
+     * Observable raised when an error is detected
+     */
+    public onBuildErrorObservable = new Observable<string>();
+
+    /**
      * Gets or sets the root nodes of the material vertex shader
      */
     public _vertexOutputNodes = new Array<NodeMaterialBlock>();
@@ -926,7 +931,7 @@ export class NodeMaterial extends PushMaterial {
         }
 
         // Errors
-        this._sharedData.emitErrors();
+        const noError = this._sharedData.emitErrors(this.onBuildErrorObservable);
 
         if (verbose) {
             Logger.Log("Vertex shader:");
@@ -937,7 +942,9 @@ export class NodeMaterial extends PushMaterial {
 
         this._buildIsInProgress = false;
         this._buildWasSuccessful = true;
-        this.onBuildObservable.notifyObservers(this);
+        if (noError) {
+            this.onBuildObservable.notifyObservers(this);
+        }
 
         // Wipe defines
         const meshes = this.getScene().meshes;
@@ -1866,6 +1873,7 @@ export class NodeMaterial extends PushMaterial {
         (this._fragmentCompilationState as any) = null;
 
         this.onBuildObservable.clear();
+        this.onBuildErrorObservable.clear();
 
         if (this._imageProcessingObserver) {
             this._imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingObserver);
