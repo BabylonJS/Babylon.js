@@ -126,6 +126,10 @@ export interface IEffectCreationOptions {
      * Provide an existing pipeline context to avoid creating a new one
      */
     existingPipelineContext?: IPipelineContext;
+    /**
+     * Additional async code to run before preparing the effect
+     */
+    extraInitializationsAsync?: () => Promise<void>;
 }
 
 /**
@@ -281,6 +285,7 @@ export class Effect implements IDisposable {
      * @param indexParameters Parameters to be used with Babylons include syntax to iterate over an array (eg. \{lights: 10\})
      * @param key Effect Key identifying uniquely compiled shader variants
      * @param shaderLanguage the language the shader is written in (default: GLSL)
+     * @param extraInitializationsAsync additional async code to run before preparing the effect
      */
     constructor(
         baseName: IShaderPath | string,
@@ -294,7 +299,8 @@ export class Effect implements IDisposable {
         onError: Nullable<(effect: Effect, errors: string) => void> = null,
         indexParameters?: any,
         key: string = "",
-        shaderLanguage = ShaderLanguage.GLSL
+        shaderLanguage = ShaderLanguage.GLSL,
+        extraInitializationsAsync?: () => Promise<void>
     ) {
         this.name = baseName;
         this._key = key;
@@ -353,7 +359,7 @@ export class Effect implements IDisposable {
 
         this.uniqueId = Effect._UniqueIdSeed++;
         if (!cachedPipeline) {
-            this._processShaderCode();
+            this._processShaderCodeAsync(null, false, null, extraInitializationsAsync);
         } else {
             this._pipelineContext = cachedPipeline;
             this._pipelineContext.setEngine(this._engine);
@@ -366,11 +372,16 @@ export class Effect implements IDisposable {
     }
 
     /** @internal */
-    public _processShaderCode(
+    public async _processShaderCodeAsync(
         shaderProcessor: Nullable<IShaderProcessor> = null,
         keepExistingPipelineContext = false,
-        shaderProcessingContext: Nullable<ShaderProcessingContext> = null
+        shaderProcessingContext: Nullable<ShaderProcessingContext> = null,
+        extraInitializationsAsync?: () => Promise<void>
     ) {
+        if (extraInitializationsAsync) {
+            await extraInitializationsAsync();
+        }
+
         this._processingContext = shaderProcessingContext || this._engine._getShaderProcessingContext(this._shaderLanguage, false);
 
         const processorOptions: ProcessingOptions = {

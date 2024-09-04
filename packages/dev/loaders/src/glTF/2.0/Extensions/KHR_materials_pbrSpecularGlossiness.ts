@@ -10,6 +10,17 @@ import type { IKHRMaterialsPbrSpecularGlossiness } from "babylonjs-gltf2interfac
 
 const NAME = "KHR_materials_pbrSpecularGlossiness";
 
+declare module "../../glTFFileLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface GLTFLoaderExtensionOptions {
+        /**
+         * Defines options for the KHR_materials_pbrSpecularGlossiness extension.
+         */
+        // NOTE: Don't use NAME here as it will break the UMD type declarations.
+        ["KHR_materials_pbrSpecularGlossiness"]: {};
+    }
+}
+
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Archived/KHR_materials_pbrSpecularGlossiness/README.md)
  */

@@ -21,8 +21,7 @@ import type { Light } from "../Lights/light";
 import { RuntimeError, ErrorCodes } from "../Misc/error";
 import type { ISpriteManager } from "../Sprites/spriteManager";
 import { RandomGUID } from "../Misc/guid";
-import { Engine } from "../Engines/engine";
-import type { AbstractEngine } from "../Engines/abstractEngine";
+import { AbstractEngine } from "../Engines/abstractEngine";
 
 /**
  * Type used for the success callback of ImportMesh
@@ -423,7 +422,7 @@ interface SceneLoaderOptions {
         // NOTE: This type is doing two things:
         // 1. Adding an implicit 'enabled' property to the options for each plugin.
         // 2. Creating a mapped type of all the options of all the plugins to make it just look like a consolidated plain object in intellisense for the user.
-        [Plugin in keyof SceneLoaderPluginOptions]: {
+        [Plugin in keyof SceneLoaderPluginOptions]?: {
             [Option in keyof DefaultPluginOptions<SceneLoaderPluginOptions[Plugin]>]: DefaultPluginOptions<SceneLoaderPluginOptions[Plugin]>[Option];
         };
     };
@@ -669,9 +668,9 @@ function loadData(
         canUseOfflineSupport = !exceptionFound;
     }
 
-    if (canUseOfflineSupport && Engine.OfflineProviderFactory) {
+    if (canUseOfflineSupport && AbstractEngine.OfflineProviderFactory) {
         // Checking if a manifest file has been set for this scene and if offline mode has been requested
-        scene.offlineProvider = Engine.OfflineProviderFactory(fileInfo.url, manifestChecked, engine.disableManifestCheck);
+        scene.offlineProvider = AbstractEngine.OfflineProviderFactory(fileInfo.url, manifestChecked, engine.disableManifestCheck);
     } else {
         manifestChecked();
     }

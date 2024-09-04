@@ -45,7 +45,7 @@ declare module "core/Loading/sceneLoader" {
         /**
          * Defines options for the glTF loader.
          */
-        [PLUGIN_GLTF]?: Partial<GLTFLoaderOptions>;
+        [PLUGIN_GLTF]: Partial<GLTFLoaderOptions>;
     }
 }
 
@@ -198,20 +198,33 @@ abstract class GLTFLoaderOptions {
     // eslint-disable-next-line babylonjs/available
     protected copyFrom(options?: Partial<Readonly<GLTFLoaderOptions>>) {
         if (options) {
-            const copyOption = (option: string) => {
-                const typedKey = option as keyof GLTFLoaderOptions;
-                (this as Record<keyof GLTFLoaderOptions, unknown>)[typedKey] = options[typedKey] ?? this[typedKey];
-            };
-
-            // Copy concrete properties
-            for (const option in this) {
-                copyOption(option);
-            }
-
-            // Copy abstract properties
-            for (const option of ["onParsed", "onMeshLoaded", "onSkinLoaded", "onTextureLoaded", "onMaterialLoaded", "onCameraLoaded"] satisfies (keyof GLTFLoaderOptions)[]) {
-                copyOption(option);
-            }
+            this.onParsed = options.onParsed;
+            this.coordinateSystemMode = options.coordinateSystemMode ?? this.coordinateSystemMode;
+            this.animationStartMode = options.animationStartMode ?? this.animationStartMode;
+            this.loadNodeAnimations = options.loadNodeAnimations ?? this.loadNodeAnimations;
+            this.loadSkins = options.loadSkins ?? this.loadSkins;
+            this.loadMorphTargets = options.loadMorphTargets ?? this.loadMorphTargets;
+            this.compileMaterials = options.compileMaterials ?? this.compileMaterials;
+            this.useClipPlane = options.useClipPlane ?? this.useClipPlane;
+            this.compileShadowGenerators = options.compileShadowGenerators ?? this.compileShadowGenerators;
+            this.transparencyAsCoverage = options.transparencyAsCoverage ?? this.transparencyAsCoverage;
+            this.useRangeRequests = options.useRangeRequests ?? this.useRangeRequests;
+            this.createInstances = options.createInstances ?? this.createInstances;
+            this.alwaysComputeBoundingBox = options.alwaysComputeBoundingBox ?? this.alwaysComputeBoundingBox;
+            this.loadAllMaterials = options.loadAllMaterials ?? this.loadAllMaterials;
+            this.loadOnlyMaterials = options.loadOnlyMaterials ?? this.loadOnlyMaterials;
+            this.skipMaterials = options.skipMaterials ?? this.skipMaterials;
+            this.useSRGBBuffers = options.useSRGBBuffers ?? this.useSRGBBuffers;
+            this.targetFps = options.targetFps ?? this.targetFps;
+            this.alwaysComputeSkeletonRootNode = options.alwaysComputeSkeletonRootNode ?? this.alwaysComputeSkeletonRootNode;
+            this.preprocessUrlAsync = options.preprocessUrlAsync ?? this.preprocessUrlAsync;
+            this.customRootNode = options.customRootNode;
+            this.onMeshLoaded = options.onMeshLoaded;
+            this.onSkinLoaded = options.onSkinLoaded;
+            this.onTextureLoaded = options.onTextureLoaded;
+            this.onMaterialLoaded = options.onMaterialLoaded;
+            this.onCameraLoaded = options.onCameraLoaded;
+            this.extensionOptions = options.extensionOptions ?? this.extensionOptions;
         }
     }
 
@@ -222,7 +235,7 @@ abstract class GLTFLoaderOptions {
     /**
      * Raised when the asset has been parsed
      */
-    public abstract onParsed: (loaderData: IGLTFLoaderData) => void;
+    public abstract onParsed?: ((loaderData: IGLTFLoaderData) => void) | undefined;
 
     // ----------
     // V2 options
@@ -341,28 +354,28 @@ abstract class GLTFLoaderOptions {
      * Callback raised when the loader creates a mesh after parsing the glTF properties of the mesh.
      * Note that the callback is called as soon as the mesh object is created, meaning some data may not have been setup yet for this mesh (vertex data, morph targets, material, ...)
      */
-    public abstract onMeshLoaded: (mesh: AbstractMesh) => void;
+    public abstract onMeshLoaded?: ((mesh: AbstractMesh) => void) | undefined;
 
     /**
      * Callback raised when the loader creates a skin after parsing the glTF properties of the skin node.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/importers/glTF/glTFSkinning#ignoring-the-transform-of-the-skinned-mesh
      */
-    public abstract onSkinLoaded: (node: TransformNode, skinnedNode: TransformNode) => void;
+    public abstract onSkinLoaded?: ((node: TransformNode, skinnedNode: TransformNode) => void) | undefined;
 
     /**
      * Callback raised when the loader creates a texture after parsing the glTF properties of the texture.
      */
-    public abstract onTextureLoaded: (texture: BaseTexture) => void;
+    public abstract onTextureLoaded?: ((texture: BaseTexture) => void) | undefined;
 
     /**
      * Callback raised when the loader creates a material after parsing the glTF properties of the material.
      */
-    public abstract onMaterialLoaded: (material: Material) => void;
+    public abstract onMaterialLoaded?: ((material: Material) => void) | undefined;
 
     /**
      * Callback raised when the loader creates a camera after parsing the glTF properties of the camera.
      */
-    public abstract onCameraLoaded: (camera: Camera) => void;
+    public abstract onCameraLoaded?: ((camera: Camera) => void) | undefined;
 
     /**
      * Defines options for glTF extensions.
@@ -371,7 +384,7 @@ abstract class GLTFLoaderOptions {
         // NOTE: This type is doing two things:
         // 1. Adding an implicit 'enabled' property to the options for each extension.
         // 2. Creating a mapped type of all the options of all the extensions to make it just look like a consolidated plain object in intellisense for the user.
-        [Extension in keyof GLTFLoaderExtensionOptions]: {
+        [Extension in keyof GLTFLoaderExtensionOptions]?: {
             [Option in keyof DefaultExtensionOptions<GLTFLoaderExtensionOptions[Extension]>]: DefaultExtensionOptions<GLTFLoaderExtensionOptions[Extension]>[Option];
         };
     } = {};
@@ -410,11 +423,13 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
     /**
      * Raised when the asset has been parsed
      */
-    public set onParsed(callback: (loaderData: IGLTFLoaderData) => void) {
+    public set onParsed(callback: ((loaderData: IGLTFLoaderData) => void) | undefined) {
         if (this._onParsedObserver) {
             this.onParsedObservable.remove(this._onParsedObserver);
         }
-        this._onParsedObserver = this.onParsedObservable.add(callback);
+        if (callback) {
+            this._onParsedObserver = this.onParsedObservable.add(callback);
+        }
     }
 
     // ------------------
@@ -456,11 +471,13 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
      * Callback raised when the loader creates a mesh after parsing the glTF properties of the mesh.
      * Note that the callback is called as soon as the mesh object is created, meaning some data may not have been setup yet for this mesh (vertex data, morph targets, material, ...)
      */
-    public set onMeshLoaded(callback: (mesh: AbstractMesh) => void) {
+    public set onMeshLoaded(callback: ((mesh: AbstractMesh) => void) | undefined) {
         if (this._onMeshLoadedObserver) {
             this.onMeshLoadedObservable.remove(this._onMeshLoadedObserver);
         }
-        this._onMeshLoadedObserver = this.onMeshLoadedObservable.add(callback);
+        if (callback) {
+            this._onMeshLoadedObserver = this.onMeshLoadedObservable.add(callback);
+        }
     }
 
     /**
@@ -477,11 +494,13 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
      * Callback raised when the loader creates a skin after parsing the glTF properties of the skin node.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/importers/glTF/glTFSkinning#ignoring-the-transform-of-the-skinned-mesh
      */
-    public set onSkinLoaded(callback: (node: TransformNode, skinnedNode: TransformNode) => void) {
+    public set onSkinLoaded(callback: ((node: TransformNode, skinnedNode: TransformNode) => void) | undefined) {
         if (this._onSkinLoadedObserver) {
             this.onSkinLoadedObservable.remove(this._onSkinLoadedObserver);
         }
-        this._onSkinLoadedObserver = this.onSkinLoadedObservable.add((data) => callback(data.node, data.skinnedNode));
+        if (callback) {
+            this._onSkinLoadedObserver = this.onSkinLoadedObservable.add((data) => callback(data.node, data.skinnedNode));
+        }
     }
 
     /**
@@ -494,11 +513,13 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
     /**
      * Callback raised when the loader creates a texture after parsing the glTF properties of the texture.
      */
-    public set onTextureLoaded(callback: (texture: BaseTexture) => void) {
+    public set onTextureLoaded(callback: ((texture: BaseTexture) => void) | undefined) {
         if (this._onTextureLoadedObserver) {
             this.onTextureLoadedObservable.remove(this._onTextureLoadedObserver);
         }
-        this._onTextureLoadedObserver = this.onTextureLoadedObservable.add(callback);
+        if (callback) {
+            this._onTextureLoadedObserver = this.onTextureLoadedObservable.add(callback);
+        }
     }
 
     /**
@@ -511,11 +532,13 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
     /**
      * Callback raised when the loader creates a material after parsing the glTF properties of the material.
      */
-    public set onMaterialLoaded(callback: (material: Material) => void) {
+    public set onMaterialLoaded(callback: ((material: Material) => void) | undefined) {
         if (this._onMaterialLoadedObserver) {
             this.onMaterialLoadedObservable.remove(this._onMaterialLoadedObserver);
         }
-        this._onMaterialLoadedObserver = this.onMaterialLoadedObservable.add(callback);
+        if (callback) {
+            this._onMaterialLoadedObserver = this.onMaterialLoadedObservable.add(callback);
+        }
     }
 
     /**
@@ -528,11 +551,13 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
     /**
      * Callback raised when the loader creates a camera after parsing the glTF properties of the camera.
      */
-    public set onCameraLoaded(callback: (camera: Camera) => void) {
+    public set onCameraLoaded(callback: ((camera: Camera) => void) | undefined) {
         if (this._onCameraLoadedObserver) {
             this.onCameraLoadedObservable.remove(this._onCameraLoadedObserver);
         }
-        this._onCameraLoadedObserver = this.onCameraLoadedObservable.add(callback);
+        if (callback) {
+            this._onCameraLoadedObserver = this.onCameraLoadedObservable.add(callback);
+        }
     }
 
     /**

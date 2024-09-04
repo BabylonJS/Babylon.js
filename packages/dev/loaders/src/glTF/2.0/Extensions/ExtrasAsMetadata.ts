@@ -10,6 +10,17 @@ import type { Material } from "core/Materials/material";
 
 const NAME = "ExtrasAsMetadata";
 
+declare module "../../glTFFileLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface GLTFLoaderExtensionOptions {
+        /**
+         * Defines options for the ExtrasAsMetadata extension.
+         */
+        // NOTE: Don't use NAME here as it will break the UMD type declarations.
+        ["ExtrasAsMetadata"]: {};
+    }
+}
+
 interface ObjectWithMetadata {
     metadata: any;
 }

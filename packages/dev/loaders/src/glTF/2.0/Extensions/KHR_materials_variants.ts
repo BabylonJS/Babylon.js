@@ -12,6 +12,17 @@ import type { TransformNode } from "core/Meshes/transformNode";
 
 const NAME = "KHR_materials_variants";
 
+declare module "../../glTFFileLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface GLTFLoaderExtensionOptions {
+        /**
+         * Defines options for the KHR_materials_variants extension.
+         */
+        // NOTE: Don't use NAME here as it will break the UMD type declarations.
+        ["KHR_materials_variants"]: {};
+    }
+}
+
 interface IVariantsMap {
     [key: string]: Array<{ mesh: AbstractMesh; material: Nullable<Material> }>;
 }

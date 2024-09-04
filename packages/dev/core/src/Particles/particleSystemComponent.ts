@@ -7,7 +7,6 @@ import { ParticleSystem } from "./particleSystem";
 import type { Scene } from "../scene";
 import { SceneComponentConstants } from "../sceneComponent";
 import type { AssetContainer } from "../assetContainer";
-import "../Shaders/particles.vertex";
 import type { EffectFallbacks } from "../Materials/effectFallbacks";
 import { AbstractEngine } from "../Engines/abstractEngine";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
@@ -119,7 +118,14 @@ AbstractEngine.prototype.createEffectForParticles = function (
         onCompiled,
         onError,
         undefined,
-        shaderLanguage
+        shaderLanguage,
+        async () => {
+            if (shaderLanguage === ShaderLanguage.GLSL) {
+                await import("../Shaders/particles.vertex");
+            } else {
+                await import("../ShadersWGSL/particles.vertex");
+            }
+        }
     );
 };
 

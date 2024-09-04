@@ -3,7 +3,7 @@
  */
 
 import { AudioEngine, Sound } from "core/Audio";
-import { Engine, NullEngine } from "core/Engines";
+import { AbstractEngine, NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 
 import { AudioTestHelper } from "./helpers/audioTestHelper";
@@ -34,7 +34,7 @@ describe("Sound", () => {
         mock = new MockedAudioObjects;
         engine = new NullEngine;
         scene = new Scene(engine);
-        audioEngine = Engine.audioEngine = new AudioEngine(null, new AudioContext, null);
+        audioEngine = AbstractEngine.audioEngine = new AudioEngine(null, new AudioContext, null);
     });
 
     afterEach(() => {
@@ -205,7 +205,7 @@ describe("Sound", () => {
     });
 
     it("constructor loads given .mp3 when supported", () => {
-        (Engine.audioEngine as any).isMP3supported = true;
+        (AbstractEngine.audioEngine as any).isMP3supported = true;
         const sceneLoadFileMock = jest.fn().mockName("scene._loadFile");
         scene!._loadFile = sceneLoadFileMock;
 
@@ -216,7 +216,7 @@ describe("Sound", () => {
     });
 
     it("constructor loads given .ogg when supported", () => {
-        (Engine.audioEngine as any).isOGGsupported = true;
+        (AbstractEngine.audioEngine as any).isOGGsupported = true;
         const sceneLoadFileMock = jest.fn().mockName("scene._loadFile");
         scene!._loadFile = sceneLoadFileMock;
 
@@ -227,7 +227,7 @@ describe("Sound", () => {
     });
 
     it("constructor loads given .wav", () => {
-        (Engine.audioEngine as any).isOGGsupported = true;
+        (AbstractEngine.audioEngine as any).isOGGsupported = true;
         const sceneLoadFileMock = jest.fn().mockName("scene._loadFile");
         scene!._loadFile = sceneLoadFileMock;
 
@@ -238,7 +238,7 @@ describe("Sound", () => {
     });
 
     it("constructor loads given .m4a", () => {
-        (Engine.audioEngine as any).isOGGsupported = true;
+        (AbstractEngine.audioEngine as any).isOGGsupported = true;
         const sceneLoadFileMock = jest.fn().mockName("scene._loadFile");
         scene!._loadFile = sceneLoadFileMock;
 
@@ -249,7 +249,7 @@ describe("Sound", () => {
     });
 
     it("constructor loads given .mp4", () => {
-        (Engine.audioEngine as any).isOGGsupported = true;
+        (AbstractEngine.audioEngine as any).isOGGsupported = true;
         const sceneLoadFileMock = jest.fn().mockName("scene._loadFile");
         scene!._loadFile = sceneLoadFileMock;
 
@@ -260,7 +260,7 @@ describe("Sound", () => {
     });
 
     it("constructor loads given blob", () => {
-        (Engine.audioEngine as any).isOGGsupported = true;
+        (AbstractEngine.audioEngine as any).isOGGsupported = true;
         const sceneLoadFileMock = jest.fn().mockName("scene._loadFile");
         scene!._loadFile = sceneLoadFileMock;
 
@@ -271,8 +271,8 @@ describe("Sound", () => {
     });
 
     it("constructor skips given .ogg when not supported", () => {
-        (Engine.audioEngine as any).isMP3supported = true;
-        (Engine.audioEngine as any).isOGGsupported = false;
+        (AbstractEngine.audioEngine as any).isMP3supported = true;
+        (AbstractEngine.audioEngine as any).isOGGsupported = false;
         const sceneLoadFileMock = jest.fn().mockName("scene._loadFile");
         scene!._loadFile = sceneLoadFileMock;
 
@@ -283,8 +283,8 @@ describe("Sound", () => {
     });
 
     it("constructor skips given .mp3 when not supported", () => {
-        (Engine.audioEngine as any).isMP3supported = false;
-        (Engine.audioEngine as any).isOGGsupported = true;
+        (AbstractEngine.audioEngine as any).isMP3supported = false;
+        (AbstractEngine.audioEngine as any).isOGGsupported = true;
         const sceneLoadFileMock = jest.fn().mockName("scene._loadFile");
         scene!._loadFile = sceneLoadFileMock;
 
@@ -529,7 +529,7 @@ describe("Sound", () => {
 
         AudioTestHelper.WaitForAudioContextSuspendedDoubleCheck();
         sound.stop();
-        Engine.audioEngine!.unlock();
+        AbstractEngine.audioEngine!.unlock();
 
         return AudioTestHelper.WhenAudioContextResumes(() => {
             expect(AudioTestHelper.SoundWasStarted()).toBe(false);
@@ -543,7 +543,7 @@ describe("Sound", () => {
         sound.play();
         AudioTestHelper.WaitForAudioContextSuspendedDoubleCheck();
         sound.stop();
-        Engine.audioEngine!.unlock();
+        AbstractEngine.audioEngine!.unlock();
 
         return AudioTestHelper.WhenAudioContextResumes(() => {
             expect(AudioTestHelper.SoundWasStarted()).toBe(false);

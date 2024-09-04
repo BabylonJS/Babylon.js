@@ -79,15 +79,15 @@ class GlowBlurPostProcess extends PostProcess {
         });
     }
 
-    protected override async _initShaderSourceAsync(useWebGPU: boolean) {
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
-            await import("../ShadersWGSL/glowBlurPostProcess.fragment");
+            list.push(import("../ShadersWGSL/glowBlurPostProcess.fragment"));
         } else {
-            await import("../Shaders/glowBlurPostProcess.fragment");
+            list.push(import("../Shaders/glowBlurPostProcess.fragment"));
         }
 
-        super._initShaderSourceAsync(useWebGPU);
+        super._gatherImports(useWebGPU, list);
     }
 }
 
@@ -347,11 +347,8 @@ export class HighlightLayer extends EffectLayer {
         this._shouldRender = false;
     }
 
-    protected override async _initShaderSourceAsync(forceGLSL = false) {
-        const engine = this._scene.getEngine();
-
-        if (engine.isWebGPU && !forceGLSL && !EffectLayer.ForceGLSL) {
-            this._shaderLanguage = ShaderLanguage.WGSL;
+    protected override async _importShadersAsync() {
+        if (this._shaderLanguage === ShaderLanguage.WGSL) {
             await Promise.all([
                 import("../ShadersWGSL/glowMapMerge.fragment"),
                 import("../ShadersWGSL/glowMapMerge.vertex"),
@@ -361,7 +358,7 @@ export class HighlightLayer extends EffectLayer {
             await Promise.all([import("../Shaders/glowMapMerge.fragment"), import("../Shaders/glowMapMerge.vertex"), import("../Shaders/glowBlurPostProcess.fragment")]);
         }
 
-        await super._initShaderSourceAsync(forceGLSL);
+        await super._importShadersAsync();
     }
 
     /**
@@ -393,7 +390,13 @@ export class HighlightLayer extends EffectLayer {
             undefined,
             undefined,
             undefined,
-            this._shaderLanguage
+            this._shaderLanguage,
+            this._shadersLoaded
+                ? undefined
+                : async () => {
+                      await this._importShadersAsync();
+                      this._shadersLoaded = true;
+                  }
         );
     }
 

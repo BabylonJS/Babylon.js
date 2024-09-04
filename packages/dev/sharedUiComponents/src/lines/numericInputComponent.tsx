@@ -3,6 +3,7 @@ import type { LockObject } from "../tabs/propertyGrids/lockObject";
 
 interface INumericInputProps {
     label: string;
+    labelTooltip?: string;
     value: number;
     step?: number;
     onChange: (value: number) => void;
@@ -111,7 +112,7 @@ export class NumericInput extends React.Component<INumericInputProps, { value: s
             <div className="numeric">
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
                 {this.props.label && (
-                    <div className="numeric-label" title={this.props.label}>
+                    <div className="numeric-label" title={this.props.labelTooltip ?? this.props.label}>
                         {`${this.props.label}: `}
                     </div>
                 )}

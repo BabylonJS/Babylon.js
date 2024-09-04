@@ -10,6 +10,17 @@ import type { IKHRMaterialsVolume } from "babylonjs-gltf2interface";
 
 const NAME = "KHR_materials_volume";
 
+declare module "../../glTFFileLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface GLTFLoaderExtensionOptions {
+        /**
+         * Defines options for the KHR_materials_volume extension.
+         */
+        // NOTE: Don't use NAME here as it will break the UMD type declarations.
+        ["KHR_materials_volume"]: {};
+    }
+}
+
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_volume/README.md)
  * @since 5.0.0
@@ -91,6 +102,7 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
         if (extension.thicknessTexture) {
             (extension.thicknessTexture as ITextureInfo).nonColorData = true;
             return this._loader.loadTextureInfoAsync(`${context}/thicknessTexture`, extension.thicknessTexture).then((texture: BaseTexture) => {
+                texture.name = `${babylonMaterial.name} (thickness)`;
                 babylonMaterial.subSurface.thicknessTexture = texture;
                 babylonMaterial.subSurface.useGltfStyleTextures = true;
             });

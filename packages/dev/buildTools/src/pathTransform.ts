@@ -176,6 +176,14 @@ function transformerFactory<T extends TransformerNode>(context: ts.Transformatio
                 return ts.visitEachChild(node, pathReplacer, context);
             }
 
+            /**
+             * e.g.
+             * - declare module "core/path";
+             */
+            if (ts.isModuleDeclaration(node)) {
+                return ts.visitEachChild(node, pathReplacer, context);
+            }
+
             return ts.visitEachChild(node, visitor, context);
         }
 

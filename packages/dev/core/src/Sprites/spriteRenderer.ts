@@ -158,6 +158,7 @@ export class SpriteRenderer {
     private _drawWrapperBase: DrawWrapper;
     private _drawWrapperDepth: DrawWrapper;
     private _vertexArrayObject: WebGLVertexArrayObject;
+    private _isDisposed = false;
 
     /**
      * Creates a new sprite Renderer
@@ -233,6 +234,10 @@ export class SpriteRenderer {
     }
 
     private _createEffects() {
+        if (this._isDisposed) {
+            return;
+        }
+
         this._drawWrapperBase?.dispose();
         this._drawWrapperDepth?.dispose();
 
@@ -550,7 +555,8 @@ export class SpriteRenderer {
             this.texture.dispose();
             (<any>this.texture) = null;
         }
-        this._drawWrapperBase.dispose();
-        this._drawWrapperDepth.dispose();
+        this._drawWrapperBase?.dispose();
+        this._drawWrapperDepth?.dispose();
+        this._isDisposed = true;
     }
 }

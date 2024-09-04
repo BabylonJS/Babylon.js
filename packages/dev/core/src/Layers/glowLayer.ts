@@ -230,11 +230,8 @@ export class GlowLayer extends EffectLayer {
         });
     }
 
-    protected override async _initShaderSourceAsync(forceGLSL = false) {
-        const engine = this._scene.getEngine();
-
-        if (engine.isWebGPU && !forceGLSL && !EffectLayer.ForceGLSL) {
-            this._shaderLanguage = ShaderLanguage.WGSL;
+    protected override async _importShadersAsync() {
+        if (this._shaderLanguage === ShaderLanguage.WGSL) {
             await Promise.all([
                 import("../ShadersWGSL/glowMapMerge.fragment"),
                 import("../ShadersWGSL/glowMapMerge.vertex"),
@@ -244,7 +241,7 @@ export class GlowLayer extends EffectLayer {
             await Promise.all([import("../Shaders/glowMapMerge.fragment"), import("../Shaders/glowMapMerge.vertex"), import("../Shaders/glowBlurPostProcess.fragment")]);
         }
 
-        await super._initShaderSourceAsync(forceGLSL);
+        await super._importShadersAsync();
     }
 
     /**
@@ -277,7 +274,13 @@ export class GlowLayer extends EffectLayer {
             undefined,
             undefined,
             undefined,
-            this.shaderLanguage
+            this.shaderLanguage,
+            this._shadersLoaded
+                ? undefined
+                : async () => {
+                      await this._importShadersAsync();
+                      this._shadersLoaded = true;
+                  }
         );
     }
 

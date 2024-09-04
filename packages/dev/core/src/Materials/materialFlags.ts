@@ -1,4 +1,4 @@
-import { Engine } from "../Engines/engine";
+import { AbstractEngine } from "../Engines/abstractEngine";
 import { Constants } from "../Engines/constants";
 
 /**
@@ -19,7 +19,7 @@ export class MaterialFlags {
         }
 
         this._DiffuseTextureEnabled = value;
-        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        AbstractEngine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
     private static _DetailTextureEnabled = true;
@@ -35,7 +35,7 @@ export class MaterialFlags {
         }
 
         this._DetailTextureEnabled = value;
-        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        AbstractEngine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
     private static _DecalMapEnabled = true;
@@ -51,7 +51,7 @@ export class MaterialFlags {
         }
 
         this._DecalMapEnabled = value;
-        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        AbstractEngine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
     private static _AmbientTextureEnabled = true;
@@ -67,7 +67,7 @@ export class MaterialFlags {
         }
 
         this._AmbientTextureEnabled = value;
-        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        AbstractEngine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
     private static _OpacityTextureEnabled = true;
@@ -83,7 +83,7 @@ export class MaterialFlags {
         }
 
         this._OpacityTextureEnabled = value;
-        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        AbstractEngine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
     private static _ReflectionTextureEnabled = true;
@@ -99,7 +99,7 @@ export class MaterialFlags {
         }
 
         this._ReflectionTextureEnabled = value;
-        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        AbstractEngine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
     private static _EmissiveTextureEnabled = true;
@@ -115,7 +115,7 @@ export class MaterialFlags {
         }
 
         this._EmissiveTextureEnabled = value;
-        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        AbstractEngine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
     private static _SpecularTextureEnabled = true;
@@ -131,7 +131,7 @@ export class MaterialFlags {
         }
 
         this._SpecularTextureEnabled = value;
-        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        AbstractEngine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
     private static _BumpTextureEnabled = true;
@@ -147,7 +147,7 @@ export class MaterialFlags {
         }
 
         this._BumpTextureEnabled = value;
-        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        AbstractEngine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
     private static _LightmapTextureEnabled = true;
@@ -163,7 +163,7 @@ export class MaterialFlags {
         }
 
         this._LightmapTextureEnabled = value;
-        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        AbstractEngine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
     private static _RefractionTextureEnabled = true;
@@ -179,7 +179,7 @@ export class MaterialFlags {
         }
 
         this._RefractionTextureEnabled = value;
-        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        AbstractEngine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
     private static _ColorGradingTextureEnabled = true;
@@ -195,7 +195,7 @@ export class MaterialFlags {
         }
 
         this._ColorGradingTextureEnabled = value;
-        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        AbstractEngine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
     private static _FresnelEnabled = true;
@@ -211,7 +211,7 @@ export class MaterialFlags {
         }
 
         this._FresnelEnabled = value;
-        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_FresnelDirtyFlag);
+        AbstractEngine.MarkAllMaterialsAsDirty(Constants.MATERIAL_FresnelDirtyFlag);
     }
 
     private static _ClearCoatTextureEnabled = true;
@@ -227,7 +227,7 @@ export class MaterialFlags {
         }
 
         this._ClearCoatTextureEnabled = value;
-        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        AbstractEngine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
     private static _ClearCoatBumpTextureEnabled = true;
@@ -243,7 +243,7 @@ export class MaterialFlags {
         }
 
         this._ClearCoatBumpTextureEnabled = value;
-        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        AbstractEngine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
     private static _ClearCoatTintTextureEnabled = true;
@@ -259,7 +259,7 @@ export class MaterialFlags {
         }
 
         this._ClearCoatTintTextureEnabled = value;
-        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        AbstractEngine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
     private static _SheenTextureEnabled = true;
@@ -275,7 +275,7 @@ export class MaterialFlags {
         }
 
         this._SheenTextureEnabled = value;
-        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        AbstractEngine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
     private static _AnisotropicTextureEnabled = true;
@@ -291,7 +291,7 @@ export class MaterialFlags {
         }
 
         this._AnisotropicTextureEnabled = value;
-        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        AbstractEngine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
     private static _ThicknessTextureEnabled = true;
@@ -307,7 +307,7 @@ export class MaterialFlags {
         }
 
         this._ThicknessTextureEnabled = value;
-        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        AbstractEngine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
     private static _RefractionIntensityTextureEnabled = true;
@@ -323,7 +323,7 @@ export class MaterialFlags {
         }
 
         this._RefractionIntensityTextureEnabled = value;
-        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        AbstractEngine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
     private static _TranslucencyIntensityTextureEnabled = true;
@@ -339,7 +339,7 @@ export class MaterialFlags {
         }
 
         this._TranslucencyIntensityTextureEnabled = value;
-        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        AbstractEngine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
     private static _TranslucencyColorTextureEnabled = true;
@@ -355,7 +355,7 @@ export class MaterialFlags {
         }
 
         this._TranslucencyColorTextureEnabled = value;
-        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        AbstractEngine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
     private static _IridescenceTextureEnabled = true;
@@ -371,6 +371,6 @@ export class MaterialFlags {
         }
 
         this._IridescenceTextureEnabled = value;
-        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        AbstractEngine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 }

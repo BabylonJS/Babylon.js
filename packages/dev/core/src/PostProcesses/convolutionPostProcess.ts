@@ -59,15 +59,15 @@ export class ConvolutionPostProcess extends PostProcess {
         };
     }
 
-    protected override async _initShaderSourceAsync(useWebGPU: boolean) {
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
-            await Promise.all([import("../ShadersWGSL/convolution.fragment")]);
+            list.push(Promise.all([import("../ShadersWGSL/convolution.fragment")]));
         } else {
-            await Promise.all([import("../Shaders/convolution.fragment")]);
+            list.push(Promise.all([import("../Shaders/convolution.fragment")]));
         }
 
-        await super._initShaderSourceAsync(useWebGPU);
+        super._gatherImports(useWebGPU, list);
     }
 
     /**

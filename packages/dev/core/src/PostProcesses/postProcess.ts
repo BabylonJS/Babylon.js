@@ -635,7 +635,7 @@ export class PostProcess {
         blockCompilation?: boolean,
         textureFormat?: number,
         shaderLanguage?: ShaderLanguage,
-        extraInitializations?: (useWebGPU: boolean) => Promise<void>
+        extraInitializations?: (useWebGPU: boolean, list: Promise<any>[]) => void
     );
 
     /** @internal */
@@ -656,7 +656,7 @@ export class PostProcess {
         blockCompilation = false,
         textureFormat = Constants.TEXTUREFORMAT_RGBA,
         shaderLanguage?: ShaderLanguage,
-        extraInitializations?: (useWebGPU: boolean) => Promise<void>
+        extraInitializations?: (useWebGPU: boolean, list: Promise<any>[]) => void
     ) {
         this.name = name;
         let size: number | { width: number; height: number } = 1;
@@ -725,36 +725,30 @@ export class PostProcess {
         this._postConstructor(blockCompilation, defines, extraInitializations);
     }
 
-    protected async _initShaderSourceAsync(useWebGPU = false) {
+    /** @internal */
+    protected _gatherImports(useWebGPU = false, list: Promise<any>[]) {
         // this._webGPUReady is used to detect when a postprocess is intended to be used with WebGPU
         if (useWebGPU && this._webGPUReady) {
-            await Promise.all([import("../ShadersWGSL/postprocess.vertex")]);
+            list.push(Promise.all([import("../ShadersWGSL/postprocess.vertex")]));
         } else {
-            await Promise.all([import("../Shaders/postprocess.vertex")]);
+            list.push(Promise.all([import("../Shaders/postprocess.vertex")]));
         }
-
-        this._shadersLoaded = true;
     }
 
-    private _onInitShadersDone: Nullable<() => void> = null;
-    private async _postConstructor(blockCompilation: boolean, defines: Nullable<string> = null, extraInitializations?: (useWebGPU: boolean) => Promise<void>) {
+    private _importPromises: Array<Promise<any>> = [];
+    private _postConstructor(blockCompilation: boolean, defines: Nullable<string> = null, extraInitializations?: (useWebGPU: boolean, list: Promise<any>[]) => void) {
         const engine = this.getEngine();
         const useWebGPU = engine.isWebGPU && !PostProcess.ForceGLSL;
 
-        await this._initShaderSourceAsync(useWebGPU);
+        this._gatherImports(useWebGPU, this._importPromises);
         if (extraInitializations) {
-            await extraInitializations(useWebGPU);
+            extraInitializations(useWebGPU, this._importPromises);
         }
 
         if (useWebGPU && this._webGPUReady) {
             this._shaderLanguage = ShaderLanguage.WGSL;
         }
 
-        if (this._onInitShadersDone) {
-            this._onInitShadersDone();
-            return;
-        }
-        this._shadersLoaded = true;
         if (!blockCompilation) {
             this.updateEffect(defines);
         }
@@ -780,8 +774,8 @@ export class PostProcess {
      * The effect that is created when initializing the post process.
      * @returns The created effect corresponding to the postprocess.
      */
-    public getEffect(): Nullable<Effect> {
-        return this._drawWrapper.effect;
+    public getEffect(): Effect {
+        return this._drawWrapper.effect!;
     }
 
     /**
@@ -838,15 +832,6 @@ export class PostProcess {
         vertexUrl?: string,
         fragmentUrl?: string
     ) {
-        if (!this._shadersLoaded) {
-            this._onInitShadersDone = () => {
-                this._shadersLoaded = true;
-                this._onInitShadersDone = null;
-                this.updateEffect(defines, uniforms, samplers, indexParameters, onCompiled, onError, vertexUrl, fragmentUrl);
-            };
-            return;
-        }
-
         const customShaderCodeProcessing = PostProcess._GetShaderCodeProcessing(this.name);
         if (customShaderCodeProcessing?.defineCustomBindings) {
             const newUniforms = uniforms?.slice() ?? [];
@@ -879,6 +864,12 @@ export class PostProcess {
                     ? (shaderType: string, code: string) => customShaderCodeProcessing!.processFinalCode!(this.name, shaderType, code)
                     : null,
                 shaderLanguage: this._shaderLanguage,
+                extraInitializationsAsync: this._shadersLoaded
+                    ? undefined
+                    : async () => {
+                          await Promise.all(this._importPromises);
+                          this._shadersLoaded = true;
+                      },
             },
             this._engine
         );
@@ -1110,9 +1101,6 @@ export class PostProcess {
      * If the post process is supported.
      */
     public get isSupported(): boolean {
-        if (!this._shadersLoaded) {
-            return true; // Waiting for the effect to be created
-        }
         return this._drawWrapper.effect!.isSupported;
     }
 
@@ -1135,9 +1123,6 @@ export class PostProcess {
      * @returns true if the post-process is ready (shader is compiled)
      */
     public isReady(): boolean {
-        if (!this._shadersLoaded) {
-            return false;
-        }
         return this._drawWrapper.effect?.isReady() ?? false;
     }
 

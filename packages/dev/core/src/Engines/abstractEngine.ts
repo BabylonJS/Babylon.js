@@ -24,7 +24,6 @@ import type { LoadFileError } from "../Misc/fileTools";
 import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import type { IPipelineContext } from "./IPipelineContext";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
-import type { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
 import type { InternalTextureCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
 import type { EffectFallbacks } from "../Materials/effectFallbacks";
 import type { IMaterialContext } from "./IMaterialContext";
@@ -51,6 +50,8 @@ import { IsDocumentAvailable, IsNavigatorAvailable, IsWindowObjectExist } from "
 import { Constants } from "./constants";
 import { Observable } from "../Misc/observable";
 import { EngineFunctionContext, _loadFile } from "./abstractEngine.functions";
+import type { Material } from "core/Materials/material";
+import { _GetCompatibleTextureLoader } from "core/Materials/Textures/Loaders/textureLoaderManager";
 
 /**
  * Defines the interface used by objects working like Scene
@@ -195,9 +196,6 @@ export type PrepareTextureFunction = (
  * The parent class for specialized engines (WebGL, WebGPU)
  */
 export abstract class AbstractEngine {
-    /** @internal */
-    public static _TextureLoaders: IInternalTextureLoader[] = [];
-
     // States
     /** @internal */
     protected _colorWrite = true;
@@ -1283,6 +1281,7 @@ export abstract class AbstractEngine {
      * @param onError defines a function to call when the effect creation has failed
      * @param indexParameters defines an object containing the index values to use to compile shaders (like the maximum number of simultaneous lights)
      * @param shaderLanguage the language the shader is written in (default: GLSL)
+     * @param extraInitializationsAsync additional async code to run before preparing the effect
      * @returns the new Effect
      */
     public abstract createEffect(
@@ -1295,7 +1294,8 @@ export abstract class AbstractEngine {
         onCompiled?: Nullable<(effect: Effect) => void>,
         onError?: Nullable<(effect: Effect, errors: string) => void>,
         indexParameters?: any,
-        shaderLanguage?: ShaderLanguage
+        shaderLanguage?: ShaderLanguage,
+        extraInitializationsAsync?: () => Promise<void>
     ): Effect;
 
     /**
@@ -1458,7 +1458,6 @@ export abstract class AbstractEngine {
         // establish the file extension, if possible
         const lastDot = url.lastIndexOf(".");
         let extension = forcedExtension ? forcedExtension : lastDot > -1 ? url.substring(lastDot).toLowerCase() : "";
-        let loader: Nullable<IInternalTextureLoader> = null;
 
         // Remove query string
         const queryStringIndex = extension.indexOf("?");
@@ -1467,12 +1466,7 @@ export abstract class AbstractEngine {
             extension = extension.split("?")[0];
         }
 
-        for (const availableLoader of AbstractEngine._TextureLoaders) {
-            if (availableLoader.canLoad(extension, mimeType)) {
-                loader = availableLoader;
-                break;
-            }
-        }
+        const loaderPromise = _GetCompatibleTextureLoader(extension, mimeType);
 
         if (scene) {
             scene.addPendingData(texture);
@@ -1553,9 +1547,10 @@ export abstract class AbstractEngine {
         };
 
         // processing for non-image formats
-        if (loader) {
-            const callback = (data: ArrayBufferView) => {
-                loader!.loadData(
+        if (loaderPromise) {
+            const callback = async (data: ArrayBufferView) => {
+                const loader = await loaderPromise;
+                loader.loadData(
                     data,
                     texture,
                     (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed) => {
@@ -1797,14 +1792,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@7.21.0";
+        return "babylonjs@7.23.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "7.21.0";
+        return "7.23.0";
     }
 
     /**
@@ -2659,4 +2654,34 @@ export abstract class AbstractEngine {
      * By default, this will create a Database object if the workload has been embedded.
      */
     public static OfflineProviderFactory: (urlToScene: string, callbackManifestChecked: (checked: boolean) => any, disableManifestCheck: boolean) => IOfflineProvider;
+
+    /**
+     * Will flag all materials in all scenes in all engines as dirty to trigger new shader compilation
+     * @param flag defines which part of the materials must be marked as dirty
+     * @param predicate defines a predicate used to filter which materials should be affected
+     */
+    public static MarkAllMaterialsAsDirty(flag: number, predicate?: (mat: Material) => boolean): void {
+        for (let engineIndex = 0; engineIndex < EngineStore.Instances.length; engineIndex++) {
+            const engine = EngineStore.Instances[engineIndex];
+
+            for (let sceneIndex = 0; sceneIndex < engine.scenes.length; sceneIndex++) {
+                engine.scenes[sceneIndex].markAllMaterialsAsDirty(flag, predicate);
+            }
+        }
+    }
+
+    // Updatable statics so stick with vars here
+
+    /**
+     * Gets or sets the epsilon value used by collision engine
+     */
+    public static CollisionsEpsilon = 0.001;
+
+    /**
+     * Queue a new function into the requested animation frame pool (ie. this function will be executed by the browser (or the javascript engine) for the next frame)
+     * @param func - the function to be called
+     * @param requester - the object that will request the next frame. Falls back to window.
+     * @returns frame number
+     */
+    public static QueueNewFrame: (func: () => void, requester?: any) => number = QueueNewFrame;
 }

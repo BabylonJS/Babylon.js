@@ -3,7 +3,6 @@ import { serializeAsVector3, serialize } from "../Misc/decorators";
 import { Vector3, Vector2 } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { Scene } from "../scene";
-import { Engine } from "../Engines/engine";
 import { TargetCamera } from "./targetCamera";
 import { FreeCameraInputsManager } from "./freeCameraInputsManager";
 import type { FreeCameraMouseInput } from "../Cameras/Inputs/freeCameraMouseInput";
@@ -12,6 +11,7 @@ import { Tools } from "../Misc/tools";
 import { RegisterClass } from "../Misc/typeStore";
 
 import type { Collider } from "../Collisions/collider";
+import { AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
  * This represents a free type of camera. It can be useful in First Person Shooter game for instance.
@@ -385,7 +385,7 @@ export class FreeCamera extends TargetCamera {
 
         this._newPosition.subtractToRef(this._oldPosition, this._diffPosition);
 
-        if (this._diffPosition.length() > Engine.CollisionsEpsilon) {
+        if (this._diffPosition.length() > AbstractEngine.CollisionsEpsilon) {
             this.position.addToRef(this._diffPosition, this._deferredPositionUpdate);
             if (!this._deferOnly) {
                 this.position.copyFrom(this._deferredPositionUpdate);

@@ -115,14 +115,26 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public PREPASS_NORMAL = false;
     /** Prepass normal index */
     public PREPASS_NORMAL_INDEX = -1;
+    /** Prepass world normal */
+    public PREPASS_WORLD_NORMAL = false;
+    /** Prepass world normal index */
+    public PREPASS_WORLD_NORMAL_INDEX = -1;
     /** Prepass position */
     public PREPASS_POSITION = false;
     /** Prepass position index */
     public PREPASS_POSITION_INDEX = -1;
+    /** Prepass local position */
+    public PREPASS_LOCAL_POSITION = false;
+    /** Prepass local position index */
+    public PREPASS_LOCAL_POSITION_INDEX = -1;
     /** Prepass depth */
     public PREPASS_DEPTH = false;
     /** Prepass depth index */
     public PREPASS_DEPTH_INDEX = -1;
+    /** Clip-space depth */
+    public PREPASS_NDC_DEPTH = false;
+    /** Clip-space depth index */
+    public PREPASS_NDC_DEPTH_INDEX = -1;
     /** Scene MRT count */
     public SCENE_MRT_COUNT = 0;
 
@@ -1018,8 +1030,16 @@ export class NodeMaterial extends PushMaterial {
             result.push(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
         }
 
+        if (prePassOutputBlock.viewDepthNDC.isConnected) {
+            result.push(Constants.PREPASS_NDC_DEPTH_TEXTURE_TYPE);
+        }
+
         if (prePassOutputBlock.viewNormal.isConnected) {
             result.push(Constants.PREPASS_NORMAL_TEXTURE_TYPE);
+        }
+
+        if (prePassOutputBlock.worldNormal.isConnected) {
+            result.push(Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE);
         }
 
         if (prePassOutputBlock.worldPosition.isConnected) {
@@ -1043,8 +1063,14 @@ export class NodeMaterial extends PushMaterial {
             if (block.depth.isConnected && !result.includes(Constants.PREPASS_DEPTH_TEXTURE_TYPE)) {
                 result.push(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
             }
+            if (block.clipSpaceDepth.isConnected && !result.includes(Constants.PREPASS_NDC_DEPTH_TEXTURE_TYPE)) {
+                result.push(Constants.PREPASS_NDC_DEPTH_TEXTURE_TYPE);
+            }
             if (block.normal.isConnected && !result.includes(Constants.PREPASS_NORMAL_TEXTURE_TYPE)) {
                 result.push(Constants.PREPASS_NORMAL_TEXTURE_TYPE);
+            }
+            if (block.worldNormal.isConnected && !result.includes(Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE)) {
+                result.push(Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE);
             }
         }
 

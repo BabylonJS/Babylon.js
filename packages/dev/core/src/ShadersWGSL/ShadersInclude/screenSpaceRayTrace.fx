@@ -270,9 +270,9 @@ fn traceScreenSpaceRay1(
 
         for (;
             refinementStepCount <= 1.0 ||
-            (refinementStepCount <= stride * 1.4) &&
-            (rayZMax < sceneZMax) && (sceneZMax != 0.0);
-            pqk += dPQK, refinementStepCount += 1.0)
+            ((refinementStepCount <= stride * 1.4) &&
+            (rayZMax < sceneZMax) && (sceneZMax != 0.0));
+            pqk += dPQK)
         {
             rayZMin = prevZMaxEstimate;
 
@@ -285,6 +285,8 @@ fn traceScreenSpaceRay1(
 
             *hitPixel = select(pqk.xy, pqk.yx, permute);
             sceneZMax = textureLoad(csZBuffer, vec2<i32>(*hitPixel), 0).r;
+
+            refinementStepCount += 1.0;
         }
 
         // Undo the last increment, which happened after the test variables were set up

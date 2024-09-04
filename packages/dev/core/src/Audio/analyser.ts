@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable } from "../types";
 import type { Scene } from "../scene";
-import { Engine } from "../Engines/engine";
 import type { IAudioEngine } from "./Interfaces/IAudioEngine";
 import { Tools } from "../Misc/tools";
 import { EngineStore } from "../Engines/engineStore";
+import { AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
  * Class used to work with sound analyzer using fast fourier transform (FFT)
@@ -57,11 +57,11 @@ export class Analyser {
             return;
         }
         this._scene = scene;
-        if (!Engine.audioEngine) {
+        if (!AbstractEngine.audioEngine) {
             Tools.Warn("No audio engine initialized, failed to create an audio analyser");
             return;
         }
-        this._audioEngine = Engine.audioEngine;
+        this._audioEngine = AbstractEngine.audioEngine;
         if (this._audioEngine.canUseWebAudio && this._audioEngine.audioContext) {
             this._webAudioAnalyser = this._audioEngine.audioContext.createAnalyser();
             this._webAudioAnalyser.minDecibels = -140;

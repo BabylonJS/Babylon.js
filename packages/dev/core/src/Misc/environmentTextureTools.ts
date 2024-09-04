@@ -18,8 +18,6 @@ import "../Engines/Extensions/engine.renderTargetCube";
 import "../Engines/Extensions/engine.readTexture";
 import "../Materials/Textures/baseTexture.polynomial";
 
-import "../Shaders/rgbdEncode.fragment";
-import "../Shaders/rgbdDecode.fragment";
 import { DumpDataAsync } from "../Misc/dumpTools";
 import { ShaderLanguage } from "core/Materials";
 
