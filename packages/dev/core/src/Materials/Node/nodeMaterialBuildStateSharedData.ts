@@ -4,7 +4,8 @@ import type { InputBlock } from "./Blocks/Input/inputBlock";
 import type { Scene } from "../../scene";
 import type { Immutable, Nullable } from "../../types";
 import type { NodeMaterial, NodeMaterialTextureBlocks } from "./nodeMaterial";
-import { Logger, type Observable } from "core/Misc";
+import { Logger } from "core/Misc/logger";
+import type { Observable } from "core/Misc/observable";
 
 /**
  * Class used to store shared data between 2 NodeMaterialBuildState
