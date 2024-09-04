@@ -493,7 +493,7 @@ export class PreviewManager {
                         return;
                 }
             } else if (this._globalState.mode === NodeMaterialModes.ProceduralTexture) {
-                this._layer = new Layer("proceduralLayer", null, this._scene);
+                this._layer = new Layer("proceduralLayer", null, this._scene, false);
             } else if (this._globalState.mode === NodeMaterialModes.Particle) {
                 switch (this._globalState.previewType) {
                     case PreviewType.DefaultParticleSystem:
