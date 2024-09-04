@@ -19,7 +19,6 @@ export function registerBuiltInLoaders() {
     registerSceneLoaderPlugin({
         ...GLTFFileLoaderMetadata,
         createPlugin: async (options: SceneLoaderPluginOptions) => {
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             const { GLTFFileLoader } = await import("./glTF/2.0/glTFLoader");
             return new GLTFFileLoader(options[GLTFFileLoaderMetadata.name]);
         },
