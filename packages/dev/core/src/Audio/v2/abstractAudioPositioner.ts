@@ -21,6 +21,9 @@ export abstract class AbstractAudioPositioner extends AbstractAudioNode {
     public override dispose(): void {
         this._spatialTransform.dispose();
 
+        this._listeners?.clear();
+        this._listeners = null;
+
         super.dispose();
     }
 
