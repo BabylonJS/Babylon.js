@@ -81,15 +81,13 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
      * Creates loader for gaussian splatting files
      * @param loadingOptions options for loading and parsing splat and PLY files.
      */
-    constructor(loadingOptions?: Partial<Readonly<SPLATLoadingOptions>>) {
-        this._loadingOptions = loadingOptions || SPLATFileLoader._DefaultLoadingOptions;
+    constructor(loadingOptions: Partial<Readonly<SPLATLoadingOptions>> = SPLATFileLoader._DefaultLoadingOptions) {
+        this._loadingOptions = loadingOptions;
     }
 
-    private static get _DefaultLoadingOptions(): SPLATLoadingOptions {
-        return {
-            keepInRam: false,
-        };
-    }
+    private static readonly _DefaultLoadingOptions = {
+        keepInRam: false,
+    } as const satisfies SPLATLoadingOptions;
 
     /** @internal */
     createPlugin(options: SceneLoaderPluginOptions): ISceneLoaderPluginAsync {

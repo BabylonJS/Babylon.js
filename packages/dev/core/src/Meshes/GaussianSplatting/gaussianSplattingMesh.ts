@@ -29,11 +29,11 @@ export class GaussianSplattingMesh extends Mesh {
     private _centersTexture: Nullable<BaseTexture> = null;
     private _colorsTexture: Nullable<BaseTexture> = null;
     private _splatPositions: Nullable<Float32Array> = null;
-    //@ts-ignore
+    //@ts-expect-error
     private _covariancesA: Nullable<Float32Array> = null;
-    //@ts-ignore
+    //@ts-expect-error
     private _covariancesB: Nullable<Float32Array> = null;
-    //@ts-ignore
+    //@ts-expect-error
     private _colors: Nullable<Float32Array> = null;
     private readonly _keepInRam: boolean = false;
 
