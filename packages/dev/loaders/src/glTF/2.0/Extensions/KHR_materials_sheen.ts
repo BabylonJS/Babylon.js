@@ -7,7 +7,7 @@ import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import { Color3 } from "core/Maths/math.color";
 import type { IKHRMaterialsSheen } from "babylonjs-gltf2interface";
-import { GLTFLoaderExtensionRegistry } from "../glTFLoaderExtensionRegistry";
+import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "KHR_materials_sheen";
 
@@ -118,5 +118,5 @@ export class KHR_materials_sheen implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoaderExtensionRegistry.Unregister(NAME);
-GLTFLoaderExtensionRegistry.Register(NAME, true, (loader) => new KHR_materials_sheen(loader));
+unregisterGLTFExtension(NAME);
+registerGLTFExtension(NAME, true, (loader) => new KHR_materials_sheen(loader));

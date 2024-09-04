@@ -10,7 +10,7 @@ import { Logger } from "core/Misc/logger";
 import { animationPointerTree } from "./KHR_animation_pointer.data";
 import { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
 import type { AnimationPropertyInfo } from "../glTFLoaderAnimation";
-import { GLTFLoaderExtensionRegistry } from "../glTFLoaderExtensionRegistry";
+import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "KHR_animation_pointer";
 
@@ -116,5 +116,5 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoaderExtensionRegistry.Unregister(NAME);
-GLTFLoaderExtensionRegistry.Register(NAME, true, (loader) => new KHR_animation_pointer(loader));
+unregisterGLTFExtension(NAME);
+registerGLTFExtension(NAME, true, (loader) => new KHR_animation_pointer(loader));

@@ -7,7 +7,7 @@ import type { INode, ICamera, IMaterial } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import type { GLTFLoader } from "../glTFLoader";
 import type { Material } from "core/Materials/material";
-import { GLTFLoaderExtensionRegistry } from "../glTFLoaderExtensionRegistry";
+import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "ExtrasAsMetadata";
 
@@ -92,5 +92,5 @@ export class ExtrasAsMetadata implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoaderExtensionRegistry.Unregister(NAME);
-GLTFLoaderExtensionRegistry.Register(NAME, false, (loader) => new ExtrasAsMetadata(loader));
+unregisterGLTFExtension(NAME);
+registerGLTFExtension(NAME, false, (loader) => new ExtrasAsMetadata(loader));

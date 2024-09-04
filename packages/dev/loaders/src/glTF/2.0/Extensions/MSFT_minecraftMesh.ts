@@ -5,7 +5,7 @@ import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { IMaterial } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
-import { GLTFLoaderExtensionRegistry } from "../glTFLoaderExtensionRegistry";
+import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "MSFT_minecraftMesh";
 
@@ -68,5 +68,5 @@ export class MSFT_minecraftMesh implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoaderExtensionRegistry.Unregister(NAME);
-GLTFLoaderExtensionRegistry.Register(NAME, true, (loader) => new MSFT_minecraftMesh(loader));
+unregisterGLTFExtension(NAME);
+registerGLTFExtension(NAME, true, (loader) => new MSFT_minecraftMesh(loader));

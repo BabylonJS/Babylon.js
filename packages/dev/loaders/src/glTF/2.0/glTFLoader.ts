@@ -76,7 +76,7 @@ import type { AssetContainer } from "core/assetContainer";
 import type { AnimationPropertyInfo } from "./glTFLoaderAnimation";
 import { nodeAnimationData } from "./glTFLoaderAnimation";
 import type { IObjectInfo } from "core/ObjectModel/objectModelInterfaces";
-import { GLTFLoaderExtensionRegistry } from "./glTFLoaderExtensionRegistry";
+import { glTFRegisteredExtensions, registerGLTFExtension, unregisterGLTFExtension } from "./glTFLoaderExtensionRegistry";
 import type { ExtensionFactory } from "./glTFLoaderExtensionRegistry";
 export { GLTFFileLoader };
 
@@ -221,7 +221,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param factory The factory function that creates the loader extension.
      */
     public static RegisterExtension(name: string, factory: ExtensionFactory): void {
-        GLTFLoaderExtensionRegistry.Register(name, false, factory);
+        registerGLTFExtension(name, false, factory);
     }
 
     /**
@@ -230,7 +230,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @returns A boolean indicating whether the extension has been unregistered
      */
     public static UnregisterExtension(name: string): boolean {
-        return GLTFLoaderExtensionRegistry.Unregister(name);
+        return unregisterGLTFExtension(name);
     }
 
     /**
@@ -551,7 +551,7 @@ export class GLTFLoader implements IGLTFLoader {
     private async _loadExtensionsAsync() {
         const extensionPromises: Promise<IGLTFLoaderExtension>[] = [];
 
-        GLTFLoaderExtensionRegistry.RegisteredExtensions.forEach((registeredExtension, name) => {
+        glTFRegisteredExtensions.forEach((registeredExtension, name) => {
             // Don't load explicitly disabled extensions.
             if (this.parent.extensionOptions[name]?.enabled === false) {
                 // But warn if the disabled extension is used by the model.

@@ -4,7 +4,7 @@ import type { ITexture } from "../glTFLoaderInterfaces";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { Nullable } from "core/types";
 import type { IEXTTextureWebP } from "babylonjs-gltf2interface";
-import { GLTFLoaderExtensionRegistry } from "../glTFLoaderExtensionRegistry";
+import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "EXT_texture_webp";
 
@@ -66,5 +66,5 @@ export class EXT_texture_webp implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoaderExtensionRegistry.Unregister(NAME);
-GLTFLoaderExtensionRegistry.Register(NAME, true, (loader) => new EXT_texture_webp(loader));
+unregisterGLTFExtension(NAME);
+registerGLTFExtension(NAME, true, (loader) => new EXT_texture_webp(loader));

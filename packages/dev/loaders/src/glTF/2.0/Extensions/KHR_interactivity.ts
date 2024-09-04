@@ -6,7 +6,7 @@ import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { FlowGraph } from "core/FlowGraph/flowGraph";
 import { convertGLTFToSerializedFlowGraph } from "./interactivityFunctions";
 import { InteractivityPathToObjectConverter } from "./interactivityPathToObjectConverter";
-import { GLTFLoaderExtensionRegistry } from "../glTFLoaderExtensionRegistry";
+import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "KHR_interactivity";
 
@@ -65,5 +65,5 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoaderExtensionRegistry.Unregister(NAME);
-GLTFLoaderExtensionRegistry.Register(NAME, true, (loader) => new KHR_interactivity(loader));
+unregisterGLTFExtension(NAME);
+registerGLTFExtension(NAME, true, (loader) => new KHR_interactivity(loader));
