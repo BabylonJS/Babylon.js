@@ -4,7 +4,7 @@ import type { InputBlock } from "./Blocks/Input/inputBlock";
 import type { Scene } from "../../scene";
 import type { Immutable, Nullable } from "../../types";
 import type { NodeMaterial, NodeMaterialTextureBlocks } from "./nodeMaterial";
-import type { Observable } from "core/Misc";
+import { Logger, type Observable } from "core/Misc";
 
 /**
  * Class used to store shared data between 2 NodeMaterialBuildState
@@ -168,11 +168,10 @@ export class NodeMaterialBuildStateSharedData {
 
     /**
      * Emits console errors and exceptions if there is a failing check
-     * @param allowThrow defines if an exception can be thrown
      * @param errorObservable defines an Observable to send the error message
      * @returns true if all checks pass
      */
-    public emitErrors(allowThrow = true, errorObservable: Nullable<Observable<string>> = null) {
+    public emitErrors(errorObservable: Nullable<Observable<string>> = null) {
         let errorMessage = "";
 
         if (!this.checks.emitVertex && !this.allowEmptyVertexProgram) {
@@ -191,10 +190,8 @@ export class NodeMaterialBuildStateSharedData {
             if (errorObservable) {
                 errorObservable.notifyObservers(errorMessage);
             }
-            if (allowThrow) {
-                // eslint-disable-next-line no-throw-literal
-                throw "Build of NodeMaterial failed:\n" + errorMessage;
-            }
+            Logger.Error("Build of NodeMaterial failed:\n" + errorMessage);
+
             return false;
         }
 

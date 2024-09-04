@@ -886,7 +886,7 @@ export class NodeMaterial extends PushMaterial {
                 node.onCodeIsReadyObservable.addOnce(() => {
                     waitingNodeCount--;
                     if (waitingNodeCount === 0) {
-                        this._finishBuildProcess(verbose, updateBuildId, vertexNodes, fragmentNodes, false);
+                        this._finishBuildProcess(verbose, updateBuildId, vertexNodes, fragmentNodes);
                     }
                 });
             }
@@ -899,7 +899,7 @@ export class NodeMaterial extends PushMaterial {
         this._finishBuildProcess(verbose, updateBuildId, vertexNodes, fragmentNodes);
     }
 
-    private _finishBuildProcess(verbose: boolean = false, updateBuildId = true, vertexNodes: NodeMaterialBlock[], fragmentNodes: NodeMaterialBlock[], allowThrow = true) {
+    private _finishBuildProcess(verbose: boolean = false, updateBuildId = true, vertexNodes: NodeMaterialBlock[], fragmentNodes: NodeMaterialBlock[]) {
         // Optimize
         this.optimize();
 
@@ -931,7 +931,7 @@ export class NodeMaterial extends PushMaterial {
         }
 
         // Errors
-        const noError = this._sharedData.emitErrors(allowThrow, this.onBuildErrorObservable);
+        const noError = this._sharedData.emitErrors(this.onBuildErrorObservable);
 
         if (verbose) {
             Logger.Log("Vertex shader:");
