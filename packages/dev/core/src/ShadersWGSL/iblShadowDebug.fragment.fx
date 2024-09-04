@@ -14,7 +14,7 @@ uniform sizeParams: vec4f;
 @fragment
 fn main(input: FragmentInputs) -> FragmentOutputs {
   var uv: vec2f =
-       vec2f((offsetX + vUV.x) * widthScale, (offsetY + vUV.y) * heightScale);
+       vec2f((offsetX + fragmentInputs.vUV.x) * widthScale, (offsetY + fragmentInputs.vUV.y) * heightScale);
   var background: vec4f = textureSample(textureSampler, textureSamplerSampler, fragmentInputs.vUV);
   var debugColour: vec4f = textureSample(debugSampler, debugSamplerSampler, fragmentInputs.vUV);
   if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {

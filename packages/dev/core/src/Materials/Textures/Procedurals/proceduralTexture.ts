@@ -17,7 +17,6 @@ import { ProceduralTextureSceneComponent } from "./proceduralTextureSceneCompone
 
 import "../../../Engines/Extensions/engine.renderTarget";
 import "../../../Engines/Extensions/engine.renderTargetCube";
-import "../../../Shaders/procedural.vertex";
 import type { DataBuffer } from "../../../Buffers/dataBuffer";
 import { RegisterClass } from "../../../Misc/typeStore";
 import type { NodeMaterial } from "../../Node/nodeMaterial";
@@ -405,7 +404,16 @@ export class ProceduralTexture extends Texture {
                 },
                 undefined,
                 this._shaderLanguage,
-                this._options.extraInitializationsAsync
+                async () => {
+                    if (this.shaderLanguage === ShaderLanguage.WGSL) {
+                        await import("../../../ShadersWGSL/procedural.vertex");
+                    } else {
+                        await import("../../../Shaders/procedural.vertex");
+                    }
+                    if (this._options.extraInitializationsAsync) {
+                        await this._options.extraInitializationsAsync();
+                    }
+                }
             );
         }
 

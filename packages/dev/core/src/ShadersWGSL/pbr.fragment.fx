@@ -628,7 +628,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
 
 #ifdef PREPASS
-    var writeGeometryInfo: f32 = select(0.0, 1.0, finalColor.a > 0.4);
+    var writeGeometryInfo: f32 = select(0.0, 1.0, finalColor.a > ALPHATESTVALUE);
     var fragData: array<vec4<f32>, SCENE_MRT_COUNT>;
 
     #ifdef PREPASS_POSITION
