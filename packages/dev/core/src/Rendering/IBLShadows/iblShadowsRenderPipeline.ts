@@ -144,6 +144,12 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     private _noiseTexture: Texture;
     private _shadowOpacity: number = 0.75;
     private _enabled: boolean = true;
+
+    /**
+     * The current world-space size of that the voxel grid covers in the scene.
+     */
+    public voxelGridSize: number = 1.0;
+
     /**
      * How dark the shadows appear. 1.0 is full opacity, 0.0 is no shadows.
      */
@@ -1011,7 +1017,14 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
                 return mesh instanceof Mesh && this._excludedMeshes.indexOf(mesh.uniqueId) === -1;
             });
             const size = bounds.max.subtract(bounds.min);
-            const halfSize = Math.max(size.x, Math.max(size.y, size.z)) * 0.5;
+            this.voxelGridSize = Math.max(size.x, Math.max(size.y, size.z));
+            if (!isFinite(this.voxelGridSize) || this.voxelGridSize === 0) {
+                Logger.Warn("IBL Shadows: Scene size is invalid. Can't update bounds.");
+                this._boundsNeedUpdate = false;
+                this.voxelGridSize = 1.0;
+                return;
+            }
+            const halfSize = this.voxelGridSize / 2.0;
             const centre = bounds.max.add(bounds.min).multiplyByFloats(-0.5, -0.5, -0.5);
             const invWorldScaleMatrix = Matrix.Compose(new Vector3(1.0 / halfSize, 1.0 / halfSize, 1.0 / halfSize), new Quaternion(), new Vector3(0, 0, 0));
             const invTranslationMatrix = Matrix.Compose(new Vector3(1.0, 1.0, 1.0), new Quaternion(), centre);
@@ -1024,12 +1037,19 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             // Logger.Log("IBL Shadows: Scene size: " + size);
             // Logger.Log("Half size: " + halfSize);
             // Logger.Log("Centre translation: " + centre);
+
+            // Update the SS shadow max distance based on the voxel grid size and resolution.
+            // The max distance should be just a little larger than the world size of a single voxel.
+            this.ssShadowMaxDist = (1.1 * this.voxelGridSize) / (1 << this.resolutionExp);
         }
 
         // If update is needed, render voxels
         if (this._voxelizationDirty) {
             this._voxelRenderer.updateVoxelGrid(this._excludedMeshes);
             this._voxelizationDirty = false;
+            // Update the SS shadow max distance based on the voxel grid size and resolution.
+            // The max distance should be just a little larger than the world size of a single voxel.
+            this.ssShadowMaxDist = (1.1 * this.voxelGridSize) / (1 << this.resolutionExp);
         }
     }
 
