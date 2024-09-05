@@ -1,4 +1,4 @@
-var uFrountColor: texture_2d<f32>;
+var uFrontColor: texture_2d<f32>;
 var uBackColor: texture_2d<f32>;
 
 @fragment
