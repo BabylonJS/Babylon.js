@@ -24,11 +24,6 @@ var textureSampler: texture_2d<f32>;
 
 uniform sizeParams: vec4f;
 
-#define offsetX uniforms.sizeParams.x
-#define offsetY uniforms.sizeParams.y
-#define widthScale uniforms.sizeParams.z
-#define heightScale uniforms.sizeParams.w
-
 #ifdef IBL_USE_CUBE_MAP
   fn equirectangularToCubemapDirection(uv: vec2f) -> vec3f {
     var longitude: f32 = uv.x * 2.0 * PI - PI;
@@ -45,7 +40,7 @@ uniform sizeParams: vec4f;
 fn main(input: FragmentInputs) -> FragmentOutputs {  
   var colour: vec3f =  vec3f(0.0);
   var uv: vec2f =
-       vec2f((offsetX + input.vUV.x) * widthScale, (offsetY + input.vUV.y) * heightScale);
+       vec2f((uniforms.sizeParams.x + input.vUV.x) * uniforms.sizeParams.z, (uniforms.sizeParams.y + input.vUV.y) * uniforms.sizeParams.w);
   var backgroundColour: vec3f = textureSample(textureSampler, textureSamplerSampler, input.vUV).rgb;
 
   const iblStart: f32 = 1.0 - cdfyVSize;

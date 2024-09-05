@@ -12,7 +12,7 @@ fn bisect(size: u32, targetValue: f32) -> f32
     var a: u32 = 0;
     var b = size - 1;
     while (b - a > 1) {
-        var c: u32 = a + (b >> 1);
+        var c: u32 = (a + b) >> 1;
         if (fetchCDF(c) < targetValue) {
             a = c;
         }
