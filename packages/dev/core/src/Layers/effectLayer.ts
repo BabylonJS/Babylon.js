@@ -567,6 +567,10 @@ export abstract class EffectLayer {
      * @returns true if ready otherwise, false
      */
     protected _isReady(subMesh: SubMesh, useInstances: boolean, emissiveTexture: Nullable<BaseTexture>): boolean {
+        if (!this._shadersLoaded) {
+            return false;
+        }
+
         const engine = this._scene.getEngine();
         const mesh = subMesh.getMesh();
 
