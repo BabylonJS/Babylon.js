@@ -48,3 +48,9 @@ export * from "../Shaders/outline.fragment";
 export * from "../Shaders/outline.vertex";
 export * from "../ShadersWGSL/outline.fragment";
 export * from "../ShadersWGSL/outline.vertex";
+
+// Depth Peeling Renderer
+export * from "../Shaders/oitBackBlend.fragment";
+export * from "../Shaders/oitFinal.fragment";
+export * from "../ShadersWGSL/oitBackBlend.fragment";
+export * from "../ShadersWGSL/oitFinal.fragment";
