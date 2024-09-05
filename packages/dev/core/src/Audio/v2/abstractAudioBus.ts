@@ -9,9 +9,11 @@ import type { AbstractAudioSender } from "./abstractAudioSender";
 import type { AbstractMainAudioBus } from "./abstractMainAudioBus";
 import type { Nullable } from "../../types";
 
+export type AbstractPrimaryAudioBus = AbstractMainAudioBus | AbstractAudioBus;
+
 export interface IAudioBusOptions extends IAudioBusNodeOptions {
     enablePositioner?: boolean;
-    outputBus?: AbstractMainAudioBus | AbstractAudioBus;
+    outputBus?: AbstractPrimaryAudioBus;
 }
 
 export abstract class AbstractAudioBus extends AbstractAudioBusNode {
@@ -45,13 +47,13 @@ export abstract class AbstractAudioBus extends AbstractAudioBusNode {
 
     public readonly sender: AbstractAudioSender;
 
-    private _outputBus: Nullable<AbstractMainAudioBus | AbstractAudioBus> = null;
+    private _outputBus: Nullable<AbstractPrimaryAudioBus> = null;
 
-    public get outputBus(): Nullable<AbstractMainAudioBus | AbstractAudioBus> {
+    public get outputBus(): Nullable<AbstractPrimaryAudioBus> {
         return this._outputBus;
     }
 
-    public setOutputBus(outputBus: Nullable<AbstractMainAudioBus | AbstractAudioBus>) {
+    public setOutputBus(outputBus: Nullable<AbstractPrimaryAudioBus>) {
         if (this._outputBus === outputBus) {
             return;
         }

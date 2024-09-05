@@ -1,12 +1,11 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 
-import type { AbstractAudioBus } from "./abstractAudioBus";
+import type { AbstractPrimaryAudioBus } from "./abstractAudioBus";
 import type { AbstractAudioEngine } from "./abstractAudioEngine";
 import { AbstractNamedAudioNode, AudioNodeType } from "./abstractAudioNode";
 import type { AbstractAudioPositioner } from "./abstractAudioPositioner";
 import type { AbstractAudioSender } from "./abstractAudioSender";
-import type { AbstractMainAudioBus } from "./abstractMainAudioBus";
 import type { AbstractSoundSource } from "./abstractSoundSource";
 import { SoundState } from "./soundState";
 import type { Nullable } from "../../types";
@@ -73,13 +72,13 @@ export abstract class AbstractSoundObject extends AbstractNamedAudioNode {
 
     public readonly sender: AbstractAudioSender;
 
-    private _outputBus: Nullable<AbstractMainAudioBus | AbstractAudioBus> = null;
+    private _outputBus: Nullable<AbstractPrimaryAudioBus> = null;
 
-    public get outputBus(): Nullable<AbstractMainAudioBus | AbstractAudioBus> {
+    public get outputBus(): Nullable<AbstractPrimaryAudioBus> {
         return this._outputBus;
     }
 
-    public setOutputBus(outputBus: Nullable<AbstractMainAudioBus | AbstractAudioBus>) {
+    public setOutputBus(outputBus: Nullable<AbstractPrimaryAudioBus>) {
         if (this._outputBus === outputBus) {
             return;
         }
