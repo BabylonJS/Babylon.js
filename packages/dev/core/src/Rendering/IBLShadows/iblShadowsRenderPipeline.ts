@@ -57,6 +57,11 @@ interface IblShadowsSettings {
     triPlanarVoxelization: boolean;
 
     /**
+     * Separate control for the opacity of the voxel shadows.
+     */
+    voxelShadowOpacity: number;
+
+    /**
      * Include screen-space shadows in the IBL shadow pipeline. This adds sharp shadows to small details
      * but only applies close to a shadow-casting object.
      */
@@ -137,7 +142,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     private _spatialBlurPass: _IblShadowsSpatialBlurPass;
     private _accumulationPass: _IblShadowsAccumulationPass;
     private _noiseTexture: Texture;
-    private _shadowOpacity: number = 1.0;
+    private _shadowOpacity: number = 0.75;
     private _enabled: boolean = true;
     /**
      * How dark the shadows appear. 1.0 is full opacity, 0.0 is no shadows.
@@ -597,7 +602,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             Logger.Warn("IBL Shadows Render Pipeline could not enable PrePass, aborting.");
             return;
         }
-        this.shadowOpacity = options.shadowOpacity || 1.0;
+        this.shadowOpacity = options.shadowOpacity || 0.75;
         this._prePassEffectConfiguration = new IblShadowsPrepassConfiguration();
         this._voxelRenderer = new _IblShadowsVoxelRenderer(
             this.scene,
@@ -608,6 +613,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._importanceSamplingRenderer = new _IblShadowsImportanceSamplingRenderer(this.scene);
         this._voxelTracingPass = new _IblShadowsVoxelTracingPass(this.scene, this);
         this.sampleDirections = options.sampleDirections || 2;
+        this.voxelShadowOpacity = options.voxelShadowOpacity || 1.0;
         this.ssShadowOpacity = options.ssShadowsEnabled === undefined || options.ssShadowsEnabled ? 1.0 : 0.0;
         this.ssShadowMaxDist = options.ssShadowMaxDist || 0.05;
         this.ssShadowSamples = options.ssShadowSampleCount || 16;
@@ -626,8 +632,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
 
         scene.postProcessRenderPipelineManager.addPipeline(this);
 
-        this._createEffectPasses(cameras);
-
         this.scene.onNewMeshAddedObservable.add(this.updateSceneBounds.bind(this));
         this.scene.onMeshRemovedObservable.add(this.updateSceneBounds.bind(this));
         this.scene.onActiveCameraChanged.add(this._listenForCameraChanges.bind(this));
@@ -638,6 +642,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
 
         // Only turn on the pipeline if the importance sampling RT's are ready
         this._importanceSamplingRenderer.onReadyObservable.add(() => {
+            this._createEffectPasses(cameras);
             if (this._voxelRenderer.isReady()) {
                 this.toggleShadow(this._enabled);
             } else {
@@ -700,9 +705,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             }
         });
         this._shadowCompositePP._prePassEffectConfiguration = this._prePassEffectConfiguration;
-        setTimeout(() => {
-            this._voxelizationDirty = true;
-        }, 500);
     }
 
     private _createEffectPasses(cameras: Camera[] | undefined) {
