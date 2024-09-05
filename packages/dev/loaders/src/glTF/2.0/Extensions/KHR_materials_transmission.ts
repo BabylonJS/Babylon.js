@@ -15,6 +15,7 @@ import { Observable } from "core/Misc/observable";
 import { Constants } from "core/Engines/constants";
 import { Tools } from "core/Misc/tools";
 import type { Color4 } from "core/Maths/math.color";
+import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 interface ITransmissionHelperHolder {
     /**
@@ -317,6 +318,17 @@ class TransmissionHelper {
 
 const NAME = "KHR_materials_transmission";
 
+declare module "../../glTFFileLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface GLTFLoaderExtensionOptions {
+        /**
+         * Defines options for the KHR_materials_transmission extension.
+         */
+        // NOTE: Don't use NAME here as it will break the UMD type declarations.
+        ["KHR_materials_transmission"]: {};
+    }
+}
+
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_transmission/README.md)
  */
@@ -412,4 +424,5 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_materials_transmission(loader));
+unregisterGLTFExtension(NAME);
+registerGLTFExtension(NAME, true, (loader) => new KHR_materials_transmission(loader));

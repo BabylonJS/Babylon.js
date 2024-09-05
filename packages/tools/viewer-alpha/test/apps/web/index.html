@@ -14,14 +14,51 @@
                 margin: 0;
                 overflow: hidden;
             }
+
+            button {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+            }
+
+            babylon-viewer {
+                /* --ui-foreground-color: red; */
+                /* --ui-background-hue: 0;
+                --ui-background-saturation: 100%; */
+            }
+
+            babylon-viewer::part(tool-bar) {
+                /* border-radius: 24px;
+                height: 72px;
+                left: 12px;
+                right: 12px;
+                bottom: unset;
+                top: 12px;
+                width: unset;
+                max-width: unset;
+                transform: unset; */
+            }
         </style>
     </head>
 
     <body ondragover="event.preventDefault()" ondrop="onDrop(event)">
-        <babylon-viewer src="https://playground.babylonjs.com/scenes/BoomBox.glb" env="https://assets.babylonjs.com/environments/ulmerMuenster.env"> </babylon-viewer>
+        <babylon-viewer
+            src="https://raw.githubusercontent.com/BabylonJS/Assets/master/meshes/ufo.glb"
+            env="https://assets.babylonjs.com/environments/ulmerMuenster.env"
+            animation-speed="1.5"
+        >
+            <!-- <div slot="tool-bar" style="position: absolute; top: 12px; left: 12px; width: 100px; height: 36px">
+                <button onclick="viewerElement.viewer.toggleAnimation()">Toggle Animation</button>
+            </div> -->
+        </babylon-viewer>
+        <button onclick="onToggle()">Toggle</button>
         <script type="module" src="/packages/tools/viewer-alpha/src/index.ts"></script>
         <script>
             const viewerElement = document.querySelector("babylon-viewer");
+            viewerElement.addEventListener("modelchange", (event) => {
+                console.log("Model loaded");
+            });
+            let isViewerConnected = true;
 
             (async () => {
                 // The module referenced in the script tag above is loaded asynchronously, so we need to wait for it to load and for the custom element to be defined.
@@ -29,11 +66,11 @@
                 await customElements.whenDefined("babylon-viewer");
                 // "BabylonViewer" is defined as the "library" in webpack.config.js and can be used to access the Viewer as needed.
                 await new Promise((resolve) => setTimeout(resolve, 2000));
-                viewerElement.src = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/BrainStem/glTF-Binary/BrainStem.glb";
+                //viewerElement.src = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/BrainStem/glTF-Binary/BrainStem.glb";
                 // error case
                 //viewerElement.src = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/BrainStem/glTF-Binary/BrainStem2.glb';
                 await new Promise((resolve) => setTimeout(resolve, 2000));
-                viewerElement.src = "https://playground.babylonjs.com/scenes/BoomBox.glb";
+                //viewerElement.src = "https://playground.babylonjs.com/scenes/BoomBox.glb";
             })();
 
             async function onDrop(event) {
@@ -43,6 +80,11 @@
                     await customElements.whenDefined("babylon-viewer");
                     await viewerElement.viewer.loadModelAsync(file);
                 }
+            }
+
+            function onToggle() {
+                isViewerConnected ? document.body.removeChild(viewerElement) : document.body.appendChild(viewerElement);
+                isViewerConnected = !isViewerConnected;
             }
         </script>
     </body>

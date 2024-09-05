@@ -6,8 +6,20 @@ import type { Material } from "core/Materials/material";
 import type { IMaterial } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
+import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "KHR_materials_unlit";
+
+declare module "../../glTFFileLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface GLTFLoaderExtensionOptions {
+        /**
+         * Defines options for the KHR_materials_unlit extension.
+         */
+        // NOTE: Don't use NAME here as it will break the UMD type declarations.
+        ["KHR_materials_unlit"]: {};
+    }
+}
 
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_unlit/README.md)
@@ -91,4 +103,5 @@ export class KHR_materials_unlit implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_materials_unlit(loader));
+unregisterGLTFExtension(NAME);
+registerGLTFExtension(NAME, true, (loader) => new KHR_materials_unlit(loader));

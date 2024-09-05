@@ -5,8 +5,20 @@ import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { IMaterial } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
+import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "MSFT_minecraftMesh";
+
+declare module "../../glTFFileLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface GLTFLoaderExtensionOptions {
+        /**
+         * Defines options for the MSFT_minecraftMesh extension.
+         */
+        // NOTE: Don't use NAME here as it will break the UMD type declarations.
+        ["MSFT_minecraftMesh"]: {};
+    }
+}
 
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -56,4 +68,5 @@ export class MSFT_minecraftMesh implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new MSFT_minecraftMesh(loader));
+unregisterGLTFExtension(NAME);
+registerGLTFExtension(NAME, true, (loader) => new MSFT_minecraftMesh(loader));

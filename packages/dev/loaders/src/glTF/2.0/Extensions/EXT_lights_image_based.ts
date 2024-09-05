@@ -8,8 +8,20 @@ import type { IEXTLightsImageBased_LightReferenceImageBased, IEXTLightsImageBase
 import type { IScene } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
+import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "EXT_lights_image_based";
+
+declare module "../../glTFFileLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface GLTFLoaderExtensionOptions {
+        /**
+         * Defines options for the EXT_lights_image_based extension.
+         */
+        // NOTE: Don't use NAME here as it will break the UMD type declarations.
+        ["EXT_lights_image_based"]: {};
+    }
+}
 
 declare module "babylonjs-gltf2interface" {
     /** @internal */
@@ -157,4 +169,5 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new EXT_lights_image_based(loader));
+unregisterGLTFExtension(NAME);
+registerGLTFExtension(NAME, true, (loader) => new EXT_lights_image_based(loader));

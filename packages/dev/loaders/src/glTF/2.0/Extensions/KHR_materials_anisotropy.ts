@@ -6,8 +6,20 @@ import type { IMaterial } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsAnisotropy } from "babylonjs-gltf2interface";
+import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "KHR_materials_anisotropy";
+
+declare module "../../glTFFileLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface GLTFLoaderExtensionOptions {
+        /**
+         * Defines options for the KHR_materials_anisotropy extension.
+         */
+        // NOTE: Don't use NAME here as it will break the UMD type declarations.
+        ["KHR_materials_anisotropy"]: {};
+    }
+}
 
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_anisotropy)
@@ -81,4 +93,5 @@ export class KHR_materials_anisotropy implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_materials_anisotropy(loader));
+unregisterGLTFExtension(NAME);
+registerGLTFExtension(NAME, true, (loader) => new KHR_materials_anisotropy(loader));

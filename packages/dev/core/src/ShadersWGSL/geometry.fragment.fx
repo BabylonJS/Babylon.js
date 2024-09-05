@@ -96,7 +96,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             fragData[DEPTH_INDEX] =  vec4f(input.vViewPos.z / input.vViewPos.w, 0.0, 0.0, 1.0);
         #endif
 
-        #ifdef PREPASS_NORMAL
+        #if defined(PREPASS_NORMAL) || defined(PREPASS_WORLD_NORMAL)
             fragData[NORMAL_INDEX] =  vec4f(normalOutput, 1.0);
         #endif
     #else

@@ -9,8 +9,20 @@ import type { IKHRDracoMeshCompression } from "babylonjs-gltf2interface";
 import type { IMeshPrimitive, IBufferView } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
+import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "KHR_draco_mesh_compression";
+
+declare module "../../glTFFileLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface GLTFLoaderExtensionOptions {
+        /**
+         * Defines options for the KHR_draco_mesh_compression extension.
+         */
+        // NOTE: Don't use NAME here as it will break the UMD type declarations.
+        ["KHR_draco_mesh_compression"]: {};
+    }
+}
 
 interface IBufferViewDraco extends IBufferView {
     _dracoBabylonGeometry?: Promise<Geometry>;
@@ -119,4 +131,5 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_draco_mesh_compression(loader));
+unregisterGLTFExtension(NAME);
+registerGLTFExtension(NAME, true, (loader) => new KHR_draco_mesh_compression(loader));

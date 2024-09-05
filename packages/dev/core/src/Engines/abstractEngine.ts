@@ -24,7 +24,6 @@ import type { LoadFileError } from "../Misc/fileTools";
 import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import type { IPipelineContext } from "./IPipelineContext";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
-import type { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
 import type { InternalTextureCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
 import type { EffectFallbacks } from "../Materials/effectFallbacks";
 import type { IMaterialContext } from "./IMaterialContext";
@@ -52,6 +51,7 @@ import { Constants } from "./constants";
 import { Observable } from "../Misc/observable";
 import { EngineFunctionContext, _loadFile } from "./abstractEngine.functions";
 import type { Material } from "core/Materials/material";
+import { _GetCompatibleTextureLoader } from "core/Materials/Textures/Loaders/textureLoaderManager";
 
 /**
  * Defines the interface used by objects working like Scene
@@ -196,9 +196,6 @@ export type PrepareTextureFunction = (
  * The parent class for specialized engines (WebGL, WebGPU)
  */
 export abstract class AbstractEngine {
-    /** @internal */
-    public static _TextureLoaders: IInternalTextureLoader[] = [];
-
     // States
     /** @internal */
     protected _colorWrite = true;
@@ -1455,7 +1452,6 @@ export abstract class AbstractEngine {
         // establish the file extension, if possible
         const lastDot = url.lastIndexOf(".");
         let extension = forcedExtension ? forcedExtension : lastDot > -1 ? url.substring(lastDot).toLowerCase() : "";
-        let loader: Nullable<IInternalTextureLoader> = null;
 
         // Remove query string
         const queryStringIndex = extension.indexOf("?");
@@ -1464,12 +1460,7 @@ export abstract class AbstractEngine {
             extension = extension.split("?")[0];
         }
 
-        for (const availableLoader of AbstractEngine._TextureLoaders) {
-            if (availableLoader.canLoad(extension, mimeType)) {
-                loader = availableLoader;
-                break;
-            }
-        }
+        const loaderPromise = _GetCompatibleTextureLoader(extension, mimeType);
 
         if (scene) {
             scene.addPendingData(texture);
@@ -1550,9 +1541,10 @@ export abstract class AbstractEngine {
         };
 
         // processing for non-image formats
-        if (loader) {
-            const callback = (data: ArrayBufferView) => {
-                loader!.loadData(
+        if (loaderPromise) {
+            const callback = async (data: ArrayBufferView) => {
+                const loader = await loaderPromise;
+                loader.loadData(
                     data,
                     texture,
                     (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed) => {
@@ -1794,14 +1786,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@7.21.4";
+        return "babylonjs@7.24.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "7.21.4";
+        return "7.24.0";
     }
 
     /**

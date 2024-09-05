@@ -67,7 +67,7 @@ import type { Skeleton } from "./Bones/skeleton";
 import type { Bone } from "./Bones/bone";
 import type { Camera } from "./Cameras/camera";
 import type { Collider } from "./Collisions/collider";
-import type { Ray, TrianglePickingPredicate } from "./Culling/ray";
+import type { Ray, MeshPredicate, TrianglePickingPredicate } from "./Culling/ray";
 import type { Light } from "./Lights/light";
 import type { PerformanceViewerCollector } from "./Misc/PerformanceViewer/performanceViewerCollector";
 import type { MorphTarget } from "./Morph/morphTarget";
@@ -2466,9 +2466,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public removeMesh(toRemove: AbstractMesh, recursive = false): number {
         const index = this.meshes.indexOf(toRemove);
         if (index !== -1) {
-            // Remove from the scene if mesh found
-            this.meshes[index] = this.meshes[this.meshes.length - 1];
-            this.meshes.pop();
+            // Remove from the scene if the mesh found
+
+            this.meshes.splice(index, 1);
 
             if (!toRemove.parent) {
                 toRemove._removeFromSceneRootNodes();
@@ -5106,20 +5106,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /** Launch a ray to try to pick a mesh in the scene
      * @param x position on screen
      * @param y position on screen
-     * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
+     * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true. thinInstanceIndex is -1 when the mesh is non-instanced
      * @param fastCheck defines if the first intersection will be used (and not the closest)
      * @param camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
      * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns a PickingInfo
      */
-    public pick(
-        x: number,
-        y: number,
-        predicate?: (mesh: AbstractMesh) => boolean,
-        fastCheck?: boolean,
-        camera?: Nullable<Camera>,
-        trianglePredicate?: TrianglePickingPredicate
-    ): PickingInfo {
+    public pick(x: number, y: number, predicate?: MeshPredicate, fastCheck?: boolean, camera?: Nullable<Camera>, trianglePredicate?: TrianglePickingPredicate): PickingInfo {
         const warn = _WarnImport("Ray", true);
         if (warn) {
             Logger.Warn(warn);
@@ -5131,12 +5124,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /** Launch a ray to try to pick a mesh in the scene using only bounding information of the main mesh (not using submeshes)
      * @param x position on screen
      * @param y position on screen
-     * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
+     * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true. thinInstanceIndex is -1 when the mesh is non-instanced
      * @param fastCheck defines if the first intersection will be used (and not the closest)
      * @param camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
      * @returns a PickingInfo (Please note that some info will not be set like distance, bv, bu and everything that cannot be capture by only using bounding infos)
      */
-    public pickWithBoundingInfo(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Nullable<Camera>): Nullable<PickingInfo> {
+    public pickWithBoundingInfo(x: number, y: number, predicate?: MeshPredicate, fastCheck?: boolean, camera?: Nullable<Camera>): Nullable<PickingInfo> {
         const warn = _WarnImport("Ray", true);
         if (warn) {
             Logger.Warn(warn);
@@ -5150,12 +5143,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Use the given ray to pick a mesh in the scene. A mesh triangle can be picked both from its front and back sides,
      * irrespective of orientation.
      * @param ray The ray to use to pick meshes
-     * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must have isPickable set to true
+     * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must have isPickable set to true. thinInstanceIndex is -1 when the mesh is non-instanced
      * @param fastCheck defines if the first intersection will be used (and not the closest)
      * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns a PickingInfo
      */
-    public pickWithRay(ray: Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo> {
+    public pickWithRay(ray: Ray, predicate?: MeshPredicate, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo> {
         throw _WarnImport("Ray");
     }
 
@@ -5165,12 +5158,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * irrespective of orientation.
      * @param x X position on screen
      * @param y Y position on screen
-     * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
+     * @param predicate Predicate function used to determine eligible meshes and instances. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true. thinInstanceIndex is -1 when the mesh is non-instanced
      * @param camera camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
      * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns an array of PickingInfo
      */
-    public multiPick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, camera?: Camera, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
+    public multiPick(x: number, y: number, predicate?: MeshPredicate, camera?: Camera, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
         throw _WarnImport("Ray");
     }
 
@@ -5178,11 +5171,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Launch a ray to try to pick a mesh in the scene
      * @param ray Ray to use
-     * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
+     * @param predicate Predicate function used to determine eligible meshes and instances. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true. thinInstanceIndex is -1 when the mesh is non-instanced
      * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns an array of PickingInfo
      */
-    public multiPickWithRay(ray: Ray, predicate?: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
+    public multiPickWithRay(ray: Ray, predicate?: MeshPredicate, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
         throw _WarnImport("Ray");
     }
 

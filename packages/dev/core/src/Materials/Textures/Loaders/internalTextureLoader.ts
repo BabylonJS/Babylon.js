@@ -1,5 +1,5 @@
-import type { Nullable } from "../../types";
-import type { InternalTexture } from "../../Materials/Textures/internalTexture";
+import type { Nullable } from "../../../types";
+import type { InternalTexture } from "../internalTexture";
 
 /**
  * This represents the required contract to create a new type of texture loader.
@@ -9,14 +9,6 @@ export interface IInternalTextureLoader {
      * Defines whether the loader supports cascade loading the different faces.
      */
     supportCascades: boolean;
-
-    /**
-     * This returns if the loader support the current file information.
-     * @param extension defines the file extension of the file being loaded
-     * @param mimeType defines the optional mime type of the file being loaded
-     * @returns true if the loader can load the specified file
-     */
-    canLoad(extension: string, mimeType?: string): boolean;
 
     /**
      * Uploads the cube texture data to the WebGL texture. It has already been bound.

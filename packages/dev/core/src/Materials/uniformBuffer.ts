@@ -1104,6 +1104,14 @@ export class UniformBuffer {
     }
 
     /**
+     * Sets an array of sampler uniforms on the effect.
+     * @param name Define the name of uniform.
+     * @param textures Define the textures to set in the array of samplers
+     */
+    public setTextureArray(name: string, textures: ThinTexture[]) {
+        this._currentEffect.setTextureArray(name, textures);
+    }
+    /**
      * Sets a sampler uniform on the effect.
      * @param name Define the name of the sampler.
      * @param texture Define the (internal) texture to set in the sampler

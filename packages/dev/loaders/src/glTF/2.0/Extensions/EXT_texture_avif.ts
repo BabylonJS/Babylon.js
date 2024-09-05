@@ -4,8 +4,20 @@ import type { ITexture } from "../glTFLoaderInterfaces";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { Nullable } from "core/types";
 import type { IEXTTextureAVIF } from "babylonjs-gltf2interface";
+import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "EXT_texture_avif";
+
+declare module "../../glTFFileLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface GLTFLoaderExtensionOptions {
+        /**
+         * Defines options for the EXT_texture_avif extension.
+         */
+        // NOTE: Don't use NAME here as it will break the UMD type declarations.
+        ["EXT_texture_avif"]: {};
+    }
+}
 
 /**
  * [glTF PR](https://github.com/KhronosGroup/glTF/pull/2235)
@@ -55,4 +67,5 @@ export class EXT_texture_avif implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new EXT_texture_avif(loader));
+unregisterGLTFExtension(NAME);
+registerGLTFExtension(NAME, true, (loader) => new EXT_texture_avif(loader));

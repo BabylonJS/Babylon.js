@@ -158,7 +158,7 @@ export class PropertiesBar extends React.PureComponent<IPropertiesBarProps, IPro
                     <img title="Reset" className="icon button" src={resetButton} onClick={() => resetTexture()} />
                     <label>
                         <input
-                            accept=".jpg, .png, .tga, .dds, .env"
+                            accept=".jpg, .png, .tga, .dds, .env, .exr"
                             type="file"
                             onChange={(evt: React.ChangeEvent<HTMLInputElement>) => {
                                 const files = evt.target.files;

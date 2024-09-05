@@ -13,8 +13,20 @@ import { KHRLightsPunctual_LightType } from "babylonjs-gltf2interface";
 import type { INode, IKHRLightsPunctual_Light } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
+import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "KHR_lights_punctual";
+
+declare module "../../glTFFileLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface GLTFLoaderExtensionOptions {
+        /**
+         * Defines options for the KHR_lights_punctual extension.
+         */
+        // NOTE: Don't use NAME here as it will break the UMD type declarations.
+        ["KHR_lights_punctual"]: {};
+    }
+}
 
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_lights_punctual/README.md)
@@ -118,4 +130,5 @@ export class KHR_lights implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_lights(loader));
+unregisterGLTFExtension(NAME);
+registerGLTFExtension(NAME, true, (loader) => new KHR_lights(loader));

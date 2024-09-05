@@ -171,6 +171,24 @@ export const SetCorsBehavior = (url: string | string[], element: { crossOrigin: 
 };
 
 /**
+ * Configuration used to load images
+ * @see #DKMEZK#2
+ */
+export const LoadImageConfiguration: {
+    /**
+     * Use this callback if you want to provide the required size of an image before loading it.
+     */
+    getRequiredSize: Nullable<
+        (input: string | ArrayBuffer | ArrayBufferView | Blob) => {
+            width: number;
+            height: number;
+        }
+    >;
+} = {
+    getRequiredSize: null,
+};
+
+/**
  * Loads an image as an HTMLImageElement.
  * @param input url string, ArrayBuffer, or Blob to load
  * @param onLoad callback called when the image successfully loads
@@ -250,6 +268,15 @@ export const LoadImage = (
     }
 
     const img = new Image();
+    if (LoadImageConfiguration.getRequiredSize) {
+        const size = LoadImageConfiguration.getRequiredSize(input);
+        if (size.width) {
+            img.width = size.width;
+        }
+        if (size.height) {
+            img.height = size.height;
+        }
+    }
     SetCorsBehavior(url, img);
 
     const handlersList: { target: any; name: string; handler: any }[] = [];
@@ -290,7 +317,7 @@ export const LoadImage = (
     };
 
     const cspHandler = (err: any) => {
-        if (err.blockedURI !== img.src) {
+        if (err.blockedURI !== img.src || err.disposition === "report") {
             return;
         }
 

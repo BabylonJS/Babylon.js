@@ -5,12 +5,23 @@ import type { Nullable } from "core/types";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import type { INode } from "../glTFLoaderInterfaces";
-
 import type { IEXTMeshGpuInstancing } from "babylonjs-gltf2interface";
+import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 import "core/Meshes/thinInstanceMesh";
 
 const NAME = "EXT_mesh_gpu_instancing";
+
+declare module "../../glTFFileLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface GLTFLoaderExtensionOptions {
+        /**
+         * Defines options for the EXT_mesh_gpu_instancing extension.
+         */
+        // NOTE: Don't use NAME here as it will break the UMD type declarations.
+        ["EXT_mesh_gpu_instancing"]: {};
+    }
+}
 
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_mesh_gpu_instancing/README.md)
@@ -110,4 +121,5 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new EXT_mesh_gpu_instancing(loader));
+unregisterGLTFExtension(NAME);
+registerGLTFExtension(NAME, true, (loader) => new EXT_mesh_gpu_instancing(loader));
