@@ -24,6 +24,7 @@ export class GaussianSplattingMesh extends Mesh {
     private _material: Nullable<GaussianSplattingMaterial> = null;
     private _depthMix: BigInt64Array;
     private _canPostToWorker = true;
+    private _readyToDisplay = false;
     private _lastModelViewMatrix: DeepImmutable<FloatArray>;
     private _covariancesATexture: Nullable<BaseTexture> = null;
     private _covariancesBTexture: Nullable<BaseTexture> = null;
@@ -67,6 +68,12 @@ export class GaussianSplattingMesh extends Mesh {
     }
 
     /**
+     * returns true if thin instances have been updated with webworker feed
+     */
+    public get readyToDisplay() {
+        return this._readyToDisplay;
+    }
+    /**
      * Creates a new gaussian splatting mesh
      * @param name defines the name of the mesh
      * @param url defines the url to load from (optional)
@@ -92,6 +99,9 @@ export class GaussianSplattingMesh extends Mesh {
         if (url) {
             this.loadFileAsync(url);
         }
+
+        this._material = new GaussianSplattingMaterial(this.name + "_material", this._scene);
+        this.material = this._material;
     }
 
     /**
@@ -362,6 +372,7 @@ export class GaussianSplattingMesh extends Mesh {
         newGS._copyTextures(this);
         newGS._modelViewMatrix = Matrix.Identity();
         newGS._splatPositions = this._splatPositions;
+        newGS._readyToDisplay = true;
         newGS._instanciateWorker();
 
         const binfo = this.getBoundingInfo();
@@ -422,6 +433,8 @@ export class GaussianSplattingMesh extends Mesh {
         if (!data.byteLength) {
             return;
         }
+        this._readyToDisplay = false;
+
         // Parse the data
         const uBuffer = new Uint8Array(data);
         const fBuffer = new Float32Array(uBuffer.buffer);
@@ -554,6 +567,7 @@ export class GaussianSplattingMesh extends Mesh {
             }
             this.thinInstanceBufferUpdated("splatIndex");
             this._canPostToWorker = true;
+            this._readyToDisplay = true;
         };
     }
 
