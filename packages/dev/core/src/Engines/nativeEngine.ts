@@ -271,6 +271,7 @@ export class NativeEngine extends Engine {
             maxRenderTextureSize: 512,
             maxVertexAttribs: 16,
             maxVaryingVectors: 16,
+            maxDrawBuffers: 8,
             maxFragmentUniformVectors: 16,
             maxVertexUniformVectors: 16,
             standardDerivatives: true,

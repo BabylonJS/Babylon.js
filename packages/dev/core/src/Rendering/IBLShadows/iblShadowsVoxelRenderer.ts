@@ -271,11 +271,7 @@ export class _IblShadowsVoxelRenderer {
         }
 
         const isWebGPU = this._engine.isWebGPU;
-        if (isWebGPU) {
-            this._maxDrawBuffers = 8; // TODO - get this from the WebGPU engine?
-        } else {
-            this._maxDrawBuffers = (this._engine as Engine)._gl.getParameter((this._engine as Engine)._gl.MAX_DRAW_BUFFERS);
-        }
+        this._maxDrawBuffers = this._engine.getCaps().maxDrawBuffers || 0;
 
         this._copyMipEffectRenderer = new EffectRenderer(this._engine);
         this._copyMipEffectWrapper = new EffectWrapper({
