@@ -68,12 +68,6 @@ export class GaussianSplattingMesh extends Mesh {
     }
 
     /**
-     * returns true if thin instances have been updated with webworker feed
-     */
-    public get readyToDisplay() {
-        return this._readyToDisplay;
-    }
-    /**
      * Creates a new gaussian splatting mesh
      * @param name defines the name of the mesh
      * @param url defines the url to load from (optional)
@@ -99,6 +93,8 @@ export class GaussianSplattingMesh extends Mesh {
         if (url) {
             this.loadFileAsync(url);
         }
+        this._material = new GaussianSplattingMaterial(this.name + "_material", this._scene);
+        this.material = this._material;
     }
 
     /**
@@ -118,18 +114,24 @@ export class GaussianSplattingMesh extends Mesh {
     }
 
     /**
-     * Triggers the draw call for the mesh. Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager
-     * @param subMesh defines the subMesh to render
-     * @param enableAlphaMode defines if alpha mode can be changed
-     * @param effectiveMeshReplacement defines an optional mesh used to provide info for the rendering
-     * @returns the current mesh
+     * Is this node ready to be used/rendered
+     * @param completeCheck defines if a complete check (including materials and lights) has to be done (false by default)
+     * @returns {boolean} is it ready
      */
-    public override render(subMesh: SubMesh, enableAlphaMode: boolean, effectiveMeshReplacement?: AbstractMesh): Mesh {
-        if (!this.material) {
-            this._material = new GaussianSplattingMaterial(this.name + "_material", this._scene);
-            this.material = this._material;
+    public override isReady(completeCheck = false): boolean {
+        if (!super.isReady(completeCheck)) {
+            return false;
         }
 
+        if (!this._readyToDisplay) {
+            // mesh is ready when worker has done at least 1 sorting
+            this._postToWorker();
+            return false;
+        }
+        return true;
+    }
+
+    protected _postToWorker(): void {
         const frameId = this.getScene().getFrameId();
         if (frameId !== this._frameIdLastUpdate && this._worker && this._scene.activeCamera && this._canPostToWorker) {
             this.getWorldMatrix().multiplyToRef(this._scene.activeCamera.getViewMatrix(), this._modelViewMatrix);
@@ -148,7 +150,16 @@ export class GaussianSplattingMesh extends Mesh {
                 ]);
             }
         }
-
+    }
+    /**
+     * Triggers the draw call for the mesh. Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager
+     * @param subMesh defines the subMesh to render
+     * @param enableAlphaMode defines if alpha mode can be changed
+     * @param effectiveMeshReplacement defines an optional mesh used to provide info for the rendering
+     * @returns the current mesh
+     */
+    public override render(subMesh: SubMesh, enableAlphaMode: boolean, effectiveMeshReplacement?: AbstractMesh): Mesh {
+        this._postToWorker();
         return super.render(subMesh, enableAlphaMode, effectiveMeshReplacement);
     }
 
@@ -369,7 +380,7 @@ export class GaussianSplattingMesh extends Mesh {
         newGS._copyTextures(this);
         newGS._modelViewMatrix = Matrix.Identity();
         newGS._splatPositions = this._splatPositions;
-        newGS._readyToDisplay = true;
+        newGS._readyToDisplay = false;
         newGS._instanciateWorker();
 
         const binfo = this.getBoundingInfo();

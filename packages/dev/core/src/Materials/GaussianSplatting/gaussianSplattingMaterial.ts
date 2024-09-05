@@ -170,10 +170,6 @@ export class GaussianSplattingMaterial extends PushMaterial {
             return false;
         }
 
-        if (!(<GaussianSplattingMesh>mesh).readyToDisplay) {
-            return false;
-        }
-
         defines._renderId = scene.getRenderId();
         drawWrapper._wasPreviouslyReady = true;
         drawWrapper._wasPreviouslyUsingInstances = useInstances;
