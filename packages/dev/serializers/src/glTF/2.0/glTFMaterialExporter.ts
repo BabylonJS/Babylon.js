@@ -4,7 +4,7 @@ import { ImageMimeType, MaterialAlphaMode, TextureMagFilter, TextureMinFilter, T
 import type { Nullable } from "core/types";
 import { Vector2 } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
-import { Clamp, WithinEpsilon } from "core/Maths/math.scalar.functions";
+import { Scalar } from "core/Maths/math.scalar";
 import { Tools } from "core/Misc/tools";
 import { TextureTools } from "core/Misc/textureTools";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
@@ -131,7 +131,7 @@ export class _GLTFMaterialExporter {
      * @returns boolean specifying if the colors are approximately equal in value
      */
     private static _FuzzyEquals(color1: Color3, color2: Color3, epsilon: number): boolean {
-        return WithinEpsilon(color1.r, color2.r, epsilon) && WithinEpsilon(color1.g, color2.g, epsilon) && WithinEpsilon(color1.b, color2.b, epsilon);
+        return Scalar.WithinEpsilon(color1.r, color2.r, epsilon) && Scalar.WithinEpsilon(color1.g, color2.g, epsilon) && Scalar.WithinEpsilon(color1.b, color2.b, epsilon);
     }
 
     /**
@@ -262,7 +262,7 @@ export class _GLTFMaterialExporter {
 
         const diffuse = babylonStandardMaterial.diffuseColor.toLinearSpace(babylonStandardMaterial.getScene().getEngine().useExactSrgbConversions).scale(0.5);
         const opacity = babylonStandardMaterial.alpha;
-        const specularPower = Clamp(babylonStandardMaterial.specularPower, 0, _GLTFMaterialExporter._MaxSpecularPower);
+        const specularPower = Scalar.Clamp(babylonStandardMaterial.specularPower, 0, _GLTFMaterialExporter._MaxSpecularPower);
 
         const roughness = solveForRoughness(specularPower);
 
@@ -292,7 +292,7 @@ export class _GLTFMaterialExporter {
         const b = (diffuse * oneMinusSpecularStrength) / (1.0 - this._DielectricSpecular.r) + specular - 2.0 * this._DielectricSpecular.r;
         const c = this._DielectricSpecular.r - specular;
         const D = b * b - 4.0 * a * c;
-        return Clamp((-b + Math.sqrt(D)) / (2.0 * a), 0, 1);
+        return Scalar.Clamp((-b + Math.sqrt(D)) / (2.0 * a), 0, 1);
     }
 
     /**

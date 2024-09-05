@@ -1,5 +1,5 @@
 import type { DefaultRenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline";
-import { Clamp } from "core/Maths/math.scalar.functions";
+import { Scalar } from "core/Maths/math.scalar";
 import type { SceneManager } from "../../managers/sceneManager";
 
 /**
@@ -16,7 +16,7 @@ export function extendedUpgrade(sceneManager: SceneManager): boolean {
     // return false;
     // }
     if (sceneManager.scene.getEngine().getHardwareScalingLevel() > 1) {
-        const scaling = Clamp(sceneManager.scene.getEngine().getHardwareScalingLevel() - 0.25, 0, 1);
+        const scaling = Scalar.Clamp(sceneManager.scene.getEngine().getHardwareScalingLevel() - 0.25, 0, 1);
         sceneManager.scene.getEngine().setHardwareScalingLevel(scaling);
         return false;
     }
@@ -34,7 +34,7 @@ export function extendedUpgrade(sceneManager: SceneManager): boolean {
     }
     const hardwareScalingLevel = Math.max(1 / 2, 1 / (window.devicePixelRatio || 2));
     if (sceneManager.scene.getEngine().getHardwareScalingLevel() > hardwareScalingLevel) {
-        const scaling = Clamp(sceneManager.scene.getEngine().getHardwareScalingLevel() - 0.25, 0, hardwareScalingLevel);
+        const scaling = Scalar.Clamp(sceneManager.scene.getEngine().getHardwareScalingLevel() - 0.25, 0, hardwareScalingLevel);
         sceneManager.scene.getEngine().setHardwareScalingLevel(scaling);
         return false;
     }
@@ -74,7 +74,7 @@ export function extendedDegrade(sceneManager: SceneManager): boolean {
         return false;
     }
     if (sceneManager.scene.getEngine().getHardwareScalingLevel() < 1) {
-        const scaling = Clamp(sceneManager.scene.getEngine().getHardwareScalingLevel() + 0.25, 0, 1);
+        const scaling = Scalar.Clamp(sceneManager.scene.getEngine().getHardwareScalingLevel() + 0.25, 0, 1);
         sceneManager.scene.getEngine().setHardwareScalingLevel(scaling);
         return false;
     }
@@ -91,7 +91,7 @@ export function extendedDegrade(sceneManager: SceneManager): boolean {
         return false;
     }
     if (sceneManager.scene.getEngine().getHardwareScalingLevel() < 1.25) {
-        const scaling = Clamp(sceneManager.scene.getEngine().getHardwareScalingLevel() + 0.25, 0, 1.25);
+        const scaling = Scalar.Clamp(sceneManager.scene.getEngine().getHardwareScalingLevel() + 0.25, 0, 1.25);
         sceneManager.scene.getEngine().setHardwareScalingLevel(scaling);
         return false;
     }

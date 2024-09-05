@@ -10,7 +10,7 @@ import type { Observer } from "core/Misc/observable";
 import type { IAnimationKey } from "core/Animations/animationKey";
 import { Quaternion, Vector2, Vector3 } from "core/Maths/math.vector";
 import { Color3, Color4 } from "core/Maths/math.color";
-import { Hermite1stDerivative } from "core/Maths/math.scalar.functions";
+import { Scalar } from "core/Maths/math.scalar";
 
 interface IGraphComponentProps {
     globalState: GlobalState;
@@ -193,7 +193,13 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
 
                         switch (currentAnimation.dataType) {
                             case Animation.ANIMATIONTYPE_FLOAT: {
-                                derivative = Hermite1stDerivative(leftKey.value * invFrameDelta, leftKey.outTangent, rightKey.value * invFrameDelta, rightKey.inTangent, cutTime);
+                                derivative = Scalar.Hermite1stDerivative(
+                                    leftKey.value * invFrameDelta,
+                                    leftKey.outTangent,
+                                    rightKey.value * invFrameDelta,
+                                    rightKey.inTangent,
+                                    cutTime
+                                );
                                 break;
                             }
                             case Animation.ANIMATIONTYPE_VECTOR2: {

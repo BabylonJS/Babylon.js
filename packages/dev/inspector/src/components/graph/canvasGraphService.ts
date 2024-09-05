@@ -14,7 +14,7 @@ import type {
 } from "./graphSupportingTypes";
 import { TimestampUnit } from "./graphSupportingTypes";
 import type { IPerfDatasets, IPerfMetadata } from "core/Misc/interfaces/iPerfViewer";
-import { Clamp } from "core/Maths/math.scalar.functions";
+import { Scalar } from "core/Maths/math.scalar";
 import { PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performanceViewerCollector";
 import type { Observable } from "core/Misc/observable";
 
@@ -307,7 +307,7 @@ export class CanvasGraphService {
         // keep track of largest timestamp value in view!
         this._globalTimeMinMax.max = Math.max(this.datasets.data.at(this.datasets.startingIndices.at(this._datasetBounds.end - 1)), this._globalTimeMinMax.max);
 
-        const updatedScaleFactor = Clamp((this._globalTimeMinMax.max - this._globalTimeMinMax.min) / (bufferMaximum - this._globalTimeMinMax.min), scaleFactor, 1);
+        const updatedScaleFactor = Scalar.Clamp((this._globalTimeMinMax.max - this._globalTimeMinMax.min) / (bufferMaximum - this._globalTimeMinMax.min), scaleFactor, 1);
 
         // we will now set the global maximum to the maximum of the buffer.
         this._globalTimeMinMax.max = bufferMaximum;
@@ -1112,7 +1112,7 @@ export class CanvasGraphService {
             this._position = null;
         }
         // Bind the zoom between [minZoom, maxZoom]
-        this._sizeOfWindow = Clamp(this._sizeOfWindow - amount, minZoom, maxZoom);
+        this._sizeOfWindow = Scalar.Clamp(this._sizeOfWindow - amount, minZoom, maxZoom);
     };
 
     /**
@@ -1151,7 +1151,11 @@ export class CanvasGraphService {
         const pos = this._position ?? this._getNumberOfSlices() - 1;
 
         // update our position without allowing the user to pan more than they need to (approximation)
-        this._position = Clamp(pos - itemsDelta, Math.floor(this._sizeOfWindow * scaleFactor), this._getNumberOfSlices() - Math.floor(this._sizeOfWindow * (1 - scaleFactor)));
+        this._position = Scalar.Clamp(
+            pos - itemsDelta,
+            Math.floor(this._sizeOfWindow * scaleFactor),
+            this._getNumberOfSlices() - Math.floor(this._sizeOfWindow * (1 - scaleFactor))
+        );
 
         if (itemsDelta === 0) {
             this._panPosition.delta += pixelDelta;

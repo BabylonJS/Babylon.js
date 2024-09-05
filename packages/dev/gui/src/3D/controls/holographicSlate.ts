@@ -12,7 +12,7 @@ import { PointerDragBehavior } from "core/Behaviors/Meshes/pointerDragBehavior";
 import type { Texture } from "core/Materials/Textures/texture";
 import { Vector4 } from "core/Maths/math";
 import { Epsilon } from "core/Maths/math.constants";
-import { Clamp } from "core/Maths/math.scalar.functions";
+import { Scalar } from "core/Maths/math.scalar";
 import type { Matrix } from "core/Maths/math.vector";
 import { Quaternion, Vector2, Vector3 } from "core/Maths/math.vector";
 import { Viewport } from "core/Maths/math.viewport";
@@ -403,8 +403,8 @@ export class HolographicSlate extends ContentDisplay3D {
             projectedOffset.copyFromFloats(Vector3.Dot(offset, rightWorld), Vector3.Dot(offset, upWorld));
 
             // By default, content takes full width available and height is cropped to keep aspect ratio
-            this._contentViewport.x = Clamp(startViewport.x - offset.x, 0, 1 - this._contentViewport.width * this._contentScaleRatio);
-            this._contentViewport.y = Clamp(startViewport.y - offset.y, 0, 1 - this._contentViewport.height * this._contentScaleRatio);
+            this._contentViewport.x = Scalar.Clamp(startViewport.x - offset.x, 0, 1 - this._contentViewport.width * this._contentScaleRatio);
+            this._contentViewport.y = Scalar.Clamp(startViewport.y - offset.y, 0, 1 - this._contentViewport.height * this._contentScaleRatio);
             this._applyContentViewport();
         });
     }

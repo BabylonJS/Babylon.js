@@ -20,7 +20,7 @@ import { TouchButton3D } from "./touchButton3D";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import { IsDocumentAvailable } from "core/Misc/domManagement";
-import { Clamp } from "core/Maths/math.scalar.functions";
+import { Scalar } from "core/Maths/math.scalar";
 
 /**
  * Class used to create a holographic button in 3D
@@ -273,7 +273,7 @@ export class TouchHolographicButton extends TouchButton3D {
                 const scale = Vector3.Zero();
                 if (this._backPlate.getWorldMatrix().decompose(scale, undefined, undefined)) {
                     let interactionHeight = this._getInteractionHeight(position, this._backPlate.getAbsolutePosition()) / scale.z;
-                    interactionHeight = Clamp(interactionHeight - this._backPlateDepth / 2, 0.2 * this._frontPlateDepth, this._frontPlateDepth);
+                    interactionHeight = Scalar.Clamp(interactionHeight - this._backPlateDepth / 2, 0.2 * this._frontPlateDepth, this._frontPlateDepth);
 
                     this._frontPlate.scaling.z = interactionHeight;
                     this._frontPlate.position = Vector3.Forward(this._frontPlate._scene.useRightHandedSystem).scale((this._frontPlateDepth - interactionHeight) / 2);
