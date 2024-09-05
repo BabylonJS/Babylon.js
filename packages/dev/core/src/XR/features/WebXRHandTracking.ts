@@ -726,7 +726,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
      */
     public onHandRemovedObservable: Observable<WebXRHand> = new Observable();
 
-    private _originalMesh: Mesh;
+    private _originalMesh?: Mesh;
 
     /**
      * Check if the needed objects are defined.
@@ -929,6 +929,8 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
             WebXRHandTracking._LeftHandGLB?.meshes.forEach((mesh) => mesh.dispose());
             WebXRHandTracking._RightHandGLB = null;
             WebXRHandTracking._LeftHandGLB = null;
+            this._originalMesh?.dispose();
+            this._originalMesh = undefined;
         }
 
         // remove world scale observer
