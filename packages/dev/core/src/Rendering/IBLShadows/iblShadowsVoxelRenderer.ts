@@ -375,7 +375,7 @@ export class _IblShadowsVoxelRenderer {
             this._voxelMrtsYaxis = this._createVoxelMRTs("y_axis_", this._voxelGridYaxis, numSlabs);
             this._voxelMrtsZaxis = this._createVoxelMRTs("z_axis_", this._voxelGridZaxis, numSlabs);
 
-            this._voxelGridRT = new ProceduralTexture("combinedVoxelGrid", size, "combineVoxelGrids", this._scene, voxelCombinedOptions, true);
+            this._voxelGridRT = new ProceduralTexture("combinedVoxelGrid", size, "combineVoxelGrids", this._scene, voxelCombinedOptions, false);
             this._scene.proceduralTextures.splice(this._scene.proceduralTextures.indexOf(this._voxelGridRT), 1);
             this._voxelGridRT.setFloat("layer", 0.0);
             this._voxelGridRT.setTexture("voxelXaxisSampler", this._voxelGridXaxis);
@@ -577,8 +577,6 @@ export class _IblShadowsVoxelRenderer {
                 this._stopVoxelization();
 
                 if (this._triPlanarVoxelization) {
-                    // This hack is to prevent the procedural texture from auto-generating mips while unbinding the framebuffer.
-                    this._voxelGridRT._generateMipMaps = false;
                     this._voxelGridRT.render();
                 }
                 this._generateMipMaps();
