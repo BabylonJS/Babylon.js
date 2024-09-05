@@ -14,13 +14,13 @@ export interface IStreamingSoundSourceOptions extends ISoundSourceOptions {
 }
 
 export abstract class AbstractStreamingSoundSource extends AbstractSoundSource {
+    private _preload: StreamingSoundPreloadType = "auto";
+
     public constructor(name: string, engine: AbstractAudioEngine, options?: IStreamingSoundSourceOptions) {
         super(name, engine, options);
 
         this._preload = options?.preload ?? "auto";
     }
-
-    private _preload: StreamingSoundPreloadType = "auto";
 
     public get preload(): StreamingSoundPreloadType {
         return this._preload;

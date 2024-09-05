@@ -13,6 +13,12 @@ export interface ISpatialAudioTransformOptions {
 }
 
 export class SpatialAudioTransform implements IDisposable {
+    private _attachedTransformNode: Nullable<TransformNode> = null;
+    private _position: Vector3;
+    private _positionDirty: boolean = false;
+    private _rotation: Quaternion;
+    private _rotationDirty: boolean = false;
+
     public constructor(options?: ISpatialAudioTransformOptions) {
         this._position = options?.position ?? Vector3.Zero();
         this._rotation = options?.rotation ?? Quaternion.Identity();
@@ -23,12 +29,6 @@ export class SpatialAudioTransform implements IDisposable {
         this._detachFromTransformNode();
         this._attachedTransformNode = null;
     }
-
-    private _position: Vector3;
-    private _positionDirty: boolean = false;
-
-    private _rotation: Quaternion;
-    private _rotationDirty: boolean = false;
 
     public get position(): Vector3 {
         this._updatePosition();
@@ -47,8 +47,6 @@ export class SpatialAudioTransform implements IDisposable {
     public set rotation(rotation: Quaternion) {
         this._rotation.copyFrom(rotation);
     }
-
-    private _attachedTransformNode: Nullable<TransformNode> = null;
 
     public get attachedTransformNode(): Nullable<TransformNode> {
         return this._attachedTransformNode;

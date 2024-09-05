@@ -6,6 +6,8 @@ import type { Nullable } from "../../types";
 import type { IDisposable } from "../../scene";
 
 export class AbstractAudioNodeParent implements IDisposable {
+    private _children: Nullable<Set<AbstractAudioNode>>;
+
     public dispose(): void {
         if (this._children) {
             for (const node of this._children) {
@@ -14,8 +16,6 @@ export class AbstractAudioNodeParent implements IDisposable {
             this._children.clear();
         }
     }
-
-    private _children: Nullable<Set<AbstractAudioNode>>;
 
     public get children(): Set<AbstractAudioNode> {
         if (!this._children) {

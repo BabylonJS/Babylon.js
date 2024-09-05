@@ -23,6 +23,25 @@ export enum AudioNodeType {
 }
 
 export abstract class AbstractAudioNode extends AbstractAudioNodeParent {
+    // If parent is null, node is owned by audio engine.
+    private _parent: Nullable<AbstractAudioNodeParent> = null;
+
+    public readonly engine: AbstractAudioEngine;
+
+    /**
+     * The connected downstream audio nodes.
+     *
+     * Undefined for input nodes.
+     */
+    protected readonly _connectedDownstreamNodes?: Set<AbstractAudioNode> | undefined;
+
+    /**
+     * The connected upstream audio nodes.
+     *
+     * Undefined for output nodes.
+     */
+    protected readonly _connectedUpstreamNodes?: Set<AbstractAudioNode> | undefined;
+
     /**
      * Creates a new audio node.
      * @param engine - The audio engine this node will be added to
@@ -68,11 +87,6 @@ export abstract class AbstractAudioNode extends AbstractAudioNodeParent {
         super.dispose();
     }
 
-    public readonly engine: AbstractAudioEngine;
-
-    // If parent is null, node is owned by audio engine.
-    private _parent: Nullable<AbstractAudioNodeParent> = null;
-
     public get parent(): AbstractAudioNodeParent {
         return this._parent ?? this.engine;
     }
@@ -86,20 +100,6 @@ export abstract class AbstractAudioNode extends AbstractAudioNodeParent {
         this._parent = parent;
         this.parent.children.add(this);
     }
-
-    /**
-     * The connected downstream audio nodes.
-     *
-     * Undefined for input nodes.
-     */
-    protected readonly _connectedDownstreamNodes?: Set<AbstractAudioNode> | undefined;
-
-    /**
-     * The connected upstream audio nodes.
-     *
-     * Undefined for output nodes.
-     */
-    protected readonly _connectedUpstreamNodes?: Set<AbstractAudioNode> | undefined;
 
     /**
      * The audio node's type.
@@ -177,10 +177,10 @@ export abstract class AbstractAudioNode extends AbstractAudioNodeParent {
 }
 
 export abstract class AbstractNamedAudioNode extends AbstractAudioNode {
+    public name: string;
+
     public constructor(name: string, engine: AbstractAudioEngine, nodeType: AudioNodeType) {
         super(engine, nodeType);
         this.name = name;
     }
-
-    public name: string;
 }

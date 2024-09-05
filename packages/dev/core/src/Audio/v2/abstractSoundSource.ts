@@ -20,6 +20,19 @@ export interface ISoundSourceOptions {
  * Owned by AbstractAudioEngine.
  */
 export abstract class AbstractSoundSource implements IDisposable {
+    // Non-owning.
+    protected _soundInstances: Nullable<Set<AbstractSoundInstance>> = null;
+
+    public name: string;
+    public readonly engine: AbstractAudioEngine;
+
+    public readonly autoplay: boolean;
+    public loop: boolean;
+    public pitch: number;
+    public startTime: number;
+    public stopTime: number;
+    public volume: number;
+
     public constructor(name: string, engine: AbstractAudioEngine, options: Nullable<ISoundSourceOptions> = null) {
         this.name = name;
         this.engine = engine;
@@ -42,20 +55,7 @@ export abstract class AbstractSoundSource implements IDisposable {
         this.engine.soundSources.delete(this);
     }
 
-    public name: string;
-    public readonly engine: AbstractAudioEngine;
-
-    public readonly autoplay: boolean;
-    public loop: boolean;
-    public pitch: number;
-    public startTime: number;
-    public stopTime: number;
-    public volume: number;
-
     public abstract get currentTime(): number;
-
-    // Non-owning.
-    protected _soundInstances: Nullable<Set<AbstractSoundInstance>> = null;
 
     public get soundInstances(): Nullable<IterableIterator<AbstractSoundInstance>> {
         return this._soundInstances?.values() ?? null;

@@ -20,6 +20,15 @@ import type { Nullable } from "../../types";
  * Owns all AbstractSoundSource objects.
  */
 export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
+    // Owned
+    private _listeners: Nullable<Set<SpatialAudioListener>> = null;
+
+    // Not owned, but all items should in parent's `children` container, too, which is owned.
+    public readonly soundInstances = new Set<AbstractStaticSoundInstance>();
+
+    // Owned
+    public readonly soundSources = new Set<AbstractSoundSource>();
+
     public override dispose(): void {
         this.soundInstances.clear();
 
@@ -37,15 +46,6 @@ export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
 
         super.dispose();
     }
-
-    // Not owned, but all items should in parent's `children` container, too, which is owned.
-    public readonly soundInstances = new Set<AbstractStaticSoundInstance>();
-
-    // Owned
-    public readonly soundSources = new Set<AbstractSoundSource>();
-
-    // Owned
-    private _listeners: Nullable<Set<SpatialAudioListener>> = null;
 
     public get listeners(): Set<SpatialAudioListener> {
         if (!this._listeners) {

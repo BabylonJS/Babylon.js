@@ -14,6 +14,11 @@ export interface IAuxilliaryAudioBusOptions extends IAudioBusNodeOptions {
 }
 
 export abstract class AbstractAuxilliaryAudioBus extends AbstractAudioBusNode {
+    private _positioner: Nullable<AbstractAudioPositioner> = null;
+    private _outputBus: Nullable<AbstractAudioBusNode> = null;
+
+    public readonly sender: AbstractAudioSender;
+
     public constructor(name: string, engine: AbstractAudioEngine, options?: IAuxilliaryAudioBusOptions) {
         super(name, engine);
 
@@ -28,8 +33,6 @@ export abstract class AbstractAuxilliaryAudioBus extends AbstractAudioBusNode {
         }
     }
 
-    private _positioner: Nullable<AbstractAudioPositioner> = null;
-
     public get positioner(): Nullable<AbstractAudioPositioner> {
         return this._positioner;
     }
@@ -41,10 +44,6 @@ export abstract class AbstractAuxilliaryAudioBus extends AbstractAudioBusNode {
 
         this._positioner = this.engine.createPositioner(this);
     }
-
-    public readonly sender: AbstractAudioSender;
-
-    private _outputBus: Nullable<AbstractAudioBusNode> = null;
 
     public get outputBus(): Nullable<AbstractAudioBusNode> {
         return this._outputBus;

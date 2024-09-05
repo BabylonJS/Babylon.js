@@ -9,6 +9,8 @@ import type { AbstractSoundSource } from "./abstractSoundSource";
  * Output-only node that connects to a downstream input node.
  */
 export abstract class AbstractSoundInstance extends AbstractAudioNode {
+    protected _source: AbstractSoundSource;
+
     public constructor(source: AbstractSoundSource, inputNode: AbstractAudioNode) {
         super(source.engine, AudioNodeType.Output);
 
@@ -26,8 +28,6 @@ export abstract class AbstractSoundInstance extends AbstractAudioNode {
 
         super.dispose();
     }
-
-    protected _source: AbstractSoundSource;
 
     public abstract get currentTime(): number;
 

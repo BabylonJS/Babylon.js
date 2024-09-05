@@ -12,6 +12,14 @@ import type { Nullable } from "../../types";
 export interface IAudioPositionerOptions extends ISpatialAudioTransformOptions {}
 
 export abstract class AbstractAudioPositioner extends AbstractAudioNode {
+    // Not owned
+    private _listeners: Nullable<Set<SpatialAudioListener>> = null;
+    private _pannerGain: number = 1;
+    private _pannerPosition: Nullable<Vector3> = null;
+    private _spatialTransform: SpatialAudioTransform;
+    private _spatializerGain: number = 1;
+    // TODO: Add spatializer cone angles/volumes, etc ...
+
     public constructor(parent: AbstractAudioNode, options?: ISpatialAudioTransformOptions) {
         super(parent.engine, AudioNodeType.InputOutput, parent);
 
@@ -27,9 +35,6 @@ export abstract class AbstractAudioPositioner extends AbstractAudioNode {
         super.dispose();
     }
 
-    // Not owned
-    private _listeners: Nullable<Set<SpatialAudioListener>> = null;
-
     /** @internal */
     public _addListener(listener: SpatialAudioListener): void {
         if (!this._listeners) {
@@ -43,8 +48,6 @@ export abstract class AbstractAudioPositioner extends AbstractAudioNode {
     public _removeListener(listener: SpatialAudioListener): void {
         this._listeners?.delete(listener);
     }
-
-    private _spatialTransform: SpatialAudioTransform;
 
     public get position(): Vector3 {
         return this._spatialTransform.position;
@@ -70,9 +73,6 @@ export abstract class AbstractAudioPositioner extends AbstractAudioNode {
         this._spatialTransform.attachedTransformNode = node;
     }
 
-    private _spatializerGain: number = 1;
-    // TODO: Add spatializer cone angles/volumes, etc ...
-
     public get spatializerGain(): number {
         return this._spatializerGain;
     }
@@ -81,8 +81,6 @@ export abstract class AbstractAudioPositioner extends AbstractAudioNode {
         this._spatializerGain = value;
     }
 
-    private _pannerGain: number = 1;
-
     public get pannerGain(): number {
         return this._pannerGain;
     }
@@ -90,8 +88,6 @@ export abstract class AbstractAudioPositioner extends AbstractAudioNode {
     public set pannerGain(value: number) {
         this._pannerGain = value;
     }
-
-    private _pannerPosition: Nullable<Vector3> = null;
 
     public get pannerPosition(): Nullable<Vector3> {
         return this._pannerPosition;

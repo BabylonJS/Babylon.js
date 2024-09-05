@@ -13,14 +13,15 @@ export interface IStaticSoundSourceOptions extends ISoundSourceOptions {
 }
 
 export abstract class AbstractStaticSoundSource extends AbstractSoundSource {
+    private _loopStart: number;
+    private _loopEnd: number;
+
     public constructor(name: string, engine: AbstractAudioEngine, options?: IStaticSoundSourceOptions) {
         super(name, engine, options);
 
         this._loopStart = options?.loopStart ?? 0;
         this._loopEnd = options?.loopEnd ?? 0;
     }
-
-    private _loopStart: number;
 
     public get loopStart(): number {
         return this._loopStart;
@@ -29,8 +30,6 @@ export abstract class AbstractStaticSoundSource extends AbstractSoundSource {
     public set loopStart(value: number) {
         this._loopStart = value;
     }
-
-    private _loopEnd: number;
 
     public get loopEnd(): number {
         return this._loopEnd;

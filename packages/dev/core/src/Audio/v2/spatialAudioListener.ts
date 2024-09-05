@@ -10,6 +10,9 @@ import type { IDisposable } from "../../scene";
 import type { Nullable } from "../../types";
 
 export class SpatialAudioListener implements IDisposable {
+    private _engine: AbstractAudioEngine;
+    private _spatialTransform: SpatialAudioTransform;
+
     public constructor(engine: AbstractAudioEngine, options?: ISpatialAudioTransformOptions) {
         this._engine = engine;
         this._spatialTransform = new SpatialAudioTransform(options);
@@ -22,10 +25,6 @@ export class SpatialAudioListener implements IDisposable {
 
         this._spatialTransform.dispose();
     }
-
-    private _engine: AbstractAudioEngine;
-
-    private _spatialTransform: SpatialAudioTransform;
 
     public get position(): Vector3 {
         return this._spatialTransform.position;

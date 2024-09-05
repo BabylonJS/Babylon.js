@@ -9,11 +9,11 @@ export interface IAudioBusNodeOptions {
 }
 
 export abstract class AbstractAudioBusNode extends AbstractNamedAudioNode {
+    public volume: number;
+
     public constructor(name: string, engine: AbstractAudioEngine, options?: IAudioBusNodeOptions) {
         super(name, engine, AudioNodeType.InputOutput);
 
         this.volume = options?.volume ?? 1;
     }
-
-    public volume: number;
 }

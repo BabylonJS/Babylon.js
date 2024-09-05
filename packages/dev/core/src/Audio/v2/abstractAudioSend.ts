@@ -19,13 +19,14 @@ export interface IAudioSendOptions {
  * Owned by AbstractAudioEngine.
  */
 export abstract class AbstractAudioSend extends AbstractAudioNode {
+    private _outputBus: Nullable<AbstractAuxilliaryAudioBus> = null;
+    private _sendType: AudioSendType;
+
     public constructor(engine: AbstractAudioEngine, options?: IAudioSendOptions) {
         super(engine, AudioNodeType.InputOutput);
 
         this._sendType = options?.sendType ?? AudioSendType.PostFader;
     }
-
-    private _outputBus: Nullable<AbstractAuxilliaryAudioBus> = null;
 
     public get outputBus(): Nullable<AbstractAuxilliaryAudioBus> {
         return this._outputBus;
@@ -46,8 +47,6 @@ export abstract class AbstractAudioSend extends AbstractAudioNode {
             this._connect(this._outputBus);
         }
     }
-
-    private _sendType: AudioSendType;
 
     /**
      * The type of send.

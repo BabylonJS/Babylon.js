@@ -21,6 +21,19 @@ export interface ISoundObjectOptions {
 }
 
 export abstract class AbstractSoundObject extends AbstractNamedAudioNode {
+    private _outputBus: Nullable<AbstractPrimaryAudioBus> = null;
+    private _positioner: Nullable<AbstractAudioPositioner> = null;
+    private _soundSources = new Set<AbstractSoundSource>();
+
+    public readonly autoplay: boolean;
+    public loop: boolean;
+    public pitch: number;
+    public startTime: number;
+    public stopTime: number;
+    public volume: number;
+
+    public readonly sender: AbstractAudioSender;
+
     public constructor(name: string, engine: AbstractAudioEngine, options?: ISoundObjectOptions) {
         super(name, engine, AudioNodeType.InputOutput);
 
@@ -49,15 +62,6 @@ export abstract class AbstractSoundObject extends AbstractNamedAudioNode {
         this._soundSources.clear();
     }
 
-    public readonly autoplay: boolean;
-    public loop: boolean;
-    public pitch: number;
-    public startTime: number;
-    public stopTime: number;
-    public volume: number;
-
-    private _positioner: Nullable<AbstractAudioPositioner> = null;
-
     public get positioner(): Nullable<AbstractAudioPositioner> {
         return this._positioner;
     }
@@ -69,10 +73,6 @@ export abstract class AbstractSoundObject extends AbstractNamedAudioNode {
 
         this._positioner = this.engine.createPositioner(this);
     }
-
-    public readonly sender: AbstractAudioSender;
-
-    private _outputBus: Nullable<AbstractPrimaryAudioBus> = null;
 
     public get outputBus(): Nullable<AbstractPrimaryAudioBus> {
         return this._outputBus;
@@ -93,8 +93,6 @@ export abstract class AbstractSoundObject extends AbstractNamedAudioNode {
             this._connect(this._outputBus);
         }
     }
-
-    private _soundSources = new Set<AbstractSoundSource>();
 
     public get soundSources(): IterableIterator<AbstractSoundSource> {
         return this._soundSources.values();

@@ -7,11 +7,11 @@ import type { AbstractAudioEngine } from "./abstractAudioEngine";
 import type { Nullable } from "../../types";
 
 export abstract class AbstractMainAudioBus extends AbstractAudioBusNode {
+    private _device: Nullable<AbstractAudioDevice> = null;
+
     public constructor(name: string, engine: AbstractAudioEngine) {
         super(name, engine);
     }
-
-    private _device: Nullable<AbstractAudioDevice> = null;
 
     public get device(): Nullable<AbstractAudioDevice> {
         return this._device;
