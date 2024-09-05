@@ -351,15 +351,19 @@ export class Sound {
                                         this._htmlAudioElement.loop = this.loop;
                                         Tools.SetCorsBehavior(url, this._htmlAudioElement);
                                         this._htmlAudioElement.preload = "auto";
-                                        this._htmlAudioElement.addEventListener("canplaythrough", () => {
-                                            this._isReadyToPlay = true;
-                                            if (this.autoplay) {
-                                                this.play(0, this._offset, this._length);
-                                            }
-                                            if (this._readyToPlayCallback) {
-                                                this._readyToPlayCallback();
-                                            }
-                                        });
+                                        this._htmlAudioElement.addEventListener(
+                                            "canplaythrough",
+                                            () => {
+                                                this._isReadyToPlay = true;
+                                                if (this.autoplay) {
+                                                    this.play(0, this._offset, this._length);
+                                                }
+                                                if (this._readyToPlayCallback) {
+                                                    this._readyToPlayCallback();
+                                                }
+                                            },
+                                            { once: true }
+                                        );
                                         document.body.appendChild(this._htmlAudioElement);
                                         this._htmlAudioElement.load();
                                     }
@@ -831,6 +835,7 @@ export class Sound {
                         // an HTML Audio element
                         const tryToPlay = () => {
                             if (AbstractEngine.audioEngine?.unlocked) {
+                                this._htmlAudioElement.currentTime = offset ?? 0;
                                 const playPromise = this._htmlAudioElement.play();
 
                                 // In browsers that don’t yet support this functionality,

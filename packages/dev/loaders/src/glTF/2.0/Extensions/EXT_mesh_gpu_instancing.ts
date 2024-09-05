@@ -5,8 +5,8 @@ import type { Nullable } from "core/types";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import type { INode } from "../glTFLoaderInterfaces";
-
 import type { IEXTMeshGpuInstancing } from "babylonjs-gltf2interface";
+import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 import "core/Meshes/thinInstanceMesh";
 
@@ -121,4 +121,5 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new EXT_mesh_gpu_instancing(loader));
+unregisterGLTFExtension(NAME);
+registerGLTFExtension(NAME, true, (loader) => new EXT_mesh_gpu_instancing(loader));
