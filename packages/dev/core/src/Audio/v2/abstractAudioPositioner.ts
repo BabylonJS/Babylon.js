@@ -41,15 +41,7 @@ export abstract class AbstractAudioPositioner extends AbstractAudioNode {
 
     /** @internal */
     public _removeListener(listener: SpatialAudioListener): void {
-        if (!this._listeners) {
-            return;
-        }
-
-        this._listeners.delete(listener);
-
-        if (this._listeners.size === 0) {
-            this._listeners = null;
-        }
+        this._listeners?.delete(listener);
     }
 
     private _spatialTransform: SpatialAudioTransform;
