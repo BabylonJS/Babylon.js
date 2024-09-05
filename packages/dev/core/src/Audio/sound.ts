@@ -163,7 +163,7 @@ export class Sound {
     private _readyToPlayCallback: Nullable<() => any>;
     private _audioBuffer: Nullable<AudioBuffer>;
     private _soundSource: Nullable<AudioBufferSourceNode>;
-    private _streamingSource: AudioNode;
+    private _streamingSource: Nullable<AudioNode>;
     private _soundPanner: Nullable<PannerNode>;
     private _soundGain: Nullable<GainNode>;
     private _inputAudioNode: Nullable<AudioNode>;
@@ -178,7 +178,7 @@ export class Sound {
     private _customAttenuationFunction: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number;
     private _registerFunc: Nullable<(connectedMesh: TransformNode) => void>;
     private _isOutputConnected = false;
-    private _htmlAudioElement: HTMLAudioElement;
+    private _htmlAudioElement: Nullable<HTMLAudioElement>;
     private _urlType: "Unknown" | "String" | "Array" | "ArrayBuffer" | "MediaStream" | "AudioBuffer" | "MediaElement" = "Unknown";
     private _length?: number;
     private _offset?: number;
@@ -446,10 +446,12 @@ export class Sound {
                 this._htmlAudioElement.pause();
                 this._htmlAudioElement.src = "";
                 document.body.removeChild(this._htmlAudioElement);
+                this._htmlAudioElement = null;
             }
 
             if (this._streamingSource) {
                 this._streamingSource.disconnect();
+                this._streamingSource = null;
             }
 
             if (this._connectedTransformNode && this._registerFunc) {
@@ -817,16 +819,18 @@ export class Sound {
                     }
                 }
                 if (this._streaming) {
-                    if (!this._streamingSource) {
+                    if (!this._streamingSource && this._htmlAudioElement) {
                         this._streamingSource = AbstractEngine.audioEngine.audioContext.createMediaElementSource(this._htmlAudioElement);
                         this._htmlAudioElement.onended = () => {
                             this._onended();
                         };
                         this._htmlAudioElement.playbackRate = this._playbackRate;
                     }
-                    this._streamingSource.disconnect();
-                    if (this._inputAudioNode) {
-                        this._streamingSource.connect(this._inputAudioNode);
+                    if (this._streamingSource) {
+                        this._streamingSource.disconnect();
+                        if (this._inputAudioNode) {
+                            this._streamingSource.connect(this._inputAudioNode);
+                        }
                     }
                     if (this._htmlAudioElement) {
                         // required to manage properly the new suspended default state of Chrome
@@ -835,6 +839,10 @@ export class Sound {
                         // an HTML Audio element
                         const tryToPlay = () => {
                             if (AbstractEngine.audioEngine?.unlocked) {
+                                if (!this._htmlAudioElement) {
+                                    return;
+                                }
+
                                 this._htmlAudioElement.currentTime = offset ?? 0;
                                 const playPromise = this._htmlAudioElement.play();
 
@@ -953,7 +961,7 @@ export class Sound {
                         this._htmlAudioElement.currentTime = 0;
                     }
                 } else {
-                    this._streamingSource.disconnect();
+                    this._streamingSource?.disconnect();
                 }
                 this.isPlaying = false;
             } else if (AbstractEngine.audioEngine?.audioContext && this._soundSource) {
@@ -989,7 +997,7 @@ export class Sound {
                 if (this._htmlAudioElement) {
                     this._htmlAudioElement.pause();
                 } else {
-                    this._streamingSource.disconnect();
+                    this._streamingSource?.disconnect();
                 }
                 this.isPlaying = false;
                 this.isPaused = true;
