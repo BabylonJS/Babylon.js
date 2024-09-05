@@ -122,7 +122,7 @@ export interface IWebXRHandTrackingOptions {
         disposeOnSessionEnd?: boolean;
 
         /**
-         * Setting this will allow th developer to avoid loading the NME material and use the standard material instead.
+         * Setting this will allow the developer to avoid loading the NME material and use the standard material instead.
          */
         disableHandShader?: boolean;
     };
