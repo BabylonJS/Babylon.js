@@ -367,7 +367,7 @@ export class WebXRHand implements IDisposable {
 
         // Initialize the joint transform quaternions and link the transforms to the bones.
         for (let jointIdx = 0; jointIdx < this._jointTransforms.length; jointIdx++) {
-            this._jointTransforms[jointIdx] = this._jointTransforms[jointIdx] || new TransformNode(handJointReferenceArray[jointIdx], this._scene);
+            this._jointTransforms[jointIdx] = new TransformNode(handJointReferenceArray[jointIdx], this._scene);
             this._jointTransforms[jointIdx].rotationQuaternion = new Quaternion();
 
             // Set the rotation quaternion so we can use it later for tracking.
