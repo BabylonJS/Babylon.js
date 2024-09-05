@@ -301,8 +301,9 @@ float screenSpaceShadow(vec3 csOrigin, vec3 csDirection, vec2 csZBufferSize,
                               sceneDepth > 0.0 && stepCount < ssSamples;
        stepCount++, P += dP,
              Z += dZ) { // 'sceneDepth > 0.0' instead of 'sceneDepth < 0.0'
+    ivec2 coords = ivec2(permute ? P.yx : P);
     vec2 linearZ_alpha =
-        texelFetch(linearDepthSampler, ivec2(permute ? P.yx : P), 0).xy;
+        texelFetch(linearDepthSampler, coords, 0).xy;
     sceneDepth = csZDir * linearZ_alpha.x;
     if (sceneDepth <= 0.0)
       break;
@@ -379,7 +380,9 @@ void main(void) {
   float normalizedRotation = envRot / (2.0 * PI);
 
   float depth = texelFetch(depthSampler, PixelCoord, 0).x;
-  depth = depth * 2.0 - 1.0;
+  #ifndef IS_NDC_HALF_ZRANGE
+    depth = depth * 2.0 - 1.0;
+  #endif
   vec2 temp = (vec2(PixelCoord) + vec2(0.5)) * 2.0 / Resolution - vec2(1.0);
   vec2 temp2 = vUV * vec2(2.0) - vec2(1.0);
   vec4 VP = invProjMtx * vec4(temp.x, -temp.y, depth, 1.0);

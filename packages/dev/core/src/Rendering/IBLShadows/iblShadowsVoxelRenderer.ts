@@ -28,7 +28,6 @@ import { ProceduralTexture } from "../../Materials/Textures/Procedurals/procedur
 import { EffectRenderer, EffectWrapper } from "../../Materials/effectRenderer";
 import type { IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
 import type { RenderTargetWrapper } from "core/Engines";
-import { Observable } from "../../Misc/observable";
 
 /**
  * Voxel-based shadow rendering for IBL's.
@@ -47,6 +46,7 @@ export class _IblShadowsVoxelRenderer {
     private _voxelMrtsYaxis: MultiRenderTarget[] = [];
     private _voxelMrtsZaxis: MultiRenderTarget[] = [];
     private _isVoxelGrid3D: boolean = true;
+    private _renderInFlight = false;
 
     /**
      * Return the voxel grid texture.
@@ -135,11 +135,6 @@ export class _IblShadowsVoxelRenderer {
         this._disposeVoxelTextures();
         this._createTextures();
     }
-
-    /**
-     * Observable that will be triggered when the voxel grid is ready to be used
-     */
-    public onReadyObservable: Observable<void> = new Observable<void>();
 
     private _copyMipEffectRenderer: EffectRenderer;
     private _copyMipEffectWrapper: EffectWrapper;
@@ -381,14 +376,13 @@ export class _IblShadowsVoxelRenderer {
             this._voxelMrtsZaxis = this._createVoxelMRTs("z_axis_", this._voxelGridZaxis, numSlabs);
 
             this._voxelGridRT = new ProceduralTexture("combinedVoxelGrid", size, "combineVoxelGrids", this._scene, voxelCombinedOptions, true);
-            this._voxelGridRT.isRenderTarget = true;
+            this._scene.proceduralTextures.splice(this._scene.proceduralTextures.indexOf(this._voxelGridRT), 1);
             this._voxelGridRT.setFloat("layer", 0.0);
             this._voxelGridRT.setTexture("voxelXaxisSampler", this._voxelGridXaxis);
             this._voxelGridRT.setTexture("voxelYaxisSampler", this._voxelGridYaxis);
             this._voxelGridRT.setTexture("voxelZaxisSampler", this._voxelGridZaxis);
             // We will render this only after voxelization is completed for the 3 axes.
             this._voxelGridRT.autoClear = false;
-            this._voxelGridRT.refreshRate = 0;
             this._voxelGridRT.wrapU = Texture.CLAMP_ADDRESSMODE;
             this._voxelGridRT.wrapV = Texture.CLAMP_ADDRESSMODE;
         } else {
@@ -400,11 +394,10 @@ export class _IblShadowsVoxelRenderer {
         for (let mipIdx = 1; mipIdx <= this._mipArray.length; mipIdx++) {
             const mipDim = this._voxelResolution >> mipIdx;
             const mipSize: TextureSize = { width: mipDim, height: mipDim, depth: mipDim };
-            this._mipArray[mipIdx - 1] = new ProceduralTexture("voxelMip" + mipIdx, mipSize, "generateVoxelMip", this._scene, voxelAxisOptions);
+            this._mipArray[mipIdx - 1] = new ProceduralTexture("voxelMip" + mipIdx, mipSize, "generateVoxelMip", this._scene, voxelAxisOptions, false);
+            this._scene.proceduralTextures.splice(this._scene.proceduralTextures.indexOf(this._mipArray[mipIdx - 1]), 1);
 
             const mipTarget = this._mipArray[mipIdx - 1];
-            mipTarget._noMipmap = true;
-            mipTarget.refreshRate = 0;
             mipTarget.autoClear = false;
             mipTarget.wrapU = Texture.CLAMP_ADDRESSMODE;
             mipTarget.wrapV = Texture.CLAMP_ADDRESSMODE;
@@ -498,7 +491,13 @@ export class _IblShadowsVoxelRenderer {
      * @returns true if the voxel renderer is ready to voxelize scene
      */
     public isReady() {
-        if (!this.getVoxelGrid().isReady() || this._voxelizationInProgress) {
+        let allReady = this.getVoxelGrid().isReady();
+        for (let i = 0; i < this._mipArray.length; i++) {
+            const mipReady = this._mipArray[i].isReady();
+            allReady &&= mipReady;
+        }
+
+        if (!allReady || this._voxelizationInProgress) {
             return false;
         }
 
@@ -564,8 +563,13 @@ export class _IblShadowsVoxelRenderer {
 
     private _renderVoxelGrid() {
         if (this._voxelizationInProgress) {
-            const allRTsReady = this._renderTargets.every((rt) => rt.isReadyForRendering());
+            let allRTsReady = true;
+            for (let i = 0; i < this._renderTargets.length; i++) {
+                const rttReady = this._renderTargets[i].isReadyForRendering();
+                allRTsReady &&= rttReady;
+            }
             if (allRTsReady) {
+                this._renderInFlight = false;
                 (this._scene.prePassRenderer as any)._setEnabled(false);
                 this._renderTargets.forEach((rt) => {
                     rt.render();
@@ -581,8 +585,12 @@ export class _IblShadowsVoxelRenderer {
                 this._copyMipMaps();
                 this._voxelizationInProgress = false;
                 this._scene.onAfterRenderTargetsRenderObservable.removeCallback((this as any).boundVoxelGridRenderFn);
-                this.onReadyObservable.notifyObservers();
                 (this._scene.prePassRenderer as any)._setEnabled(true);
+            } else if (!this._renderInFlight) {
+                this._renderInFlight = true;
+                setTimeout(() => {
+                    this._renderVoxelGrid();
+                }, 16);
             }
         }
     }

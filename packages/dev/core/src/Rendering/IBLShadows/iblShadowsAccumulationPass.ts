@@ -206,7 +206,12 @@ export class _IblShadowsAccumulationPass {
         const accumulationCopyPP = new PostProcess("Copy Accumulation Texture", "pass", accumulationCopyOptions);
         accumulationCopyPP.autoClear = false;
         accumulationCopyPP.onApplyObservable.add((effect) => {
-            effect.setTextureFromPostProcessOutput("textureSampler", this._outputPP);
+            if (this._outputPP._outputTexture?.texture) {
+                effect.setTextureFromPostProcessOutput("textureSampler", this._outputPP);
+            } else {
+                // We must set a texture. It's not the right one, but we must set something before the right one is available (see above), probably on next frame.
+                effect._bindTexture("textureSampler", this._outputPP.inputTexture.texture);
+            }
         });
         this._oldAccumulationRT.addPostProcess(accumulationCopyPP);
         this._oldAccumulationRT.skipInitialClear = true;
@@ -227,6 +232,7 @@ export class _IblShadowsAccumulationPass {
         };
         this._outputPP = new PostProcess("accumulationPassPP", "iblShadowAccumulation", ppOptions);
         this._outputPP.autoClear = false;
+        this._outputPP.resize(this._engine.getRenderWidth(), this._engine.getRenderHeight()); // make sure that _outputPP.inputTexture.texture is created right away
         this._outputPP.onApplyObservable.add((effect) => {
             this._updatePostProcess(effect);
         });
