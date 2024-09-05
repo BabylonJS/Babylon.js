@@ -1,139 +1,32 @@
 {
-    "fromTag": "7.23.0",
+    "fromTag": "7.23.1",
     "changelog": {
-        "7.23.0": [
+        "7.24.0": [
             {
-                "pr": "15487",
-                "title": "fix BB Style anchor alignment",
-                "description": "fixes #15485 \r\nIdk how I missed it :/",
+                "pr": "15526",
+                "title": "Use `Sound.play` `offset` arg for sounds with `streaming` set to `true`",
+                "description": "## Overview\r\nThe `Sound.play` `offset` arg is currently ignored when the `streaming` option is set. This change fixes it so it is not ignored.\r\n\r\nNote that setting the sound's `HTMLAudioElement.currentTime` property causes Chrome to fire its \"canplaythrough\" event continuously, so this change also removes the event listener after it has fired once since we only use it the first time it is raised.\r\n\r\n## Related forum post:\r\nhttps://forum.babylonjs.com/t/sound-element-not-playing-after-window-blur-on-ipados/52802\r\n\r\n## Test playground:\r\nhttps://playground.babylonjs.com/#RF3XZS\r\n- Before this change, the playground restarts the sound from the beginning when audio is unmuted and the \"Toggle playback\" button is pressed twice, ignoring the `Sound.play` `offset` arg.\r\n- After this change, the same actions resume the sound from the given `Sound.play` `offset` arg correctly.",
                 "author": {
-                    "name": "CedricGuillemet",
-                    "url": "https://github.com/CedricGuillemet"
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
                 },
                 "files": [
-                    "packages/dev/core/src/Gizmos/boundingBoxGizmo.ts"
+                    "packages/dev/core/src/Audio/sound.ts"
                 ],
                 "tags": [
-                    "skip changelog"
+                    "bug"
                 ]
             },
             {
-                "pr": "15491",
-                "title": "Fix alphaCutOff bug for prepasses with PBRMaterial",
-                "description": "This seems like a bug that's been here since 2020?\r\n\r\nhttps://github.com/BabylonJS/Babylon.js/commit/b0ea94d2da49bb433be9e1f683fb8601ec7602e3#diff-2a4a53d0e5c40a5418e4772bae04358b45cdaf0efc65291d9e8873b47b08a8a4",
-                "author": {
-                    "name": "MiiBond",
-                    "url": "https://github.com/MiiBond"
-                },
-                "files": [
-                    "packages/dev/core/src/Shaders/pbr.fragment.fx"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "15493",
-                "title": "Fix non deterministic test",
-                "description": null,
-                "author": {
-                    "name": "noname0310",
-                    "url": "https://github.com/noname0310"
-                },
-                "files": [
-                    "packages/tools/tests/test/visualization/config.json"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "15490",
-                "title": "Several IBL shadow fixes",
-                "description": "This PR addresses a few issues that I've found while using the IBL shadow pipeline.\r\n* The voxel tracing debug shader code was left on (`_debugVoxelMarchEnabled = true`). This has a small performance cost but shouldn't be on by default.\r\n* Using the `toggleShadow` function immediately after creating the pipeline wasn't working because it gets toggled internally when the pipeline is ready.\r\n  *  e.g. https://playground.babylonjs.com//#8R5SSE#212\r\n* Double voxelization was being done as a hack before to get around some async issues that no longer exist. I've removed this.\r\n* There were some async issues with multiple calls to setIblTexture that would prevent the IBL from being initialized correctly.\r\n  *  e.g. https://playground.babylonjs.com//#8R5SSE#211",
-                "author": {
-                    "name": "MiiBond",
-                    "url": "https://github.com/MiiBond"
-                },
-                "files": [
-                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsImportanceSamplingRenderer.ts",
-                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsRenderPipeline.ts",
-                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelRenderer.ts",
-                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelTracingPass.ts",
-                    "packages/dev/core/src/Shaders/iblShadowVoxelTracing.fragment.fx"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "15484",
-                "title": "Fix gltf thickness texture name",
-                "description": "https://forum.babylonjs.com/t/sandbox-loading-babylon-file-exported-from-glb-never-ends/52930/7",
-                "author": {
-                    "name": "sebavan",
-                    "url": "https://github.com/sebavan"
-                },
-                "files": [
-                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_volume.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "15489",
-                "title": "Bump webpack from 5.93.0 to 5.94.0",
-                "description": "Bumps [webpack](https://github.com/webpack/webpack) from 5.93.0 to 5.94.0.\n<details>\n<summary>Release notes</summary>\n<p><em>Sourced from <a href=\"https://github.com/webpack/webpack/releases\">webpack's releases</a>.</em></p>\n<blockquote>\n<h2>v5.94.0</h2>\n<h2>Bug Fixes</h2>\n<ul>\n<li>Added runtime condition for harmony reexport checked</li>\n<li>Handle properly <code>data</code>/<code>http</code>/<code>https</code> protocols in source maps</li>\n<li>Make <code>bigint</code> optimistic when browserslist not found</li>\n<li>Move <code>@​types/eslint-scope</code> to dev deps</li>\n<li>Related in asset stats is now always an array when no related found</li>\n<li>Handle ASI for export declarations</li>\n<li>Mangle destruction incorrect with export named default properly</li>\n<li>Fixed unexpected asi generation with sequence expression</li>\n<li>Fixed a lot of types</li>\n</ul>\n<h2>New Features</h2>\n<ul>\n<li>Added new external type &quot;module-import&quot;</li>\n<li>Support <code>webpackIgnore</code> for <code>new URL()</code> construction</li>\n<li>[CSS] <code>@import</code> pathinfo support</li>\n</ul>\n<h2>Security</h2>\n<ul>\n<li>Fixed DOM clobbering in auto public path</li>\n</ul>\n</blockquote>\n</details>\n<details>\n<summary>Commits</summary>\n<ul>\n<li><a href=\"https://github.com/webpack/webpack/commit/eabf85d8580dfcb876b56957ba5488222a4f7873\"><code>eabf85d</code></a> chore(release): 5.94.0</li>\n<li><a href=\"https://github.com/webpack/webpack/commit/955e057abc6cc83cbc3fa1e1ef67a49758bf5a61\"><code>955e057</code></a> security: fix DOM clobbering in auto public path</li>\n<li><a href=\"https://github.com/webpack/webpack/commit/98223873625a029b9903d5ec6c0235b8f9fb5a66\"><code>9822387</code></a> test: fix</li>\n<li><a href=\"https://github.com/webpack/webpack/commit/cbb86ede32ab53d8eade6efee30da2463f0082ec\"><code>cbb86ed</code></a> test: fix</li>\n<li><a href=\"https://github.com/webpack/webpack/commit/5ac3d7f2cdce6da63a8dfb07e9dbbd95756bf7a2\"><code>5ac3d7f</code></a> fix: unexpected asi generation with sequence expression</li>\n<li><a href=\"https://github.com/webpack/webpack/commit/2411661bd1bedf1b2efc23c76d595c189425d39f\"><code>2411661</code></a> security: fix DOM clobbering in auto public path</li>\n<li><a href=\"https://github.com/webpack/webpack/commit/b8c03d47726a57e0dc6ba58b4f96f0e81b168268\"><code>b8c03d4</code></a> fix: unexpected asi generation with sequence expression</li>\n<li><a href=\"https://github.com/webpack/webpack/commit/f46a03ccbc2b96ff3552642fea0d7402f7880865\"><code>f46a03c</code></a> revert: do not use heuristic fallback for &quot;module-import&quot;</li>\n<li><a href=\"https://github.com/webpack/webpack/commit/60f189871a4cdc5d595663d6babadac74f2f6a7d\"><code>60f1898</code></a> fix: do not use heuristic fallback for &quot;module-import&quot;</li>\n<li><a href=\"https://github.com/webpack/webpack/commit/66306aa45659ef4e8dac8226798931c228fdb204\"><code>66306aa</code></a> Revert &quot;fix: module-import get fallback from externalsPresets&quot;</li>\n<li>Additional commits viewable in <a href=\"https://github.com/webpack/webpack/compare/v5.93.0...v5.94.0\">compare view</a></li>\n</ul>\n</details>\n<br />\n\n\n[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=webpack&package-manager=npm_and_yarn&previous-version=5.93.0&new-version=5.94.0)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)\n\nDependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.\n\n[//]: # (dependabot-automerge-start)\n[//]: # (dependabot-automerge-end)\n\n---\n\n<details>\n<summary>Dependabot commands and options</summary>\n<br />\n\nYou can trigger Dependabot actions by commenting on this PR:\n- `@dependabot rebase` will rebase this PR\n- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it\n- `@dependabot merge` will merge this PR after your CI passes on it\n- `@dependabot squash and merge` will squash and merge this PR after your CI passes on it\n- `@dependabot cancel merge` will cancel a previously requested merge and block automerging\n- `@dependabot reopen` will reopen this PR if it is closed\n- `@dependabot close` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually\n- `@dependabot show <dependency name> ignore conditions` will show all of the ignore conditions of the specified dependency\n- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)\nYou can disable automated security fix PRs for this repo from the [Security Alerts page](https://github.com/BabylonJS/Babylon.js/network/alerts).\n\n</details>",
-                "author": {
-                    "name": "dependabot[bot]",
-                    "url": "https://github.com/apps/dependabot"
-                },
-                "files": [
-                    "package-lock.json"
-                ],
-                "tags": [
-                    "dependencies"
-                ]
-            },
-            {
-                "pr": "15488",
-                "title": "Fix styling for viewer toolbar select options (Windows only)",
-                "description": "I recently added the default toolbar for animation controls in the alpha Viewer. I tested it on Chrome/Edge/Safari/Firefox on MacOS as well as Safari on iOS and Chrome on Android. However it turns out that only on Windows, the popup for a `select` is stylable, and so it did not render correctly since the default Viewer styling first removes all default styling for `select`s and then adds back custom styling. This change adds additional custom styling to the `option`s of the `select`s.\r\n\r\n![image](https://github.com/user-attachments/assets/d288be66-ce55-481d-af39-3ac486cf403f)\r\n",
+                "pr": "15527",
+                "title": "Set correct peerDependencies versions based on recent changes",
+                "description": "I was not able to set the correct peerDependencies versions with the previous PR. I had to publish a patch version first. So correcting this now.",
                 "author": {
                     "name": "ryantrem",
                     "url": "https://github.com/ryantrem"
                 },
                 "files": [
-                    "package-lock.json",
-                    "packages/tools/viewer-alpha/package.json",
-                    "packages/tools/viewer-alpha/src/viewerElement.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "15486",
-                "title": "Fix ternary op crash for native",
-                "description": "This ternary operator crashes GLSLang. Just that particular one. No idea why even after some investigations.",
-                "author": {
-                    "name": "CedricGuillemet",
-                    "url": "https://github.com/CedricGuillemet"
-                },
-                "files": [
-                    "packages/dev/core/src/Shaders/ShadersInclude/pbrHelperFunctions.fx"
-                ],
-                "tags": [
-                    "native"
-                ]
-            },
-            {
-                "pr": "15482",
-                "title": "Viewer alpha code splitting / chunking for dynamic imports",
-                "description": "This change configures rollup to allow code splitting / chunking for dynamic imports (previously we just inlined the dynamic imports). This only affects the `dist` folder of the alpha viewer, which even if it is not being used right now, it is useful for testing. The dist folder now looks like this (truncated):\r\n\r\n![image](https://github.com/user-attachments/assets/519bf567-ce20-45cb-a04e-2446265b933e)\r\n\r\nThis chunking breaks it into 23 js files instead of 1 (per min/max). This gets the top level minified file back down to about 1.5mb as expected.\r\n\r\nI also added a very simple test app to the public package directory to make it easy to test the built dist locally.\r\n\r\nLastly, I made one tiny fix to `ViewerElement.ts`, where I had used `??` to make the animation controls conditional, which meant when a model with no animation is loaded, it actually ends up inserting a \"false\" string into the dom. When the viewer is taking up the full space of the parent, it's not visible, so I missed it previously. I just changed it to use a ternary operator and substitute empty string when there is no animation.",
-                "author": {
-                    "name": "ryantrem",
-                    "url": "https://github.com/ryantrem"
-                },
-                "files": [
-                    "package-lock.json",
-                    "packages/public/@babylonjs/viewer-alpha/package.json",
-                    "packages/public/@babylonjs/viewer-alpha/rollup.config.dist.esm.mjs",
-                    "packages/public/@babylonjs/viewer-alpha/test/apps/web/index.html",
-                    "packages/public/@babylonjs/viewer-alpha/tsconfig.build.dist.json",
-                    "packages/public/@babylonjs/viewer-alpha/vite.config.mjs",
-                    "packages/tools/viewer-alpha/src/viewerElement.ts"
+                    "packages/public/@babylonjs/viewer-alpha/package.json"
                 ],
                 "tags": []
             }
@@ -625,6 +518,143 @@
                 "files": [
                     "packages/tools/tests/test/performance/config.json",
                     "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            }
+        ],
+        "7.23.0": [
+            {
+                "pr": "15487",
+                "title": "fix BB Style anchor alignment",
+                "description": "fixes #15485 \r\nIdk how I missed it :/",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/boundingBoxGizmo.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15491",
+                "title": "Fix alphaCutOff bug for prepasses with PBRMaterial",
+                "description": "This seems like a bug that's been here since 2020?\r\n\r\nhttps://github.com/BabylonJS/Babylon.js/commit/b0ea94d2da49bb433be9e1f683fb8601ec7602e3#diff-2a4a53d0e5c40a5418e4772bae04358b45cdaf0efc65291d9e8873b47b08a8a4",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15493",
+                "title": "Fix non deterministic test",
+                "description": null,
+                "author": {
+                    "name": "noname0310",
+                    "url": "https://github.com/noname0310"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15490",
+                "title": "Several IBL shadow fixes",
+                "description": "This PR addresses a few issues that I've found while using the IBL shadow pipeline.\r\n* The voxel tracing debug shader code was left on (`_debugVoxelMarchEnabled = true`). This has a small performance cost but shouldn't be on by default.\r\n* Using the `toggleShadow` function immediately after creating the pipeline wasn't working because it gets toggled internally when the pipeline is ready.\r\n  *  e.g. https://playground.babylonjs.com//#8R5SSE#212\r\n* Double voxelization was being done as a hack before to get around some async issues that no longer exist. I've removed this.\r\n* There were some async issues with multiple calls to setIblTexture that would prevent the IBL from being initialized correctly.\r\n  *  e.g. https://playground.babylonjs.com//#8R5SSE#211",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsImportanceSamplingRenderer.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsRenderPipeline.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelRenderer.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelTracingPass.ts",
+                    "packages/dev/core/src/Shaders/iblShadowVoxelTracing.fragment.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15484",
+                "title": "Fix gltf thickness texture name",
+                "description": "https://forum.babylonjs.com/t/sandbox-loading-babylon-file-exported-from-glb-never-ends/52930/7",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_volume.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15489",
+                "title": "Bump webpack from 5.93.0 to 5.94.0",
+                "description": "Bumps [webpack](https://github.com/webpack/webpack) from 5.93.0 to 5.94.0.\n<details>\n<summary>Release notes</summary>\n<p><em>Sourced from <a href=\"https://github.com/webpack/webpack/releases\">webpack's releases</a>.</em></p>\n<blockquote>\n<h2>v5.94.0</h2>\n<h2>Bug Fixes</h2>\n<ul>\n<li>Added runtime condition for harmony reexport checked</li>\n<li>Handle properly <code>data</code>/<code>http</code>/<code>https</code> protocols in source maps</li>\n<li>Make <code>bigint</code> optimistic when browserslist not found</li>\n<li>Move <code>@​types/eslint-scope</code> to dev deps</li>\n<li>Related in asset stats is now always an array when no related found</li>\n<li>Handle ASI for export declarations</li>\n<li>Mangle destruction incorrect with export named default properly</li>\n<li>Fixed unexpected asi generation with sequence expression</li>\n<li>Fixed a lot of types</li>\n</ul>\n<h2>New Features</h2>\n<ul>\n<li>Added new external type &quot;module-import&quot;</li>\n<li>Support <code>webpackIgnore</code> for <code>new URL()</code> construction</li>\n<li>[CSS] <code>@import</code> pathinfo support</li>\n</ul>\n<h2>Security</h2>\n<ul>\n<li>Fixed DOM clobbering in auto public path</li>\n</ul>\n</blockquote>\n</details>\n<details>\n<summary>Commits</summary>\n<ul>\n<li><a href=\"https://github.com/webpack/webpack/commit/eabf85d8580dfcb876b56957ba5488222a4f7873\"><code>eabf85d</code></a> chore(release): 5.94.0</li>\n<li><a href=\"https://github.com/webpack/webpack/commit/955e057abc6cc83cbc3fa1e1ef67a49758bf5a61\"><code>955e057</code></a> security: fix DOM clobbering in auto public path</li>\n<li><a href=\"https://github.com/webpack/webpack/commit/98223873625a029b9903d5ec6c0235b8f9fb5a66\"><code>9822387</code></a> test: fix</li>\n<li><a href=\"https://github.com/webpack/webpack/commit/cbb86ede32ab53d8eade6efee30da2463f0082ec\"><code>cbb86ed</code></a> test: fix</li>\n<li><a href=\"https://github.com/webpack/webpack/commit/5ac3d7f2cdce6da63a8dfb07e9dbbd95756bf7a2\"><code>5ac3d7f</code></a> fix: unexpected asi generation with sequence expression</li>\n<li><a href=\"https://github.com/webpack/webpack/commit/2411661bd1bedf1b2efc23c76d595c189425d39f\"><code>2411661</code></a> security: fix DOM clobbering in auto public path</li>\n<li><a href=\"https://github.com/webpack/webpack/commit/b8c03d47726a57e0dc6ba58b4f96f0e81b168268\"><code>b8c03d4</code></a> fix: unexpected asi generation with sequence expression</li>\n<li><a href=\"https://github.com/webpack/webpack/commit/f46a03ccbc2b96ff3552642fea0d7402f7880865\"><code>f46a03c</code></a> revert: do not use heuristic fallback for &quot;module-import&quot;</li>\n<li><a href=\"https://github.com/webpack/webpack/commit/60f189871a4cdc5d595663d6babadac74f2f6a7d\"><code>60f1898</code></a> fix: do not use heuristic fallback for &quot;module-import&quot;</li>\n<li><a href=\"https://github.com/webpack/webpack/commit/66306aa45659ef4e8dac8226798931c228fdb204\"><code>66306aa</code></a> Revert &quot;fix: module-import get fallback from externalsPresets&quot;</li>\n<li>Additional commits viewable in <a href=\"https://github.com/webpack/webpack/compare/v5.93.0...v5.94.0\">compare view</a></li>\n</ul>\n</details>\n<br />\n\n\n[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=webpack&package-manager=npm_and_yarn&previous-version=5.93.0&new-version=5.94.0)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)\n\nDependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.\n\n[//]: # (dependabot-automerge-start)\n[//]: # (dependabot-automerge-end)\n\n---\n\n<details>\n<summary>Dependabot commands and options</summary>\n<br />\n\nYou can trigger Dependabot actions by commenting on this PR:\n- `@dependabot rebase` will rebase this PR\n- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it\n- `@dependabot merge` will merge this PR after your CI passes on it\n- `@dependabot squash and merge` will squash and merge this PR after your CI passes on it\n- `@dependabot cancel merge` will cancel a previously requested merge and block automerging\n- `@dependabot reopen` will reopen this PR if it is closed\n- `@dependabot close` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually\n- `@dependabot show <dependency name> ignore conditions` will show all of the ignore conditions of the specified dependency\n- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)\nYou can disable automated security fix PRs for this repo from the [Security Alerts page](https://github.com/BabylonJS/Babylon.js/network/alerts).\n\n</details>",
+                "author": {
+                    "name": "dependabot[bot]",
+                    "url": "https://github.com/apps/dependabot"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": [
+                    "dependencies"
+                ]
+            },
+            {
+                "pr": "15488",
+                "title": "Fix styling for viewer toolbar select options (Windows only)",
+                "description": "I recently added the default toolbar for animation controls in the alpha Viewer. I tested it on Chrome/Edge/Safari/Firefox on MacOS as well as Safari on iOS and Chrome on Android. However it turns out that only on Windows, the popup for a `select` is stylable, and so it did not render correctly since the default Viewer styling first removes all default styling for `select`s and then adds back custom styling. This change adds additional custom styling to the `option`s of the `select`s.\r\n\r\n![image](https://github.com/user-attachments/assets/d288be66-ce55-481d-af39-3ac486cf403f)\r\n",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/tools/viewer-alpha/package.json",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15486",
+                "title": "Fix ternary op crash for native",
+                "description": "This ternary operator crashes GLSLang. Just that particular one. No idea why even after some investigations.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrHelperFunctions.fx"
+                ],
+                "tags": [
+                    "native"
+                ]
+            },
+            {
+                "pr": "15482",
+                "title": "Viewer alpha code splitting / chunking for dynamic imports",
+                "description": "This change configures rollup to allow code splitting / chunking for dynamic imports (previously we just inlined the dynamic imports). This only affects the `dist` folder of the alpha viewer, which even if it is not being used right now, it is useful for testing. The dist folder now looks like this (truncated):\r\n\r\n![image](https://github.com/user-attachments/assets/519bf567-ce20-45cb-a04e-2446265b933e)\r\n\r\nThis chunking breaks it into 23 js files instead of 1 (per min/max). This gets the top level minified file back down to about 1.5mb as expected.\r\n\r\nI also added a very simple test app to the public package directory to make it easy to test the built dist locally.\r\n\r\nLastly, I made one tiny fix to `ViewerElement.ts`, where I had used `??` to make the animation controls conditional, which meant when a model with no animation is loaded, it actually ends up inserting a \"false\" string into the dom. When the viewer is taking up the full space of the parent, it's not visible, so I missed it previously. I just changed it to use a ternary operator and substitute empty string when there is no animation.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/public/@babylonjs/viewer-alpha/package.json",
+                    "packages/public/@babylonjs/viewer-alpha/rollup.config.dist.esm.mjs",
+                    "packages/public/@babylonjs/viewer-alpha/test/apps/web/index.html",
+                    "packages/public/@babylonjs/viewer-alpha/tsconfig.build.dist.json",
+                    "packages/public/@babylonjs/viewer-alpha/vite.config.mjs",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts"
                 ],
                 "tags": []
             }

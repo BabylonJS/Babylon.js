@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.24.0
+
+### Core
+
+- Use `Sound.play` `offset` arg for sounds with `streaming` set to `true` - [_Bug Fix_] by [docEdub](https://github.com/docEdub) ([#15526](https://github.com/BabylonJS/Babylon.js/pull/15526))
+
 ## 7.23.1
 
 ### Core
