@@ -205,6 +205,7 @@ export class _IblShadowsVoxelTracingPass {
      * Creates the debug post process effect for this pass
      */
     private _createDebugPass() {
+        const isWebGPU = this._engine.isWebGPU;
         if (!this._debugPassPP) {
             const debugOptions: PostProcessOptions = {
                 width: this._engine.getRenderWidth(),
@@ -213,6 +214,14 @@ export class _IblShadowsVoxelTracingPass {
                 samplers: ["debugSampler"],
                 engine: this._engine,
                 reusable: false,
+                shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+                extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
+                    if (useWebGPU) {
+                        list.push(import("../../ShadersWGSL/iblShadowDebug.fragment"));
+                    } else {
+                        list.push(import("../../Shaders/iblShadowDebug.fragment"));
+                    }
+                },
             };
             this._debugPassPP = new PostProcess(this.debugPassName, "iblShadowDebug", debugOptions);
             this._debugPassPP.autoClear = false;

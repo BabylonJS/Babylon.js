@@ -11,13 +11,6 @@ import { Mesh } from "../../Meshes/mesh";
 import type { Scene } from "../../scene";
 import { Texture } from "../../Materials/Textures/texture";
 import { Logger } from "../../Misc/logger";
-import "../../Shaders/voxelGrid.fragment";
-import "../../Shaders/voxelGrid.vertex";
-import "../../Shaders/voxelGrid2dArrayDebug.fragment";
-import "../../Shaders/voxelGrid3dDebug.fragment";
-import "../../Shaders/voxelSlabDebug.vertex";
-import "../../Shaders/voxelSlabDebug.fragment";
-
 import { PostProcess } from "../../PostProcesses/postProcess";
 import type { PostProcessOptions } from "../../PostProcesses/postProcess";
 import { ProceduralTexture } from "../../Materials/Textures/Procedurals/proceduralTexture";
@@ -222,6 +215,7 @@ export class _IblShadowsVoxelRenderer {
      * Creates the debug post process effect for this pass
      */
     private _createDebugPass() {
+        const isWebGPU = this._engine.isWebGPU;
         if (!this._voxelDebugPass) {
             const debugOptions: PostProcessOptions = {
                 width: this._engine.getRenderWidth(),
@@ -233,8 +227,24 @@ export class _IblShadowsVoxelRenderer {
                 samplers: ["voxelTexture", "voxelSlabTexture"],
                 engine: this._engine,
                 reusable: false,
+                shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+                extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
+                    if (this._isVoxelGrid3D) {
+                        if (useWebGPU) {
+                            list.push(import("../../ShadersWGSL/iblVoxelGrid3dDebug.fragment"));
+                        } else {
+                            list.push(import("../../Shaders/iblVoxelGrid3dDebug.fragment"));
+                        }
+                        return;
+                    }
+                    if (useWebGPU) {
+                        list.push(import("../../ShadersWGSL/iblVoxelGrid2dArrayDebug.fragment"));
+                    } else {
+                        list.push(import("../../Shaders/iblVoxelGrid2dArrayDebug.fragment"));
+                    }
+                },
             };
-            this._voxelDebugPass = new PostProcess(this.debugPassName, this._isVoxelGrid3D ? "voxelGrid3dDebug" : "voxelGrid2dArrayDebug", debugOptions);
+            this._voxelDebugPass = new PostProcess(this.debugPassName, this._isVoxelGrid3D ? "iblVoxelGrid3dDebug" : "iblVoxelGrid2dArrayDebug", debugOptions);
             this._voxelDebugPass.onApplyObservable.add((effect) => {
                 if (this._voxelDebugAxis === 0) {
                     effect.setTexture("voxelTexture", this._voxelGridXaxis);
@@ -512,9 +522,18 @@ export class _IblShadowsVoxelRenderer {
     }
 
     private _createVoxelMaterial(): ShaderMaterial {
-        const voxelMaterial = new ShaderMaterial("voxelization", this._scene, "voxelGrid", {
+        const isWebGPU = this._engine.isWebGPU;
+        const voxelMaterial = new ShaderMaterial("voxelization", this._scene, "iblVoxelGrid", {
             uniforms: ["world", "viewMatrix", "invWorldScale", "nearPlane", "farPlane", "stepSize"],
             defines: ["MAX_DRAW_BUFFERS " + this._maxDrawBuffers],
+            shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            extraInitializationsAsync: async () => {
+                if (isWebGPU) {
+                    await Promise.all([import("../../ShadersWGSL/iblVoxelGrid.fragment"), import("../../ShadersWGSL/iblVoxelGrid.vertex")]);
+                } else {
+                    await Promise.all([import("../../Shaders/iblVoxelGrid.fragment"), import("../../Shaders/iblVoxelGrid.vertex")]);
+                }
+            },
         });
         voxelMaterial.cullBackFaces = false;
         voxelMaterial.backFaceCulling = false;
@@ -631,9 +650,18 @@ export class _IblShadowsVoxelRenderer {
             if (shaderType === 0) {
                 voxelMaterial = this._createVoxelMaterial();
             } else {
-                voxelMaterial = new ShaderMaterial("voxelSlabDebug", this._scene, "voxelSlabDebug", {
+                const isWebGPU = this._engine.isWebGPU;
+                voxelMaterial = new ShaderMaterial("voxelSlabDebug", this._scene, "iblVoxelSlabDebug", {
                     uniforms: ["world", "viewMatrix", "cameraViewMatrix", "projection", "invWorldScale", "nearPlane", "farPlane", "stepSize"],
                     defines: ["MAX_DRAW_BUFFERS " + this._maxDrawBuffers],
+                    shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+                    extraInitializationsAsync: async () => {
+                        if (isWebGPU) {
+                            await Promise.all([import("../../ShadersWGSL/iblVoxelSlabDebug.fragment"), import("../../ShadersWGSL/iblVoxelSlabDebug.vertex")]);
+                        } else {
+                            await Promise.all([import("../../Shaders/iblVoxelSlabDebug.fragment"), import("../../Shaders/iblVoxelSlabDebug.vertex")]);
+                        }
+                    },
                 });
                 this._scene.onBeforeRenderObservable.add(() => {
                     voxelMaterial.setMatrix("projection", this._scene.activeCamera!.getProjectionMatrix());
