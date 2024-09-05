@@ -21,7 +21,6 @@ export class GaussianSplattingMesh extends Mesh {
     private _worker: Nullable<Worker> = null;
     private _frameIdLastUpdate = -1;
     private _modelViewMatrix = Matrix.Identity();
-    private _material: Nullable<GaussianSplattingMaterial> = null;
     private _depthMix: BigInt64Array;
     private _canPostToWorker = true;
     private _readyToDisplay = false;
@@ -93,8 +92,7 @@ export class GaussianSplattingMesh extends Mesh {
         if (url) {
             this.loadFileAsync(url);
         }
-        this._material = new GaussianSplattingMaterial(this.name + "_material", this._scene);
-        this.material = this._material;
+        this.material = new GaussianSplattingMaterial(this.name + "_material", this._scene);
     }
 
     /**
@@ -116,10 +114,10 @@ export class GaussianSplattingMesh extends Mesh {
     /**
      * Is this node ready to be used/rendered
      * @param completeCheck defines if a complete check (including materials and lights) has to be done (false by default)
-     * @returns {boolean} is it ready
+     * @returns true when ready
      */
     public override isReady(completeCheck = false): boolean {
-        if (!super.isReady(completeCheck)) {
+        if (!super.isReady(completeCheck, true)) {
             return false;
         }
 
@@ -351,13 +349,10 @@ export class GaussianSplattingMesh extends Mesh {
         this._centersTexture = null;
         this._colorsTexture = null;
 
-        this._material?.dispose(false, true);
-        this._material = null;
-
         this._worker?.terminate();
         this._worker = null;
 
-        super.dispose(doNotRecurse);
+        super.dispose(doNotRecurse, true);
     }
 
     private _copyTextures(source: GaussianSplattingMesh): void {
