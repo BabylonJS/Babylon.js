@@ -12,7 +12,6 @@ import { Logger } from "../../Misc/logger";
 import { _IblShadowsVoxelRenderer } from "./iblShadowsVoxelRenderer";
 import { _IblShadowsVoxelTracingPass } from "./iblShadowsVoxelTracingPass";
 
-import "../../Shaders/iblShadowGBufferDebug.fragment";
 import { PostProcess } from "../../PostProcesses/postProcess";
 import type { PostProcessOptions } from "../../PostProcesses/postProcess";
 import { _IblShadowsImportanceSamplingRenderer } from "./iblShadowsImportanceSamplingRenderer";
@@ -767,6 +766,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         if (this._gbufferDebugPass) {
             return this._gbufferDebugPass;
         }
+        const isWebGPU = this.engine.isWebGPU;
         const textureNames: string[] = this._prePassEffectConfiguration.texturesRequired.map((type) => PrePassRenderer.TextureFormats[type].name.toString());
 
         const options: PostProcessOptions = {
@@ -779,6 +779,14 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             uniforms: ["sizeParams"],
             samplers: textureNames,
             reusable: false,
+            shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
+                if (useWebGPU) {
+                    list.push(import("../../ShadersWGSL/iblShadowGBufferDebug.fragment"));
+                } else {
+                    list.push(import("../../Shaders/iblShadowGBufferDebug.fragment"));
+                }
+            },
         };
         this._gbufferDebugPass = new PostProcess("iblShadowGBufferDebug", "iblShadowGBufferDebug", options);
         this._gbufferDebugPass.autoClear = false;

@@ -20,7 +20,6 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
   if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
     fragmentOutputs.color.rgba = background;
   } else {
-    fragmentOutputs.color.rgb = mix(debugColour.rgb, background.rgb, 0.0);
-    fragmentOutputs.color.a = 1.0;
+    fragmentOutputs.color = vec4f(mix(debugColour.rgb, background.rgb, 0.0), 1.0);
   }
 }

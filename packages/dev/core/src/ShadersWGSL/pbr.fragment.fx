@@ -686,6 +686,11 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                                           writeGeometryInfo); // Linear depth
 #endif
 
+#ifdef PREPASS_NDC_DEPTH
+        fragData[PREPASS_NDC_DEPTH_INDEX] = vec4f(
+            fragmentInputs.position.z, 0.0, 0.0, writeGeometryInfo); // Clip-space depth
+#endif
+
 #ifdef PREPASS_NORMAL
 #ifdef PREPASS_NORMAL_WORLDSPACE
     fragData[PREPASS_NORMAL_INDEX] =
@@ -695,6 +700,10 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         vec4f(normalize((scene.view * vec4f(normalW, 0.0)).rgb),
               writeGeometryInfo); // Normal
 #endif
+#endif
+
+#ifdef PREPASS_WORLD_NORMAL
+    fragData[PREPASS_WORLD_NORMAL_INDEX] = vec4f(normalW * 0.5 + 0.5, writeGeometryInfo); // Normal
 #endif
 
 #ifdef PREPASS_ALBEDO_SQRT
