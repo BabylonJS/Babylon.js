@@ -26,12 +26,10 @@ import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { Observable } from "core/Misc/observable";
 import { Scene } from "core/scene";
+import { registerBuiltInLoaders } from "loaders/dynamic";
 
 // TODO: Dynamic imports?
 import "core/Animations/animatable";
-import "core/Materials/Textures/Loaders/envTextureLoader";
-// eslint-disable-next-line import/no-internal-modules
-import "loaders/glTF/2.0/index";
 
 function createSkybox(scene: Scene, camera: Camera, environmentTexture: CubeTexture, blur: number): Mesh {
     const hdrSkybox = CreateBox("hdrSkyBox", undefined, scene);
@@ -98,6 +96,10 @@ export type ViewerOptions = Partial<
  * - Full screen and XR modes.
  */
 export class Viewer implements IDisposable {
+    static {
+        registerBuiltInLoaders();
+    }
+
     /**
      * Fired when a model is loaded into the viewer.
      */
@@ -292,13 +294,13 @@ export class Viewer implements IDisposable {
 
         // TODO: Disable audio for now, later figure out how to re-introduce it through dynamic imports.
         options = {
-            ...options,
+            ...(options ?? {}),
             pluginOptions: {
-                ...options?.pluginOptions,
+                ...(options?.pluginOptions ?? {}),
                 gltf: {
-                    ...options?.pluginOptions?.gltf,
+                    ...(options?.pluginOptions?.gltf ?? {}),
                     extensionOptions: {
-                        ...options?.pluginOptions?.gltf?.extensionOptions,
+                        ...(options?.pluginOptions?.gltf?.extensionOptions ?? {}),
                         // eslint-disable-next-line @typescript-eslint/naming-convention
                         KHR_audio: {
                             enabled: false,
