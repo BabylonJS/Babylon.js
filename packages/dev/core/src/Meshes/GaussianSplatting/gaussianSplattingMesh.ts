@@ -5,12 +5,13 @@ import { SubMesh } from "../subMesh";
 import type { AbstractMesh } from "../abstractMesh";
 import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
-import { Tools } from "core/Misc/tools";
-import { Matrix, TmpVectors, Vector2, Vector3, Quaternion } from "core/Maths/math.vector";
+import { Matrix, Quaternion, TmpVectors, Vector2, Vector3 } from "core/Maths/math.vector";
 import { Logger } from "core/Misc/logger";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Constants } from "core/Engines/constants";
+import { Tools } from "core/Misc/tools";
+import "core/Meshes/thinInstanceMesh";
 
 /**
  * Class used to render a gaussian splatting mesh
@@ -29,6 +30,13 @@ export class GaussianSplattingMesh extends Mesh {
     private _centersTexture: Nullable<BaseTexture> = null;
     private _colorsTexture: Nullable<BaseTexture> = null;
     private _splatPositions: Nullable<Float32Array> = null;
+    //@ts-expect-error
+    private _covariancesA: Nullable<Float32Array> = null;
+    //@ts-expect-error
+    private _covariancesB: Nullable<Float32Array> = null;
+    //@ts-expect-error
+    private _colors: Nullable<Float32Array> = null;
+    private readonly _keepInRam: boolean = false;
 
     /**
      * Gets the covariancesA texture
@@ -63,8 +71,9 @@ export class GaussianSplattingMesh extends Mesh {
      * @param name defines the name of the mesh
      * @param url defines the url to load from (optional)
      * @param scene defines the hosting scene (optional)
+     * @param keepInRam keep datas in ram for editing purpose
      */
-    constructor(name: string, url: Nullable<string> = null, scene: Nullable<Scene> = null) {
+    constructor(name: string, url: Nullable<string> = null, scene: Nullable<Scene> = null, keepInRam: boolean = false) {
         super(name, scene);
 
         const vertexData = new VertexData();
@@ -79,7 +88,7 @@ export class GaussianSplattingMesh extends Mesh {
         this.setEnabled(false);
 
         this._lastModelViewMatrix = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-
+        this._keepInRam = keepInRam;
         if (url) {
             this.loadFileAsync(url);
         }
@@ -142,6 +151,7 @@ export class GaussianSplattingMesh extends Mesh {
      * if data array buffer is not ply, returns the original buffer
      * @param data the .ply data to load
      * @returns the loaded splat buffer
+     * @deprecated Please use SceneLoader.ImportMeshAsync instead
      */
     public static ConvertPLYToSplat(data: ArrayBuffer): ArrayBuffer {
         const ubuf = new Uint8Array(data);
@@ -300,6 +310,7 @@ export class GaussianSplattingMesh extends Mesh {
      * Loads a .splat Gaussian or .ply Splatting file asynchronously
      * @param url path to the splat file to load
      * @returns a promise that resolves when the operation is complete
+     * @deprecated Please use SceneLoader.ImportMeshAsync instead
      */
     public loadFileAsync(url: string): Promise<void> {
         return Tools.LoadFileAsync(url, true).then((data) => {
@@ -498,6 +509,11 @@ export class GaussianSplattingMesh extends Mesh {
             colorArray[i * 4 + 3] = uBuffer[32 * i + 24 + 3] / 255;
         }
 
+        if (this._keepInRam) {
+            this._covariancesA = covA;
+            this._covariancesB = covB;
+            this._colors = colorArray;
+        }
         this._covariancesATexture = createTextureFromData(convertRgbToRgba(covA), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
         this._covariancesBTexture = createTextureFromData(convertRgbToRgba(covB), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
         this._centersTexture = createTextureFromData(convertRgbToRgba(this._splatPositions), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);

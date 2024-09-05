@@ -284,7 +284,7 @@ export abstract class EffectLayer {
         this._generateVertexBuffer();
     }
 
-    private _shadersLoaded = false;
+    protected _shadersLoaded = false;
 
     /**
      * Get the effect name of the layer.

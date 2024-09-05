@@ -453,7 +453,9 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                                 onSelect={(value) => this.setState({ textureIsPrefiltered: value })}
                             />
                         )}
-                        {this.state.isEmbedded && <FileButtonLineComponent label="Upload" onClick={(file) => this.replaceTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />}
+                        {this.state.isEmbedded && (
+                            <FileButtonLineComponent label="Upload" onClick={(file) => this.replaceTexture(file)} accept=".jpg, .png, .tga, .dds, .env, .exr" />
+                        )}
                         {!this.state.isEmbedded && (
                             <TextInputLineComponent
                                 lockObject={this.props.stateManager.lockObject}

@@ -72,6 +72,11 @@ export class HolographicSlate extends ContentDisplay3D {
     private _contentDragBehavior: PointerDragBehavior;
 
     private _defaultBehavior: DefaultBehavior;
+
+    /**
+     * If true, the content will be scaled to fit the dimensions of the slate
+     */
+    public fitContentToDimensions = false;
     /**
      * Regroups all mesh behaviors for the slate
      */
@@ -259,7 +264,7 @@ export class HolographicSlate extends ContentDisplay3D {
         if (this._contentPlate?.material && (this._contentPlate.material as FluentMaterial).albedoTexture) {
             const tex = (this._contentPlate.material as FluentMaterial).albedoTexture as Texture;
             tex.uScale = this._contentScaleRatio;
-            tex.vScale = (this._contentScaleRatio / this._contentViewport.width) * this._contentViewport.height;
+            tex.vScale = this.fitContentToDimensions ? this._contentScaleRatio : (this._contentScaleRatio / this._contentViewport.width) * this._contentViewport.height;
             tex.uOffset = this._contentViewport.x;
             tex.vOffset = this._contentViewport.y;
         }
@@ -267,7 +272,7 @@ export class HolographicSlate extends ContentDisplay3D {
 
     private _resetContentPositionAndZoom() {
         this._contentViewport.x = 0;
-        this._contentViewport.y = 1 - this._contentViewport.height / this._contentViewport.width;
+        this._contentViewport.y = 0; // 1 - this._contentViewport.height / this._contentViewport.width;
         this._contentScaleRatio = 1;
     }
 
@@ -398,6 +403,9 @@ export class HolographicSlate extends ContentDisplay3D {
 
         const offset = new Vector3();
         this._contentDragBehavior.onDragObservable.add((event) => {
+            if (this.fitContentToDimensions) {
+                return;
+            }
             offset.copyFrom(event.dragPlanePoint);
             offset.subtractInPlace(origin);
             projectedOffset.copyFromFloats(Vector3.Dot(offset, rightWorld), Vector3.Dot(offset, upWorld));
@@ -466,7 +474,10 @@ export class HolographicSlate extends ContentDisplay3D {
             this.origin.setAll(0);
             this._gizmo.updateBoundingBox();
             const pivot = this.node.getAbsolutePivotPoint();
-            this.node.position.copyFrom(camera.position).subtractInPlace(backward).subtractInPlace(pivot);
+            // only if position was not yet set!
+            if (this.node.position.equalsToFloats(0, 0, 0)) {
+                this.node.position.copyFrom(camera.position).subtractInPlace(backward).subtractInPlace(pivot);
+            }
             this.node.rotationQuaternion = Quaternion.FromLookDirectionLH(backward, new Vector3(0, 1, 0));
 
             if (resetAspect) {
