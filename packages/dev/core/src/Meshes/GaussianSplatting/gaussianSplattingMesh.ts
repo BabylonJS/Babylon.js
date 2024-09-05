@@ -99,9 +99,6 @@ export class GaussianSplattingMesh extends Mesh {
         if (url) {
             this.loadFileAsync(url);
         }
-
-        this._material = new GaussianSplattingMaterial(this.name + "_material", this._scene);
-        this.material = this._material;
     }
 
     /**
