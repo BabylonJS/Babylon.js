@@ -76,3 +76,10 @@ export * from "../ShadersWGSL/iblShadowsIcdfx.fragment";
 export * from "../Shaders/iblShadowsIcdfx.fragment";
 export * from "../ShadersWGSL/iblShadowsIcdfy.fragment";
 export * from "../Shaders/iblShadowsIcdfy.fragment";
+
+// Depth Peeling Renderer
+export * from "../Shaders/oitBackBlend.fragment";
+export * from "../Shaders/oitFinal.fragment";
+export * from "../ShadersWGSL/oitBackBlend.fragment";
+export * from "../ShadersWGSL/oitFinal.fragment";
+
