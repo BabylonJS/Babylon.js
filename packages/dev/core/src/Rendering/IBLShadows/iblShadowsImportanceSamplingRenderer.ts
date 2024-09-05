@@ -6,7 +6,6 @@ import { Texture } from "../../Materials/Textures/texture";
 import type { TextureSize } from "../../Materials/Textures/textureCreationOptions";
 import { ProceduralTexture } from "../../Materials/Textures/Procedurals/proceduralTexture";
 import type { IProceduralTextureCreationOptions } from "../../Materials/Textures/Procedurals/proceduralTexture";
-import "../../Shaders/iblShadowsImportanceSamplingDebug.fragment";
 import { PostProcess } from "../../PostProcesses/postProcess";
 import type { PostProcessOptions } from "../../PostProcesses/postProcess";
 import { Vector4 } from "../../Maths/math.vector";
@@ -234,6 +233,7 @@ export class _IblShadowsImportanceSamplingRenderer {
         if (this._debugPass) {
             this._debugPass.dispose();
         }
+        const isWebGPU = this._engine.isWebGPU;
         const debugOptions: PostProcessOptions = {
             width: this._scene.getEngine().getRenderWidth(),
             height: this._scene.getEngine().getRenderHeight(),
@@ -243,6 +243,14 @@ export class _IblShadowsImportanceSamplingRenderer {
             uniforms: ["sizeParams"],
             samplers: ["cdfy", "icdfy", "cdfx", "icdfx", "iblSource"],
             defines: this._iblSource?.isCube ? "#define IBL_USE_CUBE_MAP\n" : "",
+            shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
+                if (useWebGPU) {
+                    list.push(import("../../ShadersWGSL/iblShadowsImportanceSamplingDebug.fragment"));
+                } else {
+                    list.push(import("../../Shaders/iblShadowsImportanceSamplingDebug.fragment"));
+                }
+            },
         };
         this._debugPass = new PostProcess(this._debugPassName, "iblShadowsImportanceSamplingDebug", debugOptions);
         const debugEffect = this._debugPass.getEffect();

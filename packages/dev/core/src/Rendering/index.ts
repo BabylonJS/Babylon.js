@@ -62,10 +62,10 @@ export * from "../ShadersWGSL/iblShadowAccumulation.fragment";
 export * from "../Shaders/iblShadowAccumulation.fragment";
 export * from "../Shaders/iblShadowsCombine.fragment";
 export * from "../ShadersWGSL/iblShadowsCombine.fragment";
-export * from "../ShadersWGSL/combineVoxelGrids.fragment";
-export * from "../Shaders/combineVoxelGrids.fragment";
-export * from "../Shaders/generateVoxelMip.fragment";
-export * from "../ShadersWGSL/generateVoxelMip.fragment";
+export * from "../ShadersWGSL/iblCombineVoxelGrids.fragment";
+export * from "../Shaders/iblCombineVoxelGrids.fragment";
+export * from "../Shaders/iblGenerateVoxelMip.fragment";
+export * from "../ShadersWGSL/iblGenerateVoxelMip.fragment";
 export * from "../Shaders/iblShadowGBufferDebug.fragment";
 export * from "../ShadersWGSL/iblShadowGBufferDebug.fragment";
 export * from "../ShadersWGSL/iblShadowsCdfx.fragment";
@@ -76,10 +76,11 @@ export * from "../ShadersWGSL/iblShadowsIcdfx.fragment";
 export * from "../Shaders/iblShadowsIcdfx.fragment";
 export * from "../ShadersWGSL/iblShadowsIcdfy.fragment";
 export * from "../Shaders/iblShadowsIcdfy.fragment";
+export * from "../ShadersWGSL/iblShadowsImportanceSamplingDebug.fragment";
+export * from "../Shaders/iblShadowsImportanceSamplingDebug.fragment";
 
 // Depth Peeling Renderer
 export * from "../Shaders/oitBackBlend.fragment";
 export * from "../Shaders/oitFinal.fragment";
 export * from "../ShadersWGSL/oitBackBlend.fragment";
 export * from "../ShadersWGSL/oitFinal.fragment";
-
