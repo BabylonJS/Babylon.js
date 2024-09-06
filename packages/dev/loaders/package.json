@@ -12,7 +12,7 @@
     "scripts": {
         "build": "npm run clean && npm run compile",
         "test": "jest -c ../../../jest.config.ts",
-        "clean": "rimraf dist && rimraf *.tsbuildinfo",
+        "clean": "rimraf dist && rimraf *.tsbuildinfo -g",
         "compile": "tsc -b tsconfig.build.json",
         "watch": "tsc -b tsconfig.build.json -w",
         "watch:dev": "npm run watch"

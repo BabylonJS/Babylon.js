@@ -51,7 +51,7 @@ export class TextWrapper {
             return temp.join("");
         }
 
-        return this._text.substr(from, length);
+        return this._text.substring(from, length ? length + from : undefined);
     }
 
     public substring(from: number, to?: number): string {

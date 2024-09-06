@@ -11,7 +11,7 @@
     ],
     "scripts": {
         "build": "npm run clean && npm run compile",
-        "clean": "rimraf dist && rimraf generated && rimraf *.tsbuildinfo",
+        "clean": "rimraf dist && rimraf generated && rimraf *.tsbuildinfo -g",
         "compile": "tsc -b tsconfig.build.json"
     },
     "dependencies": {

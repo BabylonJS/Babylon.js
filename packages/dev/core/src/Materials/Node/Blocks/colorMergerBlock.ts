@@ -118,7 +118,7 @@ export class ColorMergerBlock extends NodeMaterialBlock {
 
     private _buildSwizzle(len: number) {
         const swizzle = this.rSwizzle + this.gSwizzle + this.bSwizzle + this.aSwizzle;
-        return "." + swizzle.substr(0, len);
+        return "." + swizzle.substring(0, len);
     }
 
     protected override _buildBlock(state: NodeMaterialBuildState) {

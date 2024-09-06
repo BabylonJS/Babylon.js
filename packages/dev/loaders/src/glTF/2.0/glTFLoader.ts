@@ -2494,7 +2494,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         if (IsBase64DataUrl(uri)) {
             const data = new Uint8Array(DecodeBase64UrlToBinary(uri));
-            this.log(`${context}: Decoded ${uri.substr(0, 64)}... (${data.length} bytes)`);
+            this.log(`${context}: Decoded ${uri.substring(0, 64)}... (${data.length} bytes)`);
             return Promise.resolve(data);
         }
 
