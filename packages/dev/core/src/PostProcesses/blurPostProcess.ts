@@ -122,9 +122,9 @@ export class BlurPostProcess extends PostProcess {
             textureType,
             vertexUrl: "kernelBlur",
             indexParameters: { varyingCount: 0, depCount: 0 },
-            blockCompilation: true,
             textureFormat,
             ...(options as PostProcessOptions),
+            blockCompilation: true,
         });
         this._staticDefines = defines;
         this.direction = direction;
