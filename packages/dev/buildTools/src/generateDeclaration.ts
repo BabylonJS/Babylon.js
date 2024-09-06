@@ -35,16 +35,9 @@ function getModuleDeclaration(
         fullPath: string;
     }[]
 ) {
-    const distPosition = filename.indexOf("/dist");
+    const distPosition = filename.replace(/\\/g, "/").indexOf("/dist");
     const packageVariables = getPackageMappingByDevName(config.devPackageName);
-    let extraPackageName = filename
-        .substring(distPosition + 5)
-        .replace(".d.ts", "")
-        .replace(/\\/g, "/");
-    if (extraPackageName.includes("/dist/")) {
-        extraPackageName = "/" + extraPackageName.substring(extraPackageName.indexOf("/dist/") + 6);
-    }
-    const moduleName = getPublicPackageName(packageVariables[buildType], filename) + extraPackageName;
+    const moduleName = getPublicPackageName(packageVariables[buildType], filename) + filename.substring(distPosition + 5).replace(".d.ts", "");
     const sourceDir = path.dirname(moduleName);
     const lines = source.split("\n");
     const namedExportPathsToExcludeRegExp = config.namedExportPathsToExclude !== undefined ? new RegExp(`export {.*} from ".*${config.namedExportPathsToExclude}"`) : undefined;
