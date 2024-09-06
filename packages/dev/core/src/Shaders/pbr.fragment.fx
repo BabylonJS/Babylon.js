@@ -713,7 +713,13 @@ void main(void) {
 
 #ifdef PREPASS_REFLECTIVITY
 #ifndef UNLIT
+    #ifdef REFLECTION
+    // Make prepass RT that causes irradiance and radiance parts to be split.
+    // Then we shouldn't need both irradiance and radiance prepasses.
+            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(finalRadianceScaled, microSurface) * writeGeometryInfo;
+    #else
             gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(specularEnvironmentR0, microSurface) * writeGeometryInfo;
+    #endif
 #else
             gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4( 0.0, 0.0, 0.0, 1.0 ) * writeGeometryInfo;
 #endif
