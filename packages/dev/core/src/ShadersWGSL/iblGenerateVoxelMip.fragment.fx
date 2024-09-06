@@ -6,7 +6,7 @@ uniform layerNum: i32;
 
 @fragment
 fn main(input: FragmentInputs) -> FragmentOutputs {
-  var Coords = vec3i(2) * vec3i(i32(input.position.x), i32(input.position.y), uniforms.layerNum);
+  var Coords = vec3i(2) * vec3i(fragmentInputs.position.xy), uniforms.layerNum);
 
   var tex =
       (u32(select(0u, 1u, textureLoad(srcMip, Coords + vec3i(0, 0, 0), 0).x > 0.0f))
