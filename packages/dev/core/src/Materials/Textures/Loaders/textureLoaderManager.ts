@@ -36,7 +36,7 @@ export function _GetCompatibleTextureLoader(extension: string, mimeType?: string
     if (mimeType === "image/ktx" || mimeType === "image/ktx2") {
         extension = ".ktx";
     }
-    if (!_registeredTextureLoaders.get(extension)) {
+    if (!_registeredTextureLoaders.has(extension)) {
         if (extension.endsWith(".dds")) {
             registerTextureLoader(".dds", () => import("./ddsTextureLoader").then((module) => new module._DDSTextureLoader()));
         }
