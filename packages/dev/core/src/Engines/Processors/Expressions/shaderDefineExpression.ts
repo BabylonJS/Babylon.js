@@ -115,7 +115,7 @@ export class ShaderDefineExpression {
 
         while (idx < infix.length) {
             const c = infix.charAt(idx),
-                token = idx < infix.length - 1 ? infix.substr(idx, 2) : "";
+                token = idx < infix.length - 1 ? infix.substring(idx, 2 + idx) : "";
 
             if (c === "(") {
                 operand = "";

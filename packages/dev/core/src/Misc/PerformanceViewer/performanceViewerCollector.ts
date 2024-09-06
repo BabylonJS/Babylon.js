@@ -237,7 +237,8 @@ export class PerformanceViewerCollector {
         let hex = "#";
         for (let i = 0; i < NumberOfBitsInHexcode; i += 8) {
             const octet = (hash >> i) & 0xff;
-            hex += (HexPadding + octet.toString(16)).substr(-2);
+            const toStr = HexPadding + octet.toString(16);
+            hex += toStr.substring(toStr.length - 2);
         }
 
         return hex;

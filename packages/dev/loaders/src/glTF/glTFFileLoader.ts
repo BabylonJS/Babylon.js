@@ -1358,7 +1358,7 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
     }
 
     private _logEnabled(message: string): void {
-        const spaces = GLTFFileLoader._logSpaces.substr(0, this._logIndentLevel * 2);
+        const spaces = GLTFFileLoader._logSpaces.substring(0, this._logIndentLevel * 2);
         Logger.Log(`${spaces}${message}`);
     }
 

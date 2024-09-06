@@ -145,7 +145,7 @@ function getModuleDeclaration(
                     if (processedLines[i] === "}") {
                         // +1 to enroll the last }
                         // +2 to enroll the trailing ;
-                        processedLines = processedLines.substr(0, constStart) + processedLines.substr(i + 2);
+                        processedLines = processedLines.substring(0, constStart) + processedLines.substring(i + 2);
                         break;
                     }
                 }
