@@ -19,7 +19,7 @@ import { EffectRenderer, EffectWrapper } from "../../Materials/effectRenderer";
 import type { IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
 import type { RenderTargetWrapper } from "core/Engines";
 import { Observable } from "../../Misc/observable";
-import { ShaderLanguage } from "core/Materials";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Voxel-based shadow rendering for IBL's.
