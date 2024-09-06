@@ -73,6 +73,11 @@ export class NodeRenderGraph {
      */
     public onBuildObservable = new Observable<NodeRenderGraph>();
 
+    /**
+     * Observable raised when an error is detected
+     */
+    public onBuildErrorObservable = new Observable<string>();
+
     /** Gets or sets the RenderGraphOutputBlock used to gather the final node render graph data */
     public outputBlock: Nullable<NodeRenderGraphOutputBlock> = null;
 
@@ -279,9 +284,9 @@ export class NodeRenderGraph {
 
         this._buildId = NodeRenderGraph._BuildIdGenerator++;
 
-        state.emitErrors();
-
-        this.onBuildObservable.notifyObservers(this);
+        if (state.emitErrors(this.onBuildErrorObservable)) {
+            this.onBuildObservable.notifyObservers(this);
+        }
     }
 
     /**
@@ -628,6 +633,7 @@ export class NodeRenderGraph {
 
         this.attachedBlocks.length = 0;
         this.onBuildObservable.clear();
+        this.onBuildErrorObservable.clear();
     }
 
     /**

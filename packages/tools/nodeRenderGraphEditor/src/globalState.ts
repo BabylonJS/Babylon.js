@@ -1,6 +1,6 @@
 import type { NodeRenderGraph } from "core/FrameGraph/Node/nodeRenderGraph";
 import { Observable } from "core/Misc/observable";
-import type { LogEntry } from "./components/log/logComponent";
+import { LogEntry } from "./components/log/logComponent";
 import { DataStorage } from "core/Misc/dataStorage";
 import { RegisterElbowSupport } from "./graphSystem/registerElbowSupport";
 import { RegisterNodePortDesign } from "./graphSystem/registerNodePortDesign";
@@ -16,9 +16,9 @@ import type { FilesInput } from "core/Misc/filesInput";
 import { RegisterDebugSupport } from "./graphSystem/registerDebugSupport";
 import { PreviewType } from "./components/preview/previewType";
 import type { Scene } from "core/scene";
+import { SerializationTools } from "./serializationTools";
 
 export class GlobalState {
-    nodeRenderGraph: NodeRenderGraph;
     hostElement: HTMLElement;
     hostDocument: Document;
     hostWindow: Window;
@@ -53,6 +53,32 @@ export class GlobalState {
     scene: Scene;
 
     customSave?: { label: string; action: (data: string) => Promise<void> };
+
+    private _nodeRenderGraph: NodeRenderGraph;
+
+    /**
+     * Gets the current node render graph
+     */
+    public get nodeRenderGraph(): NodeRenderGraph {
+        return this._nodeRenderGraph;
+    }
+
+    /**
+     * Sets the current node material
+     */
+    public set nodeRenderGraph(nodeRenderGraph: NodeRenderGraph) {
+        this._nodeRenderGraph = nodeRenderGraph;
+        nodeRenderGraph.onBuildObservable.add(() => {
+            this.onLogRequiredObservable.notifyObservers(new LogEntry("Node render graph build successful", false));
+
+            SerializationTools.UpdateLocations(nodeRenderGraph, this);
+
+            this.onBuiltObservable.notifyObservers();
+        });
+        nodeRenderGraph.onBuildErrorObservable.add((err: string) => {
+            this.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
+        });
+    }
 
     public constructor(scene: Scene) {
         this.scene = scene;

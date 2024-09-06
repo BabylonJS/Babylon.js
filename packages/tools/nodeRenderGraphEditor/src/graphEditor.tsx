@@ -286,16 +286,13 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         this._setExternalInputs();
 
+        const nodeRenderGraph = this.props.globalState.nodeRenderGraph;
+
         try {
-            this.props.globalState.nodeRenderGraph.build();
-            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Node render graph build successful", false));
+            nodeRenderGraph.build();
         } catch (err) {
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
         }
-
-        SerializationTools.UpdateLocations(this.props.globalState.nodeRenderGraph, this.props.globalState);
-
-        this.props.globalState.onBuiltObservable.notifyObservers();
     }
 
     build(ignoreEditorData = false) {
