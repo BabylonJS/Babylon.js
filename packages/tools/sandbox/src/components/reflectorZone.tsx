@@ -32,7 +32,7 @@ class Reflector {
                 this._handleServerMessage(serverMessage);
                 return;
             } else {
-                Logger.Log(`[Reflector] Received client message: ${message.substr(0, 64)}`);
+                Logger.Log(`[Reflector] Received client message: ${message.substring(0, 64)}`);
                 this._handleClientMessage(message);
             }
         };
