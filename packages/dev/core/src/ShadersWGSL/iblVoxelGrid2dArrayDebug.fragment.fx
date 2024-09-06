@@ -1,6 +1,7 @@
 varying vUV: vec2f;
 
-uniform sampler2DArray voxelTexture;
+var voxelTextureSampler: sampler;
+var voxelTexture: texture_3d<f32>;
 var textureSamplerSampler: sampler;
 var textureSampler: texture_2d<f32>;
 uniform slice: i32;
