@@ -1,5 +1,16 @@
-import type { Nullable } from "core/types";
 import type { IInternalTextureLoader } from "./internalTextureLoader";
+import type { Nullable } from "../../../types";
+
+export const OverrideTextureLoader: {
+    /**
+     * Function used to get the correct texture loader for a specific extension.
+     * This function will be executed before the default loader. If it returns null, the default loader will be used.
+     * @param extension defines the file extension of the file being loaded
+     */
+    getTextureLoader: Nullable<(extension: string, mimeType?: string) => Nullable<Promise<IInternalTextureLoader>>>;
+} = {
+    getTextureLoader: null,
+};
 
 /**
  * Function used to get the correct texture loader for a specific extension.
@@ -8,6 +19,13 @@ import type { IInternalTextureLoader } from "./internalTextureLoader";
  * @returns the IInternalTextureLoader or null if it wasn't found
  */
 export function _GetCompatibleTextureLoader(extension: string, mimeType?: string): Nullable<Promise<IInternalTextureLoader>> {
+    if (OverrideTextureLoader.getTextureLoader) {
+        const loader = OverrideTextureLoader.getTextureLoader(extension, mimeType);
+        if (loader) {
+            return loader;
+        }
+    }
+
     if (extension.endsWith(".dds")) {
         return import("./ddsTextureLoader").then((module) => new module._DDSTextureLoader());
     }
