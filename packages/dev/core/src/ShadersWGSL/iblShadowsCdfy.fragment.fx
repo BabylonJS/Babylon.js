@@ -36,7 +36,7 @@ fn fetchPanoramic(Coords: vec2i, envmapHeight: f32) -> f32 {
 
 @fragment
 fn main(input: FragmentInputs) -> FragmentOutputs {
-  var coords: vec2i =  vec2i(i32(input.position.x), i32(input.position.y));
+  var coords: vec2i =  vec2i(fragmentInputs.position.xy);
   var cdfy: f32 = 0.0;
   for (var y: i32 = 1; y <= coords.y; y++) {
 #ifdef IBL_USE_CUBE_MAP
