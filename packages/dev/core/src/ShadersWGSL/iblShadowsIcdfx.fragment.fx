@@ -28,7 +28,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     var cdfSize: vec2u = textureDimensions(cdfx, 0);
     var cdfWidth: u32 = cdfSize.x;
     var icdfWidth: u32 = cdfWidth - 1;
-    var currentPixel: vec2u =  vec2u(input.position.xy);
+    var currentPixel: vec2u =  vec2u(fragmentInputs.position.xy);
 
     if (currentPixel.x == 0)
     {
