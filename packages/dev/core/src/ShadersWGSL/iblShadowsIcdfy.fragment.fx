@@ -27,7 +27,7 @@ fn bisect(size: u32, targetValue: f32, invocationId: u32) -> f32
 fn main(input: FragmentInputs) -> FragmentOutputs {
     var cdfSize: vec2u = textureDimensions(cdfy, 0);
     var cdfHeight: u32 = cdfSize.y;
-    var currentPixel: vec2u =  vec2u(input.position.xy);
+    var currentPixel: vec2u =  vec2u(fragmentInputs.position.xy);
 
     if (currentPixel.y == 0) {
         fragmentOutputs.color =  vec4f(0.0);
