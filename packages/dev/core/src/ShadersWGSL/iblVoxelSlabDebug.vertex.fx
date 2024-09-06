@@ -11,6 +11,6 @@ uniform viewMatrix: mat4x4f;
 fn main(input : VertexInputs) -> FragmentInputs {
   var worldPosition: vec4f = (uniforms.world *  vec4f(position, 1.));
   vertexOutputs.position = uniforms.projection * uniforms.cameraViewMatrix * worldPosition;
-  vertexOutputs.vNormalizedPosition = (uniforms.viewMatrix * invWorldScale * worldPosition).rgb;
+  vertexOutputs.vNormalizedPosition = (uniforms.viewMatrix * uniforms.invWorldScale * worldPosition).rgb;
   vertexOutputs.vNormalizedPosition = vertexOutputs.vNormalizedPosition *  vec3f(0.5) +  vec3f(0.5);
 }
