@@ -35,7 +35,7 @@ function getModuleDeclaration(
         fullPath: string;
     }[]
 ) {
-    const distPosition = filename.indexOf("/dist");
+    const distPosition = filename.replace(/\\/g, "/").indexOf("/dist");
     const packageVariables = getPackageMappingByDevName(config.devPackageName);
     const moduleName = getPublicPackageName(packageVariables[buildType], filename) + filename.substring(distPosition + 5).replace(".d.ts", "");
     const sourceDir = path.dirname(moduleName);

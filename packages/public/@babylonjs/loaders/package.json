@@ -13,7 +13,7 @@
     ],
     "scripts": {
         "build": "npm run clean && npm run compile",
-        "clean": "rimraf dist && rimraf *.tsbuildinfo && rimraf \"./**/*.!(md|json|build.json|lts.json)\"",
+        "clean": "rimraf dist && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(md|json|build.json|lts.json)\" -g",
         "compile": "tsc -b tsconfig.build.json && tsc -b tsconfig.lts.json",
         "postcompile": "build-tools -c add-js-to-es6"
     },
