@@ -10,7 +10,7 @@
     ],
     "scripts": {
         "build": "npm run clean && npm run compile",
-        "clean": "rimraf dist && rimraf *.tsbuildinfo",
+        "clean": "rimraf dist && rimraf *.tsbuildinfo -g",
         "compile": "tsc -b tsconfig.build.json",
         "watch": "tsc -b tsconfig.build.json --watch",
         "postcompile": "node scripts/copyDeclaration.js"

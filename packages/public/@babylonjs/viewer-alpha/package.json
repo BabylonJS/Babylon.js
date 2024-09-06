@@ -20,7 +20,7 @@
         "start": "npm run serve -- --open test/apps/web/index.html",
         "serve": "vite",
         "build": "npm run clean && npm run bundle",
-        "clean": "rimraf lib && rimraf dist && rimraf *.tsbuildinfo",
+        "clean": "rimraf lib && rimraf dist && rimraf *.tsbuildinfo -g",
         "bundle": "npm run bundle:lib && npm run bundle:dist:esm",
         "bundle:lib": "rollup -c rollup.config.lib.mjs",
         "bundle:dist:esm": "rollup -c rollup.config.dist.esm.mjs",

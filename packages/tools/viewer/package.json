@@ -7,7 +7,7 @@
     "scripts": {
         "serve": "webpack serve",
         "build": "npm run compile",
-        "clean": "rimraf dist && rimraf *.tsbuildinfo",
+        "clean": "rimraf dist && rimraf *.tsbuildinfo -g",
         "compile": "tsc -b tsconfig.build.json",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
