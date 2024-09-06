@@ -405,13 +405,18 @@ export class ProceduralTexture extends Texture {
                 undefined,
                 this._shaderLanguage,
                 async () => {
-                    if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                        await import("../../../ShadersWGSL/procedural.vertex");
-                    } else {
-                        await import("../../../Shaders/procedural.vertex");
-                    }
                     if (this._options.extraInitializationsAsync) {
-                        await this._options.extraInitializationsAsync();
+                        if (this.shaderLanguage === ShaderLanguage.WGSL) {
+                            await Promise.all([import("../../../ShadersWGSL/procedural.vertex"), this._options.extraInitializationsAsync()]);
+                        } else {
+                            await Promise.all([import("../../../Shaders/procedural.vertex"), this._options.extraInitializationsAsync()]);
+                        }
+                    } else {
+                        if (this.shaderLanguage === ShaderLanguage.WGSL) {
+                            await import("../../../ShadersWGSL/procedural.vertex");
+                        } else {
+                            await import("../../../Shaders/procedural.vertex");
+                        }
                     }
                 }
             );

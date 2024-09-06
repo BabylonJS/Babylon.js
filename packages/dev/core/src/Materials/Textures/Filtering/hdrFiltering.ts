@@ -10,8 +10,6 @@ import type { RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
 import { Logger } from "../../../Misc/logger";
 
 import "../../../Engines/Extensions/engine.renderTargetCube";
-import "../../../Shaders/hdrFiltering.vertex";
-import "../../../Shaders/hdrFiltering.fragment";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
