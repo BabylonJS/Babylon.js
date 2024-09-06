@@ -16,7 +16,6 @@ import type { SubMesh } from "../../../../Meshes/subMesh";
 import type { Effect } from "../../../effect";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import type { Scene } from "../../../../scene";
-import { Scalar } from "../../../../Maths/math.scalar";
 import { Logger } from "core/Misc/logger";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
@@ -247,7 +246,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         const width = reflectionTexture.getSize().width;
 
         effect.setFloat3(this._vReflectionMicrosurfaceInfosName, width, reflectionTexture.lodGenerationScale, reflectionTexture.lodGenerationOffset);
-        effect.setFloat2(this._vReflectionFilteringInfoName, width, Scalar.Log2(width));
+        effect.setFloat2(this._vReflectionFilteringInfoName, width, Math.log2(width));
 
         const defines = subMesh.materialDefines as NodeMaterialDefines;
 

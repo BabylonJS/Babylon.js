@@ -14,7 +14,7 @@ import { ExtrudeShape } from "../../../Meshes/Builders/shapeBuilder";
 import { CreateLines } from "../../../Meshes/Builders/linesBuilder";
 import type { LinesMesh } from "../../../Meshes/linesMesh";
 import { PhysicsRaycastResult } from "../../physicsRaycastResult";
-import { Scalar } from "../../../Maths/math.scalar";
+import { WithinEpsilon } from "../../../Maths/math.scalar.functions";
 import { Epsilon } from "../../../Maths/math.constants";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -1060,7 +1060,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         switch (impostor.type) {
             case PhysicsImpostor.SphereImpostor:
                 // Is there a better way to compare floats number? With an epsilon or with a Math function
-                if (Scalar.WithinEpsilon(impostorExtents.x, impostorExtents.y, 0.0001) && Scalar.WithinEpsilon(impostorExtents.x, impostorExtents.z, 0.0001)) {
+                if (WithinEpsilon(impostorExtents.x, impostorExtents.y, 0.0001) && WithinEpsilon(impostorExtents.x, impostorExtents.z, 0.0001)) {
                     returnValue = new this.bjsAMMO.btSphereShape(impostorExtents.x / 2);
                 } else {
                     // create a btMultiSphereShape because it's not possible to set a local scaling on a btSphereShape

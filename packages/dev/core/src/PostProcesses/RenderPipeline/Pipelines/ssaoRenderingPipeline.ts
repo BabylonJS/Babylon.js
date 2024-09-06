@@ -12,7 +12,7 @@ import { Constants } from "../../../Engines/constants";
 import { serialize } from "../../../Misc/decorators";
 import type { Scene } from "../../../scene";
 import { RawTexture } from "../../../Materials/Textures/rawTexture";
-import { Scalar } from "../../../Maths/math.scalar";
+import { RandomRange } from "../../../Maths/math.scalar.functions";
 
 import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 
@@ -343,9 +343,9 @@ export class SSAORenderingPipeline extends PostProcessRenderPipeline {
 
         const data = new Uint8Array(size * size * 4);
         for (let index = 0; index < data.length; ) {
-            data[index++] = Math.floor(Math.max(0.0, Scalar.RandomRange(-1.0, 1.0)) * 255);
-            data[index++] = Math.floor(Math.max(0.0, Scalar.RandomRange(-1.0, 1.0)) * 255);
-            data[index++] = Math.floor(Math.max(0.0, Scalar.RandomRange(-1.0, 1.0)) * 255);
+            data[index++] = Math.floor(Math.max(0.0, RandomRange(-1.0, 1.0)) * 255);
+            data[index++] = Math.floor(Math.max(0.0, RandomRange(-1.0, 1.0)) * 255);
+            data[index++] = Math.floor(Math.max(0.0, RandomRange(-1.0, 1.0)) * 255);
             data[index++] = 255;
         }
 
