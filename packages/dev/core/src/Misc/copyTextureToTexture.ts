@@ -142,7 +142,7 @@ export class CopyTextureToTexture {
      * Releases all the resources used by the class
      */
     public dispose(): void {
-        this._effectWrapper.dispose();
+        this._effectWrapper?.dispose();
         this._renderer.dispose();
     }
 }
