@@ -152,7 +152,7 @@ function getModuleDeclaration(
             }
         }
     }
-    // replaces classes definitions with namespace definsubstring(0
+    // replaces classes definitions with namespace definitions
     classesMappingArray.forEach((classMapping: { alias: string; realClassName: string; devPackageName?: DevPackageName; externalName?: string; fullPath: string }) => {
         const { alias, devPackageName, externalName } = classMapping;
         // TODO - make a list of dependencies that are accepted by each package
