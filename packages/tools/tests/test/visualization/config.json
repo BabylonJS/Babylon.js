@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Gaussian Splatting Loading",
+            "playgroundId": "#CID4NN#204",
+            "referenceImage": "gsplat-loading.png"
+        },
+        {
             "title": "EXR Loader",
             "playgroundId": "#4RN0VF#151",
             "referenceImage": "exr-loader.png",
@@ -33,6 +38,16 @@
             "title": "Convolution Post Process",
             "playgroundId": "#FBH4J7#281",
             "referenceImage": "convolution.png"
+        },
+        {
+            "title": "Volumetric Light Scattering Post Process with Skeleton",
+            "playgroundId": "#5E318S#6",
+            "referenceImage": "volumetricLightScatteringSkeleton.png"
+        },
+        {
+            "title": "Volumetric Light Scattering Post Process with Morph Targets",
+            "playgroundId": "#5E318S#5",
+            "referenceImage": "volumetricLightScatteringMorphTargets.png"
         },
         {
             "title": "Color correction",
@@ -1114,7 +1129,6 @@
         },
         {
             "title": "GlowLayer",
-            "renderCount": 5,
             "playgroundId": "#LRFB2D#262",
             "referenceImage": "GlowLayer.png"
         },
@@ -1666,6 +1680,19 @@
             "referenceImage": "bakedVertexAnimation.png"
         },
         {
+            "title": "Baked Vertex Animation with Depth Of Field",
+            "renderCount": 20,
+            "playgroundId": "#JWO4R0#8",
+            "referenceImage": "bakedVertexAnimationDOF.png"
+        },
+        {
+            "title": "Baked Vertex Animation with Volumetric Light Scattering Post Process",
+            "renderCount": 20,
+            "playgroundId": "#1LF9GK#3",
+            "referenceImage": "bakedVertexAnimationVLS.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "Bones and morphs computation order",
             "renderCount": 40,
             "playgroundId": "#WGZLGJ#4040",
@@ -2204,6 +2231,13 @@
             "title": "glTF Loader Capabilities",
             "playgroundId": "#EBO3J1#10",
             "referenceImage": "glTFLoaderCapabilities.png"
+        },
+        {
+            "title": "IBL Voxel Shadowing",
+            "playgroundId": "#8R5SSE#180",
+            "referenceImage": "voxelShadows.png",
+            "renderCount": 15,
+            "excludedEngines": ["webgl1", "webgpu"]
         }
     ]
 }

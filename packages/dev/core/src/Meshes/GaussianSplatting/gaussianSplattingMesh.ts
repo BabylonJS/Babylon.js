@@ -5,12 +5,13 @@ import { SubMesh } from "../subMesh";
 import type { AbstractMesh } from "../abstractMesh";
 import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
-import { Tools } from "core/Misc/tools";
-import { Matrix, TmpVectors, Vector2, Vector3, Quaternion } from "core/Maths/math.vector";
+import { Matrix, Quaternion, TmpVectors, Vector2, Vector3 } from "core/Maths/math.vector";
 import { Logger } from "core/Misc/logger";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Constants } from "core/Engines/constants";
+import { Tools } from "core/Misc/tools";
+import "core/Meshes/thinInstanceMesh";
 
 /**
  * Class used to render a gaussian splatting mesh
@@ -20,15 +21,22 @@ export class GaussianSplattingMesh extends Mesh {
     private _worker: Nullable<Worker> = null;
     private _frameIdLastUpdate = -1;
     private _modelViewMatrix = Matrix.Identity();
-    private _material: Nullable<GaussianSplattingMaterial> = null;
     private _depthMix: BigInt64Array;
     private _canPostToWorker = true;
+    private _readyToDisplay = false;
     private _lastModelViewMatrix: DeepImmutable<FloatArray>;
     private _covariancesATexture: Nullable<BaseTexture> = null;
     private _covariancesBTexture: Nullable<BaseTexture> = null;
     private _centersTexture: Nullable<BaseTexture> = null;
     private _colorsTexture: Nullable<BaseTexture> = null;
     private _splatPositions: Nullable<Float32Array> = null;
+    //@ts-expect-error
+    private _covariancesA: Nullable<Float32Array> = null;
+    //@ts-expect-error
+    private _covariancesB: Nullable<Float32Array> = null;
+    //@ts-expect-error
+    private _colors: Nullable<Float32Array> = null;
+    private readonly _keepInRam: boolean = false;
 
     /**
      * Gets the covariancesA texture
@@ -63,8 +71,9 @@ export class GaussianSplattingMesh extends Mesh {
      * @param name defines the name of the mesh
      * @param url defines the url to load from (optional)
      * @param scene defines the hosting scene (optional)
+     * @param keepInRam keep datas in ram for editing purpose
      */
-    constructor(name: string, url: Nullable<string> = null, scene: Nullable<Scene> = null) {
+    constructor(name: string, url: Nullable<string> = null, scene: Nullable<Scene> = null, keepInRam: boolean = false) {
         super(name, scene);
 
         const vertexData = new VertexData();
@@ -79,10 +88,11 @@ export class GaussianSplattingMesh extends Mesh {
         this.setEnabled(false);
 
         this._lastModelViewMatrix = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-
+        this._keepInRam = keepInRam;
         if (url) {
             this.loadFileAsync(url);
         }
+        this.material = new GaussianSplattingMaterial(this.name + "_material", this._scene);
     }
 
     /**
@@ -102,18 +112,24 @@ export class GaussianSplattingMesh extends Mesh {
     }
 
     /**
-     * Triggers the draw call for the mesh. Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager
-     * @param subMesh defines the subMesh to render
-     * @param enableAlphaMode defines if alpha mode can be changed
-     * @param effectiveMeshReplacement defines an optional mesh used to provide info for the rendering
-     * @returns the current mesh
+     * Is this node ready to be used/rendered
+     * @param completeCheck defines if a complete check (including materials and lights) has to be done (false by default)
+     * @returns true when ready
      */
-    public override render(subMesh: SubMesh, enableAlphaMode: boolean, effectiveMeshReplacement?: AbstractMesh): Mesh {
-        if (!this.material) {
-            this._material = new GaussianSplattingMaterial(this.name + "_material", this._scene);
-            this.material = this._material;
+    public override isReady(completeCheck = false): boolean {
+        if (!super.isReady(completeCheck, true)) {
+            return false;
         }
 
+        if (!this._readyToDisplay) {
+            // mesh is ready when worker has done at least 1 sorting
+            this._postToWorker();
+            return false;
+        }
+        return true;
+    }
+
+    protected _postToWorker(): void {
         const frameId = this.getScene().getFrameId();
         if (frameId !== this._frameIdLastUpdate && this._worker && this._scene.activeCamera && this._canPostToWorker) {
             this.getWorldMatrix().multiplyToRef(this._scene.activeCamera.getViewMatrix(), this._modelViewMatrix);
@@ -132,7 +148,16 @@ export class GaussianSplattingMesh extends Mesh {
                 ]);
             }
         }
-
+    }
+    /**
+     * Triggers the draw call for the mesh. Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager
+     * @param subMesh defines the subMesh to render
+     * @param enableAlphaMode defines if alpha mode can be changed
+     * @param effectiveMeshReplacement defines an optional mesh used to provide info for the rendering
+     * @returns the current mesh
+     */
+    public override render(subMesh: SubMesh, enableAlphaMode: boolean, effectiveMeshReplacement?: AbstractMesh): Mesh {
+        this._postToWorker();
         return super.render(subMesh, enableAlphaMode, effectiveMeshReplacement);
     }
 
@@ -142,6 +167,7 @@ export class GaussianSplattingMesh extends Mesh {
      * if data array buffer is not ply, returns the original buffer
      * @param data the .ply data to load
      * @returns the loaded splat buffer
+     * @deprecated Please use SceneLoader.ImportMeshAsync instead
      */
     public static ConvertPLYToSplat(data: ArrayBuffer): ArrayBuffer {
         const ubuf = new Uint8Array(data);
@@ -300,6 +326,7 @@ export class GaussianSplattingMesh extends Mesh {
      * Loads a .splat Gaussian or .ply Splatting file asynchronously
      * @param url path to the splat file to load
      * @returns a promise that resolves when the operation is complete
+     * @deprecated Please use SceneLoader.ImportMeshAsync instead
      */
     public loadFileAsync(url: string): Promise<void> {
         return Tools.LoadFileAsync(url, true).then((data) => {
@@ -322,13 +349,10 @@ export class GaussianSplattingMesh extends Mesh {
         this._centersTexture = null;
         this._colorsTexture = null;
 
-        this._material?.dispose(false, true);
-        this._material = null;
-
         this._worker?.terminate();
         this._worker = null;
 
-        super.dispose(doNotRecurse);
+        super.dispose(doNotRecurse, true);
     }
 
     private _copyTextures(source: GaussianSplattingMesh): void {
@@ -351,6 +375,7 @@ export class GaussianSplattingMesh extends Mesh {
         newGS._copyTextures(this);
         newGS._modelViewMatrix = Matrix.Identity();
         newGS._splatPositions = this._splatPositions;
+        newGS._readyToDisplay = false;
         newGS._instanciateWorker();
 
         const binfo = this.getBoundingInfo();
@@ -411,6 +436,8 @@ export class GaussianSplattingMesh extends Mesh {
         if (!data.byteLength) {
             return;
         }
+        this._readyToDisplay = false;
+
         // Parse the data
         const uBuffer = new Uint8Array(data);
         const fBuffer = new Float32Array(uBuffer.buffer);
@@ -498,6 +525,11 @@ export class GaussianSplattingMesh extends Mesh {
             colorArray[i * 4 + 3] = uBuffer[32 * i + 24 + 3] / 255;
         }
 
+        if (this._keepInRam) {
+            this._covariancesA = covA;
+            this._covariancesB = covB;
+            this._colors = colorArray;
+        }
         this._covariancesATexture = createTextureFromData(convertRgbToRgba(covA), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
         this._covariancesBTexture = createTextureFromData(convertRgbToRgba(covB), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
         this._centersTexture = createTextureFromData(convertRgbToRgba(this._splatPositions), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
@@ -538,6 +570,7 @@ export class GaussianSplattingMesh extends Mesh {
             }
             this.thinInstanceBufferUpdated("splatIndex");
             this._canPostToWorker = true;
+            this._readyToDisplay = true;
         };
     }
 

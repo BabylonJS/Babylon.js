@@ -236,17 +236,13 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             return;
         }
 
+        const material = this.props.globalState.nodeMaterial;
         try {
-            this.props.globalState.nodeMaterial.options.emitComments = true;
-            this.props.globalState.nodeMaterial.build(true);
-            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Node material build successful", false));
+            material.options.emitComments = true;
+            material.build(true);
         } catch (err) {
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
         }
-
-        SerializationTools.UpdateLocations(this.props.globalState.nodeMaterial, this.props.globalState);
-
-        this.props.globalState.onBuiltObservable.notifyObservers();
     }
 
     build(ignoreEditorData = false) {

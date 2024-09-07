@@ -7,6 +7,7 @@ export * from "./depthPeelingSceneComponent";
 export * from "./edgesRenderer";
 export * from "./geometryBufferRenderer";
 export * from "./geometryBufferRendererSceneComponent";
+export * from "./IBLShadows/iblShadowsRenderPipeline";
 export * from "./prePassRenderer";
 export * from "./prePassRendererSceneComponent";
 export * from "./subSurfaceSceneComponent";
@@ -41,3 +42,15 @@ export * from "../Shaders/line.fragment";
 export * from "../Shaders/line.vertex";
 export * from "../ShadersWGSL/line.fragment";
 export * from "../ShadersWGSL/line.vertex";
+
+// Outline Renderer
+export * from "../Shaders/outline.fragment";
+export * from "../Shaders/outline.vertex";
+export * from "../ShadersWGSL/outline.fragment";
+export * from "../ShadersWGSL/outline.vertex";
+
+// Depth Peeling Renderer
+export * from "../Shaders/oitBackBlend.fragment";
+export * from "../Shaders/oitFinal.fragment";
+export * from "../ShadersWGSL/oitBackBlend.fragment";
+export * from "../ShadersWGSL/oitFinal.fragment";

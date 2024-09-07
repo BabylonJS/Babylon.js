@@ -17,8 +17,10 @@ import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes 
 
 import type { Material } from "../Materials/material";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
-import { BindMorphTargetParameters, PrepareAttributesForMorphTargetsInfluencers, PushAttributesForInstances } from "../Materials/materialHelper.functions";
+import { BindBonesParameters, BindMorphTargetParameters, PrepareAttributesForMorphTargetsInfluencers, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { EffectFallbacks } from "core/Materials/effectFallbacks";
+import type { IEffectCreationOptions } from "core/Materials";
 
 /**
  * This represents a depth renderer in Babylon.
@@ -292,21 +294,7 @@ export class DepthRenderer {
                     }
 
                     // Bones
-                    if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {
-                        const skeleton = renderingMesh.skeleton;
-
-                        if (skeleton.isUsingTextureForMatrices) {
-                            const boneTexture = skeleton.getTransformMatrixTexture(renderingMesh);
-                            if (!boneTexture) {
-                                return;
-                            }
-
-                            effect.setTexture("boneSampler", boneTexture);
-                            effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
-                        } else {
-                            effect.setMatrices("mBones", skeleton.getTransformMatrices(renderingMesh));
-                        }
-                    }
+                    BindBonesParameters(renderingMesh, effect);
 
                     // Clip planes
                     bindClipPlane(effect, material, scene);
@@ -315,6 +303,12 @@ export class DepthRenderer {
                     BindMorphTargetParameters(renderingMesh, effect);
                     if (renderingMesh.morphTargetManager && renderingMesh.morphTargetManager.isUsingTextureForTargets) {
                         renderingMesh.morphTargetManager._bind(effect);
+                    }
+
+                    // Baked vertex animations
+                    const bvaManager = subMesh.getMesh().bakedVertexAnimationManager;
+                    if (bvaManager && bvaManager.isEnabled) {
+                        bvaManager.bind(effect, hardwareInstancedRendering);
                     }
 
                     // Points cloud rendering
@@ -410,7 +404,7 @@ export class DepthRenderer {
         const attribs = [VertexBuffer.PositionKind];
 
         // Alpha test
-        if (material && material.needAlphaTesting() && material.getAlphaTestTexture()) {
+        if (material.needAlphaTesting() && material.getAlphaTestTexture()) {
             defines.push("#define ALPHATEST");
             if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
                 attribs.push(VertexBuffer.UVKind);
@@ -423,7 +417,8 @@ export class DepthRenderer {
         }
 
         // Bones
-        if (mesh.useBones && mesh.computeBonesUsingShaders) {
+        const fallbacks = new EffectFallbacks();
+        if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
             attribs.push(VertexBuffer.MatricesIndicesKind);
             attribs.push(VertexBuffer.MatricesWeightsKind);
             if (mesh.numBoneInfluencers > 4) {
@@ -431,12 +426,15 @@ export class DepthRenderer {
                 attribs.push(VertexBuffer.MatricesWeightsExtraKind);
             }
             defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-            defines.push("#define BonesPerMesh " + (mesh.skeleton ? mesh.skeleton.bones.length + 1 : 0));
+            if (mesh.numBoneInfluencers > 0) {
+                fallbacks.addCPUSkinningFallback(0, mesh);
+            }
 
-            const skeleton = subMesh.getRenderingMesh().skeleton;
-
-            if (skeleton?.isUsingTextureForMatrices) {
+            const skeleton = mesh.skeleton;
+            if (skeleton.isUsingTextureForMatrices) {
                 defines.push("#define BONETEXTURE");
+            } else {
+                defines.push("#define BonesPerMesh " + (skeleton.bones.length + 1));
             }
         } else {
             defines.push("#define NUM_BONE_INFLUENCERS 0");
@@ -470,6 +468,15 @@ export class DepthRenderer {
             PushAttributesForInstances(attribs);
             if (subMesh.getRenderingMesh().hasThinInstances) {
                 defines.push("#define THIN_INSTANCES");
+            }
+        }
+
+        // Baked vertex animations
+        const bvaManager = mesh.bakedVertexAnimationManager;
+        if (bvaManager && bvaManager.isEnabled) {
+            defines.push("#define BAKED_VERTEX_ANIMATION_TEXTURE");
+            if (useInstances) {
+                attribs.push("bakedVertexAnimationSettingsInstanced");
             }
         }
 
@@ -509,25 +516,32 @@ export class DepthRenderer {
                 "morphTargetCount",
                 "morphTargetTextureInfo",
                 "morphTargetTextureIndices",
+                "bakedVertexAnimationSettings",
+                "bakedVertexAnimationTextureSizeInverted",
+                "bakedVertexAnimationTime",
+                "bakedVertexAnimationTexture",
             ];
+            const samplers = ["diffuseSampler", "morphTargets", "boneSampler", "bakedVertexAnimationTexture"];
+
             addClipPlaneUniforms(uniforms);
 
             drawWrapper.setEffect(
                 engine.createEffect(
                     "depth",
-                    attribs,
-                    uniforms,
-                    ["diffuseSampler", "morphTargets", "boneSampler"],
-                    join,
-                    undefined,
-                    undefined,
-                    undefined,
-                    {
-                        maxSimultaneousMorphTargets: numMorphInfluencers,
+                    <IEffectCreationOptions>{
+                        attributes: attribs,
+                        uniformsNames: uniforms,
+                        uniformBuffersNames: [],
+                        samplers: samplers,
+                        defines: join,
+                        fallbacks: fallbacks,
+                        onCompiled: null,
+                        onError: null,
+                        indexParameters: { maxSimultaneousMorphTargets: numMorphInfluencers },
+                        shaderLanguage: this._shaderLanguage,
                     },
-                    this._shaderLanguage
-                ),
-                join
+                    engine
+                )
             );
         }
 

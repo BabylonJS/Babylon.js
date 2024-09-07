@@ -3,16 +3,17 @@ import { nodeResolve } from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import alias from "@rollup/plugin-alias";
 import terser from "@rollup/plugin-terser";
+import { minifyTemplateLiterals } from "rollup-plugin-minify-template-literals";
 
 const source = "dev";
 
 const commonConfig = {
     input: "../../../tools/viewer-alpha/src/index.ts",
     output: {
+        dir: "dist",
         sourcemap: true,
         format: "es",
         exports: "named",
-        inlineDynamicImports: true,
     },
     plugins: [
         typescript({ tsconfig: "tsconfig.build.dist.json" }),
@@ -31,7 +32,8 @@ const maxConfig = {
     ...commonConfig,
     output: {
         ...commonConfig.output,
-        file: "dist/babylon-viewer.esm.js",
+        entryFileNames: "babylon-viewer.esm.js",
+        chunkFileNames: "chunks/[name]-[hash].esm.js",
     },
 };
 
@@ -39,9 +41,10 @@ const minConfig = {
     ...commonConfig,
     output: {
         ...commonConfig.output,
-        file: "dist/babylon-viewer.esm.min.js",
+        entryFileNames: "babylon-viewer.esm.min.js",
+        chunkFileNames: "chunks/[name]-[hash].esm.min.js",
     },
-    plugins: [...commonConfig.plugins, terser()],
+    plugins: [...commonConfig.plugins, terser(), minifyTemplateLiterals()],
 };
 
 export default [maxConfig, minConfig];

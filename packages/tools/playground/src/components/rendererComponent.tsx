@@ -294,7 +294,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                     code += "\r\n" + "window.scene = " + createSceneFunction + "();";
                 } else {
                     const startCar = code.search("var " + createSceneFunction);
-                    code = code.substr(0, startCar) + code.substr(startCar + 4);
+                    code = code.substring(0, startCar) + code.substr(startCar + 4);
                     code += "\n" + "window.scene = " + createSceneFunction + "();";
                 }
 

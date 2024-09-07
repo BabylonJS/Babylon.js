@@ -15,7 +15,6 @@ import type { Mesh } from "../../Meshes/mesh";
 import { PBRBRDFConfiguration } from "./pbrBRDFConfiguration";
 import { PrePassConfiguration } from "../prePassConfiguration";
 import { Color3, TmpColors } from "../../Maths/math.color";
-import { Scalar } from "../../Maths/math.scalar";
 
 import type { IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration.defines";
 import { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration";
@@ -203,13 +202,21 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
     public PREPASS_ALBEDO_SQRT_INDEX = -1;
     public PREPASS_DEPTH = false;
     public PREPASS_DEPTH_INDEX = -1;
+    public PREPASS_NDC_DEPTH = false;
+    public PREPASS_NDC_DEPTH_INDEX = -1;
     public PREPASS_NORMAL = false;
     public PREPASS_NORMAL_INDEX = -1;
     public PREPASS_NORMAL_WORLDSPACE = false;
+    public PREPASS_WORLD_NORMAL = false;
+    public PREPASS_WORLD_NORMAL_INDEX = -1;
     public PREPASS_POSITION = false;
     public PREPASS_POSITION_INDEX = -1;
+    public PREPASS_LOCAL_POSITION = false;
+    public PREPASS_LOCAL_POSITION_INDEX = -1;
     public PREPASS_VELOCITY = false;
     public PREPASS_VELOCITY_INDEX = -1;
+    public PREPASS_VELOCITY_LINEAR = false;
+    public PREPASS_VELOCITY_LINEAR_INDEX = -1;
     public PREPASS_REFLECTIVITY = false;
     public PREPASS_REFLECTIVITY_INDEX = -1;
     public SCENE_MRT_COUNT = 0;
@@ -2117,7 +2124,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                         if (this.realTimeFiltering) {
                             const width = reflectionTexture.getSize().width;
-                            ubo.updateFloat2("vReflectionFilteringInfo", width, Scalar.Log2(width));
+                            ubo.updateFloat2("vReflectionFilteringInfo", width, Math.log2(width));
                         }
 
                         if (!defines.USEIRRADIANCEMAP) {

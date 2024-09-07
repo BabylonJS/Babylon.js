@@ -11,7 +11,7 @@
     ],
     "scripts": {
         "build": "npm run clean && npm run compile",
-        "clean": "rimraf dist && rimraf *.tsbuildinfo",
+        "clean": "rimraf dist && rimraf *.tsbuildinfo -g",
         "precompile": "build-tools -c build-shaders --package core",
         "compile": "tsc -b tsconfig.build.json",
         "watch:assets": "build-tools -c build-shaders --package core --watch",

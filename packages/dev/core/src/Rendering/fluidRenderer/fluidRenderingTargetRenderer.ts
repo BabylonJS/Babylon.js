@@ -14,6 +14,7 @@ import type { Nullable } from "core/types";
 import type { FluidRenderingObject } from "./fluidRenderingObject";
 import { FluidRenderingTextures } from "./fluidRenderingTextures";
 import type { WebGPUEngine } from "core/Engines/webgpuEngine";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Textures that can be displayed as a debugging tool
@@ -497,12 +498,23 @@ export class FluidRenderingTargetRenderer {
     /** @internal */
     public _thicknessRenderTarget: Nullable<FluidRenderingTextures>;
 
+    /** Shader language used by the renderer */
+    protected _shaderLanguage = ShaderLanguage.GLSL;
+
+    /**
+     * Gets the shader language used in this renderer
+     */
+    public get shaderLanguage(): ShaderLanguage {
+        return this._shaderLanguage;
+    }
+
     /**
      * Creates an instance of the class
      * @param scene Scene used to render the fluid object into
      * @param camera Camera used to render the fluid object. If not provided, use the active camera of the scene instead
+     * @param shaderLanguage The shader language to use
      */
-    constructor(scene: Scene, camera?: Camera) {
+    constructor(scene: Scene, camera?: Camera, shaderLanguage?: ShaderLanguage) {
         this._scene = scene;
         this._engine = scene.getEngine();
         this._camera = camera ?? scene.activeCamera;
@@ -518,6 +530,8 @@ export class FluidRenderingTargetRenderer {
         this._thicknessRenderTarget = null;
 
         this._renderPostProcess = null;
+
+        this._shaderLanguage = shaderLanguage ?? (this._engine.isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
     }
 
     /** @internal */
@@ -544,7 +558,8 @@ export class FluidRenderingTargetRenderer {
             false,
             this._camera,
             true,
-            this._samples
+            this._samples,
+            this._shaderLanguage
         );
 
         this._initializeRenderTarget(this._depthRenderTarget);
@@ -570,7 +585,8 @@ export class FluidRenderingTargetRenderer {
                 true,
                 this._camera,
                 true,
-                this._samples
+                this._samples,
+                this._shaderLanguage
             );
 
             this._initializeRenderTarget(this._diffuseRenderTarget);
@@ -597,7 +613,8 @@ export class FluidRenderingTargetRenderer {
                 true,
                 this._camera,
                 false,
-                this._samples
+                this._samples,
+                this._shaderLanguage
             );
 
             this._initializeRenderTarget(this._thicknessRenderTarget);
@@ -738,7 +755,15 @@ export class FluidRenderingTargetRenderer {
             undefined,
             undefined,
             true,
-            undefined
+            undefined,
+            this._shaderLanguage,
+            async () => {
+                if (this._shaderLanguage === ShaderLanguage.WGSL) {
+                    await import("../../ShadersWGSL/fluidRenderingRender.fragment");
+                } else {
+                    await import("../../Shaders/fluidRenderingRender.fragment");
+                }
+            }
         );
         this._renderPostProcess.updateEffect(defines.join("\n"));
 

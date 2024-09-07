@@ -1,7 +1,6 @@
 import type { Scene } from "core/scene";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
-import { Scalar } from "core/Maths/math.scalar";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import type { Engine } from "core/Engines/engine";
@@ -299,7 +298,7 @@ export class TextureUtils {
                                 const alphaG = roughness * roughness + kMinimumVariance;
                                 const microsurfaceAverageSlopeTexels = alphaG * textureCube.Width;
 
-                                const environmentSpecularLOD = TextureUtils.EnvironmentLODScale * Scalar.Log2(microsurfaceAverageSlopeTexels) + TextureUtils.EnvironmentLODOffset;
+                                const environmentSpecularLOD = TextureUtils.EnvironmentLODScale * Math.log2(microsurfaceAverageSlopeTexels) + TextureUtils.EnvironmentLODOffset;
 
                                 const maxLODIndex = textureCube.source.length - 1;
                                 const mipmapIndex = Math.min(Math.max(Math.round(environmentSpecularLOD), 0), maxLODIndex);

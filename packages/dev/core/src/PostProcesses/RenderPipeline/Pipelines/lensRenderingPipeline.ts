@@ -15,7 +15,7 @@ import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSc
 import "../../../Shaders/chromaticAberration.fragment";
 import "../../../Shaders/lensHighlights.fragment";
 import "../../../Shaders/depthOfField.fragment";
-import { Scalar } from "../../../Maths/math.scalar";
+import { RandomRange } from "../../../Maths/math.scalar.functions";
 
 /**
  * BABYLON.JS Chromatic Aberration GLSL Shader
@@ -578,7 +578,7 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
 
         const data = new Uint8Array(size * size * 4);
         for (let index = 0; index < data.length; ) {
-            const value = Math.floor(Scalar.RandomRange(0.42, 0.58) * 255);
+            const value = Math.floor(RandomRange(0.42, 0.58) * 255);
             data[index++] = value;
             data[index++] = value;
             data[index++] = value;

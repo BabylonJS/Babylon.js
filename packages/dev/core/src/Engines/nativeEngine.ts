@@ -328,6 +328,7 @@ export class NativeEngine extends Engine {
             needTypeSuffixInShaderConstants: false,
             supportMSAA: true,
             supportSSAO2: false,
+            supportIBLShadows: false,
             supportExtendedTextureFormats: false,
             supportSwitchCaseInShader: false,
             supportSyncTextureRead: false,
@@ -1795,8 +1796,8 @@ export class NativeEngine extends Engine {
         useSRGBBuffer = false
     ): InternalTexture {
         url = url || "";
-        const fromData = url.substr(0, 5) === "data:";
-        //const fromBlob = url.substr(0, 5) === "blob:";
+        const fromData = url.substring(0, 5) === "data:";
+        //const fromBlob = url.substring(0, 5) === "blob:";
         const isBase64 = fromData && url.indexOf(";base64,") !== -1;
 
         const texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Url);
@@ -1810,7 +1811,12 @@ export class NativeEngine extends Engine {
         const lastDot = url.lastIndexOf(".");
         const extension = forcedExtension ? forcedExtension : lastDot > -1 ? url.substring(lastDot).toLowerCase() : "";
 
-        const loaderPromise = _GetCompatibleTextureLoader(extension);
+        // some formats are already supported by bimg, no need to try to load them with JS
+        // leaving TextureLoader extension check for future use
+        let loaderPromise = null;
+        if (extension.endsWith(".basis") || extension.endsWith(".ktx") || extension.endsWith(".ktx2") || mimeType === "image/ktx" || mimeType === "image/ktx2") {
+            loaderPromise = _GetCompatibleTextureLoader(extension);
+        }
 
         if (scene) {
             scene.addPendingData(texture);

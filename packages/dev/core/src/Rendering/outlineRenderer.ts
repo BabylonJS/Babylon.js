@@ -9,10 +9,11 @@ import type { ISceneComponent } from "../sceneComponent";
 import { SceneComponentConstants } from "../sceneComponent";
 import { DrawWrapper } from "../Materials/drawWrapper";
 
-import "../Shaders/outline.fragment";
-import "../Shaders/outline.vertex";
 import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "core/Materials/clipPlaneMaterialHelper";
-import { BindMorphTargetParameters, PrepareAttributesForMorphTargetsInfluencers, PushAttributesForInstances } from "../Materials/materialHelper.functions";
+import { BindBonesParameters, BindMorphTargetParameters, PrepareAttributesForMorphTargetsInfluencers, PushAttributesForInstances } from "../Materials/materialHelper.functions";
+import { EffectFallbacks } from "core/Materials/effectFallbacks";
+import type { IEffectCreationOptions } from "core/Materials/effect";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 declare module "../scene" {
     export interface Scene {
@@ -121,6 +122,16 @@ export class OutlineRenderer implements ISceneComponent {
     private _savedDepthWrite: boolean;
     private _passIdForDrawWrapper: number[];
 
+    /** Shader language used by the Outline renderer. */
+    protected _shaderLanguage = ShaderLanguage.GLSL;
+
+    /**
+     * Gets the shader language used in the Outline renderer.
+     */
+    public get shaderLanguage(): ShaderLanguage {
+        return this._shaderLanguage;
+    }
+
     /**
      * Instantiates a new outline renderer. (There could be only one per scene).
      * @param scene Defines the scene it belongs to
@@ -132,6 +143,11 @@ export class OutlineRenderer implements ISceneComponent {
         this._passIdForDrawWrapper = [];
         for (let i = 0; i < 4; ++i) {
             this._passIdForDrawWrapper[i] = this._engine.createRenderPassId(`Outline Renderer (${i})`);
+        }
+
+        const engine = this._engine;
+        if (engine.isWebGPU) {
+            this._shaderLanguage = ShaderLanguage.WGSL;
         }
     }
 
@@ -207,19 +223,22 @@ export class OutlineRenderer implements ISceneComponent {
         effect.setMatrix("world", effectiveMesh.getWorldMatrix());
 
         // Bones
-        if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {
-            effect.setMatrices("mBones", renderingMesh.skeleton.getTransformMatrices(renderingMesh));
-        }
+        BindBonesParameters(renderingMesh, effect);
 
+        // Morph targets
+        BindMorphTargetParameters(renderingMesh, effect);
         if (renderingMesh.morphTargetManager && renderingMesh.morphTargetManager.isUsingTextureForTargets) {
             renderingMesh.morphTargetManager._bind(effect);
         }
 
-        // Morph targets
-        BindMorphTargetParameters(renderingMesh, effect);
-
         if (!hardwareInstancedRendering) {
             renderingMesh._bind(subMesh, effect, material.fillMode);
+        }
+
+        // Baked vertex animations
+        const bvaManager = subMesh.getMesh().bakedVertexAnimationManager;
+        if (bvaManager && bvaManager.isEnabled) {
+            bvaManager.bind(effect, hardwareInstancedRendering);
         }
 
         // Alpha test
@@ -288,15 +307,25 @@ export class OutlineRenderer implements ISceneComponent {
         prepareStringDefinesForClipPlanes(material, scene, defines);
 
         // Bones
-        if (mesh.useBones && mesh.computeBonesUsingShaders) {
+        const fallbacks = new EffectFallbacks();
+        if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
             attribs.push(VertexBuffer.MatricesIndicesKind);
             attribs.push(VertexBuffer.MatricesWeightsKind);
             if (mesh.numBoneInfluencers > 4) {
                 attribs.push(VertexBuffer.MatricesIndicesExtraKind);
                 attribs.push(VertexBuffer.MatricesWeightsExtraKind);
             }
+            const skeleton = mesh.skeleton;
             defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-            defines.push("#define BonesPerMesh " + (mesh.skeleton ? mesh.skeleton.bones.length + 1 : 0));
+            if (mesh.numBoneInfluencers > 0) {
+                fallbacks.addCPUSkinningFallback(0, mesh);
+            }
+
+            if (skeleton.isUsingTextureForMatrices) {
+                defines.push("#define BONETEXTURE");
+            } else {
+                defines.push("#define BonesPerMesh " + (skeleton.bones.length + 1));
+            }
         } else {
             defines.push("#define NUM_BONE_INFLUENCERS 0");
         }
@@ -327,6 +356,15 @@ export class OutlineRenderer implements ISceneComponent {
             }
         }
 
+        // Baked vertex animations
+        const bvaManager = mesh.bakedVertexAnimationManager;
+        if (bvaManager && bvaManager.isEnabled) {
+            defines.push("#define BAKED_VERTEX_ANIMATION_TEXTURE");
+            if (useInstances) {
+                attribs.push("bakedVertexAnimationSettingsInstanced");
+            }
+        }
+
         // Get correct effect
         const drawWrapper = subMesh._getDrawWrapper(renderPassId, true)!;
         const cachedDefines = drawWrapper.defines;
@@ -342,16 +380,43 @@ export class OutlineRenderer implements ISceneComponent {
                 "color",
                 "logarithmicDepthConstant",
                 "morphTargetInfluences",
+                "boneTextureWidth",
                 "morphTargetCount",
                 "morphTargetTextureInfo",
                 "morphTargetTextureIndices",
+                "bakedVertexAnimationSettings",
+                "bakedVertexAnimationTextureSizeInverted",
+                "bakedVertexAnimationTime",
+                "bakedVertexAnimationTexture",
             ];
+            const samplers = ["diffuseSampler", "boneSampler", "morphTargets", "bakedVertexAnimationTexture"];
+
             addClipPlaneUniforms(uniforms);
 
             drawWrapper.setEffect(
-                this.scene.getEngine().createEffect("outline", attribs, uniforms, ["diffuseSampler", "morphTargets"], join, undefined, undefined, undefined, {
-                    maxSimultaneousMorphTargets: numMorphInfluencers,
-                }),
+                this.scene.getEngine().createEffect(
+                    "outline",
+                    <IEffectCreationOptions>{
+                        attributes: attribs,
+                        uniformsNames: uniforms,
+                        uniformBuffersNames: [],
+                        samplers: samplers,
+                        defines: join,
+                        fallbacks: fallbacks,
+                        onCompiled: null,
+                        onError: null,
+                        indexParameters: { maxSimultaneousMorphTargets: numMorphInfluencers },
+                        shaderLanguage: this._shaderLanguage,
+                        extraInitializationsAsync: async () => {
+                            if (this._shaderLanguage === ShaderLanguage.WGSL) {
+                                await Promise.all([import("../ShadersWGSL/outline.fragment"), import("../ShadersWGSL/outline.vertex")]);
+                            } else {
+                                await Promise.all([import("../Shaders/outline.fragment"), import("../Shaders/outline.vertex")]);
+                            }
+                        },
+                    },
+                    this.scene.getEngine()
+                ),
                 join
             );
         }

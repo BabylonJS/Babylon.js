@@ -9,7 +9,6 @@ import type { RenderTargetTexture } from "../../Materials/Textures/renderTargetT
 import { MaterialFlags } from "../materialFlags";
 import type { UniformBuffer } from "../../Materials/uniformBuffer";
 import type { EffectFallbacks } from "../effectFallbacks";
-import { Scalar } from "../../Maths/math.scalar";
 import type { CubeTexture } from "../Textures/cubeTexture";
 import { TmpVectors } from "../../Maths/math.vector";
 import type { SubMesh } from "../../Meshes/subMesh";
@@ -593,7 +592,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
                 );
 
                 if (realTimeFiltering) {
-                    uniformBuffer.updateFloat2("vRefractionFilteringInfo", width, Scalar.Log2(width));
+                    uniformBuffer.updateFloat2("vRefractionFilteringInfo", width, Math.log2(width));
                 }
 
                 if ((<any>refractionTexture).boundingBoxSize) {

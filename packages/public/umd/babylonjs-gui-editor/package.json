@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-gui-editor",
-    "version": "7.21.5",
+    "version": "7.24.0",
     "main": "babylon.guiEditor.max.js",
     "types": "babylon.guiEditor.module.d.ts",
     "files": [
@@ -11,11 +11,11 @@
         "build:dev": "webpack --env development",
         "build:prod": "webpack --env production",
         "build:declaration": "build-tools -c pud --config ./config.json",
-        "clean": "rimraf dist && rimraf babylon*.*"
+        "clean": "rimraf dist && rimraf babylon*.* -g"
     },
     "dependencies": {
-        "babylonjs": "^7.21.5",
-        "babylonjs-gui": "^7.21.5"
+        "babylonjs": "^7.24.0",
+        "babylonjs-gui": "^7.24.0"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",

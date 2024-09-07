@@ -9,15 +9,8 @@ import type { Camera } from "core/Cameras/camera";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { Material } from "core/Materials/material";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type {
-    ISceneLoaderPluginFactory,
-    ISceneLoaderPluginAsync,
-    ISceneLoaderProgressEvent,
-    ISceneLoaderPluginExtensions,
-    ISceneLoaderAsyncResult,
-} from "core/Loading/sceneLoader";
+import type { ISceneLoaderPluginFactory, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent, ISceneLoaderAsyncResult, SceneLoaderPluginOptions } from "core/Loading/sceneLoader";
 import { registerSceneLoaderPlugin } from "core/Loading/sceneLoader";
-import type { SceneLoaderPluginOptions } from "core/Loading/sceneLoader";
 import { AssetContainer } from "core/assetContainer";
 import type { Scene, IDisposable } from "core/scene";
 import type { WebRequest } from "core/Misc/webRequest";
@@ -26,13 +19,12 @@ import { Logger } from "core/Misc/logger";
 import type { IDataBuffer } from "core/Misc/dataReader";
 import { DataReader } from "core/Misc/dataReader";
 import { GLTFValidation } from "./glTFValidation";
+import { GLTFFileLoaderMetadata, GLTFMagicBase64Encoded } from "./glTFFileLoader.metadata";
 import type { LoadFileError } from "core/Misc/fileTools";
 import { DecodeBase64UrlToBinary } from "core/Misc/fileTools";
 import { RuntimeError, ErrorCodes } from "core/Misc/error";
 import type { TransformNode } from "core/Meshes/transformNode";
 import type { MorphTargetManager } from "core/Morph/morphTargetManager";
-
-const PLUGIN_GLTF = "gltf";
 
 /**
  * Defines options for glTF loader extensions. This interface is extended by specific extensions.
@@ -45,7 +37,7 @@ declare module "core/Loading/sceneLoader" {
         /**
          * Defines options for the glTF loader.
          */
-        [PLUGIN_GLTF]: Partial<GLTFLoaderOptions>;
+        [GLTFFileLoaderMetadata.name]: Partial<GLTFLoaderOptions>;
     }
 }
 
@@ -198,20 +190,33 @@ abstract class GLTFLoaderOptions {
     // eslint-disable-next-line babylonjs/available
     protected copyFrom(options?: Partial<Readonly<GLTFLoaderOptions>>) {
         if (options) {
-            const copyOption = (option: string) => {
-                const typedKey = option as keyof GLTFLoaderOptions;
-                (this as Record<keyof GLTFLoaderOptions, unknown>)[typedKey] = options[typedKey] ?? this[typedKey];
-            };
-
-            // Copy concrete properties
-            for (const option in this) {
-                copyOption(option);
-            }
-
-            // Copy abstract properties
-            for (const option of ["onParsed", "onMeshLoaded", "onSkinLoaded", "onTextureLoaded", "onMaterialLoaded", "onCameraLoaded"] satisfies (keyof GLTFLoaderOptions)[]) {
-                copyOption(option);
-            }
+            this.onParsed = options.onParsed;
+            this.coordinateSystemMode = options.coordinateSystemMode ?? this.coordinateSystemMode;
+            this.animationStartMode = options.animationStartMode ?? this.animationStartMode;
+            this.loadNodeAnimations = options.loadNodeAnimations ?? this.loadNodeAnimations;
+            this.loadSkins = options.loadSkins ?? this.loadSkins;
+            this.loadMorphTargets = options.loadMorphTargets ?? this.loadMorphTargets;
+            this.compileMaterials = options.compileMaterials ?? this.compileMaterials;
+            this.useClipPlane = options.useClipPlane ?? this.useClipPlane;
+            this.compileShadowGenerators = options.compileShadowGenerators ?? this.compileShadowGenerators;
+            this.transparencyAsCoverage = options.transparencyAsCoverage ?? this.transparencyAsCoverage;
+            this.useRangeRequests = options.useRangeRequests ?? this.useRangeRequests;
+            this.createInstances = options.createInstances ?? this.createInstances;
+            this.alwaysComputeBoundingBox = options.alwaysComputeBoundingBox ?? this.alwaysComputeBoundingBox;
+            this.loadAllMaterials = options.loadAllMaterials ?? this.loadAllMaterials;
+            this.loadOnlyMaterials = options.loadOnlyMaterials ?? this.loadOnlyMaterials;
+            this.skipMaterials = options.skipMaterials ?? this.skipMaterials;
+            this.useSRGBBuffers = options.useSRGBBuffers ?? this.useSRGBBuffers;
+            this.targetFps = options.targetFps ?? this.targetFps;
+            this.alwaysComputeSkeletonRootNode = options.alwaysComputeSkeletonRootNode ?? this.alwaysComputeSkeletonRootNode;
+            this.preprocessUrlAsync = options.preprocessUrlAsync ?? this.preprocessUrlAsync;
+            this.customRootNode = options.customRootNode;
+            this.onMeshLoaded = options.onMeshLoaded;
+            this.onSkinLoaded = options.onSkinLoaded;
+            this.onTextureLoaded = options.onTextureLoaded;
+            this.onMaterialLoaded = options.onMaterialLoaded;
+            this.onCameraLoaded = options.onCameraLoaded;
+            this.extensionOptions = options.extensionOptions ?? this.extensionOptions;
         }
     }
 
@@ -222,7 +227,7 @@ abstract class GLTFLoaderOptions {
     /**
      * Raised when the asset has been parsed
      */
-    public abstract onParsed?: (loaderData: IGLTFLoaderData) => void;
+    public abstract onParsed?: ((loaderData: IGLTFLoaderData) => void) | undefined;
 
     // ----------
     // V2 options
@@ -341,28 +346,28 @@ abstract class GLTFLoaderOptions {
      * Callback raised when the loader creates a mesh after parsing the glTF properties of the mesh.
      * Note that the callback is called as soon as the mesh object is created, meaning some data may not have been setup yet for this mesh (vertex data, morph targets, material, ...)
      */
-    public abstract onMeshLoaded?: (mesh: AbstractMesh) => void;
+    public abstract onMeshLoaded?: ((mesh: AbstractMesh) => void) | undefined;
 
     /**
      * Callback raised when the loader creates a skin after parsing the glTF properties of the skin node.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/importers/glTF/glTFSkinning#ignoring-the-transform-of-the-skinned-mesh
      */
-    public abstract onSkinLoaded?: (node: TransformNode, skinnedNode: TransformNode) => void;
+    public abstract onSkinLoaded?: ((node: TransformNode, skinnedNode: TransformNode) => void) | undefined;
 
     /**
      * Callback raised when the loader creates a texture after parsing the glTF properties of the texture.
      */
-    public abstract onTextureLoaded?: (texture: BaseTexture) => void;
+    public abstract onTextureLoaded?: ((texture: BaseTexture) => void) | undefined;
 
     /**
      * Callback raised when the loader creates a material after parsing the glTF properties of the material.
      */
-    public abstract onMaterialLoaded?: (material: Material) => void;
+    public abstract onMaterialLoaded?: ((material: Material) => void) | undefined;
 
     /**
      * Callback raised when the loader creates a camera after parsing the glTF properties of the camera.
      */
-    public abstract onCameraLoaded?: (camera: Camera) => void;
+    public abstract onCameraLoaded?: ((camera: Camera) => void) | undefined;
 
     /**
      * Defines options for glTF extensions.
@@ -691,18 +696,13 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
     private _progressCallback?: (event: ISceneLoaderProgressEvent) => void;
     private _requests = new Array<IFileRequestInfo>();
 
-    private static readonly _MagicBase64Encoded = "Z2xURg"; // "glTF" base64 encoded (without the quotes!)
-
     /**
      * Name of the loader ("gltf")
      */
-    public readonly name = PLUGIN_GLTF;
+    public readonly name = GLTFFileLoaderMetadata.name;
 
     /** @internal */
-    public readonly extensions = {
-        ".gltf": { isBinary: false },
-        ".glb": { isBinary: true },
-    } as const satisfies ISceneLoaderPluginExtensions;
+    public readonly extensions = GLTFFileLoaderMetadata.extensions;
 
     /**
      * Disposes the loader, releases resources during load, and cancels any outstanding requests.
@@ -960,13 +960,7 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
      * @internal
      */
     public canDirectLoad(data: string): boolean {
-        return (
-            (data.indexOf("asset") !== -1 && data.indexOf("version") !== -1) ||
-            data.startsWith("data:base64," + GLTFFileLoader._MagicBase64Encoded) || // this is technically incorrect, but will continue to support for backcompat.
-            data.startsWith("data:;base64," + GLTFFileLoader._MagicBase64Encoded) ||
-            data.startsWith("data:application/octet-stream;base64," + GLTFFileLoader._MagicBase64Encoded) ||
-            data.startsWith("data:model/gltf-binary;base64," + GLTFFileLoader._MagicBase64Encoded)
-        );
+        return GLTFFileLoaderMetadata.canDirectLoad(data);
     }
 
     /**
@@ -974,10 +968,10 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
      */
     public directLoad(scene: Scene, data: string): Promise<Object> {
         if (
-            data.startsWith("base64," + GLTFFileLoader._MagicBase64Encoded) || // this is technically incorrect, but will continue to support for backcompat.
-            data.startsWith(";base64," + GLTFFileLoader._MagicBase64Encoded) ||
-            data.startsWith("application/octet-stream;base64," + GLTFFileLoader._MagicBase64Encoded) ||
-            data.startsWith("model/gltf-binary;base64," + GLTFFileLoader._MagicBase64Encoded)
+            data.startsWith("base64," + GLTFMagicBase64Encoded) || // this is technically incorrect, but will continue to support for backcompat.
+            data.startsWith(";base64," + GLTFMagicBase64Encoded) ||
+            data.startsWith("application/octet-stream;base64," + GLTFMagicBase64Encoded) ||
+            data.startsWith("model/gltf-binary;base64," + GLTFMagicBase64Encoded)
         ) {
             const arrayBuffer = DecodeBase64UrlToBinary(data);
 
@@ -1004,7 +998,7 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
 
     /** @internal */
     public createPlugin(options: SceneLoaderPluginOptions): ISceneLoaderPluginAsync {
-        return new GLTFFileLoader(options[PLUGIN_GLTF]);
+        return new GLTFFileLoader(options[GLTFFileLoaderMetadata.name]);
     }
 
     /**
@@ -1364,7 +1358,7 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
     }
 
     private _logEnabled(message: string): void {
-        const spaces = GLTFFileLoader._logSpaces.substr(0, this._logIndentLevel * 2);
+        const spaces = GLTFFileLoader._logSpaces.substring(0, this._logIndentLevel * 2);
         Logger.Log(`${spaces}${message}`);
     }
 

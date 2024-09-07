@@ -1,5 +1,17 @@
-// eslint-disable-next-line import/no-internal-modules
-import type { AbstractEngine, AssetContainer, Camera, FramingBehavior, IDisposable, LoadAssetContainerOptions, Mesh, Nullable } from "core/index";
+import type {
+    AbstractEngine,
+    AnimationGroup,
+    AssetContainer,
+    AutoRotationBehavior,
+    Camera,
+    FramingBehavior,
+    IDisposable,
+    LoadAssetContainerOptions,
+    Mesh,
+    Nullable,
+    Observer,
+    // eslint-disable-next-line import/no-internal-modules
+} from "core/index";
 
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
@@ -8,16 +20,16 @@ import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { Color4 } from "core/Maths/math.color";
+import { Scalar } from "core/Maths/math.scalar";
 import { Vector3 } from "core/Maths/math.vector";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { AsyncLock } from "core/Misc/asyncLock";
+import { Observable } from "core/Misc/observable";
 import { Scene } from "core/scene";
+import { registerBuiltInLoaders } from "loaders/dynamic";
 
 // TODO: Dynamic imports?
 import "core/Animations/animatable";
-import "core/Materials/Textures/Loaders/envTextureLoader";
-// eslint-disable-next-line import/no-internal-modules
-import "loaders/glTF/2.0/index";
 
 function createSkybox(scene: Scene, camera: Camera, environmentTexture: CubeTexture, blur: number): Mesh {
     const hdrSkybox = CreateBox("hdrSkyBox", undefined, scene);
@@ -84,8 +96,44 @@ export type ViewerOptions = Partial<
  * - Full screen and XR modes.
  */
 export class Viewer implements IDisposable {
+    static {
+        registerBuiltInLoaders();
+    }
+
+    /**
+     * Fired when a model is loaded into the viewer.
+     */
+    public readonly onModelLoaded = new Observable<void>();
+
+    /**
+     * Fired when an error occurs while loading a model.
+     */
+    public readonly onModelError = new Observable<unknown>();
+
+    /**
+     * Fired when the selected animation changes.
+     */
+    public readonly onSelectedAnimationChanged = new Observable<void>();
+
+    /**
+     * Fired when the animation speed changes.
+     */
+    public readonly onAnimationSpeedChanged = new Observable<void>();
+
+    /**
+     * Fired when the selected animation is playing or paused.
+     */
+    public readonly onIsAnimationPlayingChanged = new Observable<void>();
+
+    /**
+     * Fired when the current point on the selected animation timeline changes.
+     */
+    public readonly onAnimationProgressChanged = new Observable<void>();
+
     private readonly _details: ViewerDetails;
     private readonly _camera: ArcRotateCamera;
+    private readonly _autoRotationBehavior: AutoRotationBehavior;
+    private readonly _renderLoopController: IDisposable;
     private _skybox: Nullable<Mesh> = null;
 
     private _isDisposed = false;
@@ -96,6 +144,10 @@ export class Viewer implements IDisposable {
     private readonly _loadEnvironmentLock = new AsyncLock();
     private _environment: Nullable<IDisposable> = null;
     private _loadEnvironmentAbortController: Nullable<AbortController> = null;
+
+    private _selectedAnimation = -1;
+    private _activeAnimationObservers: Observer<AnimationGroup>[] = [];
+    private _animationSpeed = 1;
 
     public constructor(
         private readonly _engine: AbstractEngine,
@@ -110,16 +162,120 @@ export class Viewer implements IDisposable {
         this._camera = new ArcRotateCamera("camera1", 0, 0, 1, Vector3.Zero(), this._details.scene);
         this._camera.attachControl();
         this._updateCamera(); // set default camera values
+        this._autoRotationBehavior = this._camera.getBehaviorByName("AutoRotation") as AutoRotationBehavior;
 
         // Load a default light, but ignore errors as the user might be immediately loading their own environment.
         this.loadEnvironmentAsync(undefined).catch(() => {});
 
         // TODO: render at least back ground. Maybe we can only run renderloop when a mesh is loaded. What to render until then?
-        this._engine.runRenderLoop(() => {
+        const render = () => {
             this._details.scene.render();
-        });
+            if (this.isAnimationPlaying) {
+                this.onAnimationProgressChanged.notifyObservers();
+                this._autoRotationBehavior.resetLastInteractionTime();
+            }
+        };
+
+        this._engine.runRenderLoop(render);
+        this._renderLoopController = {
+            dispose: () => this._engine.stopRenderLoop(render),
+        };
 
         options?.onInitialized?.(this._details);
+    }
+
+    /**
+     * The list of animation names for the currently loaded model.
+     */
+    public get animations(): readonly string[] {
+        return this._details.model?.animationGroups.map((group) => group.name) ?? [];
+    }
+
+    /**
+     * The currently selected animation index.
+     */
+    public get selectedAnimation(): number {
+        return this._selectedAnimation;
+    }
+
+    public set selectedAnimation(value: number) {
+        value = Math.round(Scalar.Clamp(value, -1, this.animations.length - 1));
+        if (value !== this._selectedAnimation) {
+            const startAnimation = this.isAnimationPlaying;
+            if (this._activeAnimation) {
+                this._activeAnimation.goToFrame(0);
+                this._activeAnimation.stop();
+                this._activeAnimationObservers.forEach((observer) => observer.remove());
+                this._activeAnimationObservers = [];
+            }
+
+            this._selectedAnimation = value;
+
+            if (this._activeAnimation) {
+                this._activeAnimationObservers = [
+                    this._activeAnimation.onAnimationGroupPlayObservable.add(() => {
+                        this.onIsAnimationPlayingChanged.notifyObservers();
+                    }),
+                    this._activeAnimation.onAnimationGroupPauseObservable.add(() => {
+                        this.onIsAnimationPlayingChanged.notifyObservers();
+                    }),
+                    this._activeAnimation.onAnimationGroupEndObservable.add(() => {
+                        this.onIsAnimationPlayingChanged.notifyObservers();
+                        this.onAnimationProgressChanged.notifyObservers();
+                    }),
+                ];
+
+                this._activeAnimation.start(true, this._animationSpeed);
+
+                if (!startAnimation) {
+                    this.pauseAnimation();
+                }
+            }
+
+            this.onSelectedAnimationChanged.notifyObservers();
+        }
+    }
+
+    /**
+     * True if an animation is currently playing.
+     */
+    public get isAnimationPlaying(): boolean {
+        return this._activeAnimation?.isPlaying ?? false;
+    }
+
+    /**
+     * The speed scale at which animations are played.
+     */
+    public get animationSpeed(): number {
+        return this._animationSpeed;
+    }
+
+    public set animationSpeed(value: number) {
+        this._animationSpeed = value;
+        this._applyAnimationSpeed();
+        this.onAnimationSpeedChanged.notifyObservers();
+    }
+
+    /**
+     * The current point on the selected animation timeline, normalized between 0 and 1.
+     */
+    public get animationProgress(): number {
+        if (this._activeAnimation) {
+            return this._activeAnimation.getCurrentFrame() / (this._activeAnimation.to - this._activeAnimation.from);
+        }
+        return 0;
+    }
+
+    public set animationProgress(value: number) {
+        if (this._activeAnimation) {
+            this._activeAnimation.goToFrame(value * (this._activeAnimation.to - this._activeAnimation.from));
+            this.onAnimationProgressChanged.notifyObservers();
+            this._autoRotationBehavior.resetLastInteractionTime();
+        }
+    }
+
+    private get _activeAnimation(): Nullable<AnimationGroup> {
+        return this._details.model?.animationGroups[this._selectedAnimation] ?? null;
     }
 
     /**
@@ -138,13 +294,13 @@ export class Viewer implements IDisposable {
 
         // TODO: Disable audio for now, later figure out how to re-introduce it through dynamic imports.
         options = {
-            ...options,
+            ...(options ?? {}),
             pluginOptions: {
-                ...options?.pluginOptions,
+                ...(options?.pluginOptions ?? {}),
                 gltf: {
-                    ...options?.pluginOptions?.gltf,
+                    ...(options?.pluginOptions?.gltf ?? {}),
                     extensionOptions: {
-                        ...options?.pluginOptions?.gltf?.extensionOptions,
+                        ...(options?.pluginOptions?.gltf?.extensionOptions ?? {}),
                         // eslint-disable-next-line @typescript-eslint/naming-convention
                         KHR_audio: {
                             enabled: false,
@@ -161,9 +317,21 @@ export class Viewer implements IDisposable {
         await this._loadModelLock.lockAsync(async () => {
             this._throwIfDisposedOrAborted(abortSignal, abortController.signal);
             this._details.model?.dispose();
-            this._details.model = await loadAssetContainerAsync(source, this._details.scene, options);
-            this._details.model.addAllToScene();
-            this._updateCamera();
+            this.selectedAnimation = -1;
+
+            try {
+                this._details.model = await loadAssetContainerAsync(source, this._details.scene, options);
+                this._details.model.animationGroups.forEach((group) => group.stop());
+                this.selectedAnimation = 0;
+                this._details.model.addAllToScene();
+
+                this._updateCamera();
+                this._applyAnimationSpeed();
+                this.onModelLoaded.notifyObservers();
+            } catch (e) {
+                this.onModelError.notifyObservers(e);
+                throw e;
+            }
         });
     }
 
@@ -173,9 +341,10 @@ export class Viewer implements IDisposable {
      * If no url is provided, a default hemispheric light will be created.
      * If an environment is already loaded, it will be unloaded before loading the new environment.
      * @param url The url of the environment texture to load.
+     * @param options The options to use when loading the environment.
      * @param abortSignal An optional signal that can be used to abort the loading process.
      */
-    public async loadEnvironmentAsync(url: Nullable<string | undefined>, abortSignal?: AbortSignal): Promise<void> {
+    public async loadEnvironmentAsync(url: Nullable<string | undefined>, options?: {}, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
 
         this._loadEnvironmentAbortController?.abort("New environment is being loaded before previous environment finished loading.");
@@ -226,10 +395,47 @@ export class Viewer implements IDisposable {
     }
 
     /**
+     * Toggles the play/pause animation state if there is a selected animation.
+     */
+    public toggleAnimation() {
+        if (this.isAnimationPlaying) {
+            this.pauseAnimation();
+        } else {
+            this.playAnimation();
+        }
+    }
+
+    /**
+     * Plays the selected animation if there is one.
+     */
+    public playAnimation() {
+        this._activeAnimation?.play(true);
+    }
+
+    /**
+     * Pauses the selected animation if there is one.
+     */
+    public async pauseAnimation() {
+        this._activeAnimation?.pause();
+    }
+
+    /**
      * Disposes of the resources held by the Viewer.
      */
     public dispose(): void {
+        this.selectedAnimation = -1;
+        this.animationProgress = 0;
+
+        this._renderLoopController.dispose();
         this._details.scene.dispose();
+
+        this.onModelLoaded.clear();
+        this.onModelError.clear();
+        this.onSelectedAnimationChanged.clear();
+        this.onAnimationSpeedChanged.clear();
+        this.onIsAnimationPlayingChanged.clear();
+        this.onAnimationProgressChanged.clear();
+
         this._isDisposed = true;
     }
 
@@ -279,6 +485,10 @@ export class Viewer implements IDisposable {
         this._camera.restoreStateInterpolationFactor = 0.1;
 
         updateSkybox(this._skybox, this._camera);
+    }
+
+    private _applyAnimationSpeed() {
+        this._details.model?.animationGroups.forEach((group) => (group.speedRatio = this._animationSpeed));
     }
 
     /**

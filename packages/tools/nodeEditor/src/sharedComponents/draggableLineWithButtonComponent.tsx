@@ -24,7 +24,7 @@ export class DraggableLineWithButtonComponent extends React.Component<IDraggable
                     event.dataTransfer.setData("babylonjs-material-node", this.props.data);
                 }}
             >
-                {this.props.data.substr(0, this.props.data.length - (this.props.lenSuffixToRemove ?? 6))}
+                {this.props.data.substring(0, this.props.data.length - (this.props.lenSuffixToRemove ?? 6))}
                 <div
                     className="icon"
                     onClick={() => {

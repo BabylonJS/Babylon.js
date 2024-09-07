@@ -120,6 +120,11 @@ export interface IWebXRHandTrackingOptions {
          * Not setting, or setting to false, will maintain the hand meshes in the scene after the session ends, which will allow q quicker re-entry into XR.
          */
         disposeOnSessionEnd?: boolean;
+
+        /**
+         * Setting this will allow the developer to avoid loading the NME material and use the standard material instead.
+         */
+        disableHandShader?: boolean;
     };
 }
 
@@ -362,11 +367,15 @@ export class WebXRHand implements IDisposable {
 
         // Initialize the joint transform quaternions and link the transforms to the bones.
         for (let jointIdx = 0; jointIdx < this._jointTransforms.length; jointIdx++) {
-            const jointTransform = (this._jointTransforms[jointIdx] = new TransformNode(handJointReferenceArray[jointIdx], this._scene));
-            jointTransform.rotationQuaternion = new Quaternion();
+            this._jointTransforms[jointIdx] = new TransformNode(handJointReferenceArray[jointIdx], this._scene);
+            this._jointTransforms[jointIdx].rotationQuaternion = new Quaternion();
 
             // Set the rotation quaternion so we can use it later for tracking.
-            _jointMeshes[jointIdx].rotationQuaternion = new Quaternion();
+            if (_jointMeshes[jointIdx].rotationQuaternion) {
+                _jointMeshes[jointIdx].rotationQuaternion = new Quaternion();
+            } else {
+                _jointMeshes[jointIdx].rotationQuaternion?.set(0, 0, 0, 1);
+            }
         }
 
         if (_handMesh) {
@@ -498,6 +507,8 @@ export class WebXRHand implements IDisposable {
                 this._handMesh.isVisible = false;
             }
         }
+        this._jointTransforms.forEach((transform) => transform.dispose());
+        this._jointTransforms.length = 0;
     }
 }
 
@@ -531,11 +542,13 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     private static _RightHandGLB: Nullable<ISceneLoaderAsyncResult> = null;
     private static _LeftHandGLB: Nullable<ISceneLoaderAsyncResult> = null;
 
-    private static _GenerateTrackedJointMeshes(featureOptions: IWebXRHandTrackingOptions): { left: AbstractMesh[]; right: AbstractMesh[] } {
+    private static _GenerateTrackedJointMeshes(
+        featureOptions: IWebXRHandTrackingOptions,
+        originalMesh: Mesh = CreateIcoSphere("jointParent", WebXRHandTracking._ICOSPHERE_PARAMS)
+    ): { left: AbstractMesh[]; right: AbstractMesh[] } {
         const meshes: { [handedness: string]: AbstractMesh[] } = {};
         ["left" as XRHandedness, "right" as XRHandedness].map((handedness) => {
             const trackedMeshes = [];
-            const originalMesh = featureOptions.jointMeshes?.sourceMesh || CreateIcoSphere("jointParent", WebXRHandTracking._ICOSPHERE_PARAMS);
             originalMesh.isVisible = !!featureOptions.jointMeshes?.keepOriginalVisible;
             for (let i = 0; i < handJointReferenceArray.length; ++i) {
                 let newInstance: AbstractMesh = originalMesh.createInstance(`${handedness}-handJoint-${i}`);
@@ -593,7 +606,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
             WebXRHandTracking._RightHandGLB = handGLBs[0];
             WebXRHandTracking._LeftHandGLB = handGLBs[1];
 
-            const handShader = await NodeMaterial.ParseFromFileAsync("handShader", WebXRHandTracking.DEFAULT_HAND_MODEL_SHADER_URL, scene);
+            const handShader = await NodeMaterial.ParseFromFileAsync("handShader", WebXRHandTracking.DEFAULT_HAND_MODEL_SHADER_URL, scene, undefined, true);
 
             // depth prepass and alpha mode
             handShader.needDepthPrePass = true;
@@ -633,7 +646,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                 const handMesh = handGLB.meshes[1];
                 handMesh._internalAbstractMeshDataInfo._computeBonesUsingShaders = true;
                 // if in multiview do not use the material
-                if (!isMultiview) {
+                if (!isMultiview && !options?.handMeshes?.disableHandShader) {
                     handMesh.material = handShader.clone(`${handedness}HandShaderClone`, true);
                 }
                 handMesh.isVisible = false;
@@ -712,6 +725,8 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
      * This observable will notify its observers right before the hand object is disposed
      */
     public onHandRemovedObservable: Observable<WebXRHand> = new Observable();
+
+    private _originalMesh?: Mesh;
 
     /**
      * Check if the needed objects are defined.
@@ -805,12 +820,14 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
             return false;
         }
 
-        this._handResources = {
-            jointMeshes: WebXRHandTracking._GenerateTrackedJointMeshes(this.options),
-            handMeshes: this.options.handMeshes?.customMeshes || null,
-            rigMappings: this.options.handMeshes?.customRigMappings || null,
-        };
+        if (!this._handResources.jointMeshes) {
+            this._originalMesh = this._originalMesh || this.options.jointMeshes?.sourceMesh || CreateIcoSphere("jointParent", WebXRHandTracking._ICOSPHERE_PARAMS);
+            this._originalMesh.isVisible = false;
 
+            this._handResources.jointMeshes = WebXRHandTracking._GenerateTrackedJointMeshes(this.options, this._originalMesh);
+        }
+        this._handResources.handMeshes = this.options.handMeshes?.customMeshes || null;
+        this._handResources.rigMappings = this.options.handMeshes?.customRigMappings || null;
         // If they didn't supply custom meshes and are not disabling the default meshes...
         if (!this.options.handMeshes?.customMeshes && !this.options.handMeshes?.disableDefaultMeshes) {
             WebXRHandTracking._GenerateDefaultHandMeshesAsync(EngineStore.LastCreatedScene!, this._xrSessionManager, this.options).then((defaultHandMeshes) => {
@@ -901,7 +918,19 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
             if (this._handResources.jointMeshes) {
                 this._handResources.jointMeshes.left.forEach((trackedMesh) => trackedMesh.dispose());
                 this._handResources.jointMeshes.right.forEach((trackedMesh) => trackedMesh.dispose());
+                this._handResources.jointMeshes = null;
             }
+            if (this._handResources.handMeshes) {
+                this._handResources.handMeshes.left.dispose();
+                this._handResources.handMeshes.right.dispose();
+                this._handResources.handMeshes = null;
+            }
+            WebXRHandTracking._RightHandGLB?.meshes.forEach((mesh) => mesh.dispose());
+            WebXRHandTracking._LeftHandGLB?.meshes.forEach((mesh) => mesh.dispose());
+            WebXRHandTracking._RightHandGLB = null;
+            WebXRHandTracking._LeftHandGLB = null;
+            this._originalMesh?.dispose();
+            this._originalMesh = undefined;
         }
 
         // remove world scale observer
@@ -925,6 +954,8 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
             this._handResources.handMeshes.left.dispose();
             this._handResources.handMeshes.right.dispose();
             // remove the cached meshes
+            WebXRHandTracking._RightHandGLB?.meshes.forEach((mesh) => mesh.dispose());
+            WebXRHandTracking._LeftHandGLB?.meshes.forEach((mesh) => mesh.dispose());
             WebXRHandTracking._RightHandGLB = null;
             WebXRHandTracking._LeftHandGLB = null;
         }

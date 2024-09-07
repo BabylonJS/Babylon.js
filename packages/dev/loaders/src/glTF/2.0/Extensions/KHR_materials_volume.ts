@@ -7,6 +7,7 @@ import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsVolume } from "babylonjs-gltf2interface";
+import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "KHR_materials_volume";
 
@@ -102,6 +103,7 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
         if (extension.thicknessTexture) {
             (extension.thicknessTexture as ITextureInfo).nonColorData = true;
             return this._loader.loadTextureInfoAsync(`${context}/thicknessTexture`, extension.thicknessTexture).then((texture: BaseTexture) => {
+                texture.name = `${babylonMaterial.name} (thickness)`;
                 babylonMaterial.subSurface.thicknessTexture = texture;
                 babylonMaterial.subSurface.useGltfStyleTextures = true;
             });
@@ -111,4 +113,5 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_materials_volume(loader));
+unregisterGLTFExtension(NAME);
+registerGLTFExtension(NAME, true, (loader) => new KHR_materials_volume(loader));

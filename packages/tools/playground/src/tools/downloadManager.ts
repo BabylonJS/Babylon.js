@@ -92,7 +92,6 @@ export class DownloadManager {
         }
 
         const name = textures[index].name.replace("textures/", "");
-        // var name = url.substr(url.lastIndexOf("/") + 1);
 
         if (url != null) {
             return this._addContentToZipAsync(folder, name, url, null, true).then(() => {
@@ -113,7 +112,7 @@ export class DownloadManager {
         }
         const url = importedFiles[index];
 
-        const name = url.substr(url.lastIndexOf("/") + 1);
+        const name = url.substring(url.lastIndexOf("/") + 1);
 
         return this._addContentToZipAsync(folder, name, url, null, true).then(() => {
             return this._addImportedFilesToZipAsync(zip, index + 1, importedFiles, folder);

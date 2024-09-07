@@ -198,7 +198,7 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
                     <FileButtonLine
                         label={`Add ${this.props.label} texture`}
                         onClick={(file) => this.updateTexture(file)}
-                        accept={this.props.fileFormats ?? ".jpg, .png, .tga, .dds, .env"}
+                        accept={this.props.fileFormats ?? ".jpg, .png, .tga, .dds, .env, .exr"}
                     />
                 );
             }

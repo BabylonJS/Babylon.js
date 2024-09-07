@@ -4,7 +4,7 @@ import { Logger } from "../Misc/logger";
 import type { Nullable } from "../types";
 import type { PointerInfo } from "../Events/pointerEvents";
 import type { Scene } from "../scene";
-import { Quaternion, Matrix, Vector3 } from "../Maths/math.vector";
+import { Quaternion, Matrix, Vector3, TmpVectors } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { CreateBox } from "../Meshes/Builders/boxBuilder";
@@ -422,7 +422,10 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
         this._rotateAnchorsParent = new TransformNode("", gizmoLayer.utilityLayerScene);
         this._rotateAnchorsParent.rotationQuaternion = new Quaternion();
         for (let i = 0; i < 12; i++) {
-            const anchor = CreateBox("", { width: 0.4, height: 0.4, depth: 1.6 }, gizmoLayer.utilityLayerScene);
+            const anchor = CreateBox("", { width: i < 4 || i >= 8 ? 1.6 : 0.4, height: i >= 4 && i < 8 ? 1.6 : 0.4, depth: 0.4 }, gizmoLayer.utilityLayerScene);
+            anchor.rotation.x = i < 4 || i >= 8 ? Math.PI * 0.25 : 0;
+            anchor.rotation.y = i >= 4 && i < 8 ? Math.PI * 0.25 : 0;
+            anchor.bakeTransformIntoVertices(anchor.computeWorldMatrix(true));
             anchor.rotationQuaternion = new Quaternion();
             anchor.material = this._coloredMaterial;
             anchor.isNearGrabbable = true;
@@ -558,8 +561,14 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                     box._internalMetadata = zeroAxisCount === 2; // None homogenous scale handle
                     box.isNearGrabbable = true;
 
+                    // box is oriented so, transform world desired axis to local one
+                    TmpVectors.Vector3[0].set(i - 1, j - 1, k - 1);
+                    TmpVectors.Vector3[0].normalize();
+                    box.computeWorldMatrix(true).invertToRef(TmpVectors.Matrix[0]);
+                    const dragAxis = Vector3.TransformCoordinates(TmpVectors.Vector3[0], TmpVectors.Matrix[0]);
+                    dragAxis.normalize();
+
                     // Dragging logic
-                    const dragAxis = new Vector3(i - 1, j - 1, k - 1).normalize();
                     const scaleBoxesDragBehavior = new PointerDragBehavior({ dragAxis: dragAxis });
                     scaleBoxesDragBehavior.updateDragPlane = false;
                     scaleBoxesDragBehavior.moveAttached = false;
@@ -842,20 +851,25 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
             for (let j = 0; j < 2; j++) {
                 for (let k = 0; k < 2; k++) {
                     const index = i * 4 + j * 2 + k;
+                    rotateAnchors[index].position.normalizeToRef(TmpVectors.Vector3[0]);
                     if (i == 0) {
                         rotateAnchors[index].position.set(0, this._boundingDimensions.y * (j - 0.5), this._boundingDimensions.z * (k - 0.5));
+                        TmpVectors.Vector3[1].set(1, 0, 0);
                     }
                     if (i == 1) {
                         rotateAnchors[index].position.set(this._boundingDimensions.x * (j - 0.5), 0, this._boundingDimensions.z * (k - 0.5));
+                        TmpVectors.Vector3[1].set(0, 1, 0);
                     }
                     if (i == 2) {
                         rotateAnchors[index].position.set(this._boundingDimensions.x * (j - 0.5), this._boundingDimensions.y * (k - 0.5), 0);
+                        TmpVectors.Vector3[1].set(0, 0, 1);
                     }
-                    if (i == 0 && (j || k)) {
-                        Quaternion.FromEulerAnglesToRef(0, Math.PI * 0.5, 0, rotateAnchors[index].rotationQuaternion!);
-                    } else if (i == 1) {
-                        Quaternion.FromEulerAnglesToRef(Math.PI * 0.5, 0, 0, rotateAnchors[index].rotationQuaternion!);
-                    }
+                    const target = TmpVectors.Vector3[2];
+                    Vector3.CrossToRef(TmpVectors.Vector3[0], TmpVectors.Vector3[1], target);
+                    target.normalize();
+                    target.addInPlace(rotateAnchors[index].position);
+                    rotateAnchors[index].lookAt(target);
+
                     if (this.fixedDragMeshScreenSize && this.gizmoLayer.utilityLayerScene.activeCamera) {
                         rotateAnchors[index].absolutePosition.subtractToRef(this.gizmoLayer.utilityLayerScene.activeCamera.position, this._tmpVector);
                         const distanceFromCamera = (this.rotationSphereSize * this._tmpVector.length()) / this.fixedDragMeshScreenSizeDistanceFactor;

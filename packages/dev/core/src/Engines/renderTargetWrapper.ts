@@ -267,9 +267,9 @@ export class RenderTargetWrapper {
      * Creates the depth/stencil texture
      * @param comparisonFunction Comparison function to use for the texture
      * @param bilinearFiltering true if bilinear filtering should be used when sampling the texture
-     * @param generateStencil true if the stencil aspect should also be created
-     * @param samples sample count to use when creating the texture
-     * @param format format of the depth texture
+     * @param generateStencil Not used anymore. "format" will be used to determine if stencil should be created
+     * @param samples sample count to use when creating the texture (default: 1)
+     * @param format format of the depth texture (default: Constants.TEXTUREFORMAT_DEPTH32_FLOAT)
      * @param label defines the label to use for the texture (for debugging purpose only)
      * @returns the depth/stencil created texture
      */
