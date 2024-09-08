@@ -203,7 +203,7 @@ export class FrameGraphTextureManager {
         const textureDebug = new Texture(null, this._scene);
 
         textureDebug.name = name;
-        textureDebug._texture = texture.texture!;
+        textureDebug._texture = texture.texture || texture._depthStencilTexture!;
         textureDebug._texture.incrementReferences();
 
         return textureDebug;

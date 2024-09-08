@@ -20,14 +20,16 @@ export interface INodeRenderGraphEditorOptions {
  * Options that can be passed to the node render graph build method
  */
 export interface INodeRenderGraphCreateOptions {
-    /** if true, textures created by the node render graph will be visible in the inspector, for easier debugging (default: false) */
+    /** If true, textures created by the node render graph will be visible in the inspector, for easier debugging (default: false) */
     debugTextures?: boolean;
     /** Rebuild the node render graph when the screen is resized (default: true) */
     rebuildGraphOnEngineResize?: boolean;
-    /** defines if the build should log activity (default: false) */
+    /** Defines if the build should log activity (default: false) */
     verbose?: boolean;
-    /** defines if the autoConfigure method should be called when initializing blocks (default: false) */
+    /** Defines if the autoConfigure method should be called when initializing blocks (default: false) */
     autoConfigure?: boolean;
+    /** If true, external inputs like object lists and cameras will be filled with default values, taken from the scene. Note that external textures are not concerned (default: true). */
+    autoFillExternalInputs?: boolean;
 }
 
 /**

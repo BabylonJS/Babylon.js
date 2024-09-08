@@ -24,7 +24,7 @@ import { Color3 } from "core/Maths/math.color";
 import { WebGPUEngine } from "core/Engines/webgpuEngine";
 import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
 
-const useWebGPU = true;
+const useWebGPU = false;
 
 export class PreviewManager {
     private _nodeRenderGraph: NodeRenderGraph;
@@ -207,11 +207,12 @@ export class PreviewManager {
         this._nodeRenderGraph?.dispose();
         this._nodeRenderGraph = NodeRenderGraph.Parse(serialized, this._scene, {
             rebuildGraphOnEngineResize: false,
+            autoFillExternalInputs: false,
         });
         (window as any).nrg = this._nodeRenderGraph;
     }
 
-    private _buildGraph() {
+    private async _buildGraph() {
         if (!this._scene) {
             // The initialization is not done yet
             return;
@@ -315,6 +316,7 @@ export class PreviewManager {
 
         try {
             this._nodeRenderGraph.build();
+            await this._nodeRenderGraph.whenReadyAsync();
             this._scene.frameGraph = this._nodeRenderGraph.frameGraph;
         } catch (err) {
             this._globalState.onLogRequiredObservable.notifyObservers(new LogEntry("From preview manager: " + err, true));

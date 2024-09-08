@@ -237,7 +237,8 @@ export class FrameGraph {
         return this.getTextureHandle(textureId);
     }
 
-    public getTextureFromHandle(handle: FrameGraphTextureHandle): Nullable<RenderTargetWrapper> {
+    public getTexture(handleOrId: FrameGraphTextureHandle | FrameGraphTextureId): Nullable<RenderTargetWrapper> {
+        const handle = FrameGraph._IsTextureHandle(handleOrId) ? handleOrId : this.getTextureHandle(handleOrId);
         return this._textureManager.getTextureFromHandle(handle);
     }
 

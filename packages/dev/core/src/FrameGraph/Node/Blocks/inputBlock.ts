@@ -200,9 +200,9 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
                 this.output.value = backbufferColorTextureHandle;
             } else if (this.isBackBufferDepthStencilAttachment()) {
                 this.output.value = backbufferDepthStencilTextureHandle;
-            } else if (this.type & NodeRenderGraphBlockConnectionPointTypes.Camera) {
+            } else if (this.isCamera()) {
                 this.output.value = this.getTypedValue<Camera>();
-            } else if (this.type & NodeRenderGraphBlockConnectionPointTypes.ObjectList) {
+            } else if (this.isObjectList()) {
                 this.output.value = this.getTypedValue<FrameGraphObjectList>();
             } else {
                 if (this._storedValue === undefined || this._storedValue === null) {
@@ -235,13 +235,17 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
 
     protected override _dumpPropertiesCode() {
         const codes: string[] = [];
+        codes.push(`${this._codeVariableName}.isExternal = ${this.isExternal};`);
         if (this.isAnyTexture()) {
-            codes.push(`${this._codeVariableName}.isExternal = ${this.isExternal};`);
             if (!this.isExternal) {
                 codes.push(`${this._codeVariableName}.creationOptions = ${JSON.stringify(this.creationOptions)};`);
             } else {
                 codes.push(`${this._codeVariableName}.value = EXTERNAL_TEXTURE; // TODO: set the external texture`);
             }
+        } else if (this.isCamera()) {
+            codes.push(`${this._codeVariableName}.value = EXTERNAL_CAMERA; // TODO: set the external camera`);
+        } else if (this.isObjectList()) {
+            codes.push(`${this._codeVariableName}.value = EXTERNAL_OBJECT_LIST; // TODO: set the external object list`);
         }
         return super._dumpPropertiesCode() + codes.join("\n");
     }

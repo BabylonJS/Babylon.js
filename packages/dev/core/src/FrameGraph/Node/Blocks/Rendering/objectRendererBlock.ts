@@ -34,12 +34,14 @@ export class NodeRenderGraphObjectRendererBlock extends NodeRenderGraphBlock {
         this.registerInput("depth", NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment, true);
         this.registerInput("camera", NodeRenderGraphBlockConnectionPointTypes.Camera);
         this.registerInput("objects", NodeRenderGraphBlockConnectionPointTypes.ObjectList);
+        this.registerInput("usedTextures", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
 
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
         this.registerOutput("outputDepth", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
 
         this.destination.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBufferDepthStencil);
         this.depth.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment);
+        this.usedTextures.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer);
 
         this.output._typeConnectionSource = this.destination;
         this.outputDepth._typeConnectionSource = this.depth;
@@ -104,6 +106,13 @@ export class NodeRenderGraphObjectRendererBlock extends NodeRenderGraphBlock {
     }
 
     /**
+     * Gets the usedTextures input component
+     */
+    public get usedTextures(): NodeRenderGraphConnectionPoint {
+        return this._inputs[4];
+    }
+
+    /**
      * Gets the output component
      */
     public get output(): NodeRenderGraphConnectionPoint {
@@ -146,6 +155,12 @@ export class NodeRenderGraphObjectRendererBlock extends NodeRenderGraphBlock {
             this._frameGraphTask.objectList = objectsConnectedPoint.value as FrameGraphObjectList;
         }
 
+        const usedTexturesConnectedPoint = this.usedTextures.connectedPoint;
+        if (usedTexturesConnectedPoint) {
+            this._frameGraphTask.usedTextures = [];
+            this._frameGraphTask.usedTextures[0] = usedTexturesConnectedPoint.value as FrameGraphTextureId;
+        }
+
         state.frameGraph.addTask(this._frameGraphTask);
     }
 
@@ -153,8 +168,6 @@ export class NodeRenderGraphObjectRendererBlock extends NodeRenderGraphBlock {
         const codes: string[] = [];
         codes.push(`${this._codeVariableName}.depthTest = ${this.depthTest};`);
         codes.push(`${this._codeVariableName}.depthWrite = ${this.depthWrite};`);
-        codes.push(`${this._codeVariableName}.camera = CAMERA; // TODO: set camera`);
-        codes.push(`${this._codeVariableName}.objectList = OBJECT_LIST; // TODO: set object list`);
         return super._dumpPropertiesCode() + codes.join("\n");
     }
 

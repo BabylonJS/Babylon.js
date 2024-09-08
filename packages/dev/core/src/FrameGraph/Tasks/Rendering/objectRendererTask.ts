@@ -10,6 +10,8 @@ export class FrameGraphObjectRendererTask implements IFrameGraphTask {
 
     public depthTexture?: FrameGraphTextureId;
 
+    public usedTextures?: FrameGraphTextureId[] = [];
+
     private _camera: Camera;
 
     public get camera() {
@@ -110,6 +112,14 @@ export class FrameGraphObjectRendererTask implements IFrameGraphTask {
             passDisabled.setRenderTargetDepth(frameGraph.getTextureHandle(this.depthTexture));
         }
         passDisabled.setExecuteFunc((_context) => {});
+
+        if (this.usedTextures !== undefined) {
+            for (const texture of this.usedTextures) {
+                const handle = frameGraph.getTextureHandle(texture);
+                pass.useTexture(handle);
+                passDisabled.useTexture(handle);
+            }
+        }
     }
 
     public disposeFrameGraph(): void {

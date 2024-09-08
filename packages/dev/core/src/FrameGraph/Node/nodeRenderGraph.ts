@@ -134,6 +134,8 @@ export class NodeRenderGraph {
             debugTextures: false,
             autoConfigure: false,
             verbose: false,
+            rebuildGraphOnEngineResize: true,
+            autoFillExternalInputs: true,
             ...options,
         };
 
@@ -278,6 +280,10 @@ export class NodeRenderGraph {
         state.verbose = this._options.verbose!;
         state.frameGraph = this._frameGraph;
 
+        if (this._options.autoFillExternalInputs) {
+            this._autoFillExternalInputs();
+        }
+
         this.outputBlock.build(state);
 
         this._frameGraph.build();
@@ -286,6 +292,31 @@ export class NodeRenderGraph {
 
         if (state.emitErrors(this.onBuildErrorObservable)) {
             this.onBuildObservable.notifyObservers(this);
+        }
+    }
+
+    private _autoFillExternalInputs() {
+        const allInputs = this.getInputBlocks();
+        let cameraIndex = 0;
+        for (const input of allInputs) {
+            if (!input.isExternal) {
+                continue;
+            }
+            if (!input.isAnAncestorOfType("NodeRenderGraphOutputBlock")) {
+                continue;
+            }
+            if ((input.type & NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer) !== 0) {
+                // nothing to do
+            } else if (input.isCamera()) {
+                const camera = this._scene.cameras[cameraIndex++] || this._scene.cameras[0];
+                if (!this._scene.cameraToUseForPointers) {
+                    this._scene.cameraToUseForPointers = camera;
+                }
+
+                input.value = camera;
+            } else if (input.isObjectList()) {
+                input.value = { meshes: this._scene.meshes, particleSystems: this._scene.particleSystems };
+            }
         }
     }
 
@@ -697,7 +728,7 @@ export class NodeRenderGraph {
                 if (request.readyState == 4) {
                     if (request.status == 200) {
                         const snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
-                        const serializationObject = JSON.parse(snippet.NodeRenderGraph);
+                        const serializationObject = JSON.parse(snippet.nodeRenderGraph);
 
                         if (!nodeRenderGraph) {
                             nodeRenderGraph = SerializationHelper.Parse(() => new NodeRenderGraph(snippetId, scene, nodeRenderGraphOptions), serializationObject, null);

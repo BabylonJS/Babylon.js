@@ -4564,6 +4564,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     private _renderWithFrameGraph(updateCameras = true, ignoreAnimations = false): void {
         this._frameId++;
 
+        this.activeCamera = null;
+
         // Register components that have been associated lately to the scene.
         this._registerTransientComponents();
 
