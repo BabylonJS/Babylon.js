@@ -711,6 +711,18 @@ void main(void) {
         gl_FragData[PREPASS_ALBEDO_SQRT_INDEX] = vec4(sqAlbedo, writeGeometryInfo); // albedo, for pre and post scatter
 #endif
 
+#ifdef PREPASS_RADIANCE
+#ifndef UNLIT
+    #ifdef REFLECTION
+            gl_FragData[PREPASS_RADIANCE_INDEX] = vec4(finalRadianceScaled, microSurface) * writeGeometryInfo;
+    #else
+            gl_FragData[PREPASS_RADIANCE_INDEX] = vec4( 0.0, 0.0, 0.0, 1.0 ) * writeGeometryInfo;
+    #endif
+#else
+            gl_FragData[PREPASS_RADIANCE_INDEX] = vec4( 0.0, 0.0, 0.0, 1.0 ) * writeGeometryInfo;
+#endif
+#endif
+
 #ifdef PREPASS_REFLECTIVITY
 #ifndef UNLIT
     #ifdef REFLECTION

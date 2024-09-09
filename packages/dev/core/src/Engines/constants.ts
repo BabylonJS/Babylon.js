@@ -648,6 +648,12 @@ export class Constants {
      */
     public static readonly PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE = 11;
 
+    /**
+     * Constant used to retrieve the radiance texture index in the textures array in the prepass
+     * using getIndex(Constants.PREPASS_RADIANCE_TEXTURE_TYPE)
+     */
+    public static readonly PREPASS_RADIANCE_TEXTURE_TYPE = 12;
+
     /** Flag to create a readable buffer (the buffer can be the source of a copy) */
     public static readonly BUFFER_CREATIONFLAG_READ = 1;
     /** Flag to create a writable buffer (the buffer can be the destination of a copy) */

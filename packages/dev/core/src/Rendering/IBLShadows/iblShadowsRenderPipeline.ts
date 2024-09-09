@@ -113,7 +113,7 @@ class IblShadowsPrepassConfiguration implements PrePassEffectConfiguration {
         Constants.PREPASS_POSITION_TEXTURE_TYPE,
         Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE,
 
-        Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE,
+        Constants.PREPASS_RADIANCE_TEXTURE_TYPE,
         // Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
     ];
 }
@@ -715,7 +715,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             const prePassRenderer = this.scene.prePassRenderer;
             if (prePassRenderer) {
                 // const irradianceIndex = prePassRenderer.getIndex(Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE);
-                const reflectivityIndex = prePassRenderer.getIndex(Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE);
+                const reflectivityIndex = prePassRenderer.getIndex(Constants.PREPASS_RADIANCE_TEXTURE_TYPE);
                 // if (irradianceIndex >= 0) effect.setTexture("irradianceSampler", prePassRenderer.getRenderTarget().textures[irradianceIndex]);
                 if (reflectivityIndex >= 0) effect.setTexture("reflectivitySampler", prePassRenderer.getRenderTarget().textures[reflectivityIndex]);
             }
