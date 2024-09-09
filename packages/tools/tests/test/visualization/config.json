@@ -210,16 +210,13 @@
         },
         {
             "title": "Node material 0",
-            "playgroundId": "#M5VQE9#20",
-            "referenceImage": "node-material0.png",
-            "renderCount": 5,
-            "excludeFromAutomaticTesting": true
+            "playgroundId": "#M5VQE9#41",
+            "referenceImage": "node-material0.png"
         },
         {
             "title": "Node material 1",
             "playgroundId": "#QJ71C6#5",
-            "referenceImage": "node-material1.png",
-            "renderCount": 20
+            "referenceImage": "node-material1.png"
         },
         {
             "title": "Node material 2",
