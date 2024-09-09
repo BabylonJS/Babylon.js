@@ -618,6 +618,10 @@ void main(void) {
     #define CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION
 
     #include<pbrBlockFinalColorComposition>
+#if defined(PREPASS) && defined(PREPASS_DIRECTLIGHTING)
+    #include<pbrBlockFinalIndirectLightingComposition>
+    #include<pbrBlockFinalDirectLightingComposition>
+#endif
 
     #include<logDepthFragment>
     #include<fogFragment>(color, finalColor)
@@ -679,7 +683,11 @@ void main(void) {
              writeGeometryInfo * scatteringDiffusionProfile /
                  255.); // Irradiance + SS diffusion profile
 #else
-    gl_FragData[0] = vec4(finalColor.rgb, finalColor.a);
+    #ifdef PREPASS_DIRECTLIGHTING
+        gl_FragData[0] = vec4(toGammaSpace(finalIndirectLightingColor.rgb), finalIndirectLightingColor.a);
+    #else
+        gl_FragData[0] = vec4(finalColor.rgb, finalColor.a);
+    #endif
 #endif
 
 #ifdef PREPASS_DEPTH
@@ -711,27 +719,17 @@ void main(void) {
         gl_FragData[PREPASS_ALBEDO_SQRT_INDEX] = vec4(sqAlbedo, writeGeometryInfo); // albedo, for pre and post scatter
 #endif
 
-#ifdef PREPASS_RADIANCE
+#ifdef PREPASS_DIRECTLIGHTING
 #ifndef UNLIT
-    #ifdef REFLECTION
-            gl_FragData[PREPASS_RADIANCE_INDEX] = vec4(finalRadianceScaled, microSurface) * writeGeometryInfo;
-    #else
-            gl_FragData[PREPASS_RADIANCE_INDEX] = vec4( 0.0, 0.0, 0.0, 1.0 ) * writeGeometryInfo;
-    #endif
+            gl_FragData[PREPASS_DIRECTLIGHTING_INDEX] = vec4(toGammaSpace(finalDirectLightingColor + finalEmissive), microSurface) * writeGeometryInfo;
 #else
-            gl_FragData[PREPASS_RADIANCE_INDEX] = vec4( 0.0, 0.0, 0.0, 1.0 ) * writeGeometryInfo;
+            gl_FragData[PREPASS_DIRECTLIGHTING_INDEX] = vec4( 0.0, 0.0, 0.0, 1.0 ) * writeGeometryInfo;
 #endif
 #endif
 
 #ifdef PREPASS_REFLECTIVITY
 #ifndef UNLIT
-    #ifdef REFLECTION
-    // Make prepass RT that causes irradiance and radiance parts to be split.
-    // Then we shouldn't need both irradiance and radiance prepasses.
-            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(finalRadianceScaled, microSurface) * writeGeometryInfo;
-    #else
             gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(specularEnvironmentR0, microSurface) * writeGeometryInfo;
-    #endif
 #else
             gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4( 0.0, 0.0, 0.0, 1.0 ) * writeGeometryInfo;
 #endif

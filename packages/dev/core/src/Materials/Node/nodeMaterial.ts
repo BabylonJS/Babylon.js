@@ -136,9 +136,9 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     /** Clip-space depth index */
     public PREPASS_NDC_DEPTH_INDEX = -1;
     /** Radiance lighting contribution */
-    public PREPASS_RADIANCE = false;
+    public PREPASS_DIRECTLIGHTING = false;
     /** Radiance lighting contribution */
-    public PREPASS_RADIANCE_INDEX = -1;
+    public PREPASS_DIRECTLIGHTING_INDEX = -1;
     /** Scene MRT count */
     public SCENE_MRT_COUNT = 0;
 

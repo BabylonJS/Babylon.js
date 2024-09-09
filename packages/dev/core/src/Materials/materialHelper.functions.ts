@@ -869,9 +869,9 @@ export function PrepareDefinesForPrePass(scene: Scene, defines: any, canRenderTo
             index: "PREPASS_WORLD_NORMAL_INDEX",
         },
         {
-            type: Constants.PREPASS_RADIANCE_TEXTURE_TYPE,
-            define: "PREPASS_RADIANCE",
-            index: "PREPASS_RADIANCE_INDEX",
+            type: Constants.PREPASS_DIRECTLIGHTING_TEXTURE_TYPE,
+            define: "PREPASS_DIRECTLIGHTING",
+            index: "PREPASS_DIRECTLIGHTING_INDEX",
         },
     ];
 

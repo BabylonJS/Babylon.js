@@ -195,7 +195,7 @@ export class PrePassRenderer {
             name: "prePass_VelocityLinear",
         },
         {
-            purpose: Constants.PREPASS_RADIANCE_TEXTURE_TYPE,
+            purpose: Constants.PREPASS_DIRECTLIGHTING_TEXTURE_TYPE,
             type: Constants.TEXTURETYPE_UNSIGNED_INT,
             format: Constants.TEXTUREFORMAT_RGBA,
             name: "prePass_Radiance",
