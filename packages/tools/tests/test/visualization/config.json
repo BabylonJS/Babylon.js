@@ -81,7 +81,7 @@
             "referenceImage": "gpuPicker.png"
         },
         {
-            "title": "Trailmesh - tapered and untapered",
+            "title": "Trailmesh tapered and untapered",
             "playgroundId": "#XGGSWJ#3",
             "referenceImage": "trailMesh.png"
         },
@@ -1945,7 +1945,7 @@
         },
         {
             "title": "Command encoder order in WebGPU 1",
-            "playgroundId": "#064AUB#110",
+            "playgroundId": "#064AUB#121",
             "referenceImage": "CommandEncodedWebGPU1.png",
             "excludedEngines": ["webgl1"]
         },
