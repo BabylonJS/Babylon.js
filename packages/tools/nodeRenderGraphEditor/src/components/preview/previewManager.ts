@@ -235,7 +235,7 @@ export class PreviewManager {
         this._scene.cameras.length = 0;
         this._scene.cameraToUseForPointers = null;
 
-        // Set a default texture for external input textures
+        // Set default external inputs
         const allInputs = this._nodeRenderGraph.getInputBlocks();
         for (const input of allInputs) {
             if (!input.isExternal) {

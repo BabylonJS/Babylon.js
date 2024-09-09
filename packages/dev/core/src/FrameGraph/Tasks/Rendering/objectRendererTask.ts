@@ -42,15 +42,24 @@ export class FrameGraphObjectRendererTask implements IFrameGraphTask {
         return this._rtt;
     }
 
-    constructor(
-        public name: string,
-        scene: Scene
-    ) {
+    private _name: string;
+
+    public get name() {
+        return this._name;
+    }
+
+    public set name(value: string) {
+        this._name = value;
+        this._rtt.name = value + "_internal_rtt";
+    }
+
+    constructor(name: string, scene: Scene) {
         this._scene = scene;
         this._rtt = new RenderTargetTexture(name, 1, scene, {
             delayAllocation: true,
         });
         this._rtt.skipInitialClear = true;
+        this.name = name;
     }
 
     public isReadyFrameGraph() {

@@ -51,6 +51,7 @@ export class GlobalState {
     onRefreshPreviewMeshControlComponentRequiredObservable = new Observable<void>();
     filesInput: FilesInput;
     scene: Scene;
+    noAutoFillExternalInputs: boolean;
 
     customSave?: { label: string; action: (data: string) => Promise<void> };
 

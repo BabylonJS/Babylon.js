@@ -58,6 +58,7 @@ export class NodeRenderGraphEditor {
         globalState.customSave = options.customSave;
         globalState.hostWindow = hostElement.ownerDocument!.defaultView!;
         globalState.stateManager.hostDocument = globalState.hostDocument;
+        globalState.noAutoFillExternalInputs = options.hostScene !== undefined && options.hostScene !== null;
 
         const graphEditor = React.createElement(GraphEditor, {
             globalState: globalState,

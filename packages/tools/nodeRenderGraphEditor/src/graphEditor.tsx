@@ -284,7 +284,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             return;
         }
 
-        this._setExternalInputs();
+        if (!this.props.globalState.noAutoFillExternalInputs) {
+            this._setExternalInputs();
+        }
 
         const nodeRenderGraph = this.props.globalState.nodeRenderGraph;
 
