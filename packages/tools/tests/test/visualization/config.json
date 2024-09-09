@@ -254,9 +254,8 @@
             "referenceImage": "node-material-pbr-1.png"
         },
         {
-            "title": "Node material PBR - Pure WebGPU",
-            "playgroundId": "#D8AK3Z#80",
-            "renderCount": 5,
+            "title": "Node material PBR Pure WebGPU",
+            "playgroundId": "#D8AK3Z#108",
             "referenceImage": "node-material-pbr-2.png",
             "excludedEngines": ["webgl1", "webgl2"]
         },
