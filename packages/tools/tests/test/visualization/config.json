@@ -29,7 +29,7 @@
         },
         {
             "title": "Decal map PP",
-            "playgroundId": "#9BVW2S#86",
+            "playgroundId": "#9BVW2S#90",
             "referenceImage": "decal-map-pp.png",
             "excludedEngines": ["webgl1"]
         },
@@ -77,12 +77,12 @@
         },
         {
             "title": "GPUPicker",
-            "playgroundId": "#1RWFMT#7",
+            "playgroundId": "#1RWFMT#8",
             "referenceImage": "gpuPicker.png"
         },
         {
             "title": "Trailmesh - tapered and untapered",
-            "playgroundId": "#XGGSWJ#2",
+            "playgroundId": "#XGGSWJ#3",
             "referenceImage": "trailMesh.png"
         },
         {
