@@ -87,8 +87,7 @@
         },
         {
             "title": "3D Procedural Textures",
-            "playgroundId": "#AYZY4Q#7",
-            "renderCount": 5,
+            "playgroundId": "#AYZY4Q#34",
             "referenceImage": "procedural-textures-3d.png",
             "excludedEngines": ["webgl1", "webgpu"],
             "excludeFromAutomaticTesting": true
