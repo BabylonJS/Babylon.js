@@ -302,13 +302,11 @@
         },
         {
             "title": "GUI Transform StackPanel",
-            "renderCount": 5,
             "playgroundId": "#BS60AB#0",
             "referenceImage": "TransformStackPanel.png"
         },
         {
             "title": "GUI StackPanel",
-            "renderCount": 5,
             "playgroundId": "#LLVZ90#0",
             "referenceImage": "StackPanel.png"
         },
