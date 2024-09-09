@@ -7,7 +7,16 @@ export class FrameGraphGUITask implements IFrameGraphTask {
 
     public readonly outputTextureReference: FrameGraphTaskOutputReference = [this, "output"];
 
-    public disabled = false;
+    private _disabled = false;
+
+    public get disabled() {
+        return this._disabled;
+    }
+
+    public set disabled(value: boolean) {
+        this._disabled = value;
+        this._adt.disablePicking = value;
+    }
 
     public get gui() {
         return this._adt;

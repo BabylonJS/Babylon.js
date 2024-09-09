@@ -162,6 +162,11 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     public disableTabNavigation = false;
 
     /**
+     * A boolean indicating whether controls can be picked/clicked on or not. Defaults to false.
+     */
+    public disablePicking = false;
+
+    /**
      * If set to true, the POINTERTAP event type will be used for "click", instead of POINTERUP
      */
     public usePointerTapForClickEvent = false;
@@ -877,7 +882,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
     private _doPicking(x: number, y: number, pi: Nullable<PointerInfoBase>, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): void {
         const scene = this.getScene();
-        if (!scene) {
+        if (!scene || this.disablePicking) {
             return;
         }
         const engine = scene.getEngine();
