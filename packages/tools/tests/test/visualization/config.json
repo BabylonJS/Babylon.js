@@ -29,8 +29,7 @@
         },
         {
             "title": "Decal map PP",
-            "playgroundId": "#9BVW2S#82",
-            "renderCount": 120,
+            "playgroundId": "#9BVW2S#86",
             "referenceImage": "decal-map-pp.png",
             "excludedEngines": ["webgl1"]
         },
