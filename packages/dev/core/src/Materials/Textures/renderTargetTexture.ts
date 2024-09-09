@@ -1157,6 +1157,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                         }
                         meshToRender._internalAbstractMeshDataInfo._isActiveIntermediate = true;
 
+                        scene._prepareSkeleton(meshToRender);
+
                         for (let subIndex = 0; subIndex < meshToRender.subMeshes.length; subIndex++) {
                             const subMesh = meshToRender.subMeshes[subIndex];
                             this._renderingManager.dispatch(subMesh, meshToRender);

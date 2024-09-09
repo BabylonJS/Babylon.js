@@ -4126,17 +4126,26 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
     }
 
-    private _activeMesh(sourceMesh: AbstractMesh, mesh: AbstractMesh): void {
-        if (this._skeletonsEnabled && mesh.skeleton !== null && mesh.skeleton !== undefined) {
-            if (this._activeSkeletons.pushNoDuplicate(mesh.skeleton)) {
-                mesh.skeleton.prepare();
-                this._activeBones.addCount(mesh.skeleton.bones.length, false);
-            }
+    /** @internal */
+    public _prepareSkeleton(mesh: AbstractMesh): void {
+        if (!this._skeletonsEnabled || !mesh.skeleton) {
+            return;
+        }
 
-            if (!mesh.computeBonesUsingShaders) {
-                this._softwareSkinnedMeshes.pushNoDuplicate(<Mesh>mesh);
+        if (this._activeSkeletons.pushNoDuplicate(mesh.skeleton)) {
+            mesh.skeleton.prepare();
+            this._activeBones.addCount(mesh.skeleton.bones.length, false);
+        }
+
+        if (!mesh.computeBonesUsingShaders) {
+            if (this._softwareSkinnedMeshes.pushNoDuplicate(<Mesh>mesh) && this.useFrameGraph) {
+                (<Mesh>mesh).applySkeleton(mesh.skeleton);
             }
         }
+    }
+
+    private _activeMesh(sourceMesh: AbstractMesh, mesh: AbstractMesh): void {
+        this._prepareSkeleton(mesh);
 
         let forcePush = sourceMesh.hasInstances || sourceMesh.isAnInstance || this.dispatchAllSubMeshesOfActiveMeshes || this._skipFrustumClipping || mesh.alwaysSelectAsActiveMesh;
 
@@ -4576,6 +4585,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this._meshesForIntersections.reset();
         this.resetCachedMaterial();
 
+        this._activeParticleSystems.reset();
+        this._activeSkeletons.reset();
+
         this.onBeforeAnimationsObservable.notifyObservers(this);
 
         // Actions
@@ -4635,9 +4647,25 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
             mesh.computeWorldMatrix();
 
-            // Intersections
             if (mesh.actionManager && mesh.actionManager.hasSpecificTriggers2(Constants.ACTION_OnIntersectionEnterTrigger, Constants.ACTION_OnIntersectionExitTrigger)) {
                 this._meshesForIntersections.pushNoDuplicate(mesh);
+            }
+        }
+
+        // Animate Particle systems
+        if (this.particlesEnabled) {
+            for (let particleIndex = 0; particleIndex < this.particleSystems.length; particleIndex++) {
+                const particleSystem = this.particleSystems[particleIndex];
+
+                if (!particleSystem.isStarted() || !particleSystem.emitter) {
+                    continue;
+                }
+
+                const emitter = <any>particleSystem.emitter;
+                if (!emitter.position || emitter.isEnabled()) {
+                    this._activeParticleSystems.push(particleSystem);
+                    particleSystem.animate();
+                }
             }
         }
 
