@@ -48,8 +48,9 @@ export class FrameGraphCullObjectsTask implements IFrameGraphTask {
 
             const frustumPlanes = this.camera._frustumPlanes;
 
-            for (let i = 0; i < this._inputObjectList.meshes.length; i++) {
-                const mesh = this._inputObjectList.meshes[i];
+            const meshes = this._inputObjectList.meshes || this._scene.meshes;
+            for (let i = 0; i < meshes.length; i++) {
+                const mesh = meshes[i];
                 if (mesh.isBlocked || !mesh.isReady() || !mesh.isEnabled() || mesh.scaling.hasAZeroComponent) {
                     continue;
                 }

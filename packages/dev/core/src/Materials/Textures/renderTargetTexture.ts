@@ -28,6 +28,7 @@ import type { Material } from "../material";
 import { FloorPOT, NearestPOT } from "../../Misc/tools.functions";
 import { Effect } from "../effect";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
+import type { IParticleSystem } from "core/Particles/IParticleSystem";
 
 declare module "../effect" {
     export interface Effect {
@@ -139,6 +140,9 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     public set renderList(value: Nullable<Array<AbstractMesh>>) {
+        if (this._renderList === value) {
+            return;
+        }
         if (this._unObserveRenderList) {
             this._unObserveRenderList();
             this._unObserveRenderList = null;
@@ -159,6 +163,12 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             });
         }
     };
+
+    /**
+     * Define the list of particle systems to render in the texture. If not provided, will render all the particle systems of the scene.
+     * Note that the particle systems are rendered only if renderParticles is set to true.
+     */
+    public particleSystemList: Nullable<Array<IParticleSystem>> = null;
 
     /**
      * Use this function to overload the renderList array at rendering time.
@@ -1051,6 +1061,13 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                     scene.resetCachedMaterial();
                 }
             }
+
+            const particleSystems = this.particleSystemList || scene.particleSystems;
+            for (const particleSystem of particleSystems) {
+                if (!particleSystem.isReady()) {
+                    returnValue = false;
+                }
+            }
         }
 
         this.onAfterUnbindObservable.notifyObservers(this);
@@ -1151,8 +1168,9 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             }
         }
 
-        for (let particleIndex = 0; particleIndex < scene.particleSystems.length; particleIndex++) {
-            const particleSystem = scene.particleSystems[particleIndex];
+        const particleSystems = this.particleSystemList || scene.particleSystems;
+        for (let particleIndex = 0; particleIndex < particleSystems.length; particleIndex++) {
+            const particleSystem = particleSystems[particleIndex];
 
             const emitter: any = particleSystem.emitter;
 

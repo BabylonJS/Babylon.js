@@ -31,8 +31,8 @@ export type FrameGraphTextureDescription = {
 };
 
 export type FrameGraphObjectList = {
-    meshes: AbstractMesh[];
-    particleSystems: IParticleSystem[];
+    meshes: Nullable<AbstractMesh[]>;
+    particleSystems: Nullable<IParticleSystem[]>;
 };
 
 export type FrameGraphObjectListId = FrameGraphTaskOutputReference | FrameGraphObjectList;

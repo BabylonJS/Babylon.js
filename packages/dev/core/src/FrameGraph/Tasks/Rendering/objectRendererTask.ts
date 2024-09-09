@@ -109,6 +109,7 @@ export class FrameGraphObjectRendererTask implements IFrameGraphTask {
         }
         pass.setExecuteFunc((_context) => {
             this._rtt.renderList = objectList.meshes;
+            this._rtt.particleSystemList = objectList.particleSystems;
             this._scene.incrementRenderId();
             _context.setDepthStates(this.depthTest && depthEnabled, this.depthWrite && depthEnabled);
             _context.render(this._rtt);
