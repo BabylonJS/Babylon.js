@@ -31,7 +31,7 @@ export function addJsExtensionsToCompiledFiles(files: string[], forceMJS: boolea
         while ((match = dynamicRegex.exec(processed)) !== null) {
             if (!fs.existsSync(path.resolve(path.dirname(file), match[1]))) {
                 console.log(file, path.resolve(path.dirname(file), match[1]));
-                throw new Error(`File ${match[1]} does not exist. Are you importing from an index/directory?`);
+                throw new Error(`File ${match[1]} does not exist. Are you dynamically importing from an index/directory?`);
             }
         }
         fs.writeFileSync(file, processed);
