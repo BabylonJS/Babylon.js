@@ -89,6 +89,14 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
                 } as FrameGraphTextureCreationOptions;
                 break;
             }
+            case NodeRenderGraphBlockConnectionPointTypes.ObjectList:
+                this.value = { meshes: [], particleSystems: [] };
+                this.isExternal = true;
+                break;
+            case NodeRenderGraphBlockConnectionPointTypes.Camera:
+                this.value = this._scene.cameras[0];
+                this.isExternal = true;
+                break;
             default:
                 this.isExternal = true;
         }
