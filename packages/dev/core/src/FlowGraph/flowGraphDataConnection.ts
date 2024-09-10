@@ -51,6 +51,14 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
     }
 
     /**
+     * Reset the value of the connection to the default value.
+     * @param context the context in which the value is reset
+     */
+    public resetToDefaultValue(context: FlowGraphContext): void {
+        context._setConnectionValue(this, this._defaultValue);
+    }
+
+    /**
      * Connect this point to another point.
      * @param point the point to connect to.
      */
