@@ -624,7 +624,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this.ssShadowMaxDist = options.ssShadowMaxDist || 0.05;
         this.ssShadowSamples = options.ssShadowSampleCount || 16;
         this.ssShadowStride = options.ssShadowStride || 8;
-        this.ssShadowThickness = options.ssShadowThickness || 0.01;
+        this.ssShadowThickness = options.ssShadowThickness || 0.5;
         this._spatialBlurPass = new _IblShadowsSpatialBlurPass(this.scene);
         this._accumulationPass = new _IblShadowsAccumulationPass(this.scene);
         this.shadowRemenance = options.shadowRemenance || 0.75;
