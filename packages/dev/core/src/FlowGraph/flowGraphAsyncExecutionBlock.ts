@@ -1,6 +1,6 @@
 import type { IFlowGraphBlockConfiguration } from "./flowGraphBlock";
 import type { FlowGraphContext } from "./flowGraphContext";
-import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
+import { FlowGraphExecutionBlockWithOutSignal } from "./flowGraphExecutionBlockWithOutSignal";
 import type { FlowGraphSignalConnection } from "./flowGraphSignalConnection";
 
 /**
@@ -8,11 +8,7 @@ import type { FlowGraphSignalConnection } from "./flowGraphSignalConnection";
  * It should also be responsible for clearing it in _cancelPendingTasks.
  * @experimental
  */
-export abstract class FlowGraphAsyncExecutionBlock extends FlowGraphExecutionBlock {
-    /**
-     * Output connection: The signal that is triggered when the synchronous execution of this block is done.
-     */
-    public out: FlowGraphSignalConnection;
+export abstract class FlowGraphAsyncExecutionBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**
      * Output connection: The signal that is triggered when the asynchronous execution of this block is done.
      */
@@ -20,7 +16,6 @@ export abstract class FlowGraphAsyncExecutionBlock extends FlowGraphExecutionBlo
 
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
-        this.out = this._registerSignalOutput("out");
         this.done = this._registerSignalOutput("done");
     }
     /**

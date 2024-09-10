@@ -27,7 +27,7 @@ export class FlowGraphTimerBlock extends FlowGraphAsyncExecutionBlock {
         const currentTimeout = this.timeout.getValue(context);
 
         if (currentTimeout !== undefined && currentTimeout >= 0) {
-            const timers = context._getExecutionVariable(this, "runningTimers") || [];
+            const timers = context._getExecutionVariable(this, "runningTimers", [] as AdvancedTimer[]);
             const scene = context.configuration.scene;
             const timer: AdvancedTimer = new AdvancedTimer({
                 timeout: currentTimeout,
@@ -50,7 +50,7 @@ export class FlowGraphTimerBlock extends FlowGraphAsyncExecutionBlock {
     }
 
     private _onEnded(timer: AdvancedTimer, context: FlowGraphContext) {
-        const timers = context._getExecutionVariable(this, "runningTimers") || [];
+        const timers = context._getExecutionVariable(this, "runningTimers", [] as AdvancedTimer[]);
         const index = timers.indexOf(timer);
         if (index !== -1) {
             timers.splice(index, 1);
@@ -62,7 +62,7 @@ export class FlowGraphTimerBlock extends FlowGraphAsyncExecutionBlock {
     }
 
     public _cancelPendingTasks(context: FlowGraphContext): void {
-        const timers = context._getExecutionVariable(this, "runningTimers") || [];
+        const timers = context._getExecutionVariable(this, "runningTimers", [] as AdvancedTimer[]);
         for (const timer of timers) {
             timer.dispose();
         }

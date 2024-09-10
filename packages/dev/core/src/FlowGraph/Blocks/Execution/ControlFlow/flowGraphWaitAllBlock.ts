@@ -52,7 +52,7 @@ export class FlowGraphWaitAllBlock extends FlowGraphExecutionBlockWithOutSignal 
                 activationState.push(false);
             }
         } else {
-            const contextActivationState = context._getExecutionVariable(this, "activationState");
+            const contextActivationState = context._getExecutionVariable(this, "activationState", [] as boolean[]);
             for (let i = 0; i < contextActivationState.length; i++) {
                 activationState.push(contextActivationState[i]);
             }

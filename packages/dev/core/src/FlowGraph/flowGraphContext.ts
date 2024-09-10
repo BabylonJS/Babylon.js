@@ -64,6 +64,11 @@ export class FlowGraphContext {
      * These are the variables set by the blocks.
      */
     private _executionVariables: { [key: string]: any } = {};
+
+    /**
+     * A context-specific global variables, available to all blocks in the context.
+     */
+    private _globalContextVariables: { [key: string]: any } = {};
     /**
      * These are the values for the data connection points
      */
@@ -129,6 +134,49 @@ export class FlowGraphContext {
     }
 
     /**
+     * @internal
+     * @param name name of the variable
+     * @param defaultValue default value to return if the variable is not defined
+     * @returns the variable value or the default value if the variable is not defined
+     */
+    public _getGlobalContextVariable<T>(name: string, defaultValue: T): T {
+        if (this._hasGlobalContextVariable(name)) {
+            return this._globalContextVariables[name];
+        } else {
+            return defaultValue;
+        }
+    }
+
+    /**
+     * Set a global context variable
+     * @internal
+     * @param name the name of the variable
+     * @param value the value of the variable
+     */
+    public _setGlobalContextVariable<T>(name: string, value: T) {
+        this._globalContextVariables[name] = value;
+    }
+
+    /**
+     * Delete a global context variable
+     * @internal
+     * @param name the name of the variable
+     */
+    public _deleteGlobalContextVariable(name: string) {
+        delete this._globalContextVariables[name];
+    }
+
+    /**
+     * Check if a global context variable is defined
+     * @internal
+     * @param name the name of the variable
+     * @returns true if the variable is defined
+     */
+    public _hasGlobalContextVariable(name: string) {
+        return name in this._globalContextVariables;
+    }
+
+    /**
      * Set an internal execution variable
      * @internal
      * @param name
@@ -144,7 +192,7 @@ export class FlowGraphContext {
      * @param name
      * @returns
      */
-    public _getExecutionVariable(block: FlowGraphBlock, name: string, defaultValue?: any): any {
+    public _getExecutionVariable<T>(block: FlowGraphBlock, name: string, defaultValue: T): T {
         if (this._hasExecutionVariable(block, name)) {
             return this._executionVariables[this._getUniqueIdPrefixedName(block, name)];
         } else {
@@ -215,6 +263,7 @@ export class FlowGraphContext {
 
     /**
      * Add a block to the list of blocks that have pending tasks.
+     * TODO - it is possible that the same block is executed twice. This should be handled.
      * @internal
      * @param block
      */

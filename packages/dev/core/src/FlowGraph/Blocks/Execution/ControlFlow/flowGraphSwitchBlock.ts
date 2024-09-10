@@ -20,7 +20,7 @@ export interface IFlowGraphSwitchBlockConfiguration<T> extends IFlowGraphBlockCo
  * @experimental
  * A block that executes a branch based on a selection.
  */
-export class FlowGraphSwitchBlock<T> extends FlowGraphExecutionBlock {
+export class FlowGraphSwitchBlock<T = number> extends FlowGraphExecutionBlock {
     /**
      * Input connection: The value of the selection.
      */

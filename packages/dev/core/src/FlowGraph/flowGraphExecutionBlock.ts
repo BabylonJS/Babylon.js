@@ -14,6 +14,11 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
      * Input connection: The input signal of the block.
      */
     public readonly in: FlowGraphSignalConnection;
+
+    /**
+     * An output connection that can be used to signal an error, if the block defines it.
+     */
+    public readonly err: FlowGraphSignalConnection;
     /**
      * Input connections that activate the block.
      */
@@ -28,6 +33,7 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
         this.signalInputs = [];
         this.signalOutputs = [];
         this.in = this._registerSignalInput("in");
+        this.err = this._registerSignalOutput("err");
     }
 
     /**

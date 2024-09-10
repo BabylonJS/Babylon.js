@@ -98,10 +98,11 @@ export class FlowGraphBlock {
      * Registers a data input on the block.
      * @param name the name of the input
      * @param richType the type of the input
+     * @param defaultValue optional default value of the input. If not set, the rich type's default value will be used.
      * @returns the created connection
      */
-    public registerDataInput<T>(name: string, richType: RichType<T>): FlowGraphDataConnection<T> {
-        const input = new FlowGraphDataConnection(name, FlowGraphConnectionType.Input, this, richType);
+    public registerDataInput<T>(name: string, richType: RichType<T>, defaultValue?: T): FlowGraphDataConnection<T> {
+        const input = new FlowGraphDataConnection(name, FlowGraphConnectionType.Input, this, richType, defaultValue);
         this.dataInputs.push(input);
         return input;
     }
@@ -110,10 +111,11 @@ export class FlowGraphBlock {
      * Registers a data output on the block.
      * @param name the name of the input
      * @param richType the type of the input
+     * @param defaultValue optional default value of the input. If not set, the rich type's default value will be used.
      * @returns the created connection
      */
-    public registerDataOutput<T>(name: string, richType: RichType<T>): FlowGraphDataConnection<T> {
-        const output = new FlowGraphDataConnection(name, FlowGraphConnectionType.Output, this, richType);
+    public registerDataOutput<T>(name: string, richType: RichType<T>, defaultValue?: T): FlowGraphDataConnection<T> {
+        const output = new FlowGraphDataConnection(name, FlowGraphConnectionType.Output, this, richType, defaultValue);
         this.dataOutputs.push(output);
         return output;
     }

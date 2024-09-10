@@ -17,6 +17,7 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
      * @param connectionType
      * @param ownerBlock
      * @param richType
+     * @param _defaultValue
      */
     public constructor(
         name: string,
@@ -25,7 +26,8 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
         /**
          * the type of the data in this block
          */
-        public richType: RichType<T>
+        public richType: RichType<T>,
+        private _defaultValue: T = richType.defaultValue
     ) {
         super(name, connectionType, ownerBlock);
     }
@@ -60,7 +62,7 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
         if (context._hasConnectionValue(this)) {
             return context._getConnectionValue(this);
         } else {
-            return this.richType.defaultValue;
+            return this._defaultValue;
         }
     }
 

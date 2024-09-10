@@ -21,27 +21,32 @@ export class FlowGraphThrottleBlock extends FlowGraphExecutionBlockWithOutSignal
     /**
      * Output connection: The time remaining before the throttle is done, in ms.
      */
-    public readonly timeRemaining: FlowGraphDataConnection<number>;
+    public readonly lastRemainingTime: FlowGraphDataConnection<number>;
 
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
         this.reset = this._registerSignalInput("reset");
         this.duration = this.registerDataInput("duration", RichTypeNumber);
-        this.timeRemaining = this.registerDataOutput("timeRemaining", RichTypeNumber);
+        this.lastRemainingTime = this.registerDataOutput("lastRemainingTime", RichTypeNumber);
     }
     public _execute(context: FlowGraphContext, callingSignal: FlowGraphSignalConnection): void {
-        const lastExecutedTime = context._getExecutionVariable(this, "lastExecutedTime");
+        // TODO - is NEGATIVE_INFINITY a good default value?
+        const lastExecutedTime = context._getExecutionVariable(this, "lastExecutedTime", Number.NEGATIVE_INFINITY);
         const durationValue = this.duration.getValue(context);
+        // check if the duration is valid
+        if (durationValue <= 0 || isNaN(durationValue) || !isFinite(durationValue)) {
+            return this.err._activateSignal(context);
+        }
         const currentTime = Date.now();
         if (callingSignal === this.reset || lastExecutedTime === undefined || currentTime - lastExecutedTime > durationValue) {
             //activate the output flow
-            this.timeRemaining.setValue(0, context);
+            this.lastRemainingTime.setValue(0, context);
             this.out._activateSignal(context);
             context._setExecutionVariable(this, "lastExecutedTime", currentTime);
         } else {
             //activate the output flow after the remaining time
             const remaining = durationValue - (currentTime - lastExecutedTime);
-            this.timeRemaining.setValue(remaining, context);
+            this.lastRemainingTime.setValue(remaining, context);
         }
     }
     /**
