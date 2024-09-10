@@ -171,7 +171,9 @@ export const gltfToFlowGraphTypeMap: { [key: string]: string } = {
     "math/popcnt": FlowGraphCountOneBitsBlock.ClassName,
 };
 
-export const gltfTypeToBabylonType: any = {
+export const gltfTypeToBabylonType: {
+    [key: string]: string;
+} = {
     float2: "Vector2",
     float3: "Vector3",
     float4: "Vector4",
