@@ -398,7 +398,7 @@ export class _IblShadowsVoxelRenderer {
             this._voxelMrtsYaxis = this._createVoxelMRTs("y_axis_", this._voxelGridYaxis, numSlabs);
             this._voxelMrtsZaxis = this._createVoxelMRTs("z_axis_", this._voxelGridZaxis, numSlabs);
 
-            this._voxelGridRT = new ProceduralTexture("combinedVoxelGrid", size, "combineVoxelGrids", this._scene, voxelCombinedOptions, false);
+            this._voxelGridRT = new ProceduralTexture("combinedVoxelGrid", size, "iblCombineVoxelGrids", this._scene, voxelCombinedOptions, false);
             this._scene.proceduralTextures.splice(this._scene.proceduralTextures.indexOf(this._voxelGridRT), 1);
             this._voxelGridRT.setFloat("layer", 0.0);
             this._voxelGridRT.setTexture("voxelXaxisSampler", this._voxelGridXaxis);
@@ -417,7 +417,7 @@ export class _IblShadowsVoxelRenderer {
         for (let mipIdx = 1; mipIdx <= this._mipArray.length; mipIdx++) {
             const mipDim = this._voxelResolution >> mipIdx;
             const mipSize: TextureSize = { width: mipDim, height: mipDim, depth: mipDim };
-            this._mipArray[mipIdx - 1] = new ProceduralTexture("voxelMip" + mipIdx, mipSize, "generateVoxelMip", this._scene, voxelAxisOptions, false);
+            this._mipArray[mipIdx - 1] = new ProceduralTexture("voxelMip" + mipIdx, mipSize, "iblGenerateVoxelMip", this._scene, voxelAxisOptions, false);
             this._scene.proceduralTextures.splice(this._scene.proceduralTextures.indexOf(this._mipArray[mipIdx - 1]), 1);
 
             const mipTarget = this._mipArray[mipIdx - 1];

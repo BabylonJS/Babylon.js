@@ -4,7 +4,6 @@ varying vUV: vec2f;
 #define DISABLE_UNIFORMITY_ANALYSIS
 
 var depthSampler: texture_2d<f32>;
-var linearDepthSampler: texture_2d<f32>;
 var worldNormalSampler: texture_2d<f32>;
 var worldPositionSampler: texture_2d<f32>;
 var blueNoiseSampler: texture_2d<f32>;
