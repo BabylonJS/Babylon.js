@@ -5,6 +5,7 @@ import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import type { IDisposable } from "core/scene";
 import type { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { SerializationTools } from "./serializationTools";
+import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 
 /**
  * Class handling undo / redo operations
@@ -13,6 +14,8 @@ export class HistoryStack implements IDisposable {
     private _onUpdateRequiredObserver: Nullable<Observer<Nullable<NodeMaterialBlock>>>;
     private _onClearUndoStackObserver: Nullable<Observer<void>>;
     private _onRebuildRequiredObserver: Nullable<Observer<void>>;
+    private _onNodeMovedObserver: Nullable<Observer<GraphNode>>;
+    private _onNodeAddedObserver: Nullable<Observer<GraphNode>>;
     private _globalState: GlobalState;
     private _nodeMaterial: NodeMaterial;
     private _history: string[] = [];
@@ -32,6 +35,14 @@ export class HistoryStack implements IDisposable {
         });
 
         this._onRebuildRequiredObserver = globalState.stateManager.onRebuildRequiredObservable.add(() => {
+            this._store();
+        });
+
+        this._onNodeMovedObserver = globalState.stateManager.onNodeMovedObservable.add(() => {
+            this._store();
+        });
+
+        this._onNodeAddedObserver = globalState.stateManager.onNewNodeCreatedObservable.add(() => {
             this._store();
         });
 
@@ -90,9 +101,31 @@ export class HistoryStack implements IDisposable {
     }
 
     /**
+     * Redo the latest undo operation
+     */
+    public redo() {
+        if (this._redoStack.length < 1) {
+            return;
+        }
+
+        this._locked = true;
+        const current = this._redoStack.pop()!;
+        this._history.push(current);
+
+        this._globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
+        this._nodeMaterial.parseSerializedObject(JSON.parse(current));
+
+        this._globalState.onResetRequiredObservable.notifyObservers(false);
+
+        this._locked = false;
+    }
+
+    /**
      * Disposes the stack
      */
     public dispose() {
+        this._globalState.stateManager.onNodeMovedObservable.remove(this._onNodeMovedObserver);
+        this._globalState.stateManager.onNewNodeCreatedObservable.remove(this._onNodeAddedObserver);
         this._globalState.stateManager.onRebuildRequiredObservable.remove(this._onRebuildRequiredObserver);
         this._globalState.onClearUndoStack.remove(this._onClearUndoStackObserver);
         this._globalState.stateManager.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);

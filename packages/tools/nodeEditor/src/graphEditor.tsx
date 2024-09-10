@@ -109,11 +109,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             this.componentWillUnmount();
         });
 
-        this.props.globalState.onAfterReorganize.addOnce(() => {
-            this.props.globalState.onClearUndoStack.notifyObservers();
-        });
-
         this.build(true);
+        this.props.globalState.onClearUndoStack.notifyObservers();
     }
 
     override componentWillUnmount() {
@@ -212,9 +209,20 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         };
 
         this.props.globalState.hostDocument!.addEventListener("keydown", (evt) => {
-            if (evt.ctrlKey && (evt.key === "z" || evt.key === "Z")) {
-                this._historyStack.undo();
-                return;
+            if (evt.ctrlKey) {
+                if (evt.key === "z" || evt.key === "Z") {
+                    if (evt.shiftKey) {
+                        this._historyStack.redo();
+                        return;
+                    }
+
+                    this._historyStack.undo();
+                    return;
+                }
+                if (evt.key === "y" || evt.key === "Y") {
+                    this._historyStack.redo();
+                    return;
+                }
             }
 
             this._graphCanvas.handleKeyDown(
@@ -321,11 +329,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this.showWaitScreen();
         this._graphCanvas._isLoading = true; // Will help loading large graphes
 
-        setTimeout(() => {
-            this._graphCanvas.reOrganize(editorData, isImportingAFrame);
-            this.hideWaitScreen();
-            this.props.globalState.onAfterReorganize.notifyObservers();
-        });
+        this._graphCanvas.reOrganize(editorData, isImportingAFrame);
+        this.hideWaitScreen();
     }
 
     onPointerDown(evt: React.PointerEvent<HTMLDivElement>) {

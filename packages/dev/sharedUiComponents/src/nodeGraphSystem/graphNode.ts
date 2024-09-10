@@ -434,6 +434,7 @@ export class GraphNode {
         this._visual.releasePointerCapture(evt.pointerId);
 
         if (!this._ownerCanvas._targetLinkCandidate) {
+            this._stateManager.onNodeMovedObservable.notifyObservers(this);
             return;
         }
 
