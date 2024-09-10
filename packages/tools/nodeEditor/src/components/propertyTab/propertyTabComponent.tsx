@@ -207,6 +207,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 const decoder = new TextDecoder("utf-8");
                 SerializationTools.Deserialize(JSON.parse(decoder.decode(data)), this.props.globalState);
 
+                this.props.globalState.onAfterReorganize.addOnce(() => {
+                    this.props.globalState.onClearUndoStack.notifyObservers();
+                });
                 if (!this.changeMode(this.props.globalState.nodeMaterial!.mode, true, false)) {
                     this.props.globalState.onResetRequiredObservable.notifyObservers(false);
                 }
@@ -323,6 +326,10 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
         NodeMaterial.ParseFromSnippetAsync(snippedId, scene, "", material)
             .then(() => {
+                this.props.globalState.onAfterReorganize.addOnce(() => {
+                    this.props.globalState.onClearUndoStack.notifyObservers();
+                });
+
                 material.build();
                 if (!this.changeMode(this.props.globalState.nodeMaterial!.mode, true, false)) {
                     this.props.globalState.onResetRequiredObservable.notifyObservers(true);
@@ -379,6 +386,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         DataStorage.WriteNumber("PreviewType", this.props.globalState.previewType);
 
         this.props.globalState.mode = value as NodeMaterialModes;
+        this.props.globalState.onAfterReorganize.addOnce(() => {
+            this.props.globalState.onClearUndoStack.notifyObservers();
+        });
 
         this.props.globalState.onResetRequiredObservable.notifyObservers(true);
         // Env
