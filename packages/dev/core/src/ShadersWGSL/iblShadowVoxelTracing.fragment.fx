@@ -293,10 +293,17 @@ fn screenSpaceShadow(csOrigin: vec3f, csDirection: vec3f, csZBufferSize: vec2f,
 
   var H0: vec4f = uniforms.projMtx *  vec4f(csOrigin, 1.0);
   var H1: vec4f = uniforms.projMtx *  vec4f(csEndPoint, 1.0);
-  var Z0: vec2f =  vec2f(csOrigin.z, 1.0) / H0.w;
-  var Z1: vec2f =  vec2f(csEndPoint.z, 1.0) / H1.w;
-  var P0: vec2f = csZBufferSize * (0.5 * H0.xy * Z0.y + 0.5);
-  var P1: vec2f = csZBufferSize * (0.5 * H1.xy * Z1.y + 0.5);
+  
+  #ifndef IS_NDC_HALF_ZRANGE
+    var Z0 = (0.5 * H0.z / H0.w + 0.5);
+    var Z1 = (0.5 * H1.z / H1.w + 0.5);
+  #else
+    var Z0 = (H0.z / H0.w);
+    var Z1 = (H1.z / H1.w);
+  #endif
+  
+  var P0 = csZBufferSize * (0.5 * H0.xy / H0.w + 0.5);
+  var P1 = csZBufferSize * (0.5 * H1.xy / H1.w + 0.5);
 
   P1 +=  vec2f(select(0.0, 0.01, distanceSquared(P0, P1) < 0.0001));
   var delta: vec2f = P1 - P0;
@@ -311,29 +318,24 @@ fn screenSpaceShadow(csOrigin: vec3f, csDirection: vec3f, csZBufferSize: vec2f,
   var stepDirection: f32 = sign(delta.x);
   var invdx: f32 = stepDirection / delta.x;
   var dP: vec2f = ssStride *  vec2f(stepDirection, invdx * delta.y);
-  var dZ: vec2f = ssStride * invdx * (Z1 - Z0);
+  var dZ = ssStride * invdx * (Z1 - Z0);
 
   var opacity: f32 = 0.0;
   var P: vec2f = P0 + noise * dP;
-  var Z: vec2f = Z0 + noise * dZ;
+  var Z = Z0 + noise * dZ;
   var end: f32 = P1.x * stepDirection;
-  var rayZMax: f32 = csZDir * Z.x / Z.y;
-  var sceneDepth: f32 = rayZMax;
   Z += dZ;
 
-  for (var stepCount: f32 = 0.0; opacity < 1.0 && P.x * stepDirection < end &&
-                              sceneDepth > 0.0 && stepCount < ssSamples;
+  for (var stepCount: f32 = 0.0; 
+        opacity < 1.0 && P.x * stepDirection < end && stepCount < ssSamples;
        stepCount += 1) { // 'sceneDepth > 0.0' instead of 'sceneDepth < 0.0'
-    var linearZ_alpha: vec2f =
-        textureLoad(linearDepthSampler, vec2i(select(P, P.yx, permute)), 0).xy;
-    sceneDepth = csZDir * linearZ_alpha.x;
-    if (sceneDepth <= 0.0) {
-      break;
-    }
-    var rayZMin: f32 = rayZMax;
-    rayZMax = csZDir * Z.x / Z.y;
-    opacity += max(opacity, step(rayZMax, sceneDepth + ssThickness) *
-                                step(sceneDepth, rayZMin));
+    var coords = vec2i(select(P, P.yx, permute));
+    var sceneDepth = textureLoad(depthSampler, coords, 0).x;
+    // Scale the thickness based on the scene depth to make it constant.
+    var thicknessScale = pow(1.0 - sceneDepth, 1.6);
+    opacity +=
+        max(opacity, step(Z + dZ, sceneDepth + thicknessScale * ssThickness) *
+                         step(sceneDepth, Z));
     P += dP;
     Z += dZ;
   }
@@ -409,7 +411,9 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
   var normalizedRotation: f32 = envRot / (2.0 * PI);
 
   var depth: f32 = textureLoad(depthSampler, PixelCoord, 0).x;
-  depth = depth * 2.0 - 1.0;
+  #ifndef IS_NDC_HALF_ZRANGE
+    depth = depth * 2.0 - 1.0;
+  #endif
   var temp: vec2f = ( vec2f(PixelCoord) +  vec2f(0.5)) * 2.0 / Resolution -  vec2f(1.0);
   var temp2: vec2f = fragmentInputs.vUV *  vec2f(2.0) -  vec2f(1.0);
   var VP: vec4f = uniforms.invProjMtx *  vec4f(temp.x, -temp.y, depth, 1.0);
@@ -419,8 +423,6 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
   var noise: vec3f = textureLoad(blueNoiseSampler, vec2i(PixelCoord.x & 0xFF, PixelCoord.y & 0xFF), 0).xyz;
   noise.z = fract(noise.z + goldenSequence(frameId * nbDirs));
 
-  var linearZ_alpha: vec2f = textureLoad(linearDepthSampler, PixelCoord, 0).xy;
-  linearZ_alpha.x *= -1.0;
 #ifdef VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
   var heat: f32 = 0.0f;
 #endif
@@ -437,7 +439,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
       T.x -= normalizedRotation;
       L =  vec4f(uv_to_normal(T), 0);
     }
-    var edge_tint_const: f32 = select(-0.1, -0.001, linearZ_alpha.y > 0.0);
+    var edge_tint_const = -0.001;
     var cosNL: f32 = dot(N, L.xyz);
     var opacity: f32 = select(0.0, 1.0, cosNL < edge_tint_const);
 

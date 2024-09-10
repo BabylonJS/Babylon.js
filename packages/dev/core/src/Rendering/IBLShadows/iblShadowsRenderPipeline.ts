@@ -636,13 +636,20 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
 
         // Only turn on the pipeline if the importance sampling RT's are ready
         this._importanceSamplingRenderer.onReadyObservable.add(() => {
-            if (this._voxelRenderer.isReady()) {
-                this.toggleShadow(this._enabled);
-            } else {
-                this._voxelRenderer.onReadyObservable.addOnce(() => {
+            const checkVoxelRendererReady = () => {
+                if (this._voxelRenderer.isReady()) {
                     this.toggleShadow(this._enabled);
-                });
-            }
+                    if (this._enabled) {
+                        this._voxelizationDirty = true;
+                    }
+                } else {
+                    setTimeout(() => {
+                        checkVoxelRendererReady();
+                    }, 16);
+                }
+            };
+
+            checkVoxelRendererReady();
         });
     }
 

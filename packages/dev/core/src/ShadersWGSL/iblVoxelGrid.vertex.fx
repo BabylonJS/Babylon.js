@@ -14,4 +14,8 @@ fn main(input : VertexInputs) -> FragmentInputs {
     // vertexOutputs.position.xyz = vertexOutputs.position.zyx;
     vertexOutputs.vNormalizedPosition = vertexOutputs.position.xyz * 0.5 + 0.5;
     // vNormalizedPosition.xyz = vNormalizedPosition.zyx;
+
+    #ifdef IS_NDC_HALF_ZRANGE
+        vertexOutputs.position = vec4f(vertexOutputs.position.x, vertexOutputs.position.y, vertexOutputs.position.z * 0.5 + 0.5, vertexOutputs.position.w);
+    #endif
 }
