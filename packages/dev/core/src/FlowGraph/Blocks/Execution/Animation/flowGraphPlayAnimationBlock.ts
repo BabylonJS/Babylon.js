@@ -94,7 +94,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             throw new Error("Cannot play animation without target or animation");
         }
 
-        const contextAnimatables = (context._getExecutionVariable(this, "runningAnimatables") as Animatable[]) ?? [];
+        const contextAnimatables = context._getExecutionVariable(this, "runningAnimatables", [] as Animatable[]);
 
         // was an animation started on this target already and was just paused? if so, we can unpause it.
         const existingAnimatable = this.runningAnimatable.getValue(context);
@@ -125,7 +125,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     }
 
     private _onAnimationEnd(animatable: Animatable, context: FlowGraphContext) {
-        const contextAnims = (context._getExecutionVariable(this, "runningAnimatables") as Animatable[]) ?? [];
+        const contextAnims = context._getExecutionVariable(this, "runningAnimatables", [] as Animatable[]);
         const index = contextAnims.indexOf(animatable);
         if (index !== -1) {
             contextAnims.splice(index, 1);
@@ -139,7 +139,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
      * Stop any currently running animations.
      */
     public _cancelPendingTasks(context: FlowGraphContext): void {
-        const contextAnims = (context._getExecutionVariable(this, "runningAnimatables") as Animatable[]) ?? [];
+        const contextAnims = context._getExecutionVariable(this, "runningAnimatables", [] as Animatable[]);
         for (const anim of contextAnims) {
             anim.stop();
         }

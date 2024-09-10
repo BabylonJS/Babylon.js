@@ -32,7 +32,7 @@ export class FlowGraphCounterBlock extends FlowGraphExecutionBlockWithOutSignal 
             this.count.setValue(0, context);
             return;
         }
-        const countValue = (context._getExecutionVariable(this, "count") ?? 0) + 1;
+        const countValue = context._getExecutionVariable(this, "count", 0) + 1;
 
         context._setExecutionVariable(this, "count", countValue);
         this.count.setValue(countValue, context);

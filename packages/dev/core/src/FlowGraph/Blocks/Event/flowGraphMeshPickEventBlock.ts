@@ -1,5 +1,6 @@
 import { AbstractMesh } from "../../../Meshes/abstractMesh";
 import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
+import type { PointerInfo } from "../../../Events/pointerEvents";
 import { PointerEventTypes } from "../../../Events/pointerEvents";
 import type { FlowGraphContext } from "../../flowGraphContext";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
@@ -7,6 +8,10 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { _isADescendantOf } from "../../utils";
 import type { IPathToObjectConverter } from "../../../ObjectModel/objectModelInterfaces";
 import type { IObjectAccessor } from "../../typeDefinitions";
+import type { Nullable } from "../../../types";
+import type { Mesh } from "../../../Meshes";
+import type { Observer } from "../../../Misc/observable";
+import type { Node } from "../../../node";
 /**
  * @experimental
  */
@@ -48,7 +53,7 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
      * @internal
      */
     public _preparePendingTasks(context: FlowGraphContext): void {
-        let pickObserver = context._getExecutionVariable(this, "meshPickObserver");
+        let pickObserver = context._getExecutionVariable<Nullable<Observer<PointerInfo>>>(this, "meshPickObserver", null);
         if (!pickObserver) {
             const mesh = this._getReferencedMesh();
             context._setExecutionVariable(this, "mesh", mesh);
@@ -76,9 +81,12 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
      * @internal
      */
     public _cancelPendingTasks(context: FlowGraphContext): void {
-        const mesh = context._getExecutionVariable(this, "mesh");
-        const pickObserver = context._getExecutionVariable(this, "meshPickObserver");
-        const disposeObserver = context._getExecutionVariable(this, "meshDisposeObserver");
+        const mesh = context._getExecutionVariable<Nullable<Mesh>>(this, "mesh", null);
+        if (!mesh) {
+            return;
+        }
+        const pickObserver = context._getExecutionVariable<Nullable<Observer<PointerInfo>>>(this, "meshPickObserver", null);
+        const disposeObserver = context._getExecutionVariable<Nullable<Observer<Node>>>(this, "meshDisposeObserver", null);
 
         mesh.getScene().onPointerObservable.remove(pickObserver);
         mesh.onDisposeObservable.remove(disposeObserver);

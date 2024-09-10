@@ -43,8 +43,8 @@ export class FlowGraphForLoopBlock extends FlowGraphExecutionBlockWithOutSignal 
     }
 
     private _executeLoop(context: FlowGraphContext) {
-        let index = context._getExecutionVariable(this, "index");
-        const endIndex = context._getExecutionVariable(this, "endIndex");
+        let index = context._getExecutionVariable(this, "index", -1);
+        const endIndex = context._getExecutionVariable(this, "endIndex", -1);
         if (index < endIndex) {
             this.index.setValue(index, context);
             this.onLoop._activateSignal(context);

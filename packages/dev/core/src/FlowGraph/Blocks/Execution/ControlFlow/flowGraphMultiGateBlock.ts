@@ -72,7 +72,7 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
                 result.push(i);
             }
         } else {
-            const contextUnusedIndexes = context._getExecutionVariable(this, "unusedIndexes");
+            const contextUnusedIndexes = context._getExecutionVariable(this, "unusedIndexes", [] as number[]);
             for (let i = 0; i < contextUnusedIndexes.length; i++) {
                 result.push(contextUnusedIndexes[i]);
             }
@@ -90,7 +90,7 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
     }
 
     public _execute(context: FlowGraphContext, callingSignal: FlowGraphSignalConnection): void {
-        const currentIndex = context._getExecutionVariable(this, "currentIndex") ?? this.config.startIndex! - 1;
+        const currentIndex = context._getExecutionVariable(this, "currentIndex", this.config.startIndex! - 1);
         let unusedIndexes = this._getUnusedIndexes(context);
 
         if (callingSignal === this.reset) {
