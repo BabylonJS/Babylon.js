@@ -27,7 +27,6 @@ export class GlobalState {
     stateManager: StateManager;
     onBuiltObservable = new Observable<void>();
     onResetRequiredObservable = new Observable<boolean>();
-    onAfterUndoRedo = new Observable<void>();
     onClearUndoStack = new Observable<void>();
     onAfterReorganize = new Observable<void>();
     onZoomToFitRequiredObservable = new Observable<void>();

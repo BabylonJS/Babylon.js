@@ -188,10 +188,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             }
         });
 
-        this.props.globalState.onAfterUndoRedo.add(() => {
-            this.build();
-        });
-
         this.props.globalState.onImportFrameObservable.add((source: any) => {
             const frameData = source.editorData.frames[0];
 
@@ -260,7 +256,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         try {
             material.options.emitComments = true;
 
-            material.build();
+            material.build(true);
         } catch (err) {
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
         }
