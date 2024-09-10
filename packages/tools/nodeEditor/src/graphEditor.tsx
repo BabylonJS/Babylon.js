@@ -109,7 +109,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             this.componentWillUnmount();
         });
 
-        this.build(true);
+        this.build();
         this.props.globalState.onClearUndoStack.notifyObservers();
     }
 
