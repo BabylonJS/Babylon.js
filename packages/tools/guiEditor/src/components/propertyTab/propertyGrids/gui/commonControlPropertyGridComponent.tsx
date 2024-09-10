@@ -711,7 +711,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 </div>
                 <div className="ge-divider">
                     <IconComponent icon={shadowColorIcon} label={"Shadow Color"} />
-                    <ColorLine lockObject={this.props.lockObject} label="" target={proxy} propertyName="shadowColor" disableAlpha={true} />
+                    <ColorLine lockObject={this.props.lockObject} label="" target={proxy} propertyName="shadowColor" />
                 </div>
                 <div className="ge-divider double">
                     <IconComponent icon={shadowOffsetXIcon} label={"Shadow Offset"} />

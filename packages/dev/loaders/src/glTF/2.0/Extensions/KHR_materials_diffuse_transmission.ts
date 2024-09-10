@@ -7,6 +7,7 @@ import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsDiffuseTransmission } from "babylonjs-gltf2interface";
 import { Color3 } from "core/Maths/math.color";
+import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "KHR_materials_diffuse_transmission";
 
@@ -131,4 +132,5 @@ export class KHR_materials_diffuse_transmission implements IGLTFLoaderExtension 
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_materials_diffuse_transmission(loader));
+unregisterGLTFExtension(NAME);
+registerGLTFExtension(NAME, true, (loader) => new KHR_materials_diffuse_transmission(loader));

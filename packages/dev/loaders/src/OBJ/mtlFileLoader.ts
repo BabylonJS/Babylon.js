@@ -212,7 +212,7 @@ export class MTLFileLoader {
             }
 
             if (lastDelimiter > -1) {
-                url += value.substr(lastDelimiter + 1);
+                url += value.substring(lastDelimiter + 1);
             } else {
                 url += value;
             }

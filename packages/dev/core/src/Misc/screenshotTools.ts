@@ -338,6 +338,7 @@ export function CreateScreenshotUsingRenderTarget(
  * @param enableStencilBuffer Whether the stencil buffer should be enabled or not (default: false)
  * @param useLayerMask if the camera's layer mask should be used to filter what should be rendered (default: true)
  * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
+ * @param customizeTexture An optional callback that can be used to modify the render target texture before taking the screenshot. This can be used, for instance, to enable camera post-processes before taking the screenshot.
  * @returns screenshot as a string of base64-encoded characters. This string can be assigned
  * to the src parameter of an <img> to display it
  */
@@ -352,7 +353,8 @@ export function CreateScreenshotUsingRenderTargetAsync(
     renderSprites = false,
     enableStencilBuffer = false,
     useLayerMask = true,
-    quality?: number
+    quality?: number,
+    customizeTexture?: (texture: RenderTargetTexture) => void
 ): Promise<string> {
     return new Promise((resolve, reject) => {
         CreateScreenshotUsingRenderTarget(
@@ -373,7 +375,8 @@ export function CreateScreenshotUsingRenderTargetAsync(
             renderSprites,
             enableStencilBuffer,
             useLayerMask,
-            quality
+            quality,
+            customizeTexture
         );
     });
 }

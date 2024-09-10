@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Gaussian Splatting Loading",
+            "playgroundId": "#CID4NN#204",
+            "referenceImage": "gsplat-loading.png"
+        },
+        {
             "title": "EXR Loader",
             "playgroundId": "#4RN0VF#151",
             "referenceImage": "exr-loader.png",
@@ -24,8 +29,7 @@
         },
         {
             "title": "Decal map PP",
-            "playgroundId": "#9BVW2S#82",
-            "renderCount": 120,
+            "playgroundId": "#9BVW2S#90",
             "referenceImage": "decal-map-pp.png",
             "excludedEngines": ["webgl1"]
         },
@@ -73,20 +77,17 @@
         },
         {
             "title": "GPUPicker",
-            "playgroundId": "#1RWFMT#2",
-            "renderCount": 20,
+            "playgroundId": "#1RWFMT#8",
             "referenceImage": "gpuPicker.png"
         },
         {
-            "title": "Trailmesh - tapered and untapered",
-            "playgroundId": "#XGGSWJ#1",
-            "renderCount": 100,
+            "title": "Trailmesh tapered and untapered",
+            "playgroundId": "#XGGSWJ#3",
             "referenceImage": "trailMesh.png"
         },
         {
             "title": "3D Procedural Textures",
-            "playgroundId": "#AYZY4Q#7",
-            "renderCount": 5,
+            "playgroundId": "#AYZY4Q#34",
             "referenceImage": "procedural-textures-3d.png",
             "excludedEngines": ["webgl1", "webgpu"],
             "excludeFromAutomaticTesting": true
@@ -172,8 +173,7 @@
         },
         {
             "title": "Procedural texture with NME",
-            "renderCount": 2,
-            "playgroundId": "#8S19ZC#3",
+            "playgroundId": "#8S19ZC#77",
             "referenceImage": "procedural-nme.png"
         },
         {
@@ -210,16 +210,13 @@
         },
         {
             "title": "Node material 0",
-            "playgroundId": "#M5VQE9#20",
-            "referenceImage": "node-material0.png",
-            "renderCount": 5,
-            "excludeFromAutomaticTesting": true
+            "playgroundId": "#M5VQE9#41",
+            "referenceImage": "node-material0.png"
         },
         {
             "title": "Node material 1",
             "playgroundId": "#QJ71C6#5",
-            "referenceImage": "node-material1.png",
-            "renderCount": 20
+            "referenceImage": "node-material1.png"
         },
         {
             "title": "Node material 2",
@@ -253,14 +250,12 @@
         },
         {
             "title": "Node material PBR 1",
-            "playgroundId": "#D8AK3Z#17",
-            "renderCount": 5,
+            "playgroundId": "#D8AK3Z#107",
             "referenceImage": "node-material-pbr-1.png"
         },
         {
-            "title": "Node material PBR - Pure WebGPU",
-            "playgroundId": "#D8AK3Z#80",
-            "renderCount": 5,
+            "title": "Node material PBR Pure WebGPU",
+            "playgroundId": "#D8AK3Z#108",
             "referenceImage": "node-material-pbr-2.png",
             "excludedEngines": ["webgl1", "webgl2"]
         },
@@ -281,14 +276,12 @@
         },
         {
             "title": "Nested BBG",
-            "playgroundId": "#ZG0C8B#6",
-            "renderCount": 10,
+            "playgroundId": "#ZG0C8B#12",
             "referenceImage": "nested-BBG.png"
         },
         {
             "title": "Weighted animations",
-            "playgroundId": "#LL5BIQ#72",
-            "renderCount": 50,
+            "playgroundId": "#LL5BIQ#636",
             "referenceImage": "weighted-animations.png"
         },
         {
@@ -308,13 +301,11 @@
         },
         {
             "title": "GUI Transform StackPanel",
-            "renderCount": 5,
             "playgroundId": "#BS60AB#0",
             "referenceImage": "TransformStackPanel.png"
         },
         {
             "title": "GUI StackPanel",
-            "renderCount": 5,
             "playgroundId": "#LLVZ90#0",
             "referenceImage": "StackPanel.png"
         },
@@ -1124,7 +1115,6 @@
         },
         {
             "title": "GlowLayer",
-            "renderCount": 5,
             "playgroundId": "#LRFB2D#262",
             "referenceImage": "GlowLayer.png"
         },
@@ -1955,7 +1945,7 @@
         },
         {
             "title": "Command encoder order in WebGPU 1",
-            "playgroundId": "#064AUB#110",
+            "playgroundId": "#064AUB#121",
             "referenceImage": "CommandEncodedWebGPU1.png",
             "excludedEngines": ["webgl1"]
         },

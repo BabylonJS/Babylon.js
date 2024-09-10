@@ -12,7 +12,7 @@
     ],
     "scripts": {
         "build": "npm run clean && npm run compile",
-        "clean": "rimraf dist && rimraf *.tsbuildinfo",
+        "clean": "rimraf dist && rimraf *.tsbuildinfo -g",
         "compile": "tsc -b tsconfig.build.json --verbose"
     },
     "devDependencies": {
@@ -49,4 +49,3 @@
         "url": "https://github.com/BabylonJS/Babylon.js/issues"
     }
 }
-

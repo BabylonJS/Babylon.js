@@ -24,5 +24,6 @@
         "@microsoft/tsdoc-config": "~0.16.1"
     },
     "devDependencies": {
+        "@types/eslint": "^8.56.10"
     }
 }

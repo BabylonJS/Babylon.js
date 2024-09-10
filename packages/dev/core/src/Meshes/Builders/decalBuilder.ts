@@ -1,6 +1,6 @@
 import type { Nullable, IndicesArray, FloatArray } from "../../types";
 import { Vector3, Matrix, Vector2, TmpVectors } from "../../Maths/math.vector";
-import { Scalar } from "../../Maths/math.scalar";
+import { Lerp } from "../../Maths/math.scalar.functions";
 import { Mesh } from "../mesh";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { VertexData } from "../mesh.vertexData";
@@ -179,7 +179,7 @@ export function CreateDecal(
                     if (v0Weights[mat0Index + i] > 0) {
                         const idx = indexOf(v1Indices, v0Indices[mat0Index + i], mat1Index, 4);
                         indices[index] = v0Indices[mat0Index + i];
-                        weights[index] = Scalar.Lerp(v0Weights[mat0Index + i], idx >= 0 ? v1Weights[idx] : 0, clipFactor);
+                        weights[index] = Lerp(v0Weights[mat0Index + i], idx >= 0 ? v1Weights[idx] : 0, clipFactor);
                         index++;
                     }
                 }
@@ -189,7 +189,7 @@ export function CreateDecal(
                     if (indexOf(v0Indices, ind, mat0Index, 4) !== -1) continue;
 
                     indices[index] = ind;
-                    weights[index] = Scalar.Lerp(0, v1Weights[mat1Index + i], clipFactor);
+                    weights[index] = Lerp(0, v1Weights[mat1Index + i], clipFactor);
                     index++;
                 }
 

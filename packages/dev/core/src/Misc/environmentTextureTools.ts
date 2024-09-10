@@ -2,7 +2,7 @@
 import type { Nullable } from "../types";
 import { Tools } from "./tools";
 import { Vector3 } from "../Maths/math.vector";
-import { Scalar } from "../Maths/math.scalar";
+import { ILog2 } from "../Maths/math.scalar.functions";
 import { SphericalPolynomial } from "../Maths/sphericalPolynomial";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
@@ -262,7 +262,7 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
     engine.flushFramebuffer();
 
     // Read and collect all mipmaps data from the cube.
-    const mipmapsCount = Scalar.ILog2(internalTexture.width);
+    const mipmapsCount = ILog2(internalTexture.width);
     for (let i = 0; i <= mipmapsCount; i++) {
         const faceWidth = Math.pow(2, mipmapsCount - i);
 
@@ -419,7 +419,7 @@ export function CreateImageDataArrayBufferViews(data: ArrayBufferView, info: Env
     const specularInfo = info.specular as EnvironmentTextureSpecularInfoV1;
 
     // Double checks the enclosed info
-    let mipmapsCount = Scalar.Log2(info.width);
+    let mipmapsCount = Math.log2(info.width);
     mipmapsCount = Math.round(mipmapsCount) + 1;
     if (specularInfo.mipmaps.length !== 6 * mipmapsCount) {
         throw new Error(`Unsupported specular mipmaps number "${specularInfo.mipmaps.length}"`);
@@ -537,7 +537,7 @@ export async function UploadLevelsAsync(texture: InternalTexture, imageData: Arr
         throw new Error("Texture size must be a power of two");
     }
 
-    const mipmapsCount = Scalar.ILog2(texture.width) + 1;
+    const mipmapsCount = ILog2(texture.width) + 1;
 
     // Gets everything ready.
     const engine = texture.getEngine() as Engine;

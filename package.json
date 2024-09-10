@@ -43,7 +43,7 @@
         "mini-css-extract-plugin": "~2.6.0",
         "nx": "^18.0.4",
         "prettier": "^3.0.3",
-        "rimraf": "~3.0.2",
+        "rimraf": "~6.0.1",
         "selenium-webdriver": "^4.3.1",
         "ts-jest": "~29.1.0",
         "ts-node": "~10.9.0",

@@ -10,7 +10,7 @@
         "start:coverage": "npm run bundle:analyze && npm run instrument && npm run serve -- --open packages/tools/viewer-alpha/test/apps/web/coverage.html",
         "serve": "cross-env COVERAGE_DIR=dist/coverage/raw vite",
         "build": "npm run compile",
-        "clean": "rimraf dist && rimraf *.tsbuildinfo",
+        "clean": "rimraf dist && rimraf *.tsbuildinfo -g",
         "compile": "tsc -b tsconfig.build.json",
         "bundle:analyze": "rimraf dist/analyze && rollup -c rollup.config.analyze.mjs",
         "bundle:coverage": "rimraf dist/coverage && rollup -c rollup.config.coverage.mjs",
@@ -37,7 +37,7 @@
         "nyc": "^17.0.0",
         "open": "^10.1.0",
         "rollup": "^4.18.0",
-        "rollup-plugin-minify-html-literals": "^1.2.6",
+        "rollup-plugin-minify-template-literals": "^1.1.7",
         "rollup-plugin-visualizer": "^5.12.0",
         "vite": "^5.3.3"
     }

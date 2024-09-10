@@ -5,7 +5,7 @@ import { FactorGradient, ColorGradient, GradientHelper } from "../Misc/gradients
 import { Observable } from "../Misc/observable";
 import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
 import { Color4, TmpColors } from "../Maths/math.color";
-import { Scalar } from "../Maths/math.scalar";
+import { Lerp } from "../Maths/math.scalar.functions";
 import { VertexBuffer, Buffer } from "../Buffers/buffer";
 
 import type { IParticleSystem } from "./IParticleSystem";
@@ -1593,7 +1593,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             const ratio = x / this._rawTextureWidth;
 
             GradientHelper.GetCurrentGradient(ratio, factorGradients, (currentGradient, nextGradient, scale) => {
-                data[x] = Scalar.Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
+                data[x] = Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
             });
         }
 
