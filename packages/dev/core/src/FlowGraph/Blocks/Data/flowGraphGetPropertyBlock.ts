@@ -25,7 +25,7 @@ export interface IFlowGraphGetPropertyBlockConfiguration extends IFlowGraphBlock
 /**
  * @experimental
  */
-export class FlowGraphGetPointerBlock extends FlowGraphBlock {
+export class FlowGraphGetPropertyBlock extends FlowGraphBlock {
     /**
      * Output connection: The value of the property.
      */
@@ -74,7 +74,7 @@ export class FlowGraphGetPointerBlock extends FlowGraphBlock {
      * @returns the class name
      */
     public override getClassName(): string {
-        return FlowGraphGetPointerBlock.ClassName;
+        return FlowGraphGetPropertyBlock.ClassName;
     }
 
     /**
@@ -91,4 +91,4 @@ export class FlowGraphGetPointerBlock extends FlowGraphBlock {
      */
     public static ClassName = "FGGetPropertyBlock";
 }
-RegisterClass(FlowGraphGetPointerBlock.ClassName, FlowGraphGetPointerBlock);
+RegisterClass(FlowGraphGetPropertyBlock.ClassName, FlowGraphGetPropertyBlock);
