@@ -563,12 +563,16 @@ export class _IblShadowsVoxelRenderer {
 
     private _renderVoxelGrid() {
         if (this._voxelizationInProgress) {
-            let allRTsReady = true;
+            let allReady = this.getVoxelGrid().isReady();
+            for (let i = 0; i < this._mipArray.length; i++) {
+                const mipReady = this._mipArray[i].isReady();
+                allReady &&= mipReady;
+            }
             for (let i = 0; i < this._renderTargets.length; i++) {
                 const rttReady = this._renderTargets[i].isReadyForRendering();
-                allRTsReady &&= rttReady;
+                allReady &&= rttReady;
             }
-            if (allRTsReady) {
+            if (allReady) {
                 this._renderInFlight = false;
                 (this._scene.prePassRenderer as any)._setEnabled(false);
                 this._renderTargets.forEach((rt) => {
