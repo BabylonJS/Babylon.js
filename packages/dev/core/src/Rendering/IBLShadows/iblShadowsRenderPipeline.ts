@@ -624,7 +624,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this.ssShadowMaxDist = options.ssShadowMaxDist || 0.05;
         this.ssShadowSamples = options.ssShadowSampleCount || 16;
         this.ssShadowStride = options.ssShadowStride || 8;
-        this.ssShadowThickness = options.ssShadowThickness || 0.01;
+        this.ssShadowThickness = options.ssShadowThickness || 0.5;
         this._spatialBlurPass = new _IblShadowsSpatialBlurPass(this.scene);
         this._accumulationPass = new _IblShadowsAccumulationPass(this.scene);
         this.shadowRemenance = options.shadowRemenance || 0.75;
@@ -649,13 +649,20 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         // Only turn on the pipeline if the importance sampling RT's are ready
         this._importanceSamplingRenderer.onReadyObservable.add(() => {
             this._createEffectPasses(cameras);
-            if (this._voxelRenderer.isReady()) {
-                this.toggleShadow(this._enabled);
-            } else {
-                this._voxelRenderer.onReadyObservable.addOnce(() => {
+            const checkVoxelRendererReady = () => {
+                if (this._voxelRenderer.isReady()) {
                     this.toggleShadow(this._enabled);
-                });
-            }
+                    if (this._enabled) {
+                        this._voxelizationDirty = true;
+                    }
+                } else {
+                    setTimeout(() => {
+                        checkVoxelRendererReady();
+                    }, 16);
+                }
+            };
+
+            checkVoxelRendererReady();
         });
     }
 

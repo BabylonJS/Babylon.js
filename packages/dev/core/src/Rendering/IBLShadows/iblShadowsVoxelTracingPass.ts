@@ -35,7 +35,7 @@ export class _IblShadowsVoxelTracingPass {
     private _sssSamples: number = 16;
     private _sssStride: number = 8;
     private _sssMaxDist: number = 0.05;
-    private _sssThickness: number = 0.01;
+    private _sssThickness: number = 0.5;
 
     private _ssShadowOpacity: number = 1.0;
     /**
@@ -249,7 +249,7 @@ export class _IblShadowsVoxelTracingPass {
             textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             uniforms: ["viewMtx", "projMtx", "invProjMtx", "invViewMtx", "wsNormalizationMtx", "shadowParameters", "offsetDataParameters", "sssParameters", "shadowOpacity"],
-            samplers: ["voxelGridSampler", "icdfySampler", "icdfxSampler", "blueNoiseSampler", "worldNormalSampler", "linearDepthSampler", "depthSampler", "worldPositionSampler"],
+            samplers: ["voxelGridSampler", "icdfySampler", "icdfxSampler", "blueNoiseSampler", "worldNormalSampler", "depthSampler", "worldPositionSampler"],
             defines: defines,
             engine: this._engine,
             reusable: false,
@@ -282,10 +282,7 @@ export class _IblShadowsVoxelTracingPass {
         effect.setVector4("offsetDataParameters", new Vector4(offset.x, offset.y, highestMip, 0.0));
 
         // SSS Options.
-        const worldScale = (1.0 / this._invWorldScaleMatrix.m[0]) * 2.0;
-        const maxDist = this._sssMaxDist * worldScale;
-        const thickness = this._sssThickness * worldScale;
-        effect.setVector4("sssParameters", new Vector4(this._sssSamples, this._sssStride, maxDist, thickness));
+        effect.setVector4("sssParameters", new Vector4(this._sssSamples, this._sssStride, this._sssMaxDist, this._sssThickness));
         effect.setVector4("shadowOpacity", new Vector4(this._voxelShadowOpacity, this._ssShadowOpacity, 0.0, 0.0));
         effect.setTexture("voxelGridSampler", voxelGrid);
         effect.setTexture("blueNoiseSampler", (this._renderPipeline as any)._noiseTexture);
@@ -298,11 +295,9 @@ export class _IblShadowsVoxelTracingPass {
         const prePassRenderer = this._scene.prePassRenderer;
         if (prePassRenderer) {
             const wnormalIndex = prePassRenderer.getIndex(Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE);
-            const depthIndex = prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
             const clipDepthIndex = prePassRenderer.getIndex(Constants.PREPASS_NDC_DEPTH_TEXTURE_TYPE);
             const wPositionIndex = prePassRenderer.getIndex(Constants.PREPASS_POSITION_TEXTURE_TYPE);
             if (wnormalIndex >= 0) effect.setTexture("worldNormalSampler", prePassRenderer.getRenderTarget().textures[wnormalIndex]);
-            if (depthIndex >= 0) effect.setTexture("linearDepthSampler", prePassRenderer.getRenderTarget().textures[depthIndex]);
             if (clipDepthIndex >= 0) effect.setTexture("depthSampler", prePassRenderer.getRenderTarget().textures[clipDepthIndex]);
             if (wPositionIndex >= 0) effect.setTexture("worldPositionSampler", prePassRenderer.getRenderTarget().textures[wPositionIndex]);
         }
