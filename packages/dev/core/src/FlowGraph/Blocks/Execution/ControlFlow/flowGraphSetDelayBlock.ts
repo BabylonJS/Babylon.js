@@ -9,23 +9,27 @@ import { Logger } from "../../../../Misc/logger";
 
 export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
     /**
+     * class name of the block.
+     */
+    public static readonly ClassName = "FGSetDelayBlock";
+    /**
      * The maximum number of parallel delays that can be set per node.
      */
     public static MaxParallelDelayCount = 100;
     /**
      * Input connection: If activated the delayed activations set by this block will be canceled.
      */
-    public cancel: FlowGraphSignalConnection;
+    public readonly cancel: FlowGraphSignalConnection;
 
     /**
      * Input connection: The duration of the delay in seconds.
      */
-    public duration: FlowGraphDataConnection<number>;
+    public readonly duration: FlowGraphDataConnection<number>;
 
     /**
      * Output connection: The last delay index that was set.
      */
-    public lastDelayIndex: FlowGraphDataConnection<number>;
+    public readonly lastDelayIndex: FlowGraphDataConnection<number>;
 
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
@@ -61,14 +65,14 @@ export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
         this.lastDelayIndex.setValue(newIndex, context);
         context._setGlobalContextVariable("lastDelayIndex", lastDelayIndex);
 
-        timers.push(timer);
+        timers[lastDelayIndex] = timer;
         context._setExecutionVariable(this, "pendingDelays", timers);
     }
 
     public _cancelPendingTasks(context: FlowGraphContext): void {
         const timers = context._getExecutionVariable(this, "pendingDelays", [] as AdvancedTimer[]);
         for (const timer of timers) {
-            timer.dispose();
+            timer?.dispose();
         }
         context._deleteExecutionVariable(this, "pendingDelays");
         this.lastDelayIndex.setValue(-1, context);
@@ -81,6 +85,10 @@ export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
             this._preparePendingTasks(context);
             this.out._activateSignal(context);
         }
+    }
+
+    public override getClassName(): string {
+        return FlowGraphSetDelayBlock.ClassName;
     }
 
     private _onEnded(timer: AdvancedTimer, context: FlowGraphContext) {

@@ -2,7 +2,7 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraphContext } from "../../flowGraphContext";
-import { RichTypeAny } from "../../flowGraphRichTypes";
+import { RichTypeAny, RichTypeBoolean } from "../../flowGraphRichTypes";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import type { IPathToObjectConverter } from "../../../ObjectModel/objectModelInterfaces";
 import { FlowGraphPathConverterComponent } from "../../flowGraphPathConverterComponent";
@@ -25,11 +25,16 @@ export interface IFlowGraphGetPropertyBlockConfiguration extends IFlowGraphBlock
 /**
  * @experimental
  */
-export class FlowGraphGetPropertyBlock extends FlowGraphBlock {
+export class FlowGraphGetPointerBlock extends FlowGraphBlock {
     /**
      * Output connection: The value of the property.
      */
     public readonly value: FlowGraphDataConnection<any>;
+
+    /**
+     * Output connection: Whether the value is valid.
+     */
+    public readonly isValid: FlowGraphDataConnection<boolean>;
     /**
      * The component with the templated inputs for the provided path.
      */
@@ -43,13 +48,25 @@ export class FlowGraphGetPropertyBlock extends FlowGraphBlock {
     ) {
         super(config);
         this.value = this.registerDataOutput("value", RichTypeAny);
+        this.isValid = this.registerDataOutput("isValid", RichTypeBoolean);
         this.templateComponent = new FlowGraphPathConverterComponent(config.path, this);
     }
 
     public override _updateOutputs(context: FlowGraphContext) {
-        const accessorContainer = this.templateComponent.getAccessor(this.config.pathConverter, context);
-        const value = accessorContainer.info.get(accessorContainer.object);
-        this.value.setValue(value, context);
+        try {
+            const accessorContainer = this.templateComponent.getAccessor(this.config.pathConverter, context);
+            const value = accessorContainer.info.get(accessorContainer.object);
+            if (value === undefined) {
+                this.isValid.setValue(false, context);
+            } else {
+                this.value.setValue(value, context);
+                this.isValid.setValue(true, context);
+            }
+        } catch (e) {
+            this.value.resetToDefaultValue(context);
+            this.isValid.setValue(false, context);
+            return;
+        }
     }
 
     /**
@@ -57,7 +74,7 @@ export class FlowGraphGetPropertyBlock extends FlowGraphBlock {
      * @returns the class name
      */
     public override getClassName(): string {
-        return FlowGraphGetPropertyBlock.ClassName;
+        return FlowGraphGetPointerBlock.ClassName;
     }
 
     /**
@@ -74,4 +91,4 @@ export class FlowGraphGetPropertyBlock extends FlowGraphBlock {
      */
     public static ClassName = "FGGetPropertyBlock";
 }
-RegisterClass(FlowGraphGetPropertyBlock.ClassName, FlowGraphGetPropertyBlock);
+RegisterClass(FlowGraphGetPointerBlock.ClassName, FlowGraphGetPointerBlock);

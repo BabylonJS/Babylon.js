@@ -13,7 +13,7 @@ export interface IFlowGraphGetVariableBlockConfiguration extends IFlowGraphBlock
     /**
      * The name of the variable to get.
      */
-    variableName: string;
+    variable: string;
 }
 
 /**
@@ -24,7 +24,7 @@ export class FlowGraphGetVariableBlock<T> extends FlowGraphBlock {
     /**
      * Output connection: The value of the variable.
      */
-    public readonly output: FlowGraphDataConnection<T>;
+    public readonly value: FlowGraphDataConnection<T>;
 
     /**
      * Construct a FlowGraphGetVariableBlock.
@@ -34,16 +34,16 @@ export class FlowGraphGetVariableBlock<T> extends FlowGraphBlock {
         super(config);
 
         // The output connection has to have the name of the variable.
-        this.output = this.registerDataOutput(config.variableName, RichTypeAny);
+        this.value = this.registerDataOutput(config.variable, RichTypeAny);
     }
 
     /**
      * @internal
      */
     public override _updateOutputs(context: FlowGraphContext): void {
-        const variableNameValue = this.config.variableName;
+        const variableNameValue = this.config.variable;
         if (context.hasVariable(variableNameValue)) {
-            this.output.setValue(context.getVariable(variableNameValue), context);
+            this.value.setValue(context.getVariable(variableNameValue), context);
         }
     }
 
@@ -61,7 +61,7 @@ export class FlowGraphGetVariableBlock<T> extends FlowGraphBlock {
      */
     public override serialize(serializationObject?: any): void {
         super.serialize(serializationObject);
-        serializationObject.config.variableName = this.config.variableName;
+        serializationObject.config.variable = this.config.variable;
     }
 
     /**

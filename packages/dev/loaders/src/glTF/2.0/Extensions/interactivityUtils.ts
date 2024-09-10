@@ -6,7 +6,7 @@ import { FlowGraphTimerBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow
 import { FlowGraphSendCustomEventBlock } from "core/FlowGraph/Blocks/Execution/flowGraphSendCustomEventBlock";
 import { FlowGraphReceiveCustomEventBlock } from "core/FlowGraph/Blocks/Event/flowGraphReceiveCustomEventBlock";
 import { FlowGraphSequenceBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphSequenceBlock";
-import { FlowGraphGetPropertyBlock } from "core/FlowGraph/Blocks/Data/flowGraphGetPropertyBlock";
+import { FlowGraphGetPointerBlock } from "core/FlowGraph/Blocks/Data/flowGraphGetPointerBlock";
 import { FlowGraphSetPropertyBlock } from "core/FlowGraph/Blocks/Execution/flowGraphSetPropertyBlock";
 import {
     FlowGraphAddBlock,
@@ -93,7 +93,7 @@ export const gltfToFlowGraphTypeMap: { [key: string]: string } = {
     "customEvent/send": FlowGraphSendCustomEventBlock.ClassName,
     "customEvent/receive": FlowGraphReceiveCustomEventBlock.ClassName,
     "flow/sequence": FlowGraphSequenceBlock.ClassName,
-    "world/get": FlowGraphGetPropertyBlock.ClassName,
+    "world/get": FlowGraphGetPointerBlock.ClassName,
     "world/set": FlowGraphSetPropertyBlock.ClassName,
     "flow/doN": FlowGraphDoNBlock.ClassName,
     "variable/get": FlowGraphGetVariableBlock.ClassName,

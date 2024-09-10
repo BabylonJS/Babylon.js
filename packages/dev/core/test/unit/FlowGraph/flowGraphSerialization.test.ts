@@ -29,7 +29,6 @@ describe("Flow Graph Serialization", () => {
     let engine: Engine;
     let scene: Scene;
     beforeEach(() => {
-        
         engine = new NullEngine({
             renderHeight: 256,
             renderWidth: 256,
@@ -190,7 +189,7 @@ describe("Flow Graph Serialization", () => {
 
         const getVariableBlock = new FlowGraphGetVariableBlock({ variableName: "test" });
 
-        logBlock.message.connectTo(getVariableBlock.output);
+        logBlock.message.connectTo(getVariableBlock.value);
 
         const serialized: any = {};
         graph.serialize(serialized);

@@ -38,7 +38,7 @@ describe("Flow Graph Data Nodes", () => {
         const getVariable = new FlowGraphGetVariableBlock({ variableName: "testVariable" });
 
         flowGraphContext.setVariable("testVariable", 42);
-        consoleLog.message.connectTo(getVariable.output);
+        consoleLog.message.connectTo(getVariable.value);
 
         // Test in a different context
         const flowGraphContext2 = flowGraph.createContext();

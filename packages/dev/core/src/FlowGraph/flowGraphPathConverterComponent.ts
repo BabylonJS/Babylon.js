@@ -29,10 +29,20 @@ export class FlowGraphPathConverterComponent {
         }
     }
 
+    /**
+     * Get the accessor for the path.
+     * @param pathConverter the path converter to use to convert the path to an object accessor.
+     * @param context the context to use.
+     * @returns the accessor for the path.
+     * @throws if the value for a templated input is invalid.
+     */
     public getAccessor(pathConverter: IPathToObjectConverter<IObjectAccessor>, context: FlowGraphContext): IObjectInfo<IObjectAccessor> {
         let finalPath = this.path;
         for (const templatedInput of this.templatedInputs) {
             const valueToReplace = templatedInput.getValue(context).value;
+            if (typeof valueToReplace !== "number" || valueToReplace < 0) {
+                throw new Error("Invalid value for templated input.");
+            }
             finalPath = finalPath.replace(`{${templatedInput.name}}`, valueToReplace.toString());
         }
         return pathConverter.convert(finalPath);
