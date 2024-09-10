@@ -480,6 +480,7 @@ export class GraphNode {
         this._ownerCanvas.automaticRewire(availableNodeOutputs, outputs, true);
 
         this._stateManager.onRebuildRequiredObservable.notifyObservers();
+        this._stateManager.onNodeMovedObservable.notifyObservers(this);
     }
 
     private _onMove(evt: PointerEvent) {
