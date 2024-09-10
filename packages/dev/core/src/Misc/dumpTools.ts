@@ -8,7 +8,7 @@ import { Tools } from "./tools";
 import type { Nullable } from "../types";
 
 import { passPixelShader } from "../Shaders/pass.fragment";
-import { Scalar } from "../Maths/math.scalar";
+import { Clamp } from "../Maths/math.scalar.functions";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import { EngineStore } from "../Engines/engineStore";
 
@@ -158,7 +158,7 @@ export function DumpData(
         let n = data.length;
         while (n--) {
             const v = data[n];
-            data2[n] = Math.round(Scalar.Clamp(v) * 255);
+            data2[n] = Math.round(Clamp(v) * 255);
         }
         data = data2;
     }

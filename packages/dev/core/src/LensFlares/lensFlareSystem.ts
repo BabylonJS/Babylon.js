@@ -2,7 +2,7 @@ import { Tools } from "../Misc/tools";
 import type { Nullable } from "../types";
 import type { Scene } from "../scene";
 import { Matrix, Vector3 } from "../Maths/math.vector";
-import { Scalar } from "../Maths/math.scalar";
+import { Clamp } from "../Maths/math.scalar.functions";
 import { EngineStore } from "../Engines/engineStore";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { VertexBuffer } from "../Buffers/buffer";
@@ -320,7 +320,7 @@ export class LensFlareSystem {
             away = this.borderLimit;
         }
 
-        let intensity = 1.0 - Scalar.Clamp(away / this.borderLimit, 0, 1);
+        let intensity = 1.0 - Clamp(away / this.borderLimit, 0, 1);
         if (intensity < 0) {
             return false;
         }

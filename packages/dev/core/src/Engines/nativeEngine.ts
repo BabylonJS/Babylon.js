@@ -1797,8 +1797,8 @@ export class NativeEngine extends Engine {
         useSRGBBuffer = false
     ): InternalTexture {
         url = url || "";
-        const fromData = url.substr(0, 5) === "data:";
-        //const fromBlob = url.substr(0, 5) === "blob:";
+        const fromData = url.substring(0, 5) === "data:";
+        //const fromBlob = url.substring(0, 5) === "blob:";
         const isBase64 = fromData && url.indexOf(";base64,") !== -1;
 
         const texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Url);

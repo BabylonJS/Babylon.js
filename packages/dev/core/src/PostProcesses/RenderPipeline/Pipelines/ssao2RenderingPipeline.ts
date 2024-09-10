@@ -18,7 +18,7 @@ import type { PrePassRenderer } from "../../../Rendering/prePassRenderer";
 import type { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRenderer";
 import { Constants } from "../../../Engines/constants";
 import type { Nullable } from "../../../types";
-import { Scalar } from "../../../Maths/math.scalar";
+import { RandomRange } from "../../../Maths/math.scalar.functions";
 import { RawTexture } from "../../../Materials/Textures/rawTexture";
 
 import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
@@ -681,7 +681,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         const data = new Uint8Array(size * size * 4);
         const randVector = Vector2.Zero();
         for (let index = 0; index < data.length; ) {
-            randVector.set(Scalar.RandomRange(0, 1), Scalar.RandomRange(0, 1)).normalize().scaleInPlace(255);
+            randVector.set(RandomRange(0, 1), RandomRange(0, 1)).normalize().scaleInPlace(255);
             data[index++] = Math.floor(randVector.x);
             data[index++] = Math.floor(randVector.y);
             data[index++] = 0;

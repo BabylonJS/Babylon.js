@@ -35,7 +35,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
             if (isNaN(length)) {
                 length = +preProcessors[lengthInString.trim()];
             }
-            name = name.substr(0, startArray);
+            name = name.substring(0, startArray);
         }
         return [name, type, length];
     }
@@ -189,7 +189,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
                 const componentType = uniformType.charAt(0) === "u" ? "u" : uniformType.charAt(0) === "i" ? "i" : "";
 
                 if (componentType) {
-                    uniformType = uniformType.substr(1);
+                    uniformType = uniformType.substring(1);
                 }
 
                 const sampleType = isComparisonSampler

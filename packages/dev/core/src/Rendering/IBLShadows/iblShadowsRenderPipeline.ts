@@ -55,6 +55,11 @@ interface IblShadowsSettings {
     triPlanarVoxelization: boolean;
 
     /**
+     * Separate control for the opacity of the voxel shadows.
+     */
+    voxelShadowOpacity: number;
+
+    /**
      * Include screen-space shadows in the IBL shadow pipeline. This adds sharp shadows to small details
      * but only applies close to a shadow-casting object.
      */
@@ -135,8 +140,14 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     private _spatialBlurPass: _IblShadowsSpatialBlurPass;
     private _accumulationPass: _IblShadowsAccumulationPass;
     private _noiseTexture: Texture;
-    private _shadowOpacity: number = 1.0;
+    private _shadowOpacity: number = 0.75;
     private _enabled: boolean = true;
+
+    /**
+     * The current world-space size of that the voxel grid covers in the scene.
+     */
+    public voxelGridSize: number = 1.0;
+
     /**
      * How dark the shadows appear. 1.0 is full opacity, 0.0 is no shadows.
      */
@@ -595,7 +606,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             Logger.Warn("IBL Shadows Render Pipeline could not enable PrePass, aborting.");
             return;
         }
-        this.shadowOpacity = options.shadowOpacity || 1.0;
+        this.shadowOpacity = options.shadowOpacity || 0.75;
         this._prePassEffectConfiguration = new IblShadowsPrepassConfiguration();
         this._voxelRenderer = new _IblShadowsVoxelRenderer(
             this.scene,
@@ -606,6 +617,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._importanceSamplingRenderer = new _IblShadowsImportanceSamplingRenderer(this.scene);
         this._voxelTracingPass = new _IblShadowsVoxelTracingPass(this.scene, this);
         this.sampleDirections = options.sampleDirections || 2;
+        this.voxelShadowOpacity = options.voxelShadowOpacity || 1.0;
         this.ssShadowOpacity = options.ssShadowsEnabled === undefined || options.ssShadowsEnabled ? 1.0 : 0.0;
         this.ssShadowMaxDist = options.ssShadowMaxDist || 0.05;
         this.ssShadowSamples = options.ssShadowSampleCount || 16;
@@ -623,8 +635,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._createShadowCombinePostProcess();
 
         scene.postProcessRenderPipelineManager.addPipeline(this);
-
-        this._createEffectPasses(cameras);
 
         this.scene.onNewMeshAddedObservable.add(this.updateSceneBounds.bind(this));
         this.scene.onMeshRemovedObservable.add(this.updateSceneBounds.bind(this));
@@ -714,9 +724,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             }
         });
         this._shadowCompositePP._prePassEffectConfiguration = this._prePassEffectConfiguration;
-        setTimeout(() => {
-            this._voxelizationDirty = true;
-        }, 500);
     }
 
     private _createEffectPasses(cameras: Camera[] | undefined) {
@@ -1032,7 +1039,14 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
                 return mesh instanceof Mesh && this._excludedMeshes.indexOf(mesh.uniqueId) === -1;
             });
             const size = bounds.max.subtract(bounds.min);
-            const halfSize = Math.max(size.x, Math.max(size.y, size.z)) * 0.5;
+            this.voxelGridSize = Math.max(size.x, Math.max(size.y, size.z));
+            if (!isFinite(this.voxelGridSize) || this.voxelGridSize === 0) {
+                Logger.Warn("IBL Shadows: Scene size is invalid. Can't update bounds.");
+                this._boundsNeedUpdate = false;
+                this.voxelGridSize = 1.0;
+                return;
+            }
+            const halfSize = this.voxelGridSize / 2.0;
             const centre = bounds.max.add(bounds.min).multiplyByFloats(-0.5, -0.5, -0.5);
             const invWorldScaleMatrix = Matrix.Compose(new Vector3(1.0 / halfSize, 1.0 / halfSize, 1.0 / halfSize), new Quaternion(), new Vector3(0, 0, 0));
             const invTranslationMatrix = Matrix.Compose(new Vector3(1.0, 1.0, 1.0), new Quaternion(), centre);
@@ -1045,12 +1059,19 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             // Logger.Log("IBL Shadows: Scene size: " + size);
             // Logger.Log("Half size: " + halfSize);
             // Logger.Log("Centre translation: " + centre);
+
+            // Update the SS shadow max distance based on the voxel grid size and resolution.
+            // The max distance should be just a little larger than the world size of a single voxel.
+            this.ssShadowMaxDist = (1.1 * this.voxelGridSize) / (1 << this.resolutionExp);
         }
 
         // If update is needed, render voxels
         if (this._voxelizationDirty) {
             this._voxelRenderer.updateVoxelGrid(this._excludedMeshes);
             this._voxelizationDirty = false;
+            // Update the SS shadow max distance based on the voxel grid size and resolution.
+            // The max distance should be just a little larger than the world size of a single voxel.
+            this.ssShadowMaxDist = (1.1 * this.voxelGridSize) / (1 << this.resolutionExp);
         }
     }
 

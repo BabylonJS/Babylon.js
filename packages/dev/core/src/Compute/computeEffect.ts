@@ -327,14 +327,14 @@ export class ComputeEffect {
         }
 
         // Direct source ?
-        if (shader.substr(0, 7) === "source:") {
-            callback(shader.substr(7));
+        if (shader.substring(0, 7) === "source:") {
+            callback(shader.substring(7));
             return;
         }
 
         // Base64 encoded ?
-        if (shader.substr(0, 7) === "base64:") {
-            const shaderBinary = window.atob(shader.substr(7));
+        if (shader.substring(0, 7) === "base64:") {
+            const shaderBinary = window.atob(shader.substring(7));
             callback(shaderBinary);
             return;
         }

@@ -11,7 +11,7 @@
         "build:dev": "webpack --env development",
         "build:prod": "webpack --env production",
         "build:declaration": "build-tools -c pud --config ./config.json",
-        "clean": "rimraf dist && rimraf babylon*.*",
+        "clean": "rimraf dist && rimraf babylon*.* -g",
         "test:escheck": "es-check es6 ./babylon.gui.js"
     },
     "dependencies": {

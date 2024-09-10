@@ -279,9 +279,13 @@ export class _IblShadowsImportanceSamplingRenderer {
             this._iblSource &&
             this._iblSource.name !== "Placeholder IBL Source" &&
             this._iblSource.isReady() &&
+            this._cdfyPT &&
             this._cdfyPT.isReady() &&
+            this._icdfyPT &&
             this._icdfyPT.isReady() &&
+            this._cdfxPT &&
             this._cdfxPT.isReady() &&
+            this._icdfxPT &&
             this._icdfxPT.isReady()
         );
     }
