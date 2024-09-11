@@ -12,7 +12,11 @@ import type { InternalTexture } from "./internalTexture";
  */
 export interface IMultiRenderTargetOptions {
     /**
-     * Define if the texture needs to create mip maps after render.
+     * Specifies if mipmaps must be created. If undefined, the value from generateMipMaps is taken instead
+     */
+    createMipMaps?: boolean;
+    /**
+     * Define if the texture needs to create mip maps after render (default: false).
      */
     generateMipMaps?: boolean;
     /**
@@ -28,15 +32,15 @@ export interface IMultiRenderTargetOptions {
      */
     useSRGBBuffers?: boolean[];
     /**
-     * Define if a depth buffer is required
+     * Define if a depth buffer is required (default: true)
      */
     generateDepthBuffer?: boolean;
     /**
-     * Define if a stencil buffer is required
+     * Define if a stencil buffer is required (default: false)
      */
     generateStencilBuffer?: boolean;
     /**
-     * Define if a depth texture is required instead of a depth buffer
+     * Define if a depth texture is required instead of a depth buffer (default: false)
      */
     generateDepthTexture?: boolean;
     /**
@@ -48,19 +52,23 @@ export interface IMultiRenderTargetOptions {
      */
     depthTextureFormat?: number;
     /**
-     * Define the number of desired draw buffers (render textures)
+     * Define the number of desired draw buffers (render textures). You can set it to 0 if you don't need any color attachment. (default: 1)
      */
     textureCount?: number;
     /**
-     * Define if aspect ratio should be adapted to the texture or stay the scene one
+     * Define if aspect ratio should be adapted to the texture or stay the scene one (default: true)
      */
     doNotChangeAspectRatio?: boolean;
     /**
-     * Define the default type of the buffers we are creating
+     * Define the default type of the buffers we are creating (default: Constants.TEXTURETYPE_UNSIGNED_BYTE). types[] is prioritized over defaultType if provided.
      */
     defaultType?: number;
     /**
-     * Define the default type of the buffers we are creating
+     * Defines sample count (1 by default)
+     */
+    samples?: number;
+    /**
+     * Defines if we should draw into all attachments or the first one only by default (default: false)
      */
     drawOnlyOnFirstAttachmentByDefault?: boolean;
     /**
@@ -84,6 +92,10 @@ export interface IMultiRenderTargetOptions {
      * Define the number of layer of each texture in the textures array (if applicable, given the corresponding targetType) (for Constants.TEXTURE_3D, .TEXTURE_2D_ARRAY, and .TEXTURE_CUBE_MAP_ARRAY)
      */
     layerCounts?: number[];
+    /**
+     * Define the creation flags of the textures (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+     */
+    creationFlags?: number[];
     /**
      * Define the names of the textures (used for debugging purpose)
      */

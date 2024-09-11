@@ -60,28 +60,33 @@ export class FrameGraphTextureManager {
             this._freeEntry(handle);
         }
 
-        return this._createHandleForTexture(
-            name,
-            texture,
-            {
-                size: { width: texture.width, height: texture.height },
-                options: {
-                    generateMipMaps: internalTexture.generateMipMaps,
-                    type: internalTexture.type,
-                    samplingMode: internalTexture.samplingMode,
-                    format: internalTexture.format,
-                    samples: internalTexture.samples,
-                    useSRGBBuffer: false,
-                    label: internalTexture.label,
-                    generateDepthBuffer: texture._generateDepthBuffer,
-                    generateStencilBuffer: texture._generateStencilBuffer,
-                    noColorAttachment: !texture.textures,
-                },
-                sizeIsPercentage: false,
+        const creationOptions: FrameGraphTextureCreationOptions = {
+            size: { width: texture.width, height: texture.height },
+            options: {
+                generateMipMaps: internalTexture.generateMipMaps,
+                generateDepthBuffer: texture._generateDepthBuffer,
+                generateStencilBuffer: texture._generateStencilBuffer,
+                samples: internalTexture.samples,
+                label: internalTexture.label,
+                types: [internalTexture.type],
+                samplingModes: [internalTexture.samplingMode],
+                formats: [internalTexture.format],
+                targetTypes: [
+                    internalTexture.isCube
+                        ? Constants.TEXTURE_CUBE_MAP
+                        : internalTexture.is3D
+                          ? Constants.TEXTURE_3D
+                          : internalTexture.is2DArray
+                            ? Constants.TEXTURE_2D_ARRAY
+                            : Constants.TEXTURE_2D,
+                ],
+                useSRGBBuffers: [internalTexture._useSRGBBuffer],
+                labels: internalTexture.label ? [internalTexture.label] : undefined,
             },
-            FrameGraphTextureNamespace.External,
-            handle
-        );
+            sizeIsPercentage: false,
+        };
+
+        return this._createHandleForTexture(name, texture, creationOptions, FrameGraphTextureNamespace.External, handle);
     }
 
     public createRenderTargetTexture(name: string, taskNamespace: boolean, creationOptions: FrameGraphTextureCreationOptions): FrameGraphTextureHandle {
@@ -111,30 +116,7 @@ export class FrameGraphTextureManager {
                 const creationOptions = entry.creationOptions;
                 const size = creationOptions.sizeIsPercentage ? this.getAbsoluteDimensions(creationOptions.size) : creationOptions.size;
 
-                const format = creationOptions.options.format;
-                const isDepthStencil =
-                    format === Constants.TEXTUREFORMAT_DEPTH16 ||
-                    format === Constants.TEXTUREFORMAT_DEPTH24 ||
-                    format === Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 ||
-                    format === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 ||
-                    format === Constants.TEXTUREFORMAT_DEPTH32_FLOAT ||
-                    format === Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8 ||
-                    format === Constants.TEXTUREFORMAT_STENCIL8;
-
-                creationOptions.options.noColorAttachment = isDepthStencil;
-
-                entry.texture = this._engine.createRenderTargetTexture(size, creationOptions.options);
-
-                if (isDepthStencil) {
-                    entry.texture.createDepthStencilTexture(
-                        undefined,
-                        undefined,
-                        undefined,
-                        creationOptions.options.samples,
-                        creationOptions.options.format,
-                        creationOptions.options.label
-                    );
-                }
+                entry.texture = this._engine.createMultipleRenderTarget(size, creationOptions.options, false);
             }
 
             if (entry.texture) {
@@ -240,4 +222,31 @@ export class FrameGraphTextureManager {
 
         return handle;
     }
+
+    // private _createHandlesForMultiTexture(name: string, creationOptions: FrameGraphMultiTextureCreationOptions, namespace: FrameGraphTextureNamespace): FrameGraphTextureHandle[] {
+    //     const handles: FrameGraphTextureHandle[] = [];
+    //     const textureCount = creationOptions.options.textureCount ?? 1;
+
+    //     for (let i = 0; i < textureCount; i++) {
+    //         const textureName = `${name} ${i}`;
+    //         const format = creationOptions.options.formats![i];
+    //         const type = creationOptions.options.types![i];
+    //         this._createHandleForTexture(textureName, null, creationOptions, namespace);
+    //     }
+
+    //     handle = handle ?? FrameGraphTextureManager._Counter++;
+
+    //     this._textures.set(handle, {
+    //         texture,
+    //         name,
+    //         creationOptions: {
+    //             size: getDimensionsFromTextureSize(creationOptions.size),
+    //             options: { ...creationOptions.options, label: name },
+    //             sizeIsPercentage: creationOptions.sizeIsPercentage,
+    //         },
+    //         namespace,
+    //     });
+
+    //     return handles;
+    // }
 }

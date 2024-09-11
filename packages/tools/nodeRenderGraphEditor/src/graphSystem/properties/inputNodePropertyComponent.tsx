@@ -83,16 +83,26 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                 <OptionsLine
                                     label="Format"
                                     options={textureFormatList}
-                                    target={creationOptions.options}
-                                    propertyName="format"
-                                    onSelect={() => this.props.stateManager.onRebuildRequiredObservable.notifyObservers()}
+                                    target={creationOptions}
+                                    propertyName=""
+                                    onSelect={(value: number | string) => {
+                                        creationOptions.options.formats![0] = value as number;
+                                        this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+                                    }}
+                                    extractValue={() => creationOptions.options.formats![0]}
+                                    noDirectUpdate={true}
                                 />
                                 <OptionsLine
                                     label="Type"
                                     options={textureTypeList}
-                                    target={creationOptions.options}
-                                    propertyName="type"
-                                    onSelect={() => this.props.stateManager.onRebuildRequiredObservable.notifyObservers()}
+                                    target={creationOptions}
+                                    propertyName=""
+                                    onSelect={(value: number | string) => {
+                                        creationOptions.options.types![0] = value as number;
+                                        this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+                                    }}
+                                    extractValue={() => creationOptions.options.types![0]}
+                                    noDirectUpdate={true}
                                 />
                                 <FloatLineComponent
                                     lockObject={this.props.stateManager.lockObject}
@@ -114,9 +124,13 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                 />
                                 <CheckBoxLineComponent
                                     label="Use sRGB buffer"
-                                    target={creationOptions.options}
-                                    propertyName="useSRGBBuffer"
-                                    onValueChanged={() => this.props.stateManager.onRebuildRequiredObservable.notifyObservers()}
+                                    target={creationOptions}
+                                    propertyName=""
+                                    onSelect={(value: boolean) => {
+                                        creationOptions.options.useSRGBBuffers![0] = value as boolean;
+                                        this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+                                    }}
+                                    extractValue={() => creationOptions.options.useSRGBBuffers![0]}
                                 />
                             </>
                         )}
@@ -169,7 +183,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                     label="Format"
                                     options={textureDepthStencilFormatList}
                                     target={creationOptions.options}
-                                    propertyName="format"
+                                    propertyName="depthTextureFormat"
                                     onSelect={() => this.props.stateManager.onRebuildRequiredObservable.notifyObservers()}
                                 />
                                 <FloatLineComponent

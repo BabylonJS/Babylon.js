@@ -290,12 +290,14 @@ export class NodeRenderGraphConnectionPoint {
      */
     public addExcludedConnectionPointFromAllowedTypes(mask: number): void {
         let bitmask = 0;
+        let val = 2 ** bitmask;
         // Note: don't use 1 << bitmask instead of 2 ** bitmask, as it will cause an infinite loop because 1 << 31 is negative!
-        while (2 ** bitmask < NodeRenderGraphBlockConnectionPointTypes.All) {
-            if (!(mask & (2 ** bitmask))) {
-                this.excludedConnectionPointTypes.push(bitmask);
+        while (val < NodeRenderGraphBlockConnectionPointTypes.All) {
+            if (!(mask & val)) {
+                this.excludedConnectionPointTypes.push(val);
             }
             bitmask++;
+            val = 2 ** bitmask;
         }
     }
 
@@ -305,12 +307,14 @@ export class NodeRenderGraphConnectionPoint {
      */
     public addAcceptedConnectionPointTypes(mask: number): void {
         let bitmask = 0;
+        let val = 2 ** bitmask;
         // Note: don't use 1 << bitmask instead of 2 ** bitmask, as it will cause an infinite loop because 1 << 31 is negative!
-        while (2 ** bitmask < NodeRenderGraphBlockConnectionPointTypes.All) {
-            if (mask & (2 ** bitmask) && this.acceptedConnectionPointTypes.indexOf(bitmask) === -1) {
-                this.acceptedConnectionPointTypes.push(bitmask);
+        while (val < NodeRenderGraphBlockConnectionPointTypes.All) {
+            if (mask & val && this.acceptedConnectionPointTypes.indexOf(val) === -1) {
+                this.acceptedConnectionPointTypes.push(val);
             }
             bitmask++;
+            val = 2 ** bitmask;
         }
     }
 

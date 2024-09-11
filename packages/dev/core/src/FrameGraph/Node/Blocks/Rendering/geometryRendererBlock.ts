@@ -199,42 +199,42 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
     /**
      * Gets the geometry depth component
      */
-    public get geometryDepth(): NodeRenderGraphConnectionPoint {
+    public get geomDepth(): NodeRenderGraphConnectionPoint {
         return this._outputs[1];
     }
 
     /**
      * Gets the geometry normal component
      */
-    public get geometryNormal(): NodeRenderGraphConnectionPoint {
+    public get geomNormal(): NodeRenderGraphConnectionPoint {
         return this._outputs[2];
     }
 
     /**
      * Gets the geometry position component
      */
-    public get geometryPosition(): NodeRenderGraphConnectionPoint {
+    public get geomPosition(): NodeRenderGraphConnectionPoint {
         return this._outputs[3];
     }
 
     /**
      * Gets the geometry albedo component
      */
-    public get geometryAlbedo(): NodeRenderGraphConnectionPoint {
+    public get geomAlbedo(): NodeRenderGraphConnectionPoint {
         return this._outputs[4];
     }
 
     /**
      * Gets the geometry reflectivity component
      */
-    public get geometryReflectivity(): NodeRenderGraphConnectionPoint {
+    public get geomReflectivity(): NodeRenderGraphConnectionPoint {
         return this._outputs[5];
     }
 
     /**
      * Gets the geometry velocity component
      */
-    public get geometryVelocity(): NodeRenderGraphConnectionPoint {
+    public get geomVelocity(): NodeRenderGraphConnectionPoint {
         return this._outputs[6];
     }
 
@@ -248,12 +248,12 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         this._frameGraphTask.name = this.name;
 
         this.outputDepth.value = this._frameGraphTask.outputDepthTextureReference;
-        this.geometryDepth.value = this._frameGraphTask.geometryDepthTextureReference;
-        this.geometryNormal.value = this._frameGraphTask.geometryNormalTextureReference;
-        this.geometryPosition.value = this._frameGraphTask.geometryPositionTextureReference;
-        this.geometryAlbedo.value = this._frameGraphTask.geometryAlbedoTextureReference;
-        this.geometryReflectivity.value = this._frameGraphTask.geometryReflectivityTextureReference;
-        this.geometryVelocity.value = this._frameGraphTask.geometryVelocityTextureReference;
+        this.geomDepth.value = this._frameGraphTask.geometryDepthTextureReference;
+        this.geomNormal.value = this._frameGraphTask.geometryNormalTextureReference;
+        this.geomPosition.value = this._frameGraphTask.geometryPositionTextureReference;
+        this.geomAlbedo.value = this._frameGraphTask.geometryAlbedoTextureReference;
+        this.geomReflectivity.value = this._frameGraphTask.geometryReflectivityTextureReference;
+        this.geomVelocity.value = this._frameGraphTask.geometryVelocityTextureReference;
 
         const depthConnectedPoint = this.depth.connectedPoint;
         if (depthConnectedPoint) {
@@ -272,12 +272,26 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
 
         this._frameGraphTask.geometryTextureDescriptions = [];
 
-        if (this.generateDepth) {
-            this._frameGraphTask.geometryTextureDescriptions.push({
-                textureFormat: this.depthFormat,
-                textureType: this.depthType,
-                type: Constants.PREPASS_DEPTH_TEXTURE_TYPE,
-            });
+        const textureActivation = [this.generateDepth, this.generateNormal, this.generatePosition, this.generateAlbedo, this.generateReflectivity, this.generateVelocity];
+        const textureFormats = [this.depthFormat, this.normalFormat, this.positionFormat, this.albedoFormat, this.reflectivityFormat, this.velocityFormat];
+        const textureTypes = [this.depthType, this.normalType, this.positionType, this.albedoType, this.reflectivityType, this.velocityType];
+        const bufferTypes = [
+            Constants.PREPASS_DEPTH_TEXTURE_TYPE,
+            Constants.PREPASS_NORMAL_TEXTURE_TYPE,
+            Constants.PREPASS_POSITION_TEXTURE_TYPE,
+            Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE,
+            Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE,
+            Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
+        ];
+
+        for (let i = 0; i < textureActivation.length; i++) {
+            if (textureActivation[i]) {
+                this._frameGraphTask.geometryTextureDescriptions.push({
+                    textureFormat: textureFormats[i],
+                    textureType: textureTypes[i],
+                    type: bufferTypes[i],
+                });
+            }
         }
 
         state.frameGraph.addTask(this._frameGraphTask);
@@ -287,8 +301,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         const codes: string[] = [];
         codes.push(`${this._codeVariableName}.depthTest = ${this.depthTest};`);
         codes.push(`${this._codeVariableName}.depthWrite = ${this.depthWrite};`);
-        codes.push(`${this._codeVariableName}.camera = CAMERA; // TODO: set camera`);
-        codes.push(`${this._codeVariableName}.objectList = OBJECT_LIST; // TODO: set object list`);
         codes.push(`${this._codeVariableName}.samples = ${this.samples};`);
         codes.push(`${this._codeVariableName}.generateDepth = ${this.generateDepth};`);
         codes.push(`${this._codeVariableName}.depthFormat = ${this.depthFormat};`);

@@ -63,7 +63,6 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
     public setDefaultValue() {
         switch (this.type) {
             case NodeRenderGraphBlockConnectionPointTypes.Texture:
-            case NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment:
             case NodeRenderGraphBlockConnectionPointTypes.TextureDepth:
             case NodeRenderGraphBlockConnectionPointTypes.TextureNormal:
             case NodeRenderGraphBlockConnectionPointTypes.TextureAlbedo:
@@ -72,21 +71,38 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
             case NodeRenderGraphBlockConnectionPointTypes.TextureVelocity:
             case NodeRenderGraphBlockConnectionPointTypes.TextureIrradiance:
             case NodeRenderGraphBlockConnectionPointTypes.TextureAlbedoSqrt: {
-                const depthStencil = this.type === NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment;
-                this.creationOptions = {
+                const options: FrameGraphTextureCreationOptions = {
                     size: { width: 100, height: 100 },
                     options: {
                         createMipMaps: false,
                         generateMipMaps: false,
-                        type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
-                        format: depthStencil ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_RGBA,
+                        types: [Constants.TEXTURETYPE_UNSIGNED_BYTE],
+                        formats: [Constants.TEXTUREFORMAT_RGBA],
                         samples: 1,
-                        useSRGBBuffer: false,
-                        generateDepthBuffer: depthStencil,
-                        generateStencilBuffer: depthStencil,
+                        useSRGBBuffers: [false],
+                        generateDepthBuffer: false,
                     },
                     sizeIsPercentage: true,
-                } as FrameGraphTextureCreationOptions;
+                };
+                this.creationOptions = options;
+                break;
+            }
+            case NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment: {
+                const options: FrameGraphTextureCreationOptions = {
+                    size: { width: 100, height: 100 },
+                    options: {
+                        createMipMaps: false,
+                        generateMipMaps: false,
+                        depthTextureFormat: Constants.TEXTUREFORMAT_DEPTH24_STENCIL8,
+                        textureCount: 0,
+                        samples: 1,
+                        generateDepthTexture: true,
+                        generateDepthBuffer: true,
+                        generateStencilBuffer: true,
+                    },
+                    sizeIsPercentage: true,
+                };
+                this.creationOptions = options;
                 break;
             }
             case NodeRenderGraphBlockConnectionPointTypes.ObjectList:

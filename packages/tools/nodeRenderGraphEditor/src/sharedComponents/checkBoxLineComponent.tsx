@@ -11,6 +11,7 @@ export interface ICheckBoxLineComponentProps {
     onValueChanged?: () => void;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     disabled?: boolean;
+    extractValue?: (target: any) => boolean;
 }
 
 export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, { isSelected: boolean; isDisabled?: boolean }> {
@@ -36,7 +37,9 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
     override shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: { isSelected: boolean; isDisabled: boolean }) {
         let currentState: boolean;
 
-        if (nextProps.isSelected) {
+        if (nextProps.extractValue) {
+            currentState = nextProps.extractValue(nextProps.target);
+        } else if (nextProps.isSelected) {
             currentState = nextProps.isSelected!();
         } else {
             currentState = nextProps.target[nextProps.propertyName!] == true;

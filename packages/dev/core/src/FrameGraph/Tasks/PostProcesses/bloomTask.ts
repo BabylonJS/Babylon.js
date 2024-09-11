@@ -1,5 +1,5 @@
 import type { FrameGraph } from "../../frameGraph";
-import type { FrameGraphTaskOutputReference, IFrameGraphTask, FrameGraphTextureId } from "../../frameGraphTypes";
+import type { FrameGraphTaskOutputReference, IFrameGraphTask, FrameGraphTextureId, FrameGraphTextureCreationOptions } from "../../frameGraphTypes";
 import { Constants } from "core/Engines/constants";
 import type { BloomEffect } from "../../../PostProcesses/bloomEffect";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
@@ -52,7 +52,7 @@ export class FrameGraphBloomTask implements IFrameGraphTask {
 
         const sourceTextureDescription = frameGraph.getTextureDescription(this.sourceTexture);
 
-        const textureCreationOptions = {
+        const textureCreationOptions: FrameGraphTextureCreationOptions = {
             size: {
                 width: Math.floor(sourceTextureDescription.size.width * this._bloomEffect.bloomScale),
                 height: Math.floor(sourceTextureDescription.size.height * this._bloomEffect.bloomScale),
@@ -60,11 +60,11 @@ export class FrameGraphBloomTask implements IFrameGraphTask {
             options: {
                 createMipMaps: false,
                 generateMipMaps: false,
-                type: this._bloomEffect._pipelineTextureType,
-                samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
-                format: sourceTextureDescription.options.format,
+                types: [this._bloomEffect._pipelineTextureType],
+                samplingModes: [Constants.TEXTURE_BILINEAR_SAMPLINGMODE],
+                formats: sourceTextureDescription.options.formats,
                 samples: 1,
-                useSRGBBuffer: false,
+                useSRGBBuffers: [false],
                 generateDepthBuffer: false,
                 generateStencilBuffer: false,
                 label: "",

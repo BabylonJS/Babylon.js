@@ -1,6 +1,6 @@
 import type { FrameGraph } from "../../frameGraph";
 import type { FrameGraphTaskOutputReference, IFrameGraphTask, FrameGraphTextureId, FrameGraphObjectListId } from "../../frameGraphTypes";
-import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
+import { backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
 import { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture";
 import type { Scene } from "../../../scene";
 import type { Camera } from "../../../Cameras/camera";
@@ -61,15 +61,24 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
         return this._rtt;
     }
 
-    constructor(
-        public name: string,
-        scene: Scene
-    ) {
+    private _name: string;
+
+    public get name() {
+        return this._name;
+    }
+
+    public set name(value: string) {
+        this._name = value;
+        this._rtt.name = value + "_internal_rtt";
+    }
+
+    constructor(name: string, scene: Scene) {
         this._scene = scene;
         this._rtt = new RenderTargetTexture(name, 1, scene, {
             delayAllocation: true,
         });
         this._rtt.skipInitialClear = true;
+        this.name = name;
     }
 
     public isReadyFrameGraph() {
@@ -87,8 +96,8 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
             sizeIsPercentage: this.geometryTextureSizeIsPercentage,
             options: {
                 samples: this.geometryTextureSamples,
-                type: this.geometryTextureDescriptions[0].textureType,
-                format: this.geometryTextureDescriptions[0].textureFormat,
+                types: [this.geometryTextureDescriptions[0].textureType],
+                formats: [this.geometryTextureDescriptions[0].textureFormat],
             },
         });
 
@@ -98,15 +107,8 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
 
         if (this.depthTexture !== undefined) {
             const depthTextureHandle = frameGraph.getTextureHandle(this.depthTexture);
-            if (depthTextureHandle === backbufferDepthStencilTextureHandle && outputTextureHandle !== backbufferColorTextureHandle) {
-                throw new Error(
-                    `FrameGraphGeometryRendererTask ${this.name}: the back buffer color texture is the only color texture allowed when the depth is the back buffer depth/stencil`
-                );
-            }
-            if (depthTextureHandle !== backbufferDepthStencilTextureHandle && outputTextureHandle === backbufferColorTextureHandle) {
-                throw new Error(
-                    `FrameGraphGeometryRendererTask ${this.name}: the back buffer depth/stencil texture is the only depth texture allowed when the destination is the back buffer color`
-                );
+            if (depthTextureHandle === backbufferDepthStencilTextureHandle) {
+                throw new Error(`FrameGraphGeometryRendererTask ${this.name}: the depth/stencil back buffer is not allowed as a depth texture`);
             }
 
             const depthTextureDescription = frameGraph.getTextureDescription(depthTextureHandle);
@@ -118,7 +120,8 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
         }
 
         this._rtt._size = outputTextureDescription.size;
-        this._rtt.renderList = frameGraph.getObjectList(this.objectList).meshes;
+
+        const objectList = frameGraph.getObjectList(this.objectList);
 
         const pass = frameGraph.addRenderPass(this.name);
 
@@ -128,6 +131,8 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
             pass.setRenderTargetDepth(frameGraph.getTextureHandle(this.depthTexture));
         }
         pass.setExecuteFunc((_context) => {
+            this._rtt.renderList = objectList.meshes;
+            this._rtt.particleSystemList = objectList.particleSystems;
             this._scene.incrementRenderId();
             _context.setDepthStates(this.depthTest && depthEnabled, this.depthWrite && depthEnabled);
             // TODO: clear all targets
