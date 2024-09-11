@@ -235,15 +235,14 @@ ThinEngine.prototype.updateRenderTargetTextureSampleCount = function (rtWrapper:
     const hardwareTexture = rtWrapper.texture?._hardwareTexture as Nullable<WebGLHardwareTexture>;
     hardwareTexture?.releaseMSAARenderBuffers();
 
-    const framebuffer = gl.createFramebuffer();
-
-    if (!framebuffer) {
-        throw new Error("Unable to create multi sampled framebuffer");
-    }
-
-    rtWrapper._MSAAFramebuffer = framebuffer;
-
     if (rtWrapper.texture && samples > 1 && typeof gl.renderbufferStorageMultisample === "function") {
+        const framebuffer = gl.createFramebuffer();
+
+        if (!framebuffer) {
+            throw new Error("Unable to create multi sampled framebuffer");
+        }
+
+        rtWrapper._MSAAFramebuffer = framebuffer;
         this._bindUnboundFramebuffer(rtWrapper._MSAAFramebuffer);
 
         const colorRenderbuffer = this._createRenderBuffer(
