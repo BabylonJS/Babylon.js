@@ -1,5 +1,5 @@
 import type { PropertyValues } from "lit";
-import type { Viewer } from "./viewer";
+import type { Viewer, ViewerDetails } from "./viewer";
 
 import { LitElement, css, html } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
@@ -14,6 +14,9 @@ const pauseFilledIcon = "M5 2a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V4a2
 const allowedAnimationSpeeds = [0.5, 1, 1.5, 2] as const;
 
 interface HTML3DElementEventMap extends HTMLElementEventMap {
+    viewerready: CustomEvent<ViewerDetails>;
+    environmentchange: Event;
+    environmenterror: Event;
     modelchange: Event;
     modelerror: Event;
     selectedanimationchange: Event;
@@ -363,8 +366,11 @@ export class HTML3DElement extends LitElement {
         super.addEventListener(type as string, listener as EventListenerOrEventListenerObject, options as boolean | AddEventListenerOptions);
     }
 
-    private _dispatchCustomEvent(type: keyof HTML3DElementEventMap) {
-        this.dispatchEvent(new Event(type));
+    private _dispatchCustomEvent<TEvent extends keyof HTML3DElementEventMap>(
+        ...args: HTML3DElementEventMap[TEvent] extends CustomEvent ? [type: TEvent, details: HTML3DElementEventMap[TEvent]["detail"]] : [type: TEvent]
+    ) {
+        const [type, details] = args;
+        this.dispatchEvent(details ? new CustomEvent(type, { detail: details }) : new Event(type));
     }
 
     private _onSelectedAnimationChanged(event: Event) {
@@ -397,9 +403,19 @@ export class HTML3DElement extends LitElement {
 
     private _setupViewer() {
         if (this._canvas && !this.viewer) {
-            this.viewer = createViewerForCanvas(this._canvas);
+            this.viewer = createViewerForCanvas(this._canvas, {
+                onInitialized: (details) => this._dispatchCustomEvent("viewerready", details),
+            });
 
-            this.viewer.onModelLoaded.add(() => {
+            this.viewer.onEnvironmentChanged.add(() => {
+                this._dispatchCustomEvent("environmentchange");
+            });
+
+            this.viewer.onEnvironmentError.add(() => {
+                this._dispatchCustomEvent("environmenterror");
+            });
+
+            this.viewer.onModelChanged.add(() => {
                 this._animations = [...(this.viewer?.animations ?? [])];
                 this._dispatchCustomEvent("modelchange");
             });
@@ -457,14 +473,26 @@ export class HTML3DElement extends LitElement {
     }
 
     private async _updateModel() {
-        if (this.src) {
-            await this.viewer?.loadModelAsync(this.src).catch(Logger.Log);
-        } else {
-            // TODO: Unload model?
+        try {
+            if (this.src) {
+                await this.viewer?.loadModelAsync(this.src);
+            } else {
+                await this.viewer?.resetModelAsync();
+            }
+        } catch (error) {
+            Logger.Log(error);
         }
     }
 
-    private _updateEnv() {
-        this.viewer?.loadEnvironmentAsync(this.env || undefined).catch(Logger.Log);
+    private async _updateEnv() {
+        try {
+            if (this.env) {
+                await this.viewer?.loadEnvironmentAsync(this.env);
+            } else {
+                await this.viewer?.resetEnvironmentAsync();
+            }
+        } catch (error) {
+            Logger.Log(error);
+        }
     }
 }

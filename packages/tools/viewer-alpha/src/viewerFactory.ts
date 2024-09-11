@@ -4,7 +4,7 @@ import type { EngineOptions } from "core/Engines";
 import type { ViewerOptions } from "./viewer";
 import { Viewer } from "./viewer";
 
-type CanvasViewerOptions = ViewerOptions & ({ engine: "WebGL" } & EngineOptions);
+type CanvasViewerOptions = ViewerOptions & ({ engine?: "WebGL" } & EngineOptions);
 const defaultCanvasViewerOptions: CanvasViewerOptions = {
     engine: "WebGL",
 };
