@@ -6,11 +6,15 @@ import type { IDisposable } from "core/scene";
 import type { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { SerializationTools } from "./serializationTools";
 import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
+import * as fflate from "fflate";
 
 /**
  * Class handling undo / redo operations
  */
 export class HistoryStack implements IDisposable {
+    /**
+     * Url to use to load the fflate library (for zip decompression)
+     */
     private _onUpdateRequiredObserver: Nullable<Observer<Nullable<NodeMaterialBlock>>>;
     private _onClearUndoStackObserver: Nullable<Observer<void>>;
     private _onRebuildRequiredObserver: Nullable<Observer<void>>;
@@ -18,8 +22,8 @@ export class HistoryStack implements IDisposable {
     private _onNodeAddedObserver: Nullable<Observer<GraphNode>>;
     private _globalState: GlobalState;
     private _nodeMaterial: NodeMaterial;
-    private _history: string[] = [];
-    private _redoStack: string[] = [];
+    private _history: Uint8Array[] = [];
+    private _redoStack: Uint8Array[] = [];
     private readonly _maxHistoryLength = 64;
     private _locked = false;
 
@@ -60,19 +64,31 @@ export class HistoryStack implements IDisposable {
         this._store();
     }
 
+    private _compress(dataString: string) {
+        const buf = fflate.strToU8(dataString);
+        return fflate.zlibSync(buf, { level: 9 });
+    }
+
+    private _decompress(data: Uint8Array) {
+        const decompressed = fflate.decompressSync(data);
+        return fflate.strFromU8(decompressed);
+    }
+
     private _store() {
         if (this._locked) {
             return;
         }
 
         SerializationTools.UpdateLocations(this._nodeMaterial, this._globalState);
-        const data = JSON.stringify(this._nodeMaterial.serialize());
+        const dataString = JSON.stringify(this._nodeMaterial.serialize());
 
-        if (this._history.length > 0 && this._history[this._history.length - 1] === data) {
+        if (this._history.length > 0 && this._decompress(this._history[this._history.length - 1]) === dataString) {
             return;
         }
 
-        this._history.push(data);
+        const compressedData = this._compress(dataString);
+
+        this._history.push(compressedData);
 
         if (this._history.length > this._maxHistoryLength) {
             this._history.splice(0, 1);
@@ -93,7 +109,8 @@ export class HistoryStack implements IDisposable {
         this._redoStack.push(current);
 
         this._globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
-        this._nodeMaterial.parseSerializedObject(JSON.parse(previous));
+        const previousString = this._decompress(previous);
+        this._nodeMaterial.parseSerializedObject(JSON.parse(previousString));
 
         this._globalState.onResetRequiredObservable.notifyObservers(false);
 
@@ -113,7 +130,8 @@ export class HistoryStack implements IDisposable {
         this._history.push(current);
 
         this._globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
-        this._nodeMaterial.parseSerializedObject(JSON.parse(current));
+        const currentString = this._decompress(current);
+        this._nodeMaterial.parseSerializedObject(JSON.parse(currentString));
 
         this._globalState.onResetRequiredObservable.notifyObservers(false);
 
