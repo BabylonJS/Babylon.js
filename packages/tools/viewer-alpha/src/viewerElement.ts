@@ -1,9 +1,11 @@
 import type { PropertyValues } from "lit";
 import type { Viewer, ViewerDetails } from "./viewer";
+import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, html } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
 
+import { AsyncLock } from "core/Misc/asyncLock";
 import { Logger } from "core/Misc/logger";
 import { createViewerForCanvas } from "./viewerFactory";
 
@@ -30,10 +32,8 @@ interface HTML3DElementEventMap extends HTMLElementEventMap {
  */
 @customElement("babylon-viewer")
 export class HTML3DElement extends LitElement {
-    /**
-     * Gets the underlying Viewer object. It will be undefined when the element is not connected to the DOM.
-     */
-    public viewer?: Viewer;
+    private readonly _viewerLock = new AsyncLock();
+    private _viewer?: Viewer;
 
     // eslint-disable-next-line @typescript-eslint/naming-convention, jsdoc/require-jsdoc
     static override styles = css`
@@ -206,6 +206,12 @@ export class HTML3DElement extends LitElement {
     `;
 
     /**
+     * The engine to use for rendering.
+     */
+    @property()
+    public engine: CanvasViewerOptions["engine"];
+
+    /**
      * The model URL.
      */
     @property()
@@ -266,7 +272,7 @@ export class HTML3DElement extends LitElement {
      * Toggles the play/pause animation state if there is a selected animation.
      */
     public toggleAnimation() {
-        this.viewer?.toggleAnimation();
+        this._viewer?.toggleAnimation();
     }
 
     // eslint-disable-next-line babylonjs/available
@@ -291,20 +297,25 @@ export class HTML3DElement extends LitElement {
     override update(changedProperties: PropertyValues): void {
         super.update(changedProperties);
 
-        if (changedProperties.has("animationSpeed")) {
-            this._updateAnimationSpeed();
-        }
+        if (changedProperties.has("engine" satisfies keyof this)) {
+            this._tearDownViewer();
+            this._setupViewer();
+        } else {
+            if (changedProperties.has("animationSpeed")) {
+                this._updateAnimationSpeed();
+            }
 
-        if (changedProperties.has("_selectedAnimation")) {
-            this._updateSelectedAnimation();
-        }
+            if (changedProperties.has("_selectedAnimation")) {
+                this._updateSelectedAnimation();
+            }
 
-        if (changedProperties.has("src" satisfies keyof this)) {
-            this._updateModel();
-        }
+            if (changedProperties.has("src" satisfies keyof this)) {
+                this._updateModel();
+            }
 
-        if (changedProperties.has("env" satisfies keyof this)) {
-            this._updateEnv();
+            if (changedProperties.has("env" satisfies keyof this)) {
+                this._updateEnv();
+            }
         }
     }
 
@@ -384,100 +395,111 @@ export class HTML3DElement extends LitElement {
     }
 
     private _onProgressChanged(event: Event) {
-        if (this.viewer) {
+        if (this._viewer) {
             const input = event.target as HTMLInputElement;
             const value = Number(input.value);
             if (value !== this.animationProgress) {
-                this.viewer.animationProgress = value;
+                this._viewer.animationProgress = value;
             }
         }
     }
 
     private _onProgressPointerDown(event: Event) {
-        if (this.viewer?.isAnimationPlaying) {
-            this.viewer.pauseAnimation();
+        if (this._viewer?.isAnimationPlaying) {
+            this._viewer.pauseAnimation();
             const input = event.target as HTMLInputElement;
-            input.addEventListener("pointerup", () => this.viewer?.playAnimation(), { once: true });
+            input.addEventListener("pointerup", () => this._viewer?.playAnimation(), { once: true });
         }
     }
 
-    private _setupViewer() {
-        if (this._canvas && !this.viewer) {
-            this.viewer = createViewerForCanvas(this._canvas, {
-                onInitialized: (details) => this._dispatchCustomEvent("viewerready", details),
-            });
+    private async _setupViewer() {
+        if (this._canvas) {
+            await this._viewerLock.lockAsync(async () => {
+                if (!this._viewer) {
+                    await createViewerForCanvas(this._canvas, {
+                        engine: this.engine,
+                        onInitialized: (details) => {
+                            this._viewer = details.viewer;
 
-            this.viewer.onEnvironmentChanged.add(() => {
-                this._dispatchCustomEvent("environmentchange");
-            });
+                            details.viewer.onEnvironmentChanged.add(() => {
+                                this._dispatchCustomEvent("environmentchange");
+                            });
 
-            this.viewer.onEnvironmentError.add(() => {
-                this._dispatchCustomEvent("environmenterror");
-            });
+                            details.viewer.onEnvironmentError.add(() => {
+                                this._dispatchCustomEvent("environmenterror");
+                            });
 
-            this.viewer.onModelChanged.add(() => {
-                this._animations = [...(this.viewer?.animations ?? [])];
-                this._dispatchCustomEvent("modelchange");
-            });
+                            details.viewer.onModelChanged.add(() => {
+                                this._animations = [...(this._viewer?.animations ?? [])];
+                                this._dispatchCustomEvent("modelchange");
+                            });
 
-            this.viewer.onModelError.add(() => {
-                this._dispatchCustomEvent("modelerror");
-            });
+                            details.viewer.onModelError.add(() => {
+                                this._dispatchCustomEvent("modelerror");
+                            });
 
-            this.viewer.onSelectedAnimationChanged.add(() => {
-                this._selectedAnimation = this.viewer?.selectedAnimation ?? -1;
-                this._dispatchCustomEvent("selectedanimationchange");
-            });
+                            details.viewer.onSelectedAnimationChanged.add(() => {
+                                this._selectedAnimation = this._viewer?.selectedAnimation ?? -1;
+                                this._dispatchCustomEvent("selectedanimationchange");
+                            });
 
-            this.viewer.onAnimationSpeedChanged.add(() => {
-                let speed = this.viewer?.animationSpeed ?? 1;
-                speed = allowedAnimationSpeeds.reduce((prev, curr) => (Math.abs(curr - speed) < Math.abs(prev - speed) ? curr : prev));
-                this.animationSpeed = speed;
-                this._dispatchCustomEvent("animationspeedchange");
-            });
+                            details.viewer.onAnimationSpeedChanged.add(() => {
+                                let speed = this._viewer?.animationSpeed ?? 1;
+                                speed = allowedAnimationSpeeds.reduce((prev, curr) => (Math.abs(curr - speed) < Math.abs(prev - speed) ? curr : prev));
+                                this.animationSpeed = speed;
+                                this._dispatchCustomEvent("animationspeedchange");
+                            });
 
-            this.viewer.onIsAnimationPlayingChanged.add(() => {
-                this._isAnimationPlaying = this.viewer?.isAnimationPlaying ?? false;
-                this._dispatchCustomEvent("animationplayingchange");
-            });
+                            details.viewer.onIsAnimationPlayingChanged.add(() => {
+                                this._isAnimationPlaying = this._viewer?.isAnimationPlaying ?? false;
+                                this._dispatchCustomEvent("animationplayingchange");
+                            });
 
-            this.viewer.onAnimationProgressChanged.add(() => {
-                this.animationProgress = this.viewer?.animationProgress ?? 0;
-                this._dispatchCustomEvent("animationprogresschange");
-            });
+                            details.viewer.onAnimationProgressChanged.add(() => {
+                                this.animationProgress = this._viewer?.animationProgress ?? 0;
+                                this._dispatchCustomEvent("animationprogresschange");
+                            });
 
-            this._updateSelectedAnimation();
-            this._updateAnimationSpeed();
-            this._updateModel();
-            this._updateEnv();
+                            this._updateSelectedAnimation();
+                            this._updateAnimationSpeed();
+                            this._updateModel();
+                            this._updateEnv();
+
+                            this._dispatchCustomEvent("viewerready", details);
+                        },
+                    });
+                }
+            });
         }
     }
 
-    private _tearDownViewer() {
-        if (this.viewer) {
-            this.viewer.dispose();
-            this.viewer = undefined;
-        }
+    private async _tearDownViewer() {
+        await this._viewerLock.lockAsync(async () => {
+            if (this._viewer) {
+                this._viewer.dispose();
+                this._viewer = undefined;
+            }
+        });
     }
 
     private _updateAnimationSpeed() {
-        if (this.viewer) {
-            this.viewer.animationSpeed = this.animationSpeed;
+        if (this._viewer) {
+            this._viewer.animationSpeed = this.animationSpeed;
         }
     }
 
     private _updateSelectedAnimation() {
-        if (this.viewer) {
-            this.viewer.selectedAnimation = this._selectedAnimation;
+        if (this._viewer) {
+            this._viewer.selectedAnimation = this._selectedAnimation;
         }
     }
 
     private async _updateModel() {
         try {
             if (this.src) {
-                await this.viewer?.loadModelAsync(this.src);
+                await this._viewer?.loadModelAsync(this.src);
             } else {
-                await this.viewer?.resetModelAsync();
+                await this._viewer?.resetModelAsync();
             }
         } catch (error) {
             Logger.Log(error);
@@ -487,9 +509,9 @@ export class HTML3DElement extends LitElement {
     private async _updateEnv() {
         try {
             if (this.env) {
-                await this.viewer?.loadEnvironmentAsync(this.env);
+                await this._viewer?.loadEnvironmentAsync(this.env);
             } else {
-                await this.viewer?.resetEnvironmentAsync();
+                await this._viewer?.resetEnvironmentAsync();
             }
         } catch (error) {
             Logger.Log(error);
