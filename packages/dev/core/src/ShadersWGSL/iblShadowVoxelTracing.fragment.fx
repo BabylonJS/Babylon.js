@@ -123,12 +123,12 @@ fn uv_to_normal(uv: vec2f) -> vec3f {
 }
 
 fn plasticSequence(rstate: u32) -> vec2f {
-  return vec2f(f32(rstate * 3242174889u),
-              f32(rstate * 2447445414u));
+  return vec2f(uint2float(rstate * 3242174889u),
+              uint2float(rstate * 2447445414u));
 }
 
 fn goldenSequence(rstate: u32) -> f32 {
-  return f32(rstate * 2654435769u);
+  return uint2float(rstate * 2654435769u);
 }
 
 fn distanceSquared(a: vec2f, b: vec2f) -> f32 {
@@ -155,16 +155,16 @@ fn anyHitVoxels(ray_vs: Ray,
 #else
 fn anyHitVoxels(ray_vs: Ray) -> bool {
 #endif
-  var stack = array<u32, 24>();          // Swapped dimension
+  var stack = array<i32, 24>();          // Swapped dimension
   var invD: vec3f = ray_vs.dir_rcp;
   var D: vec3f = ray_vs.dir;
   var O: vec3f = ray_vs.orig;
-  var negD = vec3u(lessThan(D,  vec3f(0, 0, 0)));
-  var voxel0: u32 = negD.x | (negD.y << 1) | (negD.z << 2);
+  var negD = vec3i(lessThan(D,  vec3f(0, 0, 0)));
+  var voxel0: i32 = negD.x | (negD.y << 1) | (negD.z << 2);
   var t0: vec3f = -O * invD;
-  var t1 = ( vec3f(1.0) - O) * invD;
-  var maxLod: u32 =  u32(highestMipLevel);
-  var stackLevel: u32 = 0;
+  var t1 = (vec3f(1.0) - O) * invD;
+  var maxLod: i32 =  i32(highestMipLevel);
+  var stackLevel: i32 = 0;
 #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
   var steps: u32 = 0u;
 #endif
@@ -173,9 +173,9 @@ fn anyHitVoxels(ray_vs: Ray) -> bool {
   stackLevel++;
   while (stackLevel > 0) {
     stackLevel = stackLevel - 1;
-    var elem: u32 = stack[stackLevel];
-    var Coords: vec4u =
-        vec4u(elem & 0xFF, (elem >> 8) & 0xFF, (elem >> 16) & 0xFF, elem >> 24);
+    var elem: i32 = stack[stackLevel];
+    var Coords: vec4i =
+        vec4i(elem & 0xFF, (elem >> 8) & 0xFF, (elem >> 16) & 0xFF, elem >> 24);
 
     if (Coords.w == 0) {
 #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
@@ -189,9 +189,9 @@ fn anyHitVoxels(ray_vs: Ray) -> bool {
     ++steps;
 #endif
 
-    var invRes: f32 = exp2( f32(Coords.w - maxLod));
+    var invRes: f32 = exp2(f32(Coords.w - maxLod));
     var bbmin: vec3f = invRes * vec3f(Coords.xyz + negD);
-    var bbmax: vec3f = invRes * vec3f(Coords.xyz - negD + vec3u(1));
+    var bbmax: vec3f = invRes * vec3f(Coords.xyz - negD + vec3i(1));
     var mint: vec3f = mix(t0, t1, bbmin);
     var maxt: vec3f = mix(t0, t1, bbmax);
     var midt: vec3f = 0.5 * (mint + maxt);
@@ -203,11 +203,10 @@ fn anyHitVoxels(ray_vs: Ray) -> bool {
     var nodeMask: u32 =  u32(
         round(textureLoad(voxelGridSampler, Coords.xyz, Coords.w).x * 255.0));
     Coords.w--;
-    var voxelBit: u32 = voxel0;
-    Coords = vec4u((Coords.x << 1) + negD.x, (Coords.y << 1) + negD.y,
-                       (Coords.z << 1) + negD.z, Coords.w);
+    var voxelBit: u32 = u32(voxel0);
+    Coords = vec4i((Coords.xyz << vec3u(1)) + negD, Coords.w);
 
-    var packedCoords: u32 =
+    var packedCoords: i32 =
         Coords.x | (Coords.y << 8) | (Coords.z << 16) | (Coords.w << 24);
     if (max(mint.x, max(mint.y, mint.z)) < min(midt.x, min(midt.y, midt.z)) &&
         ((1u << voxelBit) & nodeMask) != 0) {
@@ -350,7 +349,7 @@ fn voxelShadow(wsOrigin: vec3f, wsDirection: vec3f, wsNormal: vec3f,
 fn voxelShadow(wsOrigin: vec3f, wsDirection: vec3f, wsNormal: vec3f,
                   DitherNoise: vec2f) -> f32 {
 #endif
-  var vxResolution: f32 =  f32(textureDimensions(voxelGridSampler, 0).x);
+  var vxResolution: f32 = f32(textureDimensions(voxelGridSampler, 0).x);
   var T: vec3f;
   var B: vec3f;
   genTB(wsDirection, &T, &B);
@@ -394,13 +393,13 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
   var Resolution: vec2f =  vec2f(textureDimensions(depthSampler, 0));
   var currentPixel = vec2i(fragmentInputs.vUV * Resolution);
-  var PixelCoord = vec2i( vec2f(currentPixel * downscale) + PixelOffset.xy);
+  var PixelCoord = vec2i(vec2f(currentPixel * downscale) + PixelOffset.xy);
   var GlobalIndex =
       (frameId * u32(Resolution.y) + u32(PixelCoord.y)) * u32(Resolution.x) +
       u32(PixelCoord.x);
 
   var N: vec3f = textureLoad(worldNormalSampler, PixelCoord, 0).xyz;
-  N = N *  vec3f(2.0) -  vec3f(1.0);
+  N = N *  vec3f(2.0) - vec3f(1.0);
   if (length(N) < 0.01) {
     fragmentOutputs.color = vec4f(1.0, 1.0, 0.0, 1.0);
     return fragmentOutputs;
@@ -413,13 +412,13 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
   #ifndef IS_NDC_HALF_ZRANGE
     depth = depth * 2.0 - 1.0;
   #endif
-  var temp: vec2f = ( vec2f(PixelCoord) +  vec2f(0.5)) * 2.0 / Resolution -  vec2f(1.0);
-  var temp2: vec2f = fragmentInputs.vUV *  vec2f(2.0) -  vec2f(1.0);
-  var VP: vec4f = uniforms.invProjMtx *  vec4f(temp.x, -temp.y, depth, 1.0);
+  var temp: vec2f = (vec2f(PixelCoord) + vec2f(0.5)) * 2.0 / Resolution - vec2f(1.0);
+  var temp2: vec2f = fragmentInputs.vUV * vec2f(2.0) - vec2f(1.0);
+  var VP: vec4f = uniforms.invProjMtx * vec4f(temp.x, -temp.y, depth, 1.0);
   VP /= VP.w;
 
   N = normalize(N);
-  var noise: vec3f = textureLoad(blueNoiseSampler, vec2i(PixelCoord.x & 0xFF, PixelCoord.y & 0xFF), 0).xyz;
+  var noise: vec3f = textureLoad(blueNoiseSampler, PixelCoord & vec2i(0xFF), 0).xyz;
   noise.z = fract(noise.z + goldenSequence(frameId * nbDirs));
 
 #ifdef VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
@@ -451,7 +450,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
       // var unormWP: vec4f = texelFetch(worldPositionSampler, PixelCoord, 0);
       var WP: vec3f = (uniforms.wsNormalizationMtx * unormWP).xyz;
       var vxNoise: vec2f =
-           vec2f(f32(hash(dirId * 2)), f32(hash(dirId * 2 + 1)));
+           vec2f(uint2float(hash(dirId * 2)), uint2float(hash(dirId * 2 + 1)));
 #ifdef VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
       VoxelMarchDiagnosticInfo voxel_march_diagnostic_info;
       opacity = max(opacity,

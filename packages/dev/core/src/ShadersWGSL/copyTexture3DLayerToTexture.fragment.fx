@@ -5,7 +5,7 @@ varying vUV: vec2f;
 
 @fragment
 fn main(input: FragmentInputs) -> FragmentOutputs {
-    var coord: vec2i = vec2i(i32(input.vUV.x), i32(input.vUV.y)) * vec2i(textureDimensions(textureSampler, 0).xy);
-    var color: vec3f = textureLoad(textureSampler, vec3i(coord, uniforms.layerNum), 0).rgb;
+    let coord = vec3f(vec2f(input.vUV.x, input.vUV.y) * vec2f(textureDimensions(textureSampler, 0).xy), f32(uniforms.layerNum));
+    let color = textureLoad(textureSampler, vec3i(coord), 0).rgb;
     fragmentOutputs.color =  vec4f(color, 1);
 }

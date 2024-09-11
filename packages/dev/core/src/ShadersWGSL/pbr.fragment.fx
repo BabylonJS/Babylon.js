@@ -252,7 +252,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
         #ifndef USE_CUSTOM_REFLECTION
             reflectionOut = reflectionBlock(
-                input.vPositionW
+                fragmentInputs.vPositionW
                 , normalW
                 , alphaG
                 , uniforms.vReflectionMicrosurfaceInfos
@@ -270,7 +270,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                 , reflectionSampler
                 , reflectionSamplerSampler
             #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
-                , input.vEnvironmentIrradiance
+                , fragmentInputs.vEnvironmentIrradiance
             #endif
             #ifdef USESPHERICALFROMREFLECTIONMAP
                 #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
@@ -422,7 +422,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         #endif
 
         clearcoatOut = clearcoatBlock(
-            input.vPositionW
+            fragmentInputs.vPositionW
             , geometricNormalW
             , viewDirectionW
             , uniforms.vClearCoatParams
@@ -548,7 +548,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             , surfaceAlbedo
         #endif
         #ifdef SS_REFRACTION
-            , input.vPositionW
+            , fragmentInputs.vPositionW
             , viewDirectionW
             , scene.view
             , uniforms.vRefractionInfos
@@ -632,7 +632,11 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     var fragData: array<vec4<f32>, SCENE_MRT_COUNT>;
 
     #ifdef PREPASS_POSITION
-    fragData[PREPASS_POSITION_INDEX] =  vec4f(input.vPositionW, writeGeometryInfo);
+    fragData[PREPASS_POSITION_INDEX] =  vec4f(fragmentInputs.vPositionW, writeGeometryInfo);
+    #endif
+
+    #ifdef PREPASS_LOCAL_POSITION
+    fragData[PREPASS_LOCAL_POSITION_INDEX] = vec4f(fragmentInputs.vPosition * 0.5 + 0.5, writeGeometryInfo);
     #endif
 
     #ifdef PREPASS_VELOCITY
