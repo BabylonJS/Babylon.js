@@ -413,11 +413,26 @@ export class _IblShadowsVoxelRenderer {
             this._voxelMrtsZaxis = this._createVoxelMRTs("z_axis_", this._voxelGridZaxis, numSlabs);
         }
 
+        const generateVoxelMipOptions: IProceduralTextureCreationOptions = {
+            generateDepthBuffer: false,
+            generateMipMaps: false,
+            type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
+            format: Constants.TEXTUREFORMAT_R,
+            samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+            shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            extraInitializationsAsync: async () => {
+                if (isWebGPU) {
+                    await import("../../ShadersWGSL/iblGenerateVoxelMip.fragment");
+                } else {
+                    await import("../../Shaders/iblGenerateVoxelMip.fragment");
+                }
+            },
+        };
         this._mipArray = new Array(Math.ceil(Math.log2(this._voxelResolution)));
         for (let mipIdx = 1; mipIdx <= this._mipArray.length; mipIdx++) {
             const mipDim = this._voxelResolution >> mipIdx;
             const mipSize: TextureSize = { width: mipDim, height: mipDim, depth: mipDim };
-            this._mipArray[mipIdx - 1] = new ProceduralTexture("voxelMip" + mipIdx, mipSize, "iblGenerateVoxelMip", this._scene, voxelAxisOptions, false);
+            this._mipArray[mipIdx - 1] = new ProceduralTexture("voxelMip" + mipIdx, mipSize, "iblGenerateVoxelMip", this._scene, generateVoxelMipOptions, false);
             this._scene.proceduralTextures.splice(this._scene.proceduralTextures.indexOf(this._mipArray[mipIdx - 1]), 1);
 
             const mipTarget = this._mipArray[mipIdx - 1];
