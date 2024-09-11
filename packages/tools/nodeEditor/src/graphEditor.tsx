@@ -1,6 +1,4 @@
 import * as React from "react";
-import type { GlobalState } from "./globalState";
-
 import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import { NodeListComponent } from "./components/nodeList/nodeListComponent";
 import { PropertyTabComponent } from "./components/propertyTab/propertyTabComponent";
@@ -27,6 +25,8 @@ import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger";
 import type { IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import { HistoryStack } from "./historyStack";
+import type { GlobalState } from "./globalState";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -58,6 +58,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     private _leftWidth = DataStorage.ReadNumber("LeftWidth", 200);
     private _rightWidth = DataStorage.ReadNumber("RightWidth", 300);
 
+    private _historyStack: HistoryStack;
     private _previewManager: PreviewManager;
     private _mouseLocationX = 0;
     private _mouseLocationY = 0;
@@ -95,6 +96,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         if (this.props.globalState.hostDocument) {
             this._graphCanvas = this._graphCanvasRef.current!;
             this._diagramContainer = this._diagramContainerRef.current!;
+            this._historyStack = new HistoryStack(this.props.globalState);
             this._previewManager = new PreviewManager(this.props.globalState.hostDocument.getElementById("preview-canvas") as HTMLCanvasElement, this.props.globalState);
             (this.props.globalState as any)._previewManager = this._previewManager;
         }
@@ -108,6 +110,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         });
 
         this.build();
+        this.props.globalState.onClearUndoStack.notifyObservers();
     }
 
     override componentWillUnmount() {
@@ -115,6 +118,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         if (this.props.globalState.hostDocument) {
             this.props.globalState.hostDocument!.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
+        }
+
+        if (this._historyStack) {
+            this._historyStack.dispose();
+            this._historyStack = null as any;
         }
 
         if (this._previewManager) {
@@ -201,6 +209,22 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         };
 
         this.props.globalState.hostDocument!.addEventListener("keydown", (evt) => {
+            if (evt.ctrlKey || evt.metaKey) {
+                if (evt.key === "z" || evt.key === "Z") {
+                    if (evt.shiftKey) {
+                        this._historyStack.redo();
+                        return;
+                    }
+
+                    this._historyStack.undo();
+                    return;
+                }
+                if (evt.key === "y" || evt.key === "Y") {
+                    this._historyStack.redo();
+                    return;
+                }
+            }
+
             this._graphCanvas.handleKeyDown(
                 evt,
                 (nodeData) => {
@@ -239,6 +263,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         const material = this.props.globalState.nodeMaterial;
         try {
             material.options.emitComments = true;
+
             material.build(true);
         } catch (err) {
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
@@ -304,10 +329,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this.showWaitScreen();
         this._graphCanvas._isLoading = true; // Will help loading large graphes
 
-        setTimeout(() => {
-            this._graphCanvas.reOrganize(editorData, isImportingAFrame);
-            this.hideWaitScreen();
-        });
+        this._graphCanvas.reOrganize(editorData, isImportingAFrame);
+        this.hideWaitScreen();
     }
 
     onPointerDown(evt: React.PointerEvent<HTMLDivElement>) {
