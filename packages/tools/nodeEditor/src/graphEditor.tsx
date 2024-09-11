@@ -209,7 +209,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         };
 
         this.props.globalState.hostDocument!.addEventListener("keydown", (evt) => {
-            if (evt.ctrlKey) {
+            if (evt.ctrlKey || evt.metaKey) {
                 if (evt.key === "z" || evt.key === "Z") {
                     if (evt.shiftKey) {
                         this._historyStack.redo();
