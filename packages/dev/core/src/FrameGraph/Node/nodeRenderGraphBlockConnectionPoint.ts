@@ -289,12 +289,13 @@ export class NodeRenderGraphConnectionPoint {
      * @param mask Types (ORed values of NodeRenderGraphBlockConnectionPointTypes) that are allowed, and thus will not be pushed to the excluded list
      */
     public addExcludedConnectionPointFromAllowedTypes(mask: number): void {
-        let bitmask = 1;
-        while (bitmask < NodeRenderGraphBlockConnectionPointTypes.All) {
-            if (!(mask & bitmask)) {
+        let bitmask = 0;
+        // Note: don't use 1 << bitmask instead of 2 ** bitmask, as it will cause an infinite loop because 1 << 31 is negative!
+        while (2 ** bitmask < NodeRenderGraphBlockConnectionPointTypes.All) {
+            if (!(mask & (2 ** bitmask))) {
                 this.excludedConnectionPointTypes.push(bitmask);
             }
-            bitmask = bitmask << 1;
+            bitmask++;
         }
     }
 
@@ -303,12 +304,13 @@ export class NodeRenderGraphConnectionPoint {
      * @param mask Types (ORed values of NodeRenderGraphBlockConnectionPointTypes) that are allowed to connect to this point
      */
     public addAcceptedConnectionPointTypes(mask: number): void {
-        let bitmask = 1;
-        while (bitmask < NodeRenderGraphBlockConnectionPointTypes.All) {
-            if (mask & bitmask && this.acceptedConnectionPointTypes.indexOf(bitmask) === -1) {
+        let bitmask = 0;
+        // Note: don't use 1 << bitmask instead of 2 ** bitmask, as it will cause an infinite loop because 1 << 31 is negative!
+        while (2 ** bitmask < NodeRenderGraphBlockConnectionPointTypes.All) {
+            if (mask & (2 ** bitmask) && this.acceptedConnectionPointTypes.indexOf(bitmask) === -1) {
                 this.acceptedConnectionPointTypes.push(bitmask);
             }
-            bitmask = bitmask << 1;
+            bitmask++;
         }
     }
 

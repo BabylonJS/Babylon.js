@@ -50,23 +50,24 @@ export enum NodeRenderGraphBlockConnectionPointTypes {
     TextureVelocity = 0x00000200,
     TextureIrradiance = 0x00000400,
     TextureAlbedoSqrt = 0x00000800,
-    TextureAllButBackBufferDepthStencil = 0x0000fffb,
-    TextureAllButBackBuffer = 0x0000fff9,
-    TextureAll = 0x0000ffff,
+
+    TextureAllButBackBufferDepthStencil = 0x00fffffb,
+    TextureAllButBackBuffer = 0x00fffff9,
+    TextureAll = 0x00ffffff,
 
     /** Camera */
-    Camera = 0x00010000,
+    Camera = 0x01000000,
     /** List of objects (meshes, particle systems, sprites) */
-    ObjectList = 0x00020000,
+    ObjectList = 0x02000000,
 
     /** Detect type based on connection */
-    AutoDetect = 0x01000000,
+    AutoDetect = 0x10000000,
     /** Output type that will be defined by input type */
-    BasedOnInput = 0x02000000,
+    BasedOnInput = 0x20000000,
     /** Undefined */
-    Undefined = 0x04000000,
+    Undefined = 0x40000000,
     /** Bitmask of all types */
-    All = 0x0fffffff,
+    All = 0xffffffff,
 }
 
 /**
