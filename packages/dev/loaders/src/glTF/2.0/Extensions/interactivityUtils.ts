@@ -180,3 +180,206 @@ export const gltfTypeToBabylonType: {
     float4x4: "Matrix",
     int: "FlowGraphInteger",
 };
+
+/*
+
+# glTF to FlowGraph type mapping
+
+## Math nodes:
+### Constants:
+
+- math/e: FlowGraphEBlock !
+- math/pi: FlowGraphPiBlock !
+- math/inf: FlowGraphInfBlock !
+- math/nan: FlowGraphNaNBlock !
+
+### Arithmetic:
+
+- math/abs: FlowGraphAbsBlock !
+- math/sign: FlowGraphSignBlock !
+- math/trunc: FlowGraphTruncBlock !
+- math/floor: FlowGraphFloorBlock !
+- math/ceil: FlowGraphCeilBlock !
+- math/fract: FlowGraphFractBlock !
+- math/neg: FlowGraphNegBlock !
+- math/add: FlowGraphAddBlock !
+- math/sub: FlowGraphSubtractBlock !
+- math/mul: FlowGraphMultiplyBlock !
+- math/div: FlowGraphDivideBlock !
+- math/rem: FlowGraphRemainderBlock (Currently using % operator, need to check against floats!) !
+- math/min: FlowGraphMinBlock !
+- math/max: FlowGraphMaxBlock !
+- math/clamp: FlowGraphClampBlock !
+- math/saturate: FlowGraphSaturateBlock !
+- math/mix: FlowGraphInterpolateBlock !
+
+### Comparison:
+- math/eq: FlowGraphEqBlock !
+- math/lt: FlowGraphLessThanBlock !
+- math/le: FlowGraphLessThanOrEqualBlock !
+- math/gt: FlowGraphGreaterThanBlock !
+- math/ge: FlowGraphGreaterThanOrEqualBlock !
+
+### Special nodes
+
+- math/isnan: FlowGraphIsNanBlock !
+- math/isinf: FlowGraphIsInfBlock !
+- math/select: 
+
+### Trigonometry:
+
+- math/rad: FlowGraphDegToRadBlock !
+- math/deg: FlowGraphRadToDegBlock !
+- math/sin: FlowGraphSinBlock !
+- math/cos: FlowGraphCosBlock !
+- math/tan: FlowGraphTanBlock !
+- math/asin: FlowGraphAsinBlock !
+- math/acos: FlowGraphAcosBlock !
+- math/atan: FlowGraphAtanBlock !
+- math/atan2: FlowGraphAtan2Block !
+
+### Hyperbolic:
+
+- math/sinh: FlowGraphSinhBlock !
+- math/cosh: FlowGraphCoshBlock !
+- math/tanh: FlowGraphTanhBlock !
+- math/asinh: FlowGraphAsinhBlock !
+- math/acosh: FlowGraphAcoshBlock !
+- math/atanh: FlowGraphAtanhBlock !
+
+### Exponential:
+
+- math/exp: FlowGraphExpBlock !
+- math/log: FlowGraphLogBlock !
+- math/log2: FlowGraphLog2Block !
+- math/log10: FlowGraphLog10Block !
+- math/sqrt: FlowGraphSqrtBlock !
+- math/cbrt: FlowGraphCubeRootBlock !
+- math/pow: FlowGraphPowBlock !
+
+### Vector operations:
+
+- math/length: FlowGraphLengthBlock !
+- math/normalize: FlowGraphNormalizeBlock !
+- math/dot: FlowGraphDotBlock !
+- math/cross: FlowGraphCrossBlock !
+- math/rotate2d: FlowGraphRotate2DBlock !
+- math/rotate3d: FlowGraphRotate3DBlock !
+- math/transform: 
+- math/combine2:
+- math/combine3:
+- math/combine4:
+- math/extract2:
+- math/extract3:
+- math/extract4:
+
+### Matrix operations:
+
+- math/transpose: FlowGraphTransposeBlock !
+- math/determinant: FlowGraphDeterminantBlock !
+- math/inverse: FlowGraphInvertMatrixBlock !
+- math/matmul: FlowGraphMatMulBlock !
+- math/combine4x4:
+- math/extract4x4:
+
+### Integer operations:
+
+- math.abs: FlowGraphAbsBlock !
+- math.sign: FlowGraphSignBlock !
+- math/neg: FlowGraphNegBlock !
+- math/add: FlowGraphAddBlock !
+- math/sub: FlowGraphSubtractBlock !
+- math/mul: FlowGraphMultiplyBlock !
+- math/div: FlowGraphDivideBlock !
+- math/rem: FlowGraphRemainderBlock !
+- math/min: FlowGraphMinBlock !
+- math/max: FlowGraphMaxBlock !
+- math/clamp: FlowGraphClampBlock !
+
+### integer comparison:
+
+- math/eq: FlowGraphEqBlock !
+- math/lt: FlowGraphLessThanBlock !
+- math/le: FlowGraphLessThanOrEqualBlock !
+- math/gt: FlowGraphGreaterThanBlock !
+- math/ge: FlowGraphGreaterThanOrEqualBlock !
+
+### Bitwise operations:
+
+- math/not: FlowGraphBitwiseNotBlock !
+- math/and: FlowGraphBitwiseAndBlock !
+- math/or: FlowGraphBitwiseOrBlock !
+- math/xor: FlowGraphBitwiseXorBlock !
+- math/asr: FlowGraphBitwiseRightShiftBlock !
+- math/lsl: FlowGraphBitwiseLeftShiftBlock !
+- math/clz: FlowGraphCountLeadingZerosBlock !
+- math/ctz: FlowGraphCountTrailingZerosBlock !
+- math/popcnt: FlowGraphCountOneBitsBlock
+
+## Type conversion:
+
+### Boolean:
+
+- type.boolToInt:
+- type.boolToFloat:
+
+### Integer:
+
+- type.intToBool:
+- type.intToFloat:
+
+### Float:
+
+- type.floatToBool:
+- type.floatToInt:
+
+## Control flow:
+
+### Sync nodes:
+
+- flow/sequence: FlowGraphSequenceBlock
+- flow/branch:
+- flow/switch:
+- flow/while:
+- flow/for:
+- flow/doN: FlowGraphDoNBlock
+- flow/multiGate:
+- flow/waitAll:
+- flow/throttle: FlowGraphThrottleBlock
+- flow/setDelay:
+- flow/cancelDelay:
+
+## State manipulation nodes:
+
+## Custom variable access:
+
+- variable/get: FlowGraphGetVariableBlock
+- variable/set: FlowGraphSetVariableBlock
+
+### Object model access:
+
+- pointer/get:
+- pointer/set:
+- pointer/interpolate:
+
+### Animation control nodes:
+
+- animation/start:
+- animation/stop:
+- animation/stopAt:
+
+## Event nodes:
+
+### Lifecycle events:
+
+- event/onStart: FlowGraphSceneReadyEventBlock
+- event/onTick: FlowGraphSceneTickEventBlock
+
+### Custom events:
+
+- event/receive: FlowGraphReceiveCustomEventBlock
+- event/send: FlowGraphSendCustomEventBlock
+
+
+
+*/

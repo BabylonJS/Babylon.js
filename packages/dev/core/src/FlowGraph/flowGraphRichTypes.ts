@@ -68,6 +68,7 @@ export const RichTypeFlowGraphInteger: RichType<FlowGraphInteger> = new RichType
  * @returns the value's rich type, or RichTypeAny if the type could not be deduced.
  */
 export function getRichTypeFromValue<T>(value: T): RichType<T> {
+    const anyValue = value as any;
     switch (typeof value) {
         case "string":
             return RichTypeString as RichType<T>;
@@ -76,23 +77,27 @@ export function getRichTypeFromValue<T>(value: T): RichType<T> {
         case "boolean":
             return RichTypeBoolean as RichType<T>;
         case "object":
-            if (value instanceof Vector2) {
-                return RichTypeVector2 as RichType<T>;
-            } else if (value instanceof Vector3) {
-                return RichTypeVector3 as RichType<T>;
-            } else if (value instanceof Vector4) {
-                return RichTypeVector4 as RichType<T>;
-            } else if (value instanceof Color3) {
-                return RichTypeColor3 as RichType<T>;
-            } else if (value instanceof Color4) {
-                return RichTypeColor4 as RichType<T>;
-            } else if (value instanceof Quaternion) {
-                return RichTypeQuaternion as RichType<T>;
-            } else if (value instanceof FlowGraphInteger) {
-                return RichTypeFlowGraphInteger as RichType<T>;
-            } else {
-                return RichTypeAny as RichType<T>;
+            if (anyValue.getClassName) {
+                switch (anyValue.getClassName() as string) {
+                    case "Vector2":
+                        return RichTypeVector2 as RichType<T>;
+                    case "Vector3":
+                        return RichTypeVector3 as RichType<T>;
+                    case "Vector4":
+                        return RichTypeVector4 as RichType<T>;
+                    case "Matrix":
+                        return RichTypeMatrix as RichType<T>;
+                    case "Color3":
+                        return RichTypeColor3 as RichType<T>;
+                    case "Color4":
+                        return RichTypeColor4 as RichType<T>;
+                    case "Quaternion":
+                        return RichTypeQuaternion as RichType<T>;
+                    case "FlowGraphInteger":
+                        return RichTypeFlowGraphInteger as RichType<T>;
+                }
             }
+            return RichTypeAny as RichType<T>;
         default:
             return RichTypeAny as RichType<T>;
     }
