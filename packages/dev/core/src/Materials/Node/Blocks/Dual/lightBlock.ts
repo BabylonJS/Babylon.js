@@ -372,12 +372,18 @@ export class LightBlock extends NodeMaterialBlock {
 
         state._emitFunctionFromInclude("helperFunctions", comments);
 
+        let replaceString = { search: /vPositionW/g, replace: worldPosVariableName };
+
+        if (state.shaderLanguage === ShaderLanguage.WGSL) {
+            replaceString = { search: /fragmentInputs\.vPositionW/g, replace: worldPosVariableName };
+        }
+
         state._emitFunctionFromInclude("lightsFragmentFunctions", comments, {
-            replaceStrings: [{ search: /vPositionW/g, replace: worldPosVariableName }],
+            replaceStrings: [replaceString],
         });
 
         state._emitFunctionFromInclude("shadowsFragmentFunctions", comments, {
-            replaceStrings: [{ search: /vPositionW/g, replace: worldPosVariableName }],
+            replaceStrings: [replaceString],
         });
 
         this._injectUBODeclaration(state);
