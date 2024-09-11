@@ -3,6 +3,7 @@ precision highp sampler3D;
 
 varying vec2 vUV;
 
+
 uniform sampler3D srcMip;
 
 uniform int layerNum;

@@ -463,6 +463,11 @@ color = vec4f(max(color.rgb, vec3f(0.)), color.a);
                                           writeGeometryInfo); // Linear depth
 #endif
 
+#ifdef PREPASS_NDC_DEPTH
+        fragData[PREPASS_NDC_DEPTH_INDEX] = vec4f(
+            fragmentInputs.position.z, 0.0, 0.0, writeGeometryInfo); // Clip-space depth
+#endif
+
 #ifdef PREPASS_NORMAL
 #ifdef PREPASS_NORMAL_WORLDSPACE
     fragData[PREPASS_NORMAL_INDEX] =

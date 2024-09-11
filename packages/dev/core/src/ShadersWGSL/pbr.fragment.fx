@@ -252,7 +252,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
         #ifndef USE_CUSTOM_REFLECTION
             reflectionOut = reflectionBlock(
-                input.vPositionW
+                fragmentInputs.vPositionW
                 , normalW
                 , alphaG
                 , uniforms.vReflectionMicrosurfaceInfos
@@ -270,7 +270,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                 , reflectionSampler
                 , reflectionSamplerSampler
             #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
-                , input.vEnvironmentIrradiance
+                , fragmentInputs.vEnvironmentIrradiance
             #endif
             #ifdef USESPHERICALFROMREFLECTIONMAP
                 #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
@@ -422,7 +422,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         #endif
 
         clearcoatOut = clearcoatBlock(
-            input.vPositionW
+            fragmentInputs.vPositionW
             , geometricNormalW
             , viewDirectionW
             , uniforms.vClearCoatParams
@@ -548,7 +548,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             , surfaceAlbedo
         #endif
         #ifdef SS_REFRACTION
-            , input.vPositionW
+            , fragmentInputs.vPositionW
             , viewDirectionW
             , scene.view
             , uniforms.vRefractionInfos
@@ -628,11 +628,15 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
 
 #ifdef PREPASS
-    var writeGeometryInfo: f32 = select(0.0, 1.0, finalColor.a > 0.4);
+    var writeGeometryInfo: f32 = select(0.0, 1.0, finalColor.a > ALPHATESTVALUE);
     var fragData: array<vec4<f32>, SCENE_MRT_COUNT>;
 
     #ifdef PREPASS_POSITION
-    fragData[PREPASS_POSITION_INDEX] =  vec4f(input.vPositionW, writeGeometryInfo);
+    fragData[PREPASS_POSITION_INDEX] =  vec4f(fragmentInputs.vPositionW, writeGeometryInfo);
+    #endif
+
+    #ifdef PREPASS_LOCAL_POSITION
+    fragData[PREPASS_LOCAL_POSITION_INDEX] = vec4f(fragmentInputs.vPosition * 0.5 + 0.5, writeGeometryInfo);
     #endif
 
     #ifdef PREPASS_VELOCITY
@@ -686,6 +690,11 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                                           writeGeometryInfo); // Linear depth
 #endif
 
+#ifdef PREPASS_NDC_DEPTH
+        fragData[PREPASS_NDC_DEPTH_INDEX] = vec4f(
+            fragmentInputs.position.z, 0.0, 0.0, writeGeometryInfo); // Clip-space depth
+#endif
+
 #ifdef PREPASS_NORMAL
 #ifdef PREPASS_NORMAL_WORLDSPACE
     fragData[PREPASS_NORMAL_INDEX] =
@@ -695,6 +704,10 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         vec4f(normalize((scene.view * vec4f(normalW, 0.0)).rgb),
               writeGeometryInfo); // Normal
 #endif
+#endif
+
+#ifdef PREPASS_WORLD_NORMAL
+    fragData[PREPASS_WORLD_NORMAL_INDEX] = vec4f(normalW * 0.5 + 0.5, writeGeometryInfo); // Normal
 #endif
 
 #ifdef PREPASS_ALBEDO_SQRT

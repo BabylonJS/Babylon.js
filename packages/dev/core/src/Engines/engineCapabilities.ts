@@ -12,6 +12,8 @@ export interface EngineCapabilities {
     maxTextureSize: number;
     /** Maximum texture samples */
     maxSamples?: number;
+    /** Maximum draw buffers */
+    maxDrawBuffers?: number;
     /** Maximum cube texture size */
     maxCubemapTextureSize: number;
     /** Maximum render texture size */

@@ -12,9 +12,6 @@ import { Logger } from "../../Misc/logger";
 import { _IblShadowsVoxelRenderer } from "./iblShadowsVoxelRenderer";
 import { _IblShadowsVoxelTracingPass } from "./iblShadowsVoxelTracingPass";
 
-import "../../Shaders/postprocess.vertex";
-import "../../Shaders/iblShadowGBufferDebug.fragment";
-import "../../Shaders/iblShadowsCombine.fragment";
 import { PostProcess } from "../../PostProcesses/postProcess";
 import type { PostProcessOptions } from "../../PostProcesses/postProcess";
 import { _IblShadowsImportanceSamplingRenderer } from "./iblShadowsImportanceSamplingRenderer";
@@ -25,6 +22,7 @@ import { FreeCamera } from "../../Cameras/freeCamera";
 import { PostProcessRenderPipeline } from "../../PostProcesses/RenderPipeline/postProcessRenderPipeline";
 import { PostProcessRenderEffect } from "core/PostProcesses/RenderPipeline/postProcessRenderEffect";
 import type { Camera } from "core/Cameras/camera";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 interface IblShadowsSettings {
     /**
@@ -691,6 +689,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     }
 
     private _createShadowCombinePostProcess() {
+        const isWebGPU = this.engine.isWebGPU;
         const compositeOptions: PostProcessOptions = {
             width: this.scene.getEngine().getRenderWidth(),
             height: this.scene.getEngine().getRenderHeight(),
@@ -700,6 +699,14 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             engine: this.scene.getEngine(),
             textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             reusable: false,
+            shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
+                if (useWebGPU) {
+                    list.push(import("../../ShadersWGSL/iblShadowsCombine.fragment"));
+                } else {
+                    list.push(import("../../Shaders/iblShadowsCombine.fragment"));
+                }
+            },
         };
         this._shadowCompositePP = new PostProcess("iblShadowsCombine", "iblShadowsCombine", compositeOptions);
         this._shadowCompositePP.autoClear = false;
@@ -774,6 +781,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         if (this._gbufferDebugPass) {
             return this._gbufferDebugPass;
         }
+        const isWebGPU = this.engine.isWebGPU;
         const textureNames: string[] = this._prePassEffectConfiguration.texturesRequired.map((type) => PrePassRenderer.TextureFormats[type].name.toString());
 
         const options: PostProcessOptions = {
@@ -786,6 +794,14 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             uniforms: ["sizeParams"],
             samplers: textureNames,
             reusable: false,
+            shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
+                if (useWebGPU) {
+                    list.push(import("../../ShadersWGSL/iblShadowGBufferDebug.fragment"));
+                } else {
+                    list.push(import("../../Shaders/iblShadowGBufferDebug.fragment"));
+                }
+            },
         };
         this._gbufferDebugPass = new PostProcess("iblShadowGBufferDebug", "iblShadowGBufferDebug", options);
         this._gbufferDebugPass.autoClear = false;

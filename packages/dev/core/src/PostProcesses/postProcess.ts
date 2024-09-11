@@ -206,6 +206,10 @@ export type PostProcessOptions = {
      * The shader language of the shader. (default: GLSL)
      */
     shaderLanguage?: ShaderLanguage;
+    /**
+     * Defines additional code to call to prepare the shader code
+     */
+    extraInitializations?: (useWebGPU: boolean, list: Promise<any>[]) => void;
 };
 
 type TextureCache = { texture: RenderTargetWrapper; postProcessChannel: number; lastUsedRenderId: number };
@@ -672,6 +676,7 @@ export class PostProcess {
             textureFormat = options.textureFormat ?? Constants.TEXTUREFORMAT_RGBA;
             shaderLanguage = options.shaderLanguage ?? ShaderLanguage.GLSL;
             uniformBuffers = options.uniformBuffers ?? null;
+            extraInitializations = options.extraInitializations;
         } else if (_size) {
             if (typeof _size === "number") {
                 size = _size;
