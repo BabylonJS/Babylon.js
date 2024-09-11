@@ -409,7 +409,7 @@ export class LightBlock extends NodeMaterialBlock {
             let replaceString = { search: /vPositionW/g, replace: worldPosVariableName + ".xyz" };
 
             if (isWGSL) {
-                replaceString = { search: /input\.vPositionW/g, replace: worldPosVariableName + ".xyz" };
+                replaceString = { search: /fragmentInputs\.vPositionW/g, replace: worldPosVariableName + ".xyz" };
             }
 
             state.compilationString += state._emitCodeFromInclude("lightFragment", comments, {
@@ -419,7 +419,7 @@ export class LightBlock extends NodeMaterialBlock {
             let substitutionVars = `vPositionW,${worldPosVariableName}.xyz`;
 
             if (isWGSL) {
-                substitutionVars = `input.vPositionW,${worldPosVariableName}.xyz`;
+                substitutionVars = `fragmentInputs.vPositionW,${worldPosVariableName}.xyz`;
             }
             state.compilationString += state._emitCodeFromInclude("lightFragment", comments, {
                 repeatKey: "maxSimultaneousLights",
