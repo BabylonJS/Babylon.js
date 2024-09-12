@@ -1,5 +1,5 @@
 {
-    "fromTag": "7.23.1",
+    "fromTag": "7.24.0",
     "changelog": {
         "7.24.0": [
             {
@@ -29,6 +29,560 @@
                     "packages/public/@babylonjs/viewer-alpha/package.json"
                 ],
                 "tags": []
+            }
+        ],
+        "7.25.0": [
+            {
+                "pr": "15555",
+                "title": "Remove extraneous load of material base properties in some glTF loader extensions",
+                "description": "See https://forum.babylonjs.com/t/gltf-material-extension-attribute-loading-texture-twice/53319.\r\n\r\nNote that the one in [KHR_materials_pbrSpecularGlossiness.ts](https://github.com/BabylonJS/Babylon.js/blob/601a52d6b2d209483de3bda4baeab67d126cab1b/packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts#L66) is correct because `loadMaterialPropertiesAsync` is not called.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_diffuse_transmission.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_dispersion.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_transmission.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_volume.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15553",
+                "title": "Using zip compression for the history stack",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/package.json",
+                    "packages/tools/nodeEditor/src/historyStack.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15552",
+                "title": "Fix replacement issue when webGPU",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/lightBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightFragment.fx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15521",
+                "title": "IBL shadows to WebGPU",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts",
+                    "packages/dev/core/src/Engines/engineCapabilities.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/nullEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/Textures/Filtering/hdrFiltering.ts",
+                    "packages/dev/core/src/Materials/Textures/Procedurals/proceduralTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/index.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/postProcessRenderPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/postProcess.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsAccumulationPass.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsImportanceSamplingRenderer.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsRenderPipeline.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsSpatialBlurPass.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelRenderer.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelTracingPass.ts",
+                    "packages/dev/core/src/Rendering/index.ts",
+                    "packages/dev/core/src/Shaders/iblCombineVoxelGrids.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblGenerateVoxelMip.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblShadowsImportanceSamplingDebug.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblVoxelGrid.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblVoxelGrid.vertex.fx",
+                    "packages/dev/core/src/Shaders/iblVoxelGrid2dArrayDebug.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblVoxelGrid3dDebug.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblVoxelSlabDebug.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblVoxelSlabDebug.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/copyTexture3DLayerToTexture.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/default.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/hdrFiltering.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/hdrFiltering.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblCombineVoxelGrids.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblGenerateVoxelMip.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblShadowAccumulation.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblShadowDebug.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblShadowGBufferDebug.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblShadowSpatialBlur.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblShadowVoxelTracing.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblShadowsCdfx.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblShadowsCdfy.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblShadowsCombine.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblShadowsIcdfx.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblShadowsIcdfy.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblShadowsImportanceSamplingDebug.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblVoxelGrid.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblVoxelGrid.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblVoxelGrid2dArrayDebug.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblVoxelGrid3dDebug.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblVoxelSlabDebug.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblVoxelSlabDebug.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/pbr.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/procedural.vertex.fx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15546",
+                "title": "Add undo / redo support to NME",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/stateManager.ts",
+                    "packages/tools/nodeEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/globalState.ts",
+                    "packages/tools/nodeEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeEditor/src/historyStack.ts",
+                    "packages/tools/nodeEditor/src/serializationTools.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "15551",
+                "title": "3D GUI Near Menu computes the cell size incorrectly",
+                "description": "Fixes #15550\n\nThe extend size was computed incorrectly (if the menu is transformed in any way). The reason it was not found so far is that it will only appear if the menu is manipulated after rotating the camera.\n\nPlayground to test with - #Z6M4WM#4 . If testing the \"before\" state, rotate the camera 90 degrees and press one of the buttons.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/3D/controls/volumeBasedPanel.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "15549",
+                "title": "Inspector pane resize doesn't stick after mouse up",
+                "description": "Fixes #15548\r\n\r\nTo check - https://sandbox.babylonjs.com/?assetUrl=https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/DragonDispersion/glTF/DragonDispersion.gltf&snapshot=refs/pull/15549/merge",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/actionTabsComponent.tsx",
+                    "packages/dev/inspector/src/components/embedHost/embedHostComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/sceneExplorerComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15547",
+                "title": "go away flaky test",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15545",
+                "title": "IBL Shadows in WebGPU",
+                "description": "This incorporates @Popov72 's WebGPU fixes and addresses artifacts in screen space shadows caused when FP32 buffers are not being supported in WebGPU.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsAccumulationPass.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsRenderPipeline.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelRenderer.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelTracingPass.ts",
+                    "packages/dev/core/src/Shaders/iblShadowVoxelTracing.fragment.fx",
+                    "packages/dev/core/src/Shaders/voxelGrid.vertex.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15543",
+                "title": "Reduce render count use",
+                "description": "This is mainly to make sure we do not have hidden timing or delay issues",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    ".vscode/launch.json",
+                    "packages/tools/tests/test/visualization/ReferenceImages/decal-map-pp.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15542",
+                "title": "Fix es6 build on windows",
+                "description": "There were two issues due to directory structure on windows.\r\n\r\nWhoever thought that backslash is better than slash when defining a directory should never be consulted.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/addJSToCompiledFiles.ts",
+                    "packages/dev/buildTools/src/copyAssets.ts",
+                    "packages/dev/buildTools/src/prepareEs6Build.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15537",
+                "title": "Allow overriding the default texture loaders",
+                "description": "If an experience has developed their own texture loader there is currently no way to use them.\n\nThis allows defining a function that will either return null and then continue using the default texture loader(s) or a promise that returns the texture loader. ",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/Loaders/textureLoaderManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15541",
+                "title": "Allow alpha in shadow color",
+                "description": "Fixes #15540",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15539",
+                "title": "Remove usage of deprecated substr",
+                "description": "substr has been deprecated for a while now (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/substr) , removing all usage of substr from the framework.\r\n\r\n`substr(0, n)` is the same as `substring(0, n)`, `substr(n)` is the same as `substring(n)`. The only difference is the second variable (or if the first is negative). Adjusted.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/generateDeclaration.ts",
+                    "packages/dev/core/src/Compute/computeEffect.ts",
+                    "packages/dev/core/src/Engines/Processors/Expressions/shaderDefineExpression.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsGLSL.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Loading/sceneLoader.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/colorMergerBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/vectorMergerBlock.ts",
+                    "packages/dev/core/src/Materials/Textures/texture.ts",
+                    "packages/dev/core/src/Materials/effect.functions.ts",
+                    "packages/dev/core/src/Misc/PerformanceViewer/performanceViewerCollector.ts",
+                    "packages/dev/core/src/Misc/reflector.ts",
+                    "packages/dev/gui/src/2D/controls/inputText.ts",
+                    "packages/dev/gui/src/2D/controls/inputTextArea.ts",
+                    "packages/dev/gui/src/2D/controls/textWrapper.ts",
+                    "packages/dev/loaders/src/OBJ/mtlFileLoader.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts",
+                    "packages/dev/loaders/src/glTF/glTFFileLoader.ts",
+                    "packages/dev/sharedUiComponents/src/lines/hexLineComponent.tsx",
+                    "packages/tools/guiEditor/src/diagram/workbench.tsx",
+                    "packages/tools/nodeEditor/src/sharedComponents/draggableLineWithButtonComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/sharedComponents/draggableLineWithButtonComponent.tsx",
+                    "packages/tools/playground/src/components/rendererComponent.tsx",
+                    "packages/tools/playground/src/tools/downloadManager.ts",
+                    "packages/tools/playground/src/tools/loadManager.ts",
+                    "packages/tools/playground/src/tools/utilities.ts",
+                    "packages/tools/sandbox/src/components/reflectorZone.tsx",
+                    "packages/tools/viewer/src/viewer/viewer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15538",
+                "title": "glob update and relative dir fix in windows",
+                "description": "Under windows, declaration was using complete directories which could have caused an issue when using the declaration in the local playground, depending on the directory used.\r\n\r\nThis adjusts the directory to be relative, making the declaration define the modules correctly.\r\n\r\nI also updated rimraf to a new version, to make sure we don't use an old unsupported glob version",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/buildTools/src/generateDeclaration.ts",
+                    "packages/dev/gui/package.json",
+                    "packages/dev/inspector/package.json",
+                    "packages/dev/loaders/package.json",
+                    "packages/dev/materials/package.json",
+                    "packages/dev/postProcesses/package.json",
+                    "packages/dev/proceduralTextures/package.json",
+                    "packages/dev/serializers/package.json",
+                    "packages/dev/sharedUiComponents/package.json",
+                    "packages/lts/core/package.json",
+                    "packages/lts/gui/package.json",
+                    "packages/lts/loaders/package.json",
+                    "packages/lts/materials/package.json",
+                    "packages/lts/postProcesses/package.json",
+                    "packages/lts/proceduralTextures/package.json",
+                    "packages/lts/serializers/package.json",
+                    "packages/public/@babylonjs/core/package.json",
+                    "packages/public/@babylonjs/gui/package.json",
+                    "packages/public/@babylonjs/ktx2decoder/package.json",
+                    "packages/public/@babylonjs/loaders/package.json",
+                    "packages/public/@babylonjs/materials/package.json",
+                    "packages/public/@babylonjs/post-processes/package.json",
+                    "packages/public/@babylonjs/procedural-textures/package.json",
+                    "packages/public/@babylonjs/serializers/package.json",
+                    "packages/public/@babylonjs/shared-ui-components/package.json",
+                    "packages/public/@babylonjs/test-tools/package.json",
+                    "packages/public/@babylonjs/viewer-alpha/package.json",
+                    "packages/public/@babylonjs/viewer/package.json",
+                    "packages/public/umd/babylonjs-accessibility/package.json",
+                    "packages/public/umd/babylonjs-gui-editor/package.json",
+                    "packages/public/umd/babylonjs-gui/package.json",
+                    "packages/public/umd/babylonjs-inspector/package.json",
+                    "packages/public/umd/babylonjs-ktx2decoder/package.json",
+                    "packages/public/umd/babylonjs-loaders/package.json",
+                    "packages/public/umd/babylonjs-materials/package.json",
+                    "packages/public/umd/babylonjs-node-editor/package.json",
+                    "packages/public/umd/babylonjs-node-geometry-editor/package.json",
+                    "packages/public/umd/babylonjs-post-process/package.json",
+                    "packages/public/umd/babylonjs-procedural-textures/package.json",
+                    "packages/public/umd/babylonjs-serializers/package.json",
+                    "packages/public/umd/babylonjs-viewer/package.json",
+                    "packages/public/umd/babylonjs/package.json",
+                    "packages/tools/accessibility/package.json",
+                    "packages/tools/guiEditor/package.json",
+                    "packages/tools/nodeEditor/package.json",
+                    "packages/tools/nodeGeometryEditor/package.json",
+                    "packages/tools/testTools/package.json",
+                    "packages/tools/testsMemoryLeaks/package.json",
+                    "packages/tools/viewer-alpha/package.json",
+                    "packages/tools/viewer/package.json",
+                    "packages/tools/vsm/package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15536",
+                "title": "fix screenshot tools custom texture",
+                "description": "https://forum.babylonjs.com/t/wrong-function-signature-type-for-create-screenshot-using-rendertarget/53233",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/screenshotTools.ts",
+                    "packages/dev/core/src/Misc/tools.ts"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "15535",
+                "title": "Fix IBL Shadows async issue during effect creation",
+                "description": "We were hitting this in macOS only but it looks like it could potentially happen anywhere. The effects were potentially being created and applied before the importance sampling pipeline was ready.\r\n\r\nI also changed the default shadow opacity to 0.75 to help with the over-darkening issue of the shadows. This is what we use by default in our Substance 3D apps.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsImportanceSamplingRenderer.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsRenderPipeline.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/voxelShadows.png"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15373",
+                "title": "Complete migration of `Scalar` to functions",
+                "description": "Back in February, I opened #14805. One of the examples I used was `Scalar`. @deltakosh started to make the migration to functions in https://github.com/BabylonJS/Babylon.js/commit/74c4c4740dde6488a8dd46d2a50917a6cf83a06f.\r\n\r\nThis PR completes the migration from static methods on `Scalar` to functions. I've updated all usage throughout the framework, and marked the original class as deprecated, though I have not removed it for backward compatibility.\r\n\r\nIt also renames the functions that are named using pascal case to camel case in order to follow the correct convention. Again, they were not removed for backward compatibility but have been marked as deprecated.\r\n\r\nOne notable change is that I omitted the `Scalar.Log2` and `Scalar.Sign` method. This is because `Math.log2` and `Math.sign` can be used instead, which should be faster since it is a native function.\r\n\r\nUsing functions should speed up performance and reduce bundle size.\r\n\r\nIf pascal case is desired for the function names, I'm flexible and can make the change in a minute so no worries there.",
+                "author": {
+                    "name": "james-pre",
+                    "url": "https://github.com/james-pre"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animation.ts",
+                    "packages/dev/core/src/Behaviors/Meshes/followBehavior.ts",
+                    "packages/dev/core/src/Cameras/Inputs/arcRotateCameraMouseWheelInput.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.prefilteredCubeTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuHardwareTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureHelper.ts",
+                    "packages/dev/core/src/LensFlares/lensFlareSystem.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/reflectionBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/refractionBlock.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrSubSurfaceConfiguration.ts",
+                    "packages/dev/core/src/Materials/Textures/Filtering/hdrFiltering.ts",
+                    "packages/dev/core/src/Maths/math.color.ts",
+                    "packages/dev/core/src/Maths/math.path.ts",
+                    "packages/dev/core/src/Maths/math.scalar.functions.ts",
+                    "packages/dev/core/src/Maths/math.scalar.ts",
+                    "packages/dev/core/src/Meshes/Builders/decalBuilder.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/conditionBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryOptimizeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/noiseBlock.ts",
+                    "packages/dev/core/src/Meshes/geodesicMesh.ts",
+                    "packages/dev/core/src/Meshes/trailMesh.ts",
+                    "packages/dev/core/src/Misc/HighDynamicRange/cubemapToSphericalPolynomial.ts",
+                    "packages/dev/core/src/Misc/basis.ts",
+                    "packages/dev/core/src/Misc/dds.ts",
+                    "packages/dev/core/src/Misc/dumpTools.ts",
+                    "packages/dev/core/src/Misc/environmentTextureTools.ts",
+                    "packages/dev/core/src/Particles/EmitterTypes/coneParticleEmitter.ts",
+                    "packages/dev/core/src/Particles/EmitterTypes/cylinderParticleEmitter.ts",
+                    "packages/dev/core/src/Particles/EmitterTypes/hemisphericParticleEmitter.ts",
+                    "packages/dev/core/src/Particles/EmitterTypes/meshParticleEmitter.ts",
+                    "packages/dev/core/src/Particles/EmitterTypes/pointParticleEmitter.ts",
+                    "packages/dev/core/src/Particles/EmitterTypes/sphereParticleEmitter.ts",
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts",
+                    "packages/dev/core/src/Particles/pointsCloudSystem.ts",
+                    "packages/dev/core/src/Physics/v1/Plugins/ammoJSPlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsAggregate.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/lensRenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssaoRenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/standardRenderingPipeline.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/EXT_lights_image_based.ts",
+                    "packages/tools/viewer/src/labs/texture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15534",
+                "title": "Add missing export of new gltf extension registry",
+                "description": "Missed adding this to the index file in my previous change since all of our extension registrations are within the loaders code. I only caught this when testing in the Playground.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/index.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15533",
+                "title": "Dispose sound HTMLAudioElement and streaming source node",
+                "description": "`Sound._htmlAudioElement` and `Sound._streamingSource` are not being released in `Sound.dispose`. This change makes them nullable and sets them to `null` in `Sound.dispose` so they are released as expected.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/sound.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15531",
+                "title": "Better resource handling when attaching/detaching webxr hands",
+                "description": "See https://forum.babylonjs.com/t/duplicate-instancedmesh-webxr-hand-points-upon-vr-re-entry/52613?u=raananw\n\nIn general - resources were kept to be reused, but some of them were recreated on each generation of xr hands.\n\nThis PR also improved the disposed resources on session end - all resources ",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRHandTracking.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15529",
+                "title": "DepthPeelingRenderer to WebGPU",
+                "description": null,
+                "author": {
+                    "name": "noname0310",
+                    "url": "https://github.com/noname0310"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/dev/core/src/Rendering/depthPeelingRenderer.ts",
+                    "packages/dev/core/src/Rendering/index.ts",
+                    "packages/dev/core/src/ShadersWGSL/oitBackBlend.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/oitFinal.fragment.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15532",
+                "title": "GS readiness",
+                "description": null,
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "395",
+                "title": "Changing Quaternion fromRotationMatrix to static",
+                "description": "This function generates a new quaternion, just like FromArray or\nRotationYawPitchRoll. Instead of first creating a quaternion and then\nusing its fromRotationMatrix, the static functions should be used.\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "Babylon/Math/babylon.math.js",
+                    "Babylon/Math/babylon.math.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15528",
+                "title": "Changing Quaternion fromRotationMatrix to static",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
             }
         ],
         "7.23.1": [
