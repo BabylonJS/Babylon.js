@@ -638,7 +638,9 @@ export class NodeMaterialConnectionPoint {
         const serializationObject: any = {};
 
         serializationObject.name = this.name;
-        serializationObject.displayName = this.displayName;
+        if (this.displayName) {
+            serializationObject.displayName = this.displayName;
+        }
 
         if (isInput && this.connectedPoint) {
             serializationObject.inputName = this.name;

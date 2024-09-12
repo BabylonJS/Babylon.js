@@ -25,8 +25,8 @@ import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger";
 import type { IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
-import { HistoryStack } from "./historyStack";
 import type { GlobalState } from "./globalState";
+import { HistoryStack } from "shared-ui-components/historyStack";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -90,13 +90,50 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         return this.appendBlock(newInputBlock);
     }
 
+    prepareHistoryStack() {
+        const material = this.props.globalState.nodeMaterial;
+        const globalState = this.props.globalState;
+
+        const dataProvider = () => {
+            SerializationTools.UpdateLocations(material, globalState);
+            return material.serialize();
+        };
+
+        const applyUpdate = (data: any) => {
+            globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
+            material.parseSerializedObject(data);
+
+            globalState.onResetRequiredObservable.notifyObservers(false);
+        };
+
+        // Create the stack
+        this._historyStack = new HistoryStack(dataProvider, applyUpdate);
+
+        // Connect to relevant events
+        globalState.stateManager.onUpdateRequiredObservable.add(() => {
+            this._historyStack.store();
+        });
+        globalState.stateManager.onRebuildRequiredObservable.add(() => {
+            this._historyStack.store();
+        });
+        globalState.stateManager.onNodeMovedObservable.add(() => {
+            this._historyStack.store();
+        });
+        globalState.stateManager.onNewNodeCreatedObservable.add(() => {
+            this._historyStack.store();
+        });
+        globalState.onClearUndoStack.add(() => {
+            this._historyStack.reset();
+        });
+    }
+
     override componentDidMount() {
         window.addEventListener("wheel", this.onWheel, { passive: false });
 
         if (this.props.globalState.hostDocument) {
             this._graphCanvas = this._graphCanvasRef.current!;
             this._diagramContainer = this._diagramContainerRef.current!;
-            this._historyStack = new HistoryStack(this.props.globalState);
+            this.prepareHistoryStack();
             this._previewManager = new PreviewManager(this.props.globalState.hostDocument.getElementById("preview-canvas") as HTMLCanvasElement, this.props.globalState);
             (this.props.globalState as any)._previewManager = this._previewManager;
         }

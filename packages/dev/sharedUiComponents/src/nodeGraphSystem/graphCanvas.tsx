@@ -586,6 +586,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
             newNodes.push(newNode);
 
+            this.props.stateManager.onNewNodeCreatedObservable.notifyObservers(newNode);
+
             if (selectNew) {
                 this.props.stateManager.onSelectionChangedObservable.notifyObservers({ selection: newNode, forceKeepSelection: true });
             }
