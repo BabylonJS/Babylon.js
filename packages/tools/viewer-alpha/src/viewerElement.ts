@@ -208,20 +208,28 @@ export class HTML3DElement extends LitElement {
     /**
      * The engine to use for rendering.
      */
-    @property()
+    @property({ reflect: true })
     public engine: CanvasViewerOptions["engine"];
 
     /**
      * The model URL.
      */
-    @property()
-    public src = "";
+    @property({ reflect: true })
+    public src: string | undefined;
+
+    /**
+     * Forces the model to be loaded with the specified extension.
+     * @remarks
+     * If this property is not set, the extension will be inferred from the model URL when possible.
+     */
+    @property({ reflect: true })
+    public extension: string | undefined;
 
     /**
      * The environment URL.
      */
-    @property()
-    public env = "";
+    @property({ reflect: true })
+    public env: string | undefined;
 
     /**
      * The list of animation names for the currently loaded model.
@@ -247,7 +255,7 @@ export class HTML3DElement extends LitElement {
     /**
      * The speed scale at which animations are played.
      */
-    @property({ attribute: "animation-speed" })
+    @property({ attribute: "animation-speed", reflect: true })
     public animationSpeed = 1;
 
     /**
@@ -497,7 +505,7 @@ export class HTML3DElement extends LitElement {
     private async _updateModel() {
         try {
             if (this.src) {
-                await this._viewer?.loadModelAsync(this.src);
+                await this._viewer?.loadModelAsync(this.src, { pluginExtension: this.extension });
             } else {
                 await this._viewer?.resetModelAsync();
             }
