@@ -135,6 +135,20 @@ export interface IMeshDataCache {
 }
 
 /**
+ * Datas for mesh hotspot computation
+ */
+export interface IHotSpotData {
+    /**
+     * 3 point indices
+     */
+    pointIndex: [number, number, number];
+    /**
+     * 3 barycentric coordinates
+     */
+    barycentric: [number, number, number];
+}
+
+/**
  * Options when computing data about a mesh
  */
 export interface IMeshDataOptions {
@@ -2793,6 +2807,26 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
      */
     public getConnectedParticleSystems(): IParticleSystem[] {
         return this._scene.particleSystems.filter((particleSystem) => particleSystem.emitter === this);
+    }
+
+    /**
+     * Compute a world space hotspot position
+     * @param hotSpotData point indices and barycentric
+     * @param res output world position
+     */
+    public getHotSpotToRef(hotSpotData: IHotSpotData, res: Vector3): void {
+        const options = { applySkeleton: true, applyMorph: true, updatePositionsArray: false };
+        const positions = this._getData(options, null, VertexBuffer.PositionKind);
+        if (!positions) {
+            return;
+        }
+        res.set(0, 0, 0);
+        for (let i = 0; i < 3; i++) {
+            const index = hotSpotData.pointIndex[i] * 3;
+            TmpVectors.Vector3[0].set(positions[index + 0], positions[index + 1], positions[index + 2]);
+            TmpVectors.Vector3[0].scaleInPlace(hotSpotData.barycentric[i]);
+            res.addInPlace(TmpVectors.Vector3[0]);
+        }
     }
 }
 
