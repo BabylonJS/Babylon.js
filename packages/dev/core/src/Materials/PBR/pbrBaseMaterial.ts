@@ -202,8 +202,8 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
     public PREPASS_ALBEDO_SQRT_INDEX = -1;
     public PREPASS_DEPTH = false;
     public PREPASS_DEPTH_INDEX = -1;
-    public PREPASS_NDC_DEPTH = false;
-    public PREPASS_NDC_DEPTH_INDEX = -1;
+    public PREPASS_HYPERBOLIC_DEPTH = false;
+    public PREPASS_HYPERBOLIC_DEPTH_INDEX = -1;
     public PREPASS_NORMAL = false;
     public PREPASS_NORMAL_INDEX = -1;
     public PREPASS_NORMAL_WORLDSPACE = false;

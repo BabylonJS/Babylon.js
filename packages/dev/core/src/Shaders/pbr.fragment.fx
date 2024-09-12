@@ -633,8 +633,9 @@ void main(void) {
     #endif
 
     #ifdef PREPASS_LOCAL_POSITION
-    gl_FragData[PREPASS_LOCAL_POSITION_INDEX] = vec4(vPosition * 0.5 + 0.5, writeGeometryInfo);
-    #endif
+    gl_FragData[PREPASS_LOCAL_POSITION_INDEX] =
+        vec4(vPosition, writeGeometryInfo);
+#endif
 
 #if defined(PREPASS_VELOCITY)
     vec2 a = (vCurrentPosition.xy / vCurrentPosition.w) * 0.5 + 0.5;
@@ -687,9 +688,9 @@ void main(void) {
         vec4(vViewPos.z, 0.0, 0.0, writeGeometryInfo); // Linear depth
 #endif
 
-#ifdef PREPASS_NDC_DEPTH
-        gl_FragData[PREPASS_NDC_DEPTH_INDEX] = vec4(
-            gl_FragCoord.z, 0.0, 0.0, writeGeometryInfo); // Clip-space depth
+#ifdef PREPASS_HYPERBOLIC_DEPTH
+    gl_FragData[PREPASS_HYPERBOLIC_DEPTH_INDEX] =
+        vec4(gl_FragCoord.z, 0.0, 0.0, writeGeometryInfo); // Clip-space depth
 #endif
 
 #ifdef PREPASS_NORMAL

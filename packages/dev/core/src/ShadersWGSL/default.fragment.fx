@@ -432,7 +432,7 @@ color = vec4f(max(color.rgb, vec3f(0.)), color.a);
 
 #ifdef PREPASS_LOCAL_POSITION
     fragData[PREPASS_LOCAL_POSITION_INDEX] =
-        vec4f(fragmentInputs.vPosition * 0.5 + 0.5, writeGeometryInfo);
+        vec4f(fragmentInputs.vPosition, writeGeometryInfo);
 #endif
 
 #ifdef PREPASS_VELOCITY
@@ -463,9 +463,10 @@ color = vec4f(max(color.rgb, vec3f(0.)), color.a);
                                           writeGeometryInfo); // Linear depth
 #endif
 
-#ifdef PREPASS_NDC_DEPTH
-        fragData[PREPASS_NDC_DEPTH_INDEX] = vec4f(
-            fragmentInputs.position.z, 0.0, 0.0, writeGeometryInfo); // Clip-space depth
+#ifdef PREPASS_HYPERBOLIC_DEPTH
+    fragData[PREPASS_HYPERBOLIC_DEPTH_INDEX] =
+        vec4f(fragmentInputs.position.z, 0.0, 0.0,
+              writeGeometryInfo); // Clip-space depth
 #endif
 
 #ifdef PREPASS_NORMAL

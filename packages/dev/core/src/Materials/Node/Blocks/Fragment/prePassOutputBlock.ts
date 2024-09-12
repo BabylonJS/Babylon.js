@@ -126,12 +126,12 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
             state.compilationString += ` fragData[PREPASS_DEPTH_INDEX] = ${vec4}(0.0, 0.0, 0.0, 0.0);\r\n`;
         }
         state.compilationString += `#endif\r\n`;
-        state.compilationString += `#ifdef PREPASS_NDC_DEPTH\r\n`;
+        state.compilationString += `#ifdef PREPASS_HYPERBOLIC_DEPTH\r\n`;
         if (viewDepthNDC.connectedPoint) {
-            state.compilationString += ` gl_FragData[PREPASS_NDC_DEPTH_INDEX] = vec4(${viewDepthNDC.associatedVariableName}, 0.0, 0.0, 1.0);\r\n`;
+            state.compilationString += ` gl_FragData[PREPASS_HYPERBOLIC_DEPTH_INDEX] = vec4(${viewDepthNDC.associatedVariableName}, 0.0, 0.0, 1.0);\r\n`;
         } else {
             // We have to write something on the viewDepth output or it will raise a gl error
-            state.compilationString += ` gl_FragData[PREPASS_NDC_DEPTH_INDEX] = vec4(0.0, 0.0, 0.0, 0.0);\r\n`;
+            state.compilationString += ` gl_FragData[PREPASS_HYPERBOLIC_DEPTH_INDEX] = vec4(0.0, 0.0, 0.0, 0.0);\r\n`;
         }
         state.compilationString += `#endif\r\n`;
         state.compilationString += `#ifdef PREPASS_POSITION\r\n`;
