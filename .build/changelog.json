@@ -1,32 +1,76 @@
 {
-    "fromTag": "7.24.0",
+    "fromTag": "7.25.0",
     "changelog": {
-        "7.24.0": [
+        "7.25.1": [
             {
-                "pr": "15526",
-                "title": "Use `Sound.play` `offset` arg for sounds with `streaming` set to `true`",
-                "description": "## Overview\r\nThe `Sound.play` `offset` arg is currently ignored when the `streaming` option is set. This change fixes it so it is not ignored.\r\n\r\nNote that setting the sound's `HTMLAudioElement.currentTime` property causes Chrome to fire its \"canplaythrough\" event continuously, so this change also removes the event listener after it has fired once since we only use it the first time it is raised.\r\n\r\n## Related forum post:\r\nhttps://forum.babylonjs.com/t/sound-element-not-playing-after-window-blur-on-ipados/52802\r\n\r\n## Test playground:\r\nhttps://playground.babylonjs.com/#RF3XZS\r\n- Before this change, the playground restarts the sound from the beginning when audio is unmuted and the \"Toggle playback\" button is pressed twice, ignoring the `Sound.play` `offset` arg.\r\n- After this change, the same actions resume the sound from the given `Sound.play` `offset` arg correctly.",
+                "pr": "15561",
+                "title": "Removing zip, using delta and externalizing the class",
+                "description": null,
                 "author": {
-                    "name": "docEdub",
-                    "url": "https://github.com/docEdub"
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
                 },
                 "files": [
-                    "packages/dev/core/src/Audio/sound.ts"
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBlockConnectionPoint.ts",
+                    "packages/dev/sharedUiComponents/src/historyStack.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
+                    "packages/tools/nodeEditor/package.json",
+                    "packages/tools/nodeEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeEditor/src/historyStack.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15559",
+                "title": "Fix glTF transmission refraction texture export",
+                "description": "See https://forum.babylonjs.com/t/gltf-export-lost-transmission-texture/53315.\r\n\r\nThis change also makes the texture names more consistent when loading textures from glTF extensions.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_clearcoat.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_diffuse_transmission.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_iridescence.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_specular.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_transmission.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_volume.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_materials_transmission.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15562",
+                "title": "Fix PowBlock for WebGPU",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/lightInformationBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/powBlock.ts"
                 ],
                 "tags": [
                     "bug"
                 ]
             },
             {
-                "pr": "15527",
-                "title": "Set correct peerDependencies versions based on recent changes",
-                "description": "I was not able to set the correct peerDependencies versions with the previous PR. I had to publish a patch version first. So correcting this now.",
+                "pr": "15560",
+                "title": "Add viewerready event and other fixes",
+                "description": "This PR has a number of fixes related to the new viewer, mostly in response to usages of the new viewer in different contexts.\r\n\r\n1. The viewer html element previously exposed the underlying viewer object as a property. However, the underlying viewer is created asynchronously depending on various factors (whether or not the element is in the DOM, asynchrony of the Lit update/render sequence, and now also additional asynchrony for Babylon engine instantiation). This makes it quite hard to use, so I've replaced the property with an event (`viewerready`) that fires every time a viewer instantiation has completed.\r\n1. Added events for environment change and error.\r\n1. Made viewer API more consistent for loading/resetting the environment/model.\r\n1. Enabled Lit property \"reflection\" (e.g. changing the property will \"reflect\" back to the attribute, which allows for CSS styling based on attribute values).\r\n1. Added an \"engine\" attribute/property that can be undefined (we make the best choice of engine for you based on implementation details) or \"WebGL\" or \"WebGPU\", and updated aspects of the code to be async to account for the fact that WebGPUEngine creation is asynchronous (requires a call to `initAsync`). However, I am leaving out \"WebGPU\" for now because there are a number of problems due to missing dependencies that come from side effects. Some of these looked easy to fix (e.g. they are already in an async context), and some of them not so easy. @deltakosh not sure if this is the expected state of things for WebGPUEngine.\r\n1. Changed MSFT_audio_emitter to import `audioSceneComponent` (it can't work without this). @bghgary \r\n1. Fixed a bug in weightedsound where if pause was called when not playing, then play will try to index into the sounds array with an undefined index value. @docEdub ",
                 "author": {
                     "name": "ryantrem",
                     "url": "https://github.com/ryantrem"
                 },
                 "files": [
-                    "packages/public/@babylonjs/viewer-alpha/package.json"
+                    "packages/dev/core/src/Audio/weightedsound.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/MSFT_audio_emitter.ts",
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts",
+                    "packages/tools/viewer-alpha/src/viewerFactory.ts"
                 ],
                 "tags": []
             }
@@ -583,6 +627,36 @@
                 "tags": [
                     "skip changelog"
                 ]
+            }
+        ],
+        "7.24.0": [
+            {
+                "pr": "15526",
+                "title": "Use `Sound.play` `offset` arg for sounds with `streaming` set to `true`",
+                "description": "## Overview\r\nThe `Sound.play` `offset` arg is currently ignored when the `streaming` option is set. This change fixes it so it is not ignored.\r\n\r\nNote that setting the sound's `HTMLAudioElement.currentTime` property causes Chrome to fire its \"canplaythrough\" event continuously, so this change also removes the event listener after it has fired once since we only use it the first time it is raised.\r\n\r\n## Related forum post:\r\nhttps://forum.babylonjs.com/t/sound-element-not-playing-after-window-blur-on-ipados/52802\r\n\r\n## Test playground:\r\nhttps://playground.babylonjs.com/#RF3XZS\r\n- Before this change, the playground restarts the sound from the beginning when audio is unmuted and the \"Toggle playback\" button is pressed twice, ignoring the `Sound.play` `offset` arg.\r\n- After this change, the same actions resume the sound from the given `Sound.play` `offset` arg correctly.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/sound.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15527",
+                "title": "Set correct peerDependencies versions based on recent changes",
+                "description": "I was not able to set the correct peerDependencies versions with the previous PR. I had to publish a patch version first. So correcting this now.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/public/@babylonjs/viewer-alpha/package.json"
+                ],
+                "tags": []
             }
         ],
         "7.23.1": [
