@@ -195,11 +195,6 @@ export class HistoryStack implements IDisposable {
      * Disposes the stack
      */
     public dispose() {
-        // this._globalState.stateManager.onNodeMovedObservable.remove(this._onNodeMovedObserver);
-        // this._globalState.stateManager.onNewNodeCreatedObservable.remove(this._onNodeAddedObserver);
-        // this._globalState.stateManager.onRebuildRequiredObservable.remove(this._onRebuildRequiredObserver);
-        // this._globalState.onClearUndoStack.remove(this._onClearUndoStackObserver);
-        // this._globalState.stateManager.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
         this._history = [];
         this._redoStack = [];
     }
