@@ -414,6 +414,7 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
         if (extension.transmissionTexture) {
             (extension.transmissionTexture as ITextureInfo).nonColorData = true;
             return this._loader.loadTextureInfoAsync(`${context}/transmissionTexture`, extension.transmissionTexture, undefined).then((texture: BaseTexture) => {
+                texture.name = `${babylonMaterial.name} (Transmission)`;
                 pbrMaterial.subSurface.refractionIntensityTexture = texture;
                 pbrMaterial.subSurface.useGltfStyleTextures = true;
             });

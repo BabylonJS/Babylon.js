@@ -108,6 +108,7 @@ export class KHR_materials_diffuse_transmission implements IGLTFLoaderExtension 
             (extension.diffuseTransmissionTexture as ITextureInfo).nonColorData = true;
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/diffuseTransmissionTexture`, extension.diffuseTransmissionTexture).then((texture: BaseTexture) => {
+                    texture.name = `${babylonMaterial.name} (Diffuse Transmission)`;
                     pbrMaterial.subSurface.translucencyIntensityTexture = texture;
                 })
             );
@@ -122,6 +123,7 @@ export class KHR_materials_diffuse_transmission implements IGLTFLoaderExtension 
         if (extension.diffuseTransmissionColorTexture) {
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/diffuseTransmissionColorTexture`, extension.diffuseTransmissionColorTexture).then((texture: BaseTexture) => {
+                    texture.name = `${babylonMaterial.name} (Diffuse Transmission Color)`;
                     pbrMaterial.subSurface.translucencyColorTexture = texture;
                 })
             );
