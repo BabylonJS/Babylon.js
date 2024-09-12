@@ -34,14 +34,14 @@ export class NodeRenderGraphObjectRendererBlock extends NodeRenderGraphBlock {
         this.registerInput("depth", NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment, true);
         this.registerInput("camera", NodeRenderGraphBlockConnectionPointTypes.Camera);
         this.registerInput("objects", NodeRenderGraphBlockConnectionPointTypes.ObjectList);
-        this.registerInput("usedTextures", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
+        this.registerInput("dependencies", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
 
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
         this.registerOutput("outputDepth", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
 
         this.destination.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBufferDepthStencil);
         this.depth.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment);
-        this.usedTextures.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer);
+        this.dependencies.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer);
 
         this.output._typeConnectionSource = this.destination;
         this.outputDepth._typeConnectionSource = this.depth;
@@ -106,9 +106,9 @@ export class NodeRenderGraphObjectRendererBlock extends NodeRenderGraphBlock {
     }
 
     /**
-     * Gets the usedTextures input component
+     * Gets the dependencies input component
      */
-    public get usedTextures(): NodeRenderGraphConnectionPoint {
+    public get dependencies(): NodeRenderGraphConnectionPoint {
         return this._inputs[4];
     }
 
@@ -155,10 +155,10 @@ export class NodeRenderGraphObjectRendererBlock extends NodeRenderGraphBlock {
             this._frameGraphTask.objectList = objectsConnectedPoint.value as FrameGraphObjectList;
         }
 
-        const usedTexturesConnectedPoint = this.usedTextures.connectedPoint;
+        const usedTexturesConnectedPoint = this.dependencies.connectedPoint;
         if (usedTexturesConnectedPoint) {
-            this._frameGraphTask.usedTextures = [];
-            this._frameGraphTask.usedTextures[0] = usedTexturesConnectedPoint.value as FrameGraphTextureId;
+            this._frameGraphTask.dependencies = [];
+            this._frameGraphTask.dependencies[0] = usedTexturesConnectedPoint.value as FrameGraphTextureId;
         }
 
         state.frameGraph.addTask(this._frameGraphTask);
