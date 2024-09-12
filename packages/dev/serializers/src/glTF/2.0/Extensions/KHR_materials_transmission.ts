@@ -1,4 +1,5 @@
-import { type IMaterial, type IKHRMaterialsTransmission, ImageMimeType } from "babylonjs-gltf2interface";
+import type { IMaterial, IKHRMaterialsTransmission } from "babylonjs-gltf2interface";
+import { ImageMimeType } from "babylonjs-gltf2interface";
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { _Exporter } from "../glTFExporter";
 import type { Material } from "core/Materials/material";
