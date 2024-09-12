@@ -116,6 +116,24 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
     }
 
     /**
+     * Disconnects two connections.
+     * @param point the connection to disconnect from.
+     */
+    public disconnectFrom(point: ConnectedToT): void {
+        if (!this._connectedPoint.includes(point)) {
+            return;
+        }
+        this._connectedPoint = this._connectedPoint.filter((p) => p !== point);
+        point._connectedPoint = point._connectedPoint.filter((p) => p !== this);
+    }
+
+    public dispose() {
+        for (const point of this._connectedPoint) {
+            this.disconnectFrom(point);
+        }
+    }
+
+    /**
      * Saves the connection to a JSON object.
      * @param serializationObject the object to serialize to.
      */

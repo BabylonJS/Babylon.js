@@ -5,6 +5,7 @@ import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnecti
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphExecutionBlockWithOutSignal";
+import { Logger } from "core/Misc/logger";
 /**
  * @experimental
  * Configuration for the while loop block.
@@ -22,6 +23,12 @@ export interface IFlowGraphWhileLoopBlockConfiguration extends IFlowGraphBlockCo
  */
 export class FlowGraphWhileLoopBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**
+     * The maximum number of iterations allowed in a loop.
+     * This can be set to avoid an infinite loop.
+     */
+    public static MaxLoopCount = 10000;
+
+    /**
      * Input connection: The condition to evaluate.
      */
     public readonly condition: FlowGraphDataConnection<boolean>;
@@ -29,6 +36,12 @@ export class FlowGraphWhileLoopBlock extends FlowGraphExecutionBlockWithOutSigna
      * Output connection: The loop body.
      */
     public readonly loopBody: FlowGraphSignalConnection;
+
+    /**
+     * Output connection: The completed signal. Triggered when condition is false.
+     * No out signal is available.
+     */
+    public readonly completed: FlowGraphSignalConnection;
 
     constructor(
         /**
@@ -40,6 +53,9 @@ export class FlowGraphWhileLoopBlock extends FlowGraphExecutionBlockWithOutSigna
 
         this.condition = this.registerDataInput("condition", RichTypeBoolean);
         this.loopBody = this._registerSignalOutput("loopBody");
+        this.completed = this._registerSignalOutput("completed");
+        // unregister "out" signal
+        this._unregisterSignalInput("out");
     }
 
     public _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
@@ -47,11 +63,18 @@ export class FlowGraphWhileLoopBlock extends FlowGraphExecutionBlockWithOutSigna
         if (this.config?.isDo && !conditionValue) {
             this.loopBody._activateSignal(context);
         }
+        let i = 0;
         while (conditionValue) {
             this.loopBody._activateSignal(context);
+            ++i;
+            if (i >= FlowGraphWhileLoopBlock.MaxLoopCount) {
+                Logger.Warn("FlowGraphWhileLoopBlock: Max loop count reached. Breaking.");
+                break;
+            }
             conditionValue = this.condition.getValue(context);
         }
-        this.out._activateSignal(context);
+        // out is not triggered
+        this.completed._activateSignal(context);
     }
 
     /**

@@ -13,7 +13,13 @@ export interface IFlowGraphSwitchBlockConfiguration<T> extends IFlowGraphBlockCo
     /**
      * The possible values for the selection.
      */
-    cases: T[];
+    cases: Set<T>;
+
+    /**
+     * The default case to execute if the selection is not in the cases.
+     * If not set, the first case will be used as default.
+     */
+    defaultCase?: T;
 }
 
 /**
@@ -25,10 +31,10 @@ export class FlowGraphSwitchBlock<T = number> extends FlowGraphExecutionBlock {
      * Input connection: The value of the selection.
      */
     public readonly selection: FlowGraphDataConnection<T>;
-    /**
-     * Output connection: The output flows.
-     */
-    public outputFlows: FlowGraphSignalConnection[];
+
+    private _defaultCase: T;
+
+    private _caseToOutputFlow: Map<T, FlowGraphSignalConnection> = new Map();
 
     constructor(
         /**
@@ -39,24 +45,57 @@ export class FlowGraphSwitchBlock<T = number> extends FlowGraphExecutionBlock {
         super(config);
 
         this.selection = this.registerDataInput("selection", RichTypeAny);
-        this.outputFlows = [];
-        for (let i = 0; i <= this.config.cases.length; i++) {
-            this.outputFlows.push(this._registerSignalOutput(`out${i}`));
+
+        this._defaultCase = config.default;
+        for (const caseValue of this.config.cases) {
+            this._caseToOutputFlow.set(caseValue, this._registerSignalOutput(`out_${caseValue}`));
+            // if no defaultCase was set, use the first one as default
+            if (!this._defaultCase) {
+                this._defaultCase = caseValue;
+            }
         }
     }
 
     public _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
         const selectionValue = this.selection.getValue(context);
 
-        for (let i = 0; i < this.config.cases.length; i++) {
-            if (selectionValue === this.config.cases[i]) {
-                this.outputFlows[i]._activateSignal(context);
-                return;
+        const outputFlow = this._getOutputFlowForCase(selectionValue);
+        if (outputFlow) {
+            outputFlow._activateSignal(context);
+        } else {
+            const defaultCase = this._getOutputFlowForCase(this._defaultCase);
+            if (defaultCase) {
+                defaultCase._activateSignal(context);
             }
         }
+    }
 
-        // default case
-        this.outputFlows[this.outputFlows.length - 1]._activateSignal(context);
+    /**
+     * Adds a new case to the switch block.
+     * @param newCase the new case to add.
+     */
+    public addCase(newCase: T): void {
+        if (this.config.cases.has(newCase)) {
+            return;
+        }
+        this.config.cases.add(newCase);
+        this._caseToOutputFlow.set(newCase, this._registerSignalOutput(`out_${newCase}`));
+    }
+
+    /**
+     * Removes a case from the switch block.
+     * @param caseToRemove the case to remove.
+     */
+    public removeCase(caseToRemove: T): void {
+        if (!this.config.cases.has(caseToRemove)) {
+            return;
+        }
+        this.config.cases.delete(caseToRemove);
+        this._caseToOutputFlow.delete(caseToRemove);
+    }
+
+    private _getOutputFlowForCase(caseValue: T) {
+        return this._caseToOutputFlow.get(caseValue);
     }
 
     /**

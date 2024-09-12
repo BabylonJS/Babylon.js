@@ -314,7 +314,7 @@ export const gltfTypeToBabylonType: {
 - math/lsl: FlowGraphBitwiseLeftShiftBlock !
 - math/clz: FlowGraphCountLeadingZerosBlock !
 - math/ctz: FlowGraphCountTrailingZerosBlock !
-- math/popcnt: FlowGraphCountOneBitsBlock
+- math/popcnt: FlowGraphCountOneBitsBlock !
 
 ## Type conversion:
 
@@ -337,10 +337,10 @@ export const gltfTypeToBabylonType: {
 
 ### Sync nodes:
 
-- flow/sequence: FlowGraphSequenceBlock
-- flow/branch:
-- flow/switch:
-- flow/while:
+- flow/sequence: FlowGraphSequenceBlock !
+- flow/branch: FlowGraphBranchBlock !
+- flow/switch: FlowGraphSwitchBlock !
+- flow/while: FlowGraphWhileLoopBlock !
 - flow/for:
 - flow/doN: FlowGraphDoNBlock
 - flow/multiGate:

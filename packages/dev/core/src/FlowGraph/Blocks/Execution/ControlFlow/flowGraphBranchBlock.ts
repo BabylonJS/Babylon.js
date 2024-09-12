@@ -29,8 +29,8 @@ export class FlowGraphBranchBlock extends FlowGraphExecutionBlock {
 
         this.condition = this.registerDataInput("condition", RichTypeBoolean);
 
-        this.onTrue = this._registerSignalOutput("onTrue");
-        this.onFalse = this._registerSignalOutput("onFalse");
+        this.onTrue = this._registerSignalOutput("true");
+        this.onFalse = this._registerSignalOutput("false");
     }
 
     public _execute(context: FlowGraphContext): void {

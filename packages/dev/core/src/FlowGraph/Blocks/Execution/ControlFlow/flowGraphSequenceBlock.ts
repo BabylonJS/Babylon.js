@@ -45,6 +45,27 @@ export class FlowGraphSequenceBlock extends FlowGraphExecutionBlock {
     }
 
     /**
+     * Sets the number of output flows.
+     * @param numberOutputFlows the number of output flows
+     */
+    public setNumberOfOutputFlows(numberOutputFlows: number) {
+        const currentNumber = this.config.numberOutputFlows;
+        if (currentNumber === numberOutputFlows) {
+            return;
+        }
+        if (currentNumber > numberOutputFlows) {
+            for (let i = numberOutputFlows; i < currentNumber; i++) {
+                this.outFlows.pop();
+            }
+        } else {
+            for (let i = currentNumber; i < numberOutputFlows; i++) {
+                this.outFlows.push(this._registerSignalOutput(`${i}`));
+            }
+        }
+        this.config.numberOutputFlows = numberOutputFlows;
+    }
+
+    /**
      * @returns class name of the block.
      */
     public override getClassName(): string {

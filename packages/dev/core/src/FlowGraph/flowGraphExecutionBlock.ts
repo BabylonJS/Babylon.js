@@ -54,6 +54,22 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
         return output;
     }
 
+    protected _unregisterSignalInput(name: string): void {
+        const index = this.signalInputs.findIndex((input) => input.name === name);
+        if (index !== -1) {
+            this.signalInputs[index].dispose();
+            this.signalInputs.splice(index, 1);
+        }
+    }
+
+    protected _unregisterSignalOutput(name: string): void {
+        const index = this.signalOutputs.findIndex((output) => output.name === name);
+        if (index !== -1) {
+            this.signalOutputs[index].dispose();
+            this.signalOutputs.splice(index, 1);
+        }
+    }
+
     /**
      * Given a name of a signal input, return that input if it exists
      * @param name the name of the input
