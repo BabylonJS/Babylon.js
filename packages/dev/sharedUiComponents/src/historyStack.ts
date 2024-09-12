@@ -152,6 +152,8 @@ export class HistoryStack implements IDisposable {
         if (this._history.length > this._maxHistoryLength) {
             this._history.splice(0, 1);
         }
+
+        this._redoStack.length = 0;
     }
 
     /**
