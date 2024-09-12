@@ -8,7 +8,7 @@ import type { Scene } from "../scene";
 import { Matrix, Vector3, Quaternion, TmpVectors } from "../Maths/math.vector";
 import { Node } from "../node";
 import type { Mesh } from "../Meshes/mesh";
-import type { AbstractMesh, IHotSpot, IHotSpotQuery } from "../Meshes/abstractMesh";
+import type { AbstractMesh, HotSpot, HotSpotQuery } from "../Meshes/abstractMesh";
 import type { ICullable } from "../Culling/boundingInfo";
 import { Logger } from "../Misc/logger";
 import { GetClass } from "../Misc/typeStore";
@@ -1576,7 +1576,7 @@ export class Camera extends Node {
      * @param res resulting hotspot infor
      * @returns true if hotspot could be computed
      */
-    getHotSpotToRef(hotSpotData: IHotSpotQuery, res: IHotSpot): boolean {
+    getHotSpotToRef(hotSpotData: HotSpotQuery, res: HotSpot): boolean {
         const scene = this.getScene();
         if (hotSpotData.meshIndex >= scene.getActiveMeshes().length) {
             return false;

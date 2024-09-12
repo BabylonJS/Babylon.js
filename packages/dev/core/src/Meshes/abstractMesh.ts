@@ -3,7 +3,7 @@ import type { Nullable, FloatArray, IndicesArray, DeepImmutable } from "../types
 import type { Camera } from "../Cameras/camera";
 import type { Scene, IDisposable } from "../scene";
 import { ScenePerformancePriority } from "../scene";
-import type { Vector2 } from "../Maths/math.vector";
+import { Vector2 } from "../Maths/math.vector";
 import { Quaternion, Matrix, Vector3, TmpVectors } from "../Maths/math.vector";
 import type { Node } from "../node";
 import { VertexBuffer } from "../Buffers/buffer";
@@ -137,7 +137,7 @@ export interface IMeshDataCache {
 /**
  * Datas for mesh hotspot computation
  */
-export interface IHotSpotQuery {
+export class HotSpotQuery {
     /**
      * Mesh index
      */
@@ -155,15 +155,15 @@ export interface IHotSpotQuery {
 /**
  * Result from a HotSpot query on the scene
  */
-export interface IHotSpot {
+export class HotSpot {
     /**
      * 2D screen position
      */
-    canvasPosition: Vector2;
+    canvasPosition = new Vector2();
     /**
      * 3D world position
      */
-    worldPosition: Vector3;
+    worldPosition = new Vector3();
 }
 
 /**
@@ -2832,7 +2832,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
      * @param hotSpotQuery point indices and barycentric
      * @param res output world position
      */
-    public getHotSpotToRef(hotSpotQuery: IHotSpotQuery, res: Vector3): void {
+    public getHotSpotToRef(hotSpotQuery: HotSpotQuery, res: Vector3): void {
         const options = { applySkeleton: true, applyMorph: true, updatePositionsArray: false };
         const positions = this._getData(options, null, VertexBuffer.PositionKind);
         if (!positions) {
