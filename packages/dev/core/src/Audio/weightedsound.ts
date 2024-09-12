@@ -132,9 +132,11 @@ export class WeightedSound {
      * Suspend playback
      */
     public pause() {
-        this.isPaused = true;
-        if (this._currentIndex !== undefined) {
-            this._sounds[this._currentIndex].pause();
+        if (this.isPlaying) {
+            this.isPaused = true;
+            if (this._currentIndex !== undefined) {
+                this._sounds[this._currentIndex].pause();
+            }
         }
     }
 
@@ -153,7 +155,6 @@ export class WeightedSound {
      * @param startOffset Position the clip head at a specific time in seconds.
      */
     public play(startOffset?: number) {
-        this._currentIndex = 0;
         if (!this.isPaused) {
             this.stop();
             const randomValue = Math.random();
@@ -166,7 +167,7 @@ export class WeightedSound {
                 }
             }
         }
-        const sound = this._sounds[this._currentIndex];
+        const sound = this._sounds[this._currentIndex ?? 0];
         if (sound.isReady()) {
             sound.play(0, this.isPaused ? undefined : startOffset);
         } else {
