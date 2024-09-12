@@ -55,7 +55,7 @@ export class FlowGraphWhileLoopBlock extends FlowGraphExecutionBlockWithOutSigna
         this.loopBody = this._registerSignalOutput("loopBody");
         this.completed = this._registerSignalOutput("completed");
         // unregister "out" signal
-        this._unregisterSignalInput("out");
+        this._unregisterSignalOutput("out");
     }
 
     public _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {

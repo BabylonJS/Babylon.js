@@ -5,6 +5,14 @@ import type { FlowGraphContext } from "../../../flowGraphContext";
 import { RichTypeNumber } from "../../../flowGraphRichTypes";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
+
+export interface IFlowGraphForLoopBlockConfiguration extends IFlowGraphBlockConfiguration {
+    /**
+     * The initial index of the loop.
+     * if not set will default to 0
+     */
+    initialIndex?: number;
+}
 /**
  * @experimental
  * Block that executes an action in a loop.
@@ -29,32 +37,26 @@ export class FlowGraphForLoopBlock extends FlowGraphExecutionBlockWithOutSignal 
     /**
      * Output connection: The signal that is activated when the loop body is executed.
      */
-    public readonly onLoop: FlowGraphSignalConnection;
+    public readonly loopBody: FlowGraphSignalConnection;
 
-    public constructor(config?: IFlowGraphBlockConfiguration) {
+    /**
+     * Output connection: The completed signal. Triggered when condition is false.
+     * No out signal is available.
+     */
+    public readonly completed: FlowGraphSignalConnection;
+
+    public constructor(config?: IFlowGraphForLoopBlockConfiguration) {
         super(config);
 
-        this.startIndex = this.registerDataInput("startIndex", RichTypeNumber);
+        this.startIndex = this.registerDataInput("startIndex", RichTypeNumber, 0);
         this.endIndex = this.registerDataInput("endIndex", RichTypeNumber);
-        this.step = this.registerDataInput("step", RichTypeNumber);
+        this.step = this.registerDataInput("step", RichTypeNumber, 1);
 
-        this.index = this.registerDataOutput("index", RichTypeNumber);
-        this.onLoop = this._registerSignalOutput("onLoop");
-    }
+        this.index = this.registerDataOutput("index", RichTypeNumber, config?.initialIndex ?? 0);
+        this.loopBody = this._registerSignalOutput("loopBody");
+        this.completed = this._registerSignalOutput("completed");
 
-    private _executeLoop(context: FlowGraphContext) {
-        let index = context._getExecutionVariable(this, "index", -1);
-        const endIndex = context._getExecutionVariable(this, "endIndex", -1);
-        if (index < endIndex) {
-            this.index.setValue(index, context);
-            this.onLoop._activateSignal(context);
-            const step = context._getExecutionVariable(this, "step", 1);
-            index += step;
-            context._setExecutionVariable(this, "index", index);
-            this._executeLoop(context);
-        } else {
-            this.out._activateSignal(context);
-        }
+        this._unregisterSignalOutput("out");
     }
 
     /**
@@ -62,12 +64,17 @@ export class FlowGraphForLoopBlock extends FlowGraphExecutionBlockWithOutSignal 
      */
     public _execute(context: FlowGraphContext): void {
         const index = this.startIndex.getValue(context);
-        const endIndex = this.endIndex.getValue(context);
         const step = this.step.getValue(context);
-        context._setExecutionVariable(this, "index", index);
-        context._setExecutionVariable(this, "endIndex", endIndex);
-        context._setExecutionVariable(this, "step", step);
-        this._executeLoop(context);
+        let endIndex = this.endIndex.getValue(context);
+        for (let i = index; i < endIndex; i += step) {
+            this.index.setValue(i, context);
+            this.loopBody._activateSignal(context);
+            endIndex = this.endIndex.getValue(context);
+        }
+
+        this.completed._activateSignal(context);
+        // TODO - this is an actual for loop. If the loop is long, we should break it and continue in the next frame.
+        // To do that we should probably re-execute the block in the next frame, maintaining the state.
     }
 
     /**

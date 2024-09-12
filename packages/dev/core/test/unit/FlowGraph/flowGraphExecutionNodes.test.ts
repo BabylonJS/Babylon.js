@@ -79,7 +79,7 @@ describe("Flow Graph Execution Nodes", () => {
 
         const nIsDone = new FlowGraphConsoleLogBlock();
         doN.out.connectTo(nIsDone.in);
-        doN.value.connectTo(nIsDone.message);
+        doN.currentCount.connectTo(nIsDone.message);
 
         flowGraph.start();
 

@@ -32,7 +32,7 @@ export class FlowGraphDoNBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**
      * Output connection: The number of times the block has been executed.
      */
-    public readonly value: FlowGraphDataConnection<FlowGraphInteger>;
+    public readonly currentCount: FlowGraphDataConnection<FlowGraphInteger>;
 
     constructor(
         /**
@@ -43,16 +43,16 @@ export class FlowGraphDoNBlock extends FlowGraphExecutionBlockWithOutSignal {
         super(config);
         this.reset = this._registerSignalInput("reset");
         this.n = this.registerDataInput("n", RichTypeFlowGraphInteger);
-        this.value = this.registerDataOutput("value", RichTypeFlowGraphInteger);
+        this.currentCount = this.registerDataOutput("value", RichTypeFlowGraphInteger);
     }
 
     public _execute(context: FlowGraphContext, callingSignal: FlowGraphSignalConnection): void {
         if (callingSignal === this.reset) {
-            this.value.setValue(this.config.startIndex, context);
+            this.currentCount.setValue(this.config.startIndex, context);
         } else {
-            const currentCountValue = this.value.getValue(context);
+            const currentCountValue = this.currentCount.getValue(context);
             if (currentCountValue.value < this.n.getValue(context).value) {
-                this.value.setValue(new FlowGraphInteger(currentCountValue.value + 1), context);
+                this.currentCount.setValue(new FlowGraphInteger(currentCountValue.value + 1), context);
                 this.out._activateSignal(context);
             }
         }
