@@ -137,7 +137,11 @@ export interface IMeshDataCache {
 /**
  * Datas for mesh hotspot computation
  */
-export interface IHotSpotData {
+export interface IHotSpotQuery {
+    /**
+     * Mesh index
+     */
+    meshIndex: number;
     /**
      * 3 point indices
      */
@@ -146,6 +150,20 @@ export interface IHotSpotData {
      * 3 barycentric coordinates
      */
     barycentric: [number, number, number];
+}
+
+/**
+ * Result from a HotSpot query on the scene
+ */
+export interface IHotSpot {
+    /**
+     * 2D screen position
+     */
+    canvasPosition: Vector2;
+    /**
+     * 3D world position
+     */
+    worldPosition: Vector3;
 }
 
 /**
@@ -2811,10 +2829,10 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
 
     /**
      * Compute a world space hotspot position
-     * @param hotSpotData point indices and barycentric
+     * @param hotSpotQuery point indices and barycentric
      * @param res output world position
      */
-    public getHotSpotToRef(hotSpotData: IHotSpotData, res: Vector3): void {
+    public getHotSpotToRef(hotSpotQuery: IHotSpotQuery, res: Vector3): void {
         const options = { applySkeleton: true, applyMorph: true, updatePositionsArray: false };
         const positions = this._getData(options, null, VertexBuffer.PositionKind);
         if (!positions) {
@@ -2822,9 +2840,9 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
         }
         res.set(0, 0, 0);
         for (let i = 0; i < 3; i++) {
-            const index = hotSpotData.pointIndex[i] * 3;
+            const index = hotSpotQuery.pointIndex[i] * 3;
             TmpVectors.Vector3[0].set(positions[index + 0], positions[index + 1], positions[index + 2]);
-            TmpVectors.Vector3[0].scaleInPlace(hotSpotData.barycentric[i]);
+            TmpVectors.Vector3[0].scaleInPlace(hotSpotQuery.barycentric[i]);
             res.addInPlace(TmpVectors.Vector3[0]);
         }
     }

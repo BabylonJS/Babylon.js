@@ -5,10 +5,10 @@ import { Observable } from "../Misc/observable";
 import type { DeepImmutable, Nullable } from "../types";
 import type { CameraInputsManager } from "./cameraInputsManager";
 import type { Scene } from "../scene";
-import { Matrix, Vector3, Quaternion } from "../Maths/math.vector";
+import { Matrix, Vector3, Quaternion, TmpVectors } from "../Maths/math.vector";
 import { Node } from "../node";
 import type { Mesh } from "../Meshes/mesh";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { AbstractMesh, IHotSpot, IHotSpotQuery } from "../Meshes/abstractMesh";
 import type { ICullable } from "../Culling/boundingInfo";
 import { Logger } from "../Misc/logger";
 import { GetClass } from "../Misc/typeStore";
@@ -1569,5 +1569,31 @@ export class Camera extends Node {
         }
 
         return handednessMultiplier;
+    }
+    /**
+     * Query a hotspot
+     * @param hotSpotData info necessary to compute the hotspot
+     * @param res resulting hotspot infor
+     * @returns true if hotspot could be computed
+     */
+    getHotSpotToRef(hotSpotData: IHotSpotQuery, res: IHotSpot): boolean {
+        const scene = this.getScene();
+        if (hotSpotData.meshIndex >= scene.getActiveMeshes().length) {
+            return false;
+        }
+        const mesh = this.getActiveMeshes().data[hotSpotData.meshIndex];
+        mesh.getHotSpotToRef(hotSpotData, res.worldPosition);
+
+        const canvasWidth = this.getEngine().getRenderWidth(); // Get the canvas width
+        const canvasHeight = this.getEngine().getRenderHeight(); // Get the canvas height
+
+        const viewportWidth = this.viewport.width * canvasWidth;
+        const viewportHeight = this.viewport.height * canvasHeight;
+
+        Vector3.ProjectToRef(res.worldPosition, mesh.getWorldMatrix(), scene.getTransformMatrix(), new Viewport(0, 0, viewportWidth, viewportHeight), TmpVectors.Vector3[0]);
+        res.canvasPosition.x = TmpVectors.Vector3[0].x;
+        res.canvasPosition.y = TmpVectors.Vector3[0].y;
+
+        return true;
     }
 }
