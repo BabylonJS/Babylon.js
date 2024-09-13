@@ -4,6 +4,7 @@ import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphExecutionBlockWithOutSignal } from "../../flowGraphExecutionBlockWithOutSignal";
 import type { FlowGraphSignalConnection } from "../../flowGraphSignalConnection";
 import { FlowGraphPathConverterComponent } from "../../flowGraphPathConverterComponent";
+import { RegisterClass } from "core/Misc/typeStore";
 
 /**
  * @experimental
@@ -57,3 +58,5 @@ export class FlowGraphSetPropertyBlock<T> extends FlowGraphExecutionBlockWithOut
         serializationObject.config.variable = this.config.variable;
     }
 }
+
+RegisterClass("FGSetPropertyBlock", FlowGraphSetPropertyBlock);

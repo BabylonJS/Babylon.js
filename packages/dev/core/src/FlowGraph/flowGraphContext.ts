@@ -9,6 +9,7 @@ import type { ISerializedFlowGraphContext } from "./typeDefinitions";
 import { defaultValueParseFunction, defaultValueSerializationFunction } from "./serialization";
 import type { FlowGraphCoordinator } from "./flowGraphCoordinator";
 import { Observable } from "../Misc/observable";
+import { FlowGraphAssetsContext } from "./flowGraphAssetsContext";
 
 /**
  * Construction parameters for the context.
@@ -23,6 +24,12 @@ export interface IFlowGraphContextConfiguration {
      * The event coordinator used by the flow graph context.
      */
     readonly coordinator: FlowGraphCoordinator;
+
+    /**
+     * The assets context used by the flow graph context.
+     * If none is provided, a default one will be created.
+     */
+    readonly assetsContext?: FlowGraphAssetsContext;
 }
 
 /**
@@ -91,8 +98,19 @@ export class FlowGraphContext {
      */
     public onNodeExecutedObservable: Observable<FlowGraphBlock> = new Observable<FlowGraphBlock>();
 
+    /**
+     * The assets context used by the flow graph context.
+     * Note that it can be shared between flow graph contexts.
+     */
+    public assetsContext: FlowGraphAssetsContext;
+
     constructor(params: IFlowGraphContextConfiguration) {
         this._configuration = params;
+        if (params.assetsContext) {
+            this.assetsContext = params.assetsContext;
+        } else {
+            this.assetsContext = new FlowGraphAssetsContext();
+        }
     }
 
     /**

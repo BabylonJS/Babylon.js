@@ -2,7 +2,7 @@ import type { IObjectInfo, IPathToObjectConverter } from "../ObjectModel/objectM
 import type { FlowGraphBlock } from "./flowGraphBlock";
 import type { FlowGraphContext } from "./flowGraphContext";
 import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
-import type { FlowGraphInteger } from "./flowGraphInteger";
+import { FlowGraphInteger } from "./flowGraphInteger";
 import { RichTypeFlowGraphInteger } from "./flowGraphRichTypes";
 import type { IObjectAccessor } from "./typeDefinitions";
 
@@ -24,7 +24,7 @@ export class FlowGraphPathConverterComponent {
         let match = pathHasTemplatesRegex.exec(path);
         while (match) {
             const [, matchGroup] = match;
-            this.templatedInputs.push(ownerBlock.registerDataInput(matchGroup, RichTypeFlowGraphInteger));
+            this.templatedInputs.push(ownerBlock.registerDataInput(matchGroup, RichTypeFlowGraphInteger, new FlowGraphInteger(0)));
             match = pathHasTemplatesRegex.exec(path);
         }
     }

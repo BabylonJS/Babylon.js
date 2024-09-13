@@ -27,26 +27,43 @@ export class FlowGraphThrottleBlock extends FlowGraphExecutionBlockWithOutSignal
         super(config);
         this.reset = this._registerSignalInput("reset");
         this.duration = this.registerDataInput("duration", RichTypeNumber);
-        this.lastRemainingTime = this.registerDataOutput("lastRemainingTime", RichTypeNumber);
+        this.lastRemainingTime = this.registerDataOutput("lastRemainingTime", RichTypeNumber, NaN);
     }
     public _execute(context: FlowGraphContext, callingSignal: FlowGraphSignalConnection): void {
-        // TODO - is NEGATIVE_INFINITY a good default value?
-        const lastExecutedTime = context._getExecutionVariable(this, "lastExecutedTime", Number.NEGATIVE_INFINITY);
+        if (callingSignal === this.reset) {
+            this.lastRemainingTime.setValue(NaN, context);
+            context._setExecutionVariable(this, "lastRemainingTime", NaN);
+            context._setExecutionVariable(this, "timestamp", 0);
+            return;
+        }
+        // in seconds
         const durationValue = this.duration.getValue(context);
-        // check if the duration is valid
         if (durationValue <= 0 || isNaN(durationValue) || !isFinite(durationValue)) {
             return this.err._activateSignal(context);
         }
+        const lastRemainingTime = context._getExecutionVariable(this, "lastRemainingTime", NaN);
         const currentTime = Date.now();
-        if (callingSignal === this.reset || lastExecutedTime === undefined || currentTime - lastExecutedTime > durationValue) {
-            //activate the output flow
+        if (isNaN(lastRemainingTime)) {
             this.lastRemainingTime.setValue(0, context);
-            this.out._activateSignal(context);
-            context._setExecutionVariable(this, "lastExecutedTime", currentTime);
+            context._setExecutionVariable(this, "lastRemainingTime", 0);
+            context._setExecutionVariable(this, "timestamp", currentTime);
+            // according to glTF interactivity specs
+            return this.out._activateSignal(context);
         } else {
-            //activate the output flow after the remaining time
-            const remaining = durationValue - (currentTime - lastExecutedTime);
-            this.lastRemainingTime.setValue(remaining, context);
+            const elapsedTime = currentTime - context._getExecutionVariable(this, "timestamp", 0);
+            // duration is in seconds, so we need to multiply by 1000
+            const durationInMs = durationValue * 1000;
+            if (durationInMs <= elapsedTime) {
+                this.lastRemainingTime.setValue(0, context);
+                context._setExecutionVariable(this, "lastRemainingTime", 0);
+                context._setExecutionVariable(this, "timestamp", currentTime);
+                return this.out._activateSignal(context);
+            } else {
+                const remainingTime = durationInMs - elapsedTime;
+                // output is in seconds
+                this.lastRemainingTime.setValue(remainingTime / 1000, context);
+                context._setExecutionVariable(this, "lastRemainingTime", remainingTime);
+            }
         }
     }
     /**

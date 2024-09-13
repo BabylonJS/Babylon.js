@@ -45,6 +45,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     public readonly speed: FlowGraphDataConnection<number>;
     /**
      * Input connection: Should the animation loop?
+     * Not in glTF specs, but useful for the engine.
      */
     public readonly loop: FlowGraphDataConnection<boolean>;
     /**

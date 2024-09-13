@@ -3,11 +3,11 @@ import { FlowGraphSceneReadyEventBlock } from "core/FlowGraph/Blocks/Event/flowG
 import { FlowGraphSceneTickEventBlock } from "core/FlowGraph/Blocks/Event/flowGraphSceneTickEventBlock";
 import { FlowGraphConsoleLogBlock } from "core/FlowGraph/Blocks/Execution/flowGraphConsoleLogBlock";
 import { FlowGraphTimerBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphTimerBlock";
-import { FlowGraphSendCustomEventBlock } from "core/FlowGraph/Blocks/Execution/flowGraphSendCustomEventBlock";
+import { FlowGraphSendCustomEventBlock } from "core/FlowGraph/Blocks/Event/flowGraphSendCustomEventBlock";
 import { FlowGraphReceiveCustomEventBlock } from "core/FlowGraph/Blocks/Event/flowGraphReceiveCustomEventBlock";
 import { FlowGraphSequenceBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphSequenceBlock";
 import { FlowGraphGetPropertyBlock } from "core/FlowGraph/Blocks/Data/flowGraphGetPropertyBlock";
-import { FlowGraphSetPropertyBlock } from "core/FlowGraph/Blocks/Execution/flowGraphSetPropertyBlock";
+import { FlowGraphSetPropertyBlock } from "core/FlowGraph/Blocks/Data/flowGraphSetPropertyBlock";
 import {
     FlowGraphAddBlock,
     FlowGraphRandomBlock,
@@ -82,7 +82,7 @@ import {
 } from "core/FlowGraph/Blocks/Data/Math/flowGraphMathBlocks";
 import { FlowGraphDoNBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphDoNBlock";
 import { FlowGraphGetVariableBlock } from "core/FlowGraph/Blocks/Data/flowGraphGetVariableBlock";
-import { FlowGraphSetVariableBlock } from "core/FlowGraph/Blocks/Execution/flowGraphSetVariableBlock";
+import { FlowGraphSetVariableBlock } from "core/FlowGraph/Blocks/Data/flowGraphSetVariableBlock";
 import { FlowGraphWhileLoopBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphWhileLoopBlock";
 
 export const gltfToFlowGraphTypeMap: { [key: string]: string } = {
@@ -345,40 +345,40 @@ export const gltfTypeToBabylonType: {
 - flow/doN: FlowGraphDoNBlock !
 - flow/multiGate: FlowGraphMultiGateBlock !
 - flow/waitAll: FlowGraphWaitAllBlock !
-- flow/throttle: FlowGraphThrottleBlock
-- flow/setDelay:
-- flow/cancelDelay:
+- flow/throttle: FlowGraphThrottleBlock !
+- flow/setDelay: FlowGraphSetDelayBlock !
+- flow/cancelDelay: FlowGraphCancelDelayBlock !
 
 ## State manipulation nodes:
 
 ## Custom variable access:
 
-- variable/get: FlowGraphGetVariableBlock
-- variable/set: FlowGraphSetVariableBlock
+- variable/get: FlowGraphGetVariableBlock !
+- variable/set: FlowGraphSetVariableBlock !
 
 ### Object model access:
 
-- pointer/get:
-- pointer/set:
+- pointer/get: FlowGraphGetPropertyBlock !
+- pointer/set: FlowGraphSetPropertyBlock !
 - pointer/interpolate:
 
 ### Animation control nodes:
 
-- animation/start:
-- animation/stop:
-- animation/stopAt:
+- animation/start: FlowGraphPlayAnimationBlock ? [Need to be revised]
+- animation/stop: FlowGraphStopAnimationBlock ? [Need to be revised]
+- animation/stopAt: FlowGraphStopAnimationAtBlock ? [Need to be revised]
 
 ## Event nodes:
 
 ### Lifecycle events:
 
-- event/onStart: FlowGraphSceneReadyEventBlock
-- event/onTick: FlowGraphSceneTickEventBlock
+- event/onStart: FlowGraphSceneReadyEventBlock ! 
+- event/onTick: FlowGraphSceneTickEventBlock !
 
 ### Custom events:
 
-- event/receive: FlowGraphReceiveCustomEventBlock
-- event/send: FlowGraphSendCustomEventBlock
+- event/receive: FlowGraphReceiveCustomEventBlock !
+- event/send: FlowGraphSendCustomEventBlock !
 
 
 
