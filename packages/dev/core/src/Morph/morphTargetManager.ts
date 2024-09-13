@@ -30,6 +30,7 @@ export class MorphTargetManager implements IDisposable {
     private _supportsNormals = false;
     private _supportsTangents = false;
     private _supportsUVs = false;
+    private _supportsUV2s = false;
     private _vertexCount = 0;
     private _uniqueId = 0;
     private _tempInfluences = new Array<number>();
@@ -73,6 +74,11 @@ export class MorphTargetManager implements IDisposable {
      * Gets or sets a boolean indicating if UV must be morphed
      */
     public enableUVMorphing = true;
+
+    /**
+     * Gets or sets a boolean indicating if UV2 must be morphed
+     */
+    public enableUV2Morphing = true;
 
     /**
      * Sets a boolean indicating that adding new target or updating an existing target will not update the underlying data buffers
@@ -172,6 +178,13 @@ export class MorphTargetManager implements IDisposable {
      */
     public get supportsUVs(): boolean {
         return this._supportsUVs && this.enableUVMorphing;
+    }
+
+    /**
+     * Gets a boolean indicating if this manager supports morphing of texture coordinates 2
+     */
+    public get supportsUV2s(): boolean {
+        return this._supportsUV2s && this.enableUV2Morphing;
     }
 
     /**
@@ -315,6 +328,7 @@ export class MorphTargetManager implements IDisposable {
         copy.enableNormalMorphing = this.enableNormalMorphing;
         copy.enableTangentMorphing = this.enableTangentMorphing;
         copy.enableUVMorphing = this.enableUVMorphing;
+        copy.enableUV2Morphing = this.enableUV2Morphing;
 
         return copy;
     }
@@ -346,6 +360,7 @@ export class MorphTargetManager implements IDisposable {
         this._supportsNormals = true;
         this._supportsTangents = true;
         this._supportsUVs = true;
+        this._supportsUV2s = true;
         this._vertexCount = 0;
 
         if (this._scene && this._targets.length > this._scene.getEngine().getCaps().texture2DArrayMaxLayerCount) {
@@ -374,6 +389,7 @@ export class MorphTargetManager implements IDisposable {
             this._supportsNormals = this._supportsNormals && target.hasNormals;
             this._supportsTangents = this._supportsTangents && target.hasTangents;
             this._supportsUVs = this._supportsUVs && target.hasUVs;
+            this._supportsUV2s = this._supportsUV2s && target.hasUV2s;
 
             const positions = target.getPositions();
             if (positions) {
@@ -427,6 +443,10 @@ export class MorphTargetManager implements IDisposable {
                 this._textureVertexStride++;
             }
 
+            if (this.supportsUV2s) {
+                this._textureVertexStride++;
+            }
+
             this._textureWidth = this._vertexCount * this._textureVertexStride || 1;
             this._textureHeight = 1;
 
@@ -460,6 +480,7 @@ export class MorphTargetManager implements IDisposable {
                     const normals = target.getNormals();
                     const uvs = target.getUVs();
                     const tangents = target.getTangents();
+                    const uv2s = target.getUV2s();
 
                     if (!positions) {
                         if (index === 0) {
@@ -493,6 +514,12 @@ export class MorphTargetManager implements IDisposable {
                             data[offset] = tangents[vertex * 3];
                             data[offset + 1] = tangents[vertex * 3 + 1];
                             data[offset + 2] = tangents[vertex * 3 + 2];
+                            offset += 4;
+                        }
+
+                        if (this._supportsUV2s && uv2s) {
+                            data[offset] = uv2s[vertex * 2];
+                            data[offset + 1] = uv2s[vertex * 2 + 1];
                             offset += 4;
                         }
                     }
