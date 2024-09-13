@@ -59,10 +59,10 @@ export type NamespacePackageName =
     | "BABYLON.NodeGeometryEditor.SharedUIComponents"
     | "BABYLON.GuiEditor.SharedUIComponents";
 export type ES6PackageName =
-    | "@babylonjs/core"
+    | "@urusgraphics/babylonjs-core"
     | "@babylonjs/gui"
     | "@babylonjs/materials"
-    | "@babylonjs/loaders"
+    | "@urusgraphics/babylonjs-loaders"
     | "@babylonjs/serializers"
     | "@babylonjs/procedural-textures"
     | "@babylonjs/inspector"
@@ -190,10 +190,10 @@ const packageMapping: {
         "babylonjs-gltf2interface": "babylonjs-gltf2interface",
     },
     es6: {
-        core: "@babylonjs/core",
+        core: "@urusgraphics/babylonjs-core",
         gui: "@babylonjs/gui",
         materials: "@babylonjs/materials",
-        loaders: "@babylonjs/loaders",
+        loaders: "@urusgraphics/babylonjs-loaders",
         serializers: "@babylonjs/serializers",
         inspector: "@babylonjs/inspector",
         "node-editor": "@babylonjs/node-editor",

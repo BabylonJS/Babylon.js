@@ -21,7 +21,7 @@
         "pack": "npm run build && npm pack"
     },
     "peerDependencies": {
-        "@babylonjs/core": "^7.13.2",
+        "@urusgraphics/babylonjs-core": "^7.13.2",
         "@babylonjs/loaders": "^7.0.0"
     },
     "devDependencies": {

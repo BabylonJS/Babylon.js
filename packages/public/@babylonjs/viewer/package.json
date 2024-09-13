@@ -18,7 +18,7 @@
         "postcompile": "build-tools -c add-js-to-es6"
     },
     "dependencies": {
-        "@babylonjs/core": "^7.15.2",
+        "@urusgraphics/babylonjs-core": "^7.15.2",
         "@babylonjs/loaders": "^7.15.2",
         "babylonjs-gltf2interface": "^7.15.2",
         "babylonjs-viewer-assets": "^7.15.2",
