@@ -150,7 +150,9 @@ export class HistoryStack implements IDisposable {
         }
 
         if (this._history.length > this._maxHistoryLength) {
-            this._history.splice(0, 1);
+            const base = this._history.splice(0, 1)[0];
+            const diff = this._history[0];
+            this._history[0] = JSON.stringify(this._applyJSONDiff(JSON.parse(base), JSON.parse(diff)));
         }
 
         this._redoStack.length = 0;
