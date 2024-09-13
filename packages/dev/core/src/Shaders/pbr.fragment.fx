@@ -688,9 +688,9 @@ void main(void) {
         vec4(vViewPos.z, 0.0, 0.0, writeGeometryInfo); // Linear depth
 #endif
 
-#ifdef PREPASS_HYPERBOLIC_DEPTH
-    gl_FragData[PREPASS_HYPERBOLIC_DEPTH_INDEX] =
-        vec4(gl_FragCoord.z, 0.0, 0.0, writeGeometryInfo); // Clip-space depth
+#ifdef PREPASS_SCREENSPACE_DEPTH
+    gl_FragData[PREPASS_SCREENSPACE_DEPTH_INDEX] =
+        vec4(gl_FragCoord.z, 0.0, 0.0, writeGeometryInfo);
 #endif
 
 #ifdef PREPASS_NORMAL

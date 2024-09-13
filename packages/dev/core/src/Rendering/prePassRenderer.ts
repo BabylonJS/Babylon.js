@@ -183,7 +183,7 @@ export class PrePassRenderer {
             name: "prePass_LocalPosition",
         },
         {
-            purpose: Constants.PREPASS_HYPERBOLIC_DEPTH_TEXTURE_TYPE,
+            purpose: Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE,
             type: Constants.TEXTURETYPE_FLOAT,
             format: Constants.TEXTUREFORMAT_R,
             name: "prePass_NdcDepth",

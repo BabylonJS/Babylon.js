@@ -691,10 +691,9 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                                           writeGeometryInfo); // Linear depth
 #endif
 
-#ifdef PREPASS_HYPERBOLIC_DEPTH
-    fragData[PREPASS_HYPERBOLIC_DEPTH_INDEX] =
-        vec4f(fragmentInputs.position.z, 0.0, 0.0,
-              writeGeometryInfo); // Clip-space depth
+#ifdef PREPASS_SCREENSPACE_DEPTH
+    fragData[PREPASS_SCREENSPACE_DEPTH_INDEX] =
+        vec4f(fragmentInputs.position.z, 0.0, 0.0, writeGeometryInfo);
 #endif
 
 #ifdef PREPASS_NORMAL

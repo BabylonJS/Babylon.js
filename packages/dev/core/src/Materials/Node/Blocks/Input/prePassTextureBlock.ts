@@ -244,7 +244,7 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
             effect.setTexture(this._depthSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)]);
         }
         if (this.clipSpaceDepth.isConnected) {
-            effect.setTexture(this._clipSpaceDepthSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_HYPERBOLIC_DEPTH_TEXTURE_TYPE)]);
+            effect.setTexture(this._clipSpaceDepthSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE)]);
         }
         if (this.normal.isConnected) {
             effect.setTexture(this._normalSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_NORMAL_TEXTURE_TYPE)]);
@@ -256,7 +256,7 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
             effect.setTexture(this._localPositionSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE)]);
         }
         if (this.clipSpaceDepth.isConnected) {
-            effect.setTexture(this._clipSpaceDepthSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_HYPERBOLIC_DEPTH_TEXTURE_TYPE)]);
+            effect.setTexture(this._clipSpaceDepthSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE)]);
         }
     }
 }
