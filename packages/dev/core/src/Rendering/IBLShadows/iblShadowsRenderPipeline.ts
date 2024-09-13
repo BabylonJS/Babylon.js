@@ -644,8 +644,8 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._listenForCameraChanges();
         this.scene.getEngine().onResizeObservable.add(this._handleResize.bind(this));
 
-        // Only turn on the pipeline if the importance sampling RT's are ready
-        this._importanceSamplingRenderer.onReadyObservable.add(() => {
+        // Only turn on the pipeline when the importance sampling RT's are ready
+        this._importanceSamplingRenderer.onReadyObservable.addOnce(() => {
             this._createEffectPasses(cameras);
             const checkVoxelRendererReady = () => {
                 if (this._voxelRenderer.isReady()) {
