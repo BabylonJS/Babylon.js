@@ -1750,7 +1750,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
                 values[component] = value;
             }
         }
-
+        res.fromArray(values);
         if (this.skeleton) {
             const matricesIndicesData = this.getVerticesData(VertexBuffer.MatricesIndicesKind);
             const matricesWeightsData = this.getVerticesData(VertexBuffer.MatricesWeightsKind);
@@ -1787,8 +1787,6 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
 
                 Vector3.TransformCoordinatesFromFloatsToRef(values[0], values[1], values[2], finalMatrix, res);
             }
-        } else {
-            res.fromArray(values);
         }
 
         return true;

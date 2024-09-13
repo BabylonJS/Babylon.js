@@ -1578,14 +1578,15 @@ export class Camera extends Node {
      */
     getHotSpotToRef(hotSpotData: HotSpotQuery, res: HotSpot): boolean {
         const scene = this.getScene();
-        if (hotSpotData.meshIndex >= scene.getActiveMeshes().length) {
+        if (hotSpotData.meshIndex >= scene.meshes.length) {
             return false;
         }
-        const mesh = this.getActiveMeshes().data[hotSpotData.meshIndex];
+        const mesh = scene.meshes[hotSpotData.meshIndex];
         mesh.getHotSpotToRef(hotSpotData, res.worldPosition);
 
-        const canvasWidth = this.getEngine().getRenderWidth(); // Get the canvas width
-        const canvasHeight = this.getEngine().getRenderHeight(); // Get the canvas height
+        const engine = this.getEngine();
+        const canvasWidth = engine.getRenderWidth(); // Get the canvas width
+        const canvasHeight = engine.getRenderHeight(); // Get the canvas height
 
         const viewportWidth = this.viewport.width * canvasWidth;
         const viewportHeight = this.viewport.height * canvasHeight;
