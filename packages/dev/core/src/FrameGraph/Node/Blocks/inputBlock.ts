@@ -63,7 +63,7 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
     public setDefaultValue() {
         switch (this.type) {
             case NodeRenderGraphBlockConnectionPointTypes.Texture:
-            case NodeRenderGraphBlockConnectionPointTypes.TextureDepth:
+            case NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth:
             case NodeRenderGraphBlockConnectionPointTypes.TextureNormal:
             case NodeRenderGraphBlockConnectionPointTypes.TextureAlbedo:
             case NodeRenderGraphBlockConnectionPointTypes.TextureReflectivity:

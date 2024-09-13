@@ -25,6 +25,7 @@ import { WebGPUEngine } from "core/Engines/webgpuEngine";
 import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
 
 const useWebGPU = false;
+const debugTextures = true;
 
 export class PreviewManager {
     private _nodeRenderGraph: NodeRenderGraph;
@@ -208,6 +209,7 @@ export class PreviewManager {
         this._nodeRenderGraph = NodeRenderGraph.Parse(serialized, this._scene, {
             rebuildGraphOnEngineResize: false,
             autoFillExternalInputs: false,
+            debugTextures,
         });
         (window as any).nrg = this._nodeRenderGraph;
     }

@@ -42,7 +42,7 @@ export enum NodeRenderGraphBlockConnectionPointTypes {
     TextureBackBuffer = 0x00000002,
     TextureBackBufferDepthStencilAttachment = 0x00000004,
     TextureDepthStencilAttachment = 0x00000008,
-    TextureDepth = 0x00000010,
+    TextureViewDepth = 0x00000010,
     TextureNormal = 0x00000020,
     TextureAlbedo = 0x00000040,
     TextureReflectivity = 0x00000080,
@@ -50,6 +50,7 @@ export enum NodeRenderGraphBlockConnectionPointTypes {
     TextureVelocity = 0x00000200,
     TextureIrradiance = 0x00000400,
     TextureAlbedoSqrt = 0x00000800,
+    TextureScreenDepth = 0x00001000,
 
     TextureAllButBackBufferDepthStencil = 0x00fffffb,
     TextureAllButBackBuffer = 0x00fffff9,

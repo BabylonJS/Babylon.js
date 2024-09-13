@@ -104,7 +104,7 @@ export class BlockTools {
             case NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment:
                 color = "#591990";
                 break;
-            case NodeRenderGraphBlockConnectionPointTypes.TextureDepth:
+            case NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth:
                 color = "#84995c";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.TextureNormal:
@@ -120,6 +120,9 @@ export class BlockTools {
                 color = "#84995c";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.TextureVelocity:
+                color = "#84995c";
+                break;
+            case NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth:
                 color = "#84995c";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.BasedOnInput:
@@ -149,8 +152,8 @@ export class BlockTools {
                 return NodeRenderGraphBlockConnectionPointTypes.Camera;
             case "ObjectList":
                 return NodeRenderGraphBlockConnectionPointTypes.ObjectList;
-            case "TextureDepth":
-                return NodeRenderGraphBlockConnectionPointTypes.TextureDepth;
+            case "TextureViewDepth":
+                return NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth;
             case "TextureNormal":
                 return NodeRenderGraphBlockConnectionPointTypes.TextureNormal;
             case "TextureAlbedo":
@@ -161,6 +164,8 @@ export class BlockTools {
                 return NodeRenderGraphBlockConnectionPointTypes.TexturePosition;
             case "TextureVelocity":
                 return NodeRenderGraphBlockConnectionPointTypes.TextureVelocity;
+            case "TextureScreenDepth":
+                return NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth;
         }
 
         return NodeRenderGraphBlockConnectionPointTypes.AutoDetect;
@@ -180,7 +185,7 @@ export class BlockTools {
                 return "Camera";
             case NodeRenderGraphBlockConnectionPointTypes.ObjectList:
                 return "ObjectList";
-            case NodeRenderGraphBlockConnectionPointTypes.TextureDepth:
+            case NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth:
                 return "TextureDepth";
             case NodeRenderGraphBlockConnectionPointTypes.TextureNormal:
                 return "TextureNormal";
@@ -192,6 +197,8 @@ export class BlockTools {
                 return "TexturePosition";
             case NodeRenderGraphBlockConnectionPointTypes.TextureVelocity:
                 return "TextureVelocity";
+            case NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth:
+                return "TextureScreenDepth";
         }
 
         return "";

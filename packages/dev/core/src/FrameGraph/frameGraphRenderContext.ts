@@ -55,6 +55,17 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         this._engine.clear(color, backBuffer, depth, stencil);
     }
 
+    public clearColorAttachments(color: Nullable<IColor4Like>, attachments: number[]): void {
+        this._applyRenderTarget();
+        this._engine.bindAttachments(attachments);
+        this._engine.clear(color, true, false, false);
+    }
+
+    public bindAttachments(attachments: number[]): void {
+        this._applyRenderTarget();
+        this._engine.bindAttachments(attachments);
+    }
+
     /**
      * Generates mipmaps for the current render target
      */
