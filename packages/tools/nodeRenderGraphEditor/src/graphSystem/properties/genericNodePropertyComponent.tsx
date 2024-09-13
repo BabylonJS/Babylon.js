@@ -298,7 +298,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                     components.push(
                         <OptionsLine
                             key={`textureformat-${propertyName}`}
-                            label="Texture format"
+                            label={displayName}
                             options={textureFormatList}
                             target={block}
                             propertyName={propertyName}
@@ -311,7 +311,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                     components.push(
                         <OptionsLine
                             key={`texturetype-${propertyName}`}
-                            label="Texture type"
+                            label={displayName}
                             options={textureTypeList}
                             target={block}
                             propertyName={propertyName}
