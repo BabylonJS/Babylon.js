@@ -474,11 +474,6 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                 , uniforms.vReflectionFilteringInfo
             #endif
         #endif
-        #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
-            #ifdef RADIANCEOCCLUSION
-                , ambientMonochrome
-            #endif
-        #endif
         #if defined(CLEARCOAT_BUMP) || defined(TWOSIDEDLIGHTING)
             , select(-1., 1., fragmentInputs.frontFacing)
         #endif

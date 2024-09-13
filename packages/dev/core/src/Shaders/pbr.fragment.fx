@@ -477,11 +477,6 @@ void main(void) {
                 , vReflectionFilteringInfo
             #endif
         #endif
-        #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
-            #ifdef RADIANCEOCCLUSION
-                , ambientMonochrome
-            #endif
-        #endif
         #if defined(CLEARCOAT_BUMP) || defined(TWOSIDEDLIGHTING)
             , (gl_FrontFacing ? 1. : -1.)
         #endif
