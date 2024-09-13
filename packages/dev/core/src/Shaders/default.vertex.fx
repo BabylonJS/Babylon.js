@@ -86,6 +86,9 @@ void main(void) {
 #ifdef UV1
 	vec2 uvUpdated = uv;
 #endif
+#ifdef UV2
+    vec2 uv2Updated = uv2;
+#endif
 
 #include<morphTargetsVertexGlobal>
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
@@ -152,6 +155,9 @@ void main(void) {
 #endif
 #ifdef MAINUV1
 	vMainUV1 = uvUpdated;
+#endif
+#ifdef MAINUV2
+    vMainUV2 = uv2Updated;
 #endif
     #include<uvVariableDeclaration>[2..7]
 

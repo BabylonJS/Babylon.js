@@ -20,6 +20,11 @@
 
 			#ifdef MORPHTARGETS_TANGENT
 				tangentUpdated.xyz += (readVector3FromRawSampler(i, vertexID)  - tangent.xyz) * morphTargetInfluences[i];
+				vertexID += 1.0;
+			#endif
+
+			#ifdef MORPHTARGETS_UV2
+				uv2Updated += (readVector3FromRawSampler(i, vertexID).xy - uv2) * morphTargetInfluences[i];
 			#endif
 		}
 		#endif
@@ -36,6 +41,10 @@
 
 		#ifdef MORPHTARGETS_UV
 		uvUpdated += (uv_{X} - uv) * morphTargetInfluences[{X}];
+		#endif
+
+		#ifdef MORPHTARGETS_UV2
+		uv2Updated += (uv2_{X} - uv2) * morphTargetInfluences[{X}];
 		#endif
 	#endif
 #endif
