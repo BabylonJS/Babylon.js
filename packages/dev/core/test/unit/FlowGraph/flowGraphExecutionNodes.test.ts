@@ -127,7 +127,7 @@ describe("Flow Graph Execution Nodes", () => {
         const sceneReady = new FlowGraphSceneReadyEventBlock();
         flowGraph.addEventBlock(sceneReady);
 
-        const multiGate = new FlowGraphMultiGateBlock({ numberOutputFlows: 3, loop: true });
+        const multiGate = new FlowGraphMultiGateBlock({ numberOutputFlows: 3, isLoop: true });
         sceneReady.out.connectTo(multiGate.in);
 
         const customFunction1 = new FlowGraphConsoleLogBlock();

@@ -341,10 +341,10 @@ export const gltfTypeToBabylonType: {
 - flow/branch: FlowGraphBranchBlock !
 - flow/switch: FlowGraphSwitchBlock !
 - flow/while: FlowGraphWhileLoopBlock !
-- flow/for:
-- flow/doN: FlowGraphDoNBlock
-- flow/multiGate:
-- flow/waitAll:
+- flow/for: FlowGraphForLoopBlock !
+- flow/doN: FlowGraphDoNBlock !
+- flow/multiGate: FlowGraphMultiGateBlock !
+- flow/waitAll: FlowGraphWaitAllBlock !
 - flow/throttle: FlowGraphThrottleBlock
 - flow/setDelay:
 - flow/cancelDelay:
