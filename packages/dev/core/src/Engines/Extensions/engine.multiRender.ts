@@ -181,6 +181,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
     let faceIndex: number[] = [];
     let layerIndex: number[] = [];
     let layers: number[] = [];
+    let labels: string[] = [];
 
     const rtWrapper = this._createHardwareRenderTargetWrapper(true, false, size) as WebGLRenderTargetWrapper;
 
@@ -199,6 +200,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
         faceIndex = options.faceIndex || faceIndex;
         layerIndex = options.layerIndex || layerIndex;
         layers = options.layerCounts || layers;
+        labels = options.labels || labels;
 
         if (
             this.webGLVersion > 1 &&
@@ -211,8 +213,6 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
             depthTextureFormat = options.depthTextureFormat;
         }
     }
-
-    rtWrapper.label = options?.label ?? "MultiRenderTargetWrapper";
 
     const gl = this._gl;
     // Create the framebuffer
@@ -231,6 +231,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
             depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 ||
             depthTextureFormat === Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8);
 
+    rtWrapper.label = options?.label ?? "MultiRenderTargetWrapper";
     rtWrapper._framebuffer = framebuffer;
     rtWrapper._generateDepthBuffer = generateDepthTexture || generateDepthBuffer;
     rtWrapper._generateStencilBuffer = generateDepthTexture ? useStencilTexture : generateStencilBuffer;
@@ -324,6 +325,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
         texture.type = type;
         texture._useSRGBBuffer = useSRGBBuffer;
         texture.format = format;
+        texture.label = labels[i] ?? rtWrapper.label + "-Texture" + i;
 
         this._internalTexturesCache.push(texture);
     }
@@ -364,8 +366,8 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
             }
         }
 
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, depthTexture._hardwareTexture!.underlyingResource);
+        this._bindTextureDirectly(gl.TEXTURE_2D, depthTexture, true);
+
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -373,6 +375,11 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
         gl.texImage2D(gl.TEXTURE_2D, 0, glDepthTextureInternalFormat, width, height, 0, glDepthTextureFormat, glDepthTextureType, null);
 
         gl.framebufferTexture2D(gl.FRAMEBUFFER, glDepthTextureAttachment, gl.TEXTURE_2D, depthTexture._hardwareTexture!.underlyingResource, 0);
+
+        this._bindTextureDirectly(gl.TEXTURE_2D, null);
+
+        rtWrapper._depthStencilTexture = depthTexture;
+        rtWrapper._depthStencilTextureWithStencil = useStencilTexture;
 
         depthTexture.baseWidth = width;
         depthTexture.baseHeight = height;
@@ -384,6 +391,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
         depthTexture.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         depthTexture.format = depthTextureFormat;
         depthTexture.type = depthTextureType;
+        depthTexture.label = rtWrapper.label + "-DepthStencil";
 
         textures[textureCount] = depthTexture;
         this._internalTexturesCache.push(depthTexture);
