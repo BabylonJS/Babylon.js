@@ -731,6 +731,13 @@ export class ThinEngine extends AbstractEngine {
                     };
                 }
             }
+            // take into account the forced state that was provided in options
+            if (this._creationOptions) {
+                const forceSRGBBufferSupportState = (this._creationOptions as EngineOptions).forceSRGBBufferSupportState;
+                if (forceSRGBBufferSupportState !== undefined) {
+                    this._caps.supportSRGBBuffers = this._caps.supportSRGBBuffers && forceSRGBBufferSupportState;
+                }
+            }
         }
 
         // Depth buffer
