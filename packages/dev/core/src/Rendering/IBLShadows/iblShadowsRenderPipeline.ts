@@ -110,6 +110,9 @@ class IblShadowsPrepassConfiguration implements PrePassEffectConfiguration {
         // Local positions used for shadow accumulation pass
         Constants.PREPASS_POSITION_TEXTURE_TYPE,
         Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE,
+
+        Constants.PREPASS_DIRECTLIGHTING_TEXTURE_TYPE,
+        // Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
     ];
 }
 
@@ -694,7 +697,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             width: this.scene.getEngine().getRenderWidth(),
             height: this.scene.getEngine().getRenderHeight(),
             uniforms: ["shadowOpacity"],
-            samplers: ["sceneTexture"],
+            samplers: ["sceneTexture", "irradianceSampler", "reflectivitySampler"],
             samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
             engine: this.scene.getEngine(),
             textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
@@ -722,6 +725,13 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
                 this._accumulationPass?.isReady()
             ) {
                 this.update();
+            }
+            const prePassRenderer = this.scene.prePassRenderer;
+            if (prePassRenderer) {
+                // const irradianceIndex = prePassRenderer.getIndex(Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE);
+                const reflectivityIndex = prePassRenderer.getIndex(Constants.PREPASS_DIRECTLIGHTING_TEXTURE_TYPE);
+                // if (irradianceIndex >= 0) effect.setTexture("irradianceSampler", prePassRenderer.getRenderTarget().textures[irradianceIndex]);
+                if (reflectivityIndex >= 0) effect.setTexture("reflectivitySampler", prePassRenderer.getRenderTarget().textures[reflectivityIndex]);
             }
         });
         this._shadowCompositePP._prePassEffectConfiguration = this._prePassEffectConfiguration;

@@ -868,6 +868,11 @@ export function PrepareDefinesForPrePass(scene: Scene, defines: any, canRenderTo
             define: "PREPASS_WORLD_NORMAL",
             index: "PREPASS_WORLD_NORMAL_INDEX",
         },
+        {
+            type: Constants.PREPASS_DIRECTLIGHTING_TEXTURE_TYPE,
+            define: "PREPASS_DIRECTLIGHTING",
+            index: "PREPASS_DIRECTLIGHTING_INDEX",
+        },
     ];
 
     if (scene.prePassRenderer && scene.prePassRenderer.enabled && canRenderToMRT) {
