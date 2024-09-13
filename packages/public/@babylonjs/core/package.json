@@ -1,5 +1,5 @@
 {
-    "name": "@babylonjs/core",
+    "name": "@urusgraphics/babylonjs-core",
     "version": "7.15.2",
     "main": "index.js",
     "module": "index.js",
@@ -42,5 +42,8 @@
     },
     "bugs": {
         "url": "https://github.com/BabylonJS/Babylon.js/issues"
+    },
+    "publishConfig": {
+        "registry": "https://npm.pkg.github.com/"
     }
 }
