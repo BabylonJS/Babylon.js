@@ -1067,6 +1067,9 @@ export class NodeMaterial extends PushMaterial {
             if (block.position.isConnected && !result.includes(Constants.PREPASS_POSITION_TEXTURE_TYPE)) {
                 result.push(Constants.PREPASS_POSITION_TEXTURE_TYPE);
             }
+            if (block.localPosition.isConnected && !result.includes(Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE)) {
+                result.push(Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE);
+            }
             if (block.depth.isConnected && !result.includes(Constants.PREPASS_DEPTH_TEXTURE_TYPE)) {
                 result.push(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
             }

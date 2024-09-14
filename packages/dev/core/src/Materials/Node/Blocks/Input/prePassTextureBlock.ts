@@ -230,12 +230,24 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
         state.sharedData.textureBlocks.push(this);
         state.sharedData.bindableBlocks.push(this);
 
-        state._emit2DSampler(this._positionSamplerName);
-        state._emit2DSampler(this._depthSamplerName);
-        state._emit2DSampler(this._normalSamplerName);
-        state._emit2DSampler(this._worldNormalSamplerName);
-        state._emit2DSampler(this._localPositionSamplerName);
-        state._emit2DSampler(this._screenSpaceDepthSamplerName);
+        if (this.position.isConnected) {
+            state._emit2DSampler(this._positionSamplerName);
+        }
+        if (this.depth.isConnected) {
+            state._emit2DSampler(this._depthSamplerName);
+        }
+        if (this.normal.isConnected) {
+            state._emit2DSampler(this._normalSamplerName);
+        }
+        if (this.worldNormal.isConnected) {
+            state._emit2DSampler(this._worldNormalSamplerName);
+        }
+        if (this.localPosition.isConnected) {
+            state._emit2DSampler(this._localPositionSamplerName);
+        }
+        if (this.screenDepth.isConnected) {
+            state._emit2DSampler(this._screenSpaceDepthSamplerName);
+        }
 
         return this;
     }
