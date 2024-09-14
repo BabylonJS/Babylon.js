@@ -69,7 +69,7 @@ const geometryTextureDescriptions = [
         clearType: TextureClearType.Zero,
     },
     {
-        type: Constants.PREPASS_NDC_DEPTH_TEXTURE_TYPE,
+        type: Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE,
         name: "ScreenDepth",
         clearType: TextureClearType.One,
     },

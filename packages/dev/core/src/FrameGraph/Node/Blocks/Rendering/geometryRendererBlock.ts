@@ -319,7 +319,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         const textureTypes = [this.viewDepthType, this.screenDepthType, this.normalType, this.positionType, this.albedoType, this.reflectivityType, this.velocityType];
         const bufferTypes = [
             Constants.PREPASS_DEPTH_TEXTURE_TYPE,
-            Constants.PREPASS_NDC_DEPTH_TEXTURE_TYPE,
+            Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE,
             Constants.PREPASS_NORMAL_TEXTURE_TYPE,
             Constants.PREPASS_POSITION_TEXTURE_TYPE,
             Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE,
