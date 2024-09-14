@@ -312,7 +312,7 @@ export class _IblShadowsVoxelTracingPass {
         const prePassRenderer = this._scene.prePassRenderer;
         if (prePassRenderer) {
             const wnormalIndex = prePassRenderer.getIndex(Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE);
-            const clipDepthIndex = prePassRenderer.getIndex(Constants.PREPASS_NDC_DEPTH_TEXTURE_TYPE);
+            const clipDepthIndex = prePassRenderer.getIndex(Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE);
             const wPositionIndex = prePassRenderer.getIndex(Constants.PREPASS_POSITION_TEXTURE_TYPE);
             if (wnormalIndex >= 0) effect.setTexture("worldNormalSampler", prePassRenderer.getRenderTarget().textures[wnormalIndex]);
             if (clipDepthIndex >= 0) effect.setTexture("depthSampler", prePassRenderer.getRenderTarget().textures[clipDepthIndex]);

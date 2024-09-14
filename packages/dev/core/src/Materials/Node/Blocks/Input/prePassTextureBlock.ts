@@ -262,19 +262,13 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
             effect.setTexture(this._depthSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)]);
         }
         if (this.screenDepth.isConnected) {
-            effect.setTexture(this._screenSpaceDepthSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_NDC_DEPTH_TEXTURE_TYPE)]);
+            effect.setTexture(this._screenSpaceDepthSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE)]);
         }
         if (this.normal.isConnected) {
             effect.setTexture(this._normalSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_NORMAL_TEXTURE_TYPE)]);
         }
         if (this.worldNormal.isConnected) {
             effect.setTexture(this._worldNormalSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE)]);
-        }
-        if (this.localPosition.isConnected) {
-            effect.setTexture(this._localPositionSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE)]);
-        }
-        if (this.screenDepth.isConnected) {
-            effect.setTexture(this._screenSpaceDepthSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_NDC_DEPTH_TEXTURE_TYPE)]);
         }
     }
 }
