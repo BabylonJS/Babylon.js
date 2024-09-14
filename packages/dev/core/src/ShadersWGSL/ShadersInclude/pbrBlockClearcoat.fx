@@ -103,11 +103,6 @@ struct clearcoatOutParams
             , vReflectionFilteringInfo: vec2f
         #endif
     #endif
-    #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
-        #ifdef RADIANCEOCCLUSION
-            , ambientMonochrome: f32
-        #endif
-    #endif
     #if defined(CLEARCOAT_BUMP) || defined(TWOSIDEDLIGHTING)
         , frontFacingMultiplier: f32
     #endif        

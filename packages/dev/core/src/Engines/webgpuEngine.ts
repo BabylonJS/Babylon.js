@@ -880,6 +880,7 @@ export class WebGPUEngine extends AbstractEngine {
             maxCubemapTextureSize: this._deviceLimits.maxTextureDimension2D,
             maxRenderTextureSize: this._deviceLimits.maxTextureDimension2D,
             maxVertexAttribs: this._deviceLimits.maxVertexAttributes,
+            maxDrawBuffers: 8,
             maxVaryingVectors: this._deviceLimits.maxInterStageShaderVariables,
             maxFragmentUniformVectors: Math.floor(this._deviceLimits.maxUniformBufferBindingSize / 4),
             maxVertexUniformVectors: Math.floor(this._deviceLimits.maxUniformBufferBindingSize / 4),

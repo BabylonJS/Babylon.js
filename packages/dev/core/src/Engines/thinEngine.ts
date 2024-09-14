@@ -629,12 +629,14 @@ export class ThinEngine extends AbstractEngine {
         if (this._webGLVersion > 1) {
             this._caps.drawBuffersExtension = true;
             this._caps.maxMSAASamples = this._maxMSAASamplesOverride !== null ? this._maxMSAASamplesOverride : this._gl.getParameter(this._gl.MAX_SAMPLES);
+            this._caps.maxDrawBuffers = this._gl.getParameter(this._gl.MAX_DRAW_BUFFERS);
         } else {
             const drawBuffersExtension = this._gl.getExtension("WEBGL_draw_buffers");
 
             if (drawBuffersExtension !== null) {
                 this._caps.drawBuffersExtension = true;
                 this._gl.drawBuffers = drawBuffersExtension.drawBuffersWEBGL.bind(drawBuffersExtension);
+                this._caps.maxDrawBuffers = this._gl.getParameter(drawBuffersExtension.MAX_DRAW_BUFFERS_WEBGL);
                 (this._gl.DRAW_FRAMEBUFFER as any) = this._gl.FRAMEBUFFER;
 
                 for (let i = 0; i < 16; i++) {

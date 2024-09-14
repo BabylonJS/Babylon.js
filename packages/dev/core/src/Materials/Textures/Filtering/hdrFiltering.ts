@@ -10,8 +10,7 @@ import type { RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
 import { Logger } from "../../../Misc/logger";
 
 import "../../../Engines/Extensions/engine.renderTargetCube";
-import "../../../Shaders/hdrFiltering.vertex";
-import "../../../Shaders/hdrFiltering.fragment";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Options for texture filtering
@@ -168,6 +167,8 @@ export class HDRFiltering {
 
         defines.push("#define NUM_SAMPLES " + this.quality + "u"); // unsigned int
 
+        const isWebGPU = this._engine.isWebGPU;
+
         const effectWrapper = new EffectWrapper({
             engine: this._engine,
             name: "hdrFiltering",
@@ -178,6 +179,14 @@ export class HDRFiltering {
             useShaderStore: true,
             defines,
             onCompiled: onCompiled,
+            shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            extraInitializationsAsync: async () => {
+                if (isWebGPU) {
+                    await Promise.all([import("../../../ShadersWGSL/hdrFiltering.vertex"), import("../../../ShadersWGSL/hdrFiltering.fragment")]);
+                } else {
+                    await Promise.all([import("../../../Shaders/hdrFiltering.vertex"), import("../../../Shaders/hdrFiltering.fragment")]);
+                }
+            },
         });
 
         return effectWrapper;

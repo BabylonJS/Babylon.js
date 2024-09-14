@@ -62,6 +62,11 @@ const defaultViewerOptions = {
 
 export type ViewerDetails = {
     /**
+     * Gets the Viewer instance.
+     */
+    viewer: Viewer;
+
+    /**
      * Provides access to the Scene managed by the Viewer.
      */
     scene: Scene;
@@ -101,9 +106,19 @@ export class Viewer implements IDisposable {
     }
 
     /**
-     * Fired when a model is loaded into the viewer.
+     * Fired when the environment has changed.
      */
-    public readonly onModelLoaded = new Observable<void>();
+    public readonly onEnvironmentChanged = new Observable<void>();
+
+    /**
+     * Fired when an error occurs while loading the environment.
+     */
+    public readonly onEnvironmentError = new Observable<unknown>();
+
+    /**
+     * Fired when a model is loaded into the viewer (or unloaded from the viewer).
+     */
+    public readonly onModelChanged = new Observable<void>();
 
     /**
      * Fired when an error occurs while loading a model.
@@ -155,6 +170,7 @@ export class Viewer implements IDisposable {
     ) {
         const finalOptions = { ...defaultViewerOptions, ...options };
         this._details = {
+            viewer: this,
             scene: new Scene(this._engine),
             model: null,
         };
@@ -165,7 +181,7 @@ export class Viewer implements IDisposable {
         this._autoRotationBehavior = this._camera.getBehaviorByName("AutoRotation") as AutoRotationBehavior;
 
         // Load a default light, but ignore errors as the user might be immediately loading their own environment.
-        this.loadEnvironmentAsync(undefined).catch(() => {});
+        this.resetEnvironmentAsync().catch(() => {});
 
         // TODO: render at least back ground. Maybe we can only run renderloop when a mesh is loaded. What to render until then?
         const render = () => {
@@ -287,32 +303,22 @@ export class Viewer implements IDisposable {
      * @param abortSignal An optional signal that can be used to abort the loading process.
      */
     public async loadModelAsync(source: string | File | ArrayBufferView, options?: LoadAssetContainerOptions, abortSignal?: AbortSignal): Promise<void> {
+        await this._updateModelAsync(source, options, abortSignal);
+    }
+
+    /**
+     * Resets the model to an empty scene.
+     * @param abortSignal An optional signal that can be used to abort the reset.
+     */
+    public async resetModelAsync(abortSignal?: AbortSignal): Promise<void> {
+        await this._updateModelAsync(undefined, undefined, abortSignal);
+    }
+
+    private async _updateModelAsync(source: string | File | ArrayBufferView | undefined, options?: LoadAssetContainerOptions, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
 
         this._loadModelAbortController?.abort("New model is being loaded before previous model finished loading.");
         const abortController = (this._loadModelAbortController = new AbortController());
-
-        // TODO: Disable audio for now, later figure out how to re-introduce it through dynamic imports.
-        options = {
-            ...(options ?? {}),
-            pluginOptions: {
-                ...(options?.pluginOptions ?? {}),
-                gltf: {
-                    ...(options?.pluginOptions?.gltf ?? {}),
-                    extensionOptions: {
-                        ...(options?.pluginOptions?.gltf?.extensionOptions ?? {}),
-                        // eslint-disable-next-line @typescript-eslint/naming-convention
-                        KHR_audio: {
-                            enabled: false,
-                        },
-                        // eslint-disable-next-line @typescript-eslint/naming-convention
-                        MSFT_audio_emitter: {
-                            enabled: false,
-                        },
-                    },
-                },
-            },
-        };
 
         await this._loadModelLock.lockAsync(async () => {
             this._throwIfDisposedOrAborted(abortSignal, abortController.signal);
@@ -320,14 +326,17 @@ export class Viewer implements IDisposable {
             this.selectedAnimation = -1;
 
             try {
-                this._details.model = await loadAssetContainerAsync(source, this._details.scene, options);
-                this._details.model.animationGroups.forEach((group) => group.stop());
-                this.selectedAnimation = 0;
-                this._details.model.addAllToScene();
+                this._details.model = null;
+                if (source) {
+                    this._details.model = await loadAssetContainerAsync(source, this._details.scene, options);
+                    this._details.model.animationGroups.forEach((group) => group.stop());
+                    this.selectedAnimation = 0;
+                    this._details.model.addAllToScene();
+                }
 
                 this._updateCamera();
                 this._applyAnimationSpeed();
-                this.onModelLoaded.notifyObservers();
+                this.onModelChanged.notifyObservers();
             } catch (e) {
                 this.onModelError.notifyObservers(e);
                 throw e;
@@ -338,13 +347,24 @@ export class Viewer implements IDisposable {
     /**
      * Loads an environment texture from the specified url and sets up a corresponding skybox.
      * @remarks
-     * If no url is provided, a default hemispheric light will be created.
      * If an environment is already loaded, it will be unloaded before loading the new environment.
      * @param url The url of the environment texture to load.
      * @param options The options to use when loading the environment.
      * @param abortSignal An optional signal that can be used to abort the loading process.
      */
-    public async loadEnvironmentAsync(url: Nullable<string | undefined>, options?: {}, abortSignal?: AbortSignal): Promise<void> {
+    public async loadEnvironmentAsync(url: string, options?: {}, abortSignal?: AbortSignal): Promise<void> {
+        await this._updateEnvironmentAsync(url, options, abortSignal);
+    }
+
+    /**
+     * Resets the environment to a simple hemispheric light.
+     * @param abortSignal An optional signal that can be used to abort the reset.
+     */
+    public async resetEnvironmentAsync(abortSignal?: AbortSignal): Promise<void> {
+        await this._updateEnvironmentAsync(undefined, undefined, abortSignal);
+    }
+
+    private async _updateEnvironmentAsync(url: Nullable<string | undefined>, options?: {}, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
 
         this._loadEnvironmentAbortController?.abort("New environment is being loaded before previous environment finished loading.");
@@ -353,44 +373,52 @@ export class Viewer implements IDisposable {
         await this._loadEnvironmentLock.lockAsync(async () => {
             this._throwIfDisposedOrAborted(abortSignal, abortController.signal);
             this._environment?.dispose();
-            this._environment = await new Promise<IDisposable>((resolve, reject) => {
-                if (!url) {
-                    const light = new HemisphericLight("hemilight", Vector3.Up(), this._details.scene);
-                    this._details.scene.autoClear = true;
-                    resolve(light);
-                } else {
-                    const cubeTexture = CubeTexture.CreateFromPrefilteredData(url, this._details.scene);
-                    this._details.scene.environmentTexture = cubeTexture;
 
-                    const skybox = createSkybox(this._details.scene, this._camera, cubeTexture, 0.3);
-                    this._skybox = skybox;
+            try {
+                this._environment = await new Promise<IDisposable>((resolve, reject) => {
+                    if (!url) {
+                        const light = new HemisphericLight("hemilight", Vector3.Up(), this._details.scene);
+                        this._details.scene.autoClear = true;
+                        resolve(light);
+                    } else {
+                        const cubeTexture = CubeTexture.CreateFromPrefilteredData(url, this._details.scene);
+                        this._details.scene.environmentTexture = cubeTexture;
 
-                    this._details.scene.autoClear = false;
+                        const skybox = createSkybox(this._details.scene, this._camera, cubeTexture, 0.3);
+                        this._skybox = skybox;
 
-                    const dispose = () => {
-                        cubeTexture.dispose();
-                        skybox.dispose();
-                        this._skybox = null;
-                    };
+                        this._details.scene.autoClear = false;
 
-                    const successObserver = cubeTexture.onLoadObservable.addOnce(() => {
-                        successObserver.remove();
-                        errorObserver.remove();
-                        resolve({
-                            dispose,
-                        });
-                    });
+                        const dispose = () => {
+                            cubeTexture.dispose();
+                            skybox.dispose();
+                            this._skybox = null;
+                        };
 
-                    const errorObserver = Texture.OnTextureLoadErrorObservable.add((texture) => {
-                        if (texture === cubeTexture) {
+                        const successObserver = cubeTexture.onLoadObservable.addOnce(() => {
                             successObserver.remove();
                             errorObserver.remove();
-                            dispose();
-                            reject(new Error("Failed to load environment texture."));
-                        }
-                    });
-                }
-            });
+                            resolve({
+                                dispose,
+                            });
+                        });
+
+                        const errorObserver = Texture.OnTextureLoadErrorObservable.add((texture) => {
+                            if (texture === cubeTexture) {
+                                successObserver.remove();
+                                errorObserver.remove();
+                                dispose();
+                                reject(new Error("Failed to load environment texture."));
+                            }
+                        });
+                    }
+
+                    this.onEnvironmentChanged.notifyObservers();
+                });
+            } catch (e) {
+                this.onEnvironmentError.notifyObservers(e);
+                throw e;
+            }
         });
     }
 
@@ -429,7 +457,9 @@ export class Viewer implements IDisposable {
         this._renderLoopController.dispose();
         this._details.scene.dispose();
 
-        this.onModelLoaded.clear();
+        this.onEnvironmentChanged.clear();
+        this.onEnvironmentError.clear();
+        this.onModelChanged.clear();
         this.onModelError.clear();
         this.onSelectedAnimationChanged.clear();
         this.onAnimationSpeedChanged.clear();

@@ -752,7 +752,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             <ResizableCasted
                 tabIndex={-1}
                 id="sceneExplorer"
-                size={{ height: "100%" }}
+                defaultSize={{ height: "100%" }}
                 ref={this._sceneExplorerRef}
                 minWidth={300}
                 maxWidth={600}

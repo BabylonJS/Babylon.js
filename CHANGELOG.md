@@ -1,5 +1,93 @@
 # Changelog
 
+## 7.25.1
+
+### Core
+
+- Fix PowBlock for WebGPU - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#15562](https://github.com/BabylonJS/Babylon.js/pull/15562))
+- Add viewerready event and other fixes - by [ryantrem](https://github.com/ryantrem) ([#15560](https://github.com/BabylonJS/Babylon.js/pull/15560))
+
+### Loaders
+
+- Fix glTF transmission refraction texture export - by [bghgary](https://github.com/bghgary) ([#15559](https://github.com/BabylonJS/Babylon.js/pull/15559))
+- Add viewerready event and other fixes - by [ryantrem](https://github.com/ryantrem) ([#15560](https://github.com/BabylonJS/Babylon.js/pull/15560))
+
+### Node Editor
+
+
+### Serializers
+
+- Fix glTF transmission refraction texture export - by [bghgary](https://github.com/bghgary) ([#15559](https://github.com/BabylonJS/Babylon.js/pull/15559))
+
+## 7.25.0
+
+### Core
+
+- IBL Shadows in WebGPU - by [MiiBond](https://github.com/MiiBond) ([#15545](https://github.com/BabylonJS/Babylon.js/pull/15545))
+- Allow overriding the default texture loaders - by [RaananW](https://github.com/RaananW) ([#15537](https://github.com/BabylonJS/Babylon.js/pull/15537))
+- Remove usage of deprecated substr - by [RaananW](https://github.com/RaananW) ([#15539](https://github.com/BabylonJS/Babylon.js/pull/15539))
+- glob update and relative dir fix in windows - by [RaananW](https://github.com/RaananW) ([#15538](https://github.com/BabylonJS/Babylon.js/pull/15538))
+- fix screenshot tools custom texture - by [sebavan](https://github.com/sebavan) ([#15536](https://github.com/BabylonJS/Babylon.js/pull/15536))
+- Fix IBL Shadows async issue during effect creation - by [MiiBond](https://github.com/MiiBond) ([#15535](https://github.com/BabylonJS/Babylon.js/pull/15535))
+- Complete migration of `Scalar` to functions - by [james-pre](https://github.com/james-pre) ([#15373](https://github.com/BabylonJS/Babylon.js/pull/15373))
+- Dispose sound HTMLAudioElement and streaming source node - [_Bug Fix_] by [docEdub](https://github.com/docEdub) ([#15533](https://github.com/BabylonJS/Babylon.js/pull/15533))
+- Better resource handling when attaching/detaching webxr hands - by [RaananW](https://github.com/RaananW) ([#15531](https://github.com/BabylonJS/Babylon.js/pull/15531))
+- DepthPeelingRenderer to WebGPU - by [noname0310](https://github.com/noname0310) ([#15529](https://github.com/BabylonJS/Babylon.js/pull/15529))
+
+### GUI
+
+- 3D GUI Near Menu computes the cell size incorrectly - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#15551](https://github.com/BabylonJS/Babylon.js/pull/15551))
+- Remove usage of deprecated substr - by [RaananW](https://github.com/RaananW) ([#15539](https://github.com/BabylonJS/Babylon.js/pull/15539))
+- glob update and relative dir fix in windows - by [RaananW](https://github.com/RaananW) ([#15538](https://github.com/BabylonJS/Babylon.js/pull/15538))
+
+### GUI Editor
+
+- Allow alpha in shadow color - by [RaananW](https://github.com/RaananW) ([#15541](https://github.com/BabylonJS/Babylon.js/pull/15541))
+- Remove usage of deprecated substr - by [RaananW](https://github.com/RaananW) ([#15539](https://github.com/BabylonJS/Babylon.js/pull/15539))
+- glob update and relative dir fix in windows - by [RaananW](https://github.com/RaananW) ([#15538](https://github.com/BabylonJS/Babylon.js/pull/15538))
+
+### Inspector
+
+- Inspector pane resize doesn't stick after mouse up - by [RaananW](https://github.com/RaananW) ([#15549](https://github.com/BabylonJS/Babylon.js/pull/15549))
+- glob update and relative dir fix in windows - by [RaananW](https://github.com/RaananW) ([#15538](https://github.com/BabylonJS/Babylon.js/pull/15538))
+
+### Loaders
+
+- Remove extraneous load of material base properties in some glTF loader extensions - by [bghgary](https://github.com/bghgary) ([#15555](https://github.com/BabylonJS/Babylon.js/pull/15555))
+- Remove usage of deprecated substr - by [RaananW](https://github.com/RaananW) ([#15539](https://github.com/BabylonJS/Babylon.js/pull/15539))
+- glob update and relative dir fix in windows - by [RaananW](https://github.com/RaananW) ([#15538](https://github.com/BabylonJS/Babylon.js/pull/15538))
+- Complete migration of `Scalar` to functions - by [james-pre](https://github.com/james-pre) ([#15373](https://github.com/BabylonJS/Babylon.js/pull/15373))
+- Add missing export of new gltf extension registry - by [ryantrem](https://github.com/ryantrem) ([#15534](https://github.com/BabylonJS/Babylon.js/pull/15534))
+
+### Materials
+
+- glob update and relative dir fix in windows - by [RaananW](https://github.com/RaananW) ([#15538](https://github.com/BabylonJS/Babylon.js/pull/15538))
+
+### Node Editor
+
+- Using zip compression for the history stack - by [deltakosh](https://github.com/deltakosh) ([#15553](https://github.com/BabylonJS/Babylon.js/pull/15553))
+- Add undo / redo support to NME - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15546](https://github.com/BabylonJS/Babylon.js/pull/15546))
+- Remove usage of deprecated substr - by [RaananW](https://github.com/RaananW) ([#15539](https://github.com/BabylonJS/Babylon.js/pull/15539))
+- glob update and relative dir fix in windows - by [RaananW](https://github.com/RaananW) ([#15538](https://github.com/BabylonJS/Babylon.js/pull/15538))
+
+### Playground
+
+- Remove usage of deprecated substr - by [RaananW](https://github.com/RaananW) ([#15539](https://github.com/BabylonJS/Babylon.js/pull/15539))
+
+### Procedural Textures
+
+- glob update and relative dir fix in windows - by [RaananW](https://github.com/RaananW) ([#15538](https://github.com/BabylonJS/Babylon.js/pull/15538))
+
+### Serializers
+
+- glob update and relative dir fix in windows - by [RaananW](https://github.com/RaananW) ([#15538](https://github.com/BabylonJS/Babylon.js/pull/15538))
+
+### Viewer
+
+- Remove usage of deprecated substr - by [RaananW](https://github.com/RaananW) ([#15539](https://github.com/BabylonJS/Babylon.js/pull/15539))
+- glob update and relative dir fix in windows - by [RaananW](https://github.com/RaananW) ([#15538](https://github.com/BabylonJS/Babylon.js/pull/15538))
+- Complete migration of `Scalar` to functions - by [james-pre](https://github.com/james-pre) ([#15373](https://github.com/BabylonJS/Babylon.js/pull/15373))
+
 ## 7.24.0
 
 ### Core

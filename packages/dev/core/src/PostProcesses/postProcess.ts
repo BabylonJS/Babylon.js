@@ -210,6 +210,10 @@ export type PostProcessOptions = {
      * Indicates that the post process will be used as a frame graph task. (default: false)
      */
     useAsFrameGraphTask?: boolean;
+    /**
+     * Defines additional code to call to prepare the shader code
+     */
+    extraInitializations?: (useWebGPU: boolean, list: Promise<any>[]) => void;
 };
 
 type TextureCache = { texture: RenderTargetWrapper; postProcessChannel: number; lastUsedRenderId: number };
@@ -678,6 +682,7 @@ export class PostProcess {
             textureFormat = options.textureFormat ?? Constants.TEXTUREFORMAT_RGBA;
             shaderLanguage = options.shaderLanguage ?? ShaderLanguage.GLSL;
             uniformBuffers = options.uniformBuffers ?? null;
+            extraInitializations = options.extraInitializations;
             this.useAsFrameGraphTask = options.useAsFrameGraphTask ?? false;
         } else if (_size) {
             if (typeof _size === "number") {

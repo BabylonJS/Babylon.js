@@ -132,9 +132,9 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     /** Prepass depth index */
     public PREPASS_DEPTH_INDEX = -1;
     /** Clip-space depth */
-    public PREPASS_NDC_DEPTH = false;
+    public PREPASS_SCREENSPACE_DEPTH = false;
     /** Clip-space depth index */
-    public PREPASS_NDC_DEPTH_INDEX = -1;
+    public PREPASS_SCREENSPACE_DEPTH_INDEX = -1;
     /** Scene MRT count */
     public SCENE_MRT_COUNT = 0;
 
@@ -1038,7 +1038,7 @@ export class NodeMaterial extends PushMaterial {
         }
 
         if (prePassOutputBlock.viewDepthNDC.isConnected) {
-            result.push(Constants.PREPASS_NDC_DEPTH_TEXTURE_TYPE);
+            result.push(Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE);
         }
 
         if (prePassOutputBlock.viewNormal.isConnected) {
@@ -1070,8 +1070,8 @@ export class NodeMaterial extends PushMaterial {
             if (block.depth.isConnected && !result.includes(Constants.PREPASS_DEPTH_TEXTURE_TYPE)) {
                 result.push(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
             }
-            if (block.clipSpaceDepth.isConnected && !result.includes(Constants.PREPASS_NDC_DEPTH_TEXTURE_TYPE)) {
-                result.push(Constants.PREPASS_NDC_DEPTH_TEXTURE_TYPE);
+            if (block.clipSpaceDepth.isConnected && !result.includes(Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE)) {
+                result.push(Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE);
             }
             if (block.normal.isConnected && !result.includes(Constants.PREPASS_NORMAL_TEXTURE_TYPE)) {
                 result.push(Constants.PREPASS_NORMAL_TEXTURE_TYPE);

@@ -1772,9 +1772,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param indices defines the source data
      * @param totalVertices defines the total number of vertices referenced by this index data (can be null)
      * @param updatable defines if the updated index buffer must be flagged as updatable (default is false)
+     * @param dontForceSubMeshRecreation defines a boolean indicating that we don't want to force the recreation of sub-meshes if we don't have to (false by default)
      * @returns the current mesh
      */
-    public override setIndices(indices: IndicesArray, totalVertices: Nullable<number> = null, updatable: boolean = false): AbstractMesh {
+    public override setIndices(indices: IndicesArray, totalVertices: Nullable<number> = null, updatable: boolean = false, dontForceSubMeshRecreation = false): AbstractMesh {
         if (!this._geometry) {
             const vertexData = new VertexData();
             vertexData.indices = indices;
@@ -1783,7 +1784,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             new Geometry(Geometry.RandomId(), scene, vertexData, updatable, this);
         } else {
-            this._geometry.setIndices(indices, totalVertices, updatable);
+            this._geometry.setIndices(indices, totalVertices, updatable, dontForceSubMeshRecreation);
         }
         return this;
     }
@@ -3306,6 +3307,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             for (i = 0; i < vertex_data.normals.length; i++) {
                 vertex_data.normals[i] *= -1;
             }
+            this.setVerticesData(VertexBuffer.NormalKind, vertex_data.normals, this.isVertexBufferUpdatable(VertexBuffer.NormalKind));
         }
 
         if (vertex_data.indices) {
@@ -3316,9 +3318,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 vertex_data.indices[i + 1] = vertex_data.indices[i + 2];
                 vertex_data.indices[i + 2] = temp;
             }
+            this.setIndices(vertex_data.indices, null, this.isVertexBufferUpdatable(VertexBuffer.PositionKind), true);
         }
 
-        vertex_data.applyToMesh(this, this.isVertexBufferUpdatable(VertexBuffer.PositionKind));
         return this;
     }
 

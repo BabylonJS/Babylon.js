@@ -333,10 +333,10 @@ export class GPUPicker {
         }
 
         // Invert Y
-        const invertedY = rttSizeH - y - 1;
-        this._preparePickingBuffer(this._engine!, rttSizeW, rttSizeH, x, invertedY);
+        const invertedY = rttSizeH - adjustedY - 1;
+        this._preparePickingBuffer(this._engine!, rttSizeW, rttSizeH, adjustedX, invertedY);
 
-        return await this._executePicking(x, invertedY, disposeWhenDone);
+        return this._executePicking(x, invertedY, disposeWhenDone);
     }
 
     /**
@@ -378,7 +378,7 @@ export class GPUPicker {
 
         this._preparePickingBuffer(this._engine!, rttSizeW, rttSizeH, minX, partialCutH, w, h);
 
-        return await this._executeMultiPicking(xy, minX, maxY, rttSizeH, w, h, disposeWhenDone);
+        return this._executeMultiPicking(xy, minX, maxY, rttSizeH, w, h, disposeWhenDone);
     }
 
     private _prepareForPicking(x: number, y: number) {
