@@ -18,7 +18,7 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
     private _positionSamplerName: string;
     private _localPositionSamplerName: string;
     private _depthSamplerName: string;
-    private _clipSpaceDepthSamplerName: string;
+    private _screenSpaceDepthSamplerName: string;
     private _normalSamplerName: string;
     private _worldNormalSamplerName: string;
 
@@ -48,16 +48,34 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
             new NodeMaterialConnectionPointCustomObject("position", this, NodeMaterialConnectionPointDirection.Output, ImageSourceBlock, "ImageSourceBlock")
         );
         this.registerOutput(
+            "localPosition",
+            NodeMaterialBlockConnectionPointTypes.Object,
+            NodeMaterialBlockTargets.VertexAndFragment,
+            new NodeMaterialConnectionPointCustomObject("localPosition", this, NodeMaterialConnectionPointDirection.Output, ImageSourceBlock, "ImageSourceBlock")
+        );
+        this.registerOutput(
             "depth",
             NodeMaterialBlockConnectionPointTypes.Object,
             NodeMaterialBlockTargets.VertexAndFragment,
             new NodeMaterialConnectionPointCustomObject("depth", this, NodeMaterialConnectionPointDirection.Output, ImageSourceBlock, "ImageSourceBlock")
         );
         this.registerOutput(
+            "screenDepth",
+            NodeMaterialBlockConnectionPointTypes.Object,
+            NodeMaterialBlockTargets.VertexAndFragment,
+            new NodeMaterialConnectionPointCustomObject("screenDepth", this, NodeMaterialConnectionPointDirection.Output, ImageSourceBlock, "ImageSourceBlock")
+        );
+        this.registerOutput(
             "normal",
             NodeMaterialBlockConnectionPointTypes.Object,
             NodeMaterialBlockTargets.VertexAndFragment,
             new NodeMaterialConnectionPointCustomObject("normal", this, NodeMaterialConnectionPointDirection.Output, ImageSourceBlock, "ImageSourceBlock")
+        );
+        this.registerOutput(
+            "worldNormal",
+            NodeMaterialBlockConnectionPointTypes.Object,
+            NodeMaterialBlockTargets.VertexAndFragment,
+            new NodeMaterialConnectionPointCustomObject("worldNormal", this, NodeMaterialConnectionPointDirection.Output, ImageSourceBlock, "ImageSourceBlock")
         );
     }
 
@@ -72,23 +90,23 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
         }
 
         if (output === this._outputs[1]) {
-            return this._depthSamplerName;
-        }
-
-        if (output === this._outputs[2]) {
-            return this._normalSamplerName;
-        }
-
-        if (output === this._outputs[3]) {
-            return this._worldNormalSamplerName;
-        }
-
-        if (output === this._outputs[4]) {
             return this._localPositionSamplerName;
         }
 
+        if (output === this._outputs[2]) {
+            return this._depthSamplerName;
+        }
+
+        if (output === this._outputs[3]) {
+            return this._screenSpaceDepthSamplerName;
+        }
+
+        if (output === this._outputs[4]) {
+            return this._normalSamplerName;
+        }
+
         if (output === this._outputs[5]) {
-            return this._clipSpaceDepthSamplerName;
+            return this._worldNormalSamplerName;
         }
 
         return "";
@@ -102,37 +120,37 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the local position texture
+     */
+    public get localPosition(): NodeMaterialConnectionPoint {
+        return this._outputs[1];
+    }
+
+    /**
      * Gets the depth texture
      */
     public get depth(): NodeMaterialConnectionPoint {
-        return this._outputs[1];
+        return this._outputs[2];
+    }
+
+    /**
+     * Gets the screen depth texture
+     */
+    public get screenDepth(): NodeMaterialConnectionPoint {
+        return this._outputs[3];
     }
 
     /**
      * Gets the normal texture
      */
     public get normal(): NodeMaterialConnectionPoint {
-        return this._outputs[2];
+        return this._outputs[4];
     }
 
     /**
      * Gets the world normal texture
      */
     public get worldNormal(): NodeMaterialConnectionPoint {
-        return this._outputs[3];
-    }
-
-    /**
-     * Gets the local position texture
-     */
-    public get localPosition(): NodeMaterialConnectionPoint {
-        return this._outputs[4];
-    }
-
-    /**
-     * Gets the depth texture
-     */
-    public get clipSpaceDepth(): NodeMaterialConnectionPoint {
         return this._outputs[5];
     }
 
@@ -175,7 +193,7 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
      * Gets the sampler name associated with this image source
      */
     public get linearDepthSamplerName(): string {
-        return this._clipSpaceDepthSamplerName;
+        return this._screenSpaceDepthSamplerName;
     }
 
     /**
@@ -198,7 +216,7 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
         this._normalSamplerName = "prepassNormalSampler";
         this._worldNormalSamplerName = "prepassWorldNormalSampler";
         this._localPositionSamplerName = "prepassLocalPositionSampler";
-        this._clipSpaceDepthSamplerName = "prepassClipSpaceDepthSampler";
+        this._screenSpaceDepthSamplerName = "prepassScreenSpaceDepthSampler";
 
         // Unique sampler names for every prepasstexture block
         state.sharedData.variableNames.prepassPositionSampler = 0;
@@ -206,18 +224,30 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
         state.sharedData.variableNames.prepassNormalSampler = 0;
         state.sharedData.variableNames.prepassWorldNormalSampler = 0;
         state.sharedData.variableNames.prepassLocalPositionSampler = 0;
-        state.sharedData.variableNames.prepassClipSpaceDepthSampler = 0;
+        state.sharedData.variableNames.prepassScreenSpaceDepthSampler = 0;
 
         // Declarations
         state.sharedData.textureBlocks.push(this);
         state.sharedData.bindableBlocks.push(this);
 
-        state._emit2DSampler(this._positionSamplerName);
-        state._emit2DSampler(this._depthSamplerName);
-        state._emit2DSampler(this._normalSamplerName);
-        state._emit2DSampler(this._worldNormalSamplerName);
-        state._emit2DSampler(this._localPositionSamplerName);
-        state._emit2DSampler(this._clipSpaceDepthSamplerName);
+        if (this.position.isConnected) {
+            state._emit2DSampler(this._positionSamplerName);
+        }
+        if (this.depth.isConnected) {
+            state._emit2DSampler(this._depthSamplerName);
+        }
+        if (this.normal.isConnected) {
+            state._emit2DSampler(this._normalSamplerName);
+        }
+        if (this.worldNormal.isConnected) {
+            state._emit2DSampler(this._worldNormalSamplerName);
+        }
+        if (this.localPosition.isConnected) {
+            state._emit2DSampler(this._localPositionSamplerName);
+        }
+        if (this.screenDepth.isConnected) {
+            state._emit2DSampler(this._screenSpaceDepthSamplerName);
+        }
 
         return this;
     }
@@ -243,20 +273,14 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
         if (this.depth.isConnected) {
             effect.setTexture(this._depthSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)]);
         }
-        if (this.clipSpaceDepth.isConnected) {
-            effect.setTexture(this._clipSpaceDepthSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE)]);
+        if (this.screenDepth.isConnected) {
+            effect.setTexture(this._screenSpaceDepthSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE)]);
         }
         if (this.normal.isConnected) {
             effect.setTexture(this._normalSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_NORMAL_TEXTURE_TYPE)]);
         }
         if (this.worldNormal.isConnected) {
             effect.setTexture(this._worldNormalSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE)]);
-        }
-        if (this.localPosition.isConnected) {
-            effect.setTexture(this._localPositionSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE)]);
-        }
-        if (this.clipSpaceDepth.isConnected) {
-            effect.setTexture(this._clipSpaceDepthSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE)]);
         }
     }
 }
