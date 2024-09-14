@@ -37,7 +37,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         this.registerInput("objects", NodeRenderGraphBlockConnectionPointTypes.ObjectList);
 
         this.registerOutput("outputDepth", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
-        this.registerOutput("geomColor", NodeRenderGraphBlockConnectionPointTypes.Texture);
         this.registerOutput("geomViewDepth", NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth);
         this.registerOutput("geomScreenDepth", NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth);
         this.registerOutput("geomNormal", NodeRenderGraphBlockConnectionPointTypes.TextureNormal);
@@ -108,15 +107,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
     public set samples(value: number) {
         this._frameGraphTask.samples = value;
     }
-
-    @editableInPropertyPage("Generate color", PropertyTypeForEdition.Boolean, "GEOMETRY BUFFERS")
-    public generateColor = true;
-
-    @editableInPropertyPage("Color format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
-    public colorFormat = Constants.TEXTUREFORMAT_RGBA;
-
-    @editableInPropertyPage("Color type", PropertyTypeForEdition.TextureType, "GEOMETRY BUFFERS")
-    public colorType = Constants.TEXTURETYPE_HALF_FLOAT;
 
     @editableInPropertyPage("Generate view depth", PropertyTypeForEdition.Boolean, "GEOMETRY BUFFERS")
     public generateViewDepth = true;
@@ -218,66 +208,58 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
     }
 
     /**
-     * Gets the geometry color component
-     */
-    public get geomColor(): NodeRenderGraphConnectionPoint {
-        return this._outputs[1];
-    }
-
-    /**
      * Gets the geometry view depth component
      */
     public get geomViewDepth(): NodeRenderGraphConnectionPoint {
-        return this._outputs[2];
+        return this._outputs[1];
     }
 
     /**
      * Gets the geometry screen depth component
      */
     public get geomScreenDepth(): NodeRenderGraphConnectionPoint {
-        return this._outputs[3];
+        return this._outputs[2];
     }
 
     /**
      * Gets the geometry normal component
      */
     public get geomNormal(): NodeRenderGraphConnectionPoint {
-        return this._outputs[4];
+        return this._outputs[3];
     }
 
     /**
      * Gets the geometry position component
      */
     public get geomPosition(): NodeRenderGraphConnectionPoint {
-        return this._outputs[5];
+        return this._outputs[4];
     }
 
     /**
      * Gets the geometry albedo component
      */
     public get geomAlbedo(): NodeRenderGraphConnectionPoint {
-        return this._outputs[6];
+        return this._outputs[5];
     }
 
     /**
      * Gets the geometry reflectivity component
      */
     public get geomReflectivity(): NodeRenderGraphConnectionPoint {
-        return this._outputs[7];
+        return this._outputs[6];
     }
 
     /**
      * Gets the geometry velocity component
      */
     public get geomVelocity(): NodeRenderGraphConnectionPoint {
-        return this._outputs[8];
+        return this._outputs[7];
     }
 
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
         super._buildBlock(state);
 
         if (
-            !this.generateColor &&
             !this.generateViewDepth &&
             !this.generateScreenDepth &&
             !this.generateNormal &&
@@ -292,7 +274,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         this._frameGraphTask.name = this.name;
 
         this.outputDepth.value = this._frameGraphTask.outputDepthTextureReference;
-        this.geomColor.value = this._frameGraphTask.geometryColorTextureReference;
         this.geomViewDepth.value = this._frameGraphTask.geometryViewDepthTextureReference;
         this.geomScreenDepth.value = this._frameGraphTask.geometryScreenDepthTextureReference;
         this.geomNormal.value = this._frameGraphTask.geometryNormalTextureReference;
@@ -319,7 +300,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         this._frameGraphTask.descriptions = [];
 
         const textureActivation = [
-            this.generateColor,
             this.generateViewDepth,
             this.generateScreenDepth,
             this.generateNormal,
@@ -329,7 +309,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
             this.generateVelocity,
         ];
         const textureFormats = [
-            this.colorFormat,
             this.viewDepthFormat,
             this.screenDepthFormat,
             this.normalFormat,
@@ -338,16 +317,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
             this.reflectivityFormat,
             this.velocityFormat,
         ];
-        const textureTypes = [
-            this.colorType,
-            this.viewDepthType,
-            this.screenDepthType,
-            this.normalType,
-            this.positionType,
-            this.albedoType,
-            this.reflectivityType,
-            this.velocityType,
-        ];
+        const textureTypes = [this.viewDepthType, this.screenDepthType, this.normalType, this.positionType, this.albedoType, this.reflectivityType, this.velocityType];
         const bufferTypes = [
             Constants.PREPASS_COLOR_TEXTURE_TYPE,
             Constants.PREPASS_DEPTH_TEXTURE_TYPE,
@@ -377,9 +347,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         codes.push(`${this._codeVariableName}.depthTest = ${this.depthTest};`);
         codes.push(`${this._codeVariableName}.depthWrite = ${this.depthWrite};`);
         codes.push(`${this._codeVariableName}.samples = ${this.samples};`);
-        codes.push(`${this._codeVariableName}.generateColor = ${this.generateColor};`);
-        codes.push(`${this._codeVariableName}.colorFormat = ${this.colorFormat};`);
-        codes.push(`${this._codeVariableName}.colorType = ${this.colorType};`);
         codes.push(`${this._codeVariableName}.generateViewDepth = ${this.generateViewDepth};`);
         codes.push(`${this._codeVariableName}.viewDepthFormat = ${this.viewDepthFormat};`);
         codes.push(`${this._codeVariableName}.viewDepthType = ${this.viewDepthType};`);
@@ -409,9 +376,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         serializationObject.depthTest = this.depthTest;
         serializationObject.depthWrite = this.depthWrite;
         serializationObject.samples = this.samples;
-        serializationObject.generateColor = this.generateColor;
-        serializationObject.colorFormat = this.colorFormat;
-        serializationObject.colorType = this.colorType;
         serializationObject.generateViewDepth = this.generateViewDepth;
         serializationObject.viewDepthFormat = this.viewDepthFormat;
         serializationObject.viewDepthType = this.viewDepthType;
@@ -441,9 +405,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         this.depthTest = serializationObject.depthTest;
         this.depthWrite = serializationObject.depthWrite;
         this.samples = serializationObject.samples;
-        this.generateColor = serializationObject.generateColor;
-        this.colorFormat = serializationObject.colorFormat;
-        this.colorType = serializationObject.colorType;
         this.generateViewDepth = serializationObject.generateViewDepth;
         this.viewDepthFormat = serializationObject.viewDepthFormat;
         this.viewDepthType = serializationObject.viewDepthType;
