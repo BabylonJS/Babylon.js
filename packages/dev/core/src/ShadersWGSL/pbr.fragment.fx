@@ -631,10 +631,11 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #endif
 
     #ifdef PREPASS_LOCAL_POSITION
-    fragData[PREPASS_LOCAL_POSITION_INDEX] = vec4f(fragmentInputs.vPosition * 0.5 + 0.5, writeGeometryInfo);
-    #endif
+    fragData[PREPASS_LOCAL_POSITION_INDEX] =
+        vec4f(fragmentInputs.vPosition, writeGeometryInfo);
+#endif
 
-    #ifdef PREPASS_VELOCITY
+#ifdef PREPASS_VELOCITY
     var a: vec2f = (fragmentInputs.vCurrentPosition.xy / fragmentInputs.vCurrentPosition.w) * 0.5 + 0.5;
     var b: vec2f = (fragmentInputs.vPreviousPosition.xy / fragmentInputs.vPreviousPosition.w) * 0.5 + 0.5;
 
@@ -685,9 +686,9 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                                           writeGeometryInfo); // Linear depth
 #endif
 
-#ifdef PREPASS_NDC_DEPTH
-        fragData[PREPASS_NDC_DEPTH_INDEX] = vec4f(
-            fragmentInputs.position.z, 0.0, 0.0, writeGeometryInfo); // Clip-space depth
+#ifdef PREPASS_SCREENSPACE_DEPTH
+    fragData[PREPASS_SCREENSPACE_DEPTH_INDEX] =
+        vec4f(fragmentInputs.position.z, 0.0, 0.0, writeGeometryInfo);
 #endif
 
 #ifdef PREPASS_NORMAL

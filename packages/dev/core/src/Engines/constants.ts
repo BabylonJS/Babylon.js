@@ -637,10 +637,10 @@ export class Constants {
     public static readonly PREPASS_LOCAL_POSITION_TEXTURE_TYPE = 9;
 
     /**
-     * Constant used to retrieve clip-space (non-linear) depth index in the textures array in the prepass
-     * using the getIndex(Constants.PREPASS_NDC_DEPTH_TEXTURE_TYPE)
+     * Constant used to retrieve screen-space (non-linear) depth index in the textures array in the prepass
+     * using the getIndex(Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE)
      */
-    public static readonly PREPASS_NDC_DEPTH_TEXTURE_TYPE = 10;
+    public static readonly PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE = 10;
 
     /**
      * Constant used to retrieve the velocity texture index in the textures array in the prepass

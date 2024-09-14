@@ -185,7 +185,7 @@ export class _IblShadowsAccumulationPass {
         localPositionCopyPP.autoClear = false;
         localPositionCopyPP.onApplyObservable.add((effect) => {
             const prePassRenderer = this._scene!.prePassRenderer;
-            const index = prePassRenderer!.getIndex(Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE);
+            const index = prePassRenderer!.getIndex(Constants.PREPASS_POSITION_TEXTURE_TYPE);
             if (index >= 0) effect.setTexture("textureSampler", prePassRenderer!.getRenderTarget().textures[index]);
         });
         this._oldLocalPositionRT.addPostProcess(localPositionCopyPP);
@@ -278,7 +278,7 @@ export class _IblShadowsAccumulationPass {
 
         const prePassRenderer = this._scene.prePassRenderer;
         if (prePassRenderer) {
-            const localPositionIndex = prePassRenderer.getIndex(Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE);
+            const localPositionIndex = prePassRenderer.getIndex(Constants.PREPASS_POSITION_TEXTURE_TYPE);
             if (localPositionIndex >= 0) effect.setTexture("localPositionSampler", prePassRenderer.getRenderTarget().textures[localPositionIndex]);
             const velocityIndex = prePassRenderer.getIndex(Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE);
             if (velocityIndex >= 0) effect.setTexture("motionSampler", prePassRenderer.getRenderTarget().textures[velocityIndex]);

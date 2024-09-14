@@ -103,7 +103,7 @@ class IblShadowsPrepassConfiguration implements PrePassEffectConfiguration {
      */
     public readonly texturesRequired: number[] = [
         Constants.PREPASS_DEPTH_TEXTURE_TYPE,
-        Constants.PREPASS_NDC_DEPTH_TEXTURE_TYPE,
+        Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE,
         Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE,
         // Constants.PREPASS_NORMAL_TEXTURE_TYPE, // TODO - don't need this for IBL shadows
         Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE,
