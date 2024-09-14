@@ -6,7 +6,8 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Deco
 import type { Scene } from "../../../../scene";
 import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
 import { FrameGraphObjectRendererTask } from "../../../Tasks/Rendering/objectRendererTask";
-import type { FrameGraphObjectList, FrameGraphTextureId } from "../../../frameGraphTypes";
+import type { FrameGraphTextureId } from "../../../frameGraphTypes";
+import type { FrameGraphObjectList } from "../../../frameGraphObjectList";
 import type { Camera } from "../../../../Cameras/camera";
 
 /**

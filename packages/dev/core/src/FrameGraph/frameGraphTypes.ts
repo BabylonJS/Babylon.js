@@ -1,11 +1,10 @@
 import type { Nullable } from "../types";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { IParticleSystem } from "../Particles/IParticleSystem";
 import type { TextureSize } from "../Materials/Textures/textureCreationOptions";
 import type { FrameGraphContext } from "./frameGraphContext";
 import type { FrameGraph } from "./frameGraph";
 import type { FrameGraphTaskInternals } from "./Tasks/taskInternals";
 import type { IMultiRenderTargetOptions } from "../Materials/Textures/multiRenderTarget";
+import type { FrameGraphObjectList } from "./frameGraphObjectList";
 
 export type FrameGraphTextureHandle = number;
 
@@ -29,11 +28,6 @@ export type FrameGraphTextureCreationOptions = {
 export type FrameGraphTextureDescription = {
     size: { width: number; height: number };
     options: IMultiRenderTargetOptions;
-};
-
-export type FrameGraphObjectList = {
-    meshes: Nullable<AbstractMesh[]>;
-    particleSystems: Nullable<IParticleSystem[]>;
 };
 
 export type FrameGraphObjectListId = FrameGraphTaskOutputReference | FrameGraphObjectList;

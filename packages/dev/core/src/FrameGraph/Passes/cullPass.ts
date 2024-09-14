@@ -1,8 +1,9 @@
 import type { Nullable } from "../../types";
 import { FrameGraphPass } from "./pass";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
-import type { IFrameGraphPass, IFrameGraphTask, FrameGraphObjectList } from "../frameGraphTypes";
+import type { IFrameGraphPass, IFrameGraphTask } from "../frameGraphTypes";
 import type { FrameGraphContext } from "../frameGraphContext";
+import type { FrameGraphObjectList } from "../frameGraphObjectList";
 
 export class FrameGraphCullPass extends FrameGraphPass<FrameGraphContext> {
     protected _engine: AbstractEngine;

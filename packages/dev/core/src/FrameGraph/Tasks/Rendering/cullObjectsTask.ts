@@ -1,7 +1,8 @@
 import type { Scene } from "../../../scene";
 import type { Camera } from "../../../Cameras/camera";
 import type { FrameGraph } from "../../frameGraph";
-import type { FrameGraphTaskOutputReference, IFrameGraphTask, FrameGraphObjectListId, FrameGraphObjectList } from "../../frameGraphTypes";
+import type { FrameGraphTaskOutputReference, IFrameGraphTask, FrameGraphObjectListId } from "../../frameGraphTypes";
+import type { FrameGraphObjectList } from "../../frameGraphObjectList";
 
 export class FrameGraphCullObjectsTask implements IFrameGraphTask {
     public objectList: FrameGraphObjectListId;

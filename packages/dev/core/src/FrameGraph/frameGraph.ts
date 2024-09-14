@@ -7,7 +7,6 @@ import type {
     FrameGraphTextureHandle,
     FrameGraphTextureDescription,
     FrameGraphTextureId,
-    FrameGraphObjectList,
     FrameGraphObjectListId,
 } from "./frameGraphTypes";
 import { FrameGraphPass } from "./Passes/pass";
@@ -20,6 +19,7 @@ import { FrameGraphTaskInternals } from "./Tasks/taskInternals";
 import { Observable } from "core/Misc/observable";
 import { getDimensionsFromTextureSize, textureSizeIsObject } from "../Materials/Textures/textureCreationOptions";
 import type { Nullable } from "../types";
+import type { FrameGraphObjectList } from "./frameGraphObjectList";
 
 enum FrameGraphPassType {
     Render = 0,

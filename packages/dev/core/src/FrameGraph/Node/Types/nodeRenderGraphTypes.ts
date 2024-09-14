@@ -1,7 +1,8 @@
 import type { Color4 } from "../../../Maths/math.color";
 import type { Scene } from "../../../scene";
-import type { FrameGraphObjectList, FrameGraphTextureId } from "../../../FrameGraph/frameGraphTypes";
+import type { FrameGraphTextureId } from "../../../FrameGraph/frameGraphTypes";
 import type { Camera } from "../../../Cameras/camera";
+import type { FrameGraphObjectList } from "core/FrameGraph/frameGraphObjectList";
 
 /**
  * Interface used to configure the node render graph editor

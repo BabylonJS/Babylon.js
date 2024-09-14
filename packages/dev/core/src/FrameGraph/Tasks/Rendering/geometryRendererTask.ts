@@ -24,6 +24,11 @@ const clearColors: Color4[] = [new Color4(0, 0, 0, 0), new Color4(1, 1, 1, 1), n
 
 const geometryTextureDescriptions = [
     {
+        type: Constants.PREPASS_COLOR_TEXTURE_TYPE,
+        name: "Color",
+        clearType: TextureClearType.Zero,
+    },
+    {
         type: Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
         name: "Irradiance",
         clearType: TextureClearType.Zero,
@@ -109,6 +114,8 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
 
     public readonly outputDepthTextureReference: FrameGraphTaskOutputReference = [this, "outputDepth"];
 
+    public readonly geometryColorTextureReference: FrameGraphTaskOutputReference = [this, "geometryColor"];
+
     public readonly geometryViewDepthTextureReference: FrameGraphTaskOutputReference = [this, "geometryViewDepth"];
 
     public readonly geometryScreenDepthTextureReference: FrameGraphTaskOutputReference = [this, "geometryScreenDepth"];
@@ -184,6 +191,7 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
 
         pass.setRenderTarget(outputTextureHandle);
 
+        pass.setOutputTexture(outputTextureHandle, 0, this.geometryColorTextureReference[1]);
         pass.setOutputTexture(outputTextureHandle, 0, this.geometryViewDepthTextureReference[1]);
         pass.setOutputTexture(outputTextureHandle, 0, this.geometryScreenDepthTextureReference[1]);
         pass.setOutputTexture(outputTextureHandle, 0, this.geometryNormalTextureReference[1]);
