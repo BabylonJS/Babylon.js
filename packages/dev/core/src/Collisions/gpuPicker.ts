@@ -423,6 +423,13 @@ export class GPUPicker {
             this._readbuffer = new Uint8Array(requiredBufferSize);
         }
 
+        // Do we need to rebuild the RTT?
+        const size = this._pickingTexture!.getSize();
+        if (size.width !== rttSizeW || size.height !== rttSizeH) {
+            this._createRenderTarget(this._cachedScene!, rttSizeW, rttSizeH);
+            this._updateRenderList();
+        }
+
         this._pickingTexture!.clearColor = new Color4(0, 0, 0, 0);
 
         this._pickingTexture!.onBeforeRender = () => {
@@ -430,13 +437,6 @@ export class GPUPicker {
         };
 
         this._cachedScene!.customRenderTargets.push(this._pickingTexture!);
-
-        // Do we need to rebuild the RTT?
-        const size = this._pickingTexture!.getSize();
-        if (size.width !== rttSizeW || size.height !== rttSizeH) {
-            this._createRenderTarget(this._cachedScene!, rttSizeW, rttSizeH);
-            this._updateRenderList();
-        }
     }
 
     // pick one pixel
@@ -447,10 +447,12 @@ export class GPUPicker {
                 reject();
                 return;
             }
+
             this._pickingTexture!.onAfterRender = async () => {
                 this._disableScissor();
 
                 if (this._checkRenderStatus()) {
+                    this._pickingTexture!.onAfterRender = null as any;
                     let pickedMesh: Nullable<AbstractMesh> = null;
                     let thinInstanceIndex: number | undefined = undefined;
 
@@ -509,6 +511,7 @@ export class GPUPicker {
                 this._disableScissor();
 
                 if (this._checkRenderStatus()) {
+                    this._pickingTexture!.onAfterRender = null as any;
                     const pickedMeshes: Nullable<AbstractMesh>[] = [];
                     const thinInstanceIndexes: number[] = [];
 
