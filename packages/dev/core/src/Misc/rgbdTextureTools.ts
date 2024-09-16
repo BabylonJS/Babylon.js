@@ -13,7 +13,11 @@ import { ShaderLanguage } from "core/Materials";
  * Class used to host RGBD texture specific utilities
  */
 export class RGBDTextureTools {
-    private static _EngineResourcesImported = false;
+    /**
+     * Boolean indicating that the shaders were imported already
+     * Can be useful if you want to dynamically switch engines
+     */
+    public static ShaderImported = false;
 
     /**
      * Expand the RGBD Texture from RGBD to Half Float if possible.
@@ -54,16 +58,12 @@ export class RGBDTextureTools {
             const shaderLanguage = isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
             internalTexture.isReady = false;
 
-            if (!this._EngineResourcesImported) {
-                this._EngineResourcesImported = true;
+            if (!this.ShaderImported) {
+                this.ShaderImported = true;
                 if (isWebGPU) {
-                    await Promise.all([
-                        import("../ShadersWGSL/rgbdDecode.fragment"),
-                        import("../ShadersWGSL/rgbdEncode.fragment"),
-                        import("../Engines/WebGPU/Extensions/engine.renderTarget"),
-                    ]);
+                    await Promise.all([import("../ShadersWGSL/rgbdDecode.fragment"), import("../ShadersWGSL/rgbdEncode.fragment")]);
                 } else {
-                    await Promise.all([import("../Shaders/rgbdDecode.fragment"), import("../Shaders/rgbdEncode.fragment"), import("../Engines/Extensions/engine.renderTarget")]);
+                    await Promise.all([import("../Shaders/rgbdDecode.fragment"), import("../Shaders/rgbdEncode.fragment")]);
                 }
             }
 

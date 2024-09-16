@@ -17,10 +17,6 @@ import { RenderingManager } from "../../Rendering/renderingManager";
 import { Constants } from "../../Engines/constants";
 import type { IRenderTargetTexture, RenderTargetWrapper } from "../../Engines/renderTargetWrapper";
 
-import "../../Engines/Extensions/engine.renderTarget";
-import "../../Engines/Extensions/engine.renderTargetCube";
-import "../../Engines/Extensions/engine.renderTargetTexture";
-
 import { _ObserveArray } from "../../Misc/arrayTools";
 import { DumpFramebuffer } from "../../Misc/dumpTools";
 

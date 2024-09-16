@@ -4,8 +4,6 @@ import type { IInternalTextureLoader } from "./internalTextureLoader";
 import { LoadTextureFromTranscodeResult, TranscodeAsync } from "../../../Misc/basis";
 import { Tools } from "../../../Misc/tools";
 
-import "../../../Engines/Extensions/engine.cubeTexture";
-
 /**
  * Loader for .basis file format
  */

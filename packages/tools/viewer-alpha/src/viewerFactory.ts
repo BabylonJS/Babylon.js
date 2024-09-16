@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { AbstractEngine, AbstractEngineOptions, EngineOptions, WebGPUEngineOptions } from "core/index";
+import { RGBDTextureTools, type AbstractEngine, type AbstractEngineOptions, type EngineOptions, type WebGPUEngineOptions } from "core/index";
 
 import type { ViewerOptions } from "./viewer";
 import { Viewer } from "./viewer";
@@ -40,6 +40,7 @@ export async function createViewerForCanvas(canvas: HTMLCanvasElement, options?:
 
     // Create an engine instance.
     let engine: AbstractEngine;
+    RGBDTextureTools.ShaderImported = false;
     switch (finalOptions.engine ?? getDefaultEngine()) {
         case "WebGL": {
             // eslint-disable-next-line @typescript-eslint/naming-convention, no-case-declarations
@@ -48,16 +49,8 @@ export async function createViewerForCanvas(canvas: HTMLCanvasElement, options?:
             break;
         }
         case "WebGPU": {
-            const [webgpuModule] = await Promise.all([
-                import("core/Engines/webgpuEngine"),
-                import("core/Engines/WebGPU/Extensions/engine.alpha"),
-                import("core/Engines/WebGPU/Extensions/engine.rawTexture"),
-                import("core/Engines/WebGPU/Extensions/engine.cubeTexture"),
-                import("core/Engines/WebGPU/Extensions/engine.renderTarget"),
-                import("core/Engines/WebGPU/Extensions/engine.renderTargetCube"),
-            ]);
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            const { WebGPUEngine } = webgpuModule;
+            // eslint-disable-next-line @typescript-eslint/naming-convention, no-case-declarations
+            const { WebGPUEngine } = await import("core/Engines/webgpuEngine");
             const webGPUEngine = new WebGPUEngine(canvas, options);
             await webGPUEngine.initAsync();
             engine = webGPUEngine;

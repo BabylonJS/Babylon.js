@@ -10,8 +10,6 @@ import { PostProcessManager } from "../PostProcesses/postProcessManager";
 
 import type { AbstractEngine } from "../Engines/abstractEngine";
 
-import "../Engines/Extensions/engine.readTexture";
-
 import "../Shaders/minmaxRedux.fragment";
 
 /**

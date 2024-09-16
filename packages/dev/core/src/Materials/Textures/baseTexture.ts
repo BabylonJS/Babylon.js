@@ -18,8 +18,6 @@ import type { AbstractScene } from "../../abstractScene";
 import type { Animation } from "../../Animations/animation";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
 
-import "../../Engines/Extensions/engine.readTexture";
-
 /**
  * Base class of all the textures in babylon.
  * It groups all the common properties the materials, post process, lights... might need

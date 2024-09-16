@@ -6,7 +6,6 @@ import type { SphericalPolynomial } from "../../Maths/sphericalPolynomial";
 import { InternalTextureSource } from "./internalTexture";
 import { CubeTexture } from "./cubeTexture";
 import { Constants } from "../../Engines/constants";
-import "../../Engines/Extensions/engine.rawTexture";
 import type { Engine } from "../../Engines/engine";
 
 /**

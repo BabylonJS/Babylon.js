@@ -14,8 +14,6 @@ import type { Engine } from "../Engines/engine";
 import { RGBDTextureTools } from "./rgbdTextureTools";
 import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 
-import "../Engines/Extensions/engine.renderTargetCube";
-import "../Engines/Extensions/engine.readTexture";
 import "../Materials/Textures/baseTexture.polynomial";
 
 import { DumpDataAsync } from "../Misc/dumpTools";
