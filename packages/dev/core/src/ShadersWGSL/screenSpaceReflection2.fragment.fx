@@ -35,6 +35,7 @@ uniform invProjectionMatrix: mat4x4f;
 uniform projectionPixel: mat4x4f;
 
 uniform nearPlaneZ: f32;
+uniform farPlaneZ: f32;
 uniform stepSize: f32;
 uniform maxSteps: f32;
 uniform strength: f32;
@@ -125,6 +126,9 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         csNormal = (uniforms.view *  vec4f(csNormal, 0.0)).xyz;
     #endif
     var depth: f32 = textureLoad(depthSampler, vec2<i32>(input.vUV * texSize), 0).r;
+    #ifdef SSRAYTRACE_SCREENSPACE_DEPTH
+        depth = -linearizeDepth(depth, uniforms.nearPlaneZ, uniforms.farPlaneZ);
+    #endif
     var csPosition: vec3f = computeViewPosFromUVDepth(input.vUV, depth, uniforms.projection, uniforms.invProjectionMatrix);
     #ifdef ORTHOGRAPHIC_CAMERA
         var csViewDirection: vec3f =  vec3f(0., 0., 1.);
@@ -198,6 +202,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         #endif
             uniforms.thickness,
             uniforms.nearPlaneZ,
+            uniforms.farPlaneZ,
             uniforms.stepSize,
             jitter,
             uniforms.maxSteps,

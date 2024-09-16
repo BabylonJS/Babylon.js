@@ -9,6 +9,13 @@ fn distanceSquared(a: vec2f, b: vec2f) -> f32 {
     return dot(temp, temp); 
 }
 
+#ifdef SSRAYTRACE_SCREENSPACE_DEPTH
+fn linearizeDepth(depth: f32, near: f32, far: f32) -> f32 {
+  var z: f32 = depth * 2.0f - 1.0f; // Convert [0, 1] range to [-1, 1]
+  return (2.0f * near * far) / (far + near - z * (far - near));
+}
+#endif
+
 /**
     \param csOrigin Camera-space ray origin, which must be 
     within the view volume and must have z > 0.01 and project within the valid screen rectangle
@@ -25,7 +32,9 @@ fn distanceSquared(a: vec2f, b: vec2f) -> f32 {
     \param csZThickness Camera space csZThickness to ascribe to each pixel in the depth buffer
     
     \param nearPlaneZ Positive number. Doesn't have to be THE actual near plane, just a reasonable value
-      for clipping rays headed towards the camera
+      for clipping rays headed towards the camera. Should be the actual near plane if screen-space depth is enabled.
+
+    \param farPlaneZ The far plane for the camera. Used when screen-space depth is enabled.
 
     \param stride Step in horizontal or vertical pixels between samples. This is a var because: f32 integer math is slow on GPUs, but should be set to an integer >= 1
 
@@ -57,6 +66,7 @@ fn traceScreenSpaceRay1(
 #endif
     csZThickness: f32,
     nearPlaneZ: f32,
+    farPlaneZ: f32,
     stride: f32,
     jitterFraction: f32,
     maxSteps: f32,
@@ -213,10 +223,16 @@ fn traceScreenSpaceRay1(
 
         // Camera-space z of the scene
         sceneZMax = textureLoad(csZBuffer, vec2<i32>(*hitPixel), 0).r;
+    #ifdef SSRAYTRACE_SCREENSPACE_DEPTH
+        sceneZMax = -linearizeDepth(sceneZMax, nearPlaneZ, farPlaneZ);
+    #endif
 
     #ifdef SSRAYTRACE_RIGHT_HANDED_SCENE
         #ifdef SSRAYTRACE_USE_BACK_DEPTHBUFFER
             var sceneBackZ: f32 = textureLoad(csZBackBuffer, vec2<i32>(*hitPixel / csZBackSizeFactor), 0).r;
+            #ifdef SSRAYTRACE_SCREENSPACE_DEPTH
+                sceneBackZ = -linearizeDepth(sceneBackZ, nearPlaneZ, farPlaneZ);
+            #endif
             hit = (rayZMax >= sceneBackZ - csZThickness) && (rayZMin <= sceneZMax);
         #else
             hit = (rayZMax >= sceneZMax - csZThickness) && (rayZMin <= sceneZMax);
@@ -224,6 +240,9 @@ fn traceScreenSpaceRay1(
     #else
         #ifdef SSRAYTRACE_USE_BACK_DEPTHBUFFER
             var sceneBackZ: f32 = textureLoad(csZBackBuffer, vec2<i32>(*hitPixel / csZBackSizeFactor), 0).r;
+            #ifdef SSRAYTRACE_SCREENSPACE_DEPTH
+                sceneBackZ = -linearizeDepth(sceneBackZ, nearPlaneZ, farPlaneZ);
+            #endif
             hit = (rayZMin <= sceneBackZ + csZThickness) && (rayZMax >= sceneZMax) && (sceneZMax != 0.0);
         #else
             hit = (rayZMin <= sceneZMax + csZThickness) && (rayZMax >= sceneZMax);
@@ -285,6 +304,9 @@ fn traceScreenSpaceRay1(
 
             *hitPixel = select(pqk.xy, pqk.yx, permute);
             sceneZMax = textureLoad(csZBuffer, vec2<i32>(*hitPixel), 0).r;
+            #ifdef SSRAYTRACE_SCREENSPACE_DEPTH
+                sceneZMax = -linearizeDepth(sceneZMax, nearPlaneZ, farPlaneZ);
+            #endif
 
             refinementStepCount += 1.0;
         }

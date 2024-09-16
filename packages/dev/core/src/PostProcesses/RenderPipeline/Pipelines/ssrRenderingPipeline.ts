@@ -235,6 +235,8 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         this._updateEffectDefines();
     }
 
+    private _useScreenspaceDepth = false;
+
     @serialize("environmentTexture")
     private _environmentTexture: Nullable<CubeTexture>;
 
@@ -629,8 +631,9 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
      * @param cameras The array of cameras that the rendering pipeline will be attached to (default: scene.cameras)
      * @param forceGeometryBuffer Set to true if you want to use the legacy geometry buffer renderer (default: false)
      * @param textureType The texture type used by the different post processes created by SSR (default: Constants.TEXTURETYPE_UNSIGNED_BYTE)
+     * @param useScreenspaceDepth Indicates if the depth buffer should be linear or screenspace (default: false). This allows sharing the buffer with other effect pipelines that may require the depth to be in screenspace.
      */
-    constructor(name: string, scene: Scene, cameras?: Camera[], forceGeometryBuffer = false, textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE) {
+    constructor(name: string, scene: Scene, cameras?: Camera[], forceGeometryBuffer = false, textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE, useScreenspaceDepth = false) {
         super(scene.getEngine(), name);
 
         this._cameras = cameras || scene.cameras;
@@ -640,6 +643,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         this._scene = scene;
         this._textureType = textureType;
         this._forceGeometryBuffer = forceGeometryBuffer;
+        this._useScreenspaceDepth = useScreenspaceDepth;
 
         if (this.isSupported) {
             scene.postProcessRenderPipelineManager.addPipeline(this);
@@ -737,6 +741,9 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         }
         if (this._scene.useRightHandedSystem) {
             defines.push("#define SSRAYTRACE_RIGHT_HANDED_SCENE");
+        }
+        if (this._useScreenspaceDepth) {
+            defines.push("#define SSRAYTRACE_SCREENSPACE_DEPTH");
         }
         if (this._environmentTexture) {
             defines.push("#define SSR_USE_ENVIRONMENT_CUBE");
@@ -950,6 +957,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                 "roughnessFactor",
                 "projectionPixel",
                 "nearPlaneZ",
+                "farPlaneZ",
                 "maxDistance",
                 "selfCollisionNumSkip",
                 "vReflectionPosition",
@@ -998,7 +1006,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                 effect.setTexture("reflectivitySampler", geometryBufferRenderer.getGBuffer().textures[roughnessIndex]);
                 effect.setTexture("depthSampler", geometryBufferRenderer.getGBuffer().textures[0]);
             } else if (prePassRenderer) {
-                const depthIndex = prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
+                const depthIndex = prePassRenderer.getIndex(this._useScreenspaceDepth ? Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE : Constants.PREPASS_DEPTH_TEXTURE_TYPE);
                 const roughnessIndex = prePassRenderer.getIndex(Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE);
                 const normalIndex = prePassRenderer.getIndex(Constants.PREPASS_NORMAL_TEXTURE_TYPE);
 
@@ -1034,6 +1042,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             effect.setFloat("maxSteps", this.maxSteps);
             effect.setFloat("roughnessFactor", this.roughnessFactor);
             effect.setFloat("nearPlaneZ", camera.minZ);
+            effect.setFloat("farPlaneZ", camera.maxZ);
             effect.setFloat("maxDistance", this.maxDistance);
             effect.setFloat("selfCollisionNumSkip", this.selfCollisionNumSkip);
             effect.setFloat("reflectivityThreshold", this._reflectivityThreshold);
@@ -1060,7 +1069,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         this._ssrPostProcess.samples = this.samples;
 
         if (!this._forceGeometryBuffer) {
-            this._ssrPostProcess._prePassEffectConfiguration = new ScreenSpaceReflections2Configuration();
+            this._ssrPostProcess._prePassEffectConfiguration = new ScreenSpaceReflections2Configuration(this._useScreenspaceDepth);
         }
     }
 
@@ -1213,7 +1222,9 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                 const roughnessIndex = prePassRenderer.getIndex(Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE);
                 effect.setTexture("reflectivitySampler", prePassRenderer.getRenderTarget().textures[roughnessIndex]);
                 if (this.useFresnel) {
-                    const depthIndex = prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
+                    const depthIndex = prePassRenderer.getIndex(
+                        this._useScreenspaceDepth ? Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE : Constants.PREPASS_DEPTH_TEXTURE_TYPE
+                    );
                     const normalIndex = prePassRenderer.getIndex(Constants.PREPASS_NORMAL_TEXTURE_TYPE);
 
                     effect.setTexture("normalSampler", prePassRenderer.getRenderTarget().textures[normalIndex]);
