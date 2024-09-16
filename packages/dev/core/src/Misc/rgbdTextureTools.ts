@@ -14,12 +14,6 @@ import { ShaderLanguage } from "core/Materials";
  */
 export class RGBDTextureTools {
     /**
-     * Boolean indicating that the shaders were imported already
-     * Can be useful if you want to dynamically switch engines
-     */
-    public static ShaderImported = false;
-
-    /**
      * Expand the RGBD Texture from RGBD to Half Float if possible.
      * @param texture the texture to expand.
      */
@@ -58,13 +52,10 @@ export class RGBDTextureTools {
             const shaderLanguage = isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
             internalTexture.isReady = false;
 
-            if (!this.ShaderImported) {
-                this.ShaderImported = true;
-                if (isWebGPU) {
-                    await Promise.all([import("../ShadersWGSL/rgbdDecode.fragment"), import("../ShadersWGSL/rgbdEncode.fragment")]);
-                } else {
-                    await Promise.all([import("../Shaders/rgbdDecode.fragment"), import("../Shaders/rgbdEncode.fragment")]);
-                }
+            if (isWebGPU) {
+                await Promise.all([import("../ShadersWGSL/rgbdDecode.fragment"), import("../ShadersWGSL/rgbdEncode.fragment")]);
+            } else {
+                await Promise.all([import("../Shaders/rgbdDecode.fragment"), import("../Shaders/rgbdEncode.fragment")]);
             }
 
             // Expand the texture if possible

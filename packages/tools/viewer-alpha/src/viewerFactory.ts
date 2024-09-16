@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import { RGBDTextureTools, type AbstractEngine, type AbstractEngineOptions, type EngineOptions, type WebGPUEngineOptions } from "core/index";
+import { type AbstractEngine, type AbstractEngineOptions, type EngineOptions, type WebGPUEngineOptions } from "core/index";
 
 import type { ViewerOptions } from "./viewer";
 import { Viewer } from "./viewer";
@@ -40,7 +40,6 @@ export async function createViewerForCanvas(canvas: HTMLCanvasElement, options?:
 
     // Create an engine instance.
     let engine: AbstractEngine;
-    RGBDTextureTools.ShaderImported = false;
     switch (finalOptions.engine ?? getDefaultEngine()) {
         case "WebGL": {
             // eslint-disable-next-line @typescript-eslint/naming-convention, no-case-declarations
