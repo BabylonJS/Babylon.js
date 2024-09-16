@@ -243,7 +243,6 @@ describe("Babylon Scene Loader", function () {
 
                 const promise = BABYLON.SceneLoader.AppendAsync("https://playground.babylonjs.com/scenes/BoomBox/", "BoomBox.gltf", window.scene).then(() => {
                     window.engine!.stopRenderLoop();
-                    console.log("render loop stopped");
                     promises.push(Promise.resolve(window.scene!.meshes.filter((mesh) => mesh.getTotalVertices() !== 0).map((mesh) => mesh.isEnabled())));
                 });
                 return promise.then(() => Promise.all(promises));
@@ -259,11 +258,15 @@ describe("Babylon Scene Loader", function () {
 
                 const oldFunction = window.engine!.createShaderProgram;
 
-                window.engine!.runRenderLoop(() => {
-                    const enabledMeshes = window.scene!.meshes.filter((mesh) => mesh.material && mesh.isEnabled());
-                    if (enabledMeshes.length > 0) {
-                        promises.push(Promise.resolve(enabledMeshes.every((mesh) => mesh.isReady(true))));
-                    }
+                const ready: { [key: string]: boolean } = {};
+                window.scene!.whenReadyAsync().then(() => {
+                    const loop = () => {
+                        const enabledMeshes = window.scene!.meshes.filter((mesh) => mesh.material && mesh.isEnabled());
+                        enabledMeshes.forEach((mesh) => {
+                            ready[mesh.name] = mesh.isReady(true);
+                        });
+                    };
+                    window.engine!.runRenderLoop(loop);
                 });
 
                 BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader) => {
@@ -283,6 +286,10 @@ describe("Babylon Scene Loader", function () {
                     };
                     return window.scene!.whenReadyAsync();
                 });
+
+                for (const name in ready) {
+                    promises.push(Promise.resolve({ [name]: ready[name] }));
+                }
 
                 return promise
                     .then(() => Promise.all(promises))
@@ -396,15 +403,16 @@ describe("Babylon Scene Loader", function () {
         });
 
         it("Load LevelOfDetail", async () => {
-            const assertionData = await page.evaluate(() => {
+            const assertionData = await page.evaluate(async () => {
                 const promises = new Array<Promise<{ [key: string]: boolean }>>();
-
-                window.engine!.runRenderLoop(() => {
+                const ready: { [key: string]: boolean } = {};
+                const loop = () => {
                     const enabledMeshes = window.scene!.meshes.filter((mesh) => mesh.material && mesh.isEnabled());
-                    if (enabledMeshes.length > 0) {
-                        promises.push(Promise.resolve({ enabledMeshes: enabledMeshes.every((mesh) => mesh.isReady(true)) }));
-                    }
-                });
+                    enabledMeshes.forEach((mesh) => {
+                        ready[mesh.name] = mesh.isReady(true);
+                    });
+                };
+                window.engine!.runRenderLoop(loop);
 
                 BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader) => {
                     (loader as GLTFFileLoader).compileMaterials = true;
@@ -441,7 +449,9 @@ describe("Babylon Scene Loader", function () {
                         })
                     );
                 });
-
+                for (const name in ready) {
+                    promises.push(Promise.resolve({ [name]: ready[name] }));
+                }
                 return promise.then(() => window.scene!.whenReadyAsync()).then(() => Promise.all(promises));
             });
 
@@ -534,7 +544,6 @@ describe("Babylon Scene Loader", function () {
                 const setRequestHeaderCalls: string[] = [];
                 const origSetRequestHeader = BABYLON.WebRequest.prototype.setRequestHeader;
                 BABYLON.WebRequest.prototype.setRequestHeader = function (...args) {
-                    console.log(args);
                     setRequestHeaderCalls.push(args.join(": "));
                     origSetRequestHeader.apply(this, args);
                 };
@@ -564,7 +573,6 @@ describe("Babylon Scene Loader", function () {
 
                 return BABYLON.SceneLoader.AppendAsync("https://playground.babylonjs.com/scenes/", "LevelOfDetail.glb", window.scene).then(() => {
                     data["setRequestHeaderCalls3"] = setRequestHeaderCalls.slice();
-                    console.log(setRequestHeaderCalls.slice());
                     return Promise.all(promises).then(() => {
                         return data;
                     });
