@@ -25,7 +25,6 @@ export class MonacoManager {
         key: string;
         documentation: string;
         insertText: string;
-        plainText: string;
         language: string;
         kind: number;
         sortText: string;
@@ -204,7 +203,9 @@ class Playground {
         let code = "";
         this._templates.forEach(function (item) {
             if (item.key === key) {
-                code = item.plainText;
+                // Remove monaco placeholders
+                const regex = /\$\{[0-9]+:([^}]+)\}|\$\{[0-9]+\}/g;
+                code = item.insertText.replace(regex, (match, p1) => p1 || "");
             }
         });
         return code + "\n";

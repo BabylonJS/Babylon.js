@@ -76,6 +76,15 @@ export class GPUPicker {
         return this._shaderLanguage;
     }
 
+    private _pickingInProgress = false;
+
+    /**
+     * Gets a boolean indicating if the picking is in progress
+     */
+    public get pickingInProgress() {
+        return this._pickingInProgress;
+    }
+
     private static _IdToRgb(id: number) {
         GPUPicker._TempColor.r = (id & 0xff0000) >> 16;
         GPUPicker._TempColor.g = (id & 0x00ff00) >> 8;
@@ -323,20 +332,26 @@ export class GPUPicker {
      * @returns A promise with the picking results
      */
     public async pickAsync(x: number, y: number, disposeWhenDone = false): Promise<Nullable<IGPUPickingInfo>> {
+        if (this._pickingInProgress) {
+            return null;
+        }
+
         if (!this._pickableMeshes || this._pickableMeshes.length === 0) {
-            return Promise.resolve(null);
+            return null;
         }
 
         const { x: adjustedX, y: adjustedY, rttSizeW, rttSizeH } = this._prepareForPicking(x, y);
         if (adjustedX < 0 || adjustedY < 0 || adjustedX >= rttSizeW || adjustedY >= rttSizeH) {
-            return Promise.resolve(null);
+            return null;
         }
+
+        this._pickingInProgress = true;
 
         // Invert Y
         const invertedY = rttSizeH - adjustedY - 1;
         this._preparePickingBuffer(this._engine!, rttSizeW, rttSizeH, adjustedX, invertedY);
 
-        return this._executePicking(x, invertedY, disposeWhenDone);
+        return this._executePicking(adjustedX, invertedY, disposeWhenDone);
     }
 
     /**
@@ -346,6 +361,10 @@ export class GPUPicker {
      * @returns A promise with the picking results. Always returns an array with the same length as the number of coordinates. The mesh or null at the index where no mesh was picked.
      */
     public async multiPickAsync(xy: IVector2Like[], disposeWhenDone = false): Promise<Nullable<IGPUMultiPickingInfo>> {
+        if (this._pickingInProgress) {
+            return null;
+        }
+
         if (!this._pickableMeshes || this._pickableMeshes.length === 0 || xy.length === 0) {
             return null;
         }
@@ -357,6 +376,8 @@ export class GPUPicker {
                 thinInstanceIndexes: pi?.thinInstanceIndex ? [pi.thinInstanceIndex] : undefined,
             };
         }
+
+        this._pickingInProgress = true;
 
         let minX = xy[0].x,
             maxX = xy[0].x,
@@ -422,7 +443,9 @@ export class GPUPicker {
     private _executePicking(x: number, y: number, disposeWhenDone: boolean): Promise<Nullable<IGPUPickingInfo>> {
         return new Promise((resolve, reject) => {
             if (!this._pickingTexture) {
+                this._pickingInProgress = false;
                 reject();
+                return;
             }
             this._pickingTexture!.onAfterRender = async () => {
                 this._disableScissor();
@@ -454,6 +477,7 @@ export class GPUPicker {
                         this.dispose();
                     }
 
+                    this._pickingInProgress = false;
                     if (pickedMesh) {
                         resolve({ mesh: pickedMesh, thinInstanceIndex: thinInstanceIndex });
                     } else {
@@ -476,7 +500,9 @@ export class GPUPicker {
     ): Promise<Nullable<IGPUMultiPickingInfo>> {
         return new Promise((resolve, reject) => {
             if (!this._pickingTexture) {
+                this._pickingInProgress = false;
                 reject();
+                return;
             }
 
             this._pickingTexture!.onAfterRender = async () => {
@@ -498,6 +524,7 @@ export class GPUPicker {
                         this.dispose();
                     }
 
+                    this._pickingInProgress = false;
                     resolve({ meshes: pickedMeshes, thinInstanceIndexes: thinInstanceIndexes });
                 }
             };
