@@ -434,8 +434,9 @@ export class GaussianSplattingMesh extends Mesh {
     };
 
     /**
-     * -
-     * @param data -
+     * @experimental
+     * Update data from GS (position, orientation, color, scaling)
+     * @param data array that contain all the datas
      */
     public updateData(data: ArrayBuffer): void {
         if (!data.byteLength) {
