@@ -1,6 +1,5 @@
 import { Constants } from "../Engines/constants";
 import { PostProcess } from "../PostProcesses/postProcess";
-import type { Engine } from "../Engines/engine";
 
 import { ApplyPostProcess } from "./textureTools";
 
@@ -24,7 +23,7 @@ export class RGBDTextureTools {
         }
 
         // Gets everything ready.
-        const engine = internalTexture.getEngine() as Engine;
+        const engine = internalTexture.getEngine();
         const caps = engine.getCaps();
         const isReady = internalTexture.isReady;
         let expandTexture = false;

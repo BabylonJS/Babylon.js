@@ -1107,6 +1107,9 @@ export abstract class AbstractEngine {
         useTextureWidthAndHeight?: boolean
     ): void;
 
+    /** @internal */
+    public abstract _unpackFlipY(value: boolean): void;
+
     /**
      * Reads pixels from the current frame buffer. Please note that this function can be slow
      * @param x defines the x coordinate of the rectangle where pixels must be read

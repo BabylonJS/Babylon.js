@@ -10,7 +10,6 @@ import { Constants } from "../Engines/constants";
 import { Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { Logger } from "../Misc/logger";
-import type { Engine } from "../Engines/engine";
 import { RGBDTextureTools } from "./rgbdTextureTools";
 import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 
@@ -18,6 +17,7 @@ import "../Materials/Textures/baseTexture.polynomial";
 
 import { DumpDataAsync } from "../Misc/dumpTools";
 import { ShaderLanguage } from "core/Materials";
+import type { Engine, WebGPUEngine } from "core/Engines";
 
 const DefaultEnvironmentTextureImageType = "image/png";
 const CurrentVersion = 2;
@@ -225,7 +225,7 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
 
     const imageType = options.imageType ?? DefaultEnvironmentTextureImageType;
 
-    const engine = internalTexture.getEngine() as Engine;
+    const engine = internalTexture.getEngine();
 
     if (
         texture.textureType !== Constants.TEXTURETYPE_HALF_FLOAT &&
@@ -460,7 +460,7 @@ export function UploadEnvLevelsAsync(texture: InternalTexture, data: ArrayBuffer
 
 function _OnImageReadyAsync(
     image: HTMLImageElement | ImageBitmap,
-    engine: Engine,
+    engine: Engine | WebGPUEngine,
     expandTexture: boolean,
     rgbdPostProcess: Nullable<PostProcess>,
     url: string,
