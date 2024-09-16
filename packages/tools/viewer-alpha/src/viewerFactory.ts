@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import { type AbstractEngine, type AbstractEngineOptions, type EngineOptions, type WebGPUEngineOptions } from "core/index";
+import type { AbstractEngine, AbstractEngineOptions, EngineOptions, WebGPUEngineOptions } from "core/index";
 
 import type { ViewerOptions } from "./viewer";
 import { Viewer } from "./viewer";
