@@ -1,12 +1,13 @@
-import type { FrameGraph } from "../../frameGraph";
 import type { FrameGraphTaskOutputReference, IFrameGraphTask, FrameGraphTextureId, FrameGraphObjectListId, FrameGraphTextureHandle } from "../../frameGraphTypes";
 import { backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
 import { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture";
 import type { Scene } from "../../../scene";
 import type { Camera } from "../../../Cameras/camera";
-import { Constants } from "core/Engines/constants";
 import { Color4 } from "core/Maths/math.color";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
+import type { FrameGraph } from "core/FrameGraph/frameGraph";
+import type { TextureClearType } from "core/Materials/materialHelper.geometryrendering";
+import { MaterialHelperGeometryRendering } from "core/Materials/materialHelper.geometryrendering";
 
 export interface IFrameGraphGeometryRendererTextureDescription {
     type: number;
@@ -14,71 +15,7 @@ export interface IFrameGraphGeometryRendererTextureDescription {
     textureFormat: number;
 }
 
-const enum TextureClearType {
-    Zero = 0,
-    One = 1,
-    MaxViewZ = 2,
-}
-
 const clearColors: Color4[] = [new Color4(0, 0, 0, 0), new Color4(1, 1, 1, 1), new Color4(1e8, 1e8, 1e8, 1e8)];
-
-const geometryTextureDescriptions = [
-    {
-        type: Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
-        name: "Irradiance",
-        clearType: TextureClearType.Zero,
-    },
-    {
-        type: Constants.PREPASS_POSITION_TEXTURE_TYPE,
-        name: "Position",
-        clearType: TextureClearType.Zero,
-    },
-    {
-        type: Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
-        name: "Velocity",
-        clearType: TextureClearType.Zero,
-    },
-    {
-        type: Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE,
-        name: "Reflectivity",
-        clearType: TextureClearType.Zero,
-    },
-    {
-        type: Constants.PREPASS_DEPTH_TEXTURE_TYPE /* this is the Z coordinate in view space */,
-        name: "Depth",
-        clearType: TextureClearType.MaxViewZ,
-    },
-    {
-        type: Constants.PREPASS_NORMAL_TEXTURE_TYPE,
-        name: "Normal",
-        clearType: TextureClearType.Zero,
-    },
-    {
-        type: Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE,
-        name: "Albedo",
-        clearType: TextureClearType.Zero,
-    },
-    {
-        type: Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE,
-        name: "WorldNormal",
-        clearType: TextureClearType.Zero,
-    },
-    {
-        type: Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE,
-        name: "LocalPosition",
-        clearType: TextureClearType.Zero,
-    },
-    {
-        type: Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE,
-        name: "ScreenDepth",
-        clearType: TextureClearType.One,
-    },
-    {
-        type: Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE,
-        name: "VelocityLinear",
-        clearType: TextureClearType.Zero,
-    },
-];
 
 export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
     public depthTexture?: FrameGraphTextureId;
@@ -103,7 +40,7 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
     public size: { width: number; height: number } = { width: 100, height: 100 };
     public sizeIsPercentage = true;
     public samples = 1;
-    public descriptions: IFrameGraphGeometryRendererTextureDescription[] = [];
+    public textureDescriptions: IFrameGraphGeometryRendererTextureDescription[] = [];
 
     public readonly outputTextureReference: FrameGraphTaskOutputReference = [this, "output"];
 
@@ -149,15 +86,23 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
     constructor(name: string, scene: Scene) {
         this._scene = scene;
         this._engine = this._scene.getEngine();
+
         this._rtt = new RenderTargetTexture(name, 1, scene, {
             delayAllocation: true,
         });
         this._rtt.skipInitialClear = true;
         this._rtt.renderSprites = false;
         this._rtt.renderParticles = false;
+
         this.name = name;
         this._clearAttachmentsLayout = new Map();
         this._allAttachmentsLayout = [];
+
+        MaterialHelperGeometryRendering.CreateConfiguration(this._rtt.renderPassId);
+    }
+
+    public get excludedSkinnedMeshFromVelocityTexture() {
+        return MaterialHelperGeometryRendering.GetConfiguration(this._rtt.renderPassId).excludedSkinnedMesh;
     }
 
     public isReadyFrameGraph() {
@@ -165,7 +110,7 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
     }
 
     public recordFrameGraph(frameGraph: FrameGraph) {
-        if (this.descriptions.length === 0 || this.objectList === undefined) {
+        if (this.textureDescriptions.length === 0 || this.objectList === undefined) {
             throw new Error(`FrameGraphGeometryRendererTask ${this.name}: object list and at least one geometry texture description must be provided`);
         }
 
@@ -174,6 +119,8 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
         const depthEnabled = this._checkDepthTextureCompatibility(frameGraph);
 
         this._buildClearAttachmentsLayout();
+
+        this._registerForRenderPassId(this._rtt.renderPassId);
 
         const outputTextureDescription = frameGraph.getTextureDescription(outputTextureHandle);
 
@@ -217,6 +164,7 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
     }
 
     public disposeFrameGraph(): void {
+        MaterialHelperGeometryRendering.DeleteConfiguration(this._rtt.renderPassId);
         this._rtt.dispose();
     }
 
@@ -225,9 +173,9 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
         const formats: number[] = [];
         const labels: string[] = [];
 
-        for (let i = 0; i < this.descriptions.length; i++) {
-            const description = this.descriptions[i];
-            const index = geometryTextureDescriptions.findIndex((f) => f.type === description.type);
+        for (let i = 0; i < this.textureDescriptions.length; i++) {
+            const description = this.textureDescriptions[i];
+            const index = MaterialHelperGeometryRendering.GeometryTextureDescriptions.findIndex((f) => f.type === description.type);
 
             if (index === -1) {
                 throw new Error(`FrameGraphGeometryRendererTask ${this.name}: unknown texture type ${description.type}`);
@@ -235,7 +183,7 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
 
             types[i] = description.textureType;
             formats[i] = description.textureFormat;
-            labels[i] = geometryTextureDescriptions[index].name;
+            labels[i] = MaterialHelperGeometryRendering.GeometryTextureDescriptions[index].name;
         }
 
         return frameGraph.createRenderTargetTexture(this.name, {
@@ -244,7 +192,7 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
             options: {
                 createMipMaps: false,
                 generateDepthBuffer: false,
-                textureCount: this.descriptions.length,
+                textureCount: this.textureDescriptions.length,
                 samples: this.samples,
                 types,
                 formats,
@@ -277,10 +225,10 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
         const clearAttachmentsLayout = new Map<TextureClearType, boolean[]>();
         const allAttachmentsLayout: boolean[] = [];
 
-        for (let i = 0; i < this.descriptions.length; i++) {
-            const description = this.descriptions[i];
-            const index = geometryTextureDescriptions.findIndex((f) => f.type === description.type);
-            const geometryDescription = geometryTextureDescriptions[index];
+        for (let i = 0; i < this.textureDescriptions.length; i++) {
+            const description = this.textureDescriptions[i];
+            const index = MaterialHelperGeometryRendering.GeometryTextureDescriptions.findIndex((f) => f.type === description.type);
+            const geometryDescription = MaterialHelperGeometryRendering.GeometryTextureDescriptions[index];
 
             let layout = clearAttachmentsLayout.get(geometryDescription.clearType);
             if (layout === undefined) {
@@ -305,5 +253,17 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
         });
 
         this._allAttachmentsLayout = this._engine.buildTextureLayout(allAttachmentsLayout);
+    }
+
+    private _registerForRenderPassId(renderPassId: number) {
+        const configuration = MaterialHelperGeometryRendering.GetConfiguration(renderPassId);
+
+        for (let i = 0; i < this.textureDescriptions.length; i++) {
+            const description = this.textureDescriptions[i];
+            const index = MaterialHelperGeometryRendering.GeometryTextureDescriptions.findIndex((f) => f.type === description.type);
+            const geometryDescription = MaterialHelperGeometryRendering.GeometryTextureDescriptions[index];
+
+            configuration.defines[geometryDescription.defineIndex] = i;
+        }
     }
 }

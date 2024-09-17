@@ -297,7 +297,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
             this._frameGraphTask.objectList = objectsConnectedPoint.value as FrameGraphObjectList;
         }
 
-        this._frameGraphTask.descriptions = [];
+        this._frameGraphTask.textureDescriptions = [];
 
         const textureActivation = [
             this.generateViewDepth,
@@ -319,7 +319,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         ];
         const textureTypes = [this.viewDepthType, this.screenDepthType, this.normalType, this.positionType, this.albedoType, this.reflectivityType, this.velocityType];
         const bufferTypes = [
-            Constants.PREPASS_COLOR_TEXTURE_TYPE,
             Constants.PREPASS_DEPTH_TEXTURE_TYPE,
             Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE,
             Constants.PREPASS_NORMAL_TEXTURE_TYPE,
@@ -331,7 +330,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
 
         for (let i = 0; i < textureActivation.length; i++) {
             if (textureActivation[i]) {
-                this._frameGraphTask.descriptions.push({
+                this._frameGraphTask.textureDescriptions.push({
                     textureFormat: textureFormats[i],
                     textureType: textureTypes[i],
                     type: bufferTypes[i],
