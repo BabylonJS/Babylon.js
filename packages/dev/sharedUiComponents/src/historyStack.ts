@@ -23,6 +23,31 @@ export class HistoryStack implements IDisposable {
     }
 
     /**
+     * Process key event to handle undo / redo
+     * @param evt defines the keyboard event to process
+     * @returns true if the event was processed
+     */
+    processKeyEvent(evt: KeyboardEvent): boolean {
+        if (evt.ctrlKey || evt.metaKey) {
+            if (evt.key === "z" || evt.key === "Z") {
+                if (evt.shiftKey) {
+                    this.redo();
+                    return true;
+                }
+
+                this.undo();
+                return true;
+            }
+            if (evt.key === "y" || evt.key === "Y") {
+                this.redo();
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Resets the stack
      */
     public reset() {
