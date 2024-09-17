@@ -19,17 +19,23 @@ glob.globSync("./dist/*").forEach((file) => {
     // each directory is a case. each case has a file called "main.js" and "async.js".
     // We want to write down the size of these files in a map with the directory name as a key
     // if the files don't exist, skip the case
+    let mainSize = -1;
+    let asyncSize = -1;
+
     try {
-        statSync(path.join(file, "main.js"));
-        statSync(path.join(file, "async.js"));
+        mainSize = statSync(path.join(file, "main.js")).size;
     } catch (e) {
-        return;
+        console.log(`##[error] main.js not found in ${file}`);
+        process.exit(1);
     }
-    const mainFile = path.join(file, "main.js");
-    const asyncFile = path.join(file, "async.js");
+    try {
+        asyncSize = statSync(path.join(file, "async.js")).size;
+    } catch (e) {
+        console.log(`##[warn] async.js not found in ${file}`);
+    }
     sizes[path.basename(file)] = {
-        main: statSync(mainFile).size,
-        async: statSync(asyncFile).size,
+        main: mainSize,
+        async: asyncSize,
     };
     // console.log(file);
     // const stats = statSync(file);
@@ -89,7 +95,7 @@ https.get("https://cdn.babylonjs.com/fileSizes.json", (res) => {
                 console.log(`##[info] File size for ${filename} has decreased from ${loadedMainSize} to ${currentMainSize}`);
             }
             // just warn about async for now
-            if (loadedAsyncSize !== -1 && loadedAsyncSize < currentAsyncSize) {
+            if (loadedAsyncSize && currentAsyncSize && loadedAsyncSize !== -1 && loadedAsyncSize < currentAsyncSize) {
                 console.log(`##[warn] File size for ${filename} async has increased from ${loadedAsyncSize} to ${currentAsyncSize}`);
             }
         }
