@@ -26,11 +26,10 @@ varying vUV: vec2f;
 
 #ifdef SSRAYTRACE_SCREENSPACE_DEPTH
 fn linearizeDepth(depth: f32, near: f32, far: f32) -> f32 {
-    var z: f32 = depth * 2.0f - 1.0f; // Convert [0, 1] range to [-1, 1]
     #ifdef SSRAYTRACE_RIGHT_HANDED_SCENE
-        return -(2.0f * near * far) / (far + near - z * (far - near));
+        return -(near * far) / (far - depth * (far + near));
     #else
-        return (2.0f * near * far) / (far + near - z * (far - near));
+        return (near * far) / (far - depth * (far + near));
     #endif
 }
 #endif
