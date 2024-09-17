@@ -181,7 +181,7 @@ export class Viewer implements IDisposable {
         this._autoRotationBehavior = this._camera.getBehaviorByName("AutoRotation") as AutoRotationBehavior;
 
         // Load a default light, but ignore errors as the user might be immediately loading their own environment.
-        this.resetEnvironmentAsync().catch(() => {});
+        this.resetEnvironment().catch(() => {});
 
         // TODO: render at least back ground. Maybe we can only run renderloop when a mesh is loaded. What to render until then?
         const render = () => {
@@ -307,19 +307,19 @@ export class Viewer implements IDisposable {
      * @param options The options to use when loading the model.
      * @param abortSignal An optional signal that can be used to abort the loading process.
      */
-    public async loadModelAsync(source: string | File | ArrayBufferView, options?: LoadAssetContainerOptions, abortSignal?: AbortSignal): Promise<void> {
-        await this._updateModelAsync(source, options, abortSignal);
+    public async loadModel(source: string | File | ArrayBufferView, options?: LoadAssetContainerOptions, abortSignal?: AbortSignal): Promise<void> {
+        await this._updateModel(source, options, abortSignal);
     }
 
     /**
      * Resets the model to an empty scene.
      * @param abortSignal An optional signal that can be used to abort the reset.
      */
-    public async resetModelAsync(abortSignal?: AbortSignal): Promise<void> {
-        await this._updateModelAsync(undefined, undefined, abortSignal);
+    public async resetModel(abortSignal?: AbortSignal): Promise<void> {
+        await this._updateModel(undefined, undefined, abortSignal);
     }
 
-    private async _updateModelAsync(source: string | File | ArrayBufferView | undefined, options?: LoadAssetContainerOptions, abortSignal?: AbortSignal): Promise<void> {
+    private async _updateModel(source: string | File | ArrayBufferView | undefined, options?: LoadAssetContainerOptions, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
 
         this._loadModelAbortController?.abort("New model is being loaded before previous model finished loading.");
@@ -357,19 +357,19 @@ export class Viewer implements IDisposable {
      * @param options The options to use when loading the environment.
      * @param abortSignal An optional signal that can be used to abort the loading process.
      */
-    public async loadEnvironmentAsync(url: string, options?: {}, abortSignal?: AbortSignal): Promise<void> {
-        await this._updateEnvironmentAsync(url, options, abortSignal);
+    public async loadEnvironment(url: string, options?: {}, abortSignal?: AbortSignal): Promise<void> {
+        await this._updateEnvironment(url, options, abortSignal);
     }
 
     /**
      * Resets the environment to a simple hemispheric light.
      * @param abortSignal An optional signal that can be used to abort the reset.
      */
-    public async resetEnvironmentAsync(abortSignal?: AbortSignal): Promise<void> {
-        await this._updateEnvironmentAsync(undefined, undefined, abortSignal);
+    public async resetEnvironment(abortSignal?: AbortSignal): Promise<void> {
+        await this._updateEnvironment(undefined, undefined, abortSignal);
     }
 
-    private async _updateEnvironmentAsync(url: Nullable<string | undefined>, options?: {}, abortSignal?: AbortSignal): Promise<void> {
+    private async _updateEnvironment(url: Nullable<string | undefined>, options?: {}, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
 
         this._loadEnvironmentAbortController?.abort("New environment is being loaded before previous environment finished loading.");

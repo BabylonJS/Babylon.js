@@ -516,9 +516,9 @@ export class HTML3DElement extends LitElement {
     private async _updateModel() {
         try {
             if (this.source) {
-                await this._viewer?.loadModelAsync(this.source, { pluginExtension: this.extension ?? undefined });
+                await this._viewer?.loadModel(this.source, { pluginExtension: this.extension ?? undefined });
             } else {
-                await this._viewer?.resetModelAsync();
+                await this._viewer?.resetModel();
             }
         } catch (error) {
             Logger.Log(error);
@@ -528,9 +528,9 @@ export class HTML3DElement extends LitElement {
     private async _updateEnv() {
         try {
             if (this.environment) {
-                await this._viewer?.loadEnvironmentAsync(this.environment);
+                await this._viewer?.loadEnvironment(this.environment);
             } else {
-                await this._viewer?.resetEnvironmentAsync();
+                await this._viewer?.resetEnvironment();
             }
         } catch (error) {
             Logger.Log(error);
