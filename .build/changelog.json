@@ -1,6 +1,235 @@
 {
-    "fromTag": "7.25.0",
+    "fromTag": "7.25.1",
     "changelog": {
+        "7.25.2": [
+            {
+                "pr": "15577",
+                "title": "Dynamic update of GS",
+                "description": "PG : https://playground.babylonjs.com/#GSUTLR#8\r\ndocumentation/Validation test will be done next week",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "15581",
+                "title": "consistency with the other tests",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/loaders/test/integration/babylon.sceneLoader.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15578",
+                "title": "Fix sizing issue",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15571",
+                "title": "Fix color space nme",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/loaders/test/integration/babylon.sceneLoader.test.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15576",
+                "title": "Playground - Fixing the Monaco Editor snippet template insertion",
+                "description": "Changes have been detailed in [this post of the BJS forum](https://forum.babylonjs.com/t/pg-snippets-issue/52210/11)\r\n- Removed 'plainText' key from Monaco snippet JSON\r\n- Replaced by regex rule (`insertText` --> `plainText`)",
+                "author": {
+                    "name": "Tricotou",
+                    "url": "https://github.com/Tricotou"
+                },
+                "files": [
+                    "packages/tools/playground/public/templates.json",
+                    "packages/tools/playground/src/tools/monacoManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15575",
+                "title": "Fix gpu picking leak",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15574",
+                "title": "NodeMaterial: Fixes for prepass support",
+                "description": "Added and fixed a number of things after new geometry buffers were added to the prepass renderer lately.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/prePassOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Input/prePassTextureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Rendering/prePassRenderer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "15570",
+                "title": "IBL Shadows - Only create the post effects for IBL shadows once",
+                "description": "When a new IBL was set, an observer was being fired which caused new post effects to be created for the pipeline. This was causing problems. The post effects should only need to be created once.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsRenderPipeline.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15564",
+                "title": "Rename prepass and fix local space values",
+                "description": "As suggested by @Popov72 , the local space prepass wasn't actually outputting pure, local space. And the \"NDC\" prepass wasn't truly NDC so I've renamed it to PREPASS_HYPERBOLIC_DEPTH to distinguish it from the linear PREPASS_DEPTH",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/constants.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/prePassOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Input/prePassTextureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/materialHelper.functions.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsAccumulationPass.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsRenderPipeline.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelTracingPass.ts",
+                    "packages/dev/core/src/Rendering/prePassRenderer.ts",
+                    "packages/dev/core/src/Shaders/default.fragment.fx",
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/default.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/pbr.fragment.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15566",
+                "title": "PBR: Fix wrong parameter passed to clearcoat",
+                "description": "See https://forum.babylonjs.com/t/nodematerial-contaning-clearcoatblock-fails-to-compile-in-webgl1/53422",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/clearCoatBlock.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockClearcoat.fx",
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockClearcoat.fx",
+                    "packages/dev/core/src/ShadersWGSL/pbr.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "15568",
+                "title": "Fix wrong adjusted coordinates",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15567",
+                "title": "Mesh: Don't delete sub-meshes when calling flipFaces",
+                "description": "See https://forum.babylonjs.com/t/how-do-i-flip-faces-of-submeshes-mesh-flipfaces-merges-all-submeshes/53423",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/geometry.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "15565",
+                "title": "Fix issue with base",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/historyStack.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15563",
+                "title": "Update package-lock.json due to removed fflate",
+                "description": null,
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": []
+            }
+        ],
         "7.25.1": [
             {
                 "pr": "15561",
