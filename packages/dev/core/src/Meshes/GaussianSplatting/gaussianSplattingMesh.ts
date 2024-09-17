@@ -12,7 +12,7 @@ import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Constants } from "core/Engines/constants";
 import { Tools } from "core/Misc/tools";
 import "core/Meshes/thinInstanceMesh";
-import type { ThinEngine } from "core/Engines";
+import type { ThinEngine } from "core/Engines/thinEngine";
 
 /**
  * Class used to render a gaussian splatting mesh
