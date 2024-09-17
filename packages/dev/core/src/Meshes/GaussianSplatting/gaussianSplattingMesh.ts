@@ -12,6 +12,7 @@ import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Constants } from "core/Engines/constants";
 import { Tools } from "core/Misc/tools";
 import "core/Meshes/thinInstanceMesh";
+import type { ThinEngine } from "core/Engines/thinEngine";
 
 /**
  * Class used to render a gaussian splatting mesh
@@ -432,11 +433,20 @@ export class GaussianSplattingMesh extends Mesh {
         };
     };
 
-    private _loadData(data: ArrayBuffer): void {
+    /**
+     * @experimental
+     * Update data from GS (position, orientation, color, scaling)
+     * @param data array that contain all the datas
+     */
+    public updateData(data: ArrayBuffer): void {
         if (!data.byteLength) {
             return;
         }
-        this._readyToDisplay = false;
+
+        // if a covariance texture is present, then it's not a creation but an update
+        if (!this._covariancesATexture) {
+            this._readyToDisplay = false;
+        }
 
         // Parse the data
         const uBuffer = new Uint8Array(data);
@@ -505,6 +515,9 @@ export class GaussianSplattingMesh extends Mesh {
             return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
         };
 
+        const updateTextureFromData = (texture: BaseTexture, data: Float32Array, width: number, height: number) => {
+            (this.getEngine() as ThinEngine).updateTextureData(texture.getInternalTexture()!, data, 0, 0, width, height, 0, 0, false);
+        };
         const convertRgbToRgba = (rgb: Float32Array) => {
             const count = rgb.length / 3;
             const rgba = new Float32Array(count * 4);
@@ -530,12 +543,25 @@ export class GaussianSplattingMesh extends Mesh {
             this._covariancesB = covB;
             this._colors = colorArray;
         }
-        this._covariancesATexture = createTextureFromData(convertRgbToRgba(covA), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
-        this._covariancesBTexture = createTextureFromData(convertRgbToRgba(covB), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
-        this._centersTexture = createTextureFromData(convertRgbToRgba(this._splatPositions), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
-        this._colorsTexture = createTextureFromData(colorArray, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+        if (this._covariancesATexture) {
+            updateTextureFromData(this._covariancesATexture, convertRgbToRgba(covA), textureSize.x, textureSize.y);
+            updateTextureFromData(this._covariancesBTexture!, convertRgbToRgba(covB), textureSize.x, textureSize.y);
+            updateTextureFromData(this._centersTexture!, convertRgbToRgba(this._splatPositions), textureSize.x, textureSize.y);
+            updateTextureFromData(this._colorsTexture!, colorArray, textureSize.x, textureSize.y);
+        } else {
+            this._covariancesATexture = createTextureFromData(convertRgbToRgba(covA), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+            this._covariancesBTexture = createTextureFromData(convertRgbToRgba(covB), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+            this._centersTexture = createTextureFromData(convertRgbToRgba(this._splatPositions), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+            this._colorsTexture = createTextureFromData(colorArray, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+            this._instanciateWorker();
+        }
+    }
 
-        this._instanciateWorker();
+    private _loadData(data: ArrayBuffer): void {
+        if (!data.byteLength) {
+            return;
+        }
+        this.updateData(data);
     }
 
     private _instanciateWorker(): void {

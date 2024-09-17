@@ -259,15 +259,13 @@ describe("Babylon Scene Loader", function () {
                 const oldFunction = window.engine!.createShaderProgram;
 
                 const ready: { [key: string]: boolean } = {};
-                window.scene!.whenReadyAsync().then(() => {
-                    const loop = () => {
-                        const enabledMeshes = window.scene!.meshes.filter((mesh) => mesh.material && mesh.isEnabled());
-                        enabledMeshes.forEach((mesh) => {
-                            ready[mesh.name] = mesh.isReady(true);
-                        });
-                    };
-                    window.engine!.runRenderLoop(loop);
-                });
+                const loop = () => {
+                    const enabledMeshes = window.scene!.meshes.filter((mesh) => mesh.material && mesh.isEnabled());
+                    enabledMeshes.forEach((mesh) => {
+                        ready[mesh.name] = mesh.isReady(true);
+                    });
+                };
+                window.engine!.runRenderLoop(loop);
 
                 BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader) => {
                     (loader as GLTFFileLoader).compileMaterials = true;
