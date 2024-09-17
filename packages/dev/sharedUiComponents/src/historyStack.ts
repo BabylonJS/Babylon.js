@@ -4,9 +4,10 @@ import type { IDisposable } from "core/scene";
  * Class handling undo / redo operations
  */
 export class HistoryStack implements IDisposable {
-    private _history: string[] = [];
+    private _historyStack: string[] = [];
     private _redoStack: string[] = [];
-    private readonly _maxHistoryLength = 64;
+    private _activeData: any;
+    private readonly _maxHistoryLength = 256;
     private _locked = false;
     private _dataProvider: () => any;
     private _applyUpdate: (data: any) => void;
@@ -25,8 +26,9 @@ export class HistoryStack implements IDisposable {
      * Resets the stack
      */
     public reset() {
-        this._history = [];
+        this._historyStack = [];
         this._redoStack = [];
+        this._activeData = null;
         this.store();
     }
 
@@ -116,13 +118,8 @@ export class HistoryStack implements IDisposable {
         return result;
     }
 
-    private _rebuildState() {
-        let newState = JSON.parse(this._history[0]);
-        for (let index = 1; index < this._history.length; index++) {
-            newState = this._applyJSONDiff(newState, JSON.parse(this._history[index]));
-        }
-
-        return newState;
+    private _copy(source: any) {
+        return JSON.parse(JSON.stringify(source));
     }
 
     /**
@@ -133,26 +130,20 @@ export class HistoryStack implements IDisposable {
             return;
         }
 
-        const data = this._dataProvider();
-        const dataString = JSON.stringify(data);
+        const data = this._copy(this._dataProvider());
 
-        if (this._history.length > 0) {
-            const previousState = this._rebuildState();
-            if (JSON.stringify(previousState) === dataString) {
+        if (this._activeData) {
+            const diff = this._generateJSONDiff(data, this._activeData);
+            if (!diff) {
                 return;
             }
-            const diff = this._generateJSONDiff(previousState, data);
-            if (diff) {
-                this._history.push(JSON.stringify(diff));
-            }
-        } else {
-            this._history.push(dataString);
+            this._historyStack.push(JSON.stringify(diff));
         }
 
-        if (this._history.length > this._maxHistoryLength) {
-            const base = this._history.splice(0, 1)[0];
-            const diff = this._history[0];
-            this._history[0] = JSON.stringify(this._applyJSONDiff(JSON.parse(base), JSON.parse(diff)));
+        this._activeData = data;
+
+        if (this._historyStack.length > this._maxHistoryLength) {
+            this._historyStack.shift();
         }
 
         this._redoStack.length = 0;
@@ -162,17 +153,18 @@ export class HistoryStack implements IDisposable {
      * Undo the latest operation
      */
     public undo() {
-        if (this._history.length < 2) {
+        if (!this._historyStack.length) {
             return;
         }
 
         this._locked = true;
-        const current = this._history.pop()!;
-        this._redoStack.push(current);
+        const diff = this._historyStack.pop()!;
 
-        const newState = this._rebuildState();
+        const newState = this._applyJSONDiff(this._activeData, JSON.parse(diff));
+        this._redoStack.push(JSON.stringify(this._generateJSONDiff(newState, this._activeData)));
 
-        this._applyUpdate(newState);
+        this._applyUpdate(this._copy(newState));
+        this._activeData = newState;
 
         this._locked = false;
     }
@@ -181,16 +173,18 @@ export class HistoryStack implements IDisposable {
      * Redo the latest undo operation
      */
     public redo() {
-        if (this._redoStack.length < 1) {
+        if (!this._redoStack.length) {
             return;
         }
 
         this._locked = true;
-        const current = this._redoStack.pop()!;
-        this._history.push(current);
+        const diff = this._redoStack.pop()!;
 
-        const newState = this._rebuildState();
-        this._applyUpdate(newState);
+        const newState = this._applyJSONDiff(this._activeData, JSON.parse(diff));
+        this._historyStack.push(JSON.stringify(this._generateJSONDiff(newState, this._activeData)));
+
+        this._applyUpdate(this._copy(newState));
+        this._activeData = newState;
 
         this._locked = false;
     }
@@ -199,7 +193,7 @@ export class HistoryStack implements IDisposable {
      * Disposes the stack
      */
     public dispose() {
-        this._history = [];
+        this._historyStack = [];
         this._redoStack = [];
     }
 }
