@@ -65,11 +65,15 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
         switch (this.type) {
             case NodeRenderGraphBlockConnectionPointTypes.Texture:
             case NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth:
+            case NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth:
             case NodeRenderGraphBlockConnectionPointTypes.TextureViewNormal:
+            case NodeRenderGraphBlockConnectionPointTypes.TextureWorldNormal:
             case NodeRenderGraphBlockConnectionPointTypes.TextureAlbedo:
             case NodeRenderGraphBlockConnectionPointTypes.TextureReflectivity:
+            case NodeRenderGraphBlockConnectionPointTypes.TextureLocalPosition:
             case NodeRenderGraphBlockConnectionPointTypes.TextureWorldPosition:
             case NodeRenderGraphBlockConnectionPointTypes.TextureVelocity:
+            case NodeRenderGraphBlockConnectionPointTypes.TextureLinearVelocity:
             case NodeRenderGraphBlockConnectionPointTypes.TextureIrradiance:
             case NodeRenderGraphBlockConnectionPointTypes.TextureAlbedoSqrt: {
                 const options: FrameGraphTextureCreationOptions = {
