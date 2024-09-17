@@ -196,6 +196,8 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
     public INSTANCESCOLOR = false;
 
     public PREPASS = false;
+    public PREPASS_COLOR = false;
+    public PREPASS_COLOR_INDEX = -1;
     public PREPASS_IRRADIANCE = false;
     public PREPASS_IRRADIANCE_INDEX = -1;
     public PREPASS_ALBEDO_SQRT = false;

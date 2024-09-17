@@ -167,6 +167,8 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public ALPHABLEND = true;
 
     public PREPASS = false;
+    public PREPASS_COLOR = false;
+    public PREPASS_COLOR_INDEX = -1;
     public PREPASS_IRRADIANCE = false;
     public PREPASS_IRRADIANCE_INDEX = -1;
     public PREPASS_ALBEDO_SQRT = false;
