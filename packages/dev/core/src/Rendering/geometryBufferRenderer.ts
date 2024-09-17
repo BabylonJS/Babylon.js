@@ -95,6 +95,12 @@ export class GeometryBufferRenderer {
     public static readonly REFLECTIVITY_TEXTURE_TYPE = 4;
 
     /**
+     * Constant used to retrieve the screen-space depth texture index in the G-Buffer textures array
+     * using getIndex(GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE)
+     */
+    public static readonly SCREENSPACE_DEPTH_TEXTURE_TYPE = 5;
+
+    /**
      * Dictionary used to store the previous transformation matrices of each rendered mesh
      * in order to compute objects velocities when enableVelocity is set to "true"
      * @internal
@@ -137,6 +143,7 @@ export class GeometryBufferRenderer {
     private _enablePosition: boolean = false;
     private _enableVelocity: boolean = false;
     private _enableReflectivity: boolean = false;
+    private _enableScreenspaceDepth: boolean = false;
     private _depthFormat: number;
     private _clearColor = new Color4(0, 0, 0, 0);
     private _clearDepthColor = new Color4(1e8, 0, 0, 1); // "infinity" value - depth in the depth texture is view.z, not a 0..1 value!
@@ -146,6 +153,7 @@ export class GeometryBufferRenderer {
     private _reflectivityIndex: number = -1;
     private _depthIndex: number = -1;
     private _normalIndex: number = -1;
+    private _screenspaceDepthIndex: number = -1;
 
     private _linkedWithPrePass: boolean = false;
     private _prePassRenderer: PrePassRenderer;
@@ -190,6 +198,7 @@ export class GeometryBufferRenderer {
         this._enablePosition = false;
         this._enableReflectivity = false;
         this._enableVelocity = false;
+        this._enableScreenspaceDepth = false;
         this._attachmentsFromPrePass = [];
     }
 
@@ -212,6 +221,9 @@ export class GeometryBufferRenderer {
             this._depthIndex = index;
         } else if (geometryBufferType === GeometryBufferRenderer.NORMAL_TEXTURE_TYPE) {
             this._normalIndex = index;
+        } else if (geometryBufferType === GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE) {
+            this._screenspaceDepthIndex = index;
+            this._enableScreenspaceDepth = true;
         }
     }
 
@@ -272,6 +284,8 @@ export class GeometryBufferRenderer {
                 return this._linkedWithPrePass ? this._depthIndex : 0;
             case GeometryBufferRenderer.NORMAL_TEXTURE_TYPE:
                 return this._linkedWithPrePass ? this._normalIndex : 1;
+            case GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE:
+                return this._screenspaceDepthIndex;
             default:
                 return -1;
         }
@@ -338,6 +352,22 @@ export class GeometryBufferRenderer {
      */
     public set enableReflectivity(enable: boolean) {
         this._enableReflectivity = enable;
+
+        if (!this._linkedWithPrePass) {
+            this.dispose();
+            this._createRenderTargets();
+        }
+    }
+
+    /**
+     * Sets whether or not objects screenspace depth are enabled for the G buffer.
+     */
+    public get enableScreenspaceDepth(): boolean {
+        return this._enableScreenspaceDepth;
+    }
+
+    public set enableScreenspaceDepth(enable: boolean) {
+        this._enableScreenspaceDepth = enable;
 
         if (!this._linkedWithPrePass) {
             this.dispose();
@@ -610,6 +640,10 @@ export class GeometryBufferRenderer {
                 defines.push("#define NORMAL_INDEX " + this._normalIndex);
                 defines.push("#define PREPASS_NORMAL");
             }
+            if (this._screenspaceDepthIndex !== -1) {
+                defines.push("#define SCREENSPACE_DEPTH_INDEX " + this._screenspaceDepthIndex);
+                defines.push("#define PREPASS_SCREENSPACE_DEPTH");
+            }
         }
 
         // Buffers
@@ -629,6 +663,13 @@ export class GeometryBufferRenderer {
         if (this._enableReflectivity) {
             defines.push("#define REFLECTIVITY");
             defines.push("#define REFLECTIVITY_INDEX " + this._reflectivityIndex);
+        }
+
+        if (this._enableScreenspaceDepth) {
+            if (this._screenspaceDepthIndex !== -1) {
+                defines.push("#define SCREENSPACE_DEPTH_INDEX " + this._screenspaceDepthIndex);
+                defines.push("#define SCREENSPACE_DEPTH");
+            }
         }
 
         if (this.generateNormalsInWorldSpace) {
@@ -782,6 +823,13 @@ export class GeometryBufferRenderer {
             count++;
             textureNames.push("gBuffer_Reflectivity");
             textureTypesAndFormats.push(this._textureTypesAndFormats[GeometryBufferRenderer.REFLECTIVITY_TEXTURE_TYPE]);
+        }
+
+        if (this._enableScreenspaceDepth) {
+            this._screenspaceDepthIndex = count;
+            count++;
+            textureNames.push("gBuffer_ScreenspaceDepth");
+            textureTypesAndFormats.push(this._textureTypesAndFormats[GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE]);
         }
 
         return [count, textureNames, textureTypesAndFormats];

@@ -11,8 +11,12 @@ fn distanceSquared(a: vec2f, b: vec2f) -> f32 {
 
 #ifdef SSRAYTRACE_SCREENSPACE_DEPTH
 fn linearizeDepth(depth: f32, near: f32, far: f32) -> f32 {
-  var z: f32 = depth * 2.0f - 1.0f; // Convert [0, 1] range to [-1, 1]
-  return (2.0f * near * far) / (far + near - z * (far - near));
+    var z: f32 = depth * 2.0f - 1.0f; // Convert [0, 1] range to [-1, 1]
+    #ifdef SSRAYTRACE_RIGHT_HANDED_SCENE
+        return -(2.0f * near * far) / (far + near - z * (far - near));
+    #else
+        return (2.0f * near * far) / (far + near - z * (far - near));
+    #endif
 }
 #endif
 
@@ -224,14 +228,14 @@ fn traceScreenSpaceRay1(
         // Camera-space z of the scene
         sceneZMax = textureLoad(csZBuffer, vec2<i32>(*hitPixel), 0).r;
     #ifdef SSRAYTRACE_SCREENSPACE_DEPTH
-        sceneZMax = -linearizeDepth(sceneZMax, nearPlaneZ, farPlaneZ);
+        sceneZMax = linearizeDepth(sceneZMax, nearPlaneZ, farPlaneZ);
     #endif
 
     #ifdef SSRAYTRACE_RIGHT_HANDED_SCENE
         #ifdef SSRAYTRACE_USE_BACK_DEPTHBUFFER
             var sceneBackZ: f32 = textureLoad(csZBackBuffer, vec2<i32>(*hitPixel / csZBackSizeFactor), 0).r;
             #ifdef SSRAYTRACE_SCREENSPACE_DEPTH
-                sceneBackZ = -linearizeDepth(sceneBackZ, nearPlaneZ, farPlaneZ);
+                sceneBackZ = linearizeDepth(sceneBackZ, nearPlaneZ, farPlaneZ);
             #endif
             hit = (rayZMax >= sceneBackZ - csZThickness) && (rayZMin <= sceneZMax);
         #else
@@ -241,7 +245,7 @@ fn traceScreenSpaceRay1(
         #ifdef SSRAYTRACE_USE_BACK_DEPTHBUFFER
             var sceneBackZ: f32 = textureLoad(csZBackBuffer, vec2<i32>(*hitPixel / csZBackSizeFactor), 0).r;
             #ifdef SSRAYTRACE_SCREENSPACE_DEPTH
-                sceneBackZ = -linearizeDepth(sceneBackZ, nearPlaneZ, farPlaneZ);
+                sceneBackZ = linearizeDepth(sceneBackZ, nearPlaneZ, farPlaneZ);
             #endif
             hit = (rayZMin <= sceneBackZ + csZThickness) && (rayZMax >= sceneZMax) && (sceneZMax != 0.0);
         #else
@@ -305,7 +309,7 @@ fn traceScreenSpaceRay1(
             *hitPixel = select(pqk.xy, pqk.yx, permute);
             sceneZMax = textureLoad(csZBuffer, vec2<i32>(*hitPixel), 0).r;
             #ifdef SSRAYTRACE_SCREENSPACE_DEPTH
-                sceneZMax = -linearizeDepth(sceneZMax, nearPlaneZ, farPlaneZ);
+                sceneZMax = linearizeDepth(sceneZMax, nearPlaneZ, farPlaneZ);
             #endif
 
             refinementStepCount += 1.0;

@@ -8,8 +8,12 @@ float distanceSquared(vec2 a, vec2 b) { a -= b; return dot(a, a); }
 
 #ifdef SSRAYTRACE_SCREENSPACE_DEPTH
 float linearizeDepth(float depth, float near, float far) {
-  float z = depth * 2.0 - 1.0; // Convert [0, 1] range to [-1, 1]
-  return (2.0 * near * far) / (far + near - z * (far - near));
+    float z = depth * 2.0 - 1.0; // Convert [0, 1] range to [-1, 1]
+    #ifdef SSRAYTRACE_RIGHT_HANDED_SCENE
+        return -(2.0f * near * far) / (far + near - z * (far - near));
+    #else
+        return (2.0f * near * far) / (far + near - z * (far - near));
+    #endif
 }
 #endif
 /**
@@ -215,13 +219,13 @@ bool traceScreenSpaceRay1(
         // Camera-space z of the scene
         sceneZMax = texelFetch(csZBuffer, ivec2(hitPixel), 0).r;
     #ifdef SSRAYTRACE_SCREENSPACE_DEPTH
-        sceneZMax = -linearizeDepth(sceneZMax, nearPlaneZ, farPlaneZ);
+        sceneZMax = linearizeDepth(sceneZMax, nearPlaneZ, farPlaneZ);
     #endif
     #ifdef SSRAYTRACE_RIGHT_HANDED_SCENE
         #ifdef SSRAYTRACE_USE_BACK_DEPTHBUFFER
             float sceneBackZ = texelFetch(csZBackBuffer, ivec2(hitPixel / csZBackSizeFactor), 0).r;
             #ifdef SSRAYTRACE_SCREENSPACE_DEPTH
-                sceneBackZ = -linearizeDepth(sceneBackZ, nearPlaneZ, farPlaneZ);
+                sceneBackZ = linearizeDepth(sceneBackZ, nearPlaneZ, farPlaneZ);
             #endif
             hit = (rayZMax >= sceneBackZ - csZThickness) && (rayZMin <= sceneZMax);
         #else
@@ -231,7 +235,7 @@ bool traceScreenSpaceRay1(
         #ifdef SSRAYTRACE_USE_BACK_DEPTHBUFFER
             float sceneBackZ = texelFetch(csZBackBuffer, ivec2(hitPixel / csZBackSizeFactor), 0).r;
             #ifdef SSRAYTRACE_SCREENSPACE_DEPTH
-                sceneBackZ = -linearizeDepth(sceneBackZ, nearPlaneZ, farPlaneZ);
+                sceneBackZ = linearizeDepth(sceneBackZ, nearPlaneZ, farPlaneZ);
             #endif
             hit = (rayZMin <= sceneBackZ + csZThickness) && (rayZMax >= sceneZMax) && (sceneZMax != 0.0);
         #else
@@ -294,7 +298,7 @@ bool traceScreenSpaceRay1(
             hitPixel = permute ? pqk.yx : pqk.xy;
             sceneZMax = texelFetch(csZBuffer, ivec2(hitPixel), 0).r;
             #ifdef SSRAYTRACE_SCREENSPACE_DEPTH
-                sceneZMax = -linearizeDepth(sceneZMax, nearPlaneZ, farPlaneZ);
+                sceneZMax = linearizeDepth(sceneZMax, nearPlaneZ, farPlaneZ);
             #endif
         }
 

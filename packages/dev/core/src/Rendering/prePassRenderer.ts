@@ -466,6 +466,10 @@ export class PrePassRenderer {
                     prePassConstant: Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
                     geometryBufferConstant: GeometryBufferRenderer.VELOCITY_TEXTURE_TYPE,
                 },
+                {
+                    prePassConstant: Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE,
+                    geometryBufferConstant: GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE,
+                },
             ];
 
             // replace textures in the geometryBuffer RT

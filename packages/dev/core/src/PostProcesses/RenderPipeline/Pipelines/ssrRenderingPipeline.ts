@@ -653,6 +653,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                 if (geometryBufferRenderer) {
                     geometryBufferRenderer.enableReflectivity = true;
                     geometryBufferRenderer.useSpecificClearForDepthTexture = true;
+                    geometryBufferRenderer.enableScreenspaceDepth = true;
                 }
             } else {
                 const prePassRenderer = scene.enablePrePassRenderer();
@@ -1004,7 +1005,12 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
 
                 effect.setTexture("normalSampler", geometryBufferRenderer.getGBuffer().textures[1]);
                 effect.setTexture("reflectivitySampler", geometryBufferRenderer.getGBuffer().textures[roughnessIndex]);
-                effect.setTexture("depthSampler", geometryBufferRenderer.getGBuffer().textures[0]);
+                if (this._useScreenspaceDepth) {
+                    const depthIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE);
+                    effect.setTexture("depthSampler", geometryBufferRenderer.getGBuffer().textures[depthIndex]);
+                } else {
+                    effect.setTexture("depthSampler", geometryBufferRenderer.getGBuffer().textures[0]);
+                }
             } else if (prePassRenderer) {
                 const depthIndex = prePassRenderer.getIndex(this._useScreenspaceDepth ? Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE : Constants.PREPASS_DEPTH_TEXTURE_TYPE);
                 const roughnessIndex = prePassRenderer.getIndex(Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE);
@@ -1159,7 +1165,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         if (this.useFresnel) {
             defines += "#define SSR_BLEND_WITH_FRESNEL\n";
 
-            uniformNames.push("projection", "invProjectionMatrix");
+            uniformNames.push("projection", "invProjectionMatrix", "nearPlaneZ", "farPlaneZ");
             samplerNames.push("depthSampler", "normalSampler");
         }
         if (this._reflectivityThreshold === 0) {
@@ -1215,13 +1221,28 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                 const roughnessIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.REFLECTIVITY_TEXTURE_TYPE);
                 effect.setTexture("reflectivitySampler", geometryBufferRenderer.getGBuffer().textures[roughnessIndex]);
                 if (this.useFresnel) {
+                    const camera = this._scene.activeCamera;
+                    if (camera) {
+                        effect.setFloat("nearPlaneZ", camera.minZ);
+                        effect.setFloat("farPlaneZ", camera.maxZ);
+                    }
                     effect.setTexture("normalSampler", geometryBufferRenderer.getGBuffer().textures[1]);
-                    effect.setTexture("depthSampler", geometryBufferRenderer.getGBuffer().textures[0]);
+                    if (this._useScreenspaceDepth) {
+                        const depthIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE);
+                        effect.setTexture("depthSampler", geometryBufferRenderer.getGBuffer().textures[depthIndex]);
+                    } else {
+                        effect.setTexture("depthSampler", geometryBufferRenderer.getGBuffer().textures[0]);
+                    }
                 }
             } else if (prePassRenderer) {
                 const roughnessIndex = prePassRenderer.getIndex(Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE);
                 effect.setTexture("reflectivitySampler", prePassRenderer.getRenderTarget().textures[roughnessIndex]);
                 if (this.useFresnel) {
+                    const camera = this._scene.activeCamera;
+                    if (camera) {
+                        effect.setFloat("nearPlaneZ", camera.minZ);
+                        effect.setFloat("farPlaneZ", camera.maxZ);
+                    }
                     const depthIndex = prePassRenderer.getIndex(
                         this._useScreenspaceDepth ? Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE : Constants.PREPASS_DEPTH_TEXTURE_TYPE
                     );

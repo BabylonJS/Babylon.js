@@ -96,10 +96,17 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             fragData[DEPTH_INDEX] =  vec4f(input.vViewPos.z / input.vViewPos.w, 0.0, 0.0, 1.0);
         #endif
 
+        #ifdef PREPASS_SCREENSPACE_DEPTH
+            fragData[SCREENSPACE_DEPTH_INDEX] = vec4(fragmentInputs.position.z, 0.0, 0.0, 1.0);
+        #endif
+
         #if defined(PREPASS_NORMAL) || defined(PREPASS_WORLD_NORMAL)
             fragData[NORMAL_INDEX] =  vec4f(normalOutput, 1.0);
         #endif
     #else
+        #ifdef SCREENSPACE_DEPTH
+            fragData[SCREENSPACE_DEPTH_INDEX] = vec4(fragmentInputs.position.z, 0.0, 0.0, 1.0);
+        #endif
         fragData[0] =  vec4f(input.vViewPos.z / input.vViewPos.w, 0.0, 0.0, 1.0);
         fragData[1] =  vec4f(normalOutput, 1.0);
     #endif
