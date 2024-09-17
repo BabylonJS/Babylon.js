@@ -5,7 +5,7 @@ import { Constants } from "../Engines/constants";
 
 import type { Nullable } from "../types";
 
-import type { Engine } from "../Engines/engine";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
 
 /** Defines operator used for tonemapping */
 export const enum TonemappingOperator {
@@ -49,7 +49,7 @@ export class TonemapPostProcess extends PostProcess {
         public exposureAdjustment: number,
         camera: Nullable<Camera>,
         samplingMode: number = Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
-        engine?: Engine,
+        engine?: AbstractEngine,
         textureFormat = Constants.TEXTURETYPE_UNSIGNED_INT,
         reusable?: boolean
     ) {

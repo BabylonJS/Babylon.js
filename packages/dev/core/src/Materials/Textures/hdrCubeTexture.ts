@@ -13,7 +13,6 @@ import { ToGammaSpace } from "../../Maths/math.constants";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import { HDRFiltering } from "../../Materials/Textures/Filtering/hdrFiltering";
 import { ToHalfFloat } from "../../Misc/textureTools";
-import "../../Engines/Extensions/engine.rawTexture";
 import "../../Materials/Textures/baseTexture.polynomial";
 
 /**

@@ -1,8 +1,8 @@
+import { ThinWebGPUEngine } from "core/Engines/thinWebGPUEngine";
 import { InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
 import type { RenderTargetCreationOptions } from "../../../Materials/Textures/textureCreationOptions";
 import { Constants } from "../../constants";
 import type { RenderTargetWrapper } from "../../renderTargetWrapper";
-import { WebGPUEngine } from "../../webgpuEngine";
 
 declare module "../../abstractEngine" {
     export interface AbstractEngine {
@@ -16,7 +16,7 @@ declare module "../../abstractEngine" {
     }
 }
 
-WebGPUEngine.prototype.createRenderTargetCubeTexture = function (size: number, options?: RenderTargetCreationOptions): RenderTargetWrapper {
+ThinWebGPUEngine.prototype.createRenderTargetCubeTexture = function (size: number, options?: RenderTargetCreationOptions): RenderTargetWrapper {
     const rtWrapper = this._createHardwareRenderTargetWrapper(false, true, size);
 
     const fullOptions = {

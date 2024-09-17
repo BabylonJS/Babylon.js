@@ -11,7 +11,6 @@ import "../Shaders/postprocess.vertex";
 import type { IInspectable } from "../Misc/iInspectable";
 import type { Color4 } from "../Maths/math.color";
 
-import "../Engines/Extensions/engine.renderTarget";
 import type { NodeMaterial } from "../Materials/Node/nodeMaterial";
 import { serialize, serializeAsColor4 } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";

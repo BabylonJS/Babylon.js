@@ -12,7 +12,6 @@ import { Observable } from "../../Misc/observable";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
 
 import "../../Engines/AbstractEngine/abstractEngine.cubeTexture";
-import "../../Engines/Extensions/engine.cubeTexture";
 import "../../Engines/Extensions/engine.prefilteredCubeTexture";
 
 /**
