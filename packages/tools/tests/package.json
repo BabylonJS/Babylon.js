@@ -13,7 +13,7 @@
         "test": "jest --runInBand -c ../../../jest.config.ts",
         "test:debug": "set DEBUG=true && npm run test",
         "update": "jest -u",
-        "build": "webpack --env mode=production",
+        "build": "node ./build.js",
         "analyse": "webpack --profile --json > stats.json",
         "generate-file-size-report": "node ./scripts/generateFileSizes.js",
         "test:playwright": "playwright test"
