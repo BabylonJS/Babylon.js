@@ -1,3 +1,6 @@
+// eslint-disable-next-line import/no-internal-modules
+import type { Nullable } from "core/index";
+
 import type { PropertyValues } from "lit";
 import type { Viewer, ViewerDetails } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
@@ -18,9 +21,9 @@ const allowedAnimationSpeeds = [0.5, 1, 1.5, 2] as const;
 interface HTML3DElementEventMap extends HTMLElementEventMap {
     viewerready: CustomEvent<ViewerDetails>;
     environmentchange: Event;
-    environmenterror: Event;
+    environmenterror: ErrorEvent;
     modelchange: Event;
-    modelerror: Event;
+    modelerror: ErrorEvent;
     selectedanimationchange: Event;
     animationspeedchange: Event;
     animationplayingchange: Event;
@@ -215,7 +218,7 @@ export class HTML3DElement extends LitElement {
      * The model URL.
      */
     @property({ reflect: true })
-    public src: string | undefined;
+    public src: Nullable<string> = null;
 
     /**
      * Forces the model to be loaded with the specified extension.
@@ -223,13 +226,13 @@ export class HTML3DElement extends LitElement {
      * If this property is not set, the extension will be inferred from the model URL when possible.
      */
     @property({ reflect: true })
-    public extension: string | undefined;
+    public extension: Nullable<string> = null;
 
     /**
      * The environment URL.
      */
     @property({ reflect: true })
-    public env: string | undefined;
+    public env: Nullable<string> = null;
 
     /**
      * The list of animation names for the currently loaded model.
@@ -379,11 +382,8 @@ export class HTML3DElement extends LitElement {
         super.addEventListener(type as string, listener as EventListenerOrEventListenerObject, options as boolean | AddEventListenerOptions);
     }
 
-    private _dispatchCustomEvent<TEvent extends keyof HTML3DElementEventMap>(
-        ...args: HTML3DElementEventMap[TEvent] extends CustomEvent ? [type: TEvent, details: HTML3DElementEventMap[TEvent]["detail"]] : [type: TEvent]
-    ) {
-        const [type, details] = args;
-        this.dispatchEvent(details ? new CustomEvent(type, { detail: details }) : new Event(type));
+    private _dispatchCustomEvent<TEvent extends keyof HTML3DElementEventMap>(type: TEvent, event: (type: TEvent) => HTML3DElementEventMap[TEvent]) {
+        this.dispatchEvent(event(type));
     }
 
     private _onSelectedAnimationChanged(event: Event) {
@@ -434,42 +434,43 @@ export class HTML3DElement extends LitElement {
                         this._viewer = details.viewer;
 
                         details.viewer.onEnvironmentChanged.add(() => {
-                            this._dispatchCustomEvent("environmentchange");
+                            this._dispatchCustomEvent("environmentchange", (type) => new Event(type));
                         });
 
-                        details.viewer.onEnvironmentError.add(() => {
-                            this._dispatchCustomEvent("environmenterror");
+                        details.viewer.onEnvironmentError.add((error) => {
+                            this._dispatchCustomEvent("environmenterror", (type) => new ErrorEvent(type, { error }));
                         });
 
                         details.viewer.onModelChanged.add(() => {
-                            this._animations = [...(this._viewer?.animations ?? [])];
-                            this._dispatchCustomEvent("modelchange");
+                            this._animations = [...details.viewer.animations];
+                            this._dispatchCustomEvent("modelchange", (type) => new Event(type));
                         });
 
-                        details.viewer.onModelError.add(() => {
-                            this._dispatchCustomEvent("modelerror");
+                        details.viewer.onModelError.add((error) => {
+                            this._animations = [...details.viewer.animations];
+                            this._dispatchCustomEvent("modelerror", (type) => new ErrorEvent(type, { error }));
                         });
 
                         details.viewer.onSelectedAnimationChanged.add(() => {
-                            this._selectedAnimation = this._viewer?.selectedAnimation ?? -1;
-                            this._dispatchCustomEvent("selectedanimationchange");
+                            this._selectedAnimation = details.viewer.selectedAnimation ?? -1;
+                            this._dispatchCustomEvent("selectedanimationchange", (type) => new Event(type));
                         });
 
                         details.viewer.onAnimationSpeedChanged.add(() => {
-                            let speed = this._viewer?.animationSpeed ?? 1;
+                            let speed = details.viewer.animationSpeed ?? 1;
                             speed = allowedAnimationSpeeds.reduce((prev, curr) => (Math.abs(curr - speed) < Math.abs(prev - speed) ? curr : prev));
                             this.animationSpeed = speed;
-                            this._dispatchCustomEvent("animationspeedchange");
+                            this._dispatchCustomEvent("animationspeedchange", (type) => new Event(type));
                         });
 
                         details.viewer.onIsAnimationPlayingChanged.add(() => {
-                            this._isAnimationPlaying = this._viewer?.isAnimationPlaying ?? false;
-                            this._dispatchCustomEvent("animationplayingchange");
+                            this._isAnimationPlaying = details.viewer.isAnimationPlaying ?? false;
+                            this._dispatchCustomEvent("animationplayingchange", (type) => new Event(type));
                         });
 
                         details.viewer.onAnimationProgressChanged.add(() => {
-                            this.animationProgress = this._viewer?.animationProgress ?? 0;
-                            this._dispatchCustomEvent("animationprogresschange");
+                            this.animationProgress = details.viewer.animationProgress ?? 0;
+                            this._dispatchCustomEvent("animationprogresschange", (type) => new Event(type));
                         });
 
                         this._updateSelectedAnimation();
@@ -477,7 +478,7 @@ export class HTML3DElement extends LitElement {
                         this._updateModel();
                         this._updateEnv();
 
-                        this._dispatchCustomEvent("viewerready", details);
+                        this._dispatchCustomEvent("viewerready", (type) => new CustomEvent(type, { detail: details }));
                     },
                 });
             }
