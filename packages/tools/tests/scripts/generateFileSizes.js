@@ -37,11 +37,6 @@ glob.globSync("./dist/*").forEach((file) => {
         main: mainSize,
         async: asyncSize,
     };
-    // console.log(file);
-    // const stats = statSync(file);
-    // console.log(`${file} - ${stats.size}`);
-    // const filename = path.basename(file);
-    // sizes[filename] = stats.size;
 });
 
 writeFileSync("./dist/fileSizes.json", JSON.stringify(sizes, null, 2));
