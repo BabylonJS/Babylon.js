@@ -1,5 +1,26 @@
 # Changelog
 
+## 7.25.2
+
+### Core
+
+- Dynamic update of GS - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#15577](https://github.com/BabylonJS/Babylon.js/pull/15577))
+- Fix color space nme - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#15571](https://github.com/BabylonJS/Babylon.js/pull/15571))
+- NodeMaterial: Fixes for prepass support - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15574](https://github.com/BabylonJS/Babylon.js/pull/15574))
+- IBL Shadows - Only create the post effects for IBL shadows once - by [MiiBond](https://github.com/MiiBond) ([#15570](https://github.com/BabylonJS/Babylon.js/pull/15570))
+- Rename prepass and fix local space values - by [MiiBond](https://github.com/MiiBond) ([#15564](https://github.com/BabylonJS/Babylon.js/pull/15564))
+- PBR: Fix wrong parameter passed to clearcoat - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15566](https://github.com/BabylonJS/Babylon.js/pull/15566))
+- Mesh: Don't delete sub-meshes when calling flipFaces - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15567](https://github.com/BabylonJS/Babylon.js/pull/15567))
+
+### Loaders
+
+- consistency with the other tests - by [RaananW](https://github.com/RaananW) ([#15581](https://github.com/BabylonJS/Babylon.js/pull/15581))
+- Fix color space nme - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#15571](https://github.com/BabylonJS/Babylon.js/pull/15571))
+
+### Playground
+
+- Playground - Fixing the Monaco Editor snippet template insertion - by [Tricotou](https://github.com/Tricotou) ([#15576](https://github.com/BabylonJS/Babylon.js/pull/15576))
+
 ## 7.25.1
 
 ### Core
