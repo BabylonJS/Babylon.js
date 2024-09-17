@@ -474,8 +474,12 @@ color = vec4f(max(color.rgb, vec3f(0.)), color.a);
 		fragData[PREPASS_WORLD_NORMAL_INDEX] = vec4f(normalW * 0.5 + 0.5, writeGeometryInfo);
 	#endif
 
+	#ifdef PREPASS_ALBEDO
+		fragData[PREPASS_ALBEDO_INDEX] = vec4f(baseColor.rgb, writeGeometryInfo);
+	#endif
+
 	#ifdef PREPASS_ALBEDO_SQRT
-		fragData[PREPASS_ALBEDO_SQRT_INDEX] = vec4f(0.0, 0.0, 0.0, writeGeometryInfo); // We can't split albedo on std material
+		fragData[PREPASS_ALBEDO_SQRT_INDEX] = vec4f(sqrt(baseColor.rgb), writeGeometryInfo);
 	#endif
 
 	#ifdef PREPASS_REFLECTIVITY

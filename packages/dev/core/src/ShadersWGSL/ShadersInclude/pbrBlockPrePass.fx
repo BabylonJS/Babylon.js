@@ -23,6 +23,10 @@ var fragData: array<vec4<f32>, SCENE_MRT_COUNT>;
     fragData[PREPASS_VELOCITY_LINEAR_INDEX] = vec4f(velocity, 0.0, writeGeometryInfo);
 #endif
 
+#ifdef PREPASS_ALBEDO
+    fragData[PREPASS_ALBEDO_INDEX] = vec4f(surfaceAlbedo, writeGeometryInfo);
+#endif
+
 #ifdef PREPASS_ALBEDO_SQRT
     var sqAlbedo : vec3f = sqrt(surfaceAlbedo); // for pre and post scatter
 #endif

@@ -107,7 +107,7 @@ export class BlockTools {
             case NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth:
                 color = "#84995c";
                 break;
-            case NodeRenderGraphBlockConnectionPointTypes.TextureNormal:
+            case NodeRenderGraphBlockConnectionPointTypes.TextureViewNormal:
                 color = "#84995c";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.TextureAlbedo:
@@ -116,13 +116,22 @@ export class BlockTools {
             case NodeRenderGraphBlockConnectionPointTypes.TextureReflectivity:
                 color = "#84995c";
                 break;
-            case NodeRenderGraphBlockConnectionPointTypes.TexturePosition:
+            case NodeRenderGraphBlockConnectionPointTypes.TextureWorldPosition:
                 color = "#84995c";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.TextureVelocity:
                 color = "#84995c";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth:
+                color = "#84995c";
+                break;
+            case NodeRenderGraphBlockConnectionPointTypes.TextureLocalPosition:
+                color = "#84995c";
+                break;
+            case NodeRenderGraphBlockConnectionPointTypes.TextureWorldNormal:
+                color = "#84995c";
+                break;
+            case NodeRenderGraphBlockConnectionPointTypes.TextureLinearVelocity:
                 color = "#84995c";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.BasedOnInput:
@@ -155,17 +164,23 @@ export class BlockTools {
             case "TextureViewDepth":
                 return NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth;
             case "TextureNormal":
-                return NodeRenderGraphBlockConnectionPointTypes.TextureNormal;
+                return NodeRenderGraphBlockConnectionPointTypes.TextureViewNormal;
             case "TextureAlbedo":
                 return NodeRenderGraphBlockConnectionPointTypes.TextureAlbedo;
             case "TextureReflectivity":
                 return NodeRenderGraphBlockConnectionPointTypes.TextureReflectivity;
             case "TexturePosition":
-                return NodeRenderGraphBlockConnectionPointTypes.TexturePosition;
+                return NodeRenderGraphBlockConnectionPointTypes.TextureWorldPosition;
             case "TextureVelocity":
                 return NodeRenderGraphBlockConnectionPointTypes.TextureVelocity;
             case "TextureScreenDepth":
                 return NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth;
+            case "TextureLocalPosition":
+                return NodeRenderGraphBlockConnectionPointTypes.TextureLocalPosition;
+            case "TextureWorldNormal":
+                return NodeRenderGraphBlockConnectionPointTypes.TextureWorldNormal;
+            case "TextureLinearVelocity":
+                return NodeRenderGraphBlockConnectionPointTypes.TextureLinearVelocity;
         }
 
         return NodeRenderGraphBlockConnectionPointTypes.AutoDetect;
@@ -187,18 +202,24 @@ export class BlockTools {
                 return "ObjectList";
             case NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth:
                 return "TextureDepth";
-            case NodeRenderGraphBlockConnectionPointTypes.TextureNormal:
+            case NodeRenderGraphBlockConnectionPointTypes.TextureViewNormal:
                 return "TextureNormal";
             case NodeRenderGraphBlockConnectionPointTypes.TextureAlbedo:
                 return "TextureAlbedo";
             case NodeRenderGraphBlockConnectionPointTypes.TextureReflectivity:
                 return "TextureReflectivity";
-            case NodeRenderGraphBlockConnectionPointTypes.TexturePosition:
+            case NodeRenderGraphBlockConnectionPointTypes.TextureWorldPosition:
                 return "TexturePosition";
             case NodeRenderGraphBlockConnectionPointTypes.TextureVelocity:
                 return "TextureVelocity";
             case NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth:
                 return "TextureScreenDepth";
+            case NodeRenderGraphBlockConnectionPointTypes.TextureLocalPosition:
+                return "TextureLocalPosition";
+            case NodeRenderGraphBlockConnectionPointTypes.TextureWorldNormal:
+                return "TextureWorldNormal";
+            case NodeRenderGraphBlockConnectionPointTypes.TextureLinearVelocity:
+                return "TextureLinearVelocity";
         }
 
         return "";

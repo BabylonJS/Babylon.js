@@ -100,6 +100,13 @@ export class MaterialHelperGeometryRendering {
             define: "PREPASS_VELOCITY_LINEAR",
             defineIndex: "PREPASS_VELOCITY_LINEAR_INDEX",
         },
+        {
+            type: Constants.PREPASS_ALBEDO_TEXTURE_TYPE,
+            name: "Albedo",
+            clearType: TextureClearType.Zero,
+            define: "PREPASS_ALBEDO",
+            defineIndex: "PREPASS_ALBEDO_INDEX",
+        },
     ];
 
     private static _Configurations: { [renderPassId: number]: GeometryRenderingConfiguration } = {};

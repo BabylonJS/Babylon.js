@@ -50,15 +50,21 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
 
     public readonly geometryScreenDepthTextureReference: FrameGraphTaskOutputReference = [this, "geometryScreenDepth"];
 
-    public readonly geometryNormalTextureReference: FrameGraphTaskOutputReference = [this, "geometryNormal"];
+    public readonly geometryViewNormalTextureReference: FrameGraphTaskOutputReference = [this, "geometryViewNormal"];
 
-    public readonly geometryPositionTextureReference: FrameGraphTaskOutputReference = [this, "geometryPosition"];
+    public readonly geometryWorldNormalTextureReference: FrameGraphTaskOutputReference = [this, "geometryWorldNormal"];
+
+    public readonly geometryLocalPositionTextureReference: FrameGraphTaskOutputReference = [this, "geometryLocalPosition"];
+
+    public readonly geometryWorldPositionTextureReference: FrameGraphTaskOutputReference = [this, "geometryWorldPosition"];
 
     public readonly geometryAlbedoTextureReference: FrameGraphTaskOutputReference = [this, "geometryAlbedo"];
 
     public readonly geometryReflectivityTextureReference: FrameGraphTaskOutputReference = [this, "geometryReflectivity"];
 
     public readonly geometryVelocityTextureReference: FrameGraphTaskOutputReference = [this, "geometryVelocity"];
+
+    public readonly geometryLinearVelocityTextureReference: FrameGraphTaskOutputReference = [this, "geometryLinearVelocity"];
 
     public disabled = false;
 
@@ -135,11 +141,14 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
 
         pass.setOutputTexture(outputTextureHandle, 0, this.geometryViewDepthTextureReference[1]);
         pass.setOutputTexture(outputTextureHandle, 0, this.geometryScreenDepthTextureReference[1]);
-        pass.setOutputTexture(outputTextureHandle, 0, this.geometryNormalTextureReference[1]);
-        pass.setOutputTexture(outputTextureHandle, 0, this.geometryPositionTextureReference[1]);
+        pass.setOutputTexture(outputTextureHandle, 0, this.geometryViewNormalTextureReference[1]);
+        pass.setOutputTexture(outputTextureHandle, 0, this.geometryWorldNormalTextureReference[1]);
+        pass.setOutputTexture(outputTextureHandle, 0, this.geometryLocalPositionTextureReference[1]);
+        pass.setOutputTexture(outputTextureHandle, 0, this.geometryWorldPositionTextureReference[1]);
         pass.setOutputTexture(outputTextureHandle, 0, this.geometryAlbedoTextureReference[1]);
         pass.setOutputTexture(outputTextureHandle, 0, this.geometryReflectivityTextureReference[1]);
         pass.setOutputTexture(outputTextureHandle, 0, this.geometryVelocityTextureReference[1]);
+        pass.setOutputTexture(outputTextureHandle, 0, this.geometryLinearVelocityTextureReference[1]);
 
         if (this.depthTexture !== undefined) {
             pass.setRenderTargetDepth(frameGraph.getTextureHandle(this.depthTexture));

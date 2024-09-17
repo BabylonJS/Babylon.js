@@ -22,6 +22,10 @@ float writeGeometryInfo = finalColor.a > ALPHATESTVALUE ? 1.0 : 0.0;
     gl_FragData[PREPASS_VELOCITY_LINEAR_INDEX] = vec4(velocity, 0.0, writeGeometryInfo);
 #endif
 
+#ifdef PREPASS_ALBEDO
+    gl_FragData[PREPASS_ALBEDO_INDEX] = vec4(surfaceAlbedo, writeGeometryInfo);
+#endif
+
 #ifdef PREPASS_ALBEDO_SQRT
     vec3 sqAlbedo = sqrt(surfaceAlbedo); // for pre and post scatter
 #endif
