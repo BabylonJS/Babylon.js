@@ -49,8 +49,9 @@
 
     <body ondragover="event.preventDefault()" ondrop="onDrop(event)">
         <babylon-viewer
-            src="https://raw.githubusercontent.com/BabylonJS/Assets/master/meshes/ufo.glb"
-            env="https://assets.babylonjs.com/environments/ulmerMuenster.env"
+            engine="WebGL"
+            source="https://raw.githubusercontent.com/BabylonJS/Assets/master/meshes/ufo.glb"
+            environment="https://assets.babylonjs.com/environments/ulmerMuenster.env"
             animation-speed="1.5"
         >
             <!-- <div slot="tool-bar" style="position: absolute; top: 12px; left: 12px; width: 100px; height: 36px">
@@ -81,11 +82,11 @@
                 // Alternatively, we could just await import("/packages/tools/viewer-alpha/src/index.ts") here instead.
                 await customElements.whenDefined("babylon-viewer");
                 await new Promise((resolve) => setTimeout(resolve, 2000));
-                //viewerElement.src = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/BrainStem/glTF-Binary/BrainStem.glb";
+                //viewerElement.source = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/BrainStem/glTF-Binary/BrainStem.glb";
                 // error case
-                //viewerElement.src = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/BrainStem/glTF-Binary/BrainStem2.glb';
+                //viewerElement.source = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/BrainStem/glTF-Binary/BrainStem2.glb";
                 await new Promise((resolve) => setTimeout(resolve, 2000));
-                //viewerElement.src = "https://playground.babylonjs.com/scenes/BoomBox.glb";
+                //viewerElement.source = "https://playground.babylonjs.com/scenes/BoomBox.glb";
             })();
 
             async function onDrop(event) {

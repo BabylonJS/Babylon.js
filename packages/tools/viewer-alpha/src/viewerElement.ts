@@ -218,7 +218,7 @@ export class HTML3DElement extends LitElement {
      * The model URL.
      */
     @property({ reflect: true })
-    public src: Nullable<string> = null;
+    public source: Nullable<string> = null;
 
     /**
      * Forces the model to be loaded with the specified extension.
@@ -232,7 +232,7 @@ export class HTML3DElement extends LitElement {
      * The environment URL.
      */
     @property({ reflect: true })
-    public env: Nullable<string> = null;
+    public environment: Nullable<string> = null;
 
     /**
      * The list of animation names for the currently loaded model.
@@ -314,11 +314,11 @@ export class HTML3DElement extends LitElement {
                 this._updateSelectedAnimation();
             }
 
-            if (changedProperties.has("src" satisfies keyof this)) {
+            if (changedProperties.has("source" satisfies keyof this)) {
                 this._updateModel();
             }
 
-            if (changedProperties.has("env" satisfies keyof this)) {
+            if (changedProperties.has("environment" satisfies keyof this)) {
                 this._updateEnv();
             }
         }
@@ -515,8 +515,8 @@ export class HTML3DElement extends LitElement {
 
     private async _updateModel() {
         try {
-            if (this.src) {
-                await this._viewer?.loadModelAsync(this.src, { pluginExtension: this.extension });
+            if (this.source) {
+                await this._viewer?.loadModelAsync(this.source, { pluginExtension: this.extension ?? undefined });
             } else {
                 await this._viewer?.resetModelAsync();
             }
@@ -527,8 +527,8 @@ export class HTML3DElement extends LitElement {
 
     private async _updateEnv() {
         try {
-            if (this.env) {
-                await this._viewer?.loadEnvironmentAsync(this.env);
+            if (this.environment) {
+                await this._viewer?.loadEnvironmentAsync(this.environment);
             } else {
                 await this._viewer?.resetEnvironmentAsync();
             }
