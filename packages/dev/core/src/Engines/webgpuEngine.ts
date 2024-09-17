@@ -339,7 +339,9 @@ export class WebGPUEngine extends AbstractEngine {
         depthTextureFormat: undefined,
     };
     /** @internal */
-    public _pendingDebugCommands: Array<[string, Nullable<string>]> = [];
+    public _pendingDebugCommands: Array<[string, Nullable<string>, number?]> = [];
+    /** @internal */
+    public _debugStackRenderPass: string[] = [];
     /**
      * Used for both the compatibilityMode=false and the snapshot rendering modes (as both can't be enabled at the same time)
      * @internal
@@ -3246,7 +3248,7 @@ export class WebGPUEngine extends AbstractEngine {
         this._debugPushGroup?.("render target pass" + (renderTargetWrapper.label ? " (" + renderTargetWrapper.label + ")" : ""), 1);
 
         this._rttRenderPassWrapper.renderPassDescriptor = {
-            label: (renderTargetWrapper.label ?? "RTT") + "RenderPass",
+            label: (renderTargetWrapper.label ?? "RTT") + " - RenderPass",
             colorAttachments,
             depthStencilAttachment:
                 depthStencilTexture && gpuDepthStencilTexture
@@ -3377,6 +3379,10 @@ export class WebGPUEngine extends AbstractEngine {
     public _endCurrentRenderPass(): number {
         if (!this._currentRenderPass) {
             return 0;
+        }
+
+        for (let i = 0; i < this._debugStackRenderPass.length; i++) {
+            this._currentRenderPass.popDebugGroup();
         }
 
         const currentPassIndex = this._currentPassIsMainPass() ? 2 : 1;
