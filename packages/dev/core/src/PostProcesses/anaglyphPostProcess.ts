@@ -1,10 +1,10 @@
 import type { Nullable } from "../types";
-import type { Engine } from "../Engines/engine";
 import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
 import type { Camera } from "../Cameras/camera";
 import type { Effect } from "../Materials/effect";
 import { RegisterClass } from "../Misc/typeStore";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
  * Postprocess used to generate anaglyphic rendering
@@ -29,7 +29,7 @@ export class AnaglyphPostProcess extends PostProcess {
      * @param engine defines hosting engine
      * @param reusable defines if the postprocess will be reused multiple times per frame
      */
-    constructor(name: string, options: number | PostProcessOptions, rigCameras: Camera[], samplingMode?: number, engine?: Engine, reusable?: boolean) {
+    constructor(name: string, options: number | PostProcessOptions, rigCameras: Camera[], samplingMode?: number, engine?: AbstractEngine, reusable?: boolean) {
         super(name, "anaglyph", null, ["leftSampler"], options, rigCameras[1], samplingMode, engine, reusable);
         this._passedProcess = rigCameras[0]._rigPostProcess;
 

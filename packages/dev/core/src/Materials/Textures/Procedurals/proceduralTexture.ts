@@ -15,8 +15,6 @@ import type { RenderTargetTextureOptions } from "../../../Materials/Textures/ren
 import { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture";
 import { ProceduralTextureSceneComponent } from "./proceduralTextureSceneComponent";
 
-import "../../../Engines/Extensions/engine.renderTarget";
-import "../../../Engines/Extensions/engine.renderTargetCube";
 import type { DataBuffer } from "../../../Buffers/dataBuffer";
 import { RegisterClass } from "../../../Misc/typeStore";
 import type { NodeMaterial } from "../../Node/nodeMaterial";

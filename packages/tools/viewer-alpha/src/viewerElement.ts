@@ -7,7 +7,7 @@ import { customElement, property, query, state } from "lit/decorators.js";
 
 import { AsyncLock } from "core/Misc/asyncLock";
 import { Logger } from "core/Misc/logger";
-import { createViewerForCanvas } from "./viewerFactory";
+import { createViewerForCanvas, getDefaultEngine } from "./viewerFactory";
 
 // Icon SVG is pulled from https://fluentuipr.z22.web.core.windows.net/heads/master/public-docsite-v9/storybook/iframe.html?id=icons-catalog--page&viewMode=story
 const playFilledIcon = "M17.22 8.68a1.5 1.5 0 0 1 0 2.63l-10 5.5A1.5 1.5 0 0 1 5 15.5v-11A1.5 1.5 0 0 1 7.22 3.2l10 5.5Z";
@@ -209,7 +209,7 @@ export class HTML3DElement extends LitElement {
      * The engine to use for rendering.
      */
     @property({ reflect: true })
-    public engine: CanvasViewerOptions["engine"];
+    public engine: NonNullable<CanvasViewerOptions["engine"]> = getDefaultEngine();
 
     /**
      * The model URL.
@@ -273,8 +273,8 @@ export class HTML3DElement extends LitElement {
     @state()
     private _isAnimationPlaying = false;
 
-    @query("#renderCanvas")
-    private _canvas: HTMLCanvasElement;
+    @query("#canvasContainer")
+    private _canvasContainer: HTMLDivElement | undefined;
 
     /**
      * Toggles the play/pause animation state if there is a selected animation.
@@ -290,12 +290,6 @@ export class HTML3DElement extends LitElement {
     }
 
     // eslint-disable-next-line babylonjs/available
-    override firstUpdated(_changedProperties: PropertyValues): void {
-        super.firstUpdated(_changedProperties);
-        this._setupViewer();
-    }
-
-    // eslint-disable-next-line babylonjs/available
     override disconnectedCallback(): void {
         super.disconnectedCallback();
         this._tearDownViewer();
@@ -305,7 +299,7 @@ export class HTML3DElement extends LitElement {
     override update(changedProperties: PropertyValues): void {
         super.update(changedProperties);
 
-        if (changedProperties.has("engine" satisfies keyof this)) {
+        if (changedProperties.get("engine" satisfies keyof this)) {
             this._tearDownViewer();
             this._setupViewer();
         } else {
@@ -331,7 +325,7 @@ export class HTML3DElement extends LitElement {
     override render() {
         return html`
             <div class="full-size">
-                <canvas id="renderCanvas" class="full-size" touch-action="none"></canvas>
+                <div id="canvasContainer" class="full-size"></div>
                 ${this.animations.length === 0
                     ? ""
                     : html`
@@ -421,64 +415,73 @@ export class HTML3DElement extends LitElement {
     }
 
     private async _setupViewer() {
-        if (this._canvas) {
-            await this._viewerLock.lockAsync(async () => {
-                if (!this._viewer) {
-                    await createViewerForCanvas(this._canvas, {
-                        engine: this.engine,
-                        onInitialized: (details) => {
-                            this._viewer = details.viewer;
+        await this._viewerLock.lockAsync(async () => {
+            // The first time the element is connected, the canvas container may not be available yet.
+            // Wait for the first update if needed.
+            if (!this._canvasContainer) {
+                await this.updateComplete;
+            }
 
-                            details.viewer.onEnvironmentChanged.add(() => {
-                                this._dispatchCustomEvent("environmentchange");
-                            });
+            if (this._canvasContainer && !this._viewer) {
+                const canvas = document.createElement("canvas");
+                canvas.className = "full-size";
+                canvas.setAttribute("touch-action", "none");
+                this._canvasContainer.appendChild(canvas);
 
-                            details.viewer.onEnvironmentError.add(() => {
-                                this._dispatchCustomEvent("environmenterror");
-                            });
+                await createViewerForCanvas(canvas, {
+                    engine: this.engine,
+                    onInitialized: (details) => {
+                        this._viewer = details.viewer;
 
-                            details.viewer.onModelChanged.add(() => {
-                                this._animations = [...(this._viewer?.animations ?? [])];
-                                this._dispatchCustomEvent("modelchange");
-                            });
+                        details.viewer.onEnvironmentChanged.add(() => {
+                            this._dispatchCustomEvent("environmentchange");
+                        });
 
-                            details.viewer.onModelError.add(() => {
-                                this._dispatchCustomEvent("modelerror");
-                            });
+                        details.viewer.onEnvironmentError.add(() => {
+                            this._dispatchCustomEvent("environmenterror");
+                        });
 
-                            details.viewer.onSelectedAnimationChanged.add(() => {
-                                this._selectedAnimation = this._viewer?.selectedAnimation ?? -1;
-                                this._dispatchCustomEvent("selectedanimationchange");
-                            });
+                        details.viewer.onModelChanged.add(() => {
+                            this._animations = [...(this._viewer?.animations ?? [])];
+                            this._dispatchCustomEvent("modelchange");
+                        });
 
-                            details.viewer.onAnimationSpeedChanged.add(() => {
-                                let speed = this._viewer?.animationSpeed ?? 1;
-                                speed = allowedAnimationSpeeds.reduce((prev, curr) => (Math.abs(curr - speed) < Math.abs(prev - speed) ? curr : prev));
-                                this.animationSpeed = speed;
-                                this._dispatchCustomEvent("animationspeedchange");
-                            });
+                        details.viewer.onModelError.add(() => {
+                            this._dispatchCustomEvent("modelerror");
+                        });
 
-                            details.viewer.onIsAnimationPlayingChanged.add(() => {
-                                this._isAnimationPlaying = this._viewer?.isAnimationPlaying ?? false;
-                                this._dispatchCustomEvent("animationplayingchange");
-                            });
+                        details.viewer.onSelectedAnimationChanged.add(() => {
+                            this._selectedAnimation = this._viewer?.selectedAnimation ?? -1;
+                            this._dispatchCustomEvent("selectedanimationchange");
+                        });
 
-                            details.viewer.onAnimationProgressChanged.add(() => {
-                                this.animationProgress = this._viewer?.animationProgress ?? 0;
-                                this._dispatchCustomEvent("animationprogresschange");
-                            });
+                        details.viewer.onAnimationSpeedChanged.add(() => {
+                            let speed = this._viewer?.animationSpeed ?? 1;
+                            speed = allowedAnimationSpeeds.reduce((prev, curr) => (Math.abs(curr - speed) < Math.abs(prev - speed) ? curr : prev));
+                            this.animationSpeed = speed;
+                            this._dispatchCustomEvent("animationspeedchange");
+                        });
 
-                            this._updateSelectedAnimation();
-                            this._updateAnimationSpeed();
-                            this._updateModel();
-                            this._updateEnv();
+                        details.viewer.onIsAnimationPlayingChanged.add(() => {
+                            this._isAnimationPlaying = this._viewer?.isAnimationPlaying ?? false;
+                            this._dispatchCustomEvent("animationplayingchange");
+                        });
 
-                            this._dispatchCustomEvent("viewerready", details);
-                        },
-                    });
-                }
-            });
-        }
+                        details.viewer.onAnimationProgressChanged.add(() => {
+                            this.animationProgress = this._viewer?.animationProgress ?? 0;
+                            this._dispatchCustomEvent("animationprogresschange");
+                        });
+
+                        this._updateSelectedAnimation();
+                        this._updateAnimationSpeed();
+                        this._updateModel();
+                        this._updateEnv();
+
+                        this._dispatchCustomEvent("viewerready", details);
+                    },
+                });
+            }
+        });
     }
 
     private async _tearDownViewer() {
@@ -486,6 +489,13 @@ export class HTML3DElement extends LitElement {
             if (this._viewer) {
                 this._viewer.dispose();
                 this._viewer = undefined;
+            }
+
+            // We want to replace the canvas for two reasons:
+            // 1. When the viewer element is reconnected to the DOM, we don't want to briefly see the last frame of the previous model.
+            // 2. If we are changing engines (e.g. WebGL to WebGPU), we need to create a new canvas for the new engine.
+            if (this._canvasContainer && this._canvasContainer.firstElementChild) {
+                this._canvasContainer.removeChild(this._canvasContainer.firstElementChild);
             }
         });
     }

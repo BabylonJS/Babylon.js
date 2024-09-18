@@ -5,7 +5,6 @@ import type { IInternalTextureLoader } from "./internalTextureLoader";
 import type { DDSInfo } from "../../../Misc/dds";
 import { DDSTools } from "../../../Misc/dds";
 
-import "../../../Engines/Extensions/engine.cubeTexture";
 import type { Engine } from "core/Engines/engine";
 
 /**

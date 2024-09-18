@@ -1,8 +1,8 @@
 import { AbstractEngine } from "core/Engines/abstractEngine";
 import { Constants } from "../../constants";
-import { WebGPUEngine } from "../../webgpuEngine";
 
 import "../../AbstractEngine/abstractEngine.alpha";
+import { ThinWebGPUEngine } from "core/Engines/thinWebGPUEngine";
 
 declare module "../../abstractEngine" {
     export interface AbstractEngine {
@@ -16,7 +16,7 @@ declare module "../../abstractEngine" {
     }
 }
 
-WebGPUEngine.prototype.setAlphaMode = function (mode: number, noDepthWriteChange: boolean = false): void {
+ThinWebGPUEngine.prototype.setAlphaMode = function (mode: number, noDepthWriteChange: boolean = false): void {
     if (this._alphaMode === mode && ((mode === Constants.ALPHA_DISABLE && !this._alphaState.alphaBlend) || (mode !== Constants.ALPHA_DISABLE && this._alphaState.alphaBlend))) {
         if (!noDepthWriteChange) {
             // Make sure we still have the correct depth mask according to the alpha mode (a transparent material could have forced writting to the depth buffer, for instance)
@@ -127,7 +127,7 @@ WebGPUEngine.prototype.setAlphaMode = function (mode: number, noDepthWriteChange
     this._cacheRenderPipeline.setAlphaBlendFactors(this._alphaState._blendFunctionParameters, this._alphaState._blendEquationParameters);
 };
 
-WebGPUEngine.prototype.setAlphaEquation = function (equation: number): void {
+ThinWebGPUEngine.prototype.setAlphaEquation = function (equation: number): void {
     AbstractEngine.prototype.setAlphaEquation.call(this, equation);
 
     this._cacheRenderPipeline.setAlphaBlendFactors(this._alphaState._blendFunctionParameters, this._alphaState._blendEquationParameters);

@@ -9,8 +9,6 @@ import { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { DDSInfo } from "core/Misc/dds";
 import { DDSTools } from "core/Misc/dds";
 
-import "../../Engines/Extensions/engine.cubeTexture";
-
 declare module "../../Engines/abstractEngine" {
     export interface AbstractEngine {
         /**
