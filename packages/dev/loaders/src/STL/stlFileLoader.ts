@@ -9,6 +9,7 @@ import { registerSceneLoaderPlugin } from "core/Loading/sceneLoader";
 import { AssetContainer } from "core/assetContainer";
 import type { Scene } from "core/scene";
 import { STLFileLoaderMetadata } from "./stlFileLoader.metadata";
+import "core/Materials/standardMaterial";
 
 declare module "core/Loading/sceneLoader" {
     // eslint-disable-next-line jsdoc/require-jsdoc

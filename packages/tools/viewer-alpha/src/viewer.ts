@@ -20,7 +20,7 @@ import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { Color4 } from "core/Maths/math.color";
-import { Scalar } from "core/Maths/math.scalar";
+import { Clamp } from "core/Maths/math.scalar.functions";
 import { Vector3 } from "core/Maths/math.vector";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { AsyncLock } from "core/Misc/asyncLock";
@@ -150,6 +150,7 @@ export class Viewer implements IDisposable {
     private readonly _autoRotationBehavior: AutoRotationBehavior;
     private readonly _renderLoopController: IDisposable;
     private _skybox: Nullable<Mesh> = null;
+    private _light: Nullable<HemisphericLight> = null;
 
     private _isDisposed = false;
 
@@ -220,7 +221,7 @@ export class Viewer implements IDisposable {
     }
 
     public set selectedAnimation(value: number) {
-        value = Math.round(Scalar.Clamp(value, -1, this.animations.length - 1));
+        value = Math.round(Clamp(value, -1, this.animations.length - 1));
         if (value !== this._selectedAnimation) {
             const startAnimation = this.isAnimationPlaying;
             if (this._activeAnimation) {
@@ -312,7 +313,7 @@ export class Viewer implements IDisposable {
     }
 
     /**
-     * Resets the model to an empty scene.
+     * Unloads the current 3D model if one is loaded.
      * @param abortSignal An optional signal that can be used to abort the reset.
      */
     public async resetModel(abortSignal?: AbortSignal): Promise<void> {
@@ -328,10 +329,10 @@ export class Viewer implements IDisposable {
         await this._loadModelLock.lockAsync(async () => {
             this._throwIfDisposedOrAborted(abortSignal, abortController.signal);
             this._details.model?.dispose();
+            this._details.model = null;
             this.selectedAnimation = -1;
 
             try {
-                this._details.model = null;
                 if (source) {
                     this._details.model = await loadAssetContainerAsync(source, this._details.scene, options);
                     this._details.model.animationGroups.forEach((group) => group.stop());
@@ -340,6 +341,7 @@ export class Viewer implements IDisposable {
                 }
 
                 this._updateCamera();
+                this._updateLight();
                 this._applyAnimationSpeed();
                 this.onModelChanged.notifyObservers();
             } catch (e) {
@@ -362,7 +364,7 @@ export class Viewer implements IDisposable {
     }
 
     /**
-     * Resets the environment to a simple hemispheric light.
+     * Unloads the current environment if one is loaded.
      * @param abortSignal An optional signal that can be used to abort the reset.
      */
     public async resetEnvironment(abortSignal?: AbortSignal): Promise<void> {
@@ -378,14 +380,12 @@ export class Viewer implements IDisposable {
         await this._loadEnvironmentLock.lockAsync(async () => {
             this._throwIfDisposedOrAborted(abortSignal, abortController.signal);
             this._environment?.dispose();
+            this._environment = null;
+            this._details.scene.autoClear = true;
 
             try {
-                this._environment = await new Promise<IDisposable>((resolve, reject) => {
-                    if (!url) {
-                        const light = new HemisphericLight("hemilight", Vector3.Up(), this._details.scene);
-                        this._details.scene.autoClear = true;
-                        resolve(light);
-                    } else {
+                if (url) {
+                    this._environment = await new Promise<IDisposable>((resolve, reject) => {
                         const cubeTexture = CubeTexture.CreateFromPrefilteredData(url, this._details.scene);
                         this._details.scene.environmentTexture = cubeTexture;
 
@@ -416,10 +416,11 @@ export class Viewer implements IDisposable {
                                 reject(new Error("Failed to load environment texture."));
                             }
                         });
-                    }
+                    });
+                }
 
-                    this.onEnvironmentChanged.notifyObservers();
-                });
+                this._updateLight();
+                this.onEnvironmentChanged.notifyObservers();
             } catch (e) {
                 this.onEnvironmentError.notifyObservers(e);
                 throw e;
@@ -474,7 +475,6 @@ export class Viewer implements IDisposable {
         this._isDisposed = true;
     }
 
-    // copy/paste from sandbox and scene helpers
     private _updateCamera(): void {
         // Enable camera's behaviors
         this._camera.useFramingBehavior = true;
@@ -520,6 +520,33 @@ export class Viewer implements IDisposable {
         this._camera.restoreStateInterpolationFactor = 0.1;
 
         updateSkybox(this._skybox, this._camera);
+    }
+
+    private _updateLight() {
+        let shouldHaveDefaultLight: boolean;
+        if (!this._details.model) {
+            shouldHaveDefaultLight = false;
+        } else {
+            const hasModelProvidedLights = this._details.model.lights.length > 0;
+            const hasImageBasedLighting = !!this._environment;
+            const hasMaterials = this._details.model.materials.length > 0;
+            const hasNonPBRMaterials = this._details.model.materials.some((material) => !(material instanceof PBRMaterial));
+
+            if (hasModelProvidedLights) {
+                shouldHaveDefaultLight = false;
+            } else {
+                shouldHaveDefaultLight = !hasImageBasedLighting || !hasMaterials || hasNonPBRMaterials;
+            }
+        }
+
+        if (shouldHaveDefaultLight) {
+            if (!this._light) {
+                this._light = new HemisphericLight("defaultLight", Vector3.Up(), this._details.scene);
+            }
+        } else {
+            this._light?.dispose();
+            this._light = null;
+        }
     }
 
     private _applyAnimationSpeed() {
