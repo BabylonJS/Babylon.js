@@ -1,5 +1,24 @@
 # Babylon.js
 
+## Instructions for urusgraphics developers
+
+We modified packages `@babylonjs/core` to `@urusgraphics/babylonjs-core` and `@babylonjs/loaders` to `@urusgraphics/babylonjs-loaders`,
+so we can publish them to the GitHub npm registry.
+
+To build the packages:
+
+```bash
+npm install
+npm run build:es6
+```
+
+To publish, go to the packages folder and run `npm publish`. Right now we publish two packages, which are in:
+
+- `packages/public/@babylonjs/core`
+- `packages/public/@babylonjs/loaders`
+
+We'll try to keep the set of patches as small as possible, so we can apply them to the latest version of Babylon.js.
+
 Getting started? Play directly with the Babylon.js API using our [playground](https://playground.babylonjs.com/). It also contains a lot of samples to learn how to use it.
 
 [![npm version](https://badge.fury.io/js/babylonjs.svg)](https://badge.fury.io/js/babylonjs)
