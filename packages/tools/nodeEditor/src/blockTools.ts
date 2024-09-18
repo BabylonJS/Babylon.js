@@ -101,7 +101,7 @@ import { CurveBlock } from "core/Materials/Node/Blocks/curveBlock";
 import { PrePassTextureBlock } from "core/Materials/Node/Blocks/Input/prePassTextureBlock";
 import { NodeMaterialTeleportInBlock } from "core/Materials/Node/Blocks/Teleport/teleportInBlock";
 import { NodeMaterialTeleportOutBlock } from "core/Materials/Node/Blocks/Teleport/teleportOutBlock";
-import { ColorConverterBlock } from "core/Materials/Node/Blocks/ColorConverterBlock";
+import { ColorConverterBlock } from "core/Materials/Node/Blocks/colorConverterBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
