@@ -1,0 +1,71 @@
+name: Publish
+# This workflow is migrated from Babylon.js's "Publish Pipeline" that runs on Azure Pipelines.
+on:
+  workflow_run:
+    workflows:
+      - "Update build config"
+    types:
+      - completed
+
+jobs: 
+  publish:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: ./package-lock.json
+
+      - name: prepare git
+        run: |
+          git fetch --tags
+          git checkout master
+          git config user.name urus-cibot
+          git config user.email urus-cibot@users.noreply.github.com
+
+      - name: npm install
+        run: npm ci
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: true
+
+      - name: run updater
+        run: node scripts/updateVersion.js master
+        env:
+          GITHUBPAT: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: fix formatting
+        run: npm run format:fix
+
+      - name: unit tests
+        run: npm run test:unit
+
+      - name: npm build es6
+        run: npm run build:es6
+
+      - name: write npmrc
+        run: |
+          echo "@urusgraphics:registry=https://npm.pkg.github.com" >> ~/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }} " >> ~/.npmrc
+
+      - name: publish core
+        run: npm publish
+        working-directory: packages/public/@babylonjs/core
+
+      - name: publish loaders
+        run: npm publish
+        working-directory: packages/public/@babylonjs/loaders
+
+      - name: fetch origin
+        run: git fetch origin
+
+      - name: pull master
+        run: git merge origin/master
+
+      - name: push to git
+        run: git push origin master --tags

@@ -1,0 +1,35 @@
+name: Update build config
+on:
+  workflow_dispatch:
+    inputs:
+      type:
+        description: The update type, can be "major", "minor" or "patch"
+        required: false
+        default: "patch"
+
+run-name: Update build config with type ${{ inputs.type }} by ${{ github.actor }}
+
+jobs:
+  update_build_config:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: ./package-lock.json
+
+      - name: Update build config
+        run: |
+          npm ci
+          node scripts/updateBuildConfig.js ${{ inputs.type }}
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: true
+
+      - uses: EndBug/add-and-commit@v9
+        with:
+          message: "${{ inputs.type }} trigger"

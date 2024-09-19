@@ -5,19 +5,17 @@
 We modified packages `@babylonjs/core` to `@urusgraphics/babylonjs-core` and `@babylonjs/loaders` to `@urusgraphics/babylonjs-loaders`,
 so we can publish them to the GitHub npm registry.
 
-To build the packages:
+To publish the packages, go to "Actions", select "Update build config", and run the workflow manually.
 
-```bash
-npm install
-npm run build:es6
-```
+This workflow updates `.build/config.json` and pushes to `master`.
 
-To publish, go to the packages folder and run `npm publish`. Right now we publish two packages, which are in:
+Another workflow "Publish" automatically runs after "Update build config" finishes. It updates the version number based on `.build/config.json`, builds packages and publishes them.
 
-- `packages/public/@babylonjs/core`
-- `packages/public/@babylonjs/loaders`
+### About version number
 
-We'll try to keep the set of patches as small as possible, so we can apply them to the latest version of Babylon.js.
+We usually set "type" to "patch" when running the "Update build config" workflow, to avoid duplicated version number with the original babylonjs packages.
+
+However, it's always possible that upstream decides to use the version number we set. In that case we'll just live with the duplication.
 
 Getting started? Play directly with the Babylon.js API using our [playground](https://playground.babylonjs.com/). It also contains a lot of samples to learn how to use it.
 
