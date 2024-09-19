@@ -192,6 +192,10 @@ export class GraphNode {
         }
     }
 
+    public get rootElement() {
+        return this._visual;
+    }
+
     public constructor(
         public content: INodeData,
         stateManager: StateManager
