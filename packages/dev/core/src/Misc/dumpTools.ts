@@ -1,13 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { _WarnImport } from "./devTools";
 
-import { ThinEngine } from "../Engines/thinEngine";
+import type { ThinEngine } from "../Engines/thinEngine";
 import { Constants } from "../Engines/constants";
 import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
 import { Tools } from "./tools";
 import type { Nullable } from "../types";
-
-import { passPixelShader } from "../Shaders/pass.fragment";
 import { Clamp } from "../Maths/math.scalar.functions";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import { EngineStore } from "../Engines/engineStore";
@@ -21,7 +19,7 @@ type DumpToolsEngine = {
 
 let _dumpToolsEngine: Nullable<DumpToolsEngine>;
 
-function _CreateDumpRenderer(): DumpToolsEngine {
+async function _CreateDumpRenderer(): Promise<DumpToolsEngine> {
     if (!_dumpToolsEngine) {
         let canvas: HTMLCanvasElement | OffscreenCanvas;
         let engine: Nullable<ThinEngine> = null;
@@ -34,13 +32,14 @@ function _CreateDumpRenderer(): DumpToolsEngine {
             antialias: false,
             failIfMajorPerformanceCaveat: false,
         };
+        const thinEngineClass = (await import("../Engines/thinEngine")).ThinEngine;
         try {
             canvas = new OffscreenCanvas(100, 100); // will be resized later
-            engine = new ThinEngine(canvas, false, options);
+            engine = new thinEngineClass(canvas, false, options);
         } catch (e) {
             // The browser either does not support OffscreenCanvas or WebGL context in OffscreenCanvas, fallback on a regular canvas
             canvas = document.createElement("canvas");
-            engine = new ThinEngine(canvas, false, options);
+            engine = new thinEngineClass(canvas, false, options);
         }
         // remove this engine from the list of instances to avoid using it for other purposes
         EngineStore.Instances.pop();
@@ -55,6 +54,7 @@ function _CreateDumpRenderer(): DumpToolsEngine {
         });
         engine.getCaps().parallelShaderCompile = undefined;
         const renderer = new EffectRenderer(engine);
+        const passPixelShader = (await import("../Shaders/pass.fragment")).passPixelShader;
         const wrapper = new EffectWrapper({
             engine,
             name: passPixelShader.name,
@@ -148,50 +148,51 @@ export function DumpData(
     invertY = false,
     toArrayBuffer = false,
     quality?: number
-) {
-    const renderer = _CreateDumpRenderer();
-    renderer.engine.setSize(width, height, true);
+): void {
+    _CreateDumpRenderer().then((renderer) => {
+        renderer.engine.setSize(width, height, true);
 
-    // Convert if data are float32
-    if (data instanceof Float32Array) {
-        const data2 = new Uint8Array(data.length);
-        let n = data.length;
-        while (n--) {
-            const v = data[n];
-            data2[n] = Math.round(Clamp(v) * 255);
+        // Convert if data are float32
+        if (data instanceof Float32Array) {
+            const data2 = new Uint8Array(data.length);
+            let n = data.length;
+            while (n--) {
+                const v = data[n];
+                data2[n] = Math.round(Clamp(v) * 255);
+            }
+            data = data2;
         }
-        data = data2;
-    }
 
-    // Create the image
-    const texture = renderer.engine.createRawTexture(data, width, height, Constants.TEXTUREFORMAT_RGBA, false, !invertY, Constants.TEXTURE_NEAREST_NEAREST);
+        // Create the image
+        const texture = renderer.engine.createRawTexture(data, width, height, Constants.TEXTUREFORMAT_RGBA, false, !invertY, Constants.TEXTURE_NEAREST_NEAREST);
 
-    renderer.renderer.setViewport();
-    renderer.renderer.applyEffectWrapper(renderer.wrapper);
-    renderer.wrapper.effect._bindTexture("textureSampler", texture);
-    renderer.renderer.draw();
+        renderer.renderer.setViewport();
+        renderer.renderer.applyEffectWrapper(renderer.wrapper);
+        renderer.wrapper.effect._bindTexture("textureSampler", texture);
+        renderer.renderer.draw();
 
-    if (toArrayBuffer) {
-        Tools.ToBlob(
-            renderer.canvas,
-            (blob) => {
-                const fileReader = new FileReader();
-                fileReader.onload = (event: any) => {
-                    const arrayBuffer = event.target!.result as ArrayBuffer;
-                    if (successCallback) {
-                        successCallback(arrayBuffer);
-                    }
-                };
-                fileReader.readAsArrayBuffer(blob!);
-            },
-            mimeType,
-            quality
-        );
-    } else {
-        Tools.EncodeScreenshotCanvasData(renderer.canvas, successCallback, mimeType, fileName, quality);
-    }
+        if (toArrayBuffer) {
+            Tools.ToBlob(
+                renderer.canvas,
+                (blob) => {
+                    const fileReader = new FileReader();
+                    fileReader.onload = (event: any) => {
+                        const arrayBuffer = event.target!.result as ArrayBuffer;
+                        if (successCallback) {
+                            successCallback(arrayBuffer);
+                        }
+                    };
+                    fileReader.readAsArrayBuffer(blob!);
+                },
+                mimeType,
+                quality
+            );
+        } else {
+            Tools.EncodeScreenshotCanvasData(renderer.canvas, successCallback, mimeType, fileName, quality);
+        }
 
-    texture.dispose();
+        texture.dispose();
+    });
 }
 
 /**
