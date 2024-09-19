@@ -764,6 +764,13 @@ export class GraphFrame {
                 link.path.style.opacity = "";
                 link.selectionPath.style.pointerEvents = "";
             }
+            for (const frame of this._ownerCanvas.frames) {
+                if (frame !== this) {
+                    frame.element.style.transition = "";
+                    frame.element.style.opacity = "";
+                    frame.element.style.pointerEvents = "";
+                }
+            }
             return;
         }
         this._isFocused = true;
@@ -776,10 +783,23 @@ export class GraphFrame {
             }
         }
         for (const link of this._ownerCanvas.links) {
+            if (this._nodes.indexOf(link.nodeA) === -1 || this._nodes.indexOf(link.nodeB!) === -1) {
+                link.path.style.transition = "opacity 0.5s";
+                link.path.style.opacity = "0.3";
+                link.selectionPath.style.pointerEvents = "none";
+            }
             if (this._nodes.indexOf(link.nodeA) === -1 && this._nodes.indexOf(link.nodeB!) === -1) {
                 link.path.style.transition = "opacity 0.5s";
                 link.path.style.opacity = "0.05";
                 link.selectionPath.style.pointerEvents = "none";
+            }
+        }
+
+        for (const frame of this._ownerCanvas.frames) {
+            if (frame !== this) {
+                frame.element.style.transition = "opacity 0.5s";
+                frame.element.style.opacity = "0.05";
+                frame.element.style.pointerEvents = "none";
             }
         }
     }
