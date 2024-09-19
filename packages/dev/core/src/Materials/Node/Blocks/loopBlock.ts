@@ -98,7 +98,7 @@ export class LoopBlock extends NodeMaterialBlock {
 
         const decl = state.shaderLanguage === ShaderLanguage.WGSL ? "var" : "int";
         const castFloat = state.shaderLanguage === ShaderLanguage.WGSL ? "f32" : "float";
-        const castInt = state.shaderLanguage === ShaderLanguage.WGSL ? "u32" : "int";
+        const castInt = state.shaderLanguage === ShaderLanguage.WGSL ? "i32" : "int";
 
         // Declare storage variable and store initial value
         state.compilationString += state._declareOutput(output) + ` = ${this.input.associatedVariableName};\n`;
