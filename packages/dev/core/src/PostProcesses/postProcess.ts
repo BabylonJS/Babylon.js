@@ -7,7 +7,6 @@ import type { Camera } from "../Cameras/camera";
 import { Effect } from "../Materials/effect";
 import { Constants } from "../Engines/constants";
 import type { RenderTargetCreationOptions } from "../Materials/Textures/textureCreationOptions";
-import "../Shaders/postprocess.vertex";
 import type { IInspectable } from "../Misc/iInspectable";
 import type { Color4 } from "../Maths/math.color";
 
