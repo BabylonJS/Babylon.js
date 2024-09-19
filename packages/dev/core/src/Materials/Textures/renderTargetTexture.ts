@@ -23,7 +23,7 @@ import type { Material } from "../material";
 import { FloorPOT, NearestPOT } from "../../Misc/tools.functions";
 import { Effect } from "../effect";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
-import { Logger } from "../..//Misc/logger";
+import { Logger } from "../../Misc/logger";
 
 declare module "../effect" {
     export interface Effect {
