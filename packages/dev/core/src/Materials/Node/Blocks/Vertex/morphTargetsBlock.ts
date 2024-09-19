@@ -36,10 +36,12 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
             NodeMaterialBlockConnectionPointTypes.Color4 | NodeMaterialBlockConnectionPointTypes.Vector4 | NodeMaterialBlockConnectionPointTypes.Vector3
         );
         this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2);
+        this.registerInput("uv2", NodeMaterialBlockConnectionPointTypes.Vector2);
         this.registerOutput("positionOutput", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerOutput("normalOutput", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerOutput("tangentOutput", NodeMaterialBlockConnectionPointTypes.Vector4);
         this.registerOutput("uvOutput", NodeMaterialBlockConnectionPointTypes.Vector2);
+        this.registerOutput("uv2Output", NodeMaterialBlockConnectionPointTypes.Vector2);
     }
 
     /**
@@ -72,10 +74,17 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the tangent input component
+     * Gets the uv input component
      */
     public get uv(): NodeMaterialConnectionPoint {
         return this._inputs[3];
+    }
+
+    /**
+     * Gets the uv2 input component
+     */
+    public get uv2(): NodeMaterialConnectionPoint {
+        return this._inputs[4];
     }
 
     /**
@@ -100,10 +109,17 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the tangent output component
+     * Gets the uv output component
      */
     public get uvOutput(): NodeMaterialConnectionPoint {
         return this._outputs[3];
+    }
+
+    /**
+     * Gets the uv2 output component
+     */
+    public get uv2Output(): NodeMaterialConnectionPoint {
+        return this._outputs[4];
     }
 
     public override initialize(state: NodeMaterialBuildState) {
@@ -147,6 +163,15 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
             }
             uvInput.output.connectTo(this.uv);
         }
+        if (!this.uv2.isConnected) {
+            let uv2Input = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "uv2" && additionalFilteringInfo(b));
+
+            if (!uv2Input) {
+                uv2Input = new InputBlock("uv2");
+                uv2Input.setAsAttribute("uv2");
+            }
+            uv2Input.output.connectTo(this.uv2);
+        }
     }
 
     public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
@@ -185,10 +210,12 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         const normal = this.normal;
         const tangent = this.tangent;
         const uv = this.uv;
+        const uv2 = this.uv2;
         const positionOutput = this.positionOutput;
         const normalOutput = this.normalOutput;
         const tangentOutput = this.tangentOutput;
         const uvOutput = this.uvOutput;
+        const uv2Output = this.uv2Output;
         const state = vertexShaderState;
         const repeatCount = defines.NUM_MORPH_INFLUENCERS as number;
 
@@ -196,6 +223,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         const hasNormals = manager && manager.supportsNormals && defines["NORMAL"];
         const hasTangents = manager && manager.supportsTangents && defines["TANGENT"];
         const hasUVs = manager && manager.supportsUVs && defines["UV1"];
+        const hasUV2s = manager && manager.supportsUV2s && defines["UV2"];
 
         let injectionCode = "";
 
@@ -237,6 +265,13 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
                 } else {
                     injectionCode += `${tangentOutput.associatedVariableName}.w = 1.;\n`;
                 }
+                injectionCode += `vertexID += 1.0;\n`;
+                injectionCode += `#endif\n`;
+            }
+
+            if (hasUV2s) {
+                injectionCode += `#ifdef MORPHTARGETS_UV2\n`;
+                injectionCode += `${uv2Output.associatedVariableName} += (readVector3FromRawSampler(i, vertexID).xy - ${uv2.associatedVariableName}) * morphTargetInfluences[i];\n`;
                 injectionCode += `#endif\n`;
             }
 
@@ -268,6 +303,12 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
                     }
                     injectionCode += `#endif\n`;
                 }
+
+                if (hasUV2s) {
+                    injectionCode += `#ifdef MORPHTARGETS_UV2\n`;
+                    injectionCode += `${uv2Output.associatedVariableName}.xy += (uv2_${index} - ${uv2.associatedVariableName}.xy) * morphTargetInfluences[${index}];\n`;
+                    injectionCode += `#endif\n`;
+                }
             }
         }
         injectionCode += `#endif\n`;
@@ -288,6 +329,10 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
 
                 if (hasUVs) {
                     state.attributes.push(VertexBuffer.UVKind + "_" + index);
+                }
+
+                if (hasUV2s) {
+                    state.attributes.push(VertexBuffer.UV2Kind + "_" + index);
                 }
             }
         }
@@ -310,10 +355,12 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         const normal = this.normal;
         const tangent = this.tangent;
         const uv = this.uv;
+        const uv2 = this.uv2;
         const positionOutput = this.positionOutput;
         const normalOutput = this.normalOutput;
         const tangentOutput = this.tangentOutput;
         const uvOutput = this.uvOutput;
+        const uv2Output = this.uv2Output;
         const comments = `//${this.name}`;
 
         state.uniforms.push("morphTargetInfluences");
@@ -342,6 +389,11 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         state.compilationString += `${state._declareOutput(uvOutput)} = ${uv.associatedVariableName};\n`;
         state.compilationString += `#else\n`;
         state.compilationString += `${state._declareOutput(uvOutput)} = vec2(0., 0.);\n`;
+        state.compilationString += `#endif\n`;
+        state.compilationString += `#ifdef UV2\n`;
+        state.compilationString += `${state._declareOutput(uv2Output)} = ${uv2.associatedVariableName};\n`;
+        state.compilationString += `#else\n`;
+        state.compilationString += `${state._declareOutput(uv2Output)} = vec2(0., 0.);\n`;
         state.compilationString += `#endif\n`;
 
         // Repeatable content
