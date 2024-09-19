@@ -18,7 +18,6 @@ import { Constants } from "../../Engines/constants";
 import type { IRenderTargetTexture, RenderTargetWrapper } from "../../Engines/renderTargetWrapper";
 
 import { _ObserveArray } from "../../Misc/arrayTools";
-import { DumpFramebuffer } from "../../Misc/dumpTools";
 
 import type { Material } from "../material";
 import { FloorPOT, NearestPOT } from "../../Misc/tools.functions";
@@ -1300,7 +1299,9 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
             // Dump ?
             if (dumpForDebug) {
-                DumpFramebuffer(this.getRenderWidth(), this.getRenderHeight(), engine);
+                import("../../Misc/dumpTools").then((dumpTools) => {
+                    dumpTools.DumpFramebuffer(this.getRenderWidth(), this.getRenderHeight(), engine);
+                });
             }
         } else {
             // Clear
