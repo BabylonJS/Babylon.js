@@ -23,6 +23,7 @@ import type { Material } from "../material";
 import { FloorPOT, NearestPOT } from "../../Misc/tools.functions";
 import { Effect } from "../effect";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
+import { Logger } from "../..//Misc/logger";
 
 declare module "../effect" {
     export interface Effect {
@@ -897,11 +898,19 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         this._render(useCameraPostProcess, dumpForDebug);
     }
 
+    private _dumpToolsLoading = false;
+    private _dumpTools: typeof import("../../Misc/dumpTools");
+
     /**
      * This function will check if the render target texture can be rendered (textures are loaded, shaders are compiled)
      * @returns true if all required resources are ready
      */
     public isReadyForRendering(): boolean {
+        if (!this._dumpToolsLoading) {
+            this._dumpToolsLoading = true;
+            // avoid a static import to allow ignoring the import in some cases
+            import("../../Misc/dumpTools").then((module) => (this._dumpTools = module));
+        }
         return this._render(false, false, true);
     }
 
@@ -1299,9 +1308,11 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
             // Dump ?
             if (dumpForDebug) {
-                import("../../Misc/dumpTools").then((dumpTools) => {
-                    dumpTools.DumpFramebuffer(this.getRenderWidth(), this.getRenderHeight(), engine);
-                });
+                if (!this._dumpTools) {
+                    Logger.Error("dumpTools module is still being loaded. To speed up the process import dump tools directly in your project");
+                } else {
+                    this._dumpTools.DumpFramebuffer(this.getRenderWidth(), this.getRenderHeight(), engine);
+                }
             }
         } else {
             // Clear
