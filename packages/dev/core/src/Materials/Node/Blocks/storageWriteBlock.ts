@@ -1,10 +1,11 @@
 import { NodeMaterialBlock } from "../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
 import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
-import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialConnectionPointDirection, type NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../Misc/typeStore";
-import type { LoopBlock } from "./loopBlock";
+import { LoopBlock } from "./loopBlock";
+import { NodeMaterialConnectionPointCustomObject } from "../nodeMaterialConnectionPointCustomObject";
 /**
  * Block used to write to a variable within a loop
  */
@@ -16,11 +17,16 @@ export class StorageWriteBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Neutral);
 
-        this.registerInput("loopID", NodeMaterialBlockConnectionPointTypes.Object);
+        this.registerInput(
+            "loopID",
+            NodeMaterialBlockConnectionPointTypes.Object,
+            false,
+            undefined,
+            new NodeMaterialConnectionPointCustomObject("loopID", this, NodeMaterialConnectionPointDirection.Input, LoopBlock, "LoopBlock")
+        );
         this.registerInput("value", NodeMaterialBlockConnectionPointTypes.AutoDetect);
 
         this._linkConnectionTypes(0, 1);
-        this._inputs[0]._preventBubbleUp = true;
     }
 
     /**
@@ -43,6 +49,18 @@ export class StorageWriteBlock extends NodeMaterialBlock {
      */
     public get value(): NodeMaterialConnectionPoint {
         return this._inputs[1];
+    }
+
+    /** Gets a boolean indicating that this connection will be used in the fragment shader
+     * @returns true if connected in fragment shader
+     */
+    public override isConnectedInFragmentShader() {
+        if (!this.loopID.isConnected) {
+            return false;
+        }
+        const loopBlock = this.loopID.connectedPoint!.ownerBlock as LoopBlock;
+
+        return loopBlock.output.isConnectedInFragmentShader;
     }
 
     protected override _buildBlock(state: NodeMaterialBuildState) {

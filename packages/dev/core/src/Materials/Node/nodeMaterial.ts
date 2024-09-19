@@ -757,7 +757,7 @@ export class NodeMaterial extends PushMaterial {
             input.associatedVariableName = "";
 
             const connectedPoint = input.connectedPoint;
-            if (connectedPoint && !input._preventBubbleUp) {
+            if (connectedPoint && !connectedPoint._preventBubbleUp) {
                 const block = connectedPoint.ownerBlock;
                 if (block !== node) {
                     this._processInitializeOnLink(block, state, nodesToProcessForOtherBuildState, autoConfigure);
@@ -799,7 +799,7 @@ export class NodeMaterial extends PushMaterial {
 
         for (const input of node.inputs) {
             const connectedPoint = input.connectedPoint;
-            if (connectedPoint && !input._preventBubbleUp) {
+            if (connectedPoint && !connectedPoint._preventBubbleUp) {
                 const block = connectedPoint.ownerBlock;
                 if (block !== node) {
                     this._resetDualBlocks(block, id);
@@ -1960,6 +1960,7 @@ export class NodeMaterial extends PushMaterial {
         this._vertexOutputNodes.length = 0;
         this._fragmentOutputNodes.length = 0;
         this.attachedBlocks.length = 0;
+        this._buildIsInProgress = false;
     }
 
     /**

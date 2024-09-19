@@ -1,12 +1,13 @@
 import { NodeMaterialBlock } from "../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
 import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
-import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialConnectionPointDirection, type NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import type { Scene } from "core/scene";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { NodeMaterialConnectionPointCustomObject } from "../nodeMaterialConnectionPointCustomObject";
 /**
  * Block used to repeat code
  */
@@ -25,14 +26,23 @@ export class LoopBlock extends NodeMaterialBlock {
         super(name, NodeMaterialBlockTargets.Neutral);
 
         this.registerInput("input", NodeMaterialBlockConnectionPointTypes.AutoDetect);
+        this.registerInput("iterations", NodeMaterialBlockConnectionPointTypes.Float, true);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.BasedOnInput);
-        this.registerOutput("index", NodeMaterialBlockConnectionPointTypes.Int);
-        this.registerOutput("loopID", NodeMaterialBlockConnectionPointTypes.Object);
+        this.registerOutput("index", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
+        this.registerOutput(
+            "loopID",
+            NodeMaterialBlockConnectionPointTypes.Object,
+            undefined,
+            new NodeMaterialConnectionPointCustomObject("loopID", this, NodeMaterialConnectionPointDirection.Output, LoopBlock, "LoopBlock")
+        );
 
         this._outputs[0]._typeConnectionSource = this._inputs[0];
         this._outputs[0]._forPostBuild = true;
 
         this._outputs[2]._redirectedSource = this._inputs[0];
+
+        this._outputs[1]._preventBubbleUp = true;
+        this._outputs[2]._preventBubbleUp = true;
     }
 
     /**
@@ -48,6 +58,13 @@ export class LoopBlock extends NodeMaterialBlock {
      */
     public get input(): NodeMaterialConnectionPoint {
         return this._inputs[0];
+    }
+
+    /**
+     * Gets the iterations input component
+     */
+    public get iterationsInput(): NodeMaterialConnectionPoint {
+        return this._inputs[1];
     }
 
     /**
@@ -75,16 +92,23 @@ export class LoopBlock extends NodeMaterialBlock {
         super._buildBlock(state);
 
         const output = this._outputs[0];
+        const index = this._outputs[1];
 
         const indexName = state._getFreeVariableName("index");
 
         const decl = state.shaderLanguage === ShaderLanguage.WGSL ? "var" : "int";
+        const castFloat = state.shaderLanguage === ShaderLanguage.WGSL ? "f32" : "float";
+        const castInt = state.shaderLanguage === ShaderLanguage.WGSL ? "u32" : "int";
 
         // Declare storage variable and store initial value
         state.compilationString += state._declareOutput(output) + ` = ${this.input.associatedVariableName};\n`;
 
+        // Iterations
+        const iterations = this.iterationsInput.isConnected ? `${castInt}(${this.iterationsInput.associatedVariableName})` : this.iterations;
+
         // Loop
-        state.compilationString += `for (${decl} ${indexName} = 0; ${indexName} < ${this.iterations}; ${indexName}++){\n`;
+        state.compilationString += `for (${decl} ${indexName} = 0; ${indexName} < ${iterations}; ${indexName}++){\n`;
+        state.compilationString += `${state._declareOutput(index)} = ${castFloat}(${indexName});\n`;
 
         return this;
     }

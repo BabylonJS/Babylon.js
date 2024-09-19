@@ -1,10 +1,11 @@
 import { NodeMaterialBlock } from "../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
 import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
-import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialConnectionPointDirection, type NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../Misc/typeStore";
-import type { LoopBlock } from "./loopBlock";
+import { LoopBlock } from "./loopBlock";
+import { NodeMaterialConnectionPointCustomObject } from "../nodeMaterialConnectionPointCustomObject";
 /**
  * Block used to read from a variable within a loop
  */
@@ -16,11 +17,16 @@ export class StorageReadBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Neutral);
 
-        this.registerInput("loopID", NodeMaterialBlockConnectionPointTypes.Object);
+        this.registerInput(
+            "loopID",
+            NodeMaterialBlockConnectionPointTypes.Object,
+            false,
+            undefined,
+            new NodeMaterialConnectionPointCustomObject("loopID", this, NodeMaterialConnectionPointDirection.Input, LoopBlock, "LoopBlock")
+        );
         this.registerOutput("value", NodeMaterialBlockConnectionPointTypes.AutoDetect);
 
         this._outputs[0]._linkedConnectionSource = this._inputs[0];
-        this._inputs[0]._preventBubbleUp = true;
     }
 
     /**
