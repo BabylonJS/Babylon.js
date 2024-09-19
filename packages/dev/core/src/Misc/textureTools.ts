@@ -9,9 +9,6 @@ import type { Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 
-import "../Shaders/lod.fragment";
-import "../Shaders/lodCube.fragment";
-
 /**
  * Uses the GPU to create a copy texture rescaled at a given size
  * @param texture Texture to copy from
@@ -243,6 +240,14 @@ export function FromHalfFloat(value: number): number {
 const ProcessAsync = async (texture: BaseTexture, width: number, height: number, face: number, lod: number): Promise<Uint8Array> => {
     const scene = texture.getScene()!;
     const engine = scene.getEngine();
+
+    if (!engine.isWebGPU) {
+        if (texture.isCube) {
+            await import("../Shaders/lodCube.fragment");
+        } else {
+            await import("../Shaders/lod.fragment");
+        }
+    }
 
     let lodPostProcess: PostProcess;
 
