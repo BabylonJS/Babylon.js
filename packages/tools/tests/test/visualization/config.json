@@ -4,7 +4,8 @@
         {
             "title": "NME Loop Block",
             "playgroundId": "#D8AK3Z#109",
-            "referenceImage": "nme-loop.png"
+            "referenceImage": "nme-loop.png",
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "Gaussian Splatting Loading",
