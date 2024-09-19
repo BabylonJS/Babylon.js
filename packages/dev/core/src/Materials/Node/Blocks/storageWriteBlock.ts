@@ -66,7 +66,7 @@ export class StorageWriteBlock extends NodeMaterialBlock {
     protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        const value = this._inputs[1];
+        const value = this.value;
 
         if (!this.loopID.isConnected) {
             return this;

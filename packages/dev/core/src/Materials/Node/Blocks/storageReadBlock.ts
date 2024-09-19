@@ -54,7 +54,7 @@ export class StorageReadBlock extends NodeMaterialBlock {
     protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        const value = this._outputs[0];
+        const value = this.value;
 
         if (!this.loopID.isConnected) {
             return this;
