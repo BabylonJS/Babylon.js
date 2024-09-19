@@ -27,6 +27,7 @@ import "./Extensions/engine.renderTarget";
 import "./Extensions/engine.renderTargetTexture";
 import "./Extensions/engine.renderTargetCube";
 import "./Extensions/engine.prefilteredCubeTexture";
+import "./Extensions/engine.uniformBuffer";
 import "./AbstractEngine/abstractEngine.loadingScreen";
 import "./AbstractEngine/abstractEngine.dom";
 import "./AbstractEngine/abstractEngine.states";
