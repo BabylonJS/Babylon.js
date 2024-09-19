@@ -783,6 +783,11 @@ export class GraphFrame {
             }
         }
         for (const link of this._ownerCanvas.links) {
+            if (this._nodes.indexOf(link.nodeA) === -1 || this._nodes.indexOf(link.nodeB!) === -1) {
+                link.path.style.transition = "opacity 0.5s";
+                link.path.style.opacity = "0.3";
+                link.selectionPath.style.pointerEvents = "none";
+            }
             if (this._nodes.indexOf(link.nodeA) === -1 && this._nodes.indexOf(link.nodeB!) === -1) {
                 link.path.style.transition = "opacity 0.5s";
                 link.path.style.opacity = "0.05";
