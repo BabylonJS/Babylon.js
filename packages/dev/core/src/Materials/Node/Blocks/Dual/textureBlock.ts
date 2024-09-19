@@ -300,7 +300,6 @@ export class TextureBlock extends NodeMaterialBlock {
         return false;
     }
 
-    private _cachedTarget: Nullable<NodeMaterialBlockTargets> = null;
     private _getEffectiveTarget() {
         if (this._fragmentOnly) {
             return NodeMaterialBlockTargets.Fragment;
@@ -320,15 +319,11 @@ export class TextureBlock extends NodeMaterialBlock {
             return NodeMaterialBlockTargets.Fragment;
         }
 
-        return NodeMaterialBlockTargets.VertexAndFragment;
+        return NodeMaterialBlockTargets.Fragment;
     }
 
     public override get target() {
-        if (!this._cachedTarget) {
-            this._cachedTarget = this._getEffectiveTarget();
-        }
-
-        return this._cachedTarget;
+        return this._getEffectiveTarget();
     }
 
     public override set target(value: NodeMaterialBlockTargets) {}
@@ -590,7 +585,6 @@ export class TextureBlock extends NodeMaterialBlock {
     }
 
     protected override _buildBlock(state: NodeMaterialBuildState) {
-        this._cachedTarget = null;
         super._buildBlock(state);
 
         if (this.source.isConnected) {
