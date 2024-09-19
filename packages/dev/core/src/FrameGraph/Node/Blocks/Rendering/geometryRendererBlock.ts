@@ -112,9 +112,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
     }
 
     // View depth
-    @editableInPropertyPage("Generate view depth", PropertyTypeForEdition.Boolean, "GEOMETRY BUFFERS")
-    public generateViewDepth = true;
-
     @editableInPropertyPage("View depth format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
     public viewDepthFormat = Constants.TEXTUREFORMAT_RED;
 
@@ -122,9 +119,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
     public viewDepthType = Constants.TEXTURETYPE_FLOAT;
 
     // Screen depth
-    @editableInPropertyPage("Generate screen depth", PropertyTypeForEdition.Boolean, "GEOMETRY BUFFERS")
-    public generateScreenDepth = false;
-
     @editableInPropertyPage("Screen depth format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
     public screenDepthFormat = Constants.TEXTUREFORMAT_RED;
 
@@ -132,9 +126,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
     public screenDepthType = Constants.TEXTURETYPE_FLOAT;
 
     // View normal
-    @editableInPropertyPage("Generate view normal", PropertyTypeForEdition.Boolean, "GEOMETRY BUFFERS")
-    public generateViewNormal = false;
-
     @editableInPropertyPage("View normal format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
     public viewNormalFormat = Constants.TEXTUREFORMAT_RGBA;
 
@@ -142,9 +133,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
     public viewNormalType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
 
     // World normal
-    @editableInPropertyPage("Generate world normal", PropertyTypeForEdition.Boolean, "GEOMETRY BUFFERS")
-    public generateWorldNormal = false;
-
     @editableInPropertyPage("World normal format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
     public worldNormalFormat = Constants.TEXTUREFORMAT_RGBA;
 
@@ -152,9 +140,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
     public worldNormalType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
 
     // Local position
-    @editableInPropertyPage("Generate local position", PropertyTypeForEdition.Boolean, "GEOMETRY BUFFERS")
-    public generateLocalPosition = false;
-
     @editableInPropertyPage("Local position format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
     public localPositionFormat = Constants.TEXTUREFORMAT_RGBA;
 
@@ -162,9 +147,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
     public localPositionType = Constants.TEXTURETYPE_HALF_FLOAT;
 
     // World Position
-    @editableInPropertyPage("Generate world position", PropertyTypeForEdition.Boolean, "GEOMETRY BUFFERS")
-    public generateWorldPosition = false;
-
     @editableInPropertyPage("World position format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
     public worldPositionFormat = Constants.TEXTUREFORMAT_RGBA;
 
@@ -172,9 +154,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
     public worldPositionType = Constants.TEXTURETYPE_HALF_FLOAT;
 
     // Albedo
-    @editableInPropertyPage("Generate albedo", PropertyTypeForEdition.Boolean, "GEOMETRY BUFFERS")
-    public generateAlbedo = false;
-
     @editableInPropertyPage("Albedo format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
     public albedoFormat = Constants.TEXTUREFORMAT_RGBA;
 
@@ -182,9 +161,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
     public albedoType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
 
     // Reflectivity
-    @editableInPropertyPage("Generate reflectivity", PropertyTypeForEdition.Boolean, "GEOMETRY BUFFERS")
-    public generateReflectivity = false;
-
     @editableInPropertyPage("Reflectivity format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
     public reflectivityFormat = Constants.TEXTUREFORMAT_RGBA;
 
@@ -192,9 +168,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
     public reflectivityType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
 
     // Velocity
-    @editableInPropertyPage("Generate velocity", PropertyTypeForEdition.Boolean, "GEOMETRY BUFFERS")
-    public generateVelocity = false;
-
     @editableInPropertyPage("Velocity format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
     public velocityFormat = Constants.TEXTUREFORMAT_RGBA;
 
@@ -202,9 +175,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
     public velocityType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
 
     // Linear velocity
-    @editableInPropertyPage("Generate linear velocity", PropertyTypeForEdition.Boolean, "GEOMETRY BUFFERS")
-    public generateLinearVelocity = false;
-
     @editableInPropertyPage("Linear velocity format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
     public linearVelocityFormat = Constants.TEXTUREFORMAT_RGBA;
 
@@ -320,19 +290,21 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
         super._buildBlock(state);
 
-        if (
-            !this.generateViewDepth &&
-            !this.generateScreenDepth &&
-            !this.generateViewNormal &&
-            !this.generateWorldNormal &&
-            !this.generateLocalPosition &&
-            !this.generateWorldPosition &&
-            !this.generateAlbedo &&
-            !this.generateReflectivity &&
-            !this.generateVelocity &&
-            !this.generateLinearVelocity
-        ) {
-            throw new Error("NodeRenderGraphGeometryRendererBlock: At least one geometry buffer must be generated");
+        const textureActivation = [
+            this.geomViewDepth.isConnected,
+            this.geomScreenDepth.isConnected,
+            this.geomViewNormal.isConnected,
+            this.geomWorldNormal.isConnected,
+            this.geomLocalPosition.isConnected,
+            this.geomWorldPosition.isConnected,
+            this.geomAlbedo.isConnected,
+            this.geomReflectivity.isConnected,
+            this.geomVelocity.isConnected,
+            this.geomLinearVelocity.isConnected,
+        ];
+
+        if (textureActivation.every((t) => !t)) {
+            throw new Error("NodeRenderGraphGeometryRendererBlock: At least one output geometry buffer must be connected");
         }
 
         this._frameGraphTask.name = this.name;
@@ -366,18 +338,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
 
         this._frameGraphTask.textureDescriptions = [];
 
-        const textureActivation = [
-            this.generateViewDepth,
-            this.generateScreenDepth,
-            this.generateViewNormal,
-            this.generateWorldNormal,
-            this.generateLocalPosition,
-            this.generateWorldPosition,
-            this.generateAlbedo,
-            this.generateReflectivity,
-            this.generateVelocity,
-            this.generateLinearVelocity,
-        ];
         const textureFormats = [
             this.viewDepthFormat,
             this.screenDepthFormat,
@@ -433,34 +393,24 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         codes.push(`${this._codeVariableName}.depthTest = ${this.depthTest};`);
         codes.push(`${this._codeVariableName}.depthWrite = ${this.depthWrite};`);
         codes.push(`${this._codeVariableName}.samples = ${this.samples};`);
-        codes.push(`${this._codeVariableName}.generateViewDepth = ${this.generateViewDepth};`);
         codes.push(`${this._codeVariableName}.viewDepthFormat = ${this.viewDepthFormat};`);
         codes.push(`${this._codeVariableName}.viewDepthType = ${this.viewDepthType};`);
-        codes.push(`${this._codeVariableName}.generateScreenDepth = ${this.generateViewDepth};`);
         codes.push(`${this._codeVariableName}.screenDepthFormat = ${this.screenDepthFormat};`);
         codes.push(`${this._codeVariableName}.screenDepthType = ${this.screenDepthType};`);
-        codes.push(`${this._codeVariableName}.generateLocalPosition = ${this.generateLocalPosition};`);
         codes.push(`${this._codeVariableName}.localPositionFormat = ${this.localPositionFormat};`);
         codes.push(`${this._codeVariableName}.localPositionType = ${this.localPositionType};`);
-        codes.push(`${this._codeVariableName}.generateWorldPosition = ${this.generateWorldPosition};`);
         codes.push(`${this._codeVariableName}.worldPositionFormat = ${this.worldPositionFormat};`);
         codes.push(`${this._codeVariableName}.worldPositionType = ${this.worldPositionType};`);
-        codes.push(`${this._codeVariableName}.generateViewNormal = ${this.generateViewNormal};`);
         codes.push(`${this._codeVariableName}.viewNormalFormat = ${this.viewNormalFormat};`);
         codes.push(`${this._codeVariableName}.viewNormalType = ${this.viewNormalType};`);
-        codes.push(`${this._codeVariableName}.generateWorldNormal = ${this.generateWorldNormal};`);
         codes.push(`${this._codeVariableName}.worldNormalFormat = ${this.worldNormalFormat};`);
         codes.push(`${this._codeVariableName}.worldNormalType = ${this.worldNormalType};`);
-        codes.push(`${this._codeVariableName}.worldGgenerateAlbedo = ${this.generateAlbedo};`);
         codes.push(`${this._codeVariableName}.albedoFormat = ${this.albedoFormat};`);
         codes.push(`${this._codeVariableName}.albedoType = ${this.albedoType};`);
-        codes.push(`${this._codeVariableName}.generateReflectivity = ${this.generateReflectivity};`);
         codes.push(`${this._codeVariableName}.reflectivityFormat = ${this.reflectivityFormat};`);
         codes.push(`${this._codeVariableName}.reflectivityType = ${this.reflectivityType};`);
-        codes.push(`${this._codeVariableName}.generateVelocity = ${this.generateVelocity};`);
         codes.push(`${this._codeVariableName}.velocityFormat = ${this.velocityFormat};`);
         codes.push(`${this._codeVariableName}.velocityType = ${this.velocityType};`);
-        codes.push(`${this._codeVariableName}.generateLinearVelocity = ${this.generateLinearVelocity};`);
         codes.push(`${this._codeVariableName}.linearVelocityFormat = ${this.linearVelocityFormat};`);
         codes.push(`${this._codeVariableName}.linearVelocityType = ${this.linearVelocityType};`);
         return super._dumpPropertiesCode() + codes.join("\n");
@@ -471,34 +421,24 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         serializationObject.depthTest = this.depthTest;
         serializationObject.depthWrite = this.depthWrite;
         serializationObject.samples = this.samples;
-        serializationObject.generateViewDepth = this.generateViewDepth;
         serializationObject.viewDepthFormat = this.viewDepthFormat;
         serializationObject.viewDepthType = this.viewDepthType;
-        serializationObject.generateScreenDepth = this.generateScreenDepth;
         serializationObject.screenDepthFormat = this.screenDepthFormat;
         serializationObject.screenDepthType = this.screenDepthType;
-        serializationObject.generateLocalPosition = this.generateLocalPosition;
         serializationObject.localPositionFormat = this.localPositionFormat;
         serializationObject.localPositionType = this.localPositionType;
-        serializationObject.generateWorldPosition = this.generateWorldPosition;
         serializationObject.worldPositionFormat = this.worldPositionFormat;
         serializationObject.worldPositionType = this.worldPositionType;
-        serializationObject.generateViewNormal = this.generateViewNormal;
         serializationObject.viewNormalFormat = this.viewNormalFormat;
         serializationObject.viewNormalType = this.viewNormalType;
-        serializationObject.generateWorldNormal = this.generateWorldNormal;
         serializationObject.worldNormalFormat = this.worldNormalFormat;
         serializationObject.worldNormalType = this.worldNormalType;
-        serializationObject.generateAlbedo = this.generateAlbedo;
         serializationObject.albedoFormat = this.albedoFormat;
         serializationObject.albedoType = this.albedoType;
-        serializationObject.generateReflectivity = this.generateReflectivity;
         serializationObject.reflectivityFormat = this.reflectivityFormat;
         serializationObject.reflectivityType = this.reflectivityType;
-        serializationObject.generateVelocity = this.generateVelocity;
         serializationObject.velocityFormat = this.velocityFormat;
         serializationObject.velocityType = this.velocityType;
-        serializationObject.generateLinearVelocity = this.generateLinearVelocity;
         serializationObject.linearVelocityFormat = this.linearVelocityFormat;
         serializationObject.linearVelocityType = this.linearVelocityType;
         return serializationObject;
@@ -509,34 +449,24 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         this.depthTest = serializationObject.depthTest;
         this.depthWrite = serializationObject.depthWrite;
         this.samples = serializationObject.samples;
-        this.generateViewDepth = serializationObject.generateViewDepth;
         this.viewDepthFormat = serializationObject.viewDepthFormat;
         this.viewDepthType = serializationObject.viewDepthType;
-        this.generateScreenDepth = serializationObject.generateScreenDepth;
         this.screenDepthFormat = serializationObject.screenDepthFormat;
         this.screenDepthType = serializationObject.screenDepthType;
-        this.generateLocalPosition = serializationObject.generateLocalPosition;
         this.localPositionFormat = serializationObject.localPositionFormat;
         this.localPositionType = serializationObject.localPositionType;
-        this.generateWorldPosition = serializationObject.generateWorldPosition;
         this.worldPositionFormat = serializationObject.worldPositionFormat;
         this.worldPositionType = serializationObject.worldPositionType;
-        this.generateViewNormal = serializationObject.generateViewNormal;
         this.viewNormalFormat = serializationObject.viewNormalFormat;
         this.viewNormalType = serializationObject.viewNormalType;
-        this.generateWorldNormal = serializationObject.generateWorldNormal;
         this.worldNormalFormat = serializationObject.worldNormalFormat;
         this.worldNormalType = serializationObject.worldNormalType;
-        this.generateAlbedo = serializationObject.generateAlbedo;
         this.albedoFormat = serializationObject.albedoFormat;
         this.albedoType = serializationObject.albedoType;
-        this.generateReflectivity = serializationObject.generateReflectivity;
         this.reflectivityFormat = serializationObject.reflectivityFormat;
         this.reflectivityType = serializationObject.reflectivityType;
-        this.generateVelocity = serializationObject.generateVelocity;
         this.velocityFormat = serializationObject.velocityFormat;
         this.velocityType = serializationObject.velocityType;
-        this.generateLinearVelocity = serializationObject.generateLinearVelocity;
         this.linearVelocityFormat = serializationObject.linearVelocityFormat;
         this.linearVelocityType = serializationObject.linearVelocityType;
     }
