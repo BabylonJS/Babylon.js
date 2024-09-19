@@ -14,7 +14,8 @@ import { NodeMaterialConnectionPointCustomObject } from "../nodeMaterialConnecti
  */
 export class LoopBlock extends NodeMaterialBlock {
     /**
-     * Gets or sets the source range
+     * Gets or sets number of iterations
+     * Will be ignored if the iterations input is connected
      */
     @editableInPropertyPage("Iterations", PropertyTypeForEdition.Int)
     public iterations = 4;
