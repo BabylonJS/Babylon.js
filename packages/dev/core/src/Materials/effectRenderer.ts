@@ -11,9 +11,6 @@ import { DrawWrapper } from "./drawWrapper";
 import type { IRenderTargetTexture, RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import type { ShaderLanguage } from "./shaderLanguage";
 
-// Prevents ES6 Crash if not imported.
-import "../Shaders/postprocess.vertex";
-
 /**
  * Effect Render Options
  */
