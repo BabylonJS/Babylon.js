@@ -187,6 +187,9 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         MeshAttributeExistsBlock: "Falls back to secondary input if specified attribute doesn't exists on the rendered mesh",
         CurveBlock: "Apply a curve function",
         ColorConverterBlock: "Converts between RGB and HSL color spaces",
+        LoopBlock: "Block used to repeat code",
+        StorageReadBlock: "Block used to read from a loop storage variable",
+        StorageWriteBlock: "Block used to write to a loop storage variable",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -438,6 +441,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "FrontFacingBlock",
                 "MeshAttributeExistsBlock",
             ],
+            Loop: ["LoopBlock", "StorageReadBlock", "StorageWriteBlock"],
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock", "CloudBlock", "VoronoiNoiseBlock"],
             Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "PrePassOutputBlock", "DiscardBlock", "ClipPlanesBlock", "FragDepthBlock"],
             Particle: [
