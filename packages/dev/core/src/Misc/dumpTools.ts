@@ -19,56 +19,69 @@ type DumpToolsEngine = {
 
 let _dumpToolsEngine: Nullable<DumpToolsEngine>;
 
+let _enginePromise: Promise<DumpToolsEngine> | null = null;
+
 async function _CreateDumpRenderer(): Promise<DumpToolsEngine> {
-    if (!_dumpToolsEngine) {
-        let canvas: HTMLCanvasElement | OffscreenCanvas;
-        let engine: Nullable<ThinEngine> = null;
-        const options = {
-            preserveDrawingBuffer: true,
-            depth: false,
-            stencil: false,
-            alpha: true,
-            premultipliedAlpha: false,
-            antialias: false,
-            failIfMajorPerformanceCaveat: false,
-        };
-        const thinEngineClass = (await import("../Engines/thinEngine")).ThinEngine;
-        try {
-            canvas = new OffscreenCanvas(100, 100); // will be resized later
-            engine = new thinEngineClass(canvas, false, options);
-        } catch (e) {
-            // The browser either does not support OffscreenCanvas or WebGL context in OffscreenCanvas, fallback on a regular canvas
-            canvas = document.createElement("canvas");
-            engine = new thinEngineClass(canvas, false, options);
-        }
-        // remove this engine from the list of instances to avoid using it for other purposes
-        EngineStore.Instances.pop();
-        // However, make sure to dispose it when no other engines are left
-        EngineStore.OnEnginesDisposedObservable.add((e) => {
-            // guaranteed to run when no other instances are left
-            // only dispose if it's not the current engine
-            if (engine && e !== engine && !engine.isDisposed && EngineStore.Instances.length === 0) {
-                // Dump the engine and the associated resources
-                Dispose();
-            }
+    if (!_enginePromise) {
+        _enginePromise = new Promise((resolve, reject) => {
+            let canvas: HTMLCanvasElement | OffscreenCanvas;
+            let engine: Nullable<ThinEngine> = null;
+            const options = {
+                preserveDrawingBuffer: true,
+                depth: false,
+                stencil: false,
+                alpha: true,
+                premultipliedAlpha: false,
+                antialias: false,
+                failIfMajorPerformanceCaveat: false,
+            };
+            import("../Engines/thinEngine")
+                .then(({ ThinEngine: thinEngineClass }) => {
+                    try {
+                        canvas = new OffscreenCanvas(100, 100); // will be resized later
+                        engine = new thinEngineClass(canvas, false, options);
+                    } catch (e) {
+                        // The browser either does not support OffscreenCanvas or WebGL context in OffscreenCanvas, fallback on a regular canvas
+                        canvas = document.createElement("canvas");
+                        engine = new thinEngineClass(canvas, false, options);
+                    }
+                    // remove this engine from the list of instances to avoid using it for other purposes
+                    EngineStore.Instances.pop();
+                    // However, make sure to dispose it when no other engines are left
+                    EngineStore.OnEnginesDisposedObservable.add((e) => {
+                        // guaranteed to run when no other instances are left
+                        // only dispose if it's not the current engine
+                        if (engine && e !== engine && !engine.isDisposed && EngineStore.Instances.length === 0) {
+                            // Dump the engine and the associated resources
+                            Dispose();
+                        }
+                    });
+                    engine.getCaps().parallelShaderCompile = undefined;
+                    const renderer = new EffectRenderer(engine);
+                    import("../Shaders/pass.fragment").then(({ passPixelShader }) => {
+                        if (!engine) {
+                            reject("Engine is not defined");
+                            return;
+                        }
+                        const wrapper = new EffectWrapper({
+                            engine,
+                            name: passPixelShader.name,
+                            fragmentShader: passPixelShader.shader,
+                            samplerNames: ["textureSampler"],
+                        });
+                        _dumpToolsEngine = {
+                            canvas,
+                            engine,
+                            renderer,
+                            wrapper,
+                        };
+                        resolve(_dumpToolsEngine);
+                    });
+                })
+                .catch(reject);
         });
-        engine.getCaps().parallelShaderCompile = undefined;
-        const renderer = new EffectRenderer(engine);
-        const passPixelShader = (await import("../Shaders/pass.fragment")).passPixelShader;
-        const wrapper = new EffectWrapper({
-            engine,
-            name: passPixelShader.name,
-            fragmentShader: passPixelShader.shader,
-            samplerNames: ["textureSampler"],
-        });
-        _dumpToolsEngine = {
-            canvas,
-            engine,
-            renderer,
-            wrapper,
-        };
     }
-    return _dumpToolsEngine;
+    return await _enginePromise;
 }
 
 /**
@@ -203,6 +216,13 @@ export function Dispose() {
         _dumpToolsEngine.wrapper.dispose();
         _dumpToolsEngine.renderer.dispose();
         _dumpToolsEngine.engine.dispose();
+    } else {
+        // in cases where the engine is not yet created, we need to wait for it to dispose it
+        _enginePromise?.then((dumpToolsEngine) => {
+            dumpToolsEngine.wrapper.dispose();
+            dumpToolsEngine.renderer.dispose();
+            dumpToolsEngine.engine.dispose();
+        });
     }
     _dumpToolsEngine = null;
 }
