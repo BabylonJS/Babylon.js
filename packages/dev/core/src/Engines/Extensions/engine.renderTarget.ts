@@ -97,7 +97,20 @@ ThinEngine.prototype.createRenderTargetTexture = function (this: ThinEngine, siz
 
     rtWrapper.setTextures(texture);
 
-    this.updateRenderTargetTextureSampleCount(rtWrapper, samples);
+    if (!colorAttachment) {
+        this.updateRenderTargetTextureSampleCount(rtWrapper, samples);
+    } else {
+        rtWrapper._samples = colorAttachment.samples;
+        if (colorAttachment.samples > 1) {
+            const msaaRenderBuffer = (colorAttachment._hardwareTexture as WebGLHardwareTexture).getMSAARenderBuffer(0);
+
+            rtWrapper._MSAAFramebuffer = gl.createFramebuffer();
+
+            this._bindUnboundFramebuffer(rtWrapper._MSAAFramebuffer!);
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, msaaRenderBuffer);
+            this._bindUnboundFramebuffer(null);
+        }
+    }
 
     return rtWrapper;
 };

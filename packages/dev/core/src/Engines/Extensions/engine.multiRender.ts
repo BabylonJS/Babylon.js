@@ -504,5 +504,7 @@ ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function (
 
     this._bindUnboundFramebuffer(null);
 
+    rtWrapper._samples = samples;
+
     return samples;
 };

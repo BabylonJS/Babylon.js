@@ -3145,7 +3145,7 @@ export class WebGPUEngine extends AbstractEngine {
         const depthStencilTexture = rtWrapper._depthStencilTexture;
         const gpuDepthStencilWrapper = depthStencilTexture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
         const gpuDepthStencilTexture = gpuDepthStencilWrapper?.underlyingResource as Nullable<GPUTexture>;
-        const gpuDepthStencilMSAATexture = gpuDepthStencilWrapper?.getMSAATexture();
+        const gpuDepthStencilMSAATexture = gpuDepthStencilWrapper?.getMSAATexture(0);
 
         const depthTextureView = gpuDepthStencilTexture?.createView(this._rttRenderPassWrapper.depthAttachmentViewDescriptor!);
         const depthMSAATextureView = gpuDepthStencilMSAATexture?.createView(this._rttRenderPassWrapper.depthAttachmentViewDescriptor!);
@@ -3180,15 +3180,14 @@ export class WebGPUEngine extends AbstractEngine {
                 const gpuMRTWrapper = mrtTexture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
                 const gpuMRTTexture = gpuMRTWrapper?.underlyingResource;
                 if (gpuMRTWrapper && gpuMRTTexture) {
-                    const gpuMSAATexture = gpuMRTWrapper.getMSAATexture(i);
+                    const baseArrayLayer = rtWrapper.getBaseArrayLayer(i);
+                    const gpuMSAATexture = gpuMRTWrapper.getMSAATexture(baseArrayLayer);
 
-                    const layerIndex = rtWrapper.layerIndices?.[i] ?? 0;
-                    const faceIndex = rtWrapper.faceIndices?.[i] ?? 0;
                     const viewDescriptor = {
                         ...this._rttRenderPassWrapper.colorAttachmentViewDescriptor!,
                         dimension: mrtTexture.is3D ? WebGPUConstants.TextureViewDimension.E3d : WebGPUConstants.TextureViewDimension.E2d,
                         format: gpuMRTWrapper.format,
-                        baseArrayLayer: mrtTexture.isCube ? layerIndex * 6 + faceIndex : mrtTexture.is3D ? 0 : layerIndex,
+                        baseArrayLayer,
                     };
                     const msaaViewDescriptor = {
                         ...this._rttRenderPassWrapper.colorAttachmentViewDescriptor!,
@@ -3204,7 +3203,7 @@ export class WebGPUEngine extends AbstractEngine {
                     colorAttachments.push({
                         view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
                         resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
-                        depthSlice: mrtTexture.is3D ? layerIndex : undefined,
+                        depthSlice: mrtTexture.is3D ? (rtWrapper.layerIndices?.[i] ?? 0) : undefined,
                         clearValue: index !== 0 && mustClearColor ? (isRTInteger ? clearColorForIntegerRT : clearColor) : undefined,
                         loadOp: index !== 0 && mustClearColor ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
                         storeOp: WebGPUConstants.StoreOp.Store,
@@ -3227,7 +3226,7 @@ export class WebGPUEngine extends AbstractEngine {
                     this._rttRenderPassWrapper.colorAttachmentViewDescriptor!.baseArrayLayer = 0;
                 }
 
-                const gpuMSAATexture = gpuWrapper.getMSAATexture();
+                const gpuMSAATexture = gpuWrapper.getMSAATexture(0);
                 const colorTextureView = gpuTexture.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
                 const colorMSAATextureView = gpuMSAATexture?.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
                 const isRTInteger = internalTexture.type === Constants.TEXTURETYPE_UNSIGNED_INTEGER || internalTexture.type === Constants.TEXTURETYPE_UNSIGNED_SHORT;

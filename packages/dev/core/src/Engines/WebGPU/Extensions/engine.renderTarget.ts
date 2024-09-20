@@ -70,10 +70,11 @@ WebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSize, 
         fullOptions.noColorAttachment = false;
     }
 
-    const texture = fullOptions.colorAttachment || (fullOptions.noColorAttachment ? null : this._createInternalTexture(size, options, true, InternalTextureSource.RenderTarget));
+    const texture =
+        fullOptions.colorAttachment || (fullOptions.noColorAttachment ? null : this._createInternalTexture(size, fullOptions, true, InternalTextureSource.RenderTarget));
 
     rtWrapper.label = fullOptions.label ?? "RenderTargetWrapper";
-    rtWrapper._samples = fullOptions.samples ?? 1;
+    rtWrapper._samples = fullOptions.colorAttachment?.samples ?? fullOptions.samples ?? 1;
     rtWrapper._generateDepthBuffer = fullOptions.generateDepthBuffer;
     rtWrapper._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
 
@@ -90,7 +91,7 @@ WebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSize, 
         );
     }
 
-    if (texture) {
+    if (texture && !fullOptions.colorAttachment) {
         if (options !== undefined && typeof options === "object" && options.createMipMaps && !fullOptions.generateMipMaps) {
             texture.generateMipMaps = true;
         }

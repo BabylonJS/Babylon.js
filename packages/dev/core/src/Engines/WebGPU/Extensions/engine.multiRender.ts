@@ -150,7 +150,6 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
     const defaultAttachments: number[] = [];
 
     rtWrapper.label = options?.label ?? "MultiRenderTargetWrapper";
-    rtWrapper._samples = samples;
     rtWrapper._generateDepthBuffer = generateDepthBuffer;
     rtWrapper._generateStencilBuffer = generateStencilBuffer;
     rtWrapper._attachments = attachments;
@@ -169,7 +168,7 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
                 depthTextureFormat = Constants.TEXTUREFORMAT_STENCIL8;
             }
         }
-        depthStencilTexture = rtWrapper.createDepthStencilTexture(0, false, generateStencilBuffer, samples, depthTextureFormat, rtWrapper.label + "-DepthStencil");
+        depthStencilTexture = rtWrapper.createDepthStencilTexture(0, false, generateStencilBuffer, 1, depthTextureFormat, rtWrapper.label + "-DepthStencil");
     }
 
     const mipmapsCreationOnly = options !== undefined && typeof options === "object" && options.createMipMaps && !generateMipMaps;
@@ -227,7 +226,7 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
         texture.width = width;
         texture.height = height;
         texture.isReady = true;
-        texture.samples = samples;
+        texture.samples = 1;
         texture.generateMipMaps = generateMipMaps;
         texture.samplingMode = samplingMode;
         texture.type = type;
@@ -244,7 +243,7 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
             texture.generateMipMaps = true;
         }
 
-        this._textureHelper.createGPUTextureForInternalTexture(texture, undefined, undefined, undefined, creationFlag);
+        this._textureHelper.createGPUTextureForInternalTexture(texture, undefined, undefined, undefined, creationFlag, true);
 
         if (mipmapsCreationOnly) {
             texture.generateMipMaps = false;
@@ -259,6 +258,8 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
 
     rtWrapper.setTextures(textures);
     rtWrapper.setLayerAndFaceIndices(layerIndex, faceIndex);
+
+    this.updateMultipleRenderTargetTextureSampleCount(rtWrapper, samples);
 
     return rtWrapper;
 };
@@ -280,7 +281,7 @@ WebGPUEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function (
         const texture = rtWrapper.textures[i];
         const gpuTextureWrapper = texture._hardwareTexture as Nullable<WebGPUHardwareTexture>;
 
-        gpuTextureWrapper?.releaseMSAATexture();
+        gpuTextureWrapper?.releaseMSAATexture(rtWrapper.getBaseArrayLayer(i));
     }
 
     // Note that rtWrapper.textures can't have null textures, lastTextureIsDepthTexture can't be true if rtWrapper._depthStencilTexture is null
@@ -288,7 +289,7 @@ WebGPUEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function (
 
     for (let i = 0; i < count; ++i) {
         const texture = rtWrapper.textures[i];
-        this._textureHelper.createMSAATexture(texture, samples, false, i === count - 1 && lastTextureIsDepthTexture ? 0 : i);
+        this._textureHelper.createMSAATexture(texture, samples, false, rtWrapper.getBaseArrayLayer(i));
         texture.samples = samples;
     }
 
@@ -299,6 +300,8 @@ WebGPUEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function (
         this._textureHelper.createMSAATexture(rtWrapper._depthStencilTexture, samples);
         rtWrapper._depthStencilTexture.samples = samples;
     }
+
+    rtWrapper._samples = samples;
 
     return samples;
 };

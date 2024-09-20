@@ -211,6 +211,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
 
         const generateDepthBuffer = !options || options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
         const generateStencilBuffer = !options || options.generateStencilBuffer === undefined ? false : options.generateStencilBuffer;
+        const samples = options && options.samples ? options.samples : 1;
 
         this._multiRenderTargetOptions = {
             samplingModes: samplingModes,
@@ -222,6 +223,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
             types: types,
             textureCount: count,
             useSRGBBuffers: useSRGBBuffers,
+            samples,
             formats: formats,
             targetTypes: targetTypes,
             faceIndex: faceIndex,

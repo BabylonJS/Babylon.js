@@ -154,6 +154,24 @@ export class RenderTargetWrapper {
     }
 
     /**
+     * Gets the base array layer of a texture in the textures array
+     * This is an number that is calculated based on the layer and face indices set for this texture at that index
+     * @param index The index of the texture in the textures array to get the base array layer for
+     * @returns the base array layer of the texture at the given index
+     */
+    public getBaseArrayLayer(index: number): number {
+        if (!this._textures) {
+            return -1;
+        }
+
+        const texture = this._textures[index];
+        const layerIndex = this._layerIndices?.[index] ?? 0;
+        const faceIndex = this._faceIndices?.[index] ?? 0;
+
+        return texture.isCube ? layerIndex * 6 + faceIndex : texture.is3D ? 0 : layerIndex;
+    }
+
+    /**
      * Gets the sample count of the render target
      */
     public get samples(): number {
