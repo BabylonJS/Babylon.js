@@ -1,7 +1,7 @@
 import type { Scene } from "../scene";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
-import type { TextureSize } from "../Materials/Textures/textureCreationOptions";
+import type { RenderTargetCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
 import { getDimensionsFromTextureSize } from "../Materials/Textures/textureCreationOptions";
 import { Texture } from "../Materials/Textures/texture";
 import type { Nullable } from "../types";
@@ -15,6 +15,8 @@ type TextureEntry = {
     creationOptions: FrameGraphTextureCreationOptions;
     namespace: FrameGraphTextureNamespace;
     debug?: Texture;
+    parentHandle?: FrameGraphTextureHandle;
+    parentTextureIndex?: number;
 };
 
 enum FrameGraphTextureNamespace {
@@ -86,11 +88,11 @@ export class FrameGraphTextureManager {
             sizeIsPercentage: false,
         };
 
-        return this._createHandleForTexture(name, texture, creationOptions, FrameGraphTextureNamespace.External, handle);
+        return this._createHandleForTexture(name, texture, creationOptions, FrameGraphTextureNamespace.External, false, handle);
     }
 
-    public createRenderTargetTexture(name: string, taskNamespace: boolean, creationOptions: FrameGraphTextureCreationOptions): FrameGraphTextureHandle {
-        return this._createHandleForTexture(name, null, creationOptions, taskNamespace ? FrameGraphTextureNamespace.Task : FrameGraphTextureNamespace.Graph);
+    public createRenderTargetTexture(name: string, taskNamespace: boolean, creationOptions: FrameGraphTextureCreationOptions, multiTargetMode = false): FrameGraphTextureHandle {
+        return this._createHandleForTexture(name, null, creationOptions, taskNamespace ? FrameGraphTextureNamespace.Task : FrameGraphTextureNamespace.Graph, multiTargetMode);
     }
 
     public getAbsoluteDimensions(
@@ -113,10 +115,34 @@ export class FrameGraphTextureManager {
     public allocateTextures() {
         this._textures.forEach((entry) => {
             if (!entry.texture && entry.namespace !== FrameGraphTextureNamespace.External) {
-                const creationOptions = entry.creationOptions;
-                const size = creationOptions.sizeIsPercentage ? this.getAbsoluteDimensions(creationOptions.size) : creationOptions.size;
+                if (entry.parentHandle !== undefined) {
+                    const creationOptions = entry.creationOptions;
+                    const size = creationOptions.sizeIsPercentage ? this.getAbsoluteDimensions(creationOptions.size) : creationOptions.size;
 
-                entry.texture = this._engine.createMultipleRenderTarget(size, creationOptions.options, false);
+                    const parentEntry = this._textures.get(entry.parentHandle)!;
+                    const parentInternalTexture = parentEntry.texture!.textures![entry.parentTextureIndex!];
+
+                    const creationOptionsForTexture: RenderTargetCreationOptions = {
+                        createMipMaps: creationOptions.options.createMipMaps,
+                        generateMipMaps: creationOptions.options.generateMipMaps,
+                        generateDepthBuffer: creationOptions.options.generateDepthBuffer,
+                        generateStencilBuffer: creationOptions.options.generateStencilBuffer,
+                        samples: creationOptions.options.samples,
+                        type: creationOptions.options.types![0],
+                        format: creationOptions.options.formats![0],
+                        useSRGBBuffer: creationOptions.options.useSRGBBuffers![0],
+                        colorAttachment: parentInternalTexture,
+                        label: creationOptions.options.label,
+                    };
+
+                    entry.texture = this._engine.createRenderTargetTexture(size, creationOptionsForTexture);
+                    parentInternalTexture.incrementReferences();
+                } else {
+                    const creationOptions = entry.creationOptions;
+                    const size = creationOptions.sizeIsPercentage ? this.getAbsoluteDimensions(creationOptions.size) : creationOptions.size;
+
+                    entry.texture = this._engine.createMultipleRenderTarget(size, creationOptions.options, false);
+                }
             }
 
             if (entry.texture) {
@@ -205,7 +231,10 @@ export class FrameGraphTextureManager {
         texture: Nullable<RenderTargetWrapper>,
         creationOptions: FrameGraphTextureCreationOptions,
         namespace: FrameGraphTextureNamespace,
-        handle?: FrameGraphTextureHandle
+        multiTargetMode = false,
+        handle?: FrameGraphTextureHandle,
+        parentHandle?: FrameGraphTextureHandle,
+        parentTextureIndex?: number
     ): FrameGraphTextureHandle {
         handle = handle ?? FrameGraphTextureManager._Counter++;
 
@@ -218,35 +247,35 @@ export class FrameGraphTextureManager {
                 sizeIsPercentage: creationOptions.sizeIsPercentage,
             },
             namespace,
+            parentHandle,
+            parentTextureIndex,
         });
+
+        if (namespace === FrameGraphTextureNamespace.External) {
+            return handle;
+        }
+
+        if (multiTargetMode) {
+            const textureCount = creationOptions.options.textureCount ?? 1;
+            for (let i = 0; i < textureCount; i++) {
+                const label = creationOptions.options.labels?.[i] ?? `${i}`;
+                const textureName = `${name} - ${label}`;
+                const creationOptionsForTexture: FrameGraphTextureCreationOptions = {
+                    size: getDimensionsFromTextureSize(creationOptions.size),
+                    options: {
+                        ...creationOptions.options,
+                        formats: [creationOptions.options.formats![i]],
+                        types: [creationOptions.options.types![i]],
+                        textureCount: 1,
+                    },
+                    sizeIsPercentage: creationOptions.sizeIsPercentage,
+                };
+                this._createHandleForTexture(textureName, null, creationOptionsForTexture, namespace, false, handle + i + 1, handle, i);
+            }
+
+            FrameGraphTextureManager._Counter += textureCount;
+        }
 
         return handle;
     }
-
-    // private _createHandlesForMultiTexture(name: string, creationOptions: FrameGraphMultiTextureCreationOptions, namespace: FrameGraphTextureNamespace): FrameGraphTextureHandle[] {
-    //     const handles: FrameGraphTextureHandle[] = [];
-    //     const textureCount = creationOptions.options.textureCount ?? 1;
-
-    //     for (let i = 0; i < textureCount; i++) {
-    //         const textureName = `${name} ${i}`;
-    //         const format = creationOptions.options.formats![i];
-    //         const type = creationOptions.options.types![i];
-    //         this._createHandleForTexture(textureName, null, creationOptions, namespace);
-    //     }
-
-    //     handle = handle ?? FrameGraphTextureManager._Counter++;
-
-    //     this._textures.set(handle, {
-    //         texture,
-    //         name,
-    //         creationOptions: {
-    //             size: getDimensionsFromTextureSize(creationOptions.size),
-    //             options: { ...creationOptions.options, label: name },
-    //             sizeIsPercentage: creationOptions.sizeIsPercentage,
-    //         },
-    //         namespace,
-    //     });
-
-    //     return handles;
-    // }
 }

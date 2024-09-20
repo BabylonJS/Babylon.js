@@ -156,10 +156,11 @@ export class NodeRenderGraphObjectRendererBlock extends NodeRenderGraphBlock {
             this._frameGraphTask.objectList = objectsConnectedPoint.value as FrameGraphObjectList;
         }
 
-        const usedTexturesConnectedPoint = this.dependencies.connectedPoint;
-        if (usedTexturesConnectedPoint) {
-            this._frameGraphTask.dependencies = [];
-            this._frameGraphTask.dependencies[0] = usedTexturesConnectedPoint.value as FrameGraphTextureId;
+        this._frameGraphTask.dependencies = [];
+
+        const dependenciesConnectedPoint = this.dependencies.connectedPoint;
+        if (dependenciesConnectedPoint) {
+            this._frameGraphTask.dependencies[0] = dependenciesConnectedPoint.value as FrameGraphTextureId;
         }
 
         state.frameGraph.addTask(this._frameGraphTask);

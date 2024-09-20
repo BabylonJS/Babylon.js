@@ -32,7 +32,7 @@ export class MaterialHelperGeometryRendering {
         },
         {
             type: Constants.PREPASS_POSITION_TEXTURE_TYPE,
-            name: "Position",
+            name: "WorldPosition",
             clearType: TextureClearType.Zero,
             define: "PREPASS_POSITION",
             defineIndex: "PREPASS_POSITION_INDEX",
@@ -53,21 +53,21 @@ export class MaterialHelperGeometryRendering {
         },
         {
             type: Constants.PREPASS_DEPTH_TEXTURE_TYPE /* this is the Z coordinate in view space */,
-            name: "Depth",
+            name: "ViewDepth",
             clearType: TextureClearType.MaxViewZ,
             define: "PREPASS_DEPTH",
             defineIndex: "PREPASS_DEPTH_INDEX",
         },
         {
             type: Constants.PREPASS_NORMAL_TEXTURE_TYPE,
-            name: "Normal",
+            name: "ViewNormal",
             clearType: TextureClearType.Zero,
             define: "PREPASS_NORMAL",
             defineIndex: "PREPASS_NORMAL_INDEX",
         },
         {
             type: Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE,
-            name: "Albedo",
+            name: "AlbedoSqrt",
             clearType: TextureClearType.Zero,
             define: "PREPASS_ALBEDO_SQRT",
             defineIndex: "PREPASS_ALBEDO_SQRT_INDEX",
@@ -95,7 +95,7 @@ export class MaterialHelperGeometryRendering {
         },
         {
             type: Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE,
-            name: "VelocityLinear",
+            name: "LinearVelocity",
             clearType: TextureClearType.Zero,
             define: "PREPASS_VELOCITY_LINEAR",
             defineIndex: "PREPASS_VELOCITY_LINEAR_INDEX",

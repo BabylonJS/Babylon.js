@@ -8,6 +8,7 @@ import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { FrameGraph } from "core/FrameGraph/frameGraph";
 import type { TextureClearType } from "core/Materials/materialHelper.geometryrendering";
 import { MaterialHelperGeometryRendering } from "core/Materials/materialHelper.geometryrendering";
+import { Constants } from "core/Engines/constants";
 
 export interface IFrameGraphGeometryRendererTextureDescription {
     type: number;
@@ -38,33 +39,64 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
     public depthWrite = true;
 
     public size: { width: number; height: number } = { width: 100, height: 100 };
-    public sizeIsPercentage = true;
-    public samples = 1;
-    public textureDescriptions: IFrameGraphGeometryRendererTextureDescription[] = [];
 
-    public readonly outputTextureReference: FrameGraphTaskOutputReference = [this, "output"];
+    public sizeIsPercentage = true;
+
+    public samples = 1;
+
+    public textureDescriptions: IFrameGraphGeometryRendererTextureDescription[] = [];
 
     public readonly outputDepthTextureReference: FrameGraphTaskOutputReference = [this, "outputDepth"];
 
-    public readonly geometryViewDepthTextureReference: FrameGraphTaskOutputReference = [this, "geometryViewDepth"];
+    public readonly geometryViewDepthTextureReference: FrameGraphTaskOutputReference = [
+        this,
+        MaterialHelperGeometryRendering.GeometryTextureDescriptions.find((f) => f.type === Constants.PREPASS_DEPTH_TEXTURE_TYPE)!.name,
+    ];
 
-    public readonly geometryScreenDepthTextureReference: FrameGraphTaskOutputReference = [this, "geometryScreenDepth"];
+    public readonly geometryScreenDepthTextureReference: FrameGraphTaskOutputReference = [
+        this,
+        MaterialHelperGeometryRendering.GeometryTextureDescriptions.find((f) => f.type === Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE)!.name,
+    ];
 
-    public readonly geometryViewNormalTextureReference: FrameGraphTaskOutputReference = [this, "geometryViewNormal"];
+    public readonly geometryViewNormalTextureReference: FrameGraphTaskOutputReference = [
+        this,
+        MaterialHelperGeometryRendering.GeometryTextureDescriptions.find((f) => f.type === Constants.PREPASS_NORMAL_TEXTURE_TYPE)!.name,
+    ];
 
-    public readonly geometryWorldNormalTextureReference: FrameGraphTaskOutputReference = [this, "geometryWorldNormal"];
+    public readonly geometryWorldNormalTextureReference: FrameGraphTaskOutputReference = [
+        this,
+        MaterialHelperGeometryRendering.GeometryTextureDescriptions.find((f) => f.type === Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE)!.name,
+    ];
 
-    public readonly geometryLocalPositionTextureReference: FrameGraphTaskOutputReference = [this, "geometryLocalPosition"];
+    public readonly geometryLocalPositionTextureReference: FrameGraphTaskOutputReference = [
+        this,
+        MaterialHelperGeometryRendering.GeometryTextureDescriptions.find((f) => f.type === Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE)!.name,
+    ];
 
-    public readonly geometryWorldPositionTextureReference: FrameGraphTaskOutputReference = [this, "geometryWorldPosition"];
+    public readonly geometryWorldPositionTextureReference: FrameGraphTaskOutputReference = [
+        this,
+        MaterialHelperGeometryRendering.GeometryTextureDescriptions.find((f) => f.type === Constants.PREPASS_POSITION_TEXTURE_TYPE)!.name,
+    ];
 
-    public readonly geometryAlbedoTextureReference: FrameGraphTaskOutputReference = [this, "geometryAlbedo"];
+    public readonly geometryAlbedoTextureReference: FrameGraphTaskOutputReference = [
+        this,
+        MaterialHelperGeometryRendering.GeometryTextureDescriptions.find((f) => f.type === Constants.PREPASS_ALBEDO_TEXTURE_TYPE)!.name,
+    ];
 
-    public readonly geometryReflectivityTextureReference: FrameGraphTaskOutputReference = [this, "geometryReflectivity"];
+    public readonly geometryReflectivityTextureReference: FrameGraphTaskOutputReference = [
+        this,
+        MaterialHelperGeometryRendering.GeometryTextureDescriptions.find((f) => f.type === Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE)!.name,
+    ];
 
-    public readonly geometryVelocityTextureReference: FrameGraphTaskOutputReference = [this, "geometryVelocity"];
+    public readonly geometryVelocityTextureReference: FrameGraphTaskOutputReference = [
+        this,
+        MaterialHelperGeometryRendering.GeometryTextureDescriptions.find((f) => f.type === Constants.PREPASS_VELOCITY_TEXTURE_TYPE)!.name,
+    ];
 
-    public readonly geometryLinearVelocityTextureReference: FrameGraphTaskOutputReference = [this, "geometryLinearVelocity"];
+    public readonly geometryLinearVelocityTextureReference: FrameGraphTaskOutputReference = [
+        this,
+        MaterialHelperGeometryRendering.GeometryTextureDescriptions.find((f) => f.type === Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE)!.name,
+    ];
 
     public disabled = false;
 
@@ -139,16 +171,13 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
 
         pass.setRenderTarget(outputTextureHandle);
 
-        pass.setOutputTexture(outputTextureHandle, 0, this.geometryViewDepthTextureReference[1]);
-        pass.setOutputTexture(outputTextureHandle, 0, this.geometryScreenDepthTextureReference[1]);
-        pass.setOutputTexture(outputTextureHandle, 0, this.geometryViewNormalTextureReference[1]);
-        pass.setOutputTexture(outputTextureHandle, 0, this.geometryWorldNormalTextureReference[1]);
-        pass.setOutputTexture(outputTextureHandle, 0, this.geometryLocalPositionTextureReference[1]);
-        pass.setOutputTexture(outputTextureHandle, 0, this.geometryWorldPositionTextureReference[1]);
-        pass.setOutputTexture(outputTextureHandle, 0, this.geometryAlbedoTextureReference[1]);
-        pass.setOutputTexture(outputTextureHandle, 0, this.geometryReflectivityTextureReference[1]);
-        pass.setOutputTexture(outputTextureHandle, 0, this.geometryVelocityTextureReference[1]);
-        pass.setOutputTexture(outputTextureHandle, 0, this.geometryLinearVelocityTextureReference[1]);
+        for (let i = 0; i < this.textureDescriptions.length; i++) {
+            const description = this.textureDescriptions[i];
+            const index = MaterialHelperGeometryRendering.GeometryTextureDescriptions.findIndex((f) => f.type === description.type);
+            const geometryDescription = MaterialHelperGeometryRendering.GeometryTextureDescriptions[index];
+
+            pass.setOutputTexture(outputTextureHandle + i + 1, geometryDescription.name);
+        }
 
         if (this.depthTexture !== undefined) {
             pass.setRenderTargetDepth(frameGraph.getTextureHandle(this.depthTexture));
@@ -159,6 +188,7 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
             this._rtt.particleSystemList = objectList.particleSystems;
 
             this._scene.incrementRenderId();
+            this._scene.resetCachedMaterial();
 
             context.setDepthStates(this.depthTest && depthEnabled, this.depthWrite && depthEnabled);
 
@@ -181,6 +211,7 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
         const types: number[] = [];
         const formats: number[] = [];
         const labels: string[] = [];
+        const useSRGBBuffers: boolean[] = [];
 
         for (let i = 0; i < this.textureDescriptions.length; i++) {
             const description = this.textureDescriptions[i];
@@ -193,21 +224,27 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
             types[i] = description.textureType;
             formats[i] = description.textureFormat;
             labels[i] = MaterialHelperGeometryRendering.GeometryTextureDescriptions[index].name;
+            useSRGBBuffers[i] = false;
         }
 
-        return frameGraph.createRenderTargetTexture(this.name, {
-            size: this.size,
-            sizeIsPercentage: this.sizeIsPercentage,
-            options: {
-                createMipMaps: false,
-                generateDepthBuffer: false,
-                textureCount: this.textureDescriptions.length,
-                samples: this.samples,
-                types,
-                formats,
-                labels,
+        return frameGraph.createRenderTargetTexture(
+            this.name,
+            {
+                size: this.size,
+                sizeIsPercentage: this.sizeIsPercentage,
+                options: {
+                    createMipMaps: false,
+                    generateDepthBuffer: false,
+                    textureCount: this.textureDescriptions.length,
+                    samples: this.samples,
+                    types,
+                    formats,
+                    useSRGBBuffers,
+                    labels,
+                },
             },
-        });
+            true
+        );
     }
 
     private _checkDepthTextureCompatibility(frameGraph: FrameGraph): boolean {

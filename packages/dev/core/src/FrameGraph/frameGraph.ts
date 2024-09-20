@@ -181,7 +181,7 @@ export class FrameGraph {
             textureHandle = textureId[0]._fgInternals!.mapNameToTextureHandle[textureId[1]];
 
             if (textureHandle === undefined) {
-                throw new Error(`Task "${textureId[0].name}" does not have a "${textureId[1]}" texture.`);
+                throw new Error(`getTextureCreationOptions: Task "${textureId[0].name}" does not have a "${textureId[1]}" texture.`);
             }
         } else {
             textureHandle = textureId;
@@ -221,7 +221,7 @@ export class FrameGraph {
         const textureHandle = textureId[0]._fgInternals!.mapNameToTextureHandle[textureId[1]];
 
         if (textureHandle === undefined) {
-            throw new Error(`Task "${textureId[0].name}" does not have a "${textureId[1]}" texture.`);
+            throw new Error(`getTextureHandle: Task "${textureId[0].name}" does not have a "${textureId[1]}" texture.`);
         }
 
         return textureHandle;
@@ -242,8 +242,8 @@ export class FrameGraph {
         return this._textureManager.getTextureFromHandle(handle);
     }
 
-    public createRenderTargetTexture(name: string, creationOptions: FrameGraphTextureCreationOptions): FrameGraphTextureHandle {
-        return this._textureManager.createRenderTargetTexture(name, !!this._currentProcessedTask, creationOptions);
+    public createRenderTargetTexture(name: string, creationOptions: FrameGraphTextureCreationOptions, multiTargetMode = false): FrameGraphTextureHandle {
+        return this._textureManager.createRenderTargetTexture(name, !!this._currentProcessedTask, creationOptions, multiTargetMode);
     }
 
     public getObjectList(objectListId: FrameGraphObjectListId): FrameGraphObjectList {
@@ -254,7 +254,7 @@ export class FrameGraph {
         const objectList = objectListId[0]._fgInternals!.mapNameToObjectList[objectListId[1]];
 
         if (objectList === undefined) {
-            throw new Error(`Task "${objectListId[0].name}" does not have a "${objectListId[1]}" object list.`);
+            throw new Error(`getObjectList: Task "${objectListId[0].name}" does not have a "${objectListId[1]}" object list.`);
         }
 
         return objectList;
