@@ -1,5 +1,26 @@
 # Changelog
 
+## 7.26.1
+
+### Core
+
+- Some Async Stuff - by [RaananW](https://github.com/RaananW) ([#15600](https://github.com/BabylonJS/Babylon.js/pull/15600))
+- Introducing loop support for NME - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15599](https://github.com/BabylonJS/Babylon.js/pull/15599))
+- Move ubo WebGL Extension to engine - by [RaananW](https://github.com/RaananW) ([#15598](https://github.com/BabylonJS/Babylon.js/pull/15598))
+
+### GUI Editor
+
+- suppress scss deprecation warnings for now - by [RaananW](https://github.com/RaananW) ([#15597](https://github.com/BabylonJS/Babylon.js/pull/15597))
+
+### Node Editor
+
+- Introducing loop support for NME - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15599](https://github.com/BabylonJS/Babylon.js/pull/15599))
+- suppress scss deprecation warnings for now - by [RaananW](https://github.com/RaananW) ([#15597](https://github.com/BabylonJS/Babylon.js/pull/15597))
+
+### Playground
+
+- suppress scss deprecation warnings for now - by [RaananW](https://github.com/RaananW) ([#15597](https://github.com/BabylonJS/Babylon.js/pull/15597))
+
 ## 7.26.0
 
 ### Core
