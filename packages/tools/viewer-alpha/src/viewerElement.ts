@@ -2,7 +2,7 @@
 import type { Nullable } from "core/index";
 
 import type { PropertyValues } from "lit";
-import type { Viewer, ViewerDetails } from "./viewer";
+import type { ViewerDetails } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, html } from "lit";
@@ -19,7 +19,7 @@ const pauseFilledIcon = "M5 2a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V4a2
 const allowedAnimationSpeeds = [0.5, 1, 1.5, 2] as const;
 
 interface HTML3DElementEventMap extends HTMLElementEventMap {
-    viewerready: CustomEvent<ViewerDetails>;
+    viewerready: Event;
     environmentchange: Event;
     environmenterror: ErrorEvent;
     modelchange: Event;
@@ -36,7 +36,7 @@ interface HTML3DElementEventMap extends HTMLElementEventMap {
 @customElement("babylon-viewer")
 export class HTML3DElement extends LitElement {
     private readonly _viewerLock = new AsyncLock();
-    private _viewer?: Viewer;
+    private _viewerDetails?: Readonly<ViewerDetails>;
 
     // eslint-disable-next-line @typescript-eslint/naming-convention, jsdoc/require-jsdoc
     static override styles = css`
@@ -209,6 +209,14 @@ export class HTML3DElement extends LitElement {
     `;
 
     /**
+     * Gets the underlying viewer details (when the underlying viewer is in a loaded state).
+     * This is useful for advanced scenarios where direct access to the viewer or Babylon scene is needed.
+     */
+    public get viewerDetails() {
+        return this._viewerDetails;
+    }
+
+    /**
      * The engine to use for rendering.
      */
     @property({ reflect: true })
@@ -283,7 +291,7 @@ export class HTML3DElement extends LitElement {
      * Toggles the play/pause animation state if there is a selected animation.
      */
     public toggleAnimation() {
-        this._viewer?.toggleAnimation();
+        this._viewerDetails?.viewer.toggleAnimation();
     }
 
     // eslint-disable-next-line babylonjs/available
@@ -377,8 +385,7 @@ export class HTML3DElement extends LitElement {
         listener: (this: HTMLElement, ev: HTML3DElementEventMap[K]) => any,
         options?: boolean | AddEventListenerOptions
     ): void;
-    override addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
-    override addEventListener(type: unknown, listener: unknown, options?: unknown): void {
+    override addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void {
         super.addEventListener(type as string, listener as EventListenerOrEventListenerObject, options as boolean | AddEventListenerOptions);
     }
 
@@ -397,20 +404,20 @@ export class HTML3DElement extends LitElement {
     }
 
     private _onProgressChanged(event: Event) {
-        if (this._viewer) {
+        if (this._viewerDetails) {
             const input = event.target as HTMLInputElement;
             const value = Number(input.value);
             if (value !== this.animationProgress) {
-                this._viewer.animationProgress = value;
+                this._viewerDetails.viewer.animationProgress = value;
             }
         }
     }
 
     private _onProgressPointerDown(event: Event) {
-        if (this._viewer?.isAnimationPlaying) {
-            this._viewer.pauseAnimation();
+        if (this._viewerDetails?.viewer.isAnimationPlaying) {
+            this._viewerDetails.viewer.pauseAnimation();
             const input = event.target as HTMLInputElement;
-            input.addEventListener("pointerup", () => this._viewer?.playAnimation(), { once: true });
+            input.addEventListener("pointerup", () => this._viewerDetails?.viewer.playAnimation(), { once: true });
         }
     }
 
@@ -422,7 +429,7 @@ export class HTML3DElement extends LitElement {
                 await this.updateComplete;
             }
 
-            if (this._canvasContainer && !this._viewer) {
+            if (this._canvasContainer && !this._viewerDetails) {
                 const canvas = document.createElement("canvas");
                 canvas.className = "full-size";
                 canvas.setAttribute("touch-action", "none");
@@ -431,7 +438,7 @@ export class HTML3DElement extends LitElement {
                 await createViewerForCanvas(canvas, {
                     engine: this.engine,
                     onInitialized: (details) => {
-                        this._viewer = details.viewer;
+                        this._viewerDetails = details;
 
                         details.viewer.onEnvironmentChanged.add(() => {
                             this._dispatchCustomEvent("environmentchange", (type) => new Event(type));
@@ -478,7 +485,7 @@ export class HTML3DElement extends LitElement {
                         this._updateModel();
                         this._updateEnv();
 
-                        this._dispatchCustomEvent("viewerready", (type) => new CustomEvent(type, { detail: details }));
+                        this._dispatchCustomEvent("viewerready", (type) => new Event(type));
                     },
                 });
             }
@@ -487,9 +494,9 @@ export class HTML3DElement extends LitElement {
 
     private async _tearDownViewer() {
         await this._viewerLock.lockAsync(async () => {
-            if (this._viewer) {
-                this._viewer.dispose();
-                this._viewer = undefined;
+            if (this._viewerDetails) {
+                this._viewerDetails.viewer.dispose();
+                this._viewerDetails = undefined;
             }
 
             // We want to replace the canvas for two reasons:
@@ -502,23 +509,23 @@ export class HTML3DElement extends LitElement {
     }
 
     private _updateAnimationSpeed() {
-        if (this._viewer) {
-            this._viewer.animationSpeed = this.animationSpeed;
+        if (this._viewerDetails) {
+            this._viewerDetails.viewer.animationSpeed = this.animationSpeed;
         }
     }
 
     private _updateSelectedAnimation() {
-        if (this._viewer) {
-            this._viewer.selectedAnimation = this._selectedAnimation;
+        if (this._viewerDetails) {
+            this._viewerDetails.viewer.selectedAnimation = this._selectedAnimation;
         }
     }
 
     private async _updateModel() {
         try {
             if (this.source) {
-                await this._viewer?.loadModel(this.source, { pluginExtension: this.extension ?? undefined });
+                await this._viewerDetails?.viewer.loadModel(this.source, { pluginExtension: this.extension ?? undefined });
             } else {
-                await this._viewer?.resetModel();
+                await this._viewerDetails?.viewer.resetModel();
             }
         } catch (error) {
             Logger.Log(error);
@@ -528,9 +535,9 @@ export class HTML3DElement extends LitElement {
     private async _updateEnv() {
         try {
             if (this.environment) {
-                await this._viewer?.loadEnvironment(this.environment);
+                await this._viewerDetails?.viewer.loadEnvironment(this.environment);
             } else {
-                await this._viewer?.resetEnvironment();
+                await this._viewerDetails?.viewer.resetEnvironment();
             }
         } catch (error) {
             Logger.Log(error);

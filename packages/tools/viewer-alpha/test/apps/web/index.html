@@ -63,17 +63,17 @@
         <script type="module" src="/packages/tools/viewer-alpha/src/index.ts"></script>
         <script>
             const viewerElement = document.querySelector("babylon-viewer");
-            let viewerDetail;
+            let viewerDetails;
             viewerElement.addEventListener(
                 "viewerready",
                 (event) => {
-                    viewerDetail = event.detail;
-                    console.log(`Viewer ready.`, viewerDetail);
+                    viewerDetails = viewerElement.viewerDetails;
+                    console.log(`Viewer ready.`, viewerDetails);
                 },
                 { once: true }
             );
             viewerElement.addEventListener("modelchange", (event) => {
-                console.log(`Model changed.`, viewerDetail);
+                console.log(`Model changed.`, viewerDetails);
             });
             let isViewerConnected = true;
 
@@ -95,7 +95,7 @@
                 if (file) {
                     event.preventDefault();
                     await customElements.whenDefined("babylon-viewer");
-                    await viewerDetail.viewer.loadModel(file);
+                    await viewerDetails.viewer.loadModel(file);
                 }
             }
 
