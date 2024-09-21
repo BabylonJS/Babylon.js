@@ -120,7 +120,7 @@ export class PreviewManager {
     }
 
     private _initScene(scene: Scene) {
-        (window as any).scene = scene;
+        (window as any).scenePreview = scene;
 
         this._scene = scene;
 
@@ -211,7 +211,7 @@ export class PreviewManager {
             autoFillExternalInputs: false,
             debugTextures,
         });
-        (window as any).nrg = this._nodeRenderGraph;
+        (window as any).nrgPreview = this._nodeRenderGraph;
     }
 
     private async _buildGraph() {
@@ -259,6 +259,8 @@ export class PreviewManager {
                 camera.useFramingBehavior = true;
                 camera.wheelDeltaPercentage = 0.01;
                 camera.pinchDeltaPercentage = 0.01;
+                camera.alpha = 0;
+                camera.beta = 0.8;
 
                 if (!this._scene.cameraToUseForPointers) {
                     this._scene.cameraToUseForPointers = camera;

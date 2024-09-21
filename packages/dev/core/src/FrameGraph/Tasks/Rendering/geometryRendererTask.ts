@@ -135,8 +135,6 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
         this.name = name;
         this._clearAttachmentsLayout = new Map();
         this._allAttachmentsLayout = [];
-
-        MaterialHelperGeometryRendering.CreateConfiguration(this._rtt.renderPassId);
     }
 
     public get excludedSkinnedMeshFromVelocityTexture() {
@@ -166,6 +164,8 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
 
         // Create pass
         const objectList = frameGraph.getObjectList(this.objectList);
+
+        MaterialHelperGeometryRendering.MarkAsDirty(this._rtt.renderPassId, objectList.meshes || this._scene.meshes);
 
         const pass = frameGraph.addRenderPass(this.name);
 
@@ -302,7 +302,7 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
     }
 
     private _registerForRenderPassId(renderPassId: number) {
-        const configuration = MaterialHelperGeometryRendering.GetConfiguration(renderPassId);
+        const configuration = MaterialHelperGeometryRendering.CreateConfiguration(renderPassId);
 
         for (let i = 0; i < this.textureDescriptions.length; i++) {
             const description = this.textureDescriptions[i];

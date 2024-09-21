@@ -136,6 +136,18 @@ export class MaterialHelperGeometryRendering {
         uniforms.push("previousWorld", "previousViewProjection", "mPreviousBones");
     }
 
+    public static MarkAsDirty(renderPassId: number, meshes: AbstractMesh[]) {
+        for (const mesh of meshes) {
+            if (!mesh.subMeshes) {
+                continue;
+            }
+
+            for (const subMesh of mesh.subMeshes) {
+                subMesh._removeDrawWrapper(renderPassId);
+            }
+        }
+    }
+
     public static PrepareDefines(renderPassId: number, mesh: AbstractMesh, defines: MaterialDefines) {
         const configuration = MaterialHelperGeometryRendering._Configurations[renderPassId];
         if (!configuration) {
