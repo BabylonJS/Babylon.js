@@ -3,6 +3,8 @@ import type { FrameGraph } from "../../frameGraph";
 import type { FrameGraphTaskOutputReference, IFrameGraphTask, FrameGraphTextureId } from "../../frameGraphTypes";
 import type { DrawWrapper } from "core/Materials/drawWrapper";
 import { Constants } from "core/Engines/constants";
+import type { FrameGraphRenderPass } from "core/FrameGraph/Passes/renderPass";
+import type { FrameGraphRenderContext } from "core/FrameGraph/frameGraphRenderContext";
 
 export class FrameGraphPostProcessTask implements IFrameGraphTask {
     public sourceTexture: FrameGraphTextureId;
@@ -37,7 +39,7 @@ export class FrameGraphPostProcessTask implements IFrameGraphTask {
         return this._postProcess.isReady();
     }
 
-    public recordFrameGraph(frameGraph: FrameGraph, skipCreationOfDisabledPasses = false): void {
+    public recordFrameGraph(frameGraph: FrameGraph, skipCreationOfDisabledPasses = false, additionalBindings?: (context: FrameGraphRenderContext) => void): FrameGraphRenderPass {
         if (this.sourceTexture === undefined) {
             throw new Error(`PostProcess "${this.name}": sourceTexture is required`);
         }
@@ -63,6 +65,7 @@ export class FrameGraphPostProcessTask implements IFrameGraphTask {
             context.applyFullScreenEffect(this._postProcessDrawWrapper, () => {
                 this._postProcess._bind();
                 context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "textureSampler", sourceTextureHandle);
+                additionalBindings?.(context);
             });
         });
 
@@ -74,6 +77,8 @@ export class FrameGraphPostProcessTask implements IFrameGraphTask {
                 context.copyTexture(sourceTextureHandle);
             });
         }
+
+        return pass;
     }
 
     public disposeFrameGraph(): void {
