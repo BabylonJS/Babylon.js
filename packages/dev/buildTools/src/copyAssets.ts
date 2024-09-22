@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { glob } from "glob";
+import { globSync } from "glob";
 import * as path from "path";
 import { copyFile, checkArgs } from "./utils.js";
 import * as chokidar from "chokidar";
@@ -77,15 +77,10 @@ export const processAssets = (options: { extensions: string[] } = { extensions: 
             });
         console.log("watching for asset changes...");
     } else {
-        glob(globDirectory).then(
-            (files) => {
-                files.forEach((file) => {
-                    processFile(file, processOptions);
-                });
-            },
-            (err) => {
-                console.log(err);
-            }
-        );
+        globSync(globDirectory, {
+            windowsPathsNoEscape: true,
+        }).forEach((file) => {
+            processFile(file.replace(/\\/g, "/"), processOptions);
+        });
     }
 };

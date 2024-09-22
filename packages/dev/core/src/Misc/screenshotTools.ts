@@ -13,8 +13,6 @@ import { ApplyPostProcess } from "./textureTools";
 
 import type { AbstractEngine } from "../Engines/abstractEngine";
 
-import "../Engines/Extensions/engine.readTexture";
-
 let screenshotCanvas: Nullable<HTMLCanvasElement> = null;
 
 /**

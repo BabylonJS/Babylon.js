@@ -126,6 +126,7 @@ export class NullEngine extends Engine {
             maxCombinedTexturesImageUnits: 32,
             maxTextureSize: 512,
             maxCubemapTextureSize: 512,
+            maxDrawBuffers: 0,
             maxRenderTextureSize: 512,
             maxVertexAttribs: 16,
             maxVaryingVectors: 16,

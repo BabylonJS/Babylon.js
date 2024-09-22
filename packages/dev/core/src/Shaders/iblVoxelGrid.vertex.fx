@@ -13,4 +13,7 @@ void main(void) {
     // gl_Position.xyz = gl_Position.zyx;
     vNormalizedPosition.xyz = gl_Position.xyz * 0.5 + 0.5;
     // vNormalizedPosition.xyz = vNormalizedPosition.zyx;
+    #ifdef IS_NDC_HALF_ZRANGE
+        gl_Position.z = gl_Position.z * 0.5 + 0.5;
+    #endif
 }

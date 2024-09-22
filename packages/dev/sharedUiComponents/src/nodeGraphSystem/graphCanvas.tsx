@@ -586,6 +586,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
             newNodes.push(newNode);
 
+            this.props.stateManager.onNewNodeCreatedObservable.notifyObservers(newNode);
+
             if (selectNew) {
                 this.props.stateManager.onSelectionChangedObservable.notifyObservers({ selection: newNode, forceKeepSelection: true });
             }
@@ -1390,10 +1392,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         newNode.y = y / this.zoom;
         newNode.cleanAccumulation();
 
-        this.props.stateManager.onNewNodeCreatedObservable.notifyObservers(newNode);
-        this.props.stateManager.onSelectionChangedObservable.notifyObservers(null);
-        this.props.stateManager.onSelectionChangedObservable.notifyObservers({ selection: newNode });
-
         x -= GraphCanvasComponent.NodeWidth + 200;
 
         newNode.content.inputs.forEach((portData) => {
@@ -1411,6 +1409,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 }
             }
         });
+
+        this.props.stateManager.onNewNodeCreatedObservable.notifyObservers(newNode);
+        this.props.stateManager.onSelectionChangedObservable.notifyObservers(null);
+        this.props.stateManager.onSelectionChangedObservable.notifyObservers({ selection: newNode });
     }
 
     processEditorData(editorData: IEditorData) {

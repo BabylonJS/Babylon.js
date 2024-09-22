@@ -85,7 +85,7 @@ export class KHR_materials_iridescence implements IGLTFLoaderExtension {
         if (properties.iridescenceTexture) {
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/iridescenceTexture`, properties.iridescenceTexture, (texture) => {
-                    texture.name = `${babylonMaterial.name} (Iridescence Intensity)`;
+                    texture.name = `${babylonMaterial.name} (Iridescence)`;
                     babylonMaterial.iridescence.texture = texture;
                 })
             );

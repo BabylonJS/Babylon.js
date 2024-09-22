@@ -12,9 +12,6 @@ import { Logger } from "../../Misc/logger";
 import { _IblShadowsVoxelRenderer } from "./iblShadowsVoxelRenderer";
 import { _IblShadowsVoxelTracingPass } from "./iblShadowsVoxelTracingPass";
 
-import "../../Shaders/postprocess.vertex";
-import "../../Shaders/iblShadowGBufferDebug.fragment";
-import "../../Shaders/iblShadowsCombine.fragment";
 import { PostProcess } from "../../PostProcesses/postProcess";
 import type { PostProcessOptions } from "../../PostProcesses/postProcess";
 import { _IblShadowsImportanceSamplingRenderer } from "./iblShadowsImportanceSamplingRenderer";
@@ -25,6 +22,7 @@ import { FreeCamera } from "../../Cameras/freeCamera";
 import { PostProcessRenderPipeline } from "../../PostProcesses/RenderPipeline/postProcessRenderPipeline";
 import { PostProcessRenderEffect } from "core/PostProcesses/RenderPipeline/postProcessRenderEffect";
 import type { Camera } from "core/Cameras/camera";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 interface IblShadowsSettings {
     /**
@@ -105,7 +103,7 @@ class IblShadowsPrepassConfiguration implements PrePassEffectConfiguration {
      */
     public readonly texturesRequired: number[] = [
         Constants.PREPASS_DEPTH_TEXTURE_TYPE,
-        Constants.PREPASS_NDC_DEPTH_TEXTURE_TYPE,
+        Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE,
         Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE,
         // Constants.PREPASS_NORMAL_TEXTURE_TYPE, // TODO - don't need this for IBL shadows
         Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE,
@@ -624,7 +622,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this.ssShadowMaxDist = options.ssShadowMaxDist || 0.05;
         this.ssShadowSamples = options.ssShadowSampleCount || 16;
         this.ssShadowStride = options.ssShadowStride || 8;
-        this.ssShadowThickness = options.ssShadowThickness || 0.01;
+        this.ssShadowThickness = options.ssShadowThickness || 0.5;
         this._spatialBlurPass = new _IblShadowsSpatialBlurPass(this.scene);
         this._accumulationPass = new _IblShadowsAccumulationPass(this.scene);
         this.shadowRemenance = options.shadowRemenance || 0.75;
@@ -646,16 +644,23 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._listenForCameraChanges();
         this.scene.getEngine().onResizeObservable.add(this._handleResize.bind(this));
 
-        // Only turn on the pipeline if the importance sampling RT's are ready
-        this._importanceSamplingRenderer.onReadyObservable.add(() => {
+        // Only turn on the pipeline when the importance sampling RT's are ready
+        this._importanceSamplingRenderer.onReadyObservable.addOnce(() => {
             this._createEffectPasses(cameras);
-            if (this._voxelRenderer.isReady()) {
-                this.toggleShadow(this._enabled);
-            } else {
-                this._voxelRenderer.onReadyObservable.addOnce(() => {
+            const checkVoxelRendererReady = () => {
+                if (this._voxelRenderer.isReady()) {
                     this.toggleShadow(this._enabled);
-                });
-            }
+                    if (this._enabled) {
+                        this._voxelizationDirty = true;
+                    }
+                } else {
+                    setTimeout(() => {
+                        checkVoxelRendererReady();
+                    }, 16);
+                }
+            };
+
+            checkVoxelRendererReady();
         });
     }
 
@@ -684,6 +689,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     }
 
     private _createShadowCombinePostProcess() {
+        const isWebGPU = this.engine.isWebGPU;
         const compositeOptions: PostProcessOptions = {
             width: this.scene.getEngine().getRenderWidth(),
             height: this.scene.getEngine().getRenderHeight(),
@@ -693,6 +699,14 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             engine: this.scene.getEngine(),
             textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             reusable: false,
+            shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
+                if (useWebGPU) {
+                    list.push(import("../../ShadersWGSL/iblShadowsCombine.fragment"));
+                } else {
+                    list.push(import("../../Shaders/iblShadowsCombine.fragment"));
+                }
+            },
         };
         this._shadowCompositePP = new PostProcess("iblShadowsCombine", "iblShadowsCombine", compositeOptions);
         this._shadowCompositePP.autoClear = false;
@@ -767,6 +781,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         if (this._gbufferDebugPass) {
             return this._gbufferDebugPass;
         }
+        const isWebGPU = this.engine.isWebGPU;
         const textureNames: string[] = this._prePassEffectConfiguration.texturesRequired.map((type) => PrePassRenderer.TextureFormats[type].name.toString());
 
         const options: PostProcessOptions = {
@@ -779,6 +794,14 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             uniforms: ["sizeParams"],
             samplers: textureNames,
             reusable: false,
+            shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
+                if (useWebGPU) {
+                    list.push(import("../../ShadersWGSL/iblShadowGBufferDebug.fragment"));
+                } else {
+                    list.push(import("../../Shaders/iblShadowGBufferDebug.fragment"));
+                }
+            },
         };
         this._gbufferDebugPass = new PostProcess("iblShadowGBufferDebug", "iblShadowGBufferDebug", options);
         this._gbufferDebugPass.autoClear = false;

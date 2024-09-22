@@ -7,11 +7,9 @@ import type { Camera } from "../Cameras/camera";
 import { Effect } from "../Materials/effect";
 import { Constants } from "../Engines/constants";
 import type { RenderTargetCreationOptions } from "../Materials/Textures/textureCreationOptions";
-import "../Shaders/postprocess.vertex";
 import type { IInspectable } from "../Misc/iInspectable";
 import type { Color4 } from "../Maths/math.color";
 
-import "../Engines/Extensions/engine.renderTarget";
 import type { NodeMaterial } from "../Materials/Node/nodeMaterial";
 import { serialize, serializeAsColor4 } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
@@ -206,6 +204,10 @@ export type PostProcessOptions = {
      * The shader language of the shader. (default: GLSL)
      */
     shaderLanguage?: ShaderLanguage;
+    /**
+     * Defines additional code to call to prepare the shader code
+     */
+    extraInitializations?: (useWebGPU: boolean, list: Promise<any>[]) => void;
 };
 
 type TextureCache = { texture: RenderTargetWrapper; postProcessChannel: number; lastUsedRenderId: number };
@@ -672,6 +674,7 @@ export class PostProcess {
             textureFormat = options.textureFormat ?? Constants.TEXTUREFORMAT_RGBA;
             shaderLanguage = options.shaderLanguage ?? ShaderLanguage.GLSL;
             uniformBuffers = options.uniformBuffers ?? null;
+            extraInitializations = options.extraInitializations;
         } else if (_size) {
             if (typeof _size === "number") {
                 size = _size;

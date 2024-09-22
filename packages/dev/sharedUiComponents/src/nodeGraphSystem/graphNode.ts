@@ -192,6 +192,10 @@ export class GraphNode {
         }
     }
 
+    public get rootElement() {
+        return this._visual;
+    }
+
     public constructor(
         public content: INodeData,
         stateManager: StateManager
@@ -434,6 +438,7 @@ export class GraphNode {
         this._visual.releasePointerCapture(evt.pointerId);
 
         if (!this._ownerCanvas._targetLinkCandidate) {
+            this._stateManager.onNodeMovedObservable.notifyObservers(this);
             return;
         }
 
@@ -479,6 +484,7 @@ export class GraphNode {
         this._ownerCanvas.automaticRewire(availableNodeOutputs, outputs, true);
 
         this._stateManager.onRebuildRequiredObservable.notifyObservers();
+        this._stateManager.onNodeMovedObservable.notifyObservers(this);
     }
 
     private _onMove(evt: PointerEvent) {

@@ -14,6 +14,8 @@ import type { IMSFTAudioEmitter_Clip, IMSFTAudioEmitter_Emitter, IMSFTAudioEmitt
 import { IMSFTAudioEmitter_AnimationEventAction } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
+import "core/Audio/audioSceneComponent";
+
 const NAME = "MSFT_audio_emitter";
 
 declare module "../../glTFFileLoader" {

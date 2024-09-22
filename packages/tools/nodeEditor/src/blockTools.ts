@@ -101,10 +101,22 @@ import { CurveBlock } from "core/Materials/Node/Blocks/curveBlock";
 import { PrePassTextureBlock } from "core/Materials/Node/Blocks/Input/prePassTextureBlock";
 import { NodeMaterialTeleportInBlock } from "core/Materials/Node/Blocks/Teleport/teleportInBlock";
 import { NodeMaterialTeleportOutBlock } from "core/Materials/Node/Blocks/Teleport/teleportOutBlock";
+import { ColorConverterBlock } from "core/Materials/Node/Blocks/colorConverterBlock";
+import { LoopBlock } from "core/Materials/Node/Blocks/loopBlock";
+import { StorageReadBlock } from "core/Materials/Node/Blocks/storageReadBlock";
+import { StorageWriteBlock } from "core/Materials/Node/Blocks/storageWriteBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
         switch (data) {
+            case "StorageWriteBlock":
+                return new StorageWriteBlock("StorageWrite");
+            case "StorageReadBlock":
+                return new StorageReadBlock("StorageRead");
+            case "LoopBlock":
+                return new LoopBlock("Loop");
+            case "ColorConverterBlock":
+                return new ColorConverterBlock("ColorConverter");
             case "TeleportInBlock":
                 return new NodeMaterialTeleportInBlock("Teleport In");
             case "TeleportOutBlock":
