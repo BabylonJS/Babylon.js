@@ -15,6 +15,7 @@ import { NodeRenderGraphObjectRendererBlock } from "core/FrameGraph/Node/Blocks/
 import { NodeRenderGraphGeometryRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/geometryRendererBlock";
 import { NodeRenderGraphCullObjectsBlock } from "core/FrameGraph/Node/Blocks/Rendering/cullObjectsBlock";
 import { NodeRenderGraphGUIBlock } from "gui/2D/FrameGraph/renderGraphGUIBlock";
+import { NodeRenderGraphCircleOfConfusionPostProcessBlock } from "core/FrameGraph";
 
 /**
  * Static class for BlockTools
@@ -77,6 +78,9 @@ export class BlockTools {
             }
             case "CullBlock": {
                 return new NodeRenderGraphCullObjectsBlock("Cull", scene);
+            }
+            case "CircleOfConfusionBlock": {
+                return new NodeRenderGraphCircleOfConfusionPostProcessBlock("Circle of Confusion", scene);
             }
         }
 

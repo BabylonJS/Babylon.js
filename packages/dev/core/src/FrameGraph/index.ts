@@ -11,6 +11,7 @@ export * from "./Passes/renderPass";
 
 export * from "./Tasks/PostProcesses/bloomMergeTask";
 export * from "./Tasks/PostProcesses/bloomTask";
+export * from "./Tasks/PostProcesses/circleOfConfusionTask";
 export * from "./Tasks/PostProcesses/postProcessTask";
 export * from "./Tasks/Texture/clearTextureTask";
 export * from "./Tasks/Texture/copyToBackbufferColorTask";

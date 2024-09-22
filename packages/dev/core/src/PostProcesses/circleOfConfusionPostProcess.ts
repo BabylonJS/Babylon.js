@@ -11,6 +11,10 @@ import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 
+export interface CircleOfConfusionPostProcessOptions extends PostProcessOptions {
+    depthNotNormalized?: boolean;
+}
+
 /**
  * The CircleOfConfusionPostProcess computes the circle of confusion value for each pixel given required lens parameters. See https://en.wikipedia.org/wiki/Circle_of_confusion
  */
@@ -60,7 +64,7 @@ export class CircleOfConfusionPostProcess extends PostProcess {
     constructor(
         name: string,
         depthTexture: Nullable<RenderTargetTexture>,
-        options: number | PostProcessOptions,
+        options: number | CircleOfConfusionPostProcessOptions,
         camera: Nullable<Camera>,
         samplingMode?: number,
         engine?: AbstractEngine,
@@ -68,29 +72,32 @@ export class CircleOfConfusionPostProcess extends PostProcess {
         textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false
     ) {
-        super(
-            name,
-            "circleOfConfusion",
-            ["cameraMinMaxZ", "focusDistance", "cocPrecalculation"],
-            ["depthSampler"],
-            options,
+        super(name, "circleOfConfusion", {
+            uniforms: ["cameraMinMaxZ", "focusDistance", "cocPrecalculation"],
+            samplers: ["depthSampler"],
+            defines: typeof options === "object" && options.depthNotNormalized ? "#define COC_DEPTH_NOT_NORMALIZED" : undefined,
+            size: typeof options === "number" ? options : undefined,
             camera,
             samplingMode,
             engine,
             reusable,
-            null,
             textureType,
-            undefined,
-            null,
-            blockCompilation
-        );
+            blockCompilation,
+            ...(options as CircleOfConfusionPostProcessOptions),
+        });
         this._depthTexture = depthTexture;
         this.onApplyObservable.add((effect: Effect) => {
-            if (!this._depthTexture) {
-                Logger.Warn("No depth texture set on CircleOfConfusionPostProcess");
-                return;
+            if (!this.useAsFrameGraphTask) {
+                if (!this._depthTexture) {
+                    Logger.Warn("No depth texture set on CircleOfConfusionPostProcess");
+                    return;
+                }
+
+                effect.setTexture("depthSampler", this._depthTexture);
+
+                const activeCamera = this._depthTexture.activeCamera!;
+                effect.setFloat2("cameraMinMaxZ", activeCamera.minZ, activeCamera.maxZ - activeCamera.minZ);
             }
-            effect.setTexture("depthSampler", this._depthTexture);
 
             // Circle of confusion calculation, See https://developer.nvidia.com/gpugems/GPUGems/gpugems_ch23.html
             const aperture = this.lensSize / this.fStop;
@@ -98,8 +105,6 @@ export class CircleOfConfusionPostProcess extends PostProcess {
 
             effect.setFloat("focusDistance", this.focusDistance);
             effect.setFloat("cocPrecalculation", cocPrecalculation);
-            const activeCamera = this._depthTexture.activeCamera!;
-            effect.setFloat2("cameraMinMaxZ", activeCamera.minZ, activeCamera.maxZ - activeCamera.minZ);
         });
     }
 

@@ -4,6 +4,7 @@ export * from "./outputBlock";
 export * from "./PostProcesses/blackAndWhitePostProcessBlock";
 export * from "./PostProcesses/bloomPostProcessBlock";
 export * from "./PostProcesses/blurPostProcessBlock";
+export * from "./PostProcesses/circleOfConfusionPostProcessBlock";
 export * from "./Rendering/objectRendererBlock";
 export * from "./Rendering/geometryRendererBlock";
 export * from "./Rendering/cullObjectsBlock";

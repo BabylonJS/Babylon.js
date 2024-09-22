@@ -4,6 +4,7 @@ import { Constants } from "core/Engines/constants";
 import type { BloomEffect } from "../../../PostProcesses/bloomEffect";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 import { FrameGraphBloomMergeTask } from "./bloomMergeTask";
+import type { BloomMergePostProcess } from "core/PostProcesses/bloomMergePostProcess";
 
 export class FrameGraphBloomTask implements IFrameGraphTask {
     public sourceTexture: FrameGraphTextureId;
@@ -38,7 +39,7 @@ export class FrameGraphBloomTask implements IFrameGraphTask {
         this._downscale = new FrameGraphPostProcessTask(`${name} Downscale`, bloomEffect._effects[0]);
         this._blurX = new FrameGraphPostProcessTask(`${name} Blur X`, bloomEffect._effects[1]);
         this._blurY = new FrameGraphPostProcessTask(`${name} Blur Y`, bloomEffect._effects[2]);
-        this._merge = new FrameGraphBloomMergeTask(`${name} Merge`, bloomEffect._effects[3]);
+        this._merge = new FrameGraphBloomMergeTask(`${name} Merge`, bloomEffect._effects[3] as BloomMergePostProcess);
     }
 
     public isReadyFrameGraph() {

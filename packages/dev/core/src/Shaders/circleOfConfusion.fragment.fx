@@ -5,7 +5,9 @@ uniform sampler2D depthSampler;
 varying vec2 vUV;
 
 // precomputed uniforms (not effect parameters)
-// cameraMinMaxZ.y => "maxZ - minZ" i.e., the near-to-far distance.
+// cameraMinMaxZ.x = minZ
+// cameraMinMaxZ.y = maxZ - minZ i.e., the near-to-far distance.
+// cameraMinMaxZ.y = maxZ / (maxZ - minZ) when COC_DEPTH_NOT_NORMALIZED is defined
 uniform vec2 cameraMinMaxZ;
 
 // uniforms
@@ -21,7 +23,11 @@ void main(void)
 
     #define CUSTOM_COC_DEPTH
 
-    float pixelDistance = (cameraMinMaxZ.x + cameraMinMaxZ.y * depth) * 1000.0; // actual distance from the lens in scene units/1000 (eg. millimeter)
+    #ifdef COC_DEPTH_NOT_NORMALIZED
+        float pixelDistance = (depth - cameraMinMaxZ.x) * cameraMinMaxZ.y * 1000.0; // transform view space depth n..f to 0..f
+    #else
+        float pixelDistance = (cameraMinMaxZ.x + cameraMinMaxZ.y * depth) * 1000.0; // actual distance from the lens in scene units/1000 (eg. millimeter)
+    #endif
 
     #define CUSTOM_COC_PIXELDISTANCE
 

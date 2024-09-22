@@ -1,4 +1,3 @@
-import type { PostProcess } from "core/PostProcesses/postProcess";
 import type { FrameGraph } from "../../frameGraph";
 import type { FrameGraphTextureId } from "../../frameGraphTypes";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
@@ -10,7 +9,7 @@ export class FrameGraphBloomMergeTask extends FrameGraphPostProcessTask {
 
     protected override _postProcess: BloomMergePostProcess;
 
-    constructor(name: string, bloomMergePostProcess: PostProcess) {
+    constructor(name: string, bloomMergePostProcess: BloomMergePostProcess) {
         super(name, bloomMergePostProcess);
     }
 

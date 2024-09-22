@@ -147,6 +147,7 @@ export class NodeRenderGraphBlurPostProcessBlock extends NodeRenderGraphBlock {
         const codes: string[] = [];
         codes.push(`${this._codeVariableName}.direction = new BABYLON.Vector2(${this.direction.x}, ${this.direction.y});`);
         codes.push(`${this._codeVariableName}.kernel = ${this.kernel};`);
+        codes.push(`${this._codeVariableName}.sourceSamplingMode = ${this.sourceSamplingMode};`);
         return super._dumpPropertiesCode() + codes.join("\n");
     }
 
@@ -154,6 +155,7 @@ export class NodeRenderGraphBlurPostProcessBlock extends NodeRenderGraphBlock {
         const serializationObject = super.serialize();
         serializationObject.direction = this.direction.asArray();
         serializationObject.kernel = this.kernel;
+        serializationObject.sourceSamplingMode = this.sourceSamplingMode;
         return serializationObject;
     }
 
@@ -161,6 +163,7 @@ export class NodeRenderGraphBlurPostProcessBlock extends NodeRenderGraphBlock {
         super._deserialize(serializationObject);
         this.direction.fromArray(serializationObject.direction);
         this.kernel = serializationObject.kernel;
+        this.sourceSamplingMode = serializationObject.sourceSamplingMode;
     }
 }
 
