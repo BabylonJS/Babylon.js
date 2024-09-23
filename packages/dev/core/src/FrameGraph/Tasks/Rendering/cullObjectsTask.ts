@@ -28,11 +28,11 @@ export class FrameGraphCullObjectsTask implements IFrameGraphTask {
         };
     }
 
-    public isReadyFrameGraph() {
+    public isReady() {
         return true;
     }
 
-    public recordFrameGraph(frameGraph: FrameGraph) {
+    public record(frameGraph: FrameGraph) {
         if (this.objectList === undefined || this.camera === undefined) {
             throw new Error(`FrameGraphCullObjectsTask ${this.name}: objectList and camera are required`);
         }
@@ -76,5 +76,5 @@ export class FrameGraphCullObjectsTask implements IFrameGraphTask {
         });
     }
 
-    public disposeFrameGraph(): void {}
+    public dispose(): void {}
 }

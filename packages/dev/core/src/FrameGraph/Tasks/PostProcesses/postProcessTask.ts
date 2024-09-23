@@ -35,11 +35,11 @@ export class FrameGraphPostProcessTask implements IFrameGraphTask {
         this._postProcessDrawWrapper = postProcess.getDrawWrapper();
     }
 
-    public isReadyFrameGraph() {
+    public isReady() {
         return this._postProcess.isReady();
     }
 
-    public recordFrameGraph(
+    public record(
         frameGraph: FrameGraph,
         skipCreationOfDisabledPasses = false,
         additionalExecute?: (context: FrameGraphRenderContext) => void,
@@ -87,7 +87,7 @@ export class FrameGraphPostProcessTask implements IFrameGraphTask {
         return pass;
     }
 
-    public disposeFrameGraph(): void {
+    public dispose(): void {
         this._postProcess.dispose();
     }
 }

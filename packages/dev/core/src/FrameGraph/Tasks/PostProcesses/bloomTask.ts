@@ -56,11 +56,11 @@ export class FrameGraphBloomTask implements IFrameGraphTask {
         this._merge = new FrameGraphBloomMergeTask(`${name} Merge`, this._bloomEffect._effects[3] as BloomMergePostProcess);
     }
 
-    public isReadyFrameGraph() {
-        return this._downscale.isReadyFrameGraph() && this._blurX.isReadyFrameGraph() && this._blurY.isReadyFrameGraph() && this._merge.isReadyFrameGraph();
+    public isReady() {
+        return this._downscale.isReady() && this._blurX.isReady() && this._blurY.isReady() && this._merge.isReady();
     }
 
-    public recordFrameGraph(frameGraph: FrameGraph): void {
+    public record(frameGraph: FrameGraph): void {
         if (this.sourceTexture === undefined) {
             throw new Error("FrameGraphBloomTask: sourceTexture is required");
         }
@@ -91,19 +91,19 @@ export class FrameGraphBloomTask implements IFrameGraphTask {
 
         this._downscale.sourceTexture = this.sourceTexture;
         this._downscale.destinationTexture = downscaleTextureHandle;
-        this._downscale.recordFrameGraph(frameGraph, true);
+        this._downscale.record(frameGraph, true);
 
         const blurXTextureHandle = frameGraph.createRenderTargetTexture(this._blurX.name, textureCreationOptions);
 
         this._blurX.sourceTexture = downscaleTextureHandle;
         this._blurX.destinationTexture = blurXTextureHandle;
-        this._blurX.recordFrameGraph(frameGraph, true);
+        this._blurX.record(frameGraph, true);
 
         const blurYTextureHandle = frameGraph.createRenderTargetTexture(this._blurY.name, textureCreationOptions);
 
         this._blurY.sourceTexture = blurXTextureHandle;
         this._blurY.destinationTexture = blurYTextureHandle;
-        this._blurY.recordFrameGraph(frameGraph, true);
+        this._blurY.record(frameGraph, true);
 
         const sourceTextureCreationOptions = frameGraph.getTextureCreationOptions(this.sourceTexture, true);
         sourceTextureCreationOptions.options.generateDepthBuffer = false;
@@ -116,7 +116,7 @@ export class FrameGraphBloomTask implements IFrameGraphTask {
         this._merge.sourceSamplingMode = this.sourceSamplingMode;
         this._merge.blurTexture = blurYTextureHandle;
         this._merge.destinationTexture = outputTextureHandle;
-        this._merge.recordFrameGraph(frameGraph, true);
+        this._merge.record(frameGraph, true);
 
         const passDisabled = frameGraph.addRenderPass(this.name + "_disabled", true);
 
@@ -126,11 +126,11 @@ export class FrameGraphBloomTask implements IFrameGraphTask {
         });
     }
 
-    public disposeFrameGraph(): void {
-        this._downscale.disposeFrameGraph();
-        this._blurX.disposeFrameGraph();
-        this._blurY.disposeFrameGraph();
-        this._merge.disposeFrameGraph();
+    public dispose(): void {
+        this._downscale.dispose();
+        this._blurX.dispose();
+        this._blurY.dispose();
+        this._merge.dispose();
         this._bloomEffect.disposeEffects();
     }
 }

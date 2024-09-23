@@ -141,11 +141,11 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
         return MaterialHelperGeometryRendering.GetConfiguration(this._rtt.renderPassId).excludedSkinnedMesh;
     }
 
-    public isReadyFrameGraph() {
+    public isReady() {
         return this._rtt.isReadyForRendering();
     }
 
-    public recordFrameGraph(frameGraph: FrameGraph) {
+    public record(frameGraph: FrameGraph) {
         if (this.textureDescriptions.length === 0 || this.objectList === undefined) {
             throw new Error(`FrameGraphGeometryRendererTask ${this.name}: object list and at least one geometry texture description must be provided`);
         }
@@ -202,7 +202,7 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
         });
     }
 
-    public disposeFrameGraph(): void {
+    public dispose(): void {
         MaterialHelperGeometryRendering.DeleteConfiguration(this._rtt.renderPassId);
         this._rtt.dispose();
     }

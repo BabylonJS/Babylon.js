@@ -40,11 +40,11 @@ export interface IFrameGraphTask {
      * Use this function to add content (render passes, ...) to the task
      * @param frameGraph The frame graph
      */
-    recordFrameGraph(frameGraph: FrameGraph): void;
+    record(frameGraph: FrameGraph): void;
 
-    isReadyFrameGraph(): boolean;
+    isReady(): boolean;
 
-    disposeFrameGraph(): void;
+    dispose(): void;
 
     name: string;
 

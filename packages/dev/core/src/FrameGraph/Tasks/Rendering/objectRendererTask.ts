@@ -62,11 +62,11 @@ export class FrameGraphObjectRendererTask implements IFrameGraphTask {
         this.name = name;
     }
 
-    public isReadyFrameGraph() {
+    public isReady() {
         return this._rtt.isReadyForRendering();
     }
 
-    public recordFrameGraph(frameGraph: FrameGraph) {
+    public record(frameGraph: FrameGraph) {
         if (this.destinationTexture === undefined || this.objectList === undefined) {
             throw new Error(`FrameGraphObjectRendererTask ${this.name}: destinationTexture and objectList are required`);
         }
@@ -133,7 +133,7 @@ export class FrameGraphObjectRendererTask implements IFrameGraphTask {
         }
     }
 
-    public disposeFrameGraph(): void {
+    public dispose(): void {
         this._rtt.dispose();
     }
 }

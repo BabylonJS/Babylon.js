@@ -33,14 +33,14 @@ export class FrameGraphCircleOfConfusionTask extends FrameGraphPostProcessTask {
         );
     }
 
-    public override recordFrameGraph(frameGraph: FrameGraph, skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
+    public override record(frameGraph: FrameGraph, skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
         if (this.sourceTexture === undefined || this.depthTexture === undefined || this.camera === undefined) {
             throw new Error(`CircleOfConfusionPostProcess "${this.name}": sourceTexture, depthTexture and camera are required`);
         }
 
         const depthTextureHandle = frameGraph.getTextureHandle(this.depthTexture);
 
-        const pass = super.recordFrameGraph(
+        const pass = super.record(
             frameGraph,
             skipCreationOfDisabledPasses,
             (context) => {

@@ -13,14 +13,14 @@ export class FrameGraphBloomMergeTask extends FrameGraphPostProcessTask {
         super(name, bloomMergePostProcess);
     }
 
-    public override recordFrameGraph(frameGraph: FrameGraph, skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
+    public override record(frameGraph: FrameGraph, skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
         if (this.sourceTexture === undefined || this.blurTexture === undefined) {
             throw new Error(`BloomMergePostProcess "${this.name}": sourceTexture and blurTexture are required`);
         }
 
         const blurTextureHandle = frameGraph.getTextureHandle(this.blurTexture);
 
-        const pass = super.recordFrameGraph(frameGraph, skipCreationOfDisabledPasses, (context) => {
+        const pass = super.record(frameGraph, skipCreationOfDisabledPasses, (context) => {
             context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "bloomBlur", blurTextureHandle);
             this._postProcessDrawWrapper.effect!.setFloat("bloomWeight", this._postProcess.weight);
         });

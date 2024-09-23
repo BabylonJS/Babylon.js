@@ -10,11 +10,11 @@ export class FrameGraphGenerateMipMapsTask implements IFrameGraphTask {
 
     constructor(public name: string) {}
 
-    public isReadyFrameGraph() {
+    public isReady() {
         return true;
     }
 
-    public recordFrameGraph(frameGraph: FrameGraph) {
+    public record(frameGraph: FrameGraph) {
         if (this.destinationTexture === undefined) {
             throw new Error(`FrameGraphGenerateMipMapsTask ${this.name}: destinationTexture is required`);
         }
@@ -39,5 +39,5 @@ export class FrameGraphGenerateMipMapsTask implements IFrameGraphTask {
         passDisabled.setExecuteFunc((_context) => {});
     }
 
-    public disposeFrameGraph(): void {}
+    public dispose(): void {}
 }

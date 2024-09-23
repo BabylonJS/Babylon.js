@@ -122,7 +122,7 @@ export class FrameGraph {
 
             this._currentProcessedTask = task;
 
-            task.recordFrameGraph(this);
+            task.record(this);
 
             internals.postBuildTask();
 
@@ -145,7 +145,7 @@ export class FrameGraph {
             const checkReady = () => {
                 let ready = true;
                 for (const task of this._tasks) {
-                    ready &&= task.isReadyFrameGraph();
+                    ready &&= task.isReady();
                 }
                 if (ready) {
                     resolve();
