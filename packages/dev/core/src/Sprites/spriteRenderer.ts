@@ -10,10 +10,6 @@ import type { ISize } from "../Maths/math.size";
 
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { Scene } from "../scene";
-
-import "../Engines/Extensions/engine.alpha";
-import "../Engines/Extensions/engine.dynamicBuffer";
-
 import type { ThinEngine } from "../Engines/thinEngine";
 import { Logger } from "core/Misc/logger";
 import { BindLogDepth } from "core/Materials/materialHelper.functions";
@@ -312,7 +308,6 @@ export class SpriteRenderer {
 
         const engine = this._engine;
         const useRightHandedSystem = !!(this._scene && this._scene.useRightHandedSystem);
-        const baseSize = this.texture.getBaseSize();
 
         // Sprites
         const max = Math.min(this._capacity, sprites.length);
@@ -327,6 +322,7 @@ export class SpriteRenderer {
 
             noSprite = false;
             sprite._animate(deltaTime);
+            const baseSize = this.texture.getBaseSize(); // This could be change by the user inside the animate callback (like onAnimationEnd)
 
             this._appendSpriteVertex(offset++, sprite, 0, 0, baseSize, useRightHandedSystem, customSpriteUpdate);
             if (!this._useInstancing) {
