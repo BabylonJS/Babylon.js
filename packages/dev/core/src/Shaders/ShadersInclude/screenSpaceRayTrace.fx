@@ -9,7 +9,7 @@ float distanceSquared(vec2 a, vec2 b) { a -= b; return dot(a, a); }
 #ifdef SSRAYTRACE_SCREENSPACE_DEPTH
 float linearizeDepth(float depth, float near, float far) {
     #ifdef SSRAYTRACE_RIGHT_HANDED_SCENE
-        return -(near * far) / (far - depth * (far + near));
+        return -(near * far) / (far - depth * (far - near));
     #else
         return (near * far) / (far - depth * (far + near));
     #endif

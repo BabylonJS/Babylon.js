@@ -19,16 +19,10 @@ varying vec2 vUV;
 
     uniform sampler2D normalSampler;
     uniform sampler2D depthSampler;
-#endif
-
-#ifdef SSRAYTRACE_SCREENSPACE_DEPTH
-float linearizeDepth(float depth, float near, float far) {
-    #ifdef SSRAYTRACE_RIGHT_HANDED_SCENE
-        return -(near * far) / (far - depth * (far + near));
-    #else
-        return (near * far) / (far - depth * (far + near));
+    #ifdef SSRAYTRACE_SCREENSPACE_DEPTH
+        uniform float nearPlaneZ;
+        uniform float farPlaneZ;
     #endif
-}
 #endif
 
 void main()

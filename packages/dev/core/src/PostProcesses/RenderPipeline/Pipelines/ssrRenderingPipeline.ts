@@ -1168,6 +1168,9 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             uniformNames.push("projection", "invProjectionMatrix", "nearPlaneZ", "farPlaneZ");
             samplerNames.push("depthSampler", "normalSampler");
         }
+        if (this._useScreenspaceDepth) {
+            defines += "#define SSRAYTRACE_SCREENSPACE_DEPTH";
+        }
         if (this._reflectivityThreshold === 0) {
             defines += "#define SSR_DISABLE_REFLECTIVITY_TEST";
         }
@@ -1222,7 +1225,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                 effect.setTexture("reflectivitySampler", geometryBufferRenderer.getGBuffer().textures[roughnessIndex]);
                 if (this.useFresnel) {
                     const camera = this._scene.activeCamera;
-                    if (camera) {
+                    if (camera && this._useScreenspaceDepth) {
                         effect.setFloat("nearPlaneZ", camera.minZ);
                         effect.setFloat("farPlaneZ", camera.maxZ);
                     }
@@ -1239,7 +1242,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                 effect.setTexture("reflectivitySampler", prePassRenderer.getRenderTarget().textures[roughnessIndex]);
                 if (this.useFresnel) {
                     const camera = this._scene.activeCamera;
-                    if (camera) {
+                    if (camera && this._useScreenspaceDepth) {
                         effect.setFloat("nearPlaneZ", camera.minZ);
                         effect.setFloat("farPlaneZ", camera.maxZ);
                     }

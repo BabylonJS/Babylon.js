@@ -22,18 +22,12 @@ varying vUV: vec2f;
 
     var normalSampler: texture_2d<f32>;
     var depthSampler: texture_2d<f32>;
-#endif
 
-#ifdef SSRAYTRACE_SCREENSPACE_DEPTH
-fn linearizeDepth(depth: f32, near: f32, far: f32) -> f32 {
-    #ifdef SSRAYTRACE_RIGHT_HANDED_SCENE
-        return -(near * far) / (far - depth * (far + near));
-    #else
-        return (near * far) / (far - depth * (far + near));
+    #ifdef SSRAYTRACE_SCREENSPACE_DEPTH
+        uniform nearPlaneZ: f32;
+        uniform farPlaneZ: f32;
     #endif
-}
 #endif
-
 
 @fragment
 fn main(input: FragmentInputs) -> FragmentOutputs {

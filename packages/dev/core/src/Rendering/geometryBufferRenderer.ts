@@ -640,10 +640,6 @@ export class GeometryBufferRenderer {
                 defines.push("#define NORMAL_INDEX " + this._normalIndex);
                 defines.push("#define PREPASS_NORMAL");
             }
-            if (this._screenspaceDepthIndex !== -1) {
-                defines.push("#define SCREENSPACE_DEPTH_INDEX " + this._screenspaceDepthIndex);
-                defines.push("#define PREPASS_SCREENSPACE_DEPTH");
-            }
         }
 
         // Buffers
