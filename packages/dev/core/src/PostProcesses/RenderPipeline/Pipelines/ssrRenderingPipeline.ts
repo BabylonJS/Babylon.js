@@ -654,6 +654,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                     geometryBufferRenderer.enableReflectivity = true;
                     geometryBufferRenderer.useSpecificClearForDepthTexture = true;
                     geometryBufferRenderer.enableScreenspaceDepth = this._useScreenspaceDepth;
+                    geometryBufferRenderer.enableDepth = !this._useScreenspaceDepth;
                 }
             } else {
                 const prePassRenderer = scene.enablePrePassRenderer();
@@ -1013,13 +1014,15 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             if (geometryBufferRenderer) {
                 const roughnessIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.REFLECTIVITY_TEXTURE_TYPE);
 
-                effect.setTexture("normalSampler", geometryBufferRenderer.getGBuffer().textures[1]);
+                const normalIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.NORMAL_TEXTURE_TYPE);
+                effect.setTexture("normalSampler", geometryBufferRenderer.getGBuffer().textures[normalIndex]);
                 effect.setTexture("reflectivitySampler", geometryBufferRenderer.getGBuffer().textures[roughnessIndex]);
                 if (this._useScreenspaceDepth) {
                     const depthIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE);
                     effect.setTexture("depthSampler", geometryBufferRenderer.getGBuffer().textures[depthIndex]);
                 } else {
-                    effect.setTexture("depthSampler", geometryBufferRenderer.getGBuffer().textures[0]);
+                    const depthIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.DEPTH_TEXTURE_TYPE);
+                    effect.setTexture("depthSampler", geometryBufferRenderer.getGBuffer().textures[depthIndex]);
                 }
             } else if (prePassRenderer) {
                 const depthIndex = prePassRenderer.getIndex(this._useScreenspaceDepth ? Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE : Constants.PREPASS_DEPTH_TEXTURE_TYPE);

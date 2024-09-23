@@ -105,8 +105,12 @@ void main() {
             gl_FragData[NORMAL_INDEX] = vec4(normalOutput, 1.0);
         #endif
     #else
-        gl_FragData[0] = vec4(vViewPos.z / vViewPos.w, 0.0, 0.0, 1.0);
-        gl_FragData[1] = vec4(normalOutput, 1.0);
+        #ifdef DEPTH
+            gl_FragData[DEPTH_INDEX] = vec4(vViewPos.z / vViewPos.w, 0.0, 0.0, 1.0);
+        #endif
+        #ifdef NORMAL
+            gl_FragData[NORMAL_INDEX] = vec4(normalOutput, 1.0);
+        #endif
         #ifdef SCREENSPACE_DEPTH
             gl_FragData[SCREENSPACE_DEPTH_INDEX] = vec4(gl_FragCoord.z, 0.0, 0.0, 1.0);
         #endif
