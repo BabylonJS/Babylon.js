@@ -14,6 +14,12 @@ import { Tools } from "core/Misc/tools";
 import "core/Meshes/thinInstanceMesh";
 import type { ThinEngine } from "core/Engines/thinEngine";
 
+interface DelayedTextureUpdate {
+    covA: Float32Array;
+    covB: Float32Array;
+    colors: Float32Array;
+    centers: Float32Array;
+}
 /**
  * Class used to render a gaussian splatting mesh
  */
@@ -40,6 +46,7 @@ export class GaussianSplattingMesh extends Mesh {
     private _colors: Nullable<Float32Array> = null;
     private readonly _keepInRam: boolean = false;
 
+    private _delayedTextureUpdate: Nullable<DelayedTextureUpdate> = null;
     /**
      * Gets the covariancesA texture
      */
@@ -517,9 +524,6 @@ export class GaussianSplattingMesh extends Mesh {
             return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
         };
 
-        const updateTextureFromData = (texture: BaseTexture, data: Float32Array, width: number, height: number) => {
-            (this.getEngine() as ThinEngine).updateTextureData(texture.getInternalTexture()!, data, 0, 0, width, height, 0, 0, false);
-        };
         const convertRgbToRgba = (rgb: Float32Array) => {
             const count = rgb.length / 3;
             const rgba = new Float32Array(count * 4);
@@ -546,10 +550,11 @@ export class GaussianSplattingMesh extends Mesh {
             this._colors = colorArray;
         }
         if (this._covariancesATexture) {
-            updateTextureFromData(this._covariancesATexture, convertRgbToRgba(covA), textureSize.x, textureSize.y);
-            updateTextureFromData(this._covariancesBTexture!, convertRgbToRgba(covB), textureSize.x, textureSize.y);
-            updateTextureFromData(this._centersTexture!, convertRgbToRgba(this._splatPositions), textureSize.x, textureSize.y);
-            updateTextureFromData(this._colorsTexture!, colorArray, textureSize.x, textureSize.y);
+            this._delayedTextureUpdate = { covA: convertRgbToRgba(covA), covB: convertRgbToRgba(covB), colors: colorArray, centers: convertRgbToRgba(this._splatPositions) };
+            const positions = Float32Array.from(this._splatPositions!);
+            const vertexCount = this._vertexCount;
+            this._worker!.postMessage({ positions, vertexCount }, [positions.buffer]);
+
             this._postToWorker(true);
         } else {
             this._covariancesATexture = createTextureFromData(convertRgbToRgba(covA), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
@@ -569,9 +574,11 @@ export class GaussianSplattingMesh extends Mesh {
 
     // in case size is different
     private _updateSplatIndexBuffer(vertexCount: number): void {
-        this._splatIndex = new Float32Array(vertexCount);
+        if (!this._splatIndex || vertexCount > this._splatIndex.length) {
+            this._splatIndex = new Float32Array(vertexCount);
 
-        this.thinInstanceSetBuffer("splatIndex", this._splatIndex, 1, false);
+            this.thinInstanceSetBuffer("splatIndex", this._splatIndex, 1, false);
+        }
         this.forcedInstanceCount = vertexCount;
     }
 
@@ -604,6 +611,17 @@ export class GaussianSplattingMesh extends Mesh {
                 for (let j = 0; j < this._vertexCount; j++) {
                     this._splatIndex[j] = indexMix[2 * j];
                 }
+            }
+            if (this._delayedTextureUpdate) {
+                const updateTextureFromData = (texture: BaseTexture, data: Float32Array, width: number, height: number) => {
+                    (this.getEngine() as ThinEngine).updateTextureData(texture.getInternalTexture()!, data, 0, 0, width, height, 0, 0, false);
+                };
+                const textureSize = this._getTextureSize(vertexCount);
+                updateTextureFromData(this._covariancesATexture!, this._delayedTextureUpdate.covA, textureSize.x, textureSize.y);
+                updateTextureFromData(this._covariancesBTexture!, this._delayedTextureUpdate.covB, textureSize.x, textureSize.y);
+                updateTextureFromData(this._centersTexture!, this._delayedTextureUpdate.centers, textureSize.x, textureSize.y);
+                updateTextureFromData(this._colorsTexture!, this._delayedTextureUpdate.colors, textureSize.x, textureSize.y);
+                this._delayedTextureUpdate = null;
             }
             this.thinInstanceBufferUpdated("splatIndex");
             this._canPostToWorker = true;
