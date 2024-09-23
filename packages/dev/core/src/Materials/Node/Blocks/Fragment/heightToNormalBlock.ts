@@ -134,7 +134,7 @@ export class HeightToNormalBlock extends NodeMaterialBlock {
                 vec3 worlddX = dFdx(position);
                 vec3 worlddY = dFdy(position);
                 vec3 crossX = cross(norm, worlddX);
-                vec3 crossY = cross(norm, worlddY);
+                vec3 crossY = cross(worlddY, norm);
                 float d = abs(dot(crossY, worlddX));
                 vec3 inToNormal = vec3(((((height + dFdx(height)) - height) * crossY) + (((height + dFdy(height)) - height) * crossX)) * sign(d));
                 inToNormal.y *= -1.0;
