@@ -1,5 +1,5 @@
 import type { Scene } from "core/scene";
-import type { DeepImmutable, FloatArray, Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { SubMesh } from "../subMesh";
 import type { AbstractMesh } from "../abstractMesh";
