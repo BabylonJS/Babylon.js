@@ -35,10 +35,10 @@ void main(void) {
 	vec2 offset = offsets.xy;
 
 	#ifdef SPRITE_APPLY_EPSILON_CORRECTION
-		if (offset.x < 0.5) offset.x += epsilon;
-		if (offset.x>= 0.5) offset.x = 1.0- epsilon;
-		if (offset.y < 0.5) offset.y += epsilon;
-		if (offset.y >0.5) offset.y = 1.0- epsilon;
+		if (offset.x == 0.) offset.x += epsilon;
+		if (offset.x == 1.) offset.x -= epsilon;
+		if (offset.y == 0.) offset.y += epsilon;
+		if (offset.y == 1.) offset.y -= epsilon;
 	#endif
 
 	cornerPos = vec2(offset.x - 0.5, offset.y  - 0.5) * size;
