@@ -256,6 +256,9 @@ export class SpriteRenderer {
         if (this._pixelPerfect) {
             defines += "#define PIXEL_PERFECT\n";
         }
+        if (this._epsilon) {
+            defines += "#define SPRITE_APPLY_EPSILON_CORRECTION\n";
+        }
         if (this._scene && this._scene.fogEnabled && this._scene.fogMode !== 0 && this._fogEnabled) {
             defines += "#define FOG\n";
         }
@@ -263,10 +266,13 @@ export class SpriteRenderer {
             defines += "#define LOGARITHMICDEPTH\n";
         }
 
+        const uniforms = ["view", "projection", "textureInfos", "alphaTest", "vFogInfos", "vFogColor", "logarithmicDepthConstant"];
+        this._epsilon && uniforms.push("epsilon");
+
         this._drawWrapperBase.effect = this._engine.createEffect(
             "sprites",
             [VertexBuffer.PositionKind, "options", "offsets", "inverts", "cellInfo", VertexBuffer.ColorKind],
-            ["view", "projection", "textureInfos", "alphaTest", "vFogInfos", "vFogColor", "logarithmicDepthConstant"],
+            uniforms,
             ["diffuseSampler"],
             defines,
             undefined,
@@ -355,6 +361,10 @@ export class SpriteRenderer {
         effect.setMatrix("view", viewMatrix);
         effect.setMatrix("projection", projectionMatrix);
 
+        if (this._epsilon) {
+            effect.setFloat("epsilon", this._epsilon);
+        }
+
         // Scene Info
         if (shouldRenderFog) {
             const scene = this._scene!;
@@ -424,18 +434,6 @@ export class SpriteRenderer {
         customSpriteUpdate: Nullable<(sprite: ThinSprite, baseSize: ISize) => void>
     ): void {
         let arrayOffset = index * this._vertexBufferSize;
-
-        if (offsetX === 0) {
-            offsetX = this._epsilon;
-        } else if (offsetX === 1) {
-            offsetX = 1 - this._epsilon;
-        }
-
-        if (offsetY === 0) {
-            offsetY = this._epsilon;
-        } else if (offsetY === 1) {
-            offsetY = 1 - this._epsilon;
-        }
 
         if (customSpriteUpdate) {
             customSpriteUpdate(sprite, baseSize);

@@ -10,13 +10,16 @@ attribute vec4 color;
 uniform mat4 view;
 uniform mat4 projection;
 
+#ifdef SPRITE_APPLY_EPSILON_CORRECTION
+    uniform float epsilon;
+#endif
+
 // Output
 varying vec2 vUV;
 varying vec4 vColor;
 
 #include<fogVertexDeclaration>
 #include<logDepthDeclaration>
-
 
 #define CUSTOM_VERTEX_DEFINITIONS
 
@@ -30,6 +33,13 @@ void main(void) {
 	float angle = position.w;
 	vec2 size = vec2(options.x, options.y);
 	vec2 offset = offsets.xy;
+
+	#ifdef SPRITE_APPLY_EPSILON_CORRECTION
+		if (offset.x < 0.5) offset.x += epsilon;
+		if (offset.x>= 0.5) offset.x = 1.0- epsilon;
+		if (offset.y < 0.5) offset.y += epsilon;
+		if (offset.y >0.5) offset.y = 1.0- epsilon;
+	#endif
 
 	cornerPos = vec2(offset.x - 0.5, offset.y  - 0.5) * size;
 
