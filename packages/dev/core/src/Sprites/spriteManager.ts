@@ -221,6 +221,13 @@ export class SpriteManager implements ISpriteManager {
         this._spriteRenderer.useLogarithmicDepth = value;
     }
 
+    public set epsilon(value: number) {
+        this._spriteRenderer.epsilon = value;
+    }
+    public get epsilon() {
+        return this._spriteRenderer.epsilon;
+    }
+
     /**
      * Blend mode use to render the particle, it can be any of
      * the static Constants.ALPHA_x properties provided in this class.

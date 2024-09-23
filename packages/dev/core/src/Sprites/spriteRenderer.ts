@@ -131,6 +131,24 @@ export class SpriteRenderer {
         this._createEffects();
     }
 
+    private _epsilon: number;
+    public get epsilon() {
+        return this._epsilon;
+    }
+
+    public set epsilon(value: number) {
+        if (this._epsilon === value) {
+            return;
+        }
+
+        if (!this._epsilon) {
+            this._epsilon = value;
+            this._createEffects();
+        } else {
+            // has epsilon set already, no need to recreate the effect
+            this._epsilon = value;
+        }
+    }
     /** Shader language used by the material */
     protected _shaderLanguage = ShaderLanguage.GLSL;
 
@@ -147,7 +165,6 @@ export class SpriteRenderer {
     private readonly _scene: Nullable<Scene>;
 
     private readonly _capacity: number;
-    private readonly _epsilon: number;
 
     private _vertexBufferSize: number;
     private _vertexData: Float32Array;
