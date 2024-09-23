@@ -33,7 +33,7 @@ To use the higher level `HTML3DElement` you can import the `@babylonjs/viewer` m
     <script type="module">
       import '@babylonjs/viewer';
     </script>
-    <babylon-viewer src="https://playground.babylonjs.com/scenes/BoomBox.glb"></babylon-viewer>
+    <babylon-viewer source="https://playground.babylonjs.com/scenes/BoomBox.glb"></babylon-viewer>
   </body>
 </html>
 ```
@@ -46,7 +46,7 @@ If you want to use the viewer directly in a browser without any build tools, you
 <html lang="en">
   <body>
     <script type="module" src="https://unpkg.com/@babylonjs/viewer@preview/dist/babylon-viewer.esm.min.js"></script>
-    <babylon-viewer src="https://playground.babylonjs.com/scenes/BoomBox.glb"></babylon-viewer>
+    <babylon-viewer source="https://playground.babylonjs.com/scenes/BoomBox.glb"></babylon-viewer>
   </body>
 </html>
 ```
