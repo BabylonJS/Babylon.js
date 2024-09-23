@@ -14,7 +14,7 @@ fn linearizeDepth(depth: f32, near: f32, far: f32) -> f32 {
     #ifdef SSRAYTRACE_RIGHT_HANDED_SCENE
         return -(near * far) / (far - depth * (far - near));
     #else
-        return (near * far) / (far - depth * (far + near));
+        return (near * far) / (far - depth * (far - near));
     #endif
 }
 #endif
