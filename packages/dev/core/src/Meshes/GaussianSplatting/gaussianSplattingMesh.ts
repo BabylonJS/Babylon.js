@@ -31,7 +31,6 @@ export class GaussianSplattingMesh extends Mesh {
     private _depthMix: BigInt64Array;
     private _canPostToWorker = true;
     private _readyToDisplay = false;
-    private _lastModelViewMatrix: DeepImmutable<FloatArray>;
     private _covariancesATexture: Nullable<BaseTexture> = null;
     private _covariancesBTexture: Nullable<BaseTexture> = null;
     private _centersTexture: Nullable<BaseTexture> = null;
@@ -47,6 +46,7 @@ export class GaussianSplattingMesh extends Mesh {
     private readonly _keepInRam: boolean = false;
 
     private _delayedTextureUpdate: Nullable<DelayedTextureUpdate> = null;
+    private _oldDirection = new Vector3();
     /**
      * Gets the covariancesA texture
      */
@@ -96,7 +96,6 @@ export class GaussianSplattingMesh extends Mesh {
 
         this.setEnabled(false);
 
-        this._lastModelViewMatrix = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         this._keepInRam = keepInRam;
         if (url) {
             this.loadFileAsync(url);
@@ -141,17 +140,18 @@ export class GaussianSplattingMesh extends Mesh {
     protected _postToWorker(forced = false): void {
         const frameId = this.getScene().getFrameId();
         if (frameId !== this._frameIdLastUpdate && this._worker && this._scene.activeCamera && this._canPostToWorker) {
-            this.getWorldMatrix().multiplyToRef(this._scene.activeCamera.getViewMatrix(), this._modelViewMatrix);
-            TmpVectors.Vector3[0].set(this._lastModelViewMatrix[8], this._lastModelViewMatrix[9], this._lastModelViewMatrix[10]);
-            TmpVectors.Vector3[1].set(this._modelViewMatrix.m[8], this._modelViewMatrix.m[9], this._modelViewMatrix.m[10]);
-            TmpVectors.Vector3[0].normalize();
-            TmpVectors.Vector3[1].normalize();
+            const cameraMatrix = this._scene.activeCamera.getViewMatrix();
+            this.getWorldMatrix().multiplyToRef(cameraMatrix, this._modelViewMatrix);
+            cameraMatrix.invertToRef(TmpVectors.Matrix[0]);
+            this.getWorldMatrix().multiplyToRef(TmpVectors.Matrix[0], TmpVectors.Matrix[1]);
+            Vector3.TransformNormalToRef(Vector3.Forward(this._scene.useRightHandedSystem), TmpVectors.Matrix[1], TmpVectors.Vector3[2]);
+            TmpVectors.Vector3[2].normalize();
 
-            const dot = Vector3.Dot(TmpVectors.Vector3[0], TmpVectors.Vector3[1]);
+            const dot = Vector3.Dot(TmpVectors.Vector3[2], this._oldDirection);
             if (forced || Math.abs(dot - 1) >= 0.01) {
+                this._oldDirection.copyFrom(TmpVectors.Vector3[2]);
                 this._frameIdLastUpdate = frameId;
                 this._canPostToWorker = false;
-                this._lastModelViewMatrix = this._modelViewMatrix.m.slice(0);
                 this._worker.postMessage({ view: this._modelViewMatrix.m, depthMix: this._depthMix, useRightHandedSystem: this._scene.useRightHandedSystem }, [
                     this._depthMix.buffer,
                 ]);
