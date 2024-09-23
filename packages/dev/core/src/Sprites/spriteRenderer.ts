@@ -252,12 +252,14 @@ export class SpriteRenderer {
         }
 
         let defines = "";
+        const uniforms = ["view", "projection", "textureInfos", "alphaTest", "vFogInfos", "vFogColor", "logarithmicDepthConstant"];
 
         if (this._pixelPerfect) {
             defines += "#define PIXEL_PERFECT\n";
         }
         if (this._epsilon) {
             defines += "#define SPRITE_APPLY_EPSILON_CORRECTION\n";
+            uniforms.push("epsilon");
         }
         if (this._scene && this._scene.fogEnabled && this._scene.fogMode !== 0 && this._fogEnabled) {
             defines += "#define FOG\n";
@@ -265,9 +267,6 @@ export class SpriteRenderer {
         if (this._useLogarithmicDepth) {
             defines += "#define LOGARITHMICDEPTH\n";
         }
-
-        const uniforms = ["view", "projection", "textureInfos", "alphaTest", "vFogInfos", "vFogColor", "logarithmicDepthConstant"];
-        this._epsilon && uniforms.push("epsilon");
 
         this._drawWrapperBase.effect = this._engine.createEffect(
             "sprites",
