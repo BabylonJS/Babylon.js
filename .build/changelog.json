@@ -1,6 +1,23 @@
 {
-    "fromTag": "7.26.0",
+    "fromTag": "7.26.1",
     "changelog": {
+        "7.26.2": [
+            {
+                "pr": "15605",
+                "title": "Fix side detection (copy paste error)",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/textureBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
         "7.26.1": [
             {
                 "pr": "15600",

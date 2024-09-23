@@ -319,7 +319,7 @@ export class TextureBlock extends NodeMaterialBlock {
             return NodeMaterialBlockTargets.Fragment;
         }
 
-        return NodeMaterialBlockTargets.Fragment;
+        return NodeMaterialBlockTargets.VertexAndFragment;
     }
 
     public override get target() {
