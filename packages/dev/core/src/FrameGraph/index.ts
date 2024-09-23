@@ -9,8 +9,10 @@ export * from "./Node/Blocks/index";
 export * from "./Passes/pass";
 export * from "./Passes/renderPass";
 
+export * from "./Tasks/PostProcesses/blackAndWhiteTask";
 export * from "./Tasks/PostProcesses/bloomMergeTask";
 export * from "./Tasks/PostProcesses/bloomTask";
+export * from "./Tasks/PostProcesses/blurTask";
 export * from "./Tasks/PostProcesses/circleOfConfusionTask";
 export * from "./Tasks/PostProcesses/postProcessTask";
 export * from "./Tasks/Texture/clearTextureTask";

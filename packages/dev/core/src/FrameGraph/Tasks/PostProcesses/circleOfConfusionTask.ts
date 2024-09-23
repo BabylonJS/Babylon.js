@@ -12,8 +12,8 @@ export class FrameGraphCircleOfConfusionTask extends FrameGraphPostProcessTask {
 
     protected override _postProcess: CircleOfConfusionPostProcess;
 
-    constructor(name: string, bloomMergePostProcess: CircleOfConfusionPostProcess) {
-        super(name, bloomMergePostProcess);
+    constructor(name: string, cocPostProcess: CircleOfConfusionPostProcess) {
+        super(name, cocPostProcess);
     }
 
     public override recordFrameGraph(frameGraph: FrameGraph, skipCreationOfDisabledPasses = false): FrameGraphRenderPass {

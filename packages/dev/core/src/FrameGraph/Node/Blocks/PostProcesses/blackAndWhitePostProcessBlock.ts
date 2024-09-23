@@ -3,17 +3,17 @@ import type { NodeRenderGraphConnectionPoint } from "../../nodeRenderGraphBlockC
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
-import { BlackAndWhitePostProcess } from "../../../../PostProcesses/blackAndWhitePostProcess";
+import type { BlackAndWhitePostProcess } from "../../../../PostProcesses/blackAndWhitePostProcess";
 import type { Scene } from "../../../../scene";
 import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
 import type { FrameGraphTextureId } from "../../../frameGraphTypes";
-import { FrameGraphPostProcessTask } from "../../../Tasks/PostProcesses/postProcessTask";
+import { FrameGraphBlackAndWhiteTask } from "core/FrameGraph/Tasks/PostProcesses/blackAndWhiteTask";
 
 /**
  * Block that implements the black and white post process
  */
 export class NodeRenderGraphBlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
-    protected override _frameGraphTask: FrameGraphPostProcessTask;
+    protected override _frameGraphTask: FrameGraphBlackAndWhiteTask;
     protected _postProcess: BlackAndWhitePostProcess;
 
     /**
@@ -48,17 +48,8 @@ export class NodeRenderGraphBlackAndWhitePostProcessBlock extends NodeRenderGrap
             return this.destination.isConnected ? this.destination : this.source;
         };
 
-        this._postProcess = new BlackAndWhitePostProcess(
-            this.name,
-            {
-                useAsFrameGraphTask: true,
-            },
-            null,
-            undefined,
-            this._engine
-        );
-
-        this._frameGraphTask = new FrameGraphPostProcessTask(this.name, this._postProcess);
+        this._frameGraphTask = new FrameGraphBlackAndWhiteTask(this.name, scene.getEngine());
+        this._postProcess = this._frameGraphTask.getPostProcess();
     }
 
     /** Sampling mode used to sample from the source texture */

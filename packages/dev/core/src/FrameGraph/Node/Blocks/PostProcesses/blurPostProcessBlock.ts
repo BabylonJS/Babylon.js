@@ -6,15 +6,15 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Deco
 import type { Scene } from "../../../../scene";
 import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
 import type { FrameGraphTextureId } from "../../../frameGraphTypes";
-import { FrameGraphPostProcessTask } from "../../../Tasks/PostProcesses/postProcessTask";
-import { BlurPostProcess } from "../../../../PostProcesses/blurPostProcess";
+import { FrameGraphBlurTask } from "core/FrameGraph/Tasks/PostProcesses/blurTask";
+import type { BlurPostProcess } from "../../../../PostProcesses/blurPostProcess";
 import { Vector2 } from "core/Maths";
 
 /**
  * Block that implements the blur post process
  */
 export class NodeRenderGraphBlurPostProcessBlock extends NodeRenderGraphBlock {
-    protected override _frameGraphTask: FrameGraphPostProcessTask;
+    protected override _frameGraphTask: FrameGraphBlurTask;
     protected _postProcess: BlurPostProcess;
 
     /**
@@ -49,19 +49,8 @@ export class NodeRenderGraphBlurPostProcessBlock extends NodeRenderGraphBlock {
             return this.destination.isConnected ? this.destination : this.source;
         };
 
-        this._postProcess = new BlurPostProcess(
-            this.name,
-            new Vector2(1, 0),
-            32,
-            {
-                useAsFrameGraphTask: true,
-            },
-            null,
-            undefined,
-            this._engine
-        );
-
-        this._frameGraphTask = new FrameGraphPostProcessTask(this.name, this._postProcess);
+        this._frameGraphTask = new FrameGraphBlurTask(this.name, scene.getEngine(), new Vector2(1, 0), 32);
+        this._postProcess = this._frameGraphTask.getPostProcess();
     }
 
     /** Sampling mode used to sample from the source texture */
