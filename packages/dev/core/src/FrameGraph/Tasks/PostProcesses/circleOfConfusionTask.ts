@@ -1,34 +1,58 @@
 import type { FrameGraph } from "../../frameGraph";
 import type { FrameGraphTextureId } from "../../frameGraphTypes";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
-import type { CircleOfConfusionPostProcess } from "core/PostProcesses/circleOfConfusionPostProcess";
+import { CircleOfConfusionPostProcess } from "core/PostProcesses/circleOfConfusionPostProcess";
 import type { FrameGraphRenderPass } from "core/FrameGraph/Passes/renderPass";
 import type { Camera } from "core/Cameras/camera";
+import { Constants } from "core/Engines/constants";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
 
 export class FrameGraphCircleOfConfusionTask extends FrameGraphPostProcessTask {
-    public sourceDepthTexture: FrameGraphTextureId;
+    public depthTexture: FrameGraphTextureId; // should store camera space depth (Z coordinate)
+
+    public depthSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
 
     public camera: Camera;
 
     protected override _postProcess: CircleOfConfusionPostProcess;
 
-    constructor(name: string, cocPostProcess: CircleOfConfusionPostProcess) {
-        super(name, cocPostProcess);
+    constructor(name: string, engine: AbstractEngine) {
+        super(
+            name,
+            new CircleOfConfusionPostProcess(
+                name,
+                null,
+                {
+                    useAsFrameGraphTask: true,
+                    depthNotNormalized: true,
+                },
+                null,
+                undefined,
+                engine
+            )
+        );
     }
 
     public override recordFrameGraph(frameGraph: FrameGraph, skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
-        if (this.sourceTexture === undefined || this.sourceDepthTexture === undefined || this.camera === undefined) {
-            throw new Error(`CircleOfConfusionPostProcess "${this.name}": sourceTexture, sourceDepthTexture and camera are required`);
+        if (this.sourceTexture === undefined || this.depthTexture === undefined || this.camera === undefined) {
+            throw new Error(`CircleOfConfusionPostProcess "${this.name}": sourceTexture, depthTexture and camera are required`);
         }
 
-        const sourceDepthTextureHandle = frameGraph.getTextureHandle(this.sourceDepthTexture);
+        const depthTextureHandle = frameGraph.getTextureHandle(this.depthTexture);
 
-        const pass = super.recordFrameGraph(frameGraph, skipCreationOfDisabledPasses, (context) => {
-            context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "depthSampler", sourceDepthTextureHandle);
-            this._postProcessDrawWrapper.effect!.setFloat2("cameraMinMaxZ", this.camera.minZ, this.camera.maxZ / (this.camera.maxZ - this.camera.minZ));
-        });
+        const pass = super.recordFrameGraph(
+            frameGraph,
+            skipCreationOfDisabledPasses,
+            (context) => {
+                context.setTextureSamplingMode(depthTextureHandle, this.depthSamplingMode);
+            },
+            (context) => {
+                context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "depthSampler", depthTextureHandle);
+                this._postProcessDrawWrapper.effect!.setFloat2("cameraMinMaxZ", this.camera.minZ, this.camera.maxZ / (this.camera.maxZ - this.camera.minZ));
+            }
+        );
 
-        pass.useTexture(sourceDepthTextureHandle);
+        pass.useTexture(depthTextureHandle);
 
         return pass;
     }

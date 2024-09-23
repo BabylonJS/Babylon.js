@@ -39,7 +39,12 @@ export class FrameGraphPostProcessTask implements IFrameGraphTask {
         return this._postProcess.isReady();
     }
 
-    public recordFrameGraph(frameGraph: FrameGraph, skipCreationOfDisabledPasses = false, additionalBindings?: (context: FrameGraphRenderContext) => void): FrameGraphRenderPass {
+    public recordFrameGraph(
+        frameGraph: FrameGraph,
+        skipCreationOfDisabledPasses = false,
+        additionalExecute?: (context: FrameGraphRenderContext) => void,
+        additionalBindings?: (context: FrameGraphRenderContext) => void
+    ): FrameGraphRenderPass {
         if (this.sourceTexture === undefined) {
             throw new Error(`PostProcess "${this.name}": sourceTexture is required`);
         }
@@ -61,7 +66,8 @@ export class FrameGraphPostProcessTask implements IFrameGraphTask {
         pass.useTexture(sourceTextureHandle);
         pass.setRenderTarget(outputTextureHandle);
         pass.setExecuteFunc((context) => {
-            context.setTextureSamplingMode(sourceTextureHandle, this!.sourceSamplingMode!);
+            context.setTextureSamplingMode(sourceTextureHandle, this.sourceSamplingMode);
+            additionalExecute?.(context);
             context.applyFullScreenEffect(this._postProcessDrawWrapper, () => {
                 this._postProcess._bind();
                 context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "textureSampler", sourceTextureHandle);

@@ -1,10 +1,11 @@
 import type { FrameGraph } from "../../frameGraph";
 import type { FrameGraphTaskOutputReference, IFrameGraphTask, FrameGraphTextureId, FrameGraphTextureCreationOptions } from "../../frameGraphTypes";
 import { Constants } from "core/Engines/constants";
-import type { BloomEffect } from "../../../PostProcesses/bloomEffect";
+import { BloomEffect } from "../../../PostProcesses/bloomEffect";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 import { FrameGraphBloomMergeTask } from "./bloomMergeTask";
 import type { BloomMergePostProcess } from "core/PostProcesses/bloomMergePostProcess";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
 
 export class FrameGraphBloomTask implements IFrameGraphTask {
     public sourceTexture: FrameGraphTextureId;
@@ -29,17 +30,30 @@ export class FrameGraphBloomTask implements IFrameGraphTask {
 
     constructor(
         public name: string,
-        bloomEffect: BloomEffect
+        engine: AbstractEngine,
+        weight: number,
+        kernel: number,
+        threshold: number,
+        hdr = false,
+        bloomScale = 0.5
     ) {
-        if (!bloomEffect.useAsFrameGraphTask) {
-            throw new Error(`BloomEffect "${name}": the bloom effect must have been created with the useAsFrameGraphTask property set to true`);
+        let defaultPipelineTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        if (hdr) {
+            const caps = engine.getCaps();
+            if (caps.textureHalfFloatRender) {
+                defaultPipelineTextureType = Constants.TEXTURETYPE_HALF_FLOAT;
+            } else if (caps.textureFloatRender) {
+                defaultPipelineTextureType = Constants.TEXTURETYPE_FLOAT;
+            }
         }
-        this._bloomEffect = bloomEffect;
 
-        this._downscale = new FrameGraphPostProcessTask(`${name} Downscale`, bloomEffect._effects[0]);
-        this._blurX = new FrameGraphPostProcessTask(`${name} Blur X`, bloomEffect._effects[1]);
-        this._blurY = new FrameGraphPostProcessTask(`${name} Blur Y`, bloomEffect._effects[2]);
-        this._merge = new FrameGraphBloomMergeTask(`${name} Merge`, bloomEffect._effects[3] as BloomMergePostProcess);
+        this._bloomEffect = new BloomEffect(engine, bloomScale, weight, kernel, defaultPipelineTextureType, false, true);
+        this._bloomEffect.threshold = threshold;
+
+        this._downscale = new FrameGraphPostProcessTask(`${name} Downscale`, this._bloomEffect._effects[0]);
+        this._blurX = new FrameGraphPostProcessTask(`${name} Blur X`, this._bloomEffect._effects[1]);
+        this._blurY = new FrameGraphPostProcessTask(`${name} Blur Y`, this._bloomEffect._effects[2]);
+        this._merge = new FrameGraphBloomMergeTask(`${name} Merge`, this._bloomEffect._effects[3] as BloomMergePostProcess);
     }
 
     public isReadyFrameGraph() {
@@ -100,7 +114,7 @@ export class FrameGraphBloomTask implements IFrameGraphTask {
 
         this._merge.sourceTexture = this.sourceTexture;
         this._merge.sourceSamplingMode = this.sourceSamplingMode;
-        this._merge.sourceBlurTexture = blurYTextureHandle;
+        this._merge.blurTexture = blurYTextureHandle;
         this._merge.destinationTexture = outputTextureHandle;
         this._merge.recordFrameGraph(frameGraph, true);
 
@@ -117,5 +131,6 @@ export class FrameGraphBloomTask implements IFrameGraphTask {
         this._blurX.disposeFrameGraph();
         this._blurY.disposeFrameGraph();
         this._merge.disposeFrameGraph();
+        this._bloomEffect.disposeEffects();
     }
 }

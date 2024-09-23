@@ -4,8 +4,7 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import type { Scene } from "../../../../scene";
-import { Constants } from "../../../../Engines/constants";
-import { BloomEffect } from "../../../../PostProcesses/bloomEffect";
+import type { BloomEffect } from "../../../../PostProcesses/bloomEffect";
 import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
 import type { FrameGraphTextureId } from "../../../frameGraphTypes";
 import { FrameGraphBloomTask } from "../../../Tasks/PostProcesses/bloomTask";
@@ -53,20 +52,8 @@ export class NodeRenderGraphBloomPostProcessBlock extends NodeRenderGraphBlock {
             return this.destination.isConnected ? this.destination : this.source;
         };
 
-        let defaultPipelineTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
-        if (hdr) {
-            const caps = this._engine.getCaps();
-            if (caps.textureHalfFloatRender) {
-                defaultPipelineTextureType = Constants.TEXTURETYPE_HALF_FLOAT;
-            } else if (caps.textureFloatRender) {
-                defaultPipelineTextureType = Constants.TEXTURETYPE_FLOAT;
-            }
-        }
-
-        this._postProcess = new BloomEffect(this._engine, bloomScale, 0.75, 64, defaultPipelineTextureType, false, true);
-        this._postProcess.threshold = 0.2;
-
-        this._frameGraphTask = new FrameGraphBloomTask(this.name, this._postProcess);
+        this._frameGraphTask = new FrameGraphBloomTask(this.name, scene.getEngine(), 0.75, 64, 0.2, hdr, bloomScale);
+        this._postProcess = this._frameGraphTask.bloom;
     }
 
     /** Sampling mode used to sample from the source texture */

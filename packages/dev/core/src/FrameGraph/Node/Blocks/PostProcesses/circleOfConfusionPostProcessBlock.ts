@@ -7,7 +7,7 @@ import type { Scene } from "../../../../scene";
 import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
 import type { FrameGraphTextureId } from "../../../frameGraphTypes";
 import { FrameGraphCircleOfConfusionTask } from "core/FrameGraph/Tasks/PostProcesses/circleOfConfusionTask";
-import { CircleOfConfusionPostProcess } from "../../../../PostProcesses/circleOfConfusionPostProcess";
+import type { CircleOfConfusionPostProcess } from "../../../../PostProcesses/circleOfConfusionPostProcess";
 import type { Camera } from "core/Cameras/camera";
 
 /**
@@ -51,19 +51,8 @@ export class NodeRenderGraphCircleOfConfusionPostProcessBlock extends NodeRender
             return this.destination.isConnected ? this.destination : this.source;
         };
 
-        this._postProcess = new CircleOfConfusionPostProcess(
-            this.name,
-            null,
-            {
-                useAsFrameGraphTask: true,
-                depthNotNormalized: true,
-            },
-            null,
-            undefined,
-            this._engine
-        );
-
-        this._frameGraphTask = new FrameGraphCircleOfConfusionTask(this.name, this._postProcess);
+        this._frameGraphTask = new FrameGraphCircleOfConfusionTask(this.name, scene.getEngine());
+        this._postProcess = this._frameGraphTask.getPostProcess();
     }
 
     /** Sampling mode used to sample from the source texture */
@@ -74,6 +63,16 @@ export class NodeRenderGraphCircleOfConfusionPostProcessBlock extends NodeRender
 
     public set sourceSamplingMode(value: number) {
         this._frameGraphTask.sourceSamplingMode = value;
+    }
+
+    /** Sampling mode used to sample from the depth texture */
+    @editableInPropertyPage("Depth sampling mode", PropertyTypeForEdition.SamplingMode, "PROPERTIES")
+    public get depthSamplingMode() {
+        return this._frameGraphTask.depthSamplingMode;
+    }
+
+    public set depthSamplingMode(value: number) {
+        this._frameGraphTask.depthSamplingMode = value;
     }
 
     /** Max lens size in scene units/1000 (eg. millimeter). Standard cameras are 50mm. The diameter of the resulting aperture can be computed by lensSize/fStop. */
@@ -173,7 +172,7 @@ export class NodeRenderGraphCircleOfConfusionPostProcessBlock extends NodeRender
 
         const geomViewDepthConnectedPoint = this.geomViewDepth.connectedPoint;
         if (geomViewDepthConnectedPoint) {
-            this._frameGraphTask.sourceDepthTexture = geomViewDepthConnectedPoint.value as FrameGraphTextureId;
+            this._frameGraphTask.depthTexture = geomViewDepthConnectedPoint.value as FrameGraphTextureId;
         }
 
         const destinationConnectedPoint = this.destination.connectedPoint;
@@ -196,6 +195,7 @@ export class NodeRenderGraphCircleOfConfusionPostProcessBlock extends NodeRender
         codes.push(`${this._codeVariableName}.focusDistance = ${this.focusDistance};`);
         codes.push(`${this._codeVariableName}.focalLength = ${this.focalLength};`);
         codes.push(`${this._codeVariableName}.sourceSamplingMode = ${this.sourceSamplingMode};`);
+        codes.push(`${this._codeVariableName}.depthSamplingMode = ${this.depthSamplingMode};`);
         return super._dumpPropertiesCode() + codes.join("\n");
     }
 
@@ -206,6 +206,7 @@ export class NodeRenderGraphCircleOfConfusionPostProcessBlock extends NodeRender
         serializationObject.focusDistance = this.focusDistance;
         serializationObject.focalLength = this.focalLength;
         serializationObject.sourceSamplingMode = this.sourceSamplingMode;
+        serializationObject.depthSamplingMode = this.depthSamplingMode;
         return serializationObject;
     }
 
@@ -216,6 +217,7 @@ export class NodeRenderGraphCircleOfConfusionPostProcessBlock extends NodeRender
         this.focusDistance = serializationObject.focusDistance;
         this.focalLength = serializationObject.focalLength;
         this.sourceSamplingMode = serializationObject.sourceSamplingMode;
+        this.depthSamplingMode = serializationObject.depthSamplingMode;
     }
 }
 

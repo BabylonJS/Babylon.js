@@ -5,7 +5,7 @@ import type { BloomMergePostProcess } from "../../../PostProcesses/bloomMergePos
 import type { FrameGraphRenderPass } from "core/FrameGraph/Passes/renderPass";
 
 export class FrameGraphBloomMergeTask extends FrameGraphPostProcessTask {
-    public sourceBlurTexture: FrameGraphTextureId;
+    public blurTexture: FrameGraphTextureId;
 
     protected override _postProcess: BloomMergePostProcess;
 
@@ -14,18 +14,18 @@ export class FrameGraphBloomMergeTask extends FrameGraphPostProcessTask {
     }
 
     public override recordFrameGraph(frameGraph: FrameGraph, skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
-        if (this.sourceTexture === undefined || this.sourceBlurTexture === undefined) {
-            throw new Error(`BloomMergePostProcess "${this.name}": sourceTexture and sourceBlurTexture are required`);
+        if (this.sourceTexture === undefined || this.blurTexture === undefined) {
+            throw new Error(`BloomMergePostProcess "${this.name}": sourceTexture and blurTexture are required`);
         }
 
-        const sourceBlurTextureHandle = frameGraph.getTextureHandle(this.sourceBlurTexture);
+        const blurTextureHandle = frameGraph.getTextureHandle(this.blurTexture);
 
         const pass = super.recordFrameGraph(frameGraph, skipCreationOfDisabledPasses, (context) => {
-            context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "bloomBlur", sourceBlurTextureHandle);
+            context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "bloomBlur", blurTextureHandle);
             this._postProcessDrawWrapper.effect!.setFloat("bloomWeight", this._postProcess.weight);
         });
 
-        pass.useTexture(sourceBlurTextureHandle);
+        pass.useTexture(blurTextureHandle);
 
         return pass;
     }

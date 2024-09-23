@@ -146,10 +146,6 @@ export class BloomEffect extends PostProcessRenderEffect {
         this._effects.push(this._merge);
     }
 
-    public disposeFrameGraph(): void {
-        this.disposeEffects();
-    }
-
     /**
      * Disposes each of the internal effects for a given camera.
      * @param camera The camera to dispose the effect on.

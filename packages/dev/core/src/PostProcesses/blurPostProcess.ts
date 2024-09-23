@@ -113,13 +113,13 @@ export class BlurPostProcess extends PostProcess {
     ) {
         super(name, "kernelBlur", {
             uniforms: ["delta", "direction"],
-            samplers: ["circleOfConfusionSampler"],
             size: typeof options === "number" ? options : undefined,
             camera,
             samplingMode,
             engine,
             reusable,
             textureType,
+            defines,
             vertexUrl: "kernelBlur",
             indexParameters: { varyingCount: 0, depCount: 0 },
             textureFormat,
