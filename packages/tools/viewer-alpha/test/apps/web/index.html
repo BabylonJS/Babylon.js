@@ -15,9 +15,15 @@
                 overflow: hidden;
             }
 
-            button {
+            .toggle-dom-button {
                 position: absolute;
                 top: 10px;
+                right: 10px;
+            }
+
+            .toggle-engine-button {
+                position: absolute;
+                top: 40px;
                 right: 10px;
             }
 
@@ -51,12 +57,22 @@
                 <button onclick="viewerElement.viewer.toggleAnimation()">Toggle Animation</button>
             </div> -->
         </babylon-viewer>
-        <button onclick="onToggle()">Toggle</button>
+        <button class="toggle-dom-button" onclick="onToggleDOM()">Toggle DOM</button>
+        <button class="toggle-engine-button" onclick="onToggleEngine()">Toggle Engine</button>
         <script type="module" src="/packages/tools/viewer-alpha/src/index.ts"></script>
         <script>
             const viewerElement = document.querySelector("babylon-viewer");
+            let viewerDetail;
+            viewerElement.addEventListener(
+                "viewerready",
+                (event) => {
+                    viewerDetail = event.detail;
+                    console.log(`Viewer ready.`, viewerDetail);
+                },
+                { once: true }
+            );
             viewerElement.addEventListener("modelchange", (event) => {
-                console.log("Model loaded");
+                console.log(`Model changed.`, viewerDetail);
             });
             let isViewerConnected = true;
 
@@ -64,7 +80,6 @@
                 // The module referenced in the script tag above is loaded asynchronously, so we need to wait for it to load and for the custom element to be defined.
                 // Alternatively, we could just await import("/packages/tools/viewer-alpha/src/index.ts") here instead.
                 await customElements.whenDefined("babylon-viewer");
-                // "BabylonViewer" is defined as the "library" in webpack.config.js and can be used to access the Viewer as needed.
                 await new Promise((resolve) => setTimeout(resolve, 2000));
                 //viewerElement.src = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/BrainStem/glTF-Binary/BrainStem.glb";
                 // error case
@@ -78,13 +93,17 @@
                 if (file) {
                     event.preventDefault();
                     await customElements.whenDefined("babylon-viewer");
-                    await viewerElement.viewer.loadModelAsync(file);
+                    await viewerDetail.viewer.loadModelAsync(file);
                 }
             }
 
-            function onToggle() {
+            function onToggleDOM() {
                 isViewerConnected ? document.body.removeChild(viewerElement) : document.body.appendChild(viewerElement);
                 isViewerConnected = !isViewerConnected;
+            }
+
+            function onToggleEngine() {
+                viewerElement.engine = viewerElement.engine === "WebGL" ? "WebGPU" : "WebGL";
             }
         </script>
     </body>

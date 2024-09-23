@@ -7,9 +7,6 @@ import { Constants } from "../../Engines/constants";
 import { RegisterClass } from "../../Misc/typeStore";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 
-// Ensures Raw texture are included
-import "../../Engines/Extensions/engine.rawTexture";
-
 /**
  * This represents a color grading texture. This acts as a lookup table LUT, useful during post process
  * It can help converting any input color in a desired output one. This can then be used to create effects

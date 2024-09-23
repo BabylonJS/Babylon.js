@@ -1,7 +1,7 @@
 import { DeepCopier } from "../../Misc/deepCopier";
 import type { Matrix } from "../../Maths/math.vector";
 import { Vector3 } from "../../Maths/math.vector";
-import { Scalar } from "../../Maths/math.scalar";
+import { RandomRange } from "../../Maths/math.scalar.functions";
 import type { Particle } from "../../Particles/particle";
 import type { IParticleEmitterType } from "./IParticleEmitterType";
 import type { UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
@@ -41,9 +41,9 @@ export class HemisphericParticleEmitter implements IParticleEmitterType {
      */
     public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
         const direction = particle.position.subtract(worldMatrix.getTranslation()).normalize();
-        const randX = Scalar.RandomRange(0, this.directionRandomizer);
-        const randY = Scalar.RandomRange(0, this.directionRandomizer);
-        const randZ = Scalar.RandomRange(0, this.directionRandomizer);
+        const randX = RandomRange(0, this.directionRandomizer);
+        const randY = RandomRange(0, this.directionRandomizer);
+        const randZ = RandomRange(0, this.directionRandomizer);
         direction.x += randX;
         direction.y += randY;
         direction.z += randZ;
@@ -65,9 +65,9 @@ export class HemisphericParticleEmitter implements IParticleEmitterType {
      * @param isLocal defines if the position should be set in local space
      */
     public startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
-        const randRadius = this.radius - Scalar.RandomRange(0, this.radius * this.radiusRange);
-        const v = Scalar.RandomRange(0, 1.0);
-        const phi = Scalar.RandomRange(0, 2 * Math.PI);
+        const randRadius = this.radius - RandomRange(0, this.radius * this.radiusRange);
+        const v = RandomRange(0, 1.0);
+        const phi = RandomRange(0, 2 * Math.PI);
         const theta = Math.acos(2 * v - 1);
         const randX = randRadius * Math.cos(phi) * Math.sin(theta);
         const randY = randRadius * Math.cos(theta);

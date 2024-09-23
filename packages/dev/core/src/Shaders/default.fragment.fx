@@ -436,7 +436,7 @@ color.rgb = max(color.rgb, 0.);
 
 #ifdef PREPASS_LOCAL_POSITION
     gl_FragData[PREPASS_LOCAL_POSITION_INDEX] =
-        vec4(vPosition * 0.5 + 0.5, writeGeometryInfo);
+        vec4(vPosition, writeGeometryInfo);
 #endif
 
 #if defined(PREPASS_VELOCITY)
@@ -467,9 +467,9 @@ color.rgb = max(color.rgb, 0.);
         vec4(vViewPos.z, 0.0, 0.0, writeGeometryInfo); // Linear depth
 #endif
 
-#ifdef PREPASS_NDC_DEPTH
-        gl_FragData[PREPASS_NDC_DEPTH_INDEX] = vec4(
-            gl_FragCoord.z, 0.0, 0.0, writeGeometryInfo); // Clip-space depth
+#ifdef PREPASS_SCREENSPACE_DEPTH
+    gl_FragData[PREPASS_SCREENSPACE_DEPTH_INDEX] =
+        vec4(gl_FragCoord.z, 0.0, 0.0, writeGeometryInfo);
 #endif
 
 #ifdef PREPASS_NORMAL

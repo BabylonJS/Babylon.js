@@ -20,7 +20,7 @@
         "start": "npm run serve -- --open test/apps/web/index.html",
         "serve": "vite",
         "build": "npm run clean && npm run bundle",
-        "clean": "rimraf lib && rimraf dist && rimraf *.tsbuildinfo",
+        "clean": "rimraf lib && rimraf dist && rimraf *.tsbuildinfo -g",
         "bundle": "npm run bundle:lib && npm run bundle:dist:esm",
         "bundle:lib": "rollup -c rollup.config.lib.mjs",
         "bundle:dist:esm": "rollup -c rollup.config.dist.esm.mjs",
@@ -30,8 +30,8 @@
         "lit": "^3.2.0"
     },
     "peerDependencies": {
-        "@babylonjs/core": "^7.13.2",
-        "@babylonjs/loaders": "^7.0.0"
+        "@babylonjs/core": "^7.23.1",
+        "@babylonjs/loaders": "^7.23.1"
     },
     "devDependencies": {
         "@dev/build-tools": "^1.0.0",

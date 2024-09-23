@@ -436,6 +436,10 @@ export class Effect implements IDisposable {
     }
 
     private _isReadyInternal(): boolean {
+        if (this._engine.isDisposed) {
+            // Engine is disposed, we return true to prevent looping over the setTimeout call in _checkIsReady
+            return true;
+        }
         if (this._isReady) {
             return true;
         }

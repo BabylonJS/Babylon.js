@@ -43,7 +43,7 @@
     text-align: center;
     display: grid;
     grid-template-rows: 100%;
-    grid-template-columns: calc(100% - 74px) 30px 7px 30px 7px;
+    grid-template-columns: calc(100% - 111px) 30px 7px 30px 7px 30px 7px;
     align-content: center;
     overflow: hidden;
 }
@@ -67,8 +67,13 @@
     grid-row: 1;
 }
 
-.frame-box-header-close {
+.frame-box-header-focus {
     grid-column: 4;
+    grid-row: 1;
+}
+
+.frame-box-header-close {
+    grid-column: 6;
     grid-row: 1;
 }
 

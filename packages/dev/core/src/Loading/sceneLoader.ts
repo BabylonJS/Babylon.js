@@ -110,25 +110,23 @@ export interface ISceneLoaderPluginExtensions {
      * Defines the list of supported extensions
      */
     readonly [extension: string]: {
-        isBinary: boolean;
+        readonly isBinary: boolean;
     };
 }
 
 /**
- * Interface used by SceneLoader plugin factory
+ * Metadata for a SceneLoader plugin that must also be provided by a plugin factory
  */
-export interface ISceneLoaderPluginFactory {
+export interface ISceneLoaderPluginMetadata {
     /**
-     * Defines the name of the factory
+     * The friendly name of the plugin.
      */
     readonly name: string;
 
     /**
-     * Function called to create a new plugin
-     * @param options plugin options that were passed to the SceneLoader operation
-     * @returns the new plugin
+     * The file extensions supported by the plugin.
      */
-    createPlugin(options: SceneLoaderPluginOptions): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
+    readonly extensions: string | ISceneLoaderPluginExtensions;
 
     /**
      * The callback that returns true if the data can be directly loaded.
@@ -139,19 +137,21 @@ export interface ISceneLoaderPluginFactory {
 }
 
 /**
+ * Interface used by SceneLoader plugin factory
+ */
+export interface ISceneLoaderPluginFactory extends ISceneLoaderPluginMetadata {
+    /**
+     * Function called to create a new plugin
+     * @param options plugin options that were passed to the SceneLoader operation
+     * @returns the new plugin
+     */
+    createPlugin(options: SceneLoaderPluginOptions): ISceneLoaderPlugin | ISceneLoaderPluginAsync | Promise<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+}
+
+/**
  * Interface used to define the base of ISceneLoaderPlugin and ISceneLoaderPluginAsync
  */
-export interface ISceneLoaderPluginBase {
-    /**
-     * The friendly name of this plugin.
-     */
-    readonly name: string;
-
-    /**
-     * The file extensions supported by this plugin.
-     */
-    readonly extensions: string | ISceneLoaderPluginExtensions;
-
+export interface ISceneLoaderPluginBase extends ISceneLoaderPluginMetadata {
     /**
      * The callback called when loading from a url.
      * @param scene scene loading this url
@@ -174,13 +174,6 @@ export interface ISceneLoaderPluginBase {
         onError?: (request?: WebRequest, exception?: LoadFileError) => void,
         name?: string
     ): Nullable<IFileRequest>;
-
-    /**
-     * The callback that returns true if the data can be directly loaded.
-     * @param data string containing the file data
-     * @returns if the data can be loaded directly
-     */
-    canDirectLoad?(data: string): boolean;
 
     /**
      * The callback that returns the data to pass to the plugin if the data can be directly loaded.
@@ -335,11 +328,15 @@ interface IRegisteredPlugin {
     /**
      * Defines the plugin to use
      */
-    plugin: (ISceneLoaderPlugin | ISceneLoaderPluginAsync) & Partial<ISceneLoaderPluginFactory> & Partial<ISceneLoaderPluginInternal>;
+    plugin: ((ISceneLoaderPlugin | ISceneLoaderPluginAsync) & Partial<ISceneLoaderPluginInternal>) | ISceneLoaderPluginFactory;
     /**
      * Defines if the plugin supports binary data
      */
     isBinary: boolean;
+}
+
+function isFactory(pluginOrFactory: IRegisteredPlugin["plugin"]): pluginOrFactory is ISceneLoaderPluginFactory {
+    return !!(pluginOrFactory as ISceneLoaderPluginFactory).createPlugin;
 }
 
 /**
@@ -481,11 +478,11 @@ const onPluginActivatedObservable = new Observable<ISceneLoaderPlugin | ISceneLo
 const registeredPlugins: { [extension: string]: IRegisteredPlugin } = {};
 let showingLoadingScreen = false;
 
-function getDefaultPlugin(): IRegisteredPlugin {
+function getDefaultPlugin(): IRegisteredPlugin | undefined {
     return registeredPlugins[".babylon"];
 }
 
-function getPluginForExtension(extension: string): IRegisteredPlugin {
+function getPluginForExtension(extension: string): IRegisteredPlugin | undefined {
     const registeredPlugin = registeredPlugins[extension];
     if (registeredPlugin) {
         return registeredPlugin;
@@ -502,7 +499,7 @@ function isPluginForExtensionAvailable(extension: string): boolean {
     return !!registeredPlugins[extension];
 }
 
-function getPluginForDirectLoad(data: string): IRegisteredPlugin {
+function getPluginForDirectLoad(data: string): IRegisteredPlugin | undefined {
     for (const extension in registeredPlugins) {
         const plugin = registeredPlugins[extension].plugin;
 
@@ -514,7 +511,7 @@ function getPluginForDirectLoad(data: string): IRegisteredPlugin {
     return getDefaultPlugin();
 }
 
-function getPluginForFilename(sceneFilename: string): IRegisteredPlugin {
+function getPluginForFilename(sceneFilename: string): IRegisteredPlugin | undefined {
     const queryStringPosition = sceneFilename.indexOf("?");
 
     if (queryStringPosition !== -1) {
@@ -528,8 +525,8 @@ function getPluginForFilename(sceneFilename: string): IRegisteredPlugin {
 }
 
 function getDirectLoad(sceneFilename: string): Nullable<string> {
-    if (sceneFilename.substr(0, 5) === "data:") {
-        return sceneFilename.substr(5);
+    if (sceneFilename.substring(0, 5) === "data:") {
+        return sceneFilename.substring(5);
     }
 
     return null;
@@ -568,6 +565,10 @@ function loadData(
 
     const registeredPlugin = pluginExtension ? getPluginForExtension(pluginExtension) : directLoad ? getPluginForDirectLoad(fileInfo.url) : getPluginForFilename(fileInfo.url);
 
+    if (!registeredPlugin) {
+        throw new Error(`No plugin or fallback for ${pluginExtension ?? fileInfo.url}`);
+    }
+
     if (pluginOptions?.[registeredPlugin.plugin.name]?.enabled === false) {
         throw new Error(`The '${registeredPlugin.plugin.name}' plugin is disabled via the loader options passed to the loading operation.`);
     }
@@ -577,105 +578,125 @@ function loadData(
         throw "Loading from ArrayBufferView can not be used with plugins that don't support binary loading.";
     }
 
-    // For plugin factories, the plugin is instantiated on each SceneLoader operation. This makes options handling
-    // much simpler as we can just pass the options to the factory, rather than passing options through to every possible
-    // plugin call. Given this, options are only supported for plugins that provide a factory function.
-    const plugin: IRegisteredPlugin["plugin"] = registeredPlugin.plugin.createPlugin?.(pluginOptions ?? {}) ?? registeredPlugin.plugin;
-    if (!plugin) {
-        // eslint-disable-next-line no-throw-literal
-        throw `The loader plugin corresponding to the '${pluginExtension}' file type has not been found. If using es6, please import the plugin you wish to use before.`;
-    }
-
-    onPluginActivatedObservable.notifyObservers(plugin);
-
-    // Check if we have a direct load url. If the plugin is registered to handle
-    // it or it's not a base64 data url, then pass it through the direct load path.
-    if (directLoad && ((plugin.canDirectLoad && plugin.canDirectLoad(fileInfo.url)) || !IsBase64DataUrl(fileInfo.url))) {
-        if (plugin.directLoad) {
-            const result = plugin.directLoad(scene, directLoad);
-            if (result instanceof Promise) {
-                result
-                    .then((data: unknown) => {
-                        onSuccess(plugin, data);
-                    })
-                    .catch((error: any) => {
-                        onError("Error in directLoad of _loadData: " + error, error);
-                    });
+    const getPluginInstance = (callback: (plugin: (ISceneLoaderPlugin | ISceneLoaderPluginAsync) & Partial<ISceneLoaderPluginInternal>) => void) => {
+        // For plugin factories, the plugin is instantiated on each SceneLoader operation. This makes options handling
+        // much simpler as we can just pass the options to the factory, rather than passing options through to every possible
+        // plugin call. Given this, options are only supported for plugins that provide a factory function.
+        if (isFactory(registeredPlugin.plugin)) {
+            const pluginFactory = registeredPlugin.plugin;
+            const partialPlugin = pluginFactory.createPlugin(pluginOptions ?? {});
+            if (partialPlugin instanceof Promise) {
+                partialPlugin.then(callback).catch((error) => {
+                    onError("Error instantiating plugin.", error);
+                });
+                // When async factories are used, the plugin instance cannot be returned synchronously.
+                // In this case, the legacy loader functions will return null.
+                return null;
             } else {
-                onSuccess(plugin, result);
+                callback(partialPlugin);
+                return partialPlugin;
             }
         } else {
-            onSuccess(plugin, directLoad);
+            callback(registeredPlugin.plugin);
+            return registeredPlugin.plugin;
         }
-        return plugin;
-    }
-
-    const useArrayBuffer = registeredPlugin.isBinary;
-
-    const dataCallback = (data: unknown, responseURL?: string) => {
-        if (scene.isDisposed) {
-            onError("Scene has been disposed");
-            return;
-        }
-
-        onSuccess(plugin, data, responseURL);
     };
 
-    let request: Nullable<IFileRequest> = null;
-    let pluginDisposed = false;
-    plugin.onDisposeObservable?.add(() => {
-        pluginDisposed = true;
-
-        if (request) {
-            request.abort();
-            request = null;
+    return getPluginInstance((plugin) => {
+        if (!plugin) {
+            // eslint-disable-next-line no-throw-literal
+            throw `The loader plugin corresponding to the '${pluginExtension}' file type has not been found. If using es6, please import the plugin you wish to use before.`;
         }
 
-        onDispose();
-    });
+        onPluginActivatedObservable.notifyObservers(plugin);
 
-    const manifestChecked = () => {
-        if (pluginDisposed) {
+        // Check if we have a direct load url. If the plugin is registered to handle
+        // it or it's not a base64 data url, then pass it through the direct load path.
+        if (directLoad && ((plugin.canDirectLoad && plugin.canDirectLoad(fileInfo.url)) || !IsBase64DataUrl(fileInfo.url))) {
+            if (plugin.directLoad) {
+                const result = plugin.directLoad(scene, directLoad);
+                if (result instanceof Promise) {
+                    result
+                        .then((data: unknown) => {
+                            onSuccess(plugin, data);
+                        })
+                        .catch((error: any) => {
+                            onError("Error in directLoad of _loadData: " + error, error);
+                        });
+                } else {
+                    onSuccess(plugin, result);
+                }
+            } else {
+                onSuccess(plugin, directLoad);
+            }
             return;
         }
 
-        const errorCallback = (request?: WebRequest, exception?: LoadFileError) => {
-            onError(request?.statusText, exception);
+        const useArrayBuffer = registeredPlugin.isBinary;
+
+        const dataCallback = (data: unknown, responseURL?: string) => {
+            if (scene.isDisposed) {
+                onError("Scene has been disposed");
+                return;
+            }
+
+            onSuccess(plugin, data, responseURL);
         };
 
-        if (!plugin.loadFile && fileInfo.rawData) {
-            // eslint-disable-next-line no-throw-literal
-            throw "Plugin does not support loading ArrayBufferView.";
-        }
+        let request: Nullable<IFileRequest> = null;
+        let pluginDisposed = false;
+        plugin.onDisposeObservable?.add(() => {
+            pluginDisposed = true;
 
-        request = plugin.loadFile
-            ? plugin.loadFile(scene, fileInfo.rawData || fileInfo.file || fileInfo.url, fileInfo.rootUrl, dataCallback, onProgress, useArrayBuffer, errorCallback, name)
-            : scene._loadFile(fileInfo.file || fileInfo.url, dataCallback, onProgress, true, useArrayBuffer, errorCallback);
-    };
-
-    const engine = scene.getEngine();
-    let canUseOfflineSupport = engine.enableOfflineSupport;
-    if (canUseOfflineSupport) {
-        // Also check for exceptions
-        let exceptionFound = false;
-        for (const regex of scene.disableOfflineSupportExceptionRules) {
-            if (regex.test(fileInfo.url)) {
-                exceptionFound = true;
-                break;
+            if (request) {
+                request.abort();
+                request = null;
             }
+
+            onDispose();
+        });
+
+        const manifestChecked = () => {
+            if (pluginDisposed) {
+                return;
+            }
+
+            const errorCallback = (request?: WebRequest, exception?: LoadFileError) => {
+                onError(request?.statusText, exception);
+            };
+
+            if (!plugin.loadFile && fileInfo.rawData) {
+                // eslint-disable-next-line no-throw-literal
+                throw "Plugin does not support loading ArrayBufferView.";
+            }
+
+            request = plugin.loadFile
+                ? plugin.loadFile(scene, fileInfo.rawData || fileInfo.file || fileInfo.url, fileInfo.rootUrl, dataCallback, onProgress, useArrayBuffer, errorCallback, name)
+                : scene._loadFile(fileInfo.file || fileInfo.url, dataCallback, onProgress, true, useArrayBuffer, errorCallback);
+        };
+
+        const engine = scene.getEngine();
+        let canUseOfflineSupport = engine.enableOfflineSupport;
+        if (canUseOfflineSupport) {
+            // Also check for exceptions
+            let exceptionFound = false;
+            for (const regex of scene.disableOfflineSupportExceptionRules) {
+                if (regex.test(fileInfo.url)) {
+                    exceptionFound = true;
+                    break;
+                }
+            }
+
+            canUseOfflineSupport = !exceptionFound;
         }
 
-        canUseOfflineSupport = !exceptionFound;
-    }
-
-    if (canUseOfflineSupport && AbstractEngine.OfflineProviderFactory) {
-        // Checking if a manifest file has been set for this scene and if offline mode has been requested
-        scene.offlineProvider = AbstractEngine.OfflineProviderFactory(fileInfo.url, manifestChecked, engine.disableManifestCheck);
-    } else {
-        manifestChecked();
-    }
-
-    return plugin;
+        if (canUseOfflineSupport && AbstractEngine.OfflineProviderFactory) {
+            // Checking if a manifest file has been set for this scene and if offline mode has been requested
+            scene.offlineProvider = AbstractEngine.OfflineProviderFactory(fileInfo.url, manifestChecked, engine.disableManifestCheck);
+        } else {
+            manifestChecked();
+        }
+    });
 }
 
 function getFileInfo(rootUrl: string, sceneSource: SceneSource): Nullable<IFileInfo> {
@@ -701,7 +722,7 @@ function getFileInfo(rootUrl: string, sceneSource: SceneSource): Nullable<IFileI
         name = "";
     } else if (rootUrl) {
         const filename = sceneSource;
-        if (filename.substr(0, 1) === "/") {
+        if (filename.substring(0, 1) === "/") {
             Tools.Error("Wrong sceneFilename parameter");
             return null;
         }
@@ -727,7 +748,7 @@ function getFileInfo(rootUrl: string, sceneSource: SceneSource): Nullable<IFileI
  * Adds a new plugin to the list of registered plugins
  * @param plugin defines the plugin to add
  */
-export function registerSceneLoaderPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void {
+export function registerSceneLoaderPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory): void {
     if (typeof plugin.extensions === "string") {
         const extension = plugin.extensions;
         registeredPlugins[extension.toLowerCase()] = {
@@ -1456,7 +1477,7 @@ export class SceneLoader {
      * Gets the default plugin (used to load Babylon files)
      * @returns the .babylon plugin
      */
-    public static GetDefaultPlugin(): IRegisteredPlugin {
+    public static GetDefaultPlugin(): IRegisteredPlugin | undefined {
         return getDefaultPlugin();
     }
 
@@ -1467,8 +1488,8 @@ export class SceneLoader {
      * @param extension defines the extension to load
      * @returns a plugin or null if none works
      */
-    public static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory {
-        return getPluginForExtension(extension).plugin;
+    public static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory | undefined {
+        return getPluginForExtension(extension)?.plugin;
     }
 
     /**
@@ -1484,7 +1505,7 @@ export class SceneLoader {
      * Adds a new plugin to the list of registered plugins
      * @param plugin defines the plugin to add
      */
-    public static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void {
+    public static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory): void {
         registerSceneLoaderPlugin(plugin);
     }
 

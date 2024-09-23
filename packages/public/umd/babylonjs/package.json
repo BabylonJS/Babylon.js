@@ -1,6 +1,6 @@
 {
     "name": "babylonjs",
-    "version": "7.23.0",
+    "version": "7.26.2",
     "main": "babylon.js",
     "types": "babylon.module.d.ts",
     "files": [
@@ -12,7 +12,7 @@
         "build:dev": "webpack --env development",
         "build:prod": "webpack --env production",
         "build:declaration": "build-tools -c pud --config ./config.json",
-        "clean": "rimraf dist && rimraf babylon*.*",
+        "clean": "rimraf dist && rimraf babylon*.* -g",
         "postinstall": "node ./scripts/postinstall.js",
         "test:escheck": "es-check es6 ./babylon.max.js"
     },

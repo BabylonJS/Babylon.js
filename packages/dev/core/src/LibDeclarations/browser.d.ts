@@ -29,11 +29,6 @@ interface WorkerGlobalScope {
 type WorkerSelf = WindowOrWorkerGlobalScope & WorkerGlobalScope;
 
 interface HTMLCanvasElement {
-    requestPointerLock(): void;
-    msRequestPointerLock?(): void;
-    mozRequestPointerLock?(): void;
-    webkitRequestPointerLock?(): void;
-
     /** Track whether a record is in progress */
     isRecording: boolean;
     /** Capture Stream method defined by some browsers */

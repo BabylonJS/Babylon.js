@@ -629,12 +629,14 @@ export class ThinEngine extends AbstractEngine {
         if (this._webGLVersion > 1) {
             this._caps.drawBuffersExtension = true;
             this._caps.maxMSAASamples = this._maxMSAASamplesOverride !== null ? this._maxMSAASamplesOverride : this._gl.getParameter(this._gl.MAX_SAMPLES);
+            this._caps.maxDrawBuffers = this._gl.getParameter(this._gl.MAX_DRAW_BUFFERS);
         } else {
             const drawBuffersExtension = this._gl.getExtension("WEBGL_draw_buffers");
 
             if (drawBuffersExtension !== null) {
                 this._caps.drawBuffersExtension = true;
                 this._gl.drawBuffers = drawBuffersExtension.drawBuffersWEBGL.bind(drawBuffersExtension);
+                this._caps.maxDrawBuffers = this._gl.getParameter(drawBuffersExtension.MAX_DRAW_BUFFERS_WEBGL);
                 (this._gl.DRAW_FRAMEBUFFER as any) = this._gl.FRAMEBUFFER;
 
                 for (let i = 0; i < 16; i++) {
@@ -730,8 +732,12 @@ export class ThinEngine extends AbstractEngine {
                 }
             }
             // take into account the forced state that was provided in options
-            // When the issue in angle/chrome is fixed the flag should be taken into account only when it is explicitly defined
-            this._caps.supportSRGBBuffers = this._caps.supportSRGBBuffers && !!(this._creationOptions && (this._creationOptions as EngineOptions).forceSRGBBufferSupportState);
+            if (this._creationOptions) {
+                const forceSRGBBufferSupportState = (this._creationOptions as EngineOptions).forceSRGBBufferSupportState;
+                if (forceSRGBBufferSupportState !== undefined) {
+                    this._caps.supportSRGBBuffers = this._caps.supportSRGBBuffers && forceSRGBBufferSupportState;
+                }
+            }
         }
 
         // Depth buffer

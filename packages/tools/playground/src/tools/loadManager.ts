@@ -42,7 +42,7 @@ export class LoadManager {
 
     private _cleanHash() {
         const substr = location.hash[1] === "#" ? 2 : 1;
-        const splits = decodeURIComponent(location.hash.substr(substr)).split("#");
+        const splits = decodeURIComponent(location.hash.substring(substr)).split("#");
 
         if (splits.length > 2) {
             splits.splice(2, splits.length - 2);

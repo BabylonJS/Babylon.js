@@ -160,6 +160,7 @@ export const commonDevWebpackConfiguration = (
         mode: "development" | "production";
         outputFilename: string;
         dirName: string;
+        dirSuffix?: string;
         enableHttps?: boolean;
         enableHotReload?: boolean;
         enableLiveReload?: boolean;
@@ -202,8 +203,9 @@ export const commonDevWebpackConfiguration = (
             : undefined,
         output: env.outputFilename
             ? {
-                  path: path.resolve(env.dirName, "dist"),
+                  path: path.resolve(env.dirName, "dist", env.dirSuffix || ""),
                   filename: env.outputFilename,
+                  clean: true,
                   devtoolModuleFilenameTemplate: production ? "webpack://[namespace]/[resource-path]?[loaders]" : "file:///[absolute-resource-path]",
               }
             : undefined,

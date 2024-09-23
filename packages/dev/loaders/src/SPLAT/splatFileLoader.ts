@@ -1,12 +1,6 @@
-import type {
-    ISceneLoaderPluginAsync,
-    ISceneLoaderPluginFactory,
-    ISceneLoaderAsyncResult,
-    ISceneLoaderPluginExtensions,
-    ISceneLoaderProgressEvent,
-    SceneLoaderPluginOptions,
-} from "core/Loading/sceneLoader";
+import type { ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, ISceneLoaderAsyncResult, ISceneLoaderProgressEvent, SceneLoaderPluginOptions } from "core/Loading/sceneLoader";
 import { registerSceneLoaderPlugin } from "core/Loading/sceneLoader";
+import { SPLATFileLoaderMetadata } from "./splatFileLoader.metadata";
 import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
 import { AssetContainer } from "core/assetContainer";
 import type { Scene } from "core/scene";
@@ -20,16 +14,13 @@ import { Color4 } from "core/Maths/math.color";
 import { VertexData } from "core/Meshes/mesh.vertexData";
 import type { SPLATLoadingOptions } from "./splatLoadingOptions";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const PLUGIN_SPLAT = "splat";
-
 declare module "core/Loading/sceneLoader" {
     // eslint-disable-next-line jsdoc/require-jsdoc
     export interface SceneLoaderPluginOptions {
         /**
          * Defines options for the splat loader.
          */
-        [PLUGIN_SPLAT]: Partial<SPLATLoadingOptions>;
+        [SPLATFileLoaderMetadata.name]: Partial<SPLATLoadingOptions>;
     }
 }
 
@@ -61,7 +52,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
     /**
      * Defines the name of the plugin.
      */
-    public readonly name = PLUGIN_SPLAT;
+    public readonly name = SPLATFileLoaderMetadata.name;
 
     private _assetContainer: Nullable<AssetContainer> = null;
 
@@ -70,12 +61,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
      * Defines the extensions the splat loader is able to load.
      * force data to come in as an ArrayBuffer
      */
-    public readonly extensions = {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        ".splat": { isBinary: true },
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        ".ply": { isBinary: true },
-    } as const satisfies ISceneLoaderPluginExtensions;
+    public readonly extensions = SPLATFileLoaderMetadata.extensions;
 
     /**
      * Creates loader for gaussian splatting files
@@ -91,15 +77,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
 
     /** @internal */
     createPlugin(options: SceneLoaderPluginOptions): ISceneLoaderPluginAsync {
-        return new SPLATFileLoader(options[PLUGIN_SPLAT]);
-    }
-
-    /**
-     * If the data string can be loaded directly.
-     * @returns if the data can be loaded directly
-     */
-    public canDirectLoad(): boolean {
-        return false;
+        return new SPLATFileLoader(options[SPLATFileLoaderMetadata.name]);
     }
 
     /**
@@ -485,5 +463,5 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
     }
 }
 
-//Add this loader into the register plugin
+// Add this loader into the register plugin
 registerSceneLoaderPlugin(new SPLATFileLoader());

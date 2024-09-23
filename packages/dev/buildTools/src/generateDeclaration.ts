@@ -35,7 +35,7 @@ function getModuleDeclaration(
         fullPath: string;
     }[]
 ) {
-    const distPosition = filename.indexOf("/dist");
+    const distPosition = filename.replace(/\\/g, "/").indexOf("/dist");
     const packageVariables = getPackageMappingByDevName(config.devPackageName);
     const moduleName = getPublicPackageName(packageVariables[buildType], filename) + filename.substring(distPosition + 5).replace(".d.ts", "");
     const sourceDir = path.dirname(moduleName);
@@ -145,7 +145,7 @@ function getModuleDeclaration(
                     if (processedLines[i] === "}") {
                         // +1 to enroll the last }
                         // +2 to enroll the trailing ;
-                        processedLines = processedLines.substr(0, constStart) + processedLines.substr(i + 2);
+                        processedLines = processedLines.substring(0, constStart) + processedLines.substring(i + 2);
                         break;
                     }
                 }
