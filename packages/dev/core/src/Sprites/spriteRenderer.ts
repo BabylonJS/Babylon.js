@@ -166,15 +166,17 @@ export class SpriteRenderer {
      * @param capacity defines the maximum allowed number of sprites
      * @param epsilon defines the epsilon value to align texture (0.01 by default)
      * @param scene defines the hosting scene
+     * @param pixelPerfect Forcing the sprite renderer to pixelPerfect mode. Sprite instancing will be disabled.
      */
-    constructor(engine: AbstractEngine, capacity: number, epsilon: number = 0.01, scene: Nullable<Scene> = null) {
+    constructor(engine: AbstractEngine, capacity: number, epsilon: number = 0.01, scene: Nullable<Scene> = null, pixelPerfect = false) {
         this._capacity = capacity;
         this._epsilon = epsilon;
 
         this._engine = engine;
-        this._useInstancing = engine.getCaps().instancedArrays && engine._features.supportSpriteInstancing;
+        this._useInstancing = pixelPerfect === false && engine.getCaps().instancedArrays && engine._features.supportSpriteInstancing;
         this._useVAO = engine.getCaps().vertexArrayObject && !engine.disableVertexArrayObjects;
         this._scene = scene;
+        this._pixelPerfect = pixelPerfect;
 
         if (!this._useInstancing) {
             this._buildIndexBuffer();
@@ -425,15 +427,15 @@ export class SpriteRenderer {
     ): void {
         let arrayOffset = index * this._vertexBufferSize;
 
-        if (offsetX === 0) {
-            offsetX = this._epsilon;
-        } else if (offsetX === 1) {
+        if (offsetX < 0.5) {
+            offsetX += this._epsilon;
+        } else if (offsetX >= 0.5) {
             offsetX = 1 - this._epsilon;
         }
 
-        if (offsetY === 0) {
-            offsetY = this._epsilon;
-        } else if (offsetY === 1) {
+        if (offsetY < 0.5) {
+            offsetY += this._epsilon;
+        } else if (offsetY >= 0.5) {
             offsetY = 1 - this._epsilon;
         }
 

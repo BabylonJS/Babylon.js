@@ -292,7 +292,13 @@ export class SpriteManager implements ISpriteManager {
         public name: string,
         imgUrl: string,
         capacity: number,
-        cellSize: any,
+        cellSize:
+            | number
+            | {
+                  width: number;
+                  height: number;
+                  pixelPerfect?: boolean;
+              },
         scene: Scene,
         epsilon: number = 0.01,
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
@@ -310,14 +316,15 @@ export class SpriteManager implements ISpriteManager {
 
         this._scene = scene;
         const engine = this._scene.getEngine();
-        this._spriteRenderer = new SpriteRenderer(engine, capacity, epsilon, scene);
 
-        if (cellSize.width && cellSize.height) {
+        if (typeof cellSize === "object" && cellSize.width && cellSize.height) {
+            this._spriteRenderer = new SpriteRenderer(engine, capacity, epsilon, scene, cellSize.pixelPerfect);
             this.cellWidth = cellSize.width;
             this.cellHeight = cellSize.height;
         } else if (cellSize !== undefined) {
-            this.cellWidth = cellSize;
-            this.cellHeight = cellSize;
+            this._spriteRenderer = new SpriteRenderer(engine, capacity, epsilon, scene);
+            this.cellWidth = cellSize as number;
+            this.cellHeight = cellSize as number;
         } else {
             this._spriteRenderer = <any>null;
             return;
