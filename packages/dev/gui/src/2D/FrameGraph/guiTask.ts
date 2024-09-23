@@ -34,11 +34,11 @@ export class FrameGraphGUITask implements IFrameGraphTask {
         this._adt = adt;
     }
 
-    public isReadyFrameGraph() {
+    public isReady() {
         return this._adt.guiIsReady() && this._adt._layerToDispose!.isReady();
     }
 
-    public recordFrameGraph(frameGraph: FrameGraph): void {
+    public record(frameGraph: FrameGraph): void {
         if (this.destinationTexture === undefined) {
             throw new Error("FrameGraphGUITask: destinationTexture is required");
         }
@@ -59,7 +59,7 @@ export class FrameGraphGUITask implements IFrameGraphTask {
         passDisabled.setExecuteFunc((_context) => {});
     }
 
-    public disposeFrameGraph(): void {
+    public dispose(): void {
         this._adt.dispose();
     }
 }

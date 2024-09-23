@@ -20,7 +20,7 @@ export class FrameGraphBloomMergeTask extends FrameGraphPostProcessTask {
 
         const blurTextureHandle = frameGraph.getTextureHandle(this.blurTexture);
 
-        const pass = super.record(frameGraph, skipCreationOfDisabledPasses, (context) => {
+        const pass = super.record(frameGraph, skipCreationOfDisabledPasses, undefined, (context) => {
             context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "bloomBlur", blurTextureHandle);
             this._postProcessDrawWrapper.effect!.setFloat("bloomWeight", this._postProcess.weight);
         });
