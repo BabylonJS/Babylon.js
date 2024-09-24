@@ -21,8 +21,7 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps> {
             const editorDiv = this.props.refObject.current! as any;
             if (editorDiv.requestFullscreen) {
                 editorDiv.requestFullscreen();
-            } else if (editorDiv.mozRequestFullScreen) {
-                editorDiv.mozRequestFullScreen();
+                // iOS 12 introduced the ewbkit prefixed version of the Fullscreen API. Not needed since 16.4
             } else if (editorDiv.webkitRequestFullscreen) {
                 editorDiv.webkitRequestFullscreen();
             }

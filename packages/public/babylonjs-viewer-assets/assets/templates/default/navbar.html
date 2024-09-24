@@ -18,7 +18,7 @@
     }
 
     nav-bar .animation-control {
-        background-color: rgba(91, 93, 107, .75);
+        background-color: rgba(91, 93, 107, 0.75);
         display: flex;
         flex-direction: row;
         height: 100%;
@@ -56,7 +56,7 @@
     }
 
     nav-bar button:hover {
-        background-color: rgba(22, 24, 26, .20);
+        background-color: rgba(22, 24, 26, 0.2);
     }
 
     nav-bar .control-text {
@@ -76,7 +76,7 @@
         align-items: center;
         flex-direction: row;
         justify-content: center;
-        background-color: rgba(91, 93, 107, .75);
+        background-color: rgba(91, 93, 107, 0.75);
         height: 48px;
         min-width: 48px;
         margin-right: 4px;
@@ -103,7 +103,7 @@
         position: absolute;
         bottom: 48px;
         width: 48px;
-        background-color: rgba(22, 24, 26, .90);
+        background-color: rgba(22, 24, 26, 0.9);
     }
 
     .logo-button,
@@ -196,7 +196,7 @@
         display: flex;
         flex-direction: row;
         height: 100%;
-        background-color: rgba(91, 93, 107, .75);
+        background-color: rgba(91, 93, 107, 0.75);
     }
 
     .menu-options button {
@@ -241,7 +241,7 @@
         justify-content: left;
     }
 
-    .types .menu-options button>* {
+    .types .menu-options button > * {
         display: flex;
         margin: 8px;
     }
@@ -305,7 +305,7 @@
             margin-left: 8px;
         }
 
-        nav-bar button.animation-buttons>div {
+        nav-bar button.animation-buttons > div {
             display: flex;
             pointer-events: none;
         }
@@ -322,7 +322,6 @@
             width: 144px;
         }
     }
-
 
     .progress-wrapper {
         -webkit-appearance: none;
@@ -352,7 +351,6 @@
         background-color: white;
     }
 
-
     /** FireFox -moz */
 
     .progress-wrapper::-moz-range-progress {
@@ -371,41 +369,6 @@
     .progress-wrapper::-moz-range-track {
         background: white;
         height: 2px;
-    }
-
-    /** IE -ms */
-
-    .progress-wrapper::-ms-track {
-        height: 2px;
-
-        /*remove bg colour from the track, we'll use ms-fill-lower and ms-fill-upper instead */
-        background: transparent;
-
-        /*leave room for the larger thumb to overflow with a transparent border */
-        border-color: transparent;
-        border-width: 10px 0;
-
-        /*remove default tick marks*/
-        color: transparent;
-    }
-
-    .progress-wrapper::-ms-fill-lower {
-        background: white;
-        border-radius: 5px;
-    }
-
-    .progress-wrapper::-ms-fill-upper {
-        background: white;
-        border-radius: 5px;
-    }
-
-    .progress-wrapper::-ms-thumb {
-        width: 16px;
-        height: 16px;
-        border: 2px solid white;
-        border-radius: 50%;
-        background: rgba(91, 93, 107, 1);
-        margin-top: 0px;
     }
 
     span {
@@ -438,10 +401,10 @@
     <div class="logo-button" title="{{logoText}}">
         {{#if logoLink}}
         <a href="{{logoLink}}" target="_blank">
-            <img src="{{logoImage}}">
+            <img src="{{logoImage}}" />
         </a>
         {{else}}
-        <img src="{{logoImage}}"> {{/if}}
+        <img src="{{logoImage}}" /> {{/if}}
     </div>
     {{/unless}}{{#unless (or (not animations) hideAnimations)}}
     <div class="animation-control">
@@ -476,7 +439,7 @@
                 <span class="icon pause-icon"></span>
                 {{/if}}
             </button>
-            <input class="progress-wrapper" type="range" min="0" max="100" step="0.01">
+            <input class="progress-wrapper" type="range" min="0" max="100" step="0.01" />
         </div>
         <div class="speed">
             <button class="flex-container speed-button">

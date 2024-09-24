@@ -101,7 +101,6 @@ export class HTML3DElement extends LitElement {
             outline: none;
             appearance: none; /* Remove default styling */
             -webkit-appearance: none; /* Remove default styling for Safari */
-            -moz-appearance: none; /* Remove default styling for Firefox */
         }
 
         .tool-bar select:hover,
