@@ -23,10 +23,17 @@ import { Color4 } from "core/Maths/math.color";
 import { Clamp } from "core/Maths/math.scalar.functions";
 import { Vector3 } from "core/Maths/math.vector";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
+import { computeMaxExtents } from "core/Meshes/meshUtils";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { Observable } from "core/Misc/observable";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
+
+function throwIfAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]): void {
+    for (const signal of abortSignals) {
+        signal?.throwIfAborted();
+    }
+}
 
 function createSkybox(scene: Scene, camera: Camera, environmentTexture: CubeTexture, blur: number): Mesh {
     const hdrSkybox = CreateBox("hdrSkyBox", undefined, scene);
@@ -183,12 +190,7 @@ export class Viewer implements IDisposable {
 
         // TODO: render at least back ground. Maybe we can only run renderloop when a mesh is loaded. What to render until then?
         const render = () => {
-            const scene = this._details.scene;
-            const engine = scene.getEngine();
-
-            engine.beginFrame();
-            scene.render();
-            engine.endFrame();
+            this._details.scene.render();
             if (this.isAnimationPlaying) {
                 this.onAnimationProgressChanged.notifyObservers();
                 this._autoRotationBehavior.resetLastInteractionTime();
@@ -222,15 +224,22 @@ export class Viewer implements IDisposable {
         if (value !== this._selectedAnimation) {
             const startAnimation = this.isAnimationPlaying;
             if (this._activeAnimation) {
-                this._activeAnimation.goToFrame(0);
-                this._activeAnimation.stop();
                 this._activeAnimationObservers.forEach((observer) => observer.remove());
                 this._activeAnimationObservers = [];
+                this._activeAnimation.pause();
+                this._activeAnimation.goToFrame(0);
             }
 
             this._selectedAnimation = value;
 
             if (this._activeAnimation) {
+                this._activeAnimation.goToFrame(0);
+                this._activeAnimation.play(true);
+
+                if (!startAnimation) {
+                    this.pauseAnimation();
+                }
+
                 this._activeAnimationObservers = [
                     this._activeAnimation.onAnimationGroupPlayObservable.add(() => {
                         this.onIsAnimationPlayingChanged.notifyObservers();
@@ -243,14 +252,9 @@ export class Viewer implements IDisposable {
                         this.onAnimationProgressChanged.notifyObservers();
                     }),
                 ];
-
-                this._activeAnimation.start(true, this._animationSpeed);
-
-                if (!startAnimation) {
-                    this.pauseAnimation();
-                }
             }
 
+            this._updateCamera();
             this.onSelectedAnimationChanged.notifyObservers();
         }
     }
@@ -324,7 +328,7 @@ export class Viewer implements IDisposable {
         const abortController = (this._loadModelAbortController = new AbortController());
 
         await this._loadModelLock.lockAsync(async () => {
-            this._throwIfDisposedOrAborted(abortSignal, abortController.signal);
+            throwIfAborted(abortSignal, abortController.signal);
             this._details.model?.dispose();
             this._details.model = null;
             this.selectedAnimation = -1;
@@ -332,7 +336,10 @@ export class Viewer implements IDisposable {
             try {
                 if (source) {
                     this._details.model = await loadAssetContainerAsync(source, this._details.scene, options);
-                    this._details.model.animationGroups.forEach((group) => group.stop());
+                    this._details.model.animationGroups.forEach((group) => {
+                        group.start(true, this.animationSpeed);
+                        group.pause();
+                    });
                     this.selectedAnimation = 0;
                     this._details.model.addAllToScene();
                 }
@@ -375,7 +382,7 @@ export class Viewer implements IDisposable {
         const abortController = (this._loadEnvironmentAbortController = new AbortController());
 
         await this._loadEnvironmentLock.lockAsync(async () => {
-            this._throwIfDisposedOrAborted(abortSignal, abortController.signal);
+            throwIfAborted(abortSignal, abortController.signal);
             this._environment?.dispose();
             this._environment = null;
             this._details.scene.autoClear = true;
@@ -457,6 +464,9 @@ export class Viewer implements IDisposable {
         this.selectedAnimation = -1;
         this.animationProgress = 0;
 
+        this._loadEnvironmentAbortController?.abort("Thew viewer is being disposed.");
+        this._loadModelAbortController?.abort("Thew viewer is being disposed.");
+
         this._renderLoopController.dispose();
         this._details.scene.dispose();
 
@@ -480,19 +490,21 @@ export class Viewer implements IDisposable {
         framingBehavior.elevationReturnTime = -1;
 
         let radius = 1;
-        if (this._details.scene.meshes.length) {
+        if (this._details.model?.meshes.length) {
             // get bounds and prepare framing/camera radius from its values
             this._camera.lowerRadiusLimit = null;
 
-            const worldExtends = this._details.scene.getWorldExtends((mesh) => {
-                return mesh.isVisible && mesh.isEnabled();
-            });
-            framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
+            const maxExtents = computeMaxExtents(this._details.model.meshes, this._activeAnimation);
+            const worldExtents = {
+                min: new Vector3(Math.min(...maxExtents.map((e) => e.minimum.x)), Math.min(...maxExtents.map((e) => e.minimum.y)), Math.min(...maxExtents.map((e) => e.minimum.z))),
+                max: new Vector3(Math.max(...maxExtents.map((e) => e.maximum.x)), Math.max(...maxExtents.map((e) => e.maximum.y)), Math.max(...maxExtents.map((e) => e.maximum.z))),
+            };
+            framingBehavior.zoomOnBoundingInfo(worldExtents.min, worldExtents.max);
 
-            const worldSize = worldExtends.max.subtract(worldExtends.min);
-            const worldCenter = worldExtends.min.add(worldSize.scale(0.5));
+            const worldSize = worldExtents.max.subtract(worldExtents.min);
+            const worldCenter = worldExtents.min.add(worldSize.scale(0.5));
 
-            radius = worldSize.length() * 1.2;
+            radius = worldSize.length() * 1.1;
 
             if (!isFinite(radius)) {
                 radius = 1;
@@ -504,7 +516,7 @@ export class Viewer implements IDisposable {
         this._camera.lowerRadiusLimit = radius * 0.01;
         this._camera.wheelPrecision = 100 / radius;
         this._camera.alpha = Math.PI / 2;
-        this._camera.beta = Math.PI / 2;
+        this._camera.beta = Math.PI / 2.4;
         this._camera.radius = radius;
         this._camera.minZ = radius * 0.01;
         this._camera.maxZ = radius * 1000;
@@ -559,8 +571,6 @@ export class Viewer implements IDisposable {
             throw new Error("Viewer is disposed.");
         }
 
-        for (const signal of abortSignals) {
-            signal?.throwIfAborted();
-        }
+        throwIfAborted(...abortSignals);
     }
 }
