@@ -3,11 +3,12 @@ import { RuntimeAnimation } from "./runtimeAnimation";
 
 import type { Nullable } from "../types";
 import { Observable } from "../Misc/observable";
-import { Scene } from "../scene";
 import { Matrix, Quaternion, Vector3, TmpVectors } from "../Maths/math.vector";
 import { PrecisionDate } from "../Misc/precisionDate";
 import { Bone } from "../Bones/bone";
 import type { Node } from "../node";
+import { CoreScene } from "core/coreScene";
+import type { SmartArrayNoDuplicate } from "core/Misc/smartArray";
 
 /**
  * Class used to store an actual running animation
@@ -19,7 +20,7 @@ export class Animatable {
     /** @hidden */
     public _runtimeAnimations = new Array<RuntimeAnimation>();
     private _paused = false;
-    private _scene: Scene;
+    private _scene: CoreScene;
     private _speedRatio = 1;
     private _weight = -1.0;
     private _syncRoot: Nullable<Animatable> = null;
@@ -127,7 +128,7 @@ export class Animatable {
      * @param playOrder defines the order in which this animatable should be processed in the list of active animatables (default: 0)
      */
     constructor(
-        scene: Scene,
+        scene: CoreScene,
         /** defines the target object */
         public target: any,
         /** [0] defines the starting frame number (default is 0) */
@@ -482,10 +483,33 @@ export class Animatable {
     }
 }
 
-declare module "../scene" {
-    export interface Scene {
+declare module "../coreScene" {
+    export interface CoreScene {
+        /** @internal */
+        _animationTimeLast: number;
+
+        /**
+         * Gets or sets a boolean indicating if a constant deltatime has to be used
+         * This is mostly useful for testing purposes when you do not want the animations to scale with the framerate
+         */
+        useConstantAnimationDeltaTime: boolean;
+
+        /**
+         * Gets or sets a boolean indicating if animations are enabled
+         */
+        animationsEnabled: boolean;
+
+        /** @internal */
+        _activeAnimatables: Array<Animatable>;
+
+        /** @internal */
+        _animate(customDeltaTime?: number): void;
+
         /** @internal */
         _registerTargetForLateAnimationBinding(runtimeAnimation: RuntimeAnimation, originalValue: any): void;
+
+        /** @internal */
+        _registeredForLateAnimationBindings: SmartArrayNoDuplicate<any>;
 
         /** @internal */
         _processLateAnimationBindingsForMatrices(holder: {
@@ -515,6 +539,14 @@ declare module "../scene" {
          * Sort active animatables based on their playOrder property
          */
         sortActiveAnimatables(): void;
+
+        /**
+         * Will stop the animation of the given target
+         * @param target - the target
+         * @param animationName - the name of the animation to stop (all animations will be stopped if both this and targetMask are empty)
+         * @param targetMask - a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
+         */
+        stopAnimation(target: any, animationName?: string, targetMask?: (target: any) => boolean): void;
 
         /**
          * Will start the animation sequence of a given target
@@ -687,7 +719,7 @@ declare module "../scene" {
     }
 }
 
-Scene.prototype._animate = function (customDeltaTime?: number): void {
+CoreScene.prototype._animate = function (customDeltaTime?: number): void {
     if (!this.animationsEnabled) {
         return;
     }
@@ -724,13 +756,13 @@ Scene.prototype._animate = function (customDeltaTime?: number): void {
     this._processLateAnimationBindings();
 };
 
-Scene.prototype.sortActiveAnimatables = function (): void {
+CoreScene.prototype.sortActiveAnimatables = function (): void {
     this._activeAnimatables.sort((a, b) => {
         return a.playOrder - b.playOrder;
     });
 };
 
-Scene.prototype.beginWeightedAnimation = function (
+CoreScene.prototype.beginWeightedAnimation = function (
     target: any,
     from: number,
     to: number,
@@ -749,7 +781,7 @@ Scene.prototype.beginWeightedAnimation = function (
     return returnedAnimatable;
 };
 
-Scene.prototype.beginAnimation = function (
+CoreScene.prototype.beginAnimation = function (
     target: any,
     from: number,
     to: number,
@@ -800,7 +832,7 @@ Scene.prototype.beginAnimation = function (
     return animatable;
 };
 
-Scene.prototype.beginHierarchyAnimation = function (
+CoreScene.prototype.beginHierarchyAnimation = function (
     target: any,
     directDescendantsOnly: boolean,
     from: number,
@@ -825,7 +857,7 @@ Scene.prototype.beginHierarchyAnimation = function (
     return result;
 };
 
-Scene.prototype.beginDirectAnimation = function (
+CoreScene.prototype.beginDirectAnimation = function (
     target: any,
     animations: Animation[],
     from: number,
@@ -852,7 +884,7 @@ Scene.prototype.beginDirectAnimation = function (
     return animatable;
 };
 
-Scene.prototype.beginDirectHierarchyAnimation = function (
+CoreScene.prototype.beginDirectHierarchyAnimation = function (
     target: Node,
     directDescendantsOnly: boolean,
     animations: Animation[],
@@ -875,7 +907,7 @@ Scene.prototype.beginDirectHierarchyAnimation = function (
     return result;
 };
 
-Scene.prototype.getAnimatableByTarget = function (target: any): Nullable<Animatable> {
+CoreScene.prototype.getAnimatableByTarget = function (target: any): Nullable<Animatable> {
     for (let index = 0; index < this._activeAnimatables.length; index++) {
         if (this._activeAnimatables[index].target === target) {
             return this._activeAnimatables[index];
@@ -885,7 +917,7 @@ Scene.prototype.getAnimatableByTarget = function (target: any): Nullable<Animata
     return null;
 };
 
-Scene.prototype.getAllAnimatablesByTarget = function (target: any): Array<Animatable> {
+CoreScene.prototype.getAllAnimatablesByTarget = function (target: any): Array<Animatable> {
     const result = [];
     for (let index = 0; index < this._activeAnimatables.length; index++) {
         if (this._activeAnimatables[index].target === target) {
@@ -902,7 +934,7 @@ Scene.prototype.getAllAnimatablesByTarget = function (target: any): Array<Animat
  * @param animationName - the name of the animation to stop (all animations will be stopped if both this and targetMask are empty)
  * @param targetMask - a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
  */
-Scene.prototype.stopAnimation = function (target: any, animationName?: string, targetMask?: (target: any) => boolean): void {
+CoreScene.prototype.stopAnimation = function (target: any, animationName?: string, targetMask?: (target: any) => boolean): void {
     const animatables = this.getAllAnimatablesByTarget(target);
 
     for (const animatable of animatables) {
@@ -913,7 +945,7 @@ Scene.prototype.stopAnimation = function (target: any, animationName?: string, t
 /**
  * Stops and removes all animations that have been applied to the scene
  */
-Scene.prototype.stopAllAnimations = function (): void {
+CoreScene.prototype.stopAllAnimations = function (): void {
     if (this._activeAnimatables) {
         for (let i = 0; i < this._activeAnimatables.length; i++) {
             this._activeAnimatables[i].stop(undefined, undefined, true);
@@ -926,7 +958,7 @@ Scene.prototype.stopAllAnimations = function (): void {
     }
 };
 
-Scene.prototype._registerTargetForLateAnimationBinding = function (runtimeAnimation: RuntimeAnimation, originalValue: any): void {
+CoreScene.prototype._registerTargetForLateAnimationBinding = function (runtimeAnimation: RuntimeAnimation, originalValue: any): void {
     const target = runtimeAnimation.target;
     this._registeredForLateAnimationBindings.pushNoDuplicate(target);
 
@@ -953,7 +985,7 @@ Scene.prototype._registerTargetForLateAnimationBinding = function (runtimeAnimat
     }
 };
 
-Scene.prototype._processLateAnimationBindingsForMatrices = function (holder: {
+CoreScene.prototype._processLateAnimationBindingsForMatrices = function (holder: {
     totalWeight: number;
     totalAdditiveWeight: number;
     animations: RuntimeAnimation[];
@@ -1045,7 +1077,7 @@ Scene.prototype._processLateAnimationBindingsForMatrices = function (holder: {
     return workValue;
 };
 
-Scene.prototype._processLateAnimationBindingsForQuaternions = function (
+CoreScene.prototype._processLateAnimationBindingsForQuaternions = function (
     holder: {
         totalWeight: number;
         totalAdditiveWeight: number;
@@ -1137,7 +1169,7 @@ Scene.prototype._processLateAnimationBindingsForQuaternions = function (
     return cumulativeQuaternion!;
 };
 
-Scene.prototype._processLateAnimationBindings = function (): void {
+CoreScene.prototype._processLateAnimationBindings = function (): void {
     if (!this._registeredForLateAnimationBindings.length) {
         return;
     }

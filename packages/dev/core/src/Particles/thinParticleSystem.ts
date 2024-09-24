@@ -34,6 +34,7 @@ import { Clamp, Lerp, RandomRange } from "../Maths/math.scalar.functions";
 import { PrepareSamplersForImageProcessing, PrepareUniformsForImageProcessing } from "../Materials/imageProcessingConfiguration.functions";
 import type { ThinEngine } from "../Engines/thinEngine";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 
 /**
  * This represents a thin particle system in Babylon.
@@ -306,7 +307,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         if (!sceneOrEngine || sceneOrEngine.getClassName() === "Scene") {
             this._scene = (sceneOrEngine as Scene) || EngineStore.LastCreatedScene;
             this._engine = this._scene.getEngine();
-            this.uniqueId = this._scene.getUniqueId();
+            this.uniqueId = UniqueIdGenerator.UniqueId;
             this._scene.particleSystems.push(this);
         } else {
             this._engine = sceneOrEngine as AbstractEngine;

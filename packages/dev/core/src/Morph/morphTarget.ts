@@ -11,6 +11,7 @@ import { SerializationHelper } from "../Misc/decorators.serialization";
 import { GetClass } from "../Misc/typeStore";
 
 import type { Animation } from "../Animations/animation";
+import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 
 /**
  * Defines a target to use with MorphTargetManager
@@ -96,7 +97,7 @@ export class MorphTarget implements IAnimatable {
         this.influence = influence;
 
         if (this._scene) {
-            this._uniqueId = this._scene.getUniqueId();
+            this._uniqueId = UniqueIdGenerator.UniqueId;
         }
     }
 

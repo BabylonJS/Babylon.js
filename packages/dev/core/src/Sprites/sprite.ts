@@ -8,6 +8,7 @@ import type { IAnimatable } from "../Animations/animatable.interface";
 import { ThinSprite } from "./thinSprite";
 
 import type { Animation } from "../Animations/animation";
+import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 
 /**
  * Class used to represent a sprite
@@ -80,7 +81,7 @@ export class Sprite extends ThinSprite implements IAnimatable {
 
         this._manager = manager;
         this._manager.sprites.push(this);
-        this.uniqueId = this._manager.scene.getUniqueId();
+        this.uniqueId = UniqueIdGenerator.UniqueId;
     }
 
     /**

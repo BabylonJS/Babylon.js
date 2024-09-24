@@ -1,5 +1,6 @@
 /* eslint-disable import/no-internal-modules */
 export * from "./abstractScene";
+export * from "./coreScene";
 export * from "./Actions/index";
 export * from "./Animations/index";
 export * from "./assetContainer";
@@ -37,6 +38,7 @@ export * from "./PostProcesses/index";
 export * from "./Probes/index";
 export * from "./Rendering/index";
 export * from "./scene";
+export * from "./scene.functions";
 export * from "./sceneComponent";
 export * from "./Sprites/index";
 export * from "./States/index";

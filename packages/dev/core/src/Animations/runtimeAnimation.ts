@@ -12,8 +12,8 @@ import {
 } from "./animation";
 import type { AnimationEvent } from "./animationEvent";
 import type { Animatable } from "./animatable";
-import type { Scene } from "../scene";
 import type { IAnimationKey } from "./animationKey";
+import type { CoreScene } from "core/coreScene";
 
 /**
  * Defines a runtime animation
@@ -74,7 +74,7 @@ export class RuntimeAnimation {
     /**
      * The BabylonJS scene
      */
-    private _scene: Scene;
+    private _scene: CoreScene;
 
     /**
      * The current value of the runtime animation
@@ -179,7 +179,7 @@ export class RuntimeAnimation {
      * @param scene defines the hosting scene
      * @param host defines the initiating Animatable
      */
-    public constructor(target: any, animation: Animation, scene: Scene, host: Animatable) {
+    public constructor(target: any, animation: Animation, scene: CoreScene, host: Animatable) {
         this._animation = animation;
         this._target = target;
         this._scene = scene;

@@ -52,6 +52,7 @@ import type { InstancedMesh } from "../Meshes/instancedMesh";
 import { BindSceneUniformBuffer } from "./materialHelper.functions";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { ShaderLanguage } from "./shaderLanguage";
+import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 
 declare let BABYLON: any;
 
@@ -939,7 +940,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         this._dirtyCallbacks[Constants.MATERIAL_AllDirtyFlag] = this._markAllSubMeshesAsAllDirty.bind(this);
 
         this.id = name || Tools.RandomId();
-        this.uniqueId = this._scene.getUniqueId();
+        this.uniqueId = UniqueIdGenerator.UniqueId;
         this._materialContext = this._scene.getEngine().createMaterialContext();
         this._drawWrapper = new DrawWrapper(this._scene.getEngine(), false);
         this._drawWrapper.materialContext = this._materialContext;

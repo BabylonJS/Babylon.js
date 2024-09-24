@@ -10,6 +10,7 @@ import { Constants } from "../Engines/constants";
 import type { Effect } from "../Materials/effect";
 import { RawTexture2DArray } from "../Materials/Textures/rawTexture2DArray";
 import type { AbstractScene } from "../abstractScene";
+import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 /**
  * This class is used to deform meshes using morphing between different targets
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/morphTargets
@@ -108,7 +109,7 @@ export class MorphTargetManager implements IDisposable {
         if (this._scene) {
             this._scene.addMorphTargetManager(this);
 
-            this._uniqueId = this._scene.getUniqueId();
+            this._uniqueId = UniqueIdGenerator.UniqueId;
 
             const engineCaps = this._scene.getEngine().getCaps();
             this._canUseTextureForTargets =

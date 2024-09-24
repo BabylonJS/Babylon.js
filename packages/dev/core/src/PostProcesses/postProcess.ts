@@ -26,6 +26,7 @@ import type { PrePassRenderer } from "../Rendering/prePassRenderer";
 import type { PrePassEffectConfiguration } from "../Rendering/prePassEffectConfiguration";
 import { AbstractEngine } from "../Engines/abstractEngine";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
+import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 
 declare module "../Engines/abstractEngine" {
     export interface AbstractEngine {
@@ -690,7 +691,7 @@ export class PostProcess {
             this._engine = this._scene.getEngine();
 
             this._scene.postProcesses.push(this);
-            this.uniqueId = this._scene.getUniqueId();
+            this.uniqueId = UniqueIdGenerator.UniqueId;
         } else if (engine) {
             this._engine = engine;
             this._engine.postProcesses.push(this);

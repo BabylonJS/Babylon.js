@@ -16,6 +16,7 @@ import { DeepCopier } from "../Misc/deepCopier";
 import type { IInspectable } from "../Misc/iInspectable";
 import type { IAnimatable } from "../Animations/animatable.interface";
 import type { AbstractScene } from "../abstractScene";
+import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 
 /**
  * Class used to handle skinning animations
@@ -144,7 +145,7 @@ export class Skeleton implements IAnimatable {
         this.bones = [];
 
         this._scene = scene || EngineStore.LastCreatedScene;
-        this._uniqueId = this._scene.getUniqueId();
+        this._uniqueId = UniqueIdGenerator.UniqueId;
 
         this._scene.addSkeleton(this);
 

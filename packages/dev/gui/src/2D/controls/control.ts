@@ -29,6 +29,7 @@ import type { Animation } from "core/Animations/animation";
 import type { BaseGradient } from "./gradient/BaseGradient";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { IFocusableControl } from "./focusableControl";
+import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 
 /**
  * Root class used for all 2D controls
@@ -1795,7 +1796,7 @@ export class Control implements IAnimatable, IFocusableControl {
     public _link(host: AdvancedDynamicTexture): void {
         this._host = host;
         if (this._host) {
-            this.uniqueId = this._host.getScene()!.getUniqueId();
+            this.uniqueId = UniqueIdGenerator.UniqueId;
         }
     }
 

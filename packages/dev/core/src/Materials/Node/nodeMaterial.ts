@@ -70,6 +70,7 @@ import type { IImageProcessingConfigurationDefines } from "../imageProcessingCon
 import { ShaderLanguage } from "../shaderLanguage";
 import { AbstractEngine } from "../../Engines/abstractEngine";
 import type { LoopBlock } from "./Blocks/loopBlock";
+import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -2576,7 +2577,7 @@ export class NodeMaterial extends PushMaterial {
 
                         if (!nodeMaterial) {
                             nodeMaterial = SerializationHelper.Parse(() => new NodeMaterial(snippetId, scene), serializationObject, scene, rootUrl);
-                            nodeMaterial.uniqueId = scene.getUniqueId();
+                            nodeMaterial.uniqueId = UniqueIdGenerator.UniqueId;
                         }
 
                         nodeMaterial.parseSerializedObject(serializationObject, undefined, undefined, urlRewriter);

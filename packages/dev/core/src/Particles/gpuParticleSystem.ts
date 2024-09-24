@@ -52,6 +52,7 @@ import {
     CreatePointEmitter,
     CreateSphereEmitter,
 } from "./particleSystem.functions";
+import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 
 /**
  * This represents a GPU particle system in Babylon
@@ -943,7 +944,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         if (!sceneOrEngine || sceneOrEngine.getClassName() === "Scene") {
             this._scene = (sceneOrEngine as Scene) || EngineStore.LastCreatedScene;
             this._engine = this._scene.getEngine();
-            this.uniqueId = this._scene.getUniqueId();
+            this.uniqueId = UniqueIdGenerator.UniqueId;
             this._scene.particleSystems.push(this);
         } else {
             this._engine = sceneOrEngine as AbstractEngine;

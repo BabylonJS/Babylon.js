@@ -25,6 +25,7 @@ import type { Buffer } from "../Buffers/buffer";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { ThinEngine } from "../Engines/thinEngine";
 import { CopyFloatData } from "../Buffers/bufferUtils";
+import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 
 /**
  * Class used to store geometry data (vertex buffers + index buffer)
@@ -146,7 +147,7 @@ export class Geometry implements IGetSetVerticesData {
             return;
         }
         this.id = id;
-        this.uniqueId = this._scene.getUniqueId();
+        this.uniqueId = UniqueIdGenerator.UniqueId;
         this._engine = this._scene.getEngine();
         this._meshes = [];
         //Init vertex buffer cache

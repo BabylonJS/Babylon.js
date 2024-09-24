@@ -17,6 +17,7 @@ import type { AbstractScene } from "../../abstractScene";
 
 import type { Animation } from "../../Animations/animation";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
+import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 
 /**
  * Base class of all the textures in babylon.
@@ -552,7 +553,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         }
 
         if (this._scene) {
-            this.uniqueId = this._scene.getUniqueId();
+            this.uniqueId = UniqueIdGenerator.UniqueId;
             this._scene.addTexture(this);
             this._engine = this._scene.getEngine();
         }

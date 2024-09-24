@@ -25,6 +25,7 @@ import type { TargetCamera } from "./targetCamera";
 import type { Ray } from "../Culling/ray";
 import type { ArcRotateCamera } from "./arcRotateCamera";
 import { SerializationHelper } from "../Misc/decorators.serialization";
+import type { CoreScene } from "core/coreScene";
 
 /**
  * Oblique projection values
@@ -47,7 +48,7 @@ export class Camera extends Node {
      * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public static _CreateDefaultParsedCamera = (name: string, scene: Scene): Camera => {
+    public static _CreateDefaultParsedCamera = (name: string, scene: CoreScene): Camera => {
         throw _WarnImport("UniversalCamera");
     };
 
@@ -452,10 +453,12 @@ export class Camera extends Node {
      * @param scene Defines the scene the camera belongs too
      * @param setActiveOnSceneIfNoneActive Defines if the camera should be set as active after creation if no other camera have been defined in the scene
      */
-    constructor(name: string, position: Vector3, scene?: Scene, setActiveOnSceneIfNoneActive = true) {
+    constructor(name: string, position: Vector3, scene?: CoreScene, setActiveOnSceneIfNoneActive = true) {
         super(name, scene, false);
 
-        this.getScene().addCamera(this);
+        if (this.getScene().addCamera) {
+            this.getScene().addCamera!(this);
+        }
 
         if (setActiveOnSceneIfNoneActive && !this.getScene().activeCamera) {
             this.getScene().activeCamera = this;
@@ -1154,10 +1157,14 @@ export class Camera extends Node {
         }
 
         // Animations
-        this.getScene().stopAnimation(this);
+        if (this.getScene().stopAnimation) {
+            this.getScene().stopAnimation(this);
+        }
 
         // Remove from scene
-        this.getScene().removeCamera(this);
+        if (this.getScene().removeCamera) {
+            this.getScene().removeCamera!(this);
+        }
         while (this._rigCameras.length > 0) {
             const camera = this._rigCameras.pop();
             if (camera) {
@@ -1462,7 +1469,7 @@ export class Camera extends Node {
      * @returns a factory method to construct the camera
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    static GetConstructorFromName(type: string, name: string, scene: Scene, interaxial_distance: number = 0, isStereoscopicSideBySide: boolean = true): () => Camera {
+    static GetConstructorFromName(type: string, name: string, scene: CoreScene, interaxial_distance: number = 0, isStereoscopicSideBySide: boolean = true): () => Camera {
         const constructorFunc = Node.Construct(type, name, scene, {
             // eslint-disable-next-line @typescript-eslint/naming-convention
             interaxial_distance: interaxial_distance,

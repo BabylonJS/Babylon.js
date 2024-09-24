@@ -18,6 +18,9 @@ import type { Node } from "./node";
 import type { PostProcess } from "./PostProcesses/postProcess";
 import type { Animation } from "./Animations/animation";
 import { RegisterClass } from "./Misc/typeStore";
+import type { Observable } from "./Misc/observable";
+import type { KeyboardInfo } from "./Events/keyboardEvents";
+import { CoreScene } from "./coreScene";
 
 /**
  * Defines how the parser contract is defined.
@@ -36,7 +39,7 @@ export type IndividualBabylonFileParser = (parsedData: any, scene: Scene, rootUr
  * This class is dynamically extended by the different components of the scene increasing
  * flexibility and reducing coupling
  */
-export abstract class AbstractScene {
+export abstract class AbstractScene extends CoreScene {
     /**
      * Stores the list of available parsers in the application.
      */
@@ -215,6 +218,18 @@ export abstract class AbstractScene {
      * The list of postprocesses added to the scene
      */
     public postProcesses: PostProcess[] = [];
+
+    public get isLoading(): boolean {
+        return false;
+    }
+
+    /**
+     * Gets or sets a boolean indicating if the scene must use right-handed coordinates system
+     * CoreScene is a left handed system
+     */
+    public get useRightHandedSystem(): boolean {
+        return false;
+    }
 
     /**
      * @returns all meshes, lights, cameras, transformNodes and bones

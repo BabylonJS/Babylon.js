@@ -6,10 +6,10 @@ import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import type { FreeCamera } from "../../Cameras/freeCamera";
 import type { KeyboardInfo } from "../../Events/keyboardEvents";
 import { KeyboardEventTypes } from "../../Events/keyboardEvents";
-import type { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
 import { Tools } from "../../Misc/tools";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
+import type { CoreScene } from "core/coreScene";
 /**
  * Manage the keyboard inputs to control the movement of a free camera.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
@@ -90,7 +90,7 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
     private _onCanvasBlurObserver: Nullable<Observer<AbstractEngine>>;
     private _onKeyboardObserver: Nullable<Observer<KeyboardInfo>>;
     private _engine: AbstractEngine;
-    private _scene: Scene;
+    private _scene: CoreScene;
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
@@ -110,63 +110,65 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
             this._keys.length = 0;
         });
 
-        this._onKeyboardObserver = this._scene.onKeyboardObservable.add((info) => {
-            const evt = info.event;
-            if (!evt.metaKey) {
-                if (info.type === KeyboardEventTypes.KEYDOWN) {
-                    if (
-                        this.keysUp.indexOf(evt.keyCode) !== -1 ||
-                        this.keysDown.indexOf(evt.keyCode) !== -1 ||
-                        this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRight.indexOf(evt.keyCode) !== -1 ||
-                        this.keysUpward.indexOf(evt.keyCode) !== -1 ||
-                        this.keysDownward.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRotateLeft.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRotateRight.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRotateUp.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRotateDown.indexOf(evt.keyCode) !== -1
-                    ) {
-                        const index = this._keys.indexOf(evt.keyCode);
+        this._onKeyboardObserver = !this._scene.onKeyboardObservable
+            ? null
+            : this._scene.onKeyboardObservable.add((info) => {
+                  const evt = info.event;
+                  if (!evt.metaKey) {
+                      if (info.type === KeyboardEventTypes.KEYDOWN) {
+                          if (
+                              this.keysUp.indexOf(evt.keyCode) !== -1 ||
+                              this.keysDown.indexOf(evt.keyCode) !== -1 ||
+                              this.keysLeft.indexOf(evt.keyCode) !== -1 ||
+                              this.keysRight.indexOf(evt.keyCode) !== -1 ||
+                              this.keysUpward.indexOf(evt.keyCode) !== -1 ||
+                              this.keysDownward.indexOf(evt.keyCode) !== -1 ||
+                              this.keysRotateLeft.indexOf(evt.keyCode) !== -1 ||
+                              this.keysRotateRight.indexOf(evt.keyCode) !== -1 ||
+                              this.keysRotateUp.indexOf(evt.keyCode) !== -1 ||
+                              this.keysRotateDown.indexOf(evt.keyCode) !== -1
+                          ) {
+                              const index = this._keys.indexOf(evt.keyCode);
 
-                        if (index === -1) {
-                            this._keys.push(evt.keyCode);
-                        }
-                        if (!noPreventDefault) {
-                            evt.preventDefault();
-                        }
-                    }
-                } else {
-                    if (
-                        this.keysUp.indexOf(evt.keyCode) !== -1 ||
-                        this.keysDown.indexOf(evt.keyCode) !== -1 ||
-                        this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRight.indexOf(evt.keyCode) !== -1 ||
-                        this.keysUpward.indexOf(evt.keyCode) !== -1 ||
-                        this.keysDownward.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRotateLeft.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRotateRight.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRotateUp.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRotateDown.indexOf(evt.keyCode) !== -1
-                    ) {
-                        const index = this._keys.indexOf(evt.keyCode);
+                              if (index === -1) {
+                                  this._keys.push(evt.keyCode);
+                              }
+                              if (!noPreventDefault) {
+                                  evt.preventDefault();
+                              }
+                          }
+                      } else {
+                          if (
+                              this.keysUp.indexOf(evt.keyCode) !== -1 ||
+                              this.keysDown.indexOf(evt.keyCode) !== -1 ||
+                              this.keysLeft.indexOf(evt.keyCode) !== -1 ||
+                              this.keysRight.indexOf(evt.keyCode) !== -1 ||
+                              this.keysUpward.indexOf(evt.keyCode) !== -1 ||
+                              this.keysDownward.indexOf(evt.keyCode) !== -1 ||
+                              this.keysRotateLeft.indexOf(evt.keyCode) !== -1 ||
+                              this.keysRotateRight.indexOf(evt.keyCode) !== -1 ||
+                              this.keysRotateUp.indexOf(evt.keyCode) !== -1 ||
+                              this.keysRotateDown.indexOf(evt.keyCode) !== -1
+                          ) {
+                              const index = this._keys.indexOf(evt.keyCode);
 
-                        if (index >= 0) {
-                            this._keys.splice(index, 1);
-                        }
-                        if (!noPreventDefault) {
-                            evt.preventDefault();
-                        }
-                    }
-                }
-            }
-        });
+                              if (index >= 0) {
+                                  this._keys.splice(index, 1);
+                              }
+                              if (!noPreventDefault) {
+                                  evt.preventDefault();
+                              }
+                          }
+                      }
+                  }
+              });
     }
     /**
      * Detach the current controls from the specified dom element.
      */
     public detachControl(): void {
         if (this._scene) {
-            if (this._onKeyboardObserver) {
+            if (this._onKeyboardObserver && this._scene.onKeyboardObservable) {
                 this._scene.onKeyboardObservable.remove(this._onKeyboardObserver);
             }
 

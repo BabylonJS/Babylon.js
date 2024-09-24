@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type { Scene } from "./scene";
 import type { Nullable } from "./types";
 import { Matrix, Vector3 } from "./Maths/math.vector";
 import type { AbstractEngine } from "./Engines/abstractEngine";
@@ -19,11 +18,13 @@ import type { AbstractMesh } from "./Meshes/abstractMesh";
 import type { Animation } from "./Animations/animation";
 import type { Animatable } from "./Animations/animatable";
 import { SerializationHelper } from "./Misc/decorators.serialization";
+import { UniqueIdGenerator } from "./Misc/uniqueIdGenerator";
+import type { CoreScene } from "./coreScene";
 
 /**
  * Defines how a node can be built from a string name.
  */
-export type NodeConstructor = (name: string, scene: Scene, options?: any) => () => Node;
+export type NodeConstructor = (name: string, scene: CoreScene, options?: any) => () => Node;
 
 /** @internal */
 class _InternalNodeDataInfo {
@@ -69,7 +70,7 @@ export class Node implements IBehaviorAware<Node> {
      * @param options defines optional options to transmit to constructors
      * @returns the new constructor or null
      */
-    public static Construct(type: string, name: string, scene: Scene, options?: any): Nullable<() => Node> {
+    public static Construct(type: string, name: string, scene: CoreScene, options?: any): Nullable<() => Node> {
         const constructorFunc = this._NodeConstructors[type];
 
         if (!constructorFunc) {
@@ -190,7 +191,7 @@ export class Node implements IBehaviorAware<Node> {
     /** @internal */
     public _waitingParsedUniqueId: Nullable<number> = null;
     /** @internal */
-    public _scene: Scene;
+    public _scene: CoreScene;
     /** @internal */
     public _cache: any = {};
 
@@ -351,11 +352,11 @@ export class Node implements IBehaviorAware<Node> {
      * @param scene the scene this node will be added to
      * @param isPure indicates this Node is just a Node, and not a derived class like Mesh or Camera
      */
-    public constructor(name: string, scene: Nullable<Scene> = null, isPure = true) {
+    public constructor(name: string, scene: Nullable<CoreScene> = null, isPure = true) {
         this.name = name;
         this.id = name;
-        this._scene = <Scene>(scene || EngineStore.LastCreatedScene);
-        this.uniqueId = this._scene.getUniqueId();
+        this._scene = <CoreScene>(scene || EngineStore.LastCreatedScene);
+        this.uniqueId = UniqueIdGenerator.UniqueId;
         this._initCache();
 
         if (isPure) {
@@ -367,7 +368,7 @@ export class Node implements IBehaviorAware<Node> {
      * Gets the scene of the node
      * @returns a scene
      */
-    public getScene(): Scene {
+    public getScene(): CoreScene {
         return this._scene;
     }
 
@@ -399,7 +400,7 @@ export class Node implements IBehaviorAware<Node> {
         behavior.init();
         if (this._scene.isLoading && !attachImmediately) {
             // We defer the attach when the scene will be loaded
-            this._scene.onDataLoadedObservable.addOnce(() => {
+            this._scene.onDataLoadedObservable?.addOnce(() => {
                 behavior.attach(this);
             });
         } else {
@@ -949,7 +950,7 @@ export class Node implements IBehaviorAware<Node> {
      * @param parsedNode defines the serialization object to read data from
      * @param _scene defines the hosting scene
      */
-    public static ParseAnimationRanges(node: Node, parsedNode: any, _scene: Scene): void {
+    public static ParseAnimationRanges(node: Node, parsedNode: any, _scene: CoreScene): void {
         if (parsedNode.ranges) {
             for (let index = 0; index < parsedNode.ranges.length; index++) {
                 const data = parsedNode.ranges[index];

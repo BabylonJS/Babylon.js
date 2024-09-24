@@ -19,6 +19,7 @@ import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
 
 import type { Ray } from "../Culling/ray";
+import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect
 declare const Reflect: any;
@@ -324,7 +325,7 @@ export class SpriteManager implements ISpriteManager {
         }
 
         this._scene.spriteManagers && this._scene.spriteManagers.push(this);
-        this.uniqueId = this.scene.getUniqueId();
+        this.uniqueId = UniqueIdGenerator.UniqueId;
 
         if (imgUrl) {
             this.texture = new Texture(imgUrl, scene, true, false, samplingMode);

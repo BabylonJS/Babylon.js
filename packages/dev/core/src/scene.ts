@@ -12,7 +12,6 @@ import { Tags } from "./Misc/tags";
 import type { Vector2, Vector4 } from "./Maths/math.vector";
 import { Vector3, Matrix, TmpVectors } from "./Maths/math.vector";
 import type { IParticleSystem } from "./Particles/IParticleSystem";
-import { AbstractScene } from "./abstractScene";
 import { ImageProcessingConfiguration } from "./Materials/imageProcessingConfiguration";
 import { UniformBuffer } from "./Materials/uniformBuffer";
 import { PickingInfo } from "./Collisions/pickingInfo";
@@ -91,6 +90,8 @@ import { PointerPickingConfiguration } from "./Inputs/pointerPickingConfiguratio
 import { Logger } from "./Misc/logger";
 import type { AbstractEngine } from "./Engines/abstractEngine";
 import { RegisterClass } from "./Misc/typeStore";
+import { CoreScene } from "./coreScene";
+import { AbstractScene } from "./abstractScene";
 
 /**
  * Define an interface for all classes that will hold resources
@@ -192,9 +193,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /** @internal */
     public readonly _isScene = true;
-
-    /** @internal */
-    public _blockEntityCollection = false;
 
     /**
      * Gets or sets a boolean that indicates if the scene must clear the render buffer before rendering a frame
@@ -388,7 +386,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets or sets a boolean indicating if animations are enabled
      */
-    public animationsEnabled = true;
+    public override animationsEnabled = true;
 
     private _animationPropertiesOverride: Nullable<AnimationPropertiesOverride> = null;
 
@@ -407,7 +405,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Gets or sets a boolean indicating if a constant deltatime has to be used
      * This is mostly useful for testing purposes when you do not want the animations to scale with the framerate
      */
-    public useConstantAnimationDeltaTime = false;
+    public override useConstantAnimationDeltaTime = false;
     /**
      * Gets or sets a boolean indicating if the scene must keep the meshUnderPointer property updated
      * Please note that it requires to run a ray cast through the scene on every frame
@@ -592,17 +590,17 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * An event triggered when SceneLoader.Append or SceneLoader.Load or SceneLoader.ImportMesh were successfully executed
      */
-    public onDataLoadedObservable = new Observable<Scene>();
+    public override onDataLoadedObservable = new Observable<Scene>();
 
     /**
      * An event triggered when a camera is created
      */
-    public onNewCameraAddedObservable = new Observable<Camera>();
+    public override onNewCameraAddedObservable = new Observable<Camera>();
 
     /**
      * An event triggered when a camera is removed
      */
-    public onCameraRemovedObservable = new Observable<Camera>();
+    public override onCameraRemovedObservable = new Observable<Camera>();
 
     /**
      * An event triggered when a light is created
@@ -749,7 +747,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     // Animations
 
     /** @internal */
-    public _registeredForLateAnimationBindings = new SmartArrayNoDuplicate<any>(256);
+    public override _registeredForLateAnimationBindings = new SmartArrayNoDuplicate<any>(256);
 
     // Pointers
     private _pointerPickingConfiguration = new PointerPickingConfiguration();
@@ -991,7 +989,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Observable event triggered each time an keyboard event is received from the hosting window
      */
-    public onKeyboardObservable = new Observable<KeyboardInfo>();
+    public override onKeyboardObservable = new Observable<KeyboardInfo>();
 
     // Coordinates system
 
@@ -999,14 +997,14 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets or sets a boolean indicating if the scene must use right-handed coordinates system
      */
-    public set useRightHandedSystem(value: boolean) {
+    public override set useRightHandedSystem(value: boolean) {
         if (this._useRightHandedSystem === value) {
             return;
         }
         this._useRightHandedSystem = value;
         this.markAllMaterialsAsDirty(Constants.MATERIAL_MiscDirtyFlag);
     }
-    public get useRightHandedSystem(): boolean {
+    public override get useRightHandedSystem(): boolean {
         return this._useRightHandedSystem;
     }
 
@@ -1353,9 +1351,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public proceduralTexturesEnabled = true;
 
-    // Private
-    private _engine: AbstractEngine;
-
     // Performance counters
     private _totalVertices = new PerfCounter();
     /** @internal */
@@ -1368,16 +1363,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     private _animationRatio: number;
 
     /** @internal */
-    public _animationTimeLast: number;
-
-    /** @internal */
-    public _animationTime: number = 0;
-
-    /**
-     * Gets or sets a general scale for animation speed
-     * @see https://www.babylonjs-playground.com/#IBU2W7#3
-     */
-    public animationTimeScale: number = 1;
+    public override _animationTimeLast: number;
 
     /** @internal */
     public _cachedMaterial: Nullable<Material>;
@@ -1386,8 +1372,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /** @internal */
     public _cachedVisibility: Nullable<number>;
 
-    private _renderId = 0;
-    private _frameId = 0;
     private _executeWhenReadyTimeoutId: Nullable<ReturnType<typeof setTimeout>> = null;
     private _intermediateRendering = false;
     private _defaultFrameBufferCleared = false;
@@ -1399,8 +1383,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public _toBeDisposed = new Array<Nullable<IDisposable>>(256);
     private _activeRequests = new Array<IFileRequest>();
 
-    /** @internal */
-    public _pendingData = new Array();
     private _isDisposed = false;
 
     /**
@@ -1427,7 +1409,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /** @internal */
-    public _activeAnimatables = new Array<Animatable>();
+    public override _activeAnimatables = new Array<Animatable>();
 
     private _transformMatrix = Matrix.Zero();
     private _sceneUbo: UniformBuffer;
@@ -1655,7 +1637,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param options defines the scene options
      */
     constructor(engine: AbstractEngine, options?: SceneOptions) {
-        super();
+        super(engine || EngineStore.LastCreatedEngine);
 
         this.activeCameras = [] as Camera[];
 
@@ -1667,7 +1649,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             ...options,
         };
 
-        engine = this._engine = engine || EngineStore.LastCreatedEngine;
+        engine = this._engine;
         if (fullOptions.virtual) {
             engine._virtualScenes.push(this);
         } else {
@@ -1822,14 +1804,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets the engine associated with the scene
-     * @returns an Engine
-     */
-    public getEngine(): AbstractEngine {
-        return this._engine;
-    }
-
-    /**
      * Gets the total number of vertices rendered per frame
      * @returns the total number of vertices rendered per frame
      */
@@ -1907,27 +1881,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public getAnimationRatio(): number {
         return this._animationRatio !== undefined ? this._animationRatio : 1;
-    }
-
-    /**
-     * Gets an unique Id for the current render phase
-     * @returns a number
-     */
-    public getRenderId(): number {
-        return this._renderId;
-    }
-
-    /**
-     * Gets an unique Id for the current frame
-     * @returns a number
-     */
-    public getFrameId(): number {
-        return this._frameId;
-    }
-
-    /** Call this function if you want to manually increment the render Id*/
-    public incrementRenderId(): void {
-        this._renderId++;
     }
 
     private _createUbo(): void {
@@ -2249,7 +2202,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Returns a boolean indicating if the scene is still loading data
      */
-    public get isLoading(): boolean {
+    public override get isLoading(): boolean {
         return this._pendingData.length > 0;
     }
 
@@ -2600,7 +2553,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param toRemove defines the camera to remove
      * @returns the index where the camera was in the camera list
      */
-    public removeCamera(toRemove: Camera): number {
+    public override removeCamera = (toRemove: Camera) => {
         const index = this.cameras.indexOf(toRemove);
         if (index !== -1) {
             // Remove from the scene if mesh found
@@ -2627,7 +2580,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
         this.onCameraRemovedObservable.notifyObservers(toRemove);
         return index;
-    }
+    };
 
     /**
      * Remove a particle system for the list of scene's particle systems
@@ -2656,16 +2609,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this.animations.splice(index, 1);
         }
         return index;
-    }
-
-    /**
-     * Will stop the animation of the given target
-     * @param target - the target
-     * @param animationName - the name of the animation to stop (all animations will be stopped if both this and targetMask are empty)
-     * @param targetMask - a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
-     */
-    public stopAnimation(target: any, animationName?: string, targetMask?: (target: any) => boolean): void {
-        // Do nothing as code will be provided by animation component
     }
 
     /**
@@ -2788,7 +2731,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Adds the given camera to this scene
      * @param newCamera The camera to add
      */
-    public addCamera(newCamera: Camera): void {
+    public override addCamera = (newCamera: Camera) => {
         if (this._blockEntityCollection) {
             return;
         }
@@ -2799,7 +2742,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         if (!newCamera.parent) {
             newCamera._addToSceneRootNodes();
         }
-    }
+    };
 
     /**
      * Adds the given skeleton to this scene
@@ -4449,11 +4392,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public getDeterministicFrameTime: () => number = () => {
         return this._engine.getTimeStep();
     };
-
-    /** @internal */
-    public _animate(customDeltaTime?: number): void {
-        // Nothing to do as long as Animatable have not been imported.
-    }
 
     /** Execute all animations (for a frame) */
     public animate() {

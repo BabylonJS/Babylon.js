@@ -12,6 +12,7 @@ import type { AbstractScene } from "../abstractScene";
 import { Tags } from "../Misc/tags";
 import type { AnimationGroupMask } from "./animationGroupMask";
 import "./animatable";
+import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 
 /**
  * This class defines the direct association between an animation and a target
@@ -511,7 +512,7 @@ export class AnimationGroup implements IDisposable {
         this._scene = scene || EngineStore.LastCreatedScene!;
         this._weight = weight;
         this._playOrder = playOrder;
-        this.uniqueId = this._scene.getUniqueId();
+        this.uniqueId = UniqueIdGenerator.UniqueId;
 
         this._scene.addAnimationGroup(this);
     }
