@@ -37,16 +37,22 @@ export class FlowGraphAssetsContext {
 
         for (let i = 0; i < this._scene.animations.length; i++) {
             const animation = this._scene.animations[i];
-            this.animations.set(animation.name, animation);
+            const key = animation.name;
+            if (!this.animations.has(key)) {
+                this.animations.set(key, animation);
+            }
         }
 
         for (let i = 0; i < this._scene.animationGroups.length; i++) {
             const animationGroup = this._scene.animationGroups[i];
-            this.animationGroups.set(animationGroup.name, animationGroup);
+            const key = animationGroup.name;
+            if (!this.animationGroups.has(key)) {
+                this.animationGroups.set(key, animationGroup);
+            }
         }
     }
 
-    public synchronizeWithScene(scene: Scene) {
+    public attachToScene(scene: Scene) {
         this._scene = scene;
         const obs = scene.onBeforeRenderObservable.add(() => {
             this._syncScene();
