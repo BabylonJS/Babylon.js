@@ -596,7 +596,7 @@ export class Color3 implements Tensor<Tuple<number, 3>, IColor3Like>, IColor3Lik
      */
     public fromHexString(hex: string): this {
         if (hex.substring(0, 1) !== "#" || hex.length !== 7) {
-            return this
+            return this;
         }
 
         this.r = parseInt(hex.substring(1, 3), 16);
@@ -782,7 +782,7 @@ export class Color3 implements Tensor<Tuple<number, 3>, IColor3Like>, IColor3Lik
      * @returns a new Color3 object
      */
     public static FromHexString(hex: string): Color3 {
-        return new Color3(0, 0, 0).fromHexString(hex)
+        return new Color3(0, 0, 0).fromHexString(hex);
     }
 
     /**
