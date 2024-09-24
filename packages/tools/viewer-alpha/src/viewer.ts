@@ -29,8 +29,6 @@ import { Observable } from "core/Misc/observable";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 
-//import "core/Rendering/boundingBoxRenderer";
-
 function throwIfAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]): void {
     for (const signal of abortSignals) {
         signal?.throwIfAborted();
@@ -344,8 +342,6 @@ export class Viewer implements IDisposable {
                     });
                     this.selectedAnimation = 0;
                     this._details.model.addAllToScene();
-
-                    this._details.model.meshes.forEach((mesh) => (mesh.showBoundingBox = true));
                 }
 
                 this._updateCamera();
