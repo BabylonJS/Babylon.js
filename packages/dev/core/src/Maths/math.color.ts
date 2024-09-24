@@ -599,9 +599,9 @@ export class Color3 implements Tensor<Tuple<number, 3>, IColor3Like>, IColor3Lik
             return this;
         }
 
-        this.r = parseInt(hex.substring(1, 3), 16);
-        this.g = parseInt(hex.substring(3, 5), 16);
-        this.b = parseInt(hex.substring(5, 7), 16);
+        this.r = parseInt(hex.substring(1, 3), 16) / 255;
+        this.g = parseInt(hex.substring(3, 5), 16) / 255;
+        this.b = parseInt(hex.substring(5, 7), 16) / 255;
 
         return this;
     }
@@ -1610,11 +1610,11 @@ export class Color4 implements Tensor<Tuple<number, 4>, IColor4Like>, IColor4Lik
             return this;
         }
 
-        this.r = parseInt(hex.substring(1, 3), 16);
-        this.g = parseInt(hex.substring(3, 5), 16);
-        this.b = parseInt(hex.substring(5, 7), 16);
+        this.r = parseInt(hex.substring(1, 3), 16) / 255;
+        this.g = parseInt(hex.substring(3, 5), 16) / 255;
+        this.b = parseInt(hex.substring(5, 7), 16) / 255;
         if (hex.length === 9) {
-            this.a = parseInt(hex.substring(7, 9), 16);
+            this.a = parseInt(hex.substring(7, 9), 16) / 255;
         }
 
         return this;
