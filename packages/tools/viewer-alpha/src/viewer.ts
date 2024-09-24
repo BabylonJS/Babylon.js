@@ -508,7 +508,7 @@ export class Viewer implements IDisposable {
             const worldSize = worldExtents.max.subtract(worldExtents.min);
             const worldCenter = worldExtents.min.add(worldSize.scale(0.5));
 
-            radius = worldSize.length() * 1.2;
+            radius = worldSize.length() * 1.1;
 
             if (!isFinite(radius)) {
                 radius = 1;
