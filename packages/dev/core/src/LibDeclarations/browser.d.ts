@@ -6,6 +6,10 @@ interface Window {
     DracoDecoderModule: any;
 }
 
+interface WorkerGlobalScope {
+    importScripts: (...args: string[]) => void;
+}
+
 type WorkerSelf = WindowOrWorkerGlobalScope & WorkerGlobalScope;
 
 // Babylon Extension to enable UIEvents to work with our IUIEvents
