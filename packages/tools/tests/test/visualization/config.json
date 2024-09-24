@@ -2,6 +2,12 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "NME Loop Block",
+            "playgroundId": "#D8AK3Z#109",
+            "referenceImage": "nme-loop.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "Gaussian Splatting Loading",
             "playgroundId": "#CID4NN#204",
             "referenceImage": "gsplat-loading.png"

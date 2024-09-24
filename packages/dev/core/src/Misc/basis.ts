@@ -4,8 +4,9 @@ import { Tools } from "./tools";
 import { Texture } from "../Materials/Textures/texture";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { Constants } from "../Engines/constants";
-import type { Engine } from "../Engines/engine";
 import { initializeWebWorker, workerFunction } from "./basisWorker";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
+import type { Engine } from "core/Engines/engine";
 
 /**
  * Info about the .basis files
@@ -128,7 +129,7 @@ export const BasisToolsOptions = {
  * @returns internal format corresponding to the Basis format
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const GetInternalFormatFromBasisFormat = (basisFormat: number, engine: Engine) => {
+export const GetInternalFormatFromBasisFormat = (basisFormat: number, engine: AbstractEngine) => {
     let format;
     switch (basisFormat) {
         case BASIS_FORMATS.cTFETC1:

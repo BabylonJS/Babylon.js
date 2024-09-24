@@ -9,7 +9,6 @@ import type { Nullable } from "../../../types";
 import type { RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
 import { Logger } from "../../../Misc/logger";
 
-import "../../../Engines/Extensions/engine.renderTargetCube";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**

@@ -1,5 +1,5 @@
 import type { Scene } from "core/scene";
-import type { DeepImmutable, FloatArray, Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { SubMesh } from "../subMesh";
 import type { AbstractMesh } from "../abstractMesh";
@@ -12,7 +12,14 @@ import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Constants } from "core/Engines/constants";
 import { Tools } from "core/Misc/tools";
 import "core/Meshes/thinInstanceMesh";
+import type { ThinEngine } from "core/Engines/thinEngine";
 
+interface DelayedTextureUpdate {
+    covA: Float32Array;
+    covB: Float32Array;
+    colors: Float32Array;
+    centers: Float32Array;
+}
 /**
  * Class used to render a gaussian splatting mesh
  */
@@ -24,12 +31,12 @@ export class GaussianSplattingMesh extends Mesh {
     private _depthMix: BigInt64Array;
     private _canPostToWorker = true;
     private _readyToDisplay = false;
-    private _lastModelViewMatrix: DeepImmutable<FloatArray>;
     private _covariancesATexture: Nullable<BaseTexture> = null;
     private _covariancesBTexture: Nullable<BaseTexture> = null;
     private _centersTexture: Nullable<BaseTexture> = null;
     private _colorsTexture: Nullable<BaseTexture> = null;
     private _splatPositions: Nullable<Float32Array> = null;
+    private _splatIndex: Nullable<Float32Array> = null;
     //@ts-expect-error
     private _covariancesA: Nullable<Float32Array> = null;
     //@ts-expect-error
@@ -38,6 +45,8 @@ export class GaussianSplattingMesh extends Mesh {
     private _colors: Nullable<Float32Array> = null;
     private readonly _keepInRam: boolean = false;
 
+    private _delayedTextureUpdate: Nullable<DelayedTextureUpdate> = null;
+    private _oldDirection = new Vector3();
     /**
      * Gets the covariancesA texture
      */
@@ -87,7 +96,6 @@ export class GaussianSplattingMesh extends Mesh {
 
         this.setEnabled(false);
 
-        this._lastModelViewMatrix = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         this._keepInRam = keepInRam;
         if (url) {
             this.loadFileAsync(url);
@@ -123,26 +131,27 @@ export class GaussianSplattingMesh extends Mesh {
 
         if (!this._readyToDisplay) {
             // mesh is ready when worker has done at least 1 sorting
-            this._postToWorker();
+            this._postToWorker(true);
             return false;
         }
         return true;
     }
 
-    protected _postToWorker(): void {
+    protected _postToWorker(forced = false): void {
         const frameId = this.getScene().getFrameId();
         if (frameId !== this._frameIdLastUpdate && this._worker && this._scene.activeCamera && this._canPostToWorker) {
-            this.getWorldMatrix().multiplyToRef(this._scene.activeCamera.getViewMatrix(), this._modelViewMatrix);
-            TmpVectors.Vector3[0].set(this._lastModelViewMatrix[8], this._lastModelViewMatrix[9], this._lastModelViewMatrix[10]);
-            TmpVectors.Vector3[1].set(this._modelViewMatrix.m[8], this._modelViewMatrix.m[9], this._modelViewMatrix.m[10]);
-            TmpVectors.Vector3[0].normalize();
-            TmpVectors.Vector3[1].normalize();
+            const cameraMatrix = this._scene.activeCamera.getViewMatrix();
+            this.getWorldMatrix().multiplyToRef(cameraMatrix, this._modelViewMatrix);
+            cameraMatrix.invertToRef(TmpVectors.Matrix[0]);
+            this.getWorldMatrix().multiplyToRef(TmpVectors.Matrix[0], TmpVectors.Matrix[1]);
+            Vector3.TransformNormalToRef(Vector3.Forward(this._scene.useRightHandedSystem), TmpVectors.Matrix[1], TmpVectors.Vector3[2]);
+            TmpVectors.Vector3[2].normalize();
 
-            const dot = Vector3.Dot(TmpVectors.Vector3[0], TmpVectors.Vector3[1]);
-            if (Math.abs(dot - 1) >= 0.01) {
+            const dot = Vector3.Dot(TmpVectors.Vector3[2], this._oldDirection);
+            if (forced || Math.abs(dot - 1) >= 0.01) {
+                this._oldDirection.copyFrom(TmpVectors.Vector3[2]);
                 this._frameIdLastUpdate = frameId;
                 this._canPostToWorker = false;
-                this._lastModelViewMatrix = this._modelViewMatrix.m.slice(0);
                 this._worker.postMessage({ view: this._modelViewMatrix.m, depthMix: this._depthMix, useRightHandedSystem: this._scene.useRightHandedSystem }, [
                     this._depthMix.buffer,
                 ]);
@@ -432,11 +441,20 @@ export class GaussianSplattingMesh extends Mesh {
         };
     };
 
-    private _loadData(data: ArrayBuffer): void {
+    /**
+     * @experimental
+     * Update data from GS (position, orientation, color, scaling)
+     * @param data array that contain all the datas
+     */
+    public updateData(data: ArrayBuffer): void {
         if (!data.byteLength) {
             return;
         }
-        this._readyToDisplay = false;
+
+        // if a covariance texture is present, then it's not a creation but an update
+        if (!this._covariancesATexture) {
+            this._readyToDisplay = false;
+        }
 
         // Parse the data
         const uBuffer = new Uint8Array(data);
@@ -444,7 +462,9 @@ export class GaussianSplattingMesh extends Mesh {
 
         const rowLength = 3 * 4 + 3 * 4 + 4 + 4;
         const vertexCount = uBuffer.length / rowLength;
-
+        if (vertexCount != this._vertexCount) {
+            this._updateSplatIndexBuffer(vertexCount);
+        }
         this._vertexCount = vertexCount;
 
         const textureSize = this._getTextureSize(vertexCount);
@@ -497,7 +517,6 @@ export class GaussianSplattingMesh extends Mesh {
         const binfo = this.getBoundingInfo();
         binfo.reConstruct(minimum, maximum, this.getWorldMatrix());
 
-        this.forcedInstanceCount = this._vertexCount;
         this.setEnabled(true);
 
         // Update the material
@@ -530,21 +549,44 @@ export class GaussianSplattingMesh extends Mesh {
             this._covariancesB = covB;
             this._colors = colorArray;
         }
-        this._covariancesATexture = createTextureFromData(convertRgbToRgba(covA), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
-        this._covariancesBTexture = createTextureFromData(convertRgbToRgba(covB), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
-        this._centersTexture = createTextureFromData(convertRgbToRgba(this._splatPositions), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
-        this._colorsTexture = createTextureFromData(colorArray, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+        if (this._covariancesATexture) {
+            this._delayedTextureUpdate = { covA: convertRgbToRgba(covA), covB: convertRgbToRgba(covB), colors: colorArray, centers: convertRgbToRgba(this._splatPositions) };
+            const positions = Float32Array.from(this._splatPositions!);
+            const vertexCount = this._vertexCount;
+            this._worker!.postMessage({ positions, vertexCount }, [positions.buffer]);
 
-        this._instanciateWorker();
+            this._postToWorker(true);
+        } else {
+            this._covariancesATexture = createTextureFromData(convertRgbToRgba(covA), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+            this._covariancesBTexture = createTextureFromData(convertRgbToRgba(covB), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+            this._centersTexture = createTextureFromData(convertRgbToRgba(this._splatPositions), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+            this._colorsTexture = createTextureFromData(colorArray, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+            this._instanciateWorker();
+        }
+    }
+
+    private _loadData(data: ArrayBuffer): void {
+        if (!data.byteLength) {
+            return;
+        }
+        this.updateData(data);
+    }
+
+    // in case size is different
+    private _updateSplatIndexBuffer(vertexCount: number): void {
+        if (!this._splatIndex || vertexCount > this._splatIndex.length) {
+            this._splatIndex = new Float32Array(vertexCount);
+
+            this.thinInstanceSetBuffer("splatIndex", this._splatIndex, 1, false);
+        }
+        this.forcedInstanceCount = vertexCount;
     }
 
     private _instanciateWorker(): void {
         if (!this._vertexCount) {
             return;
         }
-        const splatIndex = new Float32Array(this._vertexCount);
-
-        this.thinInstanceSetBuffer("splatIndex", splatIndex, 1, false);
+        this._updateSplatIndexBuffer(this._vertexCount);
 
         // Start the worker thread
         this._worker?.terminate();
@@ -565,8 +607,21 @@ export class GaussianSplattingMesh extends Mesh {
         this._worker.onmessage = (e) => {
             this._depthMix = e.data.depthMix;
             const indexMix = new Uint32Array(e.data.depthMix.buffer);
-            for (let j = 0; j < this._vertexCount; j++) {
-                splatIndex[j] = indexMix[2 * j];
+            if (this._splatIndex) {
+                for (let j = 0; j < this._vertexCount; j++) {
+                    this._splatIndex[j] = indexMix[2 * j];
+                }
+            }
+            if (this._delayedTextureUpdate) {
+                const updateTextureFromData = (texture: BaseTexture, data: Float32Array, width: number, height: number) => {
+                    (this.getEngine() as ThinEngine).updateTextureData(texture.getInternalTexture()!, data, 0, 0, width, height, 0, 0, false);
+                };
+                const textureSize = this._getTextureSize(vertexCount);
+                updateTextureFromData(this._covariancesATexture!, this._delayedTextureUpdate.covA, textureSize.x, textureSize.y);
+                updateTextureFromData(this._covariancesBTexture!, this._delayedTextureUpdate.covB, textureSize.x, textureSize.y);
+                updateTextureFromData(this._centersTexture!, this._delayedTextureUpdate.centers, textureSize.x, textureSize.y);
+                updateTextureFromData(this._colorsTexture!, this._delayedTextureUpdate.colors, textureSize.x, textureSize.y);
+                this._delayedTextureUpdate = null;
             }
             this.thinInstanceBufferUpdated("splatIndex");
             this._canPostToWorker = true;

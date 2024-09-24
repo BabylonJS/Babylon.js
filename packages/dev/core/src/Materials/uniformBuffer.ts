@@ -6,7 +6,6 @@ import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import type { InternalTexture } from "./Textures/internalTexture";
 import { Tools } from "../Misc/tools";
-import "../Engines/Extensions/engine.uniformBuffer";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 
 /**

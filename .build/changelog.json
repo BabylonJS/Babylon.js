@@ -1,6 +1,635 @@
 {
-    "fromTag": "7.25.0",
+    "fromTag": "7.26.2",
     "changelog": {
+        "7.26.2": [
+            {
+                "pr": "15605",
+                "title": "Fix side detection (copy paste error)",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/textureBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
+        "7.26.3": [
+            {
+                "pr": "15612",
+                "title": "Fix issue when sprite texture was modified during animation",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    ".build/config.json",
+                    "packages/dev/core/src/Sprites/spriteRenderer.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15608",
+                "title": "Fix refresh update for GS",
+                "description": "- Delay texture update until splats are sorted\r\n- Changed direction computation for determining if view has changed and an update is needed",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15613",
+                "title": "Fix HeightToNormal block",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/heightToNormalBlock.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15607",
+                "title": "Effect: Fix infinite loop when engine is disposed",
+                "description": "See https://forum.babylonjs.com/t/effect-checkisready-infinite-loop-when-dispose-scene-with-defaultrenderingpipeline-again/53633",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/effect.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            }
+        ],
+        "7.26.1": [
+            {
+                "pr": "15600",
+                "title": "Some Async Stuff",
+                "description": "I have worked on a webgpu-only build and have found the following (webgl-related) imports still included in the build.\n\nThis is just a suggestion of how to solve this. If there are any questions, let me know.\n\nIn certain cases it was hard to remove the dependency so I decided to opt in for  a dynamic load instead (see DumpTools as an example)",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".build/flags.json",
+                    "packages/dev/core/src/Engines/Extensions/engine.readTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuBufferManager.ts",
+                    "packages/dev/core/src/Engines/abstractEngine.functions.ts",
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Materials/Textures/cubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
+                    "packages/dev/core/src/Materials/effectRenderer.ts",
+                    "packages/dev/core/src/Misc/dumpTools.ts",
+                    "packages/dev/core/src/Misc/index.ts",
+                    "packages/dev/core/src/Misc/textureTools.ts",
+                    "packages/dev/core/src/PostProcesses/postProcess.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15604",
+                "title": "Adding test for NME loop",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/ReferenceImages/nme-loop.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15599",
+                "title": "Introducing loop support for NME",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/imageSourceBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/textureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/index.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/loopBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/storageReadBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/storageWriteBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBlockConnectionPoint.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphFrame.ts",
+                    "packages/tools/nodeEditor/src/blockTools.ts",
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/display/loopDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/registerToDisplayLedger.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15601",
+                "title": "Add focus mode for frames",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphFrame.modules.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphFrame.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodeLink.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "15598",
+                "title": "Move ubo WebGL Extension to engine",
+                "description": "@sebavan - Does this influence ThinEngine in any way? should it move there?",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Materials/uniformBuffer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15596",
+                "title": "Fix splat increase when updating GS data",
+                "description": "and kick a new sort when data has been updated",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15597",
+                "title": "suppress scss deprecation warnings for now",
+                "description": "If you have installed the new dependency versions you might have noticed a slight increase in warning messages in your console!\nThis PR updates the dependencies loading our styles, which will remove this warning.\n\nWhoever reviews this PR - please check the tools' styles before fully approving it. There shouldn't be any issue, but let's stay on the safe side.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/public/umd/babylonjs-accessibility/package.json",
+                    "packages/public/umd/babylonjs-gui-editor/package.json",
+                    "packages/public/umd/babylonjs-inspector/package.json",
+                    "packages/public/umd/babylonjs-node-editor/package.json",
+                    "packages/public/umd/babylonjs-node-geometry-editor/package.json",
+                    "packages/public/umd/babylonjs-viewer/package.json",
+                    "packages/tools/guiEditor/package.json",
+                    "packages/tools/nodeEditor/package.json",
+                    "packages/tools/nodeGeometryEditor/package.json",
+                    "packages/tools/playground/package.json",
+                    "packages/tools/sandbox/package.json",
+                    "packages/tools/vsm/package.json"
+                ],
+                "tags": []
+            }
+        ],
+        "7.26.0": [
+            {
+                "pr": "15594",
+                "title": "Add support for color space convertion node for NME",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/colorConverterBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/index.ts",
+                    "packages/tools/nodeEditor/src/blockTools.ts",
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15595",
+                "title": "Babylon's `HTMLCanvasElement.requestPointerLock()` conflicts with new TS `lib.d.ts`",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/LibDeclarations/browser.d.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15593",
+                "title": "Update dependencies and flaky test case(s)",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/loaders/test/integration/babylon.sceneLoader.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15592",
+                "title": "Adding Undo / Redo to NGE",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/historyStack.ts",
+                    "packages/tools/nodeEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeGeometryEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/globalState.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphEditor.tsx"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15579",
+                "title": "remove unnecessary imports so WebGPU can be thinner",
+                "description": "Fixes #15580",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    ".build/flags.json",
+                    "packages/dev/core/src/Engines/Extensions/engine.prefilteredCubeTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.alpha.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.cubeTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.rawTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.readTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTargetCube.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTargetTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuRenderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/thinWebGPUEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/Textures/Filtering/hdrFiltering.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/basisTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/ddsTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/ktxTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/Procedurals/proceduralTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/baseTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/colorGradingTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/cubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/equiRectangularCubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/hdrCubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/rawCubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/rawTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/rawTexture2DArray.ts",
+                    "packages/dev/core/src/Materials/Textures/rawTexture3D.ts",
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
+                    "packages/dev/core/src/Materials/material.detailMapConfiguration.ts",
+                    "packages/dev/core/src/Misc/basis.ts",
+                    "packages/dev/core/src/Misc/dds.ts",
+                    "packages/dev/core/src/Misc/environmentTextureTools.ts",
+                    "packages/dev/core/src/Misc/minMaxReducer.ts",
+                    "packages/dev/core/src/Misc/rgbdTextureTools.ts",
+                    "packages/dev/core/src/Misc/screenshotTools.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts",
+                    "packages/dev/core/src/Particles/thinParticleSystem.ts",
+                    "packages/dev/core/src/PostProcesses/anaglyphPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/highlightsPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/postProcess.ts",
+                    "packages/dev/core/src/PostProcesses/stereoscopicInterlacePostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/tonemapPostProcess.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFMaterialExporter.ts",
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts",
+                    "packages/tools/viewer-alpha/src/viewerFactory.ts",
+                    "packages/tools/viewer-alpha/test/apps/web/index.html"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15591",
+                "title": "Bump vite from 5.4.3 to 5.4.6",
+                "description": "Bumps [vite](https://github.com/vitejs/vite/tree/HEAD/packages/vite) from 5.4.3 to 5.4.6.\n<details>\n<summary>Changelog</summary>\n<p><em>Sourced from <a href=\"https://github.com/vitejs/vite/blob/v5.4.6/packages/vite/CHANGELOG.md\">vite's changelog</a>.</em></p>\n<blockquote>\n<h2><!-- raw HTML omitted -->5.4.6 (2024-09-16)<!-- raw HTML omitted --></h2>\n<ul>\n<li>fix: avoid DOM Clobbering gadget in <code>getRelativeUrlFromDocument</code> (<a href=\"https://github.com/vitejs/vite/tree/HEAD/packages/vite/issues/18115\">#18115</a>) (<a href=\"https://github.com/vitejs/vite/commit/179b17773cf35c73ddb041f9e6c703fd9f3126af\">179b177</a>), closes <a href=\"https://redirect.github.com/vitejs/vite/issues/18115\">#18115</a></li>\n<li>fix: fs raw query (<a href=\"https://github.com/vitejs/vite/tree/HEAD/packages/vite/issues/18112\">#18112</a>) (<a href=\"https://github.com/vitejs/vite/commit/6820bb3b9a54334f3268fc5ee1e967d2e1c0db34\">6820bb3</a>), closes <a href=\"https://redirect.github.com/vitejs/vite/issues/18112\">#18112</a></li>\n</ul>\n<h2><!-- raw HTML omitted -->5.4.5 (2024-09-13)<!-- raw HTML omitted --></h2>\n<ul>\n<li>fix(preload): backport <a href=\"https://github.com/vitejs/vite/tree/HEAD/packages/vite/issues/18098\">#18098</a>, throw error preloading module as well (<a href=\"https://github.com/vitejs/vite/tree/HEAD/packages/vite/issues/18099\">#18099</a>) (<a href=\"https://github.com/vitejs/vite/commit/faa2405e5d1da07a7c7fb6d48e887bf97a2f3dba\">faa2405</a>), closes <a href=\"https://redirect.github.com/vitejs/vite/issues/18098\">#18098</a> <a href=\"https://redirect.github.com/vitejs/vite/issues/18099\">#18099</a></li>\n</ul>\n<h2><!-- raw HTML omitted -->5.4.4 (2024-09-11)<!-- raw HTML omitted --></h2>\n<ul>\n<li>fix: backport <a href=\"https://github.com/vitejs/vite/tree/HEAD/packages/vite/issues/17997\">#17997</a>, ensure req.url matches moduleByEtag URL to avoid incorrect 304 (<a href=\"https://github.com/vitejs/vite/tree/HEAD/packages/vite/issues/18078\">#18078</a>) (<a href=\"https://github.com/vitejs/vite/commit/74a79c53b2286c91739d1473945012b5d206eddf\">74a79c5</a>), closes <a href=\"https://redirect.github.com/vitejs/vite/issues/17997\">#17997</a> <a href=\"https://redirect.github.com/vitejs/vite/issues/18078\">#18078</a></li>\n<li>fix: backport <a href=\"https://github.com/vitejs/vite/tree/HEAD/packages/vite/issues/18063\">#18063</a>, allow scanning exports from <code>script module</code> in svelte (<a href=\"https://github.com/vitejs/vite/tree/HEAD/packages/vite/issues/18077\">#18077</a>) (<a href=\"https://github.com/vitejs/vite/commit/d90ba40474aa1da8e722e1660ba739621238e5ac\">d90ba40</a>), closes <a href=\"https://redirect.github.com/vitejs/vite/issues/18063\">#18063</a> <a href=\"https://redirect.github.com/vitejs/vite/issues/18077\">#18077</a></li>\n<li>fix(preload): backport <a href=\"https://github.com/vitejs/vite/tree/HEAD/packages/vite/issues/18046\">#18046</a>, allow ignoring dep errors (<a href=\"https://github.com/vitejs/vite/tree/HEAD/packages/vite/issues/18076\">#18076</a>) (<a href=\"https://github.com/vitejs/vite/commit/8760293d6836dac554d1d6f214b8b09ed97cccd4\">8760293</a>), closes <a href=\"https://redirect.github.com/vitejs/vite/issues/18046\">#18046</a> <a href=\"https://redirect.github.com/vitejs/vite/issues/18076\">#18076</a></li>\n</ul>\n</blockquote>\n</details>\n<details>\n<summary>Commits</summary>\n<ul>\n<li><a href=\"https://github.com/vitejs/vite/commit/f9691767ad763720065cc7c5c7f369f97b4e7ea8\"><code>f969176</code></a> release: v5.4.6</li>\n<li><a href=\"https://github.com/vitejs/vite/commit/179b17773cf35c73ddb041f9e6c703fd9f3126af\"><code>179b177</code></a> fix: avoid DOM Clobbering gadget in <code>getRelativeUrlFromDocument</code> (<a href=\"https://github.com/vitejs/vite/tree/HEAD/packages/vite/issues/18115\">#18115</a>)</li>\n<li><a href=\"https://github.com/vitejs/vite/commit/6820bb3b9a54334f3268fc5ee1e967d2e1c0db34\"><code>6820bb3</code></a> fix: fs raw query (<a href=\"https://github.com/vitejs/vite/tree/HEAD/packages/vite/issues/18112\">#18112</a>)</li>\n<li><a href=\"https://github.com/vitejs/vite/commit/37881e71980ddbf6a93444c2d21b8ee6c076ad07\"><code>37881e7</code></a> release: v5.4.5</li>\n<li><a href=\"https://github.com/vitejs/vite/commit/faa2405e5d1da07a7c7fb6d48e887bf97a2f3dba\"><code>faa2405</code></a> fix(preload): backport <a href=\"https://github.com/vitejs/vite/tree/HEAD/packages/vite/issues/18098\">#18098</a>, throw error preloading module as well (<a href=\"https://github.com/vitejs/vite/tree/HEAD/packages/vite/issues/18099\">#18099</a>)</li>\n<li><a href=\"https://github.com/vitejs/vite/commit/54c55dbffc86f21ae88a171a5af90c37876db226\"><code>54c55db</code></a> release: v5.4.4</li>\n<li><a href=\"https://github.com/vitejs/vite/commit/74a79c53b2286c91739d1473945012b5d206eddf\"><code>74a79c5</code></a> fix: backport <a href=\"https://github.com/vitejs/vite/tree/HEAD/packages/vite/issues/17997\">#17997</a>, ensure req.url matches moduleByEtag URL to avoid incorr...</li>\n<li><a href=\"https://github.com/vitejs/vite/commit/d90ba40474aa1da8e722e1660ba739621238e5ac\"><code>d90ba40</code></a> fix: backport <a href=\"https://github.com/vitejs/vite/tree/HEAD/packages/vite/issues/18063\">#18063</a>, allow scanning exports from <code>script module</code> in svelte (...</li>\n<li><a href=\"https://github.com/vitejs/vite/commit/8760293d6836dac554d1d6f214b8b09ed97cccd4\"><code>8760293</code></a> fix(preload): backport <a href=\"https://github.com/vitejs/vite/tree/HEAD/packages/vite/issues/18046\">#18046</a>, allow ignoring dep errors (<a href=\"https://github.com/vitejs/vite/tree/HEAD/packages/vite/issues/18076\">#18076</a>)</li>\n<li>See full diff in <a href=\"https://github.com/vitejs/vite/commits/v5.4.6/packages/vite\">compare view</a></li>\n</ul>\n</details>\n<br />\n\n\n[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=vite&package-manager=npm_and_yarn&previous-version=5.4.3&new-version=5.4.6)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)\n\nDependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.\n\n[//]: # (dependabot-automerge-start)\n[//]: # (dependabot-automerge-end)\n\n---\n\n<details>\n<summary>Dependabot commands and options</summary>\n<br />\n\nYou can trigger Dependabot actions by commenting on this PR:\n- `@dependabot rebase` will rebase this PR\n- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it\n- `@dependabot merge` will merge this PR after your CI passes on it\n- `@dependabot squash and merge` will squash and merge this PR after your CI passes on it\n- `@dependabot cancel merge` will cancel a previously requested merge and block automerging\n- `@dependabot reopen` will reopen this PR if it is closed\n- `@dependabot close` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually\n- `@dependabot show <dependency name> ignore conditions` will show all of the ignore conditions of the specified dependency\n- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)\nYou can disable automated security fix PRs for this repo from the [Security Alerts page](https://github.com/BabylonJS/Babylon.js/network/alerts).\n\n</details>",
+                "author": {
+                    "name": "dependabot[bot]",
+                    "url": "https://github.com/apps/dependabot"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": [
+                    "dependencies"
+                ]
+            },
+            {
+                "pr": "15590",
+                "title": "Better stack management",
+                "description": "@AmoebaChant : This can now be used with SFE\r\n@Popov72 : Same for NGRE",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/historyStack.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15589",
+                "title": "Allow testing file-size step with chunks",
+                "description": "The current implementation of the file-size test doesn't take chunks into account.\n\nThis PR adds the ability to generate a main file (the initial references) and an async part (all async-loaded dependencies). The main file is the one that will be tested. the async-size can grow with time, and it is expected that the main size will decrease with time the more async will grow.\n\nThis PR also adds the ability to define the flags for testing these packages as part of the repository. For example, to increase the error threshold, edit the file `flags.json` in `./.build/` (which is empty at the momoent) as set it to:\n\n```javascript\n{\n    \"errorThreshold\": 1.2\n}\n```\n\nThis will allow a threshold of 20% instead of the default 10%.\n\nTo add another test case, simply add a new .ts file in the ./src/ folder of /packages/tools/tests\nThe initial fileSize will be set but not inspected.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".build/flags.json",
+                    "packages/dev/buildTools/src/webpackTools.ts",
+                    "packages/tools/tests/build.js",
+                    "packages/tools/tests/package.json",
+                    "packages/tools/tests/scripts/generateFileSizes.js",
+                    "packages/tools/tests/webpack.config.js"
+                ],
+                "tags": []
+            }
+        ],
+        "7.25.2": [
+            {
+                "pr": "15577",
+                "title": "Dynamic update of GS",
+                "description": "PG : https://playground.babylonjs.com/#GSUTLR#8\r\ndocumentation/Validation test will be done next week",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "15581",
+                "title": "consistency with the other tests",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/loaders/test/integration/babylon.sceneLoader.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15578",
+                "title": "Fix sizing issue",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15571",
+                "title": "Fix color space nme",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/loaders/test/integration/babylon.sceneLoader.test.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15576",
+                "title": "Playground - Fixing the Monaco Editor snippet template insertion",
+                "description": "Changes have been detailed in [this post of the BJS forum](https://forum.babylonjs.com/t/pg-snippets-issue/52210/11)\r\n- Removed 'plainText' key from Monaco snippet JSON\r\n- Replaced by regex rule (`insertText` --> `plainText`)",
+                "author": {
+                    "name": "Tricotou",
+                    "url": "https://github.com/Tricotou"
+                },
+                "files": [
+                    "packages/tools/playground/public/templates.json",
+                    "packages/tools/playground/src/tools/monacoManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15575",
+                "title": "Fix gpu picking leak",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15574",
+                "title": "NodeMaterial: Fixes for prepass support",
+                "description": "Added and fixed a number of things after new geometry buffers were added to the prepass renderer lately.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/prePassOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Input/prePassTextureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Rendering/prePassRenderer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "15570",
+                "title": "IBL Shadows - Only create the post effects for IBL shadows once",
+                "description": "When a new IBL was set, an observer was being fired which caused new post effects to be created for the pipeline. This was causing problems. The post effects should only need to be created once.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsRenderPipeline.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15564",
+                "title": "Rename prepass and fix local space values",
+                "description": "As suggested by @Popov72 , the local space prepass wasn't actually outputting pure, local space. And the \"NDC\" prepass wasn't truly NDC so I've renamed it to PREPASS_HYPERBOLIC_DEPTH to distinguish it from the linear PREPASS_DEPTH",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/constants.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/prePassOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Input/prePassTextureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/materialHelper.functions.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsAccumulationPass.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsRenderPipeline.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelTracingPass.ts",
+                    "packages/dev/core/src/Rendering/prePassRenderer.ts",
+                    "packages/dev/core/src/Shaders/default.fragment.fx",
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/default.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/pbr.fragment.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15566",
+                "title": "PBR: Fix wrong parameter passed to clearcoat",
+                "description": "See https://forum.babylonjs.com/t/nodematerial-contaning-clearcoatblock-fails-to-compile-in-webgl1/53422",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/clearCoatBlock.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockClearcoat.fx",
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockClearcoat.fx",
+                    "packages/dev/core/src/ShadersWGSL/pbr.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "15568",
+                "title": "Fix wrong adjusted coordinates",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15567",
+                "title": "Mesh: Don't delete sub-meshes when calling flipFaces",
+                "description": "See https://forum.babylonjs.com/t/how-do-i-flip-faces-of-submeshes-mesh-flipfaces-merges-all-submeshes/53423",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/geometry.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "15565",
+                "title": "Fix issue with base",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/historyStack.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15563",
+                "title": "Update package-lock.json due to removed fflate",
+                "description": null,
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": []
+            }
+        ],
         "7.25.1": [
             {
                 "pr": "15561",

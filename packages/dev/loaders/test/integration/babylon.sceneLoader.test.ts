@@ -252,20 +252,11 @@ describe("Babylon Scene Loader", function () {
         });
 
         it("Load CompileMaterials", async () => {
-            const assertionData = await page.evaluate(() => {
+            const assertionData = await page.evaluate(async () => {
                 const promises = new Array<Promise<any>>();
                 let called = 0;
 
                 const oldFunction = window.engine!.createShaderProgram;
-
-                const ready: { [key: string]: boolean } = {};
-                const loop = () => {
-                    const enabledMeshes = window.scene!.meshes.filter((mesh) => mesh.material && mesh.isEnabled());
-                    enabledMeshes.forEach((mesh) => {
-                        ready[mesh.name] = mesh.isReady(true);
-                    });
-                };
-                window.engine!.runRenderLoop(loop);
 
                 BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader) => {
                     (loader as GLTFFileLoader).compileMaterials = true;
@@ -285,17 +276,16 @@ describe("Babylon Scene Loader", function () {
                     return window.scene!.whenReadyAsync();
                 });
 
-                for (const name in ready) {
-                    promises.push(Promise.resolve({ [name]: ready[name] }));
-                }
-
-                return promise
-                    .then(() => Promise.all(promises))
-                    .then((data) => {
-                        window.engine!.stopRenderLoop();
-                        window.engine!.createShaderProgram = oldFunction;
-                        return data;
-                    });
+                // this will wait for the scene to be ready
+                await promise;
+                const enabledMeshes = window.scene!.meshes.filter((mesh) => mesh.material && mesh.isEnabled());
+                enabledMeshes.forEach((mesh) => {
+                    promises.push(Promise.resolve(mesh.isReady(true)));
+                });
+                const data = await Promise.all(promises);
+                window.engine!.stopRenderLoop();
+                window.engine!.createShaderProgram = oldFunction;
+                return data;
             });
             expect(assertionData.length).toBeGreaterThan(0);
             assertionData.forEach((data) => {
@@ -403,14 +393,6 @@ describe("Babylon Scene Loader", function () {
         it("Load LevelOfDetail", async () => {
             const assertionData = await page.evaluate(async () => {
                 const promises = new Array<Promise<{ [key: string]: boolean }>>();
-                const ready: { [key: string]: boolean } = {};
-                const loop = () => {
-                    const enabledMeshes = window.scene!.meshes.filter((mesh) => mesh.material && mesh.isEnabled());
-                    enabledMeshes.forEach((mesh) => {
-                        ready[mesh.name] = mesh.isReady(true);
-                    });
-                };
-                window.engine!.runRenderLoop(loop);
 
                 BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader) => {
                     (loader as GLTFFileLoader).compileMaterials = true;
@@ -447,10 +429,15 @@ describe("Babylon Scene Loader", function () {
                         })
                     );
                 });
-                for (const name in ready) {
-                    promises.push(Promise.resolve({ [name]: ready[name] }));
-                }
-                return promise.then(() => window.scene!.whenReadyAsync()).then(() => Promise.all(promises));
+                return promise
+                    .then(() => window.scene!.whenReadyAsync())
+                    .then(() => {
+                        const enabledMeshes = window.scene!.meshes.filter((mesh) => mesh.material && mesh.isEnabled());
+                        enabledMeshes.forEach((mesh) => {
+                            promises.push(Promise.resolve({ [mesh.name]: mesh.isReady(true) }));
+                        });
+                    })
+                    .then(() => Promise.all(promises));
             });
 
             assertionData.forEach((promise) => {

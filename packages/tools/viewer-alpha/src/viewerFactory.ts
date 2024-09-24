@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { AbstractEngine, AbstractEngineOptions, EngineOptions /*, WebGPUEngineOptions*/ } from "core/index";
+import type { AbstractEngine, AbstractEngineOptions, EngineOptions, WebGPUEngineOptions } from "core/index";
 
 import type { ViewerOptions } from "./viewer";
 import { Viewer } from "./viewer";
@@ -8,8 +8,17 @@ import { Viewer } from "./viewer";
  * Options for creating a Viewer instance that is bound to an HTML canvas.
  */
 export type CanvasViewerOptions = ViewerOptions &
-    (({ engine?: undefined } & AbstractEngineOptions) | ({ engine: "WebGL" } & EngineOptions)) /*| ({ engine: "WebGPU" } & WebGPUEngineOptions)*/;
+    (({ engine?: undefined } & AbstractEngineOptions) | ({ engine: "WebGL" } & EngineOptions) | ({ engine: "WebGPU" } & WebGPUEngineOptions));
 const defaultCanvasViewerOptions: CanvasViewerOptions = {};
+
+/**
+ * Chooses a default engine for the current browser environment.
+ * @returns The default engine to use.
+ */
+export function getDefaultEngine(): NonNullable<CanvasViewerOptions["engine"]> {
+    // TODO: When WebGPU is fully production ready, we may want to prefer it if it is supported by the browser.
+    return "WebGL";
+}
 
 /**
  * Creates a Viewer instance that is bound to an HTML canvas.
@@ -31,22 +40,21 @@ export async function createViewerForCanvas(canvas: HTMLCanvasElement, options?:
 
     // Create an engine instance.
     let engine: AbstractEngine;
-    switch (finalOptions.engine) {
-        case undefined:
+    switch (finalOptions.engine ?? getDefaultEngine()) {
         case "WebGL": {
             // eslint-disable-next-line @typescript-eslint/naming-convention, no-case-declarations
             const { Engine } = await import("core/Engines/engine");
             engine = new Engine(canvas, undefined, options);
             break;
         }
-        // case "WebGPU": {
-        //     // eslint-disable-next-line @typescript-eslint/naming-convention
-        //     const { WebGPUEngine } = await import("core/Engines/webgpuEngine");
-        //     const webGPUEngine = new WebGPUEngine(canvas, options);
-        //     await webGPUEngine.initAsync();
-        //     engine = webGPUEngine;
-        //     break;
-        // }
+        case "WebGPU": {
+            // eslint-disable-next-line @typescript-eslint/naming-convention, no-case-declarations
+            const { WebGPUEngine } = await import("core/Engines/webgpuEngine");
+            const webGPUEngine = new WebGPUEngine(canvas, options);
+            await webGPUEngine.initAsync();
+            engine = webGPUEngine;
+            break;
+        }
     }
 
     // Override the onInitialized callback to add in some specific behavior.
