@@ -98,11 +98,13 @@ export class VideoRecorder {
     private _resolve: Nullable<(blob: Blob) => void>;
     private _reject: Nullable<(error: any) => void>;
 
+    private _isRecording: boolean;
+
     /**
      * True when a recording is already in progress.
      */
     public get isRecording(): boolean {
-        return !!this._canvas && this._canvas.isRecording;
+        return !!this._canvas && this._isRecording;
     }
 
     /**
@@ -123,7 +125,7 @@ export class VideoRecorder {
         }
 
         this._canvas = canvas;
-        this._canvas.isRecording = false;
+        this._isRecording = false;
 
         this._options = {
             ...VideoRecorder._DefaultOptions,
@@ -155,7 +157,7 @@ export class VideoRecorder {
             return;
         }
 
-        this._canvas.isRecording = false;
+        this._isRecording = false;
         this._mediaRecorder.stop();
     }
 
@@ -189,7 +191,7 @@ export class VideoRecorder {
         this._resolve = null;
         this._reject = null;
 
-        this._canvas.isRecording = true;
+        this._isRecording = true;
         this._mediaRecorder.start(this._options.recordChunckSize);
 
         return new Promise<Blob>((resolve, reject) => {
