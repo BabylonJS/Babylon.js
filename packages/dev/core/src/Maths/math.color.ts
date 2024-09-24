@@ -590,6 +590,23 @@ export class Color3 implements Tensor<Tuple<number, 3>, IColor3Like>, IColor3Lik
     }
 
     /**
+     * Updates the Color3 rgb values from the string containing valid hexadecimal values
+     * @param hex defines a string containing valid hexadecimal values
+     * @returns the current Color3 object
+     */
+    public fromHexString(hex: string): this {
+        if (hex.substring(0, 1) !== "#" || hex.length !== 7) {
+            return this
+        }
+
+        this.r = parseInt(hex.substring(1, 3), 16);
+        this.g = parseInt(hex.substring(3, 5), 16);
+        this.b = parseInt(hex.substring(5, 7), 16);
+
+        return this;
+    }
+
+    /**
      * Converts current color in rgb space to HSV values
      * @returns a new color3 representing the HSV values
      */
@@ -1581,6 +1598,34 @@ export class Color4 implements Tensor<Tuple<number, 4>, IColor4Like>, IColor4Lik
 
         const intA = Math.round(this.a * 255);
         return "#" + ToHex(intR) + ToHex(intG) + ToHex(intB) + ToHex(intA);
+    }
+
+    /**
+     * Updates the Color4 rgba values from the string containing valid hexadecimal values.
+     *
+     * A valid hex string is either in the format #RRGGBB or #RRGGBBAA.
+     *
+     * When a hex string without alpha is passed, the resulting Color4 keeps
+     * its previous alpha value.
+     *
+     * An invalid string does not modify this object
+     *
+     * @param hex defines a string containing valid hexadecimal values
+     * @returns the current updated Color4 object
+     */
+    public fromHexString(hex: string): this {
+        if (hex.substring(0, 1) !== "#" || (hex.length !== 9 && hex.length !== 7)) {
+            return this;
+        }
+
+        this.r = parseInt(hex.substring(1, 3), 16);
+        this.g = parseInt(hex.substring(3, 5), 16);
+        this.b = parseInt(hex.substring(5, 7), 16);
+        if (hex.length === 9) {
+            this.a = parseInt(hex.substring(7, 9), 16);
+        }
+
+        return this;
     }
 
     /**
