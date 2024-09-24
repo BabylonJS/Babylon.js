@@ -23,10 +23,13 @@ import { Color4 } from "core/Maths/math.color";
 import { Clamp } from "core/Maths/math.scalar.functions";
 import { Vector3 } from "core/Maths/math.vector";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
+import { computeMaxExtents } from "core/Meshes/meshUtils";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { Observable } from "core/Misc/observable";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
+
+//import "core/Rendering/boundingBoxRenderer";
 
 function throwIfAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]): void {
     for (const signal of abortSignals) {
@@ -258,6 +261,7 @@ export class Viewer implements IDisposable {
                 ];
             }
 
+            this._updateCamera();
             this.onSelectedAnimationChanged.notifyObservers();
         }
     }
@@ -345,6 +349,8 @@ export class Viewer implements IDisposable {
                     });
                     this.selectedAnimation = 0;
                     this._details.model.addAllToScene();
+
+                    this._details.model.meshes.forEach((mesh) => (mesh.showBoundingBox = true));
                 }
 
                 this._updateCamera();
@@ -493,13 +499,15 @@ export class Viewer implements IDisposable {
         framingBehavior.elevationReturnTime = -1;
 
         let radius = 1;
-        if (this._details.scene.meshes.length) {
+        if (this._details.model?.meshes.length) {
             // get bounds and prepare framing/camera radius from its values
             this._camera.lowerRadiusLimit = null;
 
-            const worldExtents = this._details.scene.getWorldExtends((mesh) => {
-                return mesh.isVisible && mesh.isEnabled();
-            });
+            const maxExtents = computeMaxExtents(this._details.model.meshes, this._activeAnimation);
+            const worldExtents = {
+                min: new Vector3(Math.min(...maxExtents.map((e) => e.minimum.x)), Math.min(...maxExtents.map((e) => e.minimum.y)), Math.min(...maxExtents.map((e) => e.minimum.z))),
+                max: new Vector3(Math.max(...maxExtents.map((e) => e.maximum.x)), Math.max(...maxExtents.map((e) => e.maximum.y)), Math.max(...maxExtents.map((e) => e.maximum.z))),
+            };
             framingBehavior.zoomOnBoundingInfo(worldExtents.min, worldExtents.max);
 
             const worldSize = worldExtents.max.subtract(worldExtents.min);
