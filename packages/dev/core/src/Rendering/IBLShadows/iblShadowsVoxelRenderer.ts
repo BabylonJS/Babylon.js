@@ -621,7 +621,7 @@ export class _IblShadowsVoxelRenderer {
             }
             if (allReady) {
                 this._renderInFlight = false;
-                (this._scene.prePassRenderer as any)._setEnabled(false);
+                // (this._scene.prePassRenderer as any)._setEnabled(false);
                 this._renderTargets.forEach((rt) => {
                     rt.render();
                 });
@@ -634,7 +634,7 @@ export class _IblShadowsVoxelRenderer {
                 this._copyMipMaps();
                 this._voxelizationInProgress = false;
                 this._scene.onAfterRenderTargetsRenderObservable.removeCallback((this as any).boundVoxelGridRenderFn);
-                (this._scene.prePassRenderer as any)._setEnabled(true);
+                // (this._scene.prePassRenderer as any)._setEnabled(true);
             } else if (!this._renderInFlight) {
                 this._renderInFlight = true;
                 setTimeout(() => {

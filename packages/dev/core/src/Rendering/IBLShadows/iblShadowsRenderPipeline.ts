@@ -6,8 +6,6 @@ import { Mesh } from "../../Meshes/mesh";
 import type { Scene } from "../../scene";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
-import type { PrePassEffectConfiguration } from "../prePassEffectConfiguration";
-import { PrePassRenderer } from "../prePassRenderer";
 import { Logger } from "../../Misc/logger";
 import { _IblShadowsVoxelRenderer } from "./iblShadowsVoxelRenderer";
 import { _IblShadowsVoxelTracingPass } from "./iblShadowsVoxelTracingPass";
@@ -23,6 +21,7 @@ import { PostProcessRenderPipeline } from "../../PostProcesses/RenderPipeline/po
 import { PostProcessRenderEffect } from "core/PostProcesses/RenderPipeline/postProcessRenderEffect";
 import type { Camera } from "core/Cameras/camera";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { GeometryBufferRenderer } from "core/Rendering/geometryBufferRenderer";
 
 interface IblShadowsSettings {
     /**
@@ -87,32 +86,6 @@ interface IblShadowsSettings {
     ssShadowThickness: number;
 }
 
-class IblShadowsPrepassConfiguration implements PrePassEffectConfiguration {
-    /**
-     * Is this effect enabled
-     */
-    public enabled = true;
-
-    /**
-     * Name of the configuration
-     */
-    public name = "iblShadows";
-
-    /**
-     * Textures that should be present in the MRT for this effect to work
-     */
-    public readonly texturesRequired: number[] = [
-        Constants.PREPASS_DEPTH_TEXTURE_TYPE,
-        Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE,
-        Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE,
-        // Constants.PREPASS_NORMAL_TEXTURE_TYPE, // TODO - don't need this for IBL shadows
-        Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE,
-        // Local positions used for shadow accumulation pass
-        Constants.PREPASS_POSITION_TEXTURE_TYPE,
-        Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE,
-    ];
-}
-
 /**
  * Voxel-based shadow rendering for IBL's.
  * This should not be instanciated directly, as it is part of a scene component
@@ -130,7 +103,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     private _debugPasses: { pass: PostProcess; enabled: boolean }[] = [];
 
     private _shadowCompositePP: PostProcess;
-    private _prePassEffectConfiguration: IblShadowsPrepassConfiguration;
+    private _geometryBufferRenderer: GeometryBufferRenderer;
 
     private _excludedMeshes: number[] = [];
 
@@ -601,13 +574,21 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     constructor(name: string, scene: Scene, options: Partial<IblShadowsSettings> = {}, cameras?: Camera[]) {
         super(scene.getEngine(), name);
         this.scene = scene;
-        //  We need a depth texture for opaque
-        if (!scene.enablePrePassRenderer()) {
-            Logger.Warn("IBL Shadows Render Pipeline could not enable PrePass, aborting.");
+        // If there are specific formats needed per texture, you can create the
+        // geometry buffer renderer outside of this pipeline.
+        const geometryBufferRenderer = scene.enableGeometryBufferRenderer();
+        if (!geometryBufferRenderer) {
+            Logger.Error("Geometry buffer renderer is required for IBL shadows to work.");
             return;
         }
+        this._geometryBufferRenderer = geometryBufferRenderer;
+        this._geometryBufferRenderer.enableScreenspaceDepth = true;
+        this._geometryBufferRenderer.enableVelocityLinear = true;
+        this._geometryBufferRenderer.enablePosition = true;
+        this._geometryBufferRenderer.enableNormal = true;
+        this._geometryBufferRenderer.generateNormalsInWorldSpace = true;
+
         this.shadowOpacity = options.shadowOpacity || 0.75;
-        this._prePassEffectConfiguration = new IblShadowsPrepassConfiguration();
         this._voxelRenderer = new _IblShadowsVoxelRenderer(
             this.scene,
             this,
@@ -724,7 +705,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
                 this.update();
             }
         });
-        this._shadowCompositePP._prePassEffectConfiguration = this._prePassEffectConfiguration;
     }
 
     private _createEffectPasses(cameras: Camera[] | undefined) {
@@ -782,7 +762,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             return this._gbufferDebugPass;
         }
         const isWebGPU = this.engine.isWebGPU;
-        const textureNames: string[] = this._prePassEffectConfiguration.texturesRequired.map((type) => PrePassRenderer.TextureFormats[type].name.toString());
+        const textureNames: string[] = ["depthSampler", "normalSampler", "positionSampler", "velocitySampler"];
 
         const options: PostProcessOptions = {
             width: this.scene.getEngine().getRenderWidth(),
@@ -806,15 +786,14 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._gbufferDebugPass = new PostProcess("iblShadowGBufferDebug", "iblShadowGBufferDebug", options);
         this._gbufferDebugPass.autoClear = false;
         this._gbufferDebugPass.onApplyObservable.add((effect) => {
-            this._prePassEffectConfiguration.texturesRequired.forEach((type) => {
-                const prePassRenderer = this.scene.prePassRenderer;
-                if (!prePassRenderer) {
-                    Logger.Error("Can't enable G-Buffer debug rendering since prepassRenderer doesn't exist.");
-                    return;
-                }
-                const index = prePassRenderer.getIndex(type);
-                if (index >= 0) effect.setTexture(PrePassRenderer.TextureFormats[type].name, prePassRenderer.getRenderTarget().textures[index]);
-            });
+            const depthIndex = this._geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE);
+            effect.setTexture("depthSampler", this._geometryBufferRenderer.getGBuffer().textures[depthIndex]);
+            const normalIndex = this._geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.NORMAL_TEXTURE_TYPE);
+            effect.setTexture("normalSampler", this._geometryBufferRenderer.getGBuffer().textures[normalIndex]);
+            const positionIndex = this._geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.POSITION_TEXTURE_TYPE);
+            effect.setTexture("positionSampler", this._geometryBufferRenderer.getGBuffer().textures[positionIndex]);
+            const velocityIndex = this._geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.VELOCITY_LINEAR_TEXTURE_TYPE);
+            effect.setTexture("velocitySampler", this._geometryBufferRenderer.getGBuffer().textures[velocityIndex]);
             effect.setVector4("sizeParams", this._gBufferDebugSizeParams);
             if (this.scene.activeCamera) {
                 effect.setFloat("maxDepth", this.scene.activeCamera.maxZ);
@@ -892,11 +871,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         let x = 0;
         let y = 0;
         if (this.gbufferDebugEnabled) {
-            const prePassRenderer = this.scene!.prePassRenderer;
-            if (!prePassRenderer) {
-                Logger.Error("Can't enable G-Buffer debug rendering since prepassRenderer doesn't exist.");
-                return;
-            }
             this._gBufferDebugSizeParams.set(x, y, cols, rows);
             x -= width;
             if (x <= -1) {
@@ -998,15 +972,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
                 }
             });
         }
-    }
-
-    /**
-     * Links to the prepass renderer
-     * @param prePassRenderer The scene PrePassRenderer
-     * @returns true if the pre pass is setup
-     */
-    public override setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {
-        return !!prePassRenderer.addEffectConfiguration(this._prePassEffectConfiguration);
     }
 
     /**

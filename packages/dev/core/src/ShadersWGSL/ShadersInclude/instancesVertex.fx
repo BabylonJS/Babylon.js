@@ -13,7 +13,7 @@
         finalWorld = mesh.world * finalWorld;
 #endif
 #if defined(PREPASS_VELOCITY) || defined(VELOCITY) ||                  \
-            defined(PREPASS_VELOCITY_LINEAR)
+            defined(PREPASS_VELOCITY_LINEAR) || defined(VELOCITY_LINEAR)
         finalPreviousWorld = uniforms.previousWorld * finalPreviousWorld;
 #endif
 #endif

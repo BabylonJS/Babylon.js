@@ -8,6 +8,7 @@ import type { Effect } from "../../Materials/effect";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import type { RenderTargetCreationOptions } from "../../Materials/Textures/textureCreationOptions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { GeometryBufferRenderer } from "../../Rendering/geometryBufferRenderer";
 
 /**
  * This should not be instanciated directly, as it is part of a scene component
@@ -184,9 +185,9 @@ export class _IblShadowsAccumulationPass {
         const localPositionCopyPP = new PostProcess("Copy Local Position Texture", "pass", localPositionCopyOptions);
         localPositionCopyPP.autoClear = false;
         localPositionCopyPP.onApplyObservable.add((effect) => {
-            const prePassRenderer = this._scene!.prePassRenderer;
-            const index = prePassRenderer!.getIndex(Constants.PREPASS_POSITION_TEXTURE_TYPE);
-            if (index >= 0) effect.setTexture("textureSampler", prePassRenderer!.getRenderTarget().textures[index]);
+            const geometryBufferRenderer = this._scene.geometryBufferRenderer;
+            const index = geometryBufferRenderer!.getTextureIndex(GeometryBufferRenderer.POSITION_TEXTURE_TYPE);
+            effect.setTexture("textureSampler", geometryBufferRenderer!.getGBuffer().textures[index]);
         });
         this._oldLocalPositionRT.addPostProcess(localPositionCopyPP);
         this._oldLocalPositionRT.skipInitialClear = true;
@@ -276,13 +277,14 @@ export class _IblShadowsAccumulationPass {
         effect.setTexture("oldAccumulationSampler", this._oldAccumulationRT);
         effect.setTexture("prevLocalPositionSampler", this._oldLocalPositionRT);
 
-        const prePassRenderer = this._scene.prePassRenderer;
-        if (prePassRenderer) {
-            const localPositionIndex = prePassRenderer.getIndex(Constants.PREPASS_POSITION_TEXTURE_TYPE);
-            if (localPositionIndex >= 0) effect.setTexture("localPositionSampler", prePassRenderer.getRenderTarget().textures[localPositionIndex]);
-            const velocityIndex = prePassRenderer.getIndex(Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE);
-            if (velocityIndex >= 0) effect.setTexture("motionSampler", prePassRenderer.getRenderTarget().textures[velocityIndex]);
+        const geometryBufferRenderer = this._scene.geometryBufferRenderer;
+        if (!geometryBufferRenderer) {
+            return;
         }
+        const velocityIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.VELOCITY_LINEAR_TEXTURE_TYPE);
+        effect.setTexture("motionSampler", geometryBufferRenderer.getGBuffer().textures[velocityIndex]);
+        const wPositionIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.POSITION_TEXTURE_TYPE);
+        effect.setTexture("localPositionSampler", geometryBufferRenderer.getGBuffer().textures[wPositionIndex]);
 
         this.reset = false;
     }

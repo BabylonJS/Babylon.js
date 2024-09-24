@@ -6,6 +6,7 @@ import { PostProcess } from "../../PostProcesses/postProcess";
 import type { PostProcessOptions } from "../../PostProcesses/postProcess";
 import type { Effect } from "../../Materials/effect";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { GeometryBufferRenderer } from "../../Rendering/geometryBufferRenderer";
 
 /**
  * This should not be instanciated directly, as it is part of a scene component
@@ -123,7 +124,7 @@ export class _IblShadowsSpatialBlurPass {
             textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             uniforms: ["blurParameters"],
-            samplers: ["shadowSampler", "worldNormalSampler", "linearDepthSampler"],
+            samplers: ["shadowSampler", "worldNormalSampler", "depthSampler"],
             engine: this._engine,
             reusable: false,
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
@@ -145,13 +146,14 @@ export class _IblShadowsSpatialBlurPass {
     private _updatePostProcess(effect: Effect) {
         const iterationCount = 1;
         effect.setVector4("blurParameters", new Vector4(iterationCount, this._worldScale, 0.0, 0.0));
-        const prePassRenderer = this._scene.prePassRenderer;
-        if (prePassRenderer) {
-            const wnormalIndex = prePassRenderer.getIndex(Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE);
-            const depthIndex = prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
-            if (wnormalIndex >= 0) effect.setTexture("worldNormalSampler", prePassRenderer.getRenderTarget().textures[wnormalIndex]);
-            if (depthIndex >= 0) effect.setTexture("linearDepthSampler", prePassRenderer.getRenderTarget().textures[depthIndex]);
+        const geometryBufferRenderer = this._scene.geometryBufferRenderer;
+        if (!geometryBufferRenderer) {
+            return;
         }
+        const depthIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE);
+        effect.setTexture("depthSampler", geometryBufferRenderer.getGBuffer().textures[depthIndex]);
+        const wnormalIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.NORMAL_TEXTURE_TYPE);
+        effect.setTexture("worldNormalSampler", geometryBufferRenderer.getGBuffer().textures[wnormalIndex]);
     }
 
     /**

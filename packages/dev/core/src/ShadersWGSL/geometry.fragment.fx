@@ -14,7 +14,7 @@ varying vViewPos: vec4f;
 varying vPositionW: vec3f;
 #endif
 
-#ifdef VELOCITY
+#if defined(VELOCITY) || defined(VELOCITY_LINEAR)
 varying vCurrentPosition: vec4f;
 varying vPreviousPosition: vec4f;
 #endif
@@ -115,6 +115,14 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         velocity =  vec2f(pow(velocity.x, 1.0 / 3.0), pow(velocity.y, 1.0 / 3.0)) * sign(a - b) * 0.5 + 0.5;
 
         fragData[VELOCITY_INDEX] =  vec4f(velocity, 0.0, 1.0);
+    #endif
+
+    #ifdef VELOCITY_LINEAR
+        var velocity : vec2f = vec2f(0.5) * ((input.vPreviousPosition.xy /
+                                          input.vPreviousPosition.w) -
+                                         (input.vCurrentPosition.xy /
+                                          input.vCurrentPosition.w));
+        fragData[VELOCITY_LINEAR_INDEX] = vec4f(velocity, 0.0, writeGeometryInfo);
     #endif
 
     #ifdef REFLECTIVITY

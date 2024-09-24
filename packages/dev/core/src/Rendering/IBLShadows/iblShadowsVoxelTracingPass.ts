@@ -8,6 +8,7 @@ import type { IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
 import type { Effect } from "../../Materials/effect";
 import type { Camera } from "../../Cameras/camera";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { GeometryBufferRenderer } from "../../Rendering/geometryBufferRenderer";
 
 /**
  * Build cdf maps for IBL importance sampling during IBL shadow computation.
@@ -315,15 +316,16 @@ export class _IblShadowsVoxelTracingPass {
             effect.defines += "#define VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION 1u\n";
         }
 
-        const prePassRenderer = this._scene.prePassRenderer;
-        if (prePassRenderer) {
-            const wnormalIndex = prePassRenderer.getIndex(Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE);
-            const clipDepthIndex = prePassRenderer.getIndex(Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE);
-            const wPositionIndex = prePassRenderer.getIndex(Constants.PREPASS_POSITION_TEXTURE_TYPE);
-            if (wnormalIndex >= 0) effect.setTexture("worldNormalSampler", prePassRenderer.getRenderTarget().textures[wnormalIndex]);
-            if (clipDepthIndex >= 0) effect.setTexture("depthSampler", prePassRenderer.getRenderTarget().textures[clipDepthIndex]);
-            if (wPositionIndex >= 0) effect.setTexture("worldPositionSampler", prePassRenderer.getRenderTarget().textures[wPositionIndex]);
+        const geometryBufferRenderer = this._scene.geometryBufferRenderer;
+        if (!geometryBufferRenderer) {
+            return;
         }
+        const depthIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE);
+        effect.setTexture("depthSampler", geometryBufferRenderer.getGBuffer().textures[depthIndex]);
+        const wnormalIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.NORMAL_TEXTURE_TYPE);
+        effect.setTexture("worldNormalSampler", geometryBufferRenderer.getGBuffer().textures[wnormalIndex]);
+        const wPositionIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.POSITION_TEXTURE_TYPE);
+        effect.setTexture("worldPositionSampler", geometryBufferRenderer.getGBuffer().textures[wPositionIndex]);
     }
 
     /**
