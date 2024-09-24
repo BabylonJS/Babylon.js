@@ -520,7 +520,7 @@ export class Viewer implements IDisposable {
         this._camera.lowerRadiusLimit = radius * 0.01;
         this._camera.wheelPrecision = 100 / radius;
         this._camera.alpha = Math.PI / 2;
-        this._camera.beta = Math.PI / 2;
+        this._camera.beta = Math.PI / 2.4;
         this._camera.radius = radius;
         this._camera.minZ = radius * 0.01;
         this._camera.maxZ = radius * 1000;
