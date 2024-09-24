@@ -190,7 +190,16 @@ export class SpriteRenderer {
         let offsets: VertexBuffer;
 
         if (this._useInstancing) {
-            const spriteData = new Float32Array([0, 0, 1, 0, 0, 1, 1, 1]);
+            const spriteData = new Float32Array([
+                this._epsilon,
+                this._epsilon,
+                1 - this._epsilon,
+                this._epsilon,
+                this._epsilon,
+                1 - this._epsilon,
+                1 - this._epsilon,
+                1 - this._epsilon,
+            ]);
             this._spriteBuffer = new Buffer(engine, spriteData, false, 2);
             offsets = this._spriteBuffer.createVertexBuffer("offsets", 0, 2);
         } else {
