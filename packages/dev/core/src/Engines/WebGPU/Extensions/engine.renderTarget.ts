@@ -61,6 +61,8 @@ ThinWebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSi
         fullOptions.colorAttachment = options.colorAttachment;
         fullOptions.samples = options.samples;
         fullOptions.label = options.label;
+        fullOptions.format = options.format;
+        fullOptions.type = options.type;
     } else {
         fullOptions.generateMipMaps = <boolean>options;
         fullOptions.generateDepthBuffer = true;
