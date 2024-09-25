@@ -1861,7 +1861,7 @@ export class StandardMaterial extends PushMaterial {
 
             // View
             if (
-                (isFullScene && scene.fogEnabled && mesh.applyFog && scene.fogMode !== Constants.FOGMODE_NONE) ||
+                (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Constants.FOGMODE_NONE) ||
                 this._reflectionTexture ||
                 this._refractionTexture ||
                 mesh.receiveShadows ||

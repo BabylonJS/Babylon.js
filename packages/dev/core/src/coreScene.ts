@@ -1,8 +1,10 @@
 import type { Camera } from "./Cameras/camera";
+import { Constants } from "./Engines";
 import type { AbstractEngine, ISceneLike } from "./Engines/abstractEngine";
 import type { Effect } from "./Materials/effect";
-import type { Material } from "./Materials/material";
+import type { BaseTexture } from "./Materials/Textures/baseTexture";
 import { UniformBuffer } from "./Materials/uniformBuffer";
+import { Color3 } from "./Maths/math.color";
 import { Frustum } from "./Maths/math.frustum";
 import type { Plane } from "./Maths/math.plane";
 import type { Vector3, Vector4 } from "./Maths/math.vector";
@@ -17,13 +19,24 @@ import { Observable } from "./Misc/observable";
 import type { Observer } from "./Misc/observable";
 import type { WebRequest } from "./Misc/webRequest";
 import type { IOfflineProvider } from "./Offline/IOfflineProvider";
-import type { IRenderingManagerAutoClearSetup } from "./Rendering/renderingManager";
 import type { Nullable } from "./types";
 
 /**
  * Minimal scene class. Where Scene is doint all the heavy lifting at the price of file size, CoreScene is a minimal version of Scene.
+ * @experimental This class is still under heavy development and is not ready for production use.
  */
 export class CoreScene implements ISceneLike, IClipPlanesHolder {
+    /**
+     * Gets or sets the minimum deltatime when deterministic lock step is enabled
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#deterministic-lockstep
+     */
+    public static MinDeltaTime = 1.0;
+    /**
+     * Gets or sets the maximum deltatime when deterministic lock step is enabled
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#deterministic-lockstep
+     */
+    public static MaxDeltaTime = 1000.0;
+
     /** @internal */
     public _animationTime: number = 0;
 
@@ -92,6 +105,21 @@ export class CoreScene implements ISceneLike, IClipPlanesHolder {
      * An event triggered when SceneLoader.Append or SceneLoader.Load or SceneLoader.ImportMesh were successfully executed
      */
     public onDataLoadedObservable = new Observable<CoreScene>();
+
+    /**
+     * Defines if texture loading must be delayed
+     * If true, textures will only be loaded when they need to be rendered
+     */
+    public useDelayedTextureLoading: boolean;
+
+    protected _animationRatio: number;
+    /**
+     * Gets the animation ratio (which is 1.0 is the scene renders at 60fps and 2 if the scene renders at 30fps, etc.)
+     * @returns a number
+     */
+    public getAnimationRatio(): number {
+        return this._animationRatio !== undefined ? this._animationRatio : 1;
+    }
 
     /**
      * This function can help adding any object to the list of data awaited to be ready in order to check for a complete scene loading.
@@ -256,19 +284,37 @@ export class CoreScene implements ISceneLike, IClipPlanesHolder {
     }
 
     /**
-     * Gets the current auto clear configuration for one rendering group of the rendering
-     * manager.
-     * @param index the rendering group index to get the information for
-     * @returns The auto clear setup for the requested rendering group
+     * This is use to store the default BRDF lookup for PBR materials in your scene.
+     * It should only be one of the following (if not the default embedded one):
+     * * For uncorrelated BRDF (pbr.brdf.useEnergyConservation = false and pbr.brdf.useSmithVisibilityHeightCorrelated = false) : https://assets.babylonjs.com/environments/uncorrelatedBRDF.dds
+     * * For correlated BRDF (pbr.brdf.useEnergyConservation = false and pbr.brdf.useSmithVisibilityHeightCorrelated = true) : https://assets.babylonjs.com/environments/correlatedBRDF.dds
+     * * For correlated multi scattering BRDF (pbr.brdf.useEnergyConservation = true and pbr.brdf.useSmithVisibilityHeightCorrelated = true) : https://assets.babylonjs.com/environments/correlatedMSBRDF.dds
+     * The material properties need to be setup according to the type of texture in use.
      */
-    public getAutoClearDepthStencilSetup?: (index: number) => IRenderingManagerAutoClearSetup;
+    public environmentBRDFTexture: BaseTexture;
 
+    /** @internal */
+    protected _environmentTexture: Nullable<BaseTexture> = null;
     /**
-     * Will flag all materials as dirty to trigger new shader compilation
-     * @param flag defines the flag used to specify which material part must be marked as dirty
-     * @param predicate If not null, it will be used to specify if a material has to be marked as dirty
+     * Texture used in all pbr material as the reflection texture.
+     * As in the majority of the scene they are the same (exception for multi room and so on),
+     * this is easier to reference from here than from all the materials.
      */
-    public markAllMaterialsAsDirty?: (flag: number, predicate?: (mat: Material) => boolean) => void;
+    public get environmentTexture(): Nullable<BaseTexture> {
+        return this._environmentTexture;
+    }
+    /**
+     * Texture used in all pbr material as the reflection texture.
+     * As in the majority of the scene they are the same (exception for multi room and so on),
+     * this is easier to set here than in all the materials.
+     */
+    public set environmentTexture(value: Nullable<BaseTexture>) {
+        if (this._environmentTexture === value) {
+            return;
+        }
+
+        this._environmentTexture = value;
+    }
 
     /** @internal */
     public _viewMatrix: Matrix;
@@ -463,12 +509,172 @@ export class CoreScene implements ISceneLike, IClipPlanesHolder {
         return ubo;
     }
 
+    // Fog
+
+    protected _fogEnabled = true;
+    /**
+     * Gets or sets a boolean indicating if fog is enabled on this scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/environment_introduction#fog
+     * (Default is true)
+     */
+    public set fogEnabled(value: boolean) {
+        if (this._fogEnabled === value) {
+            return;
+        }
+        this._fogEnabled = value;
+    }
+    public get fogEnabled(): boolean {
+        return this._fogEnabled;
+    }
+
+    protected _fogMode = Constants.FOGMODE_NONE;
+    /**
+     * Gets or sets the fog mode to use
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/environment_introduction#fog
+     * | mode | value |
+     * | --- | --- |
+     * | FOGMODE_NONE | 0 |
+     * | FOGMODE_EXP | 1 |
+     * | FOGMODE_EXP2 | 2 |
+     * | FOGMODE_LINEAR | 3 |
+     */
+    public set fogMode(value: number) {
+        if (this._fogMode === value) {
+            return;
+        }
+        this._fogMode = value;
+    }
+    public get fogMode(): number {
+        return this._fogMode;
+    }
+
+    /**
+     * Gets or sets the fog color to use
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/environment_introduction#fog
+     * (Default is Color3(0.2, 0.2, 0.3))
+     */
+    public fogColor = new Color3(0.2, 0.2, 0.3);
+    /**
+     * Gets or sets the fog density to use
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/environment_introduction#fog
+     * (Default is 0.1)
+     */
+    public fogDensity = 0.1;
+    /**
+     * Gets or sets the fog start distance to use
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/environment_introduction#fog
+     * (Default is 0)
+     */
+    public fogStart = 0;
+    /**
+     * Gets or sets the fog end distance to use
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/environment_introduction#fog
+     * (Default is 1000)
+     */
+    public fogEnd = 1000.0;
+
     /**
      * Creates a new CoreScene
      * @param engine defines the engine to use to render this scene
      */
     constructor(engine: AbstractEngine) {
         this._engine = engine;
+    }
+
+    // Deterministic lockstep
+    private _timeAccumulator: number = 0;
+    private _currentStepId: number = 0;
+    private _currentInternalStep: number = 0;
+
+    /**
+     * An event triggered before calculating deterministic simulation step
+     */
+    public onBeforeStepObservable = new Observable<CoreScene>();
+
+    /**
+     * An event triggered after calculating deterministic simulation step
+     */
+    public onAfterStepObservable = new Observable<CoreScene>();
+
+    /**
+     * An event triggered after animations processing
+     */
+    public onAfterAnimationsObservable = new Observable<CoreScene>();
+
+    /**
+     * Sets the step Id used by deterministic lock step
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#deterministic-lockstep
+     * @param newStepId defines the step Id
+     */
+    public setStepId(newStepId: number): void {
+        this._currentStepId = newStepId;
+    }
+
+    /**
+     * Gets the step Id used by deterministic lock step
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#deterministic-lockstep
+     * @returns the step Id
+     */
+    public getStepId(): number {
+        return this._currentStepId;
+    }
+
+    /**
+     * Gets the internal step used by deterministic lock step
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#deterministic-lockstep
+     * @returns the internal step
+     */
+    public getInternalStep(): number {
+        return this._currentInternalStep;
+    }
+
+    /** Execute all animations (for a frame) */
+    public animate() {
+        if (this._engine.isDeterministicLockStep()) {
+            let deltaTime = Math.max(CoreScene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), CoreScene.MaxDeltaTime)) + this._timeAccumulator;
+
+            const defaultFrameTime = this._engine.getTimeStep();
+            const defaultFPS = 1000.0 / defaultFrameTime / 1000.0;
+
+            let stepsTaken = 0;
+
+            const maxSubSteps = this._engine.getLockstepMaxSteps();
+
+            let internalSteps = Math.floor(deltaTime / defaultFrameTime);
+            internalSteps = Math.min(internalSteps, maxSubSteps);
+
+            while (deltaTime > 0 && stepsTaken < internalSteps) {
+                this.onBeforeStepObservable.notifyObservers(this);
+
+                // Animations
+                this._animationRatio = defaultFrameTime * defaultFPS;
+                this._animate(defaultFrameTime);
+                this.onAfterAnimationsObservable.notifyObservers(this);
+
+                this._animationExtraStep(defaultFrameTime);
+
+                this.onAfterStepObservable.notifyObservers(this);
+                this._currentStepId++;
+
+                stepsTaken++;
+                deltaTime -= defaultFrameTime;
+            }
+
+            this._timeAccumulator = deltaTime < 0 ? 0 : deltaTime;
+        } else {
+            // Animations
+            const deltaTime = this.useConstantAnimationDeltaTime ? 16 : Math.max(CoreScene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), CoreScene.MaxDeltaTime));
+            this._animationRatio = deltaTime * (60.0 / 1000.0);
+            this._animate();
+            this.onAfterAnimationsObservable.notifyObservers(this);
+
+            this._animationExtraStep(deltaTime);
+        }
+    }
+
+    /** @internal */
+    protected _animationExtraStep(_frameTime: number) {
+        // Nothing to do
     }
 
     private _activeRequests = new Array<IFileRequest>();
@@ -646,6 +852,9 @@ export class CoreScene implements ISceneLike, IClipPlanesHolder {
      */
     public dispose(): void {
         this.onDataLoadedObservable.clear();
+        this.onAfterStepObservable.clear();
+        this.onBeforeStepObservable.clear();
+        this.onAfterAnimationsObservable.clear();
 
         // Abort active requests
         const activeRequests = this._activeRequests.slice();

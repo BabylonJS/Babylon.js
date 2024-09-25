@@ -10,12 +10,12 @@ import type { SubMesh } from "../../Meshes/subMesh";
 import type { NodeMaterial, NodeMaterialDefines } from "./nodeMaterial";
 import type { InputBlock } from "./Blocks/Input/inputBlock";
 import { UniqueIdGenerator } from "../../Misc/uniqueIdGenerator";
-import type { Scene } from "../../scene";
 import { GetClass } from "../../Misc/typeStore";
 import type { EffectFallbacks } from "../effectFallbacks";
 import { Logger } from "core/Misc/logger";
 import { ShaderLanguage } from "../shaderLanguage";
 import { Observable } from "core/Misc/observable";
+import type { CoreScene } from "core/coreScene";
 
 /**
  * Defines a block that can be used inside a node based material
@@ -876,7 +876,7 @@ export class NodeMaterialBlock {
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @returns a copy of the current block
      */
-    public clone(scene: Scene, rootUrl: string = "") {
+    public clone(scene: CoreScene, rootUrl: string = "") {
         const serializationObject = this.serialize();
 
         const blockType = GetClass(serializationObject.customType);
@@ -922,7 +922,7 @@ export class NodeMaterialBlock {
      * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string, urlRewriter?: (url: string) => string) {
+    public _deserialize(serializationObject: any, scene: CoreScene, rootUrl: string, urlRewriter?: (url: string) => string) {
         this.name = serializationObject.name;
         this.comments = serializationObject.comments;
         this.visibleInInspector = !!serializationObject.visibleInInspector;

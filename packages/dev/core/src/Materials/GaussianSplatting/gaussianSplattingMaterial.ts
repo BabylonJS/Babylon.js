@@ -2,7 +2,6 @@ import type { SubMesh } from "../../Meshes/subMesh";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { Mesh } from "../../Meshes/mesh";
 import type { IEffectCreationOptions } from "../../Materials/effect";
-import type { Scene } from "../../scene";
 import type { Matrix } from "../../Maths/math.vector";
 import type { GaussianSplattingMesh } from "core/Meshes";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
@@ -24,6 +23,8 @@ import {
     PrepareDefinesForMisc,
     PrepareUniformsAndSamplersList,
 } from "../materialHelper.functions";
+import type { CoreScene } from "core/coreScene";
+import { IsFullScene } from "core/coreScene.functions";
 
 /**
  * @internal
@@ -58,7 +59,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
      * @param name The friendly name of the material
      * @param scene The scene to add the material to
      */
-    constructor(name: string, scene?: Scene) {
+    constructor(name: string, scene?: CoreScene) {
         super(name, scene);
 
         this.backFaceCulling = false;
@@ -129,7 +130,9 @@ export class GaussianSplattingMaterial extends PushMaterial {
         // Get correct effect
         if (defines.isDirty) {
             defines.markAsProcessed();
-            scene.resetCachedMaterial();
+            if (IsFullScene(scene)) {
+                scene.resetCachedMaterial();
+            }
 
             //Attributes
             const attribs = [VertexBuffer.PositionKind, "splatIndex"];
@@ -303,7 +306,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
      * @param rootUrl The root url of the assets the material depends upon
      * @returns the instantiated GaussianSplattingMaterial.
      */
-    public static override Parse(source: any, scene: Scene, rootUrl: string): GaussianSplattingMaterial {
+    public static override Parse(source: any, scene: CoreScene, rootUrl: string): GaussianSplattingMaterial {
         return SerializationHelper.Parse(() => new GaussianSplattingMaterial(source.name, scene), source, scene, rootUrl);
     }
 }

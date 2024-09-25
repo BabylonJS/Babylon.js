@@ -1,11 +1,11 @@
 import type { NodeMaterialConnectionPoint } from "./nodeMaterialBlockConnectionPoint";
 import type { NodeMaterialBlock } from "./nodeMaterialBlock";
 import type { InputBlock } from "./Blocks/Input/inputBlock";
-import type { Scene } from "../../scene";
 import type { Immutable, Nullable } from "../../types";
 import type { NodeMaterial, NodeMaterialTextureBlocks } from "./nodeMaterial";
 import { Logger } from "core/Misc/logger";
 import type { Observable } from "core/Misc/observable";
+import type { CoreScene } from "core/coreScene";
 
 /**
  * Class used to store shared data between 2 NodeMaterialBuildState
@@ -104,7 +104,7 @@ export class NodeMaterialBuildStateSharedData {
     public verbose: boolean;
 
     /** Gets or sets the hosting scene */
-    public scene: Scene;
+    public scene: CoreScene;
 
     /**
      * Gets the compilation hints emitted at compilation time

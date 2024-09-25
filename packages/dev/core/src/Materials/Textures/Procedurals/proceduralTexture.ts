@@ -3,7 +3,8 @@ import { Observable } from "../../../Misc/observable";
 import type { Nullable } from "../../../types";
 import type { Scene } from "../../../scene";
 import type { Matrix, Vector4, Vector3, Vector2 } from "../../../Maths/math.vector";
-import type { Color4, Color3 } from "../../../Maths/math.color";
+import type { Color3 } from "../../../Maths/math.color";
+import { Color4 } from "../../../Maths/math.color";
 import type { AbstractEngine } from "../../../Engines/abstractEngine";
 import { VertexBuffer } from "../../../Buffers/buffer";
 import { SceneComponentConstants } from "../../../sceneComponent";
@@ -24,6 +25,8 @@ import { Constants } from "../../../Engines/constants";
 import { DrawWrapper } from "../../drawWrapper";
 import type { RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import type { CoreScene } from "core/coreScene";
+import { IsFullScene } from "core/coreScene.functions";
 
 /**
  * Options to create a procedural texture
@@ -162,7 +165,7 @@ export class ProceduralTexture extends Texture {
         name: string,
         size: TextureSize,
         fragment: any,
-        scene: Nullable<Scene>,
+        scene: Nullable<CoreScene>,
         fallbackTexture: Nullable<Texture> | IProceduralTextureCreationOptions = null,
         generateMipMaps = true,
         isCube = false,
@@ -181,12 +184,14 @@ export class ProceduralTexture extends Texture {
         this._shaderLanguage = this._options.shaderLanguage ?? ShaderLanguage.GLSL;
 
         scene = this.getScene() || EngineStore.LastCreatedScene!;
-        let component = scene._getComponent(SceneComponentConstants.NAME_PROCEDURALTEXTURE);
-        if (!component) {
-            component = new ProceduralTextureSceneComponent(scene);
-            scene._addComponent(component);
+        if (IsFullScene(scene)) {
+            let component = scene._getComponent(SceneComponentConstants.NAME_PROCEDURALTEXTURE);
+            if (!component) {
+                component = new ProceduralTextureSceneComponent(scene);
+                scene._addComponent(component);
+            }
+            scene.proceduralTextures.push(this);
         }
-        scene.proceduralTextures.push(this);
 
         this._fullEngine = scene.getEngine();
 
@@ -740,7 +745,7 @@ export class ProceduralTexture extends Texture {
 
                 // Clear
                 if (this.autoClear) {
-                    engine.clear(scene.clearColor, true, false, false);
+                    engine.clear(IsFullScene(scene) ? scene.clearColor : new Color4(0, 0, 0, 0), true, false, false);
                 }
 
                 // Draw order
@@ -771,7 +776,7 @@ export class ProceduralTexture extends Texture {
 
                 // Clear
                 if (this.autoClear) {
-                    engine.clear(scene.clearColor, true, false, false);
+                    engine.clear(IsFullScene(scene) ? scene.clearColor : new Color4(0, 0, 0, 0), true, false, false);
                 }
 
                 // Draw order
@@ -827,10 +832,12 @@ export class ProceduralTexture extends Texture {
             return;
         }
 
-        const index = scene.proceduralTextures.indexOf(this);
+        if (IsFullScene(scene)) {
+            const index = scene.proceduralTextures.indexOf(this);
 
-        if (index >= 0) {
-            scene.proceduralTextures.splice(index, 1);
+            if (index >= 0) {
+                scene.proceduralTextures.splice(index, 1);
+            }
         }
 
         const vertexBuffer = this._vertexBuffers[VertexBuffer.PositionKind];

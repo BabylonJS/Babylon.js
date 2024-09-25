@@ -48,9 +48,6 @@ export function BindLogDepth(defines: any, effect: Effect, scene: CoreScene): vo
  * @param linearSpace Defines if the fog effect is applied in linear space
  */
 export function BindFogParameters(scene: CoreScene, mesh?: AbstractMesh, effect?: Effect, linearSpace = false): void {
-    if (!IsFullScene(scene)) {
-        return;
-    }
     if (effect && scene.fogEnabled && (!mesh || mesh.applyFog) && scene.fogMode !== Constants.FOGMODE_NONE) {
         effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
         // Convert fog color to linear space if used in a linear space computed shader.
@@ -378,9 +375,6 @@ export function HandleFallbacksForShadows(defines: any, fallbacks: EffectFallbac
  * @returns true if fog must be enabled
  */
 export function GetFogState(mesh: AbstractMesh, scene: CoreScene) {
-    if (!IsFullScene(scene)) {
-        return false;
-    }
     return scene.fogEnabled && mesh.applyFog && scene.fogMode !== Constants.FOGMODE_NONE;
 }
 

@@ -1,7 +1,8 @@
+import type { CoreScene } from "core/coreScene";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
-import type { Scene } from "../scene";
 import { RGBDTextureTools } from "./rgbdTextureTools";
+import { IsFullScene } from "core/coreScene.functions";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const _environmentBRDFBase64Texture =
@@ -14,14 +15,19 @@ let _instanceNumber = 0;
  * @param scene defines the hosting scene
  * @returns the environment BRDF texture
  */
-export const GetEnvironmentBRDFTexture = (scene: Scene): BaseTexture => {
+export const GetEnvironmentBRDFTexture = (scene: CoreScene): BaseTexture => {
     if (!scene.environmentBRDFTexture) {
         // Forces Delayed Texture Loading to prevent undefined error whilst setting RGBD values.
         const useDelayedTextureLoading = scene.useDelayedTextureLoading;
         scene.useDelayedTextureLoading = false;
 
-        const previousState = scene._blockEntityCollection;
-        scene._blockEntityCollection = false;
+        let previousState = false;
+        const isFullScene = IsFullScene(scene);
+
+        if (isFullScene) {
+            previousState = scene._blockEntityCollection;
+            scene._blockEntityCollection = false;
+        }
         const texture = Texture.CreateFromBase64String(
             _environmentBRDFBase64Texture,
             "EnvironmentBRDFTexture" + _instanceNumber++,
@@ -30,7 +36,9 @@ export const GetEnvironmentBRDFTexture = (scene: Scene): BaseTexture => {
             false,
             Texture.BILINEAR_SAMPLINGMODE
         );
-        scene._blockEntityCollection = previousState;
+        if (isFullScene) {
+            scene._blockEntityCollection = previousState;
+        }
         // BRDF Texture should not be cached here due to pre processing and redundant scene caches.
         const texturesCache = scene.getEngine().getLoadedTexturesCache();
         const index = texturesCache.indexOf(texture.getInternalTexture()!);
@@ -47,25 +55,27 @@ export const GetEnvironmentBRDFTexture = (scene: Scene): BaseTexture => {
 
         RGBDTextureTools.ExpandRGBDTexture(texture);
 
-        const observer = scene.getEngine().onContextRestoredObservable.add(() => {
-            texture.isRGBD = true;
-            /**
-             * Using scene.onBeforeRenderObservable instead of Tools.SetImmediate to check the texture's state of readiness allows us to check before any rendering occurs.
-             * When a context restore occurs, it gives ExpandRGBDTexture the ability to reset the state to false, preventing the texture from being used in any rendering.
-             * In WebGPU, not doing so would generate an error because ExpandRGBDTexture performs a _swapAndDie on the texture, which causes WebGPU caches to fail if the texture has already been used for rendering.
-             * Only when ExpandRGBDTexture has finished its work, the texture is ready to be used again.
-             */
-            const oo = scene.onBeforeRenderObservable.add(() => {
-                if (texture.isReady()) {
-                    scene.onBeforeRenderObservable.remove(oo);
-                    RGBDTextureTools.ExpandRGBDTexture(texture);
-                }
+        if (isFullScene) {
+            const observer = scene.getEngine().onContextRestoredObservable.add(() => {
+                texture.isRGBD = true;
+                /**
+                 * Using scene.onBeforeRenderObservable instead of Tools.SetImmediate to check the texture's state of readiness allows us to check before any rendering occurs.
+                 * When a context restore occurs, it gives ExpandRGBDTexture the ability to reset the state to false, preventing the texture from being used in any rendering.
+                 * In WebGPU, not doing so would generate an error because ExpandRGBDTexture performs a _swapAndDie on the texture, which causes WebGPU caches to fail if the texture has already been used for rendering.
+                 * Only when ExpandRGBDTexture has finished its work, the texture is ready to be used again.
+                 */
+                const oo = scene.onBeforeRenderObservable.add(() => {
+                    if (texture.isReady()) {
+                        scene.onBeforeRenderObservable.remove(oo);
+                        RGBDTextureTools.ExpandRGBDTexture(texture);
+                    }
+                });
             });
-        });
 
-        scene.onDisposeObservable.add(() => {
-            scene.getEngine().onContextRestoredObservable.remove(observer);
-        });
+            scene.onDisposeObservable.add(() => {
+                scene.getEngine().onContextRestoredObservable.remove(observer);
+            });
+        }
     }
 
     return scene.environmentBRDFTexture;

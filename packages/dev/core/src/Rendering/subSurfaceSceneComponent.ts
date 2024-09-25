@@ -20,8 +20,8 @@ AddParser(SceneComponentConstants.NAME_SUBSURFACE, (parsedData: any, scene: Scen
     }
 });
 
-declare module "../abstractScene" {
-    export interface AbstractScene {
+declare module "../scene" {
+    export interface Scene {
         /** @internal (Backing field) */
         _subSurfaceConfiguration: Nullable<SubSurfaceConfiguration>;
 

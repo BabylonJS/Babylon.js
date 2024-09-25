@@ -17,9 +17,10 @@ import { Constants } from "../../Engines/constants";
 import { MaterialDefines } from "../materialDefines";
 
 import type { Engine } from "../../Engines/engine";
-import type { Scene } from "../../scene";
 import type { PBRBaseMaterial } from "./pbrBaseMaterial";
 import { BindTextureMatrix, PrepareDefinesForMergedUV } from "../materialHelper.functions";
+import type { CoreScene } from "core/coreScene";
+import { IsFullScene } from "core/coreScene.functions";
 
 /**
  * @internal
@@ -105,6 +106,10 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
      * Useful for better scattering in the skins or foliages.
      */
     public get scatteringDiffusionProfile(): Nullable<Color3> {
+        if (!IsFullScene(this._scene)) {
+            return null;
+        }
+
         if (!this._scene.subSurfaceConfiguration) {
             return null;
         }
@@ -113,6 +118,10 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
     }
 
     public set scatteringDiffusionProfile(c: Nullable<Color3>) {
+        if (!IsFullScene(this._scene)) {
+            return;
+        }
+
         if (!this._scene.enableSubSurfaceForPrePass()) {
             // Not supported
             return;
@@ -332,7 +341,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public useGltfStyleTextures: boolean = true;
 
-    private _scene: Scene;
+    private _scene: CoreScene;
 
     /** @internal */
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
@@ -367,13 +376,13 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         this._internalMarkScenePrePassDirty = material._dirtyCallbacks[Constants.MATERIAL_PrePassDirtyFlag];
     }
 
-    public override isReadyForSubMesh(defines: MaterialSubSurfaceDefines, scene: Scene): boolean {
+    public override isReadyForSubMesh(defines: MaterialSubSurfaceDefines, scene: CoreScene): boolean {
         if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
             return true;
         }
-
+        const isFullScene = IsFullScene(scene);
         if (defines._areTexturesDirty) {
-            if (scene.texturesEnabled) {
+            if (isFullScene && scene.texturesEnabled) {
                 if (this._thicknessTexture && MaterialFlags.ThicknessTextureEnabled) {
                     if (!this._thicknessTexture.isReadyOrNotBlocking()) {
                         return false;
@@ -404,7 +413,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         return true;
     }
 
-    public override prepareDefinesBeforeAttributes(defines: MaterialSubSurfaceDefines, scene: Scene): void {
+    public override prepareDefinesBeforeAttributes(defines: MaterialSubSurfaceDefines, scene: CoreScene): void {
         if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
             defines.SUBSURFACE = false;
             defines.SS_DISPERSION = false;
@@ -436,7 +445,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
             defines.SS_TRANSLUCENCYCOLOR_TEXTUREDIRECTUV = 0;
             return;
         }
-
+        const isFullScene = IsFullScene(scene);
         if (defines._areTexturesDirty) {
             defines.SUBSURFACE = true;
 
@@ -465,7 +474,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
             defines.SS_TRANSLUCENCYCOLOR_TEXTURE = false;
 
             if (defines._areTexturesDirty) {
-                if (scene.texturesEnabled) {
+                if (isFullScene && scene.texturesEnabled) {
                     if (this._thicknessTexture && MaterialFlags.ThicknessTextureEnabled) {
                         PrepareDefinesForMergedUV(this._thicknessTexture, defines, "SS_THICKNESSANDMASK_TEXTURE");
                     }
@@ -490,7 +499,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
             defines.SS_TRANSLUCENCY_USE_INTENSITY_FROM_THICKNESS = this._useMaskFromThicknessTexture && !this._translucencyIntensityTexture;
 
             if (this._isRefractionEnabled) {
-                if (scene.texturesEnabled) {
+                if (isFullScene && scene.texturesEnabled) {
                     const refractionTexture = this._getRefractionTexture(scene);
                     if (refractionTexture && MaterialFlags.RefractionTextureEnabled) {
                         defines.SS_REFRACTION = true;
@@ -521,7 +530,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
      * @param engine defines the engine the material belongs to.
      * @param subMesh the submesh to bind data for
      */
-    public override hardBindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
+    public override hardBindForSubMesh(uniformBuffer: UniformBuffer, scene: CoreScene, engine: Engine, subMesh: SubMesh): void {
         if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
             return;
         }
@@ -536,7 +545,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         }
     }
 
-    public override bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
+    public override bindForSubMesh(uniformBuffer: UniformBuffer, scene: CoreScene, engine: Engine, subMesh: SubMesh): void {
         if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
             return;
         }
@@ -617,7 +626,8 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         }
 
         // Textures
-        if (scene.texturesEnabled) {
+        const isFullScene = IsFullScene(scene);
+        if (isFullScene && scene.texturesEnabled) {
             if (this._thicknessTexture && MaterialFlags.ThicknessTextureEnabled) {
                 uniformBuffer.setTexture("thicknessSampler", this._thicknessTexture);
             }
@@ -652,7 +662,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
      * @returns - Refraction texture if present.  If no refraction texture and refraction
      * is linked with transparency, returns environment texture.  Otherwise, returns null.
      */
-    private _getRefractionTexture(scene: Scene): Nullable<BaseTexture> {
+    private _getRefractionTexture(scene: CoreScene): Nullable<BaseTexture> {
         if (this._refractionTexture) {
             return this._refractionTexture;
         }

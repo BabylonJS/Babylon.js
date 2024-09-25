@@ -68,6 +68,7 @@ import {
 } from "../materialHelper.functions";
 import { ShaderLanguage } from "../shaderLanguage";
 import { UniformBuffer } from "../uniformBuffer";
+import { IsFullScene } from "core/coreScene.functions";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -804,7 +805,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * Default configuration related to image processing available in the PBR Material.
      */
     @serializeAsImageProcessingConfiguration()
-    protected _imageProcessingConfiguration: ImageProcessingConfiguration;
+    protected _imageProcessingConfiguration: Nullable<ImageProcessingConfiguration>;
 
     /**
      * Keep track of the image processing observer to allow dispose and replace.
@@ -826,8 +827,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         // Pick the scene configuration if needed.
-        if (!configuration) {
-            this._imageProcessingConfiguration = this.getScene().imageProcessingConfiguration;
+        const scene = this.getScene();
+        if (!configuration && IsFullScene(scene)) {
+            this._imageProcessingConfiguration = scene.imageProcessingConfiguration;
         } else {
             this._imageProcessingConfiguration = configuration;
         }
@@ -1098,12 +1100,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         const scene = this.getScene();
         const engine = scene.getEngine();
+        const isFullScene = IsFullScene(scene);
 
         if (defines._areTexturesDirty) {
             this._eventInfo.hasRenderTargetTextures = false;
             this._callbackPluginEventHasRenderTargetTextures(this._eventInfo);
             this._cacheHasRenderTargetTextures = this._eventInfo.hasRenderTargetTextures;
-            if (scene.texturesEnabled) {
+            if (isFullScene && scene.texturesEnabled) {
                 if (this._albedoTexture && MaterialFlags.DiffuseTextureEnabled) {
                     if (!this._albedoTexture.isReadyOrNotBlocking()) {
                         return false;
@@ -1243,7 +1246,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     return false;
                 }
             } else {
-                scene.resetCachedMaterial();
+                if (isFullScene) {
+                    scene.resetCachedMaterial();
+                }
                 subMesh.setEffect(effect, defines, this._materialContext);
             }
         }
@@ -1582,6 +1587,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     ): void {
         const scene = this.getScene();
         const engine = scene.getEngine();
+        const isFullScene = IsFullScene(scene);
 
         // Lights
         PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
@@ -1591,7 +1597,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         PrepareDefinesForMultiview(scene, defines);
 
         // PrePass
-        const oit = this.needAlphaBlendingForMesh(mesh) && this.getScene().useOrderIndependentTransparency;
+        const oit = this.needAlphaBlendingForMesh(mesh) && isFullScene && scene.useOrderIndependentTransparency;
         PrepareDefinesForPrePass(scene, defines, this.canRenderToMRT && !oit);
 
         // Order independant transparency
@@ -1604,7 +1610,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             for (let i = 1; i <= Constants.MAX_SUPPORTED_UV_SETS; ++i) {
                 defines["MAINUV" + i] = false;
             }
-            if (scene.texturesEnabled) {
+            if (isFullScene && scene.texturesEnabled) {
                 defines.ALBEDODIRECTUV = 0;
                 defines.AMBIENTDIRECTUV = 0;
                 defines.OPACITYDIRECTUV = 0;
@@ -2042,6 +2048,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     public override bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         const scene = this.getScene();
+        const isFullScene = IsFullScene(scene);
 
         const defines = <PBRMaterialDefines>subMesh.materialDefines;
         if (!defines) {
@@ -2065,7 +2072,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         // Binding unconditionally
         this._uniformBuffer.bindToEffect(effect, "Material");
 
-        this.prePassConfiguration.bindForSubMesh(this._activeEffect, scene, mesh, world, this.isFrozen);
+        if (isFullScene) {
+            this.prePassConfiguration.bindForSubMesh(this._activeEffect, scene, mesh, world, this.isFrozen);
+        }
 
         this._eventInfo.subMesh = subMesh;
         this._callbackPluginEventHardBindForSubMesh(this._eventInfo);
@@ -2089,7 +2098,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
             if (!ubo.useUbo || !this.isFrozen || !ubo.isSync || subMesh._drawWrapper._forceRebindOnNextCall) {
                 // Texture uniforms
-                if (scene.texturesEnabled) {
+                if (isFullScene && scene.texturesEnabled) {
                     if (this._albedoTexture && MaterialFlags.DiffuseTextureEnabled) {
                         ubo.updateFloat2("vAlbedoInfos", this._albedoTexture.coordinatesIndex, this._albedoTexture.level);
                         BindTextureMatrix(this._albedoTexture, ubo, "albedo");
@@ -2259,21 +2268,22 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 // Misc
                 this._lightingInfos.x = this._directIntensity;
                 this._lightingInfos.y = this._emissiveIntensity;
-                this._lightingInfos.z = this._environmentIntensity * scene.environmentIntensity;
+                this._lightingInfos.z = this._environmentIntensity * (isFullScene ? scene.environmentIntensity : 1);
                 this._lightingInfos.w = this._specularIntensity;
 
                 ubo.updateVector4("vLightingIntensity", this._lightingInfos);
 
                 // Colors
-                scene.ambientColor.multiplyToRef(this._ambientColor, this._globalAmbientColor);
-
-                ubo.updateColor3("vAmbientColor", this._globalAmbientColor);
+                if (isFullScene) {
+                    scene.ambientColor.multiplyToRef(this._ambientColor, this._globalAmbientColor);
+                    ubo.updateColor3("vAmbientColor", this._globalAmbientColor);
+                }
 
                 ubo.updateFloat2("vDebugMode", this.debugLimit, this.debugFactor);
             }
 
             // Textures
-            if (scene.texturesEnabled) {
+            if (isFullScene && scene.texturesEnabled) {
                 if (this._albedoTexture && MaterialFlags.DiffuseTextureEnabled) {
                     ubo.setTexture("albedoSampler", this._albedoTexture);
                 }
@@ -2338,8 +2348,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             }
 
             // OIT with depth peeling
-            if (this.getScene().useOrderIndependentTransparency && this.needAlphaBlendingForMesh(mesh)) {
-                this.getScene().depthPeelingRenderer!.bind(effect);
+            if (isFullScene && scene.useOrderIndependentTransparency && this.needAlphaBlendingForMesh(mesh)) {
+                scene.depthPeelingRenderer!.bind(effect);
             }
 
             this._eventInfo.subMesh = subMesh;
@@ -2592,10 +2602,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         if (!this.subSurface?.isScatteringEnabled) {
             return false;
         }
-
-        const subSurfaceConfiguration = this.getScene().enableSubSurfaceForPrePass();
-        if (subSurfaceConfiguration) {
-            subSurfaceConfiguration.enabled = true;
+        const scene = this.getScene();
+        const isFullScene = IsFullScene(scene);
+        if (isFullScene) {
+            const subSurfaceConfiguration = scene.enableSubSurfaceForPrePass();
+            if (subSurfaceConfiguration) {
+                subSurfaceConfiguration.enabled = true;
+            }
         }
 
         return true;

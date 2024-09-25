@@ -7,6 +7,7 @@ import type { WebXRSessionManager } from "./webXRSessionManager";
 import { Viewport } from "../Maths/math.viewport";
 import { Observable } from "../Misc/observable";
 import { WebXRTrackingState } from "./webXRTypes";
+import { IsFullScene } from "core/coreScene.functions";
 
 /**
  * WebXR Camera which holds the views for the xrSession
@@ -289,13 +290,16 @@ export class WebXRCamera extends FreeCamera {
                 }
             }
             // add any custom render targets to this camera, if available in the scene
-            const customRenderTargets = this.getScene().customRenderTargets;
-            // use a for loop
-            for (let i = 0; i < customRenderTargets.length; i++) {
-                const rt = customRenderTargets[i];
-                // make sure we don't add the same render target twice
-                if (currentRig.customRenderTargets.indexOf(rt) === -1) {
-                    currentRig.customRenderTargets.push(rt);
+            const scene = this.getScene();
+            if (IsFullScene(scene)) {
+                const customRenderTargets = scene.customRenderTargets;
+                // use a for loop
+                for (let i = 0; i < customRenderTargets.length; i++) {
+                    const rt = customRenderTargets[i];
+                    // make sure we don't add the same render target twice
+                    if (currentRig.customRenderTargets.indexOf(rt) === -1) {
+                        currentRig.customRenderTargets.push(rt);
+                    }
                 }
             }
             // Update view/projection matrix

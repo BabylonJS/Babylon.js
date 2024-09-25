@@ -1,7 +1,6 @@
 import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
-import { Scene } from "../scene";
 import { EngineStore } from "../Engines/engineStore";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { AnimationGroup } from "../Animations/animationGroup";
@@ -22,6 +21,9 @@ import { RuntimeError, ErrorCodes } from "../Misc/error";
 import type { ISpriteManager } from "../Sprites/spriteManager";
 import { RandomGUID } from "../Misc/guid";
 import { AbstractEngine } from "../Engines/abstractEngine";
+import type { CoreScene } from "core/coreScene";
+import { IsFullScene } from "core/coreScene.functions";
+import { Scene } from "core/scene";
 
 /**
  * Type used for the success callback of ImportMesh
@@ -165,7 +167,7 @@ export interface ISceneLoaderPluginBase extends ISceneLoaderPluginMetadata {
      * @returns a file request object
      */
     loadFile?(
-        scene: Scene,
+        scene: CoreScene,
         fileOrUrl: File | string | ArrayBufferView,
         rootUrl: string,
         onSuccess: (data: unknown, responseURL?: string) => void,
@@ -181,7 +183,7 @@ export interface ISceneLoaderPluginBase extends ISceneLoaderPluginMetadata {
      * @param data string containing the data
      * @returns data to pass to the plugin
      */
-    directLoad?(scene: Scene, data: string): unknown | Promise<unknown>;
+    directLoad?(scene: CoreScene, data: string): unknown | Promise<unknown>;
 
     /**
      * The callback that allows custom handling of the root url based on the response url.
@@ -210,7 +212,7 @@ export interface ISceneLoaderPlugin extends ISceneLoaderPluginBase {
      */
     importMesh(
         meshesNames: string | readonly string[] | null | undefined,
-        scene: Scene,
+        scene: CoreScene,
         data: unknown,
         rootUrl: string,
         meshes: AbstractMesh[],
@@ -227,7 +229,7 @@ export interface ISceneLoaderPlugin extends ISceneLoaderPluginBase {
      * @param onError The callback when import fails
      * @returns True if successful or false otherwise
      */
-    load(scene: Scene, data: unknown, rootUrl: string, onError?: (message: string, exception?: any) => void): boolean;
+    load(scene: CoreScene, data: unknown, rootUrl: string, onError?: (message: string, exception?: any) => void): boolean;
 
     /**
      * Load into an asset container.
@@ -237,7 +239,7 @@ export interface ISceneLoaderPlugin extends ISceneLoaderPluginBase {
      * @param onError The callback when import fails
      * @returns The loaded asset container
      */
-    loadAssetContainer(scene: Scene, data: unknown, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer;
+    loadAssetContainer(scene: CoreScene, data: unknown, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer;
 }
 
 /**
@@ -256,7 +258,7 @@ export interface ISceneLoaderPluginAsync extends ISceneLoaderPluginBase {
      */
     importMeshAsync(
         meshesNames: string | readonly string[] | null | undefined,
-        scene: Scene,
+        scene: CoreScene,
         data: unknown,
         rootUrl: string,
         onProgress?: (event: ISceneLoaderProgressEvent) => void,
@@ -272,7 +274,7 @@ export interface ISceneLoaderPluginAsync extends ISceneLoaderPluginBase {
      * @param fileName Defines the name of the file to load
      * @returns Nothing
      */
-    loadAsync(scene: Scene, data: unknown, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
+    loadAsync(scene: CoreScene, data: unknown, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
 
     /**
      * Load into an asset container.
@@ -283,7 +285,7 @@ export interface ISceneLoaderPluginAsync extends ISceneLoaderPluginBase {
      * @param fileName Defines the name of the file to load
      * @returns The loaded asset container
      */
-    loadAssetContainerAsync(scene: Scene, data: unknown, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer>;
+    loadAssetContainerAsync(scene: CoreScene, data: unknown, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer>;
 }
 
 /**
@@ -547,7 +549,7 @@ function formatErrorMessage(fileInfo: IFileInfo, message?: string, exception?: a
 
 function loadData(
     fileInfo: IFileInfo,
-    scene: Scene,
+    scene: CoreScene,
     onSuccess: (plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync, data: unknown, responseURL?: string) => void,
     onProgress: ((event: ISceneLoaderProgressEvent) => void) | undefined,
     onError: (message?: string, exception?: any) => void,
@@ -680,10 +682,12 @@ function loadData(
         if (canUseOfflineSupport) {
             // Also check for exceptions
             let exceptionFound = false;
-            for (const regex of scene.disableOfflineSupportExceptionRules) {
-                if (regex.test(fileInfo.url)) {
-                    exceptionFound = true;
-                    break;
+            if (IsFullScene(scene)) {
+                for (const regex of scene.disableOfflineSupportExceptionRules) {
+                    if (regex.test(fileInfo.url)) {
+                        exceptionFound = true;
+                        break;
+                    }
                 }
             }
 
@@ -770,10 +774,10 @@ function importMesh(
     meshNames: string | readonly string[] | null | undefined,
     rootUrl: string,
     sceneFilename: SceneSource = "",
-    scene: Nullable<Scene> = EngineStore.LastCreatedScene,
+    scene: Nullable<CoreScene> = EngineStore.LastCreatedScene,
     onSuccess: Nullable<SceneLoaderSuccessCallback> = null,
     onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
-    onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
+    onError: Nullable<(scene: CoreScene, message: string, exception?: any) => void> = null,
     pluginExtension: Nullable<string> = null,
     name = "",
     pluginOptions: PluginOptions = {}
@@ -819,7 +823,9 @@ function importMesh(
         : undefined;
 
     const successHandler: SceneLoaderSuccessCallback = (meshes, particleSystems, skeletons, animationGroups, transformNodes, geometries, lights, spriteManagers) => {
-        scene.importedMeshesFiles.push(fileInfo.url);
+        if (IsFullScene(scene)) {
+            scene.importedMeshesFiles.push(fileInfo.url);
+        }
 
         if (onSuccess) {
             try {
@@ -850,14 +856,18 @@ function importMesh(
                     return;
                 }
 
-                scene.loadingPluginName = plugin.name;
+                if (IsFullScene(scene)) {
+                    scene.loadingPluginName = plugin.name;
+                }
                 successHandler(meshes, particleSystems, skeletons, [], [], [], [], []);
             } else {
                 const asyncedPlugin = <ISceneLoaderPluginAsync>plugin;
                 asyncedPlugin
                     .importMeshAsync(meshNames, scene, data, fileInfo.rootUrl, progressHandler, fileInfo.name)
                     .then((result) => {
-                        scene.loadingPluginName = plugin.name;
+                        if (IsFullScene(scene)) {
+                            scene.loadingPluginName = plugin.name;
+                        }
                         successHandler(
                             result.meshes,
                             result.particleSystems,
@@ -887,7 +897,7 @@ function importMeshAsyncCore(
     meshNames: string | readonly string[] | null | undefined,
     rootUrl: string,
     sceneFilename?: SceneSource,
-    scene?: Nullable<Scene>,
+    scene?: Nullable<CoreScene>,
     onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
     pluginExtension?: Nullable<string>,
     name?: string,
@@ -926,9 +936,9 @@ function loadScene(
     rootUrl: string,
     sceneFilename: SceneSource = "",
     engine: Nullable<AbstractEngine> = EngineStore.LastCreatedEngine,
-    onSuccess: Nullable<(scene: Scene) => void> = null,
+    onSuccess: Nullable<(scene: CoreScene) => void> = null,
     onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
-    onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
+    onError: Nullable<(scene: CoreScene, message: string, exception?: any) => void> = null,
     pluginExtension: Nullable<string> = null,
     name = "",
     pluginOptions: PluginOptions = {}
@@ -949,7 +959,7 @@ function loadScene(
  * @param options an object that configures aspects of how the scene is loaded
  * @returns The loaded scene
  */
-export function loadSceneAsync(source: SceneSource, engine: AbstractEngine, options?: LoadOptions): Promise<Scene> {
+export function loadSceneAsync(source: SceneSource, engine: AbstractEngine, options?: LoadOptions): Promise<CoreScene> {
     const { rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = options ?? {};
     return loadSceneAsyncCore(rootUrl, source, engine, onProgress, pluginExtension, name, pluginOptions);
 }
@@ -962,7 +972,7 @@ function loadSceneAsyncCore(
     pluginExtension?: Nullable<string>,
     name?: string,
     pluginOptions?: PluginOptions
-): Promise<Scene> {
+): Promise<CoreScene> {
     return new Promise((resolve, reject) => {
         loadScene(
             rootUrl,
@@ -985,10 +995,10 @@ function loadSceneAsyncCore(
 function append(
     rootUrl: string,
     sceneFilename: SceneSource = "",
-    scene: Nullable<Scene> = EngineStore.LastCreatedScene,
-    onSuccess: Nullable<(scene: Scene) => void> = null,
+    scene: Nullable<CoreScene> = EngineStore.LastCreatedScene,
+    onSuccess: Nullable<(scene: CoreScene) => void> = null,
     onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
-    onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
+    onError: Nullable<(scene: CoreScene, message: string, exception?: any) => void> = null,
     pluginExtension: Nullable<string> = null,
     name = "",
     pluginOptions: PluginOptions = {}
@@ -1012,11 +1022,13 @@ function append(
 
     if (SceneLoaderFlags.ShowLoadingScreen && !showingLoadingScreen) {
         showingLoadingScreen = true;
-        scene.getEngine().displayLoadingUI();
-        scene.executeWhenReady(() => {
-            scene.getEngine().hideLoadingUI();
-            showingLoadingScreen = false;
-        });
+        if (IsFullScene(scene)) {
+            scene.getEngine().displayLoadingUI();
+            scene.executeWhenReady(() => {
+                scene.getEngine().hideLoadingUI();
+                showingLoadingScreen = false;
+            });
+        }
     }
 
     const errorHandler = (message?: string, exception?: any) => {
@@ -1064,14 +1076,18 @@ function append(
                     return;
                 }
 
-                scene.loadingPluginName = plugin.name;
+                if (IsFullScene(scene)) {
+                    scene.loadingPluginName = plugin.name;
+                }
                 successHandler();
             } else {
                 const asyncedPlugin = <ISceneLoaderPluginAsync>plugin;
                 asyncedPlugin
                     .loadAsync(scene, data, fileInfo.rootUrl, progressHandler, fileInfo.name)
                     .then(() => {
-                        scene.loadingPluginName = plugin.name;
+                        if (IsFullScene(scene)) {
+                            scene.loadingPluginName = plugin.name;
+                        }
                         successHandler();
                     })
                     .catch((error) => {
@@ -1095,7 +1111,7 @@ function append(
  * @param scene is the instance of BABYLON.Scene to append to
  * @param options an object that configures aspects of how the scene is loaded
  */
-export async function appendSceneAsync(source: SceneSource, scene: Scene, options?: LoadAssetContainerOptions): Promise<void> {
+export async function appendSceneAsync(source: SceneSource, scene: CoreScene, options?: LoadAssetContainerOptions): Promise<void> {
     const { rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = options ?? {};
     await appendSceneAsyncCore(rootUrl, source, scene, onProgress, pluginExtension, name, pluginOptions);
 }
@@ -1103,12 +1119,12 @@ export async function appendSceneAsync(source: SceneSource, scene: Scene, option
 function appendSceneAsyncCore(
     rootUrl: string,
     sceneFilename?: SceneSource,
-    scene?: Nullable<Scene>,
+    scene?: Nullable<CoreScene>,
     onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
     pluginExtension?: Nullable<string>,
     name?: string,
     pluginOptions?: PluginOptions
-): Promise<Scene> {
+): Promise<CoreScene> {
     return new Promise((resolve, reject) => {
         append(
             rootUrl,
@@ -1131,10 +1147,10 @@ function appendSceneAsyncCore(
 function loadAssetContainer(
     rootUrl: string,
     sceneFilename: SceneSource = "",
-    scene: Nullable<Scene> = EngineStore.LastCreatedScene,
+    scene: Nullable<CoreScene> = EngineStore.LastCreatedScene,
     onSuccess: Nullable<(assets: AssetContainer) => void> = null,
     onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
-    onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
+    onError: Nullable<(scene: CoreScene, message: string, exception?: any) => void> = null,
     pluginExtension: Nullable<string> = null,
     name = "",
     pluginOptions: PluginOptions = {}
@@ -1202,7 +1218,9 @@ function loadAssetContainer(
                     return;
                 }
                 assetContainer.populateRootNodes();
-                scene.loadingPluginName = plugin.name;
+                if (IsFullScene(scene)) {
+                    scene.loadingPluginName = plugin.name;
+                }
                 successHandler(assetContainer);
             } else if ((plugin as ISceneLoaderPluginAsync).loadAssetContainerAsync) {
                 const asyncedPlugin = <ISceneLoaderPluginAsync>plugin;
@@ -1210,7 +1228,9 @@ function loadAssetContainer(
                     .loadAssetContainerAsync(scene, data, fileInfo.rootUrl, progressHandler, fileInfo.name)
                     .then((assetContainer) => {
                         assetContainer.populateRootNodes();
-                        scene.loadingPluginName = plugin.name;
+                        if (IsFullScene(scene)) {
+                            scene.loadingPluginName = plugin.name;
+                        }
                         successHandler(assetContainer);
                     })
                     .catch((error) => {
@@ -1237,7 +1257,7 @@ function loadAssetContainer(
  * @param options an object that configures aspects of how the scene is loaded
  * @returns The loaded asset container
  */
-export function loadAssetContainerAsync(source: SceneSource, scene: Scene, options?: LoadAssetContainerOptions): Promise<AssetContainer> {
+export function loadAssetContainerAsync(source: SceneSource, scene: CoreScene, options?: LoadAssetContainerOptions): Promise<AssetContainer> {
     const { rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = options ?? {};
     return loadAssetContainerAsyncCore(rootUrl, source, scene, onProgress, pluginExtension, name, pluginOptions);
 }
@@ -1245,7 +1265,7 @@ export function loadAssetContainerAsync(source: SceneSource, scene: Scene, optio
 function loadAssetContainerAsyncCore(
     rootUrl: string,
     sceneFilename?: SceneSource,
-    scene?: Nullable<Scene>,
+    scene?: Nullable<CoreScene>,
     onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
     pluginExtension?: Nullable<string>,
     name?: string,
@@ -1273,19 +1293,23 @@ function loadAssetContainerAsyncCore(
 function importAnimations(
     rootUrl: string,
     sceneFilename: SceneSource = "",
-    scene: Nullable<Scene> = EngineStore.LastCreatedScene,
+    scene: Nullable<CoreScene> = EngineStore.LastCreatedScene,
     overwriteAnimations = true,
     animationGroupLoadingMode = SceneLoaderAnimationGroupLoadingMode.Clean,
     targetConverter: Nullable<(target: any) => any> = null,
-    onSuccess: Nullable<(scene: Scene) => void> = null,
+    onSuccess: Nullable<(scene: CoreScene) => void> = null,
     onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
-    onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
+    onError: Nullable<(scene: CoreScene, message: string, exception?: any) => void> = null,
     pluginExtension: Nullable<string> = null,
     name = "",
     pluginOptions: PluginOptions = {}
 ): void {
     if (!scene) {
         Logger.Error("No scene available to load animations to");
+        return;
+    }
+
+    if (!IsFullScene(scene)) {
         return;
     }
 
@@ -1355,7 +1379,7 @@ function importAnimations(
  * @param scene is the instance of BABYLON.Scene to append to
  * @param options an object that configures aspects of how the scene is loaded
  */
-export async function importAnimationsAsync(source: SceneSource, scene: Scene, options?: ImportAnimationsOptions): Promise<void> {
+export async function importAnimationsAsync(source: SceneSource, scene: CoreScene, options?: ImportAnimationsOptions): Promise<void> {
     const { rootUrl = "", overwriteAnimations, animationGroupLoadingMode, targetConverter, onProgress, pluginExtension, name, pluginOptions } = options ?? {};
     await importAnimationsAsyncCore(rootUrl, source, scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, onProgress, pluginExtension, name, pluginOptions);
 }
@@ -1363,7 +1387,7 @@ export async function importAnimationsAsync(source: SceneSource, scene: Scene, o
 function importAnimationsAsyncCore(
     rootUrl: string,
     sceneFilename?: SceneSource,
-    scene?: Nullable<Scene>,
+    scene?: Nullable<CoreScene>,
     overwriteAnimations?: boolean,
     animationGroupLoadingMode?: SceneLoaderAnimationGroupLoadingMode,
     targetConverter?: Nullable<(target: any) => any>,
@@ -1371,7 +1395,7 @@ function importAnimationsAsyncCore(
     pluginExtension?: Nullable<string>,
     name?: string,
     pluginOptions?: PluginOptions
-): Promise<Scene> {
+): Promise<CoreScene> {
     return new Promise((resolve, reject) => {
         importAnimations(
             rootUrl,
@@ -1526,10 +1550,10 @@ export class SceneLoader {
         meshNames: string | readonly string[] | null | undefined,
         rootUrl: string,
         sceneFilename?: SceneSource,
-        scene?: Nullable<Scene>,
+        scene?: Nullable<CoreScene>,
         onSuccess?: Nullable<SceneLoaderSuccessCallback>,
         onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
-        onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>,
+        onError?: Nullable<(scene: CoreScene, message: string, exception?: any) => void>,
         pluginExtension?: Nullable<string>,
         name?: string
     ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
@@ -1551,7 +1575,7 @@ export class SceneLoader {
         meshNames: string | readonly string[] | null | undefined,
         rootUrl: string,
         sceneFilename?: SceneSource,
-        scene?: Nullable<Scene>,
+        scene?: Nullable<CoreScene>,
         onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
         pluginExtension?: Nullable<string>,
         name?: string
@@ -1575,9 +1599,9 @@ export class SceneLoader {
         rootUrl: string,
         sceneFilename?: SceneSource,
         engine?: Nullable<AbstractEngine>,
-        onSuccess?: Nullable<(scene: Scene) => void>,
+        onSuccess?: Nullable<(scene: CoreScene) => void>,
         onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
-        onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>,
+        onError?: Nullable<(scene: CoreScene, message: string, exception?: any) => void>,
         pluginExtension?: Nullable<string>,
         name?: string
     ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
@@ -1601,7 +1625,7 @@ export class SceneLoader {
         onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
         pluginExtension?: Nullable<string>,
         name?: string
-    ): Promise<Scene> {
+    ): Promise<CoreScene> {
         return loadSceneAsyncCore(rootUrl, sceneFilename, engine, onProgress, pluginExtension, name);
     }
 
@@ -1620,10 +1644,10 @@ export class SceneLoader {
     public static Append(
         rootUrl: string,
         sceneFilename?: SceneSource,
-        scene?: Nullable<Scene>,
-        onSuccess?: Nullable<(scene: Scene) => void>,
+        scene?: Nullable<CoreScene>,
+        onSuccess?: Nullable<(scene: CoreScene) => void>,
         onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
-        onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>,
+        onError?: Nullable<(scene: CoreScene, message: string, exception?: any) => void>,
         pluginExtension?: Nullable<string>,
         name?: string
     ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
@@ -1643,11 +1667,11 @@ export class SceneLoader {
     public static AppendAsync(
         rootUrl: string,
         sceneFilename?: SceneSource,
-        scene?: Nullable<Scene>,
+        scene?: Nullable<CoreScene>,
         onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
         pluginExtension?: Nullable<string>,
         name?: string
-    ): Promise<Scene> {
+    ): Promise<CoreScene> {
         return appendSceneAsyncCore(rootUrl, sceneFilename, scene, onProgress, pluginExtension, name);
     }
 
@@ -1666,10 +1690,10 @@ export class SceneLoader {
     public static LoadAssetContainer(
         rootUrl: string,
         sceneFilename?: SceneSource,
-        scene?: Nullable<Scene>,
+        scene?: Nullable<CoreScene>,
         onSuccess?: Nullable<(assets: AssetContainer) => void>,
         onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
-        onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>,
+        onError?: Nullable<(scene: CoreScene, message: string, exception?: any) => void>,
         pluginExtension?: Nullable<string>,
         name?: string
     ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
@@ -1689,7 +1713,7 @@ export class SceneLoader {
     public static LoadAssetContainerAsync(
         rootUrl: string,
         sceneFilename?: SceneSource,
-        scene?: Nullable<Scene>,
+        scene?: Nullable<CoreScene>,
         onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
         pluginExtension?: Nullable<string>,
         name?: string
@@ -1714,13 +1738,13 @@ export class SceneLoader {
     public static ImportAnimations(
         rootUrl: string,
         sceneFilename?: SceneSource,
-        scene?: Nullable<Scene>,
+        scene?: Nullable<CoreScene>,
         overwriteAnimations?: boolean,
         animationGroupLoadingMode?: SceneLoaderAnimationGroupLoadingMode,
         targetConverter?: Nullable<(target: any) => any>,
-        onSuccess?: Nullable<(scene: Scene) => void>,
+        onSuccess?: Nullable<(scene: CoreScene) => void>,
         onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
-        onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>,
+        onError?: Nullable<(scene: CoreScene, message: string, exception?: any) => void>,
         pluginExtension?: Nullable<string>,
         name?: string
     ): void {
@@ -1745,18 +1769,18 @@ export class SceneLoader {
     public static ImportAnimationsAsync(
         rootUrl: string,
         sceneFilename?: SceneSource,
-        scene?: Nullable<Scene>,
+        scene?: Nullable<CoreScene>,
         overwriteAnimations?: boolean,
         animationGroupLoadingMode?: SceneLoaderAnimationGroupLoadingMode,
         targetConverter?: Nullable<(target: any) => any>,
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        onSuccess?: Nullable<(scene: Scene) => void>,
+        onSuccess?: Nullable<(scene: CoreScene) => void>,
         onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>,
+        onError?: Nullable<(scene: CoreScene, message: string, exception?: any) => void>,
         pluginExtension?: Nullable<string>,
         name?: string
-    ): Promise<Scene> {
+    ): Promise<CoreScene> {
         return importAnimationsAsyncCore(rootUrl, sceneFilename, scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, onProgress, pluginExtension, name);
     }
 }

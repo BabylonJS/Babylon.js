@@ -149,17 +149,6 @@ export class Scene extends CoreScene implements IAnimatable, INodeContainer {
     /** The fog density is following a linear function. */
     public static readonly FOGMODE_LINEAR = Constants.FOGMODE_LINEAR;
 
-    /**
-     * Gets or sets the minimum deltatime when deterministic lock step is enabled
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#deterministic-lockstep
-     */
-    public static MinDeltaTime = 1.0;
-    /**
-     * Gets or sets the maximum deltatime when deterministic lock step is enabled
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#deterministic-lockstep
-     */
-    public static MaxDeltaTime = 1000.0;
-
     // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Factory used to create the default material.
@@ -334,31 +323,11 @@ export class Scene extends CoreScene implements IAnimatable, INodeContainer {
     }
 
     /**
-     * This is use to store the default BRDF lookup for PBR materials in your scene.
-     * It should only be one of the following (if not the default embedded one):
-     * * For uncorrelated BRDF (pbr.brdf.useEnergyConservation = false and pbr.brdf.useSmithVisibilityHeightCorrelated = false) : https://assets.babylonjs.com/environments/uncorrelatedBRDF.dds
-     * * For correlated BRDF (pbr.brdf.useEnergyConservation = false and pbr.brdf.useSmithVisibilityHeightCorrelated = true) : https://assets.babylonjs.com/environments/correlatedBRDF.dds
-     * * For correlated multi scattering BRDF (pbr.brdf.useEnergyConservation = true and pbr.brdf.useSmithVisibilityHeightCorrelated = true) : https://assets.babylonjs.com/environments/correlatedMSBRDF.dds
-     * The material properties need to be setup according to the type of texture in use.
-     */
-    public environmentBRDFTexture: BaseTexture;
-
-    /** @internal */
-    protected _environmentTexture: Nullable<BaseTexture> = null;
-    /**
-     * Texture used in all pbr material as the reflection texture.
-     * As in the majority of the scene they are the same (exception for multi room and so on),
-     * this is easier to reference from here than from all the materials.
-     */
-    public get environmentTexture(): Nullable<BaseTexture> {
-        return this._environmentTexture;
-    }
-    /**
      * Texture used in all pbr material as the reflection texture.
      * As in the majority of the scene they are the same (exception for multi room and so on),
      * this is easier to set here than in all the materials.
      */
-    public set environmentTexture(value: Nullable<BaseTexture>) {
+    public override set environmentTexture(value: Nullable<BaseTexture>) {
         if (this._environmentTexture === value) {
             return;
         }
@@ -596,11 +565,6 @@ export class Scene extends CoreScene implements IAnimatable, INodeContainer {
     public onBeforeAnimationsObservable = new Observable<Scene>();
 
     /**
-     * An event triggered after animations processing
-     */
-    public onAfterAnimationsObservable = new Observable<Scene>();
-
-    /**
      * An event triggered before draw calls are ready to be sent
      */
     public onBeforeDrawPhaseObservable = new Observable<Scene>();
@@ -768,16 +732,6 @@ export class Scene extends CoreScene implements IAnimatable, INodeContainer {
      * Can happen multiple times per frame.
      */
     public onAfterRenderTargetsRenderObservable = new Observable<Scene>();
-
-    /**
-     * An event triggered before calculating deterministic simulation step
-     */
-    public onBeforeStepObservable = new Observable<Scene>();
-
-    /**
-     * An event triggered after calculating deterministic simulation step
-     */
-    public onAfterStepObservable = new Observable<CoreScene>();
 
     /**
      * This Observable will be triggered before rendering each renderingGroup of each rendered camera.
@@ -1030,104 +984,21 @@ export class Scene extends CoreScene implements IAnimatable, INodeContainer {
         return this._useRightHandedSystem;
     }
 
-    // Deterministic lockstep
-    private _timeAccumulator: number = 0;
-    private _currentStepId: number = 0;
-    private _currentInternalStep: number = 0;
-
-    /**
-     * Sets the step Id used by deterministic lock step
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#deterministic-lockstep
-     * @param newStepId defines the step Id
-     */
-    public setStepId(newStepId: number): void {
-        this._currentStepId = newStepId;
-    }
-
-    /**
-     * Gets the step Id used by deterministic lock step
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#deterministic-lockstep
-     * @returns the step Id
-     */
-    public getStepId(): number {
-        return this._currentStepId;
-    }
-
-    /**
-     * Gets the internal step used by deterministic lock step
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#deterministic-lockstep
-     * @returns the internal step
-     */
-    public getInternalStep(): number {
-        return this._currentInternalStep;
-    }
-
-    // Fog
-
-    private _fogEnabled = true;
-    /**
-     * Gets or sets a boolean indicating if fog is enabled on this scene
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/environment_introduction#fog
-     * (Default is true)
-     */
-    public set fogEnabled(value: boolean) {
+    public override set fogEnabled(value: boolean) {
         if (this._fogEnabled === value) {
             return;
         }
         this._fogEnabled = value;
         this.markAllMaterialsAsDirty(Constants.MATERIAL_MiscDirtyFlag);
     }
-    public get fogEnabled(): boolean {
-        return this._fogEnabled;
-    }
 
-    private _fogMode = Scene.FOGMODE_NONE;
-    /**
-     * Gets or sets the fog mode to use
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/environment_introduction#fog
-     * | mode | value |
-     * | --- | --- |
-     * | FOGMODE_NONE | 0 |
-     * | FOGMODE_EXP | 1 |
-     * | FOGMODE_EXP2 | 2 |
-     * | FOGMODE_LINEAR | 3 |
-     */
-    public set fogMode(value: number) {
+    public override set fogMode(value: number) {
         if (this._fogMode === value) {
             return;
         }
         this._fogMode = value;
         this.markAllMaterialsAsDirty(Constants.MATERIAL_MiscDirtyFlag);
     }
-    public get fogMode(): number {
-        return this._fogMode;
-    }
-
-    /**
-     * Gets or sets the fog color to use
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/environment_introduction#fog
-     * (Default is Color3(0.2, 0.2, 0.3))
-     */
-    public fogColor = new Color3(0.2, 0.2, 0.3);
-    /**
-     * Gets or sets the fog density to use
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/environment_introduction#fog
-     * (Default is 0.1)
-     */
-    public fogDensity = 0.1;
-    /**
-     * Gets or sets the fog start distance to use
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/environment_introduction#fog
-     * (Default is 0)
-     */
-    public fogStart = 0;
-    /**
-     * Gets or sets the fog end distance to use
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/environment_introduction#fog
-     * (Default is 1000)
-     */
-    public fogEnd = 1000.0;
-
     /**
      * Flag indicating that the frame buffer binding is handled by another component
      */
@@ -1282,12 +1153,6 @@ export class Scene extends CoreScene implements IAnimatable, INodeContainer {
     public customRenderTargets: RenderTargetTexture[] = [];
 
     /**
-     * Defines if texture loading must be delayed
-     * If true, textures will only be loaded when they need to be rendered
-     */
-    public useDelayedTextureLoading: boolean;
-
-    /**
      * Gets the list of meshes imported to the scene through SceneLoader
      */
     public importedMeshesFiles: string[] = [];
@@ -1320,8 +1185,6 @@ export class Scene extends CoreScene implements IAnimatable, INodeContainer {
     public _activeParticles = new PerfCounter();
     /** @internal */
     public _activeBones = new PerfCounter();
-
-    private _animationRatio: number;
 
     /** @internal */
     public override _animationTimeLast: number;
@@ -1816,14 +1679,6 @@ export class Scene extends CoreScene implements IAnimatable, INodeContainer {
      */
     public getActiveMeshes(): SmartArray<AbstractMesh> {
         return this._activeMeshes;
-    }
-
-    /**
-     * Gets the animation ratio (which is 1.0 is the scene renders at 60fps and 2 if the scene renders at 30fps, etc.)
-     * @returns a number
-     */
-    public getAnimationRatio(): number {
-        return this._animationRatio !== undefined ? this._animationRatio : 1;
     }
 
     private _createUbo(): void {
@@ -4178,56 +4033,6 @@ export class Scene extends CoreScene implements IAnimatable, INodeContainer {
         return this._engine.getTimeStep();
     };
 
-    /** Execute all animations (for a frame) */
-    public animate() {
-        if (this._engine.isDeterministicLockStep()) {
-            let deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime)) + this._timeAccumulator;
-
-            const defaultFrameTime = this._engine.getTimeStep();
-            const defaultFPS = 1000.0 / defaultFrameTime / 1000.0;
-
-            let stepsTaken = 0;
-
-            const maxSubSteps = this._engine.getLockstepMaxSteps();
-
-            let internalSteps = Math.floor(deltaTime / defaultFrameTime);
-            internalSteps = Math.min(internalSteps, maxSubSteps);
-
-            while (deltaTime > 0 && stepsTaken < internalSteps) {
-                this.onBeforeStepObservable.notifyObservers(this);
-
-                // Animations
-                this._animationRatio = defaultFrameTime * defaultFPS;
-                this._animate(defaultFrameTime);
-                this.onAfterAnimationsObservable.notifyObservers(this);
-
-                // Physics
-                if (this.physicsEnabled) {
-                    this._advancePhysicsEngineStep(defaultFrameTime);
-                }
-
-                this.onAfterStepObservable.notifyObservers(this);
-                this._currentStepId++;
-
-                stepsTaken++;
-                deltaTime -= defaultFrameTime;
-            }
-
-            this._timeAccumulator = deltaTime < 0 ? 0 : deltaTime;
-        } else {
-            // Animations
-            const deltaTime = this.useConstantAnimationDeltaTime ? 16 : Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime));
-            this._animationRatio = deltaTime * (60.0 / 1000.0);
-            this._animate();
-            this.onAfterAnimationsObservable.notifyObservers(this);
-
-            // Physics
-            if (this.physicsEnabled) {
-                this._advancePhysicsEngineStep(deltaTime);
-            }
-        }
-    }
-
     private _clear(): void {
         if (this.autoClearDepthAndStencil || this.autoClear) {
             this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe || this.forcePointsCloud, this.autoClearDepthAndStencil, this.autoClearDepthAndStencil);
@@ -4259,6 +4064,13 @@ export class Scene extends CoreScene implements IAnimatable, INodeContainer {
 
         for (const mesh of this.meshes) {
             mesh.resetDrawCache(passId);
+        }
+    }
+
+    protected override _animationExtraStep(frameTime: number) {
+        // Physics
+        if (this.physicsEnabled) {
+            this._advancePhysicsEngineStep(frameTime);
         }
     }
 
@@ -4616,8 +4428,7 @@ export class Scene extends CoreScene implements IAnimatable, INodeContainer {
         this.onAfterRenderObservable.clear();
         this.onBeforeRenderTargetsRenderObservable.clear();
         this.onAfterRenderTargetsRenderObservable.clear();
-        this.onAfterStepObservable.clear();
-        this.onBeforeStepObservable.clear();
+
         this.onBeforeActiveMeshesEvaluationObservable.clear();
         this.onAfterActiveMeshesEvaluationObservable.clear();
         this.onBeforeParticlesRenderingObservable.clear();
@@ -4625,7 +4436,6 @@ export class Scene extends CoreScene implements IAnimatable, INodeContainer {
         this.onBeforeDrawPhaseObservable.clear();
         this.onAfterDrawPhaseObservable.clear();
         this.onBeforeAnimationsObservable.clear();
-        this.onAfterAnimationsObservable.clear();
         this.onBeforeRenderingGroupObservable.clear();
         this.onAfterRenderingGroupObservable.clear();
         this.onMeshImportedObservable.clear();
@@ -5054,9 +4864,9 @@ export class Scene extends CoreScene implements IAnimatable, INodeContainer {
      * @param index the rendering group index to get the information for
      * @returns The auto clear setup for the requested rendering group
      */
-    public override getAutoClearDepthStencilSetup = (index: number): IRenderingManagerAutoClearSetup => {
+    public getAutoClearDepthStencilSetup(index: number): IRenderingManagerAutoClearSetup {
         return this._renderingManager.getAutoClearDepthStencilSetup(index);
-    };
+    }
 
     private _blockMaterialDirtyMechanism = false;
 
@@ -5088,7 +4898,7 @@ export class Scene extends CoreScene implements IAnimatable, INodeContainer {
      * @param flag defines the flag used to specify which material part must be marked as dirty
      * @param predicate If not null, it will be used to specify if a material has to be marked as dirty
      */
-    public override markAllMaterialsAsDirty = (flag: number, predicate?: (mat: Material) => boolean) => {
+    public markAllMaterialsAsDirty(flag: number, predicate?: (mat: Material) => boolean) {
         if (this._blockMaterialDirtyMechanism) {
             return;
         }
@@ -5099,7 +4909,7 @@ export class Scene extends CoreScene implements IAnimatable, INodeContainer {
             }
             material.markAsDirty(flag);
         }
-    };
+    }
 
     /**
      * Internal perfCollector instance used for sharing between inspector and playground.

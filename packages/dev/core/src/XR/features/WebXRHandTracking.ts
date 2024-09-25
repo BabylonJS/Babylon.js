@@ -9,7 +9,7 @@ import { Matrix, Quaternion } from "../../Maths/math.vector";
 import type { Nullable } from "../../types";
 import { PhysicsImpostor } from "../../Physics/v1/physicsImpostor";
 
-import type { IDisposable, Scene } from "../../scene";
+import type { IDisposable } from "../../scene";
 import type { Observer } from "../../Misc/observable";
 import { Observable } from "../../Misc/observable";
 import type { InstancedMesh } from "../../Meshes/instancedMesh";
@@ -25,6 +25,7 @@ import { Axis } from "../../Maths/math.axis";
 import { EngineStore } from "../../Engines/engineStore";
 import { Constants } from "../../Engines/constants";
 import type { WebXRCompositionLayerWrapper } from "./Layers/WebXRCompositionLayer";
+import type { CoreScene } from "core/coreScene";
 
 declare const XRHand: XRHand;
 
@@ -294,7 +295,7 @@ export class WebXRHand implements IDisposable {
      */
     public onHandMeshSetObservable = new Observable<WebXRHand>();
 
-    private _scene: Scene;
+    private _scene: CoreScene;
 
     /**
      * Transform nodes that will directly receive the transforms from the WebXR matrix data.
@@ -580,7 +581,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     }
 
     private static _GenerateDefaultHandMeshesAsync(
-        scene: Scene,
+        scene: CoreScene,
         xrSessionManager: WebXRSessionManager,
         options?: IWebXRHandTrackingOptions
     ): Promise<{ left: AbstractMesh; right: AbstractMesh }> {

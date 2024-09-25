@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { NodeMaterialBlock } from "./nodeMaterialBlock";
 import { PushMaterial } from "../pushMaterial";
-import type { Scene } from "../../scene";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Matrix, Vector2 } from "../../Maths/math.vector";
 import { Color3, Color4 } from "../../Maths/math.color";
@@ -71,6 +70,8 @@ import { ShaderLanguage } from "../shaderLanguage";
 import { AbstractEngine } from "../../Engines/abstractEngine";
 import type { LoopBlock } from "./Blocks/loopBlock";
 import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
+import type { CoreScene } from "core/coreScene";
+import { IsFullScene } from "core/coreScene.functions";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -384,12 +385,12 @@ export class NodeMaterial extends PushMaterial {
     /**
      * Default configuration related to image processing available in the standard Material.
      */
-    protected _imageProcessingConfiguration: ImageProcessingConfiguration;
+    protected _imageProcessingConfiguration: Nullable<ImageProcessingConfiguration>;
 
     /**
      * Gets the image processing configuration used either in this material.
      */
-    public get imageProcessingConfiguration(): ImageProcessingConfiguration {
+    public get imageProcessingConfiguration(): Nullable<ImageProcessingConfiguration> {
         return this._imageProcessingConfiguration;
     }
 
@@ -398,7 +399,7 @@ export class NodeMaterial extends PushMaterial {
      *
      * If sets to null, the scene one is in use.
      */
-    public set imageProcessingConfiguration(value: ImageProcessingConfiguration) {
+    public set imageProcessingConfiguration(value: Nullable<ImageProcessingConfiguration>) {
         this._attachImageProcessingConfiguration(value);
 
         // Ensure the effect will be rebuilt.
@@ -449,7 +450,7 @@ export class NodeMaterial extends PushMaterial {
      * @param scene defines the hosting scene
      * @param options defines creation option
      */
-    constructor(name: string, scene?: Scene, options: Partial<INodeMaterialOptions> = {}) {
+    constructor(name: string, scene?: CoreScene, options: Partial<INodeMaterialOptions> = {}) {
         super(name, scene || EngineStore.LastCreatedScene!);
 
         if (options && options.shaderLanguage === ShaderLanguage.WGSL && !this.getScene().getEngine().isWebGPU) {
@@ -494,8 +495,9 @@ export class NodeMaterial extends PushMaterial {
         }
 
         // Pick the scene configuration if needed.
-        if (!configuration) {
-            this._imageProcessingConfiguration = this.getScene().imageProcessingConfiguration;
+        const scene = this.getScene();
+        if (!configuration && IsFullScene(scene)) {
+            this._imageProcessingConfiguration = scene.imageProcessingConfiguration;
         } else {
             this._imageProcessingConfiguration = configuration;
         }
@@ -979,32 +981,36 @@ export class NodeMaterial extends PushMaterial {
         }
 
         // Wipe defines
-        const meshes = this.getScene().meshes;
-        for (const mesh of meshes) {
-            if (!mesh.subMeshes) {
-                continue;
-            }
-            for (const subMesh of mesh.subMeshes) {
-                if (subMesh.getMaterial() !== this) {
+        const scene = this.getScene();
+
+        if (IsFullScene(scene)) {
+            const meshes = scene.meshes;
+            for (const mesh of meshes) {
+                if (!mesh.subMeshes) {
                     continue;
                 }
+                for (const subMesh of mesh.subMeshes) {
+                    if (subMesh.getMaterial() !== this) {
+                        continue;
+                    }
 
-                if (!subMesh.materialDefines) {
-                    continue;
+                    if (!subMesh.materialDefines) {
+                        continue;
+                    }
+
+                    const defines = subMesh.materialDefines;
+                    defines.markAllAsDirty();
+                    defines.reset();
                 }
-
-                const defines = subMesh.materialDefines;
-                defines.markAllAsDirty();
-                defines.reset();
             }
-        }
 
-        if (this.prePassTextureInputs.length) {
-            this.getScene().enablePrePassRenderer();
-        }
-        const prePassRenderer = this.getScene().prePassRenderer;
-        if (prePassRenderer) {
-            prePassRenderer.markAsDirty();
+            if (this.prePassTextureInputs.length) {
+                scene.enablePrePassRenderer();
+            }
+            const prePassRenderer = scene.prePassRenderer;
+            if (prePassRenderer) {
+                prePassRenderer.markAsDirty();
+            }
         }
     }
 
@@ -1036,7 +1042,8 @@ export class NodeMaterial extends PushMaterial {
         }
 
         // PrePass
-        const oit = this.needAlphaBlendingForMesh(mesh) && this.getScene().useOrderIndependentTransparency;
+        const scene = this.getScene();
+        const oit = this.needAlphaBlendingForMesh(mesh) && IsFullScene(scene) && scene.useOrderIndependentTransparency;
         PrepareDefinesForPrePass(this.getScene(), defines, !oit);
 
         if (oldNormal !== defines["NORMAL"] || oldTangent !== defines["TANGENT"] || oldColor !== defines["VERTEXCOLOR_NME"] || uvChanged) {
@@ -1284,7 +1291,7 @@ export class NodeMaterial extends PushMaterial {
      * @param scene defines the hosting scene
      * @returns the new procedural texture attached to this node material
      */
-    public createProceduralTexture(size: number | { width: number; height: number; layers?: number }, scene: Scene): Nullable<ProceduralTexture> {
+    public createProceduralTexture(size: number | { width: number; height: number; layers?: number }, scene: CoreScene): Nullable<ProceduralTexture> {
         if (this.mode !== NodeMaterialModes.ProceduralTexture) {
             Logger.Log("Incompatible material mode");
             return null;
@@ -1384,13 +1391,14 @@ export class NodeMaterial extends PushMaterial {
         particleSystemDefinesJoined = ""
     ) {
         let tempName = this.name + this._buildId + "_" + blendMode;
+        const scene = this.getScene();
 
         if (!defines) {
             defines = new NodeMaterialDefines();
         }
 
         if (!dummyMesh) {
-            dummyMesh = this.getScene().getMeshByName(this.name + "Particle");
+            dummyMesh = IsFullScene(scene) ? scene.getMeshByName(this.name + "Particle") : null;
             if (!dummyMesh) {
                 dummyMesh = new Mesh(this.name + "Particle", this.getScene());
                 dummyMesh.reservedDataStore = {
@@ -1720,7 +1728,9 @@ export class NodeMaterial extends PushMaterial {
                         return false;
                     }
                 } else {
-                    scene.resetCachedMaterial();
+                    if (IsFullScene(scene)) {
+                        scene.resetCachedMaterial();
+                    }
                     subMesh.setEffect(effect, defines, this._materialContext);
                 }
             }
@@ -1910,7 +1920,7 @@ export class NodeMaterial extends PushMaterial {
         this.onBuildObservable.clear();
         this.onBuildErrorObservable.clear();
 
-        if (this._imageProcessingObserver) {
+        if (this._imageProcessingObserver && this._imageProcessingConfiguration) {
             this._imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingObserver);
             this._imageProcessingObserver = null;
         }
@@ -2503,7 +2513,7 @@ export class NodeMaterial extends PushMaterial {
      * @param shaderLanguage defines the language to use (GLSL by default)
      * @returns a new node material
      */
-    public static override Parse(source: any, scene: Scene, rootUrl: string = "", shaderLanguage = ShaderLanguage.GLSL): NodeMaterial {
+    public static override Parse(source: any, scene: CoreScene, rootUrl: string = "", shaderLanguage = ShaderLanguage.GLSL): NodeMaterial {
         const nodeMaterial = SerializationHelper.Parse(() => new NodeMaterial(source.name, scene, { shaderLanguage: shaderLanguage }), source, scene, rootUrl);
 
         nodeMaterial.parseSerializedObject(source, rootUrl);
@@ -2526,7 +2536,7 @@ export class NodeMaterial extends PushMaterial {
     public static async ParseFromFileAsync(
         name: string,
         url: string,
-        scene: Scene,
+        scene: CoreScene,
         rootUrl: string = "",
         skipBuild: boolean = false,
         targetMaterial?: NodeMaterial,
@@ -2556,7 +2566,7 @@ export class NodeMaterial extends PushMaterial {
      */
     public static ParseFromSnippetAsync(
         snippetId: string,
-        scene: Scene = EngineStore.LastCreatedScene!,
+        scene: CoreScene = EngineStore.LastCreatedScene!,
         rootUrl: string = "",
         nodeMaterial?: NodeMaterial,
         skipBuild: boolean = false,
@@ -2623,7 +2633,7 @@ export class NodeMaterial extends PushMaterial {
      * @param scene defines the hosting scene
      * @returns a new NodeMaterial
      */
-    public static CreateDefault(name: string, scene?: Scene) {
+    public static CreateDefault(name: string, scene?: CoreScene) {
         const newMaterial = new NodeMaterial(name, scene);
 
         newMaterial.setToDefault();

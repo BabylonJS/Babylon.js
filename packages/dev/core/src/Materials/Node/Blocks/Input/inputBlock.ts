@@ -6,7 +6,6 @@ import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import type { Nullable } from "../../../../types";
 import type { Effect } from "../../../../Materials/effect";
 import { Matrix, Vector2, Vector3, Vector4 } from "../../../../Maths/math.vector";
-import type { Scene } from "../../../../scene";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
@@ -17,6 +16,8 @@ import { Observable } from "../../../../Misc/observable";
 import type { NodeMaterial } from "../../nodeMaterial";
 import { PrecisionDate } from "../../../../Misc/precisionDate";
 import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
+import type { CoreScene } from "core/coreScene";
+import { IsFullScene } from "core/coreScene.functions";
 
 const remapAttributeName: { [name: string]: string } = {
     position2d: "position",
@@ -381,7 +382,7 @@ export class InputBlock extends NodeMaterialBlock {
      * Animate the input if animationType !== None
      * @param scene defines the rendering scene
      */
-    public animate(scene: Scene) {
+    public animate(scene: CoreScene) {
         switch (this._animationType) {
             case AnimatedInputBlockTypes.Time: {
                 if (this.type === NodeMaterialBlockConnectionPointTypes.Float) {
@@ -396,7 +397,7 @@ export class InputBlock extends NodeMaterialBlock {
                 break;
             }
             case AnimatedInputBlockTypes.MouseInfo: {
-                if (this.type === NodeMaterialBlockConnectionPointTypes.Vector4) {
+                if (this.type === NodeMaterialBlockConnectionPointTypes.Vector4 && IsFullScene(scene)) {
                     const event = scene._inputManager._originMouseEvent;
                     if (event) {
                         const x = event.offsetX;
@@ -628,7 +629,7 @@ export class InputBlock extends NodeMaterialBlock {
     /**
      * @internal
      */
-    public _transmit(effect: Effect, scene: Scene, material: NodeMaterial) {
+    public _transmit(effect: Effect, scene: CoreScene, material: NodeMaterial) {
         if (this.isAttribute) {
             return;
         }
@@ -843,7 +844,7 @@ export class InputBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
-    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: CoreScene, rootUrl: string) {
         this._mode = serializationObject.mode;
         super._deserialize(serializationObject, scene, rootUrl);
 

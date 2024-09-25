@@ -860,8 +860,7 @@ export class ShaderMaterial extends PushMaterial {
         }
 
         // Fog
-        const isFullScene = IsFullScene(scene);
-        if (isFullScene && scene.fogEnabled && mesh?.applyFog && scene.fogMode !== Constants.FOGMODE_NONE) {
+        if (scene.fogEnabled && mesh?.applyFog && scene.fogMode !== Constants.FOGMODE_NONE) {
             defines.push("#define FOG");
             if (uniforms.indexOf("view") === -1) {
                 uniforms.push("view");
@@ -933,6 +932,7 @@ export class ShaderMaterial extends PushMaterial {
             return false;
         }
 
+        const isFullScene = IsFullScene(scene);
         if (previousEffect !== effect && isFullScene) {
             scene.resetCachedMaterial();
         }
