@@ -2,12 +2,13 @@ import type { Nullable } from "../types";
 import type { Ray } from "../Culling/ray";
 import { Vector3 } from "../Maths/math.vector";
 import type { Color3 } from "../Maths/math.color";
-import type { Scene } from "../scene";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { LinesMesh } from "../Meshes/linesMesh";
 
 import { CreateLines } from "../Meshes/Builders/linesBuilder";
 import type { Observer } from "../Misc/observable";
+import type { CoreScene } from "core/coreScene";
+import { IsFullScene } from "core/coreScene.functions";
 
 /**
  * As raycast might be hard to debug, the RayHelper can help rendering the different rays
@@ -23,10 +24,10 @@ export class RayHelper {
     private _renderPoints: Vector3[];
     private _renderLine: Nullable<LinesMesh>;
     private _renderFunction: Nullable<() => void>;
-    private _scene: Nullable<Scene>;
+    private _scene: Nullable<CoreScene>;
 
-    private _onAfterRenderObserver: Nullable<Observer<Scene>>;
-    private _onAfterStepObserver: Nullable<Observer<Scene>>;
+    private _onAfterRenderObserver: Nullable<Observer<CoreScene>>;
+    private _onAfterStepObserver: Nullable<Observer<CoreScene>>;
     private _attachedToMesh: Nullable<AbstractMesh>;
     private _meshSpaceDirection: Vector3;
     private _meshSpaceOrigin: Vector3;
@@ -38,7 +39,7 @@ export class RayHelper {
      * @param color Defines the color we want to see the ray in
      * @returns The newly created ray helper.
      */
-    public static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper {
+    public static CreateAndShow(ray: Ray, scene: CoreScene, color: Color3): RayHelper {
         const helper = new RayHelper(ray);
 
         helper.show(scene, color);
@@ -62,7 +63,7 @@ export class RayHelper {
      * @param scene Defines the scene the ray needs to be rendered in
      * @param color Defines the color the ray needs to be rendered in
      */
-    public show(scene: Scene, color?: Color3): void {
+    public show(scene: CoreScene, color?: Color3): void {
         if (!this._renderFunction && this.ray) {
             const ray = this.ray;
 
@@ -72,8 +73,8 @@ export class RayHelper {
             this._renderLine = CreateLines("ray", { points: this._renderPoints, updatable: true }, scene);
             this._renderLine.isPickable = false;
 
-            if (this._renderFunction) {
-                this._scene.registerBeforeRender(this._renderFunction);
+            if (this._renderFunction && IsFullScene(this._scene)) {
+                this._scene.onBeforeRenderObservable.add(this._renderFunction);
             }
         }
 
@@ -86,7 +87,7 @@ export class RayHelper {
      * Hides the ray we are debugging.
      */
     public hide(): void {
-        if (this._renderFunction && this._scene) {
+        if (this._renderFunction && this._scene && IsFullScene(this._scene)) {
             this._scene.unregisterBeforeRender(this._renderFunction);
             this._scene = null;
             this._renderFunction = null;
@@ -169,7 +170,7 @@ export class RayHelper {
             this._meshSpaceOrigin.copyFrom(meshSpaceOrigin);
         }
 
-        if (!this._onAfterRenderObserver) {
+        if (!this._onAfterRenderObserver && IsFullScene(this._scene)) {
             this._onAfterRenderObserver = this._scene.onBeforeRenderObservable.add(() => this._updateToMesh());
             this._onAfterStepObserver = this._scene.onAfterStepObservable.add(() => this._updateToMesh());
         }
@@ -185,7 +186,7 @@ export class RayHelper {
      */
     public detachFromMesh(): void {
         if (this._attachedToMesh && this._scene) {
-            if (this._onAfterRenderObserver) {
+            if (this._onAfterRenderObserver && IsFullScene(this._scene)) {
                 this._scene.onBeforeRenderObservable.remove(this._onAfterRenderObserver);
                 this._scene.onAfterStepObservable.remove(this._onAfterStepObserver);
             }

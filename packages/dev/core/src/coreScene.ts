@@ -645,6 +645,8 @@ export class CoreScene implements ISceneLike, IClipPlanesHolder {
      * Releases all held resources
      */
     public dispose(): void {
+        this.onDataLoadedObservable.clear();
+
         // Abort active requests
         const activeRequests = this._activeRequests.slice();
         for (const request of activeRequests) {

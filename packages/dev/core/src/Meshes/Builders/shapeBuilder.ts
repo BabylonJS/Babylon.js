@@ -1,10 +1,10 @@
 import type { Nullable } from "../../types";
-import type { Scene } from "../../scene";
 import type { Vector4 } from "../../Maths/math.vector";
 import { Vector3, TmpVectors, Matrix } from "../../Maths/math.vector";
 import { Mesh } from "../mesh";
 import { CreateRibbon } from "./ribbonBuilder";
 import { Path3D } from "../../Maths/math.path";
+import type { CoreScene } from "core/coreScene";
 
 /**
  * Creates an extruded shape mesh. The extrusion is a parametric shape. It has no predefined shape. Its final shape will depend on the input parameters.
@@ -49,7 +49,7 @@ export function ExtrudeShape(
         firstNormal?: Vector3;
         adjustFrame?: boolean;
     },
-    scene: Nullable<Scene> = null
+    scene: Nullable<CoreScene> = null
 ): Mesh {
     const path = options.path;
     const shape = options.shape;
@@ -138,7 +138,7 @@ export function ExtrudeShapeCustom(
         firstNormal?: Vector3;
         adjustFrame?: boolean;
     },
-    scene: Nullable<Scene> = null
+    scene: Nullable<CoreScene> = null
 ): Mesh {
     const path = options.path;
     const shape = options.shape;
@@ -197,7 +197,7 @@ function _ExtrudeShapeGeneric(
     rbCP: boolean,
     cap: number,
     custom: boolean,
-    scene: Nullable<Scene>,
+    scene: Nullable<CoreScene>,
     updtbl: boolean,
     side: number,
     instance: Nullable<Mesh>,
@@ -372,7 +372,7 @@ Mesh.ExtrudeShape = (
     scale: number,
     rotation: number,
     cap: number,
-    scene: Nullable<Scene> = null,
+    scene: Nullable<CoreScene> = null,
     updatable?: boolean,
     sideOrientation?: number,
     instance?: Mesh
@@ -400,7 +400,7 @@ Mesh.ExtrudeShapeCustom = (
     ribbonCloseArray: boolean,
     ribbonClosePath: boolean,
     cap: number,
-    scene: Scene,
+    scene: CoreScene,
     updatable?: boolean,
     sideOrientation?: number,
     instance?: Mesh

@@ -1,6 +1,5 @@
 import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
 import { Color3, Color4 } from "../Maths/math.color";
-import type { Scene } from "../scene";
 import type { Nullable } from "../types";
 import type { Bone } from "../Bones/bone";
 import type { Skeleton } from "../Bones/skeleton";
@@ -22,6 +21,8 @@ import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
 import { ExtrudeShapeCustom } from "../Meshes/Builders/shapeBuilder";
 import { TransformNode } from "../Meshes/transformNode";
 import { Logger } from "core/Misc/logger";
+import type { CoreScene } from "core/coreScene";
+import { IsFullScene } from "core/coreScene.functions";
 
 /**
  * Class used to render a debug view of a given skeleton
@@ -41,7 +42,7 @@ export class SkeletonViewer {
      * @returns The created ShaderMaterial
      * @see http://www.babylonjs-playground.com/#1BZJVJ#395
      */
-    static CreateBoneWeightShader(options: IBoneWeightShaderOptions, scene: Scene): ShaderMaterial {
+    static CreateBoneWeightShader(options: IBoneWeightShaderOptions, scene: CoreScene): ShaderMaterial {
         const skeleton: Skeleton = options.skeleton;
         const colorBase: Color3 = options.colorBase ?? Color3.Black();
         const colorZero: Color3 = options.colorZero ?? Color3.Blue();
@@ -168,7 +169,7 @@ export class SkeletonViewer {
      * @param scene The scene that the shader is scoped to
      * @returns The created ShaderMaterial
      */
-    static CreateSkeletonMapShader(options: ISkeletonMapShaderOptions, scene: Scene) {
+    static CreateSkeletonMapShader(options: ISkeletonMapShaderOptions, scene: CoreScene) {
         const skeleton: Skeleton = options.skeleton;
         const colorMap: ISkeletonMapShaderColorMapKnot[] = options.colorMap ?? [
             {
@@ -291,7 +292,7 @@ export class SkeletonViewer {
      * @param scene The scene that the shader is scoped to
      * @returns an Array of floats from the color gradient values
      */
-    private static _CreateBoneMapColorBuffer(size: number, colorMap: ISkeletonMapShaderColorMapKnot[], scene: Scene) {
+    private static _CreateBoneMapColorBuffer(size: number, colorMap: ISkeletonMapShaderColorMapKnot[], scene: CoreScene) {
         const tempGrad = new DynamicTexture("temp", { width: size, height: 1 }, scene, false);
         const ctx = tempGrad.getContext();
         const grad = ctx.createLinearGradient(0, 0, size, 0);
@@ -314,7 +315,7 @@ export class SkeletonViewer {
     }
 
     /** If SkeletonViewer scene scope. */
-    private _scene: Scene;
+    private _scene: CoreScene;
 
     /** Gets or sets the color used to render the skeleton */
     public color: Color3 = Color3.White();
@@ -335,7 +336,7 @@ export class SkeletonViewer {
     private _ready: boolean;
 
     /** SkeletonViewer render observable. */
-    private _obs: Nullable<Observer<Scene>> = null;
+    private _obs: Nullable<Observer<CoreScene>> = null;
 
     /** The Utility Layer to render the gizmos in. */
     private _utilityLayer: Nullable<UtilityLayerRenderer>;
@@ -343,7 +344,7 @@ export class SkeletonViewer {
     private _boneIndices: Set<number>;
 
     /** Gets the Scene. */
-    get scene(): Scene {
+    get scene(): CoreScene {
         return this._scene;
     }
     /** Gets the utilityLayer. */
@@ -392,7 +393,7 @@ export class SkeletonViewer {
         /** defines the mesh attached to the skeleton */
         public mesh: Nullable<AbstractMesh>,
         /** The Scene scope*/
-        scene: Scene,
+        scene: CoreScene,
         /** [true] defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)  */
         public autoUpdateBonesMatrices: boolean = true,
         /** [3] defines the rendering group id to use with the viewer */
@@ -455,9 +456,11 @@ export class SkeletonViewer {
     private _bindObs(): void {
         switch (this.displayMode) {
             case SkeletonViewer.DISPLAY_LINES: {
-                this._obs = this.scene.onBeforeRenderObservable.add(() => {
-                    this._displayLinesUpdate();
-                });
+                if (IsFullScene(this.scene)) {
+                    this._obs = this.scene.onBeforeRenderObservable.add(() => {
+                        this._displayLinesUpdate();
+                    });
+                }
                 break;
             }
         }
@@ -498,7 +501,9 @@ export class SkeletonViewer {
         if (value && !this._obs) {
             this._bindObs();
         } else if (!value && this._obs) {
-            this.scene.onBeforeRenderObservable.remove(this._obs);
+            if (IsFullScene(this.scene)) {
+                this.scene.onBeforeRenderObservable.remove(this._obs);
+            }
             this._obs = null;
         }
     }
@@ -625,7 +630,14 @@ export class SkeletonViewer {
         return;
     }
 
-    private _createSpur(anchorPoint: Vector3, bone: Bone, childPoint: Vector3, childBone: Nullable<Bone>, displayOptions: ISkeletonViewerDisplayOptions, utilityLayerScene: Scene) {
+    private _createSpur(
+        anchorPoint: Vector3,
+        bone: Bone,
+        childPoint: Vector3,
+        childBone: Nullable<Bone>,
+        displayOptions: ISkeletonViewerDisplayOptions,
+        utilityLayerScene: CoreScene
+    ) {
         const dir = childPoint.subtract(anchorPoint);
         const h = dir.length();
         const up = dir.normalize().scale(h);

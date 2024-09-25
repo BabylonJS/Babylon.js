@@ -13,6 +13,8 @@ import { Vector3 } from "../Maths/math.vector";
 import type { Camera } from "../Cameras/camera";
 import { Color3 } from "../Maths/math.color";
 import type { IPointerEvent } from "../Events/deviceInputEvents";
+import type { CoreScene } from "core/coreScene";
+import { IsFullScene } from "core/coreScene.functions";
 
 /**
  * Renders a layer on top of an existing scene
@@ -91,7 +93,7 @@ export class UtilityLayerRenderer implements IDisposable {
      * @param scene associated scene
      * @internal
      */
-    public static _CreateDefaultUtilityLayerFromScene(scene: Scene): UtilityLayerRenderer {
+    public static _CreateDefaultUtilityLayerFromScene(scene: CoreScene): UtilityLayerRenderer {
         UtilityLayerRenderer._DefaultUtilityLayer = new UtilityLayerRenderer(scene);
         UtilityLayerRenderer._DefaultUtilityLayer.originalScene.onDisposeObservable.addOnce(() => {
             UtilityLayerRenderer._DefaultUtilityLayer = null;
@@ -146,7 +148,7 @@ export class UtilityLayerRenderer implements IDisposable {
     public mainSceneTrackerPredicate: (mesh: Nullable<AbstractMesh>) => boolean;
 
     private _afterRenderObserver: Nullable<Observer<Camera>>;
-    private _sceneDisposeObserver: Nullable<Observer<Scene>>;
+    private _sceneDisposeObserver: Nullable<Observer<CoreScene>>;
     private _originalPointerObserver: Nullable<Observer<PointerInfoPre>>;
     /**
      * Instantiates a UtilityLayerRenderer
@@ -155,7 +157,7 @@ export class UtilityLayerRenderer implements IDisposable {
      */
     constructor(
         /** the original scene that will be rendered on top of */
-        public originalScene: Scene,
+        public originalScene: CoreScene,
         handleEvents: boolean = true
     ) {
         // Create scene which will be rendered in the foreground and remove it from being referenced by engine to avoid interfering with existing app
@@ -170,156 +172,161 @@ export class UtilityLayerRenderer implements IDisposable {
         this.utilityLayerScene.detachControl();
 
         if (handleEvents) {
-            this._originalPointerObserver = originalScene.onPrePointerObservable.add((prePointerInfo) => {
-                if (!this.utilityLayerScene.activeCamera) {
-                    return;
-                }
-                if (!this.pickingEnabled) {
-                    return;
-                }
+            this._originalPointerObserver = !IsFullScene(originalScene)
+                ? null
+                : originalScene.onPrePointerObservable.add((prePointerInfo) => {
+                      if (!this.utilityLayerScene.activeCamera) {
+                          return;
+                      }
+                      if (!this.pickingEnabled) {
+                          return;
+                      }
 
-                if (!this.processAllEvents) {
-                    if (
-                        prePointerInfo.type !== PointerEventTypes.POINTERMOVE &&
-                        prePointerInfo.type !== PointerEventTypes.POINTERUP &&
-                        prePointerInfo.type !== PointerEventTypes.POINTERDOWN &&
-                        prePointerInfo.type !== PointerEventTypes.POINTERDOUBLETAP
-                    ) {
-                        return;
-                    }
-                }
-                this.utilityLayerScene.pointerX = originalScene.pointerX;
-                this.utilityLayerScene.pointerY = originalScene.pointerY;
-                const pointerEvent = <IPointerEvent>prePointerInfo.event;
-                if (originalScene!.isPointerCaptured(pointerEvent.pointerId)) {
-                    this._pointerCaptures[pointerEvent.pointerId] = false;
-                    return;
-                }
+                      if (!this.processAllEvents) {
+                          if (
+                              prePointerInfo.type !== PointerEventTypes.POINTERMOVE &&
+                              prePointerInfo.type !== PointerEventTypes.POINTERUP &&
+                              prePointerInfo.type !== PointerEventTypes.POINTERDOWN &&
+                              prePointerInfo.type !== PointerEventTypes.POINTERDOUBLETAP
+                          ) {
+                              return;
+                          }
+                      }
+                      this.utilityLayerScene.pointerX = originalScene.pointerX;
+                      this.utilityLayerScene.pointerY = originalScene.pointerY;
+                      const pointerEvent = <IPointerEvent>prePointerInfo.event;
+                      if (originalScene!.isPointerCaptured(pointerEvent.pointerId)) {
+                          this._pointerCaptures[pointerEvent.pointerId] = false;
+                          return;
+                      }
 
-                const getNearPickDataForScene = (scene: Scene) => {
-                    let scenePick = null;
+                      const getNearPickDataForScene = (scene: Scene) => {
+                          let scenePick = null;
 
-                    if (prePointerInfo.nearInteractionPickingInfo) {
-                        if (prePointerInfo.nearInteractionPickingInfo.pickedMesh!.getScene() == scene) {
-                            scenePick = prePointerInfo.nearInteractionPickingInfo;
-                        } else {
-                            scenePick = new PickingInfo();
-                        }
-                    } else if (scene !== this.utilityLayerScene && prePointerInfo.originalPickingInfo) {
-                        scenePick = prePointerInfo.originalPickingInfo;
-                    } else {
-                        let previousActiveCamera: Nullable<Camera> = null;
-                        // If a camera is set for rendering with this layer
-                        // it will also be used for the ray computation
-                        // To preserve back compat and because scene.pick always use activeCamera
-                        // it's substituted temporarily and a new scenePick is forced.
-                        // otherwise, the ray with previously active camera is always used.
-                        // It's set back to previous activeCamera after operation.
-                        if (this._renderCamera) {
-                            previousActiveCamera = scene._activeCamera;
-                            scene._activeCamera = this._renderCamera;
-                            prePointerInfo.ray = null;
-                        }
-                        scenePick = prePointerInfo.ray ? scene.pickWithRay(prePointerInfo.ray) : scene.pick(originalScene.pointerX, originalScene.pointerY);
-                        if (previousActiveCamera) {
-                            scene._activeCamera = previousActiveCamera;
-                        }
-                    }
+                          if (prePointerInfo.nearInteractionPickingInfo) {
+                              if (prePointerInfo.nearInteractionPickingInfo.pickedMesh!.getScene() == scene) {
+                                  scenePick = prePointerInfo.nearInteractionPickingInfo;
+                              } else {
+                                  scenePick = new PickingInfo();
+                              }
+                          } else if (scene !== this.utilityLayerScene && prePointerInfo.originalPickingInfo) {
+                              scenePick = prePointerInfo.originalPickingInfo;
+                          } else {
+                              let previousActiveCamera: Nullable<Camera> = null;
+                              // If a camera is set for rendering with this layer
+                              // it will also be used for the ray computation
+                              // To preserve back compat and because scene.pick always use activeCamera
+                              // it's substituted temporarily and a new scenePick is forced.
+                              // otherwise, the ray with previously active camera is always used.
+                              // It's set back to previous activeCamera after operation.
+                              if (this._renderCamera) {
+                                  previousActiveCamera = scene._activeCamera;
+                                  scene._activeCamera = this._renderCamera;
+                                  prePointerInfo.ray = null;
+                              }
+                              scenePick = prePointerInfo.ray ? scene.pickWithRay(prePointerInfo.ray) : scene.pick(originalScene.pointerX, originalScene.pointerY);
+                              if (previousActiveCamera) {
+                                  scene._activeCamera = previousActiveCamera;
+                              }
+                          }
 
-                    return scenePick;
-                };
+                          return scenePick;
+                      };
 
-                const utilityScenePick = getNearPickDataForScene(this.utilityLayerScene);
+                      const utilityScenePick = getNearPickDataForScene(this.utilityLayerScene);
 
-                if (!prePointerInfo.ray && utilityScenePick) {
-                    prePointerInfo.ray = utilityScenePick.ray;
-                }
+                      if (!prePointerInfo.ray && utilityScenePick) {
+                          prePointerInfo.ray = utilityScenePick.ray;
+                      }
 
-                // always fire the prepointer observable
-                this.utilityLayerScene.onPrePointerObservable.notifyObservers(prePointerInfo);
+                      // always fire the prepointer observable
+                      this.utilityLayerScene.onPrePointerObservable.notifyObservers(prePointerInfo);
 
-                // allow every non pointer down event to flow to the utility layer
-                if (this.onlyCheckPointerDownEvents && prePointerInfo.type != PointerEventTypes.POINTERDOWN) {
-                    if (!prePointerInfo.skipOnPointerObservable) {
-                        this.utilityLayerScene.onPointerObservable.notifyObservers(
-                            new PointerInfo(prePointerInfo.type, prePointerInfo.event, utilityScenePick),
-                            prePointerInfo.type
-                        );
-                    }
-                    if (prePointerInfo.type === PointerEventTypes.POINTERUP && this._pointerCaptures[pointerEvent.pointerId]) {
-                        this._pointerCaptures[pointerEvent.pointerId] = false;
-                    }
-                    return;
-                }
+                      // allow every non pointer down event to flow to the utility layer
+                      if (this.onlyCheckPointerDownEvents && prePointerInfo.type != PointerEventTypes.POINTERDOWN) {
+                          if (!prePointerInfo.skipOnPointerObservable) {
+                              this.utilityLayerScene.onPointerObservable.notifyObservers(
+                                  new PointerInfo(prePointerInfo.type, prePointerInfo.event, utilityScenePick),
+                                  prePointerInfo.type
+                              );
+                          }
+                          if (prePointerInfo.type === PointerEventTypes.POINTERUP && this._pointerCaptures[pointerEvent.pointerId]) {
+                              this._pointerCaptures[pointerEvent.pointerId] = false;
+                          }
+                          return;
+                      }
 
-                if (this.utilityLayerScene.autoClearDepthAndStencil || this.pickUtilitySceneFirst) {
-                    // If this layer is an overlay, check if this layer was hit and if so, skip pointer events for the main scene
-                    if (utilityScenePick && utilityScenePick.hit) {
-                        if (!prePointerInfo.skipOnPointerObservable) {
-                            this.utilityLayerScene.onPointerObservable.notifyObservers(
-                                new PointerInfo(prePointerInfo.type, prePointerInfo.event, utilityScenePick),
-                                prePointerInfo.type
-                            );
-                        }
-                        prePointerInfo.skipOnPointerObservable = true;
-                    }
-                } else {
-                    const originalScenePick = getNearPickDataForScene(originalScene);
-                    const pointerEvent = <IPointerEvent>prePointerInfo.event;
+                      if (this.utilityLayerScene.autoClearDepthAndStencil || this.pickUtilitySceneFirst) {
+                          // If this layer is an overlay, check if this layer was hit and if so, skip pointer events for the main scene
+                          if (utilityScenePick && utilityScenePick.hit) {
+                              if (!prePointerInfo.skipOnPointerObservable) {
+                                  this.utilityLayerScene.onPointerObservable.notifyObservers(
+                                      new PointerInfo(prePointerInfo.type, prePointerInfo.event, utilityScenePick),
+                                      prePointerInfo.type
+                                  );
+                              }
+                              prePointerInfo.skipOnPointerObservable = true;
+                          }
+                      } else {
+                          const originalScenePick = getNearPickDataForScene(originalScene);
+                          const pointerEvent = <IPointerEvent>prePointerInfo.event;
 
-                    // If the layer can be occluded by the original scene, only fire pointer events to the first layer that hit they ray
-                    if (originalScenePick && utilityScenePick) {
-                        // No pick in utility scene
-                        if (utilityScenePick.distance === 0 && originalScenePick.pickedMesh) {
-                            if (this.mainSceneTrackerPredicate && this.mainSceneTrackerPredicate(originalScenePick.pickedMesh)) {
-                                // We touched an utility mesh present in the main scene
-                                this._notifyObservers(prePointerInfo, originalScenePick, pointerEvent);
-                                prePointerInfo.skipOnPointerObservable = true;
-                            } else if (prePointerInfo.type === PointerEventTypes.POINTERDOWN) {
-                                this._pointerCaptures[pointerEvent.pointerId] = true;
-                            } else if (prePointerInfo.type === PointerEventTypes.POINTERMOVE || prePointerInfo.type === PointerEventTypes.POINTERUP) {
-                                if (this._lastPointerEvents[pointerEvent.pointerId]) {
-                                    // We need to send a last pointerup to the utilityLayerScene to make sure animations can complete
-                                    this.onPointerOutObservable.notifyObservers(pointerEvent.pointerId);
-                                    delete this._lastPointerEvents[pointerEvent.pointerId];
-                                }
-                                this._notifyObservers(prePointerInfo, originalScenePick, pointerEvent);
-                            }
-                        } else if (!this._pointerCaptures[pointerEvent.pointerId] && (utilityScenePick.distance < originalScenePick.distance || originalScenePick.distance === 0)) {
-                            // We pick something in utility scene or the pick in utility is closer than the one in main scene
-                            this._notifyObservers(prePointerInfo, utilityScenePick, pointerEvent);
-                            // If a previous utility layer set this, do not unset this
-                            if (!prePointerInfo.skipOnPointerObservable) {
-                                prePointerInfo.skipOnPointerObservable = utilityScenePick.distance > 0;
-                            }
-                        } else if (!this._pointerCaptures[pointerEvent.pointerId] && utilityScenePick.distance >= originalScenePick.distance) {
-                            // We have a pick in both scenes but main is closer than utility
+                          // If the layer can be occluded by the original scene, only fire pointer events to the first layer that hit they ray
+                          if (originalScenePick && utilityScenePick) {
+                              // No pick in utility scene
+                              if (utilityScenePick.distance === 0 && originalScenePick.pickedMesh) {
+                                  if (this.mainSceneTrackerPredicate && this.mainSceneTrackerPredicate(originalScenePick.pickedMesh)) {
+                                      // We touched an utility mesh present in the main scene
+                                      this._notifyObservers(prePointerInfo, originalScenePick, pointerEvent);
+                                      prePointerInfo.skipOnPointerObservable = true;
+                                  } else if (prePointerInfo.type === PointerEventTypes.POINTERDOWN) {
+                                      this._pointerCaptures[pointerEvent.pointerId] = true;
+                                  } else if (prePointerInfo.type === PointerEventTypes.POINTERMOVE || prePointerInfo.type === PointerEventTypes.POINTERUP) {
+                                      if (this._lastPointerEvents[pointerEvent.pointerId]) {
+                                          // We need to send a last pointerup to the utilityLayerScene to make sure animations can complete
+                                          this.onPointerOutObservable.notifyObservers(pointerEvent.pointerId);
+                                          delete this._lastPointerEvents[pointerEvent.pointerId];
+                                      }
+                                      this._notifyObservers(prePointerInfo, originalScenePick, pointerEvent);
+                                  }
+                              } else if (
+                                  !this._pointerCaptures[pointerEvent.pointerId] &&
+                                  (utilityScenePick.distance < originalScenePick.distance || originalScenePick.distance === 0)
+                              ) {
+                                  // We pick something in utility scene or the pick in utility is closer than the one in main scene
+                                  this._notifyObservers(prePointerInfo, utilityScenePick, pointerEvent);
+                                  // If a previous utility layer set this, do not unset this
+                                  if (!prePointerInfo.skipOnPointerObservable) {
+                                      prePointerInfo.skipOnPointerObservable = utilityScenePick.distance > 0;
+                                  }
+                              } else if (!this._pointerCaptures[pointerEvent.pointerId] && utilityScenePick.distance >= originalScenePick.distance) {
+                                  // We have a pick in both scenes but main is closer than utility
 
-                            // We touched an utility mesh present in the main scene
-                            if (this.mainSceneTrackerPredicate && this.mainSceneTrackerPredicate(originalScenePick.pickedMesh)) {
-                                this._notifyObservers(prePointerInfo, originalScenePick, pointerEvent);
-                                prePointerInfo.skipOnPointerObservable = true;
-                            } else {
-                                if (prePointerInfo.type === PointerEventTypes.POINTERMOVE || prePointerInfo.type === PointerEventTypes.POINTERUP) {
-                                    if (this._lastPointerEvents[pointerEvent.pointerId]) {
-                                        // We need to send a last pointerup to the utilityLayerScene to make sure animations can complete
-                                        this.onPointerOutObservable.notifyObservers(pointerEvent.pointerId);
-                                        delete this._lastPointerEvents[pointerEvent.pointerId];
-                                    }
-                                }
-                                this._notifyObservers(prePointerInfo, utilityScenePick, pointerEvent);
-                            }
-                        }
+                                  // We touched an utility mesh present in the main scene
+                                  if (this.mainSceneTrackerPredicate && this.mainSceneTrackerPredicate(originalScenePick.pickedMesh)) {
+                                      this._notifyObservers(prePointerInfo, originalScenePick, pointerEvent);
+                                      prePointerInfo.skipOnPointerObservable = true;
+                                  } else {
+                                      if (prePointerInfo.type === PointerEventTypes.POINTERMOVE || prePointerInfo.type === PointerEventTypes.POINTERUP) {
+                                          if (this._lastPointerEvents[pointerEvent.pointerId]) {
+                                              // We need to send a last pointerup to the utilityLayerScene to make sure animations can complete
+                                              this.onPointerOutObservable.notifyObservers(pointerEvent.pointerId);
+                                              delete this._lastPointerEvents[pointerEvent.pointerId];
+                                          }
+                                      }
+                                      this._notifyObservers(prePointerInfo, utilityScenePick, pointerEvent);
+                                  }
+                              }
 
-                        if (prePointerInfo.type === PointerEventTypes.POINTERUP && this._pointerCaptures[pointerEvent.pointerId]) {
-                            this._pointerCaptures[pointerEvent.pointerId] = false;
-                        }
-                    }
-                }
-            });
+                              if (prePointerInfo.type === PointerEventTypes.POINTERUP && this._pointerCaptures[pointerEvent.pointerId]) {
+                                  this._pointerCaptures[pointerEvent.pointerId] = false;
+                              }
+                          }
+                      }
+                  });
 
             // As a newly added utility layer will be rendered over the screen last, it's pointer events should be processed first
-            if (this._originalPointerObserver) {
+            if (this._originalPointerObserver && IsFullScene(originalScene)) {
                 originalScene.onPrePointerObservable.makeObserverTopPriority(this._originalPointerObserver);
             }
         }
@@ -327,12 +334,14 @@ export class UtilityLayerRenderer implements IDisposable {
         // Render directly on top of existing scene without clearing
         this.utilityLayerScene.autoClear = false;
 
-        this._afterRenderObserver = this.originalScene.onAfterRenderCameraObservable.add((camera) => {
-            // Only render when the render camera finishes rendering
-            if (this.shouldRender && camera == this.getRenderCamera()) {
-                this.render();
-            }
-        });
+        this._afterRenderObserver = !IsFullScene(originalScene)
+            ? null
+            : originalScene.onAfterRenderCameraObservable.add((camera) => {
+                  // Only render when the render camera finishes rendering
+                  if (this.shouldRender && camera == this.getRenderCamera()) {
+                      this.render();
+                  }
+              });
 
         this._sceneDisposeObserver = this.originalScene.onDisposeObservable.add(() => {
             this.dispose();
@@ -384,13 +393,13 @@ export class UtilityLayerRenderer implements IDisposable {
     public dispose() {
         this.onPointerOutObservable.clear();
 
-        if (this._afterRenderObserver) {
+        if (this._afterRenderObserver && IsFullScene(this.originalScene)) {
             this.originalScene.onAfterCameraRenderObservable.remove(this._afterRenderObserver);
         }
         if (this._sceneDisposeObserver) {
             this.originalScene.onDisposeObservable.remove(this._sceneDisposeObserver);
         }
-        if (this._originalPointerObserver) {
+        if (this._originalPointerObserver && IsFullScene(this.originalScene)) {
             this.originalScene.onPrePointerObservable.remove(this._originalPointerObserver);
         }
         this.utilityLayerScene.dispose();

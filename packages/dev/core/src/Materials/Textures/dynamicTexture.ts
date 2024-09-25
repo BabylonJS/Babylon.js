@@ -1,12 +1,13 @@
 import { Logger } from "../../Misc/logger";
 import type { Nullable } from "../../types";
-import type { Scene } from "../../scene";
 import type { ISize } from "../../Maths/math.size";
 import { Texture } from "../../Materials/Textures/texture";
 import { Constants } from "../../Engines/constants";
 import type { ICanvas, ICanvasRenderingContext } from "../../Engines/ICanvas";
 
 import "../../Engines/Extensions/engine.dynamicTexture";
+import type { CoreScene } from "core/coreScene";
+import { IsFullScene } from "core/coreScene.functions";
 
 /**
  * A class extending Texture allowing drawing on a texture
@@ -32,7 +33,7 @@ export class DynamicTexture extends Texture {
     constructor(
         name: string,
         options: any,
-        scene: Nullable<Scene> = null,
+        scene: Nullable<CoreScene> = null,
         generateMipMaps: boolean = false,
         samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         format: number = Constants.TEXTUREFORMAT_RGBA,
@@ -255,7 +256,7 @@ export class DynamicTexture extends Texture {
      */
     public override serialize(): any {
         const scene = this.getScene();
-        if (scene && !scene.isReady()) {
+        if (scene && IsFullScene(scene) && !scene.isReady()) {
             Logger.Warn("The scene must be ready before serializing the dynamic texture");
         }
 

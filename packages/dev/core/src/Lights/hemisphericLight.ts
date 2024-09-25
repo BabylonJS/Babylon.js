@@ -1,6 +1,5 @@
 import { serializeAsColor3, serializeAsVector3 } from "../Misc/decorators";
 import type { Nullable } from "../types";
-import type { Scene } from "../scene";
 import { Matrix, Vector3 } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import { Node } from "../node";
@@ -8,6 +7,7 @@ import type { Effect } from "../Materials/effect";
 import { Light } from "./light";
 import type { IShadowGenerator } from "./Shadows/shadowGenerator";
 import { RegisterClass } from "../Misc/typeStore";
+import type { CoreScene } from "core/coreScene";
 
 Node.AddNodeConstructor("Light_Type_3", (name, scene) => {
     return () => new HemisphericLight(name, Vector3.Zero(), scene);
@@ -40,7 +40,7 @@ export class HemisphericLight extends Light {
      * @param direction The direction of the light reflection
      * @param scene The scene the light belongs to
      */
-    constructor(name: string, direction: Vector3, scene?: Scene) {
+    constructor(name: string, direction: Vector3, scene?: CoreScene) {
         super(name, scene);
         this.direction = direction || Vector3.Up();
     }

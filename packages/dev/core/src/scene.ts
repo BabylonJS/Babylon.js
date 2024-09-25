@@ -777,7 +777,7 @@ export class Scene extends CoreScene implements IAnimatable, INodeContainer {
     /**
      * An event triggered after calculating deterministic simulation step
      */
-    public onAfterStepObservable = new Observable<Scene>();
+    public onAfterStepObservable = new Observable<CoreScene>();
 
     /**
      * This Observable will be triggered before rendering each renderingGroup of each rendered camera.
@@ -4626,7 +4626,6 @@ export class Scene extends CoreScene implements IAnimatable, INodeContainer {
         this.onAfterDrawPhaseObservable.clear();
         this.onBeforeAnimationsObservable.clear();
         this.onAfterAnimationsObservable.clear();
-        this.onDataLoadedObservable.clear();
         this.onBeforeRenderingGroupObservable.clear();
         this.onAfterRenderingGroupObservable.clear();
         this.onMeshImportedObservable.clear();
