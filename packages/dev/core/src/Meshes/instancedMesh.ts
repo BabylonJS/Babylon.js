@@ -16,6 +16,7 @@ import { VertexBuffer } from "../Buffers/buffer";
 import { Tools } from "../Misc/tools";
 import type { ThinEngine } from "../Engines/thinEngine";
 import { RegisterClass } from "../Misc/typeStore";
+import type { Scene } from "core/scene";
 
 Mesh._instancedMeshFactory = (name: string, mesh: Mesh): InstancedMesh => {
     const instance = new InstancedMesh(name, mesh);
@@ -566,10 +567,11 @@ export class InstancedMesh extends AbstractMesh {
             result.parent = newParent;
         }
 
-        if (!doNotCloneChildren) {
+        if (!doNotCloneChildren && !this.getScene().isCore) {
             // Children
-            for (let index = 0; index < this.getScene().meshes.length; index++) {
-                const mesh = this.getScene().meshes[index];
+            const fullScene = this.getScene() as Scene;
+            for (let index = 0; index < fullScene.meshes.length; index++) {
+                const mesh = fullScene.meshes[index];
 
                 if (mesh.parent === this) {
                     mesh.clone(mesh.name, result);

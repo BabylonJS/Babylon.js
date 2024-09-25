@@ -11,6 +11,7 @@ import { Frustum } from "../../Maths/math.frustum";
 import type { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
 import type { RenderTargetWrapper } from "../renderTargetWrapper";
 import type { AbstractEngine } from "../abstractEngine";
+import { CoreScene } from "core/coreScene";
 
 declare module "../../Engines/engine" {
     export interface Engine {
@@ -165,8 +166,8 @@ Camera.prototype._resizeOrCreateMultiviewTexture = function (width: number, heig
     }
 };
 
-declare module "../../scene" {
-    export interface Scene {
+declare module "../../coreScene" {
+    export interface CoreScene {
         /** @internal */
         _transformMatrixR: Matrix;
         /** @internal */
@@ -192,18 +193,18 @@ function createMultiviewUbo(engine: AbstractEngine, name?: string) {
 
 const currentCreateSceneUniformBuffer = Scene.prototype.createSceneUniformBuffer;
 
-Scene.prototype._transformMatrixR = Matrix.Zero();
-Scene.prototype._multiviewSceneUbo = null;
-Scene.prototype._createMultiviewUbo = function () {
+CoreScene.prototype._transformMatrixR = Matrix.Zero();
+CoreScene.prototype._multiviewSceneUbo = null;
+CoreScene.prototype._createMultiviewUbo = function () {
     this._multiviewSceneUbo = createMultiviewUbo(this.getEngine(), "scene_multiview");
 };
-Scene.prototype.createSceneUniformBuffer = function (name?: string): UniformBuffer {
+CoreScene.prototype.createSceneUniformBuffer = function (name?: string): UniformBuffer {
     if (this._multiviewSceneUbo) {
         return createMultiviewUbo(this.getEngine(), name);
     }
     return currentCreateSceneUniformBuffer.bind(this)(name);
 };
-Scene.prototype._updateMultiviewUbo = function (viewR?: Matrix, projectionR?: Matrix) {
+CoreScene.prototype._updateMultiviewUbo = function (viewR?: Matrix, projectionR?: Matrix) {
     if (viewR && projectionR) {
         viewR.multiplyToRef(projectionR, this._transformMatrixR);
     }

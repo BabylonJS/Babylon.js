@@ -2815,7 +2815,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
      * @returns an array of particle systems in the scene that use the mesh as an emitter
      */
     public getConnectedParticleSystems(): IParticleSystem[] {
-        if (!this._scene.isCore) {
+        if (this._scene.isCore) {
             return [];
         }
         return (this._scene as Scene).particleSystems.filter((particleSystem) => particleSystem.emitter === this);

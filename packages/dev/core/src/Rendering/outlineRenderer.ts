@@ -66,7 +66,7 @@ Object.defineProperty(Mesh.prototype, "renderOutline", {
     set: function (this: Mesh, value: boolean) {
         if (value) {
             // Lazy Load the component.
-            this.getScene().getOutlineRenderer();
+            (this.getScene() as Scene).getOutlineRenderer();
         }
         this._renderOutline = value;
     },
@@ -81,7 +81,7 @@ Object.defineProperty(Mesh.prototype, "renderOverlay", {
     set: function (this: Mesh, value: boolean) {
         if (value) {
             // Lazy Load the component.
-            this.getScene().getOutlineRenderer();
+            (this.getScene() as Scene).getOutlineRenderer();
         }
         this._renderOverlay = value;
     },

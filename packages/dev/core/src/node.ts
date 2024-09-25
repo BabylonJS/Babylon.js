@@ -20,6 +20,7 @@ import { SerializationHelper } from "./Misc/decorators.serialization";
 import { UniqueIdGenerator } from "./Misc/uniqueIdGenerator";
 import type { CoreScene } from "./coreScene";
 import type { INodeContainer } from "./INodeContainer";
+import type { Scene } from "./scene";
 
 /**
  * Defines how a node can be built from a string name.

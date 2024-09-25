@@ -1,10 +1,14 @@
 import type { Camera } from "./Cameras/camera";
 import type { AbstractEngine, ISceneLike } from "./Engines/abstractEngine";
 import type { Material } from "./Materials/material";
-import type { Matrix } from "./Maths/math.vector";
+import { UniformBuffer } from "./Materials/uniformBuffer";
+import { Frustum } from "./Maths/math.frustum";
+import type { Plane } from "./Maths/math.plane";
+import { Matrix } from "./Maths/math.vector";
 import type { IFileRequest } from "./Misc/fileRequest";
 import type { LoadFileError, ReadFileError, RequestFileError } from "./Misc/fileTools";
 import { LoadFile, ReadFile, RequestFile } from "./Misc/fileTools";
+import type { IClipPlanesHolder } from "./Misc/interfaces/iClipPlanesHolder";
 import { Logger } from "./Misc/logger";
 import { Observable } from "./Misc/observable";
 import type { Observer } from "./Misc/observable";
@@ -16,7 +20,7 @@ import type { Nullable } from "./types";
 /**
  * Minimal scene class. Where Scene is doint all the heavy lifting at the price of file size, CoreScene is a minimal version of Scene.
  */
-export class CoreScene implements ISceneLike {
+export class CoreScene implements ISceneLike, IClipPlanesHolder {
     /** @internal */
     public _animationTime: number = 0;
 
@@ -50,6 +54,36 @@ export class CoreScene implements ISceneLike {
     public getClassName(): string {
         return "CoreScene";
     }
+
+    /**
+     * Gets or sets the active clipplane 1
+     */
+    public clipPlane: Nullable<Plane>;
+
+    /**
+     * Gets or sets the active clipplane 2
+     */
+    public clipPlane2: Nullable<Plane>;
+
+    /**
+     * Gets or sets the active clipplane 3
+     */
+    public clipPlane3: Nullable<Plane>;
+
+    /**
+     * Gets or sets the active clipplane 4
+     */
+    public clipPlane4: Nullable<Plane>;
+
+    /**
+     * Gets or sets the active clipplane 5
+     */
+    public clipPlane5: Nullable<Plane>;
+
+    /**
+     * Gets or sets the active clipplane 6
+     */
+    public clipPlane6: Nullable<Plane>;
 
     /**
      * An event triggered when SceneLoader.Append or SceneLoader.Load or SceneLoader.ImportMesh were successfully executed
@@ -176,6 +210,57 @@ export class CoreScene implements ISceneLike {
     /** @internal */
     public _projectionMatrix: Matrix;
 
+    /** @internal */
+    protected _transformMatrix = Matrix.Zero();
+
+    /** @internal */
+    protected _sceneUbo: UniformBuffer;
+
+    /** @internal */
+    public _frustumPlanes: Plane[];
+    /**
+     * Gets the list of frustum planes (built from the active camera)
+     */
+    public get frustumPlanes(): Plane[] {
+        return this._frustumPlanes;
+    }
+
+    private _viewUpdateFlag = -1;
+    private _projectionUpdateFlag = -1;
+
+    /**
+     * Gets the uniform buffer used to store scene data
+     * @returns a UniformBuffer
+     */
+    public getSceneUniformBuffer(): UniformBuffer {
+        return this._multiviewSceneUbo ? this._multiviewSceneUbo : this._sceneUbo;
+    }
+
+    /**
+     * Creates a scene UBO
+     * @param name name of the uniform buffer (optional, for debugging purpose only)
+     * @returns a new ubo
+     */
+    public createSceneUniformBuffer(name?: string): UniformBuffer {
+        const sceneUbo = new UniformBuffer(this._engine, undefined, false, name ?? "scene");
+        sceneUbo.addUniform("viewProjection", 16);
+        sceneUbo.addUniform("view", 16);
+        sceneUbo.addUniform("projection", 16);
+        sceneUbo.addUniform("vEyePosition", 4);
+
+        return sceneUbo;
+    }
+
+    /**
+     * Sets the scene ubo
+     * @param ubo the ubo to set for the scene
+     */
+    public setSceneUniformBuffer(ubo: UniformBuffer): void {
+        this._sceneUbo = ubo;
+        this._viewUpdateFlag = -1;
+        this._projectionUpdateFlag = -1;
+    }
+
     /**
      * Gets the current view matrix
      * @returns a Matrix
@@ -197,6 +282,73 @@ export class CoreScene implements ISceneLike {
      */
     public get isCore() {
         return true;
+    }
+
+    /**
+     * Gets the current transform matrix
+     * @returns a Matrix made of View * Projection
+     */
+    public getTransformMatrix(): Matrix {
+        return this._transformMatrix;
+    }
+
+    /**
+     * Sets the current transform matrix
+     * @param viewL defines the View matrix to use
+     * @param projectionL defines the Projection matrix to use
+     * @param viewR defines the right View matrix to use (if provided)
+     * @param projectionR defines the right Projection matrix to use (if provided)
+     */
+    public setTransformMatrix(viewL: Matrix, projectionL: Matrix, viewR?: Matrix, projectionR?: Matrix): void {
+        // clear the multiviewSceneUbo if no viewR and projectionR are defined
+        if (!viewR && !projectionR && this._multiviewSceneUbo) {
+            this._multiviewSceneUbo.dispose();
+            this._multiviewSceneUbo = null;
+        }
+        if (this._viewUpdateFlag === viewL.updateFlag && this._projectionUpdateFlag === projectionL.updateFlag) {
+            return;
+        }
+
+        this._viewUpdateFlag = viewL.updateFlag;
+        this._projectionUpdateFlag = projectionL.updateFlag;
+        this._viewMatrix = viewL;
+        this._projectionMatrix = projectionL;
+
+        this._viewMatrix.multiplyToRef(this._projectionMatrix, this._transformMatrix);
+
+        // Update frustum
+        if (!this._frustumPlanes) {
+            this._frustumPlanes = Frustum.GetPlanes(this._transformMatrix);
+        } else {
+            Frustum.GetPlanesToRef(this._transformMatrix, this._frustumPlanes);
+        }
+
+        if (this._multiviewSceneUbo && this._multiviewSceneUbo.useUbo) {
+            this._updateMultiviewUbo(viewR, projectionR);
+        } else if (this._sceneUbo.useUbo) {
+            this._sceneUbo.updateMatrix("viewProjection", this._transformMatrix);
+            this._sceneUbo.updateMatrix("view", this._viewMatrix);
+            this._sceneUbo.updateMatrix("projection", this._projectionMatrix);
+        }
+    }
+
+    /**
+     * Update the transform matrix to update from the current active camera
+     * @param force defines a boolean used to force the update even if cache is up to date
+     */
+    public updateTransformMatrix(force?: boolean): void {
+        const activeCamera = this.activeCamera;
+        if (!activeCamera) {
+            return;
+        }
+
+        if (activeCamera._renderingMultiview) {
+            const leftCamera = activeCamera._rigCameras[0];
+            const rightCamera = activeCamera._rigCameras[1];
+            this.setTransformMatrix(leftCamera.getViewMatrix(), leftCamera.getProjectionMatrix(force), rightCamera.getViewMatrix(), rightCamera.getProjectionMatrix(force));
+        } else {
+            this.setTransformMatrix(activeCamera.getViewMatrix(), activeCamera.getProjectionMatrix(force));
+        }
     }
 
     /**

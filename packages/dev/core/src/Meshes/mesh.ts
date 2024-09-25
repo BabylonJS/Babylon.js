@@ -2376,6 +2376,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this._internalAbstractMeshDataInfo._isActive = false;
         }
 
+        const fullScene = this._scene as Scene;
         const numActiveCameras = scene.activeCameras?.length ?? 0;
         const canCheckOcclusionQuery = (numActiveCameras > 1 && scene.activeCamera === scene.activeCameras![0]) || numActiveCameras <= 1;
 
@@ -2398,7 +2399,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const engine = scene.getEngine();
         let oldCameraMaxZ = 0;
         let oldCamera: Nullable<Camera> = null;
-        if (this.ignoreCameraMaxZ && scene.activeCamera && !scene._isInIntermediateRendering()) {
+        if (this.ignoreCameraMaxZ && scene.activeCamera && (this._scene.isCore || !fullScene._isInIntermediateRendering())) {
             oldCameraMaxZ = scene.activeCamera.maxZ;
             oldCamera = scene.activeCamera;
             scene.activeCamera.maxZ = 0;
