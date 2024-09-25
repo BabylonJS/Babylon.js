@@ -11,6 +11,7 @@ import { EngineStore } from "../Engines/engineStore";
 import type { AbstractScene } from "../abstractScene";
 import { Tags } from "../Misc/tags";
 import type { AnimationGroupMask } from "./animationGroupMask";
+import "./animatable";
 
 /**
  * This class defines the direct association between an animation and a target

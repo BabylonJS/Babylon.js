@@ -5,9 +5,11 @@ import { ShadowGenerator } from "./shadowGenerator";
 import { CascadedShadowGenerator } from "./cascadedShadowGenerator";
 import type { ISceneSerializableComponent } from "../../sceneComponent";
 import { SceneComponentConstants } from "../../sceneComponent";
-import { AbstractScene } from "../../abstractScene";
+import type { AbstractScene } from "../../abstractScene";
+import { AddParser } from "core/Loading/Plugins/babylonFileParser.function";
+
 // Adds the parser to the scene parsers.
-AbstractScene.AddParser(SceneComponentConstants.NAME_SHADOWGENERATOR, (parsedData: any, scene: Scene) => {
+AddParser(SceneComponentConstants.NAME_SHADOWGENERATOR, (parsedData: any, scene: Scene) => {
     // Shadows
     if (parsedData.shadowGenerators !== undefined && parsedData.shadowGenerators !== null) {
         for (let index = 0, cache = parsedData.shadowGenerators.length; index < cache; index++) {

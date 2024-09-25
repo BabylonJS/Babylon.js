@@ -1,5 +1,8 @@
+// eslint-disable-next-line import/no-internal-modules
+import type { Nullable } from "core/index";
+
 import type { PropertyValues } from "lit";
-import type { Viewer, ViewerDetails } from "./viewer";
+import type { ViewerDetails } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, html } from "lit";
@@ -7,7 +10,7 @@ import { customElement, property, query, state } from "lit/decorators.js";
 
 import { AsyncLock } from "core/Misc/asyncLock";
 import { Logger } from "core/Misc/logger";
-import { createViewerForCanvas } from "./viewerFactory";
+import { createViewerForCanvas, getDefaultEngine } from "./viewerFactory";
 
 // Icon SVG is pulled from https://fluentuipr.z22.web.core.windows.net/heads/master/public-docsite-v9/storybook/iframe.html?id=icons-catalog--page&viewMode=story
 const playFilledIcon = "M17.22 8.68a1.5 1.5 0 0 1 0 2.63l-10 5.5A1.5 1.5 0 0 1 5 15.5v-11A1.5 1.5 0 0 1 7.22 3.2l10 5.5Z";
@@ -16,11 +19,11 @@ const pauseFilledIcon = "M5 2a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V4a2
 const allowedAnimationSpeeds = [0.5, 1, 1.5, 2] as const;
 
 interface HTML3DElementEventMap extends HTMLElementEventMap {
-    viewerready: CustomEvent<ViewerDetails>;
+    viewerready: Event;
     environmentchange: Event;
-    environmenterror: Event;
+    environmenterror: ErrorEvent;
     modelchange: Event;
-    modelerror: Event;
+    modelerror: ErrorEvent;
     selectedanimationchange: Event;
     animationspeedchange: Event;
     animationplayingchange: Event;
@@ -33,7 +36,7 @@ interface HTML3DElementEventMap extends HTMLElementEventMap {
 @customElement("babylon-viewer")
 export class HTML3DElement extends LitElement {
     private readonly _viewerLock = new AsyncLock();
-    private _viewer?: Viewer;
+    private _viewerDetails?: Readonly<ViewerDetails>;
 
     // eslint-disable-next-line @typescript-eslint/naming-convention, jsdoc/require-jsdoc
     static override styles = css`
@@ -98,7 +101,6 @@ export class HTML3DElement extends LitElement {
             outline: none;
             appearance: none; /* Remove default styling */
             -webkit-appearance: none; /* Remove default styling for Safari */
-            -moz-appearance: none; /* Remove default styling for Firefox */
         }
 
         .tool-bar select:hover,
@@ -206,16 +208,24 @@ export class HTML3DElement extends LitElement {
     `;
 
     /**
+     * Gets the underlying viewer details (when the underlying viewer is in a loaded state).
+     * This is useful for advanced scenarios where direct access to the viewer or Babylon scene is needed.
+     */
+    public get viewerDetails() {
+        return this._viewerDetails;
+    }
+
+    /**
      * The engine to use for rendering.
      */
     @property({ reflect: true })
-    public engine: CanvasViewerOptions["engine"];
+    public engine: NonNullable<CanvasViewerOptions["engine"]> = getDefaultEngine();
 
     /**
      * The model URL.
      */
     @property({ reflect: true })
-    public src: string | undefined;
+    public source: Nullable<string> = null;
 
     /**
      * Forces the model to be loaded with the specified extension.
@@ -223,13 +233,13 @@ export class HTML3DElement extends LitElement {
      * If this property is not set, the extension will be inferred from the model URL when possible.
      */
     @property({ reflect: true })
-    public extension: string | undefined;
+    public extension: Nullable<string> = null;
 
     /**
      * The environment URL.
      */
     @property({ reflect: true })
-    public env: string | undefined;
+    public environment: Nullable<string> = null;
 
     /**
      * The list of animation names for the currently loaded model.
@@ -273,25 +283,19 @@ export class HTML3DElement extends LitElement {
     @state()
     private _isAnimationPlaying = false;
 
-    @query("#renderCanvas")
-    private _canvas: HTMLCanvasElement;
+    @query("#canvasContainer")
+    private _canvasContainer: HTMLDivElement | undefined;
 
     /**
      * Toggles the play/pause animation state if there is a selected animation.
      */
     public toggleAnimation() {
-        this._viewer?.toggleAnimation();
+        this._viewerDetails?.viewer.toggleAnimation();
     }
 
     // eslint-disable-next-line babylonjs/available
     override connectedCallback(): void {
         super.connectedCallback();
-        this._setupViewer();
-    }
-
-    // eslint-disable-next-line babylonjs/available
-    override firstUpdated(_changedProperties: PropertyValues): void {
-        super.firstUpdated(_changedProperties);
         this._setupViewer();
     }
 
@@ -305,7 +309,7 @@ export class HTML3DElement extends LitElement {
     override update(changedProperties: PropertyValues): void {
         super.update(changedProperties);
 
-        if (changedProperties.has("engine" satisfies keyof this)) {
+        if (changedProperties.get("engine" satisfies keyof this)) {
             this._tearDownViewer();
             this._setupViewer();
         } else {
@@ -317,11 +321,11 @@ export class HTML3DElement extends LitElement {
                 this._updateSelectedAnimation();
             }
 
-            if (changedProperties.has("src" satisfies keyof this)) {
+            if (changedProperties.has("source" satisfies keyof this)) {
                 this._updateModel();
             }
 
-            if (changedProperties.has("env" satisfies keyof this)) {
+            if (changedProperties.has("environment" satisfies keyof this)) {
                 this._updateEnv();
             }
         }
@@ -331,7 +335,7 @@ export class HTML3DElement extends LitElement {
     override render() {
         return html`
             <div class="full-size">
-                <canvas id="renderCanvas" class="full-size" touch-action="none"></canvas>
+                <div id="canvasContainer" class="full-size"></div>
                 ${this.animations.length === 0
                     ? ""
                     : html`
@@ -380,16 +384,12 @@ export class HTML3DElement extends LitElement {
         listener: (this: HTMLElement, ev: HTML3DElementEventMap[K]) => any,
         options?: boolean | AddEventListenerOptions
     ): void;
-    override addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
-    override addEventListener(type: unknown, listener: unknown, options?: unknown): void {
+    override addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void {
         super.addEventListener(type as string, listener as EventListenerOrEventListenerObject, options as boolean | AddEventListenerOptions);
     }
 
-    private _dispatchCustomEvent<TEvent extends keyof HTML3DElementEventMap>(
-        ...args: HTML3DElementEventMap[TEvent] extends CustomEvent ? [type: TEvent, details: HTML3DElementEventMap[TEvent]["detail"]] : [type: TEvent]
-    ) {
-        const [type, details] = args;
-        this.dispatchEvent(details ? new CustomEvent(type, { detail: details }) : new Event(type));
+    private _dispatchCustomEvent<TEvent extends keyof HTML3DElementEventMap>(type: TEvent, event: (type: TEvent) => HTML3DElementEventMap[TEvent]) {
+        this.dispatchEvent(event(type));
     }
 
     private _onSelectedAnimationChanged(event: Event) {
@@ -403,111 +403,128 @@ export class HTML3DElement extends LitElement {
     }
 
     private _onProgressChanged(event: Event) {
-        if (this._viewer) {
+        if (this._viewerDetails) {
             const input = event.target as HTMLInputElement;
             const value = Number(input.value);
             if (value !== this.animationProgress) {
-                this._viewer.animationProgress = value;
+                this._viewerDetails.viewer.animationProgress = value;
             }
         }
     }
 
     private _onProgressPointerDown(event: Event) {
-        if (this._viewer?.isAnimationPlaying) {
-            this._viewer.pauseAnimation();
+        if (this._viewerDetails?.viewer.isAnimationPlaying) {
+            this._viewerDetails.viewer.pauseAnimation();
             const input = event.target as HTMLInputElement;
-            input.addEventListener("pointerup", () => this._viewer?.playAnimation(), { once: true });
+            input.addEventListener("pointerup", () => this._viewerDetails?.viewer.playAnimation(), { once: true });
         }
     }
 
     private async _setupViewer() {
-        if (this._canvas) {
-            await this._viewerLock.lockAsync(async () => {
-                if (!this._viewer) {
-                    await createViewerForCanvas(this._canvas, {
-                        engine: this.engine,
-                        onInitialized: (details) => {
-                            this._viewer = details.viewer;
+        await this._viewerLock.lockAsync(async () => {
+            // The first time the element is connected, the canvas container may not be available yet.
+            // Wait for the first update if needed.
+            if (!this._canvasContainer) {
+                await this.updateComplete;
+            }
 
-                            details.viewer.onEnvironmentChanged.add(() => {
-                                this._dispatchCustomEvent("environmentchange");
-                            });
+            if (this._canvasContainer && !this._viewerDetails) {
+                const canvas = document.createElement("canvas");
+                canvas.className = "full-size";
+                canvas.setAttribute("touch-action", "none");
+                this._canvasContainer.appendChild(canvas);
 
-                            details.viewer.onEnvironmentError.add(() => {
-                                this._dispatchCustomEvent("environmenterror");
-                            });
+                await createViewerForCanvas(canvas, {
+                    engine: this.engine,
+                    onInitialized: (details) => {
+                        this._viewerDetails = details;
 
-                            details.viewer.onModelChanged.add(() => {
-                                this._animations = [...(this._viewer?.animations ?? [])];
-                                this._dispatchCustomEvent("modelchange");
-                            });
+                        details.viewer.onEnvironmentChanged.add(() => {
+                            this._dispatchCustomEvent("environmentchange", (type) => new Event(type));
+                        });
 
-                            details.viewer.onModelError.add(() => {
-                                this._dispatchCustomEvent("modelerror");
-                            });
+                        details.viewer.onEnvironmentError.add((error) => {
+                            this._dispatchCustomEvent("environmenterror", (type) => new ErrorEvent(type, { error }));
+                        });
 
-                            details.viewer.onSelectedAnimationChanged.add(() => {
-                                this._selectedAnimation = this._viewer?.selectedAnimation ?? -1;
-                                this._dispatchCustomEvent("selectedanimationchange");
-                            });
+                        details.viewer.onModelChanged.add(() => {
+                            this._animations = [...details.viewer.animations];
+                            this._dispatchCustomEvent("modelchange", (type) => new Event(type));
+                        });
 
-                            details.viewer.onAnimationSpeedChanged.add(() => {
-                                let speed = this._viewer?.animationSpeed ?? 1;
-                                speed = allowedAnimationSpeeds.reduce((prev, curr) => (Math.abs(curr - speed) < Math.abs(prev - speed) ? curr : prev));
-                                this.animationSpeed = speed;
-                                this._dispatchCustomEvent("animationspeedchange");
-                            });
+                        details.viewer.onModelError.add((error) => {
+                            this._animations = [...details.viewer.animations];
+                            this._dispatchCustomEvent("modelerror", (type) => new ErrorEvent(type, { error }));
+                        });
 
-                            details.viewer.onIsAnimationPlayingChanged.add(() => {
-                                this._isAnimationPlaying = this._viewer?.isAnimationPlaying ?? false;
-                                this._dispatchCustomEvent("animationplayingchange");
-                            });
+                        details.viewer.onSelectedAnimationChanged.add(() => {
+                            this._selectedAnimation = details.viewer.selectedAnimation ?? -1;
+                            this._dispatchCustomEvent("selectedanimationchange", (type) => new Event(type));
+                        });
 
-                            details.viewer.onAnimationProgressChanged.add(() => {
-                                this.animationProgress = this._viewer?.animationProgress ?? 0;
-                                this._dispatchCustomEvent("animationprogresschange");
-                            });
+                        details.viewer.onAnimationSpeedChanged.add(() => {
+                            let speed = details.viewer.animationSpeed ?? 1;
+                            speed = allowedAnimationSpeeds.reduce((prev, curr) => (Math.abs(curr - speed) < Math.abs(prev - speed) ? curr : prev));
+                            this.animationSpeed = speed;
+                            this._dispatchCustomEvent("animationspeedchange", (type) => new Event(type));
+                        });
 
-                            this._updateSelectedAnimation();
-                            this._updateAnimationSpeed();
-                            this._updateModel();
-                            this._updateEnv();
+                        details.viewer.onIsAnimationPlayingChanged.add(() => {
+                            this._isAnimationPlaying = details.viewer.isAnimationPlaying ?? false;
+                            this._dispatchCustomEvent("animationplayingchange", (type) => new Event(type));
+                        });
 
-                            this._dispatchCustomEvent("viewerready", details);
-                        },
-                    });
-                }
-            });
-        }
+                        details.viewer.onAnimationProgressChanged.add(() => {
+                            this.animationProgress = details.viewer.animationProgress ?? 0;
+                            this._dispatchCustomEvent("animationprogresschange", (type) => new Event(type));
+                        });
+
+                        this._updateSelectedAnimation();
+                        this._updateAnimationSpeed();
+                        this._updateModel();
+                        this._updateEnv();
+
+                        this._dispatchCustomEvent("viewerready", (type) => new Event(type));
+                    },
+                });
+            }
+        });
     }
 
     private async _tearDownViewer() {
         await this._viewerLock.lockAsync(async () => {
-            if (this._viewer) {
-                this._viewer.dispose();
-                this._viewer = undefined;
+            if (this._viewerDetails) {
+                this._viewerDetails.viewer.dispose();
+                this._viewerDetails = undefined;
+            }
+
+            // We want to replace the canvas for two reasons:
+            // 1. When the viewer element is reconnected to the DOM, we don't want to briefly see the last frame of the previous model.
+            // 2. If we are changing engines (e.g. WebGL to WebGPU), we need to create a new canvas for the new engine.
+            if (this._canvasContainer && this._canvasContainer.firstElementChild) {
+                this._canvasContainer.removeChild(this._canvasContainer.firstElementChild);
             }
         });
     }
 
     private _updateAnimationSpeed() {
-        if (this._viewer) {
-            this._viewer.animationSpeed = this.animationSpeed;
+        if (this._viewerDetails) {
+            this._viewerDetails.viewer.animationSpeed = this.animationSpeed;
         }
     }
 
     private _updateSelectedAnimation() {
-        if (this._viewer) {
-            this._viewer.selectedAnimation = this._selectedAnimation;
+        if (this._viewerDetails) {
+            this._viewerDetails.viewer.selectedAnimation = this._selectedAnimation;
         }
     }
 
     private async _updateModel() {
         try {
-            if (this.src) {
-                await this._viewer?.loadModelAsync(this.src, { pluginExtension: this.extension });
+            if (this.source) {
+                await this._viewerDetails?.viewer.loadModel(this.source, { pluginExtension: this.extension ?? undefined });
             } else {
-                await this._viewer?.resetModelAsync();
+                await this._viewerDetails?.viewer.resetModel();
             }
         } catch (error) {
             Logger.Log(error);
@@ -516,10 +533,10 @@ export class HTML3DElement extends LitElement {
 
     private async _updateEnv() {
         try {
-            if (this.env) {
-                await this._viewer?.loadEnvironmentAsync(this.env);
+            if (this.environment) {
+                await this._viewerDetails?.viewer.loadEnvironment(this.environment);
             } else {
-                await this._viewer?.resetEnvironmentAsync();
+                await this._viewerDetails?.viewer.resetEnvironment();
             }
         } catch (error) {
             Logger.Log(error);

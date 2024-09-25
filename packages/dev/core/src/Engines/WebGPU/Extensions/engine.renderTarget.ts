@@ -3,12 +3,12 @@ import type { RenderTargetCreationOptions, DepthTextureCreationOptions, TextureS
 import type { Nullable } from "../../../types";
 import { Constants } from "../../constants";
 import type { RenderTargetWrapper } from "../../renderTargetWrapper";
-import { WebGPUEngine } from "../../webgpuEngine";
 import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 import { WebGPURenderTargetWrapper } from "../webgpuRenderTargetWrapper";
 import { WebGPUTextureHelper } from "../webgpuTextureHelper";
 
 import "../../AbstractEngine/abstractEngine.texture";
+import { ThinWebGPUEngine } from "core/Engines/thinWebGPUEngine";
 
 declare module "../../abstractEngine" {
     export interface AbstractEngine {
@@ -40,13 +40,13 @@ declare module "../../abstractEngine" {
     }
 }
 
-WebGPUEngine.prototype._createHardwareRenderTargetWrapper = function (isMulti: boolean, isCube: boolean, size: TextureSize): WebGPURenderTargetWrapper {
+ThinWebGPUEngine.prototype._createHardwareRenderTargetWrapper = function (isMulti: boolean, isCube: boolean, size: TextureSize): WebGPURenderTargetWrapper {
     const rtWrapper = new WebGPURenderTargetWrapper(isMulti, isCube, size, this);
     this._renderTargetWrapperCache.push(rtWrapper);
     return rtWrapper;
 };
 
-WebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSize, options: boolean | RenderTargetCreationOptions): WebGPURenderTargetWrapper {
+ThinWebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSize, options: boolean | RenderTargetCreationOptions): WebGPURenderTargetWrapper {
     const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, size) as WebGPURenderTargetWrapper;
 
     const fullOptions: RenderTargetCreationOptions = {};
@@ -106,7 +106,7 @@ WebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSize, 
     return rtWrapper;
 };
 
-WebGPUEngine.prototype._createDepthStencilTexture = function (size: TextureSize, options: DepthTextureCreationOptions, wrapper: WebGPURenderTargetWrapper): InternalTexture {
+ThinWebGPUEngine.prototype._createDepthStencilTexture = function (size: TextureSize, options: DepthTextureCreationOptions, wrapper: WebGPURenderTargetWrapper): InternalTexture {
     const internalOptions = {
         bilinearFiltering: false,
         comparisonFunction: 0,
@@ -143,7 +143,7 @@ WebGPUEngine.prototype._createDepthStencilTexture = function (size: TextureSize,
     return internalTexture;
 };
 
-WebGPUEngine.prototype._setupDepthStencilTexture = function (
+ThinWebGPUEngine.prototype._setupDepthStencilTexture = function (
     internalTexture: InternalTexture,
     size: TextureSize,
     bilinearFiltering: boolean,
@@ -172,7 +172,7 @@ WebGPUEngine.prototype._setupDepthStencilTexture = function (
     internalTexture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
 };
 
-WebGPUEngine.prototype.updateRenderTargetTextureSampleCount = function (rtWrapper: Nullable<RenderTargetWrapper>, samples: number): number {
+ThinWebGPUEngine.prototype.updateRenderTargetTextureSampleCount = function (rtWrapper: Nullable<RenderTargetWrapper>, samples: number): number {
     if (!rtWrapper || !rtWrapper.texture || rtWrapper.samples === samples) {
         return samples;
     }

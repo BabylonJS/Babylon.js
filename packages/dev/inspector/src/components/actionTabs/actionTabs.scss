@@ -34,9 +34,6 @@ $line-padding-left: 2px;
         text-align: center;
         display: grid;
         grid-template-columns: 30px 1fr 50px;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
         user-select: none;
 
         #logo {
@@ -217,7 +214,6 @@ $line-padding-left: 2px;
                         border-radius: 5px;
                         outline: none;
                         opacity: 0.7;
-                        -webkit-transition: 0.2s;
                         transition: opacity 0.2s;
                     }
                     .range::-webkit-slider-thumb {
@@ -277,9 +273,6 @@ $line-padding-left: 2px;
                 overflow-y: auto;
                 height: 100%;
 
-                -webkit-user-select: none;
-                -moz-user-select: none;
-                -ms-user-select: none;
                 user-select: none;
 
                 .animation-info {
@@ -484,9 +477,6 @@ $line-padding-left: 2px;
                         margin: 5px;
                         margin-top: 7px;
                         max-width: 200px;
-                        -webkit-user-select: text;
-                        -moz-user-select: text;
-                        -ms-user-select: text;
                         user-select: text;
 
                         &.check {
@@ -1090,7 +1080,6 @@ $line-padding-left: 2px;
                             border-radius: 5px;
                             outline: none;
                             opacity: 0.7;
-                            -webkit-transition: 0.2s;
                             transition: opacity 0.2s;
                         }
 

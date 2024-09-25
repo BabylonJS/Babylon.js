@@ -26,6 +26,7 @@ export class GlobalState {
     stateManager: StateManager;
     onBuiltObservable = new Observable<void>();
     onResetRequiredObservable = new Observable<boolean>();
+    onClearUndoStack = new Observable<void>();
     onZoomToFitRequiredObservable = new Observable<void>();
     onReOrganizedRequiredObservable = new Observable<void>();
     onPreviewModeChanged = new Observable<void>();

@@ -1,13 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { _WarnImport } from "./devTools";
 
-import { ThinEngine } from "../Engines/thinEngine";
+import type { ThinEngine } from "../Engines/thinEngine";
 import { Constants } from "../Engines/constants";
 import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
 import { Tools } from "./tools";
 import type { Nullable } from "../types";
-
-import { passPixelShader } from "../Shaders/pass.fragment";
 import { Clamp } from "../Maths/math.scalar.functions";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import { EngineStore } from "../Engines/engineStore";
@@ -21,54 +19,69 @@ type DumpToolsEngine = {
 
 let _dumpToolsEngine: Nullable<DumpToolsEngine>;
 
-function _CreateDumpRenderer(): DumpToolsEngine {
-    if (!_dumpToolsEngine) {
-        let canvas: HTMLCanvasElement | OffscreenCanvas;
-        let engine: Nullable<ThinEngine> = null;
-        const options = {
-            preserveDrawingBuffer: true,
-            depth: false,
-            stencil: false,
-            alpha: true,
-            premultipliedAlpha: false,
-            antialias: false,
-            failIfMajorPerformanceCaveat: false,
-        };
-        try {
-            canvas = new OffscreenCanvas(100, 100); // will be resized later
-            engine = new ThinEngine(canvas, false, options);
-        } catch (e) {
-            // The browser either does not support OffscreenCanvas or WebGL context in OffscreenCanvas, fallback on a regular canvas
-            canvas = document.createElement("canvas");
-            engine = new ThinEngine(canvas, false, options);
-        }
-        // remove this engine from the list of instances to avoid using it for other purposes
-        EngineStore.Instances.pop();
-        // However, make sure to dispose it when no other engines are left
-        EngineStore.OnEnginesDisposedObservable.add((e) => {
-            // guaranteed to run when no other instances are left
-            // only dispose if it's not the current engine
-            if (engine && e !== engine && !engine.isDisposed && EngineStore.Instances.length === 0) {
-                // Dump the engine and the associated resources
-                Dispose();
-            }
+let _enginePromise: Promise<DumpToolsEngine> | null = null;
+
+async function _CreateDumpRenderer(): Promise<DumpToolsEngine> {
+    if (!_enginePromise) {
+        _enginePromise = new Promise((resolve, reject) => {
+            let canvas: HTMLCanvasElement | OffscreenCanvas;
+            let engine: Nullable<ThinEngine> = null;
+            const options = {
+                preserveDrawingBuffer: true,
+                depth: false,
+                stencil: false,
+                alpha: true,
+                premultipliedAlpha: false,
+                antialias: false,
+                failIfMajorPerformanceCaveat: false,
+            };
+            import("../Engines/thinEngine")
+                .then(({ ThinEngine: thinEngineClass }) => {
+                    try {
+                        canvas = new OffscreenCanvas(100, 100); // will be resized later
+                        engine = new thinEngineClass(canvas, false, options);
+                    } catch (e) {
+                        // The browser either does not support OffscreenCanvas or WebGL context in OffscreenCanvas, fallback on a regular canvas
+                        canvas = document.createElement("canvas");
+                        engine = new thinEngineClass(canvas, false, options);
+                    }
+                    // remove this engine from the list of instances to avoid using it for other purposes
+                    EngineStore.Instances.pop();
+                    // However, make sure to dispose it when no other engines are left
+                    EngineStore.OnEnginesDisposedObservable.add((e) => {
+                        // guaranteed to run when no other instances are left
+                        // only dispose if it's not the current engine
+                        if (engine && e !== engine && !engine.isDisposed && EngineStore.Instances.length === 0) {
+                            // Dump the engine and the associated resources
+                            Dispose();
+                        }
+                    });
+                    engine.getCaps().parallelShaderCompile = undefined;
+                    const renderer = new EffectRenderer(engine);
+                    import("../Shaders/pass.fragment").then(({ passPixelShader }) => {
+                        if (!engine) {
+                            reject("Engine is not defined");
+                            return;
+                        }
+                        const wrapper = new EffectWrapper({
+                            engine,
+                            name: passPixelShader.name,
+                            fragmentShader: passPixelShader.shader,
+                            samplerNames: ["textureSampler"],
+                        });
+                        _dumpToolsEngine = {
+                            canvas,
+                            engine,
+                            renderer,
+                            wrapper,
+                        };
+                        resolve(_dumpToolsEngine);
+                    });
+                })
+                .catch(reject);
         });
-        engine.getCaps().parallelShaderCompile = undefined;
-        const renderer = new EffectRenderer(engine);
-        const wrapper = new EffectWrapper({
-            engine,
-            name: passPixelShader.name,
-            fragmentShader: passPixelShader.shader,
-            samplerNames: ["textureSampler"],
-        });
-        _dumpToolsEngine = {
-            canvas,
-            engine,
-            renderer,
-            wrapper,
-        };
     }
-    return _dumpToolsEngine;
+    return await _enginePromise;
 }
 
 /**
@@ -148,50 +161,51 @@ export function DumpData(
     invertY = false,
     toArrayBuffer = false,
     quality?: number
-) {
-    const renderer = _CreateDumpRenderer();
-    renderer.engine.setSize(width, height, true);
+): void {
+    _CreateDumpRenderer().then((renderer) => {
+        renderer.engine.setSize(width, height, true);
 
-    // Convert if data are float32
-    if (data instanceof Float32Array) {
-        const data2 = new Uint8Array(data.length);
-        let n = data.length;
-        while (n--) {
-            const v = data[n];
-            data2[n] = Math.round(Clamp(v) * 255);
+        // Convert if data are float32
+        if (data instanceof Float32Array) {
+            const data2 = new Uint8Array(data.length);
+            let n = data.length;
+            while (n--) {
+                const v = data[n];
+                data2[n] = Math.round(Clamp(v) * 255);
+            }
+            data = data2;
         }
-        data = data2;
-    }
 
-    // Create the image
-    const texture = renderer.engine.createRawTexture(data, width, height, Constants.TEXTUREFORMAT_RGBA, false, !invertY, Constants.TEXTURE_NEAREST_NEAREST);
+        // Create the image
+        const texture = renderer.engine.createRawTexture(data, width, height, Constants.TEXTUREFORMAT_RGBA, false, !invertY, Constants.TEXTURE_NEAREST_NEAREST);
 
-    renderer.renderer.setViewport();
-    renderer.renderer.applyEffectWrapper(renderer.wrapper);
-    renderer.wrapper.effect._bindTexture("textureSampler", texture);
-    renderer.renderer.draw();
+        renderer.renderer.setViewport();
+        renderer.renderer.applyEffectWrapper(renderer.wrapper);
+        renderer.wrapper.effect._bindTexture("textureSampler", texture);
+        renderer.renderer.draw();
 
-    if (toArrayBuffer) {
-        Tools.ToBlob(
-            renderer.canvas,
-            (blob) => {
-                const fileReader = new FileReader();
-                fileReader.onload = (event: any) => {
-                    const arrayBuffer = event.target!.result as ArrayBuffer;
-                    if (successCallback) {
-                        successCallback(arrayBuffer);
-                    }
-                };
-                fileReader.readAsArrayBuffer(blob!);
-            },
-            mimeType,
-            quality
-        );
-    } else {
-        Tools.EncodeScreenshotCanvasData(renderer.canvas, successCallback, mimeType, fileName, quality);
-    }
+        if (toArrayBuffer) {
+            Tools.ToBlob(
+                renderer.canvas,
+                (blob) => {
+                    const fileReader = new FileReader();
+                    fileReader.onload = (event: any) => {
+                        const arrayBuffer = event.target!.result as ArrayBuffer;
+                        if (successCallback) {
+                            successCallback(arrayBuffer);
+                        }
+                    };
+                    fileReader.readAsArrayBuffer(blob!);
+                },
+                mimeType,
+                quality
+            );
+        } else {
+            Tools.EncodeScreenshotCanvasData(renderer.canvas, successCallback, mimeType, fileName, quality);
+        }
 
-    texture.dispose();
+        texture.dispose();
+    });
 }
 
 /**
@@ -202,6 +216,13 @@ export function Dispose() {
         _dumpToolsEngine.wrapper.dispose();
         _dumpToolsEngine.renderer.dispose();
         _dumpToolsEngine.engine.dispose();
+    } else {
+        // in cases where the engine is not yet created, we need to wait for it to dispose it
+        _enginePromise?.then((dumpToolsEngine) => {
+            dumpToolsEngine.wrapper.dispose();
+            dumpToolsEngine.renderer.dispose();
+            dumpToolsEngine.engine.dispose();
+        });
     }
     _dumpToolsEngine = null;
 }

@@ -22,8 +22,6 @@ import type { StandardMaterial } from "core/Materials/standardMaterial";
 import type { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 
-import "core/Engines/Extensions/engine.readTexture";
-
 /**
  * Interface for storing specular glossiness factors
  * @internal

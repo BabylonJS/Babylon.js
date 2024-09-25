@@ -488,9 +488,6 @@ export class VideoTexture extends Texture {
 
         if (video.isNative) {
             // No additional configuration needed for native
-        } else if (video.mozSrcObject !== undefined) {
-            // hack for Firefox < 19
-            video.mozSrcObject = stream;
         } else {
             if (typeof video.srcObject == "object") {
                 video.srcObject = stream;

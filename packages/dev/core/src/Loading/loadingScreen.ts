@@ -145,9 +145,7 @@ export class DefaultLoadingScreen implements ILoadingScreen {
         }
 
         imgSpinner.style.animation = "spin1 0.75s infinite linear";
-        imgSpinner.style.webkitAnimation = "spin1 0.75s infinite linear";
         imgSpinner.style.transformOrigin = "50% 50%";
-        imgSpinner.style.webkitTransformOrigin = "50% 50%";
 
         if (!svgSupport) {
             const logoSize = { w: 16, h: 18.5 };

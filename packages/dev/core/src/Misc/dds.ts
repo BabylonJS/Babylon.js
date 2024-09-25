@@ -10,7 +10,6 @@ import type { AbstractEngine } from "../Engines/abstractEngine";
 import { FromHalfFloat, ToHalfFloat } from "./textureTools";
 
 import "../Engines/AbstractEngine/abstractEngine.cubeTexture";
-import "../Engines/Extensions/engine.cubeTexture";
 
 // Based on demo done by Brandon Jones - http://media.tojicode.com/webgl-samples/dds.html
 // All values and structures referenced from:

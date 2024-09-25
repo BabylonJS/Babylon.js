@@ -15,8 +15,10 @@ import { MeshAttributeExistsDisplayManager } from "./display/meshAttributeExists
 import { CurveDisplayManager } from "./display/curveDisplayManager";
 import { TeleportOutDisplayManager } from "./display/teleportOutDisplayManager";
 import { TeleportInDisplayManager } from "./display/teleportInDisplayManager";
+import { LoopDisplayManager } from "./display/loopDisplayManager";
 
 export const RegisterToDisplayManagers = () => {
+    DisplayLedger.RegisteredControls["LoopBlock"] = LoopDisplayManager;
     DisplayLedger.RegisteredControls["InputBlock"] = InputDisplayManager;
     DisplayLedger.RegisteredControls["VertexOutputBlock"] = OutputDisplayManager;
     DisplayLedger.RegisteredControls["FragmentOutputBlock"] = OutputDisplayManager;
