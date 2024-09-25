@@ -3,7 +3,7 @@ import { Constants } from "../Engines/constants";
 import { serialize } from "../Misc/decorators";
 import type { IStencilState } from "../States/IStencilState";
 
-import type { Scene } from "../scene";
+import type { CoreScene } from "core/coreScene";
 
 /**
  * Class that holds the different stencil states of a material
@@ -167,7 +167,7 @@ export class MaterialStencilState implements IStencilState {
      * @param scene Defines the scene we are parsing for
      * @param rootUrl Defines the rootUrl to load from
      */
-    public parse(source: any, scene: Scene, rootUrl: string): void {
+    public parse(source: any, scene: CoreScene, rootUrl: string): void {
         SerializationHelper.Parse(() => this, source, scene, rootUrl);
     }
 }

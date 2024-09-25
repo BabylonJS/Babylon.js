@@ -1,6 +1,5 @@
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import type { Nullable } from "../types";
-import { Scene } from "../scene";
 import { Matrix, Vector3, Vector2, Vector4, Quaternion } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { Mesh } from "../Meshes/mesh";
@@ -33,6 +32,8 @@ import {
     PrepareAttributesForBakedVertexAnimation,
     PushAttributesForInstances,
 } from "./materialHelper.functions";
+import type { CoreScene } from "core/coreScene";
+import { IsFullScene } from "core/coreScene.functions";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -168,7 +169,7 @@ export class ShaderMaterial extends PushMaterial {
      * @param options Define the options used to create the shader
      * @param storeEffectOnSubMeshes true to store effect on submeshes, false to store the effect directly in the material class.
      */
-    constructor(name: string, scene: Scene, shaderPath: IShaderPath | string, options: Partial<IShaderMaterialOptions> = {}, storeEffectOnSubMeshes = true) {
+    constructor(name: string, scene: CoreScene, shaderPath: IShaderPath | string, options: Partial<IShaderMaterialOptions> = {}, storeEffectOnSubMeshes = true) {
         super(name, scene, storeEffectOnSubMeshes);
         this._shaderPath = shaderPath;
 
@@ -859,7 +860,8 @@ export class ShaderMaterial extends PushMaterial {
         }
 
         // Fog
-        if (scene.fogEnabled && mesh?.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) {
+        const isFullScene = IsFullScene(scene);
+        if (isFullScene && scene.fogEnabled && mesh?.applyFog && scene.fogMode !== Constants.FOGMODE_NONE) {
             defines.push("#define FOG");
             if (uniforms.indexOf("view") === -1) {
                 uniforms.push("view");
@@ -931,7 +933,7 @@ export class ShaderMaterial extends PushMaterial {
             return false;
         }
 
-        if (previousEffect !== effect) {
+        if (previousEffect !== effect && isFullScene) {
             scene.resetCachedMaterial();
         }
 
@@ -1028,7 +1030,7 @@ export class ShaderMaterial extends PushMaterial {
             }
         }
 
-        const mustRebind = mesh && storeEffectOnSubMeshes ? this._mustRebind(scene, effect, subMesh, mesh.visibility) : scene.getCachedMaterial() !== this;
+        const mustRebind = mesh && storeEffectOnSubMeshes ? this._mustRebind(scene, effect, subMesh, mesh.visibility) : IsFullScene(scene) && scene.getCachedMaterial() !== this;
 
         if (effect && mustRebind) {
             if (!useSceneUBO && this._options.uniforms.indexOf("view") !== -1) {
@@ -1631,7 +1633,7 @@ export class ShaderMaterial extends PushMaterial {
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @returns a new material
      */
-    public static override Parse(source: any, scene: Scene, rootUrl: string): ShaderMaterial {
+    public static override Parse(source: any, scene: CoreScene, rootUrl: string): ShaderMaterial {
         const material = SerializationHelper.Parse(
             () => new ShaderMaterial(source.name, scene, source.shaderPath, source.options, source.storeEffectOnSubMeshes),
             source,
@@ -1793,7 +1795,7 @@ export class ShaderMaterial extends PushMaterial {
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @returns a promise that will resolve to the new ShaderMaterial
      */
-    public static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, rootUrl = ""): Promise<ShaderMaterial> {
+    public static ParseFromFileAsync(name: Nullable<string>, url: string, scene: CoreScene, rootUrl = ""): Promise<ShaderMaterial> {
         return new Promise((resolve, reject) => {
             const request = new WebRequest();
             request.addEventListener("readystatechange", () => {
@@ -1825,7 +1827,7 @@ export class ShaderMaterial extends PushMaterial {
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @returns a promise that will resolve to the new ShaderMaterial
      */
-    public static ParseFromSnippetAsync(snippetId: string, scene: Scene, rootUrl = ""): Promise<ShaderMaterial> {
+    public static ParseFromSnippetAsync(snippetId: string, scene: CoreScene, rootUrl = ""): Promise<ShaderMaterial> {
         return new Promise((resolve, reject) => {
             const request = new WebRequest();
             request.addEventListener("readystatechange", () => {

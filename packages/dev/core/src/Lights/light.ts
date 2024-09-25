@@ -1,6 +1,5 @@
 import { serialize, serializeAsColor3, expandToProperty } from "../Misc/decorators";
 import type { Nullable } from "../types";
-import type { Scene } from "../scene";
 import type { Matrix } from "../Maths/math.vector";
 import { Vector3 } from "../Maths/math.vector";
 import { Color3, TmpColors } from "../Maths/math.color";
@@ -14,6 +13,8 @@ import type { ISortableLight } from "./lightConstants";
 import { LightConstants } from "./lightConstants";
 import type { Camera } from "../Cameras/camera";
 import { SerializationHelper } from "../Misc/decorators.serialization";
+import type { CoreScene } from "core/coreScene";
+import { IsFullScene } from "core/coreScene.functions";
 
 /**
  * Base class of all the lights in Babylon. It groups all the generic information about lights.
@@ -369,10 +370,14 @@ export abstract class Light extends Node implements ISortableLight {
      * @param name The friendly name of the light
      * @param scene The scene the light belongs too
      */
-    constructor(name: string, scene?: Scene) {
+    constructor(name: string, scene?: CoreScene) {
         super(name, scene, false);
-        this.getScene().addLight(this);
-        this._uniformBuffer = new UniformBuffer(this.getScene().getEngine(), undefined, undefined, name);
+
+        const _scene = this.getScene();
+        if (IsFullScene(_scene)) {
+            _scene.addLight(this);
+        }
+        this._uniformBuffer = new UniformBuffer(_scene.getEngine(), undefined, undefined, name);
         this._buildUniformLayout();
 
         this.includedOnlyMeshes = [] as AbstractMesh[];
@@ -411,7 +416,7 @@ export abstract class Light extends Node implements ISortableLight {
      * @param useSpecular Defines if specular is supported
      * @param receiveShadows Defines if the effect (mesh) we bind the light for receives shadows
      */
-    public _bindLight(lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, receiveShadows = true): void {
+    public _bindLight(lightIndex: number, scene: CoreScene, effect: Effect, useSpecular: boolean, receiveShadows = true): void {
         const iAsString = lightIndex.toString();
         let needUpdate = false;
 
@@ -578,9 +583,11 @@ export abstract class Light extends Node implements ISortableLight {
             }
             this._shadowGenerators = null;
         }
+        const scene = this.getScene();
+        const isFullScene = IsFullScene(scene);
 
         // Animations
-        this.getScene().stopAnimation(this);
+        scene.stopAnimation(this);
 
         if (this._parentContainer) {
             const index = this._parentContainer.lights.indexOf(this);
@@ -591,14 +598,16 @@ export abstract class Light extends Node implements ISortableLight {
         }
 
         // Remove from meshes
-        for (const mesh of this.getScene().meshes) {
-            mesh._removeLightSource(this, true);
+        if (isFullScene) {
+            for (const mesh of scene.meshes) {
+                mesh._removeLightSource(this, true);
+            }
+            scene.removeLight(this);
         }
 
         this._uniformBuffer.dispose();
 
         // Remove from scene
-        this.getScene().removeLight(this);
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
     }
 
@@ -692,7 +701,7 @@ export abstract class Light extends Node implements ISortableLight {
      * @param scene The scene the new light will belong to
      * @returns the constructor function
      */
-    static GetConstructorFromName(type: number, name: string, scene: Scene): Nullable<() => Light> {
+    static GetConstructorFromName(type: number, name: string, scene: CoreScene): Nullable<() => Light> {
         const constructorFunc = Node.Construct("Light_Type_" + type, name, scene);
 
         if (constructorFunc) {
@@ -709,7 +718,7 @@ export abstract class Light extends Node implements ISortableLight {
      * @param scene The scene to create the parsed light in
      * @returns the created light after parsing
      */
-    public static Parse(parsedLight: any, scene: Scene): Nullable<Light> {
+    public static Parse(parsedLight: any, scene: CoreScene): Nullable<Light> {
         const constructor = Light.GetConstructorFromName(parsedLight.type, parsedLight.name, scene);
 
         if (!constructor) {
@@ -821,7 +830,13 @@ export abstract class Light extends Node implements ISortableLight {
     }
 
     private _resyncMeshes() {
-        for (const mesh of this.getScene().meshes) {
+        const scene = this.getScene();
+
+        if (!IsFullScene(scene)) {
+            return;
+        }
+
+        for (const mesh of scene.meshes) {
             mesh._resyncLightSource(this);
         }
     }
@@ -831,7 +846,13 @@ export abstract class Light extends Node implements ISortableLight {
      * @internal Internal Use Only
      */
     public _markMeshesAsLightDirty() {
-        for (const mesh of this.getScene().meshes) {
+        const scene = this.getScene();
+
+        if (!IsFullScene(scene)) {
+            return;
+        }
+
+        for (const mesh of scene.meshes) {
             if (mesh.lightSources.indexOf(this) !== -1) {
                 mesh._markSubMeshesAsLightDirty();
             }
@@ -843,7 +864,13 @@ export abstract class Light extends Node implements ISortableLight {
      */
     private _computePhotometricScale(): void {
         this._photometricScale = this._getPhotometricScale();
-        this.getScene().resetCachedMaterial();
+
+        const scene = this.getScene();
+
+        if (!IsFullScene(scene)) {
+            return;
+        }
+        scene.resetCachedMaterial();
     }
 
     /**
@@ -912,10 +939,15 @@ export abstract class Light extends Node implements ISortableLight {
      */
     public _reorderLightsInScene(): void {
         const scene = this.getScene();
+
+        if (!IsFullScene(scene)) {
+            return;
+        }
+
         if (this._renderPriority != 0) {
             scene.requireLightSorting = true;
         }
-        this.getScene().sortLightsByPriority();
+        scene.sortLightsByPriority();
     }
 
     /**

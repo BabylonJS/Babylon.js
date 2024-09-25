@@ -29,7 +29,6 @@ import { BoundingBox } from "../../../Culling/boundingBox";
 import type { TransformNode } from "../../../Meshes/transformNode";
 import { Mesh } from "../../../Meshes/mesh";
 import { InstancedMesh } from "../../../Meshes/instancedMesh";
-import type { Scene } from "../../../scene";
 import { VertexBuffer } from "../../../Buffers/buffer";
 import { BuildArray } from "../../../Misc/arrayTools";
 import { Observable } from "../../../Misc/observable";
@@ -39,6 +38,7 @@ import type { ProximityCastResult } from "../../proximityCastResult";
 import type { IPhysicsShapeProximityCastQuery } from "../../physicsShapeProximityCastQuery";
 import type { IPhysicsShapeCastQuery } from "../../physicsShapeCastQuery";
 import type { ShapeCastResult } from "../../shapeCastResult";
+import type { CoreScene } from "core/coreScene";
 declare let HK: any;
 
 /**
@@ -62,7 +62,7 @@ class MeshAccumulator {
      *
      * Merge mesh and its children so whole hierarchy can be used as a mesh shape or convex hull
      */
-    public constructor(mesh: Mesh, collectIndices: boolean, scene: Scene) {
+    public constructor(mesh: Mesh, collectIndices: boolean, scene: CoreScene) {
         this._isRightHanded = scene.useRightHandedSystem;
         this._collectIndices = collectIndices;
     }

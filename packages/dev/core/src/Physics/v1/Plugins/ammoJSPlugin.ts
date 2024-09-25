@@ -778,7 +778,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
 
             return vertex_data;
         }
-        return VertexData.ExtractFromMesh(<Mesh>object);
+        return VertexData.ExtractFromMesh(object as Mesh);
     }
 
     /**

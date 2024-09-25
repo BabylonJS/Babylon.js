@@ -7,7 +7,9 @@ import type { PhysicsMaterial } from "./physicsMaterial";
 import { Matrix, Vector3, Quaternion, TmpVectors } from "../../Maths/math.vector";
 import type { GroundMesh } from "../../Meshes/groundMesh";
 import type { Mesh } from "../../Meshes/mesh";
-import type { Scene } from "../../scene";
+import type { CoreScene } from "core/coreScene";
+import { IsFullScene } from "core/coreScene.functions";
+import type { Scene } from "core/scene";
 
 /**
  * Options for creating a physics shape
@@ -63,10 +65,15 @@ export class PhysicsShape {
      * It also checks that the physics engine and plugin version are correct.
      * If not, it throws an error. This ensures that the shape is created with the correct parameters and is compatible with the physics engine.
      */
-    constructor(options: PhysicShapeOptions, scene: Scene) {
+    constructor(options: PhysicShapeOptions, scene: CoreScene) {
         if (!scene) {
             return;
         }
+
+        if (!IsFullScene(scene)) {
+            throw new Error("Physics Shapes can only be created in a full scene.");
+        }
+
         const physicsEngine = scene.getPhysicsEngine();
         if (!physicsEngine) {
             throw new Error("No Physics Engine available.");
@@ -292,7 +299,7 @@ export class PhysicsShapeSphere extends PhysicsShape {
         const centerLocal = bounds.boundingSphere.center;
         const he = bounds.boundingBox.extendSize;
         const radius = Math.max(he.x, he.y, he.z);
-        return new PhysicsShapeSphere(centerLocal, radius, mesh.getScene());
+        return new PhysicsShapeSphere(centerLocal, radius, mesh.getScene() as Scene);
     }
 }
 
@@ -323,7 +330,7 @@ export class PhysicsShapeCapsule extends PhysicsShape {
         const pointFromCenter = new Vector3(0, boundsLocal.boundingBox.extendSize.y - radius, 0);
         const pointA = boundsLocal.boundingBox.center.add(pointFromCenter);
         const pointB = boundsLocal.boundingBox.center.subtract(pointFromCenter);
-        return new PhysicsShapeCapsule(pointA, pointB, radius, mesh.getScene());
+        return new PhysicsShapeCapsule(pointA, pointB, radius, mesh.getScene() as Scene);
     }
 }
 
@@ -354,7 +361,7 @@ export class PhysicsShapeCylinder extends PhysicsShape {
         const pointFromCenter = new Vector3(0, boundsLocal.boundingBox.extendSize.y, 0);
         const pointA = boundsLocal.boundingBox.center.add(pointFromCenter);
         const pointB = boundsLocal.boundingBox.center.subtract(pointFromCenter);
-        return new PhysicsShapeCylinder(pointA, pointB, radius, mesh.getScene());
+        return new PhysicsShapeCylinder(pointA, pointB, radius, mesh.getScene() as Scene);
     }
 }
 
@@ -382,7 +389,7 @@ export class PhysicsShapeBox extends PhysicsShape {
         const bounds = mesh.getBoundingInfo();
         const centerLocal = bounds.boundingBox.center;
         const extents = bounds.boundingBox.extendSize.scale(2.0); //<todo.eoin extendSize seems to really be half-extents?
-        return new PhysicsShapeBox(centerLocal, Quaternion.Identity(), extents, mesh.getScene());
+        return new PhysicsShapeBox(centerLocal, Quaternion.Identity(), extents, mesh.getScene() as Scene);
     }
 }
 

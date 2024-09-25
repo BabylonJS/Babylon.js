@@ -2,7 +2,6 @@ import { PhysicsBody } from "./physicsBody";
 import type { PhysicsMaterial } from "./physicsMaterial";
 import { PhysicsShape } from "./physicsShape";
 import { Logger } from "../../Misc/logger";
-import type { Scene } from "../../scene";
 import type { TransformNode } from "../../Meshes/transformNode";
 import { Quaternion, TmpVectors, Vector3 } from "../../Maths/math.vector";
 import { WithinEpsilon } from "../../Maths/math.scalar.functions";
@@ -13,6 +12,7 @@ import type { Nullable } from "../../types";
 import type { Node } from "../../node";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import { BoundingBox } from "../../Culling/boundingBox";
+import type { CoreScene } from "core/coreScene";
 
 /**
  * The interface for the physics aggregate parameters
@@ -115,7 +115,7 @@ export class PhysicsAggregate {
          */
         public type: PhysicsShapeType | PhysicsShape,
         private _options: PhysicsAggregateParameters = { mass: 0 },
-        private _scene?: Scene
+        private _scene?: CoreScene
     ) {
         //sanity check!
         if (!this.transformNode) {

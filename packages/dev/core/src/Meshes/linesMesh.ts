@@ -1,5 +1,4 @@
 import type { Nullable } from "../types";
-import type { Scene } from "../scene";
 import { Color3, Color4 } from "../Maths/math.color";
 import type { Node } from "../node";
 import { VertexBuffer } from "../Buffers/buffer";
@@ -11,8 +10,9 @@ import type { IShaderMaterialOptions } from "../Materials/shaderMaterial";
 import { ShaderMaterial } from "../Materials/shaderMaterial";
 import type { Effect } from "../Materials/effect";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import type { CoreScene } from "core/coreScene";
 
-Mesh._LinesMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
+Mesh._LinesMeshParser = (parsedMesh: any, scene: CoreScene): Mesh => {
     return LinesMesh.Parse(parsedMesh, scene);
 };
 
@@ -70,7 +70,7 @@ export class LinesMesh extends Mesh {
      */
     constructor(
         name: string,
-        scene: Nullable<Scene> = null,
+        scene: Nullable<CoreScene> = null,
         parent: Nullable<Node> = null,
         source: Nullable<LinesMesh> = null,
         doNotCloneChildren?: boolean,
@@ -290,7 +290,7 @@ export class LinesMesh extends Mesh {
      * @param scene the scene to create the ground mesh in
      * @returns the created ground mesh
      */
-    public static override Parse(parsedMesh: any, scene: Scene): LinesMesh {
+    public static override Parse(parsedMesh: any, scene: CoreScene): LinesMesh {
         const result = new LinesMesh(parsedMesh.name, scene);
 
         result.color = Color3.FromArray(parsedMesh.color);

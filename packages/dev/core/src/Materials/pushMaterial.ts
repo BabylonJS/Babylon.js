@@ -1,11 +1,12 @@
 import type { Nullable } from "../types";
-import type { Scene } from "../scene";
 import { Matrix } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { Mesh } from "../Meshes/mesh";
 import { Material } from "../Materials/material";
 import type { Effect } from "../Materials/effect";
 import type { SubMesh } from "../Meshes/subMesh";
+import type { CoreScene } from "core/coreScene";
+import { IsFullScene } from "core/coreScene.functions";
 /**
  * Base class of materials working in push mode in babylon JS
  * @internal
@@ -15,7 +16,7 @@ export class PushMaterial extends Material {
 
     protected _normalMatrix: Matrix = new Matrix();
 
-    constructor(name: string, scene?: Scene, storeEffectOnSubMeshes = true) {
+    constructor(name: string, scene?: CoreScene, storeEffectOnSubMeshes = true) {
         super(name, scene);
         this._storeEffectOnSubMeshes = storeEffectOnSubMeshes;
     }
@@ -79,7 +80,10 @@ export class PushMaterial extends Material {
 
     protected override _afterBind(mesh?: AbstractMesh, effect: Nullable<Effect> = null, subMesh?: SubMesh): void {
         super._afterBind(mesh, effect, subMesh);
-        this.getScene()._cachedEffect = effect;
+        const scene = this.getScene();
+        if (IsFullScene(scene)) {
+            scene._cachedEffect = effect;
+        }
         if (subMesh) {
             subMesh._drawWrapper._forceRebindOnNextCall = false;
         } else {
@@ -87,8 +91,8 @@ export class PushMaterial extends Material {
         }
     }
 
-    protected _mustRebind(scene: Scene, effect: Effect, subMesh: SubMesh, visibility = 1): boolean {
-        return subMesh._drawWrapper._forceRebindOnNextCall || scene.isCachedMaterialInvalid(this, effect, visibility);
+    protected _mustRebind(scene: CoreScene, effect: Effect, subMesh: SubMesh, visibility = 1): boolean {
+        return subMesh._drawWrapper._forceRebindOnNextCall || (IsFullScene(scene) && scene.isCachedMaterialInvalid(this, effect, visibility));
     }
 
     public override dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean) {

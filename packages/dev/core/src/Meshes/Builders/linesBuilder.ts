@@ -5,11 +5,11 @@ import { _CreationDataStorage, Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import type { FloatArray, Nullable } from "../../types";
 import { LinesMesh } from "../../Meshes/linesMesh";
-import type { Scene } from "../../scene";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { Logger } from "../../Misc/logger";
 
 import type { Material } from "../../Materials/material";
+import type { CoreScene } from "core/coreScene";
 
 /**
  * Creates the VertexData of the LineSystem
@@ -126,7 +126,7 @@ export function CreateDashedLinesVertexData(options: { points: Vector3[]; dashSi
 export function CreateLineSystem(
     name: string,
     options: { lines: Vector3[][]; updatable?: boolean; instance?: Nullable<LinesMesh>; colors?: Nullable<Color4[][]>; useVertexAlpha?: boolean; material?: Material },
-    scene: Nullable<Scene> = null
+    scene: Nullable<CoreScene> = null
 ): LinesMesh {
     const instance = options.instance;
     const lines = options.lines;
@@ -195,7 +195,7 @@ export function CreateLineSystem(
 export function CreateLines(
     name: string,
     options: { points: Vector3[]; updatable?: boolean; instance?: Nullable<LinesMesh>; colors?: Color4[]; useVertexAlpha?: boolean; material?: Material },
-    scene: Nullable<Scene> = null
+    scene: Nullable<CoreScene> = null
 ): LinesMesh {
     const colors = options.colors ? [options.colors] : null;
     const lines = CreateLineSystem(
@@ -228,7 +228,7 @@ export function CreateLines(
 export function CreateDashedLines(
     name: string,
     options: { points: Vector3[]; dashSize?: number; gapSize?: number; dashNb?: number; updatable?: boolean; instance?: LinesMesh; useVertexAlpha?: boolean; material?: Material },
-    scene: Nullable<Scene> = null
+    scene: Nullable<CoreScene> = null
 ): LinesMesh {
     const points = options.points;
     const instance = options.instance;
@@ -309,7 +309,7 @@ export const LinesBuilder = {
 VertexData.CreateLineSystem = CreateLineSystemVertexData;
 VertexData.CreateDashedLines = CreateDashedLinesVertexData;
 
-Mesh.CreateLines = (name: string, points: Vector3[], scene: Nullable<Scene> = null, updatable: boolean = false, instance: Nullable<LinesMesh> = null): LinesMesh => {
+Mesh.CreateLines = (name: string, points: Vector3[], scene: Nullable<CoreScene> = null, updatable: boolean = false, instance: Nullable<LinesMesh> = null): LinesMesh => {
     const options = {
         points,
         updatable,
@@ -324,7 +324,7 @@ Mesh.CreateDashedLines = (
     dashSize: number,
     gapSize: number,
     dashNb: number,
-    scene: Nullable<Scene> = null,
+    scene: Nullable<CoreScene> = null,
     updatable?: boolean,
     instance?: LinesMesh
 ): LinesMesh => {

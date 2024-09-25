@@ -1135,36 +1135,26 @@ export class Scene extends CoreScene implements IAnimatable, INodeContainer {
         return !!this.prePassRenderer && this.prePassRenderer.defaultRT.enabled;
     }
 
-    // Lights
-    private _shadowsEnabled = true;
     /**
      * Gets or sets a boolean indicating if shadows are enabled on this scene
      */
-    public set shadowsEnabled(value: boolean) {
+    public override set shadowsEnabled(value: boolean) {
         if (this._shadowsEnabled === value) {
             return;
         }
         this._shadowsEnabled = value;
         this.markAllMaterialsAsDirty(Constants.MATERIAL_LightDirtyFlag);
     }
-    public get shadowsEnabled(): boolean {
-        return this._shadowsEnabled;
-    }
 
-    private _lightsEnabled = true;
     /**
      * Gets or sets a boolean indicating if lights are enabled on this scene
      */
-    public set lightsEnabled(value: boolean) {
+    public override set lightsEnabled(value: boolean) {
         if (this._lightsEnabled === value) {
             return;
         }
         this._lightsEnabled = value;
         this.markAllMaterialsAsDirty(Constants.MATERIAL_LightDirtyFlag);
-    }
-
-    public get lightsEnabled(): boolean {
-        return this._lightsEnabled;
     }
 
     private _defaultMaterial: Material;

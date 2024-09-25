@@ -176,6 +176,36 @@ export class CoreScene implements ISceneLike, IClipPlanesHolder {
         return false;
     }
 
+    // Lights
+    protected _shadowsEnabled = true;
+    /**
+     * Gets or sets a boolean indicating if shadows are enabled on this scene
+     */
+    public set shadowsEnabled(value: boolean) {
+        if (this._shadowsEnabled === value) {
+            return;
+        }
+        this._shadowsEnabled = value;
+    }
+    public get shadowsEnabled(): boolean {
+        return this._shadowsEnabled;
+    }
+
+    protected _lightsEnabled = true;
+    /**
+     * Gets or sets a boolean indicating if lights are enabled on this scene
+     */
+    public set lightsEnabled(value: boolean) {
+        if (this._lightsEnabled === value) {
+            return;
+        }
+        this._lightsEnabled = value;
+    }
+
+    public get lightsEnabled(): boolean {
+        return this._lightsEnabled;
+    }
+
     /**
      * An event triggered when the activeCamera property is updated
      */

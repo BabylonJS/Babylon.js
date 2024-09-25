@@ -1,6 +1,5 @@
 import { Logger } from "../Misc/logger";
 import type { Camera } from "../Cameras/camera";
-import type { Scene } from "../scene";
 import type { Effect, IEffectCreationOptions } from "./effect";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Constants } from "../Engines/constants";
@@ -18,6 +17,8 @@ import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Material } from "./material";
 import type { Nullable } from "../types";
 import { prepareDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
+import type { CoreScene } from "core/coreScene";
+import { IsFullScene } from "core/coreScene.functions";
 
 // Temps
 const _TempFogColor = Color3.Black();
@@ -29,7 +30,7 @@ const _TmpMorphInfluencers = { NUM_MORPH_INFLUENCERS: 0 };
  * @param effect The effect we are binding the data to
  * @param scene The scene we are willing to render with logarithmic scale for
  */
-export function BindLogDepth(defines: any, effect: Effect, scene: Scene): void {
+export function BindLogDepth(defines: any, effect: Effect, scene: CoreScene): void {
     if (!defines || defines["LOGARITHMICDEPTH"] || (defines.indexOf && defines.indexOf("LOGARITHMICDEPTH") >= 0)) {
         const camera = scene.activeCamera as Camera;
         if (camera.mode === Constants.ORTHOGRAPHIC_CAMERA) {
@@ -46,7 +47,10 @@ export function BindLogDepth(defines: any, effect: Effect, scene: Scene): void {
  * @param effect The effect we are binding the data to
  * @param linearSpace Defines if the fog effect is applied in linear space
  */
-export function BindFogParameters(scene: Scene, mesh?: AbstractMesh, effect?: Effect, linearSpace = false): void {
+export function BindFogParameters(scene: CoreScene, mesh?: AbstractMesh, effect?: Effect, linearSpace = false): void {
+    if (!IsFullScene(scene)) {
+        return;
+    }
     if (effect && scene.fogEnabled && (!mesh || mesh.applyFog) && scene.fogMode !== Constants.FOGMODE_NONE) {
         effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
         // Convert fog color to linear space if used in a linear space computed shader.
@@ -228,12 +232,15 @@ export function BindBonesParameters(mesh?: AbstractMesh, effect?: Effect, prePas
 
             if (matrices) {
                 effect.setMatrices("mBones", matrices);
-                if (prePassConfiguration && mesh.getScene().prePassRenderer && mesh.getScene().prePassRenderer!.getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE)) {
-                    if (!prePassConfiguration.previousBones[mesh.uniqueId]) {
-                        prePassConfiguration.previousBones[mesh.uniqueId] = matrices.slice();
+                const scene = mesh.getScene();
+                if (IsFullScene(scene)) {
+                    if (prePassConfiguration && scene.prePassRenderer && scene.prePassRenderer!.getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE)) {
+                        if (!prePassConfiguration.previousBones[mesh.uniqueId]) {
+                            prePassConfiguration.previousBones[mesh.uniqueId] = matrices.slice();
+                        }
+                        effect.setMatrices("mPreviousBones", prePassConfiguration.previousBones[mesh.uniqueId]);
+                        _CopyBonesTransformationMatrices(matrices, prePassConfiguration.previousBones[mesh.uniqueId]);
                     }
-                    effect.setMatrices("mPreviousBones", prePassConfiguration.previousBones[mesh.uniqueId]);
-                    _CopyBonesTransformationMatrices(matrices, prePassConfiguration.previousBones[mesh.uniqueId]);
                 }
             }
         }
@@ -259,7 +266,7 @@ export function BindLightProperties(light: Light, effect: Effect, lightIndex: nu
  * @param useSpecular Defines if specular is supported
  * @param receiveShadows Defines if the effect (mesh) we bind the light for receives shadows
  */
-export function BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, receiveShadows = true): void {
+export function BindLight(light: Light, lightIndex: number, scene: CoreScene, effect: Effect, useSpecular: boolean, receiveShadows = true): void {
     light._bindLight(lightIndex, scene, effect, useSpecular, receiveShadows);
 }
 
@@ -271,7 +278,7 @@ export function BindLight(light: Light, lightIndex: number, scene: Scene, effect
  * @param defines The generated defines for the effect
  * @param maxSimultaneousLights The maximum number of light that can be bound to the effect
  */
-export function BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4): void {
+export function BindLights(scene: CoreScene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4): void {
     const len = Math.min(mesh.lightSources.length, maxSimultaneousLights);
 
     for (let i = 0; i < len; i++) {
@@ -370,7 +377,10 @@ export function HandleFallbacksForShadows(defines: any, fallbacks: EffectFallbac
  * @param scene defines the hosting scene
  * @returns true if fog must be enabled
  */
-export function GetFogState(mesh: AbstractMesh, scene: Scene) {
+export function GetFogState(mesh: AbstractMesh, scene: CoreScene) {
+    if (!IsFullScene(scene)) {
+        return false;
+    }
     return scene.fogEnabled && mesh.applyFog && scene.fogMode !== Constants.FOGMODE_NONE;
 }
 
@@ -387,7 +397,7 @@ export function GetFogState(mesh: AbstractMesh, scene: Scene) {
  */
 export function PrepareDefinesForMisc(
     mesh: AbstractMesh,
-    scene: Scene,
+    scene: CoreScene,
     useLogarithmicDepth: boolean,
     pointsCloud: boolean,
     fogEnabled: boolean,
@@ -415,7 +425,14 @@ export function PrepareDefinesForMisc(
  * @param disableLighting Specifies whether the lighting is disabled (override scene and light)
  * @returns true if normals will be required for the rest of the effect
  */
-export function PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, defines: any, specularSupported: boolean, maxSimultaneousLights = 4, disableLighting = false): boolean {
+export function PrepareDefinesForLights(
+    scene: CoreScene,
+    mesh: AbstractMesh,
+    defines: any,
+    specularSupported: boolean,
+    maxSimultaneousLights = 4,
+    disableLighting = false
+): boolean {
     if (!defines._areLightsDirty) {
         return defines._needNormals;
     }
@@ -502,7 +519,7 @@ export function PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, define
  * @param state.lightmapMode
  */
 export function PrepareDefinesForLight(
-    scene: Scene,
+    scene: CoreScene,
     mesh: AbstractMesh,
     light: Light,
     lightIndex: number,
@@ -604,7 +621,7 @@ export function PrepareDefinesForLight(
  * @param useThinInstances defines if thin instances have to be turned on
  */
 export function PrepareDefinesForFrameBoundValues(
-    scene: Scene,
+    scene: CoreScene,
     engine: AbstractEngine,
     material: Material,
     defines: any,
@@ -655,10 +672,14 @@ export function PrepareDefinesForBones(mesh: AbstractMesh, defines: any) {
             defines["BonesPerMesh"] = mesh.skeleton.bones.length + 1;
             defines["BONETEXTURE"] = materialSupportsBoneTexture ? false : undefined;
 
-            const prePassRenderer = mesh.getScene().prePassRenderer;
-            if (prePassRenderer && prePassRenderer.enabled) {
-                const nonExcluded = prePassRenderer.excludedSkinnedMesh.indexOf(mesh) === -1;
-                defines["BONES_VELOCITY_ENABLED"] = nonExcluded;
+            const scene = mesh.getScene();
+
+            if (IsFullScene(scene)) {
+                const prePassRenderer = scene.prePassRenderer;
+                if (prePassRenderer && prePassRenderer.enabled) {
+                    const nonExcluded = prePassRenderer.excludedSkinnedMesh.indexOf(mesh) === -1;
+                    defines["BONES_VELOCITY_ENABLED"] = nonExcluded;
+                }
             }
         }
     } else {
@@ -771,7 +792,7 @@ export function PrepareDefinesForAttributes(
  * @param scene The scene we are intending to draw
  * @param defines The defines to update
  */
-export function PrepareDefinesForMultiview(scene: Scene, defines: any) {
+export function PrepareDefinesForMultiview(scene: CoreScene, defines: any) {
     if (scene.activeCamera) {
         const previousMultiview = defines.MULTIVIEW;
         defines.MULTIVIEW = scene.activeCamera.outputRenderTarget !== null && scene.activeCamera.outputRenderTarget.getViewCount() > 1;
@@ -787,7 +808,11 @@ export function PrepareDefinesForMultiview(scene: Scene, defines: any) {
  * @param defines The defines to update
  * @param needAlphaBlending Determines if the material needs alpha blending
  */
-export function PrepareDefinesForOIT(scene: Scene, defines: any, needAlphaBlending: boolean) {
+export function PrepareDefinesForOIT(scene: CoreScene, defines: any, needAlphaBlending: boolean) {
+    if (!IsFullScene(scene)) {
+        return;
+    }
+
     const previousDefine = defines.ORDER_INDEPENDENT_TRANSPARENCY;
     const previousDefine16Bits = defines.ORDER_INDEPENDENT_TRANSPARENCY_16BITS;
 
@@ -805,7 +830,7 @@ export function PrepareDefinesForOIT(scene: Scene, defines: any, needAlphaBlendi
  * @param defines The defines to update
  * @param canRenderToMRT Indicates if this material renders to several textures in the prepass
  */
-export function PrepareDefinesForPrePass(scene: Scene, defines: any, canRenderToMRT: boolean) {
+export function PrepareDefinesForPrePass(scene: CoreScene, defines: any, canRenderToMRT: boolean) {
     const previousPrePass = defines.PREPASS;
 
     if (!defines._arePrePassDirty) {
@@ -870,7 +895,7 @@ export function PrepareDefinesForPrePass(scene: Scene, defines: any, canRenderTo
         },
     ];
 
-    if (scene.prePassRenderer && scene.prePassRenderer.enabled && canRenderToMRT) {
+    if (IsFullScene(scene) && scene.prePassRenderer && scene.prePassRenderer.enabled && canRenderToMRT) {
         defines.PREPASS = true;
         defines.SCENE_MRT_COUNT = scene.prePassRenderer.mrtCount;
         defines.PREPASS_NORMAL_WORLDSPACE = scene.prePassRenderer.generateNormalsInWorldSpace;
@@ -903,7 +928,7 @@ export function PrepareDefinesForPrePass(scene: Scene, defines: any, canRenderTo
  * @param defines specifies the list of active defines
  * @returns true if the defines have been updated, else false
  */
-export function PrepareDefinesForCamera(scene: Scene, defines: any): boolean {
+export function PrepareDefinesForCamera(scene: CoreScene, defines: any): boolean {
     let changed = false;
 
     if (scene.activeCamera) {

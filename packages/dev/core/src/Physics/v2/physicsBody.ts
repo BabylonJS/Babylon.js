@@ -2,7 +2,6 @@ import type { IBasePhysicsCollisionEvent, IPhysicsCollisionEvent, IPhysicsEngine
 import { PhysicsMotionType, PhysicsPrestepType } from "./IPhysicsEnginePlugin";
 import type { PhysicsShape } from "./physicsShape";
 import { Vector3, Quaternion, TmpVectors } from "../../Maths/math.vector";
-import type { Scene } from "../../scene";
 import type { PhysicsEngine } from "./physicsEngine";
 import type { Nullable } from "core/types";
 import type { PhysicsConstraint } from "./physicsConstraint";
@@ -14,6 +13,8 @@ import type { Mesh } from "core/Meshes/mesh";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { TransformNode } from "../../Meshes/transformNode";
 import type { BoundingBox } from "core/Culling/boundingBox";
+import type { CoreScene } from "core/coreScene";
+import { IsFullScene } from "core/coreScene.functions";
 
 /**
  * PhysicsBody is useful for creating a physics body that can be used in a physics engine. It allows
@@ -95,10 +96,15 @@ export class PhysicsBody {
      * It checks the version of the physics engine and the physics plugin, and initializes the body accordingly.
      * It also sets the node's rotation quaternion if it is not already set. Finally, it adds the body to the physics engine.
      */
-    constructor(transformNode: TransformNode, motionType: PhysicsMotionType, startsAsleep: boolean, scene: Scene) {
+    constructor(transformNode: TransformNode, motionType: PhysicsMotionType, startsAsleep: boolean, scene: CoreScene) {
         if (!scene) {
             return;
         }
+
+        if (!IsFullScene(scene)) {
+            throw new Error("PhysicsBody can only be created in a full scene.");
+        }
+
         const physicsEngine = scene.getPhysicsEngine() as PhysicsEngine;
         if (!physicsEngine) {
             throw new Error("No Physics Engine available.");
