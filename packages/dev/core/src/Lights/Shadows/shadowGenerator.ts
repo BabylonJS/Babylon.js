@@ -35,6 +35,8 @@ import {
     PushAttributesForInstances,
 } from "../../Materials/materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import type { CoreScene } from "core/coreScene";
+import { IsFullScene } from "core/coreScene.functions";
 
 /**
  * Defines the options associated with the creation of a custom shader for a shadow generator.
@@ -823,7 +825,7 @@ export class ShadowGenerator implements IShadowGenerator {
         return this._camera ?? this._scene.activeCamera;
     }
 
-    protected _scene: Scene;
+    protected _scene: CoreScene;
     protected _useRedTextureType: boolean;
     protected _lightDirection = Vector3.Zero();
 
@@ -903,7 +905,9 @@ export class ShadowGenerator implements IShadowGenerator {
             this._sceneUBOs.push(this._scene.createSceneUniformBuffer(`Scene for Shadow Generator (light "${this._light.name}")`));
         }
 
-        ShadowGenerator._SceneComponentInitialization(this._scene);
+        if (IsFullScene(this._scene)) {
+            ShadowGenerator._SceneComponentInitialization(this._scene);
+        }
 
         // Texture type fallback from float to int if not supported.
         const caps = this._scene.getEngine().getCaps();
@@ -1039,7 +1043,9 @@ export class ShadowGenerator implements IShadowGenerator {
             const shadowMap = this.getShadowMapForRendering();
 
             if (shadowMap) {
-                this._scene.postProcessManager.directRender(this._blurPostProcesses, shadowMap.renderTarget, true);
+                if (IsFullScene(this._scene)) {
+                    this._scene.postProcessManager.directRender(this._blurPostProcesses, shadowMap.renderTarget, true);
+                }
                 engine.unBindFramebuffer(shadowMap.renderTarget!, true);
                 engine._debugPopGroup?.(1);
             }

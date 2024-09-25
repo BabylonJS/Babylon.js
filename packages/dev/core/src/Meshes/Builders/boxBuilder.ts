@@ -1,11 +1,11 @@
 import type { Nullable } from "../../types";
-import type { Scene } from "../../scene";
 import { Matrix, Vector4 } from "../../Maths/math.vector";
 import { Color4 } from "../../Maths/math.color";
 import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
 import { CreateGroundVertexData } from "./groundBuilder";
+import type { CoreScene } from "core/coreScene";
 
 /**
  * Creates the VertexData for a box
@@ -250,7 +250,7 @@ export function CreateBox(
         bottomBaseAt?: number;
         updatable?: boolean;
     } = {},
-    scene: Nullable<Scene> = null
+    scene: Nullable<CoreScene> = null
 ): Mesh {
     const box = new Mesh(name, scene);
 
@@ -276,7 +276,7 @@ export const BoxBuilder = {
 // Side effects
 VertexData.CreateBox = CreateBoxVertexData;
 
-Mesh.CreateBox = (name: string, size: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number): Mesh => {
+Mesh.CreateBox = (name: string, size: number, scene: Nullable<CoreScene> = null, updatable?: boolean, sideOrientation?: number): Mesh => {
     const options = {
         size,
         sideOrientation,

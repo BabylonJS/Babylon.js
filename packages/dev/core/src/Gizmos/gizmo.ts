@@ -1,6 +1,6 @@
 import type { Observer } from "../Misc/observable";
 import type { Nullable } from "../types";
-import type { Scene, IDisposable } from "../scene";
+import type { IDisposable } from "../scene";
 import { Quaternion, Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
@@ -17,6 +17,7 @@ import type { LinesMesh } from "../Meshes/linesMesh";
 import type { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
 import type { ShadowLight } from "../Lights/shadowLight";
 import { Light } from "../Lights/light";
+import type { CoreScene } from "core/coreScene";
 
 /**
  * Cache built by each axis. Used for managing state between all elements of gizmo for enhanced UI
@@ -301,7 +302,7 @@ export class Gizmo implements IGizmo {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _attachedNodeChanged(value: Nullable<Node>) {}
 
-    protected _beforeRenderObserver: Nullable<Observer<Scene>>;
+    protected _beforeRenderObserver: Nullable<Observer<CoreScene>>;
     private _rightHandtoLeftHandMatrix = Matrix.RotationY(Math.PI);
 
     /**

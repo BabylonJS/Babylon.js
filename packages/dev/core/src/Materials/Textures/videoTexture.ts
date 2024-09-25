@@ -2,7 +2,6 @@ import { Observable } from "../../Misc/observable";
 import { Tools } from "../../Misc/tools";
 import { Logger } from "../../Misc/logger";
 import type { Nullable } from "../../types";
-import type { Scene } from "../../scene";
 import { Texture } from "../../Materials/Textures/texture";
 import { Constants } from "../../Engines/constants";
 import type { ExternalTexture } from "./externalTexture";
@@ -12,6 +11,7 @@ import "../../Engines/Extensions/engine.videoTexture";
 import "../../Engines/Extensions/engine.dynamicTexture";
 import { serialize } from "core/Misc/decorators";
 import { RegisterClass } from "core/Misc/typeStore";
+import type { CoreScene } from "core/coreScene";
 
 function removeSource(video: HTMLVideoElement): void {
     // Remove any <source> elements, etc.
@@ -167,7 +167,7 @@ export class VideoTexture extends Texture {
     constructor(
         name: Nullable<string>,
         src: string | string[] | HTMLVideoElement,
-        scene: Nullable<Scene>,
+        scene: Nullable<CoreScene>,
         generateMipMaps = false,
         invertY = false,
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
@@ -468,7 +468,7 @@ export class VideoTexture extends Texture {
      * @param invertY Defines if the video should be stored with invert Y set to true (true by default)
      * @returns The created video texture as a promise
      */
-    public static CreateFromStreamAsync(scene: Scene, stream: MediaStream, constraints: any, invertY = true): Promise<VideoTexture> {
+    public static CreateFromStreamAsync(scene: CoreScene, stream: MediaStream, constraints: any, invertY = true): Promise<VideoTexture> {
         const video = scene.getEngine().createVideoElement(constraints);
 
         if (scene.getEngine()._badOS) {
@@ -527,7 +527,7 @@ export class VideoTexture extends Texture {
      * @returns The created video texture as a promise
      */
     public static async CreateFromWebCamAsync(
-        scene: Scene,
+        scene: CoreScene,
         constraints: {
             minWidth: number;
             maxWidth: number;
@@ -566,7 +566,7 @@ export class VideoTexture extends Texture {
      * @param invertY Defines if the video should be stored with invert Y set to true (true by default)
      */
     public static CreateFromWebCam(
-        scene: Scene,
+        scene: CoreScene,
         onReady: (videoTexture: VideoTexture) => void,
         constraints: {
             minWidth: number;
@@ -593,7 +593,7 @@ export class VideoTexture extends Texture {
 Texture._CreateVideoTexture = (
     name: Nullable<string>,
     src: string | string[] | HTMLVideoElement,
-    scene: Nullable<Scene>,
+    scene: Nullable<CoreScene>,
     generateMipMaps = false,
     invertY = false,
     samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,

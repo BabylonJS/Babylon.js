@@ -1,11 +1,11 @@
 import { serialize, serializeAsVector3 } from "../Misc/decorators";
 import type { Camera } from "../Cameras/camera";
-import type { Scene } from "../scene";
 import { Matrix, TmpVectors, Vector3 } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Light } from "./light";
 import { Axis } from "../Maths/math.axis";
 import type { Nullable } from "core/types";
+import type { CoreScene } from "core/coreScene";
 /**
  * Interface describing all the common properties and methods a shadow light needs to implement.
  * This helps both the shadow generator and materials to generate the corresponding shadow maps
@@ -55,7 +55,7 @@ export interface IShadowLight extends Light {
      * Gets the scene the light belongs to.
      * @returns The scene
      */
-    getScene(): Scene;
+    getScene(): CoreScene;
 
     /**
      * Callback defining a custom Projection Matrix Builder.

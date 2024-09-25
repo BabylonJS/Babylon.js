@@ -1,8 +1,8 @@
 import type { Camera } from "../../Cameras/camera";
 import type { Nullable } from "../../types";
-import type { Scene } from "../../scene";
 import { Observable } from "../../Misc/observable";
 import { AbstractEngine } from "../abstractEngine";
+import type { CoreScene } from "core/coreScene";
 
 /**
  * Class used to define an additional view for the engine
@@ -176,7 +176,7 @@ AbstractEngine.prototype._renderViewStep = function (view: EngineView): boolean 
     const camera = view.camera;
     let previewCamera: Nullable<Camera> = null;
     let previewCameras: Nullable<Camera[]> = null;
-    let scene: Nullable<Scene> = null;
+    let scene: Nullable<CoreScene> = null;
     if (camera) {
         scene = Array.isArray(camera) ? camera[0].getScene() : camera.getScene();
 

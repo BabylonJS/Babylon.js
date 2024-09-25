@@ -1,5 +1,4 @@
 import { serialize } from "../Misc/decorators";
-import type { Scene } from "../scene";
 import { Matrix, Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
@@ -7,6 +6,7 @@ import { Light } from "./light";
 import { ShadowLight } from "./shadowLight";
 import type { Effect } from "../Materials/effect";
 import { RegisterClass } from "../Misc/typeStore";
+import type { CoreScene } from "core/coreScene";
 
 Node.AddNodeConstructor("Light_Type_0", (name, scene) => {
     return () => new PointLight(name, Vector3.Zero(), scene);
@@ -77,7 +77,7 @@ export class PointLight extends ShadowLight {
      * @param position The position of the point light in the scene
      * @param scene The scene the lights belongs to
      */
-    constructor(name: string, position: Vector3, scene?: Scene) {
+    constructor(name: string, position: Vector3, scene?: CoreScene) {
         super(name, scene);
         this.position = position;
     }

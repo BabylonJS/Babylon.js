@@ -1,4 +1,3 @@
-import type { Scene } from "../scene";
 import { Texture } from "../Materials/Textures/texture";
 import type { VideoTextureSettings } from "../Materials/Textures/videoTexture";
 import { VideoTexture } from "../Materials/Textures/videoTexture";
@@ -7,6 +6,8 @@ import type { PointerInfo } from "../Events/pointerEvents";
 import { PointerEventTypes } from "../Events/pointerEvents";
 import type { Nullable } from "../types";
 import type { Observer } from "../Misc/observable";
+import type { CoreScene } from "core/coreScene";
+import { IsFullScene } from "core/coreScene.functions";
 
 /**
  * Display a 360/180 degree video on an approximately spherical surface, useful for VR applications or skyboxes.
@@ -51,7 +52,7 @@ export class VideoDome extends TextureDome<VideoTexture> {
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _textureObserver: Nullable<Observer<Texture>>;
 
-    protected _initTexture(urlsOrElement: string | string[] | HTMLVideoElement, scene: Scene, options: any): VideoTexture {
+    protected _initTexture(urlsOrElement: string | string[] | HTMLVideoElement, scene: CoreScene, options: any): VideoTexture {
         const tempOptions: VideoTextureSettings = { loop: options.loop, autoPlay: options.autoPlay, autoUpdateTexture: true, poster: options.poster };
         const texture = new VideoTexture(
             (this.name || "videoDome") + "_texture",
@@ -63,7 +64,7 @@ export class VideoDome extends TextureDome<VideoTexture> {
             tempOptions
         );
         // optional configuration
-        if (options.clickToPlay) {
+        if (options.clickToPlay && IsFullScene(scene)) {
             this._pointerObserver = scene.onPointerObservable.add((data) => {
                 data.pickInfo?.pickedMesh === this.mesh && this._texture.video.play();
             }, PointerEventTypes.POINTERDOWN);
@@ -81,7 +82,9 @@ export class VideoDome extends TextureDome<VideoTexture> {
      */
     public override dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
         this._texture.onLoadObservable.remove(this._textureObserver);
-        this._scene.onPointerObservable.remove(this._pointerObserver);
+        if (IsFullScene(this._scene)) {
+            this._scene.onPointerObservable.remove(this._pointerObserver);
+        }
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
     }
 }

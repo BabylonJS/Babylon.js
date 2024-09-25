@@ -1,6 +1,5 @@
 import { serialize } from "../Misc/decorators";
 import type { Camera } from "../Cameras/camera";
-import type { Scene } from "../scene";
 import { Matrix, Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
@@ -8,6 +7,7 @@ import { Light } from "./light";
 import { ShadowLight } from "./shadowLight";
 import type { Effect } from "../Materials/effect";
 import { RegisterClass } from "../Misc/typeStore";
+import type { CoreScene } from "core/coreScene";
 
 Node.AddNodeConstructor("Light_Type_1", (name, scene) => {
     return () => new DirectionalLight(name, Vector3.Zero(), scene);
@@ -133,7 +133,7 @@ export class DirectionalLight extends ShadowLight {
      * @param direction The direction of the light
      * @param scene The scene the light belongs to
      */
-    constructor(name: string, direction: Vector3, scene?: Scene) {
+    constructor(name: string, direction: Vector3, scene?: CoreScene) {
         super(name, scene);
         this.position = direction.scale(-1.0);
         this.direction = direction;

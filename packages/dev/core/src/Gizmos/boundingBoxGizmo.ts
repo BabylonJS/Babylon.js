@@ -3,7 +3,6 @@ import { Observable } from "../Misc/observable";
 import { Logger } from "../Misc/logger";
 import type { Nullable } from "../types";
 import type { PointerInfo } from "../Events/pointerEvents";
-import type { Scene } from "../scene";
 import { Quaternion, Matrix, Vector3, TmpVectors } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
@@ -20,6 +19,8 @@ import type { LinesMesh } from "../Meshes/linesMesh";
 import { Epsilon } from "../Maths/math.constants";
 import type { IPointerEvent } from "../Events/deviceInputEvents";
 import { TransformNode } from "../Meshes/transformNode";
+import { IsFullScene } from "core/coreScene.functions";
+import type { CoreScene } from "core/coreScene";
 
 /**
  * Interface for bounding box gizmo
@@ -115,7 +116,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
     protected _rotateAnchorsParent: TransformNode;
     protected _scaleBoxesParent: TransformNode;
     protected _boundingDimensions = new Vector3(1, 1, 1);
-    protected _renderObserver: Nullable<Observer<Scene>> = null;
+    protected _renderObserver: Nullable<Observer<CoreScene>> = null;
     protected _pointerObserver: Nullable<Observer<PointerInfo>> = null;
     protected _scaleDragSpeed = 0.2;
     protected _rotateAnchorsDragBehaviors: Array<PointerDragBehavior> = [];
@@ -704,21 +705,23 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
         });
 
         // Update bounding box positions
-        this._renderObserver = this.gizmoLayer.originalScene.onBeforeRenderObservable.add(() => {
-            // Only update the bounding box if scaling has changed
-            if (this.attachedMesh && !this._existingMeshScale.equals(this.attachedMesh.scaling)) {
-                this.updateBoundingBox();
-            } else if (this.fixedDragMeshScreenSize || this.fixedDragMeshBoundsSize) {
-                this._updateRotationAnchors();
-                this._updateScaleBoxes();
-            }
+        this._renderObserver = !IsFullScene(this.gizmoLayer.originalScene)
+            ? null
+            : this.gizmoLayer.originalScene.onBeforeRenderObservable.add(() => {
+                  // Only update the bounding box if scaling has changed
+                  if (this.attachedMesh && !this._existingMeshScale.equals(this.attachedMesh.scaling)) {
+                      this.updateBoundingBox();
+                  } else if (this.fixedDragMeshScreenSize || this.fixedDragMeshBoundsSize) {
+                      this._updateRotationAnchors();
+                      this._updateScaleBoxes();
+                  }
 
-            // If drag mesh is enabled and dragging, update the attached mesh pose to match the drag mesh
-            if (this._dragMesh && this.attachedMesh && this._pointerDragBehavior.dragging) {
-                this._lineBoundingBox.position.rotateByQuaternionToRef(this._rootMesh.rotationQuaternion!, this._tmpVector);
-                this.attachedMesh.setAbsolutePosition(this._dragMesh.position.add(this._tmpVector.scale(-1)));
-            }
-        });
+                  // If drag mesh is enabled and dragging, update the attached mesh pose to match the drag mesh
+                  if (this._dragMesh && this.attachedMesh && this._pointerDragBehavior.dragging) {
+                      this._lineBoundingBox.position.rotateByQuaternionToRef(this._rootMesh.rotationQuaternion!, this._tmpVector);
+                      this.attachedMesh.setAbsolutePosition(this._dragMesh.position.add(this._tmpVector.scale(-1)));
+                  }
+              });
         this.updateBoundingBox();
     }
 
@@ -990,7 +993,9 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
      */
     public override dispose() {
         this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
-        this.gizmoLayer.originalScene.onBeforeRenderObservable.remove(this._renderObserver);
+        if (IsFullScene(this.gizmoLayer.originalScene)) {
+            this.gizmoLayer.originalScene.onBeforeRenderObservable.remove(this._renderObserver);
+        }
         this._lineBoundingBox.dispose();
         this._rotateAnchorsParent.dispose();
         this._scaleBoxesParent.dispose();

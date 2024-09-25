@@ -19,6 +19,8 @@ import { DepthReducer } from "../../Misc/depthReducer";
 import { Logger } from "../../Misc/logger";
 import { EngineStore } from "../../Engines/engineStore";
 import type { Camera } from "../../Cameras/camera";
+import type { CoreScene } from "core/coreScene";
+import { IsFullScene } from "core/coreScene.functions";
 
 interface ICascade {
     prevBreakDistance: number;
@@ -111,7 +113,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     public stabilizeCascades: boolean;
 
     private _freezeShadowCastersBoundingInfo: boolean;
-    private _freezeShadowCastersBoundingInfoObservable: Nullable<Observer<Scene>>;
+    private _freezeShadowCastersBoundingInfoObservable: Nullable<Observer<CoreScene>>;
 
     /**
      * Enables or disables the shadow casters bounding info computation.
@@ -123,13 +125,17 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     }
 
     public set freezeShadowCastersBoundingInfo(freeze: boolean) {
+        const scene = this._scene;
+        const isFullScene = IsFullScene(scene);
         if (this._freezeShadowCastersBoundingInfoObservable && freeze) {
-            this._scene.onBeforeRenderObservable.remove(this._freezeShadowCastersBoundingInfoObservable);
+            if (isFullScene) {
+                scene.onBeforeRenderObservable.remove(this._freezeShadowCastersBoundingInfoObservable);
+            }
             this._freezeShadowCastersBoundingInfoObservable = null;
         }
 
-        if (!this._freezeShadowCastersBoundingInfoObservable && !freeze) {
-            this._freezeShadowCastersBoundingInfoObservable = this._scene.onBeforeRenderObservable.add(() => this._computeShadowCastersBoundingInfo());
+        if (!this._freezeShadowCastersBoundingInfoObservable && !freeze && isFullScene) {
+            this._freezeShadowCastersBoundingInfoObservable = scene.onBeforeRenderObservable.add(() => this._computeShadowCastersBoundingInfo());
         }
 
         this._freezeShadowCastersBoundingInfo = freeze;
@@ -162,19 +168,21 @@ export class CascadedShadowGenerator extends ShadowGenerator {
                 this._scbiMax.maximizeInPlace(boundingBox.maximumWorld);
             }
 
-            const meshes = this._scene.meshes;
-            for (let meshIndex = 0; meshIndex < meshes.length; meshIndex++) {
-                const mesh = meshes[meshIndex];
+            if (IsFullScene(this._scene)) {
+                const meshes = this._scene.meshes;
+                for (let meshIndex = 0; meshIndex < meshes.length; meshIndex++) {
+                    const mesh = meshes[meshIndex];
 
-                if (!mesh || !mesh.isVisible || !mesh.isEnabled || !mesh.receiveShadows) {
-                    continue;
+                    if (!mesh || !mesh.isVisible || !mesh.isEnabled || !mesh.receiveShadows) {
+                        continue;
+                    }
+
+                    const boundingInfo = mesh.getBoundingInfo(),
+                        boundingBox = boundingInfo.boundingBox;
+
+                    this._scbiMin.minimizeInPlace(boundingBox.minimumWorld);
+                    this._scbiMax.maximizeInPlace(boundingBox.maximumWorld);
                 }
-
-                const boundingInfo = mesh.getBoundingInfo(),
-                    boundingBox = boundingInfo.boundingBox;
-
-                this._scbiMin.minimizeInPlace(boundingBox.minimumWorld);
-                this._scbiMax.maximizeInPlace(boundingBox.maximumWorld);
             }
         }
 
@@ -1021,7 +1029,9 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         super.dispose();
 
         if (this._freezeShadowCastersBoundingInfoObservable) {
-            this._scene.onBeforeRenderObservable.remove(this._freezeShadowCastersBoundingInfoObservable);
+            if (IsFullScene(this._scene)) {
+                this._scene.onBeforeRenderObservable.remove(this._freezeShadowCastersBoundingInfoObservable);
+            }
             this._freezeShadowCastersBoundingInfoObservable = null;
         }
 
