@@ -26,6 +26,7 @@ import type { Ray } from "../Culling/ray";
 import type { ArcRotateCamera } from "./arcRotateCamera";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import type { CoreScene } from "core/coreScene";
+import { IsFullScene } from "core/coreScene.functions";
 
 /**
  * Oblique projection values
@@ -456,16 +457,17 @@ export class Camera extends Node {
     constructor(name: string, position: Vector3, scene?: CoreScene, setActiveOnSceneIfNoneActive = true) {
         super(name, scene, false);
 
-        if (this.getScene().addCamera) {
-            this.getScene().addCamera!(this);
+        const _scene = this.getScene();
+        if (IsFullScene(_scene)) {
+            _scene.addCamera!(this);
         }
 
-        if (setActiveOnSceneIfNoneActive && !this.getScene().activeCamera) {
-            this.getScene().activeCamera = this;
+        if (setActiveOnSceneIfNoneActive && !_scene.activeCamera) {
+            _scene.activeCamera = this;
         }
 
         this.position = position;
-        this.renderPassId = this.getScene().getEngine().createRenderPassId(`Camera ${name}`);
+        this.renderPassId = _scene.getEngine().createRenderPassId(`Camera ${name}`);
     }
 
     /**
@@ -811,7 +813,7 @@ export class Camera extends Node {
         this._cascadePostProcessesToRigCams(); // also ensures framebuffer invalidated
 
         // Update prePass
-        if (this._scene.prePassRenderer) {
+        if (IsFullScene(this._scene) && this._scene.prePassRenderer) {
             this._scene.prePassRenderer.markAsDirty();
         }
 
@@ -830,7 +832,7 @@ export class Camera extends Node {
         }
 
         // Update prePass
-        if (this._scene.prePassRenderer) {
+        if (IsFullScene(this._scene) && this._scene.prePassRenderer) {
             this._scene.prePassRenderer.markAsDirty();
         }
 
@@ -1156,14 +1158,16 @@ export class Camera extends Node {
             this.inputs.clear();
         }
 
+        const scene = this.getScene();
+
         // Animations
-        if (this.getScene().stopAnimation) {
-            this.getScene().stopAnimation(this);
+        if (scene.stopAnimation) {
+            scene.stopAnimation(this);
         }
 
         // Remove from scene
-        if (this.getScene().removeCamera) {
-            this.getScene().removeCamera!(this);
+        if (IsFullScene(scene)) {
+            scene.removeCamera!(this);
         }
         while (this._rigCameras.length > 0) {
             const camera = this._rigCameras.pop();

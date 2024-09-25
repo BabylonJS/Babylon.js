@@ -4,6 +4,7 @@ import type { ISimplificationSettings } from "./meshSimplification";
 import { SimplificationQueue, SimplificationType } from "./meshSimplification";
 import type { ISceneComponent } from "../sceneComponent";
 import { SceneComponentConstants } from "../sceneComponent";
+import { IsFullScene } from "core/coreScene.functions";
 
 declare module "../scene" {
     export interface Scene {
@@ -62,7 +63,13 @@ Mesh.prototype.simplify = function (
     simplificationType: SimplificationType = SimplificationType.QUADRATIC,
     successCallback?: (mesh?: Mesh, submeshIndex?: number) => void
 ): Mesh {
-    this.getScene().simplificationQueue.addTask({
+    const scene = this.getScene();
+
+    if (!IsFullScene(scene)) {
+        throw new Error("Simplification can only be used in full scenes");
+    }
+
+    scene.simplificationQueue.addTask({
         settings: settings,
         parallelProcessing: parallelProcessing,
         mesh: this,

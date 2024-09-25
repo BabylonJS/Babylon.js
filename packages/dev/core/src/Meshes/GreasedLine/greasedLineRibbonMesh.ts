@@ -1,4 +1,3 @@
-import type { Scene } from "../../scene";
 import { Quaternion, TmpVectors, Vector3 } from "../../Maths/math.vector";
 import { Mesh } from "../mesh";
 import { Buffer } from "../../Buffers/buffer";
@@ -9,8 +8,9 @@ import { GreasedLineTools } from "../../Misc/greasedLineTools";
 import type { GreasedLineMeshOptions, GreasedLineRibbonOptions } from "./greasedLineBaseMesh";
 import { GreasedLineBaseMesh, GreasedLineRibbonAutoDirectionMode, GreasedLineRibbonFacesMode, GreasedLineRibbonPointsMode } from "./greasedLineBaseMesh";
 import type { VertexData } from "../mesh.vertexData";
+import type { CoreScene } from "core/coreScene";
 
-Mesh._GreasedLineRibbonMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
+Mesh._GreasedLineRibbonMeshParser = (parsedMesh: any, scene: CoreScene): Mesh => {
     return GreasedLineRibbonMesh.Parse(parsedMesh, scene);
 };
 
@@ -61,7 +61,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
      */
     constructor(
         public override readonly name: string,
-        scene: Scene,
+        scene: CoreScene,
         _options: GreasedLineMeshOptions,
         _pathOptions?: { options: GreasedLineMeshOptions; pathCount: number }[]
     ) {
@@ -483,7 +483,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
      * @param scene the scene to create the GreasedLineRibbonMesh in
      * @returns the created GreasedLineRibbonMesh
      */
-    public static override Parse(parsedMesh: any, scene: Scene): Mesh {
+    public static override Parse(parsedMesh: any, scene: CoreScene): Mesh {
         const lineOptions = <GreasedLineMeshOptions>parsedMesh.lineOptions;
         const name = <string>parsedMesh.name;
         const pathOptions = parsedMesh.pathOptions;

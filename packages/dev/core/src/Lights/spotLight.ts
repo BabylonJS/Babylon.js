@@ -1,6 +1,5 @@
 import { serialize, serializeAsTexture } from "../Misc/decorators";
 import type { Nullable } from "../types";
-import type { Scene } from "../scene";
 import { Matrix, Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
@@ -12,6 +11,7 @@ import { Texture } from "../Materials/Textures/texture";
 import type { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
 import type { Camera } from "../Cameras/camera";
 import { RegisterClass } from "../Misc/typeStore";
+import type { CoreScene } from "core/coreScene";
 
 Node.AddNodeConstructor("Light_Type_2", (name, scene) => {
     return () => new SpotLight(name, Vector3.Zero(), Vector3.Zero(), 0, 0, scene);
@@ -232,7 +232,7 @@ export class SpotLight extends ShadowLight {
      * @param exponent The light decay speed with the distance from the emission spot
      * @param scene The scene the lights belongs to
      */
-    constructor(name: string, position: Vector3, direction: Vector3, angle: number, exponent: number, scene?: Scene) {
+    constructor(name: string, position: Vector3, direction: Vector3, angle: number, exponent: number, scene?: CoreScene) {
         super(name, scene);
 
         this.position = position;

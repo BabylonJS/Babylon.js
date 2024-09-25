@@ -14,7 +14,6 @@ import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import type { Effect } from "../../../effect";
 import type { Mesh } from "../../../../Meshes/mesh";
 import { PBRBaseMaterial } from "../../../PBR/pbrBaseMaterial";
-import type { Scene } from "../../../../scene";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { SheenBlock } from "./sheenBlock";
@@ -40,6 +39,8 @@ import {
     PrepareUniformsAndSamplersForLight,
 } from "../../../materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import type { CoreScene } from "core/coreScene";
+import { IsFullScene } from "core/coreScene.functions";
 
 const mapOutputToVariable: { [name: string]: [string, string] } = {
     ambientClr: ["finalAmbient", ""],
@@ -87,7 +88,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     }
 
     private _lightId: number;
-    private _scene: Scene;
+    private _scene: CoreScene;
     private _environmentBRDFTexture: Nullable<BaseTexture> = null;
     private _environmentBrdfSamplerName: string;
     private _vNormalWName: string;
@@ -848,17 +849,20 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         effect.setFloat2("vDebugMode", this.debugLimit, this.debugFactor);
 
-        const ambientScene = this._scene.ambientColor;
+        const isFullScene = IsFullScene(scene);
+        if (isFullScene) {
+            const ambientScene = scene.ambientColor;
 
-        if (ambientScene) {
-            effect.setColor3("ambientFromScene", ambientScene);
+            if (ambientScene) {
+                effect.setColor3("ambientFromScene", ambientScene);
+            }
         }
 
         const invertNormal = scene.useRightHandedSystem === (scene._mirroredCameraPosition != null);
 
         effect.setFloat(this._invertNormalName, invertNormal ? -1 : 1);
 
-        effect.setFloat4("vLightingIntensity", this.directIntensity, 1, this.environmentIntensity * this._scene.environmentIntensity, this.specularIntensity);
+        effect.setFloat4("vLightingIntensity", this.directIntensity, 1, this.environmentIntensity * (isFullScene ? scene.environmentIntensity : 1), this.specularIntensity);
 
         // reflectivity bindings
         const outsideIOR = 1; // consider air as clear coat and other layers would remap in the shader.
@@ -1497,10 +1501,10 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
-    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: CoreScene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
-        if (serializationObject.lightId) {
+        if (serializationObject.lightId && IsFullScene(scene)) {
             this.light = scene.getLightById(serializationObject.lightId);
         }
 

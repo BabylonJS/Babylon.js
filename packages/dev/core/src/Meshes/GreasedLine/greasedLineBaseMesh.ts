@@ -1,4 +1,3 @@
-import type { Scene } from "../../scene";
 import type { IGreasedLineMaterial } from "../../Materials/GreasedLine/greasedLineMaterialInterfaces";
 import { GreasedLinePluginMaterial } from "../../Materials/GreasedLine/greasedLinePluginMaterial";
 import { Mesh } from "../mesh";
@@ -9,6 +8,7 @@ import { DeepCopier } from "../../Misc/deepCopier";
 import { GreasedLineSimpleMaterial } from "../../Materials/GreasedLine/greasedLineSimpleMaterial";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import type { FloatArray, IndicesArray } from "../../types";
+import type { CoreScene } from "core/coreScene";
 
 /**
  * In POINTS_MODE_POINTS every array of points will become the center (backbone) of the ribbon. The ribbon will be expanded by `width / 2` to `+direction` and `-direction` as well.
@@ -153,7 +153,7 @@ export abstract class GreasedLineBaseMesh extends Mesh {
 
     constructor(
         public override readonly name: string,
-        scene: Scene,
+        scene: CoreScene,
         protected _options: GreasedLineMeshOptions
     ) {
         super(name, scene, null, null, false, false);

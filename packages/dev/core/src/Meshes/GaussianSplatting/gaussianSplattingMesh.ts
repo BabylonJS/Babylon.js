@@ -1,4 +1,3 @@
-import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { SubMesh } from "../subMesh";
@@ -13,6 +12,7 @@ import { Constants } from "core/Engines/constants";
 import { Tools } from "core/Misc/tools";
 import "core/Meshes/thinInstanceMesh";
 import type { ThinEngine } from "core/Engines/thinEngine";
+import type { CoreScene } from "core/coreScene";
 
 interface DelayedTextureUpdate {
     covA: Float32Array;
@@ -82,7 +82,7 @@ export class GaussianSplattingMesh extends Mesh {
      * @param scene defines the hosting scene (optional)
      * @param keepInRam keep datas in ram for editing purpose
      */
-    constructor(name: string, url: Nullable<string> = null, scene: Nullable<Scene> = null, keepInRam: boolean = false) {
+    constructor(name: string, url: Nullable<string> = null, scene: Nullable<CoreScene> = null, keepInRam: boolean = false) {
         super(name, scene);
 
         const vertexData = new VertexData();

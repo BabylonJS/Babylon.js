@@ -1,4 +1,3 @@
-import type { Scene } from "../../scene";
 import type { Matrix } from "../../Maths/math.vector";
 import { Vector3 } from "../../Maths/math.vector";
 import { Mesh } from "../mesh";
@@ -12,8 +11,9 @@ import { GreasedLineTools } from "../../Misc/greasedLineTools";
 import type { GreasedLineMeshOptions } from "./greasedLineBaseMesh";
 import { GreasedLineBaseMesh } from "./greasedLineBaseMesh";
 import type { VertexData } from "../mesh.vertexData";
+import type { CoreScene } from "core/coreScene";
 
-Mesh._GreasedLineMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
+Mesh._GreasedLineMeshParser = (parsedMesh: any, scene: CoreScene): Mesh => {
     return GreasedLineMesh.Parse(parsedMesh, scene);
 };
 
@@ -43,7 +43,7 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
      */
     constructor(
         public override readonly name: string,
-        scene: Scene,
+        scene: CoreScene,
         _options: GreasedLineMeshOptions
     ) {
         super(name, scene, _options);
@@ -243,7 +243,7 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
      * @param scene the scene to create the GreasedLineMesh in
      * @returns the created GreasedLineMesh
      */
-    public static override Parse(parsedMesh: any, scene: Scene): Mesh {
+    public static override Parse(parsedMesh: any, scene: CoreScene): Mesh {
         const lineOptions = <GreasedLineMeshOptions>parsedMesh.lineOptions;
         const name = <string>parsedMesh.name;
         const result = new GreasedLineMesh(name, scene, lineOptions);

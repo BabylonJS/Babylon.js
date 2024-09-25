@@ -1,7 +1,6 @@
 import type { IAnimatable } from "../Animations/animatable.interface";
 import { Observable } from "../Misc/observable";
 import type { Nullable, FloatArray } from "../types";
-import type { Scene } from "../scene";
 import { EngineStore } from "../Engines/engineStore";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { VertexBuffer } from "../Buffers/buffer";
@@ -12,6 +11,7 @@ import { GetClass } from "../Misc/typeStore";
 
 import type { Animation } from "../Animations/animation";
 import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
+import type { CoreScene } from "core/coreScene";
 
 /**
  * Defines a target to use with MorphTargetManager
@@ -23,7 +23,7 @@ export class MorphTarget implements IAnimatable {
      */
     public animations: Animation[] = [];
 
-    private _scene: Nullable<Scene>;
+    private _scene: Nullable<CoreScene>;
     private _positions: Nullable<FloatArray> = null;
     private _normals: Nullable<FloatArray> = null;
     private _tangents: Nullable<FloatArray> = null;
@@ -91,7 +91,7 @@ export class MorphTarget implements IAnimatable {
         /** defines the name of the target */
         public name: string,
         influence = 0,
-        scene: Nullable<Scene> = null
+        scene: Nullable<CoreScene> = null
     ) {
         this._scene = scene || EngineStore.LastCreatedScene;
         this.influence = influence;
@@ -285,7 +285,7 @@ export class MorphTarget implements IAnimatable {
      * @param scene defines the hosting scene
      * @returns a new MorphTarget
      */
-    public static Parse(serializationObject: any, scene?: Scene): MorphTarget {
+    public static Parse(serializationObject: any, scene?: CoreScene): MorphTarget {
         const result = new MorphTarget(serializationObject.name, serializationObject.influence);
 
         result.setPositions(serializationObject.positions);

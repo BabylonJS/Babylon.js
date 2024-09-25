@@ -5,6 +5,7 @@ import { Constants } from "../Engines/constants";
 import { DepthRenderer } from "../Rendering/depthRenderer";
 
 import { MinMaxReducer } from "./minMaxReducer";
+import { IsFullScene } from "core/coreScene.functions";
 
 /**
  * This class is a small wrapper around the MinMaxReducer class to compute the min/max values of a depth texture
@@ -37,6 +38,10 @@ export class DepthReducer extends MinMaxReducer {
      */
     public setDepthRenderer(depthRenderer: Nullable<DepthRenderer> = null, type: number = Constants.TEXTURETYPE_HALF_FLOAT, forceFullscreenViewport = true): void {
         const scene = this._camera.getScene();
+
+        if (!IsFullScene(scene)) {
+            return;
+        }
 
         if (this._depthRenderer) {
             delete scene._depthRenderer[this._depthRendererId];
@@ -105,7 +110,7 @@ export class DepthReducer extends MinMaxReducer {
 
         if (this._depthRenderer && disposeAll) {
             const scene = this._depthRenderer.getDepthMap().getScene();
-            if (scene) {
+            if (scene && IsFullScene(scene)) {
                 delete scene._depthRenderer[this._depthRendererId];
             }
 

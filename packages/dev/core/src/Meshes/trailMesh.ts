@@ -8,6 +8,8 @@ import { VertexBuffer } from "../Buffers/buffer";
 import { VertexData } from "../Meshes/mesh.vertexData";
 import { Lerp } from "../Maths/math.scalar.functions";
 import type { TransformNode } from "../Meshes/transformNode";
+import { IsFullScene } from "core/coreScene.functions";
+import type { CoreScene } from "core/coreScene";
 
 Mesh._TrailMeshParser = (parsedMesh: any, scene: Scene) => {
     return TrailMesh.Parse(parsedMesh, scene);
@@ -61,7 +63,7 @@ export class TrailMesh extends Mesh {
     private _sectionPolygonPointsCount: number = 4;
     private _sectionVectors: Array<Vector3>;
     private _sectionNormalVectors: Array<Vector3>;
-    private _beforeRenderObserver: Nullable<Observer<Scene>>;
+    private _beforeRenderObserver: Nullable<Observer<CoreScene>>;
 
     /**
      * Constructor
@@ -72,7 +74,7 @@ export class TrailMesh extends Mesh {
      * @param length Length of trailing mesh. Default is 60.
      * @param autoStart Automatically start trailing mesh. Default true.
      */
-    constructor(name: string, generator: TransformNode, scene?: Scene, diameter?: number, length?: number, autoStart?: boolean);
+    constructor(name: string, generator: TransformNode, scene?: CoreScene, diameter?: number, length?: number, autoStart?: boolean);
 
     /**
      * Constructor
@@ -81,10 +83,10 @@ export class TrailMesh extends Mesh {
      * @param scene The scene to add this mesh to.
      * @param options defines the options used to create the mesh.
      */
-    constructor(name: string, generator: TransformNode, scene?: Scene, options?: ITrailMeshOptions);
+    constructor(name: string, generator: TransformNode, scene?: CoreScene, options?: ITrailMeshOptions);
 
     /** @internal */
-    constructor(name: string, generator: TransformNode, scene?: Scene, diameterOrOptions?: number | ITrailMeshOptions, length: number = 60, autoStart: boolean = true) {
+    constructor(name: string, generator: TransformNode, scene?: CoreScene, diameterOrOptions?: number | ITrailMeshOptions, length: number = 60, autoStart: boolean = true) {
         super(name, scene);
 
         this._running = false;
@@ -179,9 +181,14 @@ export class TrailMesh extends Mesh {
      * Start trailing mesh.
      */
     public start(): void {
+        const scene = this.getScene();
+        if (!IsFullScene(scene)) {
+            throw new Error("TrailMesh must be used in full scenes");
+        }
+
         if (!this._running) {
             this._running = true;
-            this._beforeRenderObserver = this.getScene().onBeforeRenderObservable.add(() => {
+            this._beforeRenderObserver = scene.onBeforeRenderObservable.add(() => {
                 this.update();
             });
         }
@@ -191,9 +198,15 @@ export class TrailMesh extends Mesh {
      * Stop trailing mesh.
      */
     public stop(): void {
+        const scene = this.getScene();
+
+        if (!IsFullScene(scene)) {
+            return;
+        }
+
         if (this._beforeRenderObserver && this._running) {
             this._running = false;
-            this.getScene().onBeforeRenderObservable.remove(this._beforeRenderObserver);
+            scene.onBeforeRenderObservable.remove(this._beforeRenderObserver);
         }
     }
 

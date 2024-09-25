@@ -12,12 +12,13 @@ import { InputBlock } from "../Input/inputBlock";
 import type { Light } from "../../../../Lights/light";
 import type { Nullable } from "../../../../types";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import type { Scene } from "../../../../scene";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 
 import { Logger } from "../../../../Misc/logger";
 import { BindLight, BindLights, PrepareDefinesForLight, PrepareDefinesForLights, PrepareUniformsAndSamplersForLight } from "../../../materialHelper.functions";
 import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
+import type { CoreScene } from "core/coreScene";
+import { IsFullScene } from "core/coreScene.functions";
 
 /**
  * Block used to add light in the fragment shader
@@ -460,10 +461,10 @@ export class LightBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
-    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: CoreScene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
-        if (serializationObject.lightId) {
+        if (serializationObject.lightId && IsFullScene(scene)) {
             this.light = scene.getLightById(serializationObject.lightId);
         }
 

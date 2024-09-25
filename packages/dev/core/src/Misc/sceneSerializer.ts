@@ -12,6 +12,7 @@ import type { Node } from "../node";
 import type { TransformNode } from "../Meshes/transformNode";
 import type { Camera } from "../Cameras/camera";
 import { Logger } from "core/Misc/logger";
+import { IsFullScene } from "core/coreScene.functions";
 
 let serializedGeometries: Geometry[] = [];
 const SerializeGeometry = (geometry: Geometry, serializationGeometries: any): any => {
@@ -30,7 +31,8 @@ const SerializeMesh = (mesh: Mesh, serializationScene: any): any => {
     // Geometry
     const geometry = mesh._geometry;
     if (geometry) {
-        if (!mesh.getScene().getGeometryById(geometry.id)) {
+        const scene = mesh.getScene();
+        if (!IsFullScene(scene) || !scene.getGeometryById(geometry.id)) {
             // Geometry was in the memory but not added to the scene, nevertheless it's better to serialize to be able to reload the mesh with its geometry
             SerializeGeometry(geometry, serializationScene.geometries);
         }
@@ -72,7 +74,11 @@ const FinalizeSingleNode = (node: Node, serializationObject: any) => {
                     serializeMaterial(mesh.material);
                 }
             } else if (!mesh.material) {
-                serializeMaterial(mesh.getScene().defaultMaterial);
+                const scene = mesh.getScene();
+
+                if (IsFullScene(scene)) {
+                    serializeMaterial(scene.defaultMaterial);
+                }
             }
 
             //serialize geometry
