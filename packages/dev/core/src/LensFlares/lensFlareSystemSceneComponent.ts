@@ -7,8 +7,10 @@ import { SceneComponentConstants } from "../sceneComponent";
 import { AbstractScene } from "../abstractScene";
 import type { AssetContainer } from "../assetContainer";
 import { LensFlareSystem } from "./lensFlareSystem";
+import { AddParser } from "core/Loading/Plugins/babylonFileParser.function";
+
 // Adds the parser to the scene parsers.
-AbstractScene.AddParser(SceneComponentConstants.NAME_LENSFLARESYSTEM, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
+AddParser(SceneComponentConstants.NAME_LENSFLARESYSTEM, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
     // Lens flares
     if (parsedData.lensFlareSystems !== undefined && parsedData.lensFlareSystems !== null) {
         if (!container.lensFlareSystems) {

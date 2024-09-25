@@ -1,5 +1,41 @@
 # Changelog
 
+## 7.26.4
+
+### Core
+
+- remove unused blur.fragment shader - by [noname0310](https://github.com/noname0310) ([#15621](https://github.com/BabylonJS/Babylon.js/pull/15621))
+- Material: Fix wireframe mode for unindexed meshes - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15622](https://github.com/BabylonJS/Babylon.js/pull/15622))
+- Moving BabylonFileParser out of the scene - [_Breaking Change_] by [deltakosh](https://github.com/deltakosh) ([#15619](https://github.com/BabylonJS/Babylon.js/pull/15619))
+- Improve viewer camera framing (and other small fixes) - by [ryantrem](https://github.com/ryantrem) ([#15618](https://github.com/BabylonJS/Babylon.js/pull/15618))
+- cleanup old suffix and functions - by [RaananW](https://github.com/RaananW) ([#15616](https://github.com/BabylonJS/Babylon.js/pull/15616))
+- applying epsilon in sprite instancing mode - by [RolandCsibrei](https://github.com/RolandCsibrei) ([#15615](https://github.com/BabylonJS/Babylon.js/pull/15615))
+- Lighting and other Viewer improvements - by [ryantrem](https://github.com/ryantrem) ([#15606](https://github.com/BabylonJS/Babylon.js/pull/15606))
+
+### GUI Editor
+
+- cleanup old suffix and functions - by [RaananW](https://github.com/RaananW) ([#15616](https://github.com/BabylonJS/Babylon.js/pull/15616))
+
+### Inspector
+
+- cleanup old suffix and functions - by [RaananW](https://github.com/RaananW) ([#15616](https://github.com/BabylonJS/Babylon.js/pull/15616))
+
+### Loaders
+
+- Lighting and other Viewer improvements - by [ryantrem](https://github.com/ryantrem) ([#15606](https://github.com/BabylonJS/Babylon.js/pull/15606))
+
+### Node Editor
+
+- cleanup old suffix and functions - by [RaananW](https://github.com/RaananW) ([#15616](https://github.com/BabylonJS/Babylon.js/pull/15616))
+
+### Playground
+
+- cleanup old suffix and functions - by [RaananW](https://github.com/RaananW) ([#15616](https://github.com/BabylonJS/Babylon.js/pull/15616))
+
+### Viewer
+
+- cleanup old suffix and functions - by [RaananW](https://github.com/RaananW) ([#15616](https://github.com/BabylonJS/Babylon.js/pull/15616))
+
 ## 7.26.3
 
 ### Core
