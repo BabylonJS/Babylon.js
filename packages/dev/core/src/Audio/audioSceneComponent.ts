@@ -5,16 +5,17 @@ import { Matrix, Vector3 } from "../Maths/math.vector";
 import type { ISceneSerializableComponent } from "../sceneComponent";
 import { SceneComponentConstants } from "../sceneComponent";
 import { Scene } from "../scene";
-import { AbstractScene } from "../abstractScene";
+import type { AbstractScene } from "../abstractScene";
 import type { AssetContainer } from "../assetContainer";
 
 import "./audioEngine";
 import { PrecisionDate } from "../Misc/precisionDate";
 import { EngineStore } from "../Engines/engineStore";
 import { AbstractEngine } from "core/Engines/abstractEngine";
+import { AddParser } from "core/Loading/Plugins/babylonFileParser.function";
 
 // Adds the parser to the scene parsers.
-AbstractScene.AddParser(SceneComponentConstants.NAME_AUDIO, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
+AddParser(SceneComponentConstants.NAME_AUDIO, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
     // TODO: add sound
     let loadedSounds: Sound[] = [];
     let loadedSound: Sound;
