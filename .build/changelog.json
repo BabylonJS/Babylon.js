@@ -1,68 +1,19 @@
 {
-    "fromTag": "7.26.3",
+    "fromTag": "7.26.4",
     "changelog": {
-        "7.26.3": [
+        "7.26.5": [
             {
-                "pr": "15612",
-                "title": "Fix issue when sprite texture was modified during animation",
-                "description": null,
+                "pr": "15623",
+                "title": "Store camera state",
+                "description": "Not sure how this got missed for so long, but we weren't actually storing the camera state after doing the framing, so restoring the stored camera state (e.g. double click) was restoring to the wrong camera pose.",
                 "author": {
-                    "name": "deltakosh",
-                    "url": "https://github.com/deltakosh"
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
                 },
                 "files": [
-                    ".build/config.json",
-                    "packages/dev/core/src/Sprites/spriteRenderer.ts"
+                    "packages/tools/viewer-alpha/src/viewer.ts"
                 ],
-                "tags": [
-                    "bug"
-                ]
-            },
-            {
-                "pr": "15608",
-                "title": "Fix refresh update for GS",
-                "description": "- Delay texture update until splats are sorted\r\n- Changed direction computation for determining if view has changed and an update is needed",
-                "author": {
-                    "name": "CedricGuillemet",
-                    "url": "https://github.com/CedricGuillemet"
-                },
-                "files": [
-                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts"
-                ],
-                "tags": [
-                    "skip changelog"
-                ]
-            },
-            {
-                "pr": "15613",
-                "title": "Fix HeightToNormal block",
-                "description": null,
-                "author": {
-                    "name": "deltakosh",
-                    "url": "https://github.com/deltakosh"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/heightToNormalBlock.ts"
-                ],
-                "tags": [
-                    "bug"
-                ]
-            },
-            {
-                "pr": "15607",
-                "title": "Effect: Fix infinite loop when engine is disposed",
-                "description": "See https://forum.babylonjs.com/t/effect-checkisready-infinite-loop-when-dispose-scene-with-defaultrenderingpipeline-again/53633",
-                "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/effect.ts"
-                ],
-                "tags": [
-                    "bug",
-                    "materials"
-                ]
+                "tags": []
             }
         ],
         "7.26.4": [
@@ -225,6 +176,70 @@
                     "packages/tools/viewer-alpha/test/apps/web/index.html"
                 ],
                 "tags": []
+            }
+        ],
+        "7.26.3": [
+            {
+                "pr": "15612",
+                "title": "Fix issue when sprite texture was modified during animation",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    ".build/config.json",
+                    "packages/dev/core/src/Sprites/spriteRenderer.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15608",
+                "title": "Fix refresh update for GS",
+                "description": "- Delay texture update until splats are sorted\r\n- Changed direction computation for determining if view has changed and an update is needed",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15613",
+                "title": "Fix HeightToNormal block",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/heightToNormalBlock.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15607",
+                "title": "Effect: Fix infinite loop when engine is disposed",
+                "description": "See https://forum.babylonjs.com/t/effect-checkisready-infinite-loop-when-dispose-scene-with-defaultrenderingpipeline-again/53633",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/effect.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
             }
         ],
         "7.26.2": [
