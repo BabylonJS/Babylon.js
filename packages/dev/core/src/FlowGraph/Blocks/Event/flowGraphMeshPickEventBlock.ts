@@ -7,6 +7,7 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { _isADescendantOf } from "../../utils";
 import type { IPathToObjectConverter } from "../../../ObjectModel/objectModelInterfaces";
 import type { IObjectAccessor } from "../../typeDefinitions";
+import type { Scene } from "core/scene";
 /**
  * @experimental
  */
@@ -52,7 +53,7 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
         if (!pickObserver) {
             const mesh = this._getReferencedMesh();
             context._setExecutionVariable(this, "mesh", mesh);
-            pickObserver = mesh.getScene().onPointerObservable.add((pointerInfo) => {
+            pickObserver = (mesh.getScene() as Scene).onPointerObservable.add((pointerInfo) => {
                 if (
                     pointerInfo.type === PointerEventTypes.POINTERPICK &&
                     pointerInfo.pickInfo?.pickedMesh &&

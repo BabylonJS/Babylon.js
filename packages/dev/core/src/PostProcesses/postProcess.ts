@@ -19,7 +19,6 @@ import type { AbstractScene } from "../abstractScene";
 import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
 
-import type { Scene } from "../scene";
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import type { Animation } from "../Animations/animation";
 import type { PrePassRenderer } from "../Rendering/prePassRenderer";
@@ -27,6 +26,7 @@ import type { PrePassEffectConfiguration } from "../Rendering/prePassEffectConfi
 import { AbstractEngine } from "../Engines/abstractEngine";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
 import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
+import type { CoreScene } from "core/coreScene";
 
 declare module "../Engines/abstractEngine" {
     export interface AbstractEngine {
@@ -378,7 +378,7 @@ export class PostProcess {
     public adaptScaleToCurrentViewport = false;
 
     private _camera: Camera;
-    protected _scene: Scene;
+    protected _scene: CoreScene;
     private _engine: AbstractEngine;
 
     private _shadersLoaded = false;
@@ -690,11 +690,11 @@ export class PostProcess {
             camera.attachPostProcess(this);
             this._engine = this._scene.getEngine();
 
-            this._scene.postProcesses.push(this);
+            this._scene.postProcesses?.push(this);
             this.uniqueId = UniqueIdGenerator.UniqueId;
         } else if (engine) {
             this._engine = engine;
-            this._engine.postProcesses.push(this);
+            this._engine.postProcesses?.push(this);
         }
 
         this._options = size;
@@ -1300,21 +1300,21 @@ export class PostProcess {
      * @param rootUrl defines the root URL to use to load textures
      * @returns a new post process
      */
-    public static Parse(parsedPostProcess: any, scene: Scene, rootUrl: string): Nullable<PostProcess> {
+    public static Parse(parsedPostProcess: any, scene: CoreScene, rootUrl: string): Nullable<PostProcess> {
         const postProcessType = GetClass(parsedPostProcess.customType);
 
         if (!postProcessType || !postProcessType._Parse) {
             return null;
         }
 
-        const camera = scene ? scene.getCameraById(parsedPostProcess.cameraId) : null;
+        const camera = scene && scene.getCameraById ? scene.getCameraById(parsedPostProcess.cameraId) : null;
         return postProcessType._Parse(parsedPostProcess, camera, scene, rootUrl);
     }
 
     /**
      * @internal
      */
-    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<PostProcess> {
+    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: CoreScene, rootUrl: string): Nullable<PostProcess> {
         return SerializationHelper.Parse(
             () => {
                 return new PostProcess(

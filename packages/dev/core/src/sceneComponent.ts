@@ -1,4 +1,3 @@
-import type { Scene } from "./scene";
 import type { SmartArrayNoDuplicate } from "./Misc/smartArray";
 import type { Nullable } from "./types";
 import type { PickingInfo } from "./Collisions/pickingInfo";
@@ -11,6 +10,7 @@ import type { Camera } from "./Cameras/camera";
 import type { AbstractMesh } from "./Meshes/abstractMesh";
 import type { SubMesh } from "./Meshes/subMesh";
 import type { RenderTargetTexture } from "./Materials/Textures/renderTargetTexture";
+import type { CoreScene } from "./coreScene";
 
 /**
  * Groups all the scene component constants in one place to ease maintenance.
@@ -118,7 +118,7 @@ export interface ISceneComponent {
     /**
      * The scene the component belongs to.
      */
-    scene: Scene;
+    scene: CoreScene;
 
     /**
      * Register the component to one instance of a scene.

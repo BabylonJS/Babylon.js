@@ -1,12 +1,12 @@
 import { serialize, serializeAsVector3, serializeAsMeshReference } from "../Misc/decorators";
 import type { Nullable } from "../types";
 import { Camera } from "./camera";
-import type { Scene } from "../scene";
 import { Quaternion, Matrix, Vector3, Vector2, TmpVectors } from "../Maths/math.vector";
 import { Epsilon } from "../Maths/math.constants";
 import { Axis } from "../Maths/math.axis";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Node } from "../node";
+import type { CoreScene } from "core/coreScene";
 
 Node.AddNodeConstructor("TargetCamera", (name, scene) => {
     return () => new TargetCamera(name, Vector3.Zero(), scene);
@@ -122,7 +122,7 @@ export class TargetCamera extends Camera {
      * @param scene Defines the scene the camera belongs to
      * @param setActiveOnSceneIfNoneActive Defines whether the camera should be marked as active if not other active cameras have been defined
      */
-    constructor(name: string, position: Vector3, scene?: Scene, setActiveOnSceneIfNoneActive = true) {
+    constructor(name: string, position: Vector3, scene?: CoreScene, setActiveOnSceneIfNoneActive = true) {
         super(name, position, scene, setActiveOnSceneIfNoneActive);
     }
 

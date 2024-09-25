@@ -55,6 +55,9 @@ export class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera
      */
     public attachControl(): void {
         const manager = this.camera.getScene().gamepadManager;
+        if (!manager) {
+            return;
+        }
         this._onGamepadConnectedObserver = manager.onGamepadConnectedObservable.add((gamepad) => {
             if (gamepad.type !== Gamepad.POSE_ENABLED) {
                 // prioritize XBOX gamepads.
@@ -81,8 +84,13 @@ export class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera
      * Detach the current controls from the specified dom element.
      */
     public detachControl(): void {
-        this.camera.getScene().gamepadManager.onGamepadConnectedObservable.remove(this._onGamepadConnectedObserver);
-        this.camera.getScene().gamepadManager.onGamepadDisconnectedObservable.remove(this._onGamepadDisconnectedObserver);
+        const manager = this.camera.getScene().gamepadManager;
+        if (!manager) {
+            return;
+        }
+
+        manager.onGamepadConnectedObservable.remove(this._onGamepadConnectedObserver);
+        manager.onGamepadDisconnectedObservable.remove(this._onGamepadDisconnectedObserver);
         this.gamepad = null;
     }
 

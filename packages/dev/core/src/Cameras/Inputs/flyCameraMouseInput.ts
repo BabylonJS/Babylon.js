@@ -6,11 +6,11 @@ import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import type { FlyCamera } from "../../Cameras/flyCamera";
 import type { PointerInfo } from "../../Events/pointerEvents";
 import { PointerEventTypes } from "../../Events/pointerEvents";
-import type { Scene } from "../../scene";
 import { Quaternion } from "../../Maths/math.vector";
 import { Axis } from "../../Maths/math.axis";
 import { Tools } from "../../Misc/tools";
 import type { IPointerEvent } from "../../Events/deviceInputEvents";
+import type { CoreScene } from "core/coreScene";
 /**
  * Listen to mouse events to control the camera.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
@@ -64,7 +64,7 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
     public angularSensibility = 1000.0;
 
     private _observer: Nullable<Observer<PointerInfo>>;
-    private _rollObserver: Nullable<Observer<Scene>>;
+    private _rollObserver: Nullable<Observer<CoreScene>>;
     private _previousPosition: Nullable<{ x: number; y: number }> = null;
     private _noPreventDefault: boolean | undefined;
 

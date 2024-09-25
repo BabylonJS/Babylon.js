@@ -107,26 +107,29 @@ export abstract class AbstractScene extends CoreScene {
         }
     }
 
+    /** @internal */
+    public override _blockEntityCollection = false;
+
     /**
      * Gets the list of root nodes (ie. nodes with no parent)
      */
-    public rootNodes: Node[] = [];
+    public override rootNodes: Node[] = [];
 
     /** All of the cameras added to this scene
      * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras
      */
-    public cameras: Camera[] = [];
+    public override cameras: Camera[] = [];
 
     /**
      * All of the lights added to this scene
      * @see https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction
      */
-    public lights: Light[] = [];
+    public override lights: Light[] = [];
 
     /**
      * All of the (abstract) meshes added to this scene
      */
-    public meshes: AbstractMesh[] = [];
+    public override meshes: AbstractMesh[] = [];
 
     /**
      * The list of skeletons added to the scene
@@ -149,7 +152,7 @@ export abstract class AbstractScene extends CoreScene {
      * All of the animation groups added to this scene
      * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/groupAnimations
      */
-    public animationGroups: AnimationGroup[] = [];
+    public override animationGroups: AnimationGroup[] = [];
 
     /**
      * All of the multi-materials added to this scene
@@ -215,19 +218,7 @@ export abstract class AbstractScene extends CoreScene {
     /**
      * The list of postprocesses added to the scene
      */
-    public postProcesses: PostProcess[] = [];
-
-    public get isLoading(): boolean {
-        return false;
-    }
-
-    /**
-     * Gets or sets a boolean indicating if the scene must use right-handed coordinates system
-     * CoreScene is a left handed system
-     */
-    public get useRightHandedSystem(): boolean {
-        return false;
-    }
+    public override postProcesses: PostProcess[] = [];
 
     /**
      * @returns all meshes, lights, cameras, transformNodes and bones

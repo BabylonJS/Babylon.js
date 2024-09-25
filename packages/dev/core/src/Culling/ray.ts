@@ -6,13 +6,13 @@ import { PickingInfo } from "../Collisions/pickingInfo";
 import { IntersectionInfo } from "../Collisions/intersectionInfo";
 import type { BoundingBox } from "./boundingBox";
 import type { BoundingSphere } from "./boundingSphere";
-import { Scene } from "../scene";
 import { Camera } from "../Cameras/camera";
 import type { Plane } from "../Maths/math.plane";
 import { EngineStore } from "../Engines/engineStore";
 
 import type { Mesh } from "../Meshes/mesh";
 import { Epsilon } from "core/Maths/math.constants";
+import { CoreScene } from "core/coreScene";
 
 /**
  * Class representing a ray with position and direction
@@ -674,8 +674,8 @@ export type MeshPredicate = (mesh: AbstractMesh, thinInstanceIndex: number) => b
  */
 export type TrianglePickingPredicate = (p0: Vector3, p1: Vector3, p2: Vector3, ray: Ray, i0: number, i1: number, i2: number) => boolean;
 
-declare module "../scene" {
-    export interface Scene {
+declare module "../coreScene" {
+    export interface CoreScene {
         /** @internal */
         _tempPickingRay: Nullable<Ray>;
 
@@ -712,10 +712,115 @@ declare module "../scene" {
             trianglePredicate?: TrianglePickingPredicate,
             skipBoundingInfo?: boolean
         ): Nullable<PickingInfo>;
+
+        /**
+         * Creates a ray that can be used to pick in the scene
+         * @param x defines the x coordinate of the origin (on-screen)
+         * @param y defines the y coordinate of the origin (on-screen)
+         * @param world defines the world matrix to use if you want to pick in object space (instead of world space)
+         * @param camera defines the camera to use for the picking
+         * @param cameraViewSpace defines if picking will be done in view space (false by default)
+         * @returns a Ray
+         */
+        createPickingRay(x: number, y: number, world: Nullable<Matrix>, camera: Nullable<Camera>, cameraViewSpace?: boolean): Ray;
+
+        // eslint-disable-next-line jsdoc/require-returns-check
+        /**
+         * Creates a ray that can be used to pick in the scene
+         * @param x defines the x coordinate of the origin (on-screen)
+         * @param y defines the y coordinate of the origin (on-screen)
+         * @param world defines the world matrix to use if you want to pick in object space (instead of world space)
+         * @param result defines the ray where to store the picking ray
+         * @param camera defines the camera to use for the picking
+         * @param cameraViewSpace defines if picking will be done in view space (false by default)
+         * @param enableDistantPicking defines if picking should handle large values for mesh position/scaling (false by default)
+         * @returns the current scene
+         */
+        createPickingRayToRef(
+            x: number,
+            y: number,
+            world: Nullable<Matrix>,
+            result: Ray,
+            camera: Nullable<Camera>,
+            cameraViewSpace?: boolean,
+            enableDistantPicking?: boolean
+        ): CoreScene;
+
+        /**
+         * Creates a ray that can be used to pick in the scene
+         * @param x defines the x coordinate of the origin (on-screen)
+         * @param y defines the y coordinate of the origin (on-screen)
+         * @param camera defines the camera to use for the picking
+         * @returns a Ray
+         */
+        createPickingRayInCameraSpace(x: number, y: number, camera?: Camera): Ray;
+
+        /**
+         * Creates a ray that can be used to pick in the scene
+         * @param x defines the x coordinate of the origin (on-screen)
+         * @param y defines the y coordinate of the origin (on-screen)
+         * @param result defines the ray where to store the picking ray
+         * @param camera defines the camera to use for the picking
+         * @returns the current scene
+         */
+        createPickingRayInCameraSpaceToRef(x: number, y: number, result: Ray, camera?: Camera): CoreScene;
+
+        /** Launch a ray to try to pick a mesh in the scene using only bounding information of the main mesh (not using submeshes)
+         * @param x position on screen
+         * @param y position on screen
+         * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true. thinInstanceIndex is -1 when the mesh is non-instanced
+         * @param fastCheck defines if the first intersection will be used (and not the closest)
+         * @param camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
+         * @returns a PickingInfo (Please note that some info will not be set like distance, bv, bu and everything that cannot be capture by only using bounding infos)
+         */
+        pickWithBoundingInfo(x: number, y: number, predicate?: MeshPredicate, fastCheck?: boolean, camera?: Nullable<Camera>): Nullable<PickingInfo>;
+
+        /** Launch a ray to try to pick a mesh in the scene
+         * @param x position on screen
+         * @param y position on screen
+         * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true. thinInstanceIndex is -1 when the mesh is non-instanced
+         * @param fastCheck defines if the first intersection will be used (and not the closest)
+         * @param camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
+         * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
+         * @returns a PickingInfo
+         */
+        pick(x: number, y: number, predicate?: MeshPredicate, fastCheck?: boolean, camera?: Nullable<Camera>, trianglePredicate?: TrianglePickingPredicate): PickingInfo;
+
+        /**
+         * Use the given ray to pick a mesh in the scene. A mesh triangle can be picked both from its front and back sides,
+         * irrespective of orientation.
+         * @param ray The ray to use to pick meshes
+         * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must have isPickable set to true. thinInstanceIndex is -1 when the mesh is non-instanced
+         * @param fastCheck defines if the first intersection will be used (and not the closest)
+         * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
+         * @returns a PickingInfo
+         */
+        pickWithRay(ray: Ray, predicate?: MeshPredicate, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo>;
+
+        /**
+         * Launch a ray to try to pick a mesh in the scene. A mesh triangle can be picked both from its front and back sides,
+         * irrespective of orientation.
+         * @param x X position on screen
+         * @param y Y position on screen
+         * @param predicate Predicate function used to determine eligible meshes and instances. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true. thinInstanceIndex is -1 when the mesh is non-instanced
+         * @param camera camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
+         * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
+         * @returns an array of PickingInfo
+         */
+        multiPick(x: number, y: number, predicate?: MeshPredicate, camera?: Camera, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]>;
+
+        /**
+         * Launch a ray to try to pick a mesh in the scene
+         * @param ray Ray to use
+         * @param predicate Predicate function used to determine eligible meshes and instances. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true. thinInstanceIndex is -1 when the mesh is non-instanced
+         * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
+         * @returns an array of PickingInfo
+         */
+        multiPickWithRay(ray: Ray, predicate?: MeshPredicate, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]>;
     }
 }
 
-Scene.prototype.createPickingRay = function (x: number, y: number, world: Nullable<Matrix>, camera: Nullable<Camera>, cameraViewSpace = false): Ray {
+CoreScene.prototype.createPickingRay = function (x: number, y: number, world: Nullable<Matrix>, camera: Nullable<Camera>, cameraViewSpace = false): Ray {
     const result = Ray.Zero();
 
     this.createPickingRayToRef(x, y, world, result, camera, cameraViewSpace);
@@ -723,7 +828,7 @@ Scene.prototype.createPickingRay = function (x: number, y: number, world: Nullab
     return result;
 };
 
-Scene.prototype.createPickingRayToRef = function (
+CoreScene.prototype.createPickingRayToRef = function (
     x: number,
     y: number,
     world: Nullable<Matrix>,
@@ -731,7 +836,7 @@ Scene.prototype.createPickingRayToRef = function (
     camera: Nullable<Camera>,
     cameraViewSpace = false,
     enableDistantPicking = false
-): Scene {
+): CoreScene {
     const engine = this.getEngine();
 
     if (!camera && !(camera = this.activeCamera!)) {
@@ -760,7 +865,7 @@ Scene.prototype.createPickingRayToRef = function (
     return this;
 };
 
-Scene.prototype.createPickingRayInCameraSpace = function (x: number, y: number, camera?: Camera): Ray {
+CoreScene.prototype.createPickingRayInCameraSpace = function (x: number, y: number, camera?: Camera): Ray {
     const result = Ray.Zero();
 
     this.createPickingRayInCameraSpaceToRef(x, y, result, camera);
@@ -768,7 +873,7 @@ Scene.prototype.createPickingRayInCameraSpace = function (x: number, y: number, 
     return result;
 };
 
-Scene.prototype.createPickingRayInCameraSpaceToRef = function (x: number, y: number, result: Ray, camera?: Camera): Scene {
+CoreScene.prototype.createPickingRayInCameraSpaceToRef = function (x: number, y: number, result: Ray, camera?: Camera): CoreScene {
     if (!PickingInfo) {
         return this;
     }
@@ -792,7 +897,7 @@ Scene.prototype.createPickingRayInCameraSpaceToRef = function (x: number, y: num
     return this;
 };
 
-Scene.prototype._internalPickForMesh = function (
+CoreScene.prototype._internalPickForMesh = function (
     pickingInfo: Nullable<PickingInfo>,
     rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray,
     mesh: AbstractMesh,
@@ -816,7 +921,7 @@ Scene.prototype._internalPickForMesh = function (
     return result;
 };
 
-Scene.prototype._internalPick = function (
+CoreScene.prototype._internalPick = function (
     rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray,
     predicate?: MeshPredicate,
     fastCheck?: boolean,
@@ -886,7 +991,7 @@ Scene.prototype._internalPick = function (
     return pickingInfo || new PickingInfo();
 };
 
-Scene.prototype._internalMultiPick = function (
+CoreScene.prototype._internalMultiPick = function (
     rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray,
     predicate?: MeshPredicate,
     trianglePredicate?: TrianglePickingPredicate
@@ -943,7 +1048,7 @@ Scene.prototype._internalMultiPick = function (
     return pickingInfos;
 };
 
-Scene.prototype.pickWithBoundingInfo = function (x: number, y: number, predicate?: MeshPredicate, fastCheck?: boolean, camera?: Nullable<Camera>): Nullable<PickingInfo> {
+CoreScene.prototype.pickWithBoundingInfo = function (x: number, y: number, predicate?: MeshPredicate, fastCheck?: boolean, camera?: Nullable<Camera>): Nullable<PickingInfo> {
     if (!PickingInfo) {
         return null;
     }
@@ -966,13 +1071,13 @@ Scene.prototype.pickWithBoundingInfo = function (x: number, y: number, predicate
     return result;
 };
 
-Object.defineProperty(Scene.prototype, "_pickingAvailable", {
+Object.defineProperty(CoreScene.prototype, "_pickingAvailable", {
     get: () => true,
     enumerable: false,
     configurable: false,
 });
 
-Scene.prototype.pick = function (
+CoreScene.prototype.pick = function (
     x: number,
     y: number,
     predicate?: MeshPredicate,
@@ -1001,7 +1106,7 @@ Scene.prototype.pick = function (
     return result;
 };
 
-Scene.prototype.pickWithRay = function (ray: Ray, predicate?: MeshPredicate, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo> {
+CoreScene.prototype.pickWithRay = function (ray: Ray, predicate?: MeshPredicate, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo> {
     const result = this._internalPick(
         (world) => {
             if (!this._pickWithRayInverseMatrix) {
@@ -1027,11 +1132,11 @@ Scene.prototype.pickWithRay = function (ray: Ray, predicate?: MeshPredicate, fas
     return result;
 };
 
-Scene.prototype.multiPick = function (x: number, y: number, predicate?: MeshPredicate, camera?: Camera, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
+CoreScene.prototype.multiPick = function (x: number, y: number, predicate?: MeshPredicate, camera?: Camera, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
     return this._internalMultiPick((world) => this.createPickingRay(x, y, world, camera || null), predicate, trianglePredicate);
 };
 
-Scene.prototype.multiPickWithRay = function (ray: Ray, predicate?: MeshPredicate, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
+CoreScene.prototype.multiPickWithRay = function (ray: Ray, predicate?: MeshPredicate, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
     return this._internalMultiPick(
         (world) => {
             if (!this._pickWithRayInverseMatrix) {

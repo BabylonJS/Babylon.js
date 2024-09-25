@@ -1,9 +1,9 @@
 import { FreeCamera } from "./freeCamera";
 import type { FreeCameraTouchInput } from "../Cameras/Inputs/freeCameraTouchInput";
 import type { FreeCameraMouseInput } from "../Cameras/Inputs/freeCameraMouseInput";
-import type { Scene } from "../scene";
 import { Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
+import type { CoreScene } from "core/coreScene";
 
 Node.AddNodeConstructor("TouchCamera", (name, scene) => {
     return () => new TouchCamera(name, Vector3.Zero(), scene);
@@ -64,7 +64,7 @@ export class TouchCamera extends FreeCamera {
      * @param position Define the start position of the camera in the scene
      * @param scene Define the scene the camera belongs to
      */
-    constructor(name: string, position: Vector3, scene?: Scene) {
+    constructor(name: string, position: Vector3, scene?: CoreScene) {
         super(name, position, scene);
         this.inputs.addTouch();
 

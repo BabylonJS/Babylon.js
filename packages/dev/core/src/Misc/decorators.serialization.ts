@@ -2,7 +2,6 @@ import type { FresnelParameters } from "../Materials/fresnelParameters";
 import type { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
 import { _WarnImport } from "./devTools";
 import type { ColorCurves } from "../Materials/colorCurves";
-import type { Scene } from "../scene";
 import type { Nullable } from "../types";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import type { IAnimatable } from "../Animations/animatable.interface";
@@ -11,6 +10,7 @@ import { Color3, Color4 } from "../Maths/math.color";
 import { Matrix, Quaternion, Vector2, Vector3 } from "../Maths/math.vector";
 import type { Camera } from "../Cameras/camera";
 import { GetMergedStore } from "./decorators.functions";
+import type { CoreScene } from "core/coreScene";
 
 /** @internal */
 export interface CopySourceOptions {
@@ -104,7 +104,7 @@ export class SerializationHelper {
     /**
      * @internal
      */
-    public static _TextureParser = (sourceProperty: any, scene: Scene, rootUrl: string): Nullable<BaseTexture> => {
+    public static _TextureParser = (sourceProperty: any, scene: CoreScene, rootUrl: string): Nullable<BaseTexture> => {
         throw _WarnImport("Texture");
     };
 
@@ -204,7 +204,7 @@ export class SerializationHelper {
      * @param scene the scene where the object is
      * @param rootUrl root url to use to load assets
      */
-    public static ParseProperties(source: any, destination: any, scene: Nullable<Scene>, rootUrl: Nullable<string>) {
+    public static ParseProperties(source: any, destination: any, scene: Nullable<CoreScene>, rootUrl: Nullable<string>) {
         if (!rootUrl) {
             rootUrl = "";
         }
@@ -241,7 +241,7 @@ export class SerializationHelper {
                         dest[property] = Vector3.FromArray(sourceProperty);
                         break;
                     case 6: // Mesh reference
-                        if (scene) {
+                        if (scene && scene.getLastMeshById) {
                             dest[property] = scene.getLastMeshById(sourceProperty);
                         }
                         break;
@@ -258,7 +258,7 @@ export class SerializationHelper {
                         dest[property] = Quaternion.FromArray(sourceProperty);
                         break;
                     case 11: // Camera reference
-                        if (scene) {
+                        if (scene && scene.getCameraById) {
                             dest[property] = scene.getCameraById(sourceProperty);
                         }
                         break;
@@ -278,7 +278,7 @@ export class SerializationHelper {
      * @param rootUrl defines the root url for resources
      * @returns a new entity
      */
-    public static Parse<T>(creationFunction: () => T, source: any, scene: Nullable<Scene>, rootUrl: Nullable<string> = null): T {
+    public static Parse<T>(creationFunction: () => T, source: any, scene: Nullable<CoreScene>, rootUrl: Nullable<string> = null): T {
         const destination = creationFunction();
 
         // Tags

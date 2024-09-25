@@ -8,10 +8,10 @@ import { WebXRHandJoint } from "../../XR/features/WebXRHandTracking";
 import type { WebXRExperienceHelper } from "../../XR/webXRExperienceHelper";
 import type { Behavior } from "../behavior";
 import type { Observer } from "../../Misc/observable";
-import type { Scene } from "../../scene";
 import { Quaternion, TmpVectors, Vector3 } from "../../Maths/math.vector";
 import type { Ray } from "../../Culling/ray";
 import { Tools } from "core/Misc/tools";
+import type { CoreScene } from "core/coreScene";
 
 /**
  * Zones around the hand
@@ -83,11 +83,11 @@ type HandPoseInfo = {
  * @since 5.0.0
  */
 export class HandConstraintBehavior implements Behavior<TransformNode> {
-    private _scene: Scene;
+    private _scene: CoreScene;
     private _node: TransformNode;
     private _eyeTracking: Nullable<WebXREyeTracking>;
     private _handTracking: Nullable<WebXRHandTracking>;
-    private _sceneRenderObserver: Nullable<Observer<Scene>> = null;
+    private _sceneRenderObserver: Nullable<Observer<CoreScene>> = null;
     private _zoneAxis: { [id: number]: Vector3 } = {};
 
     /**

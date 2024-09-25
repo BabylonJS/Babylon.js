@@ -90,7 +90,7 @@ import { PointerPickingConfiguration } from "./Inputs/pointerPickingConfiguratio
 import { Logger } from "./Misc/logger";
 import type { AbstractEngine } from "./Engines/abstractEngine";
 import { RegisterClass } from "./Misc/typeStore";
-import { CoreScene } from "./coreScene";
+import type { CoreScene } from "./coreScene";
 import { AbstractScene } from "./abstractScene";
 
 /**
@@ -186,10 +186,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     // Members
 
     /** @internal */
-    public _inputManager = new InputManager(this);
+    public override _inputManager = new InputManager(this);
 
     /** Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position */
-    public cameraToUseForPointers: Nullable<Camera> = null;
+    public override cameraToUseForPointers: Nullable<Camera> = null;
 
     /** @internal */
     public readonly _isScene = true;
@@ -205,7 +205,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Defines the color used to clear the render buffer (Default is (0.2, 0.2, 0.3, 1.0))
      */
-    public clearColor: Color4 = new Color4(0.2, 0.2, 0.3, 1.0);
+    public override clearColor: Color4 = new Color4(0.2, 0.2, 0.3, 1.0);
     /**
      * Defines the color used to simulate the ambient color (Default is (0, 0, 0))
      */
@@ -393,11 +393,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets or sets the animation properties override
      */
-    public get animationPropertiesOverride(): Nullable<AnimationPropertiesOverride> {
+    public override get animationPropertiesOverride(): Nullable<AnimationPropertiesOverride> {
         return this._animationPropertiesOverride;
     }
 
-    public set animationPropertiesOverride(value: Nullable<AnimationPropertiesOverride>) {
+    public override set animationPropertiesOverride(value: Nullable<AnimationPropertiesOverride>) {
         this._animationPropertiesOverride = value;
     }
 
@@ -474,9 +474,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * An event triggered before rendering the scene (right after animations and physics)
      */
-    public onBeforeRenderObservable = new Observable<Scene>();
+    public override onBeforeRenderObservable = new Observable<CoreScene>();
 
-    private _onBeforeRenderObserver: Nullable<Observer<Scene>> = null;
+    private _onBeforeRenderObserver: Nullable<Observer<CoreScene>> = null;
     /** Sets a function to be executed before rendering this scene */
     public set beforeRender(callback: Nullable<() => void>) {
         if (this._onBeforeRenderObserver) {
@@ -590,7 +590,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * An event triggered when SceneLoader.Append or SceneLoader.Load or SceneLoader.ImportMesh were successfully executed
      */
-    public override onDataLoadedObservable = new Observable<Scene>();
+    public override onDataLoadedObservable = new Observable<CoreScene>();
 
     /**
      * An event triggered when a camera is created
@@ -884,7 +884,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Observable event triggered each time an input event is received from the rendering canvas
      */
-    public onPointerObservable = new Observable<PointerInfo>();
+    public override onPointerObservable = new Observable<PointerInfo>();
 
     /**
      * Gets the pointer coordinates without any translation (ie. straight out of the pointer event)
@@ -1154,11 +1154,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     private _unObserveActiveCameras: Nullable<() => void> = null;
 
     /** All of the active cameras added to this scene. */
-    public get activeCameras(): Nullable<Camera[]> {
+    public override get activeCameras(): Nullable<Camera[]> {
         return this._activeCameras;
     }
 
-    public set activeCameras(cameras: Nullable<Camera[]>) {
+    public override set activeCameras(cameras: Nullable<Camera[]>) {
         if (this._unObserveActiveCameras) {
             this._unObserveActiveCameras();
             this._unObserveActiveCameras = null;
@@ -1176,11 +1176,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /** @internal */
     public _activeCamera: Nullable<Camera>;
     /** Gets or sets the current active camera */
-    public get activeCamera(): Nullable<Camera> {
+    public override get activeCamera(): Nullable<Camera> {
         return this._activeCamera;
     }
 
-    public set activeCamera(value: Nullable<Camera>) {
+    public override set activeCamera(value: Nullable<Camera>) {
         if (value === this._activeCamera) {
             return;
         }
@@ -1268,12 +1268,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Gets or sets a boolean indicating if collisions are enabled on this scene
      * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_collisions
      */
-    public collisionsEnabled = true;
+    public override collisionsEnabled = true;
 
     private _collisionCoordinator: ICollisionCoordinator;
 
     /** @internal */
-    public get collisionCoordinator(): ICollisionCoordinator {
+    public override get collisionCoordinator(): ICollisionCoordinator {
         if (!this._collisionCoordinator) {
             this._collisionCoordinator = Scene.CollisionCoordinatorFactory();
             this._collisionCoordinator.init(this);
@@ -1286,7 +1286,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Defines the gravity applied to this scene (used only for collisions)
      * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_collisions
      */
-    public gravity = new Vector3(0, -9.807, 0);
+    public override gravity = new Vector3(0, -9.807, 0);
 
     // Postprocesses
     /**
@@ -1749,22 +1749,22 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets or sets the current on-screen X position of the pointer
      */
-    public get pointerX(): number {
+    public override get pointerX(): number {
         return this._inputManager.pointerX;
     }
 
-    public set pointerX(value: number) {
+    public override set pointerX(value: number) {
         this._inputManager.pointerX = value;
     }
 
     /**
      * Gets or sets the current on-screen Y position of the pointer
      */
-    public get pointerY(): number {
+    public override get pointerY(): number {
         return this._inputManager.pointerY;
     }
 
-    public set pointerY(value: number) {
+    public override set pointerY(value: number) {
         this._inputManager.pointerY = value;
     }
 
@@ -3043,7 +3043,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param id defines the Id to look for
      * @returns the camera or null if not found
      */
-    public getCameraById(id: string): Nullable<Camera> {
+    public override getCameraById = (id: string): Nullable<Camera> => {
         for (let index = 0; index < this.cameras.length; index++) {
             if (this.cameras[index].id === id) {
                 return this.cameras[index];
@@ -3051,7 +3051,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         return null;
-    }
+    };
 
     /**
      * Gets a camera using its unique Id
@@ -3363,7 +3363,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param id defines the Id to search for
      * @returns the found mesh or null if not found at all.
      */
-    public getLastMeshById(id: string): Nullable<AbstractMesh> {
+    public override getLastMeshById = (id: string): Nullable<AbstractMesh> => {
         for (let index = this.meshes.length - 1; index >= 0; index--) {
             if (this.meshes[index].id === id) {
                 return this.meshes[index];
@@ -3371,7 +3371,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         return null;
-    }
+    };
 
     /**
      * Gets a the last transform node using a given Id
@@ -4148,7 +4148,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /** @internal */
-    public _allowPostProcessClearColor = true;
+    public override _allowPostProcessClearColor = true;
     /**
      * @internal
      */
@@ -4980,7 +4980,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param cameraViewSpace defines if picking will be done in view space (false by default)
      * @returns a Ray
      */
-    public createPickingRay(x: number, y: number, world: Nullable<Matrix>, camera: Nullable<Camera>, cameraViewSpace = false): Ray {
+    public override createPickingRay(x: number, y: number, world: Nullable<Matrix>, camera: Nullable<Camera>, cameraViewSpace = false): Ray {
         throw _WarnImport("Ray");
     }
 
@@ -4996,7 +4996,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param enableDistantPicking defines if picking should handle large values for mesh position/scaling (false by default)
      * @returns the current scene
      */
-    public createPickingRayToRef(
+    public override createPickingRayToRef(
         x: number,
         y: number,
         world: Nullable<Matrix>,
@@ -5016,7 +5016,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param camera defines the camera to use for the picking
      * @returns a Ray
      */
-    public createPickingRayInCameraSpace(x: number, y: number, camera?: Camera): Ray {
+    public override createPickingRayInCameraSpace(x: number, y: number, camera?: Camera): Ray {
         throw _WarnImport("Ray");
     }
 
@@ -5029,7 +5029,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param camera defines the camera to use for the picking
      * @returns the current scene
      */
-    public createPickingRayInCameraSpaceToRef(x: number, y: number, result: Ray, camera?: Camera): Scene {
+    public override createPickingRayInCameraSpaceToRef(x: number, y: number, result: Ray, camera?: Camera): Scene {
         throw _WarnImport("Ray");
     }
 
@@ -5050,7 +5050,14 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns a PickingInfo
      */
-    public pick(x: number, y: number, predicate?: MeshPredicate, fastCheck?: boolean, camera?: Nullable<Camera>, trianglePredicate?: TrianglePickingPredicate): PickingInfo {
+    public override pick(
+        x: number,
+        y: number,
+        predicate?: MeshPredicate,
+        fastCheck?: boolean,
+        camera?: Nullable<Camera>,
+        trianglePredicate?: TrianglePickingPredicate
+    ): PickingInfo {
         const warn = _WarnImport("Ray", true);
         if (warn) {
             Logger.Warn(warn);
@@ -5067,7 +5074,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
      * @returns a PickingInfo (Please note that some info will not be set like distance, bv, bu and everything that cannot be capture by only using bounding infos)
      */
-    public pickWithBoundingInfo(x: number, y: number, predicate?: MeshPredicate, fastCheck?: boolean, camera?: Nullable<Camera>): Nullable<PickingInfo> {
+    public override pickWithBoundingInfo(x: number, y: number, predicate?: MeshPredicate, fastCheck?: boolean, camera?: Nullable<Camera>): Nullable<PickingInfo> {
         const warn = _WarnImport("Ray", true);
         if (warn) {
             Logger.Warn(warn);
@@ -5086,7 +5093,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns a PickingInfo
      */
-    public pickWithRay(ray: Ray, predicate?: MeshPredicate, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo> {
+    public override pickWithRay(ray: Ray, predicate?: MeshPredicate, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo> {
         throw _WarnImport("Ray");
     }
 
@@ -5101,7 +5108,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns an array of PickingInfo
      */
-    public multiPick(x: number, y: number, predicate?: MeshPredicate, camera?: Camera, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
+    public override multiPick(x: number, y: number, predicate?: MeshPredicate, camera?: Camera, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
         throw _WarnImport("Ray");
     }
 
@@ -5113,7 +5120,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns an array of PickingInfo
      */
-    public multiPickWithRay(ray: Ray, predicate?: MeshPredicate, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
+    public override multiPickWithRay(ray: Ray, predicate?: MeshPredicate, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
         throw _WarnImport("Ray");
     }
 

@@ -6,10 +6,10 @@ import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import type { FlyCamera } from "../../Cameras/flyCamera";
 import type { KeyboardInfo } from "../../Events/keyboardEvents";
 import { KeyboardEventTypes } from "../../Events/keyboardEvents";
-import type { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
 import { Tools } from "../../Misc/tools";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
+import type { CoreScene } from "core/coreScene";
 
 /**
  * Listen to keyboard events to control the camera.
@@ -61,7 +61,7 @@ export class FlyCameraKeyboardInput implements ICameraInput<FlyCamera> {
     private _onCanvasBlurObserver: Nullable<Observer<AbstractEngine>>;
     private _onKeyboardObserver: Nullable<Observer<KeyboardInfo>>;
     private _engine: AbstractEngine;
-    private _scene: Scene;
+    private _scene: CoreScene;
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
@@ -81,47 +81,49 @@ export class FlyCameraKeyboardInput implements ICameraInput<FlyCamera> {
             this._keys.length = 0;
         });
 
-        this._onKeyboardObserver = this._scene.onKeyboardObservable.add((info) => {
-            const evt = info.event;
+        this._onKeyboardObserver = !this._scene.onKeyboardObservable
+            ? null
+            : this._scene.onKeyboardObservable.add((info) => {
+                  const evt = info.event;
 
-            if (info.type === KeyboardEventTypes.KEYDOWN) {
-                if (
-                    this.keysForward.indexOf(evt.keyCode) !== -1 ||
-                    this.keysBackward.indexOf(evt.keyCode) !== -1 ||
-                    this.keysUp.indexOf(evt.keyCode) !== -1 ||
-                    this.keysDown.indexOf(evt.keyCode) !== -1 ||
-                    this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                    this.keysRight.indexOf(evt.keyCode) !== -1
-                ) {
-                    const index = this._keys.indexOf(evt.keyCode);
+                  if (info.type === KeyboardEventTypes.KEYDOWN) {
+                      if (
+                          this.keysForward.indexOf(evt.keyCode) !== -1 ||
+                          this.keysBackward.indexOf(evt.keyCode) !== -1 ||
+                          this.keysUp.indexOf(evt.keyCode) !== -1 ||
+                          this.keysDown.indexOf(evt.keyCode) !== -1 ||
+                          this.keysLeft.indexOf(evt.keyCode) !== -1 ||
+                          this.keysRight.indexOf(evt.keyCode) !== -1
+                      ) {
+                          const index = this._keys.indexOf(evt.keyCode);
 
-                    if (index === -1) {
-                        this._keys.push(evt.keyCode);
-                    }
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                }
-            } else {
-                if (
-                    this.keysForward.indexOf(evt.keyCode) !== -1 ||
-                    this.keysBackward.indexOf(evt.keyCode) !== -1 ||
-                    this.keysUp.indexOf(evt.keyCode) !== -1 ||
-                    this.keysDown.indexOf(evt.keyCode) !== -1 ||
-                    this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                    this.keysRight.indexOf(evt.keyCode) !== -1
-                ) {
-                    const index = this._keys.indexOf(evt.keyCode);
+                          if (index === -1) {
+                              this._keys.push(evt.keyCode);
+                          }
+                          if (!noPreventDefault) {
+                              evt.preventDefault();
+                          }
+                      }
+                  } else {
+                      if (
+                          this.keysForward.indexOf(evt.keyCode) !== -1 ||
+                          this.keysBackward.indexOf(evt.keyCode) !== -1 ||
+                          this.keysUp.indexOf(evt.keyCode) !== -1 ||
+                          this.keysDown.indexOf(evt.keyCode) !== -1 ||
+                          this.keysLeft.indexOf(evt.keyCode) !== -1 ||
+                          this.keysRight.indexOf(evt.keyCode) !== -1
+                      ) {
+                          const index = this._keys.indexOf(evt.keyCode);
 
-                    if (index >= 0) {
-                        this._keys.splice(index, 1);
-                    }
-                    if (!noPreventDefault) {
-                        evt.preventDefault();
-                    }
-                }
-            }
-        });
+                          if (index >= 0) {
+                              this._keys.splice(index, 1);
+                          }
+                          if (!noPreventDefault) {
+                              evt.preventDefault();
+                          }
+                      }
+                  }
+              });
     }
 
     /**
@@ -129,7 +131,7 @@ export class FlyCameraKeyboardInput implements ICameraInput<FlyCamera> {
      */
     public detachControl(): void {
         if (this._scene) {
-            if (this._onKeyboardObserver) {
+            if (this._onKeyboardObserver && this._scene.onKeyboardObservable) {
                 this._scene.onKeyboardObservable.remove(this._onKeyboardObserver);
             }
 

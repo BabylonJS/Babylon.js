@@ -2,7 +2,6 @@ import type { Nullable } from "../types";
 import { serializeAsVector3, serialize } from "../Misc/decorators";
 import { Vector3, Vector2 } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { Scene } from "../scene";
 import { TargetCamera } from "./targetCamera";
 import { FreeCameraInputsManager } from "./freeCameraInputsManager";
 import type { FreeCameraMouseInput } from "../Cameras/Inputs/freeCameraMouseInput";
@@ -12,6 +11,7 @@ import { RegisterClass } from "../Misc/typeStore";
 
 import type { Collider } from "../Collisions/collider";
 import { AbstractEngine } from "core/Engines/abstractEngine";
+import type { CoreScene } from "core/coreScene";
 
 /**
  * This represents a free type of camera. It can be useful in First Person Shooter game for instance.
@@ -292,7 +292,7 @@ export class FreeCamera extends TargetCamera {
      * @param scene Define the scene the camera belongs to
      * @param setActiveOnSceneIfNoneActive Defines whether the camera should be marked as active if not other active cameras have been defined
      */
-    constructor(name: string, position: Vector3, scene?: Scene, setActiveOnSceneIfNoneActive = true) {
+    constructor(name: string, position: Vector3, scene?: CoreScene, setActiveOnSceneIfNoneActive = true) {
         super(name, position, scene, setActiveOnSceneIfNoneActive);
         this.inputs = new FreeCameraInputsManager(this);
         this.inputs.addKeyboard().addMouse();
@@ -361,7 +361,7 @@ export class FreeCamera extends TargetCamera {
         this._oldPosition.addInPlace(this.ellipsoidOffset);
 
         const coordinator = this.getScene().collisionCoordinator;
-        if (!this._collider) {
+        if (!this._collider && coordinator) {
             this._collider = coordinator.createCollider();
         }
 
@@ -377,7 +377,9 @@ export class FreeCamera extends TargetCamera {
             actualDisplacement = displacement.add(this.getScene().gravity);
         }
 
-        coordinator.getNewPosition(this._oldPosition, actualDisplacement, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
+        if (coordinator) {
+            coordinator.getNewPosition(this._oldPosition, actualDisplacement, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
+        }
     }
 
     private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh> = null) => {

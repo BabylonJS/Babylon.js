@@ -9,6 +9,7 @@ import { Bone } from "../Bones/bone";
 import type { Node } from "../node";
 import { CoreScene } from "core/coreScene";
 import type { SmartArrayNoDuplicate } from "core/Misc/smartArray";
+import type { AnimationPropertiesOverride } from "./animationPropertiesOverride";
 
 /**
  * Class used to store an actual running animation
@@ -498,6 +499,11 @@ declare module "../coreScene" {
          * Gets or sets a boolean indicating if animations are enabled
          */
         animationsEnabled: boolean;
+
+        /**
+         * Gets or sets the animation properties override
+         */
+        animationPropertiesOverride: Nullable<AnimationPropertiesOverride>;
 
         /** @internal */
         _activeAnimatables: Array<Animatable>;
