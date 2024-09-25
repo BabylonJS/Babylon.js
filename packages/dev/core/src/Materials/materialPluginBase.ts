@@ -5,7 +5,6 @@ import type { SmartArray } from "../Misc/smartArray";
 import { Constants } from "../Engines/constants";
 
 import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { Scene } from "../scene";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { SubMesh } from "../Meshes/subMesh";
 import type { IAnimatable } from "../Animations/animatable.interface";
@@ -18,6 +17,7 @@ import type { RenderTargetTexture } from "./Textures/renderTargetTexture";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { RegisterClass } from "../Misc/typeStore";
 import { ShaderLanguage } from "./shaderLanguage";
+import type { CoreScene } from "core/coreScene";
 
 /**
  * Base class for material plugins.
@@ -131,7 +131,7 @@ export class MaterialPluginBase {
      * @returns - boolean indicating that the submesh is ready or not.
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public isReadyForSubMesh(defines: MaterialDefines, scene: Scene, engine: AbstractEngine, subMesh: SubMesh): boolean {
+    public isReadyForSubMesh(defines: MaterialDefines, scene: CoreScene, engine: AbstractEngine, subMesh: SubMesh): boolean {
         return true;
     }
 
@@ -143,7 +143,7 @@ export class MaterialPluginBase {
      * @param subMesh the submesh to bind data for
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public hardBindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: AbstractEngine, subMesh: SubMesh): void {}
+    public hardBindForSubMesh(uniformBuffer: UniformBuffer, scene: CoreScene, engine: AbstractEngine, subMesh: SubMesh): void {}
 
     /**
      * Binds the material data.
@@ -153,7 +153,7 @@ export class MaterialPluginBase {
      * @param subMesh the submesh to bind data for
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: AbstractEngine, subMesh: SubMesh): void {}
+    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: CoreScene, engine: AbstractEngine, subMesh: SubMesh): void {}
 
     /**
      * Disposes the resources of the material.
@@ -204,7 +204,7 @@ export class MaterialPluginBase {
      * @param mesh the mesh being rendered
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public prepareDefinesBeforeAttributes(defines: MaterialDefines, scene: Scene, mesh: AbstractMesh): void {}
+    public prepareDefinesBeforeAttributes(defines: MaterialDefines, scene: CoreScene, mesh: AbstractMesh): void {}
 
     /**
      * Sets the defines for the next rendering
@@ -213,7 +213,7 @@ export class MaterialPluginBase {
      * @param mesh the mesh being rendered
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public prepareDefines(defines: MaterialDefines, scene: Scene, mesh: AbstractMesh): void {}
+    public prepareDefines(defines: MaterialDefines, scene: CoreScene, mesh: AbstractMesh): void {}
 
     /**
      * Checks to see if a texture is used in the material.
@@ -279,7 +279,7 @@ export class MaterialPluginBase {
      * @param mesh the mesh being rendered.
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public getAttributes(attributes: string[], scene: Scene, mesh: AbstractMesh): void {}
+    public getAttributes(attributes: string[], scene: CoreScene, mesh: AbstractMesh): void {}
 
     /**
      * Gets the uniform buffers names added by the plugin.
@@ -323,7 +323,7 @@ export class MaterialPluginBase {
      * @param scene Defines the scene we are parsing for
      * @param rootUrl Defines the rootUrl to load from
      */
-    public parse(source: any, scene: Scene, rootUrl: string): void {
+    public parse(source: any, scene: CoreScene, rootUrl: string): void {
         SerializationHelper.Parse(() => this, source, scene, rootUrl);
     }
 }

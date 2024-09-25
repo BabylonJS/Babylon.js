@@ -1,10 +1,12 @@
 import type { Camera } from "./Cameras/camera";
 import type { AbstractEngine, ISceneLike } from "./Engines/abstractEngine";
+import type { Effect } from "./Materials/effect";
 import type { Material } from "./Materials/material";
 import { UniformBuffer } from "./Materials/uniformBuffer";
 import { Frustum } from "./Maths/math.frustum";
 import type { Plane } from "./Maths/math.plane";
-import { Matrix } from "./Maths/math.vector";
+import type { Vector3, Vector4 } from "./Maths/math.vector";
+import { Matrix, TmpVectors } from "./Maths/math.vector";
 import { _ObserveArray } from "./Misc/arrayTools";
 import type { IFileRequest } from "./Misc/fileRequest";
 import type { LoadFileError, ReadFileError, RequestFileError } from "./Misc/fileTools";
@@ -383,6 +385,52 @@ export class CoreScene implements ISceneLike, IClipPlanesHolder {
         } else {
             this.setTransformMatrix(activeCamera.getViewMatrix(), activeCamera.getProjectionMatrix(force));
         }
+    }
+
+    /** @internal */
+    public _forcedViewPosition: Nullable<Vector3>;
+
+    // Mirror
+    /** @internal */
+    public _mirroredCameraPosition: Nullable<Vector3>;
+
+    /**
+     * Bind the current view position to an effect.
+     * @param effect The effect to be bound
+     * @param variableName name of the shader variable that will hold the eye position
+     * @param isVector3 true to indicates that variableName is a Vector3 and not a Vector4
+     * @returns the computed eye position
+     */
+    public bindEyePosition(effect: Nullable<Effect>, variableName = "vEyePosition", isVector3 = false): Vector4 {
+        const eyePosition = this._forcedViewPosition ? this._forcedViewPosition : this._mirroredCameraPosition ? this._mirroredCameraPosition : this.activeCamera!.globalPosition;
+
+        const invertNormal = this.useRightHandedSystem === (this._mirroredCameraPosition != null);
+
+        TmpVectors.Vector4[0].set(eyePosition.x, eyePosition.y, eyePosition.z, invertNormal ? -1 : 1);
+
+        if (effect) {
+            if (isVector3) {
+                effect.setFloat3(variableName, TmpVectors.Vector4[0].x, TmpVectors.Vector4[0].y, TmpVectors.Vector4[0].z);
+            } else {
+                effect.setVector4(variableName, TmpVectors.Vector4[0]);
+            }
+        }
+
+        return TmpVectors.Vector4[0];
+    }
+
+    /**
+     * Update the scene ubo before it can be used in rendering processing
+     * @returns the scene UniformBuffer
+     */
+    public finalizeSceneUbo(): UniformBuffer {
+        const ubo = this.getSceneUniformBuffer();
+        const eyePosition = this.bindEyePosition(null);
+        ubo.updateFloat4("vEyePosition", eyePosition.x, eyePosition.y, eyePosition.z, eyePosition.w);
+
+        ubo.update();
+
+        return ubo;
     }
 
     /**

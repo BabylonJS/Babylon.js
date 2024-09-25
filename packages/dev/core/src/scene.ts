@@ -9,11 +9,10 @@ import type { ISmartArrayLike } from "./Misc/smartArray";
 import { SmartArrayNoDuplicate, SmartArray } from "./Misc/smartArray";
 import { StringDictionary } from "./Misc/stringDictionary";
 import { Tags } from "./Misc/tags";
-import type { Vector2, Vector4, Matrix } from "./Maths/math.vector";
-import { Vector3, TmpVectors } from "./Maths/math.vector";
+import type { Vector2, Matrix } from "./Maths/math.vector";
+import { Vector3 } from "./Maths/math.vector";
 import type { IParticleSystem } from "./Particles/IParticleSystem";
 import { ImageProcessingConfiguration } from "./Materials/imageProcessingConfiguration";
-import type { UniformBuffer } from "./Materials/uniformBuffer";
 import { PickingInfo } from "./Collisions/pickingInfo";
 import type { ICollisionCoordinator } from "./Collisions/collisionCoordinator";
 import type { PointerEventTypes, PointerInfoPre, PointerInfo } from "./Events/pointerEvents";
@@ -47,9 +46,7 @@ import { _WarnImport } from "./Misc/devTools";
 import { InputManager } from "./Inputs/scene.inputManager";
 import { PerfCounter } from "./Misc/perfCounter";
 import { Color4, Color3 } from "./Maths/math.color";
-import type { Plane } from "./Maths/math.plane";
 import { UniqueIdGenerator } from "./Misc/uniqueIdGenerator";
-import type { IClipPlanesHolder } from "./Misc/interfaces/iClipPlanesHolder";
 import type { IPointerEvent } from "./Events/deviceInputEvents";
 import { LightConstants } from "./Lights/lightConstants";
 import { _ObserveArray } from "./Misc/arrayTools";
@@ -1003,49 +1000,6 @@ export class Scene extends CoreScene implements IAnimatable, INodeContainer {
         InputManager.ExclusiveDoubleClickMode = value;
     }
 
-    /**
-     * Bind the current view position to an effect.
-     * @param effect The effect to be bound
-     * @param variableName name of the shader variable that will hold the eye position
-     * @param isVector3 true to indicates that variableName is a Vector3 and not a Vector4
-     * @returns the computed eye position
-     */
-    public bindEyePosition(effect: Nullable<Effect>, variableName = "vEyePosition", isVector3 = false): Vector4 {
-        const eyePosition = this._forcedViewPosition ? this._forcedViewPosition : this._mirroredCameraPosition ? this._mirroredCameraPosition : this.activeCamera!.globalPosition;
-
-        const invertNormal = this.useRightHandedSystem === (this._mirroredCameraPosition != null);
-
-        TmpVectors.Vector4[0].set(eyePosition.x, eyePosition.y, eyePosition.z, invertNormal ? -1 : 1);
-
-        if (effect) {
-            if (isVector3) {
-                effect.setFloat3(variableName, TmpVectors.Vector4[0].x, TmpVectors.Vector4[0].y, TmpVectors.Vector4[0].z);
-            } else {
-                effect.setVector4(variableName, TmpVectors.Vector4[0]);
-            }
-        }
-
-        return TmpVectors.Vector4[0];
-    }
-
-    /**
-     * Update the scene ubo before it can be used in rendering processing
-     * @returns the scene UniformBuffer
-     */
-    public finalizeSceneUbo(): UniformBuffer {
-        const ubo = this.getSceneUniformBuffer();
-        const eyePosition = this.bindEyePosition(null);
-        ubo.updateFloat4("vEyePosition", eyePosition.x, eyePosition.y, eyePosition.z, eyePosition.w);
-
-        ubo.update();
-
-        return ubo;
-    }
-
-    // Mirror
-    /** @internal */
-    public _mirroredCameraPosition: Nullable<Vector3>;
-
     // Keyboard
 
     /**
@@ -1421,9 +1375,6 @@ export class Scene extends CoreScene implements IAnimatable, INodeContainer {
 
     /** @internal */
     public override _activeAnimatables = new Array<Animatable>();
-
-    /** @internal */
-    public _forcedViewPosition: Nullable<Vector3>;
 
     /**
      * Gets or sets a boolean indicating if lights must be sorted by priority (off by default)

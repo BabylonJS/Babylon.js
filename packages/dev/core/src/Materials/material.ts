@@ -23,7 +23,6 @@ import type { IMaterialContext } from "../Engines/IMaterialContext";
 import { DrawWrapper } from "./drawWrapper";
 import { MaterialStencilState } from "./materialStencilState";
 import { ScenePerformancePriority } from "../scene";
-import type { Scene } from "../scene";
 import type { AbstractScene } from "../abstractScene";
 import type {
     MaterialPluginDisposed,
@@ -53,6 +52,8 @@ import { BindSceneUniformBuffer } from "./materialHelper.functions";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { ShaderLanguage } from "./shaderLanguage";
 import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
+import type { CoreScene } from "core/coreScene";
+import { IsFullScene } from "core/coreScene.functions";
 
 declare let BABYLON: any;
 
@@ -694,6 +695,10 @@ export class Material implements IAnimatable, IClipPlanesHolder {
                 return true;
         }
 
+        if (!IsFullScene(this._scene)) {
+            return false;
+        }
+
         return this._scene.forceWireframe;
     }
 
@@ -713,6 +718,9 @@ export class Material implements IAnimatable, IClipPlanesHolder {
             case Material.PointFillMode:
             case Material.PointListDrawMode:
                 return true;
+        }
+        if (!IsFullScene(this._scene)) {
+            return false;
         }
 
         return this._scene.forcePointsCloud;
@@ -830,7 +838,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     /**
      * Stores a reference to the scene
      */
-    private _scene: Scene;
+    private _scene: CoreScene;
     protected _needToBindSceneUbo: boolean;
 
     /**
@@ -922,7 +930,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * @param scene defines the scene to reference
      * @param doNotAdd specifies if the material should be added to the scene
      */
-    constructor(name: string, scene?: Nullable<Scene>, doNotAdd?: boolean) {
+    constructor(name: string, scene?: Nullable<CoreScene>, doNotAdd?: boolean) {
         this.name = name;
         const setScene = scene || EngineStore.LastCreatedScene;
         if (!setScene) {
@@ -948,12 +956,14 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         this._uniformBuffer = new UniformBuffer(this._scene.getEngine(), undefined, undefined, name);
         this._useUBO = this.getScene().getEngine().supportsUniformBuffers;
 
-        if (!doNotAdd) {
-            this._scene.addMaterial(this);
-        }
+        if (IsFullScene(this._scene)) {
+            if (!doNotAdd) {
+                this._scene.addMaterial(this);
+            }
 
-        if (this._scene.useMaterialMeshMap) {
-            this.meshMap = {};
+            if (this._scene.useMaterialMeshMap) {
+                this.meshMap = {};
+            }
         }
 
         Material.OnEventObservable.notifyObservers(this, MaterialPluginEvent.Created);
@@ -1050,7 +1060,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * Returns the current scene
      * @returns a Scene
      */
-    public getScene(): Scene {
+    public getScene(): CoreScene {
         return this._scene;
     }
 
@@ -1170,7 +1180,12 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * @param forceMaterialDirty - Forces the material to be marked as dirty for all components (same as this.markAsDirty(Material.AllDirtyFlag)). You should use this flag if the material is frozen and you want to force a recompilation.
      */
     public markDirty(forceMaterialDirty = false): void {
-        const meshes = this.getScene().meshes;
+        const scene = this.getScene();
+        if (!IsFullScene(scene)) {
+            return;
+        }
+
+        const meshes = scene.meshes;
         for (const mesh of meshes) {
             if (!mesh.subMeshes) {
                 continue;
@@ -1213,7 +1228,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
             this.zOffset,
             false,
             reverse,
-            this._scene._mirroredCameraPosition ? !this.cullBackFaces : this.cullBackFaces,
+            IsFullScene(this._scene) && this._scene._mirroredCameraPosition ? !this.cullBackFaces : this.cullBackFaces,
             this.stencil,
             this.zOffsetUnits
         );
@@ -1309,18 +1324,25 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * @param _subMesh defines the subMesh that the material has been bound for
      */
     protected _afterBind(mesh?: AbstractMesh, effect: Nullable<Effect> = null, _subMesh?: SubMesh): void {
-        this._scene._cachedMaterial = this;
+        const scene = this._scene;
+        const isFullScene = IsFullScene(scene);
+
+        if (isFullScene) {
+            scene._cachedMaterial = this;
+        }
         if (this._needToBindSceneUbo) {
             if (effect) {
                 this._needToBindSceneUbo = false;
                 BindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
-                this._scene.finalizeSceneUbo();
+                scene.finalizeSceneUbo();
             }
         }
-        if (mesh) {
-            this._scene._cachedVisibility = mesh.visibility;
-        } else {
-            this._scene._cachedVisibility = 1;
+        if (isFullScene) {
+            if (mesh) {
+                scene._cachedVisibility = mesh.visibility;
+            } else {
+                scene._cachedVisibility = 1;
+            }
         }
 
         if (this._onBindObservable && mesh) {
@@ -1445,10 +1467,12 @@ export class Material implements IAnimatable, IClipPlanesHolder {
                 }
             }
             return result;
-        } else {
+        } else if (IsFullScene(this._scene)) {
             const meshes = this._scene.meshes;
             return meshes.filter((mesh) => mesh.material === this);
         }
+
+        return [];
     }
 
     /**
@@ -1584,7 +1608,12 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * @param flag defines a flag used to determine which parts of the material have to be marked as dirty
      */
     public markAsDirty(flag: number): void {
-        if (this.getScene().blockMaterialDirtyMechanism || this._blockDirtyMechanism) {
+        const scene = this.getScene();
+
+        if (!IsFullScene(scene)) {
+            return;
+        }
+        if (scene.blockMaterialDirtyMechanism || this._blockDirtyMechanism) {
             return;
         }
 
@@ -1618,14 +1647,19 @@ export class Material implements IAnimatable, IClipPlanesHolder {
             this._markAllSubMeshesAsDirty(Material._RunDirtyCallBacks);
         }
 
-        this.getScene().resetCachedMaterial();
+        scene.resetCachedMaterial();
     }
 
     /**
      * Resets the draw wrappers cache for all submeshes that are using this material
      */
     public resetDrawCache(): void {
-        const meshes = this.getScene().meshes;
+        const scene = this.getScene();
+
+        if (!IsFullScene(scene)) {
+            return;
+        }
+        const meshes = scene.meshes;
         for (const mesh of meshes) {
             if (!mesh.subMeshes) {
                 continue;
@@ -1645,11 +1679,16 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * @param func defines a function which checks material defines against the submeshes
      */
     protected _markAllSubMeshesAsDirty(func: (defines: MaterialDefines) => void) {
-        if (this.getScene().blockMaterialDirtyMechanism || this._blockDirtyMechanism) {
+        const scene = this.getScene();
+
+        if (!IsFullScene(scene)) {
+            return;
+        }
+        if (scene.blockMaterialDirtyMechanism || this._blockDirtyMechanism) {
             return;
         }
 
-        const meshes = this.getScene().meshes;
+        const meshes = scene.meshes;
         for (const mesh of meshes) {
             if (!mesh.subMeshes) {
                 continue;
@@ -1676,11 +1715,16 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * Indicates that the scene should check if the rendering now needs a prepass
      */
     protected _markScenePrePassDirty() {
-        if (this.getScene().blockMaterialDirtyMechanism || this._blockDirtyMechanism) {
+        const scene = this.getScene();
+
+        if (!IsFullScene(scene)) {
+            return;
+        }
+        if (scene.blockMaterialDirtyMechanism || this._blockDirtyMechanism) {
             return;
         }
 
-        const prePassRenderer = this.getScene().enablePrePassRenderer();
+        const prePassRenderer = scene.enablePrePassRenderer();
         if (prePassRenderer) {
             prePassRenderer.markAsDirty();
         }
@@ -1757,15 +1801,20 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     }
 
     protected _checkScenePerformancePriority() {
-        if (this._scene.performancePriority !== ScenePerformancePriority.BackwardCompatible) {
+        const scene = this.getScene();
+
+        if (!IsFullScene(scene)) {
+            return;
+        }
+        if (scene.performancePriority !== ScenePerformancePriority.BackwardCompatible) {
             this.checkReadyOnlyOnce = true;
             // re-set the flag when the perf priority changes
-            const observer = this._scene.onScenePerformancePriorityChangedObservable.addOnce(() => {
+            const observer = scene.onScenePerformancePriorityChangedObservable.addOnce(() => {
                 this.checkReadyOnlyOnce = false;
             });
             // if this material is disposed before the scene is disposed, cleanup the observer
             this.onDisposeObservable.add(() => {
-                this._scene.onScenePerformancePriorityChangedObservable.remove(observer);
+                scene.onScenePerformancePriorityChangedObservable.remove(observer);
             });
         }
     }
@@ -1789,12 +1838,16 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      */
     public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean): void {
         const scene = this.getScene();
+        const isFullScene = IsFullScene(scene);
         // Animations
         scene.stopAnimation(this);
-        scene.freeProcessedMaterials();
 
-        // Remove from scene
-        scene.removeMaterial(this);
+        if (isFullScene) {
+            scene.freeProcessedMaterials();
+
+            // Remove from scene
+            scene.removeMaterial(this);
+        }
 
         this._eventInfo.forceDisposeTextures = forceDisposeTextures;
         this._callbackPluginEventGeneric(MaterialPluginEvent.Disposed, this._eventInfo);
@@ -1817,7 +1870,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
                         this.releaseVertexArrayObject(mesh, forceDisposeEffect);
                     }
                 }
-            } else {
+            } else if (isFullScene) {
                 const meshes = scene.meshes;
                 for (const mesh of meshes) {
                     if (mesh.material === this && !(mesh as InstancedMesh).sourceMesh) {
@@ -1916,7 +1969,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * @param rootUrl defines the root URL to use to load textures
      * @returns a new material
      */
-    public static Parse(parsedMaterial: any, scene: Scene, rootUrl: string): Nullable<Material> {
+    public static Parse(parsedMaterial: any, scene: CoreScene, rootUrl: string): Nullable<Material> {
         if (!parsedMaterial.customType) {
             parsedMaterial.customType = "BABYLON.StandardMaterial";
         } else if (parsedMaterial.customType === "BABYLON.PBRMaterial" && parsedMaterial.overloadedAlbedo) {
@@ -1934,7 +1987,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         return material;
     }
 
-    protected static _ParsePlugins(serializationObject: any, material: Material, scene: Scene, rootUrl: string) {
+    protected static _ParsePlugins(serializationObject: any, material: Material, scene: CoreScene, rootUrl: string) {
         if (!serializationObject.plugins) {
             return;
         }

@@ -2547,8 +2547,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Unbind
         this._internalMeshDataInfo._effectiveMaterial.unbind();
 
-        for (const step of scene._afterRenderingMeshStage) {
-            step.action(this, subMesh, batch, effect);
+        const isFullScene = IsFullScene(scene);
+        if (isFullScene) {
+            for (const step of scene._afterRenderingMeshStage) {
+                step.action(this, subMesh, batch, effect);
+            }
         }
 
         if (this._internalMeshDataInfo._onAfterRenderObservable) {
@@ -2560,7 +2563,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             scene.updateTransformMatrix(true);
         }
 
-        if (scene.performancePriority === ScenePerformancePriority.Aggressive && !instanceDataStorage.isFrozen) {
+        if (isFullScene && scene.performancePriority === ScenePerformancePriority.Aggressive && !instanceDataStorage.isFrozen) {
             this._freeze();
         }
 
@@ -2758,7 +2761,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return this;
     }
 
-    private _queueLoad(scene: Scene): Mesh {
+    private _queueLoad(scene: CoreScene): Mesh {
         scene.addPendingData(this);
 
         const getBinaryData = this.delayLoadingFile.indexOf(".babylonbinarymeshdata") !== -1;
@@ -2813,7 +2816,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns the current mesh
      */
     public setMaterialById(id: string): Mesh {
-        const materials = this.getScene().materials;
+        const scene = this.getScene();
+        if (!IsFullScene(scene)) {
+            return this;
+        }
+        const materials = scene.materials;
         let index: number;
         for (index = materials.length - 1; index > -1; index--) {
             if (materials[index].id === id) {
@@ -2823,7 +2830,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Multi
-        const multiMaterials = this.getScene().multiMaterials;
+        const multiMaterials = scene.multiMaterials;
         for (index = multiMaterials.length - 1; index > -1; index--) {
             if (multiMaterials[index].id === id) {
                 this.material = multiMaterials[index];
@@ -2999,26 +3006,28 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Sources
-        if (this._scene.useClonedMeshMap) {
-            if (internalDataInfo.meshMap) {
-                for (const uniqueId in internalDataInfo.meshMap) {
-                    const mesh = internalDataInfo.meshMap[uniqueId];
-                    if (mesh) {
-                        mesh._internalMeshDataInfo._source = null;
-                        internalDataInfo.meshMap[uniqueId] = undefined;
+        if (IsFullScene(this._scene)) {
+            if (this._scene.useClonedMeshMap) {
+                if (internalDataInfo.meshMap) {
+                    for (const uniqueId in internalDataInfo.meshMap) {
+                        const mesh = internalDataInfo.meshMap[uniqueId];
+                        if (mesh) {
+                            mesh._internalMeshDataInfo._source = null;
+                            internalDataInfo.meshMap[uniqueId] = undefined;
+                        }
                     }
                 }
-            }
 
-            if (internalDataInfo._source && internalDataInfo._source._internalMeshDataInfo.meshMap) {
-                internalDataInfo._source._internalMeshDataInfo.meshMap[this.uniqueId] = undefined;
-            }
-        } else {
-            const meshes = this.getScene().meshes;
-            for (const abstractMesh of meshes) {
-                const mesh = abstractMesh as Mesh;
-                if (mesh._internalMeshDataInfo && mesh._internalMeshDataInfo._source && mesh._internalMeshDataInfo._source === this) {
-                    mesh._internalMeshDataInfo._source = null;
+                if (internalDataInfo._source && internalDataInfo._source._internalMeshDataInfo.meshMap) {
+                    internalDataInfo._source._internalMeshDataInfo.meshMap[this.uniqueId] = undefined;
+                }
+            } else {
+                const meshes = this._scene.meshes;
+                for (const abstractMesh of meshes) {
+                    const mesh = abstractMesh as Mesh;
+                    if (mesh._internalMeshDataInfo && mesh._internalMeshDataInfo._source && mesh._internalMeshDataInfo._source === this) {
+                        mesh._internalMeshDataInfo._source = null;
+                    }
                 }
             }
         }
@@ -3032,7 +3041,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Thin instances
         this._disposeThinInstanceSpecificData();
 
-        if (this._internalMeshDataInfo._checkReadinessObserver) {
+        if (this._internalMeshDataInfo._checkReadinessObserver && IsFullScene(this._scene)) {
             this._scene.onBeforeRenderObservable.remove(this._internalMeshDataInfo._checkReadinessObserver);
         }
 
@@ -3805,6 +3814,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 });
             }
         }
+        const scene = this.getScene();
+        const isFullScene = IsFullScene(scene);
 
         // Material
         if (this.material) {
@@ -3814,8 +3825,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
         } else {
             this.material = null;
-            serializationObject.materialUniqueId = this._scene.defaultMaterial.uniqueId;
-            serializationObject.materialId = this._scene.defaultMaterial.id; // back compat
+            if (isFullScene) {
+                serializationObject.materialUniqueId = scene.defaultMaterial.uniqueId;
+                serializationObject.materialId = scene.defaultMaterial.id; // back compat
+            }
         }
 
         // Morph targets
@@ -3831,7 +3844,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Physics
         //TODO implement correct serialization for physics impostors.
-        if (this.getScene()._getComponent(SceneComponentConstants.NAME_PHYSICSENGINE)) {
+        if (isFullScene && scene._getComponent(SceneComponentConstants.NAME_PHYSICSENGINE)) {
             const impostor = this.getPhysicsImpostor();
             if (impostor) {
                 serializationObject.physicsMass = impostor.getParam("mass");
@@ -3877,7 +3890,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             // Physics
             //TODO implement correct serialization for physics impostors.
-            if (this.getScene()._getComponent(SceneComponentConstants.NAME_PHYSICSENGINE)) {
+            if (isFullScene && scene._getComponent(SceneComponentConstants.NAME_PHYSICSENGINE)) {
                 const impostor = instance.getPhysicsImpostor();
                 if (impostor) {
                     serializationInstance.physicsMass = impostor.getParam("mass");
@@ -4939,9 +4952,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public _getRenderingFillMode(fillMode: number): number {
         const scene = this.getScene();
 
-        if (scene.forcePointsCloud) return Material.PointFillMode;
+        if (IsFullScene(scene)) {
+            if (scene.forcePointsCloud) return Material.PointFillMode;
 
-        if (scene.forceWireframe) return Material.WireFrameFillMode;
+            if (scene.forceWireframe) return Material.WireFrameFillMode;
+        }
 
         return this.overrideRenderingFillMode ?? fillMode;
     }
