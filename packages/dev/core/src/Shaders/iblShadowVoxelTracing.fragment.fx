@@ -373,7 +373,7 @@ void main(void) {
       uint(PixelCoord.x);
 
   vec3 N = texelFetch(worldNormalSampler, PixelCoord, 0).xyz;
-  N = N * vec3(2.0) - vec3(1.0);
+  // N = N * vec3(2.0) - vec3(1.0);
   if (length(N) < 0.01) {
     glFragColor = vec4(1.0, 1.0, 0.0, 1.0);
     return;
