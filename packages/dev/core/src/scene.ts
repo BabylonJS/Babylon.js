@@ -1695,7 +1695,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Gets a string identifying the name of the class
      * @returns "Scene" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "Scene";
     }
 

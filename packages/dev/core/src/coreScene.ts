@@ -38,6 +38,14 @@ export class CoreScene {
     public _allowPostProcessClearColor: boolean;
 
     /**
+     * Gets a string identifying the name of the class
+     * @returns "CoreScene" string
+     */
+    public getClassName(): string {
+        return "CoreScene";
+    }
+
+    /**
      * Returns a boolean indicating if the scene is still loading data
      * Always false in CoreScene
      */
