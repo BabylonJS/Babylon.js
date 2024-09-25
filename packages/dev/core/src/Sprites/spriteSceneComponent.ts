@@ -24,12 +24,6 @@ declare module "../scene" {
         _tempSpritePickingRay: Nullable<Ray>;
 
         /**
-         * All of the sprite managers added to this scene
-         * @see https://doc.babylonjs.com/features/featuresDeepDive/sprites
-         */
-        spriteManagers?: Array<ISpriteManager>;
-
-        /**
          * An event triggered when sprites rendering is about to start
          * Note: This event can be trigger more than once per frame (because sprites can be rendered by render target textures as well)
          */

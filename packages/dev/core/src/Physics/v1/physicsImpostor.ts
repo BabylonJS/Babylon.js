@@ -6,7 +6,6 @@ import { Vector3, Quaternion } from "../../Maths/math.vector";
 import type { TransformNode } from "../../Meshes/transformNode";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
-import type { Scene } from "../../scene";
 import type { Bone } from "../../Bones/bone";
 import type { BoundingInfo } from "../../Culling/boundingInfo";
 import type { PhysicsEngine as PhysicsEngineV1 } from "./physicsEngine";
@@ -14,6 +13,8 @@ import type { PhysicsEngine as PhysicsEngineV1 } from "./physicsEngine";
 import type { PhysicsJointData } from "./physicsJoint";
 import { PhysicsJoint } from "./physicsJoint";
 import { Space } from "../../Maths/math.axis";
+import type { CoreScene } from "core/coreScene";
+import type { Scene } from "core/scene";
 
 /**
  * The interface for the physics imposter parameters
@@ -146,7 +147,7 @@ export interface IPhysicsEnabledObject {
      * Gets the scene from the mesh
      * @returns the indices array or null
      */
-    getScene?(): Scene;
+    getScene?(): CoreScene;
     /**
      * Gets the absolute position from the mesh
      * @returns the absolute position
@@ -186,7 +187,7 @@ export interface IPhysicsEnabledObject {
     getClassName(): string;
 }
 
-Mesh._PhysicsImpostorParser = function (scene: Scene, physicObject: IPhysicsEnabledObject, jsonObject: any): PhysicsImpostor {
+Mesh._PhysicsImpostorParser = function (scene: CoreScene, physicObject: IPhysicsEnabledObject, jsonObject: any): PhysicsImpostor {
     return new PhysicsImpostor(
         physicObject,
         jsonObject.physicsImpostor,
@@ -447,7 +448,7 @@ export class PhysicsImpostor {
          */
         public type: number,
         private _options: PhysicsImpostorParameters = { mass: 0 },
-        private _scene?: Scene
+        private _scene?: CoreScene
     ) {
         //sanity check!
         if (!this.object) {
@@ -471,7 +472,7 @@ export class PhysicsImpostor {
             this.soft = true;
         }
 
-        this._physicsEngine = this._scene.getPhysicsEngine() as any;
+        this._physicsEngine = (this._scene as Scene).getPhysicsEngine() as any;
         if (!this._physicsEngine) {
             Logger.Error("Physics not enabled. Please use scene.enablePhysics(...) before creating impostors.");
         } else {

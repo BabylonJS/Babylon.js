@@ -6,9 +6,9 @@ import type { Nullable } from "../../types";
 import type { Observer } from "../../Misc/observable";
 import type { KeyboardInfo } from "../../Events/keyboardEvents";
 import { KeyboardEventTypes } from "../../Events/keyboardEvents";
-import type { Scene } from "../../scene";
 import { Tools } from "../../Misc/tools";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
+import type { CoreScene } from "core/coreScene";
 
 /**
  * Manage the keyboard inputs to control the movement of a follow camera.
@@ -135,7 +135,7 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
     private _onCanvasBlurObserver: Nullable<Observer<AbstractEngine>>;
     private _onKeyboardObserver: Nullable<Observer<KeyboardInfo>>;
     private _engine: AbstractEngine;
-    private _scene: Scene;
+    private _scene: CoreScene;
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
@@ -155,58 +155,60 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
             this._keys.length = 0;
         });
 
-        this._onKeyboardObserver = this._scene.onKeyboardObservable.add((info) => {
-            const evt = info.event;
-            if (!evt.metaKey) {
-                if (info.type === KeyboardEventTypes.KEYDOWN) {
-                    this._ctrlPressed = evt.ctrlKey;
-                    this._altPressed = evt.altKey;
-                    this._shiftPressed = evt.shiftKey;
+        this._onKeyboardObserver = !this._scene.onKeyboardObservable
+            ? null
+            : this._scene.onKeyboardObservable.add((info) => {
+                  const evt = info.event;
+                  if (!evt.metaKey) {
+                      if (info.type === KeyboardEventTypes.KEYDOWN) {
+                          this._ctrlPressed = evt.ctrlKey;
+                          this._altPressed = evt.altKey;
+                          this._shiftPressed = evt.shiftKey;
 
-                    if (
-                        this.keysHeightOffsetIncr.indexOf(evt.keyCode) !== -1 ||
-                        this.keysHeightOffsetDecr.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRotationOffsetIncr.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRotationOffsetDecr.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRadiusIncr.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRadiusDecr.indexOf(evt.keyCode) !== -1
-                    ) {
-                        const index = this._keys.indexOf(evt.keyCode);
+                          if (
+                              this.keysHeightOffsetIncr.indexOf(evt.keyCode) !== -1 ||
+                              this.keysHeightOffsetDecr.indexOf(evt.keyCode) !== -1 ||
+                              this.keysRotationOffsetIncr.indexOf(evt.keyCode) !== -1 ||
+                              this.keysRotationOffsetDecr.indexOf(evt.keyCode) !== -1 ||
+                              this.keysRadiusIncr.indexOf(evt.keyCode) !== -1 ||
+                              this.keysRadiusDecr.indexOf(evt.keyCode) !== -1
+                          ) {
+                              const index = this._keys.indexOf(evt.keyCode);
 
-                        if (index === -1) {
-                            this._keys.push(evt.keyCode);
-                        }
+                              if (index === -1) {
+                                  this._keys.push(evt.keyCode);
+                              }
 
-                        if (evt.preventDefault) {
-                            if (!noPreventDefault) {
-                                evt.preventDefault();
-                            }
-                        }
-                    }
-                } else {
-                    if (
-                        this.keysHeightOffsetIncr.indexOf(evt.keyCode) !== -1 ||
-                        this.keysHeightOffsetDecr.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRotationOffsetIncr.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRotationOffsetDecr.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRadiusIncr.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRadiusDecr.indexOf(evt.keyCode) !== -1
-                    ) {
-                        const index = this._keys.indexOf(evt.keyCode);
+                              if (evt.preventDefault) {
+                                  if (!noPreventDefault) {
+                                      evt.preventDefault();
+                                  }
+                              }
+                          }
+                      } else {
+                          if (
+                              this.keysHeightOffsetIncr.indexOf(evt.keyCode) !== -1 ||
+                              this.keysHeightOffsetDecr.indexOf(evt.keyCode) !== -1 ||
+                              this.keysRotationOffsetIncr.indexOf(evt.keyCode) !== -1 ||
+                              this.keysRotationOffsetDecr.indexOf(evt.keyCode) !== -1 ||
+                              this.keysRadiusIncr.indexOf(evt.keyCode) !== -1 ||
+                              this.keysRadiusDecr.indexOf(evt.keyCode) !== -1
+                          ) {
+                              const index = this._keys.indexOf(evt.keyCode);
 
-                        if (index >= 0) {
-                            this._keys.splice(index, 1);
-                        }
+                              if (index >= 0) {
+                                  this._keys.splice(index, 1);
+                              }
 
-                        if (evt.preventDefault) {
-                            if (!noPreventDefault) {
-                                evt.preventDefault();
-                            }
-                        }
-                    }
-                }
-            }
-        });
+                              if (evt.preventDefault) {
+                                  if (!noPreventDefault) {
+                                      evt.preventDefault();
+                                  }
+                              }
+                          }
+                      }
+                  }
+              });
     }
 
     /**
@@ -214,7 +216,7 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
      */
     public detachControl(): void {
         if (this._scene) {
-            if (this._onKeyboardObserver) {
+            if (this._onKeyboardObserver && this._scene.onKeyboardObservable) {
                 this._scene.onKeyboardObservable.remove(this._onKeyboardObserver);
             }
             if (this._onCanvasBlurObserver) {

@@ -4,13 +4,14 @@ import { SerializationHelper } from "../Misc/decorators.serialization";
 import { Observable } from "../Misc/observable";
 
 import type { Camera } from "../Cameras/camera";
-import type { Scene } from "../scene";
+import type { CoreScene } from "../coreScene";
 import { Quaternion, Matrix, Vector3, TmpVectors } from "../Maths/math.vector";
 import { Node } from "../node";
 import type { Bone } from "../Bones/bone";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Space } from "../Maths/math.axis";
 import { GetClass } from "../Misc/typeStore";
+import type { Scene } from "core/scene";
 
 const convertRHSToLHS = Matrix.Compose(Vector3.One(), Quaternion.FromEulerAngles(0, Math.PI, 0), Vector3.Zero());
 
@@ -184,11 +185,11 @@ export class TransformNode extends Node {
      */
     public onAfterWorldMatrixUpdateObservable = new Observable<TransformNode>();
 
-    constructor(name: string, scene: Nullable<Scene> = null, isPure = true) {
+    constructor(name: string, scene: Nullable<CoreScene> = null, isPure = true) {
         super(name, scene, false);
 
-        if (isPure) {
-            this.getScene().addTransformNode(this);
+        if (isPure && !this.getScene().isCore) {
+            (this.getScene() as Scene).addTransformNode!(this);
         }
     }
 
@@ -1472,7 +1473,7 @@ export class TransformNode extends Node {
      * @param rootUrl is a string, it's the root URL to prefix the `delayLoadingFile` property with
      * @returns a new TransformNode object parsed from the source provided.
      */
-    public static Parse(parsedTransformNode: any, scene: Scene, rootUrl: string): TransformNode {
+    public static Parse(parsedTransformNode: any, scene: CoreScene, rootUrl: string): TransformNode {
         const transformNode = SerializationHelper.Parse(() => new TransformNode(parsedTransformNode.name, scene), parsedTransformNode, scene, rootUrl);
 
         if (parsedTransformNode.localMatrix) {
@@ -1539,11 +1540,15 @@ export class TransformNode extends Node {
      * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
      */
     public override dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
+        const scene = this.getScene();
+
         // Animations
-        this.getScene().stopAnimation(this);
+        scene.stopAnimation(this);
 
         // Remove from scene
-        this.getScene().removeTransformNode(this);
+        if (!scene.isCore) {
+            (scene as Scene).removeTransformNode(this);
+        }
 
         if (this._parentContainer) {
             const index = this._parentContainer.transformNodes.indexOf(this);

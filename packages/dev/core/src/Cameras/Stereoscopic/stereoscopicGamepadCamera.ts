@@ -1,6 +1,6 @@
+import type { CoreScene } from "core/coreScene";
 import { Camera } from "../../Cameras/camera";
 import { GamepadCamera } from "../../Cameras/gamepadCamera";
-import type { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
 import { Node } from "../../node";
 import { setStereoscopicRigMode } from "../RigModes/stereoscopicRigMode";
@@ -22,7 +22,7 @@ export class StereoscopicGamepadCamera extends GamepadCamera {
      * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
      * @param scene defines the hosting scene
      */
-    constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene?: Scene) {
+    constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene?: CoreScene) {
         super(name, position, scene);
         this.interaxialDistance = interaxialDistance;
         this.isStereoscopicSideBySide = isStereoscopicSideBySide;

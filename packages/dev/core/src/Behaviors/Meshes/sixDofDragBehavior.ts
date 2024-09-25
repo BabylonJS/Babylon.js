@@ -1,5 +1,4 @@
 import type { Mesh } from "../../Meshes/mesh";
-import type { Scene } from "../../scene";
 import type { Nullable } from "../../types";
 import { Vector3, Quaternion, Matrix, TmpVectors } from "../../Maths/math.vector";
 import type { Observer } from "../../Misc/observable";
@@ -7,12 +6,13 @@ import { Observable } from "../../Misc/observable";
 import { BaseSixDofDragBehavior } from "./baseSixDofDragBehavior";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Space } from "../../Maths/math.axis";
+import type { CoreScene } from "core/coreScene";
 
 /**
  * A behavior that when attached to a mesh will allow the mesh to be dragged around based on directions and origin of the pointer's ray
  */
 export class SixDofDragBehavior extends BaseSixDofDragBehavior {
-    private _sceneRenderObserver: Nullable<Observer<Scene>> = null;
+    private _sceneRenderObserver: Nullable<Observer<CoreScene>> = null;
     private _virtualTransformNode: TransformNode;
 
     protected _targetPosition = new Vector3(0, 0, 0);

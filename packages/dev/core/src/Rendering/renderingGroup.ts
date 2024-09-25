@@ -8,8 +8,9 @@ import type { IEdgesRenderer } from "./edgesRenderer";
 import type { ISpriteManager } from "../Sprites/spriteManager";
 import { Constants } from "../Engines/constants";
 import type { Material } from "../Materials/material";
-import type { Scene } from "../scene";
 import type { Camera } from "../Cameras/camera";
+import type { CoreScene } from "core/coreScene";
+import type { Scene } from "core/scene";
 
 /**
  * This represents the object necessary to create a rendering group.
@@ -19,7 +20,7 @@ import type { Camera } from "../Cameras/camera";
  */
 export class RenderingGroup {
     private static _ZeroVector: DeepImmutable<Vector3> = Vector3.Zero();
-    private _scene: Scene;
+    private _scene: CoreScene;
     private _opaqueSubMeshes = new SmartArray<SubMesh>(256);
     private _transparentSubMeshes = new SmartArray<SubMesh>(256);
     private _alphaTestSubMeshes = new SmartArray<SubMesh>(256);
@@ -92,7 +93,7 @@ export class RenderingGroup {
      */
     constructor(
         public index: number,
-        scene: Scene,
+        scene: CoreScene,
         opaqueSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number> = null,
         alphaTestSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number> = null,
         transparentSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number> = null
@@ -166,10 +167,11 @@ export class RenderingGroup {
         }
 
         // Transparent
-        if (this._transparentSubMeshes.length !== 0 || this._scene.useOrderIndependentTransparency) {
+        const fullScene = this._scene as Scene;
+        if (this._transparentSubMeshes.length !== 0 || fullScene.useOrderIndependentTransparency) {
             engine.setStencilBuffer(stencilState);
-            if (this._scene.useOrderIndependentTransparency) {
-                const excludedMeshes = this._scene.depthPeelingRenderer!.render(this._transparentSubMeshes);
+            if (fullScene.useOrderIndependentTransparency && fullScene.depthPeelingRenderer) {
+                const excludedMeshes = fullScene.depthPeelingRenderer!.render(this._transparentSubMeshes);
                 if (excludedMeshes.length) {
                     // Render leftover meshes that could not be processed by depth peeling
                     this._renderTransparent(excludedMeshes);
@@ -252,10 +254,11 @@ export class RenderingGroup {
         }
 
         const scene = sortedArray[0].getMesh().getScene();
+        const fullScene = scene as Scene;
         for (subIndex = 0; subIndex < sortedArray.length; subIndex++) {
             subMesh = sortedArray[subIndex];
 
-            if (scene._activeMeshesFrozenButKeepClipping && !subMesh.isInFrustum(scene._frustumPlanes)) {
+            if (fullScene._activeMeshesFrozenButKeepClipping && fullScene._frustumPlanes && !subMesh.isInFrustum(fullScene._frustumPlanes)) {
                 continue;
             }
 
@@ -452,7 +455,10 @@ export class RenderingGroup {
 
         // Particles
         const activeCamera = this._scene.activeCamera;
-        this._scene.onBeforeParticlesRenderingObservable.notifyObservers(this._scene);
+        const fullScene = this._scene as Scene;
+        if (fullScene.onBeforeParticlesRenderingObservable) {
+            fullScene.onBeforeParticlesRenderingObservable.notifyObservers(fullScene);
+        }
         for (let particleIndex = 0; particleIndex < this._particleSystems.length; particleIndex++) {
             const particleSystem = this._particleSystems.data[particleIndex];
 
@@ -462,20 +468,28 @@ export class RenderingGroup {
 
             const emitter: any = particleSystem.emitter;
             if (!emitter.position || !activeMeshes || activeMeshes.indexOf(emitter) !== -1) {
-                this._scene._activeParticles.addCount(particleSystem.render(), false);
+                if (fullScene._activeParticles) {
+                    fullScene._activeParticles.addCount(particleSystem.render(), false);
+                }
             }
         }
-        this._scene.onAfterParticlesRenderingObservable.notifyObservers(this._scene);
+        if (fullScene.onAfterParticlesRenderingObservable) {
+            fullScene.onAfterParticlesRenderingObservable.notifyObservers(fullScene);
+        }
     }
 
     private _renderSprites(): void {
-        if (!this._scene.spritesEnabled || this._spriteManagers.length === 0) {
+        const fullScene = this._scene as Scene;
+        if (!fullScene.spritesEnabled || this._spriteManagers.length === 0) {
             return;
         }
 
         // Sprites
         const activeCamera = this._scene.activeCamera;
-        this._scene.onBeforeSpritesRenderingObservable.notifyObservers(this._scene);
+
+        if (fullScene.onBeforeSpritesRenderingObservable) {
+            fullScene.onBeforeSpritesRenderingObservable.notifyObservers(fullScene);
+        }
         for (let id = 0; id < this._spriteManagers.length; id++) {
             const spriteManager = this._spriteManagers.data[id];
 
@@ -483,6 +497,8 @@ export class RenderingGroup {
                 spriteManager.render();
             }
         }
-        this._scene.onAfterSpritesRenderingObservable.notifyObservers(this._scene);
+        if (fullScene.onAfterSpritesRenderingObservable) {
+            fullScene.onAfterSpritesRenderingObservable.notifyObservers(fullScene);
+        }
     }
 }

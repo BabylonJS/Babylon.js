@@ -1,9 +1,9 @@
 import { Camera } from "../../Cameras/camera";
 import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
-import type { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
 import { Node } from "../../node";
 import { setStereoscopicAnaglyphRigMode } from "../RigModes/stereoscopicAnaglyphRigMode";
+import type { CoreScene } from "core/coreScene";
 
 Node.AddNodeConstructor("AnaglyphArcRotateCamera", (name, scene, options) => {
     return () => new AnaglyphArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), options.interaxial_distance, scene);
@@ -24,7 +24,7 @@ export class AnaglyphArcRotateCamera extends ArcRotateCamera {
      * @param interaxialDistance defines distance between each color axis
      * @param scene defines the hosting scene
      */
-    constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, scene?: Scene) {
+    constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, scene?: CoreScene) {
         super(name, alpha, beta, radius, target, scene);
         this.interaxialDistance = interaxialDistance;
         this.setCameraRigMode(Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH, { interaxialDistance: interaxialDistance });

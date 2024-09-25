@@ -3,7 +3,6 @@ import { Vector3, Quaternion, Vector2, Matrix, TmpVectors } from "../Maths/math.
 import { Color3, Color4 } from "../Maths/math.color";
 import { Hermite, Lerp } from "../Maths/math.scalar.functions";
 import type { DeepImmutable, Nullable } from "../types";
-import type { Scene } from "../scene";
 import { RegisterClass } from "../Misc/typeStore";
 import type { IAnimationKey } from "./animationKey";
 import { AnimationKeyInterpolation } from "./animationKey";
@@ -17,6 +16,7 @@ import { Constants } from "../Engines/constants";
 import type { Animatable } from "./animatable";
 import type { RuntimeAnimation } from "./runtimeAnimation";
 import { SerializationHelper } from "../Misc/decorators.serialization";
+import type { CoreScene } from "core/coreScene";
 
 // Static values to help the garbage collector
 
@@ -247,7 +247,7 @@ export class Animation {
         loopMode?: number,
         easingFunction?: EasingFunction,
         onAnimationEnd?: () => void,
-        scene?: Scene
+        scene?: CoreScene
     ): Nullable<Animatable> {
         const animation = Animation._PrepareAnimation(name, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
 
@@ -548,7 +548,7 @@ export class Animation {
         property: string,
         targetValue: any,
         host: any,
-        scene: Scene,
+        scene: CoreScene,
         frameRate: number,
         transition: Animation,
         duration: number,

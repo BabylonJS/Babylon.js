@@ -1,7 +1,6 @@
 import type { SmartArrayNoDuplicate } from "./Misc/smartArray";
 import type { Nullable } from "./types";
 import type { PickingInfo } from "./Collisions/pickingInfo";
-import type { AbstractScene } from "./abstractScene";
 import type { IPointerEvent } from "./Events/deviceInputEvents";
 
 import type { Mesh } from "./Meshes/mesh";
@@ -11,6 +10,7 @@ import type { AbstractMesh } from "./Meshes/abstractMesh";
 import type { SubMesh } from "./Meshes/subMesh";
 import type { RenderTargetTexture } from "./Materials/Textures/renderTargetTexture";
 import type { CoreScene } from "./coreScene";
+import type { INodeContainer } from "./INodeContainer";
 
 /**
  * Groups all the scene component constants in one place to ease maintenance.
@@ -147,14 +147,14 @@ export interface ISceneSerializableComponent extends ISceneComponent {
      * Adds all the elements from the container to the scene
      * @param container the container holding the elements
      */
-    addFromContainer(container: AbstractScene): void;
+    addFromContainer(container: INodeContainer): void;
 
     /**
      * Removes all the elements in the container from the scene
      * @param container contains the elements to remove
      * @param dispose if the removed element should be disposed (default: false)
      */
-    removeFromContainer(container: AbstractScene, dispose?: boolean): void;
+    removeFromContainer(container: INodeContainer, dispose?: boolean): void;
 
     /**
      * Serializes the component data to the specified json object

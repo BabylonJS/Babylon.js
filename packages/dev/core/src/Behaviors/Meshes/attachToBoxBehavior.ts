@@ -1,10 +1,10 @@
 import { Vector3, Matrix, Quaternion } from "../../Maths/math.vector";
 import type { Mesh } from "../../Meshes/mesh";
 import type { TransformNode } from "../../Meshes/transformNode";
-import type { Scene } from "../../scene";
 import type { Nullable } from "../../types";
 import type { Observer } from "../../Misc/observable";
 import type { Behavior } from "../../Behaviors/behavior";
+import type { CoreScene } from "core/coreScene";
 
 /**
  * @internal
@@ -43,8 +43,8 @@ export class AttachToBoxBehavior implements Behavior<Mesh> {
         new FaceDirectionInfo(Vector3.Forward().scaleInPlace(-1)),
     ];
     private _target: Mesh;
-    private _scene: Scene;
-    private _onRenderObserver: Nullable<Observer<Scene>>;
+    private _scene: CoreScene;
+    private _onRenderObserver: Nullable<Observer<CoreScene>>;
     private _tmpMatrix = new Matrix();
     private _tmpVector = new Vector3();
 

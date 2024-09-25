@@ -2,12 +2,12 @@ import type { Nullable } from "../types";
 import { serialize, serializeAsMeshReference } from "../Misc/decorators";
 import { Tools } from "../Misc/tools";
 import { TargetCamera } from "./targetCamera";
-import type { Scene } from "../scene";
 import { TmpVectors, Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { FollowCameraInputsManager } from "./followCameraInputsManager";
 import { RegisterClass } from "../Misc/typeStore";
+import type { CoreScene } from "core/coreScene";
 
 Node.AddNodeConstructor("FollowCamera", (name, scene) => {
     return () => new FollowCamera(name, Vector3.Zero(), scene);
@@ -117,7 +117,7 @@ export class FollowCamera extends TargetCamera {
      * @param scene Define the scene the camera belong to
      * @param lockedTarget Define the target of the camera
      */
-    constructor(name: string, position: Vector3, scene?: Scene, lockedTarget: Nullable<AbstractMesh> = null) {
+    constructor(name: string, position: Vector3, scene?: CoreScene, lockedTarget: Nullable<AbstractMesh> = null) {
         super(name, position, scene);
 
         this.lockedTarget = lockedTarget;
@@ -266,7 +266,7 @@ export class ArcFollowCamera extends TargetCamera {
         public radius: number,
         /** Define the camera target (the mesh it should follow) */
         target: Nullable<AbstractMesh>,
-        scene: Scene
+        scene: CoreScene
     ) {
         super(name, Vector3.Zero(), scene);
         this.setMeshTarget(target);

@@ -2,7 +2,6 @@ import { serialize, serializeAsTexture } from "../../Misc/decorators";
 import type { Observer } from "../../Misc/observable";
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
-import type { Scene } from "../../scene";
 import { Matrix } from "../../Maths/math.vector";
 import { EngineStore } from "../../Engines/engineStore";
 import type { InternalTexture } from "../../Materials/Textures/internalTexture";
@@ -18,6 +17,7 @@ import type { AbstractScene } from "../../abstractScene";
 import type { Animation } from "../../Animations/animation";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
 import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
+import type { CoreScene } from "core/coreScene";
 
 /**
  * Base class of all the textures in babylon.
@@ -67,7 +67,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
             return;
         }
         this._hasAlpha = value;
-        if (this._scene) {
+        if (this._scene && this._scene.markAllMaterialsAsDirty) {
             this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
                 return mat.hasTexture(this);
             });
@@ -88,7 +88,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
             return;
         }
         this._getAlphaFromRGB = value;
-        if (this._scene) {
+        if (this._scene && this._scene.markAllMaterialsAsDirty) {
             this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
                 return mat.hasTexture(this);
             });
@@ -124,7 +124,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
             return;
         }
         this._coordinatesIndex = value;
-        if (this._scene) {
+        if (this._scene && this._scene.markAllMaterialsAsDirty) {
             this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
                 return mat.hasTexture(this);
             });
@@ -158,7 +158,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
             return;
         }
         this._coordinatesMode = value;
-        if (this._scene) {
+        if (this._scene && this._scene.markAllMaterialsAsDirty) {
             this._scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
                 return mat.hasTexture(this);
             });
@@ -315,9 +315,12 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
             this._texture._gammaSpace = gamma;
         }
 
-        this.getScene()?.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
-            return mat.hasTexture(this);
-        });
+        const scene = this.getScene();
+        if (scene && scene.markAllMaterialsAsDirty) {
+            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+                return mat.hasTexture(this);
+            });
+        }
     }
 
     /**
@@ -335,9 +338,12 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
             this._texture._isRGBD = value;
         }
 
-        this.getScene()?.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
-            return mat.hasTexture(this);
-        });
+        const scene = this.getScene();
+        if (scene && scene.markAllMaterialsAsDirty) {
+            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+                return mat.hasTexture(this);
+            });
+        }
     }
 
     /**
@@ -490,7 +496,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         this._onDisposeObserver = this.onDisposeObservable.add(callback);
     }
 
-    protected _scene: Nullable<Scene> = null;
+    protected _scene: Nullable<CoreScene> = null;
 
     /** @internal */
     private _uid: Nullable<string> = null;
@@ -539,7 +545,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
      * @param sceneOrEngine Define the scene or engine the texture belongs to
      * @param internalTexture Define the internal texture associated with the texture
      */
-    constructor(sceneOrEngine?: Nullable<Scene | AbstractEngine>, internalTexture: Nullable<InternalTexture> = null) {
+    constructor(sceneOrEngine?: Nullable<CoreScene | AbstractEngine>, internalTexture: Nullable<InternalTexture> = null) {
         super(null);
 
         if (sceneOrEngine) {
@@ -554,7 +560,9 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
 
         if (this._scene) {
             this.uniqueId = UniqueIdGenerator.UniqueId;
-            this._scene.addTexture(this);
+            if (this._scene.addTexture) {
+                this._scene.addTexture(this);
+            }
             this._engine = this._scene.getEngine();
         }
 
@@ -567,7 +575,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
      * Get the scene the texture belongs to.
      * @returns the scene or null if undefined
      */
-    public getScene(): Nullable<Scene> {
+    public getScene(): Nullable<CoreScene> {
         return this._scene;
     }
 
@@ -698,7 +706,9 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
             return;
         }
 
-        scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        if (scene.markAllMaterialsAsDirty) {
+            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        }
     }
 
     /**
@@ -913,7 +923,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         }
     }
 
-    private static _IsScene(sceneOrEngine: Scene | AbstractEngine): sceneOrEngine is Scene {
-        return sceneOrEngine.getClassName() === "Scene";
+    private static _IsScene(sceneOrEngine: CoreScene | AbstractEngine): sceneOrEngine is CoreScene {
+        return sceneOrEngine.getClassName() === "Scene" || sceneOrEngine.getClassName() === "CoreScene";
     }
 }

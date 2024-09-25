@@ -1,9 +1,9 @@
 import { Camera } from "../../Cameras/camera";
 import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
-import type { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
 import { Node } from "../../node";
 import { setStereoscopicRigMode } from "../RigModes/stereoscopicRigMode";
+import type { CoreScene } from "core/coreScene";
 
 Node.AddNodeConstructor("StereoscopicArcRotateCamera", (name, scene, options) => {
     return () => new StereoscopicArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), options.interaxial_distance, options.isStereoscopicSideBySide, scene);
@@ -25,7 +25,7 @@ export class StereoscopicArcRotateCamera extends ArcRotateCamera {
      * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
      * @param scene defines the hosting scene
      */
-    constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene?: Scene) {
+    constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene?: CoreScene) {
         super(name, alpha, beta, radius, target, scene);
         this.interaxialDistance = interaxialDistance;
         this.isStereoscopicSideBySide = isStereoscopicSideBySide;

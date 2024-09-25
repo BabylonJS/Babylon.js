@@ -6,14 +6,15 @@ import { Constants } from "../Engines/constants";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import { Observable } from "../Misc/observable";
-import type { Scene } from "../scene";
+import type { CoreScene } from "core/coreScene";
+import type { Scene } from "core/scene";
 
 /**
  * PostProcessManager is used to manage one or more post processes or post process pipelines
  * See https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/usePostProcesses
  */
 export class PostProcessManager {
-    private _scene: Scene;
+    private _scene: CoreScene;
     private _indexBuffer: Nullable<DataBuffer>;
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
 
@@ -21,7 +22,7 @@ export class PostProcessManager {
      * Creates a new instance PostProcess
      * @param scene The scene that the post process is associated with.
      */
-    constructor(scene: Scene) {
+    constructor(scene: CoreScene) {
         this._scene = scene;
     }
 
@@ -90,7 +91,8 @@ export class PostProcessManager {
                 return pp != null;
             });
 
-        if (!postProcesses || postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
+        const fullScene = this._scene as Scene;
+        if (!postProcesses || postProcesses.length === 0 || !fullScene.postProcessesEnabled) {
             return false;
         }
 
@@ -179,7 +181,9 @@ export class PostProcessManager {
         postProcesses = postProcesses || <Array<PostProcess>>camera._postProcesses.filter((pp) => {
                 return pp != null;
             });
-        if (postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
+
+        const fullScene = this._scene as Scene;
+        if (postProcesses.length === 0 || !fullScene.postProcessesEnabled) {
             return;
         }
         const engine = this._scene.getEngine();

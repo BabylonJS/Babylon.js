@@ -3,7 +3,7 @@ import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { Mesh } from "../../Meshes/mesh";
 import type { Nullable } from "../../types";
 import type { Observer } from "core/Misc/observable";
-import type { Scene } from "core/scene";
+import type { CoreScene } from "core/coreScene";
 
 /**
  * A behavior that when attached to a mesh will allow the mesh to fade in and out
@@ -46,7 +46,7 @@ export class FadeInOutBehavior implements Behavior<Mesh> {
     private _hovered = false;
     private _hoverValue = 0;
     private _ownerNode: Nullable<Mesh> = null;
-    private _onBeforeRenderObserver: Nullable<Observer<Scene>> | undefined;
+    private _onBeforeRenderObserver: Nullable<Observer<CoreScene>> | undefined;
     private _delay: number = 0;
     private _time: number = 300;
 

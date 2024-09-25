@@ -1,6 +1,6 @@
+import type { CoreScene } from "core/coreScene";
 import { Camera } from "../../Cameras/camera";
 import { GamepadCamera } from "../../Cameras/gamepadCamera";
-import type { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
 import { Node } from "../../node";
 import { setStereoscopicAnaglyphRigMode } from "../RigModes/stereoscopicAnaglyphRigMode";
@@ -21,7 +21,7 @@ export class AnaglyphGamepadCamera extends GamepadCamera {
      * @param interaxialDistance defines distance between each color axis
      * @param scene defines the hosting scene
      */
-    constructor(name: string, position: Vector3, interaxialDistance: number, scene?: Scene) {
+    constructor(name: string, position: Vector3, interaxialDistance: number, scene?: CoreScene) {
         super(name, position, scene);
         this.interaxialDistance = interaxialDistance;
         this.setCameraRigMode(Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH, { interaxialDistance: interaxialDistance });

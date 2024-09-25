@@ -4,7 +4,7 @@ import { PointerDragBehavior } from "./pointerDragBehavior";
 import { Vector3 } from "../../Maths/math.vector";
 import type { Nullable } from "../../types";
 import type { Observer } from "../../Misc/observable";
-import type { Scene } from "../../scene";
+import type { CoreScene } from "core/coreScene";
 
 /**
  * A behavior that when attached to a mesh will allow the mesh to be scaled
@@ -16,7 +16,7 @@ export class MultiPointerScaleBehavior implements Behavior<Mesh> {
     private _initialScale = new Vector3(0, 0, 0);
     private _targetScale = new Vector3(0, 0, 0);
     private _ownerNode: Mesh;
-    private _sceneRenderObserver: Nullable<Observer<Scene>> = null;
+    private _sceneRenderObserver: Nullable<Observer<CoreScene>> = null;
 
     /**
      * Instantiate a new behavior that when attached to a mesh will allow the mesh to be scaled

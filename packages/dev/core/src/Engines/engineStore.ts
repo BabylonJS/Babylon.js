@@ -1,8 +1,8 @@
+import type { CoreScene } from "core/coreScene";
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 
 import type { AbstractEngine } from "./abstractEngine";
-import type { Scene } from "../scene";
 
 /**
  * The engine store class is responsible to hold all the instances of Engine and Scene created
@@ -19,7 +19,7 @@ export class EngineStore {
     public static OnEnginesDisposedObservable = new Observable<AbstractEngine>();
 
     /** @internal */
-    public static _LastCreatedScene: Nullable<Scene> = null;
+    public static _LastCreatedScene: Nullable<CoreScene> = null;
 
     /**
      * Gets the latest created engine
@@ -35,7 +35,7 @@ export class EngineStore {
     /**
      * Gets the latest created scene
      */
-    public static get LastCreatedScene(): Nullable<Scene> {
+    public static get LastCreatedScene(): Nullable<CoreScene> {
         return this._LastCreatedScene;
     }
 

@@ -10,7 +10,6 @@ import { EngineStore } from "./Engines/engineStore";
 import { _WarnImport } from "./Misc/devTools";
 import type { AbstractActionManager } from "./Actions/abstractActionManager";
 import type { IInspectable } from "./Misc/iInspectable";
-import type { AbstractScene } from "./abstractScene";
 import type { IAccessibilityTag } from "./IAccessibilityTag";
 import type { AnimationRange } from "./Animations/animationRange";
 import type { AnimationPropertiesOverride } from "./Animations/animationPropertiesOverride";
@@ -20,6 +19,7 @@ import type { Animatable } from "./Animations/animatable";
 import { SerializationHelper } from "./Misc/decorators.serialization";
 import { UniqueIdGenerator } from "./Misc/uniqueIdGenerator";
 import type { CoreScene } from "./coreScene";
+import type { INodeContainer } from "./INodeContainer";
 
 /**
  * Defines how a node can be built from a string name.
@@ -165,7 +165,7 @@ export class Node implements IBehaviorAware<Node> {
     }
 
     /** @internal */
-    public _parentContainer: Nullable<AbstractScene> = null;
+    public _parentContainer: Nullable<INodeContainer> = null;
 
     /**
      * Gets a list of Animations associated with the node
@@ -271,20 +271,30 @@ export class Node implements IBehaviorAware<Node> {
 
     /** @internal */
     public _addToSceneRootNodes() {
+        if (this._scene.isCore) {
+            return;
+        }
+        const fullScene = this._scene as Scene;
+
         if (this._nodeDataStorage._sceneRootNodesIndex === -1) {
-            this._nodeDataStorage._sceneRootNodesIndex = this._scene.rootNodes.length;
-            this._scene.rootNodes.push(this);
+            this._nodeDataStorage._sceneRootNodesIndex = fullScene.rootNodes.length;
+            fullScene.rootNodes.push(this);
         }
     }
 
     /** @internal */
     public _removeFromSceneRootNodes() {
+        if (this._scene.isCore) {
+            return;
+        }
+        const fullScene = this._scene as Scene;
+
         if (this._nodeDataStorage._sceneRootNodesIndex !== -1) {
-            const rootNodes = this._scene.rootNodes;
+            const rootNodes = fullScene.rootNodes;
             const lastIdx = rootNodes.length - 1;
             rootNodes[this._nodeDataStorage._sceneRootNodesIndex] = rootNodes[lastIdx];
             rootNodes[this._nodeDataStorage._sceneRootNodesIndex]._nodeDataStorage._sceneRootNodesIndex = this._nodeDataStorage._sceneRootNodesIndex;
-            this._scene.rootNodes.pop();
+            fullScene.rootNodes.pop();
             this._nodeDataStorage._sceneRootNodesIndex = -1;
         }
     }

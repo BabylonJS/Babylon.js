@@ -1,12 +1,12 @@
 import { Camera } from "../../Cameras/camera";
 import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { VRCameraMetrics } from "./vrCameraMetrics";
-import type { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
 import { Node } from "../../node";
 import { setVRRigMode } from "../RigModes/vrRigMode";
 
 import "../Inputs/arcRotateCameraVRDeviceOrientationInput";
+import type { CoreScene } from "core/coreScene";
 
 Node.AddNodeConstructor("VRDeviceOrientationArcRotateCamera", (name, scene) => {
     return () => new VRDeviceOrientationArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), scene);
@@ -34,7 +34,7 @@ export class VRDeviceOrientationArcRotateCamera extends ArcRotateCamera {
         beta: number,
         radius: number,
         target: Vector3,
-        scene?: Scene,
+        scene?: CoreScene,
         compensateDistortion = true,
         vrCameraMetrics: VRCameraMetrics = VRCameraMetrics.GetDefault()
     ) {

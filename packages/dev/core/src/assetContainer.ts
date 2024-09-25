@@ -1,5 +1,3 @@
-import { AbstractScene } from "./abstractScene";
-import type { Scene } from "./scene";
 import { Mesh } from "./Meshes/mesh";
 import { TransformNode } from "./Meshes/transformNode";
 import type { Skeleton } from "./Bones/skeleton";
@@ -18,11 +16,150 @@ import { InstancedMesh } from "./Meshes/instancedMesh";
 import { Light } from "./Lights/light";
 import { Camera } from "./Cameras/camera";
 import { Tools } from "./Misc/tools";
+import type { INodeContainer } from "./INodeContainer";
+import type { Geometry } from "./Meshes/geometry";
+import type { Animation } from "./Animations/animation";
+import type { IParticleSystem } from "./Particles/IParticleSystem";
+import type { BaseTexture } from "./Materials/Textures/baseTexture";
+import type { PostProcess } from "./PostProcesses/postProcess";
+import type { MorphTargetManager } from "./Morph/morphTargetManager";
+import type { AbstractActionManager } from "./Actions/abstractActionManager";
+import type { ReflectionProbe } from "./Probes/reflectionProbe";
+import { GetNodes } from "./assetContainer.functions";
+import type { Sound } from "./Audio";
+import type { Layer } from "./Layers/layer";
+import type { CoreScene } from "./coreScene";
+import type { Scene } from "./scene";
 
 /**
  * Set of assets to keep when moving a scene into an asset container.
  */
-export class KeepAssets extends AbstractScene {}
+export class KeepAssets implements INodeContainer {
+    /**
+     * Gets the list of root nodes (ie. nodes with no parent)
+     */
+    public rootNodes: Node[] = [];
+
+    /** All of the cameras added to this scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras
+     */
+    public cameras: Camera[] = [];
+
+    /**
+     * All of the lights added to this scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction
+     */
+    public lights: Light[] = [];
+
+    /**
+     * All of the (abstract) meshes added to this scene
+     */
+    public meshes: AbstractMesh[] = [];
+
+    /**
+     * The list of skeletons added to the scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/bonesSkeletons
+     */
+    public skeletons: Skeleton[] = [];
+
+    /**
+     * All of the particle systems added to this scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/particle_system_intro
+     */
+    public particleSystems: IParticleSystem[] = [];
+
+    /**
+     * Gets a list of Animations associated with the scene
+     */
+    public animations: Animation[] = [];
+
+    /**
+     * All of the animation groups added to this scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/groupAnimations
+     */
+    public animationGroups: AnimationGroup[] = [];
+
+    /**
+     * All of the multi-materials added to this scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/multiMaterials
+     */
+    public multiMaterials: MultiMaterial[] = [];
+
+    /**
+     * The list of reflection probes added to the scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/reflectionProbes
+     */
+    public reflectionProbes: ReflectionProbe[];
+
+    /**
+     * All of the materials added to this scene
+     * In the context of a Scene, it is not supposed to be modified manually.
+     * Any addition or removal should be done using the addMaterial and removeMaterial Scene methods.
+     * Note also that the order of the Material within the array is not significant and might change.
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/materials_introduction
+     */
+    public materials: Material[] = [];
+
+    /**
+     * The list of morph target managers added to the scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/dynamicMeshMorph
+     */
+    public morphTargetManagers: MorphTargetManager[] = [];
+
+    /**
+     * The list of geometries used in the scene.
+     */
+    public geometries: Geometry[] = [];
+
+    /**
+     * All of the transform nodes added to this scene
+     * In the context of a Scene, it is not supposed to be modified manually.
+     * Any addition or removal should be done using the addTransformNode and removeTransformNode Scene methods.
+     * Note also that the order of the TransformNode within the array is not significant and might change.
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/parent_pivot/transform_node
+     */
+    public transformNodes: TransformNode[] = [];
+
+    /**
+     * ActionManagers available on the scene.
+     * @deprecated
+     */
+    public actionManagers: AbstractActionManager[] = [];
+
+    /**
+     * Textures to keep.
+     */
+    public textures: BaseTexture[] = [];
+
+    /**
+     * Texture used in all pbr material as the reflection texture.
+     * As in the majority of the scene they are the same (exception for multi room and so on),
+     * this is easier to reference from here than from all the materials.
+     */
+    public environmentTexture: Nullable<BaseTexture> = null;
+
+    /**
+     * The list of postprocesses added to the scene
+     */
+    public postProcesses: PostProcess[] = [];
+
+    /**
+     * The list of sounds used in the scene
+     */
+    public sounds: Sound[];
+
+    /**
+     * The list of layers (background and foreground) added to the scene
+     */
+    public layers: Layer[];
+
+    /**
+     * @returns all meshes, lights, cameras, transformNodes and bones
+     */
+    public getNodes(): Array<Node> {
+        return GetNodes(this);
+    }
+}
 
 /**
  * Class used to store the output of the AssetContainer.instantiateAllMeshesToScene function
@@ -67,32 +204,150 @@ export class InstantiatedEntries {
 /**
  * Container with a set of assets that can be added or removed from a scene.
  */
-export class AssetContainer extends AbstractScene {
+export class AssetContainer implements INodeContainer {
     private _wasAddedToScene = false;
     private _onContextRestoredObserver: Nullable<Observer<AbstractEngine>>;
 
     /**
+     * Gets the list of root nodes (ie. nodes with no parent)
+     */
+    public rootNodes: Node[] = [];
+
+    /** All of the cameras added to this scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras
+     */
+    public cameras: Camera[] = [];
+
+    /**
+     * All of the lights added to this scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction
+     */
+    public lights: Light[] = [];
+
+    /**
+     * All of the (abstract) meshes added to this scene
+     */
+    public meshes: AbstractMesh[] = [];
+
+    /**
+     * The list of skeletons added to the scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/bonesSkeletons
+     */
+    public skeletons: Skeleton[] = [];
+
+    /**
+     * All of the particle systems added to this scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/particle_system_intro
+     */
+    public particleSystems: IParticleSystem[] = [];
+
+    /**
+     * Gets a list of Animations associated with the scene
+     */
+    public animations: Animation[] = [];
+
+    /**
+     * All of the animation groups added to this scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/groupAnimations
+     */
+    public animationGroups: AnimationGroup[] = [];
+
+    /**
+     * All of the multi-materials added to this scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/multiMaterials
+     */
+    public multiMaterials: MultiMaterial[] = [];
+
+    /**
+     * The list of reflection probes added to the scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/reflectionProbes
+     */
+    public reflectionProbes: ReflectionProbe[];
+
+    /**
+     * All of the materials added to this scene
+     * In the context of a Scene, it is not supposed to be modified manually.
+     * Any addition or removal should be done using the addMaterial and removeMaterial Scene methods.
+     * Note also that the order of the Material within the array is not significant and might change.
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/materials_introduction
+     */
+    public materials: Material[] = [];
+
+    /**
+     * The list of morph target managers added to the scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/dynamicMeshMorph
+     */
+    public morphTargetManagers: MorphTargetManager[] = [];
+
+    /**
+     * The list of geometries used in the scene.
+     */
+    public geometries: Geometry[] = [];
+
+    /**
+     * All of the transform nodes added to this scene
+     * In the context of a Scene, it is not supposed to be modified manually.
+     * Any addition or removal should be done using the addTransformNode and removeTransformNode Scene methods.
+     * Note also that the order of the TransformNode within the array is not significant and might change.
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/parent_pivot/transform_node
+     */
+    public transformNodes: TransformNode[] = [];
+
+    /**
+     * ActionManagers available on the scene.
+     * @deprecated
+     */
+    public actionManagers: AbstractActionManager[] = [];
+
+    /**
+     * Textures to keep.
+     */
+    public textures: BaseTexture[] = [];
+
+    /**
+     * The list of layers (background and foreground) added to the scene
+     */
+    public layers: Layer[];
+
+    /**
+     * Texture used in all pbr material as the reflection texture.
+     * As in the majority of the scene they are the same (exception for multi room and so on),
+     * this is easier to reference from here than from all the materials.
+     */
+    public environmentTexture: Nullable<BaseTexture> = null;
+
+    /**
+     * The list of postprocesses added to the scene
+     */
+    public postProcesses: PostProcess[] = [];
+
+    /**
+     * The list of sounds used in the scene
+     */
+    public sounds: Sound[];
+
+    /**
+     * @returns all meshes, lights, cameras, transformNodes and bones
+     */
+    public getNodes(): Array<Node> {
+        return GetNodes(this);
+    }
+
+    /**
      * The scene the AssetContainer belongs to.
      */
-    public scene: Scene;
+    public scene: CoreScene;
 
     /**
      * Instantiates an AssetContainer.
      * @param scene The scene the AssetContainer belongs to.
      */
-    constructor(scene?: Nullable<Scene>) {
-        super();
+    constructor(scene?: Nullable<CoreScene>) {
         scene = scene || EngineStore.LastCreatedScene;
         if (!scene) {
             return;
         }
         this.scene = scene;
-        this["sounds"] = [];
-        this["effectLayers"] = [];
-        this["layers"] = [];
-        this["lensFlareSystems"] = [];
-        this["proceduralTextures"] = [];
-        this["reflectionProbes"] = [];
 
         scene.onDisposeObservable.add(() => {
             if (!this._wasAddedToScene) {
@@ -417,13 +672,16 @@ export class AssetContainer extends AbstractScene {
                             mesh.material = storeMap[conversionMap[sourceMaterial.uniqueId]];
                         }
                     } else {
-                        if (mesh.material.getClassName() === "MultiMaterial") {
-                            if (this.scene.multiMaterials.indexOf(mesh.material as MultiMaterial) === -1) {
-                                this.scene.addMultiMaterial(mesh.material as MultiMaterial);
-                            }
-                        } else {
-                            if (this.scene.materials.indexOf(mesh.material) === -1) {
-                                this.scene.addMaterial(mesh.material);
+                        if (!this.scene.isCore) {
+                            const fullScene = this.scene as Scene;
+                            if (mesh.material.getClassName() === "MultiMaterial") {
+                                if (fullScene.multiMaterials.indexOf(mesh.material as MultiMaterial) === -1) {
+                                    fullScene.addMultiMaterial(mesh.material as MultiMaterial);
+                                }
+                            } else {
+                                if (fullScene.materials.indexOf(mesh.material) === -1) {
+                                    fullScene.addMaterial(mesh.material);
+                                }
                             }
                         }
                     }
@@ -535,12 +793,15 @@ export class AssetContainer extends AbstractScene {
 
         this.addToScene(null);
 
-        if (this.environmentTexture) {
-            this.scene.environmentTexture = this.environmentTexture;
-        }
+        if (!this.scene.isCore) {
+            const fullScene = this.scene as Scene;
+            if (this.environmentTexture) {
+                fullScene.environmentTexture = this.environmentTexture;
+            }
 
-        for (const component of this.scene._serializableComponents) {
-            component.addFromContainer(this);
+            for (const component of fullScene._serializableComponents) {
+                component.addFromContainer(this);
+            }
         }
 
         this.scene.getEngine().onContextRestoredObservable.remove(this._onContextRestoredObserver);
@@ -552,99 +813,105 @@ export class AssetContainer extends AbstractScene {
      * @param predicate defines a predicate used to select which entity will be added (can be null)
      */
     public addToScene(predicate: Nullable<(entity: any) => boolean> = null) {
+        if (this.scene.isCore) {
+            // Do nothing
+            return;
+        }
+
+        const fullScene = this.scene as Scene;
         const addedNodes: Node[] = [];
         this.cameras.forEach((o) => {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.addCamera(o);
+            fullScene.addCamera(o);
             addedNodes.push(o);
         });
         this.lights.forEach((o) => {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.addLight(o);
+            fullScene.addLight(o);
             addedNodes.push(o);
         });
         this.meshes.forEach((o) => {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.addMesh(o);
+            fullScene.addMesh(o);
             addedNodes.push(o);
         });
         this.skeletons.forEach((o) => {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.addSkeleton(o);
+            fullScene.addSkeleton(o);
         });
         this.animations.forEach((o) => {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.addAnimation(o);
+            fullScene.addAnimation(o);
         });
         this.animationGroups.forEach((o) => {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.addAnimationGroup(o);
+            fullScene.addAnimationGroup(o);
         });
         this.multiMaterials.forEach((o) => {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.addMultiMaterial(o);
+            fullScene.addMultiMaterial(o);
         });
         this.materials.forEach((o) => {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.addMaterial(o);
+            fullScene.addMaterial(o);
         });
         this.morphTargetManagers.forEach((o) => {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.addMorphTargetManager(o);
+            fullScene.addMorphTargetManager(o);
         });
         this.geometries.forEach((o) => {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.addGeometry(o);
+            fullScene.addGeometry(o);
         });
         this.transformNodes.forEach((o) => {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.addTransformNode(o);
+            fullScene.addTransformNode(o);
             addedNodes.push(o);
         });
         this.actionManagers.forEach((o) => {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.addActionManager(o);
+            fullScene.addActionManager(o);
         });
         this.textures.forEach((o) => {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.addTexture(o);
+            fullScene.addTexture(o);
         });
         this.reflectionProbes.forEach((o) => {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.addReflectionProbe(o);
+            fullScene.addReflectionProbe(o);
         });
 
         for (const addedNode of addedNodes) {
             // If node was added to the scene, but parent is not in the scene, break the relationship
-            if (addedNode.parent && this.scene.getNodes().indexOf(addedNode.parent) === -1) {
+            if (addedNode.parent && fullScene.getNodes().indexOf(addedNode.parent) === -1) {
                 // Use setParent to keep transform if possible
                 if ((addedNode as TransformNode).setParent) {
                     (addedNode as TransformNode).setParent(null);
@@ -666,13 +933,15 @@ export class AssetContainer extends AbstractScene {
         this._wasAddedToScene = false;
 
         this.removeFromScene(null);
+        if (!this.scene.isCore) {
+            const fullScene = this.scene as Scene;
+            if (this.environmentTexture === fullScene.environmentTexture) {
+                fullScene.environmentTexture = null;
+            }
 
-        if (this.environmentTexture === this.scene.environmentTexture) {
-            this.scene.environmentTexture = null;
-        }
-
-        for (const component of this.scene._serializableComponents) {
-            component.removeFromContainer(this);
+            for (const component of fullScene._serializableComponents) {
+                component.removeFromContainer(this);
+            }
         }
     }
 
@@ -681,89 +950,95 @@ export class AssetContainer extends AbstractScene {
      * @param predicate defines a predicate used to select which entity will be added (can be null)
      */
     public removeFromScene(predicate: Nullable<(entity: any) => boolean> = null) {
+        if (this.scene.isCore) {
+            // Do nothing
+            return;
+        }
+
+        const fullScene = this.scene as Scene;
         this.cameras.forEach((o) => {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.removeCamera(o);
+            fullScene.removeCamera(o);
         });
         this.lights.forEach((o) => {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.removeLight(o);
+            fullScene.removeLight(o);
         });
         this.meshes.forEach((o) => {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.removeMesh(o, true);
+            fullScene.removeMesh(o, true);
         });
         this.skeletons.forEach((o) => {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.removeSkeleton(o);
+            fullScene.removeSkeleton(o);
         });
         this.animations.forEach((o) => {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.removeAnimation(o);
+            fullScene.removeAnimation(o);
         });
         this.animationGroups.forEach((o) => {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.removeAnimationGroup(o);
+            fullScene.removeAnimationGroup(o);
         });
         this.multiMaterials.forEach((o) => {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.removeMultiMaterial(o);
+            fullScene.removeMultiMaterial(o);
         });
         this.materials.forEach((o) => {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.removeMaterial(o);
+            fullScene.removeMaterial(o);
         });
         this.morphTargetManagers.forEach((o) => {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.removeMorphTargetManager(o);
+            fullScene.removeMorphTargetManager(o);
         });
         this.geometries.forEach((o) => {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.removeGeometry(o);
+            fullScene.removeGeometry(o);
         });
         this.transformNodes.forEach((o) => {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.removeTransformNode(o);
+            fullScene.removeTransformNode(o);
         });
         this.actionManagers.forEach((o) => {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.removeActionManager(o);
+            fullScene.removeActionManager(o);
         });
         this.textures.forEach((o) => {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.removeTexture(o);
+            fullScene.removeTexture(o);
         });
         this.reflectionProbes.forEach((o) => {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.removeReflectionProbe(o);
+            fullScene.removeReflectionProbe(o);
         });
     }
 
@@ -841,8 +1116,10 @@ export class AssetContainer extends AbstractScene {
             this.environmentTexture = null;
         }
 
-        for (const component of this.scene._serializableComponents) {
-            component.removeFromContainer(this, true);
+        if (!this.scene.isCore) {
+            for (const component of (this.scene as Scene)._serializableComponents) {
+                component.removeFromContainer(this, true);
+            }
         }
 
         if (this._onContextRestoredObserver) {
@@ -892,7 +1169,9 @@ export class AssetContainer extends AbstractScene {
             }
         }
 
-        this.environmentTexture = this.scene.environmentTexture;
+        if (!this.scene.isCore) {
+            this.environmentTexture = (this.scene as Scene).environmentTexture;
+        }
 
         this.removeAllFromScene();
     }
@@ -920,12 +1199,16 @@ export class AssetContainer extends AbstractScene {
      * @returns an array of the new AnimationGroup added to the scene (empty array if none)
      */
     public mergeAnimationsTo(
-        scene: Nullable<Scene> = EngineStore.LastCreatedScene,
+        scene: Nullable<CoreScene> = EngineStore.LastCreatedScene,
         animatables: Animatable[],
         targetConverter: Nullable<(target: any) => Nullable<Node>> = null
     ): AnimationGroup[] {
         if (!scene) {
             Logger.Error("No scene available to merge animations to");
+            return [];
+        }
+
+        if (scene.isCore) {
             return [];
         }
 
@@ -944,17 +1227,18 @@ export class AssetContainer extends AbstractScene {
               of the primitive's parent.
           */
                   const name = target.name.split(".").join("").split("_primitive")[0];
+                  const fullScene = scene as Scene;
 
                   switch (targetProperty) {
                       case "position":
                       case "rotationQuaternion":
-                          node = scene.getTransformNodeByName(target.name) || scene.getTransformNodeByName(name);
+                          node = fullScene.getTransformNodeByName(target.name) || fullScene.getTransformNodeByName(name);
                           break;
                       case "influence":
-                          node = scene.getMorphTargetByName(target.name) || scene.getMorphTargetByName(name);
+                          node = fullScene.getMorphTargetByName(target.name) || fullScene.getMorphTargetByName(name);
                           break;
                       default:
-                          node = scene.getNodeByName(target.name) || scene.getNodeByName(name);
+                          node = fullScene.getNodeByName(target.name) || fullScene.getNodeByName(name);
                   }
 
                   return node;
@@ -968,7 +1252,7 @@ export class AssetContainer extends AbstractScene {
                 // Remove old animations with same target property as a new one
                 for (const animationInAC of nodeInAC.animations) {
                     // Doing treatment on an array for safety measure
-                    const animationsWithSameProperty = nodeInScene.animations.filter((animationInScene) => {
+                    const animationsWithSameProperty = nodeInScene.animations.filter((animationInScene: Animation) => {
                         return animationInScene.targetProperty === animationInAC.targetProperty;
                     });
                     for (const animationWithSameProperty of animationsWithSameProperty) {

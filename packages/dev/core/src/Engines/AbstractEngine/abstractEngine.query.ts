@@ -2,6 +2,7 @@ import { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { PerfCounter } from "../../Misc/perfCounter";
 import type { Nullable } from "../../types";
 import { AbstractEngine } from "../abstractEngine";
+import type { Scene } from "core/scene";
 
 /** @internal */
 export type OcclusionQuery = WebGLQuery | number;
@@ -302,8 +303,8 @@ AbstractMesh.prototype._checkOcclusionQuery = function () {
     }
 
     const scene = this.getScene();
-    if (scene.getBoundingBoxRenderer) {
-        const occlusionBoundingBoxRenderer = scene.getBoundingBoxRenderer();
+    if (!scene.isCore && (scene as Scene).getBoundingBoxRenderer) {
+        const occlusionBoundingBoxRenderer = (scene as Scene).getBoundingBoxRenderer();
 
         if (this._occlusionQuery === null) {
             this._occlusionQuery = engine.createQuery();

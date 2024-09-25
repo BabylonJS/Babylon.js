@@ -1,5 +1,4 @@
 import type { Nullable, FloatArray, DataArray, IndicesArray } from "../types";
-import type { Scene } from "../scene";
 import type { Vector2 } from "../Maths/math.vector";
 import { Vector3 } from "../Maths/math.vector";
 import { Color4 } from "../Maths/math.color";
@@ -26,6 +25,8 @@ import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { ThinEngine } from "../Engines/thinEngine";
 import { CopyFloatData } from "../Buffers/bufferUtils";
 import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
+import type { CoreScene } from "core/coreScene";
+import type { Scene } from "core/scene";
 
 /**
  * Class used to store geometry data (vertex buffers + index buffer)
@@ -54,7 +55,7 @@ export class Geometry implements IGetSetVerticesData {
     public onGeometryUpdated: (geometry: Geometry, kind?: string) => void;
 
     // Private
-    private _scene: Scene;
+    private _scene: CoreScene;
     private _engine: AbstractEngine;
     private _meshes: Mesh[];
     private _totalVertices = 0;
@@ -141,8 +142,8 @@ export class Geometry implements IGetSetVerticesData {
      * @param updatable defines if geometry must be updatable (false by default)
      * @param mesh defines the mesh that will be associated with the geometry
      */
-    constructor(id: string, scene?: Scene, vertexData?: VertexData, updatable: boolean = false, mesh: Nullable<Mesh> = null) {
-        this._scene = scene || <Scene>EngineStore.LastCreatedScene;
+    constructor(id: string, scene?: CoreScene, vertexData?: VertexData, updatable: boolean = false, mesh: Nullable<Mesh> = null) {
+        this._scene = scene || <CoreScene>EngineStore.LastCreatedScene;
         if (!this._scene) {
             return;
         }
@@ -184,7 +185,7 @@ export class Geometry implements IGetSetVerticesData {
      * Gets the hosting scene
      * @returns the hosting Scene
      */
-    public getScene(): Scene {
+    public getScene(): CoreScene {
         return this._scene;
     }
 
@@ -745,7 +746,9 @@ export class Geometry implements IGetSetVerticesData {
         mesh._geometry = this;
         mesh._internalAbstractMeshDataInfo._positions = null;
 
-        this._scene.pushGeometry(this);
+        if (!this._scene.isCore) {
+            (this._scene as Scene).pushGeometry(this);
+        }
 
         meshes.push(mesh);
 
@@ -829,7 +832,7 @@ export class Geometry implements IGetSetVerticesData {
      * @param scene defines the hosting scene
      * @param onLoaded defines a callback called when the geometry is loaded
      */
-    public load(scene: Scene, onLoaded?: () => void): void {
+    public load(scene: CoreScene, onLoaded?: () => void): void {
         if (this.delayLoadState === Constants.DELAYLOADSTATE_LOADING) {
             return;
         }
@@ -846,7 +849,7 @@ export class Geometry implements IGetSetVerticesData {
         this._queueLoad(scene, onLoaded);
     }
 
-    private _queueLoad(scene: Scene, onLoaded?: () => void): void {
+    private _queueLoad(scene: CoreScene, onLoaded?: () => void): void {
         if (!this.delayLoadingFile) {
             return;
         }
@@ -1005,7 +1008,9 @@ export class Geometry implements IGetSetVerticesData {
 
         this._boundingInfo = null;
 
-        this._scene.removeGeometry(this);
+        if (!this._scene.isCore) {
+            (this._scene as Scene).removeGeometry(this);
+        }
         if (this._parentContainer) {
             const index = this._parentContainer.geometries.indexOf(this);
             if (index > -1) {
@@ -1245,10 +1250,15 @@ export class Geometry implements IGetSetVerticesData {
         return Tools.RandomId();
     }
 
-    private static _GetGeometryByLoadedUniqueId(uniqueId: string, scene: Scene) {
-        for (let index = 0; index < scene.geometries.length; index++) {
-            if (scene.geometries[index]._loadedUniqueId === uniqueId) {
-                return scene.geometries[index];
+    private static _GetGeometryByLoadedUniqueId(uniqueId: string, scene: CoreScene) {
+        if (scene.isCore) {
+            return null;
+        }
+
+        const fullScene = scene as Scene;
+        for (let index = 0; index < fullScene.geometries.length; index++) {
+            if (fullScene.geometries[index]._loadedUniqueId === uniqueId) {
+                return fullScene.geometries[index];
             }
         }
 
@@ -1265,7 +1275,7 @@ export class Geometry implements IGetSetVerticesData {
         const geometryUniqueId = parsedGeometry.geometryUniqueId;
         const geometryId = parsedGeometry.geometryId;
         if (geometryUniqueId || geometryId) {
-            const geometry = geometryUniqueId ? this._GetGeometryByLoadedUniqueId(geometryUniqueId, scene) : scene.getGeometryById(geometryId);
+            const geometry = geometryUniqueId ? this._GetGeometryByLoadedUniqueId(geometryUniqueId, scene) : scene.isCore ? null : (scene as Scene).getGeometryById(geometryId);
             if (geometry) {
                 geometry.applyToMesh(mesh);
             }
@@ -1517,7 +1527,9 @@ export class Geometry implements IGetSetVerticesData {
         // Update
         mesh.computeWorldMatrix(true);
 
-        scene.onMeshImportedObservable.notifyObservers(<AbstractMesh>mesh);
+        if (!scene.isCore) {
+            (scene as Scene).onMeshImportedObservable.notifyObservers(<AbstractMesh>mesh);
+        }
     }
 
     private static _CleanMatricesWeights(parsedGeometry: any, mesh: Mesh): void {
@@ -1527,7 +1539,12 @@ export class Geometry implements IGetSetVerticesData {
         }
         let noInfluenceBoneIndex = 0.0;
         if (parsedGeometry.skeletonId > -1) {
-            const skeleton = mesh.getScene().getLastSkeletonById(parsedGeometry.skeletonId);
+            const scene = mesh.getScene();
+            if (scene.isCore) {
+                return;
+            }
+
+            const skeleton = (scene as Scene).getLastSkeletonById(parsedGeometry.skeletonId);
 
             if (!skeleton) {
                 return;
@@ -1599,7 +1616,7 @@ export class Geometry implements IGetSetVerticesData {
      * @param rootUrl defines the root url to use to load assets (like delayed data)
      * @returns the new geometry object
      */
-    public static Parse(parsedVertexData: any, scene: Scene, rootUrl: string): Nullable<Geometry> {
+    public static Parse(parsedVertexData: any, scene: CoreScene, rootUrl: string): Nullable<Geometry> {
         const geometry = new Geometry(parsedVertexData.id, scene, undefined, parsedVertexData.updatable);
         geometry._loadedUniqueId = parsedVertexData.uniqueId;
 
@@ -1654,7 +1671,9 @@ export class Geometry implements IGetSetVerticesData {
             VertexData.ImportVertexData(parsedVertexData, geometry);
         }
 
-        scene.pushGeometry(geometry, true);
+        if (!scene.isCore) {
+            (scene as Scene).pushGeometry(geometry, true);
+        }
 
         return geometry;
     }

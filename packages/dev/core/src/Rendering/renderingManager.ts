@@ -4,11 +4,12 @@ import type { ISpriteManager } from "../Sprites/spriteManager";
 import type { IParticleSystem } from "../Particles/IParticleSystem";
 import { RenderingGroup } from "./renderingGroup";
 
-import type { Scene } from "../scene";
 import type { Camera } from "../Cameras/camera";
 import type { Material } from "../Materials/material";
 import type { SubMesh } from "../Meshes/subMesh";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { CoreScene } from "core/coreScene";
+import type { Scene } from "core/scene";
 
 /**
  * Interface describing the different options available in the rendering manager
@@ -36,7 +37,7 @@ export class RenderingGroupInfo {
     /**
      * The Scene that being rendered
      */
-    scene: Scene;
+    scene: CoreScene;
 
     /**
      * The camera currently used for the rendering pass
@@ -75,7 +76,7 @@ export class RenderingManager {
      */
     public _useSceneAutoClearSetup = false;
 
-    private _scene: Scene;
+    private _scene: CoreScene;
     private _renderingGroups = new Array<RenderingGroup>();
     private _depthStencilBufferAlreadyCleaned: boolean;
 
@@ -134,7 +135,7 @@ export class RenderingManager {
      * Instantiates a new rendering group for a particular scene
      * @param scene Defines the scene the groups belongs to
      */
-    constructor(scene: Scene) {
+    constructor(scene: CoreScene) {
         this._scene = scene;
 
         for (let i = RenderingManager.MIN_RENDERINGGROUPS; i < RenderingManager.MAX_RENDERINGGROUPS; i++) {
@@ -209,7 +210,10 @@ export class RenderingManager {
 
             // Clear depth/stencil if needed
             if (RenderingManager.AUTOCLEAR) {
-                const autoClear = this._useSceneAutoClearSetup ? this._scene.getAutoClearDepthStencilSetup(index) : this._autoClearDepthStencil[index];
+                const autoClear =
+                    this._useSceneAutoClearSetup && this._scene.getAutoClearDepthStencilSetup
+                        ? this._scene.getAutoClearDepthStencilSetup(index)
+                        : this._autoClearDepthStencil[index];
 
                 if (autoClear && autoClear.autoClear) {
                     this._clearDepthStencilBuffer(autoClear.depth, autoClear.stencil);
@@ -217,12 +221,17 @@ export class RenderingManager {
             }
 
             // Render
-            for (const step of this._scene._beforeRenderingGroupDrawStage) {
-                step.action(index);
+            const sceneAsScene = this._scene as Scene;
+            if (sceneAsScene._beforeRenderingGroupDrawStage) {
+                for (const step of sceneAsScene._beforeRenderingGroupDrawStage) {
+                    step.action(index);
+                }
             }
             renderingGroup.render(customRenderFunction, renderSprites, renderParticles, activeMeshes);
-            for (const step of this._scene._afterRenderingGroupDrawStage) {
-                step.action(index);
+            if (sceneAsScene._afterRenderingGroupDrawStage) {
+                for (const step of sceneAsScene._afterRenderingGroupDrawStage) {
+                    step.action(index);
+                }
             }
 
             // After Observable

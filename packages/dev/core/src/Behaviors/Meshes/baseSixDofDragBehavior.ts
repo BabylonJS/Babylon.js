@@ -3,7 +3,6 @@
 import type { Behavior } from "../../Behaviors/behavior";
 import type { Mesh } from "../../Meshes/mesh";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
-import { Scene } from "../../scene";
 import type { Nullable } from "../../types";
 import type { PointerInfo } from "../../Events/pointerEvents";
 import { PointerEventTypes } from "../../Events/pointerEvents";
@@ -16,6 +15,8 @@ import { Camera } from "../../Cameras/camera";
 import type { Ray } from "../../Culling/ray";
 import type { IPointerEvent } from "../../Events/deviceInputEvents";
 import type { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
+import type { CoreScene } from "core/coreScene";
+import { Scene } from "core/scene";
 
 /**
  * Data store to track virtual pointers movement
@@ -40,7 +41,7 @@ type VirtualMeshInfo = {
  * And observables for position/rotation changes
  */
 export class BaseSixDofDragBehavior implements Behavior<Mesh> {
-    protected static _virtualScene: Scene;
+    protected static _virtualScene: CoreScene;
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _attachedToElement: boolean = false;
     protected _virtualMeshesInfo: {
@@ -57,7 +58,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
         NEAR_DRAG: 3,
     };
 
-    protected _scene: Scene;
+    protected _scene: CoreScene;
     protected _moving = false;
     protected _ownerNode: TransformNode;
     protected _dragging = this._dragType.NONE;
@@ -148,8 +149,8 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
      * In the case of multiple active cameras, the cameraToUseForPointers should be used if set instead of active camera
      */
     private get _pointerCamera() {
-        if (this._scene.cameraToUseForPointers) {
-            return this._scene.cameraToUseForPointers;
+        if ((this._scene as Scene).cameraToUseForPointers) {
+            return (this._scene as Scene).cameraToUseForPointers;
         } else {
             return this._scene.activeCamera;
         }
@@ -284,162 +285,164 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
         this._scene = this._ownerNode.getScene();
         if (!BaseSixDofDragBehavior._virtualScene) {
             BaseSixDofDragBehavior._virtualScene = new Scene(this._scene.getEngine(), { virtual: true });
-            BaseSixDofDragBehavior._virtualScene.detachControl();
+            (BaseSixDofDragBehavior._virtualScene as Scene).detachControl();
         }
 
         const pickPredicate = (m: AbstractMesh) => {
             return this._ownerNode === m || (m.isDescendantOf(this._ownerNode) && (!this.draggableMeshes || this.draggableMeshes.indexOf(m) !== -1));
         };
 
-        this._pointerObserver = this._scene.onPointerObservable.add((pointerInfo) => {
-            const pointerId = (<IPointerEvent>pointerInfo.event).pointerId;
-            if (!this._virtualMeshesInfo[pointerId]) {
-                this._virtualMeshesInfo[pointerId] = this._createVirtualMeshInfo();
-            }
-            const virtualMeshesInfo = this._virtualMeshesInfo[pointerId];
-            const isXRPointer = (<IPointerEvent>pointerInfo.event).pointerType === "xr-near" || (<IPointerEvent>pointerInfo.event).pointerType === "xr";
+        this._pointerObserver = this._scene.isCore
+            ? null
+            : (this._scene as Scene).onPointerObservable.add((pointerInfo) => {
+                  const pointerId = (<IPointerEvent>pointerInfo.event).pointerId;
+                  if (!this._virtualMeshesInfo[pointerId]) {
+                      this._virtualMeshesInfo[pointerId] = this._createVirtualMeshInfo();
+                  }
+                  const virtualMeshesInfo = this._virtualMeshesInfo[pointerId];
+                  const isXRPointer = (<IPointerEvent>pointerInfo.event).pointerType === "xr-near" || (<IPointerEvent>pointerInfo.event).pointerType === "xr";
 
-            if (pointerInfo.type == PointerEventTypes.POINTERDOWN) {
-                if (
-                    !virtualMeshesInfo.dragging &&
-                    pointerInfo.pickInfo &&
-                    pointerInfo.pickInfo.hit &&
-                    pointerInfo.pickInfo.pickedMesh &&
-                    pointerInfo.pickInfo.pickedPoint &&
-                    pointerInfo.pickInfo.ray &&
-                    (!isXRPointer || pointerInfo.pickInfo.aimTransform) &&
-                    pickPredicate(pointerInfo.pickInfo.pickedMesh)
-                ) {
-                    if ((!this.allowMultiPointer || isXRPointer) && this.currentDraggingPointerIds.length > 0) {
-                        return;
-                    }
+                  if (pointerInfo.type == PointerEventTypes.POINTERDOWN) {
+                      if (
+                          !virtualMeshesInfo.dragging &&
+                          pointerInfo.pickInfo &&
+                          pointerInfo.pickInfo.hit &&
+                          pointerInfo.pickInfo.pickedMesh &&
+                          pointerInfo.pickInfo.pickedPoint &&
+                          pointerInfo.pickInfo.ray &&
+                          (!isXRPointer || pointerInfo.pickInfo.aimTransform) &&
+                          pickPredicate(pointerInfo.pickInfo.pickedMesh)
+                      ) {
+                          if ((!this.allowMultiPointer || isXRPointer) && this.currentDraggingPointerIds.length > 0) {
+                              return;
+                          }
 
-                    if (
-                        this._pointerCamera &&
-                        this._pointerCamera.cameraRigMode === Camera.RIG_MODE_NONE &&
-                        !this._pointerCamera._isLeftCamera &&
-                        !this._pointerCamera._isRightCamera
-                    ) {
-                        pointerInfo.pickInfo.ray.origin.copyFrom(this._pointerCamera!.globalPosition);
-                    }
+                          if (
+                              this._pointerCamera &&
+                              this._pointerCamera.cameraRigMode === Camera.RIG_MODE_NONE &&
+                              !this._pointerCamera._isLeftCamera &&
+                              !this._pointerCamera._isRightCamera
+                          ) {
+                              pointerInfo.pickInfo.ray.origin.copyFrom(this._pointerCamera!.globalPosition);
+                          }
 
-                    this._ownerNode.computeWorldMatrix(true);
-                    const virtualMeshesInfo = this._virtualMeshesInfo[pointerId];
+                          this._ownerNode.computeWorldMatrix(true);
+                          const virtualMeshesInfo = this._virtualMeshesInfo[pointerId];
 
-                    if (isXRPointer) {
-                        this._dragging = pointerInfo.pickInfo.originMesh ? this._dragType.NEAR_DRAG : this._dragType.DRAG_WITH_CONTROLLER;
-                        virtualMeshesInfo.originMesh.position.copyFrom(pointerInfo.pickInfo.aimTransform!.position);
-                        if (this._dragging === this._dragType.NEAR_DRAG && pointerInfo.pickInfo.gripTransform) {
-                            virtualMeshesInfo.originMesh.rotationQuaternion!.copyFrom(pointerInfo.pickInfo.gripTransform.rotationQuaternion!);
-                        } else {
-                            virtualMeshesInfo.originMesh.rotationQuaternion!.copyFrom(pointerInfo.pickInfo.aimTransform!.rotationQuaternion!);
-                        }
-                    } else {
-                        this._dragging = this._dragType.DRAG;
-                        virtualMeshesInfo.originMesh.position.copyFrom(pointerInfo.pickInfo.ray.origin);
-                    }
+                          if (isXRPointer) {
+                              this._dragging = pointerInfo.pickInfo.originMesh ? this._dragType.NEAR_DRAG : this._dragType.DRAG_WITH_CONTROLLER;
+                              virtualMeshesInfo.originMesh.position.copyFrom(pointerInfo.pickInfo.aimTransform!.position);
+                              if (this._dragging === this._dragType.NEAR_DRAG && pointerInfo.pickInfo.gripTransform) {
+                                  virtualMeshesInfo.originMesh.rotationQuaternion!.copyFrom(pointerInfo.pickInfo.gripTransform.rotationQuaternion!);
+                              } else {
+                                  virtualMeshesInfo.originMesh.rotationQuaternion!.copyFrom(pointerInfo.pickInfo.aimTransform!.rotationQuaternion!);
+                              }
+                          } else {
+                              this._dragging = this._dragType.DRAG;
+                              virtualMeshesInfo.originMesh.position.copyFrom(pointerInfo.pickInfo.ray.origin);
+                          }
 
-                    virtualMeshesInfo.lastOriginPosition.copyFrom(virtualMeshesInfo.originMesh.position);
+                          virtualMeshesInfo.lastOriginPosition.copyFrom(virtualMeshesInfo.originMesh.position);
 
-                    virtualMeshesInfo.dragMesh.position.copyFrom(pointerInfo.pickInfo.pickedPoint);
-                    virtualMeshesInfo.lastDragPosition.copyFrom(pointerInfo.pickInfo.pickedPoint);
+                          virtualMeshesInfo.dragMesh.position.copyFrom(pointerInfo.pickInfo.pickedPoint);
+                          virtualMeshesInfo.lastDragPosition.copyFrom(pointerInfo.pickInfo.pickedPoint);
 
-                    virtualMeshesInfo.pivotMesh.position.copyFrom(this._ownerNode.getAbsolutePivotPoint());
-                    virtualMeshesInfo.pivotMesh.rotationQuaternion!.copyFrom(this._ownerNode.absoluteRotationQuaternion);
+                          virtualMeshesInfo.pivotMesh.position.copyFrom(this._ownerNode.getAbsolutePivotPoint());
+                          virtualMeshesInfo.pivotMesh.rotationQuaternion!.copyFrom(this._ownerNode.absoluteRotationQuaternion);
 
-                    virtualMeshesInfo.startingPosition.copyFrom(virtualMeshesInfo.dragMesh.position);
-                    virtualMeshesInfo.startingPivotPosition.copyFrom(virtualMeshesInfo.pivotMesh.position);
-                    virtualMeshesInfo.startingOrientation.copyFrom(virtualMeshesInfo.dragMesh.rotationQuaternion!);
-                    virtualMeshesInfo.startingPivotOrientation.copyFrom(virtualMeshesInfo.pivotMesh.rotationQuaternion!);
+                          virtualMeshesInfo.startingPosition.copyFrom(virtualMeshesInfo.dragMesh.position);
+                          virtualMeshesInfo.startingPivotPosition.copyFrom(virtualMeshesInfo.pivotMesh.position);
+                          virtualMeshesInfo.startingOrientation.copyFrom(virtualMeshesInfo.dragMesh.rotationQuaternion!);
+                          virtualMeshesInfo.startingPivotOrientation.copyFrom(virtualMeshesInfo.pivotMesh.rotationQuaternion!);
 
-                    if (isXRPointer) {
-                        virtualMeshesInfo.originMesh.addChild(virtualMeshesInfo.dragMesh);
-                        virtualMeshesInfo.originMesh.addChild(virtualMeshesInfo.pivotMesh);
-                    } else {
-                        virtualMeshesInfo.originMesh.lookAt(virtualMeshesInfo.dragMesh.position);
-                    }
+                          if (isXRPointer) {
+                              virtualMeshesInfo.originMesh.addChild(virtualMeshesInfo.dragMesh);
+                              virtualMeshesInfo.originMesh.addChild(virtualMeshesInfo.pivotMesh);
+                          } else {
+                              virtualMeshesInfo.originMesh.lookAt(virtualMeshesInfo.dragMesh.position);
+                          }
 
-                    // Update state
-                    virtualMeshesInfo.dragging = true;
+                          // Update state
+                          virtualMeshesInfo.dragging = true;
 
-                    if (this.currentDraggingPointerIds.indexOf(pointerId) === -1) {
-                        this.currentDraggingPointerIds.push(pointerId);
-                    }
+                          if (this.currentDraggingPointerIds.indexOf(pointerId) === -1) {
+                              this.currentDraggingPointerIds.push(pointerId);
+                          }
 
-                    // Detach camera controls
-                    if (this.detachCameraControls && this._pointerCamera && !this._pointerCamera.leftCamera) {
-                        if (this._pointerCamera.inputs && this._pointerCamera.inputs.attachedToElement) {
-                            this._pointerCamera.detachControl();
-                            this._attachedToElement = true;
-                        } else if (!this.allowMultiPointer || this.currentDraggingPointerIds.length === 0) {
-                            this._attachedToElement = false;
-                        }
-                    }
+                          // Detach camera controls
+                          if (this.detachCameraControls && this._pointerCamera && !this._pointerCamera.leftCamera) {
+                              if (this._pointerCamera.inputs && this._pointerCamera.inputs.attachedToElement) {
+                                  this._pointerCamera.detachControl();
+                                  this._attachedToElement = true;
+                              } else if (!this.allowMultiPointer || this.currentDraggingPointerIds.length === 0) {
+                                  this._attachedToElement = false;
+                              }
+                          }
 
-                    this._targetDragStart(virtualMeshesInfo.pivotMesh.position, virtualMeshesInfo.pivotMesh.rotationQuaternion!, pointerId);
-                    this.onDragStartObservable.notifyObservers({ position: virtualMeshesInfo.pivotMesh.position });
-                }
-            } else if (pointerInfo.type == PointerEventTypes.POINTERUP || pointerInfo.type == PointerEventTypes.POINTERDOUBLETAP) {
-                const registeredPointerIndex = this.currentDraggingPointerIds.indexOf(pointerId);
+                          this._targetDragStart(virtualMeshesInfo.pivotMesh.position, virtualMeshesInfo.pivotMesh.rotationQuaternion!, pointerId);
+                          this.onDragStartObservable.notifyObservers({ position: virtualMeshesInfo.pivotMesh.position });
+                      }
+                  } else if (pointerInfo.type == PointerEventTypes.POINTERUP || pointerInfo.type == PointerEventTypes.POINTERDOUBLETAP) {
+                      const registeredPointerIndex = this.currentDraggingPointerIds.indexOf(pointerId);
 
-                // Update state
-                virtualMeshesInfo.dragging = false;
+                      // Update state
+                      virtualMeshesInfo.dragging = false;
 
-                if (registeredPointerIndex !== -1) {
-                    this.currentDraggingPointerIds.splice(registeredPointerIndex, 1);
-                    if (this.currentDraggingPointerIds.length === 0) {
-                        this._moving = false;
-                        this._dragging = this._dragType.NONE;
+                      if (registeredPointerIndex !== -1) {
+                          this.currentDraggingPointerIds.splice(registeredPointerIndex, 1);
+                          if (this.currentDraggingPointerIds.length === 0) {
+                              this._moving = false;
+                              this._dragging = this._dragType.NONE;
 
-                        // Reattach camera controls
-                        if (this.detachCameraControls && this._attachedToElement && this._pointerCamera && !this._pointerCamera.leftCamera) {
-                            this._reattachCameraControls();
-                            this._attachedToElement = false;
-                        }
-                    }
+                              // Reattach camera controls
+                              if (this.detachCameraControls && this._attachedToElement && this._pointerCamera && !this._pointerCamera.leftCamera) {
+                                  this._reattachCameraControls();
+                                  this._attachedToElement = false;
+                              }
+                          }
 
-                    virtualMeshesInfo.originMesh.removeChild(virtualMeshesInfo.dragMesh);
-                    virtualMeshesInfo.originMesh.removeChild(virtualMeshesInfo.pivotMesh);
-                    this._targetDragEnd(pointerId);
-                    this.onDragEndObservable.notifyObservers({});
-                }
-            } else if (pointerInfo.type == PointerEventTypes.POINTERMOVE) {
-                const registeredPointerIndex = this.currentDraggingPointerIds.indexOf(pointerId);
+                          virtualMeshesInfo.originMesh.removeChild(virtualMeshesInfo.dragMesh);
+                          virtualMeshesInfo.originMesh.removeChild(virtualMeshesInfo.pivotMesh);
+                          this._targetDragEnd(pointerId);
+                          this.onDragEndObservable.notifyObservers({});
+                      }
+                  } else if (pointerInfo.type == PointerEventTypes.POINTERMOVE) {
+                      const registeredPointerIndex = this.currentDraggingPointerIds.indexOf(pointerId);
 
-                if (registeredPointerIndex !== -1 && virtualMeshesInfo.dragging && pointerInfo.pickInfo && (pointerInfo.pickInfo.ray || pointerInfo.pickInfo.aimTransform)) {
-                    let zDragFactor = this.zDragFactor;
+                      if (registeredPointerIndex !== -1 && virtualMeshesInfo.dragging && pointerInfo.pickInfo && (pointerInfo.pickInfo.ray || pointerInfo.pickInfo.aimTransform)) {
+                          let zDragFactor = this.zDragFactor;
 
-                    // 2 pointer interaction should not have a z axis drag factor
-                    // as well as near interaction
-                    if (this.currentDraggingPointerIds.length > 1 || pointerInfo.pickInfo.originMesh) {
-                        zDragFactor = 0;
-                    }
+                          // 2 pointer interaction should not have a z axis drag factor
+                          // as well as near interaction
+                          if (this.currentDraggingPointerIds.length > 1 || pointerInfo.pickInfo.originMesh) {
+                              zDragFactor = 0;
+                          }
 
-                    this._ownerNode.computeWorldMatrix(true);
-                    if (!isXRPointer) {
-                        this._pointerUpdate2D(pointerInfo.pickInfo.ray!, pointerId, zDragFactor);
-                    } else {
-                        this._pointerUpdateXR(pointerInfo.pickInfo.aimTransform!, pointerInfo.pickInfo.gripTransform, pointerId, zDragFactor);
-                    }
+                          this._ownerNode.computeWorldMatrix(true);
+                          if (!isXRPointer) {
+                              this._pointerUpdate2D(pointerInfo.pickInfo.ray!, pointerId, zDragFactor);
+                          } else {
+                              this._pointerUpdateXR(pointerInfo.pickInfo.aimTransform!, pointerInfo.pickInfo.gripTransform, pointerId, zDragFactor);
+                          }
 
-                    // Get change in rotation
-                    this._tmpQuaternion.copyFrom(virtualMeshesInfo.startingPivotOrientation);
-                    this._tmpQuaternion.x = -this._tmpQuaternion.x;
-                    this._tmpQuaternion.y = -this._tmpQuaternion.y;
-                    this._tmpQuaternion.z = -this._tmpQuaternion.z;
-                    virtualMeshesInfo.pivotMesh.absoluteRotationQuaternion!.multiplyToRef(this._tmpQuaternion, this._tmpQuaternion);
-                    virtualMeshesInfo.pivotMesh.absolutePosition.subtractToRef(virtualMeshesInfo.startingPivotPosition, this._tmpVector);
+                          // Get change in rotation
+                          this._tmpQuaternion.copyFrom(virtualMeshesInfo.startingPivotOrientation);
+                          this._tmpQuaternion.x = -this._tmpQuaternion.x;
+                          this._tmpQuaternion.y = -this._tmpQuaternion.y;
+                          this._tmpQuaternion.z = -this._tmpQuaternion.z;
+                          virtualMeshesInfo.pivotMesh.absoluteRotationQuaternion!.multiplyToRef(this._tmpQuaternion, this._tmpQuaternion);
+                          virtualMeshesInfo.pivotMesh.absolutePosition.subtractToRef(virtualMeshesInfo.startingPivotPosition, this._tmpVector);
 
-                    this.onDragObservable.notifyObservers({ delta: this._tmpVector, position: virtualMeshesInfo.pivotMesh.position, pickInfo: pointerInfo.pickInfo });
+                          this.onDragObservable.notifyObservers({ delta: this._tmpVector, position: virtualMeshesInfo.pivotMesh.position, pickInfo: pointerInfo.pickInfo });
 
-                    // Notify herited methods and observables
-                    this._targetDrag(this._tmpVector, this._tmpQuaternion, pointerId);
-                    virtualMeshesInfo.lastDragPosition.copyFrom(virtualMeshesInfo.dragMesh.absolutePosition);
+                          // Notify herited methods and observables
+                          this._targetDrag(this._tmpVector, this._tmpQuaternion, pointerId);
+                          virtualMeshesInfo.lastDragPosition.copyFrom(virtualMeshesInfo.dragMesh.absolutePosition);
 
-                    this._moving = true;
-                }
-            }
-        });
+                          this._moving = true;
+                      }
+                  }
+              });
     }
 
     private _applyZOffset(node: TransformNode, localOriginDragDifference: number, zDragFactor: number) {
@@ -490,7 +493,9 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                 this._reattachCameraControls();
                 this._attachedToElement = false;
             }
-            this._scene.onPointerObservable.remove(this._pointerObserver);
+            if (this._pointerObserver && (this._scene as Scene).onPointerObservable) {
+                (this._scene as Scene).onPointerObservable.remove(this._pointerObserver);
+            }
         }
 
         for (const pointerId in this._virtualMeshesInfo) {

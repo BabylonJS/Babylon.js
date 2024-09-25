@@ -1,3 +1,4 @@
+import type { CoreScene } from "core/coreScene";
 import type { PickingInfo } from "../../Collisions/pickingInfo";
 import type { PointerInfo } from "../../Events/pointerEvents";
 import { PointerEventTypes } from "../../Events/pointerEvents";
@@ -5,7 +6,6 @@ import { Quaternion, TmpVectors, Vector3 } from "../../Maths/math.vector";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { Mesh } from "../../Meshes/mesh";
 import type { Observer } from "../../Misc/observable";
-import type { Scene } from "../../scene";
 import type { Nullable } from "../../types";
 import type { Behavior } from "../behavior";
 
@@ -14,14 +14,14 @@ import type { Behavior } from "../behavior";
  * @since 5.0.0
  */
 export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
-    private _scene: Scene;
+    private _scene: CoreScene;
     private _attachedMesh: Nullable<Mesh>;
     private _attachPointLocalOffset: Vector3 = new Vector3();
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _workingPosition: Vector3 = new Vector3();
     private _workingQuaternion: Quaternion = new Quaternion();
     private _lastTick: number = -1;
-    private _onBeforeRender: Nullable<Observer<Scene>>;
+    private _onBeforeRender: Nullable<Observer<CoreScene>>;
     private _hit = false;
 
     /**
@@ -77,7 +77,7 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
      * @param target defines the target where the behavior is attached to
      * @param scene the scene
      */
-    public attach(target: Mesh, scene?: Scene): void {
+    public attach(target: Mesh, scene?: CoreScene): void {
         this._attachedMesh = target;
         this._scene = scene || target.getScene();
         if (!this._attachedMesh.rotationQuaternion) {
@@ -222,11 +222,13 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
     }
 
     private _addObservables() {
-        this._pointerObserver = this._scene.onPointerObservable.add((pointerInfo) => {
-            if (this.enabled && pointerInfo.type == PointerEventTypes.POINTERMOVE && pointerInfo.pickInfo) {
-                this.findAndUpdateTarget(pointerInfo.pickInfo);
-            }
-        });
+        this._pointerObserver = !this._scene.onPointerObservable
+            ? null
+            : this._scene.onPointerObservable.add((pointerInfo) => {
+                  if (this.enabled && pointerInfo.type == PointerEventTypes.POINTERMOVE && pointerInfo.pickInfo) {
+                      this.findAndUpdateTarget(pointerInfo.pickInfo);
+                  }
+              });
 
         this._lastTick = Date.now();
         this._onBeforeRender = this._scene.onBeforeRenderObservable.add(() => {
@@ -237,7 +239,9 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
     }
 
     private _removeObservables() {
-        this._scene.onPointerObservable.remove(this._pointerObserver);
+        if (this._scene.onPointerObservable && this._pointerObserver) {
+            this._scene.onPointerObservable.remove(this._pointerObserver);
+        }
         this._scene.onBeforeRenderObservable.remove(this._onBeforeRender);
         this._pointerObserver = null;
         this._onBeforeRender = null;

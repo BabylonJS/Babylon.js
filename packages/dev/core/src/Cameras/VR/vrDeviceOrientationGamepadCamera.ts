@@ -1,11 +1,11 @@
 import { VRDeviceOrientationFreeCamera } from "./vrDeviceOrientationFreeCamera";
 import { VRCameraMetrics } from "./vrCameraMetrics";
-import type { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
 import { Node } from "../../node";
 import { setVRRigMode } from "../RigModes/vrRigMode";
 
 import "../../Gamepads/gamepadSceneComponent";
+import type { CoreScene } from "core/coreScene";
 
 Node.AddNodeConstructor("VRDeviceOrientationGamepadCamera", (name, scene) => {
     return () => new VRDeviceOrientationGamepadCamera(name, Vector3.Zero(), scene);
@@ -24,7 +24,7 @@ export class VRDeviceOrientationGamepadCamera extends VRDeviceOrientationFreeCam
      * @param compensateDistortion defines if the camera needs to compensate the lens distortion
      * @param vrCameraMetrics defines the vr metrics associated to the camera
      */
-    constructor(name: string, position: Vector3, scene?: Scene, compensateDistortion = true, vrCameraMetrics: VRCameraMetrics = VRCameraMetrics.GetDefault()) {
+    constructor(name: string, position: Vector3, scene?: CoreScene, compensateDistortion = true, vrCameraMetrics: VRCameraMetrics = VRCameraMetrics.GetDefault()) {
         super(name, position, scene, compensateDistortion, vrCameraMetrics);
 
         this.inputs.addGamepad();

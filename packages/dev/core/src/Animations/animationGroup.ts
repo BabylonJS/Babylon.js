@@ -8,11 +8,11 @@ import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import { EngineStore } from "../Engines/engineStore";
 
-import type { AbstractScene } from "../abstractScene";
 import { Tags } from "../Misc/tags";
 import type { AnimationGroupMask } from "./animationGroupMask";
 import "./animatable";
 import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
+import type { INodeContainer } from "core/INodeContainer";
 
 /**
  * This class defines the direct association between an animation and a target
@@ -85,7 +85,7 @@ export class AnimationGroup implements IDisposable {
     private _shouldStart = true;
 
     /** @internal */
-    public _parentContainer: Nullable<AbstractScene> = null;
+    public _parentContainer: Nullable<INodeContainer> = null;
 
     /**
      * Gets or sets the unique id of the node

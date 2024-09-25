@@ -198,16 +198,18 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
 
         FramingBehavior.EasingFunction.setEasingMode(FramingBehavior.EasingMode);
 
-        this._onPrePointerObservableObserver = scene.onPrePointerObservable.add((pointerInfoPre) => {
-            if (pointerInfoPre.type === PointerEventTypes.POINTERDOWN) {
-                this._isPointerDown = true;
-                return;
-            }
+        this._onPrePointerObservableObserver = !scene.onPrePointerObservable
+            ? null
+            : scene.onPrePointerObservable.add((pointerInfoPre) => {
+                  if (pointerInfoPre.type === PointerEventTypes.POINTERDOWN) {
+                      this._isPointerDown = true;
+                      return;
+                  }
 
-            if (pointerInfoPre.type === PointerEventTypes.POINTERUP) {
-                this._isPointerDown = false;
-            }
-        });
+                  if (pointerInfoPre.type === PointerEventTypes.POINTERUP) {
+                      this._isPointerDown = false;
+                  }
+              });
 
         this._onMeshTargetChangedObserver = camera.onMeshTargetChangedObservable.add((transformNode) => {
             if (transformNode && (transformNode as AbstractMesh).getBoundingInfo) {
@@ -237,7 +239,7 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
 
         const scene = this._attachedCamera.getScene();
 
-        if (this._onPrePointerObservableObserver) {
+        if (this._onPrePointerObservableObserver && scene.onPrePointerObservable) {
             scene.onPrePointerObservable.remove(this._onPrePointerObservableObserver);
         }
 

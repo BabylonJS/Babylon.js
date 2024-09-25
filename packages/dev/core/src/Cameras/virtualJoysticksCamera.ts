@@ -1,9 +1,9 @@
 import { FreeCamera } from "./freeCamera";
-import type { Scene } from "../scene";
 import { Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
 
 import "./Inputs/freeCameraVirtualJoystickInput";
+import type { CoreScene } from "core/coreScene";
 
 Node.AddNodeConstructor("VirtualJoysticksCamera", (name, scene) => {
     return () => new VirtualJoysticksCamera(name, Vector3.Zero(), scene);
@@ -25,7 +25,7 @@ export class VirtualJoysticksCamera extends FreeCamera {
      * @param position Define the start position of the camera in the scene
      * @param scene Define the scene the camera belongs to
      */
-    constructor(name: string, position: Vector3, scene?: Scene) {
+    constructor(name: string, position: Vector3, scene?: CoreScene) {
         super(name, position, scene);
         this.inputs.addVirtualJoystick();
     }

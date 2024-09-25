@@ -4,19 +4,12 @@ import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { Matrix, Vector3 } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { Nullable } from "../types";
-import { AbstractScene } from "../abstractScene";
-import type { Scene } from "../scene";
+import { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
 import type { UniformBuffer } from "../Materials/uniformBuffer";
 
-declare module "../abstractScene" {
-    export interface AbstractScene {
-        /**
-         * The list of reflection probes added to the scene
-         * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/reflectionProbes
-         */
-        reflectionProbes: Array<ReflectionProbe>;
-
+declare module "../scene" {
+    export interface Scene {
         /**
          * Removes the given reflection probe from this scene.
          * @param toRemove The reflection probe to remove
@@ -32,7 +25,7 @@ declare module "../abstractScene" {
     }
 }
 
-AbstractScene.prototype.removeReflectionProbe = function (toRemove: ReflectionProbe): number {
+Scene.prototype.removeReflectionProbe = function (toRemove: ReflectionProbe): number {
     if (!this.reflectionProbes) {
         return -1;
     }
@@ -45,7 +38,7 @@ AbstractScene.prototype.removeReflectionProbe = function (toRemove: ReflectionPr
     return index;
 };
 
-AbstractScene.prototype.addReflectionProbe = function (newReflectionProbe: ReflectionProbe): void {
+Scene.prototype.addReflectionProbe = function (newReflectionProbe: ReflectionProbe): void {
     if (!this.reflectionProbes) {
         this.reflectionProbes = [];
     }
@@ -81,7 +74,7 @@ export class ReflectionProbe {
     public metadata: any = null;
 
     /** @internal */
-    public _parentContainer: Nullable<AbstractScene> = null;
+    public _parentContainer: Nullable<Scene> = null;
 
     /**
      * Creates a new reflection probe

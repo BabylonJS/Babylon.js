@@ -10,6 +10,7 @@ import type { Node } from "../node";
 import { CoreScene } from "core/coreScene";
 import type { SmartArrayNoDuplicate } from "core/Misc/smartArray";
 import type { AnimationPropertiesOverride } from "./animationPropertiesOverride";
+import type { Scene } from "core/scene";
 
 /**
  * Class used to store an actual running animation
@@ -959,7 +960,10 @@ CoreScene.prototype.stopAllAnimations = function (): void {
         this._activeAnimatables.length = 0;
     }
 
-    for (const group of this.animationGroups) {
+    if (this.isCore) {
+        return;
+    }
+    for (const group of (this as Scene).animationGroups) {
         group.stop();
     }
 };

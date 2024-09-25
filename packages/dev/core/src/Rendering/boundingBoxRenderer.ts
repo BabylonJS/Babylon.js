@@ -83,7 +83,7 @@ Object.defineProperty(AbstractMesh.prototype, "showBoundingBox", {
         this._showBoundingBox = value;
         // Lazyly creates a BB renderer if needed.
         if (value) {
-            this.getScene().getBoundingBoxRenderer();
+            (this.getScene() as Scene).getBoundingBoxRenderer();
         }
     },
     enumerable: true,

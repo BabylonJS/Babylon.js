@@ -1,10 +1,10 @@
 import { FreeCamera } from "./freeCamera";
-import type { Scene } from "../scene";
 import { Quaternion, Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
 
 import "./Inputs/freeCameraDeviceOrientationInput";
 import { Axis } from "../Maths/math.axis";
+import type { CoreScene } from "core/coreScene";
 
 Node.AddNodeConstructor("DeviceOrientationCamera", (name, scene) => {
     return () => new DeviceOrientationCamera(name, Vector3.Zero(), scene);
@@ -27,7 +27,7 @@ export class DeviceOrientationCamera extends FreeCamera {
      * @param position The start position camera
      * @param scene The scene the camera belongs to
      */
-    constructor(name: string, position: Vector3, scene?: Scene) {
+    constructor(name: string, position: Vector3, scene?: CoreScene) {
         super(name, position, scene);
         this._quaternionCache = new Quaternion();
         this.inputs.addDeviceOrientation();

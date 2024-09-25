@@ -1,7 +1,6 @@
 import { serialize, serializeAsVector3, serializeAsMeshReference, serializeAsVector2 } from "../Misc/decorators";
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
-import type { Scene } from "../scene";
 import { Matrix, Vector3, Vector2, TmpVectors, Quaternion } from "../Maths/math.vector";
 import { Node } from "../node";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
@@ -21,6 +20,7 @@ import { RegisterClass } from "../Misc/typeStore";
 
 import type { Collider } from "../Collisions/collider";
 import type { TransformNode } from "core/Meshes/transformNode";
+import type { CoreScene } from "core/coreScene";
 
 Node.AddNodeConstructor("ArcRotateCamera", (name, scene) => {
     return () => new ArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), scene);
@@ -712,7 +712,7 @@ export class ArcRotateCamera extends TargetCamera {
      * @param scene Defines the scene the camera belongs to
      * @param setActiveOnSceneIfNoneActive Defines whether the camera should be marked as active if not other active cameras have been defined
      */
-    constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene?: Scene, setActiveOnSceneIfNoneActive = true) {
+    constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene?: CoreScene, setActiveOnSceneIfNoneActive = true) {
         super(name, Vector3.Zero(), scene, setActiveOnSceneIfNoneActive);
 
         this._target = Vector3.Zero();
@@ -1204,13 +1204,15 @@ export class ArcRotateCamera extends TargetCamera {
         target.addToRef(this._computationVector, this._newPosition);
         if (this.getScene().collisionsEnabled && this.checkCollisions) {
             const coordinator = this.getScene().collisionCoordinator;
-            if (!this._collider) {
+            if (!this._collider && coordinator) {
                 this._collider = coordinator.createCollider();
             }
             this._collider._radius = this.collisionRadius;
             this._newPosition.subtractToRef(this._position, this._collisionVelocity);
             this._collisionTriggered = true;
-            coordinator.getNewPosition(this._position, this._collisionVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
+            if (coordinator) {
+                coordinator.getNewPosition(this._position, this._collisionVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
+            }
         } else {
             this._position.copyFrom(this._newPosition);
 

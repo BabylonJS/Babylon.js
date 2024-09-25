@@ -1,5 +1,4 @@
 import type { Behavior } from "../behavior";
-import type { Scene } from "../../scene";
 import type { Nullable } from "../../types";
 import type { Observer } from "../../Misc/observable";
 import type { Camera } from "../../Cameras/camera";
@@ -7,13 +6,14 @@ import { Matrix, Quaternion, Vector3 } from "../../Maths/math.vector";
 import { Clamp } from "../../Maths/math.scalar.functions";
 import type { TransformNode } from "../../Meshes/transformNode";
 import { Epsilon } from "../../Maths/math.constants";
+import type { CoreScene } from "core/coreScene";
 
 /**
  * A behavior that when attached to a mesh will follow a camera
  * @since 5.0.0
  */
 export class FollowBehavior implements Behavior<TransformNode> {
-    private _scene: Scene;
+    private _scene: CoreScene;
 
     // Memory cache to avoid GC usage
     private _tmpQuaternion: Quaternion = new Quaternion();
@@ -25,7 +25,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
     private _tmpPosition: Vector3 = new Vector3();
 
     private _followedCamera: Nullable<Camera>;
-    private _onBeforeRender: Nullable<Observer<Scene>>;
+    private _onBeforeRender: Nullable<Observer<CoreScene>>;
 
     private _workingPosition: Vector3 = new Vector3();
     private _workingQuaternion: Quaternion = new Quaternion();

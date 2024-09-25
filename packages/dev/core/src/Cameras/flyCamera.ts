@@ -333,7 +333,7 @@ export class FlyCamera extends TargetCamera {
         this._oldPosition.addInPlace(this.ellipsoidOffset);
         const coordinator = this.getScene().collisionCoordinator;
 
-        if (!this._collider) {
+        if (!this._collider && coordinator) {
             this._collider = coordinator.createCollider();
         }
 
@@ -349,7 +349,9 @@ export class FlyCamera extends TargetCamera {
             actualDisplacement = displacement.add(this.getScene().gravity);
         }
 
-        coordinator.getNewPosition(this._oldPosition, actualDisplacement, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
+        if (coordinator) {
+            coordinator.getNewPosition(this._oldPosition, actualDisplacement, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
+        }
     }
 
     /**

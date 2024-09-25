@@ -20,7 +20,6 @@ import type { PointerEventTypes, PointerInfoPre, PointerInfo } from "./Events/po
 import type { KeyboardInfoPre, KeyboardInfo } from "./Events/keyboardEvents";
 import { ActionEvent } from "./Actions/actionEvent";
 import { PostProcessManager } from "./PostProcesses/postProcessManager";
-import type { IOfflineProvider } from "./Offline/IOfflineProvider";
 import type { RenderingGroupInfo, IRenderingManagerAutoClearSetup } from "./Rendering/renderingManager";
 import { RenderingManager } from "./Rendering/renderingManager";
 import type {
@@ -45,16 +44,12 @@ import { IsWindowObjectExist } from "./Misc/domManagement";
 import { EngineStore } from "./Engines/engineStore";
 import type { AbstractActionManager } from "./Actions/abstractActionManager";
 import { _WarnImport } from "./Misc/devTools";
-import type { WebRequest } from "./Misc/webRequest";
 import { InputManager } from "./Inputs/scene.inputManager";
 import { PerfCounter } from "./Misc/perfCounter";
-import type { IFileRequest } from "./Misc/fileRequest";
 import { Color4, Color3 } from "./Maths/math.color";
 import type { Plane } from "./Maths/math.plane";
 import { Frustum } from "./Maths/math.frustum";
 import { UniqueIdGenerator } from "./Misc/uniqueIdGenerator";
-import type { LoadFileError, RequestFileError, ReadFileError } from "./Misc/fileTools";
-import { ReadFile, RequestFile, LoadFile } from "./Misc/fileTools";
 import type { IClipPlanesHolder } from "./Misc/interfaces/iClipPlanesHolder";
 import type { IPointerEvent } from "./Events/deviceInputEvents";
 import { LightConstants } from "./Lights/lightConstants";
@@ -90,8 +85,13 @@ import { PointerPickingConfiguration } from "./Inputs/pointerPickingConfiguratio
 import { Logger } from "./Misc/logger";
 import type { AbstractEngine } from "./Engines/abstractEngine";
 import { RegisterClass } from "./Misc/typeStore";
-import type { CoreScene } from "./coreScene";
-import { AbstractScene } from "./abstractScene";
+import { CoreScene } from "./coreScene";
+import type { INodeContainer } from "./INodeContainer";
+import { GetNodes } from "./assetContainer.functions";
+import type { Sound } from "./Audio/sound";
+import type { Layer } from "./Layers/layer";
+import type { ReflectionProbe } from "./Probes/reflectionProbe";
+import type { SpriteManager } from "./Sprites";
 
 /**
  * Define an interface for all classes that will hold resources
@@ -143,7 +143,7 @@ export const enum ScenePerformancePriority {
  * Represents a scene to be rendered by the engine.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene
  */
-export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHolder {
+export class Scene extends CoreScene implements IAnimatable, IClipPlanesHolder, INodeContainer {
     /** The fog is deactivated */
     public static readonly FOGMODE_NONE = Constants.FOGMODE_NONE;
     /** The fog density is following an exponential function */
@@ -186,13 +186,16 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     // Members
 
     /** @internal */
-    public override _inputManager = new InputManager(this);
+    public _inputManager = new InputManager(this);
 
     /** Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position */
-    public override cameraToUseForPointers: Nullable<Camera> = null;
+    public cameraToUseForPointers: Nullable<Camera> = null;
 
     /** @internal */
     public readonly _isScene = true;
+
+    /** @internal */
+    public _blockEntityCollection: boolean;
 
     /**
      * Gets or sets a boolean that indicates if the scene must clear the render buffer before rendering a frame
@@ -205,11 +208,134 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Defines the color used to clear the render buffer (Default is (0.2, 0.2, 0.3, 1.0))
      */
-    public override clearColor: Color4 = new Color4(0.2, 0.2, 0.3, 1.0);
+    public clearColor: Color4 = new Color4(0.2, 0.2, 0.3, 1.0);
     /**
      * Defines the color used to simulate the ambient color (Default is (0, 0, 0))
      */
     public ambientColor = new Color3(0, 0, 0);
+
+    /**
+     * Gets the list of root nodes (ie. nodes with no parent)
+     */
+    public rootNodes: Node<Scene>[] = [];
+
+    /** All of the cameras added to this scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras
+     */
+    public cameras: Camera[] = [];
+
+    /**
+     * All of the lights added to this scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction
+     */
+    public lights: Light[] = [];
+
+    /**
+     * All of the (abstract) meshes added to this scene
+     */
+    public meshes: AbstractMesh[] = [];
+
+    /**
+     * The list of skeletons added to the scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/bonesSkeletons
+     */
+    public skeletons: Skeleton[] = [];
+
+    /**
+     * All of the particle systems added to this scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/particle_system_intro
+     */
+    public particleSystems: IParticleSystem[] = [];
+
+    /**
+     * Gets a list of Animations associated with the scene
+     */
+    public animations: Animation[] = [];
+
+    /**
+     * All of the animation groups added to this scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/groupAnimations
+     */
+    public animationGroups: AnimationGroup[] = [];
+
+    /**
+     * All of the multi-materials added to this scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/multiMaterials
+     */
+    public multiMaterials: MultiMaterial[] = [];
+
+    /**
+     * The list of layers (background and foreground) added to the scene
+     */
+    public layers: Layer[];
+
+    /**
+     * All of the materials added to this scene
+     * In the context of a Scene, it is not supposed to be modified manually.
+     * Any addition or removal should be done using the addMaterial and removeMaterial Scene methods.
+     * Note also that the order of the Material within the array is not significant and might change.
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/materials_introduction
+     */
+    public materials: Material[] = [];
+
+    /**
+     * The list of morph target managers added to the scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/dynamicMeshMorph
+     */
+    public morphTargetManagers: MorphTargetManager[] = [];
+
+    /**
+     * The list of geometries used in the scene.
+     */
+    public geometries: Geometry[] = [];
+
+    /**
+     * All of the transform nodes added to this scene
+     * In the context of a Scene, it is not supposed to be modified manually.
+     * Any addition or removal should be done using the addTransformNode and removeTransformNode Scene methods.
+     * Note also that the order of the TransformNode within the array is not significant and might change.
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/parent_pivot/transform_node
+     */
+    public transformNodes: TransformNode[] = [];
+
+    /**
+     * ActionManagers available on the scene.
+     * @deprecated
+     */
+    public actionManagers: AbstractActionManager[] = [];
+
+    /**
+     * Textures to keep.
+     */
+    public textures: BaseTexture[] = [];
+
+    /**
+     * The list of postprocesses added to the scene
+     */
+    public postProcesses: PostProcess[] = [];
+
+    /**
+     * The list of reflection probes added to the scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/reflectionProbes
+     */
+    public reflectionProbes: ReflectionProbe[];
+
+    /**
+     * The list of sounds used in the scene
+     */
+    public sounds: Sound[];
+
+    /**
+     * List of active sprite managers
+     */
+    public spriteManagers: SpriteManager[];
+
+    /**
+     * @returns all meshes, lights, cameras, transformNodes and bones
+     */
+    public getNodes(): Array<Node> {
+        return GetNodes(this);
+    }
 
     /**
      * This is use to store the default BRDF lookup for PBR materials in your scene.
@@ -221,12 +347,14 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public environmentBRDFTexture: BaseTexture;
 
+    /** @internal */
+    protected _environmentTexture: Nullable<BaseTexture> = null;
     /**
      * Texture used in all pbr material as the reflection texture.
      * As in the majority of the scene they are the same (exception for multi room and so on),
      * this is easier to reference from here than from all the materials.
      */
-    public override get environmentTexture(): Nullable<BaseTexture> {
+    public get environmentTexture(): Nullable<BaseTexture> {
         return this._environmentTexture;
     }
     /**
@@ -234,7 +362,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * As in the majority of the scene they are the same (exception for multi room and so on),
      * this is easier to set here than in all the materials.
      */
-    public override set environmentTexture(value: Nullable<BaseTexture>) {
+    public set environmentTexture(value: Nullable<BaseTexture>) {
         if (this._environmentTexture === value) {
             return;
         }
@@ -458,23 +586,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public disableOfflineSupportExceptionRules: RegExp[] = [];
 
     /**
-     * An event triggered when the scene is disposed.
-     */
-    public onDisposeObservable = new Observable<Scene>();
-
-    private _onDisposeObserver: Nullable<Observer<Scene>> = null;
-    /** Sets a function to be executed when this scene is disposed. */
-    public set onDispose(callback: () => void) {
-        if (this._onDisposeObserver) {
-            this.onDisposeObservable.remove(this._onDisposeObserver);
-        }
-        this._onDisposeObserver = this.onDisposeObservable.add(callback);
-    }
-
-    /**
      * An event triggered before rendering the scene (right after animations and physics)
      */
-    public override onBeforeRenderObservable = new Observable<CoreScene>();
+    public onBeforeRenderObservable = new Observable<CoreScene>();
 
     private _onBeforeRenderObserver: Nullable<Observer<CoreScene>> = null;
     /** Sets a function to be executed before rendering this scene */
@@ -588,19 +702,14 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public onAfterParticlesRenderingObservable = new Observable<Scene>();
 
     /**
-     * An event triggered when SceneLoader.Append or SceneLoader.Load or SceneLoader.ImportMesh were successfully executed
-     */
-    public override onDataLoadedObservable = new Observable<CoreScene>();
-
-    /**
      * An event triggered when a camera is created
      */
-    public override onNewCameraAddedObservable = new Observable<Camera>();
+    public onNewCameraAddedObservable = new Observable<Camera>();
 
     /**
      * An event triggered when a camera is removed
      */
-    public override onCameraRemovedObservable = new Observable<Camera>();
+    public onCameraRemovedObservable = new Observable<Camera>();
 
     /**
      * An event triggered when a light is created
@@ -625,12 +734,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * An event triggered when a transform node is created
      */
-    public onNewTransformNodeAddedObservable = new Observable<TransformNode>();
+    public onNewTransformNodeAddedObservable = new Observable<TransformNode<Scene>>();
 
     /**
      * An event triggered when a transform node is removed
      */
-    public onTransformNodeRemovedObservable = new Observable<TransformNode>();
+    public onTransformNodeRemovedObservable = new Observable<TransformNode<Scene>>();
 
     /**
      * An event triggered when a mesh is created
@@ -884,7 +993,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Observable event triggered each time an input event is received from the rendering canvas
      */
-    public override onPointerObservable = new Observable<PointerInfo>();
+    public onPointerObservable = new Observable<PointerInfo>();
 
     /**
      * Gets the pointer coordinates without any translation (ie. straight out of the pointer event)
@@ -989,7 +1098,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Observable event triggered each time an keyboard event is received from the hosting window
      */
-    public override onKeyboardObservable = new Observable<KeyboardInfo>();
+    public onKeyboardObservable = new Observable<KeyboardInfo>();
 
     // Coordinates system
 
@@ -1112,11 +1221,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public get prePass(): boolean {
         return !!this.prePassRenderer && this.prePassRenderer.defaultRT.enabled;
     }
-
-    /**
-     * Flag indicating if we need to store previous matrices when rendering
-     */
-    public needsPreviousWorldMatrices = false;
 
     // Lights
     private _shadowsEnabled = true;
@@ -1268,12 +1372,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Gets or sets a boolean indicating if collisions are enabled on this scene
      * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_collisions
      */
-    public override collisionsEnabled = true;
+    public collisionsEnabled = true;
 
     private _collisionCoordinator: ICollisionCoordinator;
 
     /** @internal */
-    public override get collisionCoordinator(): ICollisionCoordinator {
+    public get collisionCoordinator(): ICollisionCoordinator {
         if (!this._collisionCoordinator) {
             this._collisionCoordinator = Scene.CollisionCoordinatorFactory();
             this._collisionCoordinator.init(this);
@@ -1286,7 +1390,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Defines the gravity applied to this scene (used only for collisions)
      * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_collisions
      */
-    public override gravity = new Vector3(0, -9.807, 0);
+    public gravity = new Vector3(0, -9.807, 0);
 
     // Postprocesses
     /**
@@ -1329,13 +1433,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Gets or sets a boolean indicating if probes are enabled on this scene
      */
     public probesEnabled = true;
-
-    // Offline support
-    /**
-     * Gets or sets the current offline provider to use to store scene data
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/optimizeCached
-     */
-    public offlineProvider: IOfflineProvider;
 
     /**
      * Gets or sets the action manager associated with the scene
@@ -1381,9 +1478,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /** @internal */
     public _toBeDisposed = new Array<Nullable<IDisposable>>(256);
-    private _activeRequests = new Array<IFileRequest>();
-
-    private _isDisposed = false;
 
     /**
      * Gets or sets a boolean indicating that all submeshes of active meshes must be rendered
@@ -1414,10 +1508,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     private _transformMatrix = Matrix.Zero();
     private _sceneUbo: UniformBuffer;
 
-    /** @internal */
-    public _viewMatrix: Matrix;
-    /** @internal */
-    public _projectionMatrix: Matrix;
     /** @internal */
     public _forcedViewPosition: Nullable<Vector3>;
 
@@ -1692,6 +1782,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
+     * Boolean indicating if this is a CoreScene or a full Scene
+     */
+    public override get isCore() {
+        return false;
+    }
+
+    /**
      * Gets a string identifying the name of the class
      * @returns "Scene" string
      */
@@ -1749,22 +1846,22 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets or sets the current on-screen X position of the pointer
      */
-    public override get pointerX(): number {
+    public get pointerX(): number {
         return this._inputManager.pointerX;
     }
 
-    public override set pointerX(value: number) {
+    public set pointerX(value: number) {
         this._inputManager.pointerX = value;
     }
 
     /**
      * Gets or sets the current on-screen Y position of the pointer
      */
-    public override get pointerY(): number {
+    public get pointerY(): number {
         return this._inputManager.pointerY;
     }
 
-    public override set pointerY(value: number) {
+    public set pointerY(value: number) {
         this._inputManager.pointerY = value;
     }
 
@@ -1955,7 +2052,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @returns true if all required resources are ready
      */
     public isReady(checkRenderTargets = true): boolean {
-        if (this._isDisposed) {
+        if (this.isDisposed) {
             return false;
         }
 
@@ -2167,46 +2264,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * This function can help adding any object to the list of data awaited to be ready in order to check for a complete scene loading.
-     * @param data defines the object to wait for
-     */
-    public addPendingData(data: any): void {
-        this._pendingData.push(data);
-    }
-
-    /**
-     * Remove a pending data from the loading list which has previously been added with addPendingData.
-     * @param data defines the object to remove from the pending list
-     */
-    public removePendingData(data: any): void {
-        const wasLoading = this.isLoading;
-        const index = this._pendingData.indexOf(data);
-
-        if (index !== -1) {
-            this._pendingData.splice(index, 1);
-        }
-
-        if (wasLoading && !this.isLoading) {
-            this.onDataLoadedObservable.notifyObservers(this);
-        }
-    }
-
-    /**
-     * Returns the number of items waiting to be loaded
-     * @returns the number of items waiting to be loaded
-     */
-    public getWaitingItemsCount(): number {
-        return this._pendingData.length;
-    }
-
-    /**
-     * Returns a boolean indicating if the scene is still loading data
-     */
-    public override get isLoading(): boolean {
-        return this._pendingData.length > 0;
-    }
-
-    /**
      * Registers a function to be executed when the scene is ready
      * @param func - the function to be executed
      * @param checkRenderTargets true to also check that the meshes rendered as part of a render target are ready (default: false)
@@ -2248,7 +2305,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             return;
         }
 
-        if (this._isDisposed) {
+        if (this.isDisposed) {
             this.onReadyObservable.clear();
             this._executeWhenReadyTimeoutId = null;
             return;
@@ -2277,22 +2334,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     // Matrix
-
-    /**
-     * Gets the current view matrix
-     * @returns a Matrix
-     */
-    public getViewMatrix(): Matrix {
-        return this._viewMatrix;
-    }
-
-    /**
-     * Gets the current projection matrix
-     * @returns a Matrix
-     */
-    public getProjectionMatrix(): Matrix {
-        return this._projectionMatrix;
-    }
 
     /**
      * Gets the current transform matrix
@@ -2443,7 +2484,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Add a transform node to the list of scene's transform nodes
      * @param newTransformNode defines the transform node to add
      */
-    public addTransformNode(newTransformNode: TransformNode) {
+    public addTransformNode<T extends CoreScene | Scene>(newTransformNode: TransformNode<T>) {
         if (this._blockEntityCollection) {
             return;
         }
@@ -2553,7 +2594,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param toRemove defines the camera to remove
      * @returns the index where the camera was in the camera list
      */
-    public override removeCamera = (toRemove: Camera) => {
+    public removeCamera(toRemove: Camera) {
         const index = this.cameras.indexOf(toRemove);
         if (index !== -1) {
             // Remove from the scene if mesh found
@@ -2580,7 +2621,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
         this.onCameraRemovedObservable.notifyObservers(toRemove);
         return index;
-    };
+    }
 
     /**
      * Remove a particle system for the list of scene's particle systems
@@ -2731,7 +2772,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Adds the given camera to this scene
      * @param newCamera The camera to add
      */
-    public override addCamera = (newCamera: Camera) => {
+    public addCamera(newCamera: Camera) {
         if (this._blockEntityCollection) {
             return;
         }
@@ -2742,7 +2783,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         if (!newCamera.parent) {
             newCamera._addToSceneRootNodes();
         }
-    };
+    }
 
     /**
      * Adds the given skeleton to this scene
@@ -2860,7 +2901,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Adds the given texture to this scene.
      * @param newTexture The texture to add
      */
-    public addTexture(newTexture: BaseTexture): void {
+    public addTexture(newTexture: BaseTexture) {
         if (this._blockEntityCollection) {
             return;
         }
@@ -3043,7 +3084,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param id defines the Id to look for
      * @returns the camera or null if not found
      */
-    public override getCameraById = (id: string): Nullable<Camera> => {
+    public getCameraById(id: string): Nullable<Camera> {
         for (let index = 0; index < this.cameras.length; index++) {
             if (this.cameras[index].id === id) {
                 return this.cameras[index];
@@ -3051,7 +3092,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         return null;
-    };
+    }
 
     /**
      * Gets a camera using its unique Id
@@ -3363,7 +3404,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param id defines the Id to search for
      * @returns the found mesh or null if not found at all.
      */
-    public override getLastMeshById = (id: string): Nullable<AbstractMesh> => {
+    public getLastMeshById(id: string): Nullable<AbstractMesh> {
         for (let index = this.meshes.length - 1; index >= 0; index--) {
             if (this.meshes[index].id === id) {
                 return this.meshes[index];
@@ -3371,7 +3412,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         return null;
-    };
+    }
 
     /**
      * Gets a the last transform node using a given Id
@@ -4682,7 +4723,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Releases all held resources
      */
-    public dispose(): void {
+    public override dispose(): void {
         if (this.isDisposed) {
             return;
         }
@@ -4747,20 +4788,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this._registeredForLateAnimationBindings.dispose();
         this._meshesForIntersections.dispose();
         this._toBeDisposed.length = 0;
-
-        // Abort active requests
-        const activeRequests = this._activeRequests.slice();
-        for (const request of activeRequests) {
-            request.abort();
-        }
-        this._activeRequests.length = 0;
-
-        // Events
-        try {
-            this.onDisposeObservable.notifyObservers(this);
-        } catch (e) {
-            Logger.Error("An error occurred while calling onDisposeObservable!", e);
-        }
 
         this.detachControl();
 
@@ -4841,7 +4868,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         this._engine.wipeCaches(true);
-        this.onDisposeObservable.clear();
         this.onBeforeRenderObservable.clear();
         this.onAfterRenderObservable.clear();
         this.onBeforeRenderTargetsRenderObservable.clear();
@@ -4888,7 +4914,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.onKeyboardObservable.clear();
         this.onActiveCameraChanged.clear();
         this.onScenePerformancePriorityChangedObservable.clear();
-        this._isDisposed = true;
+        super.dispose();
     }
 
     private _disposeList<T extends IDisposable>(items: T[], callback?: (item: T) => void): void {
@@ -4898,13 +4924,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             callback(item);
         }
         items.length = 0;
-    }
-
-    /**
-     * Gets if the scene is already disposed
-     */
-    public get isDisposed(): boolean {
-        return this._isDisposed;
     }
 
     /**
@@ -5292,9 +5311,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param index the rendering group index to get the information for
      * @returns The auto clear setup for the requested rendering group
      */
-    public getAutoClearDepthStencilSetup(index: number): IRenderingManagerAutoClearSetup {
+    public override getAutoClearDepthStencilSetup = (index: number): IRenderingManagerAutoClearSetup => {
         return this._renderingManager.getAutoClearDepthStencilSetup(index);
-    }
+    };
 
     private _blockMaterialDirtyMechanism = false;
 
@@ -5326,7 +5345,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param flag defines the flag used to specify which material part must be marked as dirty
      * @param predicate If not null, it will be used to specify if a material has to be marked as dirty
      */
-    public markAllMaterialsAsDirty(flag: number, predicate?: (mat: Material) => boolean): void {
+    public override markAllMaterialsAsDirty = (flag: number, predicate?: (mat: Material) => boolean) => {
         if (this._blockMaterialDirtyMechanism) {
             return;
         }
@@ -5337,154 +5356,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             }
             material.markAsDirty(flag);
         }
-    }
-
-    /**
-     * @internal
-     */
-    public _loadFile(
-        fileOrUrl: File | string,
-        onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
-        onProgress?: (ev: ProgressEvent) => void,
-        useOfflineSupport?: boolean,
-        useArrayBuffer?: boolean,
-        onError?: (request?: WebRequest, exception?: LoadFileError) => void,
-        onOpened?: (request: WebRequest) => void
-    ): IFileRequest {
-        const request = LoadFile(fileOrUrl, onSuccess, onProgress, useOfflineSupport ? this.offlineProvider : undefined, useArrayBuffer, onError, onOpened);
-        this._activeRequests.push(request);
-        request.onCompleteObservable.add((request) => {
-            this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
-        });
-        return request;
-    }
-
-    public _loadFileAsync(
-        fileOrUrl: File | string,
-        onProgress?: (data: any) => void,
-        useOfflineSupport?: boolean,
-        useArrayBuffer?: false,
-        onOpened?: (request: WebRequest) => void
-    ): Promise<string>;
-
-    public _loadFileAsync(
-        fileOrUrl: File | string,
-        onProgress?: (data: any) => void,
-        useOfflineSupport?: boolean,
-        useArrayBuffer?: true,
-        onOpened?: (request: WebRequest) => void
-    ): Promise<ArrayBuffer>;
-
-    /**
-     * @internal
-     */
-    public _loadFileAsync(
-        fileOrUrl: File | string,
-        onProgress?: (data: any) => void,
-        useOfflineSupport?: boolean,
-        useArrayBuffer?: boolean,
-        onOpened?: (request: WebRequest) => void
-    ): Promise<string | ArrayBuffer> {
-        return new Promise((resolve, reject) => {
-            this._loadFile(
-                fileOrUrl,
-                (data) => {
-                    resolve(data);
-                },
-                onProgress,
-                useOfflineSupport,
-                useArrayBuffer,
-                (request, exception) => {
-                    reject(exception);
-                },
-                onOpened
-            );
-        });
-    }
-
-    /**
-     * @internal
-     */
-    public _requestFile(
-        url: string,
-        onSuccess: (data: string | ArrayBuffer, request?: WebRequest) => void,
-        onProgress?: (ev: ProgressEvent) => void,
-        useOfflineSupport?: boolean,
-        useArrayBuffer?: boolean,
-        onError?: (error: RequestFileError) => void,
-        onOpened?: (request: WebRequest) => void
-    ): IFileRequest {
-        const request = RequestFile(url, onSuccess, onProgress, useOfflineSupport ? this.offlineProvider : undefined, useArrayBuffer, onError, onOpened);
-        this._activeRequests.push(request);
-        request.onCompleteObservable.add((request) => {
-            this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
-        });
-        return request;
-    }
-
-    /**
-     * @internal
-     */
-    public _requestFileAsync(
-        url: string,
-        onProgress?: (ev: ProgressEvent) => void,
-        useOfflineSupport?: boolean,
-        useArrayBuffer?: boolean,
-        onOpened?: (request: WebRequest) => void
-    ): Promise<string | ArrayBuffer> {
-        return new Promise((resolve, reject) => {
-            this._requestFile(
-                url,
-                (data) => {
-                    resolve(data);
-                },
-                onProgress,
-                useOfflineSupport,
-                useArrayBuffer,
-                (error) => {
-                    reject(error);
-                },
-                onOpened
-            );
-        });
-    }
-
-    /**
-     * @internal
-     */
-    public _readFile(
-        file: File,
-        onSuccess: (data: string | ArrayBuffer) => void,
-        onProgress?: (ev: ProgressEvent) => any,
-        useArrayBuffer?: boolean,
-        onError?: (error: ReadFileError) => void
-    ): IFileRequest {
-        const request = ReadFile(file, onSuccess, onProgress, useArrayBuffer, onError);
-        this._activeRequests.push(request);
-        request.onCompleteObservable.add((request) => {
-            this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
-        });
-        return request;
-    }
-
-    /**
-     * @internal
-     */
-    public _readFileAsync(file: File, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
-        return new Promise((resolve, reject) => {
-            this._readFile(
-                file,
-                (data) => {
-                    resolve(data);
-                },
-                onProgress,
-                useArrayBuffer,
-                (error) => {
-                    reject(error);
-                }
-            );
-        });
-    }
+    };
 
     /**
      * Internal perfCollector instance used for sharing between inspector and playground.

@@ -3,7 +3,6 @@ import { Observable } from "../../Misc/observable";
 import type { SmartArray } from "../../Misc/smartArray";
 import type { Nullable, Immutable } from "../../types";
 import type { Camera } from "../../Cameras/camera";
-import type { Scene } from "../../scene";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
 import type { Color4 } from "../../Maths/math.color";
 import type { RenderTargetCreationOptions, TextureSize } from "../../Materials/Textures/textureCreationOptions";
@@ -24,6 +23,7 @@ import { FloorPOT, NearestPOT } from "../../Misc/tools.functions";
 import { Effect } from "../effect";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import { Logger } from "../../Misc/logger";
+import type { CoreScene } from "core/coreScene";
 
 declare module "../effect" {
     export interface Effect {
@@ -415,7 +415,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         }
         this._boundingBoxSize = value;
         const scene = this.getScene();
-        if (scene) {
+        if (scene && scene.markAllMaterialsAsDirty) {
             scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
         }
     }
@@ -440,7 +440,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * @param scene The scene the RTT belongs to. Default is the last created scene.
      * @param options The options for creating the render target texture.
      */
-    constructor(name: string, size: TextureSize | { ratio: number }, scene?: Nullable<Scene>, options?: RenderTargetTextureOptions);
+    constructor(name: string, size: TextureSize | { ratio: number }, scene?: Nullable<CoreScene>, options?: RenderTargetTextureOptions);
 
     /**
      * Instantiate a render target texture. This is mainly used to render of screen the scene to for instance apply post process
@@ -466,7 +466,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     constructor(
         name: string,
         size: TextureSize | { ratio: number },
-        scene?: Nullable<Scene>,
+        scene?: Nullable<CoreScene>,
         generateMipMaps?: boolean,
         doNotChangeAspectRatio?: boolean,
         type?: number,
@@ -487,7 +487,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     constructor(
         name: string,
         size: TextureSize | { ratio: number },
-        scene?: Nullable<Scene>,
+        scene?: Nullable<CoreScene>,
         generateMipMaps: boolean | RenderTargetTextureOptions = false,
         doNotChangeAspectRatio: boolean = true,
         type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
