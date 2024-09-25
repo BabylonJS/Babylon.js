@@ -527,6 +527,7 @@ export class Viewer implements IDisposable {
         this._camera.wheelDeltaPercentage = 0.01;
         this._camera.pinchDeltaPercentage = 0.01;
         this._camera.restoreStateInterpolationFactor = 0.1;
+        this._camera.storeState();
 
         updateSkybox(this._skybox, this._camera);
     }
