@@ -151,8 +151,6 @@ export class MaterialHelperGeometryRendering {
     public static PrepareDefines(renderPassId: number, mesh: AbstractMesh, defines: MaterialDefines) {
         const configuration = MaterialHelperGeometryRendering._Configurations[renderPassId];
         if (!configuration) {
-            defines["PREPASS"] = false;
-            defines["SCENE_MRT_COUNT"] = 0;
             return;
         }
 
