@@ -18,8 +18,6 @@ import type { Node } from "./node";
 import type { PostProcess } from "./PostProcesses/postProcess";
 import type { Animation } from "./Animations/animation";
 import { RegisterClass } from "./Misc/typeStore";
-import type { Observable } from "./Misc/observable";
-import type { KeyboardInfo } from "./Events/keyboardEvents";
 import { CoreScene } from "./coreScene";
 
 /**
