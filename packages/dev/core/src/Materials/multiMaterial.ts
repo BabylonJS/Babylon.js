@@ -7,6 +7,7 @@ import { Material } from "../Materials/material";
 import { Tags } from "../Misc/tags";
 import { RegisterClass } from "../Misc/typeStore";
 import type { CoreScene } from "core/coreScene";
+import { IsFullScene } from "core/coreScene.functions";
 
 /**
  * A multi-material is used to apply different materials to different parts of the same object without the need of
@@ -50,7 +51,11 @@ export class MultiMaterial extends Material {
     constructor(name: string, scene?: CoreScene) {
         super(name, scene, true);
 
-        this.getScene().addMultiMaterial(this);
+        const _scene = this.getScene();
+
+        if (IsFullScene(_scene)) {
+            _scene.addMultiMaterial(this);
+        }
 
         this.subMaterials = [] as Material[];
 
@@ -83,8 +88,14 @@ export class MultiMaterial extends Material {
      * @returns The Material if the index has been defined
      */
     public getSubMaterial(index: number): Nullable<Material> {
+        const scene = this.getScene();
+
         if (index < 0 || index >= this.subMaterials.length) {
-            return this.getScene().defaultMaterial;
+            if (IsFullScene(scene)) {
+                return scene.defaultMaterial;
+            } else {
+                return null;
+            }
         }
 
         return this.subMaterials[index];
@@ -236,9 +247,11 @@ export class MultiMaterial extends Material {
             }
         }
 
-        const index = scene.multiMaterials.indexOf(this);
-        if (index >= 0) {
-            scene.multiMaterials.splice(index, 1);
+        if (IsFullScene(scene)) {
+            const index = scene.multiMaterials.indexOf(this);
+            if (index >= 0) {
+                scene.multiMaterials.splice(index, 1);
+            }
         }
 
         super.dispose(forceDisposeEffect, forceDisposeTextures);

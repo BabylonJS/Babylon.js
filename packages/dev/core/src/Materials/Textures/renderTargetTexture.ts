@@ -4,7 +4,7 @@ import type { SmartArray } from "../../Misc/smartArray";
 import type { Nullable, Immutable } from "../../types";
 import type { Camera } from "../../Cameras/camera";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
-import type { Color4 } from "../../Maths/math.color";
+import { Color4 } from "../../Maths/math.color";
 import type { RenderTargetCreationOptions, TextureSize } from "../../Materials/Textures/textureCreationOptions";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { SubMesh } from "../../Meshes/subMesh";
@@ -1246,6 +1246,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
         const fastPath = engine.snapshotRendering && engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST;
 
+        const isFullScene = IsFullScene(scene);
         if (!fastPath) {
             // Get the list of meshes to render
             let currentRenderList: Nullable<Array<AbstractMesh>> = null;
@@ -1270,16 +1271,17 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             }
 
             // Before clear
-            const fullScene = scene as Scene;
-            for (const step of scene._beforeRenderTargetClearStage) {
-                step.action(this, faceIndex, layer);
+            if (isFullScene) {
+                for (const step of scene._beforeRenderTargetClearStage) {
+                    step.action(this, faceIndex, layer);
+                }
             }
 
             // Clear
             if (this.onClearObservable.hasObservers()) {
                 this.onClearObservable.notifyObservers(engine);
             } else if (!this.skipInitialClear) {
-                engine.clear(this.clearColor || scene.clearColor, true, true, true);
+                engine.clear(this.clearColor || (isFullScene ? scene.clearColor : new Color4(0, 0, 0, 0)), true, true, true);
             }
 
             if (!this._doNotChangeAspectRatio) {
@@ -1287,16 +1289,20 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             }
 
             // Before Camera Draw
-            for (const step of scene._beforeRenderTargetDrawStage) {
-                step.action(this, faceIndex, layer);
+            if (isFullScene) {
+                for (const step of scene._beforeRenderTargetDrawStage) {
+                    step.action(this, faceIndex, layer);
+                }
             }
 
             // Render
             this._renderingManager.render(this.customRenderFunction, currentRenderList, this.renderParticles, this.renderSprites);
 
             // After Camera Draw
-            for (const step of scene._afterRenderTargetDrawStage) {
-                step.action(this, faceIndex, layer);
+            if (isFullScene) {
+                for (const step of scene._afterRenderTargetDrawStage) {
+                    step.action(this, faceIndex, layer);
+                }
             }
 
             const saveGenerateMipMaps = this._texture?.generateMipMaps ?? false;
@@ -1309,12 +1315,14 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
             if (this._postProcessManager) {
                 this._postProcessManager._finalizeFrame(false, this._renderTarget ?? undefined, faceIndex, this._postProcesses, this.ignoreCameraViewport);
-            } else if (useCameraPostProcess) {
+            } else if (useCameraPostProcess && isFullScene) {
                 scene.postProcessManager._finalizeFrame(false, this._renderTarget ?? undefined, faceIndex);
             }
 
-            for (const step of scene._afterRenderTargetPostProcessStage) {
-                step.action(this, faceIndex, layer);
+            if (isFullScene) {
+                for (const step of scene._afterRenderTargetPostProcessStage) {
+                    step.action(this, faceIndex, layer);
+                }
             }
 
             if (this._texture) {
@@ -1339,7 +1347,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                 this.onClearObservable.notifyObservers(engine);
             } else {
                 if (!this.skipInitialClear) {
-                    engine.clear(this.clearColor || scene.clearColor, true, true, true);
+                    engine.clear(this.clearColor || (isFullScene ? scene.clearColor : new Color4(0, 0, 0, 0)), true, true, true);
                 }
             }
         }
@@ -1494,17 +1502,19 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             return;
         }
 
-        let index = scene.customRenderTargets.indexOf(this);
-
-        if (index >= 0) {
-            scene.customRenderTargets.splice(index, 1);
-        }
-
-        for (const camera of scene.cameras) {
-            index = camera.customRenderTargets.indexOf(this);
+        if (IsFullScene(scene)) {
+            let index = scene.customRenderTargets.indexOf(this);
 
             if (index >= 0) {
-                camera.customRenderTargets.splice(index, 1);
+                scene.customRenderTargets.splice(index, 1);
+            }
+
+            for (const camera of scene.cameras) {
+                index = camera.customRenderTargets.indexOf(this);
+
+                if (index >= 0) {
+                    camera.customRenderTargets.splice(index, 1);
+                }
             }
         }
 
