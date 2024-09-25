@@ -1,3 +1,4 @@
+import type { CoreScene } from "core/coreScene";
 import type { Camera } from "../Cameras/camera";
 import type { DirectionalLight } from "../Lights/directionalLight";
 import { StandardMaterial } from "../Materials/standardMaterial";
@@ -8,7 +9,6 @@ import type { LinesMesh } from "../Meshes/linesMesh";
 import { Mesh } from "../Meshes/mesh";
 import { VertexData } from "../Meshes/mesh.vertexData";
 import { TransformNode } from "../Meshes/transformNode";
-import type { Scene } from "../scene";
 
 /**
  * Class used to render a debug view of the frustum for a directional light
@@ -16,7 +16,7 @@ import type { Scene } from "../scene";
  * @since 5.0.0
  */
 export class DirectionalLightFrustumViewer {
-    private _scene: Scene;
+    private _scene: CoreScene;
     private _light: DirectionalLight;
     private _camera: Camera;
     private _inverseViewMatrix: Matrix;

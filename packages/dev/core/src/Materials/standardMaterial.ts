@@ -5,7 +5,6 @@ import { SmartArray } from "../Misc/smartArray";
 import type { IAnimatable } from "../Animations/animatable.interface";
 
 import type { Nullable } from "../types";
-import { Scene } from "../scene";
 import { Matrix } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import { VertexBuffer } from "../Buffers/buffer";
@@ -61,6 +60,9 @@ import {
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { UniformBuffer } from "./uniformBuffer";
 import { ShaderLanguage } from "./shaderLanguage";
+import type { CoreScene } from "core/coreScene";
+import { IsFullScene } from "core/coreScene.functions";
+import { Scene } from "core/scene";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -614,12 +616,12 @@ export class StandardMaterial extends PushMaterial {
     /**
      * Default configuration related to image processing available in the standard Material.
      */
-    protected _imageProcessingConfiguration: ImageProcessingConfiguration;
+    protected _imageProcessingConfiguration: Nullable<ImageProcessingConfiguration>;
 
     /**
      * Gets the image processing configuration used either in this material.
      */
-    public get imageProcessingConfiguration(): ImageProcessingConfiguration {
+    public get imageProcessingConfiguration(): Nullable<ImageProcessingConfiguration> {
         return this._imageProcessingConfiguration;
     }
 
@@ -628,7 +630,7 @@ export class StandardMaterial extends PushMaterial {
      *
      * If sets to null, the scene one is in use.
      */
-    public set imageProcessingConfiguration(value: ImageProcessingConfiguration) {
+    public set imageProcessingConfiguration(value: Nullable<ImageProcessingConfiguration>) {
         this._attachImageProcessingConfiguration(value);
 
         // Ensure the effect will be rebuilt.
@@ -655,8 +657,9 @@ export class StandardMaterial extends PushMaterial {
         }
 
         // Pick the scene configuration if needed
-        if (!configuration) {
-            this._imageProcessingConfiguration = this.getScene().imageProcessingConfiguration;
+        const scene = this.getScene();
+        if (!configuration && IsFullScene(scene)) {
+            this._imageProcessingConfiguration = scene.imageProcessingConfiguration;
         } else {
             this._imageProcessingConfiguration = configuration;
         }
@@ -687,39 +690,45 @@ export class StandardMaterial extends PushMaterial {
      * Gets whether the color curves effect is enabled.
      */
     public get cameraColorCurvesEnabled(): boolean {
-        return this.imageProcessingConfiguration.colorCurvesEnabled;
+        return !this.imageProcessingConfiguration ? false : this.imageProcessingConfiguration.colorCurvesEnabled;
     }
     /**
      * Sets whether the color curves effect is enabled.
      */
     public set cameraColorCurvesEnabled(value: boolean) {
-        this.imageProcessingConfiguration.colorCurvesEnabled = value;
+        if (this.imageProcessingConfiguration) {
+            this.imageProcessingConfiguration.colorCurvesEnabled = value;
+        }
     }
 
     /**
      * Gets whether the color grading effect is enabled.
      */
     public get cameraColorGradingEnabled(): boolean {
-        return this.imageProcessingConfiguration.colorGradingEnabled;
+        return !this.imageProcessingConfiguration ? false : this.imageProcessingConfiguration.colorGradingEnabled;
     }
     /**
      * Gets whether the color grading effect is enabled.
      */
     public set cameraColorGradingEnabled(value: boolean) {
-        this.imageProcessingConfiguration.colorGradingEnabled = value;
+        if (this.imageProcessingConfiguration) {
+            this.imageProcessingConfiguration.colorGradingEnabled = value;
+        }
     }
 
     /**
      * Gets whether tonemapping is enabled or not.
      */
     public get cameraToneMappingEnabled(): boolean {
-        return this._imageProcessingConfiguration.toneMappingEnabled;
+        return !this._imageProcessingConfiguration ? false : this._imageProcessingConfiguration.toneMappingEnabled;
     }
     /**
      * Sets whether tonemapping is enabled or not
      */
     public set cameraToneMappingEnabled(value: boolean) {
-        this._imageProcessingConfiguration.toneMappingEnabled = value;
+        if (this._imageProcessingConfiguration) {
+            this._imageProcessingConfiguration.toneMappingEnabled = value;
+        }
     }
 
     /**
@@ -728,7 +737,7 @@ export class StandardMaterial extends PushMaterial {
      * This corresponds to a photographic exposure.
      */
     public get cameraExposure(): number {
-        return this._imageProcessingConfiguration.exposure;
+        return !this._imageProcessingConfiguration ? 0 : this._imageProcessingConfiguration.exposure;
     }
     /**
      * The camera exposure used on this material.
@@ -736,34 +745,40 @@ export class StandardMaterial extends PushMaterial {
      * This corresponds to a photographic exposure.
      */
     public set cameraExposure(value: number) {
-        this._imageProcessingConfiguration.exposure = value;
+        if (this._imageProcessingConfiguration) {
+            this._imageProcessingConfiguration.exposure = value;
+        }
     }
 
     /**
      * Gets The camera contrast used on this material.
      */
     public get cameraContrast(): number {
-        return this._imageProcessingConfiguration.contrast;
+        return !this._imageProcessingConfiguration ? 0 : this._imageProcessingConfiguration.contrast;
     }
 
     /**
      * Sets The camera contrast used on this material.
      */
     public set cameraContrast(value: number) {
-        this._imageProcessingConfiguration.contrast = value;
+        if (this._imageProcessingConfiguration) {
+            this._imageProcessingConfiguration.contrast = value;
+        }
     }
 
     /**
      * Gets the Color Grading 2D Lookup Texture.
      */
     public get cameraColorGradingTexture(): Nullable<BaseTexture> {
-        return this._imageProcessingConfiguration.colorGradingTexture;
+        return !this._imageProcessingConfiguration ? null : this._imageProcessingConfiguration.colorGradingTexture;
     }
     /**
      * Sets the Color Grading 2D Lookup Texture.
      */
     public set cameraColorGradingTexture(value: Nullable<BaseTexture>) {
-        this._imageProcessingConfiguration.colorGradingTexture = value;
+        if (this._imageProcessingConfiguration) {
+            this._imageProcessingConfiguration.colorGradingTexture = value;
+        }
     }
 
     /**
@@ -773,7 +788,7 @@ export class StandardMaterial extends PushMaterial {
      * corresponding to low luminance, medium luminance, and high luminance areas respectively.
      */
     public get cameraColorCurves(): Nullable<ColorCurves> {
-        return this._imageProcessingConfiguration.colorCurves;
+        return !this._imageProcessingConfiguration ? null : this._imageProcessingConfiguration.colorCurves;
     }
     /**
      * The color grading curves provide additional color adjustment that is applied after any color grading transform (3D LUT).
@@ -782,7 +797,9 @@ export class StandardMaterial extends PushMaterial {
      * corresponding to low luminance, medium luminance, and high luminance areas respectively.
      */
     public set cameraColorCurves(value: Nullable<ColorCurves>) {
-        this._imageProcessingConfiguration.colorCurves = value;
+        if (this._imageProcessingConfiguration) {
+            this._imageProcessingConfiguration.colorCurves = value;
+        }
     }
 
     /**
@@ -811,7 +828,7 @@ export class StandardMaterial extends PushMaterial {
      * @param scene Define the scene the material belong to
      * @param forceGLSL Use the GLSL code generation for the shader (even on WebGPU). Default is false
      */
-    constructor(name: string, scene?: Scene, forceGLSL = false) {
+    constructor(name: string, scene?: CoreScene, forceGLSL = false) {
         super(name, scene);
         const engine = this.getScene().getEngine();
         if (engine.isWebGPU && !forceGLSL && !StandardMaterial.ForceGLSL) {
@@ -955,6 +972,7 @@ export class StandardMaterial extends PushMaterial {
         }
 
         const engine = scene.getEngine();
+        const isFullScene = IsFullScene(scene);
 
         // Lights
         defines._needNormals = PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
@@ -963,7 +981,7 @@ export class StandardMaterial extends PushMaterial {
         PrepareDefinesForMultiview(scene, defines);
 
         // PrePass
-        const oit = this.needAlphaBlendingForMesh(mesh) && this.getScene().useOrderIndependentTransparency;
+        const oit = this.needAlphaBlendingForMesh(mesh) && isFullScene && scene.useOrderIndependentTransparency;
         PrepareDefinesForPrePass(scene, defines, this.canRenderToMRT && !oit);
 
         // Order independant transparency
@@ -978,7 +996,7 @@ export class StandardMaterial extends PushMaterial {
             for (let i = 1; i <= Constants.MAX_SUPPORTED_UV_SETS; ++i) {
                 defines["MAINUV" + i] = false;
             }
-            if (scene.texturesEnabled) {
+            if (isFullScene && scene.texturesEnabled) {
                 defines.DIFFUSEDIRECTUV = 0;
                 defines.BUMPDIRECTUV = 0;
                 defines.AMBIENTDIRECTUV = 0;
@@ -1518,7 +1536,9 @@ export class StandardMaterial extends PushMaterial {
                         return false;
                     }
                 } else {
-                    scene.resetCachedMaterial();
+                    if (isFullScene) {
+                        scene.resetCachedMaterial();
+                    }
                     subMesh.setEffect(effect, defines, this._materialContext);
                 }
             }
@@ -1596,6 +1616,7 @@ export class StandardMaterial extends PushMaterial {
      */
     public override bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         const scene = this.getScene();
+        const isFullScene = IsFullScene(scene);
 
         const defines = <StandardMaterialDefines>subMesh.materialDefines;
         if (!defines) {
@@ -1615,7 +1636,9 @@ export class StandardMaterial extends PushMaterial {
         // Binding unconditionally
         this._uniformBuffer.bindToEffect(effect, "Material");
 
-        this.prePassConfiguration.bindForSubMesh(this._activeEffect, scene, mesh, world, this.isFrozen);
+        if (isFullScene) {
+            this.prePassConfiguration.bindForSubMesh(this._activeEffect, scene, mesh, world, this.isFrozen);
+        }
 
         this._eventInfo.subMesh = subMesh;
         this._callbackPluginEventHardBindForSubMesh(this._eventInfo);
@@ -1670,7 +1693,7 @@ export class StandardMaterial extends PushMaterial {
                 }
 
                 // Textures
-                if (scene.texturesEnabled) {
+                if (isFullScene && scene.texturesEnabled) {
                     if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
                         ubo.updateFloat2("vDiffuseInfos", this._diffuseTexture.coordinatesIndex, this._diffuseTexture.level);
                         BindTextureMatrix(this._diffuseTexture, ubo, "diffuse");
@@ -1760,12 +1783,14 @@ export class StandardMaterial extends PushMaterial {
                 ubo.updateColor3("vEmissiveColor", StandardMaterial.EmissiveTextureEnabled ? this.emissiveColor : Color3.BlackReadOnly);
                 ubo.updateColor4("vDiffuseColor", this.diffuseColor, this.alpha);
 
-                scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
-                ubo.updateColor3("vAmbientColor", this._globalAmbientColor);
+                if (isFullScene) {
+                    scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
+                    ubo.updateColor3("vAmbientColor", this._globalAmbientColor);
+                }
             }
 
             // Textures
-            if (scene.texturesEnabled) {
+            if (isFullScene && scene.texturesEnabled) {
                 if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
                     effect.setTexture("diffuseSampler", this._diffuseTexture);
                 }
@@ -1812,8 +1837,8 @@ export class StandardMaterial extends PushMaterial {
             }
 
             // OIT with depth peeling
-            if (this.getScene().useOrderIndependentTransparency && this.needAlphaBlendingForMesh(mesh)) {
-                this.getScene().depthPeelingRenderer!.bind(effect);
+            if (isFullScene && scene.useOrderIndependentTransparency && this.needAlphaBlendingForMesh(mesh)) {
+                scene.depthPeelingRenderer!.bind(effect);
             }
 
             this._eventInfo.subMesh = subMesh;
@@ -1836,7 +1861,7 @@ export class StandardMaterial extends PushMaterial {
 
             // View
             if (
-                (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) ||
+                (isFullScene && scene.fogEnabled && mesh.applyFog && scene.fogMode !== Constants.FOGMODE_NONE) ||
                 this._reflectionTexture ||
                 this._refractionTexture ||
                 mesh.receiveShadows ||
@@ -2065,7 +2090,7 @@ export class StandardMaterial extends PushMaterial {
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @returns a new standard material
      */
-    public static override Parse(source: any, scene: Scene, rootUrl: string): StandardMaterial {
+    public static override Parse(source: any, scene: CoreScene, rootUrl: string): StandardMaterial {
         const material = SerializationHelper.Parse(() => new StandardMaterial(source.name, scene), source, scene, rootUrl);
 
         if (source.stencil) {
@@ -2201,6 +2226,6 @@ export class StandardMaterial extends PushMaterial {
 
 RegisterClass("BABYLON.StandardMaterial", StandardMaterial);
 
-Scene.DefaultMaterialFactory = (scene: Scene) => {
+Scene.DefaultMaterialFactory = (scene: CoreScene) => {
     return new StandardMaterial("default material", scene);
 };
