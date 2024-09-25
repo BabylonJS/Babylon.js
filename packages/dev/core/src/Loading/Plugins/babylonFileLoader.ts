@@ -17,7 +17,6 @@ import { AnimationGroup } from "../../Animations/animationGroup";
 import { Light } from "../../Lights/light";
 import { SceneComponentConstants } from "../../sceneComponent";
 import { SceneLoader } from "../../Loading/sceneLoader";
-import { AbstractScene } from "../../abstractScene";
 import { AssetContainer } from "../../assetContainer";
 import { ActionManager } from "../../Actions/actionManager";
 import type { IParticleSystem } from "../../Particles/IParticleSystem";
@@ -31,6 +30,7 @@ import { GetClass } from "../../Misc/typeStore";
 import { Tools } from "../../Misc/tools";
 import { PostProcess } from "../../PostProcesses/postProcess";
 import { SpriteManager } from "core/Sprites/spriteManager";
+import { GetIndividualParser, Parse } from "./babylonFileParser.function";
 
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention, no-var
@@ -558,7 +558,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
             g._loadedUniqueId = "";
         });
 
-        AbstractScene.Parse(parsedData, scene, container, rootUrl);
+        Parse(parsedData, scene, container, rootUrl);
 
         // Actions (scene) Done last as it can access other objects.
         for (index = 0, cache = scene.meshes.length; index < cache; index++) {
@@ -893,7 +893,7 @@ SceneLoader.RegisterPlugin({
 
             // Particles
             if (parsedData.particleSystems !== undefined && parsedData.particleSystems !== null) {
-                const parser = AbstractScene.GetIndividualParser(SceneComponentConstants.NAME_PARTICLESYSTEM);
+                const parser = GetIndividualParser(SceneComponentConstants.NAME_PARTICLESYSTEM);
                 if (parser) {
                     for (let index = 0, cache = parsedData.particleSystems.length; index < cache; index++) {
                         const parsedParticleSystem = parsedData.particleSystems[index];
