@@ -249,7 +249,11 @@ bool anyHitVoxels(const Ray ray_vs) {
 float screenSpaceShadow(vec3 csOrigin, vec3 csDirection, vec2 csZBufferSize,
                         float nearPlaneZ, float noise) {
   // Camera space Z direction
-  float csZDir = projMtx[2][2] > 0.0 ? 1.0 : -1.0;
+  #ifdef RIGHT_HANDED
+    float csZDir = -1.0;
+  #else // LEFT_HANDED
+    float csZDir = 1.0;
+  #endif
   // Max sample count per ray
   float ssSamples = SSSsamples;
   // Max world space distance from ray origin
@@ -375,7 +379,6 @@ void main(void) {
     return;
   }
 
-  // TODO: Move this matrix into a uniform
   float normalizedRotation = envRot / (2.0 * PI);
 
   float depth = texelFetch(depthSampler, PixelCoord, 0).x;
@@ -406,6 +409,9 @@ void main(void) {
       T.y = textureLod(icdfySampler, vec2(T.x, r.y), 0.0).x;
       T.x -= normalizedRotation;
       L = vec4(uv_to_normal(T), 0);
+      #ifndef RIGHT_HANDED
+        L.z *= -1.0;
+      #endif
     }
     float edge_tint_const = -0.001;
     float cosNL = dot(N, L.xyz);
@@ -434,7 +440,6 @@ void main(void) {
 
       // sss
       vec3 VL = (viewMtx * L).xyz;
-      // VL.y *= -1.0;
       float nearPlaneZ =
           -projMtx[3][2] / projMtx[2][2]; // retreive camera Z near value
       float ssShadow = shadowOpacity.y *
