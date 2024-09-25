@@ -46,30 +46,27 @@ export class DepthOfFieldMergePostProcess extends PostProcess {
         textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false
     ) {
-        super(
-            name,
-            "depthOfFieldMerge",
-            [],
-            ["circleOfConfusionSampler", "blurStep0", "blurStep1", "blurStep2"],
-            options,
+        super(name, "depthOfFieldMerge", {
+            samplers: ["circleOfConfusionSampler", "blurStep0", "blurStep1", "blurStep2"],
             camera,
             samplingMode,
             engine,
             reusable,
-            null,
             textureType,
-            undefined,
-            null,
-            true
-        );
-        this.externalTextureSamplerBinding = true;
-        this.onApplyObservable.add((effect: Effect) => {
-            effect.setTextureFromPostProcess("textureSampler", originalFromInput);
-            effect.setTextureFromPostProcessOutput("circleOfConfusionSampler", circleOfConfusion);
-            _blurSteps.forEach((step, index) => {
-                effect.setTextureFromPostProcessOutput("blurStep" + (_blurSteps.length - index - 1), step);
-            });
+            ...(options as PostProcessOptions),
+            blockCompilation: true,
         });
+
+        this.externalTextureSamplerBinding = true;
+        if (!this.useAsFrameGraphTask) {
+            this.onApplyObservable.add((effect: Effect) => {
+                effect.setTextureFromPostProcess("textureSampler", originalFromInput);
+                effect.setTextureFromPostProcessOutput("circleOfConfusionSampler", circleOfConfusion);
+                _blurSteps.forEach((step, index) => {
+                    effect.setTextureFromPostProcessOutput("blurStep" + (_blurSteps.length - index - 1), step);
+                });
+            });
+        }
 
         if (!blockCompilation) {
             this.updateEffect();

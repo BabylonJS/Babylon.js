@@ -10,20 +10,22 @@ export * from "./Passes/pass";
 export * from "./Passes/renderPass";
 
 export * from "./Tasks/PostProcesses/blackAndWhiteTask";
-export * from "./Tasks/PostProcesses/bloomMergeTask";
 export * from "./Tasks/PostProcesses/bloomTask";
 export * from "./Tasks/PostProcesses/blurTask";
 export * from "./Tasks/PostProcesses/circleOfConfusionTask";
 export * from "./Tasks/PostProcesses/postProcessTask";
+
 export * from "./Tasks/Texture/clearTextureTask";
 export * from "./Tasks/Texture/copyToBackbufferColorTask";
 export * from "./Tasks/Texture/copyToTextureTask";
+
 export * from "./Tasks/Rendering/objectRendererTask";
 export * from "./Tasks/Rendering/geometryRendererTask";
 export * from "./Tasks/Rendering/cullObjectsTask";
 
 export * from "./frameGraph";
 export * from "./frameGraphContext";
+export * from "./frameGraphObjectList";
 export * from "./frameGraphRenderContext";
 export * from "./frameGraphTextureManager";
 export * from "./frameGraphTypes";

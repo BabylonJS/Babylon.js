@@ -35,7 +35,7 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
     /**
      * Creates a new instance DepthOfFieldBlurPostProcess
      * @param name The name of the effect.
-     * @param scene The scene the effect belongs to.
+     * @param _scene The scene the effect belongs to (not used, you can pass null)
      * @param direction The direction the blur should be applied.
      * @param kernel The size of the kernel used to blur.
      * @param options The required width/height ratio to downsize to before computing the render pass.
@@ -51,7 +51,7 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
      */
     constructor(
         name: string,
-        scene: Scene,
+        _scene: Nullable<Scene>,
         direction: Vector2,
         kernel: number,
         options: number | PostProcessOptions,
@@ -65,31 +65,30 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
         blockCompilation = false,
         textureFormat = Constants.TEXTUREFORMAT_RGBA
     ) {
-        super(
-            name,
-            direction,
-            kernel,
-            options,
+        super(name, direction, kernel, {
             camera,
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            (samplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE),
             engine,
             reusable,
             textureType,
-            `#define DOF 1\n`,
+            defines: `#define DOF 1\n`,
             blockCompilation,
-            textureFormat
-        );
+            textureFormat,
+            ...(options as PostProcessOptions),
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            samplingMode: (samplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE),
+        });
 
         this.direction = direction;
         this.externalTextureSamplerBinding = !!imageToBlur;
 
-        this.onApplyObservable.add((effect: Effect) => {
-            if (imageToBlur != null) {
-                effect.setTextureFromPostProcess("textureSampler", imageToBlur);
-            }
-            effect.setTextureFromPostProcessOutput("circleOfConfusionSampler", circleOfConfusion);
-        });
+        if (!this.useAsFrameGraphTask) {
+            this.onApplyObservable.add((effect: Effect) => {
+                if (imageToBlur != null) {
+                    effect.setTextureFromPostProcess("textureSampler", imageToBlur);
+                }
+                effect.setTextureFromPostProcessOutput("circleOfConfusionSampler", circleOfConfusion);
+            });
+        }
     }
 }
 
