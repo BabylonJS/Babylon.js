@@ -673,29 +673,17 @@ export class GeometryBufferRenderer {
             }
         }
 
-        // PrePass
-        if (this._linkedWithPrePass) {
-            defines.push("#define PREPASS");
-            if (this._depthIndex !== -1) {
-                defines.push("#define DEPTH_INDEX " + this._depthIndex);
-                defines.push("#define PREPASS_DEPTH");
-            }
-            if (this._normalIndex !== -1) {
-                defines.push("#define NORMAL_INDEX " + this._normalIndex);
-                defines.push("#define PREPASS_NORMAL");
-            }
-        } else {
-            if (this._enableDepth) {
-                defines.push("#define DEPTH");
-                defines.push("#define DEPTH_INDEX " + this._depthIndex);
-            }
-            if (this._enableNormal) {
-                defines.push("#define NORMAL");
-                defines.push("#define NORMAL_INDEX " + this._normalIndex);
-            }
+        // Buffers
+        if (this._enableDepth) {
+            defines.push("#define DEPTH");
+            defines.push("#define DEPTH_INDEX " + this._depthIndex);
         }
 
-        // Buffers
+        if (this._enableNormal) {
+            defines.push("#define NORMAL");
+            defines.push("#define NORMAL_INDEX " + this._normalIndex);
+        }
+
         if (this._enablePosition) {
             defines.push("#define POSITION");
             defines.push("#define POSITION_INDEX " + this._positionIndex);

@@ -92,24 +92,14 @@ void main() {
         normalOutput = normalOutput * 0.5 + 0.5;
     #endif
 
-    #ifdef PREPASS
-        #ifdef PREPASS_DEPTH
-            gl_FragData[DEPTH_INDEX] = vec4(vViewPos.z / vViewPos.w, 0.0, 0.0, 1.0);
-        #endif
-
-        #if defined(PREPASS_NORMAL) || defined(PREPASS_WORLD_NORMAL)
-            gl_FragData[NORMAL_INDEX] = vec4(normalOutput, 1.0);
-        #endif
-    #else
-        #ifdef DEPTH
-            gl_FragData[DEPTH_INDEX] = vec4(vViewPos.z / vViewPos.w, 0.0, 0.0, 1.0);
-        #endif
-        #ifdef NORMAL
-            gl_FragData[NORMAL_INDEX] = vec4(normalOutput, 1.0);
-        #endif
-        #ifdef SCREENSPACE_DEPTH
-            gl_FragData[SCREENSPACE_DEPTH_INDEX] = vec4(gl_FragCoord.z, 0.0, 0.0, 1.0);
-        #endif
+    #ifdef DEPTH
+        gl_FragData[DEPTH_INDEX] = vec4(vViewPos.z / vViewPos.w, 0.0, 0.0, 1.0);
+    #endif
+    #ifdef NORMAL
+        gl_FragData[NORMAL_INDEX] = vec4(normalOutput, 1.0);
+    #endif
+    #ifdef SCREENSPACE_DEPTH
+        gl_FragData[SCREENSPACE_DEPTH_INDEX] = vec4(gl_FragCoord.z, 0.0, 0.0, 1.0);
     #endif
 
     #ifdef POSITION
