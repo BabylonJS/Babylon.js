@@ -35,7 +35,7 @@ export class FrameGraphCircleOfConfusionTask extends FrameGraphPostProcessTask {
 
     public override record(frameGraph: FrameGraph, skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
         if (this.sourceTexture === undefined || this.depthTexture === undefined || this.camera === undefined) {
-            throw new Error(`CircleOfConfusionPostProcess "${this.name}": sourceTexture, depthTexture and camera are required`);
+            throw new Error(`FrameGraphCircleOfConfusionTask "${this.name}": sourceTexture, depthTexture and camera are required`);
         }
 
         const depthTextureHandle = frameGraph.getTextureHandle(this.depthTexture);

@@ -18,7 +18,7 @@ export class FrameGraphDepthOfFieldBlurTask extends FrameGraphPostProcessTask {
 
     public override record(frameGraph: FrameGraph, skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
         if (this.sourceTexture === undefined || this.circleOfConfusionTexture === undefined) {
-            throw new Error(`DepthOfFieldBlurPostProcess "${this.name}": sourceTexture and circleOfConfusionTexture are required`);
+            throw new Error(`FrameGraphDepthOfFieldBlurTask "${this.name}": sourceTexture and circleOfConfusionTexture are required`);
         }
 
         const cocTextureHandle = frameGraph.getTextureHandle(this.circleOfConfusionTexture);

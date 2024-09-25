@@ -46,7 +46,7 @@ export class FrameGraphPostProcessTask implements IFrameGraphTask {
         additionalBindings?: (context: FrameGraphRenderContext) => void
     ): FrameGraphRenderPass {
         if (this.sourceTexture === undefined) {
-            throw new Error(`PostProcess "${this.name}": sourceTexture is required`);
+            throw new Error(`FrameGraphPostProcessTask "${this.name}": sourceTexture is required`);
         }
 
         const sourceTextureCreationOptions = frameGraph.getTextureCreationOptions(this.sourceTexture, true);

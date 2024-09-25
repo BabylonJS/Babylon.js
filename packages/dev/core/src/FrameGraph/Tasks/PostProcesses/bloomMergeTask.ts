@@ -15,7 +15,7 @@ export class FrameGraphBloomMergeTask extends FrameGraphPostProcessTask {
 
     public override record(frameGraph: FrameGraph, skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
         if (this.sourceTexture === undefined || this.blurTexture === undefined) {
-            throw new Error(`BloomMergePostProcess "${this.name}": sourceTexture and blurTexture are required`);
+            throw new Error(`FrameGraphBloomMergeTask "${this.name}": sourceTexture and blurTexture are required`);
         }
 
         const blurTextureHandle = frameGraph.getTextureHandle(this.blurTexture);
