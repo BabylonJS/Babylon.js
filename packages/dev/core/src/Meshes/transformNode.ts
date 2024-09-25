@@ -12,6 +12,7 @@ import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Space } from "../Maths/math.axis";
 import { GetClass } from "../Misc/typeStore";
 import type { Scene } from "core/scene";
+import { IsFullScene } from "core/coreScene.functions";
 
 const convertRHSToLHS = Matrix.Compose(Vector3.One(), Quaternion.FromEulerAngles(0, Math.PI, 0), Vector3.Zero());
 
@@ -188,8 +189,9 @@ export class TransformNode extends Node {
     constructor(name: string, scene: Nullable<CoreScene> = null, isPure = true) {
         super(name, scene, false);
 
-        if (isPure && !this.getScene().isCore) {
-            (this.getScene() as Scene).addTransformNode!(this);
+        const _scene = this.getScene();
+        if (isPure && IsFullScene(_scene)) {
+            _scene.addTransformNode!(this);
         }
     }
 
@@ -1546,8 +1548,8 @@ export class TransformNode extends Node {
         scene.stopAnimation(this);
 
         // Remove from scene
-        if (!scene.isCore) {
-            (scene as Scene).removeTransformNode(this);
+        if (IsFullScene(scene)) {
+            scene.removeTransformNode(this);
         }
 
         if (this._parentContainer) {

@@ -17,6 +17,7 @@ import { Tools } from "../Misc/tools";
 import type { ThinEngine } from "../Engines/thinEngine";
 import { RegisterClass } from "../Misc/typeStore";
 import type { Scene } from "core/scene";
+import { IsFullScene } from "core/coreScene.functions";
 
 Mesh._instancedMeshFactory = (name: string, mesh: Mesh): InstancedMesh => {
     const instance = new InstancedMesh(name, mesh);
@@ -567,11 +568,11 @@ export class InstancedMesh extends AbstractMesh {
             result.parent = newParent;
         }
 
-        if (!doNotCloneChildren && !this.getScene().isCore) {
+        const scene = this.getScene();
+        if (!doNotCloneChildren && IsFullScene(scene)) {
             // Children
-            const fullScene = this.getScene() as Scene;
-            for (let index = 0; index < fullScene.meshes.length; index++) {
-                const mesh = fullScene.meshes[index];
+            for (let index = 0; index < scene.meshes.length; index++) {
+                const mesh = scene.meshes[index];
 
                 if (mesh.parent === this) {
                     mesh.clone(mesh.name, result);

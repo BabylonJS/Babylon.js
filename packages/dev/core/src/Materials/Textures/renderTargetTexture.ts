@@ -1168,10 +1168,9 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             }
         }
 
-        if (!scene.isCore) {
-            const fullScene = scene as Scene;
-            for (let particleIndex = 0; particleIndex < fullScene.particleSystems.length; particleIndex++) {
-                const particleSystem = fullScene.particleSystems[particleIndex];
+        if (IsFullScene(scene)) {
+            for (let particleIndex = 0; particleIndex < scene.particleSystems.length; particleIndex++) {
+                const particleSystem = scene.particleSystems[particleIndex];
 
                 const emitter: any = particleSystem.emitter;
 
@@ -1218,7 +1217,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             if (!this._prePassEnabled) {
                 this._postProcessManager._prepareFrame(this._texture, this._postProcesses);
             }
-        } else if (!useCameraPostProcess || (!scene.isCore && !(scene as Scene).postProcessManager._prepareFrame(this._texture))) {
+        } else if (!useCameraPostProcess || (IsFullScene(scene) && !scene.postProcessManager._prepareFrame(this._texture))) {
             this._bindFrameBuffer(faceIndex, layer);
         }
     }
@@ -1250,8 +1249,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         if (!fastPath) {
             // Get the list of meshes to render
             let currentRenderList: Nullable<Array<AbstractMesh>> = null;
-            const defaultRenderList = this.renderList ? this.renderList : scene.isCore ? null : (scene as Scene).getActiveMeshes().data;
-            const defaultRenderListLength = this.renderList ? this.renderList.length : scene.isCore ? 0 : (scene as Scene).getActiveMeshes().length;
+            const defaultRenderList = this.renderList ? this.renderList : !IsFullScene(scene) ? null : scene.getActiveMeshes().data;
+            const defaultRenderListLength = this.renderList ? this.renderList.length : !IsFullScene(scene) ? 0 : scene.getActiveMeshes().length;
 
             if (this.getCustomRenderList) {
                 currentRenderList = this.getCustomRenderList(this.is2DArray || this.is3D ? layer : faceIndex, defaultRenderList, defaultRenderListLength);

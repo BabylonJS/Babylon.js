@@ -46,6 +46,7 @@ import type { MorphTarget } from "../Morph/morphTarget";
 import { nativeOverride } from "../Misc/decorators";
 import { AbstractEngine } from "core/Engines/abstractEngine";
 import type { CoreScene } from "core/coreScene";
+import { IsFullScene } from "core/coreScene.functions";
 
 function applyMorph(data: FloatArray, kind: string, morphTargetManager: MorphTargetManager): void {
     let getTargetData: Nullable<(target: MorphTarget) => Nullable<FloatArray>> = null;
@@ -1026,14 +1027,16 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
         this._uniformBuffer = new UniformBuffer(this.getScene().getEngine(), undefined, undefined, name, !this.getScene().getEngine().isWebGPU);
         this._buildUniformLayout();
 
-        switch (!scene.isCore && (scene as Scene).performancePriority) {
-            case ScenePerformancePriority.Aggressive:
-                this.doNotSyncBoundingInfo = true;
-            // eslint-disable-next-line no-fallthrough
-            case ScenePerformancePriority.Intermediate:
-                this.alwaysSelectAsActiveMesh = true;
-                this.isPickable = false;
-                break;
+        if (IsFullScene(scene)) {
+            switch (scene.performancePriority) {
+                case ScenePerformancePriority.Aggressive:
+                    this.doNotSyncBoundingInfo = true;
+                // eslint-disable-next-line no-fallthrough
+                case ScenePerformancePriority.Intermediate:
+                    this.alwaysSelectAsActiveMesh = true;
+                    this.isPickable = false;
+                    break;
+            }
         }
     }
 
@@ -1480,8 +1483,8 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
         const scene = this.getScene();
         return <boolean>(
             (this.skeleton &&
-                !scene.isCore &&
-                (scene as Scene).skeletonsEnabled &&
+                IsFullScene(scene) &&
+                scene.skeletonsEnabled &&
                 this.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind) &&
                 this.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind))
         );
@@ -1918,9 +1921,8 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
 
         globalPosition.addToRef(this.ellipsoidOffset, this._internalAbstractMeshDataInfo._meshCollisionData._oldPositionForCollisions);
         const scene = this.getScene();
-        if (!scene.isCore) {
-            const fullScene = scene as Scene;
-            const coordinator = fullScene.collisionCoordinator;
+        if (IsFullScene(scene)) {
+            const coordinator = scene.collisionCoordinator;
             if (!this._internalAbstractMeshDataInfo._meshCollisionData._collider) {
                 this._internalAbstractMeshDataInfo._meshCollisionData._collider = coordinator.createCollider();
             }
@@ -2215,10 +2217,9 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
 
         const scene = this.getScene();
 
-        if (!scene.isCore) {
-            const fullScene = scene as Scene;
+        if (IsFullScene(scene)) {
             // mesh map release.
-            if (fullScene.useMaterialMeshMap) {
+            if (scene.useMaterialMeshMap) {
                 // remove from material mesh map id needed
                 if (this._internalAbstractMeshDataInfo._material && this._internalAbstractMeshDataInfo._material.meshMap) {
                     this._internalAbstractMeshDataInfo._material.meshMap[this.uniqueId] = undefined;
@@ -2226,18 +2227,20 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
             }
 
             // Smart Array Retainers.
-            fullScene.freeActiveMeshes();
-            fullScene.freeRenderingGroups();
-            if (fullScene.renderingManager.maintainStateBetweenFrames) {
-                fullScene.renderingManager.restoreDispachedFlags();
+            scene.freeActiveMeshes();
+            scene.freeRenderingGroups();
+            if (scene.renderingManager.maintainStateBetweenFrames) {
+                scene.renderingManager.restoreDispachedFlags();
             }
         }
 
         // Action manager
         if (this.actionManager !== undefined && this.actionManager !== null) {
-            // If we are the only mesh using the action manager, dispose of the action manager too unless it has opted out from that behavior
-            if ((this.actionManager.disposeWhenUnowned && this._scene.isCore) || !(this._scene as Scene).meshes.some((m) => m !== this && m.actionManager === this.actionManager)) {
-                this.actionManager.dispose();
+            if (IsFullScene(this._scene)) {
+                // If we are the only mesh using the action manager, dispose of the action manager too unless it has opted out from that behavior
+                if (this.actionManager.disposeWhenUnowned && !this._scene.meshes.some((m) => m !== this && m.actionManager === this.actionManager)) {
+                    this.actionManager.dispose();
+                }
             }
             this.actionManager = null;
         }
@@ -2261,8 +2264,8 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
         this._intersectionsInProgress.length = 0;
 
         // Lights
-        if (!scene.isCore) {
-            const lights = (scene as Scene).lights;
+        if (IsFullScene(scene)) {
+            const lights = scene.lights;
 
             lights.forEach((light: Light) => {
                 let meshIndex = light.includedOnlyMeshes.indexOf(this);
@@ -2314,8 +2317,9 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
         engine.wipeCaches();
 
         // Remove from scene
-        if (!scene.isCore) {
-            (scene as Scene).removeMesh(this);
+        const isFullScene = IsFullScene(scene);
+        if (isFullScene) {
+            scene.removeMesh(this);
         }
 
         if (this._parentContainer) {
@@ -2336,12 +2340,11 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
             }
         }
 
-        if (!doNotRecurse && !scene.isCore) {
+        if (!doNotRecurse && isFullScene) {
             // Particles
-            const fullScene = scene as Scene;
-            for (index = 0; index < fullScene.particleSystems.length; index++) {
-                if (fullScene.particleSystems[index].emitter === this) {
-                    fullScene.particleSystems[index].dispose();
+            for (index = 0; index < scene.particleSystems.length; index++) {
+                if (scene.particleSystems[index].emitter === this) {
+                    scene.particleSystems[index].dispose();
                     index--;
                 }
             }

@@ -27,6 +27,7 @@ import { CopyFloatData } from "../Buffers/bufferUtils";
 import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 import type { CoreScene } from "core/coreScene";
 import type { Scene } from "core/scene";
+import { IsFullScene } from "core/coreScene.functions";
 
 /**
  * Class used to store geometry data (vertex buffers + index buffer)
@@ -746,8 +747,8 @@ export class Geometry implements IGetSetVerticesData {
         mesh._geometry = this;
         mesh._internalAbstractMeshDataInfo._positions = null;
 
-        if (!this._scene.isCore) {
-            (this._scene as Scene).pushGeometry(this);
+        if (IsFullScene(this._scene)) {
+            this._scene.pushGeometry(this);
         }
 
         meshes.push(mesh);
@@ -1008,8 +1009,8 @@ export class Geometry implements IGetSetVerticesData {
 
         this._boundingInfo = null;
 
-        if (!this._scene.isCore) {
-            (this._scene as Scene).removeGeometry(this);
+        if (IsFullScene(this._scene)) {
+            this._scene.removeGeometry(this);
         }
         if (this._parentContainer) {
             const index = this._parentContainer.geometries.indexOf(this);
@@ -1275,7 +1276,7 @@ export class Geometry implements IGetSetVerticesData {
         const geometryUniqueId = parsedGeometry.geometryUniqueId;
         const geometryId = parsedGeometry.geometryId;
         if (geometryUniqueId || geometryId) {
-            const geometry = geometryUniqueId ? this._GetGeometryByLoadedUniqueId(geometryUniqueId, scene) : scene.isCore ? null : (scene as Scene).getGeometryById(geometryId);
+            const geometry = geometryUniqueId ? this._GetGeometryByLoadedUniqueId(geometryUniqueId, scene) : !IsFullScene(scene) ? null : scene.getGeometryById(geometryId);
             if (geometry) {
                 geometry.applyToMesh(mesh);
             }
@@ -1527,8 +1528,8 @@ export class Geometry implements IGetSetVerticesData {
         // Update
         mesh.computeWorldMatrix(true);
 
-        if (!scene.isCore) {
-            (scene as Scene).onMeshImportedObservable.notifyObservers(<AbstractMesh>mesh);
+        if (IsFullScene(scene)) {
+            scene.onMeshImportedObservable.notifyObservers(<AbstractMesh>mesh);
         }
     }
 
@@ -1540,11 +1541,11 @@ export class Geometry implements IGetSetVerticesData {
         let noInfluenceBoneIndex = 0.0;
         if (parsedGeometry.skeletonId > -1) {
             const scene = mesh.getScene();
-            if (scene.isCore) {
+            if (!IsFullScene(scene)) {
                 return;
             }
 
-            const skeleton = (scene as Scene).getLastSkeletonById(parsedGeometry.skeletonId);
+            const skeleton = scene.getLastSkeletonById(parsedGeometry.skeletonId);
 
             if (!skeleton) {
                 return;
@@ -1671,8 +1672,8 @@ export class Geometry implements IGetSetVerticesData {
             VertexData.ImportVertexData(parsedVertexData, geometry);
         }
 
-        if (!scene.isCore) {
-            (scene as Scene).pushGeometry(geometry, true);
+        if (IsFullScene(scene)) {
+            scene.pushGeometry(geometry, true);
         }
 
         return geometry;

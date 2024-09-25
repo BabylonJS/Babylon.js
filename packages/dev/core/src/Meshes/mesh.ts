@@ -707,9 +707,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Physics clone
-        const fullScene = scene as Scene;
-        if (fullScene.getPhysicsEngine) {
-            const physicsEngine = fullScene.getPhysicsEngine();
+        const isFullScene = IsFullScene(scene);
+        if (isFullScene && scene.getPhysicsEngine) {
+            const physicsEngine = scene.getPhysicsEngine();
             if (clonePhysicsImpostor && physicsEngine) {
                 if (physicsEngine.getPluginVersion() === 1) {
                     const impostor = (physicsEngine as PhysicsEngineV1).getImpostorForPhysicsObject(source);
@@ -725,10 +725,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Particles
-        if (!scene.isCore) {
-            const fullScene = scene as Scene;
-            for (let index = 0; index < fullScene.particleSystems.length; index++) {
-                const system = fullScene.particleSystems[index];
+        if (isFullScene) {
+            for (let index = 0; index < scene.particleSystems.length; index++) {
+                const system = scene.particleSystems[index];
 
                 if (system.emitter === source) {
                     system.clone(system.name, this);
@@ -800,9 +799,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 this.onMeshReadyObservable.notifyObservers(this);
             } else {
                 if (!this._internalMeshDataInfo._checkReadinessObserver) {
-                    this._internalMeshDataInfo._checkReadinessObserver = this._scene.isCore
+                    this._internalMeshDataInfo._checkReadinessObserver = !IsFullScene(this._scene)
                         ? null
-                        : (this._scene as Scene).onBeforeRenderObservable.add(() => {
+                        : this._scene.onBeforeRenderObservable.add(() => {
                               // check for complete readiness
                               if (this.isReady(true)) {
                                   (this._scene as Scene).onBeforeRenderObservable.remove(this._internalMeshDataInfo._checkReadinessObserver);
@@ -1969,7 +1968,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
         }
         const scene = this.getScene();
-        const isInIntermediateRendering = scene.isCore ? false : (scene as Scene)._isInIntermediateRendering();
+        const isInIntermediateRendering = !IsFullScene(scene) ? false : scene._isInIntermediateRendering();
         const onlyForInstances = isInIntermediateRendering
             ? this._internalAbstractMeshDataInfo._onlyForInstancesIntermediate
             : this._internalAbstractMeshDataInfo._onlyForInstances;
@@ -2134,8 +2133,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Stats
         const scene = this.getScene();
 
-        if (!scene.isCore) {
-            (scene as Scene)._activeIndices.addCount(subMesh.indexCount * instancesCount, false);
+        if (IsFullScene(scene)) {
+            scene._activeIndices.addCount(subMesh.indexCount * instancesCount, false);
         }
 
         // Draw
@@ -2170,8 +2169,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const instancesCount = this._thinInstanceDataStorage?.instancesCount ?? 0;
         const scene = this.getScene();
 
-        if (!scene.isCore) {
-            (scene as Scene)._activeIndices.addCount(subMesh.indexCount * instancesCount, false);
+        if (IsFullScene(scene)) {
+            scene._activeIndices.addCount(subMesh.indexCount * instancesCount, false);
         }
 
         // Draw
@@ -2266,8 +2265,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             // Stats
             const scene = this.getScene();
 
-            if (!scene.isCore) {
-                (scene as Scene)._activeIndices.addCount(subMesh.indexCount * instanceCount, false);
+            if (IsFullScene(scene)) {
+                scene._activeIndices.addCount(subMesh.indexCount * instanceCount, false);
             }
         }
         return this;
@@ -2377,7 +2376,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this._internalAbstractMeshDataInfo._isActive = false;
         }
 
-        const fullScene = this._scene as Scene;
         const numActiveCameras = scene.activeCameras?.length ?? 0;
         const canCheckOcclusionQuery = (numActiveCameras > 1 && scene.activeCamera === scene.activeCameras![0]) || numActiveCameras <= 1;
 
@@ -2400,7 +2398,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const engine = scene.getEngine();
         let oldCameraMaxZ = 0;
         let oldCamera: Nullable<Camera> = null;
-        if (this.ignoreCameraMaxZ && scene.activeCamera && (this._scene.isCore || !fullScene._isInIntermediateRendering())) {
+        if (this.ignoreCameraMaxZ && scene.activeCamera && (!IsFullScene(scene) || !scene._isInIntermediateRendering())) {
             oldCameraMaxZ = scene.activeCamera.maxZ;
             oldCamera = scene.activeCamera;
             scene.activeCamera.maxZ = 0;
