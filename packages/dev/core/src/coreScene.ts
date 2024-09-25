@@ -5,6 +5,7 @@ import { UniformBuffer } from "./Materials/uniformBuffer";
 import { Frustum } from "./Maths/math.frustum";
 import type { Plane } from "./Maths/math.plane";
 import { Matrix } from "./Maths/math.vector";
+import { _ObserveArray } from "./Misc/arrayTools";
 import type { IFileRequest } from "./Misc/fileRequest";
 import type { LoadFileError, ReadFileError, RequestFileError } from "./Misc/fileTools";
 import { LoadFile, ReadFile, RequestFile } from "./Misc/fileTools";
@@ -174,19 +175,52 @@ export class CoreScene implements ISceneLike, IClipPlanesHolder {
     }
 
     /**
-     * Gets or sets the current active camera
-     * Always null in CoreScene
+     * An event triggered when the activeCamera property is updated
      */
-    public get activeCamera(): Nullable<Camera> {
-        return null;
-    }
+    public onActiveCameraChanged = new Observable<CoreScene>();
 
     /**
-     * All of the active cameras added to this scene.
-     * Always null in CoreScene
+     * An event triggered when the activeCameras property is updated
      */
+    public onActiveCamerasChanged = new Observable<CoreScene>();
+
+    private _activeCameras: Nullable<Camera[]>;
+    private _unObserveActiveCameras: Nullable<() => void> = null;
+
+    /** All of the active cameras added to this scene. */
     public get activeCameras(): Nullable<Camera[]> {
-        return null;
+        return this._activeCameras;
+    }
+
+    public set activeCameras(cameras: Nullable<Camera[]>) {
+        if (this._unObserveActiveCameras) {
+            this._unObserveActiveCameras();
+            this._unObserveActiveCameras = null;
+        }
+
+        if (cameras) {
+            this._unObserveActiveCameras = _ObserveArray(cameras, () => {
+                this.onActiveCamerasChanged.notifyObservers(this);
+            });
+        }
+
+        this._activeCameras = cameras;
+    }
+
+    /** @internal */
+    public _activeCamera: Nullable<Camera>;
+    /** Gets or sets the current active camera */
+    public get activeCamera(): Nullable<Camera> {
+        return this._activeCamera;
+    }
+
+    public set activeCamera(value: Nullable<Camera>) {
+        if (value === this._activeCamera) {
+            return;
+        }
+
+        this._activeCamera = value;
+        this.onActiveCameraChanged.notifyObservers(this);
     }
 
     /**

@@ -46,3 +46,4 @@ export * from "./types";
 export * from "./Compat/index";
 export * from "./FlowGraph/index";
 export * from "./ObjectModel/index";
+export * from "./coreScene.functions";

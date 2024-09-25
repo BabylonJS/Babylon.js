@@ -17,6 +17,7 @@ import type { IPointerEvent } from "../../Events/deviceInputEvents";
 import type { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import type { CoreScene } from "core/coreScene";
 import { Scene } from "core/scene";
+import { IsFullScene } from "core/coreScene.functions";
 
 /**
  * Data store to track virtual pointers movement
@@ -292,9 +293,9 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
             return this._ownerNode === m || (m.isDescendantOf(this._ownerNode) && (!this.draggableMeshes || this.draggableMeshes.indexOf(m) !== -1));
         };
 
-        this._pointerObserver = this._scene.isCore
+        this._pointerObserver = !IsFullScene(this._scene)
             ? null
-            : (this._scene as Scene).onPointerObservable.add((pointerInfo) => {
+            : this._scene.onPointerObservable.add((pointerInfo) => {
                   const pointerId = (<IPointerEvent>pointerInfo.event).pointerId;
                   if (!this._virtualMeshesInfo[pointerId]) {
                       this._virtualMeshesInfo[pointerId] = this._createVirtualMeshInfo();

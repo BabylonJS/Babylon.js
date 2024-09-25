@@ -52,6 +52,7 @@ import type { GroundMesh } from "./groundMesh";
 import type { DataBuffer } from "core/Buffers/dataBuffer";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { CoreScene } from "core/coreScene";
+import { IsFullScene } from "core/coreScene.functions";
 
 /**
  * @internal
@@ -2470,8 +2471,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         const effect = drawWrapper?.effect ?? null;
 
-        for (const step of scene._beforeRenderingMeshStage) {
-            step.action(this, subMesh, batch, effect);
+        if (IsFullScene(scene)) {
+            for (const step of scene._beforeRenderingMeshStage) {
+                step.action(this, subMesh, batch, effect);
+            }
         }
 
         if (!drawWrapper || !effect) {

@@ -783,16 +783,6 @@ export class Scene extends CoreScene implements IAnimatable, INodeContainer {
     public onAfterStepObservable = new Observable<Scene>();
 
     /**
-     * An event triggered when the activeCamera property is updated
-     */
-    public onActiveCameraChanged = new Observable<Scene>();
-
-    /**
-     * An event triggered when the activeCameras property is updated
-     */
-    public onActiveCamerasChanged = new Observable<Scene>();
-
-    /**
      * This Observable will be triggered before rendering each renderingGroup of each rendered camera.
      * The RenderingGroupInfo class contains all the information about the context in which the observable is called
      * If you wish to register an Observer only for a given set of renderingGroup, use the mask with a combination of the renderingGroup index elevated to the power of two (1 for renderingGroup 0, 2 for renderingrOup1, 4 for 2 and 8 for 3)
@@ -1221,45 +1211,6 @@ export class Scene extends CoreScene implements IAnimatable, INodeContainer {
 
     public get lightsEnabled(): boolean {
         return this._lightsEnabled;
-    }
-
-    private _activeCameras: Nullable<Camera[]>;
-    private _unObserveActiveCameras: Nullable<() => void> = null;
-
-    /** All of the active cameras added to this scene. */
-    public override get activeCameras(): Nullable<Camera[]> {
-        return this._activeCameras;
-    }
-
-    public override set activeCameras(cameras: Nullable<Camera[]>) {
-        if (this._unObserveActiveCameras) {
-            this._unObserveActiveCameras();
-            this._unObserveActiveCameras = null;
-        }
-
-        if (cameras) {
-            this._unObserveActiveCameras = _ObserveArray(cameras, () => {
-                this.onActiveCamerasChanged.notifyObservers(this);
-            });
-        }
-
-        this._activeCameras = cameras;
-    }
-
-    /** @internal */
-    public _activeCamera: Nullable<Camera>;
-    /** Gets or sets the current active camera */
-    public override get activeCamera(): Nullable<Camera> {
-        return this._activeCamera;
-    }
-
-    public override set activeCamera(value: Nullable<Camera>) {
-        if (value === this._activeCamera) {
-            return;
-        }
-
-        this._activeCamera = value;
-        this.onActiveCameraChanged.notifyObservers(this);
     }
 
     private _defaultMaterial: Material;

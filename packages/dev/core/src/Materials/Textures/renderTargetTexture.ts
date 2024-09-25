@@ -24,6 +24,8 @@ import { Effect } from "../effect";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import { Logger } from "../../Misc/logger";
 import type { CoreScene } from "core/coreScene";
+import type { Scene } from "core/scene";
+import { IsFullScene } from "core/coreScene.functions";
 
 declare module "../effect" {
     export interface Effect {
@@ -148,9 +150,14 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     private _renderListHasChanged = (_functionName: String, previousLength: number) => {
+        const scene = this.getScene();
+
+        if (!scene || !IsFullScene(scene)) {
+            return;
+        }
         const newLength = this._renderList ? this._renderList.length : 0;
         if ((previousLength === 0 && newLength > 0) || newLength === 0) {
-            this.getScene()?.meshes.forEach((mesh) => {
+            scene.meshes.forEach((mesh) => {
                 mesh._markSubMeshesAsLightDirty();
             });
         }
@@ -928,7 +935,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         }
 
         if (this._waitingRenderList) {
-            if (!this.renderListPredicate) {
+            if (!this.renderListPredicate && IsFullScene(scene)) {
                 this.renderList = [];
                 for (let index = 0; index < this._waitingRenderList.length; index++) {
                     const id = this._waitingRenderList[index];
@@ -951,7 +958,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
             const scene = this.getScene();
 
-            if (!scene) {
+            if (!scene || !IsFullScene(scene)) {
                 return checkReadiness;
             }
 
@@ -991,13 +998,17 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                 for (let layer = 0; layer < this.getRenderLayers(); layer++) {
                     this._renderToTarget(0, useCameraPostProcess, dumpForDebug, layer, camera);
                     scene.incrementRenderId();
-                    scene.resetCachedMaterial();
+                    if (IsFullScene(scene)) {
+                        scene.resetCachedMaterial();
+                    }
                 }
             } else if (this.isCube && !this.isMulti) {
                 for (let face = 0; face < 6; face++) {
                     this._renderToTarget(face, useCameraPostProcess, dumpForDebug, undefined, camera);
                     scene.incrementRenderId();
-                    scene.resetCachedMaterial();
+                    if (IsFullScene(scene)) {
+                        scene.resetCachedMaterial();
+                    }
                 }
             } else {
                 this._renderToTarget(0, useCameraPostProcess, dumpForDebug, undefined, camera);
@@ -1010,8 +1021,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             const numLayers = this.is2DArray || this.is3D ? this.getRenderLayers() : this.isCube ? 6 : 1;
             for (let layer = 0; layer < numLayers && returnValue; layer++) {
                 let currentRenderList: Nullable<Array<AbstractMesh>> = null;
-                const defaultRenderList = this.renderList ? this.renderList : scene.getActiveMeshes().data;
-                const defaultRenderListLength = this.renderList ? this.renderList.length : scene.getActiveMeshes().length;
+                const defaultRenderList = this.renderList ? this.renderList : !IsFullScene(scene) ? null : scene.getActiveMeshes().data;
+                const defaultRenderListLength = this.renderList ? this.renderList.length : !IsFullScene(scene) ? 0 : scene.getActiveMeshes().length;
 
                 engine.currentRenderPassId = this._renderPassIds[layer];
 
@@ -1029,8 +1040,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                     scene.updateTransformMatrix(true);
                 }
 
-                for (let i = 0; i < currentRenderList.length && returnValue; ++i) {
-                    const mesh = currentRenderList[i];
+                for (let i = 0; i < currentRenderList!.length && returnValue; ++i) {
+                    const mesh = currentRenderList![i];
 
                     if (!mesh.isEnabled() || mesh.isBlocked || !mesh.isVisible || !mesh.subMeshes) {
                         continue;
@@ -1051,7 +1062,9 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
                 if (this.is2DArray || this.is3D || this.isCube) {
                     scene.incrementRenderId();
-                    scene.resetCachedMaterial();
+                    if (IsFullScene(scene)) {
+                        scene.resetCachedMaterial();
+                    }
                 }
             }
         }
@@ -1068,7 +1081,9 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             engine.setViewport(scene.activeCamera.viewport);
         }
 
-        scene.resetCachedMaterial();
+        if (IsFullScene(scene)) {
+            scene.resetCachedMaterial();
+        }
 
         return returnValue;
     }
@@ -1106,9 +1121,10 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                     continue;
                 }
 
-                if (!mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate && scene.activeCamera) {
-                    mesh._internalAbstractMeshDataInfo._currentLOD = scene.customLODSelector
-                        ? scene.customLODSelector(mesh, this.activeCamera || scene.activeCamera)
+                const fullScene = scene as Scene;
+                if (!mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate && scene.activeCamera && fullScene.customLODSelector) {
+                    mesh._internalAbstractMeshDataInfo._currentLOD = fullScene.customLODSelector
+                        ? fullScene.customLODSelector(mesh, this.activeCamera || scene.activeCamera)
                         : mesh.getLOD(this.activeCamera || scene.activeCamera);
                     mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate = true;
                 }
@@ -1152,16 +1168,19 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             }
         }
 
-        for (let particleIndex = 0; particleIndex < scene.particleSystems.length; particleIndex++) {
-            const particleSystem = scene.particleSystems[particleIndex];
+        if (!scene.isCore) {
+            const fullScene = scene as Scene;
+            for (let particleIndex = 0; particleIndex < fullScene.particleSystems.length; particleIndex++) {
+                const particleSystem = fullScene.particleSystems[particleIndex];
 
-            const emitter: any = particleSystem.emitter;
+                const emitter: any = particleSystem.emitter;
 
-            if (!particleSystem.isStarted() || !emitter || (emitter.position && !emitter.isEnabled())) {
-                continue;
+                if (!particleSystem.isStarted() || !emitter || (emitter.position && !emitter.isEnabled())) {
+                    continue;
+                }
+
+                this._renderingManager.dispatchParticles(particleSystem);
             }
-
-            this._renderingManager.dispatchParticles(particleSystem);
         }
     }
 
@@ -1194,12 +1213,12 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     /**
      * @internal
      */
-    public _prepareFrame(scene: Scene, faceIndex?: number, layer?: number, useCameraPostProcess?: boolean) {
+    public _prepareFrame(scene: CoreScene, faceIndex?: number, layer?: number, useCameraPostProcess?: boolean) {
         if (this._postProcessManager) {
             if (!this._prePassEnabled) {
                 this._postProcessManager._prepareFrame(this._texture, this._postProcesses);
             }
-        } else if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._texture)) {
+        } else if (!useCameraPostProcess || (!scene.isCore && !(scene as Scene).postProcessManager._prepareFrame(this._texture))) {
             this._bindFrameBuffer(faceIndex, layer);
         }
     }
@@ -1231,8 +1250,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         if (!fastPath) {
             // Get the list of meshes to render
             let currentRenderList: Nullable<Array<AbstractMesh>> = null;
-            const defaultRenderList = this.renderList ? this.renderList : scene.getActiveMeshes().data;
-            const defaultRenderListLength = this.renderList ? this.renderList.length : scene.getActiveMeshes().length;
+            const defaultRenderList = this.renderList ? this.renderList : scene.isCore ? null : (scene as Scene).getActiveMeshes().data;
+            const defaultRenderListLength = this.renderList ? this.renderList.length : scene.isCore ? 0 : (scene as Scene).getActiveMeshes().length;
 
             if (this.getCustomRenderList) {
                 currentRenderList = this.getCustomRenderList(this.is2DArray || this.is3D ? layer : faceIndex, defaultRenderList, defaultRenderListLength);
@@ -1241,7 +1260,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             if (!currentRenderList) {
                 // No custom render list provided, we prepare the rendering for the default list, but check
                 // first if we did not already performed the preparation before so as to avoid re-doing it several times
-                if (!this._defaultRenderListPrepared) {
+                if (!this._defaultRenderListPrepared && defaultRenderList) {
                     this._prepareRenderingManager(defaultRenderList, defaultRenderListLength, camera, !this.renderList || this.forceLayerMaskCheck);
                     this._defaultRenderListPrepared = true;
                 }
@@ -1252,6 +1271,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             }
 
             // Before clear
+            const fullScene = scene as Scene;
             for (const step of scene._beforeRenderTargetClearStage) {
                 step.action(this, faceIndex, layer);
             }
@@ -1526,6 +1546,6 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-Texture._CreateRenderTargetTexture = (name: string, renderTargetSize: number, scene: Scene, generateMipMaps: boolean, creationFlags?: number) => {
+Texture._CreateRenderTargetTexture = (name: string, renderTargetSize: number, scene: CoreScene, generateMipMaps: boolean, creationFlags?: number) => {
     return new RenderTargetTexture(name, renderTargetSize, scene, generateMipMaps);
 };

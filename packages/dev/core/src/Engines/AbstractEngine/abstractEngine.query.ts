@@ -3,6 +3,7 @@ import type { PerfCounter } from "../../Misc/perfCounter";
 import type { Nullable } from "../../types";
 import { AbstractEngine } from "../abstractEngine";
 import type { Scene } from "core/scene";
+import { IsFullScene } from "core/coreScene.functions";
 
 /** @internal */
 export type OcclusionQuery = WebGLQuery | number;
@@ -303,8 +304,8 @@ AbstractMesh.prototype._checkOcclusionQuery = function () {
     }
 
     const scene = this.getScene();
-    if (!scene.isCore && (scene as Scene).getBoundingBoxRenderer) {
-        const occlusionBoundingBoxRenderer = (scene as Scene).getBoundingBoxRenderer();
+    if (IsFullScene(scene)) {
+        const occlusionBoundingBoxRenderer = scene.getBoundingBoxRenderer();
 
         if (this._occlusionQuery === null) {
             this._occlusionQuery = engine.createQuery();

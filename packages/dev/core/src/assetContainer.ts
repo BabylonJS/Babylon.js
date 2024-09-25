@@ -30,6 +30,7 @@ import type { Sound } from "./Audio";
 import type { Layer } from "./Layers/layer";
 import type { CoreScene } from "./coreScene";
 import type { Scene } from "./scene";
+import { IsFullScene } from "./coreScene.functions";
 
 /**
  * Set of assets to keep when moving a scene into an asset container.
@@ -672,15 +673,14 @@ export class AssetContainer implements INodeContainer {
                             mesh.material = storeMap[conversionMap[sourceMaterial.uniqueId]];
                         }
                     } else {
-                        if (!this.scene.isCore) {
-                            const fullScene = this.scene as Scene;
+                        if (IsFullScene(this.scene)) {
                             if (mesh.material.getClassName() === "MultiMaterial") {
-                                if (fullScene.multiMaterials.indexOf(mesh.material as MultiMaterial) === -1) {
-                                    fullScene.addMultiMaterial(mesh.material as MultiMaterial);
+                                if (this.scene.multiMaterials.indexOf(mesh.material as MultiMaterial) === -1) {
+                                    this.scene.addMultiMaterial(mesh.material as MultiMaterial);
                                 }
                             } else {
-                                if (fullScene.materials.indexOf(mesh.material) === -1) {
-                                    fullScene.addMaterial(mesh.material);
+                                if (this.scene.materials.indexOf(mesh.material) === -1) {
+                                    this.scene.addMaterial(mesh.material);
                                 }
                             }
                         }
@@ -793,13 +793,12 @@ export class AssetContainer implements INodeContainer {
 
         this.addToScene(null);
 
-        if (!this.scene.isCore) {
-            const fullScene = this.scene as Scene;
+        if (IsFullScene(this.scene)) {
             if (this.environmentTexture) {
-                fullScene.environmentTexture = this.environmentTexture;
+                this.scene.environmentTexture = this.environmentTexture;
             }
 
-            for (const component of fullScene._serializableComponents) {
+            for (const component of this.scene._serializableComponents) {
                 component.addFromContainer(this);
             }
         }
@@ -933,13 +932,12 @@ export class AssetContainer implements INodeContainer {
         this._wasAddedToScene = false;
 
         this.removeFromScene(null);
-        if (!this.scene.isCore) {
-            const fullScene = this.scene as Scene;
-            if (this.environmentTexture === fullScene.environmentTexture) {
-                fullScene.environmentTexture = null;
+        if (IsFullScene(this.scene)) {
+            if (this.environmentTexture === this.scene.environmentTexture) {
+                this.scene.environmentTexture = null;
             }
 
-            for (const component of fullScene._serializableComponents) {
+            for (const component of this.scene._serializableComponents) {
                 component.removeFromContainer(this);
             }
         }
@@ -1116,8 +1114,8 @@ export class AssetContainer implements INodeContainer {
             this.environmentTexture = null;
         }
 
-        if (!this.scene.isCore) {
-            for (const component of (this.scene as Scene)._serializableComponents) {
+        if (IsFullScene(this.scene)) {
+            for (const component of this.scene._serializableComponents) {
                 component.removeFromContainer(this, true);
             }
         }
@@ -1169,8 +1167,8 @@ export class AssetContainer implements INodeContainer {
             }
         }
 
-        if (!this.scene.isCore) {
-            this.environmentTexture = (this.scene as Scene).environmentTexture;
+        if (IsFullScene(this.scene)) {
+            this.environmentTexture = this.scene.environmentTexture;
         }
 
         this.removeAllFromScene();

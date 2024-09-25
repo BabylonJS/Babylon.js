@@ -11,7 +11,7 @@ import type { IColor3Like, IVector2Like } from "core/Maths/math.like";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { VertexBuffer } from "core/Meshes/buffer";
 import type { Mesh } from "core/Meshes/mesh";
-import type { CoreScene } from "core/coreScene";
+import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 
 /**
@@ -51,7 +51,7 @@ export class GPUPicker {
     private _idMap: Array<number> = [];
     private _thinIdMap: Array<{ meshId: number; thinId: number }> = [];
     private _idColors: Array<Color3> = [];
-    private _cachedScene: Nullable<CoreScene>;
+    private _cachedScene: Nullable<Scene>;
     private _engine: Nullable<AbstractEngine>;
     private _defaultRenderMaterial: Nullable<ShaderMaterial>;
     private _pickableMeshes: Array<AbstractMesh>;
@@ -105,7 +105,7 @@ export class GPUPicker {
         buffer[i + 3] = 1.0;
     }
 
-    private _createRenderTarget(scene: CoreScene, width: number, height: number) {
+    private _createRenderTarget(scene: Scene, width: number, height: number) {
         if (this._pickingTexture) {
             this._pickingTexture.dispose();
         }
@@ -121,7 +121,7 @@ export class GPUPicker {
         );
     }
 
-    private async _createColorMaterialAsync(scene: CoreScene) {
+    private async _createColorMaterialAsync(scene: Scene) {
         if (this._defaultRenderMaterial) {
             this._defaultRenderMaterial.dispose();
         }
@@ -244,7 +244,12 @@ export class GPUPicker {
         this._pickableMeshes = list as Array<AbstractMesh>;
 
         // Prepare target
-        const scene = ("mesh" in list[0] ? list[0].mesh : list[0]).getScene();
+        const scene = ("mesh" in list[0] ? list[0].mesh : list[0]).getScene() as Scene;
+
+        if (scene.isCore) {
+            throw new Error("GPUPicker can only be used with a Scene class");
+        }
+
         const engine = scene.getEngine();
         const rttSizeW = engine.getRenderWidth();
         const rttSizeH = engine.getRenderHeight();
