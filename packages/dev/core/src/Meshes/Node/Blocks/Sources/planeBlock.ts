@@ -4,7 +4,7 @@ import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnect
 import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import { GeometryInputBlock } from "../geometryInputBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import { Matrix, type Vector4 } from "../../../../Maths/math.vector";
+import { Matrix } from "../../../../Maths/math.vector";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../../Decorators/nodeDecorator";
 import { CreateGroundVertexData } from "core/Meshes/Builders/groundBuilder";
 
