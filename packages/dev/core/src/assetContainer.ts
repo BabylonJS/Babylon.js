@@ -164,7 +164,7 @@ export class AbstractAssetContainer implements IAssetContainer {
     /**
      * The list of reflection probes added to the scene
      */
-    public reflectionProbes: ReflectionProbe[];
+    public reflectionProbes: ReflectionProbe[] = [];
 
     /**
      * The list of lens flare systems added to the scene
