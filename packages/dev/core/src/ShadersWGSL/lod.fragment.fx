@@ -6,12 +6,12 @@ var textureSamplerSampler: sampler;
 var textureSampler: texture_2d<f32>;
 
 uniform lod: f32;
-uniform gamma: bool;
+uniform gamma: i32;
 
 @fragment
 fn main(input: FragmentInputs) -> FragmentOutputs {
-	fragmentOutputs.color = textureSampleLevel(textureSampler, textureSamplerSampler, vUV, uniforms.lod);
-    if (!gamma) {
-        fragmentOutputs.color = vec4f(pow(fragmentOutputs.color, vec3f(GammaEncodePowerApprox)), fragmentOutputs.color.a);
+	fragmentOutputs.color = textureSampleLevel(textureSampler, textureSamplerSampler, fragmentInputs.vUV, uniforms.lod);
+    if (uniforms.gamma == 0) {
+        fragmentOutputs.color = vec4f(pow(fragmentOutputs.color.rgb, vec3f(GammaEncodePowerApprox)), fragmentOutputs.color.a);
     }
 }
