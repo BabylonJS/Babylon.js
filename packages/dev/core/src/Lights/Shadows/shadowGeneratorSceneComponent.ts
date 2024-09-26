@@ -5,8 +5,8 @@ import { ShadowGenerator } from "./shadowGenerator";
 import { CascadedShadowGenerator } from "./cascadedShadowGenerator";
 import type { ISceneSerializableComponent } from "../../sceneComponent";
 import { SceneComponentConstants } from "../../sceneComponent";
-import type { AbstractScene } from "../../abstractScene";
 import { AddParser } from "core/Loading/Plugins/babylonFileParser.function";
+import type { IAssetContainer } from "core/IAssetContainer";
 
 // Adds the parser to the scene parsers.
 AddParser(SceneComponentConstants.NAME_SHADOWGENERATOR, (parsedData: any, scene: Scene) => {
@@ -87,7 +87,7 @@ export class ShadowGeneratorSceneComponent implements ISceneSerializableComponen
      * @param container the container holding the elements
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public addFromContainer(container: AbstractScene): void {
+    public addFromContainer(container: IAssetContainer): void {
         // Nothing To Do Here. (directly attached to a light)
     }
 
@@ -97,7 +97,7 @@ export class ShadowGeneratorSceneComponent implements ISceneSerializableComponen
      * @param dispose if the removed element should be disposed (default: false)
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public removeFromContainer(container: AbstractScene, dispose?: boolean): void {
+    public removeFromContainer(container: IAssetContainer, dispose?: boolean): void {
         // Nothing To Do Here. (directly attached to a light)
     }
 

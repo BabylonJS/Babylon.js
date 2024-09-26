@@ -24,7 +24,6 @@ import { DrawWrapper } from "./drawWrapper";
 import { MaterialStencilState } from "./materialStencilState";
 import { ScenePerformancePriority } from "../scene";
 import type { Scene } from "../scene";
-import type { AbstractScene } from "../abstractScene";
 import type {
     MaterialPluginDisposed,
     MaterialPluginIsReadyForSubMesh,
@@ -52,6 +51,7 @@ import type { InstancedMesh } from "../Meshes/instancedMesh";
 import { BindSceneUniformBuffer } from "./materialHelper.functions";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { ShaderLanguage } from "./shaderLanguage";
+import type { IAssetContainer } from "core/IAssetContainer";
 
 declare let BABYLON: any;
 
@@ -865,7 +865,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     public meshMap: Nullable<{ [id: string]: AbstractMesh | undefined }> = null;
 
     /** @internal */
-    public _parentContainer: Nullable<AbstractScene> = null;
+    public _parentContainer: Nullable<IAssetContainer> = null;
 
     /** @internal */
     public _dirtyCallbacks: { [code: number]: () => void };

@@ -1,15 +1,15 @@
 import { Camera } from "../Cameras/camera";
-import type { Scene } from "../scene";
+import { Scene } from "../scene";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { ISceneSerializableComponent } from "../sceneComponent";
 import { SceneComponentConstants } from "../sceneComponent";
 import { EffectLayer } from "./effectLayer";
-import { AbstractScene } from "../abstractScene";
 import type { AssetContainer } from "../assetContainer";
 import { EngineStore } from "../Engines/engineStore";
 import { AddParser } from "core/Loading/Plugins/babylonFileParser.function";
+import type { IAssetContainer } from "core/IAssetContainer";
 
 // Adds the parser to the scene parsers.
 AddParser(SceneComponentConstants.NAME_EFFECTLAYER, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
@@ -25,8 +25,8 @@ AddParser(SceneComponentConstants.NAME_EFFECTLAYER, (parsedData: any, scene: Sce
     }
 });
 
-declare module "../abstractScene" {
-    export interface AbstractScene {
+declare module "../scene" {
+    export interface Scene {
         /**
          * The list of effect layers (highlights/glow) added to the scene
          * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/highlightLayer
@@ -49,7 +49,7 @@ declare module "../abstractScene" {
     }
 }
 
-AbstractScene.prototype.removeEffectLayer = function (toRemove: EffectLayer): number {
+Scene.prototype.removeEffectLayer = function (toRemove: EffectLayer): number {
     const index = this.effectLayers.indexOf(toRemove);
     if (index !== -1) {
         this.effectLayers.splice(index, 1);
@@ -58,7 +58,7 @@ AbstractScene.prototype.removeEffectLayer = function (toRemove: EffectLayer): nu
     return index;
 };
 
-AbstractScene.prototype.addEffectLayer = function (newEffectLayer: EffectLayer): void {
+Scene.prototype.addEffectLayer = function (newEffectLayer: EffectLayer): void {
     this.effectLayers.push(newEffectLayer);
 };
 
@@ -142,7 +142,7 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
      * Adds all the elements from the container to the scene
      * @param container the container holding the elements
      */
-    public addFromContainer(container: AbstractScene): void {
+    public addFromContainer(container: IAssetContainer): void {
         if (!container.effectLayers) {
             return;
         }
@@ -156,7 +156,7 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
      * @param container contains the elements to remove
      * @param dispose if the removed element should be disposed (default: false)
      */
-    public removeFromContainer(container: AbstractScene, dispose?: boolean): void {
+    public removeFromContainer(container: IAssetContainer, dispose?: boolean): void {
         if (!container.effectLayers) {
             return;
         }
