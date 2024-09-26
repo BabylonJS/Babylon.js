@@ -7,5 +7,5 @@
     #ifdef DECAL_SMOOTHALPHA
         decalTempAlpha = decalColor.a * decalColor.a;
     #endif
-    surfaceAlbedo = mix(surfaceAlbedo.rgb, decalTempColor, decalTempAlpha);
+    surfaceAlbedo = vec4f(mix(surfaceAlbedo.rgb, decalTempColor, decalTempAlpha), surfaceAlbedo.a);
 #endif
