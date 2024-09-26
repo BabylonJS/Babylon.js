@@ -15,63 +15,67 @@ import type { Light } from "./Lights/light";
 import type { Node } from "./node";
 import type { PostProcess } from "./PostProcesses/postProcess";
 import type { Animation } from "./Animations/animation";
-import { RegisterClass } from "./Misc/typeStore";
-
+import type { Sound } from "./Audio/sound";
+import type { Layer } from "./Layers/layer";
+import type { EffectLayer } from "./Layers/effectLayer";
+import type { ReflectionProbe } from "./Probes/reflectionProbe";
+import type { LensFlareSystem } from "./LensFlares/lensFlareSystem";
+import type { ProceduralTexture } from "./Materials/Textures/Procedurals/proceduralTexture";
 /**
- * Base class of the scene acting as a container for the different elements composing a scene.
+ * Interface defining container for the different elements composing a scene.
  * This class is dynamically extended by the different components of the scene increasing
  * flexibility and reducing coupling
  */
-export abstract class AbstractScene {
+export interface IAssetContainer {
     /**
      * Gets the list of root nodes (ie. nodes with no parent)
      */
-    public rootNodes: Node[] = [];
+    rootNodes: Node[];
 
     /** All of the cameras added to this scene
      * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras
      */
-    public cameras: Camera[] = [];
+    cameras: Camera[];
 
     /**
      * All of the lights added to this scene
      * @see https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction
      */
-    public lights: Light[] = [];
+    lights: Light[];
 
     /**
      * All of the (abstract) meshes added to this scene
      */
-    public meshes: AbstractMesh[] = [];
+    meshes: AbstractMesh[];
 
     /**
      * The list of skeletons added to the scene
      * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/bonesSkeletons
      */
-    public skeletons: Skeleton[] = [];
+    skeletons: Skeleton[];
 
     /**
      * All of the particle systems added to this scene
      * @see https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/particle_system_intro
      */
-    public particleSystems: IParticleSystem[] = [];
+    particleSystems: IParticleSystem[];
 
     /**
      * Gets a list of Animations associated with the scene
      */
-    public animations: Animation[] = [];
+    animations: Animation[];
 
     /**
      * All of the animation groups added to this scene
      * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/groupAnimations
      */
-    public animationGroups: AnimationGroup[] = [];
+    animationGroups: AnimationGroup[];
 
     /**
      * All of the multi-materials added to this scene
      * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/multiMaterials
      */
-    public multiMaterials: MultiMaterial[] = [];
+    multiMaterials: MultiMaterial[];
 
     /**
      * All of the materials added to this scene
@@ -80,18 +84,18 @@ export abstract class AbstractScene {
      * Note also that the order of the Material within the array is not significant and might change.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/materials_introduction
      */
-    public materials: Material[] = [];
+    materials: Material[];
 
     /**
      * The list of morph target managers added to the scene
      * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/dynamicMeshMorph
      */
-    public morphTargetManagers: MorphTargetManager[] = [];
+    morphTargetManagers: MorphTargetManager[];
 
     /**
      * The list of geometries used in the scene.
      */
-    public geometries: Geometry[] = [];
+    geometries: Geometry[];
 
     /**
      * All of the transform nodes added to this scene
@@ -100,52 +104,63 @@ export abstract class AbstractScene {
      * Note also that the order of the TransformNode within the array is not significant and might change.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/parent_pivot/transform_node
      */
-    public transformNodes: TransformNode[] = [];
+    transformNodes: TransformNode[];
 
     /**
      * ActionManagers available on the scene.
      * @deprecated
      */
-    public actionManagers: AbstractActionManager[] = [];
+    actionManagers: AbstractActionManager[];
 
     /**
      * Textures to keep.
      */
-    public textures: BaseTexture[] = [];
+    textures: BaseTexture[];
 
-    /** @internal */
-    protected _environmentTexture: Nullable<BaseTexture> = null;
     /**
      * Texture used in all pbr material as the reflection texture.
      * As in the majority of the scene they are the same (exception for multi room and so on),
      * this is easier to reference from here than from all the materials.
      */
-    public get environmentTexture(): Nullable<BaseTexture> {
-        return this._environmentTexture;
-    }
-
-    public set environmentTexture(value: Nullable<BaseTexture>) {
-        this._environmentTexture = value;
-    }
+    environmentTexture: Nullable<BaseTexture>;
 
     /**
      * The list of postprocesses added to the scene
      */
-    public postProcesses: PostProcess[] = [];
+    postProcesses: PostProcess[];
+
+    /**
+     * The list of sound added to the scene
+     */
+    sounds: Sound[];
+
+    /**
+     * The list of effect layers added to the scene
+     */
+    effectLayers: EffectLayer[];
+
+    /**
+     * The list of layers added to the scene
+     */
+    layers: Layer[];
+
+    /**
+     * The list of reflection probes added to the scene
+     */
+    reflectionProbes: ReflectionProbe[];
+
+    /**
+     * The list of lens flare system added to the scene
+     */
+    lensFlareSystems: LensFlareSystem[];
+
+    /**
+     * The list of procedural textures added to the scene
+     */
+    proceduralTextures: ProceduralTexture[];
 
     /**
      * @returns all meshes, lights, cameras, transformNodes and bones
      */
-    public getNodes(): Array<Node> {
-        let nodes: Node[] = [];
-        nodes = nodes.concat(this.meshes);
-        nodes = nodes.concat(this.lights);
-        nodes = nodes.concat(this.cameras);
-        nodes = nodes.concat(this.transformNodes); // dummies
-        this.skeletons.forEach((skeleton) => (nodes = nodes.concat(skeleton.bones)));
-        return nodes;
-    }
+    getNodes(): Array<Node>;
 }
-
-// Register Class Name
-RegisterClass("BABYLON.AbstractScene", AbstractScene);

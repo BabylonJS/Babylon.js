@@ -1,13 +1,13 @@
 import { Tools } from "../Misc/tools";
 import type { Nullable } from "../types";
 import type { Camera } from "../Cameras/camera";
-import type { Scene } from "../scene";
+import { Scene } from "../scene";
 import type { ISceneSerializableComponent } from "../sceneComponent";
 import { SceneComponentConstants } from "../sceneComponent";
-import { AbstractScene } from "../abstractScene";
 import type { AssetContainer } from "../assetContainer";
 import { LensFlareSystem } from "./lensFlareSystem";
 import { AddParser } from "core/Loading/Plugins/babylonFileParser.function";
+import type { IAssetContainer } from "core/IAssetContainer";
 
 // Adds the parser to the scene parsers.
 AddParser(SceneComponentConstants.NAME_LENSFLARESYSTEM, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
@@ -25,8 +25,8 @@ AddParser(SceneComponentConstants.NAME_LENSFLARESYSTEM, (parsedData: any, scene:
     }
 });
 
-declare module "../abstractScene" {
-    export interface AbstractScene {
+declare module "../scene" {
+    export interface Scene {
         /**
          * The list of lens flare system added to the scene
          * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/lenseFlare
@@ -70,7 +70,7 @@ declare module "../abstractScene" {
     }
 }
 
-AbstractScene.prototype.getLensFlareSystemByName = function (name: string): Nullable<LensFlareSystem> {
+Scene.prototype.getLensFlareSystemByName = function (name: string): Nullable<LensFlareSystem> {
     for (let index = 0; index < this.lensFlareSystems.length; index++) {
         if (this.lensFlareSystems[index].name === name) {
             return this.lensFlareSystems[index];
@@ -80,7 +80,7 @@ AbstractScene.prototype.getLensFlareSystemByName = function (name: string): Null
     return null;
 };
 
-AbstractScene.prototype.getLensFlareSystemById = function (id: string): Nullable<LensFlareSystem> {
+Scene.prototype.getLensFlareSystemById = function (id: string): Nullable<LensFlareSystem> {
     for (let index = 0; index < this.lensFlareSystems.length; index++) {
         if (this.lensFlareSystems[index].id === id) {
             return this.lensFlareSystems[index];
@@ -90,11 +90,11 @@ AbstractScene.prototype.getLensFlareSystemById = function (id: string): Nullable
     return null;
 };
 
-AbstractScene.prototype.getLensFlareSystemByID = function (id: string): Nullable<LensFlareSystem> {
+Scene.prototype.getLensFlareSystemByID = function (id: string): Nullable<LensFlareSystem> {
     return this.getLensFlareSystemById(id);
 };
 
-AbstractScene.prototype.removeLensFlareSystem = function (toRemove: LensFlareSystem): number {
+Scene.prototype.removeLensFlareSystem = function (toRemove: LensFlareSystem): number {
     const index = this.lensFlareSystems.indexOf(toRemove);
     if (index !== -1) {
         this.lensFlareSystems.splice(index, 1);
@@ -102,7 +102,7 @@ AbstractScene.prototype.removeLensFlareSystem = function (toRemove: LensFlareSys
     return index;
 };
 
-AbstractScene.prototype.addLensFlareSystem = function (newLensFlareSystem: LensFlareSystem): void {
+Scene.prototype.addLensFlareSystem = function (newLensFlareSystem: LensFlareSystem): void {
     this.lensFlareSystems.push(newLensFlareSystem);
 };
 
@@ -152,7 +152,7 @@ export class LensFlareSystemSceneComponent implements ISceneSerializableComponen
      * Adds all the elements from the container to the scene
      * @param container the container holding the elements
      */
-    public addFromContainer(container: AbstractScene): void {
+    public addFromContainer(container: IAssetContainer): void {
         if (!container.lensFlareSystems) {
             return;
         }
@@ -166,7 +166,7 @@ export class LensFlareSystemSceneComponent implements ISceneSerializableComponen
      * @param container contains the elements to remove
      * @param dispose if the removed element should be disposed (default: false)
      */
-    public removeFromContainer(container: AbstractScene, dispose?: boolean): void {
+    public removeFromContainer(container: IAssetContainer, dispose?: boolean): void {
         if (!container.lensFlareSystems) {
             return;
         }

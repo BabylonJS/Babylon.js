@@ -18,8 +18,8 @@ import { FluidRenderingObjectCustomParticles } from "./fluidRenderingObjectCusto
 import { FluidRenderingDepthTextureCopy } from "./fluidRenderingDepthTextureCopy";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
-declare module "../../abstractScene" {
-    export interface AbstractScene {
+declare module "../../scene" {
+    export interface Scene {
         /** @internal (Backing field) */
         _fluidRenderer: Nullable<FluidRenderer>;
 

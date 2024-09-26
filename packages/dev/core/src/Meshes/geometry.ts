@@ -16,7 +16,6 @@ import { Tools } from "../Misc/tools";
 import { Tags } from "../Misc/tags";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import { extractMinAndMax } from "../Maths/math.functions";
-import type { AbstractScene } from "../abstractScene";
 import { EngineStore } from "../Engines/engineStore";
 import { useOpenGLOrientationForUV } from "../Compat/compatibilityOptions";
 
@@ -25,6 +24,7 @@ import type { Buffer } from "../Buffers/buffer";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { ThinEngine } from "../Engines/thinEngine";
 import { CopyFloatData } from "../Buffers/bufferUtils";
+import type { IAssetContainer } from "core/IAssetContainer";
 
 /**
  * Class used to store geometry data (vertex buffers + index buffer)
@@ -86,7 +86,7 @@ export class Geometry implements IGetSetVerticesData {
     private _positionsCache: Vector3[] = [];
 
     /** @internal */
-    public _parentContainer: Nullable<AbstractScene> = null;
+    public _parentContainer: Nullable<IAssetContainer> = null;
 
     /**
      *  Gets or sets the Bias Vector to apply on the bounding elements (box/sphere), the max extend is computed as v += v * bias.x + bias.y, the min is computed as v -= v * bias.x + bias.y
