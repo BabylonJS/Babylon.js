@@ -248,7 +248,11 @@ const ProcessAsync = async (texture: BaseTexture, width: number, height: number,
             await import("../Shaders/lod.fragment");
         }
     } else {
-        throw Error("GetTextureDataAsync is not yet supported in WebGPU.");
+        if (texture.isCube) {
+            await import("../ShadersWGSL/lodCube.fragment");
+        } else {
+            await import("../ShadersWGSL/lod.fragment");
+        }
     }
 
     let lodPostProcess: PostProcess;
