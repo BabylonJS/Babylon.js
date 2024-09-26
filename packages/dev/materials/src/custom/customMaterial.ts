@@ -10,8 +10,9 @@ import { Color3, Color4 } from "core/Maths/math.color";
 import type { Nullable } from "core/types";
 import type { SubMesh } from "core/Meshes/subMesh";
 
-import "@babylonjs/core/Shaders/default.vertex";
-import "@babylonjs/core/Shaders/default.fragment";
+import "core/Shaders/default.vertex";
+import "core/Shaders/default.fragment";
+
 
 /**
  * Structure of a custom shader
