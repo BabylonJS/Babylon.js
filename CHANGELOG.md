@@ -1,5 +1,12 @@
 # Changelog
 
+## 7.27.0
+
+### Core
+
+- Add option to use screen space depth for SSR - by [MiiBond](https://github.com/MiiBond) ([#15587](https://github.com/BabylonJS/Babylon.js/pull/15587))
+- Fix handedness of IBL shadows - by [MiiBond](https://github.com/MiiBond) ([#15624](https://github.com/BabylonJS/Babylon.js/pull/15624))
+
 ## 7.26.5
 
 ## 7.26.4
