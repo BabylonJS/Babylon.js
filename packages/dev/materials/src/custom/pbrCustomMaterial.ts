@@ -12,6 +12,9 @@ import { Color3, Color4 } from "core/Maths/math.color";
 import type { Nullable } from "core/types";
 import type { SubMesh } from "core/Meshes/subMesh";
 
+import "core/Shaders/pbr.vertex";
+import "core/Shaders/pbr.fragment";
+
 /**
  * Albedo parts of the shader
  */
