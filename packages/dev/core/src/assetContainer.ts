@@ -27,7 +27,7 @@ import type { BaseTexture } from "./Materials/Textures/baseTexture";
 import type { PostProcess } from "./PostProcesses/postProcess";
 import type { Sound } from "./Audio/sound";
 import type { Layer } from "./Layers/layer";
-import type { EffectLayer } from "./Layers";
+import type { EffectLayer } from "./Layers/effectLayer";
 import type { ReflectionProbe } from "./Probes/reflectionProbe";
 import type { LensFlareSystem } from "./LensFlares/lensFlareSystem";
 import type { ProceduralTexture } from "./Materials/Textures/Procedurals/proceduralTexture";
