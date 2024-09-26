@@ -13,7 +13,6 @@ import type { SubMesh } from "core/Meshes/subMesh";
 import "core/Shaders/default.vertex";
 import "core/Shaders/default.fragment";
 
-
 /**
  * Structure of a custom shader
  */
