@@ -2,7 +2,7 @@
 
 The Babylon Viewer aims to simplify a specific but common Babylon.js use case: loading, viewing, and interacting with a 3D model.
 
-![Viewer Default Appearance](docs/ViewerDefault.jpg)
+![Viewer Default Appearance](./docs/ViewerDefault.jpg)
 
 `Viewer` is a lower level JavaScript class that implements the bulk of the features, and can be used in any babylonjs context (in the browser using pure HTML, in the browser using React, or even in Babylon Native).
 
@@ -116,7 +116,7 @@ babylon-viewer {
 }
 ```
 
-![Viewer styled with CSS Variables](docs/ViewerStyled.jpg)
+![Viewer styled with CSS Variables](./docs/ViewerStyled.jpg)
 
 #### Parts
 
@@ -141,7 +141,7 @@ babylon-viewer::part(tool-bar) {
 }
 ```
 
-![Viewer styled with Parts](docs/ViewerParts.jpg)
+![Viewer styled with Parts](./docs/ViewerParts.jpg)
 
 #### Slots
 
@@ -161,4 +161,4 @@ As an example, if you wanted to replace the toolbar with a custom button that ju
 </babylon-viewer>
 ```
 
-![Viewer UI replacement with Slots](docs/ViewerSlots.jpg)
+![Viewer UI replacement with Slots](./docs/ViewerSlots.jpg)
