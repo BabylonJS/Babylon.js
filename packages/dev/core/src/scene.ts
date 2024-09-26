@@ -90,7 +90,7 @@ import { PointerPickingConfiguration } from "./Inputs/pointerPickingConfiguratio
 import { Logger } from "./Misc/logger";
 import type { AbstractEngine } from "./Engines/abstractEngine";
 import { RegisterClass } from "./Misc/typeStore";
-import { IAssetContainer } from "./IAssetContainer";
+import type { IAssetContainer } from "./IAssetContainer";
 
 /**
  * Define an interface for all classes that will hold resources
@@ -1765,8 +1765,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @param options defines the scene options
      */
     constructor(engine: AbstractEngine, options?: SceneOptions) {
-        super();
-
         this.activeCameras = [] as Camera[];
 
         const fullOptions = {

@@ -132,7 +132,7 @@ export interface IAssetContainer {
     /**
      * The list of sound added to the scene
      */
-    sounds: Sound[];
+    sounds: Nullable<Sound[]>;
 
     /**
      * The list of effect layers added to the scene

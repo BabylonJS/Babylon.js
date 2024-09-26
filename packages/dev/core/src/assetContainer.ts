@@ -149,7 +149,7 @@ export class AbstractAssetContainer implements IAssetContainer {
     /**
      * The list of sounds
      */
-    public sounds: Sound[] = [];
+    public sounds: Nullable<Sound[]> = null;
 
     /**
      * The list of effect layers added to the scene
