@@ -207,8 +207,6 @@ export class MeshUVSpaceRenderer {
         }
 
         this._shadersLoaded = true;
-
-        this._createDiffuseRTT();
     }
 
     /**
@@ -222,6 +220,8 @@ export class MeshUVSpaceRenderer {
 
         if (!this.texture) {
             this._createDiffuseRTT();
+        } else if (this._configureUserCreatedTexture) {
+            this._configureUserCreatedRTT();
         }
 
         // this.texture is guaranteed to be non-null here as it is created in _createDiffuseRTT above
@@ -238,9 +238,17 @@ export class MeshUVSpaceRenderer {
      * @param position The position of the center of projection (world space coordinates)
      * @param normal The direction of the projection (world space coordinates)
      * @param size The size of the projection
-     * @param angle The rotation angle around the direction of the projection
+     * @param angle The rotation angle around the direction of the projection (default: 0)
+     * @param checkIsReady If true, it will check if the texture is ready before rendering (default: true). If the texture is not ready, a new attempt will be scheduled in 16ms
      */
-    public renderTexture(texture: BaseTexture, position: Vector3, normal: Vector3, size: Vector3, angle = 0): void {
+    public renderTexture(texture: BaseTexture, position: Vector3, normal: Vector3, size: Vector3, angle = 0, checkIsReady = true): void {
+        if (checkIsReady && !this.isReady()) {
+            setTimeout(() => {
+                this.renderTexture(texture, position, normal, size, angle, checkIsReady);
+            }, 16);
+            return;
+        }
+
         if (!this.texture) {
             this._createDiffuseRTT();
         } else if (this._configureUserCreatedTexture) {
@@ -256,6 +264,10 @@ export class MeshUVSpaceRenderer {
             shader.setMatrix("projMatrix", matrix);
 
             this.texture.render();
+
+            // We needed the texture only once for the render() call above, so we can remove it from the shader.
+            // It's important to do that, because this texture could be disposed by the user, meaning that shader.isReady() would return false as part of the this.texture.isReadyForRendering() call of isReady()
+            shader.removeTexture("textureSampler");
         }
     }
 
