@@ -285,7 +285,9 @@ export class SolidParser {
         if (this._loadingOptions.importVertexColors) {
             return this._extColors[index] ?? this._colors[index];
         }
-        return undefined;
+        else{
+            return undefined;
+        }
     }
 
     /**
