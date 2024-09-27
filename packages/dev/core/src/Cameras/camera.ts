@@ -1572,17 +1572,17 @@ export class Camera extends Node {
     }
     /**
      * Query a hotspot
-     * @param hotSpotData info necessary to compute the hotspot
+     * @param hotSpotQuery info necessary to compute the hotspot
      * @param res resulting hotspot infor
      * @returns true if hotspot could be computed
      */
-    getHotSpotToRef(hotSpotData: HotSpotQuery, res: HotSpot): boolean {
+    getHotSpotToRef(hotSpotQuery: HotSpotQuery, res: HotSpot): boolean {
         const scene = this.getScene();
-        if (hotSpotData.meshIndex >= scene.meshes.length) {
+        if (hotSpotQuery.meshIndex >= scene.meshes.length) {
             return false;
         }
-        const mesh = scene.meshes[hotSpotData.meshIndex];
-        mesh.getHotSpotToRef(hotSpotData, res.worldPosition);
+        const mesh = scene.meshes[hotSpotQuery.meshIndex];
+        mesh.getHotSpotToRef(hotSpotQuery, res.worldPosition);
 
         const engine = this.getEngine();
         const canvasWidth = engine.getRenderWidth(); // Get the canvas width

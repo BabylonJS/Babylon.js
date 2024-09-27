@@ -28,6 +28,7 @@ import { AsyncLock } from "core/Misc/asyncLock";
 import { Observable } from "core/Misc/observable";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
+import { HotSpot, type HotSpotQuery } from "core/Meshes/abstractMesh";
 
 function throwIfAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]): void {
     for (const signal of abortSignals) {
@@ -91,6 +92,19 @@ export type ViewerOptions = Partial<
         }>
 >;
 
+/**
+ * Information computed from the hot spot surface data, canvas and mesh datas
+ */
+export interface HotSpot {
+    /**
+     * 2D canvas position in pixels
+     */
+    canvasPosition: [number, number];
+    /**
+     * 3D world coordinates
+     */
+    worldPosition: [number, number, number];
+}
 /**
  * Provides an experience for viewing a single 3D model.
  * @remarks
@@ -480,6 +494,16 @@ export class Viewer implements IDisposable {
         this.onAnimationProgressChanged.clear();
 
         this._isDisposed = true;
+    }
+    /**
+     * retrun world and canvas coordinates of an hot spot
+     * @param hotSpotQuery
+     * @returns todo
+     */
+    public getHotSpot(hotSpotQuery: HotSpotQuery): HotSpot {
+        const hotspot = new HotSpot();
+        this._camera.getHotSpotToRef(hotSpotQuery, hotspot);
+        return hotspot;
     }
 
     private _updateCamera(): void {

@@ -3,6 +3,7 @@ import type { Nullable } from "core/index";
 
 import type { PropertyValues } from "lit";
 import type { ViewerDetails } from "./viewer";
+import { HotSpot } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, html } from "lit";
@@ -11,6 +12,7 @@ import { customElement, property, query, state } from "lit/decorators.js";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { Logger } from "core/Misc/logger";
 import { createViewerForCanvas, getDefaultEngine } from "./viewerFactory";
+import { HotSpotQuery } from "core/Meshes/abstractMesh";
 
 // Icon SVG is pulled from https://fluentuipr.z22.web.core.windows.net/heads/master/public-docsite-v9/storybook/iframe.html?id=icons-catalog--page&viewMode=story
 const playFilledIcon = "M17.22 8.68a1.5 1.5 0 0 1 0 2.63l-10 5.5A1.5 1.5 0 0 1 5 15.5v-11A1.5 1.5 0 0 1 7.22 3.2l10 5.5Z";
@@ -215,6 +217,36 @@ export class HTML3DElement extends LitElement {
         return this._viewerDetails;
     }
 
+    /**
+     * Get hotspot world and canvas values from a named hotspot
+     * @param slot slot of the hot spot
+     * @param res resulting canvas and world positions
+     * @returns world and canvas space coordinates
+     */
+    public queryHotSpot(slot: string, res: HotSpot): boolean {
+        // Retrieve all hotspots inside the viewer element
+        const hotspots = this.querySelectorAll(".hotspot");
+        let resultFound = false;
+        // Iterate through each hotspot to get the 'data-surface' and 'data-name' attributes
+        hotspots.forEach((hotspot) => {
+            const slotAttribute = hotspot.getAttribute("slot");
+            if (slot === slotAttribute) {
+                const dataSurface = hotspot.getAttribute("data-surface");
+                const numbersArray = dataSurface!.split(" ").map(Number);
+                const hotSpotQuery = new HotSpotQuery();
+                hotSpotQuery.meshIndex = numbersArray[0];
+                hotSpotQuery.pointIndex = [numbersArray[2], numbersArray[3], numbersArray[4]];
+                hotSpotQuery.barycentric = [numbersArray[5], numbersArray[6], numbersArray[7]];
+                const queriedHotspot = this._viewerDetails?.viewer.getHotSpot(hotSpotQuery);
+                const canvasPosition = queriedHotspot?.canvasPosition;
+                const worldPosition = queriedHotspot?.worldPosition;
+                res.canvasPosition = [canvasPosition!.x, canvasPosition!.y];
+                res.worldPosition = [worldPosition!.x, worldPosition!.y, worldPosition!.z];
+                resultFound = true;
+            }
+        });
+        return resultFound;
+    }
     /**
      * The engine to use for rendering.
      */

@@ -57,15 +57,48 @@
             <!-- <div slot="tool-bar" style="position: absolute; top: 12px; left: 12px; width: 100px; height: 36px">
                 <button onclick="viewerElement.viewer.toggleAnimation()">Toggle Animation</button>
             </div> -->
+
+            <div slot="hotspot" class="hotspot" data-surface="2 0 228 113 111 0.217 0.341 0.442"></div>
+            <svg id="lines" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" class="lineContainer">
+                <line class="line"></line>
+            </svg>
+            
+            <div id="container">
+                <button id="hotspot" class="label">HotSpot</button>
+            </div>
         </babylon-viewer>
         <button class="toggle-dom-button" onclick="onToggleDOM()">Toggle DOM</button>
         <button class="toggle-engine-button" onclick="onToggleEngine()">Toggle Engine</button>
         <script type="module" src="/packages/tools/viewer-alpha/src/index.ts"></script>
         <script>
             const viewerElement = document.querySelector("babylon-viewer");
+            //const lines = viewerElement.querySelectorAll('line');
+
             let viewerDetails;
             viewerElement.addEventListener("viewerready", (event) => {
                 viewerDetails = viewerElement.viewerDetails;
+
+                // update svg
+                function drawLine(svgLine, name, rect) {
+                    const hotspotResult = { canvasPosition: [0, 0], worldPosition: [0, 0, 0] };
+                    if (viewerElement.queryHotSpot("hotspot", hotspotResult)) {
+                        console.log(hotspotResult);
+                        svgLine.setAttribute('x1', hotspotResult.canvasPosition[0]);
+                        svgLine.setAttribute('y1', hotspotResult.canvasPosition[1]);
+                        svgLine.setAttribute('x2', 0);//(rect.left + rect.right) / 2 - baseRect.left);
+                        svgLine.setAttribute('y2', 0);//rect.top - baseRect.top);
+                    }
+                }
+
+                // use requestAnimationFrame to update with renderer
+                const startSVGRenderLoop = () => {
+                    let hotspotRect = document.querySelector('#hotspot').getBoundingClientRect();
+                    drawLine(lines[0], 'hotspot', hotspotRect);
+                    requestAnimationFrame(startSVGRenderLoop);
+                };
+
+                startSVGRenderLoop();
+
                 console.log(`Viewer ready.`, viewerDetails);
             });
             viewerElement.addEventListener("modelchange", (event) => {
@@ -103,6 +136,18 @@
             function onToggleEngine() {
                 viewerElement.engine = viewerElement.engine === "WebGL" ? "WebGPU" : "WebGL";
             }
+
+            // HotSpot
+            const lines = viewerElement.querySelectorAll('line');
+            let baseRect;
+            let hotspotRect;
+
+            function onResize(){
+                baseRect = viewerElement.getBoundingClientRect();
+                hotspotRect = document.querySelector('#hotspot').getBoundingClientRect();
+            }
+
+            window.addEventListener("resize", onResize);
         </script>
     </body>
 </html>
