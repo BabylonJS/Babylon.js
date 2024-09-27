@@ -11,6 +11,8 @@ import { RichType } from "./flowGraphRichTypes";
  * if the point belongs to a "function" node, the node will run its function to update the value.
  */
 export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlock, FlowGraphDataConnection<T>> {
+    private _isDiabled: boolean = false;
+
     /**
      * Create a new data connection point.
      * @param name
@@ -30,6 +32,24 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
         private _defaultValue: T = richType.defaultValue
     ) {
         super(name, connectionType, ownerBlock);
+    }
+
+    /**
+     * is this connection disabled
+     * If the connection is disabled you will not be able to connect anything to it.
+     */
+    public get isDisabled(): boolean {
+        return this._isDiabled;
+    }
+
+    public set isDisabled(value: boolean) {
+        if (this._isDiabled === value) {
+            return;
+        }
+        this._isDiabled = value;
+        if (this._isDiabled) {
+            this.disconnectFromAll();
+        }
     }
 
     /**
@@ -63,6 +83,9 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
      * @param point the point to connect to.
      */
     public override connectTo(point: FlowGraphDataConnection<T>): void {
+        if (this._isDiabled) {
+            return;
+        }
         super.connectTo(point);
     }
 
