@@ -284,8 +284,7 @@ export class SolidParser {
     private _getColor(index: number) {
         if (this._loadingOptions.importVertexColors) {
             return this._extColors[index] ?? this._colors[index];
-        }
-        else{
+        } else {
             return undefined;
         }
     }
