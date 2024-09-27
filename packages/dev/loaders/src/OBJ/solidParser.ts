@@ -559,16 +559,16 @@ export class SolidParser {
         const regex = /[a-z0-9]/g;
         const regArray = line.match(regex);
         if (!regArray || regArray.length % 8 !== 0) {
-            return null;
+            return [];
         }
-        const array = [];
+        const array: Color4[] = [];
         for (let regIndex = 0; regIndex < regArray.length / 8; regIndex++) {
-            const m = regArray[regIndex * 8 + 0] + regArray[regIndex * 8 + 1];
+            //each item is MMRRGGBB, m is material index
+            // const m = regArray[regIndex * 8 + 0] + regArray[regIndex * 8 + 1];
             const r = regArray[regIndex * 8 + 2] + regArray[regIndex * 8 + 3];
             const g = regArray[regIndex * 8 + 4] + regArray[regIndex * 8 + 5];
             const b = regArray[regIndex * 8 + 6] + regArray[regIndex * 8 + 7];
-            const color = { m: parseInt(m, 16) / 255, r: parseInt(r, 16) / 255, g: parseInt(g, 16) / 255, b: parseInt(b, 16) / 255 };
-            array.push(color);
+            array.push(new Color4(parseInt(r, 16) / 255, parseInt(g, 16) / 255, parseInt(b, 16) / 255, 1));
         }
         return array;
     }
@@ -751,7 +751,7 @@ export class SolidParser {
                 // Each time this keyword is analyzed, create a new Object with all data for creating a babylonMesh
             } else if ((result = SolidParser._GetZbrushMRGB(line, !this._loadingOptions.importVertexColors))) {
                 result.forEach((element) => {
-                    this._extColors.push(new Color4(element.r, element.g, element.b, 1));
+                    this._extColors.push(element);
                 });
             } else if ((result = SolidParser.LinePattern3.exec(line)) !== null) {
                 //Value of result
