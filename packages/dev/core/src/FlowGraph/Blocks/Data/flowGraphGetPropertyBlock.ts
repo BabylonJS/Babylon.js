@@ -1,94 +1,71 @@
-import { RegisterClass } from "../../../Misc/typeStore";
-import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
-import { FlowGraphBlock } from "../../flowGraphBlock";
-import type { FlowGraphContext } from "../../flowGraphContext";
-import { RichTypeAny, RichTypeBoolean } from "../../flowGraphRichTypes";
-import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
-import type { IPathToObjectConverter } from "../../../ObjectModel/objectModelInterfaces";
-import { FlowGraphPathConverterComponent } from "../../flowGraphPathConverterComponent";
-import type { IObjectAccessor } from "../../typeDefinitions";
+import type { AssetType, FlowGraphAssetType } from "core/FlowGraph/flowGraphAssetsContext";
+import type { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
+import { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
+import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
+import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
+import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes";
 
-/**
- * @experimental
- */
-export interface IFlowGraphGetPropertyBlockConfiguration extends IFlowGraphBlockConfiguration {
+export interface IFlowGraphGetPropertyBlockConfiguration<O extends FlowGraphAssetType> extends IFlowGraphBlockConfiguration {
     /**
-     * The complete path to the property that will be set
+     * The name of the property that will be set
      */
-    path: string;
+    propertyName: string;
+
     /**
-     * The path converter to use to convert the path to an object accessor.
+     * The target asset from which the property will be retrieved
+     * // TODO - should it be any? or do we only support assets from the assetsContext?
      */
-    pathConverter: IPathToObjectConverter<IObjectAccessor>;
+    target?: AssetType<O>;
 }
 
 /**
- * @experimental
+ * This block will deliver a property of an asset, based on the property name and an input asset.
+ * The property name can include dots ("."), which will be interpreted as a path to the property.
+ * Property name is fixed and cannot be changed after the block is created.
+ *
+ * For example, with an input of a mesh asset, the property name "position.x" will deliver the x component of the position of the mesh.
+ *
+ * Note that it is recommended to input the object on which you are working on (i.e. a material) than providing a mesh and then getting the material from it.
  */
-export class FlowGraphGetPropertyBlock extends FlowGraphBlock {
+export class FlowGraphGetPropertyBlock<P extends any, O extends FlowGraphAssetType> extends FlowGraphBlock {
     /**
      * Output connection: The value of the property.
      */
-    public readonly value: FlowGraphDataConnection<any>;
+    public readonly value: FlowGraphDataConnection<P>;
 
     /**
-     * Output connection: Whether the value is valid.
+     * Input connection: The target asset from which the property will be retrieved
      */
-    public readonly isValid: FlowGraphDataConnection<boolean>;
-    /**
-     * The component with the templated inputs for the provided path.
-     */
-    public readonly templateComponent: FlowGraphPathConverterComponent;
+    public readonly target: FlowGraphDataConnection<AssetType<O>>;
 
-    public constructor(
+    constructor(
         /**
          * the configuration of the block
          */
-        public override config: IFlowGraphGetPropertyBlockConfiguration
+        public override config: IFlowGraphGetPropertyBlockConfiguration<O>
     ) {
         super(config);
-        this.value = this.registerDataOutput("value", RichTypeAny);
-        this.isValid = this.registerDataOutput("isValid", RichTypeBoolean);
-        this.templateComponent = new FlowGraphPathConverterComponent(config.path, this);
+        this.target = this.registerDataInput("target", RichTypeAny, config.target);
     }
 
-    public override _updateOutputs(context: FlowGraphContext) {
-        try {
-            const accessorContainer = this.templateComponent.getAccessor(this.config.pathConverter, context);
-            const value = accessorContainer.info.get(accessorContainer.object);
-            if (value === undefined) {
-                this.isValid.setValue(false, context);
-            } else {
-                this.value.setValue(value, context);
-                this.isValid.setValue(true, context);
-            }
-        } catch (e) {
-            this.value.resetToDefaultValue(context);
-            this.isValid.setValue(false, context);
-            return;
+    public override _updateOutputs(context: FlowGraphContext): void {
+        const target = this.target.getValue(context);
+        const value = target ? this._getPropertyValue(target, this.config.propertyName) : undefined;
+        if (value === undefined) {
+            throw new Error(`Property ${this.config.propertyName} not found in the target asset.`);
         }
+        this.value.setValue(value, context);
     }
 
-    /**
-     * Gets the class name of this block
-     * @returns the class name
-     */
-    public override getClassName(): string {
-        return FlowGraphGetPropertyBlock.ClassName;
+    private _getPropertyValue(target: AssetType<O>, propertyName: string): P | undefined {
+        const path = propertyName.split(".");
+        let value: any = target;
+        for (const prop of path) {
+            value = value[prop];
+            if (value === undefined) {
+                return;
+            }
+        }
+        return value as P;
     }
-
-    /**
-     * Serializes this block
-     * @param serializationObject the object to serialize to
-     */
-    public override serialize(serializationObject: any = {}) {
-        super.serialize(serializationObject);
-        serializationObject.config.path = this.config.path;
-    }
-
-    /**
-     * Class name of the block.
-     */
-    public static ClassName = "FGGetPropertyBlock";
 }
-RegisterClass(FlowGraphGetPropertyBlock.ClassName, FlowGraphGetPropertyBlock);

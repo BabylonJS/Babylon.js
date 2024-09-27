@@ -1,66 +1,58 @@
 import type { AnimationGroup } from "core/Animations/animationGroup";
 import type { Animation } from "core/Animations/animation";
-import type { Scene } from "core/scene";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { Nullable } from "core/types";
+import type { Mesh } from "core/Meshes/mesh";
+import type { Material } from "core/Materials/material";
+import type { Camera } from "core/Cameras/camera";
+import type { Light } from "core/Lights/light";
+import type { IAssetContainer } from "core/IAssetContainer";
+
+export const enum FlowGraphAssetType {
+    Animation = "Animation",
+    AnimationGroup = "AnimationGroup",
+    Mesh = "Mesh",
+    Material = "Material",
+    Camera = "Camera",
+    Light = "Light",
+    // Further asset types will be added here when needed.
+}
+
+export type AssetType<T extends FlowGraphAssetType> = T extends FlowGraphAssetType.Animation
+    ? Animation
+    : T extends FlowGraphAssetType.AnimationGroup
+      ? AnimationGroup
+      : T extends FlowGraphAssetType.Mesh
+        ? Mesh
+        : T extends FlowGraphAssetType.Material
+          ? Material
+          : T extends FlowGraphAssetType.Camera
+            ? Camera
+            : T extends FlowGraphAssetType.Light
+              ? Light
+              : never;
 
 /**
- * The context for the flow graph assets.
- * This is the context that will be used to store the assets of the flow graph.
- *
- * The flow graph requires a set of assets to correspond to - a list of animations, animation groups, meshes, lights/cameras and so on.
- * An assets context can belong to N flow graph contexts, so it is possible to share assets between multiple flow graphs.
- *
- * The assets context can be synchronized with a scene, so that the assets are automatically updated when the scene is updated.
- * To do that you can call the `synchronizeWithScene` method.
- * However, as opposed to the scene, the flow group cannot have two assets with the same name. The name is unique. If more than one are found, the last one will be used.
- * Note that if the scene has a lot of assets, the constant sync might take some time. It is therefore better to carefully manage assets yourself.
+ * Returns the asset with the given index and type from the assets context.
+ * @param assetsContext The assets context to get the asset from
+ * @param type The type of the asset
+ * @param index The index of the asset
+ * @returns The asset or null if not found
  */
-export class FlowGraphAssetsContext {
-    /**
-     * The list of animations associated with the scene
-     */
-    public animations: Map<string, Animation> = new Map();
-
-    /**
-     * The list of animation groups associated with the scene
-     */
-    public animationGroups: Map<string, AnimationGroup> = new Map();
-
-    // Further assets maps will be added here when needed.
-
-    private _scene: Scene;
-
-    private _syncScene(): void {
-        if (!this._scene) {
-            return;
-        }
-
-        for (let i = 0; i < this._scene.animations.length; i++) {
-            const animation = this._scene.animations[i];
-            const key = animation.name;
-            if (!this.animations.has(key)) {
-                this.animations.set(key, animation);
-            }
-        }
-
-        for (let i = 0; i < this._scene.animationGroups.length; i++) {
-            const animationGroup = this._scene.animationGroups[i];
-            const key = animationGroup.name;
-            if (!this.animationGroups.has(key)) {
-                this.animationGroups.set(key, animationGroup);
-            }
-        }
-    }
-
-    public attachToScene(scene: Scene) {
-        this._scene = scene;
-        const obs = scene.onBeforeRenderObservable.add(() => {
-            this._syncScene();
-        });
-        scene.onDisposeObservable.add(() => {
-            this.animations.clear();
-            this.animationGroups.clear();
-            scene.onBeforeRenderObservable.remove(obs);
-        });
+export function GetFlowGraphAssetWithType<T extends FlowGraphAssetType>(assetsContext: IAssetContainer, type: T, index: number): Nullable<AssetType<T>> {
+    switch (type) {
+        case FlowGraphAssetType.Animation:
+            return (assetsContext.animations[index] as AssetType<typeof type>) ?? null;
+        case FlowGraphAssetType.AnimationGroup:
+            return (assetsContext.animationGroups[index] as AssetType<typeof type>) ?? null;
+        case FlowGraphAssetType.Mesh:
+            return (assetsContext.meshes[index] as AssetType<typeof type>) ?? null;
+        case FlowGraphAssetType.Material:
+            return (assetsContext.materials[index] as AssetType<typeof type>) ?? null;
+        case FlowGraphAssetType.Camera:
+            return (assetsContext.cameras[index] as AssetType<typeof type>) ?? null;
+        case FlowGraphAssetType.Light:
+            return (assetsContext.lights[index] as AssetType<typeof type>) ?? null;
+        default:
+            return null;
     }
 }

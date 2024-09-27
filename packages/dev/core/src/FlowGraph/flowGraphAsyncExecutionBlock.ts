@@ -14,9 +14,14 @@ export abstract class FlowGraphAsyncExecutionBlock extends FlowGraphExecutionBlo
      */
     public done: FlowGraphSignalConnection;
 
-    constructor(config?: IFlowGraphBlockConfiguration) {
+    protected _eventsSignalOutputs: { [eventName: string]: FlowGraphSignalConnection } = {};
+
+    constructor(config?: IFlowGraphBlockConfiguration, events?: string[]) {
         super(config);
         this.done = this._registerSignalOutput("done");
+        events?.forEach((eventName) => {
+            this._eventsSignalOutputs[eventName] = this._registerSignalOutput(eventName + "Event");
+        });
     }
     /**
      * @internal
@@ -26,6 +31,15 @@ export abstract class FlowGraphAsyncExecutionBlock extends FlowGraphExecutionBlo
      * @param context
      */
     public abstract _preparePendingTasks(context: FlowGraphContext): void;
+
+    /**
+     * @internal
+     * This function can be overridden to execute any
+     * logic that should be executed on every frame
+     * while the async task is pending.
+     * @param context the context in which it is running
+     */
+    public _executeOnFrame(_context: FlowGraphContext): void {}
 
     /**
      * @internal

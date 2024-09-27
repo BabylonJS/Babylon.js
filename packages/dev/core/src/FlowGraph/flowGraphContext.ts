@@ -9,7 +9,9 @@ import type { ISerializedFlowGraphContext } from "./typeDefinitions";
 import { defaultValueParseFunction, defaultValueSerializationFunction } from "./serialization";
 import type { FlowGraphCoordinator } from "./flowGraphCoordinator";
 import { Observable } from "../Misc/observable";
-import { FlowGraphAssetsContext } from "./flowGraphAssetsContext";
+import type { FlowGraphAssetType } from "./flowGraphAssetsContext";
+import { GetFlowGraphAssetWithType } from "./flowGraphAssetsContext";
+import type { IAssetContainer } from "core/IAssetContainer";
 
 /**
  * Construction parameters for the context.
@@ -29,7 +31,7 @@ export interface IFlowGraphContextConfiguration {
      * The assets context used by the flow graph context.
      * If none is provided, a default one will be created.
      */
-    readonly assetsContext?: FlowGraphAssetsContext;
+    readonly assetsContext?: IAssetContainer;
 }
 
 /**
@@ -102,15 +104,11 @@ export class FlowGraphContext {
      * The assets context used by the flow graph context.
      * Note that it can be shared between flow graph contexts.
      */
-    public assetsContext: FlowGraphAssetsContext;
+    public assetsContext: IAssetContainer;
 
     constructor(params: IFlowGraphContextConfiguration) {
         this._configuration = params;
-        if (params.assetsContext) {
-            this.assetsContext = params.assetsContext;
-        } else {
-            this.assetsContext = new FlowGraphAssetsContext();
-        }
+        this.assetsContext = params.assetsContext ?? params.scene;
     }
 
     /**
@@ -129,6 +127,16 @@ export class FlowGraphContext {
      */
     public setVariable(name: string, value: any) {
         this._userVariables[name] = value;
+    }
+
+    /**
+     * Get an assets from the assets context based on its type and index in the array
+     * @param type The type of the asset
+     * @param index The index of the asset
+     * @returns The asset or null if not found
+     */
+    public getAsset<T extends FlowGraphAssetType>(type: T, index: number) {
+        return GetFlowGraphAssetWithType(this.assetsContext, type, index);
     }
 
     /**
@@ -287,6 +295,16 @@ export class FlowGraphContext {
      */
     public _addPendingBlock(block: FlowGraphAsyncExecutionBlock) {
         this._pendingBlocks.push(block);
+    }
+
+    /**
+     * Notify all pending blocks that they should execute their on-tick tasks.
+     * @internal
+     */
+    public _notifyPendingBlocksOnTick() {
+        for (const block of this._pendingBlocks) {
+            block._executeOnFrame(this);
+        }
     }
 
     /**

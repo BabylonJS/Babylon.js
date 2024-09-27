@@ -72,6 +72,7 @@ export class FlowGraph {
     /** @internal */
     public _eventBlocks: FlowGraphEventBlock[] = [];
     private _sceneDisposeObserver: Nullable<Observer<Scene>>;
+    private _sceneOnBeforeRenderObserver: Nullable<Observer<Scene>>;
     /**
      * @internal
      */
@@ -92,6 +93,13 @@ export class FlowGraph {
         this._scene = params.scene;
         this._coordinator = params.coordinator;
         this._sceneDisposeObserver = this._scene.onDisposeObservable.add(() => this.dispose());
+        this._sceneOnBeforeRenderObserver = this._scene.onBeforeRenderObservable.add(() => {
+            if (this.state === FlowGraphState.Started) {
+                for (const context of this._executionContexts) {
+                    context._notifyPendingBlocksOnTick();
+                }
+            }
+        });
     }
 
     /**
@@ -178,6 +186,7 @@ export class FlowGraph {
         this._executionContexts.length = 0;
         this._eventBlocks.length = 0;
         this._scene.onDisposeObservable.remove(this._sceneDisposeObserver);
+        this._scene.onBeforeRenderObservable.remove(this._sceneOnBeforeRenderObserver);
         this._sceneDisposeObserver = null;
     }
 

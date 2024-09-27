@@ -6,8 +6,8 @@ import { FlowGraphTimerBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow
 import { FlowGraphSendCustomEventBlock } from "core/FlowGraph/Blocks/Event/flowGraphSendCustomEventBlock";
 import { FlowGraphReceiveCustomEventBlock } from "core/FlowGraph/Blocks/Event/flowGraphReceiveCustomEventBlock";
 import { FlowGraphSequenceBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphSequenceBlock";
-import { FlowGraphGetPropertyBlock } from "core/FlowGraph/Blocks/Data/flowGraphGetPropertyBlock";
-import { FlowGraphSetPropertyBlock } from "core/FlowGraph/Blocks/Data/flowGraphSetPropertyBlock";
+// import { FlowGraphGetPropertyBlock } from "core/FlowGraph/Blocks/Data/flowGraphGetPropertyBlock";
+// import { FlowGraphSetPropertyBlock } from "core/FlowGraph/Blocks/Data/flowGraphSetPropertyBlock";
 import {
     FlowGraphAddBlock,
     FlowGraphRandomBlock,
@@ -93,8 +93,8 @@ export const gltfToFlowGraphTypeMap: { [key: string]: string } = {
     "customEvent/send": FlowGraphSendCustomEventBlock.ClassName,
     "customEvent/receive": FlowGraphReceiveCustomEventBlock.ClassName,
     "flow/sequence": FlowGraphSequenceBlock.ClassName,
-    "world/get": FlowGraphGetPropertyBlock.ClassName,
-    "world/set": FlowGraphSetPropertyBlock.ClassName,
+    // "world/get": FlowGraphGetPropertyBlock.ClassName,
+    // "world/set": FlowGraphSetPropertyBlock.ClassName,
     "flow/doN": FlowGraphDoNBlock.ClassName,
     "variable/get": FlowGraphGetVariableBlock.ClassName,
     "variable/set": FlowGraphSetVariableBlock.ClassName,
@@ -358,8 +358,8 @@ export const gltfTypeToBabylonType: {
 
 ### Object model access:
 
-- pointer/get: FlowGraphGetPropertyBlock !
-- pointer/set: FlowGraphSetPropertyBlock !
+- pointer/get: 
+- pointer/set: 
 - pointer/interpolate:
 
 ### Animation control nodes:

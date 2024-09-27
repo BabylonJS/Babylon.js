@@ -1,62 +1,76 @@
-import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
-import type { FlowGraphContext } from "../../flowGraphContext";
-import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
-import { FlowGraphExecutionBlockWithOutSignal } from "../../flowGraphExecutionBlockWithOutSignal";
-import type { FlowGraphSignalConnection } from "../../flowGraphSignalConnection";
-import { FlowGraphPathConverterComponent } from "../../flowGraphPathConverterComponent";
-import { RegisterClass } from "core/Misc/typeStore";
+import type { AssetType, FlowGraphAssetType } from "core/FlowGraph/flowGraphAssetsContext";
+import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
+import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
+import { FlowGraphExecutionBlockWithOutSignal } from "core/FlowGraph/flowGraphExecutionBlockWithOutSignal";
+import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes";
+import type { FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalConnection";
 
-/**
- * @experimental
- */
-export interface IFlowGraphSetPropertyBlockConfiguration extends IFlowGraphBlockConfiguration {
+export interface IFlowGraphSetPropertyBlockConfiguration<O extends FlowGraphAssetType> {
     /**
-     * The complete path to the property that will be set
+     * The name of the property that will be set
      */
-    path: string;
+    propertyName: string;
+
+    /**
+     * The target asset from which the property will be retrieved
+     * // TODO - should it be any? or do we only support assets from the assetsContext?
+     */
+    target?: O;
 }
 
-export class FlowGraphSetPropertyBlock<T> extends FlowGraphExecutionBlockWithOutSignal {
+/**
+ * This block will set a property on a given target asset.
+ * The property name can include dots ("."), which will be interpreted as a path to the property.
+ * Property name is fixed and cannot be changed after the block is created.
+ * The target asset is an input and can be changed at any time.
+ * The value of the property is an input and can be changed at any time.
+ *
+ * For example, with an input of a mesh asset, the property name "position.x" will set the x component of the position of the mesh.
+ *
+ * Note that it is recommended to input the object on which you are working on (i.e. a material) than providing a mesh and then getting the material from it.
+ */
+export class FlowGraphSetPropertyBlock<P extends any, O extends FlowGraphAssetType> extends FlowGraphExecutionBlockWithOutSignal {
     /**
-     * The class name of this block.
+     * Input connection: The value to set on the property.
      */
-    public static readonly ClassName = "FGSetPointerBlock";
+    public readonly value: FlowGraphDataConnection<P>;
 
     /**
-     * Input connection: The value of the property.
+     * Input connection: The target asset from which the property will be retrieved
      */
-    public readonly value: FlowGraphDataConnection<T>;
+    public readonly target: FlowGraphDataConnection<AssetType<O>>;
 
-    /**
-     * The component with the templated inputs for the provided path.
-     */
-    public readonly templateComponent: FlowGraphPathConverterComponent;
-
-    constructor(public override config: IFlowGraphSetPropertyBlockConfiguration) {
+    constructor(
+        /**
+         * the configuration of the block
+         */
+        public override config: IFlowGraphSetPropertyBlockConfiguration<O>
+    ) {
         super(config);
-        this.value = this.registerDataInput("value", config.type);
-        this.templateComponent = new FlowGraphPathConverterComponent(config.path, this);
+        this.target = this.registerDataInput("target", RichTypeAny, config.target);
+        this.value = this.registerDataInput("value", RichTypeAny);
     }
-
-    public override _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
+    public override _execute(context: FlowGraphContext, callingSignal: FlowGraphSignalConnection): void {
         try {
+            const target = this.target.getValue(context);
             const value = this.value.getValue(context);
-            const accessorContainer = this.templateComponent.getAccessor(this.config.pathConverter, context);
-            accessorContainer.info.set(value, accessorContainer.object);
+            this._setPropertyValue(target, this.config.propertyName, value);
         } catch (e) {
             this.err._activateSignal(context);
         }
         this.out._activateSignal(context);
     }
 
-    public override getClassName(): string {
-        return FlowGraphSetPropertyBlock.ClassName;
-    }
-
-    public override serialize(serializationObject?: any): void {
-        super.serialize(serializationObject);
-        serializationObject.config.variable = this.config.variable;
+    private _setPropertyValue(target: AssetType<O>, propertyName: string, value: P): void {
+        const path = propertyName.split(".");
+        let obj = target as any;
+        for (let i = 0; i < path.length - 1; i++) {
+            const prop = path[i];
+            if (obj[prop] === undefined) {
+                obj[prop] = {};
+            }
+            obj = obj[prop];
+        }
+        obj[path[path.length - 1]] = value;
     }
 }
-
-RegisterClass("FGSetPropertyBlock", FlowGraphSetPropertyBlock);
