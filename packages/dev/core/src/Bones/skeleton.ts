@@ -15,7 +15,7 @@ import { Logger } from "../Misc/logger";
 import { DeepCopier } from "../Misc/deepCopier";
 import type { IInspectable } from "../Misc/iInspectable";
 import type { IAnimatable } from "../Animations/animatable.interface";
-import type { AbstractScene } from "../abstractScene";
+import type { IAssetContainer } from "core/IAssetContainer";
 
 /**
  * Class used to handle skinning animations
@@ -64,7 +64,7 @@ export class Skeleton implements IAnimatable {
     public _hasWaitingData: Nullable<boolean> = null;
 
     /** @internal */
-    public _parentContainer: Nullable<AbstractScene> = null;
+    public _parentContainer: Nullable<IAssetContainer> = null;
 
     /**
      * Specifies if the skeleton should be serialized

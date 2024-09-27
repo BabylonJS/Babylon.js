@@ -12,8 +12,8 @@ import type { Camera } from "../Cameras/camera";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { PrePassRenderTarget } from "../Materials/Textures/prePassRenderTarget";
 
-declare module "../abstractScene" {
-    export interface AbstractScene {
+declare module "../scene" {
+    export interface Scene {
         /** @internal (Backing field) */
         _prePassRenderer: Nullable<PrePassRenderer>;
 

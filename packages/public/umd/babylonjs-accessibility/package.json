@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-accessibility",
-    "version": "7.24.0",
+    "version": "7.27.0",
     "main": "babylon.accessibility.max.js",
     "types": "babylon.accessibility.module.d.ts",
     "files": [
@@ -11,11 +11,11 @@
         "build:dev": "webpack --env development",
         "build:prod": "webpack --env production",
         "build:declaration": "build-tools -c pud --config ./config.json",
-        "clean": "rimraf dist && rimraf babylon*.*"
+        "clean": "rimraf dist && rimraf babylon*.* -g"
     },
     "dependencies": {
-        "babylonjs": "^7.24.0",
-        "babylonjs-gui": "^7.24.0"
+        "babylonjs": "^7.27.0",
+        "babylonjs-gui": "^7.27.0"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
@@ -26,7 +26,7 @@
         "css-loader": "^6.4.0",
         "react": "^17.0.2",
         "react-dom": "^17.0.2",
-        "sass-loader": "^13.0.0",
+        "sass-loader": "^16.0.0",
         "source-map-loader": "^4.0.0",
         "ts-loader": "^9.2.6",
         "webpack": "^5.73.0",

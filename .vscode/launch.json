@@ -483,6 +483,32 @@
             */
             "type": "node",
             "request": "launch",
+            "name": "Run single validation test - WebGPU (Dev)",
+            "runtimeArgs": [
+                "--inspect-brk",
+                "${workspaceRoot}/node_modules/jest/bin/jest.js",
+                "--runInBand",
+                "--selectProjects",
+                "visualization",
+                "-i",
+                "webgpu",
+                "-t",
+                "${input:testName}"
+            ],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "port": 9229,
+            // "outFiles": ["${workspaceRoot}/**/dist/**/*"], // debugging sources
+            // "envFile": "${workspaceRoot}/.env",
+            "preLaunchTask": "CDN Serve and watch (Dev)"
+        },
+        {
+            /*
+            Launch tests
+            https://jestjs.io/docs/troubleshooting#debugging-in-vs-code
+            */
+            "type": "node",
+            "request": "launch",
             "name": "Run interactions tests (Dev)",
             "runtimeArgs": ["--inspect-brk", "${workspaceRoot}/node_modules/jest/bin/jest.js", "--runInBand", "--selectProjects", "interactions"],
             "console": "integratedTerminal",

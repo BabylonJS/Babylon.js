@@ -89,7 +89,7 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
         if (properties.clearcoatTexture) {
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/clearcoatTexture`, properties.clearcoatTexture, (texture) => {
-                    texture.name = `${babylonMaterial.name} (ClearCoat Intensity)`;
+                    texture.name = `${babylonMaterial.name} (ClearCoat)`;
                     babylonMaterial.clearCoat.texture = texture;
                 })
             );

@@ -540,7 +540,7 @@ export class InputText extends Control {
                     }
                     //delete single character
                     if (this._cursorOffset === 0) {
-                        this.text = this._textWrapper.substr(0, this._textWrapper.length - 1);
+                        this.text = this._textWrapper.substring(0, this._textWrapper.length - 1);
                     } else {
                         const deletePosition = this._textWrapper.length - this._cursorOffset;
                         if (deletePosition > 0) {

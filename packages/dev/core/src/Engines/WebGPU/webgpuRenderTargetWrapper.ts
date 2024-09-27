@@ -1,7 +1,7 @@
 import type { TextureSize } from "../../Materials/Textures/textureCreationOptions";
-import type { WebGPUEngine } from "../webgpuEngine";
 import { RenderTargetWrapper } from "../renderTargetWrapper";
 import { WebGPUPerfCounter } from "./webgpuPerfCounter";
+import type { ThinWebGPUEngine } from "../thinWebGPUEngine";
 
 /**
  * Specialized class used to store a render target of a WebGPU engine
@@ -24,7 +24,7 @@ export class WebGPURenderTargetWrapper extends RenderTargetWrapper {
      * @param engine engine used to create the render target
      * @param label defines the label to use for the wrapper (for debugging purpose only)
      */
-    constructor(isMulti: boolean, isCube: boolean, size: TextureSize, engine: WebGPUEngine, label?: string) {
+    constructor(isMulti: boolean, isCube: boolean, size: TextureSize, engine: ThinWebGPUEngine, label?: string) {
         super(isMulti, isCube, size, engine, label);
 
         if (engine.enableGPUTimingMeasurements) {

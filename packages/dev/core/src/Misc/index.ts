@@ -19,6 +19,11 @@ export * from "./smartArray";
 export * from "./stringDictionary";
 export * from "./tags";
 export * from "./textureTools";
+// loaded from texture tools
+export * from "../Shaders/lodCube.fragment";
+export * from "../Shaders/lod.fragment";
+export * from "../ShadersWGSL/lodCube.fragment";
+export * from "../ShadersWGSL/lod.fragment";
 export * from "./tga";
 export * from "./tools";
 export * from "./videoRecorder";

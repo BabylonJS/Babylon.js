@@ -192,7 +192,7 @@ export abstract class AbstractViewer {
         if (containerElement.id) {
             this.baseId = containerElement.id;
         } else {
-            this.baseId = containerElement.id = "bjs" + Math.random().toString(32).substr(2, 8);
+            this.baseId = containerElement.id = "bjs" + Math.random().toString(32).substring(2, 10);
         }
 
         this._registeredOnBeforeRenderFunctions = [];

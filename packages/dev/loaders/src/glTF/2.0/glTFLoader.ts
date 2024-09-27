@@ -9,7 +9,7 @@ import type { Animation } from "core/Animations/animation";
 import type { IAnimatable } from "core/Animations/animatable.interface";
 import type { IAnimationKey } from "core/Animations/animationKey";
 import { AnimationKeyInterpolation } from "core/Animations/animationKey";
-import { AnimationGroup } from "core/Animations/animationGroup";
+import type { AnimationGroup } from "core/Animations/animationGroup";
 import { Bone } from "core/Bones/bone";
 import { Skeleton } from "core/Bones/skeleton";
 import { Material } from "core/Materials/material";
@@ -1595,30 +1595,33 @@ export class GLTFLoader implements IGLTFLoader {
             return promise;
         }
 
-        this._babylonScene._blockEntityCollection = !!this._assetContainer;
-        const babylonAnimationGroup = new AnimationGroup(animation.name || `animation${animation.index}`, this._babylonScene);
-        babylonAnimationGroup._parentContainer = this._assetContainer;
-        this._babylonScene._blockEntityCollection = false;
-        animation._babylonAnimationGroup = babylonAnimationGroup;
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        return import("core/Animations/animationGroup").then(({ AnimationGroup }) => {
+            this._babylonScene._blockEntityCollection = !!this._assetContainer;
+            const babylonAnimationGroup = new AnimationGroup(animation.name || `animation${animation.index}`, this._babylonScene);
+            babylonAnimationGroup._parentContainer = this._assetContainer;
+            this._babylonScene._blockEntityCollection = false;
+            animation._babylonAnimationGroup = babylonAnimationGroup;
 
-        const promises = new Array<Promise<unknown>>();
+            const promises = new Array<Promise<unknown>>();
 
-        ArrayItem.Assign(animation.channels);
-        ArrayItem.Assign(animation.samplers);
+            ArrayItem.Assign(animation.channels);
+            ArrayItem.Assign(animation.samplers);
 
-        for (const channel of animation.channels) {
-            promises.push(
-                this._loadAnimationChannelAsync(`${context}/channels/${channel.index}`, context, animation, channel, (babylonTarget, babylonAnimation) => {
-                    babylonTarget.animations = babylonTarget.animations || [];
-                    babylonTarget.animations.push(babylonAnimation);
-                    babylonAnimationGroup.addTargetedAnimation(babylonAnimation, babylonTarget);
-                })
-            );
-        }
+            for (const channel of animation.channels) {
+                promises.push(
+                    this._loadAnimationChannelAsync(`${context}/channels/${channel.index}`, context, animation, channel, (babylonTarget, babylonAnimation) => {
+                        babylonTarget.animations = babylonTarget.animations || [];
+                        babylonTarget.animations.push(babylonAnimation);
+                        babylonAnimationGroup.addTargetedAnimation(babylonAnimation, babylonTarget);
+                    })
+                );
+            }
 
-        return Promise.all(promises).then(() => {
-            babylonAnimationGroup.normalize(0);
-            return babylonAnimationGroup;
+            return Promise.all(promises).then(() => {
+                babylonAnimationGroup.normalize(0);
+                return babylonAnimationGroup;
+            });
         });
     }
 
@@ -2494,7 +2497,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         if (IsBase64DataUrl(uri)) {
             const data = new Uint8Array(DecodeBase64UrlToBinary(uri));
-            this.log(`${context}: Decoded ${uri.substr(0, 64)}... (${data.length} bytes)`);
+            this.log(`${context}: Decoded ${uri.substring(0, 64)}... (${data.length} bytes)`);
             return Promise.resolve(data);
         }
 

@@ -525,8 +525,8 @@ function getPluginForFilename(sceneFilename: string): IRegisteredPlugin | undefi
 }
 
 function getDirectLoad(sceneFilename: string): Nullable<string> {
-    if (sceneFilename.substr(0, 5) === "data:") {
-        return sceneFilename.substr(5);
+    if (sceneFilename.substring(0, 5) === "data:") {
+        return sceneFilename.substring(5);
     }
 
     return null;
@@ -722,7 +722,7 @@ function getFileInfo(rootUrl: string, sceneSource: SceneSource): Nullable<IFileI
         name = "";
     } else if (rootUrl) {
         const filename = sceneSource;
-        if (filename.substr(0, 1) === "/") {
+        if (filename.substring(0, 1) === "/") {
             Tools.Error("Wrong sceneFilename parameter");
             return null;
         }

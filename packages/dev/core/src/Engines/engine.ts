@@ -19,8 +19,15 @@ import type { RenderTargetWrapper } from "./renderTargetWrapper";
 import { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 
 import "./Extensions/engine.alpha";
+import "./Extensions/engine.rawTexture";
 import "./Extensions/engine.readTexture";
 import "./Extensions/engine.dynamicBuffer";
+import "./Extensions/engine.cubeTexture";
+import "./Extensions/engine.renderTarget";
+import "./Extensions/engine.renderTargetTexture";
+import "./Extensions/engine.renderTargetCube";
+import "./Extensions/engine.prefilteredCubeTexture";
+import "./Extensions/engine.uniformBuffer";
 import "./AbstractEngine/abstractEngine.loadingScreen";
 import "./AbstractEngine/abstractEngine.dom";
 import "./AbstractEngine/abstractEngine.states";

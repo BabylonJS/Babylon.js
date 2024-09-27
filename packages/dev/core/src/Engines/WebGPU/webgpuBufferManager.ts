@@ -3,8 +3,8 @@ import type { DataBuffer } from "../../Buffers/dataBuffer";
 import { WebGPUDataBuffer } from "../../Meshes/WebGPU/webgpuDataBuffer";
 import { FromHalfFloat } from "../../Misc/textureTools";
 import type { Nullable } from "../../types";
+import { allocateAndCopyTypedBuffer } from "../abstractEngine.functions";
 import { Constants } from "../constants";
-import { allocateAndCopyTypedBuffer } from "../Extensions/engine.readTexture";
 import type { WebGPUEngine } from "../webgpuEngine";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import * as WebGPUConstants from "./webgpuConstants";

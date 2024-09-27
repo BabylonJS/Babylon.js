@@ -761,10 +761,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         if (guiControl.typeName === "Line") {
             const line = guiControl as Line;
-            const x1 = (line.x1 as string).substr(0, (line.x1 as string).length - 2); //removing the 'px'
-            const x2 = (line.x2 as string).substr(0, (line.x2 as string).length - 2);
-            const y1 = (line.y1 as string).substr(0, (line.y1 as string).length - 2);
-            const y2 = (line.y2 as string).substr(0, (line.y2 as string).length - 2);
+            const x1 = (line.x1 as string).substring(0, (line.x1 as string).length - 2); //removing the 'px'
+            const x2 = (line.x2 as string).substring(0, (line.x2 as string).length - 2);
+            const y1 = (line.y1 as string).substring(0, (line.y1 as string).length - 2);
+            const y2 = (line.y2 as string).substring(0, (line.y2 as string).length - 2);
             line.x1 = (Number(x1) + newX).toFixed(2);
             line.x2 = (Number(x2) + newX).toFixed(2);
             line.y1 = (Number(y1) + newY).toFixed(2);

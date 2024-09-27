@@ -186,6 +186,10 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         MatrixTransposeBlock: "Compute the transpose of a matrix",
         MeshAttributeExistsBlock: "Falls back to secondary input if specified attribute doesn't exists on the rendered mesh",
         CurveBlock: "Apply a curve function",
+        ColorConverterBlock: "Converts between RGB and HSL color spaces",
+        LoopBlock: "Block used to repeat code",
+        StorageReadBlock: "Block used to read from a loop storage variable",
+        StorageWriteBlock: "Block used to write to a loop storage variable",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -327,7 +331,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Custom_Frames: customFrameNames,
             Custom_Blocks: customBlockNames,
             Animation: ["BonesBlock", "MorphTargetsBlock"],
-            Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock", "DesaturateBlock"],
+            Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock", "DesaturateBlock", "ColorConverterBlock"],
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
             Inputs: [
                 "Float",
@@ -437,6 +441,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "FrontFacingBlock",
                 "MeshAttributeExistsBlock",
             ],
+            Loop: ["LoopBlock", "StorageReadBlock", "StorageWriteBlock"],
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock", "CloudBlock", "VoronoiNoiseBlock"],
             Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "PrePassOutputBlock", "DiscardBlock", "ClipPlanesBlock", "FragDepthBlock"],
             Particle: [

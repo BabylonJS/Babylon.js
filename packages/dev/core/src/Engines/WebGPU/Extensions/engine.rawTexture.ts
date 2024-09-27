@@ -2,11 +2,11 @@ import { InternalTexture, InternalTextureSource } from "../../../Materials/Textu
 import type { IWebRequest } from "../../../Misc/interfaces/iWebRequest";
 import type { Nullable } from "../../../types";
 import { Constants } from "../../constants";
-import { WebGPUEngine } from "../../webgpuEngine";
 import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 import { Logger } from "../../../Misc/logger";
 
 import type { Scene } from "../../../scene";
+import { ThinWebGPUEngine } from "core/Engines/thinWebGPUEngine";
 
 declare module "../../abstractEngine" {
     export interface AbstractEngine {
@@ -202,7 +202,7 @@ declare module "../../abstractEngine" {
     }
 }
 
-WebGPUEngine.prototype.createRawTexture = function (
+ThinWebGPUEngine.prototype.createRawTexture = function (
     data: Nullable<ArrayBufferView>,
     width: number,
     height: number,
@@ -242,7 +242,7 @@ WebGPUEngine.prototype.createRawTexture = function (
     return texture;
 };
 
-WebGPUEngine.prototype.updateRawTexture = function (
+ThinWebGPUEngine.prototype.updateRawTexture = function (
     texture: Nullable<InternalTexture>,
     bufferView: Nullable<ArrayBufferView>,
     format: number,
@@ -281,7 +281,7 @@ WebGPUEngine.prototype.updateRawTexture = function (
     texture.isReady = true;
 };
 
-WebGPUEngine.prototype.createRawCubeTexture = function (
+ThinWebGPUEngine.prototype.createRawCubeTexture = function (
     data: Nullable<ArrayBufferView[]>,
     size: number,
     format: number,
@@ -341,7 +341,7 @@ WebGPUEngine.prototype.createRawCubeTexture = function (
     return texture;
 };
 
-WebGPUEngine.prototype.updateRawCubeTexture = function (
+ThinWebGPUEngine.prototype.updateRawCubeTexture = function (
     texture: InternalTexture,
     bufferView: ArrayBufferView[],
     _format: number,
@@ -375,7 +375,7 @@ WebGPUEngine.prototype.updateRawCubeTexture = function (
     texture.isReady = true;
 };
 
-WebGPUEngine.prototype.createRawCubeTextureFromUrl = function (
+ThinWebGPUEngine.prototype.createRawCubeTextureFromUrl = function (
     url: string,
     scene: Nullable<Scene>,
     size: number,
@@ -454,7 +454,7 @@ WebGPUEngine.prototype.createRawCubeTextureFromUrl = function (
     return texture;
 };
 
-WebGPUEngine.prototype.createRawTexture3D = function (
+ThinWebGPUEngine.prototype.createRawTexture3D = function (
     data: Nullable<ArrayBufferView>,
     width: number,
     height: number,
@@ -496,7 +496,7 @@ WebGPUEngine.prototype.createRawTexture3D = function (
     return texture;
 };
 
-WebGPUEngine.prototype.updateRawTexture3D = function (
+ThinWebGPUEngine.prototype.updateRawTexture3D = function (
     texture: InternalTexture,
     bufferView: Nullable<ArrayBufferView>,
     format: number,
@@ -530,7 +530,7 @@ WebGPUEngine.prototype.updateRawTexture3D = function (
     texture.isReady = true;
 };
 
-WebGPUEngine.prototype.createRawTexture2DArray = function (
+ThinWebGPUEngine.prototype.createRawTexture2DArray = function (
     data: Nullable<ArrayBufferView>,
     width: number,
     height: number,
@@ -572,7 +572,7 @@ WebGPUEngine.prototype.createRawTexture2DArray = function (
     return texture;
 };
 
-WebGPUEngine.prototype.updateRawTexture2DArray = function (
+ThinWebGPUEngine.prototype.updateRawTexture2DArray = function (
     texture: InternalTexture,
     bufferView: Nullable<ArrayBufferView>,
     format: number,
