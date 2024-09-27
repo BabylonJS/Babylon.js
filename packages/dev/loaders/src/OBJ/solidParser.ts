@@ -282,9 +282,9 @@ export class SolidParser {
      * @returns value of target color
      */
     private _getColor(index: number) {
-        if (!this._loadingOptions.importVertexColors) return undefined;
-        if (this._extColors.length > 0) return this._extColors[index];
-        return this._colors[index];
+        if (this._loadingOptions.importVertexColors) {
+            return this._extColors[index] ?? this._colors[index];
+        }
     }
 
     /**
