@@ -9,7 +9,7 @@ export interface IFlowGraphSetPropertyBlockConfiguration<O extends FlowGraphAsse
     /**
      * The name of the property that will be set
      */
-    propertyName: string;
+    propertyName?: string;
 
     /**
      * The target asset from which the property will be retrieved
@@ -21,7 +21,6 @@ export interface IFlowGraphSetPropertyBlockConfiguration<O extends FlowGraphAsse
 /**
  * This block will set a property on a given target asset.
  * The property name can include dots ("."), which will be interpreted as a path to the property.
- * Property name is fixed and cannot be changed after the block is created.
  * The target asset is an input and can be changed at any time.
  * The value of the property is an input and can be changed at any time.
  *
@@ -40,6 +39,11 @@ export class FlowGraphSetPropertyBlock<P extends any, O extends FlowGraphAssetTy
      */
     public readonly target: FlowGraphDataConnection<AssetType<O>>;
 
+    /**
+     * Input connection: The name of the property that will be set
+     */
+    public readonly propertyName: FlowGraphDataConnection<string>;
+
     constructor(
         /**
          * the configuration of the block
@@ -49,12 +53,13 @@ export class FlowGraphSetPropertyBlock<P extends any, O extends FlowGraphAssetTy
         super(config);
         this.target = this.registerDataInput("target", RichTypeAny, config.target);
         this.value = this.registerDataInput("value", RichTypeAny);
+        this.propertyName = this.registerDataInput("propertyName", RichTypeAny, config.propertyName);
     }
-    public override _execute(context: FlowGraphContext, callingSignal: FlowGraphSignalConnection): void {
+    public override _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
         try {
             const target = this.target.getValue(context);
             const value = this.value.getValue(context);
-            this._setPropertyValue(target, this.config.propertyName, value);
+            this._setPropertyValue(target, this.propertyName.getValue(context), value);
         } catch (e) {
             this.err._activateSignal(context);
         }

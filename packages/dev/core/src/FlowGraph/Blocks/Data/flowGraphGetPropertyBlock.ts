@@ -9,19 +9,23 @@ export interface IFlowGraphGetPropertyBlockConfiguration<O extends FlowGraphAsse
     /**
      * The name of the property that will be set
      */
-    propertyName: string;
+    propertyName?: string;
 
     /**
      * The target asset from which the property will be retrieved
      * // TODO - should it be any? or do we only support assets from the assetsContext?
      */
-    target?: AssetType<O>;
+    object?: AssetType<O>;
+
+    /**
+     * If true, the block will reset the output to the default value when the target asset is undefined.
+     */
+    resetToDefaultWhenUndefined?: boolean;
 }
 
 /**
  * This block will deliver a property of an asset, based on the property name and an input asset.
  * The property name can include dots ("."), which will be interpreted as a path to the property.
- * Property name is fixed and cannot be changed after the block is created.
  *
  * For example, with an input of a mesh asset, the property name "position.x" will deliver the x component of the position of the mesh.
  *
@@ -34,9 +38,19 @@ export class FlowGraphGetPropertyBlock<P extends any, O extends FlowGraphAssetTy
     public readonly value: FlowGraphDataConnection<P>;
 
     /**
-     * Input connection: The target asset from which the property will be retrieved
+     * Input connection: The asset from which the property will be retrieved
      */
-    public readonly target: FlowGraphDataConnection<AssetType<O>>;
+    public readonly object: FlowGraphDataConnection<AssetType<O>>;
+
+    /**
+     * Input connection: The name of the property that will be set
+     */
+    public readonly propertyName: FlowGraphDataConnection<string>;
+
+    /**
+     * Output connection: Whether the value is valid.
+     */
+    public readonly isValid: FlowGraphDataConnection<boolean>;
 
     constructor(
         /**
@@ -45,16 +59,23 @@ export class FlowGraphGetPropertyBlock<P extends any, O extends FlowGraphAssetTy
         public override config: IFlowGraphGetPropertyBlockConfiguration<O>
     ) {
         super(config);
-        this.target = this.registerDataInput("target", RichTypeAny, config.target);
+        this.object = this.registerDataInput("target", RichTypeAny, config.object);
+        this.propertyName = this.registerDataInput("propertyName", RichTypeAny, config.propertyName);
+        this.value = this.registerDataOutput("value", RichTypeAny);
+        this.isValid = this.registerDataOutput("isValid", RichTypeAny, false);
     }
 
     public override _updateOutputs(context: FlowGraphContext): void {
-        const target = this.target.getValue(context);
-        const value = target ? this._getPropertyValue(target, this.config.propertyName) : undefined;
+        const target = this.object.getValue(context);
+        const propertyName = this.propertyName.getValue(context);
+        const value = target && propertyName ? this._getPropertyValue(target, propertyName) : undefined;
         if (value === undefined) {
-            throw new Error(`Property ${this.config.propertyName} not found in the target asset.`);
+            this.value.resetToDefaultValue(context);
+            this.isValid.setValue(false, context);
+        } else {
+            this.value.setValue(value, context);
+            this.isValid.setValue(true, context);
         }
-        this.value.setValue(value, context);
     }
 
     private _getPropertyValue(target: AssetType<O>, propertyName: string): P | undefined {
