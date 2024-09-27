@@ -15,6 +15,7 @@ export class GLTFPathToObjectConverter<T> implements IPathToObjectConverter<T> {
 
     /**
      * The pointer string is represented by a [JSON pointer](https://datatracker.ietf.org/doc/html/rfc6901).
+     * See also https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/ObjectModel.adoc#core-pointers
      * <animationPointer> := /<rootNode>/<assetIndex>/<propertyPath>
      * <rootNode> := "nodes" | "materials" | "meshes" | "cameras" | "extensions"
      * <assetIndex> := <digit> | <name>

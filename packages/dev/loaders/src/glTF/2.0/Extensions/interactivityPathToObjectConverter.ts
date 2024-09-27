@@ -29,6 +29,9 @@ const nodesTree = {
             getObject(node: INode) {
                 return node._babylonTransformNode;
             },
+            getPropertyName(node: INode) {
+                return "position";
+            },
         },
     },
 };
