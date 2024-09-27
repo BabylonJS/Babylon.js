@@ -127,6 +127,12 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
         point._connectedPoint = point._connectedPoint.filter((p) => p !== this);
     }
 
+    public disconnectFromAll() {
+        for (const point of this._connectedPoint) {
+            this.disconnectFrom(point);
+        }
+    }
+
     public dispose() {
         for (const point of this._connectedPoint) {
             this.disconnectFrom(point);
