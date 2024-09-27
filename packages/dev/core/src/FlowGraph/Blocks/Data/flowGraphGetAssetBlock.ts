@@ -11,7 +11,14 @@ import type { Nullable } from "core/types";
  * @experimental
  */
 export interface IFlowGraphGetAssetBlockConfiguration<T> extends IFlowGraphBlockConfiguration {
+    /**
+     * The type of the asset that will be retrieved.
+     */
     type: T;
+    /**
+     * The index of the asset in the corresponding array in the assets context.
+     * If not provided you can still change it using the input connection.
+     */
     index?: number;
 }
 
