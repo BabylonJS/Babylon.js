@@ -634,7 +634,6 @@ export class SolidParser {
             let result;
             // Comment or newLine
             if (line.length === 0 || line.charAt(0) === "#") {
-                Logger.Log("Unhandled expression at line : " + line);
                 continue;
             } else if (SolidParser.VertexPattern.test(line)) {
                 //Get information about one position possible for the vertices
