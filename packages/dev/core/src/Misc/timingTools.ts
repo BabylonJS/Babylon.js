@@ -10,6 +10,7 @@ export class TimingTools {
      */
     public static SetImmediate(action: () => void) {
         if (IsWindowObjectExist() && window.setImmediate) {
+            // Note - deprecated and should not be used directly. Not supported in any browser.
             window.setImmediate(action);
         } else {
             setTimeout(action, 1);

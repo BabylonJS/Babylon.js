@@ -19,5 +19,12 @@ export class ScreenSpaceReflections2Configuration implements PrePassEffectConfig
     /**
      * Textures that should be present in the MRT for this effect to work
      */
-    public readonly texturesRequired: number[] = [Constants.PREPASS_NORMAL_TEXTURE_TYPE, Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE, Constants.PREPASS_DEPTH_TEXTURE_TYPE];
+    public readonly texturesRequired: number[] = [Constants.PREPASS_NORMAL_TEXTURE_TYPE, Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE];
+
+    /**
+     * @param useScreenspaceDepth If the effect should use the screenspace depth texture instead of a linear one
+     */
+    constructor(useScreenspaceDepth: boolean = false) {
+        this.texturesRequired.push(useScreenspaceDepth ? Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE : Constants.PREPASS_DEPTH_TEXTURE_TYPE);
+    }
 }

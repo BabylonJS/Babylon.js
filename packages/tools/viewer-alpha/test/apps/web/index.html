@@ -49,8 +49,9 @@
 
     <body ondragover="event.preventDefault()" ondrop="onDrop(event)">
         <babylon-viewer
-            src="https://raw.githubusercontent.com/BabylonJS/Assets/master/meshes/ufo.glb"
-            env="https://assets.babylonjs.com/environments/ulmerMuenster.env"
+            engine="WebGL"
+            source="https://raw.githubusercontent.com/BabylonJS/Assets/master/meshes/ufo.glb"
+            environment="https://assets.babylonjs.com/environments/ulmerMuenster.env"
             animation-speed="1.5"
         >
             <!-- <div slot="tool-bar" style="position: absolute; top: 12px; left: 12px; width: 100px; height: 36px">
@@ -62,17 +63,13 @@
         <script type="module" src="/packages/tools/viewer-alpha/src/index.ts"></script>
         <script>
             const viewerElement = document.querySelector("babylon-viewer");
-            let viewerDetail;
-            viewerElement.addEventListener(
-                "viewerready",
-                (event) => {
-                    viewerDetail = event.detail;
-                    console.log(`Viewer ready.`, viewerDetail);
-                },
-                { once: true }
-            );
+            let viewerDetails;
+            viewerElement.addEventListener("viewerready", (event) => {
+                viewerDetails = viewerElement.viewerDetails;
+                console.log(`Viewer ready.`, viewerDetails);
+            });
             viewerElement.addEventListener("modelchange", (event) => {
-                console.log(`Model changed.`, viewerDetail);
+                console.log(`Model changed.`, viewerDetails);
             });
             let isViewerConnected = true;
 
@@ -81,11 +78,12 @@
                 // Alternatively, we could just await import("/packages/tools/viewer-alpha/src/index.ts") here instead.
                 await customElements.whenDefined("babylon-viewer");
                 await new Promise((resolve) => setTimeout(resolve, 2000));
-                //viewerElement.src = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/BrainStem/glTF-Binary/BrainStem.glb";
+                //viewerElement.source = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/BrainStem/glTF-Binary/BrainStem.glb";
+                //viewerElement.environment = "";
                 // error case
-                //viewerElement.src = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/BrainStem/glTF-Binary/BrainStem2.glb';
+                //viewerElement.source = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/BrainStem/glTF-Binary/BrainStem2.glb";
                 await new Promise((resolve) => setTimeout(resolve, 2000));
-                //viewerElement.src = "https://playground.babylonjs.com/scenes/BoomBox.glb";
+                //viewerElement.source = "https://playground.babylonjs.com/scenes/BoomBox.glb";
             })();
 
             async function onDrop(event) {
@@ -93,7 +91,7 @@
                 if (file) {
                     event.preventDefault();
                     await customElements.whenDefined("babylon-viewer");
-                    await viewerDetail.viewer.loadModelAsync(file);
+                    await viewerDetails.viewer.loadModel(file);
                 }
             }
 

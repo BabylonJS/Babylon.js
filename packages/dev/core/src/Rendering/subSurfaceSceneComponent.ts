@@ -3,11 +3,11 @@ import { Scene } from "../scene";
 import type { ISceneSerializableComponent } from "../sceneComponent";
 import { SceneComponentConstants } from "../sceneComponent";
 import { SubSurfaceConfiguration } from "./subSurfaceConfiguration";
-import { AbstractScene } from "../abstractScene";
 import { Color3 } from "../Maths/math.color";
+import { AddParser } from "core/Loading/Plugins/babylonFileParser.function";
 
 // Adds the parser to the scene parsers.
-AbstractScene.AddParser(SceneComponentConstants.NAME_SUBSURFACE, (parsedData: any, scene: Scene) => {
+AddParser(SceneComponentConstants.NAME_SUBSURFACE, (parsedData: any, scene: Scene) => {
     // Diffusion profiles
     if (parsedData.ssDiffusionProfileColors !== undefined && parsedData.ssDiffusionProfileColors !== null) {
         scene.enableSubSurfaceForPrePass();
@@ -20,8 +20,8 @@ AbstractScene.AddParser(SceneComponentConstants.NAME_SUBSURFACE, (parsedData: an
     }
 });
 
-declare module "../abstractScene" {
-    export interface AbstractScene {
+declare module "../scene" {
+    export interface Scene {
         /** @internal (Backing field) */
         _subSurfaceConfiguration: Nullable<SubSurfaceConfiguration>;
 

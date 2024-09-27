@@ -91,17 +91,14 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #endif
     
     var fragData: array<vec4<f32>, SCENE_MRT_COUNT>;
-    #ifdef PREPASS    
-        #ifdef PREPASS_DEPTH
-            fragData[DEPTH_INDEX] =  vec4f(input.vViewPos.z / input.vViewPos.w, 0.0, 0.0, 1.0);
-        #endif
-
-        #if defined(PREPASS_NORMAL) || defined(PREPASS_WORLD_NORMAL)
-            fragData[NORMAL_INDEX] =  vec4f(normalOutput, 1.0);
-        #endif
-    #else
-        fragData[0] =  vec4f(input.vViewPos.z / input.vViewPos.w, 0.0, 0.0, 1.0);
-        fragData[1] =  vec4f(normalOutput, 1.0);
+    #ifdef DEPTH
+        fragData[DEPTH_INDEX] = vec4f(input.vViewPos.z / input.vViewPos.w, 0.0, 0.0, 1.0);
+    #endif
+    #ifdef NORMAL
+        fragData[NORMAL_INDEX] = vec4f(normalOutput, 1.0);
+    #endif
+    #ifdef SCREENSPACE_DEPTH
+        fragData[SCREENSPACE_DEPTH_INDEX] = vec4f(fragmentInputs.position.z, 0.0, 0.0, 1.0);
     #endif
 
     #ifdef POSITION

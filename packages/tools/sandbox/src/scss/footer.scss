@@ -120,16 +120,6 @@
                     color: inherit;
                     opacity: 1; /* Firefox */
                 }
-
-                :-ms-input-placeholder {
-                    /* Internet Explorer 10-11 */
-                    color: inherit;
-                }
-
-                ::-ms-input-placeholder {
-                    /* Microsoft Edge */
-                    color: inherit;
-                }
             }
 
             &.long-mode {
@@ -206,7 +196,6 @@
                 outline: none;
                 position: relative;
                 text-align: right;
-                -moz-opacity: 0;
                 opacity: 0;
                 z-index: 2;
                 width: 100%;
