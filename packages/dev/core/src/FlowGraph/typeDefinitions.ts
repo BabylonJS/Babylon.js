@@ -24,6 +24,13 @@ export interface IObjectAccessor {
      * @param args any necessary arguments to get the original object
      */
     getObject(...args: any[]): any;
+
+    /**
+     * Get the name of the (babylon) property that is being accessed.
+     * @param args any necessary arguments to get the property name
+     * @returns the name of the property or empty string if not applicable
+     */
+    getPropertyName(...args: any[]): string;
 }
 
 /**
