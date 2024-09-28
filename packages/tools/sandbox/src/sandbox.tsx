@@ -95,7 +95,7 @@ export class Sandbox extends React.Component<
                 this._globalState.showDebugLayer();
             }
 
-            this.setState({ errorMessage: error.message === "" ? "Unable to load scene. Check the developer console." : `${error.message} Check the developer console.` });
+            this.setState({ errorMessage: error.message ? `${error.message} Check the developer console.` : "Unable to load scene. Check the developer console." });
 
             this._engine && this._engine.hideLoadingUI();
 
