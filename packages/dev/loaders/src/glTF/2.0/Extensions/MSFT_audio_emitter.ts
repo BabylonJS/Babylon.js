@@ -12,8 +12,22 @@ import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 import type { IMSFTAudioEmitter_Clip, IMSFTAudioEmitter_Emitter, IMSFTAudioEmitter_EmittersReference, IMSFTAudioEmitter_AnimationEvent } from "babylonjs-gltf2interface";
 import { IMSFTAudioEmitter_AnimationEventAction } from "babylonjs-gltf2interface";
+import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
+
+import "core/Audio/audioSceneComponent";
 
 const NAME = "MSFT_audio_emitter";
+
+declare module "../../glTFFileLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface GLTFLoaderExtensionOptions {
+        /**
+         * Defines options for the MSFT_audio_emitter extension.
+         */
+        // NOTE: Don't use NAME here as it will break the UMD type declarations.
+        ["MSFT_audio_emitter"]: {};
+    }
+}
 
 interface ILoaderClip extends IMSFTAudioEmitter_Clip, IArrayItem {
     _objectURL?: Promise<string>;
@@ -304,4 +318,5 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new MSFT_audio_emitter(loader));
+unregisterGLTFExtension(NAME);
+registerGLTFExtension(NAME, true, (loader) => new MSFT_audio_emitter(loader));

@@ -6,7 +6,6 @@ import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import type { InternalTexture } from "./Textures/internalTexture";
 import { Tools } from "../Misc/tools";
-import "../Engines/Extensions/engine.uniformBuffer";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
@@ -1103,6 +1102,14 @@ export class UniformBuffer {
         this._currentEffect.setTexture(name, texture);
     }
 
+    /**
+     * Sets an array of sampler uniforms on the effect.
+     * @param name Define the name of uniform.
+     * @param textures Define the textures to set in the array of samplers
+     */
+    public setTextureArray(name: string, textures: ThinTexture[]) {
+        this._currentEffect.setTextureArray(name, textures);
+    }
     /**
      * Sets a sampler uniform on the effect.
      * @param name Define the name of the sampler.

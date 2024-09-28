@@ -135,7 +135,7 @@ export class ValueCondition extends Condition {
         public propertyPath: string,
         /** the value compared by the conditional operator against the current value of the property */
         public value: any,
-        /** the conditional operator, default ValueCondition.IsEqual */
+        /** [number] the conditional operator, default ValueCondition.IsEqual */
         public operator: number = ValueCondition.IsEqual
     ) {
         super(actionManager);

@@ -7,8 +7,20 @@ import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import { Color3 } from "core/Maths/math.color";
 import type { IKHRMaterialsSpecular } from "babylonjs-gltf2interface";
+import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "KHR_materials_specular";
+
+declare module "../../glTFFileLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface GLTFLoaderExtensionOptions {
+        /**
+         * Defines options for the KHR_materials_specular extension.
+         */
+        // NOTE: Don't use NAME here as it will break the UMD type declarations.
+        ["KHR_materials_specular"]: {};
+    }
+}
 
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_specular/README.md)
@@ -76,7 +88,7 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
             (properties.specularTexture as ITextureInfo).nonColorData = true;
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/specularTexture`, properties.specularTexture, (texture) => {
-                    texture.name = `${babylonMaterial.name} (Specular F0 Strength)`;
+                    texture.name = `${babylonMaterial.name} (Specular)`;
                     babylonMaterial.metallicReflectanceTexture = texture;
                     babylonMaterial.useOnlyMetallicFromMetallicReflectanceTexture = true;
                 })
@@ -86,7 +98,7 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
         if (properties.specularColorTexture) {
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/specularColorTexture`, properties.specularColorTexture, (texture) => {
-                    texture.name = `${babylonMaterial.name} (Specular F0 Color)`;
+                    texture.name = `${babylonMaterial.name} (Specular Color)`;
                     babylonMaterial.reflectanceTexture = texture;
                 })
             );
@@ -96,4 +108,5 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_materials_specular(loader));
+unregisterGLTFExtension(NAME);
+registerGLTFExtension(NAME, true, (loader) => new KHR_materials_specular(loader));

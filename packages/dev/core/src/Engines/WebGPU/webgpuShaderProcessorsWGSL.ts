@@ -22,7 +22,6 @@ import "../../ShadersWGSL/ShadersInclude/fresnelFunction";
 import "../../ShadersWGSL/ShadersInclude/meshUboDeclaration";
 import "../../ShadersWGSL/ShadersInclude/sceneUboDeclaration";
 import "../../ShadersWGSL/ShadersInclude/decalFragment";
-import "../../ShadersWGSL/particles.vertex";
 
 const builtInName_frag_depth = "fragmentOutputs.fragDepth";
 
@@ -356,22 +355,28 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         let fragmentOutputs = "struct FragmentOutputs {\n";
 
         // Adding fragData output locations
-        let regex = /const SCENE_MRT_COUNT = (\d+);/;
-        let match = fragmentCode.match(regex);
+        const regexRoot = "fragmentOutputs\\.fragData";
+        let match = fragmentCode.match(new RegExp(regexRoot + "0", "g"));
         let indexLocation = 0;
 
         if (match) {
-            const number = parseInt(match[1]);
-            if (number > 0) {
-                for (let index = 0; index < number; index++) {
+            fragmentOutputs += ` @location(${indexLocation}) fragData0 : vec4<f32>,\n`;
+            indexLocation++;
+            for (let index = 1; index < 8; index++) {
+                match = fragmentCode.match(new RegExp(regexRoot + index, "g"));
+                if (match) {
                     fragmentOutputs += ` @location(${indexLocation}) fragData${indexLocation} : vec4<f32>,\n`;
                     indexLocation++;
                 }
             }
+            if (fragmentCode.indexOf("MRT_AND_COLOR") !== -1) {
+                fragmentOutputs += `  @location(${indexLocation}) color : vec4<f32>,\n`;
+                indexLocation++;
+            }
         }
 
         // Adding fragData output locations
-        regex = /oitDepthSampler/;
+        const regex = /oitDepthSampler/;
         match = fragmentCode.match(regex);
 
         if (match) {

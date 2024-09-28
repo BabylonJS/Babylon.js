@@ -1,5 +1,4 @@
 import type { Nullable } from "core/types";
-import { Scalar } from "core/Maths/math.scalar";
 import { SphericalHarmonics, SphericalPolynomial } from "core/Maths/sphericalPolynomial";
 import { Quaternion, Matrix } from "core/Maths/math.vector";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
@@ -9,8 +8,20 @@ import type { IEXTLightsImageBased_LightReferenceImageBased, IEXTLightsImageBase
 import type { IScene } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
+import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "EXT_lights_image_based";
+
+declare module "../../glTFFileLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface GLTFLoaderExtensionOptions {
+        /**
+         * Defines options for the EXT_lights_image_based extension.
+         */
+        // NOTE: Don't use NAME here as it will break the UMD type declarations.
+        ["EXT_lights_image_based"]: {};
+    }
+}
 
 declare module "babylonjs-gltf2interface" {
     /** @internal */
@@ -147,7 +158,7 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
                 const sphericalPolynomial = SphericalPolynomial.FromHarmonics(sphericalHarmonics);
 
                 // Compute the lod generation scale to fit exactly to the number of levels available.
-                const lodGenerationScale = (imageData.length - 1) / Scalar.Log2(light.specularImageSize);
+                const lodGenerationScale = (imageData.length - 1) / Math.log2(light.specularImageSize);
                 return babylonTexture.updateRGBDAsync(imageData, sphericalPolynomial, lodGenerationScale);
             });
         }
@@ -158,4 +169,5 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new EXT_lights_image_based(loader));
+unregisterGLTFExtension(NAME);
+registerGLTFExtension(NAME, true, (loader) => new EXT_lights_image_based(loader));

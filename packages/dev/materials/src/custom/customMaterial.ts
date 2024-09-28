@@ -10,6 +10,9 @@ import { Color3, Color4 } from "core/Maths/math.color";
 import type { Nullable } from "core/types";
 import type { SubMesh } from "core/Meshes/subMesh";
 
+import "core/Shaders/default.vertex";
+import "core/Shaders/default.fragment";
+
 /**
  * Structure of a custom shader
  */
@@ -281,7 +284,7 @@ export class CustomMaterial extends StandardMaterial {
     }
 
     constructor(name: string, scene?: Scene) {
-        super(name, scene);
+        super(name, scene, true);
         this.CustomParts = new ShaderSpecialParts();
         this.customShaderNameResolve = this.Builder;
 

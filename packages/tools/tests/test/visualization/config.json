@@ -2,9 +2,40 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "NME Loop Block",
+            "playgroundId": "#D8AK3Z#109",
+            "referenceImage": "nme-loop.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Gaussian Splatting Loading",
+            "playgroundId": "#CID4NN#204",
+            "referenceImage": "gsplat-loading.png"
+        },
+        {
+            "title": "EXR Loader",
+            "playgroundId": "#4RN0VF#151",
+            "referenceImage": "exr-loader.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Simple refraction",
+            "playgroundId": "#22KZUW#652",
+            "referenceImage": "simple-refraction.png"
+        },
+        {
+            "title": "Detail map",
+            "playgroundId": "#F8FDYT#2",
+            "referenceImage": "detail-map.png"
+        },
+        {
+            "title": "needDepthPrePass",
+            "playgroundId": "#7A66KI#1",
+            "referenceImage": "needDepthPrePass.png"
+        },
+        {
             "title": "Decal map PP",
-            "playgroundId": "#9BVW2S#82",
-            "renderCount": 120,
+            "playgroundId": "#9BVW2S#90",
             "referenceImage": "decal-map-pp.png",
             "excludedEngines": ["webgl1"]
         },
@@ -12,6 +43,16 @@
             "title": "Convolution Post Process",
             "playgroundId": "#FBH4J7#281",
             "referenceImage": "convolution.png"
+        },
+        {
+            "title": "Volumetric Light Scattering Post Process with Skeleton",
+            "playgroundId": "#5E318S#6",
+            "referenceImage": "volumetricLightScatteringSkeleton.png"
+        },
+        {
+            "title": "Volumetric Light Scattering Post Process with Morph Targets",
+            "playgroundId": "#5E318S#5",
+            "referenceImage": "volumetricLightScatteringMorphTargets.png"
         },
         {
             "title": "Color correction",
@@ -42,20 +83,17 @@
         },
         {
             "title": "GPUPicker",
-            "playgroundId": "#1RWFMT#2",
-            "renderCount": 20,
+            "playgroundId": "#1RWFMT#8",
             "referenceImage": "gpuPicker.png"
         },
         {
-            "title": "Trailmesh - tapered and untapered",
-            "playgroundId": "#XGGSWJ#1",
-            "renderCount": 100,
+            "title": "Trailmesh tapered and untapered",
+            "playgroundId": "#XGGSWJ#4",
             "referenceImage": "trailMesh.png"
         },
         {
             "title": "3D Procedural Textures",
-            "playgroundId": "#AYZY4Q#7",
-            "renderCount": 5,
+            "playgroundId": "#AYZY4Q#34",
             "referenceImage": "procedural-textures-3d.png",
             "excludedEngines": ["webgl1", "webgpu"],
             "excludeFromAutomaticTesting": true
@@ -141,8 +179,7 @@
         },
         {
             "title": "Procedural texture with NME",
-            "renderCount": 2,
-            "playgroundId": "#8S19ZC#3",
+            "playgroundId": "#8S19ZC#77",
             "referenceImage": "procedural-nme.png"
         },
         {
@@ -157,7 +194,7 @@
         },
         {
             "title": "Particle subemitters",
-            "playgroundId": "#1LK70I#21",
+            "playgroundId": "#1LK70I#40",
             "renderCount": 50,
             "referenceImage": "subemitters.png"
         },
@@ -179,16 +216,13 @@
         },
         {
             "title": "Node material 0",
-            "playgroundId": "#M5VQE9#20",
-            "referenceImage": "node-material0.png",
-            "renderCount": 5,
-            "excludeFromAutomaticTesting": true
+            "playgroundId": "#M5VQE9#41",
+            "referenceImage": "node-material0.png"
         },
         {
             "title": "Node material 1",
             "playgroundId": "#QJ71C6#5",
-            "referenceImage": "node-material1.png",
-            "renderCount": 20
+            "referenceImage": "node-material1.png"
         },
         {
             "title": "Node material 2",
@@ -222,14 +256,12 @@
         },
         {
             "title": "Node material PBR 1",
-            "playgroundId": "#D8AK3Z#17",
-            "renderCount": 5,
+            "playgroundId": "#D8AK3Z#107",
             "referenceImage": "node-material-pbr-1.png"
         },
         {
-            "title": "Node material PBR - Pure WebGPU",
-            "playgroundId": "#D8AK3Z#80",
-            "renderCount": 5,
+            "title": "Node material PBR Pure WebGPU",
+            "playgroundId": "#D8AK3Z#108",
             "referenceImage": "node-material-pbr-2.png",
             "excludedEngines": ["webgl1", "webgl2"]
         },
@@ -250,14 +282,12 @@
         },
         {
             "title": "Nested BBG",
-            "playgroundId": "#ZG0C8B#6",
-            "renderCount": 10,
+            "playgroundId": "#ZG0C8B#12",
             "referenceImage": "nested-BBG.png"
         },
         {
             "title": "Weighted animations",
-            "playgroundId": "#LL5BIQ#72",
-            "renderCount": 50,
+            "playgroundId": "#LL5BIQ#636",
             "referenceImage": "weighted-animations.png"
         },
         {
@@ -277,13 +307,11 @@
         },
         {
             "title": "GUI Transform StackPanel",
-            "renderCount": 5,
             "playgroundId": "#BS60AB#0",
             "referenceImage": "TransformStackPanel.png"
         },
         {
             "title": "GUI StackPanel",
-            "renderCount": 5,
             "playgroundId": "#LLVZ90#0",
             "referenceImage": "StackPanel.png"
         },
@@ -1093,7 +1121,6 @@
         },
         {
             "title": "GlowLayer",
-            "renderCount": 5,
             "playgroundId": "#LRFB2D#262",
             "referenceImage": "GlowLayer.png"
         },
@@ -1645,6 +1672,19 @@
             "referenceImage": "bakedVertexAnimation.png"
         },
         {
+            "title": "Baked Vertex Animation with Depth Of Field",
+            "renderCount": 20,
+            "playgroundId": "#JWO4R0#8",
+            "referenceImage": "bakedVertexAnimationDOF.png"
+        },
+        {
+            "title": "Baked Vertex Animation with Volumetric Light Scattering Post Process",
+            "renderCount": 20,
+            "playgroundId": "#1LF9GK#3",
+            "referenceImage": "bakedVertexAnimationVLS.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "Bones and morphs computation order",
             "renderCount": 40,
             "playgroundId": "#WGZLGJ#4040",
@@ -1911,7 +1951,7 @@
         },
         {
             "title": "Command encoder order in WebGPU 1",
-            "playgroundId": "#064AUB#110",
+            "playgroundId": "#064AUB#121",
             "referenceImage": "CommandEncodedWebGPU1.png",
             "excludedEngines": ["webgl1"]
         },
@@ -2183,6 +2223,13 @@
             "title": "glTF Loader Capabilities",
             "playgroundId": "#EBO3J1#10",
             "referenceImage": "glTFLoaderCapabilities.png"
+        },
+        {
+            "title": "IBL Voxel Shadowing",
+            "playgroundId": "#8R5SSE#180",
+            "referenceImage": "voxelShadows.png",
+            "renderCount": 15,
+            "excludedEngines": ["webgl1", "webgpu"]
         }
     ]
 }

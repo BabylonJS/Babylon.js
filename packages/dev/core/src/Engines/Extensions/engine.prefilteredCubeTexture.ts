@@ -6,11 +6,8 @@ import type { Scene } from "../../scene";
 import { Constants } from "../constants";
 import { SphericalPolynomial } from "core/Maths/sphericalPolynomial";
 import { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { Scalar } from "core/Maths/math.scalar";
 import type { DDSInfo } from "core/Misc/dds";
 import { DDSTools } from "core/Misc/dds";
-
-import "../../Engines/Extensions/engine.cubeTexture";
 
 declare module "../../Engines/abstractEngine" {
     export interface AbstractEngine {
@@ -91,7 +88,7 @@ ThinEngine.prototype.createPrefilteredCubeTexture = function (
             const roughness = 1 - smoothness;
 
             const minLODIndex = lodOffset; // roughness = 0
-            const maxLODIndex = Scalar.Log2(width) * lodScale + lodOffset; // roughness = 1
+            const maxLODIndex = Math.log2(width) * lodScale + lodOffset; // roughness = 1
 
             const lodIndex = minLODIndex + (maxLODIndex - minLODIndex) * roughness;
             const mipmapIndex = Math.round(Math.min(Math.max(lodIndex, 0), maxLODIndex));
@@ -99,7 +96,7 @@ ThinEngine.prototype.createPrefilteredCubeTexture = function (
             const glTextureFromLod = new InternalTexture(this, InternalTextureSource.Temp);
             glTextureFromLod.type = texture.type;
             glTextureFromLod.format = texture.format;
-            glTextureFromLod.width = Math.pow(2, Math.max(Scalar.Log2(width) - mipmapIndex, 0));
+            glTextureFromLod.width = Math.pow(2, Math.max(Math.log2(width) - mipmapIndex, 0));
             glTextureFromLod.height = glTextureFromLod.width;
             glTextureFromLod.isCube = true;
             glTextureFromLod._cachedWrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;

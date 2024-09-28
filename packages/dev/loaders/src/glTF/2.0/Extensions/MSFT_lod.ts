@@ -9,6 +9,7 @@ import type { INode, IMaterial, IBuffer, IScene } from "../glTFLoaderInterfaces"
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 import type { IProperty, IMSFTLOD } from "babylonjs-gltf2interface";
+import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "MSFT_lod";
 
@@ -18,7 +19,8 @@ declare module "../../glTFFileLoader" {
         /**
          * Defines options for the MSFT_lod extension.
          */
-        ["MSFT_lod"]?: Partial<{
+        // NOTE: Don't use NAME here as it will break the UMD type declarations.
+        ["MSFT_lod"]: Partial<{
             /**
              * Maximum number of LODs to load, starting from the lowest LOD.
              */
@@ -432,4 +434,5 @@ export class MSFT_lod implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new MSFT_lod(loader));
+unregisterGLTFExtension(NAME);
+registerGLTFExtension(NAME, true, (loader) => new MSFT_lod(loader));

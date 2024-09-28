@@ -8,9 +8,10 @@ import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import { EngineStore } from "../Engines/engineStore";
 
-import type { AbstractScene } from "../abstractScene";
 import { Tags } from "../Misc/tags";
 import type { AnimationGroupMask } from "./animationGroupMask";
+import "./animatable";
+import type { IAssetContainer } from "core/IAssetContainer";
 
 /**
  * This class defines the direct association between an animation and a target
@@ -83,7 +84,7 @@ export class AnimationGroup implements IDisposable {
     private _shouldStart = true;
 
     /** @internal */
-    public _parentContainer: Nullable<AbstractScene> = null;
+    public _parentContainer: Nullable<IAssetContainer> = null;
 
     /**
      * Gets or sets the unique id of the node
@@ -731,8 +732,6 @@ export class AnimationGroup implements IDisposable {
             this.start(loop, this._speedRatio);
         }
 
-        this._isPaused = false;
-
         return this;
     }
 
@@ -771,6 +770,8 @@ export class AnimationGroup implements IDisposable {
         }
 
         this.syncWithMask();
+
+        this._isPaused = false;
 
         this.onAnimationGroupPlayObservable.notifyObservers(this);
 
@@ -862,6 +863,14 @@ export class AnimationGroup implements IDisposable {
         }
 
         return this;
+    }
+
+    /**
+     * Helper to get the current frame. This will return 0 if the AnimationGroup is not running, and it might return wrong results if multiple animations are running in different frames.
+     * @returns current animation frame.
+     */
+    public getCurrentFrame(): number {
+        return this.animatables[0]?.masterFrame || 0;
     }
 
     /**

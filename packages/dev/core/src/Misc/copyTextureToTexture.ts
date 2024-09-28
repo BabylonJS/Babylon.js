@@ -5,7 +5,7 @@ import type { IRenderTargetTexture, RenderTargetWrapper } from "../Engines/rende
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import { Constants } from "core/Engines/constants";
 
-import "../Shaders/copyTextureToTexture.fragment";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Conversion modes available when copying a texture into another one
@@ -27,6 +27,16 @@ export class CopyTextureToTexture {
     private _source: InternalTexture | ThinTexture;
     private _conversion: number;
 
+    /** Shader language used */
+    protected _shaderLanguage = ShaderLanguage.GLSL;
+
+    /**
+     * Gets the shader language
+     */
+    public get shaderLanguage(): ShaderLanguage {
+        return this._shaderLanguage;
+    }
+
     private _textureIsInternal(texture: InternalTexture | ThinTexture): texture is InternalTexture {
         return (texture as ThinTexture).getInternalTexture === undefined;
     }
@@ -42,6 +52,23 @@ export class CopyTextureToTexture {
 
         this._renderer = new EffectRenderer(engine);
 
+        this._initShaderSourceAsync(isDepthTexture);
+    }
+
+    private _shadersLoaded = false;
+    private async _initShaderSourceAsync(isDepthTexture: boolean) {
+        const engine = this._engine;
+
+        if (engine.isWebGPU) {
+            this._shaderLanguage = ShaderLanguage.WGSL;
+
+            await import("../ShadersWGSL/copyTextureToTexture.fragment");
+        } else {
+            await import("../Shaders/copyTextureToTexture.fragment");
+        }
+
+        this._shadersLoaded = true;
+
         this._effectWrapper = new EffectWrapper({
             engine: engine,
             name: "CopyTextureToTexture",
@@ -50,6 +77,7 @@ export class CopyTextureToTexture {
             uniformNames: ["conversion"],
             samplerNames: ["textureSampler"],
             defines: isDepthTexture ? ["#define DEPTH_TEXTURE"] : [],
+            shaderLanguage: this._shaderLanguage,
         });
 
         this._effectWrapper.onApplyObservable.add(() => {
@@ -74,7 +102,7 @@ export class CopyTextureToTexture {
      * @returns true if "copy" can be called without delay, else false
      */
     public isReady(): boolean {
-        return this._effectWrapper.effect.isReady();
+        return this._shadersLoaded && this._effectWrapper.effect.isReady();
     }
 
     /**

@@ -19,6 +19,10 @@ varying vec2 vUV;
 
     uniform sampler2D normalSampler;
     uniform sampler2D depthSampler;
+    #ifdef SSRAYTRACE_SCREENSPACE_DEPTH
+        uniform float nearPlaneZ;
+        uniform float farPlaneZ;
+    #endif
 #endif
 
 void main()
@@ -46,6 +50,9 @@ void main()
 
     vec3 csNormal = texelFetch(normalSampler, ivec2(vUV * texSize), 0).xyz;
     float depth = texelFetch(depthSampler, ivec2(vUV * texSize), 0).r;
+    #ifdef SSRAYTRACE_SCREENSPACE_DEPTH
+        depth = linearizeDepth(depth, nearPlaneZ, farPlaneZ);
+    #endif
     vec3 csPosition = computeViewPosFromUVDepth(vUV, depth, projection, invProjectionMatrix);
     vec3 csViewDirection = normalize(csPosition);
 

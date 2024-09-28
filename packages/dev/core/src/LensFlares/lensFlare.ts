@@ -77,9 +77,21 @@ export class LensFlare {
 
         const engine = system.scene.getEngine();
 
-        this._drawWrapper = new DrawWrapper(engine);
-
-        this._drawWrapper.effect = engine.createEffect("lensFlare", [VertexBuffer.PositionKind], ["color", "viewportMatrix"], ["textureSampler"], "");
+        system._onShadersLoaded.addOnce(() => {
+            this._drawWrapper = new DrawWrapper(engine);
+            this._drawWrapper.effect = engine.createEffect(
+                "lensFlare",
+                [VertexBuffer.PositionKind],
+                ["color", "viewportMatrix"],
+                ["textureSampler"],
+                "",
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                system.shaderLanguage
+            );
+        });
 
         system.lensFlares.push(this);
     }

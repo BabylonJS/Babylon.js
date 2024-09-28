@@ -1,14 +1,16 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <!-- Google tag (gtag.js) -->
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-03RQHZVZ6G"></script>
         <script>
             window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
+            function gtag() {
+                dataLayer.push(arguments);
+            }
+            gtag("js", new Date());
 
-            gtag('config', 'G-03RQHZVZ6G');
+            gtag("config", "G-03RQHZVZ6G");
         </script>
         <title>Babylon.js Node Geometry Editor</title>
         <meta charset="utf-8" />
@@ -17,7 +19,7 @@
 
         <link rel="stylesheet" href="https://use.typekit.net/cta4xsb.css" />
         <meta name="description" content="Babylon.js Node Geometry editor for Babylon.js" />
-        <meta name="keywords" content="Babylon.js,materials,nme,shaders,webgl" />
+        <meta name="keywords" content="Babylon.js,nge,geometry,procedural,webgl,webgpu" />
 
         <style>
             html,
@@ -26,7 +28,6 @@
                 height: 100%;
                 padding: 0;
                 margin: 0;
-                -ms-touch-action: none;
                 touch-action: none;
                 overflow: hidden;
                 overscroll-behavior-x: none;
@@ -41,7 +42,6 @@
                 overflow: hidden;
             }
         </style>
-
     </head>
 
     <body>

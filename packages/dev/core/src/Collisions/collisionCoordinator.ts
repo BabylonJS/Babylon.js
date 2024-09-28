@@ -1,9 +1,9 @@
 import type { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Vector3 } from "../Maths/math.vector";
-import { Engine } from "../Engines/engine";
 import { Collider } from "./collider";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { AbstractEngine } from "core/Engines/abstractEngine";
 
 /** @internal */
 export interface ICollisionCoordinator {
@@ -67,7 +67,7 @@ export class DefaultCollisionCoordinator implements ICollisionCoordinator {
         finalPosition: Vector3,
         excludedMesh: Nullable<AbstractMesh> = null
     ): void {
-        const closeDistance = Engine.CollisionsEpsilon * 10.0;
+        const closeDistance = AbstractEngine.CollisionsEpsilon * 10.0;
 
         if (collider._retry >= maximumRetry) {
             finalPosition.copyFrom(position);

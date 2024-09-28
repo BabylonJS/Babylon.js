@@ -16,19 +16,10 @@ import { FluidRenderingObjectParticleSystem } from "./fluidRenderingObjectPartic
 import { FluidRenderingTargetRenderer } from "./fluidRenderingTargetRenderer";
 import { FluidRenderingObjectCustomParticles } from "./fluidRenderingObjectCustomParticles";
 import { FluidRenderingDepthTextureCopy } from "./fluidRenderingDepthTextureCopy";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
-import "../../Shaders/fluidRenderingParticleDepth.vertex";
-import "../../Shaders/fluidRenderingParticleDepth.fragment";
-import "../../Shaders/fluidRenderingParticleThickness.vertex";
-import "../../Shaders/fluidRenderingParticleThickness.fragment";
-import "../../Shaders/fluidRenderingParticleDiffuse.vertex";
-import "../../Shaders/fluidRenderingParticleDiffuse.fragment";
-import "../../Shaders/fluidRenderingBilateralBlur.fragment";
-import "../../Shaders/fluidRenderingStandardBlur.fragment";
-import "../../Shaders/fluidRenderingRender.fragment";
-
-declare module "../../abstractScene" {
-    export interface AbstractScene {
+declare module "../../scene" {
+    export interface Scene {
         /** @internal (Backing field) */
         _fluidRenderer: Nullable<FluidRenderer>;
 
@@ -198,6 +189,16 @@ export class FluidRenderer {
     /** Retrieves all the render target renderers managed by the class */
     public readonly targetRenderers: FluidRenderingTargetRenderer[];
 
+    /** Shader language used by the renderer */
+    protected _shaderLanguage = ShaderLanguage.GLSL;
+
+    /**
+     * Gets the shader language used in this renderer
+     */
+    public get shaderLanguage(): ShaderLanguage {
+        return this._shaderLanguage;
+    }
+
     /**
      * Initializes the class
      * @param scene Scene in which the objects are part of
@@ -215,6 +216,11 @@ export class FluidRenderer {
         this._onEngineResizeObserver = this._engine.onResizeObservable.add(() => {
             this._initialize();
         });
+
+        const engine = this._engine;
+        if (engine.isWebGPU) {
+            this._shaderLanguage = ShaderLanguage.WGSL;
+        }
     }
 
     /**
@@ -245,12 +251,12 @@ export class FluidRenderer {
      * @returns the render object corresponding to the particle system
      */
     public addParticleSystem(ps: IParticleSystem, generateDiffuseTexture?: boolean, targetRenderer?: FluidRenderingTargetRenderer, camera?: Camera): IFluidRenderingRenderObject {
-        const object = new FluidRenderingObjectParticleSystem(this._scene, ps);
+        const object = new FluidRenderingObjectParticleSystem(this._scene, ps, this._shaderLanguage);
 
         object.onParticleSizeChanged.add(() => this._setParticleSizeForRenderTargets());
 
         if (!targetRenderer) {
-            targetRenderer = new FluidRenderingTargetRenderer(this._scene, camera);
+            targetRenderer = new FluidRenderingTargetRenderer(this._scene, camera, this._shaderLanguage);
             this.targetRenderers.push(targetRenderer);
         }
 
@@ -289,12 +295,12 @@ export class FluidRenderer {
         targetRenderer?: FluidRenderingTargetRenderer,
         camera?: Camera
     ): IFluidRenderingRenderObject {
-        const object = new FluidRenderingObjectCustomParticles(this._scene, buffers, numParticles);
+        const object = new FluidRenderingObjectCustomParticles(this._scene, buffers, numParticles, this._shaderLanguage);
 
         object.onParticleSizeChanged.add(() => this._setParticleSizeForRenderTargets());
 
         if (!targetRenderer) {
-            targetRenderer = new FluidRenderingTargetRenderer(this._scene, camera);
+            targetRenderer = new FluidRenderingTargetRenderer(this._scene, camera, this._shaderLanguage);
             this.targetRenderers.push(targetRenderer);
         }
 

@@ -16,7 +16,6 @@ import { Tools } from "../Misc/tools";
 import { Tags } from "../Misc/tags";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import { extractMinAndMax } from "../Maths/math.functions";
-import type { AbstractScene } from "../abstractScene";
 import { EngineStore } from "../Engines/engineStore";
 import { useOpenGLOrientationForUV } from "../Compat/compatibilityOptions";
 
@@ -25,6 +24,7 @@ import type { Buffer } from "../Buffers/buffer";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { ThinEngine } from "../Engines/thinEngine";
 import { CopyFloatData } from "../Buffers/bufferUtils";
+import type { IAssetContainer } from "core/IAssetContainer";
 
 /**
  * Class used to store geometry data (vertex buffers + index buffer)
@@ -86,7 +86,7 @@ export class Geometry implements IGetSetVerticesData {
     private _positionsCache: Vector3[] = [];
 
     /** @internal */
-    public _parentContainer: Nullable<AbstractScene> = null;
+    public _parentContainer: Nullable<IAssetContainer> = null;
 
     /**
      *  Gets or sets the Bias Vector to apply on the bounding elements (box/sphere), the max extend is computed as v += v * bias.x + bias.y, the min is computed as v -= v * bias.x + bias.y
@@ -614,8 +614,9 @@ export class Geometry implements IGetSetVerticesData {
      * @param indices defines the indices to store in the index buffer
      * @param totalVertices defines the total number of vertices (could be null)
      * @param updatable defines if the index buffer must be flagged as updatable (false by default)
+     * @param dontForceSubMeshRecreation defines a boolean indicating that we don't want to force the recreation of sub-meshes if we don't have to (false by default)
      */
-    public setIndices(indices: IndicesArray, totalVertices: Nullable<number> = null, updatable: boolean = false): void {
+    public setIndices(indices: IndicesArray, totalVertices: Nullable<number> = null, updatable: boolean = false, dontForceSubMeshRecreation = false): void {
         if (this._indexBuffer) {
             this._engine._releaseBuffer(this._indexBuffer);
         }
@@ -632,7 +633,7 @@ export class Geometry implements IGetSetVerticesData {
         }
 
         for (const mesh of this._meshes) {
-            mesh._createGlobalSubMesh(true);
+            mesh._createGlobalSubMesh(!dontForceSubMeshRecreation);
             mesh.synchronizeInstances();
         }
 

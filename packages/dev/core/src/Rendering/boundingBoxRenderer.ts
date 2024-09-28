@@ -17,9 +17,7 @@ import { Observable } from "../Misc/observable";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { CreateBoxVertexData } from "../Meshes/Builders/boxBuilder";
-
-import "../Shaders/boundingBoxRenderer.fragment";
-import "../Shaders/boundingBoxRenderer.vertex";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 declare module "../scene" {
     export interface Scene {
@@ -140,6 +138,16 @@ export class BoundingBoxRenderer implements ISceneComponent {
      */
     public enabled = true;
 
+    /** Shader language used by the renderer */
+    protected _shaderLanguage = ShaderLanguage.GLSL;
+
+    /**
+     * Gets the shader language used in this renderer.
+     */
+    public get shaderLanguage(): ShaderLanguage {
+        return this._shaderLanguage;
+    }
+
     /**
      * @internal
      */
@@ -161,10 +169,16 @@ export class BoundingBoxRenderer implements ISceneComponent {
      */
     constructor(scene: Scene) {
         this.scene = scene;
+
+        const engine = this.scene.getEngine();
+        if (engine.isWebGPU) {
+            this._shaderLanguage = ShaderLanguage.WGSL;
+        }
+
         scene._addComponent(this);
-        this._uniformBufferFront = new UniformBuffer(this.scene.getEngine(), undefined, undefined, "BoundingBoxRendererFront", !this.scene.getEngine().isWebGPU);
+        this._uniformBufferFront = new UniformBuffer(this.scene.getEngine(), undefined, undefined, "BoundingBoxRendererFront", true);
         this._buildUniformLayout(this._uniformBufferFront);
-        this._uniformBufferBack = new UniformBuffer(this.scene.getEngine(), undefined, undefined, "BoundingBoxRendererBack", !this.scene.getEngine().isWebGPU);
+        this._uniformBufferBack = new UniformBuffer(this.scene.getEngine(), undefined, undefined, "BoundingBoxRendererBack", true);
         this._buildUniformLayout(this._uniformBufferBack);
     }
 
@@ -220,6 +234,14 @@ export class BoundingBoxRenderer implements ISceneComponent {
                 attributes: [VertexBuffer.PositionKind],
                 uniforms: ["world", "viewProjection", "viewProjectionR", "color"],
                 uniformBuffers: ["BoundingBoxRenderer"],
+                shaderLanguage: this._shaderLanguage,
+                extraInitializationsAsync: async () => {
+                    if (this._shaderLanguage === ShaderLanguage.WGSL) {
+                        await Promise.all([import("../ShadersWGSL/boundingBoxRenderer.vertex"), import("../ShadersWGSL/boundingBoxRenderer.fragment")]);
+                    } else {
+                        await Promise.all([import("../Shaders/boundingBoxRenderer.vertex"), import("../Shaders/boundingBoxRenderer.fragment")]);
+                    }
+                },
             },
             false
         );
@@ -237,6 +259,14 @@ export class BoundingBoxRenderer implements ISceneComponent {
                 attributes: [VertexBuffer.PositionKind],
                 uniforms: ["world", "viewProjection", "viewProjectionR", "color"],
                 uniformBuffers: ["BoundingBoxRenderer"],
+                shaderLanguage: this._shaderLanguage,
+                extraInitializationsAsync: async () => {
+                    if (this._shaderLanguage === ShaderLanguage.WGSL) {
+                        await Promise.all([import("../ShadersWGSL/boundingBoxRenderer.vertex"), import("../ShadersWGSL/boundingBoxRenderer.fragment")]);
+                    } else {
+                        await Promise.all([import("../Shaders/boundingBoxRenderer.vertex"), import("../Shaders/boundingBoxRenderer.fragment")]);
+                    }
+                },
             },
             true
         );

@@ -13,20 +13,27 @@
         "lib/**/*.map",
         "dist/**/*.js",
         "dist/**/*.map",
+        "assets/**",
         "readme.md",
+        "docs/**",
         "license.md"
     ],
     "scripts": {
+        "start": "npm run serve -- --open test/apps/web/index.html",
+        "serve": "vite",
         "build": "npm run clean && npm run bundle",
-        "clean": "rimraf lib && rimraf dist && rimraf *.tsbuildinfo",
+        "clean": "rimraf lib && rimraf dist && rimraf *.tsbuildinfo -g",
         "bundle": "npm run bundle:lib && npm run bundle:dist:esm",
         "bundle:lib": "rollup -c rollup.config.lib.mjs",
         "bundle:dist:esm": "rollup -c rollup.config.dist.esm.mjs",
         "pack": "npm run build && npm pack"
     },
+    "dependencies": {
+        "lit": "^3.2.0"
+    },
     "peerDependencies": {
-        "@babylonjs/core": "^7.13.2",
-        "@babylonjs/loaders": "^7.0.0"
+        "@babylonjs/core": "^7.23.1",
+        "@babylonjs/loaders": "^7.23.1"
     },
     "devDependencies": {
         "@dev/build-tools": "^1.0.0",
@@ -35,8 +42,11 @@
         "@rollup/plugin-node-resolve": "^15.2.3",
         "@rollup/plugin-terser": "^0.4.4",
         "@rollup/plugin-typescript": "^11.1.6",
+        "chalk": "^5.3.0",
         "rollup": "^4.18.0",
-        "rollup-plugin-dts": "^6.1.1"
+        "rollup-plugin-dts": "^6.1.1",
+        "rollup-plugin-minify-template-literals": "^1.1.7",
+        "vite": "^5.4.2"
     },
     "keywords": [
         "3D",
@@ -46,7 +56,6 @@
         "babylon.js"
     ],
     "license": "Apache-2.0",
-    "sideEffects": false,
     "homepage": "https://www.babylonjs.com",
     "repository": {
         "type": "git",

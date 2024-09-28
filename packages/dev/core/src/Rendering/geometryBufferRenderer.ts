@@ -24,6 +24,7 @@ import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes 
 import { BindMorphTargetParameters, BindSceneUniformBuffer, PrepareAttributesForMorphTargetsInfluencers, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 
 import "../Engines/Extensions/engine.multiRender";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /** @internal */
 interface ISavedTransformationMatrix {
@@ -63,6 +64,11 @@ addClipPlaneUniforms(uniforms);
  */
 export class GeometryBufferRenderer {
     /**
+     * Force all the standard materials to compile to glsl even on WebGPU engines.
+     * False by default. This is mostly meant for backward compatibility.
+     */
+    public static ForceGLSL = false;
+    /**
      * Constant used to retrieve the depth texture index in the G-Buffer textures array
      * using getIndex(GeometryBufferRenderer.DEPTH_TEXTURE_INDEX)
      */
@@ -87,6 +93,12 @@ export class GeometryBufferRenderer {
      * using the getIndex(GeometryBufferRenderer.REFLECTIVITY_TEXTURE_TYPE)
      */
     public static readonly REFLECTIVITY_TEXTURE_TYPE = 4;
+
+    /**
+     * Constant used to retrieve the screen-space depth texture index in the G-Buffer textures array
+     * using getIndex(GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE)
+     */
+    public static readonly SCREENSPACE_DEPTH_TEXTURE_TYPE = 5;
 
     /**
      * Dictionary used to store the previous transformation matrices of each rendered mesh
@@ -128,9 +140,12 @@ export class GeometryBufferRenderer {
     private _multiRenderTarget: MultiRenderTarget;
     private _textureTypesAndFormats: { [key: number]: { textureType: number; textureFormat: number } };
     private _ratioOrDimensions: number | { width: number; height: number };
+    private _enableDepth: boolean = true;
+    private _enableNormal: boolean = true;
     private _enablePosition: boolean = false;
     private _enableVelocity: boolean = false;
     private _enableReflectivity: boolean = false;
+    private _enableScreenspaceDepth: boolean = false;
     private _depthFormat: number;
     private _clearColor = new Color4(0, 0, 0, 0);
     private _clearDepthColor = new Color4(1e8, 0, 0, 1); // "infinity" value - depth in the depth texture is view.z, not a 0..1 value!
@@ -140,6 +155,7 @@ export class GeometryBufferRenderer {
     private _reflectivityIndex: number = -1;
     private _depthIndex: number = -1;
     private _normalIndex: number = -1;
+    private _screenspaceDepthIndex: number = -1;
 
     private _linkedWithPrePass: boolean = false;
     private _prePassRenderer: PrePassRenderer;
@@ -181,9 +197,12 @@ export class GeometryBufferRenderer {
      * Resets the geometry buffer layout
      */
     public _resetLayout() {
+        this._enableDepth = true;
+        this._enableNormal = true;
         this._enablePosition = false;
         this._enableReflectivity = false;
         this._enableVelocity = false;
+        this._enableScreenspaceDepth = false;
         this._attachmentsFromPrePass = [];
     }
 
@@ -204,8 +223,13 @@ export class GeometryBufferRenderer {
             this._enableReflectivity = true;
         } else if (geometryBufferType === GeometryBufferRenderer.DEPTH_TEXTURE_TYPE) {
             this._depthIndex = index;
+            this._enableDepth = true;
         } else if (geometryBufferType === GeometryBufferRenderer.NORMAL_TEXTURE_TYPE) {
             this._normalIndex = index;
+            this._enableNormal = true;
+        } else if (geometryBufferType === GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE) {
+            this._screenspaceDepthIndex = index;
+            this._enableScreenspaceDepth = true;
         }
     }
 
@@ -263,11 +287,51 @@ export class GeometryBufferRenderer {
             case GeometryBufferRenderer.REFLECTIVITY_TEXTURE_TYPE:
                 return this._reflectivityIndex;
             case GeometryBufferRenderer.DEPTH_TEXTURE_TYPE:
-                return this._linkedWithPrePass ? this._depthIndex : 0;
+                return this._depthIndex;
             case GeometryBufferRenderer.NORMAL_TEXTURE_TYPE:
-                return this._linkedWithPrePass ? this._normalIndex : 1;
+                return this._normalIndex;
+            case GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE:
+                return this._screenspaceDepthIndex;
             default:
                 return -1;
+        }
+    }
+
+    /**
+     * @returns a boolean indicating if object's depths are enabled for the G buffer.
+     */
+    public get enableDepth(): boolean {
+        return this._enableDepth;
+    }
+
+    /**
+     * Sets whether or not object's depths are enabled for the G buffer.
+     */
+    public set enableDepth(enable: boolean) {
+        this._enableDepth = enable;
+
+        if (!this._linkedWithPrePass) {
+            this.dispose();
+            this._createRenderTargets();
+        }
+    }
+
+    /**
+     * @returns a boolean indicating if object's normals are enabled for the G buffer.
+     */
+    public get enableNormal(): boolean {
+        return this._enableNormal;
+    }
+
+    /**
+     * Sets whether or not object's normals are enabled for the G buffer.
+     */
+    public set enableNormal(enable: boolean) {
+        this._enableNormal = enable;
+
+        if (!this._linkedWithPrePass) {
+            this.dispose();
+            this._createRenderTargets();
         }
     }
 
@@ -340,6 +404,22 @@ export class GeometryBufferRenderer {
     }
 
     /**
+     * Sets whether or not objects screenspace depth are enabled for the G buffer.
+     */
+    public get enableScreenspaceDepth(): boolean {
+        return this._enableScreenspaceDepth;
+    }
+
+    public set enableScreenspaceDepth(enable: boolean) {
+        this._enableScreenspaceDepth = enable;
+
+        if (!this._linkedWithPrePass) {
+            this.dispose();
+            this._createRenderTargets();
+        }
+    }
+
+    /**
      * If set to true (default: false), the depth texture will be cleared with the depth value corresponding to the far plane (1 in normal mode, 0 in reverse depth buffer mode)
      * If set to false, the depth texture is always cleared with 0.
      */
@@ -358,6 +438,16 @@ export class GeometryBufferRenderer {
      */
     public get ratio(): number {
         return typeof this._ratioOrDimensions === "object" ? 1 : this._ratioOrDimensions;
+    }
+
+    /** Shader language used by the material */
+    protected _shaderLanguage = ShaderLanguage.GLSL;
+
+    /**
+     * Gets the shader language used in this material.
+     */
+    public get shaderLanguage(): ShaderLanguage {
+        return this._shaderLanguage;
     }
 
     /**
@@ -386,10 +476,28 @@ export class GeometryBufferRenderer {
         this._depthFormat = depthFormat;
         this._textureTypesAndFormats = textureTypesAndFormats || {};
 
+        this._initShaderSourceAsync();
+
         GeometryBufferRenderer._SceneComponentInitialization(this._scene);
 
         // Render target
         this._createRenderTargets();
+    }
+
+    private _shadersLoaded = false;
+
+    private async _initShaderSourceAsync() {
+        const engine = this._scene.getEngine();
+
+        if (engine.isWebGPU && !GeometryBufferRenderer.ForceGLSL) {
+            this._shaderLanguage = ShaderLanguage.WGSL;
+
+            await Promise.all([import("../ShadersWGSL/geometry.vertex"), import("../ShadersWGSL/geometry.fragment")]);
+        } else {
+            await Promise.all([import("../Shaders/geometry.vertex"), import("../Shaders/geometry.fragment")]);
+        }
+
+        this._shadersLoaded = true;
     }
 
     /**
@@ -399,6 +507,10 @@ export class GeometryBufferRenderer {
      * @returns true if ready otherwise false
      */
     public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
+        if (!this._shadersLoaded) {
+            return false;
+        }
+
         const material = <any>subMesh.getMaterial();
 
         if (material && material.disableDepthWrite) {
@@ -561,20 +673,17 @@ export class GeometryBufferRenderer {
             }
         }
 
-        // PrePass
-        if (this._linkedWithPrePass) {
-            defines.push("#define PREPASS");
-            if (this._depthIndex !== -1) {
-                defines.push("#define DEPTH_INDEX " + this._depthIndex);
-                defines.push("#define PREPASS_DEPTH");
-            }
-            if (this._normalIndex !== -1) {
-                defines.push("#define NORMAL_INDEX " + this._normalIndex);
-                defines.push("#define PREPASS_NORMAL");
-            }
+        // Buffers
+        if (this._enableDepth) {
+            defines.push("#define DEPTH");
+            defines.push("#define DEPTH_INDEX " + this._depthIndex);
         }
 
-        // Buffers
+        if (this._enableNormal) {
+            defines.push("#define NORMAL");
+            defines.push("#define NORMAL_INDEX " + this._normalIndex);
+        }
+
         if (this._enablePosition) {
             defines.push("#define POSITION");
             defines.push("#define POSITION_INDEX " + this._positionIndex);
@@ -591,6 +700,13 @@ export class GeometryBufferRenderer {
         if (this._enableReflectivity) {
             defines.push("#define REFLECTIVITY");
             defines.push("#define REFLECTIVITY_INDEX " + this._reflectivityIndex);
+        }
+
+        if (this._enableScreenspaceDepth) {
+            if (this._screenspaceDepthIndex !== -1) {
+                defines.push("#define SCREENSPACE_DEPTH_INDEX " + this._screenspaceDepthIndex);
+                defines.push("#define SCREENSPACE_DEPTH");
+            }
         }
 
         if (this.generateNormalsInWorldSpace) {
@@ -644,9 +760,9 @@ export class GeometryBufferRenderer {
 
         // Setup textures count
         if (this._linkedWithPrePass) {
-            defines.push("#define RENDER_TARGET_COUNT " + this._attachmentsFromPrePass.length);
+            defines.push("#define SCENE_MRT_COUNT " + this._attachmentsFromPrePass.length);
         } else {
-            defines.push("#define RENDER_TARGET_COUNT " + this._multiRenderTarget.textures.length);
+            defines.push("#define SCENE_MRT_COUNT " + this._multiRenderTarget.textures.length);
         }
 
         prepareStringDefinesForClipPlanes(material, this._scene, defines);
@@ -670,6 +786,7 @@ export class GeometryBufferRenderer {
                         onError: null,
                         uniformBuffersNames: ["Scene"],
                         indexParameters: { buffersCount: this._multiRenderTarget.textures.length - 1, maxSimultaneousMorphTargets: numMorphInfluencers },
+                        shaderLanguage: this.shaderLanguage,
                     },
                     engine
                 ),
@@ -717,12 +834,21 @@ export class GeometryBufferRenderer {
     private _assignRenderTargetIndices(): [number, string[], Array<{ textureType: number; textureFormat: number } | undefined>] {
         const textureNames: string[] = [];
         const textureTypesAndFormats: Array<{ textureType: number; textureFormat: number } | undefined> = [];
-        let count = 2;
+        let count = 0;
 
-        textureNames.push("gBuffer_Depth", "gBuffer_Normal");
+        if (this._enableDepth) {
+            this._depthIndex = count;
+            count++;
+            textureNames.push("gBuffer_Depth");
+            textureTypesAndFormats.push(this._textureTypesAndFormats[GeometryBufferRenderer.DEPTH_TEXTURE_TYPE]);
+        }
 
-        textureTypesAndFormats.push(this._textureTypesAndFormats[GeometryBufferRenderer.DEPTH_TEXTURE_TYPE]);
-        textureTypesAndFormats.push(this._textureTypesAndFormats[GeometryBufferRenderer.NORMAL_TEXTURE_TYPE]);
+        if (this._enableNormal) {
+            this._normalIndex = count;
+            count++;
+            textureNames.push("gBuffer_Normal");
+            textureTypesAndFormats.push(this._textureTypesAndFormats[GeometryBufferRenderer.NORMAL_TEXTURE_TYPE]);
+        }
 
         if (this._enablePosition) {
             this._positionIndex = count;
@@ -743,6 +869,13 @@ export class GeometryBufferRenderer {
             count++;
             textureNames.push("gBuffer_Reflectivity");
             textureTypesAndFormats.push(this._textureTypesAndFormats[GeometryBufferRenderer.REFLECTIVITY_TEXTURE_TYPE]);
+        }
+
+        if (this._enableScreenspaceDepth) {
+            this._screenspaceDepthIndex = count;
+            count++;
+            textureNames.push("gBuffer_ScreenspaceDepth");
+            textureTypesAndFormats.push(this._textureTypesAndFormats[GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE]);
         }
 
         return [count, textureNames, textureTypesAndFormats];

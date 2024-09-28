@@ -1,5 +1,5 @@
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import { GLTFLoader } from "../glTFLoader";
+import type { GLTFLoader } from "../glTFLoader";
 import type { Nullable } from "core/types";
 import type { Animation } from "core/Animations/animation";
 import type { IAnimatable } from "core/Animations/animatable.interface";
@@ -10,8 +10,20 @@ import { Logger } from "core/Misc/logger";
 import { animationPointerTree } from "./KHR_animation_pointer.data";
 import { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
 import type { AnimationPropertyInfo } from "../glTFLoaderAnimation";
+import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "KHR_animation_pointer";
+
+declare module "../../glTFFileLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface GLTFLoaderExtensionOptions {
+        /**
+         * Defines options for the KHR_animation_pointer extension.
+         */
+        // NOTE: Don't use NAME here as it will break the UMD type declarations.
+        ["KHR_animation_pointer"]: {};
+    }
+}
 
 /**
  * Class to convert an animation pointer path to a smart object that
@@ -104,4 +116,5 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_animation_pointer(loader));
+unregisterGLTFExtension(NAME);
+registerGLTFExtension(NAME, true, (loader) => new KHR_animation_pointer(loader));

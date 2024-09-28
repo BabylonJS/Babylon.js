@@ -547,6 +547,8 @@ declare module "../scene" {
 
         /**
          * Will start the animation sequence of a given target
+         *
+         * Note that it is possible that the value(s) of speedRatio from and to will be changed if the animation is inverted
          * @param target defines the target
          * @param from defines from which frame should animation start
          * @param to defines until which frame should animation run.
@@ -607,6 +609,8 @@ declare module "../scene" {
 
         /**
          * Begin a new animation on a given node
+         *
+         * Note that it is possible that the value(s) of speedRatio from and to will be changed if the animation is inverted
          * @param target defines the target where the animation will take place
          * @param animations defines the list of animations to start
          * @param from defines the initial value
@@ -758,10 +762,17 @@ Scene.prototype.beginAnimation = function (
     onAnimationLoop?: () => void,
     isAdditive = false
 ): Animatable {
-    if (from > to && speedRatio > 0) {
-        speedRatio *= -1;
+    // get speed speedRatio, to and from, based on the sign and value(s)
+    if (speedRatio < 0) {
+        const tmp = from;
+        from = to;
+        to = tmp;
+        speedRatio = -speedRatio;
     }
-
+    // if from > to switch speed ratio
+    if (from > to) {
+        speedRatio = -speedRatio;
+    }
     if (stopCurrent) {
         this.stopAnimation(target, undefined, targetMask);
     }
@@ -820,23 +831,22 @@ Scene.prototype.beginDirectAnimation = function (
     from: number,
     to: number,
     loop?: boolean,
-    speedRatio?: number,
+    speedRatio: number = 1.0,
     onAnimationEnd?: () => void,
     onAnimationLoop?: () => void,
     isAdditive = false
 ): Animatable {
-    if (speedRatio === undefined) {
-        speedRatio = 1.0;
+    // get speed speedRatio, to and from, based on the sign and value(s)
+    if (speedRatio < 0) {
+        const tmp = from;
+        from = to;
+        to = tmp;
+        speedRatio = -speedRatio;
     }
-
-    if (from > to && speedRatio > 0) {
-        speedRatio *= -1;
-    } else if (to > from && speedRatio < 0) {
-        const temp = to;
-        to = from;
-        from = temp;
+    // if from > to switch speed ratio
+    if (from > to) {
+        speedRatio = -speedRatio;
     }
-
     const animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd, animations, onAnimationLoop, isAdditive);
 
     return animatable;

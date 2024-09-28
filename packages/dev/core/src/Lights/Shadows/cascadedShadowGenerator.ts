@@ -8,10 +8,6 @@ import type { Effect } from "../../Materials/effect";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 
 import { Constants } from "../../Engines/constants";
-
-import "../../Shaders/shadowMap.fragment";
-import "../../Shaders/shadowMap.vertex";
-import "../../Shaders/depthBoxBlur.fragment";
 import type { Observer } from "../../Misc/observable";
 import { _WarnImport } from "../../Misc/devTools";
 import { ShadowGenerator } from "./shadowGenerator";
@@ -20,7 +16,6 @@ import type { DirectionalLight } from "../directionalLight";
 import { BoundingInfo } from "../../Culling/boundingInfo";
 import type { DepthRenderer } from "../../Rendering/depthRenderer";
 import { DepthReducer } from "../../Misc/depthReducer";
-
 import { Logger } from "../../Misc/logger";
 import { EngineStore } from "../../Engines/engineStore";
 import type { Camera } from "../../Cameras/camera";

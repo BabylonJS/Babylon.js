@@ -19,10 +19,7 @@ import { DepthRenderer } from "../../../Rendering/depthRenderer";
 import type { ISize } from "../../../Maths/math.size";
 
 import "../postProcessRenderPipelineManagerSceneComponent";
-
-import "../../../Shaders/screenSpaceReflection2.fragment";
-import "../../../Shaders/screenSpaceReflection2Blur.fragment";
-import "../../../Shaders/screenSpaceReflection2BlurCombiner.fragment";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 const trs = Matrix.Compose(new Vector3(0.5, 0.5, 0.5), Quaternion.Identity(), new Vector3(0.5, 0.5, 0.5));
 const trsWebGPU = Matrix.Compose(new Vector3(0.5, 0.5, 1), Quaternion.Identity(), new Vector3(0.5, 0.5, 0));
@@ -237,6 +234,8 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         this._enableSmoothReflections = enabled;
         this._updateEffectDefines();
     }
+
+    private _useScreenspaceDepth = false;
 
     @serialize("environmentTexture")
     private _environmentTexture: Nullable<CubeTexture>;
@@ -632,8 +631,9 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
      * @param cameras The array of cameras that the rendering pipeline will be attached to (default: scene.cameras)
      * @param forceGeometryBuffer Set to true if you want to use the legacy geometry buffer renderer (default: false)
      * @param textureType The texture type used by the different post processes created by SSR (default: Constants.TEXTURETYPE_UNSIGNED_BYTE)
+     * @param useScreenspaceDepth Indicates if the depth buffer should be linear or screenspace (default: false). This allows sharing the buffer with other effect pipelines that may require the depth to be in screenspace.
      */
-    constructor(name: string, scene: Scene, cameras?: Camera[], forceGeometryBuffer = false, textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE) {
+    constructor(name: string, scene: Scene, cameras?: Camera[], forceGeometryBuffer = false, textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE, useScreenspaceDepth = false) {
         super(scene.getEngine(), name);
 
         this._cameras = cameras || scene.cameras;
@@ -643,6 +643,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         this._scene = scene;
         this._textureType = textureType;
         this._forceGeometryBuffer = forceGeometryBuffer;
+        this._useScreenspaceDepth = useScreenspaceDepth;
 
         if (this.isSupported) {
             scene.postProcessRenderPipelineManager.addPipeline(this);
@@ -652,6 +653,8 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                 if (geometryBufferRenderer) {
                     geometryBufferRenderer.enableReflectivity = true;
                     geometryBufferRenderer.useSpecificClearForDepthTexture = true;
+                    geometryBufferRenderer.enableScreenspaceDepth = this._useScreenspaceDepth;
+                    geometryBufferRenderer.enableDepth = !this._useScreenspaceDepth;
                 }
             } else {
                 const prePassRenderer = scene.enablePrePassRenderer();
@@ -740,6 +743,9 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         }
         if (this._scene.useRightHandedSystem) {
             defines.push("#define SSRAYTRACE_RIGHT_HANDED_SCENE");
+        }
+        if (this._useScreenspaceDepth) {
+            defines.push("#define SSRAYTRACE_SCREENSPACE_DEPTH");
         }
         if (this._environmentTexture) {
             defines.push("#define SSR_USE_ENVIRONMENT_CUBE");
@@ -838,8 +844,18 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
 
             if (camera) {
                 this._depthRendererCamera = camera;
-                this._depthRenderer = new DepthRenderer(this._scene, undefined, undefined, undefined, Constants.TEXTURE_NEAREST_SAMPLINGMODE, true, "SSRBackDepth");
-                this._depthRenderer.clearColor.r = 1e8; // "infinity": put a big value because we use the storeCameraSpaceZ mode
+                this._depthRenderer = new DepthRenderer(
+                    this._scene,
+                    undefined,
+                    undefined,
+                    this._useScreenspaceDepth,
+                    Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                    !this._useScreenspaceDepth,
+                    "SSRBackDepth"
+                );
+                if (!this._useScreenspaceDepth) {
+                    this._depthRenderer.clearColor.r = 1e8; // "infinity": put a big value because we use the storeCameraSpaceZ mode
+                }
                 this._depthRenderer.reverseCulling = true; // we generate depth for the back faces
                 this._depthRenderer.forceDepthWriteTransparentMeshes = this._backfaceForceDepthWriteTransparentMeshes;
 
@@ -953,6 +969,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                 "roughnessFactor",
                 "projectionPixel",
                 "nearPlaneZ",
+                "farPlaneZ",
                 "maxDistance",
                 "selfCollisionNumSkip",
                 "vReflectionPosition",
@@ -967,7 +984,19 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             this._scene.getEngine(),
             false,
             "",
-            this._textureType
+            this._textureType,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            this._scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            (useWebGPU, list) => {
+                if (useWebGPU) {
+                    list.push(import("../../../ShadersWGSL/screenSpaceReflection2.fragment"));
+                } else {
+                    list.push(import("../../../Shaders/screenSpaceReflection2.fragment"));
+                }
+            }
         );
 
         this._updateEffectDefines();
@@ -985,11 +1014,18 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             if (geometryBufferRenderer) {
                 const roughnessIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.REFLECTIVITY_TEXTURE_TYPE);
 
-                effect.setTexture("normalSampler", geometryBufferRenderer.getGBuffer().textures[1]);
+                const normalIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.NORMAL_TEXTURE_TYPE);
+                effect.setTexture("normalSampler", geometryBufferRenderer.getGBuffer().textures[normalIndex]);
                 effect.setTexture("reflectivitySampler", geometryBufferRenderer.getGBuffer().textures[roughnessIndex]);
-                effect.setTexture("depthSampler", geometryBufferRenderer.getGBuffer().textures[0]);
+                if (this._useScreenspaceDepth) {
+                    const depthIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE);
+                    effect.setTexture("depthSampler", geometryBufferRenderer.getGBuffer().textures[depthIndex]);
+                } else {
+                    const depthIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.DEPTH_TEXTURE_TYPE);
+                    effect.setTexture("depthSampler", geometryBufferRenderer.getGBuffer().textures[depthIndex]);
+                }
             } else if (prePassRenderer) {
-                const depthIndex = prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
+                const depthIndex = prePassRenderer.getIndex(this._useScreenspaceDepth ? Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE : Constants.PREPASS_DEPTH_TEXTURE_TYPE);
                 const roughnessIndex = prePassRenderer.getIndex(Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE);
                 const normalIndex = prePassRenderer.getIndex(Constants.PREPASS_NORMAL_TEXTURE_TYPE);
 
@@ -1025,6 +1061,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             effect.setFloat("maxSteps", this.maxSteps);
             effect.setFloat("roughnessFactor", this.roughnessFactor);
             effect.setFloat("nearPlaneZ", camera.minZ);
+            effect.setFloat("farPlaneZ", camera.maxZ);
             effect.setFloat("maxDistance", this.maxDistance);
             effect.setFloat("selfCollisionNumSkip", this.selfCollisionNumSkip);
             effect.setFloat("reflectivityThreshold", this._reflectivityThreshold);
@@ -1051,7 +1088,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         this._ssrPostProcess.samples = this.samples;
 
         if (!this._forceGeometryBuffer) {
-            this._ssrPostProcess._prePassEffectConfiguration = new ScreenSpaceReflections2Configuration();
+            this._ssrPostProcess._prePassEffectConfiguration = new ScreenSpaceReflections2Configuration(this._useScreenspaceDepth);
         }
     }
 
@@ -1069,7 +1106,19 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             engine,
             false,
             "",
-            this._textureType
+            this._textureType,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            this._scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            (useWebGPU, list) => {
+                if (useWebGPU) {
+                    list.push(import("../../../ShadersWGSL/screenSpaceReflection2Blur.fragment"));
+                } else {
+                    list.push(import("../../../Shaders/screenSpaceReflection2Blur.fragment"));
+                }
+            }
         );
         this._blurPostProcessX.autoClear = false;
 
@@ -1090,7 +1139,19 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             engine,
             false,
             "",
-            this._textureType
+            this._textureType,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            this._scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            (useWebGPU, list) => {
+                if (useWebGPU) {
+                    list.push(import("../../../ShadersWGSL/screenSpaceReflection2Blur.fragment"));
+                } else {
+                    list.push(import("../../../Shaders/screenSpaceReflection2Blur.fragment"));
+                }
+            }
         );
         this._blurPostProcessY.autoClear = false;
 
@@ -1117,8 +1178,11 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         if (this.useFresnel) {
             defines += "#define SSR_BLEND_WITH_FRESNEL\n";
 
-            uniformNames.push("projection", "invProjectionMatrix");
+            uniformNames.push("projection", "invProjectionMatrix", "nearPlaneZ", "farPlaneZ");
             samplerNames.push("depthSampler", "normalSampler");
+        }
+        if (this._useScreenspaceDepth) {
+            defines += "#define SSRAYTRACE_SCREENSPACE_DEPTH";
         }
         if (this._reflectivityThreshold === 0) {
             defines += "#define SSR_DISABLE_REFLECTIVITY_TEST";
@@ -1135,7 +1199,19 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             engine,
             false,
             defines,
-            this._textureType
+            this._textureType,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            this._scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            (useWebGPU, list) => {
+                if (useWebGPU) {
+                    list.push(import("../../../ShadersWGSL/screenSpaceReflection2BlurCombiner.fragment"));
+                } else {
+                    list.push(import("../../../Shaders/screenSpaceReflection2BlurCombiner.fragment"));
+                }
+            }
         );
         this._blurCombinerPostProcess.autoClear = false;
 
@@ -1161,14 +1237,31 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                 const roughnessIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.REFLECTIVITY_TEXTURE_TYPE);
                 effect.setTexture("reflectivitySampler", geometryBufferRenderer.getGBuffer().textures[roughnessIndex]);
                 if (this.useFresnel) {
+                    const camera = this._scene.activeCamera;
+                    if (camera && this._useScreenspaceDepth) {
+                        effect.setFloat("nearPlaneZ", camera.minZ);
+                        effect.setFloat("farPlaneZ", camera.maxZ);
+                    }
                     effect.setTexture("normalSampler", geometryBufferRenderer.getGBuffer().textures[1]);
-                    effect.setTexture("depthSampler", geometryBufferRenderer.getGBuffer().textures[0]);
+                    if (this._useScreenspaceDepth) {
+                        const depthIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE);
+                        effect.setTexture("depthSampler", geometryBufferRenderer.getGBuffer().textures[depthIndex]);
+                    } else {
+                        effect.setTexture("depthSampler", geometryBufferRenderer.getGBuffer().textures[0]);
+                    }
                 }
             } else if (prePassRenderer) {
                 const roughnessIndex = prePassRenderer.getIndex(Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE);
                 effect.setTexture("reflectivitySampler", prePassRenderer.getRenderTarget().textures[roughnessIndex]);
                 if (this.useFresnel) {
-                    const depthIndex = prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
+                    const camera = this._scene.activeCamera;
+                    if (camera && this._useScreenspaceDepth) {
+                        effect.setFloat("nearPlaneZ", camera.minZ);
+                        effect.setFloat("farPlaneZ", camera.maxZ);
+                    }
+                    const depthIndex = prePassRenderer.getIndex(
+                        this._useScreenspaceDepth ? Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE : Constants.PREPASS_DEPTH_TEXTURE_TYPE
+                    );
                     const normalIndex = prePassRenderer.getIndex(Constants.PREPASS_NORMAL_TEXTURE_TYPE);
 
                     effect.setTexture("normalSampler", prePassRenderer.getRenderTarget().textures[normalIndex]);

@@ -889,7 +889,7 @@ export class Texture extends BaseTexture {
         }
 
         if (Texture.SerializeBuffers || Texture.ForceSerializeBuffers) {
-            if (typeof this._buffer === "string" && (this._buffer as string).substr(0, 5) === "data:") {
+            if (typeof this._buffer === "string" && (this._buffer as string).substring(0, 5) === "data:") {
                 serializationObject.base64String = this._buffer;
                 serializationObject.name = serializationObject.name.replace("data:", "");
             } else if (this.url && this.url.startsWith("data:") && this._buffer instanceof Uint8Array) {
@@ -1188,7 +1188,7 @@ export class Texture extends BaseTexture {
         creationFlags?: number,
         forcedExtension?: string
     ): Texture {
-        if (name.substr(0, 5) !== "data:") {
+        if (name.substring(0, 5) !== "data:") {
             name = "data:" + name;
         }
 

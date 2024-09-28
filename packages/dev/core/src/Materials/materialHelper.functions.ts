@@ -819,9 +819,19 @@ export function PrepareDefinesForPrePass(scene: Scene, defines: any, canRenderTo
             index: "PREPASS_POSITION_INDEX",
         },
         {
+            type: Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE,
+            define: "PREPASS_LOCAL_POSITION",
+            index: "PREPASS_LOCAL_POSITION_INDEX",
+        },
+        {
             type: Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
             define: "PREPASS_VELOCITY",
             index: "PREPASS_VELOCITY_INDEX",
+        },
+        {
+            type: Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE,
+            define: "PREPASS_VELOCITY_LINEAR",
+            index: "PREPASS_VELOCITY_LINEAR_INDEX",
         },
         {
             type: Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE,
@@ -844,9 +854,19 @@ export function PrepareDefinesForPrePass(scene: Scene, defines: any, canRenderTo
             index: "PREPASS_DEPTH_INDEX",
         },
         {
+            type: Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE,
+            define: "PREPASS_SCREENSPACE_DEPTH",
+            index: "PREPASS_SCREENSPACE_DEPTH_INDEX",
+        },
+        {
             type: Constants.PREPASS_NORMAL_TEXTURE_TYPE,
             define: "PREPASS_NORMAL",
             index: "PREPASS_NORMAL_INDEX",
+        },
+        {
+            type: Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE,
+            define: "PREPASS_WORLD_NORMAL",
+            index: "PREPASS_WORLD_NORMAL_INDEX",
         },
     ];
 

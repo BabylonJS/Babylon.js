@@ -173,13 +173,21 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public PREPASS_ALBEDO_SQRT_INDEX = -1;
     public PREPASS_DEPTH = false;
     public PREPASS_DEPTH_INDEX = -1;
+    public PREPASS_SCREENSPACE_DEPTH = false;
+    public PREPASS_SCREENSPACE_DEPTH_INDEX = -1;
     public PREPASS_NORMAL = false;
     public PREPASS_NORMAL_INDEX = -1;
     public PREPASS_NORMAL_WORLDSPACE = false;
+    public PREPASS_WORLD_NORMAL = false;
+    public PREPASS_WORLD_NORMAL_INDEX = -1;
     public PREPASS_POSITION = false;
     public PREPASS_POSITION_INDEX = -1;
+    public PREPASS_LOCAL_POSITION = false;
+    public PREPASS_LOCAL_POSITION_INDEX = -1;
     public PREPASS_VELOCITY = false;
     public PREPASS_VELOCITY_INDEX = -1;
+    public PREPASS_VELOCITY_LINEAR = false;
+    public PREPASS_VELOCITY_LINEAR_INDEX = -1;
     public PREPASS_REFLECTIVITY = false;
     public PREPASS_REFLECTIVITY_INDEX = -1;
     public SCENE_MRT_COUNT = 0;
@@ -805,8 +813,15 @@ export class StandardMaterial extends PushMaterial {
      */
     constructor(name: string, scene?: Scene, forceGLSL = false) {
         super(name, scene);
-
-        this._initShaderSourceAsync(forceGLSL);
+        const engine = this.getScene().getEngine();
+        if (engine.isWebGPU && !forceGLSL && !StandardMaterial.ForceGLSL) {
+            // Switch main UBO to non UBO to connect to leftovers UBO in webgpu
+            if (this._uniformBuffer) {
+                this._uniformBuffer.dispose();
+            }
+            this._uniformBuffer = new UniformBuffer(engine, undefined, undefined, this.name, true);
+            this._shaderLanguage = ShaderLanguage.WGSL;
+        }
 
         this.detailMap = new DetailMapConfiguration(this);
 
@@ -830,25 +845,6 @@ export class StandardMaterial extends PushMaterial {
 
             return this._renderTargets;
         };
-    }
-
-    private async _initShaderSourceAsync(forceGLSL = false) {
-        const engine = this.getScene().getEngine();
-
-        if (engine.isWebGPU && !forceGLSL && !StandardMaterial.ForceGLSL) {
-            // Switch main UBO to non UBO to connect to leftovers UBO in webgpu
-            if (this._uniformBuffer) {
-                this._uniformBuffer.dispose();
-            }
-            this._uniformBuffer = new UniformBuffer(engine, undefined, undefined, this.name, true);
-            this._shaderLanguage = ShaderLanguage.WGSL;
-
-            await Promise.all([import("../ShadersWGSL/default.vertex"), import("../ShadersWGSL/default.fragment")]);
-        } else {
-            await Promise.all([import("../Shaders/default.vertex"), import("../Shaders/default.fragment")]);
-        }
-
-        this._shadersLoaded = true;
     }
 
     /**
@@ -935,10 +931,6 @@ export class StandardMaterial extends PushMaterial {
      * @returns a boolean indicating that the submesh is ready or not
      */
     public override isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances: boolean = false): boolean {
-        if (!this._shadersLoaded) {
-            return false;
-        }
-
         if (!this._uniformBufferLayoutBuilt) {
             this.buildUniformLayout();
         }
@@ -1490,6 +1482,16 @@ export class StandardMaterial extends PushMaterial {
                     processCodeAfterIncludes: this._eventInfo.customCode,
                     multiTarget: defines.PREPASS,
                     shaderLanguage: this._shaderLanguage,
+                    extraInitializationsAsync: this._shadersLoaded
+                        ? undefined
+                        : async () => {
+                              if (this._shaderLanguage === ShaderLanguage.WGSL) {
+                                  await Promise.all([import("../ShadersWGSL/default.vertex"), import("../ShadersWGSL/default.fragment")]);
+                              } else {
+                                  await Promise.all([import("../Shaders/default.vertex"), import("../Shaders/default.fragment")]);
+                              }
+                              this._shadersLoaded = true;
+                          },
                 },
                 engine
             );

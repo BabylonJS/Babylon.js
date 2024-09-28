@@ -21,8 +21,6 @@ import type { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { Constants } from "../Engines/constants";
 
-import "../Shaders/glowMapGeneration.fragment";
-import "../Shaders/glowMapGeneration.vertex";
 import { _WarnImport } from "../Misc/devTools";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import { EffectFallbacks } from "../Materials/effectFallbacks";
@@ -269,7 +267,11 @@ export abstract class EffectLayer {
         this._scene = scene || <Scene>EngineStore.LastCreatedScene;
         EffectLayer._SceneComponentInitialization(this._scene);
 
-        this._initShaderSourceAsync(forceGLSL);
+        const engine = this._scene.getEngine();
+
+        if (engine.isWebGPU && !forceGLSL && !EffectLayer.ForceGLSL) {
+            this._shaderLanguage = ShaderLanguage.WGSL;
+        }
 
         this._engine = this._scene.getEngine();
         this._maxSize = this._engine.getCaps().maxTextureSize;
@@ -282,20 +284,7 @@ export abstract class EffectLayer {
         this._generateVertexBuffer();
     }
 
-    private _shadersLoaded = false;
-    protected async _initShaderSourceAsync(forceGLSL = false) {
-        const engine = this._scene.getEngine();
-
-        if (engine.isWebGPU && !forceGLSL && !EffectLayer.ForceGLSL) {
-            this._shaderLanguage = ShaderLanguage.WGSL;
-
-            await Promise.all([import("../ShadersWGSL/glowMapGeneration.fragment"), import("../ShadersWGSL/glowMapGeneration.vertex")]);
-        } else {
-            await Promise.all([import("../Shaders/glowMapGeneration.fragment"), import("../Shaders/glowMapGeneration.vertex")]);
-        }
-
-        this._shadersLoaded = true;
-    }
+    protected _shadersLoaded = false;
 
     /**
      * Get the effect name of the layer.
@@ -578,10 +567,6 @@ export abstract class EffectLayer {
      * @returns true if ready otherwise, false
      */
     protected _isReady(subMesh: SubMesh, useInstances: boolean, emissiveTexture: Nullable<BaseTexture>): boolean {
-        if (!this._shadersLoaded) {
-            return false;
-        }
-
         const engine = this._scene.getEngine();
         const mesh = subMesh.getMesh();
 
@@ -768,13 +753,27 @@ export abstract class EffectLayer {
                     undefined,
                     undefined,
                     { maxSimultaneousMorphTargets: morphInfluencers },
-                    this._shaderLanguage
+                    this._shaderLanguage,
+                    this._shadersLoaded
+                        ? undefined
+                        : async () => {
+                              await this._importShadersAsync();
+                              this._shadersLoaded = true;
+                          }
                 ),
                 join
             );
         }
 
         return drawWrapper.effect!.isReady();
+    }
+
+    protected async _importShadersAsync(): Promise<void> {
+        if (this._shaderLanguage === ShaderLanguage.WGSL) {
+            await Promise.all([import("../ShadersWGSL/glowMapGeneration.vertex"), import("../ShadersWGSL/glowMapGeneration.fragment")]);
+        } else {
+            await Promise.all([import("../Shaders/glowMapGeneration.vertex"), import("../Shaders/glowMapGeneration.fragment")]);
+        }
     }
 
     /**

@@ -6,7 +6,7 @@
     var fragDepth: f32 = fragmentInputs.position.z;   // 0 - 1
 
 #ifdef ORDER_INDEPENDENT_TRANSPARENCY_16BITS
-    uvar halfFloat: i32 = packHalf2x16( vec2f(fragDepth));
+    var halfFloat: i32 = packHalf2x16( vec2f(fragDepth));
     var full: vec2f = unpackHalf2x16(halfFloat);
     fragDepth = full.x;
 #endif

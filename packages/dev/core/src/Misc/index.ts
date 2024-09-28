@@ -19,6 +19,11 @@ export * from "./smartArray";
 export * from "./stringDictionary";
 export * from "./tags";
 export * from "./textureTools";
+// loaded from texture tools
+export * from "../Shaders/lodCube.fragment";
+export * from "../Shaders/lod.fragment";
+export * from "../ShadersWGSL/lodCube.fragment";
+export * from "../ShadersWGSL/lod.fragment";
 export * from "./tga";
 export * from "./tools";
 export * from "./videoRecorder";
@@ -75,3 +80,7 @@ export * from "../Shaders/rgbdDecode.fragment";
 export * from "../Shaders/rgbdEncode.fragment";
 export * from "../ShadersWGSL/rgbdDecode.fragment";
 export * from "../ShadersWGSL/rgbdEncode.fragment";
+
+// CopyTextureToTexture
+export * from "../Shaders/copyTextureToTexture.fragment";
+export * from "../ShadersWGSL/copyTextureToTexture.fragment";

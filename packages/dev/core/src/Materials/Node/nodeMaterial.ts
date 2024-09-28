@@ -69,6 +69,7 @@ import { PrepareDefinesForCamera, PrepareDefinesForPrePass } from "../materialHe
 import type { IImageProcessingConfigurationDefines } from "../imageProcessingConfiguration.defines";
 import { ShaderLanguage } from "../shaderLanguage";
 import { AbstractEngine } from "../../Engines/abstractEngine";
+import type { LoopBlock } from "./Blocks/loopBlock";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -115,14 +116,26 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public PREPASS_NORMAL = false;
     /** Prepass normal index */
     public PREPASS_NORMAL_INDEX = -1;
+    /** Prepass world normal */
+    public PREPASS_WORLD_NORMAL = false;
+    /** Prepass world normal index */
+    public PREPASS_WORLD_NORMAL_INDEX = -1;
     /** Prepass position */
     public PREPASS_POSITION = false;
     /** Prepass position index */
     public PREPASS_POSITION_INDEX = -1;
+    /** Prepass local position */
+    public PREPASS_LOCAL_POSITION = false;
+    /** Prepass local position index */
+    public PREPASS_LOCAL_POSITION_INDEX = -1;
     /** Prepass depth */
     public PREPASS_DEPTH = false;
     /** Prepass depth index */
     public PREPASS_DEPTH_INDEX = -1;
+    /** Clip-space depth */
+    public PREPASS_SCREENSPACE_DEPTH = false;
+    /** Clip-space depth index */
+    public PREPASS_SCREENSPACE_DEPTH_INDEX = -1;
     /** Scene MRT count */
     public SCENE_MRT_COUNT = 0;
 
@@ -342,6 +355,11 @@ export class NodeMaterial extends PushMaterial {
      * Observable raised when the material is built
      */
     public onBuildObservable = new Observable<NodeMaterial>();
+
+    /**
+     * Observable raised when an error is detected
+     */
+    public onBuildErrorObservable = new Observable<string>();
 
     /**
      * Gets or sets the root nodes of the material vertex shader
@@ -710,13 +728,7 @@ export class NodeMaterial extends PushMaterial {
         this._initializeBlock(block, state, nodesToProcessForOtherBuildState, autoConfigure);
     }
 
-    private _initializeBlock(node: NodeMaterialBlock, state: NodeMaterialBuildState, nodesToProcessForOtherBuildState: NodeMaterialBlock[], autoConfigure = true) {
-        node.initialize(state);
-        if (autoConfigure) {
-            node.autoConfigure(this);
-        }
-        node._preparationId = this._buildId;
-
+    private _attachBlock(node: NodeMaterialBlock) {
         if (this.attachedBlocks.indexOf(node) === -1) {
             if (node.isUnique) {
                 const className = node.getClassName();
@@ -730,12 +742,22 @@ export class NodeMaterial extends PushMaterial {
             }
             this.attachedBlocks.push(node);
         }
+    }
+
+    private _initializeBlock(node: NodeMaterialBlock, state: NodeMaterialBuildState, nodesToProcessForOtherBuildState: NodeMaterialBlock[], autoConfigure = true) {
+        node.initialize(state);
+        if (autoConfigure) {
+            node.autoConfigure(this);
+        }
+        node._preparationId = this._buildId;
+
+        this._attachBlock(node);
 
         for (const input of node.inputs) {
             input.associatedVariableName = "";
 
             const connectedPoint = input.connectedPoint;
-            if (connectedPoint) {
+            if (connectedPoint && !connectedPoint._preventBubbleUp) {
                 const block = connectedPoint.ownerBlock;
                 if (block !== node) {
                     this._processInitializeOnLink(block, state, nodesToProcessForOtherBuildState, autoConfigure);
@@ -743,8 +765,22 @@ export class NodeMaterial extends PushMaterial {
             }
         }
 
-        // Teleportation
-        if (node.isTeleportOut) {
+        // Loop
+        if (node.isLoop) {
+            // We need to keep the storage write block in the active blocks
+            const loopBlock = node as LoopBlock;
+            if (loopBlock.loopID.hasEndpoints) {
+                for (const endpoint of loopBlock.loopID.endpoints) {
+                    const block = endpoint.ownerBlock;
+                    if (block.outputs.length !== 0) {
+                        continue;
+                    }
+                    state._terminalBlocks.add(block); // Attach the storage write only
+                    this._processInitializeOnLink(block, state, nodesToProcessForOtherBuildState, autoConfigure);
+                }
+            }
+        } else if (node.isTeleportOut) {
+            // Teleportation
             const teleport = node as NodeMaterialTeleportOutBlock;
             if (teleport.entryPoint) {
                 this._processInitializeOnLink(teleport.entryPoint, state, nodesToProcessForOtherBuildState, autoConfigure);
@@ -761,9 +797,9 @@ export class NodeMaterial extends PushMaterial {
             node.buildId = id;
         }
 
-        for (const inputs of node.inputs) {
-            const connectedPoint = inputs.connectedPoint;
-            if (connectedPoint) {
+        for (const input of node.inputs) {
+            const connectedPoint = input.connectedPoint;
+            if (connectedPoint && !connectedPoint._preventBubbleUp) {
                 const block = connectedPoint.ownerBlock;
                 if (block !== node) {
                     this._resetDualBlocks(block, id);
@@ -776,6 +812,18 @@ export class NodeMaterial extends PushMaterial {
             const teleportOut = node as NodeMaterialTeleportOutBlock;
             if (teleportOut.entryPoint) {
                 this._resetDualBlocks(teleportOut.entryPoint, id);
+            }
+        } else if (node.isLoop) {
+            // Loop
+            const loopBlock = node as LoopBlock;
+            if (loopBlock.loopID.hasEndpoints) {
+                for (const endpoint of loopBlock.loopID.endpoints) {
+                    const block = endpoint.ownerBlock;
+                    if (block.outputs.length !== 0) {
+                        continue;
+                    }
+                    this._resetDualBlocks(block, id);
+                }
             }
         }
     }
@@ -914,7 +962,7 @@ export class NodeMaterial extends PushMaterial {
         }
 
         // Errors
-        this._sharedData.emitErrors();
+        const noError = this._sharedData.emitErrors(this.onBuildErrorObservable);
 
         if (verbose) {
             Logger.Log("Vertex shader:");
@@ -925,7 +973,9 @@ export class NodeMaterial extends PushMaterial {
 
         this._buildIsInProgress = false;
         this._buildWasSuccessful = true;
-        this.onBuildObservable.notifyObservers(this);
+        if (noError) {
+            this.onBuildObservable.notifyObservers(this);
+        }
 
         // Wipe defines
         const meshes = this.getScene().meshes;
@@ -1018,8 +1068,16 @@ export class NodeMaterial extends PushMaterial {
             result.push(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
         }
 
+        if (prePassOutputBlock.screenDepth.isConnected) {
+            result.push(Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE);
+        }
+
         if (prePassOutputBlock.viewNormal.isConnected) {
             result.push(Constants.PREPASS_NORMAL_TEXTURE_TYPE);
+        }
+
+        if (prePassOutputBlock.worldNormal.isConnected) {
+            result.push(Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE);
         }
 
         if (prePassOutputBlock.worldPosition.isConnected) {
@@ -1040,11 +1098,20 @@ export class NodeMaterial extends PushMaterial {
             if (block.position.isConnected && !result.includes(Constants.PREPASS_POSITION_TEXTURE_TYPE)) {
                 result.push(Constants.PREPASS_POSITION_TEXTURE_TYPE);
             }
+            if (block.localPosition.isConnected && !result.includes(Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE)) {
+                result.push(Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE);
+            }
             if (block.depth.isConnected && !result.includes(Constants.PREPASS_DEPTH_TEXTURE_TYPE)) {
                 result.push(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
             }
+            if (block.screenDepth.isConnected && !result.includes(Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE)) {
+                result.push(Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE);
+            }
             if (block.normal.isConnected && !result.includes(Constants.PREPASS_NORMAL_TEXTURE_TYPE)) {
                 result.push(Constants.PREPASS_NORMAL_TEXTURE_TYPE);
+            }
+            if (block.worldNormal.isConnected && !result.includes(Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE)) {
+                result.push(Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE);
             }
         }
 
@@ -1840,6 +1907,7 @@ export class NodeMaterial extends PushMaterial {
         (this._fragmentCompilationState as any) = null;
 
         this.onBuildObservable.clear();
+        this.onBuildErrorObservable.clear();
 
         if (this._imageProcessingObserver) {
             this._imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingObserver);
@@ -1892,6 +1960,7 @@ export class NodeMaterial extends PushMaterial {
         this._vertexOutputNodes.length = 0;
         this._fragmentOutputNodes.length = 0;
         this.attachedBlocks.length = 0;
+        this._buildIsInProgress = false;
     }
 
     /**

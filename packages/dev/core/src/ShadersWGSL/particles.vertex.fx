@@ -54,7 +54,7 @@ fn rotate(yaxis: vec3f, rotatedCorner: vec3f) -> vec3f {
 	var row1: vec3f =  vec3f(yaxis.x, yaxis.y, yaxis.z);
 	var row2: vec3f =  vec3f(zaxis.x, zaxis.y, zaxis.z);
 
-	var rotMatrix: mat3x3f =   mat3x3f(row0, row1, row2);
+	var rotMatrix: mat3x3f =  mat3x3f(row0, row1, row2);
 
 	var alignedCorner: vec3f = rotMatrix * rotatedCorner;
 	return vertexInputs.position + alignedCorner;
@@ -63,13 +63,13 @@ fn rotate(yaxis: vec3f, rotatedCorner: vec3f) -> vec3f {
 #ifdef BILLBOARDSTRETCHED
 fn rotateAlign(toCamera: vec3f, rotatedCorner: vec3f) -> vec3f {
 	var normalizedToCamera: vec3f = normalize(toCamera);
-	var normalizedCrossDirToCamera: vec3f = normalize(cross(normalize(direction), normalizedToCamera));
+	var normalizedCrossDirToCamera: vec3f = normalize(cross(normalize(vertexInputs.direction), normalizedToCamera));
 
 	var row0: vec3f =  vec3f(normalizedCrossDirToCamera.x, normalizedCrossDirToCamera.y, normalizedCrossDirToCamera.z);
 	var row2: vec3f =  vec3f(normalizedToCamera.x, normalizedToCamera.y, normalizedToCamera.z);
 
 #ifdef BILLBOARDSTRETCHED_LOCAL
-	var row1: vec3f = direction;
+	var row1: vec3f = vertexInputs.direction;
 #else
 	var crossProduct: vec3f = normalize(cross(normalizedToCamera, normalizedCrossDirToCamera));
 	var row1: vec3f =  vec3f(crossProduct.x, crossProduct.y, crossProduct.z);
@@ -78,7 +78,7 @@ fn rotateAlign(toCamera: vec3f, rotatedCorner: vec3f) -> vec3f {
 	var rotMatrix: mat3x3f =   mat3x3f(row0, row1, row2);
 
 	var alignedCorner: vec3f = rotMatrix * rotatedCorner;
-	return vertexInputs.position + alignedCorner;
+	return input.position + alignedCorner;
 }
 #endif
 
@@ -86,55 +86,50 @@ fn rotateAlign(toCamera: vec3f, rotatedCorner: vec3f) -> vec3f {
 #define CUSTOM_VERTEX_DEFINITIONS
 
 @vertex
-fn main(input: VertexInputs) -> FragmentInputs {
+fn main(input : VertexInputs) -> FragmentInputs {
 
 #define CUSTOM_VERTEX_MAIN_BEGIN
 
 	var cornerPos: vec2f;
 
-	cornerPos = ( vec2f(vertexInputs.offset.x - 0.5, vertexInputs.offset.y  - 0.5) - uniforms.translationPivot) * vertexInputs.size;
+	cornerPos = ( vec2f(input.offset.x - 0.5, input.offset.y  - 0.5) - uniforms.translationPivot) * input.size;
 
 #ifdef BILLBOARD
 	// Rotate
 	var rotatedCorner: vec3f;
 
 #ifdef BILLBOARDY
-	rotatedCorner.x = cornerPos.x * cos(vertexInputs.angle) - cornerPos.y * sin(vertexInputs.ngle);
-	rotatedCorner.z = cornerPos.x * sin(vertexInputs.angle) + cornerPos.y * cos(vertexInputs.angle);
+	rotatedCorner.x = cornerPos.x * cos(input.angle) - cornerPos.y * sin(input.angle) + uniforms.translationPivot.x;
+	rotatedCorner.z = cornerPos.x * sin(input.angle) + cornerPos.y * cos(input.angle) + uniforms.translationPivot.y;
 	rotatedCorner.y = 0.;
-    rotatedCorner.xz += uniforms.translationPivot;
 
-	var yaxis: vec3f = vertexInputs.position - eyePosition;
+	var yaxis: vec3f = input.position - uniforms.eyePosition;
 	yaxis.y = 0.;
 
 	vertexOutputs.vPositionW = rotate(normalize(yaxis), rotatedCorner);
 
 	var viewPos: vec3f = (uniforms.view *  vec4f(vertexOutputs.vPositionW, 1.0)).xyz;
 #elif defined(BILLBOARDSTRETCHED)
-	rotatedCorner.x = cornerPos.x * cos(vertexInputs.angle) - cornerPos.y * sin(vertexInputs.angle);
-	rotatedCorner.y = cornerPos.x * sin(vertexInputs.angle) + cornerPos.y * cos(vertexInputs.angle);
+	rotatedCorner.x = cornerPos.x * cos(input.angle) - cornerPos.y * sin(input.angle) + uniforms.translationPivot.x;
+	rotatedCorner.y = cornerPos.x * sin(input.angle) + cornerPos.y * cos(input.angle) + uniforms.translationPivot.y;
 	rotatedCorner.z = 0.;
-    rotatedCorner.x += uniforms.translationPivot.x;
-	rotatedCorner.y += uniforms.translationPivot.y;
 
-	var toCamera: vec3f = vertexInputs.position - eyePosition;
+	var toCamera: vec3f = input.position - uniforms.eyePosition;
 	vertexOutputs.vPositionW = rotateAlign(toCamera, rotatedCorner);
 
 	var viewPos: vec3f = (uniforms.view *  vec4f(vertexOutputs.vPositionW, 1.0)).xyz;
 #else
-	rotatedCorner.x = cornerPos.x * cos(vertexInputs.angle) - cornerPos.y * sin(vertexInputs.angle);
-	rotatedCorner.y = cornerPos.x * sin(vertexInputs.angle) + cornerPos.y * cos(vertexInputs.angle);
+	rotatedCorner.x = cornerPos.x * cos(input.angle) - cornerPos.y * sin(input.angle) + uniforms.translationPivot.x;
+	rotatedCorner.y = cornerPos.x * sin(input.angle) + cornerPos.y * cos(input.angle) + uniforms.translationPivot.y;
 	rotatedCorner.z = 0.;
-    rotatedCorner.x += uniforms.translationPivot.x;
-	rotatedCorner.y += uniforms.translationPivot.y;
 
-	var viewPos: vec3f = (uniforms.view *  vec4f(vertexInputs.position, 1.0)).xyz + rotatedCorner;
+	var viewPos: vec3f = (uniforms.view *  vec4f(input.position, 1.0)).xyz + rotatedCorner;
 
     vertexOutputs.vPositionW = (uniforms.invView *  vec4f(viewPos, 1)).xyz;
 #endif
 
 #ifdef RAMPGRADIENT
-	remapRanges = remapData;
+	vertexOutputs.remapRanges = input.remapData;
 #endif
 
 	// Position
@@ -142,29 +137,26 @@ fn main(input: VertexInputs) -> FragmentInputs {
 #else
 	// Rotate
 	var rotatedCorner: vec3f;
-	rotatedCorner.x = cornerPos.x * cos(vertexInputs.angle) - cornerPos.y * sin(vertexInputs.angle);
-	rotatedCorner.z = cornerPos.x * sin(vertexInputs.angle) + cornerPos.y * cos(vertexInputs.angle);
+	rotatedCorner.x = cornerPos.x * cos(input.angle) - cornerPos.y * sin(input.angle) + uniforms.translationPivot.x;
+	rotatedCorner.z = cornerPos.x * sin(input.angle) + cornerPos.y * cos(input.angle) + uniforms.translationPivot.y;
 	rotatedCorner.y = 0.;
-    rotatedCorner.x += uniforms.translationPivot.x;
-	rotatedCorner.y += uniforms.translationPivot.y;
 
-
-	var yaxis: vec3f = normalize(direction);
+	var yaxis: vec3f = normalize(vertexInputs.direction);
 	vertexOutputs.vPositionW = rotate(yaxis, rotatedCorner);
 
-	vertexOutputs.position = uniforms.projection * view *  vec4f(vertexOutputs.vPositionW, 1.0);
+	vertexOutputs.position = uniforms.projection * uniforms.view *  vec4f(vertexOutputs.vPositionW, 1.0);
 #endif
-	vertexOutputs.vColor = vertexInputs.color;
+	vertexOutputs.vColor = input.color;
 
 	#ifdef ANIMATESHEET
-		var rowOffset: f32 = floor(cellIndex * particlesInfos.z);
-		var columnOffset: f32 = cellIndex - rowOffset / particlesInfos.z;
+		var rowOffset: f32 = floor(input.cellIndex * uniforms.particlesInfos.z);
+		var columnOffset: f32 = input.cellIndex - rowOffset / uniforms.particlesInfos.z;
 
-		var uvScale: vec2f = particlesInfos.xy;
-		var uvOffset: vec2f =  vec2f(vertexInputs.offset.x , 1.0 - vertexInputs.offset.y);
+		var uvScale: vec2f = uniforms.particlesInfos.xy;
+		var uvOffset: vec2f =  vec2f(input.offset.x , 1.0 - input.offset.y);
 		vertexOutputs.vUV = (uvOffset +  vec2f(columnOffset, rowOffset)) * uvScale;
 	#else
-		vertexOutputs.vUV = vertexInputs.offset;
+		vertexOutputs.vUV = input.offset;
 	#endif
 
 	// Clip plane

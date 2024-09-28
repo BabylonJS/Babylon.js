@@ -3,7 +3,6 @@ import { Observable } from "../Misc/observable";
 import { Vector3 } from "../Maths/math.vector";
 import type { Nullable } from "../types";
 import type { Scene } from "../scene";
-import { Engine } from "../Engines/engine";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { TransformNode } from "../Meshes/transformNode";
 import { Logger } from "../Misc/logger";
@@ -13,6 +12,7 @@ import { EngineStore } from "../Engines/engineStore";
 import type { IAudioEngine } from "./Interfaces/IAudioEngine";
 import type { Observer } from "../Misc/observable";
 import { RegisterClass } from "../Misc/typeStore";
+import { AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
  * Defines a sound that can be played in the application.
@@ -107,10 +107,10 @@ export class Sound {
             return this._htmlAudioElement.currentTime;
         }
 
-        if (Engine.audioEngine?.audioContext && (this.isPlaying || this.isPaused)) {
+        if (AbstractEngine.audioEngine?.audioContext && (this.isPlaying || this.isPaused)) {
             // The `_currentTime` member is only updated when the sound is paused. Add the time since the last start
             // to get the actual current time.
-            const timeSinceLastStart = this.isPaused ? 0 : Engine.audioEngine.audioContext.currentTime - this._startTime;
+            const timeSinceLastStart = this.isPaused ? 0 : AbstractEngine.audioEngine.audioContext.currentTime - this._startTime;
             return this._currentTime + timeSinceLastStart;
         }
 
@@ -163,7 +163,7 @@ export class Sound {
     private _readyToPlayCallback: Nullable<() => any>;
     private _audioBuffer: Nullable<AudioBuffer>;
     private _soundSource: Nullable<AudioBufferSourceNode>;
-    private _streamingSource: AudioNode;
+    private _streamingSource: Nullable<AudioNode>;
     private _soundPanner: Nullable<PannerNode>;
     private _soundGain: Nullable<GainNode>;
     private _inputAudioNode: Nullable<AudioNode>;
@@ -178,7 +178,7 @@ export class Sound {
     private _customAttenuationFunction: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number;
     private _registerFunc: Nullable<(connectedMesh: TransformNode) => void>;
     private _isOutputConnected = false;
-    private _htmlAudioElement: HTMLAudioElement;
+    private _htmlAudioElement: Nullable<HTMLAudioElement>;
     private _urlType: "Unknown" | "String" | "Array" | "ArrayBuffer" | "MediaStream" | "AudioBuffer" | "MediaElement" = "Unknown";
     private _length?: number;
     private _offset?: number;
@@ -238,8 +238,8 @@ export class Sound {
             this._offset = options.offset;
         }
 
-        if (Engine.audioEngine?.canUseWebAudio && Engine.audioEngine.audioContext) {
-            this._soundGain = Engine.audioEngine.audioContext.createGain();
+        if (AbstractEngine.audioEngine?.canUseWebAudio && AbstractEngine.audioEngine.audioContext) {
+            this._soundGain = AbstractEngine.audioEngine.audioContext.createGain();
             this._soundGain!.gain.value = this._volume;
             this._inputAudioNode = this._soundGain;
             this._outputAudioNode = this._soundGain;
@@ -274,7 +274,7 @@ export class Sound {
                         case "MediaElement":
                             this._streaming = true;
                             this._isReadyToPlay = true;
-                            this._streamingSource = Engine.audioEngine.audioContext.createMediaElementSource(urlOrArrayBuffer);
+                            this._streamingSource = AbstractEngine.audioEngine.audioContext.createMediaElementSource(urlOrArrayBuffer);
 
                             if (this.autoplay) {
                                 this.play(0, this._offset, this._length);
@@ -287,7 +287,7 @@ export class Sound {
                         case "MediaStream":
                             this._streaming = true;
                             this._isReadyToPlay = true;
-                            this._streamingSource = Engine.audioEngine.audioContext.createMediaStreamSource(urlOrArrayBuffer);
+                            this._streamingSource = AbstractEngine.audioEngine.audioContext.createMediaStreamSource(urlOrArrayBuffer);
 
                             if (this.autoplay) {
                                 this.play(0, this._offset, this._length);
@@ -318,8 +318,8 @@ export class Sound {
                                 const url = urls[i];
                                 codecSupportedFound =
                                     (options && options.skipCodecCheck) ||
-                                    (url.indexOf(".mp3", url.length - 4) !== -1 && Engine.audioEngine.isMP3supported) ||
-                                    (url.indexOf(".ogg", url.length - 4) !== -1 && Engine.audioEngine.isOGGsupported) ||
+                                    (url.indexOf(".mp3", url.length - 4) !== -1 && AbstractEngine.audioEngine.isMP3supported) ||
+                                    (url.indexOf(".ogg", url.length - 4) !== -1 && AbstractEngine.audioEngine.isOGGsupported) ||
                                     url.indexOf(".wav", url.length - 4) !== -1 ||
                                     url.indexOf(".m4a", url.length - 4) !== -1 ||
                                     url.indexOf(".mp4", url.length - 4) !== -1 ||
@@ -351,15 +351,19 @@ export class Sound {
                                         this._htmlAudioElement.loop = this.loop;
                                         Tools.SetCorsBehavior(url, this._htmlAudioElement);
                                         this._htmlAudioElement.preload = "auto";
-                                        this._htmlAudioElement.addEventListener("canplaythrough", () => {
-                                            this._isReadyToPlay = true;
-                                            if (this.autoplay) {
-                                                this.play(0, this._offset, this._length);
-                                            }
-                                            if (this._readyToPlayCallback) {
-                                                this._readyToPlayCallback();
-                                            }
-                                        });
+                                        this._htmlAudioElement.addEventListener(
+                                            "canplaythrough",
+                                            () => {
+                                                this._isReadyToPlay = true;
+                                                if (this.autoplay) {
+                                                    this.play(0, this._offset, this._length);
+                                                }
+                                                if (this._readyToPlayCallback) {
+                                                    this._readyToPlayCallback();
+                                                }
+                                            },
+                                            { once: true }
+                                        );
                                         document.body.appendChild(this._htmlAudioElement);
                                         this._htmlAudioElement.load();
                                     }
@@ -395,9 +399,9 @@ export class Sound {
         } else {
             // Adding an empty sound to avoid breaking audio calls for non Web Audio browsers
             this._scene.mainSoundTrack.addSound(this);
-            if (Engine.audioEngine && !Engine.audioEngine.WarnedWebAudioUnsupported) {
+            if (AbstractEngine.audioEngine && !AbstractEngine.audioEngine.WarnedWebAudioUnsupported) {
                 Logger.Error("Web Audio is not supported by your browser.");
-                Engine.audioEngine.WarnedWebAudioUnsupported = true;
+                AbstractEngine.audioEngine.WarnedWebAudioUnsupported = true;
             }
             // Simulating a ready to play event to avoid breaking code for non web audio browsers
             if (this._readyToPlayCallback) {
@@ -414,7 +418,7 @@ export class Sound {
      * Release the sound and its associated resources
      */
     public dispose() {
-        if (Engine.audioEngine?.canUseWebAudio) {
+        if (AbstractEngine.audioEngine?.canUseWebAudio) {
             if (this.isPlaying) {
                 this.stop();
             }
@@ -442,10 +446,12 @@ export class Sound {
                 this._htmlAudioElement.pause();
                 this._htmlAudioElement.src = "";
                 document.body.removeChild(this._htmlAudioElement);
+                this._htmlAudioElement = null;
             }
 
             if (this._streamingSource) {
                 this._streamingSource.disconnect();
+                this._streamingSource = null;
             }
 
             if (this._connectedTransformNode && this._registerFunc) {
@@ -474,7 +480,7 @@ export class Sound {
     }
 
     private _audioBufferLoaded(buffer: AudioBuffer) {
-        if (!Engine.audioEngine?.audioContext) {
+        if (!AbstractEngine.audioEngine?.audioContext) {
             return;
         }
         this._audioBuffer = buffer;
@@ -488,10 +494,10 @@ export class Sound {
     }
 
     private _soundLoaded(audioData: ArrayBuffer) {
-        if (!Engine.audioEngine?.audioContext) {
+        if (!AbstractEngine.audioEngine?.audioContext) {
             return;
         }
-        Engine.audioEngine.audioContext.decodeAudioData(
+        AbstractEngine.audioEngine.audioContext.decodeAudioData(
             audioData,
             (buffer) => {
                 this._audioBufferLoaded(buffer);
@@ -507,7 +513,7 @@ export class Sound {
      * @param audioBuffer The audioBuffer containing the data
      */
     public setAudioBuffer(audioBuffer: AudioBuffer): void {
-        if (Engine.audioEngine?.canUseWebAudio) {
+        if (AbstractEngine.audioEngine?.canUseWebAudio) {
             this._audioBuffer = audioBuffer;
             this._isReadyToPlay = true;
         }
@@ -556,11 +562,11 @@ export class Sound {
     }
 
     private _createSpatialParameters() {
-        if (Engine.audioEngine?.canUseWebAudio && Engine.audioEngine.audioContext) {
+        if (AbstractEngine.audioEngine?.canUseWebAudio && AbstractEngine.audioEngine.audioContext) {
             if (this._scene.headphone) {
                 this._panningModel = "HRTF";
             }
-            this._soundPanner = this._soundPanner ?? Engine.audioEngine.audioContext.createPanner();
+            this._soundPanner = this._soundPanner ?? AbstractEngine.audioEngine.audioContext.createPanner();
             if (this._soundPanner && this._outputAudioNode) {
                 this._updateSpatialParameters();
                 this._soundPanner.connect(this._outputAudioNode);
@@ -624,7 +630,7 @@ export class Sound {
     }
 
     private _switchPanningModel() {
-        if (Engine.audioEngine?.canUseWebAudio && this._spatialSound && this._soundPanner) {
+        if (AbstractEngine.audioEngine?.canUseWebAudio && this._spatialSound && this._soundPanner) {
             this._soundPanner.panningModel = this._panningModel as any;
         }
     }
@@ -634,7 +640,7 @@ export class Sound {
      * @param soundTrackAudioNode the sound track audio node to connect to
      */
     public connectToSoundTrackAudioNode(soundTrackAudioNode: AudioNode): void {
-        if (Engine.audioEngine?.canUseWebAudio && this._outputAudioNode) {
+        if (AbstractEngine.audioEngine?.canUseWebAudio && this._outputAudioNode) {
             if (this._isOutputConnected) {
                 this._outputAudioNode.disconnect();
             }
@@ -683,7 +689,7 @@ export class Sound {
             }
 
             this._coneInnerAngle = value;
-            if (Engine.audioEngine?.canUseWebAudio && this._spatialSound && this._soundPanner) {
+            if (AbstractEngine.audioEngine?.canUseWebAudio && this._spatialSound && this._soundPanner) {
                 this._soundPanner.coneInnerAngle = this._coneInnerAngle;
             }
         }
@@ -707,7 +713,7 @@ export class Sound {
             }
 
             this._coneOuterAngle = value;
-            if (Engine.audioEngine?.canUseWebAudio && this._spatialSound && this._soundPanner) {
+            if (AbstractEngine.audioEngine?.canUseWebAudio && this._spatialSound && this._soundPanner) {
                 this._soundPanner.coneOuterAngle = this._coneOuterAngle;
             }
         }
@@ -723,7 +729,14 @@ export class Sound {
         }
         this._position.copyFrom(newPosition);
 
-        if (Engine.audioEngine?.canUseWebAudio && this._spatialSound && this._soundPanner && !isNaN(this._position.x) && !isNaN(this._position.y) && !isNaN(this._position.z)) {
+        if (
+            AbstractEngine.audioEngine?.canUseWebAudio &&
+            this._spatialSound &&
+            this._soundPanner &&
+            !isNaN(this._position.x) &&
+            !isNaN(this._position.y) &&
+            !isNaN(this._position.z)
+        ) {
             this._soundPanner.positionX.value = this._position.x;
             this._soundPanner.positionY.value = this._position.y;
             this._soundPanner.positionZ.value = this._position.z;
@@ -737,7 +750,7 @@ export class Sound {
     public setLocalDirectionToMesh(newLocalDirection: Vector3): void {
         this._localDirection = newLocalDirection;
 
-        if (Engine.audioEngine?.canUseWebAudio && this._connectedTransformNode && this.isPlaying) {
+        if (AbstractEngine.audioEngine?.canUseWebAudio && this._connectedTransformNode && this.isPlaying) {
             this._updateDirection();
         }
     }
@@ -757,7 +770,7 @@ export class Sound {
 
     /** @internal */
     public updateDistanceFromListener() {
-        if (Engine.audioEngine?.canUseWebAudio && this._connectedTransformNode && this.useCustomAttenuation && this._soundGain && this._scene.activeCamera) {
+        if (AbstractEngine.audioEngine?.canUseWebAudio && this._connectedTransformNode && this.useCustomAttenuation && this._soundGain && this._scene.activeCamera) {
             const distance = this._scene.audioListenerPositionProvider
                 ? this._connectedTransformNode.position.subtract(this._scene.audioListenerPositionProvider()).length()
                 : this._connectedTransformNode.getDistanceToCamera(this._scene.activeCamera);
@@ -781,11 +794,11 @@ export class Sound {
      * @param length (optional) Sound duration (in seconds)
      */
     public play(time?: number, offset?: number, length?: number): void {
-        if (this._isReadyToPlay && this._scene.audioEnabled && Engine.audioEngine?.audioContext) {
+        if (this._isReadyToPlay && this._scene.audioEnabled && AbstractEngine.audioEngine?.audioContext) {
             try {
                 this._clearTimeoutsAndObservers();
 
-                let startTime = time ? Engine.audioEngine?.audioContext.currentTime + time : Engine.audioEngine?.audioContext.currentTime;
+                let startTime = time ? AbstractEngine.audioEngine?.audioContext.currentTime + time : AbstractEngine.audioEngine?.audioContext.currentTime;
                 if (!this._soundSource || !this._streamingSource) {
                     if (this._spatialSound && this._soundPanner) {
                         if (!isNaN(this._position.x) && !isNaN(this._position.y) && !isNaN(this._position.z)) {
@@ -806,16 +819,18 @@ export class Sound {
                     }
                 }
                 if (this._streaming) {
-                    if (!this._streamingSource) {
-                        this._streamingSource = Engine.audioEngine.audioContext.createMediaElementSource(this._htmlAudioElement);
+                    if (!this._streamingSource && this._htmlAudioElement) {
+                        this._streamingSource = AbstractEngine.audioEngine.audioContext.createMediaElementSource(this._htmlAudioElement);
                         this._htmlAudioElement.onended = () => {
                             this._onended();
                         };
                         this._htmlAudioElement.playbackRate = this._playbackRate;
                     }
-                    this._streamingSource.disconnect();
-                    if (this._inputAudioNode) {
-                        this._streamingSource.connect(this._inputAudioNode);
+                    if (this._streamingSource) {
+                        this._streamingSource.disconnect();
+                        if (this._inputAudioNode) {
+                            this._streamingSource.connect(this._inputAudioNode);
+                        }
                     }
                     if (this._htmlAudioElement) {
                         // required to manage properly the new suspended default state of Chrome
@@ -823,7 +838,12 @@ export class Sound {
                         // the audio engine to be unlocked by a user gesture before trying to play
                         // an HTML Audio element
                         const tryToPlay = () => {
-                            if (Engine.audioEngine?.unlocked) {
+                            if (AbstractEngine.audioEngine?.unlocked) {
+                                if (!this._htmlAudioElement) {
+                                    return;
+                                }
+
+                                this._htmlAudioElement.currentTime = offset ?? 0;
                                 const playPromise = this._htmlAudioElement.play();
 
                                 // In browsers that don’t yet support this functionality,
@@ -832,9 +852,9 @@ export class Sound {
                                     playPromise.catch(() => {
                                         // Automatic playback failed.
                                         // Waiting for the audio engine to be unlocked by user click on unmute
-                                        Engine.audioEngine?.lock();
+                                        AbstractEngine.audioEngine?.lock();
                                         if (this.loop || this.autoplay) {
-                                            this._audioUnlockedObserver = Engine.audioEngine?.onAudioUnlockedObservable.addOnce(() => {
+                                            this._audioUnlockedObserver = AbstractEngine.audioEngine?.onAudioUnlockedObservable.addOnce(() => {
                                                 tryToPlay();
                                             });
                                         }
@@ -842,7 +862,7 @@ export class Sound {
                                 }
                             } else {
                                 if (this.loop || this.autoplay) {
-                                    this._audioUnlockedObserver = Engine.audioEngine?.onAudioUnlockedObservable.addOnce(() => {
+                                    this._audioUnlockedObserver = AbstractEngine.audioEngine?.onAudioUnlockedObservable.addOnce(() => {
                                         tryToPlay();
                                     });
                                 }
@@ -852,7 +872,7 @@ export class Sound {
                     }
                 } else {
                     const tryToPlay = () => {
-                        if (Engine.audioEngine?.audioContext) {
+                        if (AbstractEngine.audioEngine?.audioContext) {
                             length = length || this._length;
 
                             if (offset !== undefined) {
@@ -865,7 +885,7 @@ export class Sound {
                                     oldSource.disconnect();
                                 };
                             }
-                            this._soundSource = Engine.audioEngine?.audioContext.createBufferSource();
+                            this._soundSource = AbstractEngine.audioEngine?.audioContext.createBufferSource();
                             if (this._soundSource && this._inputAudioNode) {
                                 this._soundSource.buffer = this._audioBuffer;
                                 this._soundSource.connect(this._inputAudioNode);
@@ -880,22 +900,22 @@ export class Sound {
                                 this._soundSource.onended = () => {
                                     this._onended();
                                 };
-                                startTime = time ? Engine.audioEngine?.audioContext!.currentTime + time : Engine.audioEngine.audioContext!.currentTime;
+                                startTime = time ? AbstractEngine.audioEngine?.audioContext!.currentTime + time : AbstractEngine.audioEngine.audioContext!.currentTime;
                                 const actualOffset = ((this.isPaused ? this.currentTime : 0) + (this._offset ?? 0)) % this._soundSource!.buffer!.duration;
                                 this._soundSource!.start(startTime, actualOffset, this.loop ? undefined : length);
                             }
                         }
                     };
 
-                    if (Engine.audioEngine?.audioContext.state === "suspended") {
+                    if (AbstractEngine.audioEngine?.audioContext.state === "suspended") {
                         // Wait a bit for FF as context seems late to be ready.
                         this._tryToPlayTimeout = setTimeout(() => {
-                            if (Engine.audioEngine?.audioContext!.state === "suspended") {
+                            if (AbstractEngine.audioEngine?.audioContext!.state === "suspended") {
                                 // Automatic playback failed.
                                 // Waiting for the audio engine to be unlocked by user click on unmute
-                                Engine.audioEngine.lock();
+                                AbstractEngine.audioEngine.lock();
                                 if (this.loop || this.autoplay) {
-                                    this._audioUnlockedObserver = Engine.audioEngine.onAudioUnlockedObservable.addOnce(() => {
+                                    this._audioUnlockedObserver = AbstractEngine.audioEngine.onAudioUnlockedObservable.addOnce(() => {
                                         tryToPlay();
                                     });
                                 }
@@ -941,11 +961,11 @@ export class Sound {
                         this._htmlAudioElement.currentTime = 0;
                     }
                 } else {
-                    this._streamingSource.disconnect();
+                    this._streamingSource?.disconnect();
                 }
                 this.isPlaying = false;
-            } else if (Engine.audioEngine?.audioContext && this._soundSource) {
-                const stopTime = time ? Engine.audioEngine.audioContext.currentTime + time : undefined;
+            } else if (AbstractEngine.audioEngine?.audioContext && this._soundSource) {
+                const stopTime = time ? AbstractEngine.audioEngine.audioContext.currentTime + time : undefined;
                 this._soundSource.onended = () => {
                     this.isPlaying = false;
                     this.isPaused = false;
@@ -977,16 +997,16 @@ export class Sound {
                 if (this._htmlAudioElement) {
                     this._htmlAudioElement.pause();
                 } else {
-                    this._streamingSource.disconnect();
+                    this._streamingSource?.disconnect();
                 }
                 this.isPlaying = false;
                 this.isPaused = true;
-            } else if (Engine.audioEngine?.audioContext && this._soundSource) {
+            } else if (AbstractEngine.audioEngine?.audioContext && this._soundSource) {
                 this._soundSource.onended = () => void 0;
                 this._soundSource.stop();
                 this.isPlaying = false;
                 this.isPaused = true;
-                this._currentTime += Engine.audioEngine.audioContext.currentTime - this._startTime;
+                this._currentTime += AbstractEngine.audioEngine.audioContext.currentTime - this._startTime;
             }
         }
     }
@@ -997,11 +1017,11 @@ export class Sound {
      * @param time Define time for gradual change to new volume
      */
     public setVolume(newVolume: number, time?: number): void {
-        if (Engine.audioEngine?.canUseWebAudio && this._soundGain) {
-            if (time && Engine.audioEngine.audioContext) {
-                this._soundGain.gain.cancelScheduledValues(Engine.audioEngine.audioContext.currentTime);
-                this._soundGain.gain.setValueAtTime(this._soundGain.gain.value, Engine.audioEngine.audioContext.currentTime);
-                this._soundGain.gain.linearRampToValueAtTime(newVolume, Engine.audioEngine.audioContext.currentTime + time);
+        if (AbstractEngine.audioEngine?.canUseWebAudio && this._soundGain) {
+            if (time && AbstractEngine.audioEngine.audioContext) {
+                this._soundGain.gain.cancelScheduledValues(AbstractEngine.audioEngine.audioContext.currentTime);
+                this._soundGain.gain.setValueAtTime(this._soundGain.gain.value, AbstractEngine.audioEngine.audioContext.currentTime);
+                this._soundGain.gain.linearRampToValueAtTime(newVolume, AbstractEngine.audioEngine.audioContext.currentTime + time);
             } else {
                 this._soundGain.gain.value = newVolume;
             }
@@ -1084,7 +1104,7 @@ export class Sound {
             const boundingInfo = mesh.getBoundingInfo();
             this.setPosition(boundingInfo.boundingSphere.centerWorld);
         }
-        if (Engine.audioEngine?.canUseWebAudio && this._isDirectional && this.isPlaying) {
+        if (AbstractEngine.audioEngine?.canUseWebAudio && this._isDirectional && this.isPlaying) {
             this._updateDirection();
         }
     }
@@ -1302,7 +1322,7 @@ export class Sound {
             this._tryToPlayTimeout = null;
         }
         if (this._audioUnlockedObserver) {
-            Engine.audioEngine?.onAudioUnlockedObservable.remove(this._audioUnlockedObserver);
+            AbstractEngine.audioEngine?.onAudioUnlockedObservable.remove(this._audioUnlockedObserver);
             this._audioUnlockedObserver = null;
         }
     }

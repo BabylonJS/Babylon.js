@@ -1,20 +1,19 @@
 import { Mesh } from "../Meshes/mesh";
 import type { IParticleSystem } from "./IParticleSystem";
 import { GPUParticleSystem } from "./gpuParticleSystem";
-import { AbstractScene } from "../abstractScene";
 import type { Effect } from "../Materials/effect";
 import { ParticleSystem } from "./particleSystem";
 import type { Scene } from "../scene";
 import { SceneComponentConstants } from "../sceneComponent";
 import type { AssetContainer } from "../assetContainer";
-import "../Shaders/particles.vertex";
 import type { EffectFallbacks } from "../Materials/effectFallbacks";
 import { AbstractEngine } from "../Engines/abstractEngine";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { AddParser, AddIndividualParser, GetIndividualParser } from "core/Loading/Plugins/babylonFileParser.function";
 
 // Adds the parsers to the scene parsers.
-AbstractScene.AddParser(SceneComponentConstants.NAME_PARTICLESYSTEM, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
-    const individualParser = AbstractScene.GetIndividualParser(SceneComponentConstants.NAME_PARTICLESYSTEM);
+AddParser(SceneComponentConstants.NAME_PARTICLESYSTEM, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
+    const individualParser = GetIndividualParser(SceneComponentConstants.NAME_PARTICLESYSTEM);
 
     if (!individualParser) {
         return;
@@ -29,7 +28,7 @@ AbstractScene.AddParser(SceneComponentConstants.NAME_PARTICLESYSTEM, (parsedData
     }
 });
 
-AbstractScene.AddIndividualParser(SceneComponentConstants.NAME_PARTICLESYSTEM, (parsedParticleSystem: any, scene: Scene, rootUrl: string) => {
+AddIndividualParser(SceneComponentConstants.NAME_PARTICLESYSTEM, (parsedParticleSystem: any, scene: Scene, rootUrl: string) => {
     if (parsedParticleSystem.activeParticleCount) {
         const ps = GPUParticleSystem.Parse(parsedParticleSystem, scene, rootUrl);
         return ps;
@@ -119,7 +118,14 @@ AbstractEngine.prototype.createEffectForParticles = function (
         onCompiled,
         onError,
         undefined,
-        shaderLanguage
+        shaderLanguage,
+        async () => {
+            if (shaderLanguage === ShaderLanguage.GLSL) {
+                await import("../Shaders/particles.vertex");
+            } else {
+                await import("../ShadersWGSL/particles.vertex");
+            }
+        }
     );
 };
 

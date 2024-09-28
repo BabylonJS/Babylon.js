@@ -11,9 +11,6 @@ import { DrawWrapper } from "./drawWrapper";
 import type { IRenderTargetTexture, RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import type { ShaderLanguage } from "./shaderLanguage";
 
-// Prevents ES6 Crash if not imported.
-import "../Shaders/postprocess.vertex";
-
 /**
  * Effect Render Options
  */
@@ -238,6 +235,10 @@ interface EffectWrapperCreationOptions {
      * The language the shader is written in (default: GLSL)
      */
     shaderLanguage?: ShaderLanguage;
+    /**
+     * Additional async code to run before preparing the effect
+     */
+    extraInitializationsAsync?: () => Promise<void>;
 }
 
 /**
@@ -269,11 +270,11 @@ export class EffectWrapper {
      * @param creationOptions options to create the effect
      */
     constructor(creationOptions: EffectWrapperCreationOptions) {
-        let effectCreationOptions: any;
+        let shaderPath: any;
         const uniformNames = creationOptions.uniformNames || [];
 
         if (creationOptions.vertexShader) {
-            effectCreationOptions = {
+            shaderPath = {
                 fragmentSource: creationOptions.fragmentShader,
                 vertexSource: creationOptions.vertexShader,
                 spectorName: creationOptions.name || "effectWrapper",
@@ -282,7 +283,7 @@ export class EffectWrapper {
             // Default scale to use in post process vertex shader.
             uniformNames.push("scale");
 
-            effectCreationOptions = {
+            shaderPath = {
                 fragmentSource: creationOptions.fragmentShader,
                 vertex: "postprocess",
                 spectorName: creationOptions.name || "effectWrapper",
@@ -298,16 +299,16 @@ export class EffectWrapper {
         this._drawWrapper = new DrawWrapper(creationOptions.engine);
 
         if (creationOptions.useShaderStore) {
-            effectCreationOptions.fragment = effectCreationOptions.fragmentSource;
-            if (!effectCreationOptions.vertex) {
-                effectCreationOptions.vertex = effectCreationOptions.vertexSource;
+            shaderPath.fragment = shaderPath.fragmentSource;
+            if (!shaderPath.vertex) {
+                shaderPath.vertex = shaderPath.vertexSource;
             }
 
-            delete effectCreationOptions.fragmentSource;
-            delete effectCreationOptions.vertexSource;
+            delete shaderPath.fragmentSource;
+            delete shaderPath.vertexSource;
 
             this.effect = creationOptions.engine.createEffect(
-                effectCreationOptions,
+                shaderPath,
                 creationOptions.attributeNames || ["position"],
                 uniformNames,
                 creationOptions.samplerNames,
@@ -316,11 +317,12 @@ export class EffectWrapper {
                 creationOptions.onCompiled,
                 undefined,
                 undefined,
-                creationOptions.shaderLanguage
+                creationOptions.shaderLanguage,
+                creationOptions.extraInitializationsAsync
             );
         } else {
             this.effect = new Effect(
-                effectCreationOptions,
+                shaderPath,
                 creationOptions.attributeNames || ["position"],
                 uniformNames,
                 creationOptions.samplerNames,
@@ -331,7 +333,8 @@ export class EffectWrapper {
                 undefined,
                 undefined,
                 undefined,
-                creationOptions.shaderLanguage
+                creationOptions.shaderLanguage,
+                creationOptions.extraInitializationsAsync
             );
 
             this._onContextRestoredObserver = creationOptions.engine.onContextRestoredObservable.add(() => {
@@ -343,15 +346,13 @@ export class EffectWrapper {
 
     /**
      * Disposes of the effect wrapper
-     * @param disposeEffect defines if the underlying effect should also be disposed (true by default)
+     * @param _ignored kept for backward compatibility
      */
-    public dispose(disposeEffect = true) {
+    public dispose(_ignored: boolean = false) {
         if (this._onContextRestoredObserver) {
             this.effect.getEngine().onContextRestoredObservable.remove(this._onContextRestoredObserver);
             this._onContextRestoredObserver = null;
         }
-        if (disposeEffect) {
-            this.effect.dispose();
-        }
+        this.effect.dispose();
     }
 }

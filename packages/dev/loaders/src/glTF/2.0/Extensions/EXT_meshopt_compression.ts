@@ -4,8 +4,20 @@ import { ArrayItem, GLTFLoader } from "../glTFLoader";
 import type { IBufferView } from "../glTFLoaderInterfaces";
 import type { IEXTMeshoptCompression } from "babylonjs-gltf2interface";
 import { MeshoptCompression } from "core/Meshes/Compression/meshoptCompression";
+import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "EXT_meshopt_compression";
+
+declare module "../../glTFFileLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface GLTFLoaderExtensionOptions {
+        /**
+         * Defines options for the EXT_meshopt_compression extension.
+         */
+        // NOTE: Don't use NAME here as it will break the UMD type declarations.
+        ["EXT_meshopt_compression"]: {};
+    }
+}
 
 interface IBufferViewMeshopt extends IBufferView {
     _meshOptData?: Promise<ArrayBufferView>;
@@ -64,4 +76,5 @@ export class EXT_meshopt_compression implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new EXT_meshopt_compression(loader));
+unregisterGLTFExtension(NAME);
+registerGLTFExtension(NAME, true, (loader) => new EXT_meshopt_compression(loader));

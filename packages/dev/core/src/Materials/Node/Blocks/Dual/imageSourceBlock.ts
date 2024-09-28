@@ -13,6 +13,7 @@ import { NodeMaterial } from "../../nodeMaterial";
 import type { Scene } from "../../../../scene";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { EngineStore } from "../../../../Engines/engineStore";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 /**
  * Block used to provide an image for a TextureBlock
  */
@@ -68,6 +69,8 @@ export class ImageSourceBlock extends NodeMaterialBlock {
             NodeMaterialBlockTargets.VertexAndFragment,
             new NodeMaterialConnectionPointCustomObject("source", this, NodeMaterialConnectionPointDirection.Output, ImageSourceBlock, "ImageSourceBlock")
         );
+
+        this.registerOutput("dimensions", NodeMaterialBlockConnectionPointTypes.Vector2);
     }
 
     public override bind(effect: Effect) {
@@ -101,6 +104,13 @@ export class ImageSourceBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
+    /**
+     * Gets the dimension component
+     */
+    public get dimensions(): NodeMaterialConnectionPoint {
+        return this._outputs[1];
+    }
+
     protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
@@ -111,6 +121,17 @@ export class ImageSourceBlock extends NodeMaterialBlock {
             state.sharedData.blockingBlocks.push(this);
             state.sharedData.textureBlocks.push(this);
             state.sharedData.bindableBlocks.push(this);
+        }
+
+        if (this.dimensions.isConnected) {
+            let affect: string = "";
+            if (state.shaderLanguage === ShaderLanguage.WGSL) {
+                affect = `vec2f(textureDimensions(${this._samplerName}, 0).xy)`;
+            } else {
+                affect = `vec2(textureSize(${this._samplerName}, 0).xy)`;
+            }
+
+            state.compilationString += `${state._declareOutput(this.dimensions)} = ${affect};\n`;
         }
 
         state._emit2DSampler(this._samplerName);

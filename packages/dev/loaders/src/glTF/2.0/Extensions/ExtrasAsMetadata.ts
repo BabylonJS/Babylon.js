@@ -5,10 +5,22 @@ import type { Camera } from "core/Cameras/camera";
 import type { IProperty } from "babylonjs-gltf2interface";
 import type { INode, ICamera, IMaterial } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import { GLTFLoader } from "../glTFLoader";
+import type { GLTFLoader } from "../glTFLoader";
 import type { Material } from "core/Materials/material";
+import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "ExtrasAsMetadata";
+
+declare module "../../glTFFileLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface GLTFLoaderExtensionOptions {
+        /**
+         * Defines options for the ExtrasAsMetadata extension.
+         */
+        // NOTE: Don't use NAME here as it will break the UMD type declarations.
+        ["ExtrasAsMetadata"]: {};
+    }
+}
 
 interface ObjectWithMetadata {
     metadata: any;
@@ -80,4 +92,5 @@ export class ExtrasAsMetadata implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader): IGLTFLoaderExtension => new ExtrasAsMetadata(loader));
+unregisterGLTFExtension(NAME);
+registerGLTFExtension(NAME, false, (loader) => new ExtrasAsMetadata(loader));

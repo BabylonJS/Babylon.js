@@ -169,6 +169,10 @@ export function computeMaxExtents(
     const updateMaxExtents = (): void => {
         for (let i = 0; i < meshes.length; i++) {
             const mesh = meshes[i];
+            const positions = mesh.getVerticesData(VertexBuffer.PositionKind);
+            if (!positions) {
+                continue;
+            }
 
             const worldMatrix = mesh.computeWorldMatrix(true);
 

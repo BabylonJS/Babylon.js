@@ -309,7 +309,7 @@ export class Gizmo implements IGizmo {
      * @param gizmoLayer The utility layer the gizmo will be added to
      */
     constructor(
-        /** The utility layer the gizmo will be added to */
+        /** [Object] The utility layer the gizmo will be added to */
         public gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer
     ) {
         this._rootMesh = new Mesh("gizmoRootNode", gizmoLayer.utilityLayerScene);

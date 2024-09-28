@@ -5,8 +5,8 @@ import { SceneComponentConstants } from "../../../sceneComponent";
 
 import type { ProceduralTexture } from "./proceduralTexture";
 
-declare module "../../../abstractScene" {
-    export interface AbstractScene {
+declare module "../../../scene" {
+    export interface Scene {
         /**
          * The list of procedural textures added to the scene
          * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/proceduralTextures

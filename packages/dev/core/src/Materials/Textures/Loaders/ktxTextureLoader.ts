@@ -1,13 +1,10 @@
 import { KhronosTextureContainer } from "../../../Misc/khronosTextureContainer";
 import { KhronosTextureContainer2 } from "../../../Misc/khronosTextureContainer2";
 import type { Nullable } from "../../../types";
-import { Engine } from "../../../Engines/engine";
 import type { InternalTexture } from "../../../Materials/Textures/internalTexture";
-import type { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
+import type { IInternalTextureLoader } from "./internalTextureLoader";
 import { Logger } from "../../../Misc/logger";
 import { Constants } from "../../../Engines/constants";
-
-import "../../../Engines/Extensions/engine.cubeTexture";
 
 function mapSRGBToLinear(format: number): Nullable<number> {
     switch (format) {
@@ -44,17 +41,6 @@ export class _KTXTextureLoader implements IInternalTextureLoader {
     public readonly supportCascades = false;
 
     /**
-     * This returns if the loader support the current file information.
-     * @param extension defines the file extension of the file being loaded
-     * @param mimeType defines the optional mime type of the file being loaded
-     * @returns true if the loader can load the specified file
-     */
-    public canLoad(extension: string, mimeType?: string): boolean {
-        // The ".ktx2" file extension is still up for debate: https://github.com/KhronosGroup/KTX-Specification/issues/18
-        return extension.endsWith(".ktx") || extension.endsWith(".ktx2") || mimeType === "image/ktx" || mimeType === "image/ktx2";
-    }
-
-    /**
      * Uploads the cube texture data to the WebGL texture. It has already been bound.
      * @param data contains the texture data
      * @param texture defines the BabylonJS internal texture
@@ -68,7 +54,7 @@ export class _KTXTextureLoader implements IInternalTextureLoader {
 
         // Need to invert vScale as invertY via UNPACK_FLIP_Y_WEBGL is not supported by compressed texture
         texture._invertVScale = !texture.invertY;
-        const engine = texture.getEngine() as Engine;
+        const engine = texture.getEngine();
         const ktx = new KhronosTextureContainer(data, 6);
 
         const loadMipmap = ktx.numberOfMipmapLevels > 1 && texture.generateMipMaps;
@@ -144,6 +130,3 @@ export class _KTXTextureLoader implements IInternalTextureLoader {
         }
     }
 }
-
-// Register the loader.
-Engine._TextureLoaders.push(new _KTXTextureLoader());

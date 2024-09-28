@@ -5,7 +5,7 @@ const float GammaEncodePowerApprox = 1.0 / 2.2;
 varying vec2 vUV;
 uniform samplerCube textureSampler;
 uniform float lod;
-uniform bool gamma;
+uniform int gamma;
 void main(void)
 {
     vec2 uv=vUV*2.0-1.0;
@@ -27,7 +27,7 @@ void main(void)
     #ifdef NEGATIVEZ
     gl_FragColor=textureCube(textureSampler,vec3(uv,-1.001),lod);
     #endif
-    if (!gamma) {
+    if (gamma == 0) {
         gl_FragColor.rgb = pow(gl_FragColor.rgb, vec3(GammaEncodePowerApprox));
     }
 }

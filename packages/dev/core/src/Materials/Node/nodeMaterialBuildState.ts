@@ -5,6 +5,7 @@ import { ShaderLanguage } from "../shaderLanguage";
 import type { NodeMaterialConnectionPoint } from "./nodeMaterialBlockConnectionPoint";
 import { ShaderStore as EngineShaderStore } from "../../Engines/shaderStore";
 import { Constants } from "../../Engines/constants";
+import type { NodeMaterialBlock } from "./nodeMaterialBlock";
 
 /**
  * Class used to store node based material build state
@@ -54,6 +55,9 @@ export class NodeMaterialBuildState {
      * Shared data between multiple NodeMaterialBuildState instances
      */
     public sharedData: NodeMaterialBuildStateSharedData;
+
+    /** @internal */
+    public _terminalBlocks: Set<NodeMaterialBlock> = new Set();
 
     /** @internal */
     public _vertexState: NodeMaterialBuildState;

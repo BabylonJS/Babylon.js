@@ -19,13 +19,18 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
         super(name, NodeMaterialBlockTargets.Fragment, true);
 
         this.registerInput("viewDepth", NodeMaterialBlockConnectionPointTypes.Float, true);
+        this.registerInput("screenDepth", NodeMaterialBlockConnectionPointTypes.Float, true);
         this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
+        this.registerInput("localPosition", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
         this.registerInput("viewNormal", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
+        this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
         this.registerInput("reflectivity", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
 
-        this.inputs[1].addExcludedConnectionPointFromAllowedTypes(NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4);
         this.inputs[2].addExcludedConnectionPointFromAllowedTypes(NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4);
-        this.inputs[3].addExcludedConnectionPointFromAllowedTypes(
+        this.inputs[3].addExcludedConnectionPointFromAllowedTypes(NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4);
+        this.inputs[4].addExcludedConnectionPointFromAllowedTypes(NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4);
+        this.inputs[5].addExcludedConnectionPointFromAllowedTypes(NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4);
+        this.inputs[6].addExcludedConnectionPointFromAllowedTypes(
             NodeMaterialBlockConnectionPointTypes.Vector3 |
                 NodeMaterialBlockConnectionPointTypes.Vector4 |
                 NodeMaterialBlockConnectionPointTypes.Color3 |
@@ -49,24 +54,45 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the screen depth component
+     */
+    public get screenDepth(): NodeMaterialConnectionPoint {
+        return this._inputs[1];
+    }
+
+    /**
      * Gets the world position component
      */
     public get worldPosition(): NodeMaterialConnectionPoint {
-        return this._inputs[1];
+        return this._inputs[2];
+    }
+
+    /**
+     * Gets the position in local space component
+     */
+    public get localPosition(): NodeMaterialConnectionPoint {
+        return this._inputs[3];
     }
 
     /**
      * Gets the view normal component
      */
     public get viewNormal(): NodeMaterialConnectionPoint {
-        return this._inputs[2];
+        return this._inputs[4];
+    }
+
+    /**
+     * Gets the world normal component
+     */
+    public get worldNormal(): NodeMaterialConnectionPoint {
+        return this._inputs[5];
     }
 
     /**
      * Gets the reflectivity component
      */
     public get reflectivity(): NodeMaterialConnectionPoint {
-        return this._inputs[3];
+        return this._inputs[6];
     }
 
     private _getFragData(isWebGPU: boolean, index: number) {
@@ -77,9 +103,12 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
         super._buildBlock(state);
 
         const worldPosition = this.worldPosition;
+        const localPosition = this.localPosition;
         const viewNormal = this.viewNormal;
+        const worldNormal = this.worldNormal;
         const viewDepth = this.viewDepth;
         const reflectivity = this.reflectivity;
+        const screenDepth = this.screenDepth;
 
         state.sharedData.blocksWithDefines.push(this);
 
@@ -99,6 +128,14 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
             state.compilationString += ` fragData[PREPASS_DEPTH_INDEX] = ${vec4}(0.0, 0.0, 0.0, 0.0);\r\n`;
         }
         state.compilationString += `#endif\r\n`;
+        state.compilationString += `#ifdef PREPASS_SCREENSPACE_DEPTH\r\n`;
+        if (screenDepth.connectedPoint) {
+            state.compilationString += ` gl_FragData[PREPASS_SCREENSPACE_DEPTH_INDEX] = vec4(${screenDepth.associatedVariableName}, 0.0, 0.0, 1.0);\r\n`;
+        } else {
+            // We have to write something on the viewDepth output or it will raise a gl error
+            state.compilationString += ` gl_FragData[PREPASS_SCREENSPACE_DEPTH_INDEX] = vec4(0.0, 0.0, 0.0, 0.0);\r\n`;
+        }
+        state.compilationString += `#endif\r\n`;
         state.compilationString += `#ifdef PREPASS_POSITION\r\n`;
         if (worldPosition.connectedPoint) {
             state.compilationString += `fragData[PREPASS_POSITION_INDEX] = ${vec4}(${worldPosition.associatedVariableName}.rgb, ${
@@ -109,6 +146,16 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
             state.compilationString += ` fragData[PREPASS_POSITION_INDEX] = ${vec4}(0.0, 0.0, 0.0, 0.0);\r\n`;
         }
         state.compilationString += `#endif\r\n`;
+        state.compilationString += `#ifdef PREPASS_LOCAL_POSITION\r\n`;
+        if (localPosition.connectedPoint) {
+            state.compilationString += ` gl_FragData[PREPASS_LOCAL_POSITION_INDEX] = vec4(${localPosition.associatedVariableName}.rgb, ${
+                localPosition.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Vector4 ? localPosition.associatedVariableName + ".a" : "1.0"
+            });\r\n`;
+        } else {
+            // We have to write something on the position output or it will raise a gl error
+            state.compilationString += ` gl_FragData[PREPASS_LOCAL_POSITION_INDEX] = vec4(0.0, 0.0, 0.0, 0.0);\r\n`;
+        }
+        state.compilationString += `#endif\r\n`;
         state.compilationString += `#ifdef PREPASS_NORMAL\r\n`;
         if (viewNormal.connectedPoint) {
             state.compilationString += ` fragData[PREPASS_NORMAL_INDEX] = ${vec4}(${viewNormal.associatedVariableName}.rgb, ${
@@ -117,6 +164,16 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
         } else {
             // We have to write something on the normal output or it will raise a gl error
             state.compilationString += ` fragData[PREPASS_NORMAL_INDEX] = ${vec4}(0.0, 0.0, 0.0, 0.0);\r\n`;
+        }
+        state.compilationString += `#endif\r\n`;
+        state.compilationString += `#ifdef PREPASS_WORLD_NORMAL\r\n`;
+        if (worldNormal.connectedPoint) {
+            state.compilationString += ` gl_FragData[PREPASS_WORLD_NORMAL_INDEX] = vec4(${worldNormal.associatedVariableName}.rgb, ${
+                worldNormal.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Vector4 ? worldNormal.associatedVariableName + ".a" : "1.0"
+            });\r\n`;
+        } else {
+            // We have to write something on the normal output or it will raise a gl error
+            state.compilationString += ` gl_FragData[PREPASS_WORLD_NORMAL_INDEX] = vec4(0.0, 0.0, 0.0, 0.0);\r\n`;
         }
         state.compilationString += `#endif\r\n`;
         state.compilationString += `#ifdef PREPASS_REFLECTIVITY\r\n`;

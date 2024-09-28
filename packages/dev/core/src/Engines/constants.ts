@@ -595,7 +595,7 @@ export class Constants {
     public static readonly PREPASS_POSITION_TEXTURE_TYPE = 1;
     /**
      * Constant used to retrieve the velocity texture index in the textures array in the prepass
-     * using getIndex(Constants.PREPASS_VELOCITY_TEXTURE_INDEX)
+     * using getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE)
      */
     public static readonly PREPASS_VELOCITY_TEXTURE_TYPE = 2;
     /**
@@ -623,6 +623,30 @@ export class Constants {
      * using the getIndex(Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE)
      */
     public static readonly PREPASS_ALBEDO_SQRT_TEXTURE_TYPE = 7;
+
+    /**
+     * Constant used to retrieve world normal index in the textures array in the prepass
+     * using the getIndex(Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE)
+     */
+    public static readonly PREPASS_WORLD_NORMAL_TEXTURE_TYPE = 8;
+
+    /**
+     * Constant used to retrieve the local position texture index in the textures array in the prepass
+     * using getIndex(Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE)
+     */
+    public static readonly PREPASS_LOCAL_POSITION_TEXTURE_TYPE = 9;
+
+    /**
+     * Constant used to retrieve screen-space (non-linear) depth index in the textures array in the prepass
+     * using the getIndex(Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE)
+     */
+    public static readonly PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE = 10;
+
+    /**
+     * Constant used to retrieve the velocity texture index in the textures array in the prepass
+     * using getIndex(Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE)
+     */
+    public static readonly PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE = 11;
 
     /** Flag to create a readable buffer (the buffer can be the source of a copy) */
     public static readonly BUFFER_CREATIONFLAG_READ = 1;

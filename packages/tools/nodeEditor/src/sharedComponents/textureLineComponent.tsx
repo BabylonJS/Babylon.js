@@ -86,107 +86,102 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
             passPostProcess = passCubePostProcess;
         }
 
-        if (!passPostProcess.getEffect().isReady()) {
-            // Try again later
-            passPostProcess.dispose();
+        passPostProcess.onEffectCreatedObservable.add((e) => {
+            e.executeWhenCompiled(async () => {
+                if (globalState) {
+                    globalState.blockMutationUpdates = true;
+                }
 
-            setTimeout(() => TextureLineComponent.UpdatePreview(previewCanvas, texture, width, options, onReady, globalState), 250);
+                const rtt = new RenderTargetTexture("temp", { width: width, height: height }, scene, false);
 
-            return;
-        }
+                passPostProcess.externalTextureSamplerBinding = true;
+                passPostProcess.onApply = function (effect) {
+                    effect.setTexture("textureSampler", texture);
+                };
 
-        if (globalState) {
-            globalState.blockMutationUpdates = true;
-        }
+                const internalTexture = rtt.renderTarget;
 
-        const rtt = new RenderTargetTexture("temp", { width: width, height: height }, scene, false);
+                if (internalTexture) {
+                    scene.postProcessManager.directRender([passPostProcess], internalTexture, true);
 
-        passPostProcess.externalTextureSamplerBinding = true;
-        passPostProcess.onApply = function (effect) {
-            effect.setTexture("textureSampler", texture);
-        };
+                    // Read the contents of the framebuffer
+                    const numberOfChannelsByLine = width * 4;
+                    const halfHeight = height / 2;
 
-        const internalTexture = rtt.renderTarget;
+                    //Reading datas from WebGL
+                    const bufferView = await engine.readPixels(0, 0, width, height);
+                    const data = new Uint8Array(bufferView.buffer, 0, bufferView.byteLength);
 
-        if (internalTexture) {
-            scene.postProcessManager.directRender([passPostProcess], internalTexture, true);
+                    if (!texture.isCube) {
+                        if (!options.displayRed || !options.displayGreen || !options.displayBlue) {
+                            for (let i = 0; i < width * height * 4; i += 4) {
+                                if (!options.displayRed) {
+                                    data[i] = 0;
+                                }
 
-            // Read the contents of the framebuffer
-            const numberOfChannelsByLine = width * 4;
-            const halfHeight = height / 2;
+                                if (!options.displayGreen) {
+                                    data[i + 1] = 0;
+                                }
 
-            //Reading datas from WebGL
-            const bufferView = await engine.readPixels(0, 0, width, height);
-            const data = new Uint8Array(bufferView.buffer, 0, bufferView.byteLength);
+                                if (!options.displayBlue) {
+                                    data[i + 2] = 0;
+                                }
 
-            if (!texture.isCube) {
-                if (!options.displayRed || !options.displayGreen || !options.displayBlue) {
-                    for (let i = 0; i < width * height * 4; i += 4) {
-                        if (!options.displayRed) {
-                            data[i] = 0;
-                        }
-
-                        if (!options.displayGreen) {
-                            data[i + 1] = 0;
-                        }
-
-                        if (!options.displayBlue) {
-                            data[i + 2] = 0;
-                        }
-
-                        if (options.displayAlpha) {
-                            const alpha = data[i + 2];
-                            data[i] = alpha;
-                            data[i + 1] = alpha;
-                            data[i + 2] = alpha;
-                            data[i + 2] = 0;
+                                if (options.displayAlpha) {
+                                    const alpha = data[i + 2];
+                                    data[i] = alpha;
+                                    data[i + 1] = alpha;
+                                    data[i + 2] = alpha;
+                                    data[i + 2] = 0;
+                                }
+                            }
                         }
                     }
-                }
-            }
 
-            //To flip image on Y axis.
-            if ((texture as Texture).invertY || texture.isCube) {
-                for (let i = 0; i < halfHeight; i++) {
-                    for (let j = 0; j < numberOfChannelsByLine; j++) {
-                        const currentCell = j + i * numberOfChannelsByLine;
-                        const targetLine = height - i - 1;
-                        const targetCell = j + targetLine * numberOfChannelsByLine;
+                    //To flip image on Y axis.
+                    if ((texture as Texture).invertY || texture.isCube) {
+                        for (let i = 0; i < halfHeight; i++) {
+                            for (let j = 0; j < numberOfChannelsByLine; j++) {
+                                const currentCell = j + i * numberOfChannelsByLine;
+                                const targetLine = height - i - 1;
+                                const targetCell = j + targetLine * numberOfChannelsByLine;
 
-                        const temp = data[currentCell];
-                        data[currentCell] = data[targetCell];
-                        data[targetCell] = temp;
+                                const temp = data[currentCell];
+                                data[currentCell] = data[targetCell];
+                                data[targetCell] = temp;
+                            }
+                        }
                     }
+
+                    previewCanvas.width = width;
+                    previewCanvas.height = height;
+                    const context = previewCanvas.getContext("2d");
+
+                    if (context) {
+                        // Copy the pixels to the preview canvas
+                        const imageData = context.createImageData(width, height);
+                        const castData = imageData.data;
+                        castData.set(data);
+                        context.putImageData(imageData, 0, 0);
+
+                        if (onReady) {
+                            onReady();
+                        }
+                    }
+
+                    // Unbind
+                    engine.unBindFramebuffer(internalTexture);
                 }
-            }
 
-            previewCanvas.width = width;
-            previewCanvas.height = height;
-            const context = previewCanvas.getContext("2d");
+                rtt.dispose();
+                passPostProcess.dispose();
 
-            if (context) {
-                // Copy the pixels to the preview canvas
-                const imageData = context.createImageData(width, height);
-                const castData = imageData.data;
-                castData.set(data);
-                context.putImageData(imageData, 0, 0);
-
-                if (onReady) {
-                    onReady();
+                previewCanvas.style.height = height + "px";
+                if (globalState) {
+                    globalState.blockMutationUpdates = false;
                 }
-            }
-
-            // Unbind
-            engine.unBindFramebuffer(internalTexture);
-        }
-
-        rtt.dispose();
-        passPostProcess.dispose();
-
-        previewCanvas.style.height = height + "px";
-        if (globalState) {
-            globalState.blockMutationUpdates = false;
-        }
+            });
+        });
     }
 
     override render() {

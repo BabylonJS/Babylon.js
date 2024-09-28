@@ -50,12 +50,12 @@ export function CreateGeodesic(
 ): Mesh {
     let m: number = options.m || 1;
     if (m !== Math.floor(m)) {
-        m === Math.floor(m);
+        m = Math.floor(m);
         Logger.Warn("m not an integer only floor(m) used");
     }
     let n: number = options.n || 0;
     if (n !== Math.floor(n)) {
-        n === Math.floor(n);
+        n = Math.floor(n);
         Logger.Warn("n not an integer only floor(n) used");
     }
     if (n > m) {

@@ -13,7 +13,6 @@ import type { PrePassRenderer } from "../Rendering/prePassRenderer";
 
 import "../Animations/animatable";
 import "../Rendering/geometryBufferRendererSceneComponent";
-import "../Shaders/motionBlur.fragment";
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { RegisterClass } from "../Misc/typeStore";
@@ -169,6 +168,17 @@ export class MotionBlurPostProcess extends PostProcess {
         }
 
         this._applyMode();
+    }
+
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
+        if (useWebGPU) {
+            this._webGPUReady = true;
+            list.push(Promise.all([import("../ShadersWGSL/motionBlur.fragment")]));
+        } else {
+            list.push(Promise.all([import("../Shaders/motionBlur.fragment")]));
+        }
+
+        super._gatherImports(useWebGPU, list);
     }
 
     /**

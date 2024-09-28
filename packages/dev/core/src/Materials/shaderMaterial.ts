@@ -99,6 +99,11 @@ export interface IShaderMaterialOptions {
      * The language the shader is written in (default: GLSL)
      */
     shaderLanguage?: ShaderLanguage;
+
+    /**
+     * Defines additional code to call to prepare the shader code
+     */
+    extraInitializationsAsync?: () => Promise<void>;
 }
 
 /**
@@ -258,6 +263,14 @@ export class ShaderMaterial extends PushMaterial {
         this._textures[name] = texture;
 
         return this;
+    }
+
+    /**
+     * Remove a texture from the material.
+     * @param name Define the name of the texture to remove
+     */
+    public removeTexture(name: string): void {
+        delete this._textures[name];
     }
 
     /**
@@ -902,6 +915,7 @@ export class ShaderMaterial extends PushMaterial {
                     onError: this.onError,
                     indexParameters: { maxSimultaneousMorphTargets: numInfluencers },
                     shaderLanguage: this._options.shaderLanguage,
+                    extraInitializationsAsync: this._options.extraInitializationsAsync,
                 },
                 engine
             );

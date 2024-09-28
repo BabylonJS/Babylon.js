@@ -44,6 +44,13 @@ export class PostProcessRenderPipeline {
     }
 
     /**
+     * Gets the active engine
+     */
+    public get engine(): AbstractEngine {
+        return this._engine;
+    }
+
+    /**
      * Initializes a PostProcessRenderPipeline
      * @param _engine engine to add the pipeline to
      * @param name name of the pipeline

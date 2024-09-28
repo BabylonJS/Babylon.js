@@ -1,9 +1,10 @@
 import { Tools } from "core/Misc/tools";
-import { Matrix, Vector3, TmpVectors } from "core/Maths/math.vector";
+import { Vector3 } from "core/Maths/math.vector";
 import type { int } from "core/types";
 
 import { Container3D } from "./container3D";
 import type { Control3D } from "./control3D";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 
 /**
  * Abstract class used to create a container panel deployed on the surface of a volume
@@ -105,9 +106,6 @@ export abstract class VolumeBasedPanel extends Container3D {
         let rows = 0;
         let columns = 0;
         let controlCount = 0;
-
-        const currentInverseWorld = Matrix.Invert(this.node!.computeWorldMatrix(true));
-
         // Measure
         for (const child of this._children) {
             if (!child.mesh) {
@@ -116,17 +114,19 @@ export abstract class VolumeBasedPanel extends Container3D {
 
             controlCount++;
             child.mesh.computeWorldMatrix(true);
-            //   child.mesh.getWorldMatrix().multiplyToRef(currentInverseWorld, Tmp.Matrix[0]);
-
-            const boundingBox = child.mesh.getHierarchyBoundingVectors();
-            const extendSize = TmpVectors.Vector3[0];
-            const diff = TmpVectors.Vector3[1];
-
-            boundingBox.max.subtractToRef(boundingBox.min, diff);
-
-            diff.scaleInPlace(0.5);
-
-            Vector3.TransformNormalToRef(diff, currentInverseWorld, extendSize);
+            const extendSize = child.mesh.getBoundingInfo().boundingBox.extendSize;
+            // to be safe, check descendants
+            const descendants = child.mesh.getDescendants(false);
+            for (const descendant of descendants) {
+                descendant.computeWorldMatrix(true);
+                const casted = descendant as AbstractMesh;
+                if (typeof casted.getBoundingInfo === "function") {
+                    const extendSizeChild = casted.getBoundingInfo().boundingBox.extendSize;
+                    extendSize.x = Math.max(extendSize.x, extendSizeChild.x);
+                    extendSize.y = Math.max(extendSize.y, extendSizeChild.y);
+                    extendSize.z = Math.max(extendSize.z, extendSizeChild.z);
+                }
+            }
 
             this._cellWidth = Math.max(this._cellWidth, extendSize.x * 2);
             this._cellHeight = Math.max(this._cellHeight, extendSize.y * 2);

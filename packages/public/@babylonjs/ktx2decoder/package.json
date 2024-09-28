@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/ktx2decoder",
-    "version": "7.20.1",
+    "version": "7.27.0",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -14,12 +14,12 @@
     ],
     "scripts": {
         "build": "npm run clean && npm run compile",
-        "clean": "rimraf dist && rimraf *.tsbuildinfo && rimraf \"./**/*.!(md|json|build.json|lts.json)\"",
+        "clean": "rimraf dist && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(md|json|build.json|lts.json)\" -g",
         "compile": "tsc -b tsconfig.build.json",
         "postcompile": "build-tools -c add-js-to-es6 && build-tools -c cp -f \"../../../tools/babylonServer/public/ktx2Transcoders/1\" -t ./wasm"
     },
     "devDependencies": {
-        "@babylonjs/core": "^7.20.1",
+        "@babylonjs/core": "^7.27.0",
         "@dev/build-tools": "^1.0.0",
         "@tools/ktx2decoder": "^1.0.0"
     },

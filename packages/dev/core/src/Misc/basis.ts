@@ -3,10 +3,10 @@ import type { Nullable } from "../types";
 import { Tools } from "./tools";
 import { Texture } from "../Materials/Textures/texture";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
-import { Scalar } from "../Maths/math.scalar";
 import { Constants } from "../Engines/constants";
-import type { Engine } from "../Engines/engine";
 import { initializeWebWorker, workerFunction } from "./basisWorker";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
+import type { Engine } from "core/Engines/engine";
 
 /**
  * Info about the .basis files
@@ -129,7 +129,7 @@ export const BasisToolsOptions = {
  * @returns internal format corresponding to the Basis format
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const GetInternalFormatFromBasisFormat = (basisFormat: number, engine: Engine) => {
+export const GetInternalFormatFromBasisFormat = (basisFormat: number, engine: AbstractEngine) => {
     let format;
     switch (basisFormat) {
         case BASIS_FORMATS.cTFETC1:
@@ -261,7 +261,7 @@ export const LoadTextureFromTranscodeResult = (texture: InternalTexture, transco
             texture.type = Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
             texture.format = Constants.TEXTUREFORMAT_RGB;
 
-            if (engine._features.basisNeedsPOT && (Scalar.Log2(rootImage.width) % 1 !== 0 || Scalar.Log2(rootImage.height) % 1 !== 0)) {
+            if (engine._features.basisNeedsPOT && (Math.log2(rootImage.width) % 1 !== 0 || Math.log2(rootImage.height) % 1 !== 0)) {
                 // Create non power of two texture
                 const source = new InternalTexture(engine, InternalTextureSource.Temp);
 
@@ -305,7 +305,7 @@ export const LoadTextureFromTranscodeResult = (texture: InternalTexture, transco
                 engine._uploadCompressedDataToTextureDirectly(texture, format, level.width, level.height, level.transcodedPixels, i, index);
             });
 
-            if (engine._features.basisNeedsPOT && (Scalar.Log2(texture.width) % 1 !== 0 || Scalar.Log2(texture.height) % 1 !== 0)) {
+            if (engine._features.basisNeedsPOT && (Math.log2(texture.width) % 1 !== 0 || Math.log2(texture.height) % 1 !== 0)) {
                 Tools.Warn(
                     "Loaded .basis texture width and height are not a power of two. Texture wrapping will be set to Texture.CLAMP_ADDRESSMODE as other modes are not supported with non power of two dimensions in webGL 1."
                 );

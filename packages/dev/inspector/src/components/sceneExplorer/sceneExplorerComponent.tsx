@@ -23,6 +23,7 @@ import { ParticleHelper } from "core/Particles/particleHelper";
 import { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
 import { SSAO2RenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline";
 import { SSRRenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/ssrRenderingPipeline";
+import { IblShadowsRenderPipeline } from "core/Rendering/IBLShadows/iblShadowsRenderPipeline";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { SpriteManager } from "core/Sprites/spriteManager";
@@ -301,6 +302,20 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                     label: "Add new SSR Rendering Pipeline",
                     action: () => {
                         const newPipeline = new SSRRenderingPipeline("SSR rendering pipeline", scene, scene.cameras);
+                        this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
+                    },
+                });
+            }
+
+            if (
+                scene.getEngine().getCaps().drawBuffersExtension &&
+                scene.getEngine().getCaps().texelFetch &&
+                !pipelines.some((p) => p.getClassName() === "IBLShadowsRenderingPipeline")
+            ) {
+                defaultMenuItems.push({
+                    label: "Add new IBL Shadows Rendering Pipeline",
+                    action: () => {
+                        const newPipeline = new IblShadowsRenderPipeline("IBL Shadows rendering pipeline", scene, {}, scene.cameras);
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
                     },
                 });
@@ -737,7 +752,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             <ResizableCasted
                 tabIndex={-1}
                 id="sceneExplorer"
-                size={{ height: "100%" }}
+                defaultSize={{ height: "100%" }}
                 ref={this._sceneExplorerRef}
                 minWidth={300}
                 maxWidth={600}

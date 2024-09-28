@@ -1,6 +1,6 @@
 import type { Matrix } from "../../Maths/math.vector";
 import { Vector3 } from "../../Maths/math.vector";
-import { Scalar } from "../../Maths/math.scalar";
+import { RandomRange } from "../../Maths/math.scalar.functions";
 import type { Particle } from "../../Particles/particle";
 import type { IParticleEmitterType } from "./IParticleEmitterType";
 import { DeepCopier } from "../../Misc/deepCopier";
@@ -54,10 +54,10 @@ export class CylinderParticleEmitter implements IParticleEmitterType {
 
         Vector3.TransformNormalToRef(this._tempVector, inverseWorldMatrix, this._tempVector);
 
-        const randY = Scalar.RandomRange(-this.directionRandomizer / 2, this.directionRandomizer / 2);
+        const randY = RandomRange(-this.directionRandomizer / 2, this.directionRandomizer / 2);
 
         let angle = Math.atan2(this._tempVector.x, this._tempVector.z);
-        angle += Scalar.RandomRange(-Math.PI / 2, Math.PI / 2) * this.directionRandomizer;
+        angle += RandomRange(-Math.PI / 2, Math.PI / 2) * this.directionRandomizer;
 
         this._tempVector.y = randY; // set direction y to rand y to mirror normal of cylinder surface
         this._tempVector.x = Math.sin(angle);
@@ -80,11 +80,11 @@ export class CylinderParticleEmitter implements IParticleEmitterType {
      * @param isLocal defines if the position should be set in local space
      */
     public startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
-        const yPos = Scalar.RandomRange(-this.height / 2, this.height / 2);
-        const angle = Scalar.RandomRange(0, 2 * Math.PI);
+        const yPos = RandomRange(-this.height / 2, this.height / 2);
+        const angle = RandomRange(0, 2 * Math.PI);
 
         // Pick a properly distributed point within the circle https://programming.guide/random-point-within-circle.html
-        const radiusDistribution = Scalar.RandomRange((1 - this.radiusRange) * (1 - this.radiusRange), 1);
+        const radiusDistribution = RandomRange((1 - this.radiusRange) * (1 - this.radiusRange), 1);
         const positionRadius = Math.sqrt(radiusDistribution) * this.radius;
         const xPos = positionRadius * Math.cos(angle);
         const zPos = positionRadius * Math.sin(angle);
@@ -192,11 +192,11 @@ export class CylinderDirectedParticleEmitter extends CylinderParticleEmitter {
         height = 1,
         radiusRange = 1,
         /**
-         * The min limit of the emission direction.
+         * [Up vector] The min limit of the emission direction.
          */
         public direction1 = new Vector3(0, 1, 0),
         /**
-         * The max limit of the emission direction.
+         * [Up vector] The max limit of the emission direction.
          */
         public direction2 = new Vector3(0, 1, 0)
     ) {
@@ -211,9 +211,9 @@ export class CylinderDirectedParticleEmitter extends CylinderParticleEmitter {
      * @param isLocal defines if the direction should be set in local space
      */
     public override startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, _particle: Particle, isLocal: boolean): void {
-        const randX = Scalar.RandomRange(this.direction1.x, this.direction2.x);
-        const randY = Scalar.RandomRange(this.direction1.y, this.direction2.y);
-        const randZ = Scalar.RandomRange(this.direction1.z, this.direction2.z);
+        const randX = RandomRange(this.direction1.x, this.direction2.x);
+        const randY = RandomRange(this.direction1.y, this.direction2.y);
+        const randZ = RandomRange(this.direction1.z, this.direction2.z);
         if (isLocal) {
             directionToUpdate.copyFromFloats(randX, randY, randZ);
             return;

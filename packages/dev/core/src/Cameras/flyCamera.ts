@@ -3,7 +3,6 @@ import type { Nullable } from "../types";
 import type { Scene } from "../scene";
 import type { Quaternion } from "../Maths/math.vector";
 import { Vector3 } from "../Maths/math.vector";
-import { Engine } from "../Engines/engine";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { TargetCamera } from "./targetCamera";
 import { FlyCameraInputsManager } from "./flyCameraInputsManager";
@@ -13,6 +12,7 @@ import { Tools } from "../Misc/tools";
 import { RegisterClass } from "../Misc/typeStore";
 
 import type { Collider } from "../Collisions/collider";
+import { AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
  * This is a flying camera, designed for 3D movement and rotation in all directions,
@@ -361,7 +361,7 @@ export class FlyCamera extends TargetCamera {
 
             this._newPosition.subtractToRef(this._oldPosition, this._diffPosition);
 
-            if (this._diffPosition.length() > Engine.CollisionsEpsilon) {
+            if (this._diffPosition.length() > AbstractEngine.CollisionsEpsilon) {
                 this.position.addInPlace(this._diffPosition);
                 if (this.onCollide && collidedMesh) {
                     this.onCollide(collidedMesh);

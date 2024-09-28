@@ -1,8 +1,8 @@
 /* eslint-disable babylonjs/available */
 import { Logger } from "../Misc/logger";
+import { ThinWebGPUEngine } from "./thinWebGPUEngine";
 import type { Nullable, DataArray, IndicesArray, Immutable, FloatArray } from "../types";
 import { Color4 } from "../Maths/math";
-import { Engine } from "../Engines/engine";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import type { IEffectCreationOptions, IShaderPath } from "../Materials/effect";
 import { Effect } from "../Materials/effect";
@@ -32,7 +32,6 @@ import { WebGPUHardwareTexture } from "./WebGPU/webgpuHardwareTexture";
 import type { IColor4Like } from "../Maths/math.like";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { WebGPUCacheSampler } from "./WebGPU/webgpuCacheSampler";
-import type { WebGPUCacheRenderPipeline } from "./WebGPU/webgpuCacheRenderPipeline";
 import { WebGPUCacheRenderPipelineTree } from "./WebGPU/webgpuCacheRenderPipelineTree";
 import { WebGPUStencilStateComposer } from "./WebGPU/webgpuStencilStateComposer";
 import { WebGPUDepthCullingState } from "./WebGPU/webgpuDepthCullingState";
@@ -62,7 +61,6 @@ import "../Buffers/buffer.align";
 import type { VideoTexture } from "../Materials/Textures/videoTexture";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { RenderTargetWrapper } from "./renderTargetWrapper";
-import { WebGPUPerfCounter } from "./WebGPU/webgpuPerfCounter";
 import type { Scene } from "../scene";
 
 import { SphericalPolynomial } from "../Maths/sphericalPolynomial";
@@ -90,6 +88,13 @@ import { resetCachedPipeline } from "../Materials/effect.functions";
 import { WebGPUExternalTexture } from "./WebGPU/webgpuExternalTexture";
 import type { TextureSampler } from "../Materials/Textures/textureSampler";
 import type { StorageBuffer } from "../Buffers/storageBuffer";
+import "./WebGPU/Extensions/engine.alpha";
+import "./WebGPU/Extensions/engine.rawTexture";
+import "./WebGPU/Extensions/engine.readTexture";
+import "./WebGPU/Extensions/engine.cubeTexture";
+import "./WebGPU/Extensions/engine.renderTarget";
+import "./WebGPU/Extensions/engine.renderTargetTexture";
+import "./WebGPU/Extensions/engine.renderTargetCube";
 
 const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
     label: `TextureView_SwapChain_ResolveTarget`,
@@ -195,7 +200,7 @@ export interface WebGPUEngineOptions extends AbstractEngineOptions, GPURequestAd
  * The web GPU engine class provides support for WebGPU version of babylon.js.
  * @since 5.0.0
  */
-export class WebGPUEngine extends AbstractEngine {
+export class WebGPUEngine extends ThinWebGPUEngine {
     // Default glslang options.
     private static readonly _GlslangDefaultOptions: GlslangOptions = {
         jsPath: `${Tools._DefaultCdnUrl}/glslang/glslang.js`,
@@ -223,6 +228,7 @@ export class WebGPUEngine extends AbstractEngine {
     public _options: WebGPUEngineOptions;
     private _glslang: any = null;
     private _tintWASM: Nullable<WebGPUTintWASM> = null;
+    private _glslangAndTintAreFullyLoaded = false;
     private _adapter: GPUAdapter;
     private _adapterSupportedExtensions: GPUFeatureName[];
     private _adapterInfo: GPUAdapterInfo = {
@@ -241,22 +247,14 @@ export class WebGPUEngine extends AbstractEngine {
     private _glslangOptions?: GlslangOptions;
     private _twgslOptions?: TwgslOptions;
     /** @internal */
-    public _textureHelper: WebGPUTextureManager;
-    /** @internal */
     public _bufferManager: WebGPUBufferManager;
     private _clearQuad: WebGPUClearQuad;
     /** @internal */
     public _cacheSampler: WebGPUCacheSampler;
-    /** @internal */
-    public _cacheRenderPipeline: WebGPUCacheRenderPipeline;
     private _cacheBindGroups: WebGPUCacheBindGroups;
     private _emptyVertexBuffer: VertexBuffer;
     /** @internal */
     public _mrtAttachments: number[];
-    /** @internal */
-    public _timestampQuery: WebGPUTimestampQuery;
-    /** @internal */
-    public _timestampIndex = 0;
     /** @internal */
     public _occlusionQuery: WebGPUOcclusionQuery;
     /** @internal */
@@ -313,17 +311,10 @@ export class WebGPUEngine extends AbstractEngine {
     /** @internal */
     public _ubDontInvertY: WebGPUDataBuffer;
 
-    // Frame Life Cycle (recreated each frame)
-    /** @internal */
-    public _uploadEncoder: GPUCommandEncoder;
-    /** @internal */
-    public _renderEncoder: GPUCommandEncoder;
-
     private _commandBuffers: GPUCommandBuffer[] = [null as any, null as any];
 
     // Frame Buffer Life Cycle (recreated for each render target pass)
-    /** @internal */
-    public _currentRenderPass: Nullable<GPURenderPassEncoder> = null;
+
     private _mainRenderPassWrapper: IWebGPURenderPassWrapper = {
         renderPassDescriptor: null,
         colorAttachmentViewDescriptor: null,
@@ -340,11 +331,6 @@ export class WebGPUEngine extends AbstractEngine {
     };
     /** @internal */
     public _pendingDebugCommands: Array<[string, Nullable<string>]> = [];
-    /**
-     * Used for both the compatibilityMode=false and the snapshot rendering modes (as both can't be enabled at the same time)
-     * @internal
-     */
-    public _bundleList: WebGPUBundleList;
 
     // DrawCall Life Cycle
     // Effect is on the parent class
@@ -359,23 +345,6 @@ export class WebGPUEngine extends AbstractEngine {
     private _currentIndexBuffer: Nullable<DataBuffer> = null;
     private _colorWriteLocal = true;
     private _forceEnableEffect = false;
-
-    // TODO WEBGPU remove those variables when code stabilized
-    /** @internal */
-    public dbgShowShaderCode = false;
-    /** @internal */
-    public dbgSanityChecks = true;
-    /** @internal */
-    public dbgVerboseLogsForFirstFrames = false;
-    /** @internal */
-    public dbgVerboseLogsNumFrames = 10;
-    /** @internal */
-    public dbgLogIfNotDrawWrapper = true;
-    /** @internal */
-    public dbgShowEmptyEnableEffectCalls = true;
-
-    private _snapshotRendering: WebGPUSnapshotRendering;
-    protected _snapshotRenderingMode = Constants.SNAPSHOTRENDERING_STANDARD;
 
     /**
      * Gets or sets the snapshot rendering mode
@@ -554,29 +523,6 @@ export class WebGPUEngine extends AbstractEngine {
         this._compatibilityMode = mode;
     }
 
-    /**
-     * Enables or disables GPU timing measurements.
-     * Note that this is only supported if the "timestamp-query" extension is enabled in the options.
-     */
-    public get enableGPUTimingMeasurements(): boolean {
-        return this._timestampQuery.enable;
-    }
-
-    public set enableGPUTimingMeasurements(enable: boolean) {
-        if (this._timestampQuery.enable === enable) {
-            return;
-        }
-        (this.gpuTimeInFrameForMainPass as any) = enable ? new WebGPUPerfCounter() : undefined;
-        this._timestampQuery.enable = enable;
-    }
-
-    /**
-     * Gets the GPU time spent in the main render pass for the last frame rendered (in nanoseconds).
-     * You have to enable the "timestamp-query" extension in the engine constructor options and set engine.enableGPUTimingMeasurements = true.
-     * It will only return time spent in the main pass, not additional render target / compute passes (if any)!
-     */
-    public readonly gpuTimeInFrameForMainPass?: WebGPUPerfCounter;
-
     /** @internal */
     public get currentSampleCount(): number {
         return this._currentRenderTarget ? this._currentRenderTarget.samples : this._mainPassSampleCount;
@@ -620,7 +566,7 @@ export class WebGPUEngine extends AbstractEngine {
         options.deviceDescriptor = options.deviceDescriptor || {};
         options.enableGPUDebugMarkers = options.enableGPUDebugMarkers ?? false;
 
-        Logger.Log(`Babylon.js v${Engine.Version} - ${this.description} engine`);
+        Logger.Log(`Babylon.js v${AbstractEngine.Version} - ${this.description} engine`);
         if (!navigator.gpu) {
             Logger.Error("WebGPU is not supported by your browser.");
             return;
@@ -662,6 +608,7 @@ export class WebGPUEngine extends AbstractEngine {
                     this._glslang = glslang;
                     this._tintWASM = new WebGPUTintWASM();
                     this._tintWASM.initTwgsl(this._twgslOptions ?? this._options?.twgslOptions).then(() => {
+                        this._glslangAndTintAreFullyLoaded = true;
                         resolve();
                     });
                 });
@@ -879,6 +826,7 @@ export class WebGPUEngine extends AbstractEngine {
             maxCubemapTextureSize: this._deviceLimits.maxTextureDimension2D,
             maxRenderTextureSize: this._deviceLimits.maxTextureDimension2D,
             maxVertexAttribs: this._deviceLimits.maxVertexAttributes,
+            maxDrawBuffers: 8,
             maxVaryingVectors: this._deviceLimits.maxInterStageShaderVariables,
             maxFragmentUniformVectors: Math.floor(this._deviceLimits.maxUniformBufferBindingSize / 4),
             maxVertexUniformVectors: Math.floor(this._deviceLimits.maxUniformBufferBindingSize / 4),
@@ -942,6 +890,7 @@ export class WebGPUEngine extends AbstractEngine {
             needTypeSuffixInShaderConstants: true,
             supportMSAA: true,
             supportSSAO2: true,
+            supportIBLShadows: true,
             supportExtendedTextureFormats: true,
             supportSwitchCaseInShader: true,
             supportSyncTextureRead: false,
@@ -1261,10 +1210,6 @@ export class WebGPUEngine extends AbstractEngine {
      */
     public _getShaderProcessingContext(shaderLanguage: ShaderLanguage, pureMode: boolean): Nullable<ShaderProcessingContext> {
         return new WebGPUShaderProcessingContext(shaderLanguage, pureMode);
-    }
-
-    private _currentPassIsMainPass() {
-        return this._currentRenderTarget === null;
     }
 
     private _getCurrentRenderPass(): GPURenderPassEncoder {
@@ -1917,6 +1862,7 @@ export class WebGPUEngine extends AbstractEngine {
      * @param onError defines a function to call when the effect creation has failed
      * @param indexParameters defines an object containing the index values to use to compile shaders (like the maximum number of simultaneous lights)
      * @param shaderLanguage the language the shader is written in (default: GLSL)
+     * @param extraInitializationsAsync additional async code to run before preparing the effect
      * @returns the new Effect
      */
     public createEffect(
@@ -1929,7 +1875,8 @@ export class WebGPUEngine extends AbstractEngine {
         onCompiled?: Nullable<(effect: Effect) => void>,
         onError?: Nullable<(effect: Effect, errors: string) => void>,
         indexParameters?: any,
-        shaderLanguage = ShaderLanguage.GLSL
+        shaderLanguage = ShaderLanguage.GLSL,
+        extraInitializationsAsync?: () => Promise<void>
     ): Effect {
         const vertex = typeof baseName === "string" ? baseName : baseName.vertexToken || baseName.vertexSource || baseName.vertexElement || baseName.vertex;
         const fragment = typeof baseName === "string" ? baseName : baseName.fragmentToken || baseName.fragmentSource || baseName.fragmentElement || baseName.fragment;
@@ -1947,7 +1894,7 @@ export class WebGPUEngine extends AbstractEngine {
             if (onCompiled && compiledEffect.isReady()) {
                 onCompiled(compiledEffect);
             }
-
+            compiledEffect._refCount++;
             return compiledEffect;
         }
         const effect = new Effect(
@@ -1962,7 +1909,8 @@ export class WebGPUEngine extends AbstractEngine {
             onError,
             indexParameters,
             name,
-            (<IEffectCreationOptions>attributesNamesOrOptions).shaderLanguage ?? shaderLanguage
+            (<IEffectCreationOptions>attributesNamesOrOptions).shaderLanguage ?? shaderLanguage,
+            (<IEffectCreationOptions>attributesNamesOrOptions).extraInitializationsAsync ?? extraInitializationsAsync
         );
         this._compiledEffects[name] = effect;
 
@@ -2124,7 +2072,7 @@ export class WebGPUEngine extends AbstractEngine {
         const webGpuContext = pipelineContext as WebGPUPipelineContext;
         const shaderLanguage = webGpuContext.shaderProcessingContext.shaderLanguage;
 
-        if (shaderLanguage === ShaderLanguage.GLSL && (!this._glslang || !this._tintWASM)) {
+        if (shaderLanguage === ShaderLanguage.GLSL && !this._glslangAndTintAreFullyLoaded) {
             await this.prepareGlslangAndTintAsync();
         }
 
@@ -2800,53 +2748,6 @@ export class WebGPUEngine extends AbstractEngine {
     }
 
     /**
-     * @internal
-     */
-    public _generateMipmaps(texture: InternalTexture, commandEncoder?: GPUCommandEncoder) {
-        commandEncoder = commandEncoder ?? this._renderEncoder;
-
-        const gpuHardwareTexture = texture._hardwareTexture as Nullable<WebGPUHardwareTexture>;
-
-        if (!gpuHardwareTexture) {
-            return;
-        }
-
-        if (commandEncoder === this._renderEncoder) {
-            // We must close the current pass (if any) because we are going to use the render encoder to generate the mipmaps (so, we are going to create a new render pass)
-            this._endCurrentRenderPass();
-        }
-
-        const format = (texture._hardwareTexture as WebGPUHardwareTexture).format;
-        const mipmapCount = WebGPUTextureHelper.ComputeNumMipmapLevels(texture.width, texture.height);
-
-        if (this.dbgVerboseLogsForFirstFrames) {
-            if ((this as any)._count === undefined) {
-                (this as any)._count = 0;
-            }
-            if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                Logger.Log(
-                    "frame #" +
-                        (this as any)._count +
-                        " - generate mipmaps - width=" +
-                        texture.width +
-                        ", height=" +
-                        texture.height +
-                        ", isCube=" +
-                        texture.isCube +
-                        ", command encoder=" +
-                        (commandEncoder === this._renderEncoder ? "render" : "copy")
-                );
-            }
-        }
-
-        if (texture.isCube) {
-            this._textureHelper.generateCubeMipmaps(gpuHardwareTexture, format, mipmapCount, commandEncoder);
-        } else {
-            this._textureHelper.generateMipmaps(gpuHardwareTexture, format, mipmapCount, 0, texture.is3D, commandEncoder);
-        }
-    }
-
-    /**
      * Update a portion of an internal texture
      * @param texture defines the texture to update
      * @param imageData defines the data to store into the texture
@@ -3365,49 +3266,6 @@ export class WebGPUEngine extends AbstractEngine {
         if (!this._isStencilEnable) {
             this._stencilStateComposer.enabled = false;
         }
-    }
-
-    /** @internal */
-    public _endCurrentRenderPass(): number {
-        if (!this._currentRenderPass) {
-            return 0;
-        }
-
-        const currentPassIndex = this._currentPassIsMainPass() ? 2 : 1;
-
-        if (!this._snapshotRendering.endRenderPass(this._currentRenderPass) && !this.compatibilityMode) {
-            this._bundleList.run(this._currentRenderPass);
-            this._bundleList.reset();
-        }
-        this._currentRenderPass.end();
-
-        this._timestampQuery.endPass(
-            this._timestampIndex,
-            (this._currentRenderTarget && (this._currentRenderTarget as WebGPURenderTargetWrapper).gpuTimeInFrame
-                ? (this._currentRenderTarget as WebGPURenderTargetWrapper).gpuTimeInFrame
-                : this.gpuTimeInFrameForMainPass) as WebGPUPerfCounter
-        );
-        this._timestampIndex += 2;
-
-        if (this.dbgVerboseLogsForFirstFrames) {
-            if ((this as any)._count === undefined) {
-                (this as any)._count = 0;
-            }
-            if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                Logger.Log(
-                    "frame #" +
-                        (this as any)._count +
-                        " - " +
-                        (currentPassIndex === 2 ? "main" : "render target") +
-                        " end pass" +
-                        (currentPassIndex === 1 ? " - internalTexture.uniqueId=" + this._currentRenderTarget?.texture?.uniqueId : "")
-                );
-            }
-        }
-        this._debugPopGroup?.(0);
-        this._currentRenderPass = null;
-
-        return currentPassIndex;
     }
 
     /**

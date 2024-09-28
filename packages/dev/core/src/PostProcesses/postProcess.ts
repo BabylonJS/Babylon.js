@@ -7,17 +7,14 @@ import type { Camera } from "../Cameras/camera";
 import { Effect } from "../Materials/effect";
 import { Constants } from "../Engines/constants";
 import type { RenderTargetCreationOptions } from "../Materials/Textures/textureCreationOptions";
-import "../Shaders/postprocess.vertex";
 import type { IInspectable } from "../Misc/iInspectable";
 import type { Color4 } from "../Maths/math.color";
 
-import "../Engines/Extensions/engine.renderTarget";
 import type { NodeMaterial } from "../Materials/Node/nodeMaterial";
 import { serialize, serializeAsColor4 } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { GetClass, RegisterClass } from "../Misc/typeStore";
 import { DrawWrapper } from "../Materials/drawWrapper";
-import type { AbstractScene } from "../abstractScene";
 import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
 
@@ -28,6 +25,7 @@ import type { PrePassRenderer } from "../Rendering/prePassRenderer";
 import type { PrePassEffectConfiguration } from "../Rendering/prePassEffectConfiguration";
 import { AbstractEngine } from "../Engines/abstractEngine";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
+import type { IAssetContainer } from "core/IAssetContainer";
 
 declare module "../Engines/abstractEngine" {
     export interface AbstractEngine {
@@ -206,6 +204,10 @@ export type PostProcessOptions = {
      * The shader language of the shader. (default: GLSL)
      */
     shaderLanguage?: ShaderLanguage;
+    /**
+     * Defines additional code to call to prepare the shader code
+     */
+    extraInitializations?: (useWebGPU: boolean, list: Promise<any>[]) => void;
 };
 
 type TextureCache = { texture: RenderTargetWrapper; postProcessChannel: number; lastUsedRenderId: number };
@@ -222,7 +224,7 @@ export class PostProcess {
     public static ForceGLSL = false;
 
     /** @internal */
-    public _parentContainer: Nullable<AbstractScene> = null;
+    public _parentContainer: Nullable<IAssetContainer> = null;
 
     private static _CustomShaderCodeProcessing: { [postProcessName: string]: PostProcessCustomShaderCodeProcessing } = {};
 
@@ -451,7 +453,7 @@ export class PostProcess {
      * Executed when the effect was created
      * @returns effect that was created for this post process
      */
-    public onEffectCreatedObservable = new Observable<Effect>();
+    public onEffectCreatedObservable = new Observable<Effect>(undefined, true);
 
     // Events
 
@@ -629,7 +631,7 @@ export class PostProcess {
         blockCompilation?: boolean,
         textureFormat?: number,
         shaderLanguage?: ShaderLanguage,
-        extraInitializations?: (useWebGPU: boolean) => Promise<void>
+        extraInitializations?: (useWebGPU: boolean, list: Promise<any>[]) => void
     );
 
     /** @internal */
@@ -649,8 +651,8 @@ export class PostProcess {
         indexParameters?: any,
         blockCompilation = false,
         textureFormat = Constants.TEXTUREFORMAT_RGBA,
-        shaderLanguage = ShaderLanguage.GLSL,
-        extraInitializations?: (useWebGPU: boolean) => Promise<void>
+        shaderLanguage?: ShaderLanguage,
+        extraInitializations?: (useWebGPU: boolean, list: Promise<any>[]) => void
     ) {
         this.name = name;
         let size: number | { width: number; height: number } = 1;
@@ -672,6 +674,7 @@ export class PostProcess {
             textureFormat = options.textureFormat ?? Constants.TEXTUREFORMAT_RGBA;
             shaderLanguage = options.shaderLanguage ?? ShaderLanguage.GLSL;
             uniformBuffers = options.uniformBuffers ?? null;
+            extraInitializations = options.extraInitializations;
         } else if (_size) {
             if (typeof _size === "number") {
                 size = _size;
@@ -698,7 +701,7 @@ export class PostProcess {
         this._reusable = reusable || false;
         this._textureType = textureType;
         this._textureFormat = textureFormat;
-        this._shaderLanguage = shaderLanguage;
+        this._shaderLanguage = shaderLanguage || ShaderLanguage.GLSL;
 
         this._samplers = samplers || [];
         this._samplers.push("textureSampler");
@@ -718,36 +721,30 @@ export class PostProcess {
         this._postConstructor(blockCompilation, defines, extraInitializations);
     }
 
-    protected async _initShaderSourceAsync(useWebGPU = false) {
+    /** @internal */
+    protected _gatherImports(useWebGPU = false, list: Promise<any>[]) {
         // this._webGPUReady is used to detect when a postprocess is intended to be used with WebGPU
         if (useWebGPU && this._webGPUReady) {
-            await Promise.all([import("../ShadersWGSL/postprocess.vertex")]);
+            list.push(Promise.all([import("../ShadersWGSL/postprocess.vertex")]));
         } else {
-            await Promise.all([import("../Shaders/postprocess.vertex")]);
+            list.push(Promise.all([import("../Shaders/postprocess.vertex")]));
         }
-
-        this._shadersLoaded = true;
     }
 
-    private _onInitShadersDone: Nullable<() => void> = null;
-    private async _postConstructor(blockCompilation: boolean, defines: Nullable<string> = null, extraInitializations?: (useWebGPU: boolean) => Promise<void>) {
+    private _importPromises: Array<Promise<any>> = [];
+    private _postConstructor(blockCompilation: boolean, defines: Nullable<string> = null, extraInitializations?: (useWebGPU: boolean, list: Promise<any>[]) => void) {
         const engine = this.getEngine();
         const useWebGPU = engine.isWebGPU && !PostProcess.ForceGLSL;
 
-        await this._initShaderSourceAsync(useWebGPU);
+        this._gatherImports(useWebGPU, this._importPromises);
         if (extraInitializations) {
-            await extraInitializations(useWebGPU);
+            extraInitializations(useWebGPU, this._importPromises);
         }
 
         if (useWebGPU && this._webGPUReady) {
             this._shaderLanguage = ShaderLanguage.WGSL;
         }
 
-        if (this._onInitShadersDone) {
-            this._onInitShadersDone();
-            return;
-        }
-        this._shadersLoaded = true;
         if (!blockCompilation) {
             this.updateEffect(defines);
         }
@@ -823,15 +820,6 @@ export class PostProcess {
         vertexUrl?: string,
         fragmentUrl?: string
     ) {
-        if (!this._shadersLoaded) {
-            this._onInitShadersDone = () => {
-                this._shadersLoaded = true;
-                this._onInitShadersDone = null;
-                this.updateEffect(defines, uniforms, samplers, indexParameters, onCompiled, onError, vertexUrl, fragmentUrl);
-            };
-            return;
-        }
-
         const customShaderCodeProcessing = PostProcess._GetShaderCodeProcessing(this.name);
         if (customShaderCodeProcessing?.defineCustomBindings) {
             const newUniforms = uniforms?.slice() ?? [];
@@ -864,6 +852,12 @@ export class PostProcess {
                     ? (shaderType: string, code: string) => customShaderCodeProcessing!.processFinalCode!(this.name, shaderType, code)
                     : null,
                 shaderLanguage: this._shaderLanguage,
+                extraInitializationsAsync: this._shadersLoaded
+                    ? undefined
+                    : async () => {
+                          await Promise.all(this._importPromises);
+                          this._shadersLoaded = true;
+                      },
             },
             this._engine
         );
@@ -1095,9 +1089,6 @@ export class PostProcess {
      * If the post process is supported.
      */
     public get isSupported(): boolean {
-        if (!this._shadersLoaded) {
-            return true; // Waiting for the effect to be created
-        }
         return this._drawWrapper.effect!.isSupported;
     }
 
@@ -1120,9 +1111,6 @@ export class PostProcess {
      * @returns true if the post-process is ready (shader is compiled)
      */
     public isReady(): boolean {
-        if (!this._shadersLoaded) {
-            return false;
-        }
         return this._drawWrapper.effect?.isReady() ?? false;
     }
 

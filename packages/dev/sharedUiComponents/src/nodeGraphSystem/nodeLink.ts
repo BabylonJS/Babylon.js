@@ -133,6 +133,14 @@ export class NodeLink {
         this._path.setAttribute("stroke", this._portA.element.style.backgroundColor!);
     }
 
+    public get path() {
+        return this._path;
+    }
+
+    public get selectionPath() {
+        return this._selectionPath;
+    }
+
     public constructor(graphCanvas: GraphCanvasComponent, portA: NodePort, nodeA: GraphNode, portB?: NodePort, nodeB?: GraphNode) {
         this._portA = portA;
         this._portB = portB;

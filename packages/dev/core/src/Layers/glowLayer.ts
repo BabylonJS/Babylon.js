@@ -2,7 +2,7 @@
 import { serialize } from "../Misc/decorators";
 import type { Nullable } from "../types";
 import type { Camera } from "../Cameras/camera";
-import type { Scene } from "../scene";
+import { Scene } from "../scene";
 import { Vector2 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
 import type { SubMesh } from "../Meshes/subMesh";
@@ -15,7 +15,6 @@ import { Material } from "../Materials/material";
 import type { PostProcess } from "../PostProcesses/postProcess";
 import { BlurPostProcess } from "../PostProcesses/blurPostProcess";
 import { EffectLayer } from "./effectLayer";
-import { AbstractScene } from "../abstractScene";
 import { Constants } from "../Engines/constants";
 import { RegisterClass } from "../Misc/typeStore";
 import { Color4 } from "../Maths/math.color";
@@ -26,8 +25,8 @@ import { SerializationHelper } from "../Misc/decorators.serialization";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
-declare module "../abstractScene" {
-    export interface AbstractScene {
+declare module "../scene" {
+    export interface Scene {
         /**
          * Return the first glow layer of the scene with a given name.
          * @param name The name of the glow layer to look for.
@@ -37,7 +36,7 @@ declare module "../abstractScene" {
     }
 }
 
-AbstractScene.prototype.getGlowLayerByName = function (name: string): Nullable<GlowLayer> {
+Scene.prototype.getGlowLayerByName = function (name: string): Nullable<GlowLayer> {
     for (let index = 0; index < this.effectLayers?.length; index++) {
         if (this.effectLayers[index].name === name && this.effectLayers[index].getEffectName() === GlowLayer.EffectName) {
             return (<any>this.effectLayers[index]) as GlowLayer;
@@ -230,11 +229,8 @@ export class GlowLayer extends EffectLayer {
         });
     }
 
-    protected override async _initShaderSourceAsync(forceGLSL = false) {
-        const engine = this._scene.getEngine();
-
-        if (engine.isWebGPU && !forceGLSL && !EffectLayer.ForceGLSL) {
-            this._shaderLanguage = ShaderLanguage.WGSL;
+    protected override async _importShadersAsync() {
+        if (this._shaderLanguage === ShaderLanguage.WGSL) {
             await Promise.all([
                 import("../ShadersWGSL/glowMapMerge.fragment"),
                 import("../ShadersWGSL/glowMapMerge.vertex"),
@@ -244,7 +240,7 @@ export class GlowLayer extends EffectLayer {
             await Promise.all([import("../Shaders/glowMapMerge.fragment"), import("../Shaders/glowMapMerge.vertex"), import("../Shaders/glowBlurPostProcess.fragment")]);
         }
 
-        await super._initShaderSourceAsync(forceGLSL);
+        await super._importShadersAsync();
     }
 
     /**
@@ -277,7 +273,13 @@ export class GlowLayer extends EffectLayer {
             undefined,
             undefined,
             undefined,
-            this.shaderLanguage
+            this.shaderLanguage,
+            this._shadersLoaded
+                ? undefined
+                : async () => {
+                      await this._importShadersAsync();
+                      this._shadersLoaded = true;
+                  }
         );
     }
 

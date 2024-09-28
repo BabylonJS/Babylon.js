@@ -435,20 +435,15 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
         const fullscreenElement = this.fullscreenElement || viewerElement;
 
         if (fullscreenElement) {
-            const currentElement =
-                (<any>document).fullscreenElement || (<any>document).webkitFullscreenElement || (<any>document).mozFullScreenElement || (<any>document).msFullscreenElement;
+            const currentElement = (<any>document).fullscreenElement || (<any>document).webkitFullscreenElement;
             if (!currentElement) {
-                const requestFullScreen =
-                    fullscreenElement.requestFullscreen ||
-                    (<any>fullscreenElement).webkitRequestFullscreen ||
-                    (<any>fullscreenElement).msRequestFullscreen ||
-                    (<any>fullscreenElement).mozRequestFullScreen;
+                const requestFullScreen = fullscreenElement.requestFullscreen || (<any>fullscreenElement).webkitRequestFullscreen;
                 requestFullScreen.call(fullscreenElement);
                 if (viewerElement) {
                     viewerElement.classList.add("in-fullscreen");
                 }
             } else {
-                const exitFullscreen = document.exitFullscreen || (<any>document).webkitExitFullscreen || (<any>document).msExitFullscreen || (<any>document).mozCancelFullScreen;
+                const exitFullscreen = document.exitFullscreen || (<any>document).webkitExitFullscreen;
                 exitFullscreen.call(document);
                 if (viewerElement) {
                     viewerElement.classList.remove("in-fullscreen");

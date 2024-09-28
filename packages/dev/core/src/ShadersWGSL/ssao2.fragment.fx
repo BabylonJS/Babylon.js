@@ -106,123 +106,124 @@ var textureSampler: texture_2d<f32>;
 		var result: f32 = clamp(ao + uniforms.base, 0.0, 1.0);
 		fragmentOutputs.color =  vec4f( vec3f(result), 1.0);
 	}
-#endif
+#else
 
-#ifdef BLUR
-	uniform outSize: f32;
+	#ifdef BLUR
+		uniform outSize: f32;
 
-	// These three controls the non-legacy bilateral filter
-	uniform soften: f32;
-	uniform tolerance: f32;
-	uniform samples: i32;
+		// These three controls the non-legacy bilateral filter
+		uniform soften: f32;
+		uniform tolerance: f32;
+		uniform samples: i32;
 
-#ifndef BLUR_BYPASS
-	var depthSamplerSampler: sampler;
-	var depthSampler: texture_2d<f32>;
-#ifdef BLUR_LEGACY
-    #define inline
-	fn blur13Bilateral(image: texture_sd<f32>, imageSampler: sampler, uv: vec2f, step: vec2f) -> f32 {
-		var result: f32 = 0.0;
-		var off1: vec2f =  vec2f(1.411764705882353) * step;
-		var off2: vec2f =  vec2f(3.2941176470588234) * step;
-		var off3: vec2f =  vec2f(5.176470588235294) * step;
+	#ifndef BLUR_BYPASS
+		var depthSamplerSampler: sampler;
+		var depthSampler: texture_2d<f32>;
+	#ifdef BLUR_LEGACY
+	
+		fn blur13Bilateral(image: texture_2d<f32>, imageSampler: sampler, uv: vec2f, step: vec2f) -> f32 {
+			var result: f32 = 0.0;
+			var off1: vec2f =  vec2f(1.411764705882353) * step;
+			var off2: vec2f =  vec2f(3.2941176470588234) * step;
+			var off3: vec2f =  vec2f(5.176470588235294) * step;
 
-		var compareDepth: f32 = abs(textureLod(depthSampler,depthSamplerSampler, uv, 0.0).r);
-		var sampleDepth: f32;
-		var weight: f32;
-		var weightSum: f32 = 30.0;
+			var compareDepth: f32 = abs(textureSampleLevel(depthSampler, depthSamplerSampler, uv, 0.0).r);
+			var sampleDepth: f32;
+			var weight: f32;
+			var weightSum: f32 = 30.0;
 
-		result += textureSampleLevel(image, imageSampler,uv, 0.0).r * 30.0;
+			result += textureSampleLevel(image, imageSampler,uv, 0.0).r * 30.0;
 
-		sampleDepth = abs(textureLod(depthSampler, uv + off1, 0.0).r);
-		weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
-		weightSum +=  weight;
-		result += textureSampleLevel(image, imageSampler, uv + off1, 0.0).r * weight;
+			sampleDepth = abs(textureSampleLevel(depthSampler, depthSamplerSampler, uv + off1, 0.0).r);
+			weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
+			weightSum +=  weight;
+			result += textureSampleLevel(image, imageSampler, uv + off1, 0.0).r * weight;
 
-		sampleDepth = abs(textureLod(depthSampler, uv - off1, 0.0).r);
-		weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
-		weightSum +=  weight;
-		result += textureSampleLevel(image, imageSampler, uv - off1, 0.0).r * weight;
+			sampleDepth = abs(textureSampleLevel(depthSampler, depthSamplerSampler, uv - off1, 0.0).r);
+			weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
+			weightSum +=  weight;
+			result += textureSampleLevel(image, imageSampler, uv - off1, 0.0).r * weight;
 
-		sampleDepth = abs(textureLod(depthSampler, uv + off2, 0.0).r);
-		weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
-		weightSum += weight;
-		result += textureSampleLevel(image, imageSampler, uv + off2, 0.0).r * weight;
+			sampleDepth = abs(textureSampleLevel(depthSampler, depthSamplerSampler, uv + off2, 0.0).r);
+			weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
+			weightSum += weight;
+			result += textureSampleLevel(image, imageSampler, uv + off2, 0.0).r * weight;
 
-		sampleDepth = abs(textureLod(depthSampler, uv - off2, 0.0).r);
-		weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
-		weightSum += weight;
-		result += textureSampleLevel(image, imageSampler, uv - off2, 0.0).r * weight;
+			sampleDepth = abs(textureSampleLevel(depthSampler, depthSamplerSampler, uv - off2, 0.0).r);
+			weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
+			weightSum += weight;
+			result += textureSampleLevel(image, imageSampler, uv - off2, 0.0).r * weight;
 
-		sampleDepth = abs(textureLod(depthSampler, uv + off3, 0.0).r);
-		weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
-		weightSum += weight;
-		result += textureSampleLevel(image, imageSampler, uv + off3, 0.0).r * weight;
+			sampleDepth = abs(textureSampleLevel(depthSampler, depthSamplerSampler, uv + off3, 0.0).r);
+			weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
+			weightSum += weight;
+			result += textureSampleLevel(image, imageSampler, uv + off3, 0.0).r * weight;
 
-		sampleDepth = abs(textureLod(depthSampler, uv - off3, 0.0).r);
-		weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
-		weightSum += weight;
-		result += textureSampleLevel(image, imageSampler, uv - off3, 0.0).r * weight;
+			sampleDepth = abs(textureSampleLevel(depthSampler, depthSamplerSampler, uv - off3, 0.0).r);
+			weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
+			weightSum += weight;
+			result += textureSampleLevel(image, imageSampler, uv - off3, 0.0).r * weight;
 
-		return result / weightSum;
-	}
-#endif
-#endif
+			return result / weightSum;
+		}
+	#endif
+	#endif
 
-	@fragment
-	fn main(input: FragmentInputs) -> FragmentOutputs {
-		var result: f32 = 0.0;
-		#ifdef BLUR_BYPASS
-			result = textureSampleLevel(textureSampler, textureSamplerSampler, input.vUV, 0.0).r;
-		#else
-			#ifdef BLUR_H
-				var step: vec2f =  vec2f(1.0 / uniforms.outSize, 0.0);
+		@fragment
+		fn main(input: FragmentInputs) -> FragmentOutputs {
+			var result: f32 = 0.0;
+			#ifdef BLUR_BYPASS
+				result = textureSampleLevel(textureSampler, textureSamplerSampler, input.vUV, 0.0).r;
 			#else
-				var step: vec2f =  vec2f(0.0, 1.0 / uniforms.outSize);
+				#ifdef BLUR_H
+					var step: vec2f =  vec2f(1.0 / uniforms.outSize, 0.0);
+				#else
+					var step: vec2f =  vec2f(0.0, 1.0 / uniforms.outSize);
+				#endif
+
+				#ifdef BLUR_LEGACY
+					result = blur13Bilateral(textureSampler, textureSamplerSampler, input.vUV, step);
+				#else
+					var compareDepth: f32 = abs(textureSampleLevel(depthSampler, depthSamplerSampler, input.vUV, 0.0).r);
+					var weightSum: f32 = 0.0;
+					for (var i: i32 = -uniforms.samples; i < uniforms.samples; i += 2)
+					{
+						// Step over the texels two at a time, sampling both by sampling the position
+						// directly between them. The graphics hardware will thus read both.
+						//
+						// Note that we really should sample the center position seperately, but to
+						// minimize the risk of regressions, we keep doing it like this for now.
+						var samplePos: vec2f = input.vUV + step * ( f32(i) + 0.5);
+
+						var sampleDepth: f32 = abs(textureSampleLevel(depthSampler, depthSamplerSampler, samplePos, 0.0).r);
+
+						// The falloff is used to optionally give samples further from the center
+						// gradually lower weights. The value at the center is always 1.0, but the
+						// value at the edge varies depending on the "soften" control input.
+						//
+						// Note: soften === 0 => fallof === 1 for all i, legacy that needs to be kept.
+						var falloff: f32 = smoothstep(0.0,
+													f32(uniforms.samples),
+													f32(uniforms.samples) - abs( f32(i)) * uniforms.soften);
+
+						// minDivider affects how much a sample's depth need to differ before it is
+						// more or less rejected. A higher value results in the bilateral filter
+						// being more forgiving when rejecting samples, letting the denoiser work on
+						// slanted and curved surfaces.
+						//
+						// Note: tolerance === 0 => minDivider === 0.003, legacy that needs to be kept.
+						var minDivider: f32 = uniforms.tolerance * 0.5 + 0.003;
+						var weight: f32 = falloff / ( minDivider + abs(compareDepth - sampleDepth));
+
+						result += textureSampleLevel(textureSampler, textureSamplerSampler, samplePos, 0.0).r * weight;
+						weightSum += weight;
+					}
+					result /= weightSum;
+				#endif
 			#endif
 
-			#ifdef BLUR_LEGACY
-				result = blur13Bilateral(textureSampler, textureSamplerSampler, input.vUV, step);
-			#else
-				var compareDepth: f32 = abs(textureSampleLevel(depthSampler, depthSamplerSampler, input.vUV, 0.0).r);
-				var weightSum: f32 = 0.0;
-				for (var i: i32 = -uniforms.samples; i < uniforms.samples; i += 2)
-				{
-					// Step over the texels two at a time, sampling both by sampling the position
-					// directly between them. The graphics hardware will thus read both.
-					//
-					// Note that we really should sample the center position seperately, but to
-					// minimize the risk of regressions, we keep doing it like this for now.
-					var samplePos: vec2f = input.vUV + step * ( f32(i) + 0.5);
+			fragmentOutputs.color = vec4f(result, result, result, 1.0);
+		}
 
-					var sampleDepth: f32 = abs(textureSampleLevel(depthSampler, depthSamplerSampler, samplePos, 0.0).r);
-
-					// The falloff is used to optionally give samples further from the center
-					// gradually lower weights. The value at the center is always 1.0, but the
-					// value at the edge varies depending on the "soften" control input.
-					//
-					// Note: soften === 0 => fallof === 1 for all i, legacy that needs to be kept.
-					var falloff: f32 = smoothstep(0.0,
-											    f32(uniforms.samples),
-											    f32(uniforms.samples) - abs( f32(i)) * uniforms.soften);
-
-					// minDivider affects how much a sample's depth need to differ before it is
-					// more or less rejected. A higher value results in the bilateral filter
-					// being more forgiving when rejecting samples, letting the denoiser work on
-					// slanted and curved surfaces.
-					//
-					// Note: tolerance === 0 => minDivider === 0.003, legacy that needs to be kept.
-					var minDivider: f32 = uniforms.tolerance * 0.5 + 0.003;
-					var weight: f32 = falloff / ( minDivider + abs(compareDepth - sampleDepth));
-
-					result += textureSampleLevel(textureSampler, textureSamplerSampler, samplePos, 0.0).r * weight;
-					weightSum += weight;
-				}
-				result /= weightSum;
-			#endif
-		#endif
-
-		fragmentOutputs.color = vec4f(result, result, result, 1.0);
-	}
-
+	#endif
 #endif

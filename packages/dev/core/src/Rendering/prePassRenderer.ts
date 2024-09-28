@@ -170,6 +170,30 @@ export class PrePassRenderer {
             format: Constants.TEXTUREFORMAT_RGBA,
             name: "prePass_Albedo",
         },
+        {
+            purpose: Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE,
+            type: Constants.TEXTURETYPE_UNSIGNED_INT,
+            format: Constants.TEXTUREFORMAT_RGBA,
+            name: "prePass_WorldNormal",
+        },
+        {
+            purpose: Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE,
+            type: Constants.TEXTURETYPE_HALF_FLOAT,
+            format: Constants.TEXTUREFORMAT_RGBA,
+            name: "prePass_LocalPosition",
+        },
+        {
+            purpose: Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE,
+            type: Constants.TEXTURETYPE_FLOAT,
+            format: Constants.TEXTUREFORMAT_R,
+            name: "prePass_ScreenDepth",
+        },
+        {
+            purpose: Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE,
+            type: Constants.TEXTURETYPE_HALF_FLOAT,
+            format: Constants.TEXTUREFORMAT_RGBA,
+            name: "prePass_VelocityLinear",
+        },
     ];
 
     private _isDirty: boolean = true;
@@ -289,13 +313,14 @@ export class PrePassRenderer {
         for (let i = 0; i < PrePassRenderer.TextureFormats.length; ++i) {
             const format = PrePassRenderer.TextureFormats[i].format;
             if (PrePassRenderer.TextureFormats[i].type === Constants.TEXTURETYPE_FLOAT) {
-                PrePassRenderer.TextureFormats[Constants.PREPASS_DEPTH_TEXTURE_TYPE].type = type;
+                PrePassRenderer.TextureFormats[i].type = type;
                 if (
+                    type === Constants.TEXTURETYPE_FLOAT &&
                     (format === Constants.TEXTUREFORMAT_R || format === Constants.TEXTUREFORMAT_RG || format === Constants.TEXTUREFORMAT_RGBA) &&
                     !this._engine._caps.supportFloatTexturesResolve
                 ) {
                     // We don't know in advance if the texture will be used as a resolve target, so we revert to half_float if the extension to resolve full float textures is not supported
-                    PrePassRenderer.TextureFormats[Constants.PREPASS_DEPTH_TEXTURE_TYPE].type = Constants.TEXTURETYPE_HALF_FLOAT;
+                    PrePassRenderer.TextureFormats[i].type = Constants.TEXTURETYPE_HALF_FLOAT;
                 }
             }
         }
@@ -828,7 +853,7 @@ export class PrePassRenderer {
                 this.mrtCount++;
             }
 
-            if (type === Constants.PREPASS_VELOCITY_TEXTURE_TYPE) {
+            if (type === Constants.PREPASS_VELOCITY_TEXTURE_TYPE || type === Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE) {
                 this._scene.needsPreviousWorldMatrices = true;
             }
         }

@@ -12,7 +12,7 @@ import { RawTexture } from "core/Materials/Textures/rawTexture";
 import type { Nullable } from "core/types";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { PostProcess } from "core/PostProcesses/postProcess";
-import type { Observer } from "core/Misc/observable";
+import { Observable, type Observer } from "core/Misc/observable";
 import { Layer } from "core/Layers/layer";
 import { Matrix } from "core/Maths/math.vector";
 import { Constants } from "core/Engines/constants";
@@ -30,10 +30,7 @@ import { expandToProperty, serialize } from "core/Misc/decorators";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { RegisterClass } from "core/Misc/typeStore";
 
-import "../../Shaders/bilateralBlur.fragment";
-import "../../Shaders/bilateralBlurQuality.fragment";
-import "../../Shaders/rsmGlobalIllumination.fragment";
-import "../../Shaders/rsmFullGlobalIllumination.fragment";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Class used to manage the global illumination contribution calculated from reflective shadow maps (RSM).
@@ -283,6 +280,14 @@ export class GIRSMManager {
         this.recreateResources();
     }
 
+    /** Shader language used by the material */
+    protected _shaderLanguage = ShaderLanguage.GLSL;
+
+    /** Gets the shader language used in this material. */
+    public get shaderLanguage(): ShaderLanguage {
+        return this._shaderLanguage;
+    }
+
     /**
      * Gets the list of GIRSM used by the manager.
      */
@@ -361,6 +366,13 @@ export class GIRSMManager {
      * @param disposeGeometryBufferRenderer Defines if the geometry buffer renderer should be disposed and recreated. Default is false.
      */
     public recreateResources(disposeGeometryBufferRenderer = false) {
+        if (!this._shadersLoaded) {
+            this._onShaderLoadedObservable.addOnce(() => {
+                this.recreateResources(disposeGeometryBufferRenderer);
+            });
+            return;
+        }
+
         this._disposePostProcesses(disposeGeometryBufferRenderer);
         this._createPostProcesses();
         this._setPluginParameters();
@@ -440,6 +452,8 @@ export class GIRSMManager {
         this._counters = [];
         this._countersRTW = [];
 
+        this._initShaderSourceAsync();
+
         this.generateSampleTexture(maxSamples);
 
         this._drawPhaseObserver = this._scene.onBeforeDrawPhaseObservable.add(() => {
@@ -481,6 +495,32 @@ export class GIRSMManager {
                 this._engine.bindFramebuffer(currentRenderTarget);
             }
         });
+    }
+
+    private _shadersLoaded = false;
+    private _onShaderLoadedObservable = new Observable<void>();
+    private async _initShaderSourceAsync() {
+        const engine = this._engine;
+
+        if (engine.isWebGPU) {
+            this._shaderLanguage = ShaderLanguage.WGSL;
+
+            await Promise.all([
+                import("../../ShadersWGSL/bilateralBlur.fragment"),
+                import("../../ShadersWGSL/bilateralBlurQuality.fragment"),
+                import("../../ShadersWGSL/rsmGlobalIllumination.fragment"),
+                import("../../ShadersWGSL/rsmFullGlobalIllumination.fragment"),
+            ]);
+        } else {
+            await Promise.all([
+                import("../../Shaders/bilateralBlur.fragment"),
+                import("../../Shaders/bilateralBlurQuality.fragment"),
+                import("../../Shaders/rsmGlobalIllumination.fragment"),
+                import("../../Shaders/rsmFullGlobalIllumination.fragment"),
+            ]);
+        }
+        this._shadersLoaded = true;
+        this._onShaderLoadedObservable.notifyObservers();
     }
 
     protected _disposePostProcesses(disposeGeometryBufferRenderer = false) {
@@ -585,6 +625,7 @@ export class GIRSMManager {
                 engine: this._engine,
                 textureType: this._giTextureType,
                 textureFormat,
+                shaderLanguage: this._shaderLanguage,
             });
 
             this._ppGlobalIllumination.push(ppGlobalIllumination);
@@ -673,6 +714,7 @@ export class GIRSMManager {
                 engine: this._engine,
                 textureType: this._giTextureType,
                 textureFormat,
+                shaderLanguage: this._shaderLanguage,
             });
 
             this._blurXPostprocess.onApplyObservable.add((effect) => {
@@ -701,6 +743,7 @@ export class GIRSMManager {
                     engine: this._engine,
                     textureType: this._giTextureType,
                     textureFormat,
+                    shaderLanguage: this._shaderLanguage,
                 });
 
                 this._blurYPostprocess.autoClear = false;
@@ -750,6 +793,7 @@ export class GIRSMManager {
                         engine: this._engine,
                         textureType: this._giTextureType,
                         textureFormat,
+                        shaderLanguage: this._shaderLanguage,
                     }
                 );
 
@@ -783,6 +827,7 @@ export class GIRSMManager {
                         engine: this._engine,
                         textureType: this._giTextureType,
                         textureFormat,
+                        shaderLanguage: this._shaderLanguage,
                     });
 
                     this._upsamplingYPostprocess.autoClear = false;
@@ -892,6 +937,14 @@ export class GIRSMRenderPluginMaterial extends MaterialPluginBase {
 
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
 
+    /**
+     * Gets a boolean indicating that the plugin is compatible with a give shader language.
+     * @returns true if the plugin is compatible with the shader language
+     */
+    public override isCompatible(): boolean {
+        return true;
+    }
+
     constructor(material: Material | StandardMaterial | PBRBaseMaterial) {
         super(material, GIRSMRenderPluginMaterial.Name, 310, new MaterialGIRSMRenderDefines());
 
@@ -928,10 +981,43 @@ export class GIRSMRenderPluginMaterial extends MaterialPluginBase {
         }
     }
 
-    public override getCustomCode(shaderType: string) {
-        const frag: { [name: string]: string } = {
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            CUSTOM_FRAGMENT_DEFINITIONS: `
+    public override getCustomCode(shaderType: string, shaderLanguage: ShaderLanguage) {
+        let frag: { [name: string]: string };
+
+        if (shaderLanguage === ShaderLanguage.WGSL) {
+            frag = {
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                CUSTOM_FRAGMENT_DEFINITIONS: `
+                #ifdef RENDER_WITH_GIRSM
+                    var girsmTextureGIContribSampler: sampler;
+                    var girsmTextureGIContrib: texture_2d<f32>;
+
+                    fn computeIndirect() -> vec3f {
+                        var uv = fragmentInputs.position.xy / uniforms.girsmTextureOutputSize;
+                        return textureSample(girsmTextureGIContrib, girsmTextureGIContribSampler, uv).rgb;
+                    }
+                #endif
+            `,
+
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION: `
+                #ifdef RENDER_WITH_GIRSM
+                    finalDiffuse += computeIndirect() * surfaceAlbedo.rgb;
+                #endif
+            `,
+            };
+
+            if (!this._isPBR) {
+                frag["CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR"] = `
+                #ifdef RENDER_WITH_GIRSM
+                    color = vec4f(color.rgb + computeIndirect() * baseColor.rgb, color.a);
+                #endif
+            `;
+            }
+        } else {
+            frag = {
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                CUSTOM_FRAGMENT_DEFINITIONS: `
                 #ifdef RENDER_WITH_GIRSM
                     uniform sampler2D girsmTextureGIContrib;
 
@@ -942,20 +1028,21 @@ export class GIRSMRenderPluginMaterial extends MaterialPluginBase {
                 #endif
             `,
 
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION: `
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION: `
                 #ifdef RENDER_WITH_GIRSM
                     finalDiffuse += computeIndirect() * surfaceAlbedo.rgb;
                 #endif
             `,
-        };
+            };
 
-        if (!this._isPBR) {
-            frag["CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR"] = `
+            if (!this._isPBR) {
+                frag["CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR"] = `
                 #ifdef RENDER_WITH_GIRSM
                     color.rgb += computeIndirect() * baseColor.rgb;
                 #endif
             `;
+            }
         }
 
         return shaderType === "vertex" ? null : frag;

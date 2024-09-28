@@ -21,6 +21,8 @@ import { expandToProperty, serialize } from "core/Misc/decorators";
 import { RegisterClass } from "core/Misc/typeStore";
 import { Light } from "core/Lights/light";
 import type { DirectionalLight } from "core/Lights/directionalLight";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import type { Nullable } from "core/types";
 
 /**
  * Class used to generate the RSM (Reflective Shadow Map) textures for a given light.
@@ -352,6 +354,14 @@ export class RSMCreatePluginMaterial extends MaterialPluginBase {
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
 
     /**
+     * Gets a boolean indicating that the plugin is compatible with a give shader language.
+     * @returns true if the plugin is compatible with the shader language
+     */
+    public override isCompatible(): boolean {
+        return true;
+    }
+
+    /**
      * Create a new RSMCreatePluginMaterial
      * @param material Parent material of the plugin
      */
@@ -376,6 +386,7 @@ export class RSMCreatePluginMaterial extends MaterialPluginBase {
 
         defines.RSMCREATE_PROJTEXTURE = this._hasProjectionTexture;
         defines.RSMCREATE_LIGHT_IS_SPOT = isSpot;
+        defines.SCENE_MRT_COUNT = 3;
     }
 
     public override getClassName() {
@@ -433,19 +444,59 @@ export class RSMCreatePluginMaterial extends MaterialPluginBase {
         }
     }
 
-    public override getCustomCode(shaderType: string) {
-        return shaderType === "vertex"
-            ? null
-            : {
-                  // eslint-disable-next-line @typescript-eslint/naming-convention
-                  CUSTOM_FRAGMENT_BEGIN: `
+    public override getCustomCode(shaderType: string, shaderLanguage: ShaderLanguage): Nullable<{ [pointName: string]: string }> {
+        if (shaderType === "vertex") {
+            return null;
+        }
+        if (shaderLanguage === ShaderLanguage.WGSL) {
+            return {
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                CUSTOM_FRAGMENT_DEFINITIONS: `
+                #ifdef RSMCREATE
+                    #ifdef RSMCREATE_PROJTEXTURE
+                        var rsmTextureProjectionSamplerSampler: sampler;
+                        var rsmTextureProjectionSampler: texture_2d<f32>;
+                    #endif
+                #endif
+            `,
+
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR: `
+                #ifdef RSMCREATE
+                    var rsmColor = ${this._varAlbedoName} * uniforms.rsmLightColor;
+                    #ifdef RSMCREATE_PROJTEXTURE
+                    {
+                        var strq = uniforms.rsmTextureProjectionMatrix * vec4f(fragmentInputs.vPositionW, 1.0);
+                        strq /= strq.w;
+                        rsmColor *= textureSample(rsmTextureProjectionSampler, rsmTextureProjectionSamplerSampler, strq.xy).rgb;
+                    }
+                    #endif
+                    #ifdef RSMCREATE_LIGHT_IS_SPOT
+                    {
+                        var cosAngle = max(0., dot(uniforms.rsmSpotInfo.xyz, normalize(fragmentInputs.vPositionW - uniforms.rsmLightPosition)));
+                        rsmColor = sign(cosAngle - uniforms.rsmSpotInfo.w) * rsmColor;
+                    }
+                    #endif
+
+                    #define MRT_AND_COLOR
+                    fragmentOutputs.fragData0 = vec4f(fragmentInputs.vPositionW, 1.);
+                    fragmentOutputs.fragData1 = vec4f(normalize(normalW) * 0.5 + 0.5, 1.);
+                    fragmentOutputs.fragData2 = vec4f(rsmColor, 1.);
+                #endif
+            `,
+            };
+        }
+
+        return {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            CUSTOM_FRAGMENT_BEGIN: `
                 #ifdef RSMCREATE
                     #extension GL_EXT_draw_buffers : require
                 #endif
             `,
 
-                  // eslint-disable-next-line @typescript-eslint/naming-convention
-                  CUSTOM_FRAGMENT_DEFINITIONS: `
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            CUSTOM_FRAGMENT_DEFINITIONS: `
                 #ifdef RSMCREATE
                     #ifdef RSMCREATE_PROJTEXTURE
                         uniform highp sampler2D rsmTextureProjectionSampler;                    
@@ -455,8 +506,8 @@ export class RSMCreatePluginMaterial extends MaterialPluginBase {
                 #endif
             `,
 
-                  // eslint-disable-next-line @typescript-eslint/naming-convention
-                  CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR: `
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR: `
                 #ifdef RSMCREATE
                     vec3 rsmColor = ${this._varAlbedoName} * rsmLightColor;
                     #ifdef RSMCREATE_PROJTEXTURE
@@ -477,7 +528,7 @@ export class RSMCreatePluginMaterial extends MaterialPluginBase {
                     glFragData[2] = vec4(rsmColor, 1.);
                 #endif
             `,
-              };
+        };
     }
 }
 
