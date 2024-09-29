@@ -364,24 +364,19 @@ export class Tools {
      * @returns "pointer" if touch is enabled. Else returns "mouse"
      */
     public static GetPointerPrefix(engine: AbstractEngine): string {
-        let eventPrefix = "pointer";
-
-        // Check if pointer events are supported
-        if (IsWindowObjectExist() && !window.PointerEvent) {
-            eventPrefix = "mouse";
-        }
-
         // Special Fallback MacOS Safari...
+        /* Leaving the code here commented for future fixes
         if (
             engine._badDesktopOS &&
             !engine._badOS &&
             // And not ipad pros who claim to be macs...
             !(document && "ontouchend" in document)
         ) {
-            eventPrefix = "mouse";
+            eventPrefix = "pointer";
         }
+        */
 
-        return eventPrefix;
+        return IsWindowObjectExist() && !window.PointerEvent ? "mouse" : "pointer";
     }
 
     /**
