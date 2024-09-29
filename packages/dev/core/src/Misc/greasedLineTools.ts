@@ -46,13 +46,12 @@ export class GreasedLineTools {
             if (options?.floatArrayStride) {
                 const positions: number[][] = [];
                 const stride = options.floatArrayStride * 3;
-                let linePoints = [];
                 for (let i = 0; i < points.length; i += stride) {
+                    const linePoints = new Array(stride); // Pre-allocate memory for the line
                     for (let j = 0; j < stride; j++) {
-                        linePoints.push(points[i + j]);
+                        linePoints[j] = points[i + j];
                     }
                     positions.push(linePoints);
-                    linePoints = [];
                 }
                 return positions;
             } else {
