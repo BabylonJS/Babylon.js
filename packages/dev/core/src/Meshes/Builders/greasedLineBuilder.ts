@@ -78,6 +78,19 @@ export const enum GreasedLineMeshWidthDistribution {
 }
 
 /**
+ * Options for converting the points to the internal number[][] format used by GreasedLine
+ */
+export interface GreasedLinePointsOptions {
+    /**
+     * If defined and a Float32Array is used for the points parameter,
+     * it will create multiple disconnected lines.
+     * This parameter defines how many entries from the array to use for one line.
+     * One entry = 3 float values.
+     */
+    floatArrayStride?: number;
+}
+
+/**
  * Material options for GreasedLineBuilder
  */
 export interface GreasedLineMaterialBuilderOptions extends GreasedLineMaterialOptions {
@@ -98,6 +111,10 @@ export interface GreasedLineMaterialBuilderOptions extends GreasedLineMaterialOp
  * Line mesh options for GreasedLineBuilder
  */
 export interface GreasedLineMeshBuilderOptions extends GreasedLineMeshOptions {
+    /**
+     * Options for converting the points.
+     */
+    pointsOptions?: GreasedLinePointsOptions;
     /**
      * Distribution of the widths if the width table contains fewer entries than needed. Defaults to GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START
      * @see CompleteGreasedLineWidthTable
@@ -149,7 +166,7 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
     scene = <Scene>(scene ?? EngineStore.LastCreatedScene);
 
     let instance;
-    const allPoints = GreasedLineTools.ConvertPoints(options.points);
+    const allPoints = GreasedLineTools.ConvertPoints(options.points, options.pointsOptions);
 
     options.widthDistribution = options.widthDistribution ?? GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START;
     if (options.ribbonOptions) {
