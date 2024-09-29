@@ -5,7 +5,8 @@ import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGra
 import type { Scene } from "../../../scene";
 import type { NodeRenderGraphBuildState } from "../nodeRenderGraphBuildState";
 import { FrameGraphCopyToBackbufferColorTask } from "../../Tasks/Texture/copyToBackbufferColorTask";
-import type { FrameGraphTextureId } from "../../frameGraphTypes";
+import type { FrameGraphTextureHandle } from "../../frameGraphTypes";
+import type { FrameGraph } from "core/FrameGraph/frameGraph";
 
 /**
  * Block used to generate the final graph
@@ -23,10 +24,11 @@ export class NodeRenderGraphOutputBlock extends NodeRenderGraphBlock {
     /**
      * Create a new NodeRenderGraphOutputBlock
      * @param name defines the block name
+     * @param frameGraph defines the hosting frame graph
      * @param scene defines the hosting scene
      */
-    public constructor(name: string, scene: Scene) {
-        super(name, scene);
+    public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
+        super(name, frameGraph, scene);
 
         this._isUnique = true;
 
@@ -34,7 +36,7 @@ export class NodeRenderGraphOutputBlock extends NodeRenderGraphBlock {
 
         this.texture.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
 
-        this._frameGraphTask = new FrameGraphCopyToBackbufferColorTask(name);
+        this._frameGraphTask = new FrameGraphCopyToBackbufferColorTask(name, frameGraph);
     }
 
     /**
@@ -58,10 +60,8 @@ export class NodeRenderGraphOutputBlock extends NodeRenderGraphBlock {
 
         const textureConnectedPoint = this.texture.connectedPoint;
         if (textureConnectedPoint) {
-            this._frameGraphTask.sourceTexture = textureConnectedPoint.value as FrameGraphTextureId;
+            this._frameGraphTask.sourceTexture = textureConnectedPoint.value as FrameGraphTextureHandle;
         }
-
-        state.frameGraph.addTask(this._frameGraphTask);
     }
 }
 

@@ -6,8 +6,9 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Deco
 import type { BlackAndWhitePostProcess } from "../../../../PostProcesses/blackAndWhitePostProcess";
 import type { Scene } from "../../../../scene";
 import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
-import type { FrameGraphTextureId } from "../../../frameGraphTypes";
+import type { FrameGraphTextureHandle } from "../../../frameGraphTypes";
 import { FrameGraphBlackAndWhiteTask } from "core/FrameGraph/Tasks/PostProcesses/blackAndWhiteTask";
+import type { FrameGraph } from "core/FrameGraph/frameGraph";
 
 /**
  * Block that implements the black and white post process
@@ -33,10 +34,11 @@ export class NodeRenderGraphBlackAndWhitePostProcessBlock extends NodeRenderGrap
     /**
      * Create a new BlackAndWhitePostProcessBlock
      * @param name defines the block name
+     * @param frameGraph defines the hosting frame graph
      * @param scene defines the hosting scene
      */
-    public constructor(name: string, scene: Scene) {
-        super(name, scene);
+    public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
+        super(name, frameGraph, scene);
 
         this.registerInput("source", NodeRenderGraphBlockConnectionPointTypes.Texture);
         this.registerInput("destination", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
@@ -48,7 +50,7 @@ export class NodeRenderGraphBlackAndWhitePostProcessBlock extends NodeRenderGrap
             return this.destination.isConnected ? this.destination : this.source;
         };
 
-        this._frameGraphTask = new FrameGraphBlackAndWhiteTask(this.name, scene.getEngine());
+        this._frameGraphTask = new FrameGraphBlackAndWhiteTask(this.name, frameGraph, scene.getEngine());
         this._postProcess = this._frameGraphTask.getPostProcess();
     }
 
@@ -110,15 +112,13 @@ export class NodeRenderGraphBlackAndWhitePostProcessBlock extends NodeRenderGrap
 
         const sourceConnectedPoint = this.source.connectedPoint;
         if (sourceConnectedPoint) {
-            this._frameGraphTask.sourceTexture = sourceConnectedPoint.value as FrameGraphTextureId;
+            this._frameGraphTask.sourceTexture = sourceConnectedPoint.value as FrameGraphTextureHandle;
         }
 
         const destinationConnectedPoint = this.destination.connectedPoint;
         if (destinationConnectedPoint) {
-            this._frameGraphTask.destinationTexture = destinationConnectedPoint.value as FrameGraphTextureId;
+            this._frameGraphTask.destinationTexture = destinationConnectedPoint.value as FrameGraphTextureHandle;
         }
-
-        state.frameGraph.addTask(this._frameGraphTask);
     }
 
     protected override _dumpPropertiesCode() {

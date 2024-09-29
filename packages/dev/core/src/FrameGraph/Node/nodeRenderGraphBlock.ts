@@ -9,8 +9,9 @@ import type { NodeRenderGraphInputBlock } from "./Blocks/inputBlock";
 import { Logger } from "../../Misc/logger";
 import { NodeRenderGraphConnectionPoint } from "./nodeRenderGraphBlockConnectionPoint";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
-import type { IFrameGraphTask } from "../frameGraphTypes";
 import type { Scene } from "../../scene";
+import type { FrameGraphTask } from "../frameGraphTask";
+import type { FrameGraph } from "../frameGraph";
 
 /**
  * Defines a block that can be used inside a node render graph
@@ -25,7 +26,8 @@ export class NodeRenderGraphBlock {
     protected _isUnique = false;
     protected _scene: Scene;
     protected _engine: AbstractEngine;
-    protected _frameGraphTask: IFrameGraphTask;
+    protected _frameGraph: FrameGraph;
+    protected _frameGraphTask?: FrameGraphTask;
 
     /**
      * Gets or sets the disable flag of the task associated with this block
@@ -230,11 +232,13 @@ export class NodeRenderGraphBlock {
     /**
      * Creates a new NodeRenderGraphBlock
      * @param name defines the block name
+     * @param frameGraph defines the hosting frame graph
      * @param scene defines the hosting scene
      * @param _additionalConstructionParameters defines additional parameters to pass to the block constructor
      */
-    public constructor(name: string, scene: Scene, ..._additionalConstructionParameters: unknown[]) {
+    public constructor(name: string, frameGraph: FrameGraph, scene: Scene, ..._additionalConstructionParameters: unknown[]) {
         this._name = name;
+        this._frameGraph = frameGraph;
         this._scene = scene;
         this._engine = scene.getEngine();
         this.uniqueId = UniqueIdGenerator.UniqueId;
@@ -324,6 +328,9 @@ export class NodeRenderGraphBlock {
         }
 
         this._buildBlock(state);
+        if (this._frameGraphTask) {
+            this._frameGraph.addTask(this._frameGraphTask);
+        }
 
         // Note: I don't know why we have the code below in the node frameworks.
         // Apparently this isn't necessary; we'll collect/build all the required blocks by simply calling “build” on the output block.
@@ -534,12 +541,12 @@ export class NodeRenderGraphBlock {
             const block = this as unknown as NodeRenderGraphInputBlock;
             const blockType = block.type;
 
-            codeString += `var ${this._codeVariableName} = new BABYLON.NodeRenderGraphInputBlock("${this.name}", scene, BABYLON.NodeRenderGraphBlockConnectionPointTypes.${NodeRenderGraphBlockConnectionPointTypes[blockType]});\n`;
+            codeString += `var ${this._codeVariableName} = new BABYLON.NodeRenderGraphInputBlock("${this.name}", nodeRenderGraph.frameGraph, scene, BABYLON.NodeRenderGraphBlockConnectionPointTypes.${NodeRenderGraphBlockConnectionPointTypes[blockType]});\n`;
         } else {
             if (this._additionalConstructionParameters) {
-                codeString += `var ${this._codeVariableName} = new BABYLON.${className}("${this.name}", scene, ...${JSON.stringify(this._additionalConstructionParameters)});\n`;
+                codeString += `var ${this._codeVariableName} = new BABYLON.${className}("${this.name}", nodeRenderGraph.frameGraph, scene, ...${JSON.stringify(this._additionalConstructionParameters)});\n`;
             } else {
-                codeString += `var ${this._codeVariableName} = new BABYLON.${className}("${this.name}", scene);\n`;
+                codeString += `var ${this._codeVariableName} = new BABYLON.${className}("${this.name}", nodeRenderGraph.frameGraph, scene);\n`;
             }
         }
 
@@ -588,8 +595,8 @@ export class NodeRenderGraphBlock {
         if (blockType) {
             const additionalConstructionParameters = serializationObject.additionalConstructionParameters;
             const block: NodeRenderGraphBlock = additionalConstructionParameters
-                ? new blockType("", this._scene, ...additionalConstructionParameters)
-                : new blockType("", this._scene);
+                ? new blockType("", this._frameGraph, this._scene, ...additionalConstructionParameters)
+                : new blockType("", this._frameGraph, this._scene);
             block._deserialize(serializationObject);
             return block;
         }

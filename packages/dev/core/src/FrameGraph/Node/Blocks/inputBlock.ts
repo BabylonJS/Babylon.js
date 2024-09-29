@@ -14,6 +14,7 @@ import type { FrameGraphTextureCreationOptions, FrameGraphTextureHandle } from "
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../../FrameGraph/frameGraphTypes";
 import { Constants } from "../../../Engines/constants";
 import type { FrameGraphObjectList } from "core/FrameGraph/frameGraphObjectList";
+import type { FrameGraph } from "core/FrameGraph/frameGraph";
 
 export type NodeRenderGraphValueType = RenderTargetWrapper | Camera | FrameGraphObjectList;
 
@@ -46,11 +47,12 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
     /**
      * Creates a new NodeRenderGraphInputBlock
      * @param name defines the block name
+     * @param frameGraph defines the hosting frame graph
      * @param scene defines the hosting scene
      * @param type defines the type of the input (can be set to NodeRenderGraphBlockConnectionPointTypes.Undefined)
      */
-    public constructor(name: string, scene: Scene, type: NodeRenderGraphBlockConnectionPointTypes = NodeRenderGraphBlockConnectionPointTypes.Undefined) {
-        super(name, scene);
+    public constructor(name: string, frameGraph: FrameGraph, scene: Scene, type: NodeRenderGraphBlockConnectionPointTypes = NodeRenderGraphBlockConnectionPointTypes.Undefined) {
+        super(name, frameGraph, scene);
 
         this._type = type;
         this._isInput = true;
@@ -239,7 +241,7 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
                 }
                 const texture = this.getValueAsRenderTargetWrapper();
                 if (texture) {
-                    this.output.value = state.frameGraph.importTexture(this.name, texture, this.output.value as FrameGraphTextureHandle);
+                    this.output.value = this._frameGraph.importTexture(this.name, texture, this.output.value as FrameGraphTextureHandle);
                 }
             }
             return;
@@ -252,7 +254,7 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
                 throw new Error(`NodeRenderGraphInputBlock: Creation options are missing for texture "${this.name}"`);
             }
 
-            this.output.value = state.frameGraph.createRenderTargetTexture(this.name, textureCreateOptions);
+            this.output.value = this._frameGraph.createRenderTargetTexture(this.name, textureCreateOptions);
         }
     }
 

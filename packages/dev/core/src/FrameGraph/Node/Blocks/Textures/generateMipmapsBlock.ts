@@ -4,8 +4,9 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import type { Scene } from "../../../../scene";
 import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
-import type { FrameGraphTextureId } from "../../../frameGraphTypes";
+import type { FrameGraphTextureHandle } from "../../../frameGraphTypes";
 import { FrameGraphGenerateMipMapsTask } from "../../../Tasks/Texture/generateMipMapsTask";
+import type { FrameGraph } from "core/FrameGraph/frameGraph";
 
 /**
  * Block used to generate mipmaps for a texture
@@ -23,10 +24,11 @@ export class NodeRenderGraphGenerateMipmapsBlock extends NodeRenderGraphBlock {
     /**
      * Create a new NodeRenderGraphGenerateMipmapsBlock
      * @param name defines the block name
+     * @param frameGraph defines the hosting frame graph
      * @param scene defines the hosting scene
      */
-    public constructor(name: string, scene: Scene) {
-        super(name, scene);
+    public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
+        super(name, frameGraph, scene);
 
         this.registerInput("texture", NodeRenderGraphBlockConnectionPointTypes.Texture);
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
@@ -34,7 +36,7 @@ export class NodeRenderGraphGenerateMipmapsBlock extends NodeRenderGraphBlock {
         this.texture.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer);
         this.output._typeConnectionSource = this.texture;
 
-        this._frameGraphTask = new FrameGraphGenerateMipMapsTask(name);
+        this._frameGraphTask = new FrameGraphGenerateMipMapsTask(name, frameGraph);
     }
 
     /**
@@ -67,10 +69,8 @@ export class NodeRenderGraphGenerateMipmapsBlock extends NodeRenderGraphBlock {
 
         const textureConnectedPoint = this.texture.connectedPoint;
         if (textureConnectedPoint) {
-            this._frameGraphTask.destinationTexture = textureConnectedPoint.value as FrameGraphTextureId;
+            this._frameGraphTask.destinationTexture = textureConnectedPoint.value as FrameGraphTextureHandle;
         }
-
-        state.frameGraph.addTask(this._frameGraphTask);
     }
 }
 

@@ -6,10 +6,11 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Deco
 import type { Scene } from "../../../../scene";
 import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
 import { FrameGraphGeometryRendererTask } from "../../../Tasks/Rendering/geometryRendererTask";
-import type { FrameGraphTextureId } from "../../../frameGraphTypes";
+import type { FrameGraphTextureHandle } from "../../../frameGraphTypes";
 import type { FrameGraphObjectList } from "../../../frameGraphObjectList";
 import type { Camera } from "../../../../Cameras/camera";
 import { Constants } from "core/Engines/constants";
+import type { FrameGraph } from "core/FrameGraph/frameGraph";
 
 /**
  * Block that render geometry of objects to a multi render target
@@ -27,10 +28,11 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
     /**
      * Create a new NodeRenderGraphGeometryRendererBlock
      * @param name defines the block name
+     * @param frameGraph defines the hosting frame graph
      * @param scene defines the hosting scene
      */
-    public constructor(name: string, scene: Scene) {
-        super(name, scene);
+    public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
+        super(name, frameGraph, scene);
 
         this.registerInput("depth", NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment, true);
         this.registerInput("camera", NodeRenderGraphBlockConnectionPointTypes.Camera);
@@ -52,7 +54,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
 
         this.outputDepth._typeConnectionSource = this.depth;
 
-        this._frameGraphTask = new FrameGraphGeometryRendererTask(this.name, scene);
+        this._frameGraphTask = new FrameGraphGeometryRendererTask(this.name, frameGraph, scene);
     }
 
     /** Indicates if depth testing must be enabled or disabled */
@@ -309,21 +311,21 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
 
         this._frameGraphTask.name = this.name;
 
-        this.outputDepth.value = this._frameGraphTask.outputDepthTextureReference;
-        this.geomViewDepth.value = this._frameGraphTask.geometryViewDepthTextureReference;
-        this.geomScreenDepth.value = this._frameGraphTask.geometryScreenDepthTextureReference;
-        this.geomViewNormal.value = this._frameGraphTask.geometryViewNormalTextureReference;
-        this.geomWorldNormal.value = this._frameGraphTask.geometryWorldNormalTextureReference;
-        this.geomLocalPosition.value = this._frameGraphTask.geometryLocalPositionTextureReference;
-        this.geomWorldPosition.value = this._frameGraphTask.geometryWorldPositionTextureReference;
-        this.geomAlbedo.value = this._frameGraphTask.geometryAlbedoTextureReference;
-        this.geomReflectivity.value = this._frameGraphTask.geometryReflectivityTextureReference;
-        this.geomVelocity.value = this._frameGraphTask.geometryVelocityTextureReference;
-        this.geomLinearVelocity.value = this._frameGraphTask.geometryLinearVelocityTextureReference;
+        this.outputDepth.value = this._frameGraphTask.outputDepthTexture;
+        this.geomViewDepth.value = this._frameGraphTask.geometryViewDepthTexture;
+        this.geomScreenDepth.value = this._frameGraphTask.geometryScreenDepthTexture;
+        this.geomViewNormal.value = this._frameGraphTask.geometryViewNormalTexture;
+        this.geomWorldNormal.value = this._frameGraphTask.geometryWorldNormalTexture;
+        this.geomLocalPosition.value = this._frameGraphTask.geometryLocalPositionTexture;
+        this.geomWorldPosition.value = this._frameGraphTask.geometryWorldPositionTexture;
+        this.geomAlbedo.value = this._frameGraphTask.geometryAlbedoTexture;
+        this.geomReflectivity.value = this._frameGraphTask.geometryReflectivityTexture;
+        this.geomVelocity.value = this._frameGraphTask.geometryVelocityTexture;
+        this.geomLinearVelocity.value = this._frameGraphTask.geometryLinearVelocityTexture;
 
         const depthConnectedPoint = this.depth.connectedPoint;
         if (depthConnectedPoint) {
-            this._frameGraphTask.depthTexture = depthConnectedPoint.value as FrameGraphTextureId;
+            this._frameGraphTask.depthTexture = depthConnectedPoint.value as FrameGraphTextureHandle;
         }
 
         const cameraConnectedPoint = this.camera.connectedPoint;
@@ -384,8 +386,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
                 });
             }
         }
-
-        state.frameGraph.addTask(this._frameGraphTask);
     }
 
     protected override _dumpPropertiesCode() {

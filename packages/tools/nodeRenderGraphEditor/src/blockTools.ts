@@ -16,71 +16,77 @@ import { NodeRenderGraphGeometryRendererBlock } from "core/FrameGraph/Node/Block
 import { NodeRenderGraphCullObjectsBlock } from "core/FrameGraph/Node/Blocks/Rendering/cullObjectsBlock";
 import { NodeRenderGraphGUIBlock } from "gui/2D/FrameGraph/renderGraphGUIBlock";
 import { NodeRenderGraphCircleOfConfusionPostProcessBlock } from "core/FrameGraph";
+import type { FrameGraph } from "core/FrameGraph";
 
 /**
  * Static class for BlockTools
  */
 export class BlockTools {
-    public static GetBlockFromString(data: string, scene: Scene) {
+    public static GetBlockFromString(data: string, frameGraph: FrameGraph, scene: Scene) {
         switch (data) {
             case "TeleportInBlock":
-                return new NodeRenderGraphTeleportInBlock("Teleport In", scene);
+                return new NodeRenderGraphTeleportInBlock("Teleport In", frameGraph, scene);
             case "TeleportOutBlock":
-                return new NodeRenderGraphTeleportOutBlock("Teleport Out", scene);
+                return new NodeRenderGraphTeleportOutBlock("Teleport Out", frameGraph, scene);
             case "OutputBlock":
-                return new NodeRenderGraphOutputBlock("Output", scene);
+                return new NodeRenderGraphOutputBlock("Output", frameGraph, scene);
             case "ElbowBlock":
-                return new NodeRenderGraphElbowBlock("", scene);
+                return new NodeRenderGraphElbowBlock("", frameGraph, scene);
             case "TextureBlock": {
-                return new NodeRenderGraphInputBlock("Texture", scene, NodeRenderGraphBlockConnectionPointTypes.Texture);
+                return new NodeRenderGraphInputBlock("Texture", frameGraph, scene, NodeRenderGraphBlockConnectionPointTypes.Texture);
             }
             case "TextureBackBufferBlock": {
-                return new NodeRenderGraphInputBlock("Backbuffer color", scene, NodeRenderGraphBlockConnectionPointTypes.TextureBackBuffer);
+                return new NodeRenderGraphInputBlock("Backbuffer color", frameGraph, scene, NodeRenderGraphBlockConnectionPointTypes.TextureBackBuffer);
             }
             case "TextureBackBufferDepthStencilBlock": {
-                return new NodeRenderGraphInputBlock("Backbuffer depth/stencil", scene, NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment);
+                return new NodeRenderGraphInputBlock(
+                    "Backbuffer depth/stencil",
+                    frameGraph,
+                    scene,
+                    NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment
+                );
             }
             case "TextureDepthStencilBlock": {
-                return new NodeRenderGraphInputBlock("Depth/stencil texture", scene, NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment);
+                return new NodeRenderGraphInputBlock("Depth/stencil texture", frameGraph, scene, NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment);
             }
             case "CameraBlock": {
-                return new NodeRenderGraphInputBlock("Camera", scene, NodeRenderGraphBlockConnectionPointTypes.Camera);
+                return new NodeRenderGraphInputBlock("Camera", frameGraph, scene, NodeRenderGraphBlockConnectionPointTypes.Camera);
             }
             case "ObjectListBlock": {
-                return new NodeRenderGraphInputBlock("Object list", scene, NodeRenderGraphBlockConnectionPointTypes.ObjectList);
+                return new NodeRenderGraphInputBlock("Object list", frameGraph, scene, NodeRenderGraphBlockConnectionPointTypes.ObjectList);
             }
             case "ClearBlock": {
-                return new NodeRenderGraphClearBlock("Clear", scene);
+                return new NodeRenderGraphClearBlock("Clear", frameGraph, scene);
             }
             case "CopyTextureBlock": {
-                return new NodeRenderGraphCopyTextureBlock("Copy texture", scene);
+                return new NodeRenderGraphCopyTextureBlock("Copy texture", frameGraph, scene);
             }
             case "GenerateMipmapsBlock": {
-                return new NodeRenderGraphGenerateMipmapsBlock("Generate mipmaps", scene);
+                return new NodeRenderGraphGenerateMipmapsBlock("Generate mipmaps", frameGraph, scene);
             }
             case "BlackAndWhiteBlock": {
-                return new NodeRenderGraphBlackAndWhitePostProcessBlock("Black and White", scene);
+                return new NodeRenderGraphBlackAndWhitePostProcessBlock("Black and White", frameGraph, scene);
             }
             case "BloomBlock": {
-                return new NodeRenderGraphBloomPostProcessBlock("Bloom", scene);
+                return new NodeRenderGraphBloomPostProcessBlock("Bloom", frameGraph, scene);
             }
             case "BlurBlock": {
-                return new NodeRenderGraphBlurPostProcessBlock("Blur", scene);
+                return new NodeRenderGraphBlurPostProcessBlock("Blur", frameGraph, scene);
             }
             case "GUIBlock": {
-                return new NodeRenderGraphGUIBlock("GUI", scene);
+                return new NodeRenderGraphGUIBlock("GUI", frameGraph, scene);
             }
             case "ObjectRendererBlock": {
-                return new NodeRenderGraphObjectRendererBlock("Object renderer", scene);
+                return new NodeRenderGraphObjectRendererBlock("Object renderer", frameGraph, scene);
             }
             case "GeometryRendererBlock": {
-                return new NodeRenderGraphGeometryRendererBlock("Geometry renderer", scene);
+                return new NodeRenderGraphGeometryRendererBlock("Geometry renderer", frameGraph, scene);
             }
             case "CullBlock": {
-                return new NodeRenderGraphCullObjectsBlock("Cull", scene);
+                return new NodeRenderGraphCullObjectsBlock("Cull", frameGraph, scene);
             }
             case "CircleOfConfusionBlock": {
-                return new NodeRenderGraphCircleOfConfusionPostProcessBlock("Circle of Confusion", scene);
+                return new NodeRenderGraphCircleOfConfusionPostProcessBlock("Circle of Confusion", frameGraph, scene);
             }
         }
 

@@ -1,39 +1,27 @@
-import type { FrameGraph } from "../../frameGraph";
-import type { IFrameGraphTask, FrameGraphTextureId } from "../../frameGraphTypes";
+import type { FrameGraphTextureHandle } from "../../frameGraphTypes";
 import { backbufferColorTextureHandle } from "../../frameGraphTypes";
+import { FrameGraphTask } from "../../frameGraphTask";
 
-export class FrameGraphCopyToBackbufferColorTask implements IFrameGraphTask {
-    public sourceTexture: FrameGraphTextureId;
+export class FrameGraphCopyToBackbufferColorTask extends FrameGraphTask {
+    public sourceTexture: FrameGraphTextureHandle;
 
-    public disabled = false;
-
-    constructor(public name: string) {}
-
-    public isReady() {
-        return true;
-    }
-
-    public record(frameGraph: FrameGraph) {
+    public override record() {
         if (this.sourceTexture === undefined) {
             throw new Error(`FrameGraphCopyToBackbufferColorTask "${this.name}": sourceTexture is required`);
         }
 
-        const sourceTextureHandle = frameGraph.getTextureHandle(this.sourceTexture);
-
-        const pass = frameGraph.addRenderPass(this.name);
+        const pass = this._frameGraph.addRenderPass(this.name);
 
         pass.setRenderTarget(backbufferColorTextureHandle);
         pass.setExecuteFunc((context) => {
-            if (!context.isBackbuffer(sourceTextureHandle)) {
-                context.copyTexture(sourceTextureHandle);
+            if (!context.isBackbuffer(this.sourceTexture)) {
+                context.copyTexture(this.sourceTexture);
             }
         });
 
-        const passDisabled = frameGraph.addRenderPass(this.name + "_disabled", true);
+        const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
 
         passDisabled.setRenderTarget(backbufferColorTextureHandle);
         passDisabled.setExecuteFunc((_context) => {});
     }
-
-    public dispose(): void {}
 }

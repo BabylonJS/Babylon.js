@@ -1,42 +1,38 @@
-import type { FrameGraph } from "../../frameGraph";
-import type { FrameGraphTaskOutputReference, FrameGraphTextureId, IFrameGraphTask } from "../../frameGraphTypes";
+import type { FrameGraph } from "core/FrameGraph/frameGraph";
+import type { FrameGraphTextureHandle } from "../../frameGraphTypes";
+import { FrameGraphTask } from "../../frameGraphTask";
 
-export class FrameGraphCopyToTextureTask implements IFrameGraphTask {
-    public sourceTexture: FrameGraphTextureId;
+export class FrameGraphCopyToTextureTask extends FrameGraphTask {
+    public sourceTexture: FrameGraphTextureHandle;
 
-    public destinationTexture: FrameGraphTextureId;
+    public destinationTexture: FrameGraphTextureHandle;
 
-    public readonly outputTextureReference: FrameGraphTaskOutputReference = [this, "output"];
+    public readonly outputTexture: FrameGraphTextureHandle;
 
-    public disabled = false;
+    constructor(name: string, frameGraph: FrameGraph) {
+        super(name, frameGraph);
 
-    constructor(public name: string) {}
-
-    public isReady() {
-        return true;
+        this.outputTexture = this._frameGraph.createDanglingHandle();
     }
 
-    public record(frameGraph: FrameGraph) {
+    public override record() {
         if (this.sourceTexture === undefined || this.destinationTexture === undefined) {
             throw new Error(`FrameGraphCopyToTextureTask "${this.name}": sourceTexture and destinationTexture are required`);
         }
 
-        const pass = frameGraph.addRenderPass(this.name);
+        this._frameGraph.resolveDanglingHandle(this.outputTexture, this.destinationTexture);
 
-        const sourceTextureHandle = frameGraph.getTextureHandle(this.sourceTexture);
-        const outputTextureHandle = frameGraph.getTextureHandle(this.destinationTexture);
+        const pass = this._frameGraph.addRenderPass(this.name);
 
-        pass.useTexture(sourceTextureHandle);
-        pass.setRenderTarget(outputTextureHandle);
+        pass.useTexture(this.sourceTexture);
+        pass.setRenderTarget(this.outputTexture);
         pass.setExecuteFunc((context) => {
-            context.copyTexture(sourceTextureHandle);
+            context.copyTexture(this.sourceTexture);
         });
 
-        const passDisabled = frameGraph.addRenderPass(this.name + "_disabled", true);
+        const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
 
-        passDisabled.setRenderTarget(outputTextureHandle);
+        passDisabled.setRenderTarget(this.outputTexture);
         passDisabled.setExecuteFunc((_context) => {});
     }
-
-    public dispose(): void {}
 }

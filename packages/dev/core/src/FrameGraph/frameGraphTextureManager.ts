@@ -17,6 +17,7 @@ type TextureEntry = {
     debug?: Texture;
     parentHandle?: FrameGraphTextureHandle;
     parentTextureIndex?: number;
+    refHandle?: FrameGraphTextureHandle;
 };
 
 enum FrameGraphTextureNamespace {
@@ -91,8 +92,21 @@ export class FrameGraphTextureManager {
         return this._createHandleForTexture(name, texture, creationOptions, FrameGraphTextureNamespace.External, false, handle);
     }
 
-    public createRenderTargetTexture(name: string, taskNamespace: boolean, creationOptions: FrameGraphTextureCreationOptions, multiTargetMode = false): FrameGraphTextureHandle {
-        return this._createHandleForTexture(name, null, creationOptions, taskNamespace ? FrameGraphTextureNamespace.Task : FrameGraphTextureNamespace.Graph, multiTargetMode);
+    public createRenderTargetTexture(
+        name: string,
+        taskNamespace: boolean,
+        creationOptions: FrameGraphTextureCreationOptions,
+        multiTargetMode = false,
+        handle?: FrameGraphTextureHandle
+    ): FrameGraphTextureHandle {
+        return this._createHandleForTexture(
+            name,
+            null,
+            creationOptions,
+            taskNamespace ? FrameGraphTextureNamespace.Task : FrameGraphTextureNamespace.Graph,
+            multiTargetMode,
+            handle
+        );
     }
 
     public getAbsoluteDimensions(
@@ -137,6 +151,11 @@ export class FrameGraphTextureManager {
 
                     entry.texture = this._engine.createRenderTargetTexture(size, creationOptionsForTexture);
                     parentInternalTexture.incrementReferences();
+                } else if (entry.refHandle !== undefined) {
+                    const refEntry = this._textures.get(entry.refHandle)!;
+
+                    entry.texture = refEntry.texture;
+                    entry.texture?.texture?.incrementReferences();
                 } else {
                     const creationOptions = entry.creationOptions;
                     const size = creationOptions.sizeIsPercentage ? this.getAbsoluteDimensions(creationOptions.size) : creationOptions.size;
@@ -149,6 +168,36 @@ export class FrameGraphTextureManager {
                 entry.debug?.dispose();
                 entry.debug = this._createDebugTexture(entry.name, entry.texture);
             }
+        });
+    }
+
+    public createDanglingHandle() {
+        return FrameGraphTextureManager._Counter++;
+    }
+
+    public resolveDanglingHandle(danglingHandle: FrameGraphTextureHandle, handle: FrameGraphTextureHandle) {
+        if (this._textures.has(danglingHandle)) {
+            throw new Error(`resolveDanglingHandle: Handle ${handle} is not dangling!`);
+        }
+
+        if (!this._textures.has(handle)) {
+            throw new Error(`resolveDanglingHandle: Handle ${handle} does not exist!`);
+        }
+
+        const textureEntry = this._textures.get(handle)!;
+
+        this._textures.set(danglingHandle, {
+            texture: textureEntry.texture,
+            refHandle: handle,
+            name: textureEntry.name,
+            creationOptions: {
+                size: { ...(textureEntry.creationOptions.size as { width: number; height: number; depth?: number; layers?: number }) },
+                options: { ...textureEntry.creationOptions.options, label: textureEntry.name },
+                sizeIsPercentage: textureEntry.creationOptions.sizeIsPercentage,
+            },
+            namespace: textureEntry.namespace,
+            parentHandle: textureEntry.parentHandle,
+            parentTextureIndex: textureEntry.parentTextureIndex,
         });
     }
 

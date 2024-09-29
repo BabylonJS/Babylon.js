@@ -1,6 +1,6 @@
 import type { Color4 } from "../../../Maths/math.color";
 import type { Scene } from "../../../scene";
-import type { FrameGraphTextureId } from "../../../FrameGraph/frameGraphTypes";
+import type { FrameGraphTextureHandle } from "../../../FrameGraph/frameGraphTypes";
 import type { Camera } from "../../../Cameras/camera";
 import type { FrameGraphObjectList } from "core/FrameGraph/frameGraphObjectList";
 
@@ -97,4 +97,4 @@ export const enum NodeRenderGraphConnectionPointDirection {
     Output,
 }
 
-export type NodeRenderGraphBlockConnectionPointValueType = FrameGraphTextureId | Camera | FrameGraphObjectList;
+export type NodeRenderGraphBlockConnectionPointValueType = FrameGraphTextureHandle | Camera | FrameGraphObjectList;

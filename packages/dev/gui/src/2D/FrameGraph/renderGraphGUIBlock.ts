@@ -5,8 +5,9 @@ import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/T
 import type { NodeRenderGraphConnectionPoint } from "core/FrameGraph/Node/nodeRenderGraphBlockConnectionPoint";
 import type { NodeRenderGraphBuildState } from "core/FrameGraph/Node/nodeRenderGraphBuildState";
 import { RegisterClass } from "core/Misc/typeStore";
-import type { FrameGraphTextureId } from "core/FrameGraph/frameGraphTypes";
+import type { FrameGraphTextureHandle } from "core/FrameGraph/frameGraphTypes";
 import { FrameGraphGUITask } from "./guiTask";
+import type { FrameGraph } from "core/FrameGraph/frameGraph";
 
 /**
  * Block that implements a fullscreen GUI for render graph
@@ -32,10 +33,11 @@ export class NodeRenderGraphGUIBlock extends NodeRenderGraphBlock {
     /**
      * Create a new NodeRenderGraphGUIBlock
      * @param name defines the block name
+     * @param frameGraph defines the hosting frame graph
      * @param scene defines the hosting scene
      */
-    public constructor(name: string, scene: Scene) {
-        super(name, scene);
+    public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
+        super(name, frameGraph, scene);
 
         this.registerInput("destination", NodeRenderGraphBlockConnectionPointTypes.Texture);
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
@@ -46,7 +48,7 @@ export class NodeRenderGraphGUIBlock extends NodeRenderGraphBlock {
         this._gui = AdvancedDynamicTexture.CreateFullscreenUI(this.name, undefined, {
             useAsFrameGraphTask: true,
         });
-        this._frameGraphTask = new FrameGraphGUITask(this.name, this._gui);
+        this._frameGraphTask = new FrameGraphGUITask(this.name, frameGraph, this._gui);
     }
 
     /**
@@ -76,14 +78,12 @@ export class NodeRenderGraphGUIBlock extends NodeRenderGraphBlock {
 
         this._frameGraphTask.name = this.name;
 
-        this.output.value = this._frameGraphTask.outputTextureReference; // the value of the output connection point is the "output" texture of the task
+        this.output.value = this._frameGraphTask.outputTexture; // the value of the output connection point is the "output" texture of the task
 
         const destinationConnectedPoint = this.destination.connectedPoint;
         if (destinationConnectedPoint) {
-            this._frameGraphTask.destinationTexture = destinationConnectedPoint.value as FrameGraphTextureId;
+            this._frameGraphTask.destinationTexture = destinationConnectedPoint.value as FrameGraphTextureHandle;
         }
-
-        state.frameGraph.addTask(this._frameGraphTask);
     }
 }
 

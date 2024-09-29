@@ -6,9 +6,10 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Deco
 import type { Scene } from "../../../../scene";
 import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
 import { FrameGraphObjectRendererTask } from "../../../Tasks/Rendering/objectRendererTask";
-import type { FrameGraphTextureId } from "../../../frameGraphTypes";
+import type { FrameGraphTextureHandle } from "../../../frameGraphTypes";
 import type { FrameGraphObjectList } from "../../../frameGraphObjectList";
 import type { Camera } from "../../../../Cameras/camera";
+import type { FrameGraph } from "core/FrameGraph/frameGraph";
 
 /**
  * Block that render objects to a render target
@@ -26,10 +27,11 @@ export class NodeRenderGraphObjectRendererBlock extends NodeRenderGraphBlock {
     /**
      * Create a new NodeRenderGraphObjectRendererBlock
      * @param name defines the block name
+     * @param frameGraph defines the hosting frame graph
      * @param scene defines the hosting scene
      */
-    public constructor(name: string, scene: Scene) {
-        super(name, scene);
+    public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
+        super(name, frameGraph, scene);
 
         this.registerInput("destination", NodeRenderGraphBlockConnectionPointTypes.Texture);
         this.registerInput("depth", NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment, true);
@@ -47,7 +49,7 @@ export class NodeRenderGraphObjectRendererBlock extends NodeRenderGraphBlock {
         this.output._typeConnectionSource = this.destination;
         this.outputDepth._typeConnectionSource = this.depth;
 
-        this._frameGraphTask = new FrameGraphObjectRendererTask(this.name, scene);
+        this._frameGraphTask = new FrameGraphObjectRendererTask(this.name, frameGraph, scene);
     }
 
     /** Indicates if depth testing must be enabled or disabled */
@@ -132,18 +134,18 @@ export class NodeRenderGraphObjectRendererBlock extends NodeRenderGraphBlock {
 
         this._frameGraphTask.name = this.name;
 
-        this.output.value = this._frameGraphTask.outputTextureReference; // the value of the output connection point is the "output" texture of the task
+        this.output.value = this._frameGraphTask.outputTexture; // the value of the output connection point is the "output" texture of the task
 
-        this.outputDepth.value = this._frameGraphTask.outputDepthTextureReference; // the value of the outputDepth connection point is the "outputDepth" texture of the task
+        this.outputDepth.value = this._frameGraphTask.outputDepthTexture; // the value of the outputDepth connection point is the "outputDepth" texture of the task
 
         const destinationConnectedPoint = this.destination.connectedPoint;
         if (destinationConnectedPoint) {
-            this._frameGraphTask.destinationTexture = destinationConnectedPoint.value as FrameGraphTextureId;
+            this._frameGraphTask.destinationTexture = destinationConnectedPoint.value as FrameGraphTextureHandle;
         }
 
         const depthConnectedPoint = this.depth.connectedPoint;
         if (depthConnectedPoint) {
-            this._frameGraphTask.depthTexture = depthConnectedPoint.value as FrameGraphTextureId;
+            this._frameGraphTask.depthTexture = depthConnectedPoint.value as FrameGraphTextureHandle;
         }
 
         const cameraConnectedPoint = this.camera.connectedPoint;
@@ -160,10 +162,8 @@ export class NodeRenderGraphObjectRendererBlock extends NodeRenderGraphBlock {
 
         const dependenciesConnectedPoint = this.dependencies.connectedPoint;
         if (dependenciesConnectedPoint) {
-            this._frameGraphTask.dependencies[0] = dependenciesConnectedPoint.value as FrameGraphTextureId;
+            this._frameGraphTask.dependencies[0] = dependenciesConnectedPoint.value as FrameGraphTextureHandle;
         }
-
-        state.frameGraph.addTask(this._frameGraphTask);
     }
 
     protected override _dumpPropertiesCode() {

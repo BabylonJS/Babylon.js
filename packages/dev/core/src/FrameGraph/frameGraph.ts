@@ -1,25 +1,17 @@
 import type { Scene } from "../scene";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
-import type {
-    IFrameGraphTask,
-    FrameGraphTextureCreationOptions,
-    FrameGraphTextureHandle,
-    FrameGraphTextureDescription,
-    FrameGraphTextureId,
-    FrameGraphObjectListId,
-} from "./frameGraphTypes";
+import type { FrameGraphTextureCreationOptions, FrameGraphTextureHandle, FrameGraphTextureDescription } from "./frameGraphTypes";
 import { FrameGraphPass } from "./Passes/pass";
 import { FrameGraphRenderPass } from "./Passes/renderPass";
 import { FrameGraphCullPass } from "./Passes/cullPass";
 import { FrameGraphRenderContext } from "./frameGraphRenderContext";
 import { FrameGraphContext } from "./frameGraphContext";
 import { FrameGraphTextureManager } from "./frameGraphTextureManager";
-import { FrameGraphTaskInternals } from "./Tasks/taskInternals";
 import { Observable } from "core/Misc/observable";
 import { getDimensionsFromTextureSize, textureSizeIsObject } from "../Materials/Textures/textureCreationOptions";
 import type { Nullable } from "../types";
-import type { FrameGraphObjectList } from "./frameGraphObjectList";
+import type { FrameGraphTask } from "./frameGraphTask";
 
 enum FrameGraphPassType {
     Render = 0,
@@ -33,19 +25,13 @@ enum FrameGraphPassType {
 export class FrameGraph {
     private _engine: AbstractEngine;
     private _textureManager: FrameGraphTextureManager;
-    private _passContext: FrameGraphContext;
-    private _renderContext: FrameGraphRenderContext;
+    /** @internal */
+    public _passContext: FrameGraphContext;
+    /** @internal */
+    public _renderContext: FrameGraphRenderContext;
 
-    private _tasks: IFrameGraphTask[] = [];
-    private _currentProcessedTask: IFrameGraphTask | null = null;
-
-    private static _IsTextureHandle(textureId: FrameGraphTextureId): textureId is FrameGraphTextureHandle {
-        return typeof textureId === "number";
-    }
-
-    private static _IsObjectList(objectListId: FrameGraphObjectListId): objectListId is FrameGraphObjectList {
-        return !Array.isArray(objectListId);
-    }
+    private _tasks: FrameGraphTask[] = [];
+    private _currentProcessedTask: FrameGraphTask | null = null;
 
     /**
      * Observable raised when the node render graph is built
@@ -65,17 +51,14 @@ export class FrameGraph {
         this._renderContext = new FrameGraphRenderContext(this._engine, this._textureManager);
     }
 
-    public getTaskByName<T extends IFrameGraphTask>(name: string): T | undefined {
+    public getTaskByName<T extends FrameGraphTask>(name: string): T | undefined {
         return this._tasks.find((t) => t.name === name) as T;
     }
 
-    public addTask(task: IFrameGraphTask): void {
+    public addTask(task: FrameGraphTask): void {
         if (this._currentProcessedTask !== null) {
-            throw new Error(`Can't add the task "${task.name}" while another task is currently building (task: ${this._currentProcessedTask.name}).`);
+            throw new Error(`addTask: Can't add the task "${task.name}" while another task is currently building (task: ${this._currentProcessedTask.name}).`);
         }
-
-        task._fgInternals?.dispose();
-        task._fgInternals = new FrameGraphTaskInternals(task);
 
         this._tasks.push(task);
     }
@@ -107,7 +90,7 @@ export class FrameGraph {
                 break;
         }
 
-        this._currentProcessedTask._fgInternals!.addPass(pass, whenTaskDisabled);
+        this._currentProcessedTask._addPass(pass, whenTaskDisabled);
 
         return pass;
     }
@@ -116,20 +99,20 @@ export class FrameGraph {
         this._textureManager.releaseTextures(false);
 
         for (const task of this._tasks) {
-            const internals = task._fgInternals!;
-
-            internals.reset();
+            task._reset();
 
             this._currentProcessedTask = task;
 
-            task.record(this);
-
-            internals.postBuildTask();
+            task.record();
 
             this._currentProcessedTask = null;
         }
 
         this._textureManager.allocateTextures();
+
+        for (const task of this._tasks) {
+            task._checkTask();
+        }
 
         this.onBuildObservable.notifyObservers(this);
     }
@@ -162,7 +145,7 @@ export class FrameGraph {
         this._renderContext._bindRenderTarget();
 
         for (const task of this._tasks) {
-            const passes = task._fgInternals!.getPasses();
+            const passes = task._getPasses();
 
             for (const pass of passes) {
                 pass._execute();
@@ -174,20 +157,8 @@ export class FrameGraph {
         return this._textureManager.importTexture(name, texture, handle);
     }
 
-    public getTextureCreationOptions(textureId: FrameGraphTextureId, cloneOptions = false): FrameGraphTextureCreationOptions {
-        let textureHandle: FrameGraphTextureHandle;
-
-        if (!FrameGraph._IsTextureHandle(textureId)) {
-            textureHandle = textureId[0]._fgInternals!.mapNameToTextureHandle[textureId[1]];
-
-            if (textureHandle === undefined) {
-                throw new Error(`getTextureCreationOptions: Task "${textureId[0].name}" does not have a "${textureId[1]}" texture.`);
-            }
-        } else {
-            textureHandle = textureId;
-        }
-
-        const creationOptions = this._textureManager.getTextureCreationOptions(textureHandle);
+    public getTextureCreationOptions(handle: FrameGraphTextureHandle, cloneOptions = false): FrameGraphTextureCreationOptions {
+        const creationOptions = this._textureManager.getTextureCreationOptions(handle);
 
         return cloneOptions
             ? {
@@ -198,8 +169,8 @@ export class FrameGraph {
             : creationOptions;
     }
 
-    public getTextureDescription(textureId: FrameGraphTextureId): FrameGraphTextureDescription {
-        const creationOptions = this.getTextureCreationOptions(textureId);
+    public getTextureDescription(handle: FrameGraphTextureHandle): FrameGraphTextureDescription {
+        const creationOptions = this.getTextureCreationOptions(handle);
 
         const size = !creationOptions.sizeIsPercentage
             ? textureSizeIsObject(creationOptions.size)
@@ -213,32 +184,17 @@ export class FrameGraph {
         };
     }
 
-    public getTextureHandle(textureId: FrameGraphTextureId): FrameGraphTextureHandle {
-        if (FrameGraph._IsTextureHandle(textureId)) {
-            return textureId;
-        }
-
-        const textureHandle = textureId[0]._fgInternals!.mapNameToTextureHandle[textureId[1]];
-
-        if (textureHandle === undefined) {
-            throw new Error(`getTextureHandle: Task "${textureId[0].name}" does not have a "${textureId[1]}" texture.`);
-        }
-
-        return textureHandle;
-    }
-
-    public getTextureHandleOrCreateTexture(textureId?: FrameGraphTextureId, newTextureName?: string, creationOptions?: FrameGraphTextureCreationOptions): FrameGraphTextureHandle {
-        if (textureId === undefined) {
+    public getTextureHandleOrCreateTexture(handle?: FrameGraphTextureHandle, newTextureName?: string, creationOptions?: FrameGraphTextureCreationOptions): FrameGraphTextureHandle {
+        if (handle === undefined) {
             if (newTextureName === undefined || creationOptions === undefined) {
-                throw new Error("Either textureId or newTextureName and creationOptions must be provided.");
+                throw new Error("getTextureHandleOrCreateTexture: Either handle or newTextureName and creationOptions must be provided.");
             }
             return this.createRenderTargetTexture(newTextureName, creationOptions);
         }
-        return this.getTextureHandle(textureId);
+        return handle;
     }
 
-    public getTexture(handleOrId: FrameGraphTextureHandle | FrameGraphTextureId): Nullable<RenderTargetWrapper> {
-        const handle = FrameGraph._IsTextureHandle(handleOrId) ? handleOrId : this.getTextureHandle(handleOrId);
+    public getTexture(handle: FrameGraphTextureHandle): Nullable<RenderTargetWrapper> {
         return this._textureManager.getTextureFromHandle(handle);
     }
 
@@ -246,23 +202,33 @@ export class FrameGraph {
         return this._textureManager.createRenderTargetTexture(name, !!this._currentProcessedTask, creationOptions, multiTargetMode);
     }
 
-    public getObjectList(objectListId: FrameGraphObjectListId): FrameGraphObjectList {
-        if (FrameGraph._IsObjectList(objectListId)) {
-            return objectListId;
+    public createDanglingHandle(): FrameGraphTextureHandle {
+        return this._textureManager.createDanglingHandle();
+    }
+
+    public resolveDanglingHandle(
+        danglingHandle: FrameGraphTextureHandle,
+        handle?: FrameGraphTextureHandle,
+        newTextureName?: string,
+        creationOptions?: FrameGraphTextureCreationOptions
+    ) {
+        if (handle === undefined) {
+            if (this._textureManager._textures.has(danglingHandle)) {
+                throw new Error(`resolveDanglingHandle: Handle ${handle} is not dangling!`);
+            }
+            if (newTextureName === undefined || creationOptions === undefined) {
+                throw new Error("resolveDanglingHandle: Either handle or newTextureName and creationOptions must be provided.");
+            }
+            this._textureManager.createRenderTargetTexture(newTextureName, !!this._currentProcessedTask, creationOptions, false, danglingHandle);
+            return;
         }
 
-        const objectList = objectListId[0]._fgInternals!.mapNameToObjectList[objectListId[1]];
-
-        if (objectList === undefined) {
-            throw new Error(`getObjectList: Task "${objectListId[0].name}" does not have a "${objectListId[1]}" object list.`);
-        }
-
-        return objectList;
+        this._textureManager.resolveDanglingHandle(danglingHandle, handle);
     }
 
     public clear(): void {
         for (const task of this._tasks) {
-            task._fgInternals?.dispose();
+            task._reset();
         }
 
         this._tasks.length = 0;

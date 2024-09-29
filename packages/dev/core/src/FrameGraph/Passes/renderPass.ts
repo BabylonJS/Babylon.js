@@ -2,14 +2,14 @@ import type { Nullable } from "../../types";
 import type { FrameGraphRenderContext } from "../frameGraphRenderContext";
 import { FrameGraphPass } from "./pass";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
-import type { IFrameGraphPass, IFrameGraphTask, FrameGraphTextureHandle } from "../frameGraphTypes";
+import type { IFrameGraphPass, FrameGraphTextureHandle } from "../frameGraphTypes";
+import type { FrameGraphTask } from "../frameGraphTask";
 
 export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext> {
     protected _engine: AbstractEngine;
     protected _renderTarget: FrameGraphTextureHandle;
     protected _renderTargetDepth: FrameGraphTextureHandle | undefined;
     protected _usedTextures: FrameGraphTextureHandle[] = [];
-    protected _outputTextures: { handle: FrameGraphTextureHandle; name: string }[] = [];
     protected _depthShared = false;
 
     public static IsRenderPass(pass: IFrameGraphPass): pass is FrameGraphRenderPass {
@@ -27,12 +27,7 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
     }
 
     /** @internal */
-    public get outputTextures() {
-        return this._outputTextures;
-    }
-
-    /** @internal */
-    constructor(name: string, parentTask: IFrameGraphTask, context: FrameGraphRenderContext, engine: AbstractEngine) {
+    constructor(name: string, parentTask: FrameGraphTask, context: FrameGraphRenderContext, engine: AbstractEngine) {
         super(name, parentTask, context);
         this._engine = engine;
     }
@@ -43,10 +38,6 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
 
     public setRenderTarget(renderTargetHandle: FrameGraphTextureHandle) {
         this._renderTarget = renderTargetHandle;
-    }
-
-    public setOutputTexture(renderTargetHandle: FrameGraphTextureHandle, name: string) {
-        this._outputTextures.push({ handle: renderTargetHandle, name });
     }
 
     public setRenderTargetDepth(renderTargetHandle?: FrameGraphTextureHandle) {

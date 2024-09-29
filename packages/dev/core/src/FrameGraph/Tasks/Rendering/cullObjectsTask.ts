@@ -1,55 +1,43 @@
 import type { Scene } from "../../../scene";
 import type { Camera } from "../../../Cameras/camera";
 import type { FrameGraph } from "../../frameGraph";
-import type { FrameGraphTaskOutputReference, IFrameGraphTask, FrameGraphObjectListId } from "../../frameGraphTypes";
 import type { FrameGraphObjectList } from "../../frameGraphObjectList";
+import { FrameGraphTask } from "../../frameGraphTask";
 
-export class FrameGraphCullObjectsTask implements IFrameGraphTask {
-    public objectList: FrameGraphObjectListId;
+export class FrameGraphCullObjectsTask extends FrameGraphTask {
+    public objectList: FrameGraphObjectList;
 
     public camera: Camera;
 
-    public readonly outputObjectListReference: FrameGraphTaskOutputReference = [this, "output"];
-
-    public disabled = false;
+    public readonly outputObjectList: FrameGraphObjectList;
 
     private _scene: Scene;
-    private _inputObjectList: FrameGraphObjectList;
-    private _outputObjectList: FrameGraphObjectList;
 
-    constructor(
-        public name: string,
-        scene: Scene
-    ) {
+    constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
+        super(name, frameGraph);
         this._scene = scene;
-        this._outputObjectList = {
+        this.outputObjectList = {
             meshes: [],
             particleSystems: [],
         };
     }
 
-    public isReady() {
-        return true;
-    }
-
-    public record(frameGraph: FrameGraph) {
+    public override record() {
         if (this.objectList === undefined || this.camera === undefined) {
             throw new Error(`FrameGraphCullObjectsTask ${this.name}: objectList and camera are required`);
         }
 
-        this._inputObjectList = frameGraph.getObjectList(this.objectList);
+        const pass = this._frameGraph.addCullPass(this.name);
 
-        const pass = frameGraph.addCullPass(this.name);
-
-        pass.setObjectList(this._outputObjectList);
+        pass.setObjectList(this.outputObjectList);
         pass.setExecuteFunc((_context) => {
-            this._outputObjectList.meshes = [];
+            this.outputObjectList.meshes = [];
 
             this.camera._updateFrustumPlanes();
 
             const frustumPlanes = this.camera._frustumPlanes;
 
-            const meshes = this._inputObjectList.meshes || this._scene.meshes;
+            const meshes = this.objectList.meshes || this._scene.meshes;
             for (let i = 0; i < meshes.length; i++) {
                 const mesh = meshes[i];
                 if (mesh.isBlocked || !mesh.isReady() || !mesh.isEnabled() || mesh.scaling.hasAZeroComponent) {
@@ -62,19 +50,17 @@ export class FrameGraphCullObjectsTask implements IFrameGraphTask {
                     (mesh.layerMask & this.camera.layerMask) !== 0 &&
                     (this._scene.skipFrustumClipping || mesh.alwaysSelectAsActiveMesh || mesh.isInFrustum(frustumPlanes))
                 ) {
-                    this._outputObjectList.meshes.push(mesh);
+                    this.outputObjectList.meshes.push(mesh);
                 }
             }
         });
 
-        const passDisabled = frameGraph.addCullPass(this.name + "_disabled", true);
+        const passDisabled = this._frameGraph.addCullPass(this.name + "_disabled", true);
 
-        passDisabled.setObjectList(this._outputObjectList);
+        passDisabled.setObjectList(this.outputObjectList);
         passDisabled.setExecuteFunc((_context) => {
-            this._outputObjectList.meshes = this._inputObjectList.meshes;
-            this._outputObjectList.particleSystems = this._inputObjectList.particleSystems;
+            this.outputObjectList.meshes = this.objectList.meshes;
+            this.outputObjectList.particleSystems = this.objectList.particleSystems;
         });
     }
-
-    public dispose(): void {}
 }

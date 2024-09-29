@@ -5,10 +5,11 @@ import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRender
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import type { Scene } from "../../../../scene";
 import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
-import type { FrameGraphTextureId } from "../../../frameGraphTypes";
+import type { FrameGraphTextureHandle } from "../../../frameGraphTypes";
 import { FrameGraphCircleOfConfusionTask } from "core/FrameGraph/Tasks/PostProcesses/circleOfConfusionTask";
 import type { CircleOfConfusionPostProcess } from "../../../../PostProcesses/circleOfConfusionPostProcess";
 import type { Camera } from "core/Cameras/camera";
+import type { FrameGraph } from "core/FrameGraph/frameGraph";
 
 /**
  * Block that implements the circle of confusion post process
@@ -34,10 +35,11 @@ export class NodeRenderGraphCircleOfConfusionPostProcessBlock extends NodeRender
     /**
      * Create a new NodeRenderGraphCircleOfConfusionPostProcessBlock
      * @param name defines the block name
+     * @param frameGraph defines the hosting frame graph
      * @param scene defines the hosting scene
      */
-    public constructor(name: string, scene: Scene) {
-        super(name, scene);
+    public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
+        super(name, frameGraph, scene);
 
         this.registerInput("source", NodeRenderGraphBlockConnectionPointTypes.Texture);
         this.registerInput("geomViewDepth", NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth);
@@ -51,7 +53,7 @@ export class NodeRenderGraphCircleOfConfusionPostProcessBlock extends NodeRender
             return this.destination.isConnected ? this.destination : this.source;
         };
 
-        this._frameGraphTask = new FrameGraphCircleOfConfusionTask(this.name, scene.getEngine());
+        this._frameGraphTask = new FrameGraphCircleOfConfusionTask(this.name, frameGraph, scene.getEngine());
         this._postProcess = this._frameGraphTask.getPostProcess();
     }
 
@@ -167,25 +169,23 @@ export class NodeRenderGraphCircleOfConfusionPostProcessBlock extends NodeRender
 
         const sourceConnectedPoint = this.source.connectedPoint;
         if (sourceConnectedPoint) {
-            this._frameGraphTask.sourceTexture = sourceConnectedPoint.value as FrameGraphTextureId;
+            this._frameGraphTask.sourceTexture = sourceConnectedPoint.value as FrameGraphTextureHandle;
         }
 
         const geomViewDepthConnectedPoint = this.geomViewDepth.connectedPoint;
         if (geomViewDepthConnectedPoint) {
-            this._frameGraphTask.depthTexture = geomViewDepthConnectedPoint.value as FrameGraphTextureId;
+            this._frameGraphTask.depthTexture = geomViewDepthConnectedPoint.value as FrameGraphTextureHandle;
         }
 
         const destinationConnectedPoint = this.destination.connectedPoint;
         if (destinationConnectedPoint) {
-            this._frameGraphTask.destinationTexture = destinationConnectedPoint.value as FrameGraphTextureId;
+            this._frameGraphTask.destinationTexture = destinationConnectedPoint.value as FrameGraphTextureHandle;
         }
 
         const cameraConnectedPoint = this.camera.connectedPoint;
         if (cameraConnectedPoint) {
             this._frameGraphTask.camera = cameraConnectedPoint.value as Camera;
         }
-
-        state.frameGraph.addTask(this._frameGraphTask);
     }
 
     protected override _dumpPropertiesCode() {

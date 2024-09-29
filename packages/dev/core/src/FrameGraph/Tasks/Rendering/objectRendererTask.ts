@@ -1,16 +1,18 @@
 import type { FrameGraph } from "../../frameGraph";
-import type { FrameGraphTaskOutputReference, IFrameGraphTask, FrameGraphTextureId, FrameGraphObjectListId } from "../../frameGraphTypes";
+import type { FrameGraphTextureHandle } from "../../frameGraphTypes";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
 import { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture";
 import type { Scene } from "../../../scene";
 import type { Camera } from "../../../Cameras/camera";
+import { FrameGraphTask } from "../../frameGraphTask";
+import type { FrameGraphObjectList } from "core/FrameGraph/frameGraphObjectList";
 
-export class FrameGraphObjectRendererTask implements IFrameGraphTask {
-    public destinationTexture: FrameGraphTextureId;
+export class FrameGraphObjectRendererTask extends FrameGraphTask {
+    public destinationTexture: FrameGraphTextureHandle;
 
-    public depthTexture?: FrameGraphTextureId;
+    public depthTexture?: FrameGraphTextureHandle;
 
-    public dependencies?: FrameGraphTextureId[] = [];
+    public dependencies?: FrameGraphTextureHandle[] = [];
 
     private _camera: Camera;
 
@@ -23,17 +25,15 @@ export class FrameGraphObjectRendererTask implements IFrameGraphTask {
         this._rtt.activeCamera = this.camera;
     }
 
-    public objectList: FrameGraphObjectListId;
+    public objectList: FrameGraphObjectList;
 
     public depthTest = true;
 
     public depthWrite = true;
 
-    public readonly outputTextureReference: FrameGraphTaskOutputReference = [this, "output"];
+    public readonly outputTexture: FrameGraphTextureHandle;
 
-    public readonly outputDepthTextureReference: FrameGraphTaskOutputReference = [this, "outputDepth"];
-
-    public disabled = false;
+    public readonly outputDepthTexture: FrameGraphTextureHandle;
 
     private _scene: Scene;
     private _rtt: RenderTargetTexture;
@@ -42,54 +42,57 @@ export class FrameGraphObjectRendererTask implements IFrameGraphTask {
         return this._rtt;
     }
 
-    private _name: string;
-
-    public get name() {
+    public override get name() {
         return this._name;
     }
 
-    public set name(value: string) {
+    public override set name(value: string) {
         this._name = value;
-        this._rtt.name = value + "_internal_rtt";
+        if (this._rtt) {
+            this._rtt.name = value + "_internal_rtt";
+        }
     }
 
-    constructor(name: string, scene: Scene) {
+    constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
+        super(name, frameGraph);
+
         this._scene = scene;
         this._rtt = new RenderTargetTexture(name, 1, scene, {
             delayAllocation: true,
         });
         this._rtt.skipInitialClear = true;
         this.name = name;
+
+        this.outputTexture = this._frameGraph.createDanglingHandle();
+        this.outputDepthTexture = this._frameGraph.createDanglingHandle();
     }
 
-    public isReady() {
+    public override isReady() {
         return this._rtt.isReadyForRendering();
     }
 
-    public record(frameGraph: FrameGraph) {
+    public record() {
         if (this.destinationTexture === undefined || this.objectList === undefined) {
             throw new Error(`FrameGraphObjectRendererTask ${this.name}: destinationTexture and objectList are required`);
         }
 
-        const outputTextureHandle = frameGraph.getTextureHandle(this.destinationTexture);
-        const outputTextureDescription = frameGraph.getTextureDescription(outputTextureHandle);
+        const outputTextureDescription = this._frameGraph.getTextureDescription(this.destinationTexture);
 
         let depthEnabled = false;
 
         if (this.depthTexture !== undefined) {
-            const depthTextureHandle = frameGraph.getTextureHandle(this.depthTexture);
-            if (depthTextureHandle === backbufferDepthStencilTextureHandle && outputTextureHandle !== backbufferColorTextureHandle) {
+            if (this.depthTexture === backbufferDepthStencilTextureHandle && this.destinationTexture !== backbufferColorTextureHandle) {
                 throw new Error(
                     `FrameGraphObjectRendererTask ${this.name}: the back buffer color texture is the only color texture allowed when the depth is the back buffer depth/stencil`
                 );
             }
-            if (depthTextureHandle !== backbufferDepthStencilTextureHandle && outputTextureHandle === backbufferColorTextureHandle) {
+            if (this.depthTexture !== backbufferDepthStencilTextureHandle && this.destinationTexture === backbufferColorTextureHandle) {
                 throw new Error(
                     `FrameGraphObjectRendererTask ${this.name}: the back buffer depth/stencil texture is the only depth texture allowed when the destination is the back buffer color`
                 );
             }
 
-            const depthTextureDescription = frameGraph.getTextureDescription(depthTextureHandle);
+            const depthTextureDescription = this._frameGraph.getTextureDescription(this.depthTexture);
             if (depthTextureDescription.options.samples !== outputTextureDescription.options.samples) {
                 throw new Error(`FrameGraphObjectRendererTask ${this.name}: the depth texture and the output texture must have the same number of samples`);
             }
@@ -97,43 +100,46 @@ export class FrameGraphObjectRendererTask implements IFrameGraphTask {
             depthEnabled = true;
         }
 
+        this._frameGraph.resolveDanglingHandle(this.outputTexture, this.destinationTexture);
+        if (this.depthTexture !== undefined) {
+            this._frameGraph.resolveDanglingHandle(this.outputDepthTexture, this.depthTexture);
+        }
+
         this._rtt._size = outputTextureDescription.size;
 
-        const objectList = frameGraph.getObjectList(this.objectList);
+        const pass = this._frameGraph.addRenderPass(this.name);
 
-        const pass = frameGraph.addRenderPass(this.name);
-
-        pass.setRenderTarget(outputTextureHandle);
+        pass.setRenderTarget(this.destinationTexture);
         if (this.depthTexture !== undefined) {
-            pass.setRenderTargetDepth(frameGraph.getTextureHandle(this.depthTexture));
+            pass.setRenderTargetDepth(this.depthTexture);
         }
         pass.setExecuteFunc((_context) => {
-            this._rtt.renderList = objectList.meshes;
-            this._rtt.particleSystemList = objectList.particleSystems;
+            this._rtt.renderList = this.objectList.meshes;
+            this._rtt.particleSystemList = this.objectList.particleSystems;
             this._scene.incrementRenderId();
             this._scene.resetCachedMaterial();
             _context.setDepthStates(this.depthTest && depthEnabled, this.depthWrite && depthEnabled);
             _context.render(this._rtt);
         });
 
-        const passDisabled = frameGraph.addRenderPass(this.name + "_disabled", true);
+        const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
 
-        passDisabled.setRenderTarget(outputTextureHandle);
+        passDisabled.setRenderTarget(this.destinationTexture);
         if (this.depthTexture !== undefined) {
-            passDisabled.setRenderTargetDepth(frameGraph.getTextureHandle(this.depthTexture));
+            passDisabled.setRenderTargetDepth(this.depthTexture);
         }
         passDisabled.setExecuteFunc((_context) => {});
 
         if (this.dependencies !== undefined) {
-            for (const texture of this.dependencies) {
-                const handle = frameGraph.getTextureHandle(texture);
+            for (const handle of this.dependencies) {
                 pass.useTexture(handle);
                 passDisabled.useTexture(handle);
             }
         }
     }
 
-    public dispose(): void {
+    public override dispose(): void {
         this._rtt.dispose();
+        super.dispose();
     }
 }

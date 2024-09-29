@@ -7,7 +7,8 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Deco
 import type { Scene } from "../../../../scene";
 import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
 import { FrameGraphClearTextureTask } from "../../../Tasks/Texture/clearTextureTask";
-import type { FrameGraphTextureId } from "../../../frameGraphTypes";
+import type { FrameGraphTextureHandle } from "../../../frameGraphTypes";
+import type { FrameGraph } from "core/FrameGraph/frameGraph";
 
 /**
  * Block used to clear a texture
@@ -25,10 +26,11 @@ export class NodeRenderGraphClearBlock extends NodeRenderGraphBlock {
     /**
      * Create a new NodeRenderGraphClearBlock
      * @param name defines the block name
+     * @param frameGraph defines the hosting frame graph
      * @param scene defines the hosting scene
      */
-    public constructor(name: string, scene: Scene) {
-        super(name, scene);
+    public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
+        super(name, frameGraph, scene);
 
         this.registerInput("texture", NodeRenderGraphBlockConnectionPointTypes.Texture);
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
@@ -36,7 +38,7 @@ export class NodeRenderGraphClearBlock extends NodeRenderGraphBlock {
         this.texture.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
         this.output._typeConnectionSource = this.texture;
 
-        this._frameGraphTask = new FrameGraphClearTextureTask(name);
+        this._frameGraphTask = new FrameGraphClearTextureTask(name, frameGraph);
     }
 
     /** Gets or sets the clear color */
@@ -109,10 +111,8 @@ export class NodeRenderGraphClearBlock extends NodeRenderGraphBlock {
 
         const textureConnectedPoint = this.texture.connectedPoint;
         if (textureConnectedPoint) {
-            this._frameGraphTask.destinationTexture = textureConnectedPoint.value as FrameGraphTextureId;
+            this._frameGraphTask.destinationTexture = textureConnectedPoint.value as FrameGraphTextureHandle;
         }
-
-        state.frameGraph.addTask(this._frameGraphTask);
     }
 
     protected override _dumpPropertiesCode() {

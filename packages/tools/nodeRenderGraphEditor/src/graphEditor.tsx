@@ -89,7 +89,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     addValueNode(type: string) {
         const nodeType: NodeRenderGraphBlockConnectionPointTypes = BlockTools.GetConnectionNodeTypeFromString(type);
 
-        const newInputBlock = new NodeRenderGraphInputBlock(type, this.props.globalState.scene, nodeType);
+        const newInputBlock = new NodeRenderGraphInputBlock(type, this.props.globalState.nodeRenderGraph.frameGraph, this.props.globalState.scene, nodeType);
         return this.appendBlock(newInputBlock);
     }
 
@@ -466,7 +466,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         if (blockType.indexOf("Block") === -1) {
             newNode = this.addValueNode(blockType);
         } else {
-            const block = BlockTools.GetBlockFromString(blockType, this.props.globalState.scene)!;
+            const block = BlockTools.GetBlockFromString(blockType, this.props.globalState.nodeRenderGraph.frameGraph, this.props.globalState.scene)!;
 
             if (block.isUnique) {
                 const className = block.getClassName();

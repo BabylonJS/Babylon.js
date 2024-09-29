@@ -1,9 +1,10 @@
 import type { Nullable } from "../../types";
 import { FrameGraphPass } from "./pass";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
-import type { IFrameGraphPass, IFrameGraphTask } from "../frameGraphTypes";
+import type { IFrameGraphPass } from "../frameGraphTypes";
 import type { FrameGraphContext } from "../frameGraphContext";
 import type { FrameGraphObjectList } from "../frameGraphObjectList";
+import type { FrameGraphTask } from "../frameGraphTask";
 
 export class FrameGraphCullPass extends FrameGraphPass<FrameGraphContext> {
     protected _engine: AbstractEngine;
@@ -19,7 +20,7 @@ export class FrameGraphCullPass extends FrameGraphPass<FrameGraphContext> {
     }
 
     /** @internal */
-    constructor(name: string, parentTask: IFrameGraphTask, context: FrameGraphContext, engine: AbstractEngine) {
+    constructor(name: string, parentTask: FrameGraphTask, context: FrameGraphContext, engine: AbstractEngine) {
         super(name, parentTask, context);
         this._engine = engine;
     }

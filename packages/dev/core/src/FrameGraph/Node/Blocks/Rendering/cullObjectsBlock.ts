@@ -4,9 +4,10 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import type { Scene } from "../../../../scene";
 import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
-import type { FrameGraphObjectListId } from "../../../frameGraphTypes";
 import { FrameGraphCullObjectsTask } from "../../../Tasks/Rendering/cullObjectsTask";
 import type { Camera } from "../../../../Cameras/camera";
+import type { FrameGraph } from "core/FrameGraph/frameGraph";
+import type { FrameGraphObjectList } from "core/FrameGraph/frameGraphObjectList";
 
 /**
  * Block that culls a list of objects
@@ -24,17 +25,18 @@ export class NodeRenderGraphCullObjectsBlock extends NodeRenderGraphBlock {
     /**
      * Create a new NodeRenderGraphCullObjectsBlock
      * @param name defines the block name
+     * @param frameGraph defines the hosting frame graph
      * @param scene defines the hosting scene
      */
-    public constructor(name: string, scene: Scene) {
-        super(name, scene);
+    public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
+        super(name, frameGraph, scene);
 
         this.registerInput("camera", NodeRenderGraphBlockConnectionPointTypes.Camera);
         this.registerInput("objects", NodeRenderGraphBlockConnectionPointTypes.ObjectList);
 
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.ObjectList);
 
-        this._frameGraphTask = new FrameGraphCullObjectsTask(this.name, scene);
+        this._frameGraphTask = new FrameGraphCullObjectsTask(this.name, frameGraph, scene);
     }
 
     /**
@@ -71,7 +73,7 @@ export class NodeRenderGraphCullObjectsBlock extends NodeRenderGraphBlock {
 
         this._frameGraphTask.name = this.name;
 
-        this.output.value = this._frameGraphTask.outputObjectListReference;
+        this.output.value = this._frameGraphTask.outputObjectList;
 
         const cameraConnectedPoint = this.camera.connectedPoint;
         if (cameraConnectedPoint) {
@@ -80,10 +82,8 @@ export class NodeRenderGraphCullObjectsBlock extends NodeRenderGraphBlock {
 
         const objectsConnectedPoint = this.objects.connectedPoint;
         if (objectsConnectedPoint) {
-            this._frameGraphTask.objectList = objectsConnectedPoint.value as FrameGraphObjectListId;
+            this._frameGraphTask.objectList = objectsConnectedPoint.value as FrameGraphObjectList;
         }
-
-        state.frameGraph.addTask(this._frameGraphTask);
     }
 
     protected override _dumpPropertiesCode() {

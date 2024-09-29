@@ -278,7 +278,6 @@ export class NodeRenderGraph {
 
         state.buildId = this._buildId;
         state.verbose = this._options.verbose!;
-        state.frameGraph = this._frameGraph;
 
         if (this._options.autoFillExternalInputs) {
             this._autoFillExternalInputs();
@@ -395,12 +394,12 @@ export class NodeRenderGraph {
 
         // Create blocks
         for (const parsedBlock of source.blocks) {
-            const blockType = GetClass(parsedBlock.customType);
+            const blockType: typeof NodeRenderGraphBlock = GetClass(parsedBlock.customType);
             if (blockType) {
                 const additionalConstructionParameters = parsedBlock.additionalConstructionParameters;
                 const block: NodeRenderGraphBlock = additionalConstructionParameters
-                    ? new blockType("", this._scene, ...additionalConstructionParameters)
-                    : new blockType("", this._scene);
+                    ? new blockType("", this._frameGraph, this._scene, ...additionalConstructionParameters)
+                    : new blockType("", this._frameGraph, this._scene);
                 block._deserialize(parsedBlock);
                 map[parsedBlock.id] = block;
 
@@ -577,15 +576,15 @@ export class NodeRenderGraph {
         this.editorData = null;
 
         // Source
-        const backBuffer = new NodeRenderGraphInputBlock("BackBuffer color", this._scene, NodeRenderGraphBlockConnectionPointTypes.TextureBackBuffer);
+        const backBuffer = new NodeRenderGraphInputBlock("BackBuffer color", this._frameGraph, this._scene, NodeRenderGraphBlockConnectionPointTypes.TextureBackBuffer);
 
         // Clear texture
-        const clear = new NodeRenderGraphClearBlock("Clear", this._scene);
+        const clear = new NodeRenderGraphClearBlock("Clear", this._frameGraph, this._scene);
 
         backBuffer.output.connectTo(clear.texture);
 
         // Final output
-        const output = new NodeRenderGraphOutputBlock("Output", this._scene);
+        const output = new NodeRenderGraphOutputBlock("Output", this._frameGraph, this._scene);
         clear.output.connectTo(output.texture);
 
         this.outputBlock = output;

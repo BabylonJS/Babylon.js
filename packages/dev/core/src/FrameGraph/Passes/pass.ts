@@ -1,13 +1,14 @@
 import type { Nullable } from "../../types";
 import type { FrameGraphContext } from "../frameGraphContext";
-import type { IFrameGraphPass, IFrameGraphTask } from "../frameGraphTypes";
+import type { IFrameGraphPass } from "../frameGraphTypes";
+import type { FrameGraphTask } from "../frameGraphTask";
 
 export class FrameGraphPass<T extends FrameGraphContext> implements IFrameGraphPass {
     private _executeFunc: (context: T) => void;
 
     constructor(
         public name: string,
-        protected _parentTask: IFrameGraphTask,
+        protected _parentTask: FrameGraphTask,
         protected _context: T
     ) {}
 

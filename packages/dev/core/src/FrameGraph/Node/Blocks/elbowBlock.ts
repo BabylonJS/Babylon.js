@@ -4,6 +4,8 @@ import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGra
 import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
 import type { NodeRenderGraphConnectionPoint } from "../nodeRenderGraphBlockConnectionPoint";
 import type { NodeRenderGraphBuildState } from "../nodeRenderGraphBuildState";
+import type { FrameGraph } from "core/FrameGraph/frameGraph";
+
 /**
  * Block used as a pass through
  */
@@ -11,10 +13,11 @@ export class NodeRenderGraphElbowBlock extends NodeRenderGraphBlock {
     /**
      * Creates a new NodeRenderGraphElbowBlock
      * @param name defines the block name
+     * @param frameGraph defines the hosting frame graph
      * @param scene defines the hosting scene
      */
-    public constructor(name: string, scene: Scene) {
-        super(name, scene);
+    public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
+        super(name, frameGraph, scene);
 
         this.registerInput("input", NodeRenderGraphBlockConnectionPointTypes.AutoDetect);
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);

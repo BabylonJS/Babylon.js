@@ -1,4 +1,4 @@
-import type { FrameGraphTaskOutputReference, IFrameGraphTask, FrameGraphTextureId, FrameGraphObjectListId, FrameGraphTextureHandle } from "../../frameGraphTypes";
+import type { FrameGraphTextureHandle } from "../../frameGraphTypes";
 import { backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
 import { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture";
 import type { Scene } from "../../../scene";
@@ -9,6 +9,8 @@ import type { FrameGraph } from "core/FrameGraph/frameGraph";
 import type { TextureClearType } from "core/Materials/materialHelper.geometryrendering";
 import { MaterialHelperGeometryRendering } from "core/Materials/materialHelper.geometryrendering";
 import { Constants } from "core/Engines/constants";
+import { FrameGraphTask } from "../../frameGraphTask";
+import type { FrameGraphObjectList } from "core/FrameGraph/frameGraphObjectList";
 
 export interface IFrameGraphGeometryRendererTextureDescription {
     type: number;
@@ -18,8 +20,8 @@ export interface IFrameGraphGeometryRendererTextureDescription {
 
 const clearColors: Color4[] = [new Color4(0, 0, 0, 0), new Color4(1, 1, 1, 1), new Color4(1e8, 1e8, 1e8, 1e8)];
 
-export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
-    public depthTexture?: FrameGraphTextureId;
+export class FrameGraphGeometryRendererTask extends FrameGraphTask {
+    public depthTexture?: FrameGraphTextureHandle;
 
     private _camera: Camera;
 
@@ -32,7 +34,7 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
         this._rtt.activeCamera = this.camera;
     }
 
-    public objectList: FrameGraphObjectListId;
+    public objectList: FrameGraphObjectList;
 
     public depthTest = true;
 
@@ -46,73 +48,41 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
 
     public textureDescriptions: IFrameGraphGeometryRendererTextureDescription[] = [];
 
-    public readonly outputDepthTextureReference: FrameGraphTaskOutputReference = [this, "outputDepth"];
+    public readonly outputDepthTexture: FrameGraphTextureHandle;
 
-    public readonly geometryViewDepthTextureReference: FrameGraphTaskOutputReference = [
-        this,
-        MaterialHelperGeometryRendering.GeometryTextureDescriptions.find((f) => f.type === Constants.PREPASS_DEPTH_TEXTURE_TYPE)!.name,
-    ];
+    public readonly geometryViewDepthTexture: FrameGraphTextureHandle;
 
-    public readonly geometryScreenDepthTextureReference: FrameGraphTaskOutputReference = [
-        this,
-        MaterialHelperGeometryRendering.GeometryTextureDescriptions.find((f) => f.type === Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE)!.name,
-    ];
+    public readonly geometryScreenDepthTexture: FrameGraphTextureHandle;
 
-    public readonly geometryViewNormalTextureReference: FrameGraphTaskOutputReference = [
-        this,
-        MaterialHelperGeometryRendering.GeometryTextureDescriptions.find((f) => f.type === Constants.PREPASS_NORMAL_TEXTURE_TYPE)!.name,
-    ];
+    public readonly geometryViewNormalTexture: FrameGraphTextureHandle;
 
-    public readonly geometryWorldNormalTextureReference: FrameGraphTaskOutputReference = [
-        this,
-        MaterialHelperGeometryRendering.GeometryTextureDescriptions.find((f) => f.type === Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE)!.name,
-    ];
+    public readonly geometryWorldNormalTexture: FrameGraphTextureHandle;
 
-    public readonly geometryLocalPositionTextureReference: FrameGraphTaskOutputReference = [
-        this,
-        MaterialHelperGeometryRendering.GeometryTextureDescriptions.find((f) => f.type === Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE)!.name,
-    ];
+    public readonly geometryLocalPositionTexture: FrameGraphTextureHandle;
 
-    public readonly geometryWorldPositionTextureReference: FrameGraphTaskOutputReference = [
-        this,
-        MaterialHelperGeometryRendering.GeometryTextureDescriptions.find((f) => f.type === Constants.PREPASS_POSITION_TEXTURE_TYPE)!.name,
-    ];
+    public readonly geometryWorldPositionTexture: FrameGraphTextureHandle;
 
-    public readonly geometryAlbedoTextureReference: FrameGraphTaskOutputReference = [
-        this,
-        MaterialHelperGeometryRendering.GeometryTextureDescriptions.find((f) => f.type === Constants.PREPASS_ALBEDO_TEXTURE_TYPE)!.name,
-    ];
+    public readonly geometryAlbedoTexture: FrameGraphTextureHandle;
 
-    public readonly geometryReflectivityTextureReference: FrameGraphTaskOutputReference = [
-        this,
-        MaterialHelperGeometryRendering.GeometryTextureDescriptions.find((f) => f.type === Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE)!.name,
-    ];
+    public readonly geometryReflectivityTexture: FrameGraphTextureHandle;
 
-    public readonly geometryVelocityTextureReference: FrameGraphTaskOutputReference = [
-        this,
-        MaterialHelperGeometryRendering.GeometryTextureDescriptions.find((f) => f.type === Constants.PREPASS_VELOCITY_TEXTURE_TYPE)!.name,
-    ];
+    public readonly geometryVelocityTexture: FrameGraphTextureHandle;
 
-    public readonly geometryLinearVelocityTextureReference: FrameGraphTaskOutputReference = [
-        this,
-        MaterialHelperGeometryRendering.GeometryTextureDescriptions.find((f) => f.type === Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE)!.name,
-    ];
-
-    public disabled = false;
+    public readonly geometryLinearVelocityTexture: FrameGraphTextureHandle;
 
     public get renderTargetTexture() {
         return this._rtt;
     }
 
-    private _name: string;
-
-    public get name() {
+    public override get name() {
         return this._name;
     }
 
-    public set name(value: string) {
+    public override set name(value: string) {
         this._name = value;
-        this._rtt.name = value + "_internal_rtt";
+        if (this._rtt) {
+            this._rtt.name = value + "_internal_rtt";
+        }
     }
 
     private _engine: AbstractEngine;
@@ -121,7 +91,9 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
     private _clearAttachmentsLayout: Map<TextureClearType, number[]>;
     private _allAttachmentsLayout: number[];
 
-    constructor(name: string, scene: Scene) {
+    constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
+        super(name, frameGraph);
+
         this._scene = scene;
         this._engine = this._scene.getEngine();
 
@@ -135,57 +107,99 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
         this.name = name;
         this._clearAttachmentsLayout = new Map();
         this._allAttachmentsLayout = [];
+
+        this.outputDepthTexture = this._frameGraph.createDanglingHandle();
+        this.geometryViewDepthTexture = this._frameGraph.createDanglingHandle();
+        this.geometryScreenDepthTexture = this._frameGraph.createDanglingHandle();
+        this.geometryViewNormalTexture = this._frameGraph.createDanglingHandle();
+        this.geometryWorldNormalTexture = this._frameGraph.createDanglingHandle();
+        this.geometryLocalPositionTexture = this._frameGraph.createDanglingHandle();
+        this.geometryWorldPositionTexture = this._frameGraph.createDanglingHandle();
+        this.geometryAlbedoTexture = this._frameGraph.createDanglingHandle();
+        this.geometryReflectivityTexture = this._frameGraph.createDanglingHandle();
+        this.geometryVelocityTexture = this._frameGraph.createDanglingHandle();
+        this.geometryLinearVelocityTexture = this._frameGraph.createDanglingHandle();
     }
 
     public get excludedSkinnedMeshFromVelocityTexture() {
         return MaterialHelperGeometryRendering.GetConfiguration(this._rtt.renderPassId).excludedSkinnedMesh;
     }
 
-    public isReady() {
+    public override isReady() {
         return this._rtt.isReadyForRendering();
     }
 
-    public record(frameGraph: FrameGraph) {
+    public record() {
         if (this.textureDescriptions.length === 0 || this.objectList === undefined) {
             throw new Error(`FrameGraphGeometryRendererTask ${this.name}: object list and at least one geometry texture description must be provided`);
         }
 
-        const outputTextureHandle = this._createMultiRenderTargetTexture(frameGraph);
+        const outputTextureHandle = this._createMultiRenderTargetTexture();
 
-        const depthEnabled = this._checkDepthTextureCompatibility(frameGraph);
+        const depthEnabled = this._checkDepthTextureCompatibility();
 
         this._buildClearAttachmentsLayout();
 
         this._registerForRenderPassId(this._rtt.renderPassId);
 
-        const outputTextureDescription = frameGraph.getTextureDescription(outputTextureHandle);
+        const outputTextureDescription = this._frameGraph.getTextureDescription(outputTextureHandle);
 
         this._rtt._size = outputTextureDescription.size;
 
         // Create pass
-        const objectList = frameGraph.getObjectList(this.objectList);
+        MaterialHelperGeometryRendering.MarkAsDirty(this._rtt.renderPassId, this.objectList.meshes || this._scene.meshes);
 
-        MaterialHelperGeometryRendering.MarkAsDirty(this._rtt.renderPassId, objectList.meshes || this._scene.meshes);
-
-        const pass = frameGraph.addRenderPass(this.name);
+        const pass = this._frameGraph.addRenderPass(this.name);
 
         pass.setRenderTarget(outputTextureHandle);
 
+        let handle = outputTextureHandle + 1;
         for (let i = 0; i < this.textureDescriptions.length; i++) {
             const description = this.textureDescriptions[i];
             const index = MaterialHelperGeometryRendering.GeometryTextureDescriptions.findIndex((f) => f.type === description.type);
             const geometryDescription = MaterialHelperGeometryRendering.GeometryTextureDescriptions[index];
 
-            pass.setOutputTexture(outputTextureHandle + i + 1, geometryDescription.name);
+            switch (geometryDescription.type) {
+                case Constants.PREPASS_DEPTH_TEXTURE_TYPE:
+                    this._frameGraph.resolveDanglingHandle(this.geometryViewDepthTexture, handle++);
+                    break;
+                case Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE:
+                    this._frameGraph.resolveDanglingHandle(this.geometryScreenDepthTexture, handle++);
+                    break;
+                case Constants.PREPASS_NORMAL_TEXTURE_TYPE:
+                    this._frameGraph.resolveDanglingHandle(this.geometryViewNormalTexture, handle++);
+                    break;
+                case Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE:
+                    this._frameGraph.resolveDanglingHandle(this.geometryWorldNormalTexture, handle++);
+                    break;
+                case Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE:
+                    this._frameGraph.resolveDanglingHandle(this.geometryLocalPositionTexture, handle++);
+                    break;
+                case Constants.PREPASS_POSITION_TEXTURE_TYPE:
+                    this._frameGraph.resolveDanglingHandle(this.geometryWorldPositionTexture, handle++);
+                    break;
+                case Constants.PREPASS_ALBEDO_TEXTURE_TYPE:
+                    this._frameGraph.resolveDanglingHandle(this.geometryAlbedoTexture, handle++);
+                    break;
+                case Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE:
+                    this._frameGraph.resolveDanglingHandle(this.geometryReflectivityTexture, handle++);
+                    break;
+                case Constants.PREPASS_VELOCITY_TEXTURE_TYPE:
+                    this._frameGraph.resolveDanglingHandle(this.geometryVelocityTexture, handle++);
+                    break;
+                case Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE:
+                    this._frameGraph.resolveDanglingHandle(this.geometryLinearVelocityTexture, handle++);
+                    break;
+            }
         }
 
         if (this.depthTexture !== undefined) {
-            pass.setRenderTargetDepth(frameGraph.getTextureHandle(this.depthTexture));
+            pass.setRenderTargetDepth(this.depthTexture);
         }
 
         pass.setExecuteFunc((context) => {
-            this._rtt.renderList = objectList.meshes;
-            this._rtt.particleSystemList = objectList.particleSystems;
+            this._rtt.renderList = this.objectList.meshes;
+            this._rtt.particleSystemList = this.objectList.particleSystems;
 
             this._scene.incrementRenderId();
             this._scene.resetCachedMaterial();
@@ -202,12 +216,13 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
         });
     }
 
-    public dispose(): void {
+    public override dispose(): void {
         MaterialHelperGeometryRendering.DeleteConfiguration(this._rtt.renderPassId);
         this._rtt.dispose();
+        super.dispose();
     }
 
-    private _createMultiRenderTargetTexture(frameGraph: FrameGraph): FrameGraphTextureHandle {
+    private _createMultiRenderTargetTexture(): FrameGraphTextureHandle {
         const types: number[] = [];
         const formats: number[] = [];
         const labels: string[] = [];
@@ -227,7 +242,7 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
             useSRGBBuffers[i] = false;
         }
 
-        return frameGraph.createRenderTargetTexture(
+        return this._frameGraph.createRenderTargetTexture(
             this.name,
             {
                 size: this.size,
@@ -247,19 +262,20 @@ export class FrameGraphGeometryRendererTask implements IFrameGraphTask {
         );
     }
 
-    private _checkDepthTextureCompatibility(frameGraph: FrameGraph): boolean {
+    private _checkDepthTextureCompatibility(): boolean {
         let depthEnabled = false;
 
         if (this.depthTexture !== undefined) {
-            const depthTextureHandle = frameGraph.getTextureHandle(this.depthTexture);
-            if (depthTextureHandle === backbufferDepthStencilTextureHandle) {
+            if (this.depthTexture === backbufferDepthStencilTextureHandle) {
                 throw new Error(`FrameGraphGeometryRendererTask ${this.name}: the depth/stencil back buffer is not allowed as a depth texture`);
             }
 
-            const depthTextureDescription = frameGraph.getTextureDescription(depthTextureHandle);
+            const depthTextureDescription = this._frameGraph.getTextureDescription(this.depthTexture);
             if (depthTextureDescription.options.samples !== this.samples) {
                 throw new Error(`FrameGraphGeometryRendererTask ${this.name}: the depth texture and the output texture must have the same number of samples`);
             }
+
+            this._frameGraph.resolveDanglingHandle(this.outputDepthTexture, this.depthTexture);
 
             depthEnabled = true;
         }

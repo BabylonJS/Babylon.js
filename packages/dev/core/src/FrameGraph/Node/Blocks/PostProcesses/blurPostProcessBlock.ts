@@ -5,10 +5,11 @@ import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRender
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import type { Scene } from "../../../../scene";
 import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
-import type { FrameGraphTextureId } from "../../../frameGraphTypes";
+import type { FrameGraphTextureHandle } from "../../../frameGraphTypes";
 import { FrameGraphBlurTask } from "core/FrameGraph/Tasks/PostProcesses/blurTask";
 import type { BlurPostProcess } from "../../../../PostProcesses/blurPostProcess";
 import { Vector2 } from "core/Maths";
+import type { FrameGraph } from "core/FrameGraph/frameGraph";
 
 /**
  * Block that implements the blur post process
@@ -34,10 +35,11 @@ export class NodeRenderGraphBlurPostProcessBlock extends NodeRenderGraphBlock {
     /**
      * Create a new NodeRenderGraphBlurPostProcessBlock
      * @param name defines the block name
+     * @param frameGraph defines the hosting frame graph
      * @param scene defines the hosting scene
      */
-    public constructor(name: string, scene: Scene) {
-        super(name, scene);
+    public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
+        super(name, frameGraph, scene);
 
         this.registerInput("source", NodeRenderGraphBlockConnectionPointTypes.Texture);
         this.registerInput("destination", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
@@ -49,7 +51,7 @@ export class NodeRenderGraphBlurPostProcessBlock extends NodeRenderGraphBlock {
             return this.destination.isConnected ? this.destination : this.source;
         };
 
-        this._frameGraphTask = new FrameGraphBlurTask(this.name, scene.getEngine(), new Vector2(1, 0), 32);
+        this._frameGraphTask = new FrameGraphBlurTask(this.name, frameGraph, scene.getEngine(), new Vector2(1, 0), 32);
         this._postProcess = this._frameGraphTask.getPostProcess();
     }
 
@@ -121,15 +123,13 @@ export class NodeRenderGraphBlurPostProcessBlock extends NodeRenderGraphBlock {
 
         const sourceConnectedPoint = this.source.connectedPoint;
         if (sourceConnectedPoint) {
-            this._frameGraphTask.sourceTexture = sourceConnectedPoint.value as FrameGraphTextureId;
+            this._frameGraphTask.sourceTexture = sourceConnectedPoint.value as FrameGraphTextureHandle;
         }
 
         const destinationConnectedPoint = this.destination.connectedPoint;
         if (destinationConnectedPoint) {
-            this._frameGraphTask.destinationTexture = destinationConnectedPoint.value as FrameGraphTextureId;
+            this._frameGraphTask.destinationTexture = destinationConnectedPoint.value as FrameGraphTextureHandle;
         }
-
-        state.frameGraph.addTask(this._frameGraphTask);
     }
 
     protected override _dumpPropertiesCode() {

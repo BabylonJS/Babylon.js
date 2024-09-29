@@ -6,6 +6,7 @@ import type { NodeRenderGraphConnectionPoint } from "../../nodeRenderGraphBlockC
 import type { NodeRenderGraphTeleportInBlock } from "./teleportInBlock";
 import type { Scene } from "../../../../scene";
 import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
+import type { FrameGraph } from "core/FrameGraph/frameGraph";
 
 /**
  * Defines a block used to receive a value from a teleport entry point
@@ -19,10 +20,11 @@ export class NodeRenderGraphTeleportOutBlock extends NodeRenderGraphBlock {
     /**
      * Create a new NodeRenderGraphTeleportOutBlock
      * @param name defines the block name
+     * @param frameGraph defines the hosting frame graph
      * @param scene defines the hosting scene
      */
-    public constructor(name: string, scene: Scene) {
-        super(name, scene);
+    public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
+        super(name, frameGraph, scene);
 
         this._isTeleportOut = true;
 

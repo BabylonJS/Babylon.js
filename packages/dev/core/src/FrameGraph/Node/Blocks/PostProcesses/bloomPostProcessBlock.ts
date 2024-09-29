@@ -6,8 +6,9 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Deco
 import type { Scene } from "../../../../scene";
 import type { BloomEffect } from "../../../../PostProcesses/bloomEffect";
 import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
-import type { FrameGraphTextureId } from "../../../frameGraphTypes";
+import type { FrameGraphTextureHandle } from "../../../frameGraphTypes";
 import { FrameGraphBloomTask } from "../../../Tasks/PostProcesses/bloomTask";
+import type { FrameGraph } from "core/FrameGraph/frameGraph";
 
 /**
  * Block that implements the bloom post process
@@ -33,12 +34,13 @@ export class NodeRenderGraphBloomPostProcessBlock extends NodeRenderGraphBlock {
     /**
      * Create a new NodeRenderGraphBloomPostProcessBlock
      * @param name defines the block name
+     * @param frameGraph defines the hosting frame graph
      * @param scene defines the hosting scene
      * @param hdr If high dynamic range textures should be used (default: false)
      * @param bloomScale The scale of the bloom effect (default: 0.5)
      */
-    public constructor(name: string, scene: Scene, hdr = false, bloomScale = 0.5) {
-        super(name, scene);
+    public constructor(name: string, frameGraph: FrameGraph, scene: Scene, hdr = false, bloomScale = 0.5) {
+        super(name, frameGraph, scene);
 
         this._additionalConstructionParameters = [hdr, bloomScale];
 
@@ -52,7 +54,7 @@ export class NodeRenderGraphBloomPostProcessBlock extends NodeRenderGraphBlock {
             return this.destination.isConnected ? this.destination : this.source;
         };
 
-        this._frameGraphTask = new FrameGraphBloomTask(this.name, scene.getEngine(), 0.75, 64, 0.2, hdr, bloomScale);
+        this._frameGraphTask = new FrameGraphBloomTask(this.name, frameGraph, scene.getEngine(), 0.75, 64, 0.2, hdr, bloomScale);
         this._postProcess = this._frameGraphTask.bloom;
     }
 
@@ -130,19 +132,17 @@ export class NodeRenderGraphBloomPostProcessBlock extends NodeRenderGraphBlock {
 
         this._frameGraphTask.name = this.name;
 
-        this.output.value = this._frameGraphTask.outputTextureReference; // the value of the output connection point is the "output" texture of the task
+        this.output.value = this._frameGraphTask.outputTexture; // the value of the output connection point is the "output" texture of the task
 
         const sourceConnectedPoint = this.source.connectedPoint;
         if (sourceConnectedPoint) {
-            this._frameGraphTask.sourceTexture = sourceConnectedPoint.value as FrameGraphTextureId;
+            this._frameGraphTask.sourceTexture = sourceConnectedPoint.value as FrameGraphTextureHandle;
         }
 
         const destinationConnectedPoint = this.destination.connectedPoint;
         if (destinationConnectedPoint) {
-            this._frameGraphTask.destinationTexture = destinationConnectedPoint.value as FrameGraphTextureId;
+            this._frameGraphTask.destinationTexture = destinationConnectedPoint.value as FrameGraphTextureHandle;
         }
-
-        state.frameGraph.addTask(this._frameGraphTask);
     }
 
     protected override _dumpPropertiesCode() {

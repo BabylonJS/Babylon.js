@@ -1,19 +1,18 @@
-import type { FrameGraphTaskOutputReference, FrameGraphTextureId, IFrameGraphTask } from "core/FrameGraph/frameGraphTypes";
+import type { FrameGraphTextureHandle } from "core/FrameGraph/frameGraphTypes";
 import type { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import type { FrameGraph } from "core/FrameGraph/frameGraph";
+import { FrameGraphTask } from "core/FrameGraph/frameGraphTask";
 
-export class FrameGraphGUITask implements IFrameGraphTask {
-    public destinationTexture?: FrameGraphTextureId;
+export class FrameGraphGUITask extends FrameGraphTask {
+    public destinationTexture: FrameGraphTextureHandle;
 
-    public readonly outputTextureReference: FrameGraphTaskOutputReference = [this, "output"];
+    public readonly outputTexture: FrameGraphTextureHandle;
 
-    private _disabled = false;
-
-    public get disabled() {
+    public override get disabled() {
         return this._disabled;
     }
 
-    public set disabled(value: boolean) {
+    public override set disabled(value: boolean) {
         this._disabled = value;
         this._adt.disablePicking = value;
     }
@@ -24,42 +23,44 @@ export class FrameGraphGUITask implements IFrameGraphTask {
 
     protected _adt: AdvancedDynamicTexture;
 
-    constructor(
-        public name: string,
-        adt: AdvancedDynamicTexture
-    ) {
+    constructor(name: string, frameGraph: FrameGraph, adt: AdvancedDynamicTexture) {
+        super(name, frameGraph);
+
         if (!adt.useAsFrameGraphTask) {
             throw new Error(`AdvancedDynamicTexture "${name}": the texture must have been created with the useAsFrameGraphTask property set to true`);
         }
         this._adt = adt;
+
+        this.outputTexture = this._frameGraph.createDanglingHandle();
     }
 
-    public isReady() {
+    public override isReady() {
         return this._adt.guiIsReady() && this._adt._layerToDispose!.isReady();
     }
 
-    public record(frameGraph: FrameGraph): void {
+    public record(): void {
         if (this.destinationTexture === undefined) {
             throw new Error("FrameGraphGUITask: destinationTexture is required");
         }
 
-        const outputTextureHandle = frameGraph.getTextureHandle(this.destinationTexture);
+        this._frameGraph.resolveDanglingHandle(this.outputTexture, this.destinationTexture);
 
-        const pass = frameGraph.addRenderPass(this.name);
+        const pass = this._frameGraph.addRenderPass(this.name);
 
-        pass.setRenderTarget(outputTextureHandle);
+        pass.setRenderTarget(this.outputTexture);
         pass.setExecuteFunc((context) => {
             this._adt._checkUpdate(null);
             context.render(this._adt._layerToDispose!);
         });
 
-        const passDisabled = frameGraph.addRenderPass(this.name + "_disabled", true);
+        const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
 
-        passDisabled.setRenderTarget(outputTextureHandle);
+        passDisabled.setRenderTarget(this.outputTexture);
         passDisabled.setExecuteFunc((_context) => {});
     }
 
-    public dispose(): void {
+    public override dispose(): void {
         this._adt.dispose();
+        super.dispose();
     }
 }

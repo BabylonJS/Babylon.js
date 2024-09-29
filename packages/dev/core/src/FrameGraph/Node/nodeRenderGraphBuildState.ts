@@ -1,5 +1,4 @@
 import type { Nullable } from "../../types";
-import type { FrameGraph } from "../frameGraph";
 import type { NodeRenderGraphConnectionPoint } from "./nodeRenderGraphBlockConnectionPoint";
 import type { Observable } from "../../Misc/observable";
 import { Logger } from "../../Misc/logger";
@@ -10,9 +9,6 @@ import { Logger } from "../../Misc/logger";
 export class NodeRenderGraphBuildState {
     /** Gets or sets the build identifier */
     public buildId: number;
-
-    /** Gets or sets the frame graph */
-    public frameGraph: FrameGraph;
 
     /** Gets or sets a boolean indicating that verbose mode is on */
     public verbose = false;

@@ -5,7 +5,8 @@ import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRender
 import type { Scene } from "../../../../scene";
 import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
 import { FrameGraphCopyToTextureTask } from "../../../Tasks/Texture/copyToTextureTask";
-import type { FrameGraphTextureId } from "../../../frameGraphTypes";
+import type { FrameGraphTextureHandle } from "../../../frameGraphTypes";
+import type { FrameGraph } from "core/FrameGraph/frameGraph";
 
 /**
  * Block used to copy a texture
@@ -23,10 +24,11 @@ export class NodeRenderGraphCopyTextureBlock extends NodeRenderGraphBlock {
     /**
      * Create a new NodeRenderGraphCopyTextureBlock
      * @param name defines the block name
+     * @param frameGraph defines the hosting frame graph
      * @param scene defines the hosting scene
      */
-    public constructor(name: string, scene: Scene) {
-        super(name, scene);
+    public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
+        super(name, frameGraph, scene);
 
         this.registerInput("source", NodeRenderGraphBlockConnectionPointTypes.Texture);
         this.registerInput("destination", NodeRenderGraphBlockConnectionPointTypes.Texture);
@@ -36,7 +38,7 @@ export class NodeRenderGraphCopyTextureBlock extends NodeRenderGraphBlock {
         this.destination.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
         this.output._typeConnectionSource = this.destination;
 
-        this._frameGraphTask = new FrameGraphCopyToTextureTask(name);
+        this._frameGraphTask = new FrameGraphCopyToTextureTask(name, frameGraph);
     }
 
     /**
@@ -72,19 +74,17 @@ export class NodeRenderGraphCopyTextureBlock extends NodeRenderGraphBlock {
 
         this._frameGraphTask.name = this.name;
 
-        this.output.value = this._frameGraphTask.outputTextureReference; // the value of the output connection point is the "output" texture of the task
+        this.output.value = this._frameGraphTask.outputTexture; // the value of the output connection point is the "output" texture of the task
 
         const sourceConnectedPoint = this.source.connectedPoint;
         if (sourceConnectedPoint) {
-            this._frameGraphTask.sourceTexture = sourceConnectedPoint.value as FrameGraphTextureId;
+            this._frameGraphTask.sourceTexture = sourceConnectedPoint.value as FrameGraphTextureHandle;
         }
 
         const destinationConnectedPoint = this.destination.connectedPoint;
         if (destinationConnectedPoint) {
-            this._frameGraphTask.destinationTexture = destinationConnectedPoint.value as FrameGraphTextureId;
+            this._frameGraphTask.destinationTexture = destinationConnectedPoint.value as FrameGraphTextureHandle;
         }
-
-        state.frameGraph.addTask(this._frameGraphTask);
     }
 }
 
