@@ -213,9 +213,6 @@ export class FrameGraph {
         creationOptions?: FrameGraphTextureCreationOptions
     ) {
         if (handle === undefined) {
-            if (this._textureManager._textures.has(danglingHandle)) {
-                throw new Error(`resolveDanglingHandle: Handle ${handle} is not dangling!`);
-            }
             if (newTextureName === undefined || creationOptions === undefined) {
                 throw new Error("resolveDanglingHandle: Either handle or newTextureName and creationOptions must be provided.");
             }

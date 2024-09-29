@@ -44,6 +44,45 @@ export class FrameGraphTextureManager {
         this._addSystemTextures();
     }
 
+    public isBackbuffer(handle: FrameGraphTextureHandle): boolean {
+        if (handle === backbufferColorTextureHandle || handle === backbufferDepthStencilTextureHandle) {
+            return true;
+        }
+
+        const textureEntry = this._textures.get(handle);
+        if (!textureEntry) {
+            return false;
+        }
+
+        return textureEntry.refHandle === backbufferColorTextureHandle || textureEntry.refHandle === backbufferDepthStencilTextureHandle;
+    }
+
+    public isBackbufferColor(handle: FrameGraphTextureHandle): boolean {
+        if (handle === backbufferColorTextureHandle) {
+            return true;
+        }
+
+        const textureEntry = this._textures.get(handle);
+        if (!textureEntry) {
+            return false;
+        }
+
+        return textureEntry.refHandle === backbufferColorTextureHandle;
+    }
+
+    public isBackbufferDepthStencil(handle: FrameGraphTextureHandle): boolean {
+        if (handle === backbufferDepthStencilTextureHandle) {
+            return true;
+        }
+
+        const textureEntry = this._textures.get(handle);
+        if (!textureEntry) {
+            return false;
+        }
+
+        return textureEntry.refHandle === backbufferDepthStencilTextureHandle;
+    }
+
     public getTextureCreationOptions(handle: FrameGraphTextureHandle): FrameGraphTextureCreationOptions {
         return this._textures.get(handle)!.creationOptions;
     }
@@ -128,43 +167,52 @@ export class FrameGraphTextureManager {
 
     public allocateTextures() {
         this._textures.forEach((entry) => {
-            if (!entry.texture && entry.namespace !== FrameGraphTextureNamespace.External) {
-                if (entry.parentHandle !== undefined) {
-                    const creationOptions = entry.creationOptions;
-                    const size = creationOptions.sizeIsPercentage ? this.getAbsoluteDimensions(creationOptions.size) : creationOptions.size;
-
-                    const parentEntry = this._textures.get(entry.parentHandle)!;
-                    const parentInternalTexture = parentEntry.texture!.textures![entry.parentTextureIndex!];
-
-                    const creationOptionsForTexture: RenderTargetCreationOptions = {
-                        createMipMaps: creationOptions.options.createMipMaps,
-                        generateMipMaps: creationOptions.options.generateMipMaps,
-                        generateDepthBuffer: creationOptions.options.generateDepthBuffer,
-                        generateStencilBuffer: creationOptions.options.generateStencilBuffer,
-                        samples: creationOptions.options.samples,
-                        type: creationOptions.options.types![0],
-                        format: creationOptions.options.formats![0],
-                        useSRGBBuffer: creationOptions.options.useSRGBBuffers![0],
-                        colorAttachment: parentInternalTexture,
-                        label: creationOptions.options.label,
-                    };
-
-                    entry.texture = this._engine.createRenderTargetTexture(size, creationOptionsForTexture);
-                    parentInternalTexture.incrementReferences();
-                } else if (entry.refHandle !== undefined) {
+            if (!entry.texture) {
+                if (entry.refHandle !== undefined) {
                     const refEntry = this._textures.get(entry.refHandle)!;
 
                     entry.texture = refEntry.texture;
                     entry.texture?.texture?.incrementReferences();
-                } else {
-                    const creationOptions = entry.creationOptions;
-                    const size = creationOptions.sizeIsPercentage ? this.getAbsoluteDimensions(creationOptions.size) : creationOptions.size;
 
-                    entry.texture = this._engine.createMultipleRenderTarget(size, creationOptions.options, false);
+                    if (refEntry.refHandle === backbufferColorTextureHandle) {
+                        entry.refHandle = backbufferColorTextureHandle;
+                    }
+                    if (refEntry.refHandle === backbufferDepthStencilTextureHandle) {
+                        entry.refHandle = backbufferDepthStencilTextureHandle;
+                    }
+                } else if (entry.namespace !== FrameGraphTextureNamespace.External) {
+                    if (entry.parentHandle !== undefined) {
+                        const creationOptions = entry.creationOptions;
+                        const size = creationOptions.sizeIsPercentage ? this.getAbsoluteDimensions(creationOptions.size) : creationOptions.size;
+
+                        const parentEntry = this._textures.get(entry.parentHandle)!;
+                        const parentInternalTexture = parentEntry.texture!.textures![entry.parentTextureIndex!];
+
+                        const creationOptionsForTexture: RenderTargetCreationOptions = {
+                            createMipMaps: creationOptions.options.createMipMaps,
+                            generateMipMaps: creationOptions.options.generateMipMaps,
+                            generateDepthBuffer: creationOptions.options.generateDepthBuffer,
+                            generateStencilBuffer: creationOptions.options.generateStencilBuffer,
+                            samples: creationOptions.options.samples,
+                            type: creationOptions.options.types![0],
+                            format: creationOptions.options.formats![0],
+                            useSRGBBuffer: creationOptions.options.useSRGBBuffers![0],
+                            colorAttachment: parentInternalTexture,
+                            label: creationOptions.options.label,
+                        };
+
+                        entry.texture = this._engine.createRenderTargetTexture(size, creationOptionsForTexture);
+                        parentInternalTexture.incrementReferences();
+                    } else {
+                        const creationOptions = entry.creationOptions;
+                        const size = creationOptions.sizeIsPercentage ? this.getAbsoluteDimensions(creationOptions.size) : creationOptions.size;
+
+                        entry.texture = this._engine.createMultipleRenderTarget(size, creationOptions.options, false);
+                    }
                 }
             }
 
-            if (entry.texture) {
+            if (entry.texture && entry.refHandle === undefined) {
                 entry.debug?.dispose();
                 entry.debug = this._createDebugTexture(entry.name, entry.texture);
             }
@@ -176,10 +224,6 @@ export class FrameGraphTextureManager {
     }
 
     public resolveDanglingHandle(danglingHandle: FrameGraphTextureHandle, handle: FrameGraphTextureHandle) {
-        if (this._textures.has(danglingHandle)) {
-            throw new Error(`resolveDanglingHandle: Handle ${handle} is not dangling!`);
-        }
-
         if (!this._textures.has(handle)) {
             throw new Error(`resolveDanglingHandle: Handle ${handle} does not exist!`);
         }

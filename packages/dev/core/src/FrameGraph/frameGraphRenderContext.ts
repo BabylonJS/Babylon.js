@@ -32,15 +32,15 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     }
 
     public isBackbuffer(handle: FrameGraphTextureHandle): boolean {
-        return handle === backbufferColorTextureHandle || handle === backbufferDepthStencilTextureHandle;
+        return this._textureManager.isBackbuffer(handle);
     }
 
     public isBackbufferColor(handle: FrameGraphTextureHandle): boolean {
-        return handle === backbufferColorTextureHandle;
+        return this._textureManager.isBackbufferColor(handle);
     }
 
     public isBackbufferDepthStencil(handle: FrameGraphTextureHandle): boolean {
-        return handle === backbufferDepthStencilTextureHandle;
+        return this._textureManager.isBackbufferDepthStencil(handle);
     }
 
     /**
@@ -212,9 +212,9 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         this._flushDebugMessages();
 
         if (!renderTarget) {
-            if (handle === backbufferColorTextureHandle) {
+            if (handle === backbufferColorTextureHandle || textureSlot.refHandle === backbufferColorTextureHandle) {
                 this._engine.restoreDefaultFramebuffer();
-            } else if (handle === backbufferDepthStencilTextureHandle) {
+            } else if (handle === backbufferDepthStencilTextureHandle || textureSlot.refHandle === backbufferDepthStencilTextureHandle) {
                 this._engine.restoreDefaultFramebuffer();
             }
         } else {
