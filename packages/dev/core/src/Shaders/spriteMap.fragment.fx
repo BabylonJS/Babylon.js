@@ -72,17 +72,28 @@ void main(){
         vec2 ratio = frameData[2].xy / frameData[0].zw;
 
         //rotated
-        if (frameData[2].z == 1.){
+        #ifdef FR_CW
+            if (frameData[2].z == 1.){
+                tileUV.xy = tileUV.yx;
+            } else {
+                tileUV.xy = fract(tUV).xy;
+            }
             #ifdef FLIPU
                 tileUV.y = 1.0 - tileUV.y;
             #endif
-            tileUV.xy = tileUV.yx;
-        } else {
-            tileUV.xy = fract(tUV).xy;
-            #ifdef FLIPU
-                tileUV.y = 1.0 - tileUV.y;
-            #endif
-        }
+        #else
+            if (frameData[2].z == 1.){
+                #ifdef FLIPU
+                    tileUV.y = 1.0 - tileUV.y;
+                #endif
+                tileUV.xy = tileUV.yx;
+            } else {
+                tileUV.xy = fract(tUV).xy;
+                #ifdef FLIPU
+                    tileUV.y = 1.0 - tileUV.y;
+                #endif
+            }
+        #endif
 
 
         vec4 nc = texture2D(spriteSheet, tileUV * frameSize+offset);
