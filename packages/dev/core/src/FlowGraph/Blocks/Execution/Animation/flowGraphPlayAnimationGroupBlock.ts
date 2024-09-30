@@ -4,7 +4,8 @@ import { FlowGraphAsyncExecutionBlock } from "../../../flowGraphAsyncExecutionBl
 import { RichTypeAny, RichTypeNumber, RichTypeBoolean } from "../../../flowGraphRichTypes";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
-import type { AnimationGroup } from "core/Animations/animationGroup";
+import { AnimationGroup } from "core/Animations/animationGroup";
+import type { Animation } from "core/Animations/animation";
 
 /**
  * @experimental
@@ -59,6 +60,16 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
      */
     public readonly animationGroupInput: FlowGraphDataConnection<AnimationGroup>;
 
+    /**
+     * If provided this animation will be used. Priority will be given to the animation group input.
+     */
+    public readonly animationInput: FlowGraphDataConnection<Animation>;
+
+    /**
+     * Input connection: The target object that will be animated. If animation group is provided this input will be ignored.
+     */
+    public readonly targetInput: FlowGraphDataConnection<any>;
+
     public constructor(
         /**
          * the configuration of the block
@@ -77,6 +88,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
 
         this.currentAnimationGroup = this.registerDataOutput("currentAnimationGroup", RichTypeAny);
         this.animationGroupInput = this.registerDataInput("animationGroupInput", RichTypeAny, config.animationGroup);
+        this.animationInput = this.registerDataInput("animationInput", RichTypeAny);
     }
 
     /**
@@ -85,21 +97,39 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
      */
     public _preparePendingTasks(context: FlowGraphContext): void {
         const ag = this.animationGroupInput.getValue(context);
-        if (!ag) {
-            throw new Error("No animation group provided.");
+        const animation = this.animationInput.getValue(context);
+        if (!ag && !animation) {
+            throw new Error("No animation provided.");
         } else {
+            // if an animation group was created, dispose it and create a new one
+            // TODO - is it possible to be sure this aniamtionGroup can be reused?
+            const currentAnimationGroup = this.currentAnimationGroup.getValue(context);
+            if (currentAnimationGroup) {
+                currentAnimationGroup.dispose();
+            }
+            let animationGroupToUse = ag;
+            // check which animation to use
+            if (animation && !animationGroupToUse) {
+                const target = this.targetInput.getValue(context);
+                if (!target) {
+                    this.err._activateSignal(context);
+                    return;
+                }
+                animationGroupToUse = new AnimationGroup("flowGraphAnimationGroup-" + animation.name + "-" + target.name, context.configuration.scene);
+                animationGroupToUse.addTargetedAnimation(animation, target);
+            }
             // not accepting 0
             const speed = this.speed.getValue(context) || 1;
             const from = this.from.getValue(context) ?? 0;
             // not accepting 0
             const to = this.to.getValue(context) || ag.to;
             const loop = this.loop.getValue(context);
-            this.currentAnimationGroup.setValue(ag, context);
-            ag.start(loop, speed, from, to);
-            ag.onAnimationGroupEndObservable.add(() => this._onAnimationGroupEnd(context));
-            ag.onAnimationEndObservable.add(() => this._eventsSignalOutputs["animationEnd"]._activateSignal(context));
-            ag.onAnimationLoopObservable.add(() => this._eventsSignalOutputs["animationLoop"]._activateSignal(context));
-            ag.onAnimationGroupLoopObservable.add(() => this._eventsSignalOutputs["animationGroupLoop"]._activateSignal(context));
+            this.currentAnimationGroup.setValue(animationGroupToUse, context);
+            animationGroupToUse.start(loop, speed, from, to);
+            animationGroupToUse.onAnimationGroupEndObservable.add(() => this._onAnimationGroupEnd(context));
+            animationGroupToUse.onAnimationEndObservable.add(() => this._eventsSignalOutputs["animationEnd"]._activateSignal(context));
+            animationGroupToUse.onAnimationLoopObservable.add(() => this._eventsSignalOutputs["animationLoop"]._activateSignal(context));
+            animationGroupToUse.onAnimationGroupLoopObservable.add(() => this._eventsSignalOutputs["animationGroupLoop"]._activateSignal(context));
         }
     }
 
@@ -129,7 +159,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
      * Stop any currently running animations.
      */
     public _cancelPendingTasks(context: FlowGraphContext): void {
-        const ag = this.animationGroupInput.getValue(context);
+        const ag = this.currentAnimationGroup.getValue(context);
         if (ag) {
             ag.stop();
         }
