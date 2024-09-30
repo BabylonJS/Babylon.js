@@ -39,7 +39,7 @@ export class FlowGraphThrottleBlock extends FlowGraphExecutionBlockWithOutSignal
         // in seconds
         const durationValue = this.duration.getValue(context);
         if (durationValue <= 0 || isNaN(durationValue) || !isFinite(durationValue)) {
-            return this.err._activateSignal(context);
+            return this.error._activateSignal(context);
         }
         const lastRemainingTime = context._getExecutionVariable(this, "lastRemainingTime", NaN);
         const currentTime = Date.now();

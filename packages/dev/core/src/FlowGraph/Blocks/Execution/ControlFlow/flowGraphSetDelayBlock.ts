@@ -41,13 +41,13 @@ export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
     public _preparePendingTasks(context: FlowGraphContext): void {
         const duration = this.duration.getValue(context);
         if (duration < 0 || isNaN(duration) || !isFinite(duration)) {
-            return this.err._activateSignal(context);
+            return this.error._activateSignal(context);
         }
 
         // active delays are global to the context
         const activeDelays: number = context._getGlobalContextVariable("activeDelays", 0);
         if (activeDelays >= FlowGraphSetDelayBlock.MaxParallelDelayCount) {
-            return this.err._activateSignal(context);
+            return this.error._activateSignal(context);
         }
         // global - "This value MUST be unique across all previous activations of all flow/setDelay nodes of the graph."
         const lastDelayIndex: number = context._getGlobalContextVariable("lastDelayIndex", -1);

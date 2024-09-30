@@ -112,7 +112,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             if (animation && !animationGroupToUse) {
                 const target = this.targetInput.getValue(context);
                 if (!target) {
-                    this.err._activateSignal(context);
+                    this.error._activateSignal(context);
                     return;
                 }
                 animationGroupToUse = new AnimationGroup("flowGraphAnimationGroup-" + animation.name + "-" + target.name, context.configuration.scene);

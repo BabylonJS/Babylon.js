@@ -44,7 +44,7 @@ export class FlowGraphSetPropertyBlock<T> extends FlowGraphExecutionBlockWithOut
             const accessorContainer = this.templateComponent.getAccessor(this.config.pathConverter, context);
             accessorContainer.info.set(value, accessorContainer.object);
         } catch (e) {
-            this.err._activateSignal(context);
+            this.error._activateSignal(context);
         }
         this.out._activateSignal(context);
     }
