@@ -21,6 +21,7 @@ enum FrameGraphPassType {
 
 /**
  * Class used to implement the frame graph
+ * @experimental
  */
 export class FrameGraph {
     private _engine: AbstractEngine;

@@ -6,6 +6,9 @@ import { FrameGraphCullPass } from "./Passes/cullPass";
 import { FrameGraphRenderPass } from "./Passes/renderPass";
 import type { Nullable } from "core/types";
 
+/*
+ * @experimental
+ */
 export abstract class FrameGraphTask {
     protected _frameGraph: FrameGraph;
 

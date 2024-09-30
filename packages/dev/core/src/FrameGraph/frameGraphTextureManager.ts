@@ -26,7 +26,10 @@ enum FrameGraphTextureNamespace {
     External,
 }
 
-/** @internal */
+/*
+ * @experimental
+ * @internal
+ */
 export class FrameGraphTextureManager {
     private static _Counter = 2; // 0 and 1 are reserved for backbuffer textures
 

@@ -13,6 +13,9 @@ import type { Effect } from "../Materials/effect";
 import type { FrameGraphTextureManager } from "./frameGraphTextureManager";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 
+/*
+ * @experimental
+ */
 export class FrameGraphRenderContext extends FrameGraphContext {
     private _effectRenderer: EffectRenderer;
     private _currentRenderTargetHandle: FrameGraphTextureHandle;
