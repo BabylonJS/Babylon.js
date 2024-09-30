@@ -95,7 +95,6 @@ void main(){
             }
         #endif
 
-
         vec4 nc = texture2D(spriteSheet, tileUV * frameSize+offset);
         if (i == 0){
             color = nc;
