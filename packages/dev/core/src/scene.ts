@@ -4648,6 +4648,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     }
 
     /**
+     * If this function is defined it will take precedence over the standard render() function.
+     */
+    public customRenderFunction?: () => void;
+
+    /**
      * Render the scene
      * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)
      * @param ignoreAnimations defines a boolean indicating if animations should not be executed (false by default)
@@ -4721,73 +4726,80 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         // Before render
         this.onBeforeRenderObservable.notifyObservers(this);
-
-        const engine = this.getEngine();
-
-        // Customs render targets
-        this.onBeforeRenderTargetsRenderObservable.notifyObservers(this);
-
-        const currentActiveCamera = this.activeCameras?.length ? this.activeCameras[0] : this.activeCamera;
-        if (this.renderTargetsEnabled) {
-            Tools.StartPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
-            this._intermediateRendering = true;
-            for (let customIndex = 0; customIndex < this.customRenderTargets.length; customIndex++) {
-                const renderTarget = this.customRenderTargets[customIndex];
-                if (renderTarget._shouldRender()) {
-                    this._renderId++;
-
-                    this.activeCamera = renderTarget.activeCamera || this.activeCamera;
-
-                    if (!this.activeCamera) {
-                        throw new Error("Active camera not set");
-                    }
-
-                    // Viewport
-                    engine.setViewport(this.activeCamera.viewport);
-
-                    // Camera
-                    this.updateTransformMatrix();
-
-                    renderTarget.render(currentActiveCamera !== this.activeCamera, this.dumpNextRenderTargets);
-                }
-            }
-            Tools.EndPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
-            this._intermediateRendering = false;
+        // Custom render function?
+        if (this.customRenderFunction) {
             this._renderId++;
-        }
+            this._engine.currentRenderPassId = Constants.RENDERPASS_MAIN;
 
-        this._engine.currentRenderPassId = currentActiveCamera?.renderPassId ?? Constants.RENDERPASS_MAIN;
-
-        // Restore back buffer
-        this.activeCamera = currentActiveCamera;
-        if (this._activeCamera && this._activeCamera.cameraRigMode !== Constants.RIG_MODE_CUSTOM && !this.prePass) {
-            this._bindFrameBuffer(this._activeCamera, false);
-        }
-        this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
-
-        for (const step of this._beforeClearStage) {
-            step.action();
-        }
-
-        // Clear
-        this._clearFrameBuffer(this.activeCamera);
-
-        // Collects render targets from external components.
-        for (const step of this._gatherRenderTargetsStage) {
-            step.action(this._renderTargets);
-        }
-
-        // Multi-cameras?
-        if (this.activeCameras && this.activeCameras.length > 0) {
-            for (let cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
-                this._processSubCameras(this.activeCameras[cameraIndex], cameraIndex > 0);
-            }
+            this.customRenderFunction();
         } else {
-            if (!this.activeCamera) {
-                throw new Error("No camera defined");
+            const engine = this.getEngine();
+
+            // Customs render targets
+            this.onBeforeRenderTargetsRenderObservable.notifyObservers(this);
+
+            const currentActiveCamera = this.activeCameras?.length ? this.activeCameras[0] : this.activeCamera;
+            if (this.renderTargetsEnabled) {
+                Tools.StartPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
+                this._intermediateRendering = true;
+                for (let customIndex = 0; customIndex < this.customRenderTargets.length; customIndex++) {
+                    const renderTarget = this.customRenderTargets[customIndex];
+                    if (renderTarget._shouldRender()) {
+                        this._renderId++;
+
+                        this.activeCamera = renderTarget.activeCamera || this.activeCamera;
+
+                        if (!this.activeCamera) {
+                            throw new Error("Active camera not set");
+                        }
+
+                        // Viewport
+                        engine.setViewport(this.activeCamera.viewport);
+
+                        // Camera
+                        this.updateTransformMatrix();
+
+                        renderTarget.render(currentActiveCamera !== this.activeCamera, this.dumpNextRenderTargets);
+                    }
+                }
+                Tools.EndPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
+                this._intermediateRendering = false;
+                this._renderId++;
             }
 
-            this._processSubCameras(this.activeCamera, !!this.activeCamera.outputRenderTarget);
+            this._engine.currentRenderPassId = currentActiveCamera?.renderPassId ?? Constants.RENDERPASS_MAIN;
+
+            // Restore back buffer
+            this.activeCamera = currentActiveCamera;
+            if (this._activeCamera && this._activeCamera.cameraRigMode !== Constants.RIG_MODE_CUSTOM && !this.prePass) {
+                this._bindFrameBuffer(this._activeCamera, false);
+            }
+            this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
+
+            for (const step of this._beforeClearStage) {
+                step.action();
+            }
+
+            // Clear
+            this._clearFrameBuffer(this.activeCamera);
+
+            // Collects render targets from external components.
+            for (const step of this._gatherRenderTargetsStage) {
+                step.action(this._renderTargets);
+            }
+
+            // Multi-cameras?
+            if (this.activeCameras && this.activeCameras.length > 0) {
+                for (let cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
+                    this._processSubCameras(this.activeCameras[cameraIndex], cameraIndex > 0);
+                }
+            } else {
+                if (!this.activeCamera) {
+                    throw new Error("No camera defined");
+                }
+
+                this._processSubCameras(this.activeCamera, !!this.activeCamera.outputRenderTarget);
+            }
         }
 
         // Intersection checks
