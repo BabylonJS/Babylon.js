@@ -372,6 +372,8 @@ export class Camera extends Node {
 
     /**
      * Observable triggered when the camera view matrix has changed.
+     * Beware of reentrance! Some methods like Camera.getViewMatrix and Camera.getWorldMatrix can trigger the onViewMatrixChangedObservable
+     * observable, so using them inside an observer will require additional logic to avoid a stack overflow error.
      */
     public onViewMatrixChangedObservable = new Observable<Camera>();
     /**
