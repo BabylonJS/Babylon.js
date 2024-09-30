@@ -70,7 +70,7 @@ void main(){
         vec2 frameSize = (frameData[0].zw) / spriteMapSize;
         vec2 offset = frameData[0].xy * sheetUnits;
         vec2 ratio = frameData[2].xy / frameData[0].zw;
-        
+
         //rotated
         if (frameData[2].z == 1.){
             #ifdef FLIPU
@@ -78,7 +78,7 @@ void main(){
             #endif
             tileUV.xy = tileUV.yx;
         } else {
-            tileUV.xy = 1.0 - fract(tUV).xy;
+            tileUV.xy = fract(tUV).xy;
             #ifdef FLIPU
                 tileUV.y = 1.0 - tileUV.y;
             #endif
