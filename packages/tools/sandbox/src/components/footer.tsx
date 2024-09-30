@@ -22,7 +22,7 @@ interface IFooterProps {
 }
 
 /**
- *
+ * Footer
  */
 export class Footer extends React.Component<IFooterProps> {
     private _cameraNames: string[] = [];
