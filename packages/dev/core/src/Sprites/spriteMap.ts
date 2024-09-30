@@ -71,6 +71,7 @@ export interface ISpriteMapOptions {
     /**
      * Rotation direction of the frame by 90 degrees.
      * Applied when the the frame's "rotated" parameter is true.
+     * Default is CCW.
      */
     frameRotationDirection?: SpriteMapFrameRotationDirection;
 }
