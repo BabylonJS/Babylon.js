@@ -1,21 +1,6 @@
 {
-    "fromTag": "7.26.5",
+    "fromTag": "7.27.0",
     "changelog": {
-        "7.26.5": [
-            {
-                "pr": "15623",
-                "title": "Store camera state",
-                "description": "Not sure how this got missed for so long, but we weren't actually storing the camera state after doing the framing, so restoring the stored camera state (e.g. double click) was restoring to the wrong camera pose.",
-                "author": {
-                    "name": "ryantrem",
-                    "url": "https://github.com/ryantrem"
-                },
-                "files": [
-                    "packages/tools/viewer-alpha/src/viewer.ts"
-                ],
-                "tags": []
-            }
-        ],
         "7.27.0": [
             {
                 "pr": "15587",
@@ -51,6 +36,386 @@
                 "files": [
                     "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelTracingPass.ts",
                     "packages/dev/core/src/Shaders/iblShadowVoxelTracing.fragment.fx"
+                ],
+                "tags": []
+            }
+        ],
+        "7.27.1": [
+            {
+                "pr": "15654",
+                "title": "- Enable the ability to remove vertices/faces",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setPositionsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/nullBlock.ts"
+                ],
+                "tags": [
+                    "nge"
+                ]
+            },
+            {
+                "pr": "15652",
+                "title": "Optimize node improvements for faces",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryOptimizeBlock.ts"
+                ],
+                "tags": [
+                    "nge"
+                ]
+            },
+            {
+                "pr": "15651",
+                "title": "Debug node note deleted when using undo",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/debugBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryElbowBlock.ts",
+                    "packages/dev/sharedUiComponents/src/historyStack.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodeLink.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/stateManager.ts",
+                    "packages/tools/nodeEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphEditor.tsx"
+                ],
+                "tags": [
+                    "nme",
+                    "nge"
+                ]
+            },
+            {
+                "pr": "15403",
+                "title": "Sandbox error msg for unhanled errors",
+                "description": "Added global error handler for unhandled rejections and exceptions.\r\nDisplays an error message in case of such errors directly in the sandbox and hides the loader.",
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/loaders/src/OBJ/solidParser.ts",
+                    "packages/tools/sandbox/src/components/footer.tsx",
+                    "packages/tools/sandbox/src/components/renderingZone.tsx",
+                    "packages/tools/sandbox/src/sandbox.tsx",
+                    "packages/tools/sandbox/src/scss/main.scss"
+                ],
+                "tags": [
+                    "stale"
+                ]
+            },
+            {
+                "pr": "15646",
+                "title": "Spritemap",
+                "description": "Fixing rotation of sprites in multiple layers.\r\nhttps://forum.babylonjs.com/t/unexpected-rotation-on-multi-layered-spritemap/53668/5\r\n\r\n#YCY2IL#2273\r\n\r\nThe tile in the right bottom corner in layer 0 must be brown and rotated however the torch musn't be rotated.",
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/spriteMap.fragment.fx",
+                    "packages/dev/core/src/Shaders/spriteMap.vertex.fx",
+                    "packages/dev/core/src/Sprites/spriteMap.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15643",
+                "title": "added floatarray stride mode for points",
+                "description": "User can provide a flat Float32Array as points coordinates and set a stride option to draw separate lines.\r\n\r\nhttps://forum.babylonjs.com/t/low-level-havok-debug-lines-visualization/53484/41?u=roland\r\n\r\n#TCURLI#3",
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/greasedLineBuilder.ts",
+                    "packages/dev/core/src/Misc/greasedLineTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15644",
+                "title": "dont sync bbinfo fix",
+                "description": "https://forum.babylonjs.com/t/greasedline-mesh-doesnt-respect-donotsyncboundinginfo/53829",
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineBaseMesh.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineMesh.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineRibbonMesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15647",
+                "title": "Camera: Add warnings about re-entrance in onViewMatrixChanged observables",
+                "description": "See https://forum.babylonjs.com/t/prevent-excessive-onviewmatrixchangedobservable/53790/6",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/camera.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "documentation"
+                ]
+            },
+            {
+                "pr": "15648",
+                "title": "Update greasedLineSimpleMaterial.ts",
+                "description": "https://forum.babylonjs.com/t/greasedlinesimplematerial-infnite-loop-in-color-getter/53841\r\n\r\nFixing issue with the color getter",
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLineSimpleMaterial.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15636",
+                "title": "Feature to support ObjLoader Zbrush MRGB",
+                "description": "https://forum.babylonjs.com/t/feature-for-obj-loader-zbrush-mrgb-support/53190/3",
+                "author": {
+                    "name": "Moriyer",
+                    "url": "https://github.com/Moriyer"
+                },
+                "files": [
+                    "packages/dev/loaders/src/OBJ/solidParser.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15635",
+                "title": "Updating Viewer readme",
+                "description": "This change is mostly updating the new viewer's readme.md with a bit more high level info about how to use and customize the viewer. My hope is that the readme.md will basically be the top level doc page for the viewer, and then we'll have more detailed doc pages plus the API documentation. This will be easier to setup after @RaananW merges the docs repo into the main BJS monorepo. For now I'm just updating the top level readme.md.\r\n\r\nThis change also adds photoStudio.env to an assets folder of the viewer package.\r\n\r\nLastly, this change removes the `\"sideEffects\": false` from the package.json. I found in various integrations that with this set, the custom element registration does not work since it in fact depends on side effects (effectively a module level call to `customElements.define`, which is the standard pattern for custom elements). I will talk with @RaananW more about this specific change.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/public/@babylonjs/viewer-alpha/assets/photoStudio.env",
+                    "packages/public/@babylonjs/viewer-alpha/docs/ViewerDefault.jpg",
+                    "packages/public/@babylonjs/viewer-alpha/docs/ViewerParts.jpg",
+                    "packages/public/@babylonjs/viewer-alpha/docs/ViewerSlots.jpg",
+                    "packages/public/@babylonjs/viewer-alpha/docs/ViewerStyled.jpg",
+                    "packages/public/@babylonjs/viewer-alpha/package.json",
+                    "packages/public/@babylonjs/viewer-alpha/readme.md",
+                    "packages/public/@babylonjs/viewer-alpha/test/apps/web/index.html",
+                    "packages/tools/viewer-alpha/test/apps/web/analyze.html",
+                    "packages/tools/viewer-alpha/test/apps/web/coverage.html",
+                    "packages/tools/viewer-alpha/test/apps/web/index.html"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15633",
+                "title": "WebGPU: fixed incorrect snapshot mode when reset is called while snapshot recording is active",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuSnapshotRendering.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "15640",
+                "title": "Decal: Misc fixes for decal management",
+                "description": "See https://forum.babylonjs.com/t/user-texture-for-decalmap/53777\r\n\r\nI've also simplified the use of `renderTexture` so that users don't have to call `isReady()` themselves. However, as calling `isReady()` can be time-consuming, it's possible to disable this feature in cases where the user knows everything is ready and doesn't need to double-check every time.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Meshes/meshUVSpaceRenderer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "15632",
+                "title": "Fix wacky test",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15628",
+                "title": "Remove AbstractScene",
+                "description": "AbstractScene was an internal class used to share data definition between Scene and AssetContainer. It was misleading and used to extend Scene (and this AssetContainer for no reason)\r\n\r\n",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animationGroup.ts",
+                    "packages/dev/core/src/Audio/audioSceneComponent.ts",
+                    "packages/dev/core/src/Bones/skeleton.ts",
+                    "packages/dev/core/src/IAssetContainer.ts",
+                    "packages/dev/core/src/Layers/effectLayerSceneComponent.ts",
+                    "packages/dev/core/src/Layers/glowLayer.ts",
+                    "packages/dev/core/src/Layers/highlightLayer.ts",
+                    "packages/dev/core/src/Layers/layerSceneComponent.ts",
+                    "packages/dev/core/src/LensFlares/lensFlareSystemSceneComponent.ts",
+                    "packages/dev/core/src/Lights/Shadows/shadowGeneratorSceneComponent.ts",
+                    "packages/dev/core/src/Materials/Textures/Procedurals/proceduralTextureSceneComponent.ts",
+                    "packages/dev/core/src/Materials/Textures/baseTexture.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Meshes/geometry.ts",
+                    "packages/dev/core/src/Morph/morphTargetManager.ts",
+                    "packages/dev/core/src/PostProcesses/postProcess.ts",
+                    "packages/dev/core/src/Probes/reflectionProbe.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderer.ts",
+                    "packages/dev/core/src/Rendering/prePassRendererSceneComponent.ts",
+                    "packages/dev/core/src/Rendering/subSurfaceSceneComponent.ts",
+                    "packages/dev/core/src/assetContainer.ts",
+                    "packages/dev/core/src/index.ts",
+                    "packages/dev/core/src/node.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/core/src/sceneComponent.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15630",
+                "title": "Add subdivisions for PlaneBlock",
+                "description": "Fix #15627 ",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/groundBuilder.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/planeBlock.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15626",
+                "title": "Inspector: Fix texture preview in WebGPU",
+                "description": "See https://forum.babylonjs.com/t/texture-preview-does-not-work-in-the-latest-webgpu-playground/53729",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/index.ts",
+                    "packages/dev/core/src/Misc/textureTools.ts",
+                    "packages/dev/core/src/Shaders/lod.fragment.fx",
+                    "packages/dev/core/src/Shaders/lodCube.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/lod.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/lodCube.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "15631",
+                "title": "Fix missing import for Screenshots",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/screenshotTools.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15629",
+                "title": "Fix customMaterial waiting for shaders to be loaded",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/materials/src/custom/customMaterial.ts",
+                    "packages/dev/materials/src/custom/pbrCustomMaterial.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15617",
+                "title": "Color from hex",
+                "description": "Added instance methods to the `Color3` and `Color4` objects for filling the object with the hex values. The static methods now re-use that method to reduce code duplication.\r\nThis allows us to re-use color object instances when we need to parse hex values and therefore reduces GC.",
+                "author": {
+                    "name": "vinhui",
+                    "url": "https://github.com/vinhui"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.color.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15625",
+                "title": "DecalMap: Fix no uv when using decalmap and no other textures",
+                "description": "See https://forum.babylonjs.com/t/how-to-make-a-decalmap-seen-by-other-camera/53748\r\n\r\nIt also fixes a shader bug in WGSL.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/material.decalMapConfiguration.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            }
+        ],
+        "7.26.5": [
+            {
+                "pr": "15623",
+                "title": "Store camera state",
+                "description": "Not sure how this got missed for so long, but we weren't actually storing the camera state after doing the framing, so restoring the stored camera state (e.g. double click) was restoring to the wrong camera pose.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer-alpha/src/viewer.ts"
                 ],
                 "tags": []
             }
