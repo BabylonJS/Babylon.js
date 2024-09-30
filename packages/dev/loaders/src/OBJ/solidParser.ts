@@ -214,38 +214,42 @@ export class SolidParser {
      * Transform Vector() and BABYLON.Color() objects into numbers in an array
      */
     private _unwrapData() {
-        //Every array has the same length
-        for (let l = 0; l < this._wrappedPositionForBabylon.length; l++) {
-            //Push the x, y, z values of each element in the unwrapped array
-            this._unwrappedPositionsForBabylon.push(
-                this._wrappedPositionForBabylon[l].x * this._handednessSign,
-                this._wrappedPositionForBabylon[l].y,
-                this._wrappedPositionForBabylon[l].z
-            );
-            this._unwrappedNormalsForBabylon.push(
-                this._wrappedNormalsForBabylon[l].x * this._handednessSign,
-                this._wrappedNormalsForBabylon[l].y,
-                this._wrappedNormalsForBabylon[l].z
-            );
-
-            this._unwrappedUVForBabylon.push(this._wrappedUvsForBabylon[l].x, this._wrappedUvsForBabylon[l].y); //z is an optional value not supported by BABYLON
-            if (this._loadingOptions.importVertexColors) {
-                //Push the r, g, b, a values of each element in the unwrapped array
-                this._unwrappedColorsForBabylon.push(
-                    this._wrappedColorsForBabylon[l].r,
-                    this._wrappedColorsForBabylon[l].g,
-                    this._wrappedColorsForBabylon[l].b,
-                    this._wrappedColorsForBabylon[l].a
+        try {
+            //Every array has the same length
+            for (let l = 0; l < this._wrappedPositionForBabylon.length; l++) {
+                //Push the x, y, z values of each element in the unwrapped array
+                this._unwrappedPositionsForBabylon.push(
+                    this._wrappedPositionForBabylon[l].x * this._handednessSign,
+                    this._wrappedPositionForBabylon[l].y,
+                    this._wrappedPositionForBabylon[l].z
                 );
+                this._unwrappedNormalsForBabylon.push(
+                    this._wrappedNormalsForBabylon[l].x * this._handednessSign,
+                    this._wrappedNormalsForBabylon[l].y,
+                    this._wrappedNormalsForBabylon[l].z
+                );
+
+                this._unwrappedUVForBabylon.push(this._wrappedUvsForBabylon[l].x, this._wrappedUvsForBabylon[l].y); //z is an optional value not supported by BABYLON
+                if (this._loadingOptions.importVertexColors) {
+                    //Push the r, g, b, a values of each element in the unwrapped array
+                    this._unwrappedColorsForBabylon.push(
+                        this._wrappedColorsForBabylon[l].r,
+                        this._wrappedColorsForBabylon[l].g,
+                        this._wrappedColorsForBabylon[l].b,
+                        this._wrappedColorsForBabylon[l].a
+                    );
+                }
             }
+            // Reset arrays for the next new meshes
+            this._wrappedPositionForBabylon.length = 0;
+            this._wrappedNormalsForBabylon.length = 0;
+            this._wrappedUvsForBabylon.length = 0;
+            this._wrappedColorsForBabylon.length = 0;
+            this._tuplePosNorm.length = 0;
+            this._curPositionInIndices = 0;
+        } catch (e) {
+            throw new Error("Unable to unwrap data while parsing OBJ data.");
         }
-        // Reset arrays for the next new meshes
-        this._wrappedPositionForBabylon.length = 0;
-        this._wrappedNormalsForBabylon.length = 0;
-        this._wrappedUvsForBabylon.length = 0;
-        this._wrappedColorsForBabylon.length = 0;
-        this._tuplePosNorm.length = 0;
-        this._curPositionInIndices = 0;
     }
 
     /**
