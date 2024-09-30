@@ -57,6 +57,26 @@ export class HistoryStack implements IDisposable {
         this.store();
     }
 
+    /**
+     * Remove the n-1 element of the stack
+     */
+    public collapseLastTwo() {
+        if (this._historyStack.length < 2) {
+            return;
+        }
+
+        this._locked = true;
+        const diff = this._historyStack.pop()!;
+        const diff2 = this._historyStack.pop()!;
+
+        let newState = this._applyJSONDiff(this._activeData, JSON.parse(diff));
+        newState = this._applyJSONDiff(newState, JSON.parse(diff2));
+
+        this._historyStack.push(JSON.stringify(this._generateJSONDiff(this._activeData, newState)));
+
+        this._locked = false;
+    }
+
     private _generateJSONDiff(obj1: any, obj2: any): any {
         if (obj1 === obj2) return undefined;
         if (obj1 === null || obj2 === null || typeof obj1 !== "object" || typeof obj2 !== "object") {
@@ -189,6 +209,7 @@ export class HistoryStack implements IDisposable {
         this._redoStack.push(JSON.stringify(this._generateJSONDiff(newState, this._activeData)));
 
         this._applyUpdate(this._copy(newState));
+
         this._activeData = newState;
 
         this._locked = false;
