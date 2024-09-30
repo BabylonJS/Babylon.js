@@ -30,8 +30,7 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
 
     /**
      * The priority of the block. Higher priority blocks will be executed first.
-     * Note that priority cannot be change AFTER the block was added as sorting happens during adding.
-     * To override this caall the `sortBlocks` method on the flow graph context.
+     * Note that priority cannot be change AFTER the block was added as sorting happens when the block is added to the execution queue.
      */
     public priority: number = 0;
 
