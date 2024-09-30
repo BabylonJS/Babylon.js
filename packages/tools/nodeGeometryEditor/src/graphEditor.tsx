@@ -110,6 +110,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         // Create the stack
         this._historyStack = new HistoryStack(dataProvider, applyUpdate);
+        globalState.stateManager.historyStack = this._historyStack;
 
         // Connect to relevant events
         globalState.stateManager.onUpdateRequiredObservable.add(() => {
