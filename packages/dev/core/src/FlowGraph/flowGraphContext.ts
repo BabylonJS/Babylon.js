@@ -295,10 +295,13 @@ export class FlowGraphContext {
      */
     public _addPendingBlock(block: FlowGraphAsyncExecutionBlock) {
         this._pendingBlocks.push(block);
+        // sort pending blocks by priority
+        this._pendingBlocks = this._pendingBlocks.sort((a, b) => a.priority - b.priority);
     }
 
     /**
      * Notify all pending blocks that they should execute their on-tick tasks.
+     * // TODO - if we need execution sorting of the synchronous tasks it can be done here.
      * @internal
      */
     public _notifyPendingBlocksOnTick() {
