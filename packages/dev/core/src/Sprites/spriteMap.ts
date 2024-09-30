@@ -302,6 +302,16 @@ export class SpriteMap implements ISpriteMap {
     }
 
     /**
+     * Returns the index of the frame for a given filename
+     * @param name filename of the frame
+     * @returns index of the frame
+     */
+    public getTileIdxByName(name: string): number {
+        const idx = this.atlasJSON.frames.findIndex((f) => f.filename === name);
+        return idx;
+    }
+
+    /**
      * Returns tileID location
      * @returns Vector2 the cell position ID
      */
