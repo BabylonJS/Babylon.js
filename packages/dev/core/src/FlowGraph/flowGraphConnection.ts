@@ -118,19 +118,28 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
     /**
      * Disconnects two connections.
      * @param point the connection to disconnect from.
+     * @param removeFromLocal if true, the connection will be removed from the local connection list.
      */
-    public disconnectFrom(point: ConnectedToT): void {
-        if (!this._connectedPoint.includes(point)) {
+    public disconnectFrom(point: ConnectedToT, removeFromLocal = true): void {
+        const indexLocal = this._connectedPoint.indexOf(point);
+        const indexConnected = point._connectedPoint.indexOf(this);
+        if (indexLocal === -1 || indexConnected === -1) {
             return;
         }
-        this._connectedPoint = this._connectedPoint.filter((p) => p !== point);
-        point._connectedPoint = point._connectedPoint.filter((p) => p !== this);
+        if (removeFromLocal) {
+            this._connectedPoint.splice(indexLocal, 1);
+        }
+        point._connectedPoint.splice(indexConnected, 1);
     }
 
+    /**
+     * Disconnects all connected points.
+     */
     public disconnectFromAll() {
         for (const point of this._connectedPoint) {
-            this.disconnectFrom(point);
+            this.disconnectFrom(point, false);
         }
+        this._connectedPoint.length = 0;
     }
 
     public dispose() {
