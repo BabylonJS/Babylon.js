@@ -51,8 +51,8 @@ export class FlowGraphGetAssetBlock<T extends FlowGraphAssetType> extends FlowGr
         public override config: IFlowGraphGetAssetBlockConfiguration<T>
     ) {
         super(config);
-        this.type = this.registerDataOutput("type", RichTypeAny, config.type);
-        this.value = this.registerDataInput("value", RichTypeAny);
+        this.type = this.registerDataInput("type", RichTypeAny, config.type);
+        this.value = this.registerDataOutput("value", RichTypeAny);
         this.index = this.registerDataInput("index", RichTypeNumber, config.index);
     }
 
