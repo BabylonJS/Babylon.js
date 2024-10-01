@@ -4905,7 +4905,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         this.importedMeshesFiles = [] as string[];
 
-        if (this._activeAnimatables) {
+        if (this._activeAnimatables && this.stopAllAnimations) {
             // Ensures that no animatable notifies a callback that could start a new animation group, constantly adding new animatables to the active list...
             this._activeAnimatables.forEach((animatable) => {
                 animatable.onAnimationEndObservable.clear();
