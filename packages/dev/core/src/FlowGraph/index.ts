@@ -10,5 +10,6 @@ export * from "./typeDefinitions";
 export * from "./flowGraphContextLogger";
 export * from "./flowGraphConnection";
 export * from "./flowGraphDataConnection";
+export * from "./flowGraphAssetsContext";
 // eslint-disable-next-line import/no-internal-modules
 export * from "./Blocks/index";
