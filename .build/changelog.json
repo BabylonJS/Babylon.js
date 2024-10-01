@@ -1,5 +1,5 @@
 {
-    "fromTag": "7.27.1",
+    "fromTag": "7.27.2",
     "changelog": {
         "7.27.2": [
             {
@@ -40,6 +40,87 @@
                 "files": [
                     "packages/dev/core/src/Meshes/mesh.ts",
                     "packages/dev/core/src/scene.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "7.27.3": [
+            {
+                "pr": "15660",
+                "title": "Fix es6 build",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/audioSceneComponent.ts",
+                    "packages/dev/core/src/Layers/effectLayerSceneComponent.ts",
+                    "packages/dev/core/src/Layers/layerSceneComponent.ts",
+                    "packages/dev/core/src/LensFlares/lensFlareSystemSceneComponent.ts",
+                    "packages/dev/core/src/Materials/Textures/Procedurals/proceduralTextureSceneComponent.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15656",
+                "title": "Remove animation side effects",
+                "description": "OK folks!\r\n\r\nHere is the first attempt to remove one of our side effects while preserving our back compat.\r\n\r\nIn a nutshell: \r\n- No change for UMD as everything is reexported from index.ts\r\n- For ES6, for users who were importing \"animatable.ts\": no change, side effects are still here and we still update the prototype\r\n- For the framework and for people who will not import from \"animatable.ts\", they will be able to pick and choose what they need from \"animatable.core\". In that mode the user will have to register scene._animate = SceneAnimate. I plan to create an additional InitAnimations(scene) that will do it. I will document it in a new page dedicated to all this new way of dealing with NO side effects.\r\n\r\nBut before going further,I have one question for @RaananW though:\r\n\r\n**If you look at the changes I did for mesh.ts, you can see that now I import \"BeginAnimation\". But does that ruin all the effort? Will that force the bundler to import Animation and Animatable?**\r\nhttps://github.com/BabylonJS/Babylon.js/pull/15656/files#diff-ef2df1b096469b55aef42174260ffc963185b1b91ed5bf63f1941a2decb92e9bR4304\r\n\r\n\r\n",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animatable.core.ts",
+                    "packages/dev/core/src/Animations/animatable.ts",
+                    "packages/dev/core/src/Animations/animationGroup.ts",
+                    "packages/dev/core/src/Animations/runtimeAnimation.ts",
+                    "packages/dev/core/src/Behaviors/Cameras/bouncingBehavior.ts",
+                    "packages/dev/core/src/Behaviors/Cameras/framingBehavior.ts",
+                    "packages/dev/core/src/Bones/skeleton.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPauseAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPlayAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphStopAnimationBlock.ts",
+                    "packages/dev/core/src/Lights/light.ts",
+                    "packages/dev/core/src/Misc/assetsManager.ts",
+                    "packages/dev/core/src/assetContainer.ts",
+                    "packages/dev/core/src/node.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/preview/previewManager.ts"
+                ],
+                "tags": [
+                    "build"
+                ]
+            },
+            {
+                "pr": "15659",
+                "title": "Add a no side effect support for Ray",
+                "description": "For Ray , it is a bit better than Animatable as i was able to keep pick and choose options",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/ray.core.ts",
+                    "packages/dev/core/src/Culling/ray.ts",
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts",
+                    "packages/dev/core/src/Sprites/spriteSceneComponent.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15645",
+                "title": "The PointerInfo provided in onPointerObservable has an undefined pointerType on MacOS Safari",
+                "description": "https://github.com/BabylonJS/Babylon.js/issues/15466",
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/tools.ts"
                 ],
                 "tags": []
             }
