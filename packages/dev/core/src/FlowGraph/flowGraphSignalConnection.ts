@@ -14,14 +14,21 @@ export class FlowGraphSignalConnection extends FlowGraphConnection<FlowGraphExec
      * Optional payload. Can be used, for example, when an error is thrown to pass additional information.
      */
     public payload: any;
+
     /**
-     * @internal
-     * A signal input can be connected to more than one signal output,
-     * but a signal output can only connect to one signal input
-     * @returns true if the connection is singular
+     * The priority of the signal. Signals with higher priority will be executed first.
+     * Set priority before adding the connection as sorting happens only when the connection is added.
      */
+    public priority: number = 0;
+
     public override _isSingularConnection(): boolean {
-        return this.connectionType === FlowGraphConnectionType.Output;
+        return false;
+    }
+
+    public override connectTo(point: FlowGraphSignalConnection): void {
+        super.connectTo(point);
+        // sort according to priority to handle execution order
+        this._connectedPoint.sort((a, b) => b.priority - a.priority);
     }
 
     /**
@@ -33,7 +40,9 @@ export class FlowGraphSignalConnection extends FlowGraphConnection<FlowGraphExec
             this._ownerBlock._execute(context, this);
             context._increaseExecutionId();
         } else {
-            this._connectedPoint[0]?._activateSignal(context);
+            for (const connectedPoint of this._connectedPoint) {
+                connectedPoint._activateSignal(context);
+            }
         }
     }
 }
