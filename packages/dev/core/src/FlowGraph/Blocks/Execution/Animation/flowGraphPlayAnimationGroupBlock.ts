@@ -99,7 +99,9 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
         const ag = this.animationGroupInput.getValue(context);
         const animation = this.animationInput.getValue(context);
         if (!ag && !animation) {
-            throw new Error("No animation provided.");
+            this.error.payload = "No animation group or animation provided";
+            this.error._activateSignal(context);
+            return;
         } else {
             // if an animation group was created, dispose it and create a new one
             // TODO - is it possible to be sure this aniamtionGroup can be reused?
@@ -125,11 +127,20 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             const to = this.to.getValue(context) || ag.to;
             const loop = this.loop.getValue(context);
             this.currentAnimationGroup.setValue(animationGroupToUse, context);
+
+            const currentlyRunningAnimationGroups = context._getGlobalContextVariable("currentlyRunningAnimationGroups", []) as number[];
+            // check if it already running
+            if (currentlyRunningAnimationGroups.indexOf(animationGroupToUse.uniqueId) !== -1) {
+                animationGroupToUse.stop();
+            }
+
             animationGroupToUse.start(loop, speed, from, to);
             animationGroupToUse.onAnimationGroupEndObservable.add(() => this._onAnimationGroupEnd(context));
             animationGroupToUse.onAnimationEndObservable.add(() => this._eventsSignalOutputs["animationEnd"]._activateSignal(context));
             animationGroupToUse.onAnimationLoopObservable.add(() => this._eventsSignalOutputs["animationLoop"]._activateSignal(context));
             animationGroupToUse.onAnimationGroupLoopObservable.add(() => this._eventsSignalOutputs["animationGroupLoop"]._activateSignal(context));
+            currentlyRunningAnimationGroups.push(animationGroupToUse.uniqueId);
+            context._setGlobalContextVariable("currentlyRunningAnimationGroups", currentlyRunningAnimationGroups);
         }
     }
 
@@ -162,6 +173,12 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
         const ag = this.currentAnimationGroup.getValue(context);
         if (ag) {
             ag.stop();
+            const currentlyRunningAnimationGroups = context._getGlobalContextVariable("currentlyRunningAnimationGroups", []) as number[];
+            // check if it already running
+            if (currentlyRunningAnimationGroups.indexOf(ag.uniqueId) !== -1) {
+                currentlyRunningAnimationGroups.splice(currentlyRunningAnimationGroups.indexOf(ag.uniqueId), 1);
+                context._setGlobalContextVariable("currentlyRunningAnimationGroups", currentlyRunningAnimationGroups);
+            }
         }
     }
 

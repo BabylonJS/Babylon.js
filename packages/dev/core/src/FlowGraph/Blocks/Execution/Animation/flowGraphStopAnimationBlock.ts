@@ -22,7 +22,12 @@ export class FlowGraphStopAnimationBlock extends FlowGraphExecutionBlockWithOutS
 
     public _execute(context: FlowGraphContext): void {
         const animationToStopValue = this.animationToStop.getValue(context);
-        animationToStopValue.stop();
+        const currentlyRunning = context._getGlobalContextVariable("currentlyRunningAnimationGroups", []) as number[];
+        const index = currentlyRunning.indexOf(animationToStopValue.uniqueId);
+        if (index !== -1) {
+            animationToStopValue.stop();
+            currentlyRunning.splice(index, 1);
+        }
         this.out._activateSignal(context);
     }
 
