@@ -12,14 +12,14 @@ import { RichType } from "./flowGraphRichTypes";
  */
 export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlock, FlowGraphDataConnection<T>> {
     private _isDiabled: boolean = false;
-
     /**
      * Create a new data connection point.
-     * @param name
-     * @param connectionType
-     * @param ownerBlock
-     * @param richType
-     * @param _defaultValue
+     * @param name the name of the connection
+     * @param connectionType the type of the connection
+     * @param ownerBlock the block that owns this connection
+     * @param richType the type of the data in this block
+     * @param _defaultValue the default value of the connection
+     * @param _optional if the connection is optional
      */
     public constructor(
         name: string,
@@ -29,9 +29,24 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
          * the type of the data in this block
          */
         public richType: RichType<T>,
-        private _defaultValue: T = richType.defaultValue
+        /**
+         * [any] the default value of the connection
+         */
+        private _defaultValue: T = richType.defaultValue,
+        /**
+         * [false] if the connection is optional
+         */
+        private _optional: boolean = false
     ) {
         super(name, connectionType, ownerBlock);
+    }
+
+    /**
+     * Whether or not the connection is optional.
+     * Currently only used for UI control.
+     */
+    public get optional(): boolean {
+        return this._optional;
     }
 
     /**
