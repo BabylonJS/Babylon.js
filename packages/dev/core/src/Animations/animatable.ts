@@ -2,7 +2,7 @@ import type { Nullable } from "../types";
 import type { Vector3 } from "../Maths/math.vector";
 import { Bone } from "../Bones/bone";
 import type { Node } from "../node";
-import { InitAnimations } from "./animatable.core";
+import { AddAnimationExtensions } from "./animatable.core";
 import type { Animatable } from "./animatable.core";
 import type { Animation } from "./animation";
 import { Scene } from "core/scene";
@@ -198,4 +198,4 @@ declare module "../Bones/bone" {
 }
 
 // Connect everything!
-InitAnimations(Scene.prototype, Bone.prototype);
+AddAnimationExtensions(Scene, Bone);

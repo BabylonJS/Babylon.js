@@ -803,12 +803,12 @@ export function RegisterTargetForLateAnimationBinding(scene: Scene, runtimeAnima
 
 /**
  * Initialize all the inter dependecies between the animations and Scene and Bone
- * @param scenePrototype defines the scene prototype to use
- * @param bonePrototype defines the bone prototype to use
+ * @param sceneClass defines the scene prototype to use
+ * @param boneClass defines the bone prototype to use
  */
-export function InitAnimations(scenePrototype: Scene, bonePrototype: Bone): void {
-    if (bonePrototype) {
-        bonePrototype.copyAnimationRange = function (
+export function AddAnimationExtensions(sceneClass: typeof Scene, boneClass: typeof Bone): void {
+    if (boneClass) {
+        boneClass.prototype.copyAnimationRange = function (
             source: Bone,
             rangeName: string,
             frameOffset: number,
@@ -878,10 +878,11 @@ export function InitAnimations(scenePrototype: Scene, bonePrototype: Bone): void
         };
     }
 
-    if (!scenePrototype) {
+    if (!sceneClass) {
         return;
     }
-    scenePrototype._animate = function (customDeltaTime?: number): void {
+
+    sceneClass.prototype._animate = function (customDeltaTime?: number): void {
         if (!this.animationsEnabled) {
             return;
         }
@@ -918,13 +919,13 @@ export function InitAnimations(scenePrototype: Scene, bonePrototype: Bone): void
         ProcessLateAnimationBindings(this);
     };
 
-    scenePrototype.sortActiveAnimatables = function (): void {
+    sceneClass.prototype.sortActiveAnimatables = function (): void {
         this._activeAnimatables.sort((a, b) => {
             return a.playOrder - b.playOrder;
         });
     };
 
-    scenePrototype.beginWeightedAnimation = function (
+    sceneClass.prototype.beginWeightedAnimation = function (
         target: any,
         from: number,
         to: number,
@@ -943,7 +944,7 @@ export function InitAnimations(scenePrototype: Scene, bonePrototype: Bone): void
         return returnedAnimatable;
     };
 
-    scenePrototype.beginAnimation = function (
+    sceneClass.prototype.beginAnimation = function (
         target: any,
         from: number,
         to: number,
@@ -994,7 +995,7 @@ export function InitAnimations(scenePrototype: Scene, bonePrototype: Bone): void
         return animatable;
     };
 
-    scenePrototype.beginHierarchyAnimation = function (
+    sceneClass.prototype.beginHierarchyAnimation = function (
         target: any,
         directDescendantsOnly: boolean,
         from: number,
@@ -1019,7 +1020,7 @@ export function InitAnimations(scenePrototype: Scene, bonePrototype: Bone): void
         return result;
     };
 
-    scenePrototype.beginDirectAnimation = function (
+    sceneClass.prototype.beginDirectAnimation = function (
         target: any,
         animations: Animation[],
         from: number,
@@ -1046,7 +1047,7 @@ export function InitAnimations(scenePrototype: Scene, bonePrototype: Bone): void
         return animatable;
     };
 
-    scenePrototype.beginDirectHierarchyAnimation = function (
+    sceneClass.prototype.beginDirectHierarchyAnimation = function (
         target: Node,
         directDescendantsOnly: boolean,
         animations: Animation[],
@@ -1069,7 +1070,7 @@ export function InitAnimations(scenePrototype: Scene, bonePrototype: Bone): void
         return result;
     };
 
-    scenePrototype.getAnimatableByTarget = function (target: any): Nullable<Animatable> {
+    sceneClass.prototype.getAnimatableByTarget = function (target: any): Nullable<Animatable> {
         for (let index = 0; index < this._activeAnimatables.length; index++) {
             if (this._activeAnimatables[index].target === target) {
                 return this._activeAnimatables[index];
@@ -1079,7 +1080,7 @@ export function InitAnimations(scenePrototype: Scene, bonePrototype: Bone): void
         return null;
     };
 
-    scenePrototype.getAllAnimatablesByTarget = function (target: any): Array<Animatable> {
+    sceneClass.prototype.getAllAnimatablesByTarget = function (target: any): Array<Animatable> {
         const result = [];
         for (let index = 0; index < this._activeAnimatables.length; index++) {
             if (this._activeAnimatables[index].target === target) {
@@ -1090,7 +1091,7 @@ export function InitAnimations(scenePrototype: Scene, bonePrototype: Bone): void
         return result;
     };
 
-    scenePrototype.stopAnimation = function (target: any, animationName?: string, targetMask?: (target: any) => boolean): void {
+    sceneClass.prototype.stopAnimation = function (target: any, animationName?: string, targetMask?: (target: any) => boolean): void {
         const animatables = this.getAllAnimatablesByTarget(target);
 
         for (const animatable of animatables) {
@@ -1098,7 +1099,7 @@ export function InitAnimations(scenePrototype: Scene, bonePrototype: Bone): void
         }
     };
 
-    scenePrototype.stopAllAnimations = function (): void {
+    sceneClass.prototype.stopAllAnimations = function (): void {
         if (this._activeAnimatables) {
             for (let i = 0; i < this._activeAnimatables.length; i++) {
                 this._activeAnimatables[i].stop(undefined, undefined, true);
