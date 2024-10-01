@@ -13,6 +13,7 @@ import type { IWheelEvent } from "../../Events/deviceInputEvents";
 import { EventConstants } from "../../Events/deviceInputEvents";
 import { Clamp } from "../../Maths/math.scalar.functions";
 import { Tools } from "../../Misc/tools";
+import { CreatePickingRay } from "core/Culling/ray.core";
 
 /**
  * Firefox uses a different scheme to report scroll distances to other
@@ -210,7 +211,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
         // since the _hitPlane is always updated to be orthogonal to the camera position vector
         // we don't have to worry about this ray shooting off to infinity. This ray creates
         // a vector defining where we want to zoom to.
-        const ray = scene.createPickingRay(scene.pointerX, scene.pointerY, Matrix.Identity(), camera, false);
+        const ray = CreatePickingRay(scene, scene.pointerX, scene.pointerY, Matrix.Identity(), camera, false);
         // Since the camera is the origin of the picking ray, we need to offset it by the camera's offset manually
         // Because the offset is in view space, we need to convert it to world space first
         if (camera.targetScreenOffset.x !== 0 || camera.targetScreenOffset.y !== 0) {
