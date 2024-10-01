@@ -14,6 +14,12 @@ export interface IFlowGraphInterpolationBlockConfiguration<T> extends IFlowGraph
     numberOfKeyFrames?: number;
 
     /**
+     * The value to interpolate from.
+     * If not provided, the default value of this type will be used.
+     */
+    initialValue?: T;
+
+    /**
      * The value to interpolate to.
      * If number of keyframes is more than 1, this will be the last value.
      */
@@ -75,9 +81,11 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
 
     constructor(config: IFlowGraphInterpolationBlockConfiguration<T> = {}) {
         super(config);
-        const type = getRichTypeByAnimationType(config.animationType ?? Constants.ANIMATIONTYPE_FLOAT);
-        this.from = this.registerDataInput("from", type);
+        const type = getRichTypeByAnimationType(config?.animationType ?? Constants.ANIMATIONTYPE_FLOAT);
+        this.from = this.registerDataInput("from", type, config?.initialValue);
         this.easingFunction = this.registerDataInput("easingFunction", RichTypeAny, config?.easingFunction);
+        this.animation = this.registerDataOutput("animation", RichTypeAny);
+        this.propertyName = this.registerDataInput("propertyName", RichTypeAny, config?.propertyName);
 
         const numberOfKeyFrames = config?.numberOfKeyFrames ?? 1;
         for (let i = 0; i < numberOfKeyFrames; i++) {
@@ -96,6 +104,9 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
     private _createAnimation(context: FlowGraphContext, propertyName: string, easingFunction: EasingFunction): Animation {
         const type = this.from.richType;
         const keys: { frame: number; value: T }[] = [];
+        // add initial value
+        const currentValue = this.from.getValue(context) || type.defaultValue;
+        keys.push({ frame: 0, value: currentValue });
         const numberOfKeyFrames = this.config?.numberOfKeyFrames ?? 1;
         for (let i = 0; i < numberOfKeyFrames; i++) {
             const duration = this.getDataInput(`Duration-${i + 1}`)?.getValue(context);
@@ -105,7 +116,7 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
                 keys.push({ frame: duration * 60, value });
             }
         }
-        const animation = Animation.CreateAnimation(propertyName, 60, type.animationType, easingFunction);
+        const animation = Animation.CreateAnimation(propertyName, type.animationType, 60, easingFunction);
         animation.setKeys(keys);
         return animation;
     }

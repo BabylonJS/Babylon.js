@@ -87,8 +87,9 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
         this.currentTime = this.registerDataOutput("currentTime", RichTypeNumber);
 
         this.currentAnimationGroup = this.registerDataOutput("currentAnimationGroup", RichTypeAny);
-        this.animationGroupInput = this.registerDataInput("animationGroupInput", RichTypeAny, config.animationGroup);
+        this.animationGroupInput = this.registerDataInput("animationGroupInput", RichTypeAny, config?.animationGroup);
         this.animationInput = this.registerDataInput("animationInput", RichTypeAny);
+        this.targetInput = this.registerDataInput("targetInput", RichTypeAny);
     }
 
     /**
@@ -124,7 +125,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             const speed = this.speed.getValue(context) || 1;
             const from = this.from.getValue(context) ?? 0;
             // not accepting 0
-            const to = this.to.getValue(context) || ag.to;
+            const to = this.to.getValue(context) || animationGroupToUse.to;
             const loop = this.loop.getValue(context);
             this.currentAnimationGroup.setValue(animationGroupToUse, context);
 
