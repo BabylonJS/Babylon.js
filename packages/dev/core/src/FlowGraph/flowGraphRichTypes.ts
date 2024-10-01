@@ -1,6 +1,7 @@
 import { Vector2, Vector3, Vector4, Matrix, Quaternion } from "../Maths/math.vector";
 import { Color3, Color4 } from "../Maths/math.color";
 import { FlowGraphInteger } from "./flowGraphInteger";
+import { Constants } from "core/Engines/constants";
 
 /**
  * A rich type represents extra information about a type,
@@ -16,7 +17,12 @@ export class RichType<T> {
         /**
          * The default value of the type.
          */
-        public defaultValue: T
+        public defaultValue: T,
+
+        /**
+         * [-1] The ANIMATIONTYPE of the type, if available
+         */
+        public animationType: number = -1
     ) {}
 
     /**
@@ -42,25 +48,25 @@ export const RichTypeAny: RichType<any> = new RichType("any", undefined);
 
 export const RichTypeString: RichType<string> = new RichType("string", "");
 
-export const RichTypeNumber: RichType<number> = new RichType("number", 0);
+export const RichTypeNumber: RichType<number> = new RichType("number", 0, Constants.ANIMATIONTYPE_FLOAT);
 
 export const RichTypeBoolean: RichType<boolean> = new RichType("boolean", false);
 
-export const RichTypeVector2: RichType<Vector2> = new RichType("Vector2", Vector2.Zero());
+export const RichTypeVector2: RichType<Vector2> = new RichType("Vector2", Vector2.Zero(), Constants.ANIMATIONTYPE_VECTOR2);
 
-export const RichTypeVector3: RichType<Vector3> = new RichType("Vector3", Vector3.Zero());
+export const RichTypeVector3: RichType<Vector3> = new RichType("Vector3", Vector3.Zero(), Constants.ANIMATIONTYPE_VECTOR3);
 
 export const RichTypeVector4: RichType<Vector4> = new RichType("Vector4", Vector4.Zero());
 
-export const RichTypeMatrix: RichType<Matrix> = new RichType("Matrix", Matrix.Identity());
+export const RichTypeMatrix: RichType<Matrix> = new RichType("Matrix", Matrix.Identity(), Constants.ANIMATIONTYPE_MATRIX);
 
-export const RichTypeColor3: RichType<Color3> = new RichType("Color3", Color3.Black());
+export const RichTypeColor3: RichType<Color3> = new RichType("Color3", Color3.Black(), Constants.ANIMATIONTYPE_COLOR3);
 
-export const RichTypeColor4: RichType<Color4> = new RichType("Color4", new Color4(0, 0, 0, 0));
+export const RichTypeColor4: RichType<Color4> = new RichType("Color4", new Color4(0, 0, 0, 0), Constants.ANIMATIONTYPE_COLOR4);
 
-export const RichTypeQuaternion: RichType<Quaternion> = new RichType("Quaternion", Quaternion.Identity());
+export const RichTypeQuaternion: RichType<Quaternion> = new RichType("Quaternion", Quaternion.Identity(), Constants.ANIMATIONTYPE_QUATERNION);
 
-export const RichTypeFlowGraphInteger: RichType<FlowGraphInteger> = new RichType("FlowGraphInteger", new FlowGraphInteger(0));
+export const RichTypeFlowGraphInteger: RichType<FlowGraphInteger> = new RichType("FlowGraphInteger", new FlowGraphInteger(0), Constants.ANIMATIONTYPE_FLOAT);
 
 /**
  * Given a value, try to deduce its rich type.
@@ -100,5 +106,31 @@ export function getRichTypeFromValue<T>(value: T): RichType<T> {
             return RichTypeAny as RichType<T>;
         default:
             return RichTypeAny as RichType<T>;
+    }
+}
+
+/**
+ * Given an animation type, return the rich type that corresponds to it.
+ * @param animationType the animation type
+ * @returns the rich type that corresponds to the animation type
+ */
+export function getRichTypeByAnimationType(animationType: number): RichType<any> {
+    switch (animationType) {
+        case Constants.ANIMATIONTYPE_FLOAT:
+            return RichTypeNumber;
+        case Constants.ANIMATIONTYPE_VECTOR2:
+            return RichTypeVector2;
+        case Constants.ANIMATIONTYPE_VECTOR3:
+            return RichTypeVector3;
+        case Constants.ANIMATIONTYPE_MATRIX:
+            return RichTypeMatrix;
+        case Constants.ANIMATIONTYPE_COLOR3:
+            return RichTypeColor3;
+        case Constants.ANIMATIONTYPE_COLOR4:
+            return RichTypeColor4;
+        case Constants.ANIMATIONTYPE_QUATERNION:
+            return RichTypeQuaternion;
+        default:
+            return RichTypeAny;
     }
 }
