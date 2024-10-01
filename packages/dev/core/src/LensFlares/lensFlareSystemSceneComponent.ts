@@ -28,12 +28,6 @@ AddParser(SceneComponentConstants.NAME_LENSFLARESYSTEM, (parsedData: any, scene:
 declare module "../scene" {
     export interface Scene {
         /**
-         * The list of lens flare system added to the scene
-         * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/lenseFlare
-         */
-        lensFlareSystems: Array<LensFlareSystem>;
-
-        /**
          * Removes the given lens flare system from this scene.
          * @param toRemove The lens flare system to remove
          * @returns The index of the removed lens flare system
@@ -127,8 +121,6 @@ export class LensFlareSystemSceneComponent implements ISceneSerializableComponen
      */
     constructor(scene: Scene) {
         this.scene = scene;
-
-        scene.lensFlareSystems = [] as LensFlareSystem[];
     }
 
     /**

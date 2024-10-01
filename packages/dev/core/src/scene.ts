@@ -92,6 +92,12 @@ import type { AbstractEngine } from "./Engines/abstractEngine";
 import { RegisterClass } from "./Misc/typeStore";
 import type { IAssetContainer } from "./IAssetContainer";
 
+import type { EffectLayer } from "./Layers/effectLayer";
+import type { Sound } from "./Audio/sound";
+import type { Layer } from "./Layers/layer";
+import type { LensFlareSystem } from "./LensFlares/lensFlareSystem";
+import type { ProceduralTexture } from "./Materials/Textures/Procedurals/proceduralTexture";
+
 /**
  * Define an interface for all classes that will hold resources
  */
@@ -481,6 +487,35 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * The list of postprocesses added to the scene
      */
     public postProcesses: PostProcess[] = [];
+
+    /**
+     * The list of effect layers (highlights/glow) added to the scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/highlightLayer
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/glowLayer
+     */
+    public effectLayers: Array<EffectLayer> = [];
+
+    /**
+     * The list of sounds used in the scene.
+     */
+    public sounds: Nullable<Array<Sound>> = null;
+
+    /**
+     * The list of layers (background and foreground) of the scene
+     */
+    public layers: Array<Layer> = [];
+
+    /**
+     * The list of lens flare system added to the scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/lenseFlare
+     */
+    public lensFlareSystems: Array<LensFlareSystem> = [];
+
+    /**
+     * The list of procedural textures added to the scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/proceduralTextures
+     */
+    public proceduralTextures: Array<ProceduralTexture> = [];
 
     /**
      * @returns all meshes, lights, cameras, transformNodes and bones
