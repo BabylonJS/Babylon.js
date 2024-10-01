@@ -12,6 +12,6 @@ export abstract class FlowGraphEventBlock extends FlowGraphAsyncExecutionBlock {
      */
     public _execute(context: FlowGraphContext): void {
         context._notifyExecuteNode(this);
-        this.out._activateSignal(context);
+        this.done._activateSignal(context);
     }
 }
