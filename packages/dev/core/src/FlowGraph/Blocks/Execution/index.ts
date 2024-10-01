@@ -1,6 +1,4 @@
 export * from "./flowGraphConsoleLogBlock";
-export * from "./flowGraphSetVariableBlock";
-export * from "./flowGraphSetPropertyBlock";
 export * from "../Event/flowGraphSendCustomEventBlock";
 // eslint-disable-next-line import/no-internal-modules
 export * from "./ControlFlow/index";
