@@ -66,7 +66,7 @@ import type { Skeleton } from "./Bones/skeleton";
 import type { Bone } from "./Bones/bone";
 import type { Camera } from "./Cameras/camera";
 import type { Collider } from "./Collisions/collider";
-import type { Ray, MeshPredicate, TrianglePickingPredicate } from "./Culling/ray";
+import type { Ray, MeshPredicate, TrianglePickingPredicate } from "./Culling/ray.core";
 import type { Light } from "./Lights/light";
 import type { PerformanceViewerCollector } from "./Misc/PerformanceViewer/performanceViewerCollector";
 import type { MorphTarget } from "./Morph/morphTarget";
@@ -183,6 +183,15 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     }
 
     // Members
+
+    /** @internal */
+    public _tempPickingRay: Nullable<Ray>;
+
+    /** @internal */
+    public _cachedRayForTransform: Ray;
+
+    /** @internal */
+    public _pickWithRayInverseMatrix: Matrix;
 
     /** @internal */
     public _inputManager = new InputManager(this);
@@ -5213,11 +5222,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      */
     public createPickingRayInCameraSpaceToRef(x: number, y: number, result: Ray, camera?: Camera): Scene {
         throw _WarnImport("Ray");
-    }
-
-    /** @internal */
-    public get _pickingAvailable(): boolean {
-        return false;
     }
 
     /** @internal */
