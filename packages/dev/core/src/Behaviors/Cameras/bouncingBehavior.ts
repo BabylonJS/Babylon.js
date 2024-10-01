@@ -6,7 +6,7 @@ import type { Nullable } from "../../types";
 import type { Observer } from "../../Misc/observable";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { TransformNode } from "../../Meshes/transformNode";
-import type { Animatable } from "../../Animations/animatable";
+import type { Animatable } from "../../Animations/animatable.core";
 import { Animation } from "../../Animations/animation";
 
 /**
