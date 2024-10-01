@@ -9,11 +9,16 @@ import { RegisterClass } from "../../../Misc/typeStore";
  * @experimental
  * The configuration of the FlowGraphGetVariableBlock.
  */
-export interface IFlowGraphGetVariableBlockConfiguration extends IFlowGraphBlockConfiguration {
+export interface IFlowGraphGetVariableBlockConfiguration<T> extends IFlowGraphBlockConfiguration {
     /**
      * The name of the variable to get.
      */
     variable: string;
+
+    /**
+     * The initial value of the variable.
+     */
+    initialValue?: T;
 }
 
 /**
@@ -30,11 +35,11 @@ export class FlowGraphGetVariableBlock<T> extends FlowGraphBlock {
      * Construct a FlowGraphGetVariableBlock.
      * @param config construction parameters
      */
-    constructor(public override config: IFlowGraphGetVariableBlockConfiguration) {
+    constructor(public override config: IFlowGraphGetVariableBlockConfiguration<T>) {
         super(config);
 
         // The output connection has to have the name of the variable.
-        this.value = this.registerDataOutput(config.variable, RichTypeAny);
+        this.value = this.registerDataOutput(config.variable, RichTypeAny, config.initialValue);
     }
 
     /**
