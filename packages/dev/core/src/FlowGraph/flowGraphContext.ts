@@ -296,7 +296,7 @@ export class FlowGraphContext {
     public _addPendingBlock(block: FlowGraphAsyncExecutionBlock) {
         this._pendingBlocks.push(block);
         // sort pending blocks by priority
-        this._pendingBlocks = this._pendingBlocks.sort((a, b) => a.priority - b.priority);
+        this._pendingBlocks.sort((a, b) => a.priority - b.priority);
     }
 
     /**
