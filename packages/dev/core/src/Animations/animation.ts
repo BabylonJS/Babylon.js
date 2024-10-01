@@ -1328,35 +1328,35 @@ export class Animation {
     /**
      * Float animation type
      */
-    public static readonly ANIMATIONTYPE_FLOAT = 0;
+    public static readonly ANIMATIONTYPE_FLOAT = Constants.ANIMATIONTYPE_FLOAT;
     /**
      * Vector3 animation type
      */
-    public static readonly ANIMATIONTYPE_VECTOR3 = 1;
+    public static readonly ANIMATIONTYPE_VECTOR3 = Constants.ANIMATIONTYPE_VECTOR3;
     /**
      * Quaternion animation type
      */
-    public static readonly ANIMATIONTYPE_QUATERNION = 2;
+    public static readonly ANIMATIONTYPE_QUATERNION = Constants.ANIMATIONTYPE_QUATERNION;
     /**
      * Matrix animation type
      */
-    public static readonly ANIMATIONTYPE_MATRIX = 3;
+    public static readonly ANIMATIONTYPE_MATRIX = Constants.ANIMATIONTYPE_MATRIX;
     /**
      * Color3 animation type
      */
-    public static readonly ANIMATIONTYPE_COLOR3 = 4;
+    public static readonly ANIMATIONTYPE_COLOR3 = Constants.ANIMATIONTYPE_COLOR3;
     /**
      * Color3 animation type
      */
-    public static readonly ANIMATIONTYPE_COLOR4 = 7;
+    public static readonly ANIMATIONTYPE_COLOR4 = Constants.ANIMATIONTYPE_COLOR4;
     /**
      * Vector2 animation type
      */
-    public static readonly ANIMATIONTYPE_VECTOR2 = 5;
+    public static readonly ANIMATIONTYPE_VECTOR2 = Constants.ANIMATIONTYPE_VECTOR2;
     /**
      * Size animation type
      */
-    public static readonly ANIMATIONTYPE_SIZE = 6;
+    public static readonly ANIMATIONTYPE_SIZE = Constants.ANIMATIONTYPE_SIZE;
     /**
      * Relative Loop Mode
      */
