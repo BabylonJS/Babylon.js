@@ -8,7 +8,6 @@ import { Vector3 } from "core/Maths/math.vector";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { PreviewType } from "./previewType";
-import { Animation } from "core/Animations/animation";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import { TransformNode } from "core/Meshes/transformNode";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
@@ -41,6 +40,7 @@ import "core/Helpers/sceneHelpers";
 import "core/Rendering/depthRendererSceneComponent";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Engine } from "core/Engines/engine";
+import { CreateAndStartAnimation } from "core/Animations/animation.core";
 
 const dontSerializeTextureContent = true;
 
@@ -273,7 +273,7 @@ export class PreviewManager {
                         transformNode.rotation = transformNode.rotationQuaternion.toEulerAngles();
                         transformNode.rotationQuaternion = null;
                     }
-                    Animation.CreateAndStartAnimation("turnTable", root, "rotation.y", 60, 1200, transformNode.rotation.y, transformNode.rotation.y + 2 * Math.PI, 1);
+                    CreateAndStartAnimation("turnTable", root, "rotation.y", 60, 1200, transformNode.rotation.y, transformNode.rotation.y + 2 * Math.PI, 1);
                 }
             }
         }

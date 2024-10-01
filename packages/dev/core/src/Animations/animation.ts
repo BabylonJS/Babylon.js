@@ -15,8 +15,6 @@ import { WebRequest } from "../Misc/webRequest";
 import { Constants } from "../Engines/constants";
 import type { RuntimeAnimation } from "./runtimeAnimation";
 import { SerializationHelper } from "../Misc/decorators.serialization";
-import type { Scene } from "core/scene";
-import type { Animatable } from "./animatable.core";
 
 // Static values to help the garbage collector
 
