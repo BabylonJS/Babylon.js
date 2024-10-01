@@ -1006,7 +1006,8 @@ export class Animation {
 
         // check for easingFunction and correction of gradient
         const easingFunction = startKey.easingFunction || this.getEasingFunction();
-        if (easingFunction !== null) {
+        // can also be undefined, if not provided
+        if (easingFunction) {
             gradient = easingFunction.ease(gradient);
         }
 
