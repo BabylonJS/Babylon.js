@@ -1,3 +1,4 @@
+export * from "./flowGraphJsonPointerParserBlock";
 /* 
 
 This directory holds type conversions and type transformation blocks:
