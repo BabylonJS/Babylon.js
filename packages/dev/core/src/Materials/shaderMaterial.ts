@@ -266,6 +266,14 @@ export class ShaderMaterial extends PushMaterial {
     }
 
     /**
+     * Remove a texture from the material.
+     * @param name Define the name of the texture to remove
+     */
+    public removeTexture(name: string): void {
+        delete this._textures[name];
+    }
+
+    /**
      * Set a texture array in the shader.
      * @param name Define the name of the uniform sampler array as defined in the shader
      * @param textures Define the list of textures to bind to this sampler

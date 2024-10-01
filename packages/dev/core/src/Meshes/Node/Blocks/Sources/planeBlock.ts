@@ -1,17 +1,18 @@
-import { CreatePlaneVertexData } from "../../../../Meshes/Builders/planeBuilder";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
 import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import { GeometryInputBlock } from "../geometryInputBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import type { Vector4 } from "../../../../Maths/math.vector";
+import { Matrix } from "../../../../Maths/math.vector";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../../Decorators/nodeDecorator";
+import { CreateGroundVertexData } from "core/Meshes/Builders/groundBuilder";
 
 /**
  * Defines a block used to generate plane geometry data
  */
 export class PlaneBlock extends NodeGeometryBlock {
+    private _rotationMatrix = new Matrix();
     /**
      * Gets or sets a boolean indicating that this block can evaluate context
      * Build performance is improved when this value is set to false as the system will cache values instead of reevaluating everything per context change
@@ -29,6 +30,9 @@ export class PlaneBlock extends NodeGeometryBlock {
         this.registerInput("size", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
         this.registerInput("width", NodeGeometryBlockConnectionPointTypes.Float, true, 0);
         this.registerInput("height", NodeGeometryBlockConnectionPointTypes.Float, true, 0);
+        this.registerInput("subdivisions", NodeGeometryBlockConnectionPointTypes.Int, true, 1);
+        this.registerInput("subdivisionsX", NodeGeometryBlockConnectionPointTypes.Int, true, 0);
+        this.registerInput("subdivisionsY", NodeGeometryBlockConnectionPointTypes.Int, true, 0);
 
         this.registerOutput("geometry", NodeGeometryBlockConnectionPointTypes.Geometry);
     }
@@ -60,6 +64,27 @@ export class PlaneBlock extends NodeGeometryBlock {
      */
     public get height(): NodeGeometryConnectionPoint {
         return this._inputs[2];
+    }
+
+    /**
+     * Gets the subdivisions input component
+     */
+    public get subdivisions(): NodeGeometryConnectionPoint {
+        return this._inputs[3];
+    }
+
+    /**
+     * Gets the subdivisionsX input component
+     */
+    public get subdivisionsX(): NodeGeometryConnectionPoint {
+        return this._inputs[4];
+    }
+
+    /**
+     * Gets the subdivisionsY input component
+     */
+    public get subdivisionsY(): NodeGeometryConnectionPoint {
+        return this._inputs[5];
     }
 
     /**
@@ -95,14 +120,36 @@ export class PlaneBlock extends NodeGeometryBlock {
     }
 
     protected override _buildBlock(state: NodeGeometryBuildState) {
-        const options: { size?: number; width?: number; height?: number; sideOrientation?: number; frontUVs?: Vector4; backUVs?: Vector4 } = {};
+        const options: { size?: number; width?: number; height?: number; subdivisions?: number; subdivisionsX?: number; subdivisionsY?: number } = {};
         const func = (state: NodeGeometryBuildState) => {
             options.size = this.size.getConnectedValue(state);
             options.width = this.width.getConnectedValue(state);
             options.height = this.height.getConnectedValue(state);
 
-            // Append vertex data from the plane builder
-            return CreatePlaneVertexData(options);
+            const subdivisions = this.subdivisions.getConnectedValue(state);
+            const subdivisionsX = this.subdivisionsX.getConnectedValue(state);
+            const subdivisionsY = this.subdivisionsY.getConnectedValue(state);
+
+            if (subdivisions) {
+                options.subdivisions = subdivisions;
+            }
+
+            if (subdivisionsX) {
+                options.subdivisionsX = subdivisionsX;
+            }
+
+            if (subdivisionsY) {
+                options.subdivisionsY = subdivisionsY;
+            }
+
+            // Append vertex data from the ground builder (to get access to subdivisions)
+            const vertexData = CreateGroundVertexData(options);
+
+            Matrix.RotationYawPitchRollToRef(-Math.PI / 2, 0, Math.PI / 2, this._rotationMatrix);
+
+            vertexData.transform(this._rotationMatrix);
+
+            return vertexData;
         };
 
         if (this.evaluateContext) {

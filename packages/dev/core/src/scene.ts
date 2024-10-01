@@ -12,7 +12,6 @@ import { Tags } from "./Misc/tags";
 import type { Vector2, Vector4 } from "./Maths/math.vector";
 import { Vector3, Matrix, TmpVectors } from "./Maths/math.vector";
 import type { IParticleSystem } from "./Particles/IParticleSystem";
-import { AbstractScene } from "./abstractScene";
 import { ImageProcessingConfiguration } from "./Materials/imageProcessingConfiguration";
 import { UniformBuffer } from "./Materials/uniformBuffer";
 import { PickingInfo } from "./Collisions/pickingInfo";
@@ -92,6 +91,7 @@ import { Logger } from "./Misc/logger";
 import type { AbstractEngine } from "./Engines/abstractEngine";
 import { RegisterClass } from "./Misc/typeStore";
 import type { FrameGraph } from "./FrameGraph";
+import type { IAssetContainer } from "./IAssetContainer";
 
 /**
  * Define an interface for all classes that will hold resources
@@ -143,7 +143,7 @@ export const enum ScenePerformancePriority {
  * Represents a scene to be rendered by the engine.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene
  */
-export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHolder {
+export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     /** The fog is deactivated */
     public static readonly FOGMODE_NONE = Constants.FOGMODE_NONE;
     /** The fog density is following an exponential function */
@@ -223,28 +223,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * The material properties need to be setup according to the type of texture in use.
      */
     public environmentBRDFTexture: BaseTexture;
-
-    /**
-     * Texture used in all pbr material as the reflection texture.
-     * As in the majority of the scene they are the same (exception for multi room and so on),
-     * this is easier to reference from here than from all the materials.
-     */
-    public override get environmentTexture(): Nullable<BaseTexture> {
-        return this._environmentTexture;
-    }
-    /**
-     * Texture used in all pbr material as the reflection texture.
-     * As in the majority of the scene they are the same (exception for multi room and so on),
-     * this is easier to set here than in all the materials.
-     */
-    public override set environmentTexture(value: Nullable<BaseTexture>) {
-        if (this._environmentTexture === value) {
-            return;
-        }
-
-        this._environmentTexture = value;
-        this.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
-    }
 
     /**
      * Intensity of the environment in all pbr material.
@@ -385,6 +363,138 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Gets or sets the active clipplane 6
      */
     public clipPlane6: Nullable<Plane>;
+
+    /**
+     * Gets the list of root nodes (ie. nodes with no parent)
+     */
+    public rootNodes: Node[] = [];
+
+    /** All of the cameras added to this scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras
+     */
+    public cameras: Camera[] = [];
+
+    /**
+     * All of the lights added to this scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction
+     */
+    public lights: Light[] = [];
+
+    /**
+     * All of the (abstract) meshes added to this scene
+     */
+    public meshes: AbstractMesh[] = [];
+
+    /**
+     * The list of skeletons added to the scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/bonesSkeletons
+     */
+    public skeletons: Skeleton[] = [];
+
+    /**
+     * All of the particle systems added to this scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/particle_system_intro
+     */
+    public particleSystems: IParticleSystem[] = [];
+
+    /**
+     * Gets a list of Animations associated with the scene
+     */
+    public animations: Animation[] = [];
+
+    /**
+     * All of the animation groups added to this scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/groupAnimations
+     */
+    public animationGroups: AnimationGroup[] = [];
+
+    /**
+     * All of the multi-materials added to this scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/multiMaterials
+     */
+    public multiMaterials: MultiMaterial[] = [];
+
+    /**
+     * All of the materials added to this scene
+     * In the context of a Scene, it is not supposed to be modified manually.
+     * Any addition or removal should be done using the addMaterial and removeMaterial Scene methods.
+     * Note also that the order of the Material within the array is not significant and might change.
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/materials_introduction
+     */
+    public materials: Material[] = [];
+
+    /**
+     * The list of morph target managers added to the scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/dynamicMeshMorph
+     */
+    public morphTargetManagers: MorphTargetManager[] = [];
+
+    /**
+     * The list of geometries used in the scene.
+     */
+    public geometries: Geometry[] = [];
+
+    /**
+     * All of the transform nodes added to this scene
+     * In the context of a Scene, it is not supposed to be modified manually.
+     * Any addition or removal should be done using the addTransformNode and removeTransformNode Scene methods.
+     * Note also that the order of the TransformNode within the array is not significant and might change.
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/parent_pivot/transform_node
+     */
+    public transformNodes: TransformNode[] = [];
+
+    /**
+     * ActionManagers available on the scene.
+     * @deprecated
+     */
+    public actionManagers: AbstractActionManager[] = [];
+
+    /**
+     * Textures to keep.
+     */
+    public textures: BaseTexture[] = [];
+
+    /** @internal */
+    protected _environmentTexture: Nullable<BaseTexture> = null;
+    /**
+     * Texture used in all pbr material as the reflection texture.
+     * As in the majority of the scene they are the same (exception for multi room and so on),
+     * this is easier to reference from here than from all the materials.
+     */
+    public get environmentTexture(): Nullable<BaseTexture> {
+        return this._environmentTexture;
+    }
+    /**
+     * Texture used in all pbr material as the reflection texture.
+     * As in the majority of the scene they are the same (exception for multi room and so on),
+     * this is easier to set here than in all the materials.
+     */
+    public set environmentTexture(value: Nullable<BaseTexture>) {
+        if (this._environmentTexture === value) {
+            return;
+        }
+
+        this._environmentTexture = value;
+        this.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
+
+    /**
+     * The list of postprocesses added to the scene
+     */
+    public postProcesses: PostProcess[] = [];
+
+    /**
+     * @returns all meshes, lights, cameras, transformNodes and bones
+     */
+    public getNodes(): Array<Node> {
+        let nodes: Node[] = [];
+        nodes = nodes.concat(this.meshes);
+        nodes = nodes.concat(this.lights);
+        nodes = nodes.concat(this.cameras);
+        nodes = nodes.concat(this.transformNodes); // dummies
+        this.skeletons.forEach((skeleton) => (nodes = nodes.concat(skeleton.bones)));
+        return nodes;
+    }
 
     /**
      * Gets or sets a boolean indicating if animations are enabled
@@ -1660,8 +1770,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param options defines the scene options
      */
     constructor(engine: AbstractEngine, options?: SceneOptions) {
-        super();
-
         this.activeCameras = [] as Camera[];
 
         const fullOptions = {
@@ -4554,6 +4662,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
+     * If this function is defined it will take precedence over the standard render() function.
+     */
+    public customRenderFunction?: () => void;
+
+    /**
      * Render the scene
      * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)
      * @param ignoreAnimations defines a boolean indicating if animations should not be executed (false by default)
@@ -4777,73 +4890,80 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         // Before render
         this.onBeforeRenderObservable.notifyObservers(this);
-
-        const engine = this.getEngine();
-
-        // Customs render targets
-        this.onBeforeRenderTargetsRenderObservable.notifyObservers(this);
-
-        const currentActiveCamera = this.activeCameras?.length ? this.activeCameras[0] : this.activeCamera;
-        if (this.renderTargetsEnabled) {
-            Tools.StartPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
-            this._intermediateRendering = true;
-            for (let customIndex = 0; customIndex < this.customRenderTargets.length; customIndex++) {
-                const renderTarget = this.customRenderTargets[customIndex];
-                if (renderTarget._shouldRender()) {
-                    this._renderId++;
-
-                    this.activeCamera = renderTarget.activeCamera || this.activeCamera;
-
-                    if (!this.activeCamera) {
-                        throw new Error("Active camera not set");
-                    }
-
-                    // Viewport
-                    engine.setViewport(this.activeCamera.viewport);
-
-                    // Camera
-                    this.updateTransformMatrix();
-
-                    renderTarget.render(currentActiveCamera !== this.activeCamera, this.dumpNextRenderTargets);
-                }
-            }
-            Tools.EndPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
-            this._intermediateRendering = false;
+        // Custom render function?
+        if (this.customRenderFunction) {
             this._renderId++;
-        }
+            this._engine.currentRenderPassId = Constants.RENDERPASS_MAIN;
 
-        this._engine.currentRenderPassId = currentActiveCamera?.renderPassId ?? Constants.RENDERPASS_MAIN;
-
-        // Restore back buffer
-        this.activeCamera = currentActiveCamera;
-        if (this._activeCamera && this._activeCamera.cameraRigMode !== Constants.RIG_MODE_CUSTOM && !this.prePass) {
-            this._bindFrameBuffer(this._activeCamera, false);
-        }
-        this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
-
-        for (const step of this._beforeClearStage) {
-            step.action();
-        }
-
-        // Clear
-        this._clearFrameBuffer(this.activeCamera);
-
-        // Collects render targets from external components.
-        for (const step of this._gatherRenderTargetsStage) {
-            step.action(this._renderTargets);
-        }
-
-        // Multi-cameras?
-        if (this.activeCameras && this.activeCameras.length > 0) {
-            for (let cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
-                this._processSubCameras(this.activeCameras[cameraIndex], cameraIndex > 0);
-            }
+            this.customRenderFunction();
         } else {
-            if (!this.activeCamera) {
-                throw new Error("No camera defined");
+            const engine = this.getEngine();
+
+            // Customs render targets
+            this.onBeforeRenderTargetsRenderObservable.notifyObservers(this);
+
+            const currentActiveCamera = this.activeCameras?.length ? this.activeCameras[0] : this.activeCamera;
+            if (this.renderTargetsEnabled) {
+                Tools.StartPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
+                this._intermediateRendering = true;
+                for (let customIndex = 0; customIndex < this.customRenderTargets.length; customIndex++) {
+                    const renderTarget = this.customRenderTargets[customIndex];
+                    if (renderTarget._shouldRender()) {
+                        this._renderId++;
+
+                        this.activeCamera = renderTarget.activeCamera || this.activeCamera;
+
+                        if (!this.activeCamera) {
+                            throw new Error("Active camera not set");
+                        }
+
+                        // Viewport
+                        engine.setViewport(this.activeCamera.viewport);
+
+                        // Camera
+                        this.updateTransformMatrix();
+
+                        renderTarget.render(currentActiveCamera !== this.activeCamera, this.dumpNextRenderTargets);
+                    }
+                }
+                Tools.EndPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
+                this._intermediateRendering = false;
+                this._renderId++;
             }
 
-            this._processSubCameras(this.activeCamera, !!this.activeCamera.outputRenderTarget);
+            this._engine.currentRenderPassId = currentActiveCamera?.renderPassId ?? Constants.RENDERPASS_MAIN;
+
+            // Restore back buffer
+            this.activeCamera = currentActiveCamera;
+            if (this._activeCamera && this._activeCamera.cameraRigMode !== Constants.RIG_MODE_CUSTOM && !this.prePass) {
+                this._bindFrameBuffer(this._activeCamera, false);
+            }
+            this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
+
+            for (const step of this._beforeClearStage) {
+                step.action();
+            }
+
+            // Clear
+            this._clearFrameBuffer(this.activeCamera);
+
+            // Collects render targets from external components.
+            for (const step of this._gatherRenderTargetsStage) {
+                step.action(this._renderTargets);
+            }
+
+            // Multi-cameras?
+            if (this.activeCameras && this.activeCameras.length > 0) {
+                for (let cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
+                    this._processSubCameras(this.activeCameras[cameraIndex], cameraIndex > 0);
+                }
+            } else {
+                if (!this.activeCamera) {
+                    throw new Error("No camera defined");
+                }
+
+                this._processSubCameras(this.activeCamera, !!this.activeCamera.outputRenderTarget);
+            }
         }
 
         // Intersection checks

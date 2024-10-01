@@ -1,5 +1,4 @@
 /* eslint-disable import/no-internal-modules */
-export * from "./abstractScene";
 export * from "./Actions/index";
 export * from "./Animations/index";
 export * from "./assetContainer";

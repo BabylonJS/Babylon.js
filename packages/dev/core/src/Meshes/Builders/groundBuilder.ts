@@ -20,15 +20,22 @@ import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
  * @param options.subdivisionsY the number of subdivisions in the y direction, overrides options.subdivisions, optional, default undefined
  * @returns the VertexData of the Ground
  */
-export function CreateGroundVertexData(options: { width?: number; height?: number; subdivisions?: number; subdivisionsX?: number; subdivisionsY?: number }): VertexData {
+export function CreateGroundVertexData(options: {
+    size?: number;
+    width?: number;
+    height?: number;
+    subdivisions?: number;
+    subdivisionsX?: number;
+    subdivisionsY?: number;
+}): VertexData {
     const indices = [];
     const positions = [];
     const normals = [];
     const uvs = [];
     let row: number, col: number;
 
-    const width: number = options.width || 1;
-    const height: number = options.height || 1;
+    const width: number = options.width || options.size || 1;
+    const height: number = options.height || options.size || 1;
     const subdivisionsX: number = (options.subdivisionsX || options.subdivisions || 1) | 0;
     const subdivisionsY: number = (options.subdivisionsY || options.subdivisions || 1) | 0;
 

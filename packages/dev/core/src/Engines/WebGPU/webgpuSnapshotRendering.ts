@@ -99,6 +99,9 @@ export class WebGPUSnapshotRendering {
     }
 
     public reset(): void {
+        if (this._record) {
+            this._mode = this._modeSaved;
+        }
         this.enabled = false;
         this.enabled = true;
     }

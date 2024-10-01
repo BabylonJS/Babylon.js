@@ -9,12 +9,15 @@ import type { INodeData } from "./interfaces/nodeData";
 import type { IPortData } from "./interfaces/portData";
 import type { ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
 import type { NodePort } from "./nodePort";
+import type { HistoryStack } from "../historyStack";
 
 export class StateManager {
     data: any;
     hostDocument: Document;
     lockObject: any;
     modalIsDisplayed: boolean;
+
+    historyStack: HistoryStack;
 
     onSearchBoxRequiredObservable = new Observable<{ x: number; y: number }>();
     onSelectionChangedObservable = new Observable<Nullable<ISelectionChangedOptions>>();
