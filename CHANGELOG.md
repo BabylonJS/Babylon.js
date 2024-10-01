@@ -1,5 +1,12 @@
 # Changelog
 
+## 7.27.2
+
+### Core
+
+- Update effectRenderer.ts - by [RaananW](https://github.com/RaananW) ([#15657](https://github.com/BabylonJS/Babylon.js/pull/15657))
+- Allow users to provide their own custom rendering function for the scene - by [deltakosh](https://github.com/deltakosh) ([#15655](https://github.com/BabylonJS/Babylon.js/pull/15655))
+
 ## 7.27.1
 
 ### Core
