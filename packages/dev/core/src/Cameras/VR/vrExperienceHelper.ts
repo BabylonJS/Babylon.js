@@ -33,6 +33,7 @@ import { CreateGround } from "../../Meshes/Builders/groundBuilder";
 import type { IPointerEvent } from "../../Events/deviceInputEvents";
 import type { Mesh } from "core/Meshes/mesh";
 import { CreateTorus } from "core/Meshes/Builders/torusBuilder";
+import { BeginAnimation } from "core/Animations/animatable.core";
 
 /**
  * Options to modify the vr teleportation behavior.
@@ -1324,7 +1325,7 @@ export class VRExperienceHelper {
         torus.animations = [];
         torus.animations.push(animationInnerCircle);
 
-        this._scene.beginAnimation(torus, 0, 60, true);
+        BeginAnimation(this._scene, torus, 0, 60, true);
 
         this._hideTeleportationTarget();
     }
@@ -1417,7 +1418,7 @@ export class VRExperienceHelper {
         this._postProcessMove.imageProcessingConfiguration.vignetteWeight = 0;
         this._postProcessMove.imageProcessingConfiguration.vignetteStretch = 0;
         this._postProcessMove.samples = 4;
-        this._scene.beginAnimation(this.currentVRCamera, 0, 6, false, 1);
+        BeginAnimation(this._scene, this.currentVRCamera, 0, 6, false, 1);
     }
 
     private _workingVector = Vector3.Zero();
@@ -1531,7 +1532,7 @@ export class VRExperienceHelper {
         this._postProcessMove.imageProcessingConfiguration.vignetteWeight = 0;
         this._postProcessMove.imageProcessingConfiguration.vignetteStretch = 0;
 
-        this._scene.beginAnimation(this.currentVRCamera, 0, lastFrame, false, speedRatio, () => {
+        BeginAnimation(this._scene, this.currentVRCamera, 0, lastFrame, false, speedRatio, () => {
             this.onAfterCameraTeleport.notifyObservers(this._workingVector);
         });
 

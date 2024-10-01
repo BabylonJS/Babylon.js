@@ -22,6 +22,7 @@ import { RuntimeError, ErrorCodes } from "../Misc/error";
 import type { ISpriteManager } from "../Sprites/spriteManager";
 import { RandomGUID } from "../Misc/guid";
 import { AbstractEngine } from "../Engines/abstractEngine";
+import { StopAllAnimations } from "core/Animations/animatable.core";
 
 /**
  * Type used for the success callback of ImportMesh
@@ -1294,7 +1295,7 @@ function importAnimations(
         for (const animatable of scene.animatables) {
             animatable.reset();
         }
-        scene.stopAllAnimations();
+        StopAllAnimations(scene);
         scene.animationGroups.slice().forEach((animationGroup) => {
             animationGroup.dispose();
         });

@@ -7,6 +7,7 @@ import type { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
 import { Skeleton } from "core/Bones/skeleton";
 import type { Nullable } from "core/types";
+import { BeginAnimation } from "core/Animations/animatable.core";
 
 /**
  * Class to bake vertex animation textures.
@@ -78,7 +79,7 @@ export class VertexAnimationBaker {
      */
     private async _executeAnimationFrame(vertexData: Float32Array, frameIndex: number, textureIndex: number): Promise<void> {
         return new Promise<void>((resolve, _reject) => {
-            this._scene.beginAnimation(this._skeleton, frameIndex, frameIndex, false, 1.0, () => {
+            BeginAnimation(this._scene, this._skeleton, frameIndex, frameIndex, false, 1.0, () => {
                 // generate matrices
                 const skeletonMatrices = this._skeleton!.getTransformMatrices(this._mesh);
                 vertexData.set(skeletonMatrices, textureIndex * skeletonMatrices.length);

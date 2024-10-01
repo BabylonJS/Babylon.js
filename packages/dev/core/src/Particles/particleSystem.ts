@@ -32,6 +32,7 @@ import {
     CreatePointEmitter,
     CreateSphereEmitter,
 } from "./particleSystem.functions";
+import { BeginAnimation } from "core/Animations/animatable.core";
 
 /**
  * This represents a particle system in Babylon.
@@ -399,7 +400,8 @@ export class ParticleSystem extends ThinParticleSystem {
         }
 
         if (parsedParticleSystem.autoAnimate && scene) {
-            scene.beginAnimation(
+            BeginAnimation(
+                scene,
                 particleSystem,
                 parsedParticleSystem.autoAnimateFrom,
                 parsedParticleSystem.autoAnimateTo,

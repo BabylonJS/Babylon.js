@@ -3,7 +3,6 @@ import { Vector3, Quaternion, Vector2, Matrix, TmpVectors } from "../Maths/math.
 import { Color3, Color4 } from "../Maths/math.color";
 import { Hermite, Lerp } from "../Maths/math.scalar.functions";
 import type { DeepImmutable, Nullable } from "../types";
-import type { Scene } from "../scene";
 import { RegisterClass } from "../Misc/typeStore";
 import type { IAnimationKey } from "./animationKey";
 import { AnimationKeyInterpolation } from "./animationKey";
@@ -14,9 +13,10 @@ import type { IAnimatable } from "./animatable.interface";
 import { Size } from "../Maths/math.size";
 import { WebRequest } from "../Misc/webRequest";
 import { Constants } from "../Engines/constants";
-import type { Animatable } from "./animatable";
 import type { RuntimeAnimation } from "./runtimeAnimation";
 import { SerializationHelper } from "../Misc/decorators.serialization";
+import type { Scene } from "core/scene";
+import type { Animatable } from "./animatable.core";
 
 // Static values to help the garbage collector
 
@@ -222,127 +222,6 @@ export class Animation {
     }
 
     /**
-     * Create and start an animation on a node
-     * @param name defines the name of the global animation that will be run on all nodes
-     * @param target defines the target where the animation will take place
-     * @param targetProperty defines property to animate
-     * @param framePerSecond defines the number of frame per second yo use
-     * @param totalFrame defines the number of frames in total
-     * @param from defines the initial value
-     * @param to defines the final value
-     * @param loopMode defines which loop mode you want to use (off by default)
-     * @param easingFunction defines the easing function to use (linear by default)
-     * @param onAnimationEnd defines the callback to call when animation end
-     * @param scene defines the hosting scene
-     * @returns the animatable created for this animation
-     */
-    public static CreateAndStartAnimation(
-        name: string,
-        target: any,
-        targetProperty: string,
-        framePerSecond: number,
-        totalFrame: number,
-        from: any,
-        to: any,
-        loopMode?: number,
-        easingFunction?: EasingFunction,
-        onAnimationEnd?: () => void,
-        scene?: Scene
-    ): Nullable<Animatable> {
-        const animation = Animation._PrepareAnimation(name, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
-
-        if (!animation) {
-            return null;
-        }
-
-        if (target.getScene) {
-            scene = target.getScene();
-        }
-
-        if (!scene) {
-            return null;
-        }
-
-        return scene.beginDirectAnimation(target, [animation], 0, totalFrame, animation.loopMode === 1, 1.0, onAnimationEnd);
-    }
-
-    /**
-     * Create and start an animation on a node and its descendants
-     * @param name defines the name of the global animation that will be run on all nodes
-     * @param node defines the root node where the animation will take place
-     * @param directDescendantsOnly if true only direct descendants will be used, if false direct and also indirect (children of children, an so on in a recursive manner) descendants will be used
-     * @param targetProperty defines property to animate
-     * @param framePerSecond defines the number of frame per second to use
-     * @param totalFrame defines the number of frames in total
-     * @param from defines the initial value
-     * @param to defines the final value
-     * @param loopMode defines which loop mode you want to use (off by default)
-     * @param easingFunction defines the easing function to use (linear by default)
-     * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
-     * @returns the list of animatables created for all nodes
-     * @example https://www.babylonjs-playground.com/#MH0VLI
-     */
-    public static CreateAndStartHierarchyAnimation(
-        name: string,
-        node: Node,
-        directDescendantsOnly: boolean,
-        targetProperty: string,
-        framePerSecond: number,
-        totalFrame: number,
-        from: any,
-        to: any,
-        loopMode?: number,
-        easingFunction?: EasingFunction,
-        onAnimationEnd?: () => void
-    ): Nullable<Animatable[]> {
-        const animation = Animation._PrepareAnimation(name, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
-
-        if (!animation) {
-            return null;
-        }
-
-        const scene = node.getScene();
-        return scene.beginDirectHierarchyAnimation(node, directDescendantsOnly, [animation], 0, totalFrame, animation.loopMode === 1, 1.0, onAnimationEnd);
-    }
-
-    /**
-     * Creates a new animation, merges it with the existing animations and starts it
-     * @param name Name of the animation
-     * @param node Node which contains the scene that begins the animations
-     * @param targetProperty Specifies which property to animate
-     * @param framePerSecond The frames per second of the animation
-     * @param totalFrame The total number of frames
-     * @param from The frame at the beginning of the animation
-     * @param to The frame at the end of the animation
-     * @param loopMode Specifies the loop mode of the animation
-     * @param easingFunction (Optional) The easing function of the animation, which allow custom mathematical formulas for animations
-     * @param onAnimationEnd Callback to run once the animation is complete
-     * @returns Nullable animation
-     */
-    public static CreateMergeAndStartAnimation(
-        name: string,
-        node: Node,
-        targetProperty: string,
-        framePerSecond: number,
-        totalFrame: number,
-        from: any,
-        to: any,
-        loopMode?: number,
-        easingFunction?: EasingFunction,
-        onAnimationEnd?: () => void
-    ): Nullable<Animatable> {
-        const animation = Animation._PrepareAnimation(name, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
-
-        if (!animation) {
-            return null;
-        }
-
-        node.animations.push(animation);
-
-        return node.getScene().beginAnimation(node, 0, totalFrame, animation.loopMode === 1, 1.0, onAnimationEnd);
-    }
-
-    /**
      * Convert the keyframes of an animation to be relative to a given reference frame.
      * @param sourceAnimation defines the Animation containing keyframes to convert
      * @param referenceFrame defines the frame that keyframes in the range will be relative to (default: 0)
@@ -529,60 +408,6 @@ export class Animation {
             animation.setKeys(clippedKeys, true);
         }
 
-        return animation;
-    }
-
-    /**
-     * Transition property of an host to the target Value
-     * @param property The property to transition
-     * @param targetValue The target Value of the property
-     * @param host The object where the property to animate belongs
-     * @param scene Scene used to run the animation
-     * @param frameRate Framerate (in frame/s) to use
-     * @param transition The transition type we want to use
-     * @param duration The duration of the animation, in milliseconds
-     * @param onAnimationEnd Callback trigger at the end of the animation
-     * @returns Nullable animation
-     */
-    public static TransitionTo(
-        property: string,
-        targetValue: any,
-        host: any,
-        scene: Scene,
-        frameRate: number,
-        transition: Animation,
-        duration: number,
-        onAnimationEnd: Nullable<() => void> = null
-    ): Nullable<Animatable> {
-        if (duration <= 0) {
-            host[property] = targetValue;
-            if (onAnimationEnd) {
-                onAnimationEnd();
-            }
-            return null;
-        }
-
-        const endFrame: number = frameRate * (duration / 1000);
-
-        transition.setKeys([
-            {
-                frame: 0,
-                value: host[property].clone ? host[property].clone() : host[property],
-            },
-            {
-                frame: endFrame,
-                value: targetValue,
-            },
-        ]);
-
-        if (!host.animations) {
-            host.animations = [];
-        }
-
-        host.animations.push(transition);
-
-        const animation: Animatable = scene.beginAnimation(host, 0, endFrame, false);
-        animation.onAnimationEnd = onAnimationEnd;
         return animation;
     }
 

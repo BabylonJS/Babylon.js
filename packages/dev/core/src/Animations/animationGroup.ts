@@ -1,4 +1,4 @@
-import type { Animatable } from "./animatable";
+import { BeginDirectAnimation, SortActiveAnimatables, type Animatable } from "./animatable.core";
 import { Animation } from "./animation";
 import type { IMakeAnimationAdditiveOptions } from "./animation";
 import type { IAnimationKey } from "./animationKey";
@@ -378,7 +378,7 @@ export class AnimationGroup implements IDisposable {
                 this._animatables[i].playOrder = this._playOrder;
             }
 
-            this._scene.sortActiveAnimatables();
+            SortActiveAnimatables(this._scene);
         }
     }
 
@@ -657,7 +657,8 @@ export class AnimationGroup implements IDisposable {
 
         for (let index = 0; index < this._targetedAnimations.length; index++) {
             const targetedAnimation = this._targetedAnimations[index];
-            const animatable = this._scene.beginDirectAnimation(
+            const animatable = BeginDirectAnimation(
+                this._scene,
                 targetedAnimation.target,
                 [targetedAnimation.animation],
                 from !== undefined ? from : this._from,
@@ -681,7 +682,7 @@ export class AnimationGroup implements IDisposable {
 
         this.syncWithMask();
 
-        this._scene.sortActiveAnimatables();
+        SortActiveAnimatables(this._scene);
 
         this._speedRatio = speedRatio;
 

@@ -31,6 +31,7 @@ import { Tools } from "../../Misc/tools";
 import { PostProcess } from "../../PostProcesses/postProcess";
 import { SpriteManager } from "core/Sprites/spriteManager";
 import { GetIndividualParser, Parse } from "./babylonFileParser.function";
+import { BeginAnimation } from "core/Animations/animatable.core";
 
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention, no-var
@@ -1023,7 +1024,7 @@ SceneLoader.RegisterPlugin({
             }
 
             if (parsedData.autoAnimate) {
-                scene.beginAnimation(scene, parsedData.autoAnimateFrom, parsedData.autoAnimateTo, parsedData.autoAnimateLoop, parsedData.autoAnimateSpeed || 1.0);
+                BeginAnimation(scene, scene, parsedData.autoAnimateFrom, parsedData.autoAnimateTo, parsedData.autoAnimateLoop, parsedData.autoAnimateSpeed || 1.0);
             }
 
             if (parsedData.activeCameraID !== undefined && parsedData.activeCameraID !== null) {

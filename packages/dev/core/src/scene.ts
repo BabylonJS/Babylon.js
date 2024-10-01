@@ -84,7 +84,7 @@ import type { Mesh } from "./Meshes/mesh";
 import type { SubMesh } from "./Meshes/subMesh";
 import type { Node } from "./node";
 import type { Animation } from "./Animations/animation";
-import type { Animatable } from "./Animations/animatable";
+import { StopAllAnimations, type Animatable } from "./Animations/animatable.core";
 import type { Texture } from "./Materials/Textures/texture";
 import { PointerPickingConfiguration } from "./Inputs/pointerPickingConfiguration";
 import { Logger } from "./Misc/logger";
@@ -395,6 +395,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/particle_system_intro
      */
     public particleSystems: IParticleSystem[] = [];
+
+    /**
+     * Gets the current delta time used by animation engine
+     */
+    deltaTime: number;
 
     /**
      * Gets a list of Animations associated with the scene
@@ -4900,13 +4905,13 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         this.importedMeshesFiles = [] as string[];
 
-        if (this.stopAllAnimations) {
+        if (this._activeAnimatables) {
             // Ensures that no animatable notifies a callback that could start a new animation group, constantly adding new animatables to the active list...
             this._activeAnimatables.forEach((animatable) => {
                 animatable.onAnimationEndObservable.clear();
                 animatable.onAnimationEnd = null;
             });
-            this.stopAllAnimations();
+            StopAllAnimations(this);
         }
 
         this.resetCachedMaterial();

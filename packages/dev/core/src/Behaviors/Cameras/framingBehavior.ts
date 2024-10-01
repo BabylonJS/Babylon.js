@@ -12,8 +12,9 @@ import { PrecisionDate } from "../../Misc/precisionDate";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { TransformNode } from "../../Meshes/transformNode";
 import { Vector3 } from "../../Maths/math.vector";
-import type { Animatable } from "../../Animations/animatable";
+import type { Animatable } from "../../Animations/animatable.core";
 import { Animation } from "../../Animations/animation";
+import { TransitionTo } from "core/Animations/animation.core";
 
 /**
  * The framing behavior (FramingBehavior) is designed to automatically position an ArcRotateCamera when its target is set to a mesh. It is also useful if you want to prevent the camera to go under a virtual horizontal plane.
@@ -337,7 +338,7 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
         }
 
         this._betaIsAnimating = true;
-        let animatable = Animation.TransitionTo("target", zoomTarget, this._attachedCamera, this._attachedCamera.getScene(), 60, this._vectorTransition, this._framingTime);
+        let animatable = TransitionTo("target", zoomTarget, this._attachedCamera, this._attachedCamera.getScene(), 60, this._vectorTransition, this._framingTime);
         if (animatable) {
             this._animatables.push(animatable);
         }
@@ -370,7 +371,7 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
             this._radiusTransition = Animation.CreateAnimation("radius", Animation.ANIMATIONTYPE_FLOAT, 60, FramingBehavior.EasingFunction);
         }
 
-        animatable = Animation.TransitionTo("radius", radius, this._attachedCamera, this._attachedCamera.getScene(), 60, this._radiusTransition, this._framingTime, () => {
+        animatable = TransitionTo("radius", radius, this._attachedCamera, this._attachedCamera.getScene(), 60, this._radiusTransition, this._framingTime, () => {
             this.stopAllAnimations();
             if (onAnimationEnd) {
                 onAnimationEnd();
@@ -440,19 +441,10 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
                 this._betaTransition = Animation.CreateAnimation("beta", Animation.ANIMATIONTYPE_FLOAT, 60, FramingBehavior.EasingFunction);
             }
 
-            const animatabe = Animation.TransitionTo(
-                "beta",
-                defaultBeta,
-                this._attachedCamera,
-                this._attachedCamera.getScene(),
-                60,
-                this._betaTransition,
-                this._elevationReturnTime,
-                () => {
-                    this._clearAnimationLocks();
-                    this.stopAllAnimations();
-                }
-            );
+            const animatabe = TransitionTo("beta", defaultBeta, this._attachedCamera, this._attachedCamera.getScene(), 60, this._betaTransition, this._elevationReturnTime, () => {
+                this._clearAnimationLocks();
+                this.stopAllAnimations();
+            });
 
             if (animatabe) {
                 this._animatables.push(animatabe);

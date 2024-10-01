@@ -6,8 +6,9 @@ import type { Nullable } from "../../types";
 import type { Observer } from "../../Misc/observable";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { TransformNode } from "../../Meshes/transformNode";
-import type { Animatable } from "../../Animations/animatable";
+import type { Animatable } from "../../Animations/animatable.core";
 import { Animation } from "../../Animations/animation";
+import { TransitionTo } from "core/Animations/animation.core";
 
 /**
  * Add a bouncing effect to an ArcRotateCamera when reaching a specified minimum and maximum radius
@@ -184,7 +185,7 @@ export class BouncingBehavior implements Behavior<ArcRotateCamera> {
         // Animate to the radius limit
         this.stopAllAnimations();
         this._radiusIsAnimating = true;
-        const animatable = Animation.TransitionTo(
+        const animatable = TransitionTo(
             "radius",
             this._attachedCamera.radius + radiusDelta,
             this._attachedCamera,

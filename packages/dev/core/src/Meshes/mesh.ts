@@ -51,6 +51,7 @@ import type { LinesMesh } from "./linesMesh";
 import type { GroundMesh } from "./groundMesh";
 import type { DataBuffer } from "core/Buffers/dataBuffer";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { BeginAnimation } from "core/Animations/animatable.core";
 
 /**
  * @internal
@@ -4300,7 +4301,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         if (parsedMesh.autoAnimate) {
-            scene.beginAnimation(mesh, parsedMesh.autoAnimateFrom, parsedMesh.autoAnimateTo, parsedMesh.autoAnimateLoop, parsedMesh.autoAnimateSpeed || 1.0);
+            BeginAnimation(scene, mesh, parsedMesh.autoAnimateFrom, parsedMesh.autoAnimateTo, parsedMesh.autoAnimateLoop, parsedMesh.autoAnimateSpeed || 1.0);
         }
 
         // Layer Mask
@@ -4414,7 +4415,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     Node.ParseAnimationRanges(instance, parsedInstance, scene);
 
                     if (parsedInstance.autoAnimate) {
-                        scene.beginAnimation(
+                        BeginAnimation(
+                            scene,
                             instance,
                             parsedInstance.autoAnimateFrom,
                             parsedInstance.autoAnimateTo,

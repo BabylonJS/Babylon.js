@@ -34,6 +34,7 @@ import { Clamp, Lerp, RandomRange } from "../Maths/math.scalar.functions";
 import { PrepareSamplersForImageProcessing, PrepareUniformsForImageProcessing } from "../Materials/imageProcessingConfiguration.functions";
 import type { ThinEngine } from "../Engines/thinEngine";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { BeginAnimation } from "core/Animations/animatable.core";
 
 /**
  * This represents a thin particle system in Babylon.
@@ -1279,7 +1280,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
 
         // Animations
         if (this.beginAnimationOnStart && this.animations && this.animations.length > 0 && this._scene) {
-            this._scene.beginAnimation(this, this.beginAnimationFrom, this.beginAnimationTo, this.beginAnimationLoop);
+            BeginAnimation(this._scene, this, this.beginAnimationFrom, this.beginAnimationTo, this.beginAnimationLoop);
         }
     }
 
