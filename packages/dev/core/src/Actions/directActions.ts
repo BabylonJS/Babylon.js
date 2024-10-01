@@ -6,7 +6,6 @@ import { Constants } from "../Engines/constants";
 import { RegisterClass } from "../Misc/typeStore";
 
 import type { ActionEvent } from "./actionEvent";
-import { BeginAnimation } from "core/Animations/animatable.core";
 
 /**
  * This defines an action responsible to toggle a boolean once triggered.
@@ -308,7 +307,7 @@ export class PlayAnimationAction extends Action {
      */
     public override execute(): void {
         const scene = this._actionManager.getScene();
-        BeginAnimation(scene, this._target, this.from, this.to, this.loop);
+        scene.beginAnimation(this._target, this.from, this.to, this.loop);
     }
 
     /**

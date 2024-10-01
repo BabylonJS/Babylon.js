@@ -25,7 +25,6 @@ import type { TargetCamera } from "./targetCamera";
 import type { Ray } from "../Culling/ray";
 import type { ArcRotateCamera } from "./arcRotateCamera";
 import { SerializationHelper } from "../Misc/decorators.serialization";
-import { BeginAnimation } from "core/Animations/animatable.core";
 
 /**
  * Oblique projection values
@@ -1553,7 +1552,7 @@ export class Camera extends Node {
         }
 
         if (parsedCamera.autoAnimate) {
-            BeginAnimation(scene, camera, parsedCamera.autoAnimateFrom, parsedCamera.autoAnimateTo, parsedCamera.autoAnimateLoop, parsedCamera.autoAnimateSpeed || 1.0);
+            scene.beginAnimation(camera, parsedCamera.autoAnimateFrom, parsedCamera.autoAnimateTo, parsedCamera.autoAnimateLoop, parsedCamera.autoAnimateSpeed || 1.0);
         }
 
         // Check if isEnabled is defined to be back compatible with prior serialized versions.

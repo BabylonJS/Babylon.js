@@ -7,7 +7,6 @@ import { Color3 } from "../Maths/math.color";
 import { Vector3, Matrix, Quaternion } from "../Maths/math.vector";
 import { Animation } from "../Animations/animation";
 import { RegisterClass } from "../Misc/typeStore";
-import { BeginDirectAnimation } from "core/Animations/animatable.core";
 
 /**
  * This defines an action responsible to change the value of a property
@@ -134,7 +133,7 @@ export class InterpolateValueAction extends Action {
             }
         };
 
-        BeginDirectAnimation(scene, this._effectiveTarget, [animation], 0, 100, false, 1, wrapper);
+        scene.beginDirectAnimation(this._effectiveTarget, [animation], 0, 100, false, 1, wrapper);
     }
 
     /**

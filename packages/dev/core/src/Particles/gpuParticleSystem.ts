@@ -52,7 +52,6 @@ import {
     CreatePointEmitter,
     CreateSphereEmitter,
 } from "./particleSystem.functions";
-import { BeginAnimation } from "core/Animations/animatable.core";
 
 /**
  * This represents a GPU particle system in Babylon
@@ -399,7 +398,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         // Animations
         if (this.beginAnimationOnStart && this.animations && this.animations.length > 0 && this._scene) {
-            BeginAnimation(this._scene, this, this.beginAnimationFrom, this.beginAnimationTo, this.beginAnimationLoop);
+            this._scene.beginAnimation(this, this.beginAnimationFrom, this.beginAnimationTo, this.beginAnimationLoop);
         }
     }
 

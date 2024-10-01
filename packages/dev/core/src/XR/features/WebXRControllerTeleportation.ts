@@ -30,7 +30,6 @@ import { UtilityLayerRenderer } from "../../Rendering/utilityLayerRenderer";
 import { PointerEventTypes } from "../../Events/pointerEvents";
 import { setAndStartTimer } from "../../Misc/timer";
 import type { LinesMesh } from "../../Meshes/linesMesh";
-import { BeginAnimation } from "core/Animations/animatable.core";
 
 /**
  * The options container for the teleportation module
@@ -916,7 +915,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
             animationInnerCircle.setEasingFunction(easingFunction);
             torus.animations = [];
             torus.animations.push(animationInnerCircle);
-            BeginAnimation(sceneToRenderTo, torus, 0, 60, true);
+            sceneToRenderTo.beginAnimation(torus, 0, 60, true);
         }
 
         const cone = CreateCylinder("rotationCone", { diameterTop: 0, tessellation: 4 }, sceneToRenderTo);

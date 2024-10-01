@@ -1,5 +1,5 @@
 import type { FlowGraphContext } from "../../../flowGraphContext";
-import { BeginDirectAnimation, type Animatable } from "../../../../Animations/animatable.core";
+import type { Animatable } from "../../../../Animations/animatable.core";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import { FlowGraphAsyncExecutionBlock } from "../../../flowGraphAsyncExecutionBlock";
 import { RichTypeAny, RichTypeNumber, RichTypeBoolean } from "../../../flowGraphRichTypes";
@@ -102,8 +102,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             existingAnimatable.restart();
         } else {
             const scene = context.configuration.scene;
-            const animatable = BeginDirectAnimation(
-                scene,
+            const animatable = scene.beginDirectAnimation(
                 targetValue,
                 [animationValue],
                 this.from.getValue(context),

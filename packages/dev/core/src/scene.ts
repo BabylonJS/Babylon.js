@@ -84,7 +84,7 @@ import type { Mesh } from "./Meshes/mesh";
 import type { SubMesh } from "./Meshes/subMesh";
 import type { Node } from "./node";
 import type { Animation } from "./Animations/animation";
-import { StopAllAnimations, type Animatable } from "./Animations/animatable.core";
+import type { Animatable } from "./Animations/animatable.core";
 import type { Texture } from "./Materials/Textures/texture";
 import { PointerPickingConfiguration } from "./Inputs/pointerPickingConfiguration";
 import { Logger } from "./Misc/logger";
@@ -4911,7 +4911,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
                 animatable.onAnimationEndObservable.clear();
                 animatable.onAnimationEnd = null;
             });
-            StopAllAnimations(this);
+            this.stopAllAnimations();
         }
 
         this.resetCachedMaterial();

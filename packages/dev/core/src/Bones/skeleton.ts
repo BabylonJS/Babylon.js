@@ -5,7 +5,7 @@ import type { Scene } from "../scene";
 import type { Nullable } from "../types";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { RawTexture } from "../Materials/Textures/rawTexture";
-import { BeginAnimation, CopyAnimationRange, GetAllAnimatablesByTarget, type Animatable } from "../Animations/animatable.core";
+import type { Animatable } from "../Animations/animatable.core";
 import type { AnimationPropertiesOverride } from "../Animations/animationPropertiesOverride";
 import { Animation } from "../Animations/animation";
 import { AnimationRange } from "../Animations/animationRange";
@@ -345,7 +345,7 @@ export class Skeleton implements IAnimatable {
             const boneName = this.bones[i].name;
             const sourceBone = boneDict[boneName];
             if (sourceBone) {
-                ret = ret && CopyAnimationRange(this.bones[i], sourceBone, name, frameOffset, rescaleAsRequired, skelDimensionsRatio);
+                ret = ret && this.bones[i].copyAnimationRange(sourceBone, name, frameOffset, rescaleAsRequired, skelDimensionsRatio);
             } else {
                 Logger.Warn("copyAnimationRange: not same rig, missing source bone " + boneName);
                 ret = false;
@@ -398,7 +398,7 @@ export class Skeleton implements IAnimatable {
             return null;
         }
 
-        return BeginAnimation(this._scene, this, range.from, range.to, loop, speedRatio, onAnimationEnd);
+        return this._scene.beginAnimation(this, range.from, range.to, loop, speedRatio, onAnimationEnd);
     }
 
     /**
@@ -417,7 +417,7 @@ export class Skeleton implements IAnimatable {
         }
 
         // Find any current scene-level animatable belonging to the target that matches the range
-        const sceneAnimatables = GetAllAnimatablesByTarget(skeleton._scene, skeleton);
+        const sceneAnimatables = skeleton._scene.getAllAnimatablesByTarget(skeleton);
         let rangeAnimatable: Nullable<Animatable> = null;
 
         for (let index = 0; index < sceneAnimatables.length; index++) {

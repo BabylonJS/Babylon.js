@@ -3,7 +3,7 @@ import { Mesh } from "./Meshes/mesh";
 import { TransformNode } from "./Meshes/transformNode";
 import type { Skeleton } from "./Bones/skeleton";
 import type { AnimationGroup } from "./Animations/animationGroup";
-import { BeginAnimation, type Animatable } from "./Animations/animatable.core";
+import { type Animatable } from "./Animations/animatable.core";
 import { AbstractMesh } from "./Meshes/abstractMesh";
 import type { MultiMaterial } from "./Materials/multiMaterial";
 import type { Material } from "./Materials/material";
@@ -1169,8 +1169,7 @@ export class AssetContainer extends AbstractAssetContainer {
 
             if (target) {
                 // Clone the animatable and retarget it
-                BeginAnimation(
-                    scene,
+                scene.beginAnimation(
                     target,
                     animatable.fromFrame,
                     animatable.toFrame,

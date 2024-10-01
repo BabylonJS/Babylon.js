@@ -26,7 +26,6 @@ import { QuadraticEase, EasingFunction } from "../../Animations/easing";
 // side effects
 import "../../Meshes/subMesh.project";
 import { Logger } from "core/Misc/logger";
-import { BeginDirectAnimation } from "core/Animations/animatable.core";
 
 type ControllerData = {
     xrController?: WebXRInputSource;
@@ -920,7 +919,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
         const touchCollisionMeshFunction = (isTouch: boolean) => {
             const action = isTouch ? touchAction : releaseAction;
-            BeginDirectAnimation(meshCreationScene, touchCollisionMesh, [action], 0, 18, false, 1);
+            meshCreationScene.beginDirectAnimation(touchCollisionMesh, [action], 0, 18, false, 1);
         };
 
         const hydrateCollisionMeshFunction = (isHydration: boolean) => {
@@ -928,7 +927,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             if (isHydration) {
                 touchCollisionMesh.isVisible = true;
             }
-            BeginDirectAnimation(meshCreationScene, touchCollisionMesh, [action], 0, 15, false, 1, () => {
+            meshCreationScene.beginDirectAnimation(touchCollisionMesh, [action], 0, 15, false, 1, () => {
                 if (!isHydration) {
                     touchCollisionMesh.isVisible = false;
                 }

@@ -1,25 +1,11 @@
 import type { Nullable } from "../types";
-import { Scene } from "../scene";
 import type { Vector3 } from "../Maths/math.vector";
 import { Bone } from "../Bones/bone";
 import type { Node } from "../node";
-import {
-    AnimateScene,
-    BeginAnimation,
-    BeginDirectAnimation,
-    BeginDirectHierarchyAnimation,
-    BeginHierarchyAnimation,
-    BeginWeightedAnimation,
-    CopyAnimationRange,
-    GetAllAnimatablesByTarget,
-    GetAnimatableByTarget,
-    SortActiveAnimatables,
-    StopAllAnimations,
-    StopAnimation,
-} from "./animatable.core";
+import { InitAnimations } from "./animatable.core";
 import type { Animatable } from "./animatable.core";
-import { Animation } from "./animation";
-import { CreateAndStartAnimation, CreateAndStartHierarchyAnimation, CreateMergeAndStartAnimation, TransitionTo } from "./animation.core";
+import type { Animation } from "./animation";
+import { Scene } from "core/scene";
 
 export * from "./animatable.core";
 
@@ -196,122 +182,6 @@ declare module "../scene" {
     }
 }
 
-Scene.prototype._animate = function (customDeltaTime?: number): void {
-    AnimateScene(this, customDeltaTime);
-};
-
-Scene.prototype.sortActiveAnimatables = function (): void {
-    SortActiveAnimatables(this);
-};
-
-Scene.prototype.beginWeightedAnimation = function (
-    target: any,
-    from: number,
-    to: number,
-    weight = 1.0,
-    loop?: boolean,
-    speedRatio: number = 1.0,
-    onAnimationEnd?: () => void,
-    animatable?: Animatable,
-    targetMask?: (target: any) => boolean,
-    onAnimationLoop?: () => void,
-    isAdditive = false
-): Animatable {
-    return BeginWeightedAnimation(this, target, from, to, weight, loop, speedRatio, onAnimationEnd, animatable, targetMask, onAnimationLoop, isAdditive);
-};
-
-Scene.prototype.beginAnimation = function (
-    target: any,
-    from: number,
-    to: number,
-    loop?: boolean,
-    speedRatio: number = 1.0,
-    onAnimationEnd?: () => void,
-    animatable?: Animatable,
-    stopCurrent = true,
-    targetMask?: (target: any) => boolean,
-    onAnimationLoop?: () => void,
-    isAdditive = false
-): Animatable {
-    return BeginAnimation(this, target, from, to, loop, speedRatio, onAnimationEnd, animatable, stopCurrent, targetMask, onAnimationLoop, isAdditive);
-};
-
-Scene.prototype.beginHierarchyAnimation = function (
-    target: any,
-    directDescendantsOnly: boolean,
-    from: number,
-    to: number,
-    loop?: boolean,
-    speedRatio: number = 1.0,
-    onAnimationEnd?: () => void,
-    animatable?: Animatable,
-    stopCurrent = true,
-    targetMask?: (target: any) => boolean,
-    onAnimationLoop?: () => void,
-    isAdditive = false
-): Animatable[] {
-    return BeginHierarchyAnimation(
-        this,
-        target,
-        directDescendantsOnly,
-        from,
-        to,
-        loop,
-        speedRatio,
-        onAnimationEnd,
-        animatable,
-        stopCurrent,
-        targetMask,
-        onAnimationLoop,
-        isAdditive
-    );
-};
-
-Scene.prototype.beginDirectAnimation = function (
-    target: any,
-    animations: Animation[],
-    from: number,
-    to: number,
-    loop?: boolean,
-    speedRatio: number = 1.0,
-    onAnimationEnd?: () => void,
-    onAnimationLoop?: () => void,
-    isAdditive = false
-): Animatable {
-    return BeginDirectAnimation(this, target, animations, from, to, loop, speedRatio, onAnimationEnd, onAnimationLoop, isAdditive);
-};
-
-Scene.prototype.beginDirectHierarchyAnimation = function (
-    target: Node,
-    directDescendantsOnly: boolean,
-    animations: Animation[],
-    from: number,
-    to: number,
-    loop?: boolean,
-    speedRatio?: number,
-    onAnimationEnd?: () => void,
-    onAnimationLoop?: () => void,
-    isAdditive = false
-): Animatable[] {
-    return BeginDirectHierarchyAnimation(this, target, directDescendantsOnly, animations, from, to, loop, speedRatio, onAnimationEnd, onAnimationLoop, isAdditive);
-};
-
-Scene.prototype.getAnimatableByTarget = function (target: any): Nullable<Animatable> {
-    return GetAnimatableByTarget(this, target);
-};
-
-Scene.prototype.getAllAnimatablesByTarget = function (target: any): Array<Animatable> {
-    return GetAllAnimatablesByTarget(this, target);
-};
-
-Scene.prototype.stopAnimation = function (target: any, animationName?: string, targetMask?: (target: any) => boolean): void {
-    return StopAnimation(this, target, animationName, targetMask);
-};
-
-Scene.prototype.stopAllAnimations = function (): void {
-    return StopAllAnimations(this);
-};
-
 declare module "../Bones/bone" {
     export interface Bone {
         /**
@@ -327,19 +197,5 @@ declare module "../Bones/bone" {
     }
 }
 
-Bone.prototype.copyAnimationRange = function (
-    source: Bone,
-    rangeName: string,
-    frameOffset: number,
-    rescaleAsRequired = false,
-    skelDimensionsRatio: Nullable<Vector3> = null
-): boolean {
-    return CopyAnimationRange(this, source, rangeName, frameOffset, rescaleAsRequired, skelDimensionsRatio);
-};
-
-// This is mandatory to avoid dependency cycles
-// Not pretty but protect backward compat
-(Animation as any).CreateAndStartAnimation = CreateAndStartAnimation;
-(Animation as any).CreateAndStartHierarchyAnimation = CreateAndStartHierarchyAnimation;
-(Animation as any).CreateMergeAndStartAnimation = CreateMergeAndStartAnimation;
-(Animation as any).TransitionTo = TransitionTo;
+// Connect everything!
+InitAnimations(Scene.prototype, Bone.prototype);

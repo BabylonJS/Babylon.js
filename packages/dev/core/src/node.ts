@@ -16,7 +16,7 @@ import type { AnimationRange } from "./Animations/animationRange";
 import type { AnimationPropertiesOverride } from "./Animations/animationPropertiesOverride";
 import type { AbstractMesh } from "./Meshes/abstractMesh";
 import type { Animation } from "./Animations/animation";
-import { BeginAnimation, type Animatable } from "./Animations/animatable.core";
+import type { Animatable } from "./Animations/animatable.core";
 import { SerializationHelper } from "./Misc/decorators.serialization";
 import type { IAssetContainer } from "./IAssetContainer";
 
@@ -870,7 +870,7 @@ export class Node implements IBehaviorAware<Node> {
             return null;
         }
 
-        return BeginAnimation(this._scene, this, range.from, range.to, loop, speedRatio, onAnimationEnd);
+        return this._scene.beginAnimation(this, range.from, range.to, loop, speedRatio, onAnimationEnd);
     }
 
     /**

@@ -773,355 +773,6 @@ function ProcessLateAnimationBindings(scene: Scene): void {
     scene._registeredForLateAnimationBindings.reset();
 }
 
-/**
- * Gets the animatable associated with a specific target
- * @param scene defines the hosting scene
- * @param target defines the target of the animatable
- * @returns the required animatable if found
- */
-export function GetAnimatableByTarget(scene: Scene, target: any): Nullable<Animatable> {
-    for (let index = 0; index < scene._activeAnimatables.length; index++) {
-        if (scene._activeAnimatables[index].target === target) {
-            return scene._activeAnimatables[index];
-        }
-    }
-
-    return null;
-}
-
-/**
- * Gets all animatables associated with a given target
- * @param scene defines the hosting scene
- * @param target defines the target to look animatables for
- * @returns an array of Animatables
- */
-export function GetAllAnimatablesByTarget(scene: Scene, target: any): Array<Animatable> {
-    const result = [];
-    for (let index = 0; index < scene._activeAnimatables.length; index++) {
-        if (scene._activeAnimatables[index].target === target) {
-            result.push(scene._activeAnimatables[index]);
-        }
-    }
-
-    return result;
-}
-
-/**
- * Will stop the animation of the given target
- * @param scene defines the hosting scene
- * @param target - the target
- * @param animationName - the name of the animation to stop (all animations will be stopped if both this and targetMask are empty)
- * @param targetMask - a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
- */
-export function StopAnimation(scene: Scene, target: any, animationName?: string, targetMask?: (target: any) => boolean): void {
-    const animatables = GetAllAnimatablesByTarget(scene, target);
-
-    for (const animatable of animatables) {
-        animatable.stop(animationName, targetMask);
-    }
-}
-
-/**
- * Execute all animations (for a frame)
- * @param scene defines the scene to use to execute the animations
- * @param customDeltaTime defines the delta time to use to update the animations
- */
-export function AnimateScene(scene: Scene, customDeltaTime?: number): void {
-    if (!scene.animationsEnabled) {
-        return;
-    }
-
-    // Getting time
-    const now = PrecisionDate.Now;
-    if (!scene._animationTimeLast) {
-        if (scene._pendingData.length > 0) {
-            return;
-        }
-        scene._animationTimeLast = now;
-    }
-
-    scene.deltaTime = customDeltaTime !== undefined ? customDeltaTime : scene.useConstantAnimationDeltaTime ? 16.0 : (now - scene._animationTimeLast) * scene.animationTimeScale;
-    scene._animationTimeLast = now;
-
-    const animatables = scene._activeAnimatables;
-    if (animatables.length === 0) {
-        return;
-    }
-
-    scene._animationTime += scene.deltaTime;
-    const animationTime = scene._animationTime;
-
-    for (let index = 0; index < animatables.length; index++) {
-        const animatable = animatables[index];
-
-        if (!animatable._animate(animationTime) && animatable.disposeOnEnd) {
-            index--; // Array was updated
-        }
-    }
-
-    // Late animation bindings
-    ProcessLateAnimationBindings(scene);
-}
-
-/**
- * Sort the activable animatables by playOrder
- * @param scene defines the scene to use to sort the animatables
- */
-export function SortActiveAnimatables(scene: Scene): void {
-    scene._activeAnimatables.sort((a, b) => {
-        return a.playOrder - b.playOrder;
-    });
-}
-
-/**
- * Will start the animation sequence of a given target
- *
- * Note that it is possible that the value(s) of speedRatio from and to will be changed if the animation is inverted
- * @param scene defines the hosting scene
- * @param target defines the target
- * @param from defines from which frame should animation start
- * @param to defines until which frame should animation run.
- * @param loop defines if the animation loops
- * @param speedRatio defines the speed in which to run the animation (1.0 by default)
- * @param onAnimationEnd defines the function to be executed when the animation ends
- * @param animatable defines an animatable object. If not provided a new one will be created from the given params
- * @param stopCurrent defines if the current animations must be stopped first (true by default)
- * @param targetMask defines if the target should be animate if animations are present (this is called recursively on descendant animatables regardless of return value)
- * @param onAnimationLoop defines the callback to call when an animation loops
- * @param isAdditive defines whether the animation should be evaluated additively (false by default)
- * @returns the animatable object created for this animation
- */
-export function BeginAnimation(
-    scene: Scene,
-    target: any,
-    from: number,
-    to: number,
-    loop?: boolean,
-    speedRatio: number = 1.0,
-    onAnimationEnd?: () => void,
-    animatable?: Animatable,
-    stopCurrent = true,
-    targetMask?: (target: any) => boolean,
-    onAnimationLoop?: () => void,
-    isAdditive = false
-): Animatable {
-    // get speed speedRatio, to and from, based on the sign and value(s)
-    if (speedRatio < 0) {
-        const tmp = from;
-        from = to;
-        to = tmp;
-        speedRatio = -speedRatio;
-    }
-    // if from > to switch speed ratio
-    if (from > to) {
-        speedRatio = -speedRatio;
-    }
-    if (stopCurrent) {
-        StopAnimation(scene, target, undefined, targetMask);
-    }
-
-    if (!animatable) {
-        animatable = new Animatable(scene, target, from, to, loop, speedRatio, onAnimationEnd, undefined, onAnimationLoop, isAdditive);
-    }
-
-    const shouldRunTargetAnimations = targetMask ? targetMask(target) : true;
-    // Local animations
-    if (target.animations && shouldRunTargetAnimations) {
-        animatable.appendAnimations(target, target.animations);
-    }
-
-    // Children animations
-    if (target.getAnimatables) {
-        const animatables = target.getAnimatables();
-        for (let index = 0; index < animatables.length; index++) {
-            BeginAnimation(scene, animatables[index], from, to, loop, speedRatio, onAnimationEnd, animatable, stopCurrent, targetMask, onAnimationLoop);
-        }
-    }
-
-    animatable.reset();
-
-    return animatable;
-}
-
-/**
- * Will start the animation sequence of a given target
- * @param scene defines the hosting scene
- * @param target defines the target
- * @param from defines from which frame should animation start
- * @param to defines until which frame should animation run.
- * @param weight defines the weight to apply to the animation (1.0 by default)
- * @param loop defines if the animation loops
- * @param speedRatio defines the speed in which to run the animation (1.0 by default)
- * @param onAnimationEnd defines the function to be executed when the animation ends
- * @param animatable defines an animatable object. If not provided a new one will be created from the given params
- * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
- * @param onAnimationLoop defines the callback to call when an animation loops
- * @param isAdditive defines whether the animation should be evaluated additively (false by default)
- * @returns the animatable object created for this animation
- */
-export function BeginWeightedAnimation(
-    scene: Scene,
-    target: any,
-    from: number,
-    to: number,
-    weight = 1.0,
-    loop?: boolean,
-    speedRatio: number = 1.0,
-    onAnimationEnd?: () => void,
-    animatable?: Animatable,
-    targetMask?: (target: any) => boolean,
-    onAnimationLoop?: () => void,
-    isAdditive = false
-): Animatable {
-    const returnedAnimatable = BeginAnimation(scene, target, from, to, loop, speedRatio, onAnimationEnd, animatable, false, targetMask, onAnimationLoop, isAdditive);
-    returnedAnimatable.weight = weight;
-
-    return returnedAnimatable;
-}
-
-/**
- * Will start the animation sequence of a given target and its hierarchy
- * @param scene defines the hosting scene
- * @param target defines the target
- * @param directDescendantsOnly if true only direct descendants will be used, if false direct and also indirect (children of children, an so on in a recursive manner) descendants will be used.
- * @param from defines from which frame should animation start
- * @param to defines until which frame should animation run.
- * @param loop defines if the animation loops
- * @param speedRatio defines the speed in which to run the animation (1.0 by default)
- * @param onAnimationEnd defines the function to be executed when the animation ends
- * @param animatable defines an animatable object. If not provided a new one will be created from the given params
- * @param stopCurrent defines if the current animations must be stopped first (true by default)
- * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
- * @param onAnimationLoop defines the callback to call when an animation loops
- * @param isAdditive defines whether the animation should be evaluated additively (false by default)
- * @returns the list of created animatables
- */
-export function BeginHierarchyAnimation(
-    scene: Scene,
-    target: any,
-    directDescendantsOnly: boolean,
-    from: number,
-    to: number,
-    loop?: boolean,
-    speedRatio: number = 1.0,
-    onAnimationEnd?: () => void,
-    animatable?: Animatable,
-    stopCurrent = true,
-    targetMask?: (target: any) => boolean,
-    onAnimationLoop?: () => void,
-    isAdditive = false
-): Animatable[] {
-    const children = target.getDescendants(directDescendantsOnly);
-
-    const result = [];
-    result.push(BeginAnimation(scene, target, from, to, loop, speedRatio, onAnimationEnd, animatable, stopCurrent, targetMask, undefined, isAdditive));
-    for (const child of children) {
-        result.push(BeginAnimation(scene, child, from, to, loop, speedRatio, onAnimationEnd, animatable, stopCurrent, targetMask, undefined, isAdditive));
-    }
-
-    return result;
-}
-
-/**
- * Begin a new animation on a given node
- *
- * Note that it is possible that the value(s) of speedRatio from and to will be changed if the animation is inverted
- * @param scene defines the hosting scene
- * @param target defines the target where the animation will take place
- * @param animations defines the list of animations to start
- * @param from defines the initial value
- * @param to defines the final value
- * @param loop defines if you want animation to loop (off by default)
- * @param speedRatio defines the speed ratio to apply to all animations
- * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
- * @param onAnimationLoop defines the callback to call when an animation loops
- * @param isAdditive defines whether the animation should be evaluated additively (false by default)
- * @returns the list of created animatables
- */
-export function BeginDirectAnimation(
-    scene: Scene,
-    target: any,
-    animations: Animation[],
-    from: number,
-    to: number,
-    loop?: boolean,
-    speedRatio: number = 1.0,
-    onAnimationEnd?: () => void,
-    onAnimationLoop?: () => void,
-    isAdditive = false
-): Animatable {
-    // get speed speedRatio, to and from, based on the sign and value(s)
-    if (speedRatio < 0) {
-        const tmp = from;
-        from = to;
-        to = tmp;
-        speedRatio = -speedRatio;
-    }
-    // if from > to switch speed ratio
-    if (from > to) {
-        speedRatio = -speedRatio;
-    }
-    const animatable = new Animatable(scene, target, from, to, loop, speedRatio, onAnimationEnd, animations, onAnimationLoop, isAdditive);
-
-    return animatable;
-}
-
-/**
- * Begin a new animation on a given node and its hierarchy
- * @param scene defines the hosting scene
- * @param target defines the root node where the animation will take place
- * @param directDescendantsOnly if true only direct descendants will be used, if false direct and also indirect (children of children, an so on in a recursive manner) descendants will be used.
- * @param animations defines the list of animations to start
- * @param from defines the initial value
- * @param to defines the final value
- * @param loop defines if you want animation to loop (off by default)
- * @param speedRatio defines the speed ratio to apply to all animations
- * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
- * @param onAnimationLoop defines the callback to call when an animation loops
- * @param isAdditive defines whether the animation should be evaluated additively (false by default)
- * @returns the list of animatables created for all nodes
- */
-export function BeginDirectHierarchyAnimation(
-    scene: Scene,
-    target: Node,
-    directDescendantsOnly: boolean,
-    animations: Animation[],
-    from: number,
-    to: number,
-    loop?: boolean,
-    speedRatio?: number,
-    onAnimationEnd?: () => void,
-    onAnimationLoop?: () => void,
-    isAdditive = false
-): Animatable[] {
-    const children = target.getDescendants(directDescendantsOnly);
-
-    const result = [];
-    result.push(BeginDirectAnimation(scene, target, animations, from, to, loop, speedRatio, onAnimationEnd, onAnimationLoop, isAdditive));
-    for (const child of children) {
-        result.push(BeginDirectAnimation(scene, child, animations, from, to, loop, speedRatio, onAnimationEnd, onAnimationLoop, isAdditive));
-    }
-
-    return result;
-}
-
-/**
- * Stops and removes all animations that have been applied to the scene
- * @param scene defines the scene to stop the animations from
- */
-export function StopAllAnimations(scene: Scene): void {
-    if (scene._activeAnimatables) {
-        for (let i = 0; i < scene._activeAnimatables.length; i++) {
-            scene._activeAnimatables[i].stop(undefined, undefined, true);
-        }
-        scene._activeAnimatables.length = 0;
-    }
-
-    for (const group of scene.animationGroups) {
-        group.stop();
-    }
-}
-
 /** @internal */
 export function RegisterTargetForLateAnimationBinding(scene: Scene, runtimeAnimation: RuntimeAnimation, originalValue: any): void {
     const target = runtimeAnimation.target;
@@ -1151,81 +802,312 @@ export function RegisterTargetForLateAnimationBinding(scene: Scene, runtimeAnima
 }
 
 /**
- * Copy an animation range from another bone
- * @param destination defines the target bone
- * @param source defines the source bone
- * @param rangeName defines the range name to copy
- * @param frameOffset defines the frame offset
- * @param rescaleAsRequired defines if rescaling must be applied if required
- * @param skelDimensionsRatio defines the scaling ratio
- * @returns true if operation was successful
+ * Initialize all the inter dependecies between the animations and Scene and Bone
+ * @param scenePrototype defines the scene prototype to use
+ * @param bonePrototype defines the bone prototype to use
  */
-export function CopyAnimationRange(
-    destination: Bone,
-    source: Bone,
-    rangeName: string,
-    frameOffset: number,
-    rescaleAsRequired = false,
-    skelDimensionsRatio: Nullable<Vector3> = null
-): boolean {
-    // all animation may be coming from a library skeleton, so may need to create animation
-    if (destination.animations.length === 0) {
-        destination.animations.push(new Animation(destination.name, "_matrix", source.animations[0].framePerSecond, Animation.ANIMATIONTYPE_MATRIX, 0));
-        destination.animations[0].setKeys([]);
-    }
-
-    // get animation info / verify there is such a range from the source bone
-    const sourceRange = source.animations[0].getRange(rangeName);
-    if (!sourceRange) {
-        return false;
-    }
-    const from = sourceRange.from;
-    const to = sourceRange.to;
-    const sourceKeys = source.animations[0].getKeys();
-
-    // rescaling prep
-    const sourceBoneLength = source.length;
-    const sourceParent = source.getParent();
-    const parent = destination.getParent();
-    const parentScalingReqd = rescaleAsRequired && sourceParent && sourceBoneLength && destination.length && sourceBoneLength !== destination.length;
-    const parentRatio = parentScalingReqd && parent && sourceParent ? parent.length / sourceParent.length : 1;
-
-    const dimensionsScalingReqd =
-        rescaleAsRequired && !parent && skelDimensionsRatio && (skelDimensionsRatio.x !== 1 || skelDimensionsRatio.y !== 1 || skelDimensionsRatio.z !== 1);
-
-    const destKeys = destination.animations[0].getKeys();
-
-    // loop vars declaration
-    let orig: { frame: number; value: Matrix };
-    let origTranslation: Vector3;
-    let mat: Matrix;
-
-    for (let key = 0, nKeys = sourceKeys.length; key < nKeys; key++) {
-        orig = sourceKeys[key];
-        if (orig.frame >= from && orig.frame <= to) {
-            if (rescaleAsRequired) {
-                mat = orig.value.clone();
-
-                // scale based on parent ratio, when bone has parent
-                if (parentScalingReqd) {
-                    origTranslation = mat.getTranslation();
-                    mat.setTranslation(origTranslation.scaleInPlace(parentRatio));
-
-                    // scale based on skeleton dimension ratio when root bone, and value is passed
-                } else if (dimensionsScalingReqd && skelDimensionsRatio) {
-                    origTranslation = mat.getTranslation();
-                    mat.setTranslation(origTranslation.multiplyInPlace(skelDimensionsRatio));
-
-                    // use original when root bone, and no data for skelDimensionsRatio
-                } else {
-                    mat = orig.value;
-                }
-            } else {
-                mat = orig.value;
+export function InitAnimations(scenePrototype: Scene, bonePrototype: Bone): void {
+    if (bonePrototype) {
+        bonePrototype.copyAnimationRange = function (
+            source: Bone,
+            rangeName: string,
+            frameOffset: number,
+            rescaleAsRequired = false,
+            skelDimensionsRatio: Nullable<Vector3> = null
+        ): boolean {
+            // all animation may be coming from a library skeleton, so may need to create animation
+            if (this.animations.length === 0) {
+                this.animations.push(new Animation(this.name, "_matrix", source.animations[0].framePerSecond, Animation.ANIMATIONTYPE_MATRIX, 0));
+                this.animations[0].setKeys([]);
             }
-            destKeys.push({ frame: orig.frame + frameOffset, value: mat });
-        }
+
+            // get animation info / verify there is such a range from the source bone
+            const sourceRange = source.animations[0].getRange(rangeName);
+            if (!sourceRange) {
+                return false;
+            }
+            const from = sourceRange.from;
+            const to = sourceRange.to;
+            const sourceKeys = source.animations[0].getKeys();
+
+            // rescaling prep
+            const sourceBoneLength = source.length;
+            const sourceParent = source.getParent();
+            const parent = this.getParent();
+            const parentScalingReqd = rescaleAsRequired && sourceParent && sourceBoneLength && this.length && sourceBoneLength !== this.length;
+            const parentRatio = parentScalingReqd && parent && sourceParent ? parent.length / sourceParent.length : 1;
+
+            const dimensionsScalingReqd =
+                rescaleAsRequired && !parent && skelDimensionsRatio && (skelDimensionsRatio.x !== 1 || skelDimensionsRatio.y !== 1 || skelDimensionsRatio.z !== 1);
+
+            const destKeys = this.animations[0].getKeys();
+
+            // loop vars declaration
+            let orig: { frame: number; value: Matrix };
+            let origTranslation: Vector3;
+            let mat: Matrix;
+
+            for (let key = 0, nKeys = sourceKeys.length; key < nKeys; key++) {
+                orig = sourceKeys[key];
+                if (orig.frame >= from && orig.frame <= to) {
+                    if (rescaleAsRequired) {
+                        mat = orig.value.clone();
+
+                        // scale based on parent ratio, when bone has parent
+                        if (parentScalingReqd) {
+                            origTranslation = mat.getTranslation();
+                            mat.setTranslation(origTranslation.scaleInPlace(parentRatio));
+
+                            // scale based on skeleton dimension ratio when root bone, and value is passed
+                        } else if (dimensionsScalingReqd && skelDimensionsRatio) {
+                            origTranslation = mat.getTranslation();
+                            mat.setTranslation(origTranslation.multiplyInPlace(skelDimensionsRatio));
+
+                            // use original when root bone, and no data for skelDimensionsRatio
+                        } else {
+                            mat = orig.value;
+                        }
+                    } else {
+                        mat = orig.value;
+                    }
+                    destKeys.push({ frame: orig.frame + frameOffset, value: mat });
+                }
+            }
+            this.animations[0].createRange(rangeName, from + frameOffset, to + frameOffset);
+            return true;
+        };
     }
-    destination.animations[0].createRange(rangeName, from + frameOffset, to + frameOffset);
-    return true;
+
+    if (!scenePrototype) {
+        return;
+    }
+    scenePrototype._animate = function (customDeltaTime?: number): void {
+        if (!this.animationsEnabled) {
+            return;
+        }
+
+        // Getting time
+        const now = PrecisionDate.Now;
+        if (!this._animationTimeLast) {
+            if (this._pendingData.length > 0) {
+                return;
+            }
+            this._animationTimeLast = now;
+        }
+
+        this.deltaTime = customDeltaTime !== undefined ? customDeltaTime : this.useConstantAnimationDeltaTime ? 16.0 : (now - this._animationTimeLast) * this.animationTimeScale;
+        this._animationTimeLast = now;
+
+        const animatables = this._activeAnimatables;
+        if (animatables.length === 0) {
+            return;
+        }
+
+        this._animationTime += this.deltaTime;
+        const animationTime = this._animationTime;
+
+        for (let index = 0; index < animatables.length; index++) {
+            const animatable = animatables[index];
+
+            if (!animatable._animate(animationTime) && animatable.disposeOnEnd) {
+                index--; // Array was updated
+            }
+        }
+
+        // Late animation bindings
+        ProcessLateAnimationBindings(this);
+    };
+
+    scenePrototype.sortActiveAnimatables = function (): void {
+        this._activeAnimatables.sort((a, b) => {
+            return a.playOrder - b.playOrder;
+        });
+    };
+
+    scenePrototype.beginWeightedAnimation = function (
+        target: any,
+        from: number,
+        to: number,
+        weight = 1.0,
+        loop?: boolean,
+        speedRatio: number = 1.0,
+        onAnimationEnd?: () => void,
+        animatable?: Animatable,
+        targetMask?: (target: any) => boolean,
+        onAnimationLoop?: () => void,
+        isAdditive = false
+    ): Animatable {
+        const returnedAnimatable = this.beginAnimation(target, from, to, loop, speedRatio, onAnimationEnd, animatable, false, targetMask, onAnimationLoop, isAdditive);
+        returnedAnimatable.weight = weight;
+
+        return returnedAnimatable;
+    };
+
+    scenePrototype.beginAnimation = function (
+        target: any,
+        from: number,
+        to: number,
+        loop?: boolean,
+        speedRatio: number = 1.0,
+        onAnimationEnd?: () => void,
+        animatable?: Animatable,
+        stopCurrent = true,
+        targetMask?: (target: any) => boolean,
+        onAnimationLoop?: () => void,
+        isAdditive = false
+    ): Animatable {
+        // get speed speedRatio, to and from, based on the sign and value(s)
+        if (speedRatio < 0) {
+            const tmp = from;
+            from = to;
+            to = tmp;
+            speedRatio = -speedRatio;
+        }
+        // if from > to switch speed ratio
+        if (from > to) {
+            speedRatio = -speedRatio;
+        }
+        if (stopCurrent) {
+            this.stopAnimation(target, undefined, targetMask);
+        }
+
+        if (!animatable) {
+            animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd, undefined, onAnimationLoop, isAdditive);
+        }
+
+        const shouldRunTargetAnimations = targetMask ? targetMask(target) : true;
+        // Local animations
+        if (target.animations && shouldRunTargetAnimations) {
+            animatable.appendAnimations(target, target.animations);
+        }
+
+        // Children animations
+        if (target.getAnimatables) {
+            const animatables = target.getAnimatables();
+            for (let index = 0; index < animatables.length; index++) {
+                this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd, animatable, stopCurrent, targetMask, onAnimationLoop);
+            }
+        }
+
+        animatable.reset();
+
+        return animatable;
+    };
+
+    scenePrototype.beginHierarchyAnimation = function (
+        target: any,
+        directDescendantsOnly: boolean,
+        from: number,
+        to: number,
+        loop?: boolean,
+        speedRatio: number = 1.0,
+        onAnimationEnd?: () => void,
+        animatable?: Animatable,
+        stopCurrent = true,
+        targetMask?: (target: any) => boolean,
+        onAnimationLoop?: () => void,
+        isAdditive = false
+    ): Animatable[] {
+        const children = target.getDescendants(directDescendantsOnly);
+
+        const result = [];
+        result.push(this.beginAnimation(target, from, to, loop, speedRatio, onAnimationEnd, animatable, stopCurrent, targetMask, undefined, isAdditive));
+        for (const child of children) {
+            result.push(this.beginAnimation(child, from, to, loop, speedRatio, onAnimationEnd, animatable, stopCurrent, targetMask, undefined, isAdditive));
+        }
+
+        return result;
+    };
+
+    scenePrototype.beginDirectAnimation = function (
+        target: any,
+        animations: Animation[],
+        from: number,
+        to: number,
+        loop?: boolean,
+        speedRatio: number = 1.0,
+        onAnimationEnd?: () => void,
+        onAnimationLoop?: () => void,
+        isAdditive = false
+    ): Animatable {
+        // get speed speedRatio, to and from, based on the sign and value(s)
+        if (speedRatio < 0) {
+            const tmp = from;
+            from = to;
+            to = tmp;
+            speedRatio = -speedRatio;
+        }
+        // if from > to switch speed ratio
+        if (from > to) {
+            speedRatio = -speedRatio;
+        }
+        const animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd, animations, onAnimationLoop, isAdditive);
+
+        return animatable;
+    };
+
+    scenePrototype.beginDirectHierarchyAnimation = function (
+        target: Node,
+        directDescendantsOnly: boolean,
+        animations: Animation[],
+        from: number,
+        to: number,
+        loop?: boolean,
+        speedRatio?: number,
+        onAnimationEnd?: () => void,
+        onAnimationLoop?: () => void,
+        isAdditive = false
+    ): Animatable[] {
+        const children = target.getDescendants(directDescendantsOnly);
+
+        const result = [];
+        result.push(this.beginDirectAnimation(target, animations, from, to, loop, speedRatio, onAnimationEnd, onAnimationLoop, isAdditive));
+        for (const child of children) {
+            result.push(this.beginDirectAnimation(child, animations, from, to, loop, speedRatio, onAnimationEnd, onAnimationLoop, isAdditive));
+        }
+
+        return result;
+    };
+
+    scenePrototype.getAnimatableByTarget = function (target: any): Nullable<Animatable> {
+        for (let index = 0; index < this._activeAnimatables.length; index++) {
+            if (this._activeAnimatables[index].target === target) {
+                return this._activeAnimatables[index];
+            }
+        }
+
+        return null;
+    };
+
+    scenePrototype.getAllAnimatablesByTarget = function (target: any): Array<Animatable> {
+        const result = [];
+        for (let index = 0; index < this._activeAnimatables.length; index++) {
+            if (this._activeAnimatables[index].target === target) {
+                result.push(this._activeAnimatables[index]);
+            }
+        }
+
+        return result;
+    };
+
+    scenePrototype.stopAnimation = function (target: any, animationName?: string, targetMask?: (target: any) => boolean): void {
+        const animatables = this.getAllAnimatablesByTarget(target);
+
+        for (const animatable of animatables) {
+            animatable.stop(animationName, targetMask);
+        }
+    };
+
+    scenePrototype.stopAllAnimations = function (): void {
+        if (this._activeAnimatables) {
+            for (let i = 0; i < this._activeAnimatables.length; i++) {
+                this._activeAnimatables[i].stop(undefined, undefined, true);
+            }
+            this._activeAnimatables.length = 0;
+        }
+
+        for (const group of this.animationGroups) {
+            group.stop();
+        }
+    };
 }

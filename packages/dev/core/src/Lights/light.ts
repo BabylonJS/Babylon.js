@@ -14,8 +14,6 @@ import type { ISortableLight } from "./lightConstants";
 import { LightConstants } from "./lightConstants";
 import type { Camera } from "../Cameras/camera";
 import { SerializationHelper } from "../Misc/decorators.serialization";
-import { BeginAnimation } from "core/Animations/animatable.core";
-
 /**
  * Base class of all the lights in Babylon. It groups all the generic information about lights.
  * Lights are used, as you would expect, to affect how meshes are seen, in terms of both illumination and colour.
@@ -760,7 +758,7 @@ export abstract class Light extends Node implements ISortableLight {
         }
 
         if (parsedLight.autoAnimate) {
-            BeginAnimation(scene, light, parsedLight.autoAnimateFrom, parsedLight.autoAnimateTo, parsedLight.autoAnimateLoop, parsedLight.autoAnimateSpeed || 1.0);
+            scene.beginAnimation(light, parsedLight.autoAnimateFrom, parsedLight.autoAnimateTo, parsedLight.autoAnimateLoop, parsedLight.autoAnimateSpeed || 1.0);
         }
 
         // Check if isEnabled is defined to be back compatible with prior serialized versions.

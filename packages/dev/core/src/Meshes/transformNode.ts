@@ -11,7 +11,6 @@ import type { Bone } from "../Bones/bone";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Space } from "../Maths/math.axis";
 import { GetClass } from "../Misc/typeStore";
-import { BeginAnimation } from "core/Animations/animatable.core";
 
 const convertRHSToLHS = Matrix.Compose(Vector3.One(), Quaternion.FromEulerAngles(0, Math.PI, 0), Vector3.Zero());
 
@@ -1508,8 +1507,7 @@ export class TransformNode extends Node {
         }
 
         if (parsedTransformNode.autoAnimate) {
-            BeginAnimation(
-                scene,
+            scene.beginAnimation(
                 transformNode,
                 parsedTransformNode.autoAnimateFrom,
                 parsedTransformNode.autoAnimateTo,

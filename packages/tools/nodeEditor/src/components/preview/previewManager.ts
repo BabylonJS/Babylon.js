@@ -40,8 +40,7 @@ import "core/Helpers/sceneHelpers";
 import "core/Rendering/depthRendererSceneComponent";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Engine } from "core/Engines/engine";
-import { CreateAndStartAnimation } from "core/Animations/animation.core";
-
+import { Animation } from "core/Animations/animation";
 const dontSerializeTextureContent = true;
 
 /**
@@ -273,7 +272,7 @@ export class PreviewManager {
                         transformNode.rotation = transformNode.rotationQuaternion.toEulerAngles();
                         transformNode.rotationQuaternion = null;
                     }
-                    CreateAndStartAnimation("turnTable", root, "rotation.y", 60, 1200, transformNode.rotation.y, transformNode.rotation.y + 2 * Math.PI, 1);
+                    Animation.CreateAndStartAnimation("turnTable", root, "rotation.y", 60, 1200, transformNode.rotation.y, transformNode.rotation.y + 2 * Math.PI, 1);
                 }
             }
         }

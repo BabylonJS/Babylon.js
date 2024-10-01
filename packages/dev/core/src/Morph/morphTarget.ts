@@ -11,7 +11,6 @@ import { SerializationHelper } from "../Misc/decorators.serialization";
 import { GetClass } from "../Misc/typeStore";
 
 import type { Animation } from "../Animations/animation";
-import { BeginAnimation } from "core/Animations/animatable.core";
 
 /**
  * Defines a target to use with MorphTargetManager
@@ -314,8 +313,7 @@ export class MorphTarget implements IAnimatable {
             }
 
             if (serializationObject.autoAnimate && scene) {
-                BeginAnimation(
-                    scene,
+                scene.beginAnimation(
                     result,
                     serializationObject.autoAnimateFrom,
                     serializationObject.autoAnimateTo,

@@ -22,7 +22,7 @@ import type { TransformNode } from "core/Meshes/transformNode";
 import { MultiMaterial } from "core/Materials/multiMaterial";
 import { GLTF2Export } from "serializers/glTF/2.0/glTFSerializer";
 import type { GLTFData } from "serializers/glTF/2.0/glTFData";
-import { CreateAndStartAnimation } from "core/Animations/animation.core";
+import { Animation } from "core/Animations/animation";
 
 export class PreviewManager {
     private _nodeGeometry: NodeGeometry;
@@ -164,7 +164,7 @@ export class PreviewManager {
                         transformNode.rotation = transformNode.rotationQuaternion.toEulerAngles();
                         transformNode.rotationQuaternion = null;
                     }
-                    CreateAndStartAnimation("turnTable", root, "rotation.y", 60, 1200, transformNode.rotation.y, transformNode.rotation.y + 2 * Math.PI, 1);
+                    Animation.CreateAndStartAnimation("turnTable", root, "rotation.y", 60, 1200, transformNode.rotation.y, transformNode.rotation.y + 2 * Math.PI, 1);
                 }
             }
         }
