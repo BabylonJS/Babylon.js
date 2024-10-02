@@ -27,6 +27,23 @@
                 right: 10px;
             }
 
+            .toggle-hotspot-button {
+                position: absolute;
+                top: 70px;
+                right: 10px;
+            }
+
+            .lineContainer{
+                pointer-events: none;
+                display: block;
+            }
+
+            .line{
+                stroke: #16a5e6;
+                stroke-width: 10;
+                stroke-dasharray: 10
+            }
+
             babylon-viewer {
                 /* --ui-foreground-color: red; */
                 /* --ui-background-hue: 200;
@@ -61,49 +78,28 @@
             <svg id="lines" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" class="lineContainer">
                 <line class="line"></line>
             </svg>
-            
-            <div id="container">
-                <button id="hotspot" class="label">HotSpot</button>
-            </div>
         </babylon-viewer>
         <button class="toggle-dom-button" onclick="onToggleDOM()">Toggle DOM</button>
         <button class="toggle-engine-button" onclick="onToggleEngine()">Toggle Engine</button>
+        <button id="anchor-button" class="toggle-hotspot-button" onclick="onToggleHotSpot()">Toggle Hot Spot</button>
         <script type="module" src="/packages/tools/viewer-alpha/src/index.ts"></script>
         <script>
             const viewerElement = document.querySelector("babylon-viewer");
-            //const lines = viewerElement.querySelectorAll('line');
+            const lines = viewerElement.querySelectorAll('line');
+            const hotspotResult = { canvasPosition: [0, 0], worldPosition: [0, 0, 0] };
 
             let viewerDetails;
             viewerElement.addEventListener("viewerready", (event) => {
                 viewerDetails = viewerElement.viewerDetails;
 
-                // update svg
-                function drawLine(svgLine, name, rect) {
-                    const hotspotResult = { canvasPosition: [0, 0], worldPosition: [0, 0, 0] };
-                    if (viewerElement.queryHotSpot("hotspot", hotspotResult)) {
-                        console.log(hotspotResult);
-                        svgLine.setAttribute('x1', hotspotResult.canvasPosition[0]);
-                        svgLine.setAttribute('y1', hotspotResult.canvasPosition[1]);
-                        svgLine.setAttribute('x2', 0);//(rect.left + rect.right) / 2 - baseRect.left);
-                        svgLine.setAttribute('y2', 0);//rect.top - baseRect.top);
-                    }
-                }
-
-                // use requestAnimationFrame to update with renderer
-                const startSVGRenderLoop = () => {
-                    let hotspotRect = document.querySelector('#hotspot').getBoundingClientRect();
-                    drawLine(lines[0], 'hotspot', hotspotRect);
-                    requestAnimationFrame(startSVGRenderLoop);
-                };
-
-                startSVGRenderLoop();
-
+                startHotSpotLinesRenderLoop();
                 console.log(`Viewer ready.`, viewerDetails);
             });
             viewerElement.addEventListener("modelchange", (event) => {
                 console.log(`Model changed.`, viewerDetails);
             });
             let isViewerConnected = true;
+            let hotspotVisible = true;
 
             (async () => {
                 // The module referenced in the script tag above is loaded asynchronously, so we need to wait for it to load and for the custom element to be defined.
@@ -127,6 +123,25 @@
                 }
             }
 
+            // update hotspot svg
+            function drawHotSpotLine(svgLine, name, rect) {
+                if (viewerElement.queryHotSpot(name, hotspotResult) && rect) {
+                    svgLine.setAttribute('x1', hotspotResult.canvasPosition[0]);
+                    svgLine.setAttribute('y1', hotspotResult.canvasPosition[1]);
+                    svgLine.setAttribute('x2', (rect.left + rect.right) / 2);
+                    svgLine.setAttribute('y2', (rect.top + rect.bottom) / 2);
+                }
+            }
+
+            // use requestAnimationFrame to update with renderer
+            const startHotSpotLinesRenderLoop = () => {
+                const hotspotBaseRect = document.querySelector('#anchor-button').getBoundingClientRect();
+                drawHotSpotLine(lines[0], 'hotspot', hotspotBaseRect);
+                if (hotspotVisible) {
+                    requestAnimationFrame(startHotSpotLinesRenderLoop);
+                } 
+            };
+
             function onToggleDOM() {
                 isViewerConnected ? document.body.removeChild(viewerElement) : document.body.appendChild(viewerElement);
                 isViewerConnected = !isViewerConnected;
@@ -136,17 +151,11 @@
                 viewerElement.engine = viewerElement.engine === "WebGL" ? "WebGPU" : "WebGL";
             }
 
-            // HotSpot
-            const lines = viewerElement.querySelectorAll('line');
-            let baseRect;
-            let hotspotRect;
-
-            function onResize(){
-                baseRect = viewerElement.getBoundingClientRect();
-                hotspotRect = document.querySelector('#hotspot').getBoundingClientRect();
+            function onToggleHotSpot() {
+                hotspotVisible = !hotspotVisible;
+                lines[0].style.visibility = hotspotVisible ? "visible" : "hidden";
+                startHotSpotLinesRenderLoop();
             }
-
-            window.addEventListener("resize", onResize);
         </script>
     </body>
 </html>

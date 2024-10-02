@@ -2,8 +2,7 @@
 import type { Nullable } from "core/index";
 
 import type { PropertyValues } from "lit";
-import type { ViewerDetails } from "./viewer";
-import { HotSpot } from "./viewer";
+import type { HotSpotPositions, ViewerDetails } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, html } from "lit";
@@ -223,7 +222,7 @@ export class HTML3DElement extends LitElement {
      * @param res resulting canvas and world positions
      * @returns world and canvas space coordinates
      */
-    public queryHotSpot(slot: string, res: HotSpot): boolean {
+    public queryHotSpot(slot: string, res: HotSpotPositions): boolean {
         // Retrieve all hotspots inside the viewer element
         const hotspots = this.querySelectorAll(".hotspot");
         let resultFound = false;
@@ -237,11 +236,7 @@ export class HTML3DElement extends LitElement {
                 hotSpotQuery.meshIndex = numbersArray[0];
                 hotSpotQuery.pointIndex = [numbersArray[2], numbersArray[3], numbersArray[4]];
                 hotSpotQuery.barycentric = [numbersArray[5], numbersArray[6], numbersArray[7]];
-                const queriedHotspot = this._viewerDetails?.viewer.getHotSpot(hotSpotQuery);
-                const canvasPosition = queriedHotspot?.canvasPosition;
-                const worldPosition = queriedHotspot?.worldPosition;
-                res.canvasPosition = [canvasPosition!.x, canvasPosition!.y];
-                res.worldPosition = [worldPosition!.x, worldPosition!.y, worldPosition!.z];
+                this._viewerDetails?.viewer.getHotSpotToRef(hotSpotQuery, res);
                 resultFound = true;
             }
         });

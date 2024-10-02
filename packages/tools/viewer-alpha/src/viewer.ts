@@ -95,7 +95,7 @@ export type ViewerOptions = Partial<
 /**
  * Information computed from the hot spot surface data, canvas and mesh datas
  */
-export interface HotSpot {
+export interface HotSpotPositions {
     /**
      * 2D canvas position in pixels
      */
@@ -105,6 +105,7 @@ export interface HotSpot {
      */
     worldPosition: [number, number, number];
 }
+
 /**
  * Provides an experience for viewing a single 3D model.
  * @remarks
@@ -497,13 +498,18 @@ export class Viewer implements IDisposable {
     }
     /**
      * retrun world and canvas coordinates of an hot spot
-     * @param hotSpotQuery
-     * @returns todo
+     * @param hotSpotQuery a surface information to query the hot spot positions
+     * @param res Query a Hot Spot and does the conversion for Babylon Hot spot to a more generic HotSpotPositions, without Vector types
+     * @returns true if hotspot found
      */
-    public getHotSpot(hotSpotQuery: HotSpotQuery): HotSpot {
+    public getHotSpotToRef(hotSpotQuery: HotSpotQuery, res: HotSpotPositions): boolean {
         const hotspot = new HotSpot();
-        this._camera.getHotSpotToRef(hotSpotQuery, hotspot);
-        return hotspot;
+        if (this._camera.getHotSpotToRef(hotSpotQuery, hotspot)) {
+            res.canvasPosition = [hotspot.canvasPosition.x, hotspot.canvasPosition.y];
+            res.worldPosition = [hotspot.worldPosition.x, hotspot.worldPosition.y, hotspot.worldPosition.z];
+            return true;
+        }
+        return false;
     }
 
     private _updateCamera(): void {
