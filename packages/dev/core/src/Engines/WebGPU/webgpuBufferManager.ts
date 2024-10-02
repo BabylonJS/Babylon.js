@@ -53,8 +53,9 @@ export class WebGPUBufferManager {
 
     public createBuffer(viewOrSize: ArrayBufferView | number, flags: GPUBufferUsageFlags, label?: string): WebGPUDataBuffer {
         const isView = (viewOrSize as ArrayBufferView).byteLength !== undefined;
-        const buffer = this.createRawBuffer(viewOrSize, flags, undefined, label);
-        const dataBuffer = new WebGPUDataBuffer(buffer);
+        const dataBuffer = new WebGPUDataBuffer();
+        const labelId = "DataBufferUniqueId=" + dataBuffer.uniqueId;
+        dataBuffer.buffer = this.createRawBuffer(viewOrSize, flags, undefined, label ? labelId + "-" + label : labelId);
         dataBuffer.references = 1;
         dataBuffer.capacity = isView ? (viewOrSize as ArrayBufferView).byteLength : (viewOrSize as number);
         dataBuffer.engineId = this._engine.uniqueId;
