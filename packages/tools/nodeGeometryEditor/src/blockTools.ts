@@ -73,6 +73,7 @@ import { GeometryDotBlock } from "core/Meshes/Node/Blocks/geometryDotBlock";
 import { GeometryReplaceColorBlock } from "core/Meshes/Node/Blocks/geometryReplaceColorBlock";
 import { GeometryRotate2dBlock } from "core/Meshes/Node/Blocks/geometryRotate2dBlock";
 import { GeometryLengthBlock } from "core/Meshes/Node/Blocks/geometryLengthBlock";
+import { GeometryInterceptorBlock } from "core/Meshes/Node/Blocks/geometryInterceptorBlock";
 
 /**
  * Static class for BlockTools
@@ -80,6 +81,8 @@ import { GeometryLengthBlock } from "core/Meshes/Node/Blocks/geometryLengthBlock
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "InterceptorBlock":
+                return new GeometryInterceptorBlock("Interceptor");
             case "Rotate2dBlock":
                 return new GeometryRotate2dBlock("Rotate 2D");
             case "LengthBlock":
