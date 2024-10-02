@@ -1,4 +1,23 @@
 import { ImageMimeType } from "babylonjs-gltf2interface";
+import { Tools } from "core/Misc/tools";
+
+function getMimeType(fileName: string): string | undefined {
+    if (fileName.endsWith(".glb")) {
+        return "model/gltf-binary";
+    } else if (fileName.endsWith(".bin")) {
+        return "application/octet-stream";
+    } else if (fileName.endsWith(".gltf")) {
+        return "model/gltf+json";
+    } else if (fileName.endsWith(".jpeg") || fileName.endsWith(".jpg")) {
+        return ImageMimeType.JPEG;
+    } else if (fileName.endsWith(".png")) {
+        return ImageMimeType.PNG;
+    } else if (fileName.endsWith(".webp")) {
+        return ImageMimeType.WEBP;
+    }
+
+    return undefined;
+}
 
 /**
  * Class for holding and downloading glTF file data
@@ -7,51 +26,23 @@ export class GLTFData {
     /**
      * Object which contains the file name as the key and its data as the value
      */
-    glTFFiles: { [fileName: string]: string | Blob };
+    public readonly files: { [fileName: string]: string | Blob } = {};
 
     /**
-     * Initializes the glTF file object
+     * @deprecated Use files instead
      */
-    public constructor() {
-        this.glTFFiles = {};
+    public get glTFFiles() {
+        return this.files;
     }
 
     /**
      * Downloads the glTF data as files based on their names and data
      */
     public downloadFiles(): void {
-        /**
-         * Checks for a matching suffix at the end of a string (for ES5 and lower)
-         * @param str Source string
-         * @param suffix Suffix to search for in the source string
-         * @returns Boolean indicating whether the suffix was found (true) or not (false)
-         */
-        function endsWith(str: string, suffix: string): boolean {
-            return str.indexOf(suffix, str.length - suffix.length) !== -1;
-        }
-
-        for (const key in this.glTFFiles) {
-            const link = document.createElement("a");
-            document.body.appendChild(link);
-            link.setAttribute("type", "hidden");
-            link.download = key;
-            const blob = this.glTFFiles[key];
-            let mimeType;
-
-            if (endsWith(key, ".glb")) {
-                mimeType = { type: "model/gltf-binary" };
-            } else if (endsWith(key, ".bin")) {
-                mimeType = { type: "application/octet-stream" };
-            } else if (endsWith(key, ".gltf")) {
-                mimeType = { type: "model/gltf+json" };
-            } else if (endsWith(key, ".jpeg") || endsWith(key, ".jpg")) {
-                mimeType = { type: ImageMimeType.JPEG };
-            } else if (endsWith(key, ".png")) {
-                mimeType = { type: ImageMimeType.PNG };
-            }
-
-            link.href = window.URL.createObjectURL(new Blob([blob], mimeType));
-            link.click();
+        for (const key in this.files) {
+            const value = this.files[key];
+            const blob = new Blob([value], { type: getMimeType(key) });
+            Tools.Download(blob, key);
         }
     }
 }
