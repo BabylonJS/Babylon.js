@@ -976,12 +976,6 @@ export function PickWithBoundingInfo(scene: Scene, x: number, y: number, predica
     return result;
 }
 
-// Object.defineProperty(Scene.prototype, "_pickingAvailable", {
-//     get: () => true,
-//     enumerable: false,
-//     configurable: false,
-// });
-
 /** Launch a ray to try to pick a mesh in the scene
  * @param scene defines the scene to use for the picking
  * @param x position on screen
