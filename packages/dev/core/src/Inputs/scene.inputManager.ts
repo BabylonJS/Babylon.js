@@ -12,6 +12,7 @@ import { DeviceType, PointerInput } from "../DeviceInput/InputDevices/deviceEnum
 import type { IKeyboardEvent, IMouseEvent, IPointerEvent } from "../Events/deviceInputEvents";
 import { DeviceSourceManager } from "../DeviceInput/InputDevices/deviceSourceManager";
 import { EngineStore } from "../Engines/engineStore";
+import { CreatePickingRay, Pick } from "../Culling/ray.core";
 
 import type { Scene } from "../scene";
 
@@ -262,9 +263,9 @@ export class InputManager {
     /** @internal */
     public _setRayOnPointerInfo(pickInfo: Nullable<PickingInfo>, event: IMouseEvent) {
         const scene = this._scene;
-        if (pickInfo && scene.createPickingRay) {
+        if (pickInfo) {
             if (!pickInfo.ray) {
-                pickInfo.ray = scene.createPickingRay(event.offsetX, event.offsetY, Matrix.Identity(), scene.activeCamera);
+                pickInfo.ray = CreatePickingRay(scene, event.offsetX, event.offsetY, Matrix.Identity(), scene.activeCamera);
             }
         }
     }
@@ -307,7 +308,8 @@ export class InputManager {
     /** @internal */
     public _pickMove(evt: IPointerEvent): PickingInfo {
         const scene = this._scene;
-        const pickResult = scene.pick(
+        const pickResult = Pick(
+            scene,
             this._unTranslatedPointerX,
             this._unTranslatedPointerY,
             scene.pointerMovePredicate,
