@@ -135,7 +135,7 @@ export interface IMeshDataCache {
 }
 
 /**
- * Datas for mesh hotspot computation
+ * Data for mesh hotspot computation
  */
 export class HotSpotQuery {
     /**

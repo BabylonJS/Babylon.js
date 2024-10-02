@@ -21,14 +21,15 @@ import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { Color4 } from "core/Maths/math.color";
 import { Clamp } from "core/Maths/math.scalar.functions";
-import { Vector3 } from "core/Maths/math.vector";
+import { TmpVectors, Vector3 } from "core/Maths/math.vector";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { computeMaxExtents } from "core/Meshes/meshUtils";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { Observable } from "core/Misc/observable";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
-import { HotSpot, type HotSpotQuery } from "core/Meshes/abstractMesh";
+import type { HotSpotQuery } from "core/Meshes/abstractMesh";
+import { Viewport } from "core/Maths/math.viewport";
 
 function throwIfAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]): void {
     for (const signal of abortSignals) {
@@ -496,6 +497,7 @@ export class Viewer implements IDisposable {
 
         this._isDisposed = true;
     }
+
     /**
      * retrun world and canvas coordinates of an hot spot
      * @param hotSpotQuery a surface information to query the hot spot positions
@@ -503,13 +505,25 @@ export class Viewer implements IDisposable {
      * @returns true if hotspot found
      */
     public getHotSpotToRef(hotSpotQuery: HotSpotQuery, res: HotSpotPositions): boolean {
-        const hotspot = new HotSpot();
-        if (this._camera.getHotSpotToRef(hotSpotQuery, hotspot)) {
-            res.canvasPosition = [hotspot.canvasPosition.x, hotspot.canvasPosition.y];
-            res.worldPosition = [hotspot.worldPosition.x, hotspot.worldPosition.y, hotspot.worldPosition.z];
-            return true;
+        const scene = this._details.scene;
+        if (hotSpotQuery.meshIndex >= scene.meshes.length) {
+            return false;
         }
-        return false;
+        const mesh = scene.meshes[hotSpotQuery.meshIndex];
+        const worldPos = TmpVectors.Vector3[1];
+        const canvasPos = TmpVectors.Vector3[0];
+        mesh.getHotSpotToRef(hotSpotQuery, worldPos);
+
+        const canvasWidth = this._engine.getRenderWidth(); // Get the canvas width
+        const canvasHeight = this._engine.getRenderHeight(); // Get the canvas height
+
+        const viewportWidth = this._camera.viewport.width * canvasWidth;
+        const viewportHeight = this._camera.viewport.height * canvasHeight;
+
+        Vector3.ProjectToRef(TmpVectors.Vector3[1], mesh.getWorldMatrix(), scene.getTransformMatrix(), new Viewport(0, 0, viewportWidth, viewportHeight), canvasPos);
+        res.canvasPosition = [canvasPos.x, canvasPos.y];
+        res.worldPosition = [worldPos.x, worldPos.y, worldPos.z];
+        return true;
     }
 
     private _updateCamera(): void {

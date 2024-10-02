@@ -1572,31 +1572,4 @@ export class Camera extends Node {
 
         return handednessMultiplier;
     }
-    /**
-     * Query a hotspot
-     * @param hotSpotQuery info necessary to compute the hotspot
-     * @param res resulting hotspot infor
-     * @returns true if hotspot could be computed
-     */
-    getHotSpotToRef(hotSpotQuery: HotSpotQuery, res: HotSpot): boolean {
-        const scene = this.getScene();
-        if (hotSpotQuery.meshIndex >= scene.meshes.length) {
-            return false;
-        }
-        const mesh = scene.meshes[hotSpotQuery.meshIndex];
-        mesh.getHotSpotToRef(hotSpotQuery, res.worldPosition);
-
-        const engine = this.getEngine();
-        const canvasWidth = engine.getRenderWidth(); // Get the canvas width
-        const canvasHeight = engine.getRenderHeight(); // Get the canvas height
-
-        const viewportWidth = this.viewport.width * canvasWidth;
-        const viewportHeight = this.viewport.height * canvasHeight;
-
-        Vector3.ProjectToRef(res.worldPosition, mesh.getWorldMatrix(), scene.getTransformMatrix(), new Viewport(0, 0, viewportWidth, viewportHeight), TmpVectors.Vector3[0]);
-        res.canvasPosition.x = TmpVectors.Vector3[0].x;
-        res.canvasPosition.y = TmpVectors.Vector3[0].y;
-
-        return true;
-    }
 }
