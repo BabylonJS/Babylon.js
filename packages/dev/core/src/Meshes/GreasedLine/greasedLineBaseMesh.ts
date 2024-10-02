@@ -203,7 +203,7 @@ export abstract class GreasedLineBaseMesh extends Mesh {
             this._updateColorPointers();
         }
         this._createVertexBuffers(this._options.ribbonOptions?.smoothShading);
-        this.refreshBoundingInfo();
+        !this.doNotSyncBoundingInfo && this.refreshBoundingInfo();
 
         this.greasedLineMaterial?.updateLazy();
     }

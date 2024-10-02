@@ -65,9 +65,10 @@ body,
 }
 
 #errorZone {
+    z-index: 9;
     position: absolute;
-    width: 50%;
-    left: 25%;
+    width: 75%;
+    left: 12.5%;
     bottom: 80px;
     background-color: #c73228;
     padding: 20px;

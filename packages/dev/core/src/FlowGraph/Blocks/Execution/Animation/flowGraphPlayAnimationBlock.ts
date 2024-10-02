@@ -1,5 +1,5 @@
 import type { FlowGraphContext } from "../../../flowGraphContext";
-import type { Animatable } from "../../../../Animations/animatable";
+import type { Animatable } from "../../../../Animations/animatable.core";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import { FlowGraphAsyncExecutionBlock } from "../../../flowGraphAsyncExecutionBlock";
 import { RichTypeAny, RichTypeNumber, RichTypeBoolean } from "../../../flowGraphRichTypes";

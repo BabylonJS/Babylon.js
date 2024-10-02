@@ -13,7 +13,9 @@
         "lib/**/*.map",
         "dist/**/*.js",
         "dist/**/*.map",
+        "assets/**",
         "readme.md",
+        "docs/**",
         "license.md"
     ],
     "scripts": {
@@ -54,7 +56,6 @@
         "babylon.js"
     ],
     "license": "Apache-2.0",
-    "sideEffects": false,
     "homepage": "https://www.babylonjs.com",
     "repository": {
         "type": "git",

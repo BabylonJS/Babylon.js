@@ -29,21 +29,20 @@
 
             babylon-viewer {
                 /* --ui-foreground-color: red; */
-                /* --ui-background-hue: 0;
-                --ui-background-saturation: 100%; */
+                /* --ui-background-hue: 200;
+                --ui-background-saturation: 70%; */
             }
 
-            babylon-viewer::part(tool-bar) {
-                /* border-radius: 24px;
-                height: 72px;
-                left: 12px;
-                right: 12px;
+            /* babylon-viewer::part(tool-bar) {
+                border-radius: 0;
+                left: 0;
+                right: 0;
                 bottom: unset;
-                top: 12px;
+                top: 0;
                 width: unset;
                 max-width: unset;
-                transform: unset; */
-            }
+                transform: unset;
+            } */
         </style>
     </head>
 
@@ -51,11 +50,11 @@
         <babylon-viewer
             engine="WebGL"
             source="https://raw.githubusercontent.com/BabylonJS/Assets/master/meshes/ufo.glb"
-            environment="https://assets.babylonjs.com/environments/ulmerMuenster.env"
+            environment="../../../../../public/@babylonjs/viewer-alpha/assets/photoStudio.env"
             animation-speed="1.5"
         >
             <!-- <div slot="tool-bar" style="position: absolute; top: 12px; left: 12px; width: 100px; height: 36px">
-                <button onclick="viewerElement.viewer.toggleAnimation()">Toggle Animation</button>
+                <button onclick="document.querySelector('babylon-viewer').toggleAnimation()">Toggle Animation</button>
             </div> -->
 
             <div slot="hotspot" class="hotspot" data-surface="2 0 228 113 111 0.217 0.341 0.442"></div>
