@@ -1165,6 +1165,12 @@ export function AddRayExtensions(sceneClass: typeof Scene, cameraClass: typeof C
         return;
     }
 
+    Object.defineProperty(sceneClass.prototype, "_pickingAvailable", {
+        get: () => true,
+        enumerable: false,
+        configurable: false,
+    });
+
     sceneClass.prototype.createPickingRay = function (x: number, y: number, world: Nullable<Matrix>, camera: Nullable<Camera>, cameraViewSpace = false): Ray {
         return CreatePickingRay(this, x, y, world, camera, cameraViewSpace);
     };

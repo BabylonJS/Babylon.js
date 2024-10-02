@@ -262,7 +262,7 @@ export class InputManager {
     /** @internal */
     public _setRayOnPointerInfo(pickInfo: Nullable<PickingInfo>, event: IMouseEvent) {
         const scene = this._scene;
-        if (pickInfo && scene.createPickingRay) {
+        if (pickInfo && scene._pickingAvailable) {
             if (!pickInfo.ray) {
                 pickInfo.ray = scene.createPickingRay(event.offsetX, event.offsetY, Matrix.Identity(), scene.activeCamera);
             }
