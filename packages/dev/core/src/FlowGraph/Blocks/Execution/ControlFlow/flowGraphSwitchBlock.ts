@@ -47,13 +47,14 @@ export class FlowGraphSwitchBlock<T = number> extends FlowGraphExecutionBlock {
         this.selection = this.registerDataInput("selection", RichTypeAny);
 
         this._defaultCase = config.default;
-        for (const caseValue of this.config.cases) {
+        // iterate the set not using for of
+        this.config.cases.forEach((caseValue) => {
             this._caseToOutputFlow.set(caseValue, this._registerSignalOutput(`out_${caseValue}`));
             // if no defaultCase was set, use the first one as default
             if (!this._defaultCase) {
                 this._defaultCase = caseValue;
             }
-        }
+        });
     }
 
     public _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
