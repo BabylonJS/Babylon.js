@@ -9,14 +9,14 @@ import { RegisterClass } from "core/Misc/typeStore";
 /**
  * @experimental
  */
-export interface IFlowGraphSetPropertyBlockConfiguration extends IFlowGraphBlockConfiguration {
+export interface IFlowGraphSetPropertyBlockGLTFConfiguration extends IFlowGraphBlockConfiguration {
     /**
      * The complete path to the property that will be set
      */
     path: string;
 }
 
-export class FlowGraphSetPropertyBlock<T> extends FlowGraphExecutionBlockWithOutSignal {
+export class FlowGraphSetPropertyBlockGLTF<T> extends FlowGraphExecutionBlockWithOutSignal {
     /**
      * The class name of this block.
      */
@@ -32,7 +32,7 @@ export class FlowGraphSetPropertyBlock<T> extends FlowGraphExecutionBlockWithOut
      */
     public readonly templateComponent: FlowGraphPathConverterComponent;
 
-    constructor(public override config: IFlowGraphSetPropertyBlockConfiguration) {
+    constructor(public override config: IFlowGraphSetPropertyBlockGLTFConfiguration) {
         super(config);
         this.value = this.registerDataInput("value", config.type);
         this.templateComponent = new FlowGraphPathConverterComponent(config.path, this);
@@ -50,7 +50,7 @@ export class FlowGraphSetPropertyBlock<T> extends FlowGraphExecutionBlockWithOut
     }
 
     public override getClassName(): string {
-        return FlowGraphSetPropertyBlock.ClassName;
+        return FlowGraphSetPropertyBlockGLTF.ClassName;
     }
 
     public override serialize(serializationObject?: any): void {
@@ -59,4 +59,4 @@ export class FlowGraphSetPropertyBlock<T> extends FlowGraphExecutionBlockWithOut
     }
 }
 
-RegisterClass("FGSetPropertyBlock", FlowGraphSetPropertyBlock);
+RegisterClass("FGSetPropertyBlock", FlowGraphSetPropertyBlockGLTF);

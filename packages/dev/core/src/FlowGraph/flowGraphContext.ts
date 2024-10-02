@@ -9,9 +9,10 @@ import type { ISerializedFlowGraphContext } from "./typeDefinitions";
 import { defaultValueParseFunction, defaultValueSerializationFunction } from "./serialization";
 import type { FlowGraphCoordinator } from "./flowGraphCoordinator";
 import { Observable } from "../Misc/observable";
-import type { FlowGraphAssetType } from "./flowGraphAssetsContext";
+import type { AssetType, FlowGraphAssetType } from "./flowGraphAssetsContext";
 import { GetFlowGraphAssetWithType } from "./flowGraphAssetsContext";
 import type { IAssetContainer } from "core/IAssetContainer";
+import { Nullable } from "core/types";
 
 /**
  * Construction parameters for the context.
@@ -135,7 +136,7 @@ export class FlowGraphContext {
      * @param index The index of the asset
      * @returns The asset or null if not found
      */
-    public getAsset<T extends FlowGraphAssetType>(type: T, index: number) {
+    public getAsset<T extends FlowGraphAssetType>(type: T, index: number): Nullable<AssetType<T>> {
         return GetFlowGraphAssetWithType(this.assetsContext, type, index);
     }
 
