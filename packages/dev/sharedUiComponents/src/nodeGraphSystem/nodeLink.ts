@@ -217,6 +217,10 @@ export class NodeLink {
                 targetY: evt.clientY,
                 needRepositioning: true,
             });
+
+            // Make sure the undo/redo stack is reverted as we did 2 actions (create and connect)
+            stateManager.historyStack.collapseLastTwo();
+
             return;
         }
 
@@ -234,6 +238,9 @@ export class NodeLink {
                 targetY: evt.clientY,
                 needRepositioning: true,
             });
+
+            // Make sure the undo/redo stack is reverted as we did 2 actions (create and connect)
+            stateManager.historyStack.collapseLastTwo();
             return;
         }
 

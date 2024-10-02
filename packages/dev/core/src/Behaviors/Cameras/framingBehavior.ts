@@ -12,7 +12,7 @@ import { PrecisionDate } from "../../Misc/precisionDate";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { TransformNode } from "../../Meshes/transformNode";
 import { Vector3 } from "../../Maths/math.vector";
-import type { Animatable } from "../../Animations/animatable";
+import type { Animatable } from "../../Animations/animatable.core";
 import { Animation } from "../../Animations/animation";
 
 /**

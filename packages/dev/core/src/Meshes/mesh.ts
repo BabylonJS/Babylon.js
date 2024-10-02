@@ -2343,6 +2343,23 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
+     * Render a complete mesh by going through all submeshes
+     * @returns the current mesh
+     * #5SPY1V#2: simple test
+     * #5SPY1V#5: perf test
+     */
+    public directRender(): Mesh {
+        if (!this.subMeshes) {
+            return this;
+        }
+
+        for (const submesh of this.subMeshes) {
+            this.render(submesh, false);
+        }
+        return this;
+    }
+
+    /**
      * Triggers the draw call for the mesh. Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager
      * @param subMesh defines the subMesh to render
      * @param enableAlphaMode defines if alpha mode can be changed

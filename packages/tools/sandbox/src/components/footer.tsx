@@ -21,6 +21,9 @@ interface IFooterProps {
     globalState: GlobalState;
 }
 
+/**
+ * Footer
+ */
 export class Footer extends React.Component<IFooterProps> {
     private _cameraNames: string[] = [];
 

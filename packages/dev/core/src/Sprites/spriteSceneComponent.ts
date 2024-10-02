@@ -3,7 +3,7 @@ import { Observable } from "../Misc/observable";
 import { Scene } from "../scene";
 import type { Sprite } from "./sprite";
 import type { ISpriteManager } from "./spriteManager";
-import { Ray } from "../Culling/ray";
+import { CreatePickingRayInCameraSpace, CreatePickingRayInCameraSpaceToRef, Ray } from "../Culling/ray.core";
 import type { Camera } from "../Cameras/camera";
 import { PickingInfo } from "../Collisions/pickingInfo";
 import type { ISceneComponent } from "../sceneComponent";
@@ -177,11 +177,11 @@ Scene.prototype.pickSprite = function (x: number, y: number, predicate?: (sprite
         return null;
     }
 
-    this.createPickingRayInCameraSpaceToRef(x, y, this._tempSpritePickingRay, camera);
+    CreatePickingRayInCameraSpaceToRef(this, x, y, this._tempSpritePickingRay, camera);
 
     const result = this._internalPickSprites(this._tempSpritePickingRay, predicate, fastCheck, camera);
     if (result) {
-        result.ray = this.createPickingRayInCameraSpace(x, y, camera);
+        result.ray = CreatePickingRayInCameraSpace(this, x, y, camera);
     }
 
     return result;
@@ -210,7 +210,7 @@ Scene.prototype.pickSpriteWithRay = function (ray: Ray, predicate?: (sprite: Spr
 };
 
 Scene.prototype.multiPickSprite = function (x: number, y: number, predicate?: (sprite: Sprite) => boolean, camera?: Camera): Nullable<PickingInfo[]> {
-    this.createPickingRayInCameraSpaceToRef(x, y, this._tempSpritePickingRay!, camera);
+    CreatePickingRayInCameraSpaceToRef(this, x, y, this._tempSpritePickingRay!, camera);
 
     return this._internalMultiPickSprites(this._tempSpritePickingRay!, predicate, camera);
 };

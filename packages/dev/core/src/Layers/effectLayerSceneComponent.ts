@@ -28,13 +28,6 @@ AddParser(SceneComponentConstants.NAME_EFFECTLAYER, (parsedData: any, scene: Sce
 declare module "../scene" {
     export interface Scene {
         /**
-         * The list of effect layers (highlights/glow) added to the scene
-         * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/highlightLayer
-         * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/glowLayer
-         */
-        effectLayers: Array<EffectLayer>;
-
-        /**
          * Removes the given effect layer from this scene.
          * @param toRemove defines the effect layer to remove
          * @returns the index of the removed effect layer
@@ -92,7 +85,6 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
             return;
         }
         this._engine = this.scene.getEngine();
-        this.scene.effectLayers = [] as EffectLayer[];
     }
 
     /**

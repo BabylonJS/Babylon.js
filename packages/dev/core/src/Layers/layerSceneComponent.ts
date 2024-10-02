@@ -8,15 +8,6 @@ import type { RenderTargetTexture } from "../Materials/Textures/renderTargetText
 import { EngineStore } from "../Engines/engineStore";
 import type { IAssetContainer } from "core/IAssetContainer";
 
-declare module "../scene" {
-    export interface Scene {
-        /**
-         * The list of layers (background and foreground) of the scene
-         */
-        layers: Array<Layer>;
-    }
-}
-
 /**
  * Defines the layer scene component responsible to manage any layers
  * in a given scene.
@@ -44,7 +35,6 @@ export class LayerSceneComponent implements ISceneComponent {
             return;
         }
         this._engine = this.scene.getEngine();
-        this.scene.layers = [] as Layer[];
     }
 
     /**

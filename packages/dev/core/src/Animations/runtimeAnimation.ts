@@ -356,6 +356,33 @@ export class RuntimeAnimation {
         }
     }
 
+    private _registerTargetForLateAnimationBinding(runtimeAnimation: RuntimeAnimation, originalValue: any): void {
+        const target = runtimeAnimation.target;
+        this._scene._registeredForLateAnimationBindings.pushNoDuplicate(target);
+
+        if (!target._lateAnimationHolders) {
+            target._lateAnimationHolders = {};
+        }
+
+        if (!target._lateAnimationHolders[runtimeAnimation.targetPath]) {
+            target._lateAnimationHolders[runtimeAnimation.targetPath] = {
+                totalWeight: 0,
+                totalAdditiveWeight: 0,
+                animations: [],
+                additiveAnimations: [],
+                originalValue: originalValue,
+            };
+        }
+
+        if (runtimeAnimation.isAdditive) {
+            target._lateAnimationHolders[runtimeAnimation.targetPath].additiveAnimations.push(runtimeAnimation);
+            target._lateAnimationHolders[runtimeAnimation.targetPath].totalAdditiveWeight += runtimeAnimation.weight;
+        } else {
+            target._lateAnimationHolders[runtimeAnimation.targetPath].animations.push(runtimeAnimation);
+            target._lateAnimationHolders[runtimeAnimation.targetPath].totalWeight += runtimeAnimation.weight;
+        }
+    }
+
     private _setValue(target: any, destination: any, currentValue: any, weight: number, targetIndex: number): void {
         // Set value
         this._currentActiveTarget = destination;
@@ -409,7 +436,7 @@ export class RuntimeAnimation {
         }
 
         if (weight !== -1.0) {
-            this._scene._registerTargetForLateAnimationBinding(this, this._originalValue[targetIndex]);
+            this._registerTargetForLateAnimationBinding(this, this._originalValue[targetIndex]);
         } else {
             if (this._animationState.loopMode === Animation.ANIMATIONLOOPMODE_RELATIVE_FROM_CURRENT) {
                 if (this._currentValue.addToRef) {

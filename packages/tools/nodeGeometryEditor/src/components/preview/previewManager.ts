@@ -6,7 +6,6 @@ import { Scene } from "core/scene";
 import { Vector3 } from "core/Maths/math.vector";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
-import { Animation } from "core/Animations/animation";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
@@ -23,6 +22,7 @@ import type { TransformNode } from "core/Meshes/transformNode";
 import { MultiMaterial } from "core/Materials/multiMaterial";
 import { GLTF2Export } from "serializers/glTF/2.0/glTFSerializer";
 import type { GLTFData } from "serializers/glTF/2.0/glTFData";
+import { Animation } from "core/Animations/animation";
 
 export class PreviewManager {
     private _nodeGeometry: NodeGeometry;
