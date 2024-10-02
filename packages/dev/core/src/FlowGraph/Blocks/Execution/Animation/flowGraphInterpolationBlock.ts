@@ -79,6 +79,11 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
      */
     public readonly propertyName: FlowGraphDataConnection<string>;
 
+    public readonly keyFrames: {
+        duration: FlowGraphDataConnection<number>;
+        value: FlowGraphDataConnection<T>;
+    }[] = [];
+
     constructor(config: IFlowGraphInterpolationBlockConfiguration<T> = {}) {
         super(config);
         const type = getRichTypeByAnimationType(config?.animationType ?? Constants.ANIMATIONTYPE_FLOAT);
@@ -89,8 +94,9 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
 
         const numberOfKeyFrames = config?.numberOfKeyFrames ?? 1;
         for (let i = 0; i < numberOfKeyFrames; i++) {
-            this.registerDataInput(`Duration-${i + 1}`, RichTypeNumber, i === numberOfKeyFrames - 1 ? config.duration : undefined);
-            this.registerDataInput(`Value-${i + 1}`, type, i === numberOfKeyFrames - 1 ? config.endValue : undefined);
+            const duration = this.registerDataInput(`Duration-${i + 1}`, RichTypeNumber, i === numberOfKeyFrames - 1 ? config.duration : undefined);
+            const value = this.registerDataInput(`Value-${i + 1}`, type, i === numberOfKeyFrames - 1 ? config.endValue : undefined);
+            this.keyFrames.push({ duration, value });
         }
     }
 
