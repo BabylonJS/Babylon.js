@@ -304,11 +304,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this.onScenePerformancePriorityChangedObservable.notifyObservers(value);
     }
 
-    /** @internal */
-    public get _pickingAvailable() {
-        return false;
-    }
-
     private _forceWireframe = false;
 
     /**

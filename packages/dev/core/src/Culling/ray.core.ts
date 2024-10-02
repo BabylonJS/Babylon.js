@@ -12,6 +12,7 @@ import { EngineStore } from "core/Engines/engineStore";
 import type { Scene } from "core/scene";
 import type { Camera } from "core/Cameras/camera";
 import type { Mesh } from "core/Meshes/mesh";
+import { _ImportHelper } from "core/import.helper";
 
 /**
  * Type used to define predicate for selecting meshes and instances (if exist)
@@ -1165,11 +1166,7 @@ export function AddRayExtensions(sceneClass: typeof Scene, cameraClass: typeof C
         return;
     }
 
-    Object.defineProperty(sceneClass.prototype, "_pickingAvailable", {
-        get: () => true,
-        enumerable: false,
-        configurable: false,
-    });
+    _ImportHelper._IsPickingAvailable = true;
 
     sceneClass.prototype.createPickingRay = function (x: number, y: number, world: Nullable<Matrix>, camera: Nullable<Camera>, cameraViewSpace = false): Ray {
         return CreatePickingRay(this, x, y, world, camera, cameraViewSpace);
