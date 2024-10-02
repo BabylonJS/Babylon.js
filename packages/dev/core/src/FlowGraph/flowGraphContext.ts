@@ -12,7 +12,7 @@ import { Observable } from "../Misc/observable";
 import type { AssetType, FlowGraphAssetType } from "./flowGraphAssetsContext";
 import { GetFlowGraphAssetWithType } from "./flowGraphAssetsContext";
 import type { IAssetContainer } from "core/IAssetContainer";
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 
 /**
  * Construction parameters for the context.
