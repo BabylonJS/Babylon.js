@@ -181,7 +181,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         }}
                     />
                 )}
-                {system.isStopping() && <TextLineComponent label="System is stoppping..." ignoreValue={true} />}
+                {system.isStopping() && <TextLineComponent label="System is stopping..." ignoreValue={true} />}
             </>
         );
     }
