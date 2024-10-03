@@ -26,7 +26,7 @@ import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { computeMaxExtents } from "core/Meshes/meshUtils";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { Observable } from "core/Misc/observable";
-import { Scene } from "core/scene";
+import { Scene, ScenePerformancePriority } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 
 function throwIfAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]): void {
@@ -179,6 +179,7 @@ export class Viewer implements IDisposable {
             scene: new Scene(this._engine),
             model: null,
         };
+        this._details.scene.performancePriority = ScenePerformancePriority.Aggressive;
         this._details.scene.clearColor = finalOptions.backgroundColor;
         this._camera = new ArcRotateCamera("camera1", 0, 0, 1, Vector3.Zero(), this._details.scene);
         this._camera.attachControl();

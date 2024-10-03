@@ -61,6 +61,7 @@ export class HTML3DElement extends LitElement {
 
         .full-size {
             display: block;
+            position: relative;
             width: 100%;
             height: 100%;
         }
