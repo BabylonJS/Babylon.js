@@ -1,6 +1,5 @@
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
-import {} from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import type { VertexData } from "../../mesh.vertexData";
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
