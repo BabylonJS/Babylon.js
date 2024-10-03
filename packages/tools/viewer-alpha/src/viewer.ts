@@ -28,7 +28,7 @@ import { AsyncLock } from "core/Misc/asyncLock";
 import { Observable } from "core/Misc/observable";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
-import type { HotSpotQuery } from "core/Meshes/abstractMesh";
+import type { AbstractMesh, HotSpotQuery } from "core/Meshes/abstractMesh";
 import { Viewport } from "core/Maths/math.viewport";
 
 function throwIfAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]): void {
@@ -500,16 +500,12 @@ export class Viewer implements IDisposable {
 
     /**
      * retrun world and canvas coordinates of an hot spot
+     * @param mesh mesh used to do the hot spot query on
      * @param hotSpotQuery a surface information to query the hot spot positions
      * @param res Query a Hot Spot and does the conversion for Babylon Hot spot to a more generic HotSpotPositions, without Vector types
      * @returns true if hotspot found
      */
-    public getHotSpotToRef(hotSpotQuery: HotSpotQuery, res: HotSpotPositions): boolean {
-        const scene = this._details.scene;
-        const mesh = scene.getMeshByName(hotSpotQuery.meshName);
-        if (!mesh) {
-            return false;
-        }
+    public getHotSpotToRef(mesh: AbstractMesh, hotSpotQuery: HotSpotQuery, res: HotSpotPositions): boolean {
         const worldPos = TmpVectors.Vector3[1];
         const canvasPos = TmpVectors.Vector3[0];
         mesh.getHotSpotToRef(hotSpotQuery, worldPos);
@@ -519,6 +515,7 @@ export class Viewer implements IDisposable {
 
         const viewportWidth = this._camera.viewport.width * canvasWidth;
         const viewportHeight = this._camera.viewport.height * canvasHeight;
+        const scene = this._details.scene;
 
         Vector3.ProjectToRef(TmpVectors.Vector3[1], mesh.getWorldMatrix(), scene.getTransformMatrix(), new Viewport(0, 0, viewportWidth, viewportHeight), canvasPos);
         res.canvasPosition = [canvasPos.x, canvasPos.y];

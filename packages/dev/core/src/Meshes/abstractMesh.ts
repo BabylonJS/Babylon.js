@@ -139,10 +139,6 @@ export interface IMeshDataCache {
  */
 export class HotSpotQuery {
     /**
-     * Mesh name
-     */
-    meshName: string;
-    /**
      * 3 point indices
      */
     pointIndex: [number, number, number];

@@ -225,6 +225,7 @@ export class HTML3DElement extends LitElement {
     public queryHotSpot(slot: string, res: HotSpotPositions): boolean {
         // Retrieve all hotspots inside the viewer element
         const hotspots = this.querySelectorAll(".hotspot");
+        const hotSpotQuery = new HotSpotQuery();
         let resultFound = false;
         // Iterate through each hotspot to get the 'data-surface' and 'data-name' attributes
         hotspots.forEach((hotspot) => {
@@ -232,12 +233,14 @@ export class HTML3DElement extends LitElement {
             if (slot === slotAttribute) {
                 const dataSurface = hotspot.getAttribute("data-surface");
                 const array = dataSurface!.split(" ");
-                const hotSpotQuery = new HotSpotQuery();
-                hotSpotQuery.meshName = array[0];
-                hotSpotQuery.pointIndex = [Number(array[1]), Number(array[2]), Number(array[3])];
-                hotSpotQuery.barycentric = [Number(array[4]), Number(array[5]), Number(array[6])];
-                this._viewerDetails?.viewer.getHotSpotToRef(hotSpotQuery, res);
-                resultFound = true;
+                const scene = this._viewerDetails?.scene;
+                const mesh = scene?.getMeshByName(array[0]);
+                if (mesh) {
+                    hotSpotQuery.pointIndex = [Number(array[1]), Number(array[2]), Number(array[3])];
+                    hotSpotQuery.barycentric = [Number(array[4]), Number(array[5]), Number(array[6])];
+                    this._viewerDetails?.viewer.getHotSpotToRef(mesh, hotSpotQuery, res);
+                    resultFound = true;
+                }
             }
         });
         return resultFound;
