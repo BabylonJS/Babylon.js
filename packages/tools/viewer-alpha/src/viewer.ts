@@ -506,10 +506,10 @@ export class Viewer implements IDisposable {
      */
     public getHotSpotToRef(hotSpotQuery: HotSpotQuery, res: HotSpotPositions): boolean {
         const scene = this._details.scene;
-        if (hotSpotQuery.meshIndex >= scene.meshes.length) {
+        const mesh = scene.getMeshByName(hotSpotQuery.meshName);
+        if (!mesh) {
             return false;
         }
-        const mesh = scene.meshes[hotSpotQuery.meshIndex];
         const worldPos = TmpVectors.Vector3[1];
         const canvasPos = TmpVectors.Vector3[0];
         mesh.getHotSpotToRef(hotSpotQuery, worldPos);

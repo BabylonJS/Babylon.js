@@ -231,11 +231,11 @@ export class HTML3DElement extends LitElement {
             const slotAttribute = hotspot.getAttribute("slot");
             if (slot === slotAttribute) {
                 const dataSurface = hotspot.getAttribute("data-surface");
-                const numbersArray = dataSurface!.split(" ").map(Number);
+                const array = dataSurface!.split(" ");
                 const hotSpotQuery = new HotSpotQuery();
-                hotSpotQuery.meshIndex = numbersArray[0];
-                hotSpotQuery.pointIndex = [numbersArray[2], numbersArray[3], numbersArray[4]];
-                hotSpotQuery.barycentric = [numbersArray[5], numbersArray[6], numbersArray[7]];
+                hotSpotQuery.meshName = array[0];
+                hotSpotQuery.pointIndex = [Number(array[1]), Number(array[2]), Number(array[3])];
+                hotSpotQuery.barycentric = [Number(array[4]), Number(array[5]), Number(array[6])];
                 this._viewerDetails?.viewer.getHotSpotToRef(hotSpotQuery, res);
                 resultFound = true;
             }
