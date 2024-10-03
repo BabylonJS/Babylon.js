@@ -3138,7 +3138,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             }
         }
 
-        this._debugPushGroup?.("render target pass" + (renderTargetWrapper.label ? " (" + renderTargetWrapper.label + ")" : ""), 1);
+        this._debugPushGroup?.("render target pass" + (renderTargetWrapper.label ? " (" + renderTargetWrapper.label + ")" : ""), 0);
 
         this._rttRenderPassWrapper.renderPassDescriptor = {
             label: (renderTargetWrapper.label ?? "RTT") + "RenderPass",

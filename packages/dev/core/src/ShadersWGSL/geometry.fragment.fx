@@ -1,5 +1,8 @@
 #ifdef BUMP
-varying vWorldView: mat4x4f;
+varying vWorldView0: vec4f;
+varying vWorldView1: vec4f;
+varying vWorldView2: vec4f;
+varying vWorldView3: vec4f;
 varying vNormalW: vec3f;
 #else
 varying vNormalV: vec3f;
@@ -79,8 +82,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         #ifdef NORMAL_WORLDSPACE
             normalOutput = normalW;
         #else
-            normalOutput = normalize( vec3f(input.vWorldView *  vec4f(normalW, 0.0)));
-
+            normalOutput = normalize( vec3f(mat4x4f(input.vWorldView0, input.vWorldView0, input.vWorldView2, input.vWorldView3) *  vec4f(normalW, 0.0)));
         #endif
     #else
         normalOutput = normalize(input.vNormalV);

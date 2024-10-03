@@ -44,7 +44,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
     for (var x: i32 = -uniforms.filterSize; x <= uniforms.filterSize; x++) {
         for (var y: i32 = -uniforms.filterSize; y <= uniforms.filterSize; y++) {
-            var coords: vec2f =  vec2f(x, y) * uniforms.blurDir;
+            var coords: vec2f =  vec2f(f32(x), f32(y)) * uniforms.blurDir;
             var sampleColor: vec3f = textureSampleLevel(textureSampler, textureSamplerSampler, input.vUV + coords, 0.).rgb;
             var sampleDepth: f32 = textureSampleLevel(depthSampler, depthSamplerSampler, input.vUV + coords, 0.).r;
             var sampleNormal: vec3f = textureSampleLevel(normalSampler, normalSamplerSampler, input.vUV + coords, 0.).rgb;
