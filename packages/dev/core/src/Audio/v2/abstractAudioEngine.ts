@@ -13,7 +13,6 @@ import type { AbstractStaticSoundSource } from "./abstractStaticSoundSource";
 import type { AbstractStreamingSoundInstance } from "./abstractStreamingSoundInstance";
 import type { AbstractStreamingSoundSource } from "./abstractStreamingSoundSource";
 import type { SpatialAudioListener } from "./spatialAudioListener";
-import type { Nullable } from "../../types";
 
 /**
  * Owns top-level AbstractAudioNode objects.
@@ -21,7 +20,7 @@ import type { Nullable } from "../../types";
  */
 export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
     // Owned
-    private _listeners: Nullable<Set<SpatialAudioListener>> = null;
+    public readonly listeners = new Set<SpatialAudioListener>();
 
     // Not owned, but all items should in parent's `children` container, too, which is owned.
     public readonly soundInstances = new Set<AbstractStaticSoundInstance>();
@@ -32,11 +31,11 @@ export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
     public override dispose(): void {
         this.soundInstances.clear();
 
-        if (this._listeners) {
-            for (const listener of this._listeners) {
+        if (this.listeners) {
+            for (const listener of this.listeners) {
                 listener.dispose();
             }
-            this._listeners.clear();
+            this.listeners.clear();
         }
 
         for (const source of this.soundSources) {
@@ -45,14 +44,6 @@ export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
         this.soundSources.clear();
 
         super.dispose();
-    }
-
-    public get listeners(): Set<SpatialAudioListener> {
-        if (!this._listeners) {
-            this._listeners = new Set();
-        }
-
-        return this._listeners;
     }
 
     public abstract createDevice(name: string): AbstractAudioDevice;
