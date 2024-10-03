@@ -11,7 +11,6 @@ import type { WebGPUEngine } from "core/Engines";
 import "../../Engines/Extensions/engine.videoTexture";
 import "../../Engines/Extensions/engine.dynamicTexture";
 import { serialize } from "core/Misc/decorators";
-import { RegisterClass } from "core/Misc/typeStore";
 
 function removeSource(video: HTMLVideoElement): void {
     // Remove any <source> elements, etc.
@@ -603,5 +602,3 @@ Texture._CreateVideoTexture = (
 ) => {
     return new VideoTexture(name, src, scene, generateMipMaps, invertY, samplingMode, settings, onError, format);
 };
-// Some exporters relies on Tools.Instantiate
-RegisterClass("BABYLON.VideoTexture", VideoTexture);

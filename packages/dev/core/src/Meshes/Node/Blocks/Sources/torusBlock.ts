@@ -3,7 +3,6 @@ import { NodeGeometryBlock } from "../../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
 import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import { GeometryInputBlock } from "../geometryInputBlock";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Vector4 } from "../../../../Maths/math.vector";
 import { CreateTorusVertexData } from "core/Meshes/Builders/torusBuilder";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../../Decorators/nodeDecorator";
@@ -129,5 +128,3 @@ export class TorusBlock extends NodeGeometryBlock {
         this.evaluateContext = serializationObject.evaluateContext;
     }
 }
-
-RegisterClass("BABYLON.TorusBlock", TorusBlock);

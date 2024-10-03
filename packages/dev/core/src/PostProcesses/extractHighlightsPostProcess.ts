@@ -8,7 +8,6 @@ import { ToGammaSpace } from "../Maths/math.constants";
 import { Constants } from "../Engines/constants";
 
 import { serialize } from "../Misc/decorators";
-import { RegisterClass } from "../Misc/typeStore";
 
 /**
  * The extract highlights post process sets all pixels to black except pixels above the specified luminance threshold. Used as the first step for a bloom effect.
@@ -69,5 +68,3 @@ export class ExtractHighlightsPostProcess extends PostProcess {
         super._gatherImports(useWebGPU, list);
     }
 }
-
-RegisterClass("BABYLON.ExtractHighlightsPostProcess", ExtractHighlightsPostProcess);

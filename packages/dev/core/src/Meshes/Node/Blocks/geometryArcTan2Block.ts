@@ -1,5 +1,4 @@
 import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
-import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
@@ -90,5 +89,3 @@ export class GeometryArcTan2Block extends NodeGeometryBlock {
         };
     }
 }
-
-RegisterClass("BABYLON.GeometryArcTan2Block", GeometryArcTan2Block);

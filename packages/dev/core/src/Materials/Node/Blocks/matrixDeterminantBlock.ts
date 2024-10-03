@@ -3,7 +3,6 @@ import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBloc
 import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
-import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Block used to compute the determinant of a matrix
@@ -53,5 +52,3 @@ export class MatrixDeterminantBlock extends NodeMaterialBlock {
         return this;
     }
 }
-
-RegisterClass("BABYLON.MatrixDeterminantBlock", MatrixDeterminantBlock);

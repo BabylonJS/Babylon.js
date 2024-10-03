@@ -6,7 +6,6 @@ import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Effect } from "../Materials/effect";
 import { Constants } from "../Engines/constants";
 
-import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 
@@ -119,5 +118,3 @@ export class ConvolutionPostProcess extends PostProcess {
      */
     public static GaussianKernel = [0, 1, 0, 1, 1, 1, 0, 1, 0];
 }
-
-RegisterClass("BABYLON.ConvolutionPostProcess", ConvolutionPostProcess);

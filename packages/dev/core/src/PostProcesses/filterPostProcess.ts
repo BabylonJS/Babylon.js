@@ -6,7 +6,6 @@ import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 
-import { RegisterClass } from "../Misc/typeStore";
 import { serializeAsMatrix } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 
@@ -88,5 +87,3 @@ export class FilterPostProcess extends PostProcess {
         );
     }
 }
-
-RegisterClass("BABYLON.FilterPostProcess", FilterPostProcess);

@@ -1,5 +1,4 @@
 import type { Nullable } from "core/types";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
@@ -149,5 +148,3 @@ export class TeleportInBlock extends NodeGeometryBlock {
         }
     }
 }
-
-RegisterClass("BABYLON.TeleportInBlock", TeleportInBlock);

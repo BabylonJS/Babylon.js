@@ -4,7 +4,6 @@ import { Color3, Color4 } from "../Maths/math.color";
 import { Hermite, Lerp } from "../Maths/math.scalar.functions";
 import type { DeepImmutable, Nullable } from "../types";
 import type { Scene } from "../scene";
-import { RegisterClass } from "../Misc/typeStore";
 import type { IAnimationKey } from "./animationKey";
 import { AnimationKeyInterpolation } from "./animationKey";
 import { AnimationRange } from "./animationRange";
@@ -1633,5 +1632,4 @@ export class Animation {
     public static CreateFromSnippetAsync = Animation.ParseFromSnippetAsync;
 }
 
-RegisterClass("BABYLON.Animation", Animation);
 Node._AnimationRangeFactory = (name: string, from: number, to: number) => new AnimationRange(name, from, to);

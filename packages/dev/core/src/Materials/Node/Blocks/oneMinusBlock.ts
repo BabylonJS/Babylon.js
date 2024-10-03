@@ -3,7 +3,6 @@ import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBloc
 import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
-import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * Block used to get the opposite (1 - x) of a value
  */
@@ -54,6 +53,3 @@ export class OneMinusBlock extends NodeMaterialBlock {
         return this;
     }
 }
-
-RegisterClass("BABYLON.OneMinusBlock", OneMinusBlock);
-RegisterClass("BABYLON.OppositeBlock", OneMinusBlock); // Backward compatibility

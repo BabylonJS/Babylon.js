@@ -4,7 +4,6 @@ import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnect
 import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { ReflectionTextureBaseBlock } from "../Dual/reflectionTextureBaseBlock";
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
@@ -506,5 +505,3 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         }
     }
 }
-
-RegisterClass("BABYLON.ReflectionBlock", ReflectionBlock);

@@ -7,7 +7,6 @@ import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import type { Effect } from "../../../effect";
 import type { Mesh } from "../../../../Meshes/mesh";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Scene } from "../../../../scene";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 
@@ -222,5 +221,3 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
         this.convertInputToLinearSpace = serializationObject.convertInputToLinearSpace ?? true;
     }
 }
-
-RegisterClass("BABYLON.ImageProcessingBlock", ImageProcessingBlock);

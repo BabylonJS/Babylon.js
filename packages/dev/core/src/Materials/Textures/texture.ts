@@ -4,7 +4,7 @@ import type { Nullable } from "../../types";
 import { Matrix, TmpVectors, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
-import { GetClass, RegisterClass } from "../../Misc/typeStore";
+import { GetClass } from "../../Misc/typeStore";
 import { _WarnImport } from "../../Misc/devTools";
 import type { IInspectable } from "../../Misc/iInspectable";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
@@ -1212,5 +1212,4 @@ export class Texture extends BaseTexture {
 }
 
 // References the dependencies.
-RegisterClass("BABYLON.Texture", Texture);
 SerializationHelper._TextureParser = Texture.Parse;

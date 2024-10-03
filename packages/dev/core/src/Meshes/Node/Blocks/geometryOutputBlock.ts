@@ -1,6 +1,5 @@
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
-import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import type { VertexData } from "core/Meshes/mesh.vertexData";
@@ -50,5 +49,3 @@ export class GeometryOutputBlock extends NodeGeometryBlock {
         this._vertexData = state.vertexData;
     }
 }
-
-RegisterClass("BABYLON.GeometryOutputBlock", GeometryOutputBlock);

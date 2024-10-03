@@ -11,7 +11,6 @@ import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { InputBlock } from "../Input/inputBlock";
 import type { Light } from "../../../../Lights/light";
 import type { Nullable } from "../../../../types";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Scene } from "../../../../scene";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 
@@ -472,5 +471,3 @@ export class LightBlock extends NodeMaterialBlock {
         this._setTarget();
     }
 }
-
-RegisterClass("BABYLON.LightBlock", LightBlock);

@@ -1,6 +1,5 @@
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import { GeometryInputBlock } from "../geometryInputBlock";
@@ -59,5 +58,3 @@ export class RotationXBlock extends NodeGeometryBlock {
         };
     }
 }
-
-RegisterClass("BABYLON.RotationXBlock", RotationXBlock);

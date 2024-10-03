@@ -7,7 +7,6 @@ import { PostProcess } from "../../postProcess";
 import { PostProcessRenderPipeline } from "../postProcessRenderPipeline";
 import { PostProcessRenderEffect } from "../postProcessRenderEffect";
 import type { Scene } from "../../../scene";
-import { RegisterClass } from "../../../Misc/typeStore";
 import { Constants } from "../../../Engines/constants";
 import type { Nullable } from "../../../types";
 import { PassPostProcess } from "core/PostProcesses/passPostProcess";
@@ -385,5 +384,3 @@ export class TAARenderingPipeline extends PostProcessRenderPipeline {
         return SerializationHelper.Parse(() => new TAARenderingPipeline(source._name, scene, source._ratio), source, scene, rootUrl);
     }
 }
-
-RegisterClass("BABYLON.TAARenderingPipeline", TAARenderingPipeline);

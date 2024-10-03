@@ -3,7 +3,6 @@ import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBloc
 import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
-import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * Block used to get the refracted vector from a direction and a normal
  */
@@ -82,5 +81,3 @@ export class RefractBlock extends NodeMaterialBlock {
         return this;
     }
 }
-
-RegisterClass("BABYLON.RefractBlock", RefractBlock);

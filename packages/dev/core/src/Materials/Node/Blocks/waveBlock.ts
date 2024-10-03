@@ -3,7 +3,6 @@ import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBloc
 import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
-import { RegisterClass } from "../../../Misc/typeStore";
 import type { Scene } from "../../../scene";
 
 /**
@@ -102,5 +101,3 @@ export class WaveBlock extends NodeMaterialBlock {
         this.kind = serializationObject.kind;
     }
 }
-
-RegisterClass("BABYLON.WaveBlock", WaveBlock);

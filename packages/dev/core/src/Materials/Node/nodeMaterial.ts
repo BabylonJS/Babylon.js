@@ -25,7 +25,7 @@ import { TransformBlock } from "./Blocks/transformBlock";
 import { VertexOutputBlock } from "./Blocks/Vertex/vertexOutputBlock";
 import { FragmentOutputBlock } from "./Blocks/Fragment/fragmentOutputBlock";
 import { InputBlock } from "./Blocks/Input/inputBlock";
-import { GetClass, RegisterClass } from "../../Misc/typeStore";
+import { GetClass } from "../../Misc/typeStore";
 import { serialize } from "../../Misc/decorators";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
 import type { TextureBlock } from "./Blocks/Dual/textureBlock";
@@ -2631,5 +2631,3 @@ export class NodeMaterial extends PushMaterial {
         return newMaterial;
     }
 }
-
-RegisterClass("BABYLON.NodeMaterial", NodeMaterial);

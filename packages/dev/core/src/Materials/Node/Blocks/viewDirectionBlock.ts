@@ -3,7 +3,6 @@ import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBloc
 import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
-import { RegisterClass } from "../../../Misc/typeStore";
 import type { NodeMaterial } from "../nodeMaterial";
 import { NodeMaterialSystemValues } from "../Enums/nodeMaterialSystemValues";
 import { InputBlock } from "./Input/inputBlock";
@@ -76,5 +75,3 @@ export class ViewDirectionBlock extends NodeMaterialBlock {
         return this;
     }
 }
-
-RegisterClass("BABYLON.ViewDirectionBlock", ViewDirectionBlock);

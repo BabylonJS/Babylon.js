@@ -2,7 +2,6 @@ import { Observable } from "../Misc/observable";
 import { Vector2, Vector3 } from "../Maths/math.vector";
 import { Color3, Color4 } from "../Maths/math.color";
 import type { Condition } from "./condition";
-import { RegisterClass } from "../Misc/typeStore";
 import type { AbstractActionManager } from "./abstractActionManager";
 import type { Nullable } from "../types";
 import type { Material } from "../Materials/material";
@@ -321,5 +320,3 @@ export class Action implements IAction {
         };
     };
 }
-
-RegisterClass("BABYLON.Action", Action);

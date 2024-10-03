@@ -1,5 +1,4 @@
 import { Vector3 } from "core/Maths/math.vector";
-import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
@@ -85,5 +84,3 @@ export class GeometryCrossBlock extends NodeGeometryBlock {
         return this;
     }
 }
-
-RegisterClass("BABYLON.GeometryCrossBlock", GeometryCrossBlock);

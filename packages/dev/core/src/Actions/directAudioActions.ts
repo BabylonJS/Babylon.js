@@ -1,6 +1,5 @@
 import { Action } from "./action";
 import type { Condition } from "./condition";
-import { RegisterClass } from "../Misc/typeStore";
 import type { Sound } from "../Audio/sound";
 
 /**
@@ -92,6 +91,3 @@ export class StopSoundAction extends Action {
         );
     }
 }
-
-RegisterClass("BABYLON.PlaySoundAction", PlaySoundAction);
-RegisterClass("BABYLON.StopSoundAction", StopSoundAction);

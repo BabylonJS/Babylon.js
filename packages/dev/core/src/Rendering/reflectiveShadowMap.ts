@@ -18,7 +18,6 @@ import { MaterialDefines } from "core/Materials/materialDefines";
 import type { SpotLight } from "core/Lights/spotLight";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { expandToProperty, serialize } from "core/Misc/decorators";
-import { RegisterClass } from "core/Misc/typeStore";
 import { Light } from "core/Lights/light";
 import type { DirectionalLight } from "core/Lights/directionalLight";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
@@ -531,5 +530,3 @@ export class RSMCreatePluginMaterial extends MaterialPluginBase {
         };
     }
 }
-
-RegisterClass(`BABYLON.RSMCreatePluginMaterial`, RSMCreatePluginMaterial);

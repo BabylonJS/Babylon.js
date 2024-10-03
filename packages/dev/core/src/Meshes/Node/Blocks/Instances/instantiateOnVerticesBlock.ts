@@ -1,6 +1,5 @@
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import type { INodeGeometryExecutionContext } from "../../Interfaces/nodeGeometryExecutionContext";
@@ -281,5 +280,3 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
         }
     }
 }
-
-RegisterClass("BABYLON.InstantiateOnVerticesBlock", InstantiateOnVerticesBlock);

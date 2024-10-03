@@ -1,6 +1,5 @@
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import type { INodeGeometryExecutionContext } from "../../Interfaces/nodeGeometryExecutionContext";
@@ -182,5 +181,3 @@ export class SetColorsBlock extends NodeGeometryBlock implements INodeGeometryEx
         }
     }
 }
-
-RegisterClass("BABYLON.SetColorsBlock", SetColorsBlock);

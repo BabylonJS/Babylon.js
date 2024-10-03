@@ -33,7 +33,7 @@ import type { Skeleton } from "../Bones/skeleton";
 import { Constants } from "../Engines/constants";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { Logger } from "../Misc/logger";
-import { GetClass, RegisterClass } from "../Misc/typeStore";
+import { GetClass } from "../Misc/typeStore";
 import { _WarnImport } from "../Misc/devTools";
 import { SceneComponentConstants } from "../sceneComponent";
 import { MeshLODLevel } from "./meshLODLevel";
@@ -5519,5 +5519,3 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         throw new Error("Import MeshBuilder to populate this function");
     }
 }
-
-RegisterClass("BABYLON.Mesh", Mesh);

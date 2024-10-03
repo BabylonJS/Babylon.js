@@ -12,7 +12,6 @@ import { Constants } from "../Engines/constants";
 import { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
 import type { ComputeBindingMapping } from "../Engines/Extensions/engine.computeShader";
 import type { Effect } from "../Materials/effect";
-import { RegisterClass } from "../Misc/typeStore";
 
 import "../ShadersWGSL/gpuUpdateParticles.compute";
 
@@ -189,5 +188,3 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
         this._renderVertexBuffers.length = 0;
     }
 }
-
-RegisterClass("BABYLON.ComputeShaderParticleSystem", ComputeShaderParticleSystem);

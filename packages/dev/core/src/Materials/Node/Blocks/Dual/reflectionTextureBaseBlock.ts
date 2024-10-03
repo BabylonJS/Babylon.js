@@ -9,7 +9,6 @@ import { NodeMaterial } from "../../nodeMaterial";
 import type { Effect } from "../../../effect";
 import type { Mesh } from "../../../../Meshes/mesh";
 import type { Nullable } from "../../../../types";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Scene } from "../../../../scene";
 import { InputBlock } from "../Input/inputBlock";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
@@ -606,5 +605,3 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         this._setTarget();
     }
 }
-
-RegisterClass("BABYLON.ReflectionTextureBaseBlock", ReflectionTextureBaseBlock);

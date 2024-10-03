@@ -1,5 +1,4 @@
 import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import { Matrix, Quaternion, Vector3 } from "../../../../Maths/math.vector";
 import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
@@ -118,5 +117,3 @@ export class InstantiateLinearBlock extends InstantiateBaseBlock {
         }
     }
 }
-
-RegisterClass("BABYLON.InstantiateLinearBlock", InstantiateLinearBlock);

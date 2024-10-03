@@ -1,5 +1,4 @@
 import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
-import { RegisterClass } from "../../../Misc/typeStore";
 import { BaseMathBlock } from "./baseMathBlock";
 
 /**
@@ -32,5 +31,3 @@ export class AddBlock extends BaseMathBlock {
         return this;
     }
 }
-
-RegisterClass("BABYLON.AddBlock", AddBlock);

@@ -1,6 +1,5 @@
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
-import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { extractMinAndMax } from "../../../Maths/math.functions";
 
@@ -74,5 +73,3 @@ export class BoundingBlock extends NodeGeometryBlock {
         };
     }
 }
-
-RegisterClass("BABYLON.BoundingBlock", BoundingBlock);

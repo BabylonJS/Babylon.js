@@ -11,7 +11,6 @@ import type { PrePassRenderer } from "../Rendering/prePassRenderer";
 import { ScreenSpaceReflectionsConfiguration } from "../Rendering/screenSpaceReflectionsConfiguration";
 
 import "../Shaders/screenSpaceReflection.fragment";
-import { RegisterClass } from "../Misc/typeStore";
 
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Scene } from "../scene";
@@ -305,5 +304,3 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
         );
     }
 }
-
-RegisterClass("BABYLON.ScreenSpaceReflectionPostProcess", ScreenSpaceReflectionPostProcess);

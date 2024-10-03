@@ -10,7 +10,7 @@ import type { Scene } from "../../../../scene";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { GetClass, RegisterClass } from "../../../../Misc/typeStore";
+import { GetClass } from "../../../../Misc/typeStore";
 import { Color3, Color4, TmpColors } from "../../../../Maths/math";
 import { AnimatedInputBlockTypes } from "./animatedInputBlockTypes";
 import { Observable } from "../../../../Misc/observable";
@@ -884,5 +884,3 @@ export class InputBlock extends NodeMaterialBlock {
         }
     }
 }
-
-RegisterClass("BABYLON.InputBlock", InputBlock);

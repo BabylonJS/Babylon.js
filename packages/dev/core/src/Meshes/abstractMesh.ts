@@ -35,7 +35,6 @@ import { Epsilon } from "../Maths/math.constants";
 import type { Plane } from "../Maths/math.plane";
 import { Axis } from "../Maths/math.axis";
 import type { IParticleSystem } from "../Particles/IParticleSystem";
-import { RegisterClass } from "../Misc/typeStore";
 
 import type { Ray } from "../Culling/ray";
 import type { Collider } from "../Collisions/collider";
@@ -2795,5 +2794,3 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
         return this._scene.particleSystems.filter((particleSystem) => particleSystem.emitter === this);
     }
 }
-
-RegisterClass("BABYLON.AbstractMesh", AbstractMesh);

@@ -1,4 +1,3 @@
-import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
@@ -150,5 +149,3 @@ export class NodeMaterialTeleportInBlock extends NodeMaterialBlock {
         this._endpoints = [];
     }
 }
-
-RegisterClass("BABYLON.NodeMaterialTeleportInBlock", NodeMaterialTeleportInBlock);

@@ -10,7 +10,6 @@ import type { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer
 import "../Rendering/geometryBufferRendererSceneComponent";
 import "../Shaders/screenSpaceCurvature.fragment";
 import { EngineStore } from "../Engines/engineStore";
-import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 
@@ -139,5 +138,3 @@ export class ScreenSpaceCurvaturePostProcess extends PostProcess {
         );
     }
 }
-
-RegisterClass("BABYLON.ScreenSpaceCurvaturePostProcess", ScreenSpaceCurvaturePostProcess);

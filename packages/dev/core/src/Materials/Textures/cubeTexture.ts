@@ -6,7 +6,7 @@ import { Matrix, TmpVectors, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
 import { Constants } from "../../Engines/constants";
-import { GetClass, RegisterClass } from "../../Misc/typeStore";
+import { GetClass } from "../../Misc/typeStore";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import { Observable } from "../../Misc/observable";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
@@ -584,5 +584,3 @@ export class CubeTexture extends BaseTexture {
 }
 
 Texture._CubeTextureParser = CubeTexture.Parse;
-// Some exporters relies on Tools.Instantiate
-RegisterClass("BABYLON.CubeTexture", CubeTexture);

@@ -1,6 +1,6 @@
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
-import { RegisterClass } from "../../../Misc/typeStore";
+import {} from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import type { VertexData } from "../../mesh.vertexData";
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
@@ -190,5 +190,3 @@ export class GeometryCollectionBlock extends NodeGeometryBlock {
         this.evaluateContext = serializationObject.evaluateContext;
     }
 }
-
-RegisterClass("BABYLON.GeometryCollectionBlock", GeometryCollectionBlock);

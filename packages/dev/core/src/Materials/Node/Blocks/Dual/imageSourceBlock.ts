@@ -4,7 +4,6 @@ import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Nullable } from "../../../../types";
 import { Texture } from "../../../Textures/texture";
 import { Constants } from "../../../../Engines/constants";
@@ -185,5 +184,3 @@ export class ImageSourceBlock extends NodeMaterialBlock {
         }
     }
 }
-
-RegisterClass("BABYLON.ImageSourceBlock", ImageSourceBlock);

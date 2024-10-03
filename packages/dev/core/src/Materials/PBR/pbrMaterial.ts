@@ -7,7 +7,6 @@ import type { ImageProcessingConfiguration } from "../../Materials/imageProcessi
 import type { ColorCurves } from "../../Materials/colorCurves";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { PBRBaseMaterial } from "./pbrBaseMaterial";
-import { RegisterClass } from "../../Misc/typeStore";
 import { Material } from "../material";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
 
@@ -841,5 +840,3 @@ export class PBRMaterial extends PBRBaseMaterial {
         return material;
     }
 }
-
-RegisterClass("BABYLON.PBRMaterial", PBRMaterial);

@@ -9,7 +9,6 @@ import type { Effect } from "../../../effect";
 import type { Mesh } from "../../../../Meshes/mesh";
 import { VertexBuffer } from "../../../../Buffers/buffer";
 import { InputBlock } from "../Input/inputBlock";
-import { RegisterClass } from "../../../../Misc/typeStore";
 
 import { BindMorphTargetParameters, PrepareDefinesForMorphTargets } from "../../../materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
@@ -374,5 +373,3 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         return this;
     }
 }
-
-RegisterClass("BABYLON.MorphTargetsBlock", MorphTargetsBlock);

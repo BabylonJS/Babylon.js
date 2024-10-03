@@ -1,7 +1,6 @@
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Mesh } from "../../../../Meshes/mesh";
 import { VertexData } from "../../../../Meshes/mesh.vertexData";
 import type { Nullable } from "../../../../types";
@@ -134,5 +133,3 @@ export class MeshBlock extends NodeGeometryBlock {
         this.reverseWindingOrder = serializationObject.reverseWindingOrder;
     }
 }
-
-RegisterClass("BABYLON.MeshBlock", MeshBlock);

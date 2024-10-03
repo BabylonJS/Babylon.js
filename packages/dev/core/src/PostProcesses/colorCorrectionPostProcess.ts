@@ -5,7 +5,6 @@ import { Texture } from "../Materials/Textures/texture";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Camera } from "../Cameras/camera";
 
-import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import type { Nullable } from "../types";
@@ -101,5 +100,3 @@ export class ColorCorrectionPostProcess extends PostProcess {
         );
     }
 }
-
-RegisterClass("BABYLON.ColorCorrectionPostProcess", ColorCorrectionPostProcess);

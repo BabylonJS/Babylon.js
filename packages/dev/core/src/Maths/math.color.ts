@@ -1,5 +1,4 @@
 import { BuildArray } from "../Misc/arrayTools";
-import { RegisterClass } from "../Misc/typeStore";
 import type { DeepImmutable, FloatArray, Tuple } from "../types";
 import { Epsilon, ToGammaSpace, ToLinearSpace } from "./math.constants";
 import type { IColor3Like, IColor4Like } from "./math.like";
@@ -1893,6 +1892,3 @@ export class TmpColors {
     public static Color3: Color3[] = BuildArray(3, Color3.Black);
     public static Color4: Color4[] = BuildArray(3, () => new Color4(0, 0, 0, 0));
 }
-
-RegisterClass("BABYLON.Color3", Color3);
-RegisterClass("BABYLON.Color4", Color4);

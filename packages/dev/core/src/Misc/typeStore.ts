@@ -1,4 +1,7 @@
 /** @internal */
+
+import { ExtractClass } from "core/contextHelper";
+
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const _RegisteredTypes: { [key: string]: Object } = {};
 
@@ -13,6 +16,13 @@ export function RegisterClass(className: string, type: Object) {
  * @internal
  */
 export function GetClass(fqdn: string): any {
+    // First try to extract
+    const extracted = ExtractClass(fqdn.replace("BABYLON.", ""));
+    if (extracted) {
+        return extracted;
+    }
+
+    // Fallback to registered types (if user has registered them)
     return _RegisteredTypes[fqdn];
 }
 

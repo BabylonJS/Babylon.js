@@ -1,6 +1,5 @@
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
-import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import type { Matrix } from "core/Maths/math.vector";
@@ -67,5 +66,3 @@ export class MatrixComposeBlock extends NodeGeometryBlock {
         };
     }
 }
-
-RegisterClass("BABYLON.MatrixComposeBlock", MatrixComposeBlock);

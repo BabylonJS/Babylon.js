@@ -7,7 +7,6 @@ import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { InputBlock } from "../Input/inputBlock";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import type { SubMesh } from "../../../../Meshes/subMesh";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
@@ -201,5 +200,3 @@ export class InstancesBlock extends NodeMaterialBlock {
         return this;
     }
 }
-
-RegisterClass("BABYLON.InstancesBlock", InstancesBlock);

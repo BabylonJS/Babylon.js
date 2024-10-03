@@ -6,7 +6,6 @@ import { Observable } from "../Misc/observable";
 import { Color3 } from "../Maths/math.color";
 import { Vector3, Matrix, Quaternion } from "../Maths/math.vector";
 import { Animation } from "../Animations/animation";
-import { RegisterClass } from "../Misc/typeStore";
 
 /**
  * This defines an action responsible to change the value of a property
@@ -157,5 +156,3 @@ export class InterpolateValueAction extends Action {
         );
     }
 }
-
-RegisterClass("BABYLON.InterpolateValueAction", InterpolateValueAction);

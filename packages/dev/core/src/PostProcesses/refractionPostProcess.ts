@@ -7,7 +7,6 @@ import { PostProcess } from "./postProcess";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 
 import "../Shaders/refraction.fragment";
-import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import type { Nullable } from "../types";
@@ -148,5 +147,3 @@ export class RefractionPostProcess extends PostProcess {
         );
     }
 }
-
-RegisterClass("BABYLON.RefractionPostProcess", RefractionPostProcess);

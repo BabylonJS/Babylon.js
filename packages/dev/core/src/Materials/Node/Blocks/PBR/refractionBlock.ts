@@ -4,7 +4,6 @@ import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnect
 import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import { InputBlock } from "../Input/inputBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
@@ -409,5 +408,3 @@ export class RefractionBlock extends NodeMaterialBlock {
         this.useThicknessAsDepth = !!serializationObject.useThicknessAsDepth;
     }
 }
-
-RegisterClass("BABYLON.RefractionBlock", RefractionBlock);

@@ -3,7 +3,6 @@ import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialB
 import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
 /**
  * Block used to test if the fragment shader is front facing
@@ -51,5 +50,3 @@ export class FrontFacingBlock extends NodeMaterialBlock {
         return this;
     }
 }
-
-RegisterClass("BABYLON.FrontFacingBlock", FrontFacingBlock);

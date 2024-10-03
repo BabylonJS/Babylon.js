@@ -10,7 +10,6 @@ import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { UniformBuffer } from "./uniformBuffer";
 import type { PBRBaseMaterial } from "./PBR/pbrBaseMaterial";
 import type { StandardMaterial } from "./standardMaterial";
-import { RegisterClass } from "core/Misc/typeStore";
 import { BindTextureMatrix, PrepareDefinesForMergedUV } from "./materialHelper.functions";
 
 /**
@@ -145,5 +144,3 @@ export class DecalMapConfiguration extends MaterialPluginBase {
         };
     }
 }
-
-RegisterClass("BABYLON.DecalMapConfiguration", DecalMapConfiguration);

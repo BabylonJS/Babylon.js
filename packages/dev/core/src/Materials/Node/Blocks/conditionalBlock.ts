@@ -3,7 +3,6 @@ import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBloc
 import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
-import { RegisterClass } from "../../../Misc/typeStore";
 import type { Scene } from "../../../scene";
 
 /**
@@ -189,5 +188,3 @@ export class ConditionalBlock extends NodeMaterialBlock {
         return codeString;
     }
 }
-
-RegisterClass("BABYLON.ConditionalBlock", ConditionalBlock);

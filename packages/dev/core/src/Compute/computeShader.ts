@@ -4,7 +4,6 @@ import type { Scene } from "../scene";
 import type { Nullable } from "../types";
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
-import { RegisterClass } from "../Misc/typeStore";
 import type { ComputeEffect, IComputeEffectCreationOptions, IComputeShaderPath } from "./computeEffect";
 import type { ComputeBindingMapping } from "../Engines/Extensions/engine.computeShader";
 import { ComputeBindingType } from "../Engines/Extensions/engine.computeShader";
@@ -522,5 +521,3 @@ export class ComputeShader {
         return (buffer as DataBuffer).underlyingResource !== undefined;
     }
 }
-
-RegisterClass("BABYLON.ComputeShader", ComputeShader);

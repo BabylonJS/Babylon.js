@@ -9,7 +9,6 @@ import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnect
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import { InputBlock } from "../Input/inputBlock";
-import { RegisterClass } from "../../../../Misc/typeStore";
 
 import { GetFogState } from "core/Materials/materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
@@ -199,5 +198,3 @@ export class FogBlock extends NodeMaterialBlock {
         return this;
     }
 }
-
-RegisterClass("BABYLON.FogBlock", FogBlock);

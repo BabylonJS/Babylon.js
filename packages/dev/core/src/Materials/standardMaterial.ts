@@ -28,7 +28,6 @@ import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import type { CubeTexture } from "../Materials/Textures/cubeTexture";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { RegisterClass } from "../Misc/typeStore";
 import { MaterialFlags } from "./materialFlags";
 
 import { Constants } from "../Engines/constants";
@@ -2198,8 +2197,6 @@ export class StandardMaterial extends PushMaterial {
         MaterialFlags.FresnelEnabled = value;
     }
 }
-
-RegisterClass("BABYLON.StandardMaterial", StandardMaterial);
 
 Scene.DefaultMaterialFactory = (scene: Scene) => {
     return new StandardMaterial("default material", scene);

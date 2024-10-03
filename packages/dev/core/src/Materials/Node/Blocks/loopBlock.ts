@@ -4,7 +4,6 @@ import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { NodeMaterialConnectionPointDirection } from "../nodeMaterialBlockConnectionPoint";
 import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
-import { RegisterClass } from "../../../Misc/typeStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import type { Scene } from "core/scene";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
@@ -141,5 +140,3 @@ export class LoopBlock extends NodeMaterialBlock {
         this.iterations = serializationObject.iterations;
     }
 }
-
-RegisterClass("BABYLON.LoopBlock", LoopBlock);

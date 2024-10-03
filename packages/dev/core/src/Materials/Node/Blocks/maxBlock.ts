@@ -3,7 +3,6 @@ import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBloc
 import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
-import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * Block used to get the max of 2 values
  */
@@ -62,5 +61,3 @@ export class MaxBlock extends NodeMaterialBlock {
         return this;
     }
 }
-
-RegisterClass("BABYLON.MaxBlock", MaxBlock);

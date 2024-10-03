@@ -4,7 +4,6 @@ import type { Camera } from "../Cameras/camera";
 import type { Effect } from "../Materials/effect";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 
-import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import type { Nullable } from "../types";
@@ -79,5 +78,3 @@ export class BlackAndWhitePostProcess extends PostProcess {
         );
     }
 }
-
-RegisterClass("BABYLON.BlackAndWhitePostProcess", BlackAndWhitePostProcess);

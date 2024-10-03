@@ -3,7 +3,6 @@ import type { Scene } from "../../../scene";
 import { EngineStore } from "../../../Engines/engineStore";
 import type { Texture } from "../../../Materials/Textures/texture";
 import { ProceduralTexture } from "./proceduralTexture";
-import { RegisterClass } from "../../../Misc/typeStore";
 
 import "../../../Shaders/noise.fragment";
 
@@ -135,5 +134,3 @@ export class NoiseProceduralTexture extends ProceduralTexture {
         return texture;
     }
 }
-
-RegisterClass("BABYLON.NoiseProceduralTexture", NoiseProceduralTexture);

@@ -1,6 +1,5 @@
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
-import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import type { VertexData } from "../../mesh.vertexData";
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
@@ -171,5 +170,3 @@ export class BooleanGeometryBlock extends NodeGeometryBlock {
         }
     }
 }
-
-RegisterClass("BABYLON.BooleanGeometryBlock", BooleanGeometryBlock);

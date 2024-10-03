@@ -17,7 +17,6 @@ import type { ArcRotateCameraMouseWheelInput } from "../Cameras/Inputs/arcRotate
 import { ArcRotateCameraInputsManager } from "../Cameras/arcRotateCameraInputsManager";
 import { Epsilon } from "../Maths/math.constants";
 import { Tools } from "../Misc/tools";
-import { RegisterClass } from "../Misc/typeStore";
 
 import type { Collider } from "../Collisions/collider";
 import type { TransformNode } from "core/Meshes/transformNode";
@@ -1416,6 +1415,3 @@ export class ArcRotateCamera extends TargetCamera {
         return "ArcRotateCamera";
     }
 }
-
-// Register Class Name
-RegisterClass("BABYLON.ArcRotateCamera", ArcRotateCamera);

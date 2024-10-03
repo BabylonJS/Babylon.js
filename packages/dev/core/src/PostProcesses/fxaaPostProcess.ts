@@ -7,7 +7,6 @@ import { PostProcess } from "./postProcess";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import { Constants } from "../Engines/constants";
 
-import { RegisterClass } from "../Misc/typeStore";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 
 import type { Scene } from "../scene";
@@ -90,5 +89,3 @@ export class FxaaPostProcess extends PostProcess {
         );
     }
 }
-
-RegisterClass("BABYLON.FxaaPostProcess", FxaaPostProcess);

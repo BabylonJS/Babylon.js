@@ -1,6 +1,5 @@
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
-import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { Matrix, Vector2, Vector3, Vector4 } from "../../../Maths/math.vector";
 import type { VertexData } from "../../../Meshes/mesh.vertexData";
@@ -178,5 +177,3 @@ export class GeometryTransformBlock extends NodeGeometryBlock {
         }
     }
 }
-
-RegisterClass("BABYLON.GeometryTransformBlock", GeometryTransformBlock);

@@ -6,7 +6,6 @@ import { PostProcess } from "./postProcess";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import { Constants } from "../Engines/constants";
 
-import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 
@@ -95,5 +94,3 @@ export class GrainPostProcess extends PostProcess {
         );
     }
 }
-
-RegisterClass("BABYLON.GrainPostProcess", GrainPostProcess);

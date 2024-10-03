@@ -1,4 +1,3 @@
-import { RegisterClass } from "../../../Misc/typeStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
@@ -111,5 +110,3 @@ export class GeometryClampBlock extends NodeGeometryBlock {
         this.maximum = serializationObject.maximum;
     }
 }
-
-RegisterClass("BABYLON.GeometryClampBlock", GeometryClampBlock);

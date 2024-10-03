@@ -5,7 +5,6 @@ import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
 import { AbstractEngine } from "../Engines/abstractEngine";
 
-import { RegisterClass } from "../Misc/typeStore";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 
 import type { Scene } from "../scene";
@@ -78,8 +77,6 @@ export class PassPostProcess extends PostProcess {
         );
     }
 }
-
-RegisterClass("BABYLON.PassPostProcess", PassPostProcess);
 
 /**
  * PassCubePostProcess which produces an output the same as it's input (which must be a cube texture)

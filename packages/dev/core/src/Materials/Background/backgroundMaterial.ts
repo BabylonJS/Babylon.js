@@ -22,7 +22,6 @@ import { Texture } from "../../Materials/Textures/texture";
 import type { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import type { IShadowLight } from "../../Lights/shadowLight";
 import { Constants } from "../../Engines/constants";
-import { RegisterClass } from "../../Misc/typeStore";
 import { MaterialFlags } from "../materialFlags";
 import { Color3 } from "../../Maths/math.color";
 
@@ -1363,5 +1362,3 @@ export class BackgroundMaterial extends PushMaterial {
         return SerializationHelper.Parse(() => new BackgroundMaterial(source.name, scene), source, scene, rootUrl);
     }
 }
-
-RegisterClass("BABYLON.BackgroundMaterial", BackgroundMaterial);

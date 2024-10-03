@@ -3,7 +3,6 @@ import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialB
 import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Effect } from "../../../effect";
 import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import type { Mesh } from "../../../../Meshes/mesh";
@@ -152,5 +151,3 @@ export class ClipPlanesBlock extends NodeMaterialBlock {
         return this;
     }
 }
-
-RegisterClass("BABYLON.ClipPlanesBlock", ClipPlanesBlock);

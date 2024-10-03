@@ -10,7 +10,6 @@ import type { DataArray, Nullable } from "../types";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
 import { Constants } from "../Engines/constants";
-import { RegisterClass } from "../Misc/typeStore";
 
 import "../Shaders/gpuUpdateParticles.fragment";
 import "../Shaders/gpuUpdateParticles.vertex";
@@ -300,5 +299,3 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
         return vao;
     }
 }
-
-RegisterClass("BABYLON.WebGL2ParticleSystem", WebGL2ParticleSystem);

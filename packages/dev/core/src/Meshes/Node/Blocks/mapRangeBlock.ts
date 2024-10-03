@@ -1,4 +1,3 @@
-import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
@@ -105,5 +104,3 @@ export class MapRangeBlock extends NodeGeometryBlock {
         };
     }
 }
-
-RegisterClass("BABYLON.MapRangeBlock", MapRangeBlock);
