@@ -32,7 +32,7 @@ export abstract class AbstractAudioSend extends AbstractAudioNode {
         return this._outputBus;
     }
 
-    public setOutputBus(outputBus: Nullable<AbstractAuxilliaryAudioBus>) {
+    public set outputBus(outputBus: Nullable<AbstractAuxilliaryAudioBus>) {
         if (this._outputBus === outputBus) {
             return;
         }
@@ -55,7 +55,7 @@ export abstract class AbstractAudioSend extends AbstractAudioNode {
         return this._sendType;
     }
 
-    public setSendType(sendType: AudioSendType) {
+    public set sendType(sendType: AudioSendType) {
         if (this._sendType === sendType) {
             return;
         }
