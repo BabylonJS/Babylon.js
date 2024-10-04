@@ -45,15 +45,11 @@ interface ParsedPLY {
 }
 
 /** @internal */
-class CompressedPLYChunk {
-    /** @internal */
-    min = new Vector3();
-    /** @internal */
-    max = new Vector3();
-    /** @internal */
-    minScale = new Vector3();
-    /** @internal */
-    maxScale = new Vector3();
+interface CompressedPLYChunk {
+    min: Vector3;
+    max: Vector3;
+    minScale: Vector3;
+    maxScale: Vector3;
 }
 
 /** @internal */
@@ -406,7 +402,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
 
         const compressedChunks = new Array<CompressedPLYChunk>(chunkCount);
         for (let i = 0; i < chunkCount; i++) {
-            const currentChunk = new CompressedPLYChunk();
+            const currentChunk = { min: new Vector3(), max: new Vector3(), minScale: new Vector3(), maxScale: new Vector3() };
             compressedChunks[i] = currentChunk;
             for (let propertyIndex = 0; propertyIndex < chunkProperties.length; propertyIndex++) {
                 const property = chunkProperties[propertyIndex];
