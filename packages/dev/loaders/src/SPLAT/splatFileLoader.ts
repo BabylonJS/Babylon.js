@@ -325,7 +325,6 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         const vertexProperties: PlyProperty[] = [];
         const chunkProperties: PlyProperty[] = [];
         const filtered = header.slice(0, headerEndIndex).split("\n");
-        //.filter((k) => k.startsWith("property "));
         for (const prop of filtered) {
             if (prop.startsWith("property ")) {
                 const [, type, name] = prop.split(" ");
@@ -375,11 +374,6 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         };
 
         const unpack8888 = (value: number, result: Uint8ClampedArray) => {
-            /*result[0] = ((unpackUnorm(value >>> 24, 8) - 0.5) / SH_C0) * 255;
-            result[1] = ((unpackUnorm(value >>> 16, 8) - 0.5) / SH_C0) * 255;
-            result[2] = ((unpackUnorm(value >>> 8, 8) - 0.5) / SH_C0) * 255;
-            result[3] = -Math.log(1 / unpackUnorm(value, 8) - 1) * 255;
-            */
             result[0] = unpackUnorm(value >>> 24, 8) * 255;
             result[1] = unpackUnorm(value >>> 16, 8) * 255;
             result[2] = unpackUnorm(value >>> 8, 8) * 255;
