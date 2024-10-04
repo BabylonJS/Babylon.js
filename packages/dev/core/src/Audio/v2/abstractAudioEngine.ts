@@ -29,6 +29,8 @@ export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
     public readonly soundSources = new Set<AbstractSoundSource>();
 
     public override dispose(): void {
+        super.dispose();
+
         this.soundInstances.clear();
 
         if (this.listeners) {
@@ -42,8 +44,6 @@ export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
             source.dispose();
         }
         this.soundSources.clear();
-
-        super.dispose();
     }
 
     public abstract createDevice(name: string): AbstractAudioDevice;

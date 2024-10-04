@@ -68,6 +68,10 @@ export abstract class AbstractAudioNode extends AbstractAudioNodeParent {
      * Releases associated resources.
      */
     public override dispose(): void {
+        super.dispose();
+
+        this.parent.children.delete(this);
+
         if (this._connectedDownstreamNodes) {
             for (const node of this._connectedDownstreamNodes) {
                 this._disconnect(node);
@@ -81,10 +85,6 @@ export abstract class AbstractAudioNode extends AbstractAudioNodeParent {
             }
             this._connectedUpstreamNodes.clear();
         }
-
-        this.parent.children.delete(this);
-
-        super.dispose();
     }
 
     public get parent(): AbstractAudioNodeParent {

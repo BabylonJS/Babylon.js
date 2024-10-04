@@ -22,11 +22,11 @@ export abstract class AbstractSoundInstance extends AbstractAudioNode {
     }
 
     public override dispose(): void {
+        super.dispose();
+
         this.stop();
 
         this.engine.soundInstances.delete(this);
-
-        super.dispose();
     }
 
     public abstract get currentTime(): number;
