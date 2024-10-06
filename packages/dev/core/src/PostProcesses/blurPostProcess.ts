@@ -113,20 +113,20 @@ export class BlurPostProcess extends PostProcess {
     ) {
         super(name, "kernelBlur", {
             uniforms: ["delta", "direction"],
+            samplers: ["circleOfConfusionSampler"],
             size: typeof options === "number" ? options : undefined,
             camera,
             samplingMode,
             engine,
             reusable,
             textureType,
-            defines,
             vertexUrl: "kernelBlur",
             indexParameters: { varyingCount: 0, depCount: 0 },
             textureFormat,
             ...(options as PostProcessOptions),
             blockCompilation: true,
         });
-        this._staticDefines = defines;
+        this._staticDefines = (options as PostProcessOptions).defines || defines;
         this.direction = direction;
         this.onApplyObservable.add((effect: Effect) => {
             if (this._outputTexture) {

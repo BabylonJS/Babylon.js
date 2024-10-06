@@ -13,6 +13,7 @@ export * from "./Tasks/PostProcesses/blackAndWhiteTask";
 export * from "./Tasks/PostProcesses/bloomTask";
 export * from "./Tasks/PostProcesses/blurTask";
 export * from "./Tasks/PostProcesses/circleOfConfusionTask";
+export * from "./Tasks/PostProcesses/depthOfFieldTask";
 export * from "./Tasks/PostProcesses/postProcessTask";
 
 export * from "./Tasks/Texture/clearTextureTask";

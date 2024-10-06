@@ -10,6 +10,7 @@ import { DepthOfFieldBlurPostProcess } from "./depthOfFieldBlurPostProcess";
 import { DepthOfFieldMergePostProcess } from "./depthOfFieldMergePostProcess";
 import type { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
  * Specifies the level of max blur that should be applied when using the depth of field effect
@@ -32,6 +33,8 @@ export const enum DepthOfFieldEffectBlurLevel {
  * The depth of field effect applies a blur to objects that are closer or further from where the camera is focusing.
  */
 export class DepthOfFieldEffect extends PostProcessRenderEffect {
+    public readonly useAsFrameGraphTask: boolean = false;
+
     private _circleOfConfusion: CircleOfConfusionPostProcess;
     /**
      * @internal Internal, blurs from high to low
@@ -39,6 +42,9 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
     public _depthOfFieldBlurX: Array<DepthOfFieldBlurPostProcess>;
     private _depthOfFieldBlurY: Array<DepthOfFieldBlurPostProcess>;
     private _dofMerge: Nullable<DepthOfFieldMergePostProcess>;
+
+    /** @internal */
+    public _pipelineTextureType: number;
 
     /**
      * @internal Internal post processes in depth of field effect
@@ -84,21 +90,26 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
 
     /**
      * Creates a new instance DepthOfFieldEffect
-     * @param scene The scene the effect belongs to.
+     * @param sceneOrEngine The scene or engine the effect belongs to.
      * @param depthTexture The depth texture of the scene to compute the circle of confusion.This must be set in order for this to function but may be set after initialization if needed.
      * @param blurLevel
      * @param pipelineTextureType The type of texture to be used when performing the post processing.
      * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
+     * @param depthNotNormalized If the depth from the depth texture is already normalized or if the normalization should be done at runtime in the shader (default: false)
+     * @param useAsFrameGraphTask If the effect should be used as a frame graph task
      */
     constructor(
-        scene: Scene,
+        sceneOrEngine: Scene | AbstractEngine,
         depthTexture: Nullable<RenderTargetTexture>,
         blurLevel: DepthOfFieldEffectBlurLevel = DepthOfFieldEffectBlurLevel.Low,
         pipelineTextureType = 0,
-        blockCompilation = false
+        blockCompilation = false,
+        depthNotNormalized = false,
+        useAsFrameGraphTask = false
     ) {
+        const engine = (sceneOrEngine as Scene)._renderForCamera ? (sceneOrEngine as Scene).getEngine() : (sceneOrEngine as AbstractEngine);
         super(
-            scene.getEngine(),
+            engine,
             "depth of field",
             () => {
                 return this._effects;
@@ -106,22 +117,27 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
             true
         );
 
+        this._pipelineTextureType = pipelineTextureType;
+        this.useAsFrameGraphTask = useAsFrameGraphTask;
+
         // Use R-only formats if supported to store the circle of confusion values.
         // This should be more space and bandwidth efficient than using RGBA.
-        const engine = scene.getEngine();
         const circleOfConfusionTextureFormat = engine.isWebGPU || engine.version > 1 ? Constants.TEXTUREFORMAT_RED : Constants.TEXTUREFORMAT_RGBA;
 
         // Circle of confusion value for each pixel is used to determine how much to blur that pixel
         this._circleOfConfusion = new CircleOfConfusionPostProcess(
             "circleOfConfusion",
             depthTexture,
-            1,
-            null,
-            Texture.BILINEAR_SAMPLINGMODE,
-            engine,
-            false,
-            pipelineTextureType,
-            blockCompilation
+            {
+                size: 1,
+                samplingMode: Texture.BILINEAR_SAMPLINGMODE,
+                engine,
+                textureType: pipelineTextureType,
+                blockCompilation,
+                useAsFrameGraphTask,
+                depthNotNormalized,
+            },
+            null
         );
 
         // Create a pyramid of blurred images (eg. fullSize 1/4 blur, half size 1/2 blur, quarter size 3/4 blur, eith size 4/4 blur)
@@ -153,36 +169,40 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
         for (let i = 0; i < blurCount; i++) {
             const blurY = new DepthOfFieldBlurPostProcess(
                 "vertical blur",
-                scene,
+                null,
                 new Vector2(0, 1.0),
                 adjustedKernelSize,
-                ratio,
+                {
+                    size: ratio,
+                    samplingMode: Texture.BILINEAR_SAMPLINGMODE,
+                    engine,
+                    textureType: pipelineTextureType,
+                    blockCompilation,
+                    textureFormat: i == 0 ? circleOfConfusionTextureFormat : Constants.TEXTUREFORMAT_RGBA,
+                    useAsFrameGraphTask,
+                },
                 null,
                 this._circleOfConfusion,
-                i == 0 ? this._circleOfConfusion : null,
-                Texture.BILINEAR_SAMPLINGMODE,
-                engine,
-                false,
-                pipelineTextureType,
-                blockCompilation,
-                i == 0 ? circleOfConfusionTextureFormat : Constants.TEXTUREFORMAT_RGBA
+                i == 0 ? this._circleOfConfusion : null
             );
             blurY.autoClear = false;
             ratio = 0.75 / Math.pow(2, i);
             const blurX = new DepthOfFieldBlurPostProcess(
                 "horizontal blur",
-                scene,
+                null,
                 new Vector2(1.0, 0),
                 adjustedKernelSize,
-                ratio,
+                {
+                    size: ratio,
+                    samplingMode: Texture.BILINEAR_SAMPLINGMODE,
+                    engine,
+                    textureType: pipelineTextureType,
+                    blockCompilation,
+                    useAsFrameGraphTask,
+                },
                 null,
                 this._circleOfConfusion,
-                null,
-                Texture.BILINEAR_SAMPLINGMODE,
-                engine,
-                false,
-                pipelineTextureType,
-                blockCompilation
+                null
             );
             blurX.autoClear = false;
             this._depthOfFieldBlurY.push(blurY);
@@ -202,13 +222,15 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
             this._circleOfConfusion,
             this._circleOfConfusion,
             this._depthOfFieldBlurX,
-            ratio,
-            null,
-            Texture.BILINEAR_SAMPLINGMODE,
-            engine,
-            false,
-            pipelineTextureType,
-            blockCompilation
+            {
+                size: ratio,
+                samplingMode: Texture.BILINEAR_SAMPLINGMODE,
+                engine,
+                textureType: pipelineTextureType,
+                blockCompilation,
+                useAsFrameGraphTask,
+            },
+            null
         );
         this._dofMerge.autoClear = false;
         this._effects.push(this._dofMerge);

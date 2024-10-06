@@ -16,21 +16,22 @@ export class FrameGraphCircleOfConfusionTask extends FrameGraphPostProcessTask {
 
     protected override _postProcess: CircleOfConfusionPostProcess;
 
-    constructor(name: string, frameGraph: FrameGraph, engine: AbstractEngine) {
+    constructor(name: string, frameGraph: FrameGraph, engine: AbstractEngine, circleOfConfusionPostProcess?: CircleOfConfusionPostProcess) {
         super(
             name,
             frameGraph,
-            new CircleOfConfusionPostProcess(
-                name,
-                null,
-                {
-                    useAsFrameGraphTask: true,
-                    depthNotNormalized: true,
-                },
-                null,
-                undefined,
-                engine
-            )
+            circleOfConfusionPostProcess ||
+                new CircleOfConfusionPostProcess(
+                    name,
+                    null,
+                    {
+                        useAsFrameGraphTask: true,
+                        depthNotNormalized: true,
+                    },
+                    null,
+                    undefined,
+                    engine
+                )
         );
     }
 

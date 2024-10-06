@@ -8,6 +8,8 @@ import { NodeRenderGraphTeleportOutBlock } from "core/FrameGraph/Node/Blocks/Tel
 import { NodeRenderGraphBlackAndWhitePostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/blackAndWhitePostProcessBlock";
 import { NodeRenderGraphBloomPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/bloomPostProcessBlock";
 import { NodeRenderGraphBlurPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/blurPostProcessBlock";
+import { NodeRenderGraphCircleOfConfusionPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/circleOfConfusionPostProcessBlock";
+import { NodeRenderGraphDepthOfFieldPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/depthOfFieldPostProcessBlock";
 import { NodeRenderGraphClearBlock } from "core/FrameGraph/Node/Blocks/Textures/clearBlock";
 import { NodeRenderGraphCopyTextureBlock } from "core/FrameGraph/Node/Blocks/Textures/copyTextureBlock";
 import { NodeRenderGraphGenerateMipmapsBlock } from "core/FrameGraph/Node/Blocks/Textures/generateMipmapsBlock";
@@ -15,7 +17,6 @@ import { NodeRenderGraphObjectRendererBlock } from "core/FrameGraph/Node/Blocks/
 import { NodeRenderGraphGeometryRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/geometryRendererBlock";
 import { NodeRenderGraphCullObjectsBlock } from "core/FrameGraph/Node/Blocks/Rendering/cullObjectsBlock";
 import { NodeRenderGraphGUIBlock } from "gui/2D/FrameGraph/renderGraphGUIBlock";
-import { NodeRenderGraphCircleOfConfusionPostProcessBlock } from "core/FrameGraph";
 import type { FrameGraph } from "core/FrameGraph";
 
 /**
@@ -87,6 +88,9 @@ export class BlockTools {
             }
             case "CircleOfConfusionBlock": {
                 return new NodeRenderGraphCircleOfConfusionPostProcessBlock("Circle of Confusion", frameGraph, scene);
+            }
+            case "DepthOfFieldBlock": {
+                return new NodeRenderGraphDepthOfFieldPostProcessBlock("Depth of Field", frameGraph, scene);
             }
         }
 
