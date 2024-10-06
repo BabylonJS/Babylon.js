@@ -98,7 +98,7 @@ export class NodeRenderGraphCircleOfConfusionPostProcessBlock extends NodeRender
     }
 
     /** Distance away from the camera to focus on in scene units/1000 (eg. millimeter) */
-    @editableInPropertyPage("F-Stop", PropertyTypeForEdition.Float, "PROPERTIES")
+    @editableInPropertyPage("Focus distance", PropertyTypeForEdition.Float, "PROPERTIES")
     public get focusDistance(): number {
         return this._postProcess.focusDistance;
     }
@@ -108,7 +108,7 @@ export class NodeRenderGraphCircleOfConfusionPostProcessBlock extends NodeRender
     }
 
     /** Focal length of the effect's camera in scene units/1000 (eg. millimeter) */
-    @editableInPropertyPage("F-Stop", PropertyTypeForEdition.Float, "PROPERTIES")
+    @editableInPropertyPage("Focal length", PropertyTypeForEdition.Float, "PROPERTIES")
     public get focalLength(): number {
         return this._postProcess.focalLength;
     }
@@ -165,7 +165,7 @@ export class NodeRenderGraphCircleOfConfusionPostProcessBlock extends NodeRender
 
         this._frameGraphTask.name = this.name;
 
-        this.output.value = this._frameGraphTask.outputTextureReference;
+        this.output.value = this._frameGraphTask.outputTexture;
 
         const sourceConnectedPoint = this.source.connectedPoint;
         if (sourceConnectedPoint) {

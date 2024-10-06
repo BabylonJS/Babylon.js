@@ -14,7 +14,7 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
 
     public destinationTexture?: FrameGraphTextureHandle;
 
-    public readonly outputTextureReference: FrameGraphTextureHandle;
+    public readonly outputTexture: FrameGraphTextureHandle;
 
     public getPostProcess<T extends PostProcess>() {
         return this._postProcess as T;
@@ -32,7 +32,7 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
         this._postProcess = postProcess;
         this._postProcessDrawWrapper = postProcess.getDrawWrapper();
 
-        this.outputTextureReference = this._frameGraph.createDanglingHandle();
+        this.outputTexture = this._frameGraph.createDanglingHandle();
     }
 
     public override isReady() {
@@ -51,10 +51,11 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
         const sourceTextureCreationOptions = this._frameGraph.getTextureCreationOptions(this.sourceTexture, true);
         sourceTextureCreationOptions.options.generateDepthBuffer = false;
         sourceTextureCreationOptions.options.generateStencilBuffer = false;
+        sourceTextureCreationOptions.options.samples = 1;
 
-        this._frameGraph.resolveDanglingHandle(this.outputTextureReference, this.destinationTexture, this.name, sourceTextureCreationOptions);
+        this._frameGraph.resolveDanglingHandle(this.outputTexture, this.destinationTexture, this.name, sourceTextureCreationOptions);
 
-        const outputTextureDescription = this._frameGraph.getTextureDescription(this.outputTextureReference);
+        const outputTextureDescription = this._frameGraph.getTextureDescription(this.outputTexture);
 
         this._postProcess.width = outputTextureDescription.size.width;
         this._postProcess.height = outputTextureDescription.size.height;
@@ -62,7 +63,7 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
         const pass = this._frameGraph.addRenderPass(this.name);
 
         pass.useTexture(this.sourceTexture);
-        pass.setRenderTarget(this.outputTextureReference);
+        pass.setRenderTarget(this.outputTexture);
         pass.setExecuteFunc((context) => {
             context.setTextureSamplingMode(this.sourceTexture, this.sourceSamplingMode);
             additionalExecute?.(context);
@@ -76,7 +77,7 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
         if (!skipCreationOfDisabledPasses) {
             const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
 
-            passDisabled.setRenderTarget(this.outputTextureReference);
+            passDisabled.setRenderTarget(this.outputTexture);
             passDisabled.setExecuteFunc((context) => {
                 context.copyTexture(this.sourceTexture);
             });

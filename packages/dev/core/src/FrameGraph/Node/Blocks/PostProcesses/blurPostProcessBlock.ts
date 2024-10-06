@@ -119,7 +119,7 @@ export class NodeRenderGraphBlurPostProcessBlock extends NodeRenderGraphBlock {
 
         this._frameGraphTask.name = this.name;
 
-        this.output.value = this._frameGraphTask.outputTextureReference; // the value of the output connection point is the "output" texture of the task
+        this.output.value = this._frameGraphTask.outputTexture; // the value of the output connection point is the "output" texture of the task
 
         const sourceConnectedPoint = this.source.connectedPoint;
         if (sourceConnectedPoint) {
