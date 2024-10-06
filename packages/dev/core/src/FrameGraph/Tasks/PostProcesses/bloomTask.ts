@@ -72,7 +72,7 @@ export class FrameGraphBloomTask extends FrameGraphTask {
                 generateMipMaps: false,
                 types: [this._bloomEffect._pipelineTextureType],
                 samplingModes: [Constants.TEXTURE_BILINEAR_SAMPLINGMODE],
-                formats: sourceTextureDescription.options.formats,
+                formats: [Constants.TEXTUREFORMAT_RGBA],
                 samples: 1,
                 useSRGBBuffers: [false],
                 generateDepthBuffer: false,
@@ -85,24 +85,28 @@ export class FrameGraphBloomTask extends FrameGraphTask {
         const downscaleTextureHandle = this._frameGraph.createRenderTargetTexture(this._downscale.name, textureCreationOptions);
 
         this._downscale.sourceTexture = this.sourceTexture;
+        this._downscale.sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
         this._downscale.destinationTexture = downscaleTextureHandle;
         this._downscale.record(true);
 
         const blurXTextureHandle = this._frameGraph.createRenderTargetTexture(this._blurX.name, textureCreationOptions);
 
         this._blurX.sourceTexture = downscaleTextureHandle;
+        this._blurX.sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
         this._blurX.destinationTexture = blurXTextureHandle;
         this._blurX.record(true);
 
         const blurYTextureHandle = this._frameGraph.createRenderTargetTexture(this._blurY.name, textureCreationOptions);
 
         this._blurY.sourceTexture = blurXTextureHandle;
+        this._blurY.sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
         this._blurY.destinationTexture = blurYTextureHandle;
         this._blurY.record(true);
 
         const sourceTextureCreationOptions = this._frameGraph.getTextureCreationOptions(this.sourceTexture, true);
         sourceTextureCreationOptions.options.generateDepthBuffer = false;
         sourceTextureCreationOptions.options.generateStencilBuffer = false;
+        sourceTextureCreationOptions.options.samples = 1;
 
         this._frameGraph.resolveDanglingHandle(this.outputTexture, this.destinationTexture, this._merge.name, sourceTextureCreationOptions);
 
@@ -125,7 +129,6 @@ export class FrameGraphBloomTask extends FrameGraphTask {
         this._blurX.dispose();
         this._blurY.dispose();
         this._merge.dispose();
-        this._bloomEffect.disposeEffects();
         super.dispose();
     }
 }
