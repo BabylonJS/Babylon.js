@@ -28,7 +28,7 @@ export class SnapshotRenderingHelper {
     private readonly _onBeforeRenderObserver: Nullable<Observer<Scene>>;
     private _onBeforeRenderObserverUpdateLayer: Nullable<Observer<Scene>>;
     private readonly _onResizeObserver: Nullable<Observer<AbstractEngine>>;
-    private _enableInFlight = false;
+    private _disableRenderingRefCount = 0;
 
     /**
      * Creates a new snapshot rendering helper
@@ -102,16 +102,21 @@ export class SnapshotRenderingHelper {
     /**
      * Enable snapshot rendering
      * Use this method instead of engine.snapshotRendering=true, to make sure everything is ready before enabling snapshot rendering.
+     * Note that this method is ref-counted and works in pair with disableSnapshotRendering(): you should call enableSnapshotRendering() as many times as you call disableSnapshotRendering().
      */
     public enableSnapshotRendering() {
-        if (!this._engine.isWebGPU || this._enableInFlight) {
+        if (!this._engine.isWebGPU) {
             return;
         }
 
-        this._enableInFlight = true;
+        if (--this._disableRenderingRefCount > 0) {
+            return;
+        }
+
+        this._disableRenderingRefCount = 0;
 
         this._scene.executeWhenReady(() => {
-            if (!this._enableInFlight) {
+            if (this._disableRenderingRefCount > 0) {
                 return;
             }
 
@@ -124,6 +129,7 @@ export class SnapshotRenderingHelper {
 
     /**
      * Disable snapshot rendering
+     * Note that this method is ref-counted and works in pair with disableSnapshotRendering(): you should call enableSnapshotRendering() as many times as you call disableSnapshotRendering().
      */
     public disableSnapshotRendering() {
         if (!this._engine.isWebGPU) {
@@ -131,7 +137,7 @@ export class SnapshotRenderingHelper {
         }
 
         this._engine.snapshotRendering = false;
-        this._enableInFlight = false;
+        this._disableRenderingRefCount++;
     }
 
     /**
@@ -215,12 +221,11 @@ export class SnapshotRenderingHelper {
 
     private _executeAtFrame(frameId: number, func: () => void) {
         const obs = this._engine.onEndFrameObservable.add(() => {
-            if (!this._enableInFlight) {
+            if (this._disableRenderingRefCount > 0) {
                 this._engine.onEndFrameObservable.remove(obs);
                 return;
             }
             if (this._engine.frameId >= frameId) {
-                this._enableInFlight = false;
                 this._engine.onEndFrameObservable.remove(obs);
                 func();
             }
