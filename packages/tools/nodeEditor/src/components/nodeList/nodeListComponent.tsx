@@ -155,6 +155,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         ParticleRampGradientBlock: "The particle ramp gradient block",
         ParticleBlendMultiplyBlock: "The particle blend multiply block",
         ParticlePositionWorldBlock: "The world position of the particle",
+        GaussianSplattingBlockBlock: "The gaussian splatting block",
         FragCoordBlock: "The gl_FragCoord predefined variable that contains the window relative coordinate (x, y, z, 1/w)",
         ScreenSizeBlock: "The size (in pixels) of the screen window",
         SceneDepthBlock: "The scene depth buffer",
@@ -453,6 +454,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "ParticleTextureMaskBlock",
                 "ParticleUVBlock",
             ],
+            GaussianSplatting: ["GaussianSplattingBlock"],
             PBR: ["PBRMetallicRoughnessBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
             PostProcess: ["ScreenPositionBlock", "CurrentScreenBlock", "PrePassTextureBlock"],
             Procedural__Texture: ["ScreenPositionBlock"],
@@ -494,6 +496,17 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("PrePassOutputBlock"), 1);
                 break;
             case NodeMaterialModes.Particle:
+                delete allBlocks["Animation"];
+                delete allBlocks["Mesh"];
+                delete allBlocks["PostProcess"];
+                delete allBlocks["Procedural__Texture"];
+                delete allBlocks["PBR"];
+                allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("VertexOutputBlock"), 1);
+                allBlocks.Scene.splice(allBlocks.Scene.indexOf("FogBlock"), 1);
+                allBlocks.Scene.splice(allBlocks.Scene.indexOf("FogColorBlock"), 1);
+                allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("PrePassOutputBlock"), 1);
+                break;
+            case NodeMaterialModes.GaussianSplatting:
                 delete allBlocks["Animation"];
                 delete allBlocks["Mesh"];
                 delete allBlocks["PostProcess"];

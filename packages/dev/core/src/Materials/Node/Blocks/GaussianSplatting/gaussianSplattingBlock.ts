@@ -6,7 +6,7 @@ import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnect
 import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
- * Block used for the particle ramp gradient section
+ * Block used for the Gaussian Splatting
  */
 export class GaussianSplattingBlock extends NodeMaterialBlock {
     /**

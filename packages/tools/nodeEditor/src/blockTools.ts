@@ -78,6 +78,7 @@ import { CurrentScreenBlock } from "core/Materials/Node/Blocks/Dual/currentScree
 import { ParticleTextureBlock } from "core/Materials/Node/Blocks/Particle/particleTextureBlock";
 import { ParticleRampGradientBlock } from "core/Materials/Node/Blocks/Particle/particleRampGradientBlock";
 import { ParticleBlendMultiplyBlock } from "core/Materials/Node/Blocks/Particle/particleBlendMultiplyBlock";
+import { GaussianSplattingBlock } from "core/Materials/Node/Blocks/GaussianSplatting/gaussianSplattingBlock";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
 import { FragCoordBlock } from "core/Materials/Node/Blocks/Fragment/fragCoordBlock";
 import { ScreenSizeBlock } from "core/Materials/Node/Blocks/Fragment/screenSizeBlock";
@@ -672,6 +673,8 @@ export class BlockTools {
                 return new MatrixDeterminantBlock("Determinant");
             case "CurveBlock":
                 return new CurveBlock("Curve");
+            case "GaussianSplattingBlock":
+                return new GaussianSplattingBlock("GaussianSplatting");
         }
 
         return null;
