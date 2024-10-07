@@ -5,7 +5,7 @@ import { LineContainerComponent } from "../../sharedComponents/lineContainerComp
 import { DraggableLineComponent } from "shared-ui-components/lines/draggableLineComponent";
 import type { Observer } from "core/Misc/observable";
 import type { Nullable } from "core/types";
-import { DraggableLineWithButtonComponent } from "../../sharedComponents/draggableLineWithButtonComponent";
+import { DraggableLineWithButtonComponent } from "shared-ui-components/lines/draggableLineWithButtonComponent";
 import { LineWithFileButtonComponent } from "../../sharedComponents/lineWithFileButtonComponent";
 import { Tools } from "core/Misc/tools";
 import addButton from "../../imgs/add.svg";
@@ -333,6 +333,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                         return (
                             <DraggableLineWithButtonComponent
                                 key={block}
+                                format={"babylonjs-geometry-node"}
                                 data={block}
                                 tooltip={this._customFrameList[block] || ""}
                                 iconImage={deleteButton}
