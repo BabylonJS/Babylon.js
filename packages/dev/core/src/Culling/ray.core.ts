@@ -27,11 +27,11 @@ export type TrianglePickingPredicate = (p0: Vector3, p1: Vector3, p2: Vector3, r
 /**
  * This class allows user to customize internal picking mechanism
  */
-export class PickingCustomization {
+export interface IPickingCustomization {
     /**
      * Predicate to select faces when a mesh intersection is detected
      */
-    public static InternalPickerForMesh?: (
+    internalPickerForMesh?: (
         pickingInfo: Nullable<PickingInfo>,
         rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray,
         mesh: AbstractMesh,
@@ -42,6 +42,10 @@ export class PickingCustomization {
         skipBoundingInfo?: boolean
     ) => PickingInfo;
 }
+
+export const PickingCustomization: IPickingCustomization = {
+    internalPickerForMesh: undefined,
+};
 
 /**
  * Class representing a ray with position and direction
@@ -845,7 +849,7 @@ function InternalPick(
 
     const computeWorldMatrixForCamera = !!(scene.activeCameras && scene.activeCameras.length > 1 && scene.cameraToUseForPointers !== scene.activeCamera);
     const currentCamera = scene.cameraToUseForPointers || scene.activeCamera;
-    const picker = PickingCustomization.InternalPickerForMesh || InternalPickForMesh;
+    const picker = PickingCustomization.internalPickerForMesh || InternalPickForMesh;
 
     for (let meshIndex = 0; meshIndex < scene.meshes.length; meshIndex++) {
         const mesh = scene.meshes[meshIndex];
@@ -917,7 +921,7 @@ function InternalMultiPick(
     const pickingInfos: PickingInfo[] = [];
     const computeWorldMatrixForCamera = !!(scene.activeCameras && scene.activeCameras.length > 1 && scene.cameraToUseForPointers !== scene.activeCamera);
     const currentCamera = scene.cameraToUseForPointers || scene.activeCamera;
-    const picker = PickingCustomization.InternalPickerForMesh || InternalPickForMesh;
+    const picker = PickingCustomization.internalPickerForMesh || InternalPickForMesh;
 
     for (let meshIndex = 0; meshIndex < scene.meshes.length; meshIndex++) {
         const mesh = scene.meshes[meshIndex];
