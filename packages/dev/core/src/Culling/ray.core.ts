@@ -43,6 +43,9 @@ export interface IPickingCustomization {
     ) => PickingInfo;
 }
 
+/**
+ * Use this object to customize mesh picking behavior
+ */
 export const PickingCustomization: IPickingCustomization = {
     internalPickerForMesh: undefined,
 };
