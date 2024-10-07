@@ -62,6 +62,7 @@ import { Camera } from "core/Cameras/camera";
 import { MultiMaterial, PBRMaterial, StandardMaterial } from "core/Materials";
 import { Logger } from "core/Misc/logger";
 import { enumerateFloatValues } from "core/Buffers/bufferUtils";
+import { Constants } from "core/Engines/constants";
 
 // 180 degrees rotation in Y.
 // const rotation180Y = new Quaternion(0, 1, 0, 0);
@@ -1207,13 +1208,19 @@ export class GLTFExporter {
         return nodes;
     }
 
-    private _collectBuffers(babylonNode: Node, bufferToVertexBuffersMap: Map<Buffer, VertexBuffer[]>, vertexBufferToMeshesMap: Map<VertexBuffer, Mesh[]>): void {
+    private _collectBuffers(
+        babylonNode: Node,
+        bufferToVertexBuffersMap: Map<Buffer, VertexBuffer[]>,
+        vertexBufferToMeshesMap: Map<VertexBuffer, Mesh[]>,
+        indexBuffersToMeshesMap: Map<IndicesArray, Mesh[]>
+    ): void {
         if (!this._shouldExportNode(babylonNode)) {
             return;
         }
 
         if (babylonNode instanceof Mesh && babylonNode.geometry) {
             const vertexBuffers = babylonNode.geometry.getVertexBuffers();
+            const indexBuffers = babylonNode.geometry.getIndices();
             if (vertexBuffers) {
                 for (const kind in vertexBuffers) {
                     const vertexBuffer = vertexBuffers[kind];
@@ -1232,19 +1239,40 @@ export class GLTFExporter {
                     }
                 }
             }
+
+            if (indexBuffers) {
+                const meshes = indexBuffersToMeshesMap.get(indexBuffers) || [];
+                indexBuffersToMeshesMap.set(indexBuffers, meshes);
+            }
         }
 
         for (const babylonChildNode of babylonNode.getChildren()) {
-            this._collectBuffers(babylonChildNode, bufferToVertexBuffersMap, vertexBufferToMeshesMap);
+            this._collectBuffers(babylonChildNode, bufferToVertexBuffersMap, vertexBufferToMeshesMap, indexBuffersToMeshesMap);
         }
     }
 
     private _exportBuffers(babylonRootNodes: Node[], convertToRightHanded: boolean, state: ExporterState): void {
         const bufferToVertexBuffersMap = new Map<Buffer, VertexBuffer[]>();
         const vertexBufferToMeshesMap = new Map<VertexBuffer, Mesh[]>();
+        const indexBufferToMeshesMap = new Map<IndicesArray, Mesh[]>();
 
         for (const babylonNode of babylonRootNodes) {
-            this._collectBuffers(babylonNode, bufferToVertexBuffersMap, vertexBufferToMeshesMap);
+            this._collectBuffers(babylonNode, bufferToVertexBuffersMap, vertexBufferToMeshesMap, indexBufferToMeshesMap);
+        }
+
+        for (const [buffer] of indexBufferToMeshesMap) {
+            if (!convertToRightHanded) {
+                const type = buffer instanceof Uint16Array ? Constants.UNSIGNED_SHORT : buffer instanceof Uint32Array ? Constants.UNSIGNED_INT : Constants.INT;
+                const bytesPerIndex = type == Constants.UNSIGNED_SHORT ? 2 : 4;
+                enumerateFloatValues(buffer, 0, 3 * bytesPerIndex, 3, type, buffer.length, false, (values) => {
+                    const a = values[0];
+                    const b = values[1];
+                    const c = values[2];
+                    values[0] = c;
+                    values[1] = b;
+                    values[2] = a;
+                });
+            }
         }
 
         for (const [buffer, vertexBuffers] of bufferToVertexBuffersMap) {
@@ -1279,6 +1307,7 @@ export class GLTFExporter {
                 }
             }
 
+            // Performs coordinate conversion if needed (only for position, normal and tanget).
             if (convertToRightHanded) {
                 for (const vertexBuffer of vertexBuffers) {
                     switch (vertexBuffer.getKind()) {
