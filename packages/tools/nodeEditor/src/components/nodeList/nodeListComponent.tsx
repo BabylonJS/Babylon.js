@@ -2,7 +2,7 @@
 import * as React from "react";
 import type { GlobalState } from "../../globalState";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import { DraggableLineComponent } from "../../sharedComponents/draggableLineComponent";
+import { DraggableLineComponent } from "shared-ui-components/lines/draggableLineComponent";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
 import type { Observer } from "core/Misc/observable";
 import type { Nullable } from "core/types";
@@ -537,7 +537,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                             />
                         );
                     }
-                    return <DraggableLineComponent key={block} data={block} tooltip={NodeListComponent._Tooltips[block] || ""} />;
+                    return <DraggableLineComponent key={block} format={"babylonjs-material-node"} data={block} tooltip={NodeListComponent._Tooltips[block] || ""} />;
                 });
 
             if (key === "Custom_Frames") {
