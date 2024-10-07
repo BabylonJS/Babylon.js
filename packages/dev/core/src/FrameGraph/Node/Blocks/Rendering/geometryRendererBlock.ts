@@ -118,14 +118,14 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
     public viewDepthFormat = Constants.TEXTUREFORMAT_RED;
 
     @editableInPropertyPage("View depth type", PropertyTypeForEdition.TextureType, "GEOMETRY BUFFERS")
-    public viewDepthType = Constants.TEXTURETYPE_FLOAT;
+    public viewDepthType = Constants.TEXTURETYPE_HALF_FLOAT;
 
     // Screen depth
     @editableInPropertyPage("Screen depth format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
     public screenDepthFormat = Constants.TEXTUREFORMAT_RED;
 
     @editableInPropertyPage("Screen depth type", PropertyTypeForEdition.TextureType, "GEOMETRY BUFFERS")
-    public screenDepthType = Constants.TEXTURETYPE_FLOAT;
+    public screenDepthType = Constants.TEXTURETYPE_HALF_FLOAT;
 
     // View normal
     @editableInPropertyPage("View normal format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
