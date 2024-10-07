@@ -9,7 +9,7 @@ import type { WebGPUPipelineContext } from "core/Engines/WebGPU/webgpuPipelineCo
 import { BindMorphTargetParameters } from "core/Materials/materialHelper.functions";
 import type { WebGPUDrawContext } from "core/Engines/WebGPU/webgpuDrawContext";
 import { WebGPUShaderProcessor } from "core/Engines/WebGPU/webgpuShaderProcessor";
-import type { EffectLayer } from "core/Layers";
+import type { EffectLayer } from "core/Layers/effectLayer";
 
 /**
  * Options for the snapshot rendering helper
