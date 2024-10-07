@@ -22,12 +22,13 @@ export interface SnapshotRenderingHelpersOptions {
  * A helper class to simplify work with FAST snapshot mode (WebGPU only - can be used in WebGL too, but won't do anything).
  */
 export class SnapshotRenderingHelper {
-    private _engine: AbstractEngine;
-    private _scene: Scene;
-    private _options: SnapshotRenderingHelpersOptions;
-    private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
-    private _onBeforeRenderObserverUpdateLayer: Nullable<Observer<Scene>>;
-    private _onResizeObserver: Nullable<Observer<AbstractEngine>>;
+    private readonly _engine: AbstractEngine;
+    private readonly _scene: Scene;
+    private readonly _options: SnapshotRenderingHelpersOptions;
+    private readonly _onBeforeRenderObserver: Nullable<Observer<Scene>>;
+    private readonly _onBeforeRenderObserverUpdateLayer: Nullable<Observer<Scene>>;
+    private readonly _onResizeObserver: Nullable<Observer<AbstractEngine>>;
+
 
     /**
      * Creates a new snapshot rendering helper
