@@ -6,7 +6,6 @@ import type { Texture } from "core/Materials/Textures/texture";
 import type { SubMesh } from "core/Meshes/subMesh";
 import type { IDisposable } from "core/scene";
 
-import type { _BinaryWriter } from "./glTFExporter";
 import type { IGLTFExporterExtension } from "../glTFFileExporter";
 import type { Material } from "core/Materials/material";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
@@ -38,14 +37,13 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
     postExportTexture?(context: string, textureInfo: ITextureInfo, babylonTexture: BaseTexture): void;
 
     /**
-     * Define this method to modify the default behavior when exporting texture info
+     * Define this method to modify the default behavior when exporting a mesh primitive
      * @param context The context when loading the asset
      * @param meshPrimitive glTF mesh primitive
      * @param babylonSubMesh Babylon submesh
-     * @param binaryWriter glTF serializer binary writer instance
      * @returns nullable IMeshPrimitive promise
      */
-    postExportMeshPrimitiveAsync?(context: string, meshPrimitive: Nullable<IMeshPrimitive>, babylonSubMesh: SubMesh, binaryWriter: _BinaryWriter): Promise<IMeshPrimitive>;
+    postExportMeshPrimitiveAsync?(context: string, meshPrimitive: Nullable<IMeshPrimitive>, babylonSubMesh: SubMesh): Promise<IMeshPrimitive>;
 
     /**
      * Define this method to modify the default behavior when exporting a node
@@ -54,7 +52,7 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
      * @param babylonNode BabylonJS node
      * @returns nullable INode promise
      */
-    postExportNodeAsync?(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap: { [key: number]: number }, binaryWriter: _BinaryWriter): Promise<Nullable<INode>>;
+    postExportNodeAsync?(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap: { [key: number]: number }): Promise<Nullable<INode>>;
 
     /**
      * Define this method to modify the default behavior when exporting a material

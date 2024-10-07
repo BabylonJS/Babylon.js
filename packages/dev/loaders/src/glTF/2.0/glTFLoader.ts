@@ -1251,7 +1251,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         loadAttribute("POSITION", VertexBuffer.PositionKind, (babylonVertexBuffer, data) => {
             const positions = new Float32Array(data.length);
-            babylonVertexBuffer.forEach(data.length, (value, index) => {
+            babylonVertexBuffer.forEach(positions.length, (value, index) => {
                 positions[index] = data[index] + value;
             });
 
@@ -1270,7 +1270,7 @@ export class GLTFLoader implements IGLTFLoader {
         loadAttribute("TANGENT", VertexBuffer.TangentKind, (babylonVertexBuffer, data) => {
             const tangents = new Float32Array((data.length / 3) * 4);
             let dataIndex = 0;
-            babylonVertexBuffer.forEach((data.length / 3) * 4, (value, index) => {
+            babylonVertexBuffer.forEach(tangents.length, (value, index) => {
                 // Tangent data for morph targets is stored as xyz delta.
                 // The vertexData.tangent is stored as xyzw.
                 // So we need to skip every fourth vertexData.tangent.
@@ -2169,7 +2169,6 @@ export class GLTFLoader implements IGLTFLoader {
         const babylonMaterial = new PBRMaterial(name, this._babylonScene);
         babylonMaterial._parentContainer = this._assetContainer;
         this._babylonScene._blockEntityCollection = false;
-        // Moved to mesh so user can change materials on gltf meshes: babylonMaterial.sideOrientation = this._babylonScene.useRightHandedSystem ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
         babylonMaterial.fillMode = babylonDrawMode;
         babylonMaterial.enableSpecularAntiAliasing = true;
         babylonMaterial.useRadianceOverAlpha = !this._parent.transparencyAsCoverage;
@@ -2529,11 +2528,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param pointer the JSON pointer
      */
     public static AddPointerMetadata(babylonObject: IWithMetadata, pointer: string): void {
-        babylonObject.metadata = babylonObject.metadata || {};
-        const metadata = (babylonObject._internalMetadata = babylonObject._internalMetadata || {});
-        const gltf = (metadata.gltf = metadata.gltf || {});
-        const pointers = (gltf.pointers = gltf.pointers || []);
-        pointers.push(pointer);
+        (((babylonObject._internalMetadata ||= {}).gltf ||= {}).pointers ||= []).push(pointer);
     }
 
     private static _GetTextureWrapMode(context: string, mode: TextureWrapMode | undefined): number {

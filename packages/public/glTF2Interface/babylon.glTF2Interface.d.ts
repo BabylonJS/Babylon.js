@@ -1041,11 +1041,6 @@ declare module BABYLON.GLTF2 {
     }
 
     /** @internal */
-    interface IMaterialExtension {
-        hasTextures?(): boolean;
-    }
-
-    /** @internal */
     interface IKHRMaterialsClearcoat extends IMaterialExtension {
         clearcoatFactor?: number;
         clearcoatTexture?: ITextureInfo;
