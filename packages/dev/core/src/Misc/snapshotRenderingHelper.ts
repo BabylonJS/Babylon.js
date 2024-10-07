@@ -115,6 +115,7 @@ export class SnapshotRenderingHelper {
         }
 
         this._scene.executeWhenReady(() => {
+            // Make sure a full frame is rendered before enabling snapshot rendering, so use "+2" instead of "+1"
             this._executeAtFrame(this._engine.frameId + 2, () => {
                 this._engine.snapshotRendering = true;
             });
