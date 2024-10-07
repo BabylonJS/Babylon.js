@@ -506,10 +506,10 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                     case "packed_rotation":
                         {
                             unpackRot(value, q);
-                            r0 = q.x;
-                            r1 = q.y;
-                            r2 = q.z;
-                            r3 = q.w;
+                            r0 = q.w;
+                            r1 = q.z;
+                            r2 = q.y;
+                            r3 = q.x;
                         }
                         break;
                     case "packed_scale":
