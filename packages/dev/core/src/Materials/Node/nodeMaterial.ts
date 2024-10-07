@@ -35,6 +35,7 @@ import { CurrentScreenBlock } from "./Blocks/Dual/currentScreenBlock";
 import { ParticleTextureBlock } from "./Blocks/Particle/particleTextureBlock";
 import { ParticleRampGradientBlock } from "./Blocks/Particle/particleRampGradientBlock";
 import { ParticleBlendMultiplyBlock } from "./Blocks/Particle/particleBlendMultiplyBlock";
+import { GaussianSplattingBlock } from "./Blocks/GaussianSplatting/gaussianSplattingBlock";
 import { EffectFallbacks } from "../effectFallbacks";
 import { WebRequest } from "../../Misc/webRequest";
 import type { PostProcessOptions } from "../../PostProcesses/postProcess";
@@ -2151,6 +2152,41 @@ export class NodeMaterial extends PushMaterial {
         this.addOutputNode(fragmentOutput);
 
         this._mode = NodeMaterialModes.Particle;
+    }
+
+    /**
+     * Clear the current material and set it to a default state for gaussian splatting
+     */
+    public setToDefaultGaussianSplatting() {
+        this.clear();
+
+        this.editorData = null;
+
+        // Pixel
+        const position = new InputBlock("position");
+        position.setAsAttribute("splat_position");
+
+        const scale = new InputBlock("scale");
+        scale.setAsAttribute("splat_scale");
+
+        const color = new InputBlock("color");
+        color.setAsAttribute("splat_color");
+
+        const gs = new GaussianSplattingBlock("GaussianSplatting");
+        position.connectTo(gs);
+        scale.connectTo(gs);
+        const vertexOutput = new VertexOutputBlock("VertexOutput");
+
+        const fragmentOutput = new FragmentOutputBlock("FragmentOutput");
+        color.connectTo(fragmentOutput);
+
+        //gs.connectTo(vertexOutput);
+
+        // Add to nodes
+        this.addOutputNode(vertexOutput);
+        this.addOutputNode(fragmentOutput);
+
+        this._mode = NodeMaterialModes.GaussianSplatting;
     }
 
     /**

@@ -363,6 +363,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 case NodeMaterialModes.ProceduralTexture:
                     this.props.globalState.nodeMaterial!.setToDefaultProceduralTexture();
                     break;
+                case NodeMaterialModes.GaussianSplatting:
+                    this.props.globalState.nodeMaterial!.setToDefaultGaussianSplatting();
+                    break;
             }
         }
 
@@ -431,6 +434,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             { label: "Post Process", value: NodeMaterialModes.PostProcess },
             { label: "Particle", value: NodeMaterialModes.Particle },
             { label: "Procedural", value: NodeMaterialModes.ProceduralTexture },
+            { label: "Gaussian Splatting", value: NodeMaterialModes.GaussianSplatting },
         ];
 
         const engineList = [
@@ -506,6 +510,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                         break;
                                     case NodeMaterialModes.ProceduralTexture:
                                         this.props.globalState.nodeMaterial!.setToDefaultProceduralTexture();
+                                        break;
+                                    case NodeMaterialModes.GaussianSplatting:
+                                        this.props.globalState.nodeMaterial!.setToDefaultGaussianSplatting();
                                         break;
                                 }
                                 this.props.globalState.onResetRequiredObservable.notifyObservers(true);
