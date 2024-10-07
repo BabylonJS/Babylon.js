@@ -1,15 +1,8 @@
-import type { Scene } from "core/scene";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { Mesh } from "core/Meshes/mesh";
-import type { Nullable } from "core/types";
-import type { Observer } from "./observable";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
+import type { AbstractEngine, AbstractMesh, EffectLayer, Mesh, Nullable, Observable, Scene, WebGPUDrawContext, WebGPUPipelineContext, WebGPUShaderProcessor } from "core/index";
+
 import { Constants } from "core/Engines/constants";
-import type { WebGPUPipelineContext } from "core/Engines/WebGPU/webgpuPipelineContext";
 import { BindMorphTargetParameters } from "core/Materials/materialHelper.functions";
-import type { WebGPUDrawContext } from "core/Engines/WebGPU/webgpuDrawContext";
-import { WebGPUShaderProcessor } from "core/Engines/WebGPU/webgpuShaderProcessor";
-import type { EffectLayer } from "core/Layers/effectLayer";
+
 
 /**
  * Options for the snapshot rendering helper
