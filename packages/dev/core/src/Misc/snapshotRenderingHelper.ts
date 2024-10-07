@@ -1,8 +1,8 @@
-import type { AbstractEngine, AbstractMesh, EffectLayer, Mesh, Nullable, Observable, Scene, WebGPUDrawContext, WebGPUPipelineContext, WebGPUShaderProcessor } from "core/index";
+// eslint-disable-next-line import/no-internal-modules
+import type { AbstractEngine, AbstractMesh, EffectLayer, Mesh, Nullable, Observer, Scene, WebGPUDrawContext, WebGPUShaderProcessor, WebGPUPipelineContext } from "core/index";
 
 import { Constants } from "core/Engines/constants";
 import { BindMorphTargetParameters } from "core/Materials/materialHelper.functions";
-
 
 /**
  * Options for the snapshot rendering helper
@@ -26,9 +26,9 @@ export class SnapshotRenderingHelper {
     private readonly _scene: Scene;
     private readonly _options: SnapshotRenderingHelpersOptions;
     private readonly _onBeforeRenderObserver: Nullable<Observer<Scene>>;
-    private readonly _onBeforeRenderObserverUpdateLayer: Nullable<Observer<Scene>>;
+    private _onBeforeRenderObserverUpdateLayer: Nullable<Observer<Scene>>;
     private readonly _onResizeObserver: Nullable<Observer<AbstractEngine>>;
-
+    private _enableInFlight = false;
 
     /**
      * Creates a new snapshot rendering helper
@@ -85,7 +85,7 @@ export class SnapshotRenderingHelper {
                         const dw = subMesh._drawWrapper;
                         const effect = dw.effect;
                         if (effect) {
-                            const dataBuffer = (dw.drawContext as WebGPUDrawContext).buffers[WebGPUShaderProcessor.LeftOvertUBOName];
+                            const dataBuffer = (dw.drawContext as WebGPUDrawContext).buffers["LeftOver" satisfies (typeof WebGPUShaderProcessor)["LeftOvertUBOName"]];
                             const ubLeftOver = (effect._pipelineContext as WebGPUPipelineContext)?.uniformBuffer;
                             if (dataBuffer && ubLeftOver && ubLeftOver.setDataBuffer(dataBuffer)) {
                                 mesh.morphTargetManager._bind(effect);
@@ -104,11 +104,17 @@ export class SnapshotRenderingHelper {
      * Use this method instead of engine.snapshotRendering=true, to make sure everything is ready before enabling snapshot rendering.
      */
     public enableSnapshotRendering() {
-        if (!this._engine.isWebGPU) {
+        if (!this._engine.isWebGPU || this._enableInFlight) {
             return;
         }
 
+        this._enableInFlight = true;
+
         this._scene.executeWhenReady(() => {
+            if (!this._enableInFlight) {
+                return;
+            }
+
             // Make sure a full frame is rendered before enabling snapshot rendering, so use "+2" instead of "+1"
             this._executeAtFrame(this._engine.frameId + 2, () => {
                 this._engine.snapshotRendering = true;
@@ -125,6 +131,7 @@ export class SnapshotRenderingHelper {
         }
 
         this._engine.snapshotRendering = false;
+        this._enableInFlight = false;
     }
 
     /**
@@ -177,13 +184,8 @@ export class SnapshotRenderingHelper {
         }
 
         this._scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
-        this._onBeforeRenderObserver = null;
-
         this._scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserverUpdateLayer);
-        this._onBeforeRenderObserverUpdateLayer = null;
-
         this._engine.onResizeObservable.remove(this._onResizeObserver);
-        this._onResizeObserver = null;
     }
 
     private _updateMeshMatricesForRenderPassId(renderPassId: number) {
@@ -199,7 +201,7 @@ export class SnapshotRenderingHelper {
                 const dw = mesh.subMeshes[j]._getDrawWrapper(renderPassId);
                 const effect = dw?.effect;
                 if (effect) {
-                    const dataBuffer = (dw.drawContext as WebGPUDrawContext).buffers[WebGPUShaderProcessor.LeftOvertUBOName];
+                    const dataBuffer = (dw.drawContext as WebGPUDrawContext).buffers["LeftOver" satisfies (typeof WebGPUShaderProcessor)["LeftOvertUBOName"]];
                     const ubLeftOver = (effect._pipelineContext as WebGPUPipelineContext)?.uniformBuffer;
                     if (dataBuffer && ubLeftOver && ubLeftOver.setDataBuffer(dataBuffer)) {
                         effect.setMatrix("viewProjection", sceneTransformationMatrix);
@@ -213,7 +215,12 @@ export class SnapshotRenderingHelper {
 
     private _executeAtFrame(frameId: number, func: () => void) {
         const obs = this._engine.onEndFrameObservable.add(() => {
+            if (!this._enableInFlight) {
+                this._engine.onEndFrameObservable.remove(obs);
+                return;
+            }
             if (this._engine.frameId >= frameId) {
+                this._enableInFlight = false;
                 this._engine.onEndFrameObservable.remove(obs);
                 func();
             }
