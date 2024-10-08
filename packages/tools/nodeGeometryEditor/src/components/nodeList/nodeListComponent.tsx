@@ -6,7 +6,7 @@ import { DraggableLineComponent } from "shared-ui-components/lines/draggableLine
 import type { Observer } from "core/Misc/observable";
 import type { Nullable } from "core/types";
 import { DraggableLineWithButtonComponent } from "shared-ui-components/lines/draggableLineWithButtonComponent";
-import { LineWithFileButtonComponent } from "../../sharedComponents/lineWithFileButtonComponent";
+import { LineWithFileButtonComponent } from "shared-ui-components/lines/lineWithFileButtonComponent";
 import { Tools } from "core/Misc/tools";
 import addButton from "../../imgs/add.svg";
 import deleteButton from "../../imgs/delete.svg";
