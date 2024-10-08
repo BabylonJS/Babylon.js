@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Lattice",
+            "playgroundId": "#MDVD75#19",
+            "referenceImage": "lattice.png"
+        },
+        {
             "title": "NME Loop Block",
             "playgroundId": "#D8AK3Z#109",
             "referenceImage": "nme-loop.png",
