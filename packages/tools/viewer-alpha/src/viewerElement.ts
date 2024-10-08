@@ -233,7 +233,6 @@ export class HTML3DElement extends LitElement {
             if (slot === slotAttribute) {
                 const dataSurface = hotspot.getAttribute("data-surface");
                 const array = dataSurface!.split(" ");
-                const scene = this._viewerDetails?.scene;
                 const meshIndex = Number(array[0]);
                 hotSpotQuery.pointIndex = [Number(array[1]), Number(array[2]), Number(array[3])];
                 hotSpotQuery.barycentric = [Number(array[4]), Number(array[5]), Number(array[6])];

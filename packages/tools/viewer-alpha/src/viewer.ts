@@ -10,7 +10,6 @@ import type {
     Mesh,
     Nullable,
     Observer,
-    AbstractMesh,
     // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 
