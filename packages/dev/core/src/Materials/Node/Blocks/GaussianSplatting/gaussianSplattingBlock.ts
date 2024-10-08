@@ -14,7 +14,7 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name, NodeMaterialBlockTargets.Fragment);
+        super(name, NodeMaterialBlockTargets.Vertex);
 
         this._isUnique = true;
 
@@ -64,7 +64,7 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
      * @param state defines the state that will be used for the build
      */
     public override initialize(state: NodeMaterialBuildState) {
-        state._excludeVariableName("splatColor");
+        //state._excludeVariableName("splatColor");
     }
 
     protected override _buildBlock(state: NodeMaterialBuildState) {

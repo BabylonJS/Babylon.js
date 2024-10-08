@@ -446,6 +446,21 @@ export class BlockTools {
                 meshColor.setAsAttribute("instanceColor");
                 return meshColor;
             }
+            case "SplatColorBlock": {
+                const splatColor = new InputBlock("Splat Color");
+                splatColor.setAsAttribute("splat_color");
+                return splatColor;
+            }
+            case "SplatPositionBlock": {
+                const splatPosition = new InputBlock("Splat Position");
+                splatPosition.setAsAttribute("splat_position");
+                return splatPosition;
+            }
+            case "SplatScaleBlock": {
+                const splatScale = new InputBlock("Splat Scale");
+                splatScale.setAsAttribute("splat_scale");
+                return splatScale;
+            }
             case "NormalBlock": {
                 const meshNormal = new InputBlock("normal");
                 meshNormal.setAsAttribute("normal");

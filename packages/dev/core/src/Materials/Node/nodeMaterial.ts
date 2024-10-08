@@ -2163,13 +2163,13 @@ export class NodeMaterial extends PushMaterial {
         this.editorData = null;
 
         // Pixel
-        const position = new InputBlock("position");
+        const position = new InputBlock("splat_position");
         position.setAsAttribute("splat_position");
 
-        const scale = new InputBlock("scale");
+        const scale = new InputBlock("splat_scale");
         scale.setAsAttribute("splat_scale");
 
-        const color = new InputBlock("color");
+        const color = new InputBlock("splat_color");
         color.setAsAttribute("splat_color");
 
         const gs = new GaussianSplattingBlock("GaussianSplatting");
@@ -2180,7 +2180,7 @@ export class NodeMaterial extends PushMaterial {
         const fragmentOutput = new FragmentOutputBlock("FragmentOutput");
         color.connectTo(fragmentOutput);
 
-        //gs.connectTo(vertexOutput);
+        gs.connectTo(vertexOutput);
 
         // Add to nodes
         this.addOutputNode(vertexOutput);
