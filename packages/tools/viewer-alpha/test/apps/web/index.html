@@ -74,7 +74,7 @@
                 <button onclick="document.querySelector('babylon-viewer').toggleAnimation()">Toggle Animation</button>
             </div> -->
 
-            <div slot="hotspot" class="hotspot" data-surface="ufo.11 228 113 111 0.217 0.341 0.442"></div>
+            <div slot="hotspot" class="hotspot" data-surface="1 228 113 111 0.217 0.341 0.442"></div>
         </babylon-viewer>
         <button class="toggle-dom-button" onclick="onToggleDOM()">Toggle DOM</button>
         <button class="toggle-engine-button" onclick="onToggleEngine()">Toggle Engine</button>
@@ -86,7 +86,7 @@
         <script>
             const viewerElement = document.querySelector("babylon-viewer");
             const lines = document.querySelectorAll("line");
-            const hotspotResult = { canvasPosition: [0, 0], worldPosition: [0, 0, 0] };
+            const hotspotResult = { screenPosition: [0, 0], worldPosition: [0, 0, 0] };
 
             let viewerDetails;
             viewerElement.addEventListener("viewerready", (event) => {
@@ -126,8 +126,8 @@
             // update hotspot svg
             function drawHotSpotLine(svgLine, name, rect) {
                 if (viewerElement.queryHotSpot(name, hotspotResult) && rect) {
-                    svgLine.setAttribute("x1", hotspotResult.canvasPosition[0]);
-                    svgLine.setAttribute("y1", hotspotResult.canvasPosition[1]);
+                    svgLine.setAttribute("x1", hotspotResult.screenPosition[0]);
+                    svgLine.setAttribute("y1", hotspotResult.screenPosition[1]);
                     svgLine.setAttribute("x2", (rect.left + rect.right) / 2);
                     svgLine.setAttribute("y2", (rect.top + rect.bottom) / 2);
                 }

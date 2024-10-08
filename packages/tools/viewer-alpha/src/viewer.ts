@@ -10,6 +10,7 @@ import type {
     Mesh,
     Nullable,
     Observer,
+    AbstractMesh,
     // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 
@@ -28,8 +29,9 @@ import { AsyncLock } from "core/Misc/asyncLock";
 import { Observable } from "core/Misc/observable";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
-import type { AbstractMesh, HotSpotQuery } from "core/Meshes/abstractMesh";
 import { Viewport } from "core/Maths/math.viewport";
+import { GetHotSpotToRef } from "core/Meshes/abstractMesh.hotSpot";
+import type { HotSpotQuery } from "core/Meshes/abstractMesh.hotSpot";
 
 function throwIfAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]): void {
     for (const signal of abortSignals) {
@@ -100,7 +102,7 @@ export interface HotSpotPositions {
     /**
      * 2D canvas position in pixels
      */
-    canvasPosition: [number, number];
+    screenPosition: [number, number];
     /**
      * 3D world coordinates
      */
@@ -500,25 +502,32 @@ export class Viewer implements IDisposable {
 
     /**
      * retrun world and canvas coordinates of an hot spot
-     * @param mesh mesh used to do the hot spot query on
+     * @param meshIndex mesh index in asset container
      * @param hotSpotQuery a surface information to query the hot spot positions
      * @param res Query a Hot Spot and does the conversion for Babylon Hot spot to a more generic HotSpotPositions, without Vector types
      * @returns true if hotspot found
      */
-    public getHotSpotToRef(mesh: AbstractMesh, hotSpotQuery: HotSpotQuery, res: HotSpotPositions): boolean {
+    public getHotSpotToRef(meshIndex: number, hotSpotQuery: HotSpotQuery, res: HotSpotPositions): boolean {
+        if (!this._details.model) {
+            return false;
+        }
         const worldPos = TmpVectors.Vector3[1];
-        const canvasPos = TmpVectors.Vector3[0];
-        mesh.getHotSpotToRef(hotSpotQuery, worldPos);
+        const screenPos = TmpVectors.Vector3[0];
+        const mesh = this._details.model.meshes[meshIndex];
+        if (!mesh) {
+            return false;
+        }
+        GetHotSpotToRef(mesh, hotSpotQuery, worldPos);
 
-        const canvasWidth = this._engine.getRenderWidth(); // Get the canvas width
-        const canvasHeight = this._engine.getRenderHeight(); // Get the canvas height
+        const renderWidth = this._engine.getRenderWidth(); // Get the canvas width
+        const renderHeight = this._engine.getRenderHeight(); // Get the canvas height
 
-        const viewportWidth = this._camera.viewport.width * canvasWidth;
-        const viewportHeight = this._camera.viewport.height * canvasHeight;
+        const viewportWidth = this._camera.viewport.width * renderWidth;
+        const viewportHeight = this._camera.viewport.height * renderHeight;
         const scene = this._details.scene;
 
-        Vector3.ProjectToRef(TmpVectors.Vector3[1], mesh.getWorldMatrix(), scene.getTransformMatrix(), new Viewport(0, 0, viewportWidth, viewportHeight), canvasPos);
-        res.canvasPosition = [canvasPos.x, canvasPos.y];
+        Vector3.ProjectToRef(worldPos, mesh.getWorldMatrix(), scene.getTransformMatrix(), new Viewport(0, 0, viewportWidth, viewportHeight), screenPos);
+        res.screenPosition = [screenPos.x, screenPos.y];
         res.worldPosition = [worldPos.x, worldPos.y, worldPos.z];
         return true;
     }

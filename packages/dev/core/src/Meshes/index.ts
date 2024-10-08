@@ -2,6 +2,7 @@
 /* eslint-disable import/no-internal-modules */
 export * from "./abstractMesh";
 import "./abstractMesh.decalMap";
+import "./abstractMesh.hotSpot";
 export * from "./Compression/index";
 export * from "./csg";
 export * from "./meshUVSpaceRenderer";

@@ -3,7 +3,7 @@ import type { Nullable, FloatArray, IndicesArray, DeepImmutable } from "../types
 import type { Camera } from "../Cameras/camera";
 import type { Scene, IDisposable } from "../scene";
 import { ScenePerformancePriority } from "../scene";
-import { Vector2 } from "../Maths/math.vector";
+import type { Vector2 } from "../Maths/math.vector";
 import { Quaternion, Matrix, Vector3, TmpVectors } from "../Maths/math.vector";
 import type { Node } from "../node";
 import { VertexBuffer } from "../Buffers/buffer";
@@ -132,34 +132,6 @@ export interface IMeshDataCache {
 
     /** @internal */
     _vertexData?: { [kind: string]: Float32Array };
-}
-
-/**
- * Data for mesh hotspot computation
- */
-export class HotSpotQuery {
-    /**
-     * 3 point indices
-     */
-    pointIndex: [number, number, number];
-    /**
-     * 3 barycentric coordinates
-     */
-    barycentric: [number, number, number];
-}
-
-/**
- * Result from a HotSpot query on the scene
- */
-export class HotSpot {
-    /**
-     * 2D screen position
-     */
-    canvasPosition = new Vector2();
-    /**
-     * 3D world position
-     */
-    worldPosition = new Vector3();
 }
 
 /**
@@ -1723,71 +1695,6 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
     }
 
     /** @internal */
-    public _getTransformedPosition(index: number, res: Vector3): boolean {
-        const data = this.getVerticesData(VertexBuffer.PositionKind);
-        if (!data) {
-            return false;
-        }
-        const base = index * 3;
-        const values = [data[base + 0], data[base + 1], data[base + 2]];
-        if (this.morphTargetManager) {
-            for (let component = 0; component < 3; component++) {
-                let value = values[component];
-                for (let targetCount = 0; targetCount < this.morphTargetManager.numTargets; targetCount++) {
-                    const target = this.morphTargetManager.getTarget(targetCount);
-                    const influence = target.influence;
-                    if (influence !== 0) {
-                        const targetData = target.getPositions();
-                        if (targetData) {
-                            value += (targetData[base + component] - data[base + component]) * influence;
-                        }
-                    }
-                }
-                values[component] = value;
-            }
-        }
-        res.fromArray(values);
-        if (this.skeleton) {
-            const matricesIndicesData = this.getVerticesData(VertexBuffer.MatricesIndicesKind);
-            const matricesWeightsData = this.getVerticesData(VertexBuffer.MatricesWeightsKind);
-            if (matricesWeightsData && matricesIndicesData) {
-                const needExtras = this.numBoneInfluencers > 4;
-                const matricesIndicesExtraData = needExtras ? this.getVerticesData(VertexBuffer.MatricesIndicesExtraKind) : null;
-                const matricesWeightsExtraData = needExtras ? this.getVerticesData(VertexBuffer.MatricesWeightsExtraKind) : null;
-                const skeletonMatrices = this.skeleton.getTransformMatrices(this);
-
-                const finalMatrix = TmpVectors.Matrix[0];
-                const tempMatrix = TmpVectors.Matrix[1];
-
-                finalMatrix.reset();
-                const matWeightIdx = index * 4;
-
-                let inf: number;
-                let weight: number;
-                for (inf = 0; inf < 4; inf++) {
-                    weight = matricesWeightsData[matWeightIdx + inf];
-                    if (weight > 0) {
-                        Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, Math.floor(matricesIndicesData[matWeightIdx + inf] * 16), weight, tempMatrix);
-                        finalMatrix.addToSelf(tempMatrix);
-                    }
-                }
-                if (matricesIndicesExtraData && matricesWeightsExtraData) {
-                    for (inf = 0; inf < 4; inf++) {
-                        weight = matricesWeightsExtraData[matWeightIdx + inf];
-                        if (weight > 0) {
-                            Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, Math.floor(matricesIndicesExtraData[matWeightIdx + inf] * 16), weight, tempMatrix);
-                            finalMatrix.addToSelf(tempMatrix);
-                        }
-                    }
-                }
-
-                Vector3.TransformCoordinatesFromFloatsToRef(values[0], values[1], values[2], finalMatrix, res);
-            }
-        }
-
-        return true;
-    }
-    /** @internal */
     public _getData(options: IMeshDataOptions, data: Nullable<FloatArray>, kind: string = VertexBuffer.PositionKind): Nullable<FloatArray> {
         const cache = options.cache;
 
@@ -2886,21 +2793,6 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
      */
     public getConnectedParticleSystems(): IParticleSystem[] {
         return this._scene.particleSystems.filter((particleSystem) => particleSystem.emitter === this);
-    }
-
-    /**
-     * Compute a world space hotspot position
-     * @param hotSpotQuery point indices and barycentric
-     * @param res output world position
-     */
-    public getHotSpotToRef(hotSpotQuery: HotSpotQuery, res: Vector3): void {
-        res.set(0, 0, 0);
-        for (let i = 0; i < 3; i++) {
-            const index = hotSpotQuery.pointIndex[i];
-            this._getTransformedPosition(index, TmpVectors.Vector3[0]);
-            TmpVectors.Vector3[0].scaleInPlace(hotSpotQuery.barycentric[i]);
-            res.addInPlace(TmpVectors.Vector3[0]);
-        }
     }
 }
 

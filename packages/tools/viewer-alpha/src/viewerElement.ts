@@ -11,7 +11,7 @@ import { customElement, property, query, state } from "lit/decorators.js";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { Logger } from "core/Misc/logger";
 import { createViewerForCanvas, getDefaultEngine } from "./viewerFactory";
-import { HotSpotQuery } from "core/Meshes/abstractMesh";
+import { HotSpotQuery } from "core/Meshes/abstractMesh.hotSpot";
 
 // Icon SVG is pulled from https://fluentuipr.z22.web.core.windows.net/heads/master/public-docsite-v9/storybook/iframe.html?id=icons-catalog--page&viewMode=story
 const playFilledIcon = "M17.22 8.68a1.5 1.5 0 0 1 0 2.63l-10 5.5A1.5 1.5 0 0 1 5 15.5v-11A1.5 1.5 0 0 1 7.22 3.2l10 5.5Z";
@@ -234,13 +234,11 @@ export class HTML3DElement extends LitElement {
                 const dataSurface = hotspot.getAttribute("data-surface");
                 const array = dataSurface!.split(" ");
                 const scene = this._viewerDetails?.scene;
-                const mesh = scene?.getMeshByName(array[0]);
-                if (mesh) {
-                    hotSpotQuery.pointIndex = [Number(array[1]), Number(array[2]), Number(array[3])];
-                    hotSpotQuery.barycentric = [Number(array[4]), Number(array[5]), Number(array[6])];
-                    this._viewerDetails?.viewer.getHotSpotToRef(mesh, hotSpotQuery, res);
-                    resultFound = true;
-                }
+                const meshIndex = Number(array[0]);
+                hotSpotQuery.pointIndex = [Number(array[1]), Number(array[2]), Number(array[3])];
+                hotSpotQuery.barycentric = [Number(array[4]), Number(array[5]), Number(array[6])];
+                this._viewerDetails?.viewer.getHotSpotToRef(meshIndex, hotSpotQuery, res);
+                resultFound = true;
             }
         });
         return resultFound;
