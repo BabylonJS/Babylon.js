@@ -19,7 +19,7 @@ import type {
     ISkin,
     ICamera,
 } from "babylonjs-gltf2interface";
-import { AccessorComponentType, AccessorType, ImageMimeType } from "babylonjs-gltf2interface";
+import { AccessorComponentType, AccessorType, CameraType, ImageMimeType } from "babylonjs-gltf2interface";
 
 import type { IndicesArray, Nullable } from "core/types";
 import { TmpVectors, Quaternion } from "core/Maths/math.vector";
@@ -64,7 +64,7 @@ import { Logger } from "core/Misc/logger";
 import { enumerateFloatValues } from "core/Buffers/bufferUtils";
 
 // 180 degrees rotation in Y.
-// const rotation180Y = new Quaternion(0, 1, 0, 0);
+const rotation180Y = new Quaternion(0, 1, 0, 0);
 
 class ExporterState {
     // Babylon indices array, start, count, offset, flip -> glTF accessor index
@@ -78,6 +78,8 @@ class ExporterState {
 
     // Babylon mesh -> glTF mesh index
     private _meshMap = new Map<Mesh, number>();
+
+    private _camerasMap = new Map<Camera, number>();
 
     public constructor(convertToRightHanded: boolean) {
         this.convertToRightHanded = convertToRightHanded;
@@ -154,6 +156,14 @@ class ExporterState {
 
     public setMesh(mesh: Mesh, meshIndex: number): void {
         this._meshMap.set(mesh, meshIndex);
+    }
+
+    public getCameraIndex(camera: Camera): number | undefined {
+        return this._camerasMap.get(camera);
+    }
+
+    public setCameraIndex(camera: Camera, cameraIndex: number): void {
+        this._camerasMap.set(camera, cameraIndex);
     }
 }
 
@@ -727,30 +737,30 @@ export class GLTFExporter {
         }
     }
 
-    // private _setCameraTransformation(node: INode, babylonCamera: Camera, convertToRightHanded: boolean): void {
-    //     const translation = TmpVectors.Vector3[0];
-    //     const rotation = TmpVectors.Quaternion[0];
-    //     babylonCamera.getWorldMatrix().decompose(undefined, rotation, translation);
+    private _setCameraTransformation(node: INode, babylonCamera: Camera, convertToRightHanded: boolean): void {
+        const translation = TmpVectors.Vector3[0];
+        const rotation = TmpVectors.Quaternion[0];
+        babylonCamera.getWorldMatrix().decompose(undefined, rotation, translation);
 
-    //     if (!translation.equalsToFloats(0, 0, 0)) {
-    //         if (convertToRightHanded) {
-    //             convertToRightHandedPosition(translation);
-    //         }
+        if (!translation.equalsToFloats(0, 0, 0)) {
+            if (convertToRightHanded) {
+                convertToRightHandedPosition(translation);
+            }
 
-    //         node.translation = translation.asArray();
-    //     }
+            node.translation = translation.asArray();
+        }
 
-    //     // Rotation by 180 as glTF has a different convention than Babylon.
-    //     rotation.multiplyInPlace(rotation180Y);
+        // Rotation by 180 as glTF has a different convention than Babylon.
+        rotation.multiplyInPlace(rotation180Y);
 
-    //     if (!Quaternion.IsIdentity(rotation)) {
-    //         if (convertToRightHanded) {
-    //             convertToRightHandedRotation(rotation);
-    //         }
+        if (!Quaternion.IsIdentity(rotation)) {
+            if (convertToRightHanded) {
+                convertToRightHandedRotation(rotation);
+            }
 
-    //         node.rotation = rotation.asArray();
-    //     }
-    // }
+            node.rotation = rotation.asArray();
+        }
+    }
 
     // /**
     //  * Creates a bufferview based on the vertices type for the Babylon mesh
@@ -1089,43 +1099,48 @@ export class GLTFExporter {
             }
         }
 
-        // // Export babylon cameras to glTF cameras
-        // const cameraMap = new Map<Camera, number>();
-        // for (const camera of cameras) {
-        //     const glTFCamera: ICamera = {
-        //         type: camera.mode === Camera.PERSPECTIVE_CAMERA ? CameraType.PERSPECTIVE : CameraType.ORTHOGRAPHIC,
-        //     };
+        const stateLH = new ExporterState(true);
+        const stateRH = new ExporterState(false);
 
-        //     if (camera.name) {
-        //         glTFCamera.name = camera.name;
-        //     }
+        // Export babylon cameras to glTF cameras
+        for (const camera of this._babylonScene.cameras) {
+            stateLH.setCameraIndex(camera, 0);
+            stateRH.setCameraIndex(camera, 0);
 
-        //     if (glTFCamera.type === CameraType.PERSPECTIVE) {
-        //         glTFCamera.perspective = {
-        //             aspectRatio: camera.getEngine().getAspectRatio(camera),
-        //             yfov: camera.fovMode === Camera.FOVMODE_VERTICAL_FIXED ? camera.fov : camera.fov * camera.getEngine().getAspectRatio(camera),
-        //             znear: camera.minZ,
-        //             zfar: camera.maxZ,
-        //         };
-        //     } else if (glTFCamera.type === CameraType.ORTHOGRAPHIC) {
-        //         const halfWidth = camera.orthoLeft && camera.orthoRight ? 0.5 * (camera.orthoRight - camera.orthoLeft) : camera.getEngine().getRenderWidth() * 0.5;
-        //         const halfHeight = camera.orthoBottom && camera.orthoTop ? 0.5 * (camera.orthoTop - camera.orthoBottom) : camera.getEngine().getRenderHeight() * 0.5;
-        //         glTFCamera.orthographic = {
-        //             xmag: halfWidth,
-        //             ymag: halfHeight,
-        //             znear: camera.minZ,
-        //             zfar: camera.maxZ,
-        //         };
-        //     }
+            const glTFCamera: ICamera = {
+                type: camera.mode === Camera.PERSPECTIVE_CAMERA ? CameraType.PERSPECTIVE : CameraType.ORTHOGRAPHIC,
+            };
 
-        //     cameraMap.set(camera, this._cameras.length);
-        //     this._cameras.push(glTFCamera);
-        // }
+            if (camera.name) {
+                glTFCamera.name = camera.name;
+            }
+
+            if (glTFCamera.type === CameraType.PERSPECTIVE) {
+                glTFCamera.perspective = {
+                    aspectRatio: camera.getEngine().getAspectRatio(camera),
+                    yfov: camera.fovMode === Camera.FOVMODE_VERTICAL_FIXED ? camera.fov : camera.fov * camera.getEngine().getAspectRatio(camera),
+                    znear: camera.minZ,
+                    zfar: camera.maxZ,
+                };
+            } else if (glTFCamera.type === CameraType.ORTHOGRAPHIC) {
+                const halfWidth = camera.orthoLeft && camera.orthoRight ? 0.5 * (camera.orthoRight - camera.orthoLeft) : camera.getEngine().getRenderWidth() * 0.5;
+                const halfHeight = camera.orthoBottom && camera.orthoTop ? 0.5 * (camera.orthoTop - camera.orthoBottom) : camera.getEngine().getRenderHeight() * 0.5;
+                glTFCamera.orthographic = {
+                    xmag: halfWidth,
+                    ymag: halfHeight,
+                    znear: camera.minZ,
+                    zfar: camera.maxZ,
+                };
+            }
+
+            stateLH.setCameraIndex(camera, this._cameras.length);
+            stateRH.setCameraIndex(camera, this._cameras.length);
+            this._cameras.push(glTFCamera);
+        }
 
         // await this._materialExporter.convertMaterialsToGLTFAsync(this._getMaterials(nodes));
-
-        scene.nodes.push(...(await this._exportNodesAsync(rootNodesLH, true)));
-        scene.nodes.push(...(await this._exportNodesAsync(rootNodesRH, false)));
+        scene.nodes.push(...(await this._exportNodesAsync(rootNodesLH, true, stateLH)));
+        scene.nodes.push(...(await this._exportNodesAsync(rootNodesRH, false, stateRH)));
         this._scenes.push(scene);
 
         //     return this._exportNodesAndAnimationsAsync(nodes, convertToRightHandedMap, dataWriter).then((nodeMap) => {
@@ -1191,10 +1206,8 @@ export class GLTFExporter {
         return result;
     }
 
-    private async _exportNodesAsync(babylonRootNodes: Node[], convertToRightHanded: boolean): Promise<number[]> {
+    private async _exportNodesAsync(babylonRootNodes: Node[], convertToRightHanded: boolean, state: ExporterState): Promise<number[]> {
         const nodes = new Array<number>();
-
-        const state = new ExporterState(convertToRightHanded);
 
         this._exportBuffers(babylonRootNodes, convertToRightHanded, state);
 
@@ -1331,11 +1344,14 @@ export class GLTFExporter {
                 if (babylonMesh.subMeshes && babylonMesh.subMeshes.length > 0) {
                     node.mesh = await this._exportMeshAsync(babylonMesh, state, convertToRightHanded);
                 }
-            } else if (babylonNode instanceof Camera) {
-                // TODO: handle camera
             } else {
                 // TODO: handle other Babylon node types
             }
+        }
+
+        if (babylonNode instanceof Camera) {
+            node.camera = state.getCameraIndex(babylonNode);
+            this._setCameraTransformation(node, babylonNode, convertToRightHanded);
         }
 
         for (const babylonChildNode of babylonNode.getChildren()) {
