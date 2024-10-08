@@ -1,5 +1,12 @@
 # Changelog
 
+## 7.28.0
+
+### Core
+
+- Add an extractor node for NGE - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15666](https://github.com/BabylonJS/Babylon.js/pull/15666))
+- WebGPU: Fix buffer memory leak - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15662](https://github.com/BabylonJS/Babylon.js/pull/15662))
+
 ## 7.27.3
 
 ### Core

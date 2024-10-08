@@ -39,7 +39,10 @@ attribute normal: vec3f;
 #endif
 
 #ifdef BUMP
-varying vWorldView: mat4x4f;
+varying vWorldView0: vec4f;
+varying vWorldView1: vec4f;
+varying vWorldView2: vec4f;
+varying vWorldView3: vec4f;
 #endif
 
 #ifdef BUMP
@@ -88,7 +91,11 @@ fn main(input : VertexInputs) -> FragmentInputs {
 	var worldPos: vec4f =  vec4f(finalWorld *  vec4f(positionUpdated, 1.0));
 
 	#ifdef BUMP
-		vertexOutputs.vWorldView = scene.view * finalWorld;
+	let vWorldView = scene.view * finalWorld;
+		vertexOutputs.vWorldView0 = vWorldView[0];
+		vertexOutputs.vWorldView1 = vWorldView[1];
+		vertexOutputs.vWorldView2 = vWorldView[2];
+		vertexOutputs.vWorldView3 = vWorldView[3];
 		vertexOutputs.vNormalW = normalUpdated;
 	#else
         #ifdef NORMAL_WORLDSPACE

@@ -159,6 +159,24 @@ export class SpriteMap implements ISpriteMap {
         this._material.setTexture("animationMap", this._animationMap);
     }
 
+    /** Gets or sets a boolean indicating if the sprite map must consider scene fog when rendering */
+    public get fogEnabled(): boolean {
+        return this._material.fogEnabled;
+    }
+    public set fogEnabled(value: boolean) {
+        this._material.fogEnabled = value;
+    }
+
+    protected _useLogarithmicDepth: boolean;
+
+    /** Gets or sets a boolean indicating if the sprite map must use logarithmic depth when rendering */
+    public get useLogarithmicDepth(): boolean {
+        return this._material.useLogarithmicDepth;
+    }
+    public set useLogarithmicDepth(value: boolean) {
+        this._material.useLogarithmicDepth = value;
+    }
+
     /** Scene that the SpriteMap was created in */
     private _scene: Scene;
 
@@ -262,7 +280,21 @@ export class SpriteMap implements ISpriteMap {
             {
                 defines,
                 attributes: ["position", "normal", "uv"],
-                uniforms: ["worldViewProjection", "time", "stageSize", "outputSize", "spriteMapSize", "spriteCount", "time", "colorMul", "mousePosition", "curTile", "flipU"],
+                uniforms: [
+                    "world",
+                    "view",
+                    "projection",
+                    "time",
+                    "stageSize",
+                    "outputSize",
+                    "spriteMapSize",
+                    "spriteCount",
+                    "time",
+                    "colorMul",
+                    "mousePosition",
+                    "curTile",
+                    "flipU",
+                ],
                 samplers: ["spriteSheet", "frameMap", "tileMaps", "animationMap"],
                 needAlphaBlending: true,
             }

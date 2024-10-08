@@ -6,6 +6,13 @@ WebGPUEngine.prototype._debugPushGroup = function (groupName: string, targetObje
     }
 
     if (targetObject === 0 || targetObject === 1) {
+        if (targetObject === 1) {
+            if (this._currentRenderTarget) {
+                this.unBindFramebuffer(this._currentRenderTarget);
+            } else {
+                this._endCurrentRenderPass();
+            }
+        }
         this._renderEncoder.pushDebugGroup(groupName);
     } else if (this._currentRenderPass) {
         this._currentRenderPass.pushDebugGroup(groupName);
@@ -20,6 +27,13 @@ WebGPUEngine.prototype._debugPopGroup = function (targetObject?: number): void {
     }
 
     if (targetObject === 0 || targetObject === 1) {
+        if (targetObject === 1) {
+            if (this._currentRenderTarget) {
+                this.unBindFramebuffer(this._currentRenderTarget);
+            } else {
+                this._endCurrentRenderPass();
+            }
+        }
         this._renderEncoder.popDebugGroup();
     } else if (this._currentRenderPass) {
         this._currentRenderPass.popDebugGroup();
@@ -34,6 +48,13 @@ WebGPUEngine.prototype._debugInsertMarker = function (text: string, targetObject
     }
 
     if (targetObject === 0 || targetObject === 1) {
+        if (targetObject === 1) {
+            if (this._currentRenderTarget) {
+                this.unBindFramebuffer(this._currentRenderTarget);
+            } else {
+                this._endCurrentRenderPass();
+            }
+        }
         this._renderEncoder.insertDebugMarker(text);
     } else if (this._currentRenderPass) {
         this._currentRenderPass.insertDebugMarker(text);

@@ -305,6 +305,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     }
 
     private _forceWireframe = false;
+
     /**
      * Gets or sets a boolean indicating if all rendering must be done in wireframe
      */

@@ -142,6 +142,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         DistanceBlock: "Provides a distance vector based on the left and right input vectors",
         Rotate2dBlock: "Rotates UV coordinates around the W axis.",
         LengthBlock: "Outputs the length of an input vector",
+        InterceptorBlock: "Block used to trigger an observable when traversed",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -302,7 +303,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "InstantiateLinearBlock",
                 "InstantiateRadialBlock",
             ],
-            Misc: ["ElbowBlock", "DebugBlock", "TeleportInBlock", "TeleportOutBlock", "GeometryInfoBlock"],
+            Misc: ["ElbowBlock", "DebugBlock", "TeleportInBlock", "TeleportOutBlock", "GeometryInfoBlock", "InterceptorBlock"],
             Updates: [
                 "SetColorsBlock",
                 "SetNormalsBlock",

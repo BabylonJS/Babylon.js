@@ -1,47 +1,75 @@
 {
-    "fromTag": "7.27.2",
+    "fromTag": "7.27.3",
     "changelog": {
-        "7.27.2": [
+        "7.28.0": [
             {
-                "pr": "15658",
-                "title": "Updating havok to 1.3.10",
+                "pr": "15667",
+                "title": "Enable aggressive performance priority in viewer",
+                "description": "This sets the viewer scene to use aggressive performance priority. I can see this improve performance for some models, and some of the effects of this (e.g. setting `alwaysSelectAsActiveMesh` on every mesh) are needed for upcoming enablement of WebGPU snapshot rendering mode in the viewer anyway.\r\n\r\nI also tacked on one small css change that ensures the toolbar shows up in the right place when the viewer does not take up the full screen.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15664",
+                "title": "Fix unwanted skip",
                 "description": null,
-                "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
-                },
-                "files": [
-                    "packages/tools/babylonServer/public/havok/HavokPhysics.wasm",
-                    "packages/tools/babylonServer/public/havok/HavokPhysics_umd.js"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "15657",
-                "title": "Update effectRenderer.ts",
-                "description": "CC @sebavan ",
-                "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/effectRenderer.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "15655",
-                "title": "Allow users to provide their own custom rendering function for the scene",
-                "description": "PG to use to test: #5SPY1V#5\r\n\r\n\r\nRelevant code:\r\n```\r\nscene.customRenderFunction = () => {\r\n            // Clear back buffer\r\n            engine.clear(new BABYLON.Color4(0, 0.3, 0.5, 1), true, true);\r\n\r\n            // Update view and projection matrices based on active camera\r\n            scene.updateTransformMatrix();\r\n\r\n            // Set viewport size\r\n            engine.setViewport(camera.viewport);\r\n\r\n            // Compute world matrix and render\r\n            for (let index = 0; index < scene.meshes.length; index++) {\r\n                const mesh = scene.meshes[index];\r\n\r\n                if (!mesh.material) {\r\n                    continue;\r\n                }\r\n\r\n                mesh.computeWorldMatrix();\r\n\r\n                if (mesh.material.needAlphaBlending()) {\r\n                    engine.setAlphaMode(BABYLON.Constants.ALPHA_COMBINE);\r\n                } else {\r\n                    engine.setAlphaMode(BABYLON.Constants.ALPHA_DISABLE);\r\n                }\r\n                mesh.directRender();\r\n            }\r\n        }\r\n```\r\n",
                 "author": {
                     "name": "deltakosh",
                     "url": "https://github.com/deltakosh"
                 },
                 "files": [
-                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Culling/ray.core.ts",
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts",
+                    "packages/dev/core/src/import.helper.ts",
                     "packages/dev/core/src/scene.ts"
                 ],
-                "tags": []
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15666",
+                "title": "Add an extractor node for NGE",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryInterceptorBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15662",
+                "title": "WebGPU: Fix buffer memory leak",
+                "description": "I've also improved debugging a little by adding the buffer identifier to the buffer label. And I've exported `WebGPUShaderProcessor`, so we can access `BABYLON.WebGPUShaderProcessor.LeftOvertUBOName` from a PG (or anywhere else!).",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuBufferManager.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuPipelineContext.ts",
+                    "packages/dev/core/src/Engines/index.ts",
+                    "packages/dev/core/src/Meshes/WebGPU/webgpuDataBuffer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
             }
         ],
         "7.27.3": [
@@ -121,6 +149,49 @@
                 },
                 "files": [
                     "packages/dev/core/src/Misc/tools.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "7.27.2": [
+            {
+                "pr": "15658",
+                "title": "Updating havok to 1.3.10",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/babylonServer/public/havok/HavokPhysics.wasm",
+                    "packages/tools/babylonServer/public/havok/HavokPhysics_umd.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15657",
+                "title": "Update effectRenderer.ts",
+                "description": "CC @sebavan ",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/effectRenderer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15655",
+                "title": "Allow users to provide their own custom rendering function for the scene",
+                "description": "PG to use to test: #5SPY1V#5\r\n\r\n\r\nRelevant code:\r\n```\r\nscene.customRenderFunction = () => {\r\n            // Clear back buffer\r\n            engine.clear(new BABYLON.Color4(0, 0.3, 0.5, 1), true, true);\r\n\r\n            // Update view and projection matrices based on active camera\r\n            scene.updateTransformMatrix();\r\n\r\n            // Set viewport size\r\n            engine.setViewport(camera.viewport);\r\n\r\n            // Compute world matrix and render\r\n            for (let index = 0; index < scene.meshes.length; index++) {\r\n                const mesh = scene.meshes[index];\r\n\r\n                if (!mesh.material) {\r\n                    continue;\r\n                }\r\n\r\n                mesh.computeWorldMatrix();\r\n\r\n                if (mesh.material.needAlphaBlending()) {\r\n                    engine.setAlphaMode(BABYLON.Constants.ALPHA_COMBINE);\r\n                } else {\r\n                    engine.setAlphaMode(BABYLON.Constants.ALPHA_DISABLE);\r\n                }\r\n                mesh.directRender();\r\n            }\r\n        }\r\n```\r\n",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/scene.ts"
                 ],
                 "tags": []
             }
