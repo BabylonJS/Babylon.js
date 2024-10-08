@@ -69,18 +69,18 @@
             source="https://raw.githubusercontent.com/BabylonJS/Assets/master/meshes/ufo.glb"
             environment="../../../../../public/@babylonjs/viewer-alpha/assets/photoStudio.env"
             animation-speed="1.5"
+            hotspots="testHotSpot1 1 228 113 111 0.217 0.341 0.442"
         >
             <!-- <div slot="tool-bar" style="position: absolute; top: 12px; left: 12px; width: 100px; height: 36px">
                 <button onclick="document.querySelector('babylon-viewer').toggleAnimation()">Toggle Animation</button>
             </div> -->
-
-            <div slot="hotspot" class="hotspot" data-surface="1 228 113 111 0.217 0.341 0.442"></div>
+            <svg id="lines" style="position: absolute; width: 100%; height: 100%" xmlns="http://www.w3.org/2000/svg" class="lineContainer">
+                <line class="line"></line>
+            </svg>
         </babylon-viewer>
         <button class="toggle-dom-button" onclick="onToggleDOM()">Toggle DOM</button>
         <button class="toggle-engine-button" onclick="onToggleEngine()">Toggle Engine</button>
-        <svg id="lines" style="position: absolute; top: 0; left: 0" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" class="lineContainer">
-            <line class="line"></line>
-        </svg>
+
         <button id="anchor-button" class="toggle-hotspot-button" onclick="onToggleHotSpot()">Toggle Hot Spot</button>
         <script type="module" src="/packages/tools/viewer-alpha/src/index.ts"></script>
         <script>
@@ -136,7 +136,7 @@
             // use requestAnimationFrame to update with renderer
             const startHotSpotLinesRenderLoop = () => {
                 const hotspotBaseRect = document.querySelector("#anchor-button").getBoundingClientRect();
-                drawHotSpotLine(lines[0], "hotspot", hotspotBaseRect);
+                drawHotSpotLine(lines[0], "testHotSpot1", hotspotBaseRect);
                 if (hotspotVisible) {
                     requestAnimationFrame(startHotSpotLinesRenderLoop);
                 }

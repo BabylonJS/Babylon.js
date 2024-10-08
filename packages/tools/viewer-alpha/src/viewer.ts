@@ -5,6 +5,7 @@ import type {
     AutoRotationBehavior,
     Camera,
     FramingBehavior,
+    HotSpotQuery,
     IDisposable,
     LoadAssetContainerOptions,
     Mesh,
@@ -30,7 +31,6 @@ import { Scene, ScenePerformancePriority } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 import { Viewport } from "core/Maths/math.viewport";
 import { GetHotSpotToRef } from "core/Meshes/abstractMesh.hotSpot";
-import type { HotSpotQuery } from "core/Meshes/abstractMesh.hotSpot";
 
 function throwIfAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]): void {
     for (const signal of abortSignals) {
@@ -94,10 +94,17 @@ export type ViewerOptions = Partial<
         }>
 >;
 
+export type ViewerHotSpotQuery = {
+    /**
+     * The index of the mesh within the loaded model.
+     */
+    meshIndex: number;
+} & HotSpotQuery;
+
 /**
  * Information computed from the hot spot surface data, canvas and mesh datas
  */
-export interface HotSpotPositions {
+export type ViewerHotSpot = {
     /**
      * 2D canvas position in pixels
      */
@@ -106,7 +113,7 @@ export interface HotSpotPositions {
      * 3D world coordinates
      */
     worldPosition: [number, number, number];
-}
+};
 
 /**
  * Provides an experience for viewing a single 3D model.
@@ -502,18 +509,17 @@ export class Viewer implements IDisposable {
 
     /**
      * retrun world and canvas coordinates of an hot spot
-     * @param meshIndex mesh index in asset container
-     * @param hotSpotQuery a surface information to query the hot spot positions
+     * @param hotSpotQuery mesh index and surface information to query the hot spot positions
      * @param res Query a Hot Spot and does the conversion for Babylon Hot spot to a more generic HotSpotPositions, without Vector types
      * @returns true if hotspot found
      */
-    public getHotSpotToRef(meshIndex: number, hotSpotQuery: HotSpotQuery, res: HotSpotPositions): boolean {
+    public getHotSpotToRef(hotSpotQuery: Readonly<ViewerHotSpotQuery>, res: ViewerHotSpot): boolean {
         if (!this._details.model) {
             return false;
         }
         const worldPos = TmpVectors.Vector3[1];
         const screenPos = TmpVectors.Vector3[0];
-        const mesh = this._details.model.meshes[meshIndex];
+        const mesh = this._details.model.meshes[hotSpotQuery.meshIndex];
         if (!mesh) {
             return false;
         }

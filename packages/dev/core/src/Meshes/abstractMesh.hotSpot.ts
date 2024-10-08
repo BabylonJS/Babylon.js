@@ -1,11 +1,11 @@
-import { Vector2, Vector3, TmpVectors, Matrix } from "../Maths/math.vector";
+import { Vector3, TmpVectors, Matrix } from "../Maths/math.vector";
 import type { AbstractMesh } from "./abstractMesh";
 import { VertexBuffer } from "../Buffers/buffer";
 
 /**
  * Data for mesh hotspot computation
  */
-export class HotSpotQuery {
+export type HotSpotQuery = {
     /**
      * 3 point indices
      */
@@ -14,21 +14,7 @@ export class HotSpotQuery {
      * 3 barycentric coordinates
      */
     barycentric: [number, number, number];
-}
-
-/**
- * Result from a HotSpot query on the scene
- */
-export class HotSpot {
-    /**
-     * 2D screen position
-     */
-    screenPosition = new Vector2();
-    /**
-     * 3D world position
-     */
-    worldPosition = new Vector3();
-}
+};
 
 /**
  * Return a transformed local position from a mesh and vertex index
