@@ -23,6 +23,7 @@ import { AccessorComponentType, AccessorType, CameraType, ImageMimeType } from "
 
 import type { IndicesArray, Nullable } from "core/types";
 import { TmpVectors, Quaternion } from "core/Maths/math.vector";
+import type { Matrix } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
 import type { Buffer } from "core/Buffers/buffer";
 import { VertexBuffer } from "core/Buffers/buffer";
@@ -62,6 +63,7 @@ import { Camera } from "core/Cameras/camera";
 import { MultiMaterial, PBRMaterial, StandardMaterial } from "core/Materials";
 import { Logger } from "core/Misc/logger";
 import { enumerateFloatValues } from "core/Buffers/bufferUtils";
+import type { Bone } from "core/Bones";
 
 // 180 degrees rotation in Y.
 const rotation180Y = new Quaternion(0, 1, 0, 0);
@@ -80,6 +82,8 @@ class ExporterState {
     private _meshMap = new Map<Mesh, number>();
 
     private _camerasMap = new Map<Camera, number>();
+
+    private _nodeSkeletonMap = new Map<number, number>();
 
     public constructor(convertToRightHanded: boolean) {
         this.convertToRightHanded = convertToRightHanded;
@@ -162,12 +166,16 @@ class ExporterState {
         return this._camerasMap.get(camera);
     }
 
-    public getSkeletonIndex(skeletonID: number): number | undefined {
-        return 0;
-    }
-
     public setCameraIndex(camera: Camera, cameraIndex: number): void {
         this._camerasMap.set(camera, cameraIndex);
+    }
+
+    public getSkeletonIndex(skeletonID: number): number | undefined {
+        return this._nodeSkeletonMap.get(skeletonID);
+    }
+
+    public setSkeletonIndex(nodeID: number, skeletonID: number): void {
+        this._nodeSkeletonMap.set(nodeID, skeletonID);
     }
 }
 
@@ -803,6 +811,166 @@ export class GLTFExporter {
         }
     }
 
+    // Builds all skins in the skins array so nodes can reference it during node parsing.
+    private _exportEmptySkeletons(states: ExporterState[]): void {
+        for (const skeleton of this._babylonScene.skeletons) {
+            if (skeleton.bones.length <= 0) {
+                continue;
+            }
+
+            const skin: ISkin = { joints: [] };
+            this._skins.push(skin);
+
+            for (const state of states) {
+                state.setSkeletonIndex(skeleton.uniqueId, this._skins.length - 1);
+            }
+        }
+    }
+
+    private _bindNodesToBones(state: ExporterState) {
+        for (const skeleton of this._babylonScene.skeletons) {
+            if (skeleton.bones.length <= 0) {
+                continue;
+            }
+
+            const skinIndex = state.getSkeletonIndex(skeleton.uniqueId);
+
+            if (skinIndex == undefined) {
+                continue;
+            }
+
+            const skin = this._skins[skinIndex];
+            const boneIndexMap: { [index: number]: Bone } = {};
+            const inverseBindMatrices: Matrix[] = [];
+
+            let maxBoneIndex = -1;
+            for (let i = 0; i < skeleton.bones.length; ++i) {
+                const bone = skeleton.bones[i];
+                const boneIndex = bone.getIndex() ?? i;
+                if (boneIndex !== -1) {
+                    boneIndexMap[boneIndex] = bone;
+                    if (boneIndex > maxBoneIndex) {
+                        maxBoneIndex = boneIndex;
+                    }
+                }
+            }
+
+            // Set joints index to scene node.
+            for (let boneIndex = 0; boneIndex <= maxBoneIndex; ++boneIndex) {
+                const bone = boneIndexMap[boneIndex];
+                inverseBindMatrices.push(bone.getAbsoluteInverseBindMatrix());
+                const transformNode = bone.getTransformNode();
+
+                if (transformNode !== null) {
+                    const nodeID = this._nodeMap.get(transformNode);
+                    if (transformNode && nodeID !== null && nodeID !== undefined) {
+                        skin.joints.push(nodeID);
+                    } else {
+                        Tools.Warn("Exporting a bone without a linked transform node is currently unsupported");
+                    }
+                } else {
+                    Tools.Warn("Exporting a bone without a linked transform node is currently unsupported");
+                }
+            }
+
+            if (skin.joints.length > 0) {
+                // create buffer view for inverse bind matrices
+                const byteStride = 64; // 4 x 4 matrix of 32 bit float
+                const byteLength = inverseBindMatrices.length * byteStride;
+                const bufferViewOffset = this._dataWriter.byteOffset;
+                const bufferView = createBufferView(0, bufferViewOffset, byteLength, undefined);
+                this._bufferViews.push(bufferView);
+                const bufferViewIndex = this._bufferViews.length - 1;
+                const bindMatrixAccessor = createAccessor(bufferViewIndex, AccessorType.MAT4, AccessorComponentType.FLOAT, inverseBindMatrices.length, null, null);
+                const inverseBindAccessorIndex = this._accessors.push(bindMatrixAccessor) - 1;
+                skin.inverseBindMatrices = inverseBindAccessorIndex;
+                inverseBindMatrices.forEach((mat) => {
+                    mat.m.forEach((cell: number) => {
+                        this._dataWriter.writeFloat32(cell);
+                    });
+                });
+            }
+        }
+    }
+
+    // // /**
+    // //  * Creates a glTF skin from a Babylon skeleton
+    // //  * @param babylonScene Babylon Scene
+    // //  * @param nodeMap Babylon transform nodes
+    // //  * @param dataWriter Buffer to write binary data to
+    // //  * @returns Node mapping of unique id to index
+    // //  */
+    // private _exportSkeletonsAsync(states: ExporterState[]): void {
+    //     for (const skeleton of this._babylonScene.skeletons) {
+    //         if (skeleton.bones.length <= 0) {
+    //             continue;
+    //         }
+    //         // create skin
+    //         const skin: ISkin = { joints: [] };
+    //         const inverseBindMatrices: Matrix[] = [];
+
+    //         const boneIndexMap: { [index: number]: Bone } = {};
+    //         let maxBoneIndex = -1;
+    //         for (let i = 0; i < skeleton.bones.length; ++i) {
+    //             const bone = skeleton.bones[i];
+    //             const boneIndex = bone.getIndex() ?? i;
+    //             if (boneIndex !== -1) {
+    //                 boneIndexMap[boneIndex] = bone;
+    //                 if (boneIndex > maxBoneIndex) {
+    //                     maxBoneIndex = boneIndex;
+    //                 }
+    //             }
+    //         }
+
+    //         for (let boneIndex = 0; boneIndex <= maxBoneIndex; ++boneIndex) {
+    //             const bone = boneIndexMap[boneIndex];
+    //             inverseBindMatrices.push(bone.getAbsoluteInverseBindMatrix());
+
+    //             const transformNode = bone.getTransformNode();
+
+    //             if (transformNode && nodeMap[transformNode.uniqueId] !== null && nodeMap[transformNode.uniqueId] !== undefined) {
+    //                 skin.joints.push(nodeMap[transformNode.uniqueId]);
+    //             } else {
+    //                 Tools.Warn("Exporting a bone without a linked transform node is currently unsupported");
+    //             }
+    //         }
+
+    //         if (skin.joints.length > 0) {
+    //             // create buffer view for inverse bind matrices
+    //             const byteStride = 64; // 4 x 4 matrix of 32 bit float
+    //             const byteLength = inverseBindMatrices.length * byteStride;
+    //             const bufferViewOffset = dataWriter.getByteOffset();
+    //             const bufferView = createBufferView(0, bufferViewOffset, byteLength, undefined, "InverseBindMatrices" + " - " + skeleton.name);
+    //             this._bufferViews.push(bufferView);
+    //             const bufferViewIndex = this._bufferViews.length - 1;
+    //             const bindMatrixAccessor = createAccessor(
+    //                 bufferViewIndex,
+    //                 "InverseBindMatrices" + " - " + skeleton.name,
+    //                 AccessorType.MAT4,
+    //                 AccessorComponentType.FLOAT,
+    //                 inverseBindMatrices.length,
+    //                 null,
+    //                 null,
+    //                 null
+    //             );
+
+    //             const inverseBindAccessorIndex = this._accessors.push(bindMatrixAccessor) - 1;
+    //             skin.inverseBindMatrices = inverseBindAccessorIndex;
+    //             this._skins.push(skin);
+
+    //             for (const state of states) {
+    //                 state.setSkeletonIndex(skeleton.uniqueId, this._skins.length - 1);
+    //             }
+
+    //             inverseBindMatrices.forEach((mat) => {
+    //                 mat.m.forEach((cell: number) => {
+    //                     dataWriter.setFloat32(cell);
+    //                 });
+    //             });
+    //         }
+    //     }
+    // }
+
     // /**
     //  * Creates a bufferview based on the vertices type for the Babylon mesh
     //  * @param babylonSubMesh The Babylon submesh that the morph target is applied to
@@ -1144,11 +1312,14 @@ export class GLTFExporter {
         const stateRH = new ExporterState(false);
 
         this._exportCameras([stateLH, stateRH]);
+        this._exportEmptySkeletons([stateLH, stateRH]);
 
         // await this._materialExporter.convertMaterialsToGLTFAsync(this._getMaterials(nodes));
         scene.nodes.push(...(await this._exportNodesAsync(rootNodesLH, true, stateLH)));
         scene.nodes.push(...(await this._exportNodesAsync(rootNodesRH, false, stateRH)));
         this._scenes.push(scene);
+
+        this._bindNodesToBones(stateLH);
 
         //     return this._exportNodesAndAnimationsAsync(nodes, convertToRightHandedMap, dataWriter).then((nodeMap) => {
         //         return this._createSkinsAsync(nodeMap, dataWriter).then((skinMap) => {
@@ -1624,83 +1795,5 @@ export class GLTFExporter {
     // });
 
     //     return nodeMap;
-    // }
-
-    // /**
-    //  * Creates a glTF skin from a Babylon skeleton
-    //  * @param babylonScene Babylon Scene
-    //  * @param nodeMap Babylon transform nodes
-    //  * @param dataWriter Buffer to write binary data to
-    //  * @returns Node mapping of unique id to index
-    //  */
-    // private _createSkinsAsync(nodeMap: { [key: number]: number }, dataWriter: DataWriter): Promise<{ [key: number]: number }> {
-    //     const promiseChain = Promise.resolve();
-    //     const skinMap: { [key: number]: number } = {};
-    //     for (const skeleton of this._babylonScene.skeletons) {
-    //         if (skeleton.bones.length <= 0) {
-    //             continue;
-    //         }
-    //         // create skin
-    //         const skin: ISkin = { joints: [] };
-    //         const inverseBindMatrices: Matrix[] = [];
-
-    //         const boneIndexMap: { [index: number]: Bone } = {};
-    //         let maxBoneIndex = -1;
-    //         for (let i = 0; i < skeleton.bones.length; ++i) {
-    //             const bone = skeleton.bones[i];
-    //             const boneIndex = bone.getIndex() ?? i;
-    //             if (boneIndex !== -1) {
-    //                 boneIndexMap[boneIndex] = bone;
-    //                 if (boneIndex > maxBoneIndex) {
-    //                     maxBoneIndex = boneIndex;
-    //                 }
-    //             }
-    //         }
-
-    //         for (let boneIndex = 0; boneIndex <= maxBoneIndex; ++boneIndex) {
-    //             const bone = boneIndexMap[boneIndex];
-    //             inverseBindMatrices.push(bone.getAbsoluteInverseBindMatrix());
-
-    //             const transformNode = bone.getTransformNode();
-    //             if (transformNode && nodeMap[transformNode.uniqueId] !== null && nodeMap[transformNode.uniqueId] !== undefined) {
-    //                 skin.joints.push(nodeMap[transformNode.uniqueId]);
-    //             } else {
-    //                 Tools.Warn("Exporting a bone without a linked transform node is currently unsupported");
-    //             }
-    //         }
-
-    //         if (skin.joints.length > 0) {
-    //             // create buffer view for inverse bind matrices
-    //             const byteStride = 64; // 4 x 4 matrix of 32 bit float
-    //             const byteLength = inverseBindMatrices.length * byteStride;
-    //             const bufferViewOffset = dataWriter.getByteOffset();
-    //             const bufferView = createBufferView(0, bufferViewOffset, byteLength, undefined, "InverseBindMatrices" + " - " + skeleton.name);
-    //             this._bufferViews.push(bufferView);
-    //             const bufferViewIndex = this._bufferViews.length - 1;
-    //             const bindMatrixAccessor = createAccessor(
-    //                 bufferViewIndex,
-    //                 "InverseBindMatrices" + " - " + skeleton.name,
-    //                 AccessorType.MAT4,
-    //                 AccessorComponentType.FLOAT,
-    //                 inverseBindMatrices.length,
-    //                 null,
-    //                 null,
-    //                 null
-    //             );
-    //             const inverseBindAccessorIndex = this._accessors.push(bindMatrixAccessor) - 1;
-    //             skin.inverseBindMatrices = inverseBindAccessorIndex;
-    //             this._skins.push(skin);
-    //             skinMap[skeleton.uniqueId] = this._skins.length - 1;
-
-    //             inverseBindMatrices.forEach((mat) => {
-    //                 mat.m.forEach((cell: number) => {
-    //                     dataWriter.setFloat32(cell);
-    //                 });
-    //             });
-    //         }
-    //     }
-    //     return promiseChain.then(() => {
-    //         return skinMap;
-    //     });
     // }
 }
