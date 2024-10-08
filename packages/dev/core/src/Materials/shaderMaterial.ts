@@ -770,11 +770,15 @@ export class ShaderMaterial extends PushMaterial {
         const manager = mesh ? (<Mesh>mesh).morphTargetManager : null;
         if (manager) {
             const uv = manager.supportsUVs && defines.indexOf("#define UV1") !== -1;
+            const uv2 = manager.supportsUV2s && defines.indexOf("#define UV2") !== -1;
             const tangent = manager.supportsTangents && defines.indexOf("#define TANGENT") !== -1;
             const normal = manager.supportsNormals && defines.indexOf("#define NORMAL") !== -1;
             numInfluencers = manager.numMaxInfluencers || manager.numInfluencers;
             if (uv) {
                 defines.push("#define MORPHTARGETS_UV");
+            }
+            if (uv2) {
+                defines.push("#define MORPHTARGETS_UV2");
             }
             if (tangent) {
                 defines.push("#define MORPHTARGETS_TANGENT");
