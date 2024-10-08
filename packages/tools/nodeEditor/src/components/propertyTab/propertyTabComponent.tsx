@@ -1,7 +1,7 @@
 import * as React from "react";
 import type { GlobalState } from "../../globalState";
 import type { Nullable } from "core/types";
-import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { StringTools } from "shared-ui-components/stringTools";
 import { FileButtonLineComponent } from "../../sharedComponents/fileButtonLineComponent";
 import { Tools } from "core/Misc/tools";

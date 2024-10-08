@@ -2,7 +2,7 @@ import * as React from "react";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { FileButtonLineComponent } from "../../sharedComponents/fileButtonLineComponent";
 import { Tools } from "core/Misc/tools";
-import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import { Texture } from "core/Materials/Textures/texture";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";

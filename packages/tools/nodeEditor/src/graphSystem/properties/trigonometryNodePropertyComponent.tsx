@@ -1,5 +1,5 @@
 import * as React from "react";
-import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import type { TrigonometryBlock } from "core/Materials/Node/Blocks/trigonometryBlock";
 import { TrigonometryBlockOperations } from "core/Materials/Node/Blocks/trigonometryBlock";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";

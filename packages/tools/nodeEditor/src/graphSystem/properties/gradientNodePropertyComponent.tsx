@@ -1,5 +1,5 @@
 import * as React from "react";
-import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import type { GradientBlock } from "core/Materials/Node/Blocks/gradientBlock";
 import { GradientBlockColorStep } from "core/Materials/Node/Blocks/gradientBlock";
 import { GradientStepComponent } from "./gradientStepComponent";
