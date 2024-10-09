@@ -286,10 +286,10 @@ export class HTML3DElement extends LitElement {
 
             const hotspots: Record<string, ViewerHotSpotQuery> = {};
             for (let offset = 0; offset < array.length; offset += 8) {
-                hotspots[array[0]] = {
-                    meshIndex: Number(array[1]),
-                    pointIndex: [Number(array[2]), Number(array[3]), Number(array[4])],
-                    barycentric: [Number(array[5]), Number(array[6]), Number(array[7])],
+                hotspots[array[offset]] = {
+                    meshIndex: Number(array[offset + 1]),
+                    pointIndex: [Number(array[offset + 2]), Number(array[offset + 3]), Number(array[offset + 4])],
+                    barycentric: [Number(array[offset + 5]), Number(array[offset + 6]), Number(array[offset + 7])],
                 };
             }
             return hotspots;
