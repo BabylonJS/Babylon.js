@@ -107,7 +107,7 @@ export class BlurPostProcess extends PostProcess {
             indexParameters: { varyingCount: 0, depCount: 0 },
             textureFormat,
             defines,
-            implementation: new BlurPostProcessImpl(),
+            implementation: typeof options === "number" || !options.implementation ? new BlurPostProcessImpl() : undefined,
             ...(options as PostProcessOptions),
             blockCompilation: true,
         });

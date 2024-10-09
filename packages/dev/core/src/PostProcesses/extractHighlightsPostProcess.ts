@@ -71,7 +71,7 @@ export class ExtractHighlightsPostProcess extends PostProcess {
             reusable,
             textureType,
             blockCompilation,
-            implementation: new ExtractHighlightsPostProcessImpl(),
+            implementation: typeof options === "number" || !options.implementation ? new ExtractHighlightsPostProcessImpl() : undefined,
             ...(options as PostProcessOptions),
         });
 

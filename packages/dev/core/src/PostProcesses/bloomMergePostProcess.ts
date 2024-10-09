@@ -70,7 +70,7 @@ export class BloomMergePostProcess extends PostProcess {
             reusable,
             textureType,
             blockCompilation: true,
-            implementation: new BloomMergePostProcessImpl(),
+            implementation: typeof options === "number" || !options.implementation ? new BloomMergePostProcessImpl() : undefined,
             ...(options as PostProcessOptions),
         });
 

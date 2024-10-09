@@ -25,6 +25,7 @@ import { GetExponentOfTwo } from "../Misc/tools.functions";
 import type { IAssetContainer } from "core/IAssetContainer";
 import type { PostProcessCoreCustomShaderCodeProcessing, PostProcessCoreOptions } from "./postProcessCore";
 import { PostProcessCore } from "./postProcessCore";
+import type { AbstractPostProcessImpl } from "./abstractPostProcessImpl";
 
 declare module "../Engines/abstractEngine" {
     export interface AbstractEngine {
@@ -503,6 +504,7 @@ export class PostProcess extends PostProcessCore {
     ) {
         let size: number | { width: number; height: number } = 1;
         let uniformBuffers: Nullable<string[]> = null;
+        let implementation: AbstractPostProcessImpl | undefined;
         if (parameters && !Array.isArray(parameters)) {
             const options = parameters;
             parameters = options.uniforms ?? null;
@@ -521,6 +523,7 @@ export class PostProcess extends PostProcessCore {
             shaderLanguage = options.shaderLanguage ?? ShaderLanguage.GLSL;
             uniformBuffers = options.uniformBuffers ?? null;
             extraInitializations = options.extraInitializations;
+            implementation = options.implementation;
         } else if (_size) {
             if (typeof _size === "number") {
                 size = _size;
@@ -540,6 +543,7 @@ export class PostProcess extends PostProcessCore {
             blockCompilation,
             shaderLanguage,
             extraInitializations,
+            implementation,
         });
 
         if (camera != null) {

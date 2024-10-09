@@ -109,7 +109,7 @@ export class CircleOfConfusionPostProcess extends PostProcess {
             reusable,
             textureType,
             blockCompilation,
-            implementation: new CircleOfConfusionPostProcessImpl(),
+            implementation: typeof options === "number" || !options.implementation ? new CircleOfConfusionPostProcessImpl() : undefined,
             ...(options as CircleOfConfusionPostProcessOptions),
         });
 

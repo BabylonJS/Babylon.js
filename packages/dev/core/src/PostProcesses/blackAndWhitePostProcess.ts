@@ -53,7 +53,7 @@ export class BlackAndWhitePostProcess extends PostProcess {
             samplingMode,
             engine,
             reusable,
-            implementation: new BlackAndWhitePostProcessImpl(),
+            implementation: typeof options === "number" || !options.implementation ? new BlackAndWhitePostProcessImpl() : undefined,
             ...(options as PostProcessOptions),
         });
 
