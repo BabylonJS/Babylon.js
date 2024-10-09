@@ -31,6 +31,7 @@ import { Scene, ScenePerformancePriority } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 import { Viewport } from "core/Maths/math.viewport";
 import { GetHotSpotToRef } from "core/Meshes/abstractMesh.hotSpot";
+import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
 
 function throwIfAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]): void {
     for (const signal of abortSignals) {
@@ -52,7 +53,6 @@ function createSkybox(scene: Scene, camera: Camera, environmentTexture: CubeText
     hdrSkybox.material = hdrSkyboxMaterial;
     hdrSkybox.isPickable = false;
     hdrSkybox.infiniteDistance = true;
-    hdrSkybox.ignoreCameraMaxZ = true;
 
     updateSkybox(hdrSkybox, camera);
 
@@ -174,6 +174,7 @@ export class Viewer implements IDisposable {
     public readonly onAnimationProgressChanged = new Observable<void>();
 
     private readonly _details: ViewerDetails;
+    private readonly _snapshotHelper: SnapshotRenderingHelper;
     private readonly _camera: ArcRotateCamera;
     private readonly _autoRotationBehavior: AutoRotationBehavior;
     private readonly _renderLoopController: IDisposable;
@@ -205,6 +206,7 @@ export class Viewer implements IDisposable {
         };
         this._details.scene.performancePriority = ScenePerformancePriority.Aggressive;
         this._details.scene.clearColor = finalOptions.backgroundColor;
+        this._snapshotHelper = new SnapshotRenderingHelper(this._details.scene, { morphTargetsNumMaxInfluences: 30 });
         this._camera = new ArcRotateCamera("camera1", 0, 0, 1, Vector3.Zero(), this._details.scene);
         this._camera.attachControl();
         this._updateCamera(); // set default camera values
@@ -354,6 +356,7 @@ export class Viewer implements IDisposable {
 
         await this._loadModelLock.lockAsync(async () => {
             throwIfAborted(abortSignal, abortController.signal);
+            this._snapshotHelper.disableSnapshotRendering();
             this._details.model?.dispose();
             this._details.model = null;
             this.selectedAnimation = -1;
@@ -366,6 +369,7 @@ export class Viewer implements IDisposable {
                         group.pause();
                     });
                     this.selectedAnimation = 0;
+                    this._snapshotHelper.fixMeshes(this._details.model.meshes);
                     this._details.model.addAllToScene();
                 }
 
@@ -376,6 +380,8 @@ export class Viewer implements IDisposable {
             } catch (e) {
                 this.onModelError.notifyObservers(e);
                 throw e;
+            } finally {
+                this._snapshotHelper.enableSnapshotRendering();
             }
         });
     }
@@ -408,6 +414,7 @@ export class Viewer implements IDisposable {
 
         await this._loadEnvironmentLock.lockAsync(async () => {
             throwIfAborted(abortSignal, abortController.signal);
+            this._snapshotHelper.disableSnapshotRendering();
             this._environment?.dispose();
             this._environment = null;
             this._details.scene.autoClear = true;
@@ -419,6 +426,7 @@ export class Viewer implements IDisposable {
                         this._details.scene.environmentTexture = cubeTexture;
 
                         const skybox = createSkybox(this._details.scene, this._camera, cubeTexture, 0.3);
+                        this._snapshotHelper.fixMeshes([skybox]);
                         this._skybox = skybox;
 
                         this._details.scene.autoClear = false;
@@ -453,6 +461,8 @@ export class Viewer implements IDisposable {
             } catch (e) {
                 this.onEnvironmentError.notifyObservers(e);
                 throw e;
+            } finally {
+                this._snapshotHelper.enableSnapshotRendering();
             }
         });
     }
