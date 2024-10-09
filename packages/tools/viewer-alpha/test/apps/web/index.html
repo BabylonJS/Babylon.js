@@ -92,14 +92,13 @@
             viewerElement.addEventListener("viewerready", (event) => {
                 viewerDetails = viewerElement.viewerDetails;
 
-                //startHotSpotLinesRenderLoop();
                 console.log(`Viewer ready.`, viewerDetails);
             });
             viewerElement.addEventListener("modelchange", (event) => {
                 console.log(`Model changed.`, viewerDetails);
             });
             let isViewerConnected = true;
-            let hotspotVisible = true;
+            let hotspotVisible = false;
 
             (async () => {
                 // The module referenced in the script tag above is loaded asynchronously, so we need to wait for it to load and for the custom element to be defined.
