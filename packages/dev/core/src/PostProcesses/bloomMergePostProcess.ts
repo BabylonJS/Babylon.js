@@ -31,7 +31,7 @@ export class BloomMergePostProcess extends PostProcess {
         return "BloomMergePostProcess";
     }
 
-    private _impl: BloomMergePostProcessImpl;
+    protected override _impl: BloomMergePostProcessImpl;
 
     /**
      * Creates a new instance of @see BloomMergePostProcess
@@ -70,10 +70,9 @@ export class BloomMergePostProcess extends PostProcess {
             reusable,
             textureType,
             blockCompilation: true,
+            implementation: new BloomMergePostProcessImpl(),
             ...(options as PostProcessOptions),
         });
-
-        this._impl = new BloomMergePostProcessImpl(this);
 
         this.weight = weight;
         this.externalTextureSamplerBinding = true;

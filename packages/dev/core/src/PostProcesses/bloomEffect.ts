@@ -8,6 +8,7 @@ import type { Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
 import type { Scene } from "../scene";
 import type { AbstractEngine } from "../Engines/abstractEngine";
+import { BloomEffectImpl } from "./bloomEffectImpl";
 
 /**
  * The bloom effect spreads bright areas of an image to simulate artifacts seen in cameras
@@ -65,6 +66,8 @@ export class BloomEffect extends PostProcessRenderEffect {
         return this._bloomScale;
     }
 
+    private _impl: BloomEffectImpl;
+
     /**
      * Creates a new instance of @see BloomEffect
      * @param sceneOrEngine The scene or engine the effect belongs to.
@@ -92,6 +95,8 @@ export class BloomEffect extends PostProcessRenderEffect {
             true
         );
 
+        this._impl = new BloomEffectImpl(_bloomScale);
+
         this._pipelineTextureType = pipelineTextureType;
 
         this._downscale = new ExtractHighlightsPostProcess("highlights", {
@@ -100,6 +105,7 @@ export class BloomEffect extends PostProcessRenderEffect {
             engine,
             textureType: pipelineTextureType,
             blockCompilation,
+            implementation: this._impl.downscale,
         });
 
         this._blurX = new BlurPostProcess("horizontal blur", new Vector2(1.0, 0), 10.0, {
@@ -108,6 +114,7 @@ export class BloomEffect extends PostProcessRenderEffect {
             engine,
             textureType: pipelineTextureType,
             blockCompilation,
+            implementation: this._impl.blurX,
         });
         this._blurX.alwaysForcePOT = true;
         this._blurX.autoClear = false;
@@ -118,6 +125,7 @@ export class BloomEffect extends PostProcessRenderEffect {
             engine,
             textureType: pipelineTextureType,
             blockCompilation,
+            implementation: this._impl.blurY,
         });
         this._blurY.alwaysForcePOT = true;
         this._blurY.autoClear = false;
@@ -132,6 +140,7 @@ export class BloomEffect extends PostProcessRenderEffect {
             engine,
             textureType: pipelineTextureType,
             blockCompilation,
+            implementation: this._impl.merge,
         });
         this._merge.autoClear = false;
         this._effects.push(this._merge);
@@ -162,11 +171,6 @@ export class BloomEffect extends PostProcessRenderEffect {
      * @internal
      */
     public _isReady() {
-        for (let effectIndex = 0; effectIndex < this._effects.length; effectIndex++) {
-            if (!this._effects[effectIndex].isReady()) {
-                return false;
-            }
-        }
-        return true;
+        return this._impl.isReady();
     }
 }

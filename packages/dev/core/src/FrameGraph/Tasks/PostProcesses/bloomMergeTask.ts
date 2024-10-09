@@ -22,21 +22,19 @@ export class FrameGraphBloomMergeTask extends FrameGraphPostProcessCoreTask {
         super(
             name,
             frameGraph,
-            new BloomMergePostProcessImpl(
-                new PostProcessCore(name, BloomMergePostProcessImpl.FragmentUrl, engine, {
-                    uniforms: BloomMergePostProcessImpl.Uniforms,
-                    samplers: BloomMergePostProcessImpl.Samplers,
-                    blockCompilation: true,
-                    ...options,
-                    extraInitializations: (useWebGPU, promises) => {
-                        if (useWebGPU) {
-                            promises.push(import("../../../ShadersWGSL/bloomMerge.fragment"));
-                        } else {
-                            promises.push(import("../../../Shaders/bloomMerge.fragment"));
-                        }
-                    },
-                })
-            )
+            new PostProcessCore(name, BloomMergePostProcessImpl.FragmentUrl, engine, {
+                uniforms: BloomMergePostProcessImpl.Uniforms,
+                samplers: BloomMergePostProcessImpl.Samplers,
+                implementation: options?.implementation ?? new BloomMergePostProcessImpl(),
+                ...options,
+                extraInitializations: (useWebGPU, promises) => {
+                    if (useWebGPU) {
+                        promises.push(import("../../../ShadersWGSL/bloomMerge.fragment"));
+                    } else {
+                        promises.push(import("../../../Shaders/bloomMerge.fragment"));
+                    }
+                },
+            })
         );
     }
 

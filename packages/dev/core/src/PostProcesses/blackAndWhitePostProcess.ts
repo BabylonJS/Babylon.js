@@ -33,7 +33,7 @@ export class BlackAndWhitePostProcess extends PostProcess {
         return "BlackAndWhitePostProcess";
     }
 
-    private _impl: BlackAndWhitePostProcessImpl;
+    protected override _impl: BlackAndWhitePostProcessImpl;
 
     /**
      * Creates a black and white post process
@@ -53,10 +53,9 @@ export class BlackAndWhitePostProcess extends PostProcess {
             samplingMode,
             engine,
             reusable,
+            implementation: new BlackAndWhitePostProcessImpl(),
             ...(options as PostProcessOptions),
         });
-
-        this._impl = new BlackAndWhitePostProcessImpl(this);
 
         this.onApplyObservable.add(() => {
             this._impl.bind();

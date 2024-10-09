@@ -23,11 +23,11 @@ export class FrameGraphPostProcessCoreTask extends FrameGraphTask {
     protected _outputWidth: number;
     protected _outputHeight: number;
 
-    constructor(name: string, frameGraph: FrameGraph, postProcessImpl: AbstractPostProcessImpl) {
+    constructor(name: string, frameGraph: FrameGraph, postProcess: PostProcessCore) {
         super(name, frameGraph);
 
-        this._impl = postProcessImpl;
-        this._postProcess = postProcessImpl.postProcess;
+        this._impl = postProcess.implementation;
+        this._postProcess = postProcess;
         this._postProcessDrawWrapper = this._postProcess.getDrawWrapper();
 
         this.outputTexture = this._frameGraph.createDanglingHandle();

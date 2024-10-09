@@ -15,6 +15,7 @@ import type { IInspectable } from "core/Misc/iInspectable";
 import type { Scene } from "core/scene";
 import type { Camera } from "core/Cameras/camera";
 import type { Animation } from "../Animations/animation";
+import type { AbstractPostProcessImpl } from "./abstractPostProcessImpl";
 
 /**
  * Allows for custom processing of the shader code used by a post process
@@ -85,6 +86,8 @@ export type PostProcessCoreOptions = {
      * Defines additional code to call to prepare the shader code
      */
     extraInitializations?: (useWebGPU: boolean, list: Promise<any>[]) => void;
+
+    implementation?: AbstractPostProcessImpl;
 };
 
 type NonNullableFields<T> = {
@@ -201,6 +204,10 @@ export class PostProcessCore {
         return this._drawWrapper.effect!.isSupported;
     }
 
+    public get implementation() {
+        return this._impl;
+    }
+
     /**
      * Get a value indicating if the post-process is ready to be used
      * @returns true if the post-process is ready (shader is compiled)
@@ -227,6 +234,7 @@ export class PostProcessCore {
     protected _drawWrapper: DrawWrapper;
     protected _shadersLoaded = false;
     protected _webGPUReady = false;
+    protected _impl: AbstractPostProcessImpl;
 
     /**
      * Creates a new instance PostProcess
@@ -254,15 +262,21 @@ export class PostProcessCore {
             blockCompilation: options?.blockCompilation ?? false,
             shaderLanguage: options?.shaderLanguage ?? ShaderLanguage.GLSL,
             extraInitializations: options?.extraInitializations ?? (undefined as any),
+            implementation: options?.implementation ?? (undefined as any),
         };
 
         this.options.samplers.push("textureSampler");
         this.options.uniforms.push("scale");
-        this._drawWrapper = new DrawWrapper(this._engine);
 
+        this._drawWrapper = new DrawWrapper(this._engine);
         this._webGPUReady = this.options.shaderLanguage === ShaderLanguage.WGSL;
 
         this._postConstructor();
+
+        if (this.options.implementation) {
+            this._impl = this.options.implementation;
+            this._impl.linkToPostProcess(this);
+        }
     }
 
     protected _gatherImports(useWebGPU = false, list: Promise<any>[]) {

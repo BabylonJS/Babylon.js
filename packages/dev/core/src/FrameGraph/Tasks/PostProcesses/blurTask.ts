@@ -48,22 +48,21 @@ export class FrameGraphBlurTask extends FrameGraphPostProcessCoreTask {
         super(
             name,
             frameGraph,
-            new BlurPostProcessImpl(
-                new PostProcessCore(name, BlurPostProcessImpl.FragmentUrl, engine, {
-                    uniforms: BlurPostProcessImpl.Uniforms,
-                    samplers: BlurPostProcessImpl.Samplers,
-                    vertexUrl: BlurPostProcessImpl.VertexUrl,
-                    ...options,
-                    blockCompilation: true,
-                    extraInitializations: (useWebGPU, promises) => {
-                        if (useWebGPU) {
-                            promises.push(Promise.all([import("../../../ShadersWGSL/kernelBlur.fragment"), import("../../../ShadersWGSL/kernelBlur.vertex")]));
-                        } else {
-                            promises.push(Promise.all([import("../../../Shaders/kernelBlur.fragment"), import("../../../Shaders/kernelBlur.vertex")]));
-                        }
-                    },
-                })
-            )
+            new PostProcessCore(name, BlurPostProcessImpl.FragmentUrl, engine, {
+                uniforms: BlurPostProcessImpl.Uniforms,
+                samplers: BlurPostProcessImpl.Samplers,
+                vertexUrl: BlurPostProcessImpl.VertexUrl,
+                implementation: options?.implementation ?? new BlurPostProcessImpl(),
+                ...options,
+                blockCompilation: true,
+                extraInitializations: (useWebGPU, promises) => {
+                    if (useWebGPU) {
+                        promises.push(Promise.all([import("../../../ShadersWGSL/kernelBlur.fragment"), import("../../../ShadersWGSL/kernelBlur.vertex")]));
+                    } else {
+                        promises.push(Promise.all([import("../../../Shaders/kernelBlur.fragment"), import("../../../Shaders/kernelBlur.vertex")]));
+                    }
+                },
+            })
         );
 
         this.direction = direction;

@@ -63,7 +63,7 @@ export class BlurPostProcess extends PostProcess {
         return "BlurPostProcess";
     }
 
-    private _impl: BlurPostProcessImpl;
+    protected override _impl: BlurPostProcessImpl;
 
     /**
      * Creates a new instance BlurPostProcess
@@ -107,11 +107,11 @@ export class BlurPostProcess extends PostProcess {
             indexParameters: { varyingCount: 0, depCount: 0 },
             textureFormat,
             defines,
+            implementation: new BlurPostProcessImpl(),
             ...(options as PostProcessOptions),
             blockCompilation: true,
         });
 
-        this._impl = new BlurPostProcessImpl(this);
         this._impl.updateEffectFunc = super.updateEffect.bind(this);
 
         this.direction = direction;

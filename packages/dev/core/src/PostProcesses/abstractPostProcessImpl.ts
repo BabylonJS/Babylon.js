@@ -9,16 +9,26 @@ export abstract class AbstractPostProcessImpl {
      */
     public abstract getClassName(): string;
 
-    public readonly postProcess: PostProcessCore;
+    public postProcess: PostProcessCore;
 
-    protected readonly _drawWrapper: DrawWrapper;
+    protected _drawWrapper: DrawWrapper;
 
-    constructor(postProcess: PostProcessCore) {
-        this.postProcess = postProcess;
-        this._drawWrapper = postProcess.getDrawWrapper();
+    constructor(postProcess?: PostProcessCore) {
+        if (postProcess) {
+            this.linkToPostProcess(postProcess);
+        }
     }
 
     public abstract bind(..._args: any): void;
+
+    public isReady() {
+        return this.postProcess ? this.postProcess.isReady() : false;
+    }
+
+    public linkToPostProcess(postProcess: PostProcessCore) {
+        this.postProcess = postProcess;
+        this._drawWrapper = postProcess.getDrawWrapper();
+    }
 
     public parse(parsedPostProcess: any, scene: Nullable<Scene>, rootUrl: string) {
         SerializationHelper.ParseProperties(parsedPostProcess, this, scene, rootUrl);

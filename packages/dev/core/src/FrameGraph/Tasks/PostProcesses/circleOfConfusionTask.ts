@@ -66,22 +66,21 @@ export class FrameGraphCircleOfConfusionTask extends FrameGraphPostProcessCoreTa
         super(
             name,
             frameGraph,
-            new CircleOfConfusionPostProcessImpl(
-                new PostProcessCore(name, CircleOfConfusionPostProcessImpl.FragmentUrl, engine, {
-                    uniforms: CircleOfConfusionPostProcessImpl.Uniforms,
-                    samplers: CircleOfConfusionPostProcessImpl.Samplers,
-                    defines: CircleOfConfusionPostProcessImpl.DefinesDepthNotNormalized,
-                    depthNotNormalized: true,
-                    ...options,
-                    extraInitializations: (useWebGPU, promises) => {
-                        if (useWebGPU) {
-                            promises.push(import("../../../ShadersWGSL/circleOfConfusion.fragment"));
-                        } else {
-                            promises.push(import("../../../Shaders/circleOfConfusion.fragment"));
-                        }
-                    },
-                } as CircleOfConfusionPostProcessOptions)
-            )
+            new PostProcessCore(name, CircleOfConfusionPostProcessImpl.FragmentUrl, engine, {
+                uniforms: CircleOfConfusionPostProcessImpl.Uniforms,
+                samplers: CircleOfConfusionPostProcessImpl.Samplers,
+                defines: CircleOfConfusionPostProcessImpl.DefinesDepthNotNormalized,
+                depthNotNormalized: true,
+                implementation: options?.implementation ?? new CircleOfConfusionPostProcessImpl(),
+                ...options,
+                extraInitializations: (useWebGPU, promises) => {
+                    if (useWebGPU) {
+                        promises.push(import("../../../ShadersWGSL/circleOfConfusion.fragment"));
+                    } else {
+                        promises.push(import("../../../Shaders/circleOfConfusion.fragment"));
+                    }
+                },
+            } as CircleOfConfusionPostProcessOptions)
         );
     }
 

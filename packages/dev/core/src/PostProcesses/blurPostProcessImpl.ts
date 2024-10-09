@@ -87,9 +87,8 @@ export class BlurPostProcessImpl extends AbstractPostProcessImpl {
         onError?: (effect: Effect, errors: string) => void
     ) => void;
 
-    constructor(postProcess: PostProcessCore) {
-        super(postProcess);
-
+    public override linkToPostProcess(postProcess: PostProcessCore): void {
+        super.linkToPostProcess(postProcess);
         this.postProcess.options.blockCompilation = false;
     }
 

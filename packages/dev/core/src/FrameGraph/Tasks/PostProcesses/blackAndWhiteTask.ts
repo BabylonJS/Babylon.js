@@ -24,19 +24,18 @@ export class FrameGraphBlackAndWhiteTask extends FrameGraphPostProcessCoreTask {
         super(
             name,
             frameGraph,
-            new BlackAndWhitePostProcessImpl(
-                new PostProcessCore(name, BlackAndWhitePostProcessImpl.FragmentUrl, engine, {
-                    uniforms: BlackAndWhitePostProcessImpl.Uniforms,
-                    ...options,
-                    extraInitializations: (useWebGPU, promises) => {
-                        if (useWebGPU) {
-                            promises.push(import("../../../ShadersWGSL/blackAndWhite.fragment"));
-                        } else {
-                            promises.push(import("../../../Shaders/blackAndWhite.fragment"));
-                        }
-                    },
-                })
-            )
+            new PostProcessCore(name, BlackAndWhitePostProcessImpl.FragmentUrl, engine, {
+                uniforms: BlackAndWhitePostProcessImpl.Uniforms,
+                implementation: options?.implementation ?? new BlackAndWhitePostProcessImpl(),
+                ...options,
+                extraInitializations: (useWebGPU, promises) => {
+                    if (useWebGPU) {
+                        promises.push(import("../../../ShadersWGSL/blackAndWhite.fragment"));
+                    } else {
+                        promises.push(import("../../../Shaders/blackAndWhite.fragment"));
+                    }
+                },
+            })
         );
     }
 

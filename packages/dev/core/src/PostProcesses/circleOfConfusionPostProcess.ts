@@ -72,7 +72,7 @@ export class CircleOfConfusionPostProcess extends PostProcess {
         return "CircleOfConfusionPostProcess";
     }
 
-    private _impl: CircleOfConfusionPostProcessImpl;
+    protected override _impl: CircleOfConfusionPostProcessImpl;
     private _depthTexture: Nullable<RenderTargetTexture> = null;
 
     /**
@@ -109,10 +109,9 @@ export class CircleOfConfusionPostProcess extends PostProcess {
             reusable,
             textureType,
             blockCompilation,
+            implementation: new CircleOfConfusionPostProcessImpl(),
             ...(options as CircleOfConfusionPostProcessOptions),
         });
-
-        this._impl = new CircleOfConfusionPostProcessImpl(this);
 
         this._depthTexture = depthTexture;
         this.onApplyObservable.add((effect: Effect) => {

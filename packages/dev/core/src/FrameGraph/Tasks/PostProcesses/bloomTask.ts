@@ -1,12 +1,13 @@
 import type { FrameGraph } from "../../frameGraph";
 import type { FrameGraphTextureCreationOptions, FrameGraphTextureHandle } from "../../frameGraphTypes";
 import { Constants } from "core/Engines/constants";
-import { BloomEffect } from "../../../PostProcesses/bloomEffect";
-import { FrameGraphPostProcessTask } from "./postProcessTask";
-//import { FrameGraphBloomMergeTask } from "./bloomMergeTask";
-//import type { BloomMergePostProcess } from "core/PostProcesses/bloomMergePostProcess";
+import { FrameGraphBloomMergeTask } from "./bloomMergeTask";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { FrameGraphTask } from "../../frameGraphTask";
+import { BloomEffectImpl } from "core/PostProcesses/bloomEffectImpl";
+import { FrameGraphExtractHighlightsTask } from "./extractHighlightsTask";
+import { FrameGraphBlurTask } from "./blurTask";
+import { Vector2 } from "core/Maths/math.vector";
 
 export class FrameGraphBloomTask extends FrameGraphTask {
     public sourceTexture: FrameGraphTextureHandle;
@@ -17,42 +18,76 @@ export class FrameGraphBloomTask extends FrameGraphTask {
 
     public readonly outputTexture: FrameGraphTextureHandle;
 
-    public get bloom() {
-        return this._bloomEffect;
+    /**
+     * The luminance threshold to find bright areas of the image to bloom.
+     */
+    public get threshold(): number {
+        return this._impl.threshold;
+    }
+    public set threshold(value: number) {
+        this._impl.threshold = value;
     }
 
-    private _bloomEffect: BloomEffect;
-    private _downscale: FrameGraphPostProcessTask;
-    private _blurX: FrameGraphPostProcessTask;
-    private _blurY: FrameGraphPostProcessTask;
-    //private _merge: FrameGraphBloomMergeTask;
+    /**
+     * The strength of the bloom.
+     */
+    public get weight(): number {
+        return this._impl.weight;
+    }
+    public set weight(value: number) {
+        this._impl.weight = value;
+    }
+
+    /**
+     * Specifies the size of the bloom blur kernel, relative to the final output size
+     */
+    public get kernel(): number {
+        return this._impl.kernel;
+    }
+    public set kernel(value: number) {
+        this._impl.kernel = value;
+    }
+
+    public get bloomScale() {
+        return this._impl.bloomScale;
+    }
+
+    private _downscale: FrameGraphExtractHighlightsTask;
+    private _blurX: FrameGraphBlurTask;
+    private _blurY: FrameGraphBlurTask;
+    private _merge: FrameGraphBloomMergeTask;
+    private _defaultPipelineTextureType: number;
+
+    private _impl: BloomEffectImpl;
 
     constructor(name: string, frameGraph: FrameGraph, engine: AbstractEngine, weight: number, kernel: number, threshold: number, hdr = false, bloomScale = 0.5) {
         super(name, frameGraph);
 
-        let defaultPipelineTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        this._defaultPipelineTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         if (hdr) {
             const caps = engine.getCaps();
             if (caps.textureHalfFloatRender) {
-                defaultPipelineTextureType = Constants.TEXTURETYPE_HALF_FLOAT;
+                this._defaultPipelineTextureType = Constants.TEXTURETYPE_HALF_FLOAT;
             } else if (caps.textureFloatRender) {
-                defaultPipelineTextureType = Constants.TEXTURETYPE_FLOAT;
+                this._defaultPipelineTextureType = Constants.TEXTURETYPE_FLOAT;
             }
         }
 
-        this._bloomEffect = new BloomEffect(engine, bloomScale, weight, kernel, defaultPipelineTextureType, false);
-        this._bloomEffect.threshold = threshold;
+        this._impl = new BloomEffectImpl(bloomScale);
 
-        this._downscale = new FrameGraphPostProcessTask(`${name} Downscale`, this._frameGraph, this._bloomEffect._effects[0]);
-        this._blurX = new FrameGraphPostProcessTask(`${name} Blur X`, this._frameGraph, this._bloomEffect._effects[1]);
-        this._blurY = new FrameGraphPostProcessTask(`${name} Blur Y`, this._frameGraph, this._bloomEffect._effects[2]);
-        //this._merge = new FrameGraphBloomMergeTask(`${name} Merge`, this._frameGraph, this._bloomEffect._effects[3] as BloomMergePostProcess);
+        this._downscale = new FrameGraphExtractHighlightsTask(`${name} Downscale`, this._frameGraph, engine, { implementation: this._impl.downscale });
+        this._blurX = new FrameGraphBlurTask(`${name} Blur X`, this._frameGraph, engine, new Vector2(1, 0), kernel, { implementation: this._impl.blurX });
+        this._blurY = new FrameGraphBlurTask(`${name} Blur Y`, this._frameGraph, engine, new Vector2(0, 1), kernel, { implementation: this._impl.blurY });
+        this._merge = new FrameGraphBloomMergeTask(`${name} Merge`, this._frameGraph, engine, { implementation: this._impl.merge });
+
+        this._downscale.threshold = threshold;
+        this._merge.weight = weight;
 
         this.outputTexture = this._frameGraph.createDanglingHandle();
     }
 
     public override isReady() {
-        return this._downscale.isReady() && this._blurX.isReady() && this._blurY.isReady(); // && this._merge.isReady();
+        return this._impl.isReady();
     }
 
     public override record(): void {
@@ -64,13 +99,13 @@ export class FrameGraphBloomTask extends FrameGraphTask {
 
         const textureCreationOptions: FrameGraphTextureCreationOptions = {
             size: {
-                width: Math.floor(sourceTextureDescription.size.width * this._bloomEffect.bloomScale),
-                height: Math.floor(sourceTextureDescription.size.height * this._bloomEffect.bloomScale),
+                width: Math.floor(sourceTextureDescription.size.width * this._impl.bloomScale),
+                height: Math.floor(sourceTextureDescription.size.height * this._impl.bloomScale),
             },
             options: {
                 createMipMaps: false,
                 generateMipMaps: false,
-                types: [this._bloomEffect._pipelineTextureType],
+                types: [this._defaultPipelineTextureType],
                 samplingModes: [Constants.TEXTURE_BILINEAR_SAMPLINGMODE],
                 formats: [Constants.TEXTUREFORMAT_RGBA],
                 samples: 1,
@@ -108,13 +143,13 @@ export class FrameGraphBloomTask extends FrameGraphTask {
         sourceTextureCreationOptions.options.generateStencilBuffer = false;
         sourceTextureCreationOptions.options.samples = 1;
 
-        // this._frameGraph.resolveDanglingHandle(this.outputTexture, this.destinationTexture, this._merge.name, sourceTextureCreationOptions);
+        this._frameGraph.resolveDanglingHandle(this.outputTexture, this.destinationTexture, this._merge.name, sourceTextureCreationOptions);
 
-        // this._merge.sourceTexture = this.sourceTexture;
-        // this._merge.sourceSamplingMode = this.sourceSamplingMode;
-        // this._merge.blurTexture = blurYTextureHandle;
-        // this._merge.destinationTexture = this.outputTexture;
-        // this._merge.record(true);
+        this._merge.sourceTexture = this.sourceTexture;
+        this._merge.sourceSamplingMode = this.sourceSamplingMode;
+        this._merge.blurTexture = blurYTextureHandle;
+        this._merge.destinationTexture = this.outputTexture;
+        this._merge.record(true);
 
         const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
 
@@ -128,7 +163,7 @@ export class FrameGraphBloomTask extends FrameGraphTask {
         this._downscale.dispose();
         this._blurX.dispose();
         this._blurY.dispose();
-        //this._merge.dispose();
+        this._merge.dispose();
         super.dispose();
     }
 }

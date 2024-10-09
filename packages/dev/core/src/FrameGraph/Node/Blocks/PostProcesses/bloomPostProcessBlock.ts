@@ -4,7 +4,6 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import type { Scene } from "../../../../scene";
-import type { BloomEffect } from "../../../../PostProcesses/bloomEffect";
 import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
 import type { FrameGraphTextureHandle } from "../../../frameGraphTypes";
 import { FrameGraphBloomTask } from "../../../Tasks/PostProcesses/bloomTask";
@@ -15,20 +14,12 @@ import type { FrameGraph } from "core/FrameGraph/frameGraph";
  */
 export class NodeRenderGraphBloomPostProcessBlock extends NodeRenderGraphBlock {
     protected override _frameGraphTask: FrameGraphBloomTask;
-    protected _postProcess: BloomEffect;
 
     /**
      * Gets the frame graph task associated with this block
      */
     public override get task() {
         return this._frameGraphTask;
-    }
-
-    /**
-     * Gets the post process used by this block
-     */
-    public get postProcess() {
-        return this._postProcess;
     }
 
     /**
@@ -55,7 +46,6 @@ export class NodeRenderGraphBloomPostProcessBlock extends NodeRenderGraphBlock {
         };
 
         this._frameGraphTask = new FrameGraphBloomTask(this.name, frameGraph, scene.getEngine(), 0.75, 64, 0.2, hdr, bloomScale);
-        this._postProcess = this._frameGraphTask.bloom;
     }
 
     /** Sampling mode used to sample from the source texture */
@@ -71,31 +61,31 @@ export class NodeRenderGraphBloomPostProcessBlock extends NodeRenderGraphBlock {
     /** The luminance threshold to find bright areas of the image to bloom. */
     @editableInPropertyPage("Threshold", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 2 })
     public get threshold(): number {
-        return this._postProcess.threshold;
+        return this._frameGraphTask.threshold;
     }
 
     public set threshold(value: number) {
-        this._postProcess.threshold = value;
+        this._frameGraphTask.threshold = value;
     }
 
     /** The strength of the bloom. */
     @editableInPropertyPage("Weight", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 3 })
     public get weight(): number {
-        return this._postProcess.weight;
+        return this._frameGraphTask.weight;
     }
 
     public set weight(value: number) {
-        this._postProcess.weight = value;
+        this._frameGraphTask.weight = value;
     }
 
     /** Specifies the size of the bloom blur kernel, relative to the final output size */
     @editableInPropertyPage("Kernel", PropertyTypeForEdition.Int, "PROPERTIES", { min: 1, max: 128 })
     public get kernel(): number {
-        return this._postProcess.kernel;
+        return this._frameGraphTask.kernel;
     }
 
     public set kernel(value: number) {
-        this._postProcess.kernel = value;
+        this._frameGraphTask.kernel = value;
     }
 
     /**

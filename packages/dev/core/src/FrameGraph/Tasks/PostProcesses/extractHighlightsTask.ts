@@ -24,19 +24,18 @@ export class FrameGraphExtractHighlightsTask extends FrameGraphPostProcessCoreTa
         super(
             name,
             frameGraph,
-            new ExtractHighlightsPostProcessImpl(
-                new PostProcessCore(name, ExtractHighlightsPostProcessImpl.FragmentUrl, engine, {
-                    uniforms: ExtractHighlightsPostProcessImpl.Uniforms,
-                    ...options,
-                    extraInitializations: (useWebGPU, promises) => {
-                        if (useWebGPU) {
-                            promises.push(import("../../../ShadersWGSL/extractHighlights.fragment"));
-                        } else {
-                            promises.push(import("../../../Shaders/extractHighlights.fragment"));
-                        }
-                    },
-                })
-            )
+            new PostProcessCore(name, ExtractHighlightsPostProcessImpl.FragmentUrl, engine, {
+                uniforms: ExtractHighlightsPostProcessImpl.Uniforms,
+                implementation: options?.implementation ?? new ExtractHighlightsPostProcessImpl(),
+                ...options,
+                extraInitializations: (useWebGPU, promises) => {
+                    if (useWebGPU) {
+                        promises.push(import("../../../ShadersWGSL/extractHighlights.fragment"));
+                    } else {
+                        promises.push(import("../../../Shaders/extractHighlights.fragment"));
+                    }
+                },
+            })
         );
     }
 

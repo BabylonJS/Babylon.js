@@ -50,7 +50,7 @@ export class ExtractHighlightsPostProcess extends PostProcess {
         return "ExtractHighlightsPostProcess";
     }
 
-    private _impl: ExtractHighlightsPostProcessImpl;
+    protected override _impl: ExtractHighlightsPostProcessImpl;
 
     constructor(
         name: string,
@@ -71,10 +71,9 @@ export class ExtractHighlightsPostProcess extends PostProcess {
             reusable,
             textureType,
             blockCompilation,
+            implementation: new ExtractHighlightsPostProcessImpl(),
             ...(options as PostProcessOptions),
         });
-
-        this._impl = new ExtractHighlightsPostProcessImpl(this);
 
         this.onApplyObservable.add((effect: Effect) => {
             this.externalTextureSamplerBinding = !!this._inputPostProcess;
