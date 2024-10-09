@@ -63,7 +63,7 @@ import { Camera } from "core/Cameras/camera";
 import { MultiMaterial, PBRMaterial, StandardMaterial } from "core/Materials";
 import { Logger } from "core/Misc/logger";
 import { enumerateFloatValues } from "core/Buffers/bufferUtils";
-import type { Bone } from "core/Bones";
+import type { Bone, Skeleton } from "core/Bones";
 
 // 180 degrees rotation in Y.
 const rotation180Y = new Quaternion(0, 1, 0, 0);
@@ -204,7 +204,8 @@ export class GLTFExporter {
     public readonly _materialMap = new Map<Material, number>();
     private readonly _camerasMap = new Map<Camera, ICamera>();
     private readonly _nodesCameraMap = new Map<ICamera, INode[]>();
-    private readonly _skinMap = new Map<number, number>();
+    private readonly _skinMap = new Map<Skeleton, ISkin>();
+    private readonly _nodesSkinMap = new Map<ISkin, INode[]>();
 
     // A material in this set requires UVs
     public readonly _materialNeedsUVsSet = new Set<Material>();
@@ -803,31 +804,30 @@ export class GLTFExporter {
     }
 
     // Builds all skins in the skins array so nodes can reference it during node parsing.
-    private _exportEmptySkeletons(): void {
+    private _listAvailableSkeletons(): void {
         for (const skeleton of this._babylonScene.skeletons) {
             if (skeleton.bones.length <= 0) {
                 continue;
             }
 
             const skin: ISkin = { joints: [] };
-            this._skins.push(skin);
-            this._skinMap.set(skeleton.uniqueId, this._skins.length - 1);
+            //this._skins.push(skin);
+            this._skinMap.set(skeleton, skin);
         }
     }
 
-    private _bindNodesToBones() {
+    private _exportAndAssignSkeletons() {
         for (const skeleton of this._babylonScene.skeletons) {
             if (skeleton.bones.length <= 0) {
                 continue;
             }
 
-            const skinIndex = this._skinMap.get(skeleton.uniqueId);
+            const skin = this._skinMap.get(skeleton);
 
-            if (skinIndex == undefined) {
+            if (skin == undefined) {
                 continue;
             }
 
-            const skin = this._skins[skinIndex];
             const boneIndexMap: { [index: number]: Bone } = {};
             const inverseBindMatrices: Matrix[] = [];
 
@@ -861,7 +861,11 @@ export class GLTFExporter {
                 }
             }
 
-            if (skin.joints.length > 0) {
+            // Nodes that use this skin.
+            const skinedNodes = this._nodesSkinMap.get(skin);
+
+            // Only create skeleton if it has at least one joint and is used by a mesh.
+            if (skin.joints.length > 0 && skinedNodes !== undefined) {
                 // create buffer view for inverse bind matrices
                 const byteStride = 64; // 4 x 4 matrix of 32 bit float
                 const byteLength = inverseBindMatrices.length * byteStride;
@@ -877,6 +881,11 @@ export class GLTFExporter {
                         this._dataWriter.writeFloat32(cell);
                     });
                 });
+
+                this._skins.push(skin);
+                for (const skinedNode of skinedNodes) {
+                    skinedNode.skin = this._skins.length - 1;
+                }
             }
         }
     }
@@ -1210,15 +1219,15 @@ export class GLTFExporter {
         }
 
         this._listAvailableCameras();
-        this._exportEmptySkeletons();
+        this._listAvailableSkeletons();
 
         // await this._materialExporter.convertMaterialsToGLTFAsync(this._getMaterials(nodes));
         scene.nodes.push(...(await this._exportNodesAsync(rootNodesLH, true)));
         scene.nodes.push(...(await this._exportNodesAsync(rootNodesRH, false)));
         this._scenes.push(scene);
 
-        this._bindNodesToBones();
         this._exportAndAssignCameras();
+        this._exportAndAssignSkeletons();
 
         //     return this._exportNodesAndAnimationsAsync(nodes, convertToRightHandedMap, dataWriter).then((nodeMap) => {
         //         return this._createSkinsAsync(nodeMap, dataWriter).then((skinMap) => {
@@ -1424,7 +1433,15 @@ export class GLTFExporter {
                 }
 
                 if (babylonNode.skeleton) {
-                    node.skin = this._skinMap.get(babylonNode.skeleton.uniqueId);
+                    const skin = this._skinMap.get(babylonNode.skeleton);
+
+                    if (skin !== undefined) {
+                        if (this._nodesSkinMap.get(skin) === undefined) {
+                            this._nodesSkinMap.set(skin, []);
+                        }
+
+                        this._nodesSkinMap.get(skin)?.push(node);
+                    }
                 }
             } else {
                 // TODO: handle other Babylon node types
