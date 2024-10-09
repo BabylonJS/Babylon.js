@@ -2,7 +2,7 @@
 import type { Nullable } from "core/index";
 
 import type { PropertyValues } from "lit";
-import type { HotSpotPositions, ViewerDetails } from "./viewer";
+import type { ViewerDetails, ViewerHotSpot, ViewerHotSpotQuery } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, html } from "lit";
@@ -11,7 +11,6 @@ import { customElement, property, query, state } from "lit/decorators.js";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { Logger } from "core/Misc/logger";
 import { createViewerForCanvas, getDefaultEngine } from "./viewerFactory";
-import { HotSpotQuery } from "core/Meshes/abstractMesh.hotSpot";
 
 // Icon SVG is pulled from https://fluentuipr.z22.web.core.windows.net/heads/master/public-docsite-v9/storybook/iframe.html?id=icons-catalog--page&viewMode=story
 const playFilledIcon = "M17.22 8.68a1.5 1.5 0 0 1 0 2.63l-10 5.5A1.5 1.5 0 0 1 5 15.5v-11A1.5 1.5 0 0 1 7.22 3.2l10 5.5Z";
@@ -65,6 +64,13 @@ export class HTML3DElement extends LitElement {
             position: relative;
             width: 100%;
             height: 100%;
+        }
+
+        .children-slot {
+            position: absolute;
+            top: 0;
+            background: transparent;
+            pointer-events: none;
         }
 
         .tool-bar {
@@ -218,29 +224,21 @@ export class HTML3DElement extends LitElement {
     }
 
     /**
-     * Get hotspot world and canvas values from a named hotspot
-     * @param slot slot of the hot spot
-     * @param res resulting canvas and world positions
-     * @returns world and canvas space coordinates
+     * Get hotspot world and screen values from a named hotspot
+     * @param name slot of the hot spot
+     * @param result resulting world and screen positions
+     * @returns world and screen space coordinates
      */
-    public queryHotSpot(slot: string, res: HotSpotPositions): boolean {
+    public queryHotSpot(name: string, result: ViewerHotSpot): boolean {
         // Retrieve all hotspots inside the viewer element
-        const hotspots = this.querySelectorAll(".hotspot");
-        const hotSpotQuery = new HotSpotQuery();
         let resultFound = false;
         // Iterate through each hotspot to get the 'data-surface' and 'data-name' attributes
-        hotspots.forEach((hotspot) => {
-            const slotAttribute = hotspot.getAttribute("slot");
-            if (slot === slotAttribute) {
-                const dataSurface = hotspot.getAttribute("data-surface");
-                const array = dataSurface!.split(" ");
-                const meshIndex = Number(array[0]);
-                hotSpotQuery.pointIndex = [Number(array[1]), Number(array[2]), Number(array[3])];
-                hotSpotQuery.barycentric = [Number(array[4]), Number(array[5]), Number(array[6])];
-                this._viewerDetails?.viewer.getHotSpotToRef(meshIndex, hotSpotQuery, res);
-                resultFound = true;
+        if (this._viewerDetails) {
+            const hotspot = this.hotspots?.[name];
+            if (hotspot) {
+                resultFound = this._viewerDetails.viewer.getHotSpotToRef(hotspot, result);
             }
-        });
+        }
         return resultFound;
     }
     /**
@@ -268,6 +266,36 @@ export class HTML3DElement extends LitElement {
      */
     @property({ reflect: true })
     public environment: Nullable<string> = null;
+
+    /**
+     * A string value that encodes one or more hotspots.
+     */
+    @property({
+        type: "string",
+        converter: (value) => {
+            if (!value) {
+                return null;
+            }
+
+            const array = value.split(" ");
+            if (array.length % 8 !== 0) {
+                throw new Error(
+                    `hotspots should be defined in sets of 8 elements: 'name meshIndex pointIndex1 pointIndex2 pointIndex3 barycentricCoord1 barycentricCoord2 barycentricCoord3', but a total of ${array.length} elements were found in '${value}'`
+                );
+            }
+
+            const hotspots: Record<string, ViewerHotSpotQuery> = {};
+            for (let offset = 0; offset < array.length; offset += 8) {
+                hotspots[array[0]] = {
+                    meshIndex: Number(array[1]),
+                    pointIndex: [Number(array[2]), Number(array[3]), Number(array[4])],
+                    barycentric: [Number(array[5]), Number(array[6]), Number(array[7])],
+                };
+            }
+            return hotspots;
+        },
+    })
+    public hotspots: Nullable<Record<string, ViewerHotSpotQuery>> = null;
 
     /**
      * The list of animation names for the currently loaded model.
@@ -361,9 +389,11 @@ export class HTML3DElement extends LitElement {
 
     // eslint-disable-next-line babylonjs/available
     override render() {
+        // NOTE: The unnamed 'slot' element holds all child elements of the <babylon-viewer> that do not specify a 'slot' attribute.
         return html`
             <div class="full-size">
                 <div id="canvasContainer" class="full-size"></div>
+                <slot class="full-size children-slot"></slot>
                 ${this.animations.length === 0
                     ? ""
                     : html`
