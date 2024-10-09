@@ -7,15 +7,21 @@ import type { Camera } from "../Cameras/camera";
 import { Constants } from "../Engines/constants";
 
 import { RegisterClass } from "../Misc/typeStore";
-import { serialize } from "../Misc/decorators";
+import { BloomMergePostProcessImpl } from "./bloomMergePostProcessImpl";
+import type { Scene } from "core/scene";
 
 /**
  * The BloomMergePostProcess merges blurred images with the original based on the values of the circle of confusion.
  */
 export class BloomMergePostProcess extends PostProcess {
     /** Weight of the bloom to be added to the original input. */
-    @serialize()
-    public weight = 1;
+    public get weight() {
+        return this._impl.weight;
+    }
+
+    public set weight(value: number) {
+        this._impl.weight = value;
+    }
 
     /**
      * Gets a string identifying the name of the class
@@ -24,6 +30,8 @@ export class BloomMergePostProcess extends PostProcess {
     public override getClassName(): string {
         return "BloomMergePostProcess";
     }
+
+    private _impl: BloomMergePostProcessImpl;
 
     /**
      * Creates a new instance of @see BloomMergePostProcess
@@ -52,9 +60,9 @@ export class BloomMergePostProcess extends PostProcess {
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false
     ) {
-        super(name, "bloomMerge", {
-            uniforms: ["bloomWeight"],
-            samplers: ["bloomBlur"],
+        super(name, BloomMergePostProcessImpl.FragmentUrl, {
+            uniforms: BloomMergePostProcessImpl.Uniforms,
+            samplers: BloomMergePostProcessImpl.Samplers,
             size: typeof options === "number" ? options : undefined,
             camera,
             samplingMode,
@@ -65,15 +73,15 @@ export class BloomMergePostProcess extends PostProcess {
             ...(options as PostProcessOptions),
         });
 
+        this._impl = new BloomMergePostProcessImpl(this);
+
         this.weight = weight;
         this.externalTextureSamplerBinding = true;
-        if (!this.useAsFrameGraphTask) {
-            this.onApplyObservable.add((effect: Effect) => {
-                effect.setTextureFromPostProcess("textureSampler", originalFromInput);
-                effect.setTextureFromPostProcessOutput("bloomBlur", blurred);
-                effect.setFloat("bloomWeight", this.weight);
-            });
-        }
+        this.onApplyObservable.add((effect: Effect) => {
+            effect.setTextureFromPostProcess("textureSampler", originalFromInput);
+            effect.setTextureFromPostProcessOutput("bloomBlur", blurred);
+            this._impl.bind();
+        });
 
         if (!blockCompilation) {
             this.updateEffect();
@@ -89,6 +97,17 @@ export class BloomMergePostProcess extends PostProcess {
         }
 
         super._gatherImports(useWebGPU, list);
+    }
+
+    /**
+     * @internal
+     */
+    public static override _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
+        const postProcess = super._Parse(parsedPostProcess, targetCamera, scene, rootUrl) as BloomMergePostProcess;
+
+        postProcess._impl.parse(parsedPostProcess, scene, rootUrl);
+
+        return postProcess;
     }
 }
 

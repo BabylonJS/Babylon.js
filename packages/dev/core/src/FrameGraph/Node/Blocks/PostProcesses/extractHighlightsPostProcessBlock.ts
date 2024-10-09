@@ -6,15 +6,14 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Deco
 import type { Scene } from "../../../../scene";
 import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
 import type { FrameGraphTextureHandle } from "../../../frameGraphTypes";
-import { FrameGraphBlurTask } from "core/FrameGraph/Tasks/PostProcesses/blurTask";
-import { Vector2 } from "core/Maths";
+import { FrameGraphExtractHighlightsTask } from "core/FrameGraph/Tasks/PostProcesses/extractHighlightsTask";
 import type { FrameGraph } from "core/FrameGraph/frameGraph";
 
 /**
- * Block that implements the blur post process
+ * Block that implements the extract highlights post process
  */
-export class NodeRenderGraphBlurPostProcessBlock extends NodeRenderGraphBlock {
-    protected override _frameGraphTask: FrameGraphBlurTask;
+export class NodeRenderGraphExtractHighlightsPostProcessBlock extends NodeRenderGraphBlock {
+    protected override _frameGraphTask: FrameGraphExtractHighlightsTask;
 
     /**
      * Gets the frame graph task associated with this block
@@ -24,7 +23,7 @@ export class NodeRenderGraphBlurPostProcessBlock extends NodeRenderGraphBlock {
     }
 
     /**
-     * Create a new NodeRenderGraphBlurPostProcessBlock
+     * Create a new ExtractHighlightsPostProcessBlock
      * @param name defines the block name
      * @param frameGraph defines the hosting frame graph
      * @param scene defines the hosting scene
@@ -42,7 +41,7 @@ export class NodeRenderGraphBlurPostProcessBlock extends NodeRenderGraphBlock {
             return this.destination.isConnected ? this.destination : this.source;
         };
 
-        this._frameGraphTask = new FrameGraphBlurTask(this.name, frameGraph, scene.getEngine(), new Vector2(1, 0), 32);
+        this._frameGraphTask = new FrameGraphExtractHighlightsTask(this.name, frameGraph, scene.getEngine());
     }
 
     /** Sampling mode used to sample from the source texture */
@@ -55,24 +54,14 @@ export class NodeRenderGraphBlurPostProcessBlock extends NodeRenderGraphBlock {
         this._frameGraphTask.sourceSamplingMode = value;
     }
 
-    /** The direction in which to blur the image */
-    @editableInPropertyPage("Direction", PropertyTypeForEdition.Vector2, "PROPERTIES")
-    public get direction(): Vector2 {
-        return this._frameGraphTask.direction;
+    /** The luminance threshold, pixels below this value will be set to black. */
+    @editableInPropertyPage("Threshold", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 1 })
+    public get threshold(): number {
+        return this._frameGraphTask.threshold;
     }
 
-    public set direction(value: Vector2) {
-        this._frameGraphTask.direction = value;
-    }
-
-    /** Length in pixels of the blur sample region */
-    @editableInPropertyPage("Kernel", PropertyTypeForEdition.Int, "PROPERTIES", { min: 1, max: 256 })
-    public get kernel(): number {
-        return this._frameGraphTask.kernel;
-    }
-
-    public set kernel(value: number) {
-        this._frameGraphTask.kernel = value;
+    public set threshold(value: number) {
+        this._frameGraphTask.threshold = value;
     }
 
     /**
@@ -80,7 +69,7 @@ export class NodeRenderGraphBlurPostProcessBlock extends NodeRenderGraphBlock {
      * @returns the class name
      */
     public override getClassName() {
-        return "NodeRenderGraphBlurPostProcessBlock";
+        return "NodeRenderGraphExtractHighlightsPostProcessBlock";
     }
 
     /**
@@ -124,26 +113,23 @@ export class NodeRenderGraphBlurPostProcessBlock extends NodeRenderGraphBlock {
 
     protected override _dumpPropertiesCode() {
         const codes: string[] = [];
-        codes.push(`${this._codeVariableName}.direction = new BABYLON.Vector2(${this.direction.x}, ${this.direction.y});`);
-        codes.push(`${this._codeVariableName}.kernel = ${this.kernel};`);
+        codes.push(`${this._codeVariableName}.threshold = ${this.threshold};`);
         codes.push(`${this._codeVariableName}.sourceSamplingMode = ${this.sourceSamplingMode};`);
         return super._dumpPropertiesCode() + codes.join("\n");
     }
 
     public override serialize(): any {
         const serializationObject = super.serialize();
-        serializationObject.direction = this.direction.asArray();
-        serializationObject.kernel = this.kernel;
+        serializationObject.threshold = this.threshold;
         serializationObject.sourceSamplingMode = this.sourceSamplingMode;
         return serializationObject;
     }
 
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
-        this.direction.fromArray(serializationObject.direction);
-        this.kernel = serializationObject.kernel;
+        this.threshold = serializationObject.threshold;
         this.sourceSamplingMode = serializationObject.sourceSamplingMode;
     }
 }
 
-RegisterClass("BABYLON.NodeRenderGraphBlurPostProcessBlock", NodeRenderGraphBlurPostProcessBlock);
+RegisterClass("BABYLON.NodeRenderGraphExtractHighlightsPostProcessBlock", NodeRenderGraphExtractHighlightsPostProcessBlock);

@@ -7,25 +7,24 @@ import type { Camera } from "../Cameras/camera";
 import { Effect } from "../Materials/effect";
 import { Constants } from "../Engines/constants";
 import type { RenderTargetCreationOptions } from "../Materials/Textures/textureCreationOptions";
-import type { IInspectable } from "../Misc/iInspectable";
 import type { Color4 } from "../Maths/math.color";
 
 import type { NodeMaterial } from "../Materials/Node/nodeMaterial";
 import { serialize, serializeAsColor4 } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { GetClass, RegisterClass } from "../Misc/typeStore";
-import { DrawWrapper } from "../Materials/drawWrapper";
 import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
 
 import type { Scene } from "../scene";
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
-import type { Animation } from "../Animations/animation";
 import type { PrePassRenderer } from "../Rendering/prePassRenderer";
 import type { PrePassEffectConfiguration } from "../Rendering/prePassEffectConfiguration";
 import { AbstractEngine } from "../Engines/abstractEngine";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
 import type { IAssetContainer } from "core/IAssetContainer";
+import type { PostProcessCoreCustomShaderCodeProcessing, PostProcessCoreOptions } from "./postProcessCore";
+import { PostProcessCore } from "./postProcessCore";
 
 declare module "../Engines/abstractEngine" {
     export interface AbstractEngine {
@@ -105,29 +104,12 @@ Effect.prototype.setTextureFromPostProcessOutput = function (channel: string, po
 /**
  * Allows for custom processing of the shader code used by a post process
  */
-export type PostProcessCustomShaderCodeProcessing = {
-    /**
-     * If provided, will be called two times with the vertex and fragment code so that this code can be updated after the #include have been processed
-     */
-    processCodeAfterIncludes?: (postProcessName: string, shaderType: string, code: string) => string;
-    /**
-     * If provided, will be called two times with the vertex and fragment code so that this code can be updated before it is compiled by the GPU
-     */
-    processFinalCode?: (postProcessName: string, shaderType: string, code: string) => string;
-    /**
-     * If provided, will be called before creating the effect to collect additional custom bindings (defines, uniforms, samplers)
-     */
-    defineCustomBindings?: (postProcessName: string, defines: Nullable<string>, uniforms: string[], samplers: string[]) => Nullable<string>;
-    /**
-     * If provided, will be called when binding inputs to the shader code to allow the user to add custom bindings
-     */
-    bindCustomBindings?: (postProcessName: string, effect: Effect) => void;
-};
+export type PostProcessCustomShaderCodeProcessing = PostProcessCoreCustomShaderCodeProcessing;
 
 /**
  * Options for the PostProcess constructor
  */
-export type PostProcessOptions = {
+export type PostProcessOptions = PostProcessCoreOptions & {
     /**
      * The width of the texture created for this post process.
      * This parameter (and height) is only used when passing a value for the 5th parameter (options) to the PostProcess constructor function.
@@ -141,28 +123,6 @@ export type PostProcessOptions = {
      */
     height?: number;
 
-    /**
-     * The list of uniforms used in the shader (if any)
-     */
-    uniforms?: Nullable<string[]>;
-    /**
-     * The list of samplers used in the shader (if any)
-     */
-    samplers?: Nullable<string[]>;
-    /**
-     * The list of uniform buffers used in the shader (if any)
-     */
-    uniformBuffers?: Nullable<string[]>;
-    /**
-     * String of defines that will be set when running the fragment shader. (default: null)
-     */
-    defines?: Nullable<string>;
-    /**
-     * The size of the post process texture.
-     * It is either a ratio to downscale or upscale the texture create for this post process, or an object containing width and height values.
-     * Default: 1
-     */
-    size?: number | { width: number; height: number };
     /**
      * The camera that the post process will be attached to (default: null)
      */
@@ -184,34 +144,9 @@ export type PostProcessOptions = {
      */
     textureType?: number;
     /**
-     * The url of the vertex shader to be used. (default: "postprocess")
-     */
-    vertexUrl?: string;
-    /**
-     * The index parameters to be used for babylons include syntax "#include<kernelBlurVaryingDeclaration>[0..varyingCount]". (default: undefined)
-     * See usage in babylon.blurPostProcess.ts and kernelBlur.vertex.fx
-     */
-    indexParameters?: any;
-    /**
-     * If the shader should not be compiled immediately. (default: false)
-     */
-    blockCompilation?: boolean;
-    /**
      * Format of the texture created for this post process (default: TEXTUREFORMAT_RGBA)
      */
     textureFormat?: number;
-    /**
-     * The shader language of the shader. (default: GLSL)
-     */
-    shaderLanguage?: ShaderLanguage;
-    /**
-     * Indicates that the post process will be used as a frame graph task. (default: false)
-     */
-    useAsFrameGraphTask?: boolean;
-    /**
-     * Defines additional code to call to prepare the shader code
-     */
-    extraInitializations?: (useWebGPU: boolean, list: Promise<any>[]) => void;
 };
 
 type TextureCache = { texture: RenderTargetWrapper; postProcessChannel: number; lastUsedRenderId: number };
@@ -220,47 +155,15 @@ type TextureCache = { texture: RenderTargetWrapper; postProcessChannel: number; 
  * PostProcess can be used to apply a shader to a texture after it has been rendered
  * See https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/usePostProcesses
  */
-export class PostProcess {
-    /**
-     * Force all the postprocesses to compile to glsl even on WebGPU engines.
-     * False by default. This is mostly meant for backward compatibility.
-     */
-    public static ForceGLSL = false;
-
+export class PostProcess extends PostProcessCore {
     /** @internal */
     public _parentContainer: Nullable<IAssetContainer> = null;
-
-    private static _CustomShaderCodeProcessing: { [postProcessName: string]: PostProcessCustomShaderCodeProcessing } = {};
-
-    public readonly useAsFrameGraphTask: boolean = false;
-
-    /**
-     * Registers a shader code processing with a post process name.
-     * @param postProcessName name of the post process. Use null for the fallback shader code processing. This is the shader code processing that will be used in case no specific shader code processing has been associated to a post process name
-     * @param customShaderCodeProcessing shader code processing to associate to the post process name
-     */
-    public static RegisterShaderCodeProcessing(postProcessName: Nullable<string>, customShaderCodeProcessing?: PostProcessCustomShaderCodeProcessing) {
-        if (!customShaderCodeProcessing) {
-            delete PostProcess._CustomShaderCodeProcessing[postProcessName ?? ""];
-            return;
-        }
-
-        PostProcess._CustomShaderCodeProcessing[postProcessName ?? ""] = customShaderCodeProcessing;
-    }
-
-    private static _GetShaderCodeProcessing(postProcessName: string) {
-        return PostProcess._CustomShaderCodeProcessing[postProcessName] ?? PostProcess._CustomShaderCodeProcessing[""];
-    }
 
     /**
      * Gets or sets the unique id of the post process
      */
     @serialize()
     public uniqueId: number;
-
-    /** Name of the PostProcess. */
-    @serialize()
-    public name: string;
 
     /**
      * Width of the texture to apply the post process on
@@ -306,20 +209,6 @@ export class PostProcess {
      */
     @serialize()
     public forceAutoClearInAlphaMode = false;
-    /**
-     * Type of alpha mode to use when performing the post process (default: Engine.ALPHA_DISABLE)
-     */
-    @serialize()
-    public alphaMode = Constants.ALPHA_DISABLE;
-    /**
-     * Sets the setAlphaBlendConstants of the babylon engine
-     */
-    @serialize()
-    public alphaConstants: Color4;
-    /**
-     * Animations to be used for the post processing
-     */
-    public animations: Animation[] = [];
 
     /**
      * Enable Pixel Perfect mode where texture is not scaled to be power of 2.
@@ -333,12 +222,6 @@ export class PostProcess {
      */
     @serialize()
     public forceFullscreenViewport = true;
-
-    /**
-     * List of inspectable custom properties (used by the Inspector)
-     * @see https://doc.babylonjs.com/toolsAndResources/inspector#extensibility
-     */
-    public inspectableCustomProperties: IInspectable[];
 
     /**
      * Scale mode for the post process (default: Engine.SCALEMODE_FLOOR)
@@ -384,25 +267,11 @@ export class PostProcess {
 
     private _camera: Camera;
     protected _scene: Scene;
-    private _engine: AbstractEngine;
 
-    private _shadersLoaded = false;
-    protected _webGPUReady = false;
-
-    private _options: number | { width: number; height: number };
     private _reusable = false;
     private _renderId = 0;
     private _textureType: number;
     private _textureFormat: number;
-    /** @internal */
-    private _shaderLanguage: ShaderLanguage;
-
-    /**
-     * Gets the shader language type used to generate vertex and fragment source code.
-     */
-    public get shaderLanguage(): ShaderLanguage {
-        return this._shaderLanguage;
-    }
 
     /**
      * if externalTextureSamplerBinding is true, the "apply" method won't bind the textureSampler texture, it is expected to be done by the "outside" (by the onApplyObservable observer most probably).
@@ -426,15 +295,6 @@ export class PostProcess {
      * @internal
      */
     public _currentRenderTextureInd = 0;
-    private _drawWrapper: DrawWrapper;
-    private _samplers: string[];
-    private _fragmentUrl: string;
-    private _vertexUrl: string;
-    private _parameters: string[];
-    private _uniformBuffers: string[];
-    protected _postProcessDefines: Nullable<string>;
-    private _scaleRatio = new Vector2(1, 1);
-    protected _indexParameters: any;
     private _shareOutputWithPostProcess: Nullable<PostProcess>;
     private _texelSize = Vector2.Zero();
 
@@ -446,20 +306,6 @@ export class PostProcess {
      * @internal
      */
     public _prePassEffectConfiguration: PrePassEffectConfiguration;
-
-    /**
-     * Returns the fragment url or shader name used in the post process.
-     * @returns the fragment url or name in the shader store.
-     */
-    public getEffectName(): string {
-        return this._fragmentUrl;
-    }
-
-    /**
-     * Executed when the effect was created
-     * @returns effect that was created for this post process
-     */
-    public onEffectCreatedObservable = new Observable<Effect>(undefined, true);
 
     // Events
 
@@ -496,11 +342,6 @@ export class PostProcess {
         }
         this._onSizeChangedObserver = this.onSizeChangedObservable.add(callback);
     }
-
-    /**
-     * An event triggered when the postprocess applies its effect.
-     */
-    public onApplyObservable = new Observable<Effect>();
 
     private _onApplyObserver: Nullable<Observer<Effect>>;
     /**
@@ -660,7 +501,6 @@ export class PostProcess {
         shaderLanguage?: ShaderLanguage,
         extraInitializations?: (useWebGPU: boolean, list: Promise<any>[]) => void
     ) {
-        this.name = name;
         let size: number | { width: number; height: number } = 1;
         let uniformBuffers: Nullable<string[]> = null;
         if (parameters && !Array.isArray(parameters)) {
@@ -681,7 +521,6 @@ export class PostProcess {
             shaderLanguage = options.shaderLanguage ?? ShaderLanguage.GLSL;
             uniformBuffers = options.uniformBuffers ?? null;
             extraInitializations = options.extraInitializations;
-            this.useAsFrameGraphTask = options.useAsFrameGraphTask ?? false;
         } else if (_size) {
             if (typeof _size === "number") {
                 size = _size;
@@ -689,6 +528,19 @@ export class PostProcess {
                 size = { width: _size.width!, height: _size.height! };
             }
         }
+
+        super(name, fragmentUrl, camera?.getScene().getEngine() ?? engine, {
+            uniforms: parameters,
+            samplers,
+            uniformBuffers,
+            defines,
+            size,
+            vertexUrl,
+            indexParameters,
+            blockCompilation,
+            shaderLanguage,
+            extraInitializations,
+        });
 
         if (camera != null) {
             this._camera = camera;
@@ -703,90 +555,18 @@ export class PostProcess {
             this._engine.postProcesses.push(this);
         }
 
-        this._options = size;
         this.renderTargetSamplingMode = samplingMode ? samplingMode : Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         this._reusable = reusable || false;
         this._textureType = textureType;
         this._textureFormat = textureFormat;
-        this._shaderLanguage = shaderLanguage || ShaderLanguage.GLSL;
-
-        this._samplers = samplers || [];
-        this._samplers.push("textureSampler");
-
-        this._fragmentUrl = fragmentUrl;
-        this._vertexUrl = vertexUrl;
-        this._parameters = parameters || [];
-
-        this._parameters.push("scale");
-        this._uniformBuffers = uniformBuffers || [];
-
-        this._indexParameters = indexParameters;
-        this._drawWrapper = new DrawWrapper(this._engine);
-
-        this._webGPUReady = this._shaderLanguage === ShaderLanguage.WGSL;
-
-        this._postConstructor(blockCompilation, defines, extraInitializations);
-    }
-
-    /** @internal */
-    protected _gatherImports(useWebGPU = false, list: Promise<any>[]) {
-        // this._webGPUReady is used to detect when a postprocess is intended to be used with WebGPU
-        if (useWebGPU && this._webGPUReady) {
-            list.push(Promise.all([import("../ShadersWGSL/postprocess.vertex")]));
-        } else {
-            list.push(Promise.all([import("../Shaders/postprocess.vertex")]));
-        }
-    }
-
-    private _importPromises: Array<Promise<any>> = [];
-    private _postConstructor(blockCompilation: boolean, defines: Nullable<string> = null, extraInitializations?: (useWebGPU: boolean, list: Promise<any>[]) => void) {
-        const engine = this.getEngine();
-        const useWebGPU = engine.isWebGPU && !PostProcess.ForceGLSL;
-
-        this._gatherImports(useWebGPU, this._importPromises);
-        if (extraInitializations) {
-            extraInitializations(useWebGPU, this._importPromises);
-        }
-
-        if (useWebGPU && this._webGPUReady) {
-            this._shaderLanguage = ShaderLanguage.WGSL;
-        }
-
-        if (!blockCompilation) {
-            this.updateEffect(defines);
-        }
     }
 
     /**
      * Gets a string identifying the name of the class
      * @returns "PostProcess" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "PostProcess";
-    }
-
-    /**
-     * Gets the engine which this post process belongs to.
-     * @returns The engine the post process was enabled with.
-     */
-    public getEngine(): AbstractEngine {
-        return this._engine;
-    }
-
-    /**
-     * The effect that is created when initializing the post process.
-     * @returns The created effect corresponding to the postprocess.
-     */
-    public getEffect(): Effect {
-        return this._drawWrapper.effect!;
-    }
-
-    /**
-     * The drawWrapper that is created when initializing the post process.
-     * @returns The created drawWrapper corresponding to the postprocess.
-     */
-    public getDrawWrapper(): DrawWrapper {
-        return this._drawWrapper;
     }
 
     /**
@@ -812,71 +592,6 @@ export class PostProcess {
         }
 
         this._shareOutputWithPostProcess = null;
-    }
-
-    /**
-     * Updates the effect with the current post process compile time values and recompiles the shader.
-     * @param defines Define statements that should be added at the beginning of the shader. (default: null)
-     * @param uniforms Set of uniform variables that will be passed to the shader. (default: null)
-     * @param samplers Set of Texture2D variables that will be passed to the shader. (default: null)
-     * @param indexParameters The index parameters to be used for babylons include syntax "#include<kernelBlurVaryingDeclaration>[0..varyingCount]". (default: undefined) See usage in babylon.blurPostProcess.ts and kernelBlur.vertex.fx
-     * @param onCompiled Called when the shader has been compiled.
-     * @param onError Called if there is an error when compiling a shader.
-     * @param vertexUrl The url of the vertex shader to be used (default: the one given at construction time)
-     * @param fragmentUrl The url of the fragment shader to be used (default: the one given at construction time)
-     */
-    public updateEffect(
-        defines: Nullable<string> = null,
-        uniforms: Nullable<string[]> = null,
-        samplers: Nullable<string[]> = null,
-        indexParameters?: any,
-        onCompiled?: (effect: Effect) => void,
-        onError?: (effect: Effect, errors: string) => void,
-        vertexUrl?: string,
-        fragmentUrl?: string
-    ) {
-        const customShaderCodeProcessing = PostProcess._GetShaderCodeProcessing(this.name);
-        if (customShaderCodeProcessing?.defineCustomBindings) {
-            const newUniforms = uniforms?.slice() ?? [];
-            newUniforms.push(...this._parameters);
-
-            const newSamplers = samplers?.slice() ?? [];
-            newSamplers.push(...this._samplers);
-
-            defines = customShaderCodeProcessing.defineCustomBindings(this.name, defines, newUniforms, newSamplers);
-            uniforms = newUniforms;
-            samplers = newSamplers;
-        }
-        this._postProcessDefines = defines;
-        this._drawWrapper.effect = this._engine.createEffect(
-            { vertex: vertexUrl ?? this._vertexUrl, fragment: fragmentUrl ?? this._fragmentUrl },
-            {
-                attributes: ["position"],
-                uniformsNames: uniforms || this._parameters,
-                uniformBuffersNames: this._uniformBuffers,
-                samplers: samplers || this._samplers,
-                defines: defines !== null ? defines : "",
-                fallbacks: null,
-                onCompiled: onCompiled ?? null,
-                onError: onError ?? null,
-                indexParameters: indexParameters || this._indexParameters,
-                processCodeAfterIncludes: customShaderCodeProcessing?.processCodeAfterIncludes
-                    ? (shaderType: string, code: string) => customShaderCodeProcessing!.processCodeAfterIncludes!(this.name, shaderType, code)
-                    : null,
-                processFinalCode: customShaderCodeProcessing?.processFinalCode
-                    ? (shaderType: string, code: string) => customShaderCodeProcessing!.processFinalCode!(this.name, shaderType, code)
-                    : null,
-                shaderLanguage: this._shaderLanguage,
-                extraInitializationsAsync: this._shadersLoaded
-                    ? undefined
-                    : async () => {
-                          await Promise.all(this._importPromises);
-                          this._shadersLoaded = true;
-                      },
-            },
-            this._engine
-        );
-        this.onEffectCreatedObservable.notifyObservers(this._drawWrapper.effect);
     }
 
     /**
@@ -1025,11 +740,11 @@ export class PostProcess {
         const engine = scene.getEngine();
         const maxSize = engine.getCaps().maxTextureSize;
 
-        const requiredWidth = ((sourceTexture ? sourceTexture.width : this._engine.getRenderWidth(true)) * <number>this._options) | 0;
-        const requiredHeight = ((sourceTexture ? sourceTexture.height : this._engine.getRenderHeight(true)) * <number>this._options) | 0;
+        const requiredWidth = ((sourceTexture ? sourceTexture.width : this._engine.getRenderWidth(true)) * <number>this.options.size) | 0;
+        const requiredHeight = ((sourceTexture ? sourceTexture.height : this._engine.getRenderHeight(true)) * <number>this.options.size) | 0;
 
-        let desiredWidth = (<PostProcessOptions>this._options).width || requiredWidth;
-        let desiredHeight = (<PostProcessOptions>this._options).height || requiredHeight;
+        let desiredWidth = (<PostProcessOptions>this.options.size).width || requiredWidth;
+        let desiredHeight = (<PostProcessOptions>this.options.size).height || requiredHeight;
 
         const needMipMaps =
             this.renderTargetSamplingMode !== Constants.TEXTURE_NEAREST_LINEAR &&
@@ -1049,11 +764,11 @@ export class PostProcess {
             }
 
             if (needMipMaps || this.alwaysForcePOT) {
-                if (!(<PostProcessOptions>this._options).width) {
+                if (!(<PostProcessOptions>this.options.size).width) {
                     desiredWidth = engine.needPOTTextures ? GetExponentOfTwo(desiredWidth, maxSize, this.scaleMode) : desiredWidth;
                 }
 
-                if (!(<PostProcessOptions>this._options).height) {
+                if (!(<PostProcessOptions>this.options.size).height) {
                     desiredHeight = engine.needPOTTextures ? GetExponentOfTwo(desiredHeight, maxSize, this.scaleMode) : desiredHeight;
                 }
             }
@@ -1078,10 +793,10 @@ export class PostProcess {
 
         // Bind the input of this post process to be used as the output of the previous post process.
         if (this.enablePixelPerfectMode) {
-            this._scaleRatio.copyFromFloats(requiredWidth / desiredWidth, requiredHeight / desiredHeight);
+            this.scaleRatio.copyFromFloats(requiredWidth / desiredWidth, requiredHeight / desiredHeight);
             this._engine.bindFramebuffer(target, 0, requiredWidth, requiredHeight, this.forceFullscreenViewport);
         } else {
-            this._scaleRatio.copyFromFloats(1, 1);
+            this.scaleRatio.copyFromFloats(1, 1);
             this._engine.bindFramebuffer(target, 0, undefined, undefined, this.forceFullscreenViewport);
         }
 
@@ -1101,13 +816,6 @@ export class PostProcess {
     }
 
     /**
-     * If the post process is supported.
-     */
-    public get isSupported(): boolean {
-        return this._drawWrapper.effect!.isSupported;
-    }
-
-    /**
      * The aspect ratio of the output texture.
      */
     public get aspectRatio(): number {
@@ -1121,25 +829,10 @@ export class PostProcess {
         return this.width / this.height;
     }
 
-    /**
-     * Get a value indicating if the post-process is ready to be used
-     * @returns true if the post-process is ready (shader is compiled)
-     */
-    public isReady(): boolean {
-        return this._drawWrapper.effect?.isReady() ?? false;
-    }
+    public override bind() {
+        super.bind();
 
-    /**
-     * @internal
-     */
-    public _bind() {
-        // Alpha
-        this._engine.setAlphaMode(this.alphaMode, true);
-        if (this.alphaConstants) {
-            this.getEngine().setAlphaConstants(this.alphaConstants.r, this.alphaConstants.g, this.alphaConstants.b, this.alphaConstants.a);
-        }
-
-        if (!this.externalTextureSamplerBinding && !this.useAsFrameGraphTask) {
+        if (!this.externalTextureSamplerBinding) {
             // Bind the output texture of the previous post process as the input to this post process.
             let source: RenderTargetWrapper;
             if (this._shareOutputWithPostProcess) {
@@ -1152,12 +845,6 @@ export class PostProcess {
 
             this._drawWrapper.effect!._bindTexture("textureSampler", source?.texture);
         }
-
-        // Parameters
-        this._drawWrapper.effect!.setVector2("scale", this._scaleRatio);
-        this.onApplyObservable.notifyObservers(this._drawWrapper.effect!);
-
-        PostProcess._GetShaderCodeProcessing(this.name)?.bindCustomBindings?.(this.name, this._drawWrapper.effect!);
     }
 
     /**
@@ -1176,7 +863,7 @@ export class PostProcess {
         this._engine.setDepthBuffer(false);
         this._engine.setDepthWrite(false);
 
-        this._bind();
+        this.bind();
 
         return this._drawWrapper.effect;
     }
@@ -1218,7 +905,7 @@ export class PostProcess {
      * Disposes the post process.
      * @param camera The camera to dispose the post process on.
      */
-    public dispose(camera?: Camera): void {
+    public override dispose(camera?: Camera): void {
         camera = camera || this._camera;
 
         this._disposeTextures();
@@ -1259,17 +946,17 @@ export class PostProcess {
 
         this.onActivateObservable.clear();
         this.onAfterRenderObservable.clear();
-        this.onApplyObservable.clear();
         this.onBeforeRenderObservable.clear();
         this.onSizeChangedObservable.clear();
-        this.onEffectCreatedObservable.clear();
+
+        super.dispose();
     }
 
     /**
      * Serializes the post process to a JSON object
      * @returns the JSON object
      */
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = SerializationHelper.Serialize(this);
         const camera = this.getCamera() || (this._scene && this._scene.activeCamera);
         serializationObject.customType = "BABYLON." + this.getClassName();
@@ -1277,13 +964,13 @@ export class PostProcess {
         serializationObject.reusable = this._reusable;
         serializationObject.textureType = this._textureType;
         serializationObject.fragmentUrl = this._fragmentUrl;
-        serializationObject.parameters = this._parameters;
-        serializationObject.samplers = this._samplers;
-        serializationObject.options = this._options;
-        serializationObject.defines = this._postProcessDefines;
+        serializationObject.parameters = this.options.uniforms;
+        serializationObject.samplers = this.options.samplers;
+        serializationObject.options = this.options.size;
+        serializationObject.defines = this.options.defines;
         serializationObject.textureFormat = this._textureFormat;
-        serializationObject.vertexUrl = this._vertexUrl;
-        serializationObject.indexParameters = this._indexParameters;
+        serializationObject.vertexUrl = this.options.vertexUrl;
+        serializationObject.indexParameters = this.options.indexParameters;
 
         return serializationObject;
     }
@@ -1292,7 +979,7 @@ export class PostProcess {
      * Clones this post process
      * @returns a new post process similar to this one
      */
-    public clone(): Nullable<PostProcess> {
+    public override clone(): Nullable<PostProcess> {
         const serializationObject = this.serialize();
         serializationObject._engine = this._engine;
         serializationObject.cameraId = null;
@@ -1321,7 +1008,7 @@ export class PostProcess {
      * @param rootUrl defines the root URL to use to load textures
      * @returns a new post process
      */
-    public static Parse(parsedPostProcess: any, scene: Scene, rootUrl: string): Nullable<PostProcess> {
+    public static override Parse(parsedPostProcess: any, scene: Scene, rootUrl: string): Nullable<PostProcess> {
         const postProcessType = GetClass(parsedPostProcess.customType);
 
         if (!postProcessType || !postProcessType._Parse) {
@@ -1335,7 +1022,7 @@ export class PostProcess {
     /**
      * @internal
      */
-    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<PostProcess> {
+    public static override _Parse(parsedPostProcess: any, targetCamera: Nullable<Camera>, scene: Nullable<Scene>, rootUrl: string): Nullable<PostProcess> {
         return SerializationHelper.Parse(
             () => {
                 return new PostProcess(

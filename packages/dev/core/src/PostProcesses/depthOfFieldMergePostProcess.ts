@@ -58,15 +58,13 @@ export class DepthOfFieldMergePostProcess extends PostProcess {
         });
 
         this.externalTextureSamplerBinding = true;
-        if (!this.useAsFrameGraphTask) {
-            this.onApplyObservable.add((effect: Effect) => {
-                effect.setTextureFromPostProcess("textureSampler", originalFromInput);
-                effect.setTextureFromPostProcessOutput("circleOfConfusionSampler", circleOfConfusion);
-                _blurSteps.forEach((step, index) => {
-                    effect.setTextureFromPostProcessOutput("blurStep" + (_blurSteps.length - index - 1), step);
-                });
+        this.onApplyObservable.add((effect: Effect) => {
+            effect.setTextureFromPostProcess("textureSampler", originalFromInput);
+            effect.setTextureFromPostProcessOutput("circleOfConfusionSampler", circleOfConfusion);
+            _blurSteps.forEach((step, index) => {
+                effect.setTextureFromPostProcessOutput("blurStep" + (_blurSteps.length - index - 1), step);
             });
-        }
+        });
 
         if (!blockCompilation) {
             this.updateEffect();

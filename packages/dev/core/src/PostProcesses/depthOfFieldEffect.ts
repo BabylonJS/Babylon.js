@@ -33,8 +33,6 @@ export const enum DepthOfFieldEffectBlurLevel {
  * The depth of field effect applies a blur to objects that are closer or further from where the camera is focusing.
  */
 export class DepthOfFieldEffect extends PostProcessRenderEffect {
-    public readonly useAsFrameGraphTask: boolean = false;
-
     private _circleOfConfusion: CircleOfConfusionPostProcess;
     /**
      * @internal Internal, blurs from high to low
@@ -96,7 +94,6 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
      * @param pipelineTextureType The type of texture to be used when performing the post processing.
      * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
      * @param depthNotNormalized If the depth from the depth texture is already normalized or if the normalization should be done at runtime in the shader (default: false)
-     * @param useAsFrameGraphTask If the effect should be used as a frame graph task
      */
     constructor(
         sceneOrEngine: Scene | AbstractEngine,
@@ -104,8 +101,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
         blurLevel: DepthOfFieldEffectBlurLevel = DepthOfFieldEffectBlurLevel.Low,
         pipelineTextureType = 0,
         blockCompilation = false,
-        depthNotNormalized = false,
-        useAsFrameGraphTask = false
+        depthNotNormalized = false
     ) {
         const engine = (sceneOrEngine as Scene)._renderForCamera ? (sceneOrEngine as Scene).getEngine() : (sceneOrEngine as AbstractEngine);
         super(
@@ -118,7 +114,6 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
         );
 
         this._pipelineTextureType = pipelineTextureType;
-        this.useAsFrameGraphTask = useAsFrameGraphTask;
 
         // Use R-only formats if supported to store the circle of confusion values.
         // This should be more space and bandwidth efficient than using RGBA.
@@ -134,7 +129,6 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
                 engine,
                 textureType: pipelineTextureType,
                 blockCompilation,
-                useAsFrameGraphTask,
                 depthNotNormalized,
             },
             null
@@ -179,7 +173,6 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
                     textureType: pipelineTextureType,
                     blockCompilation,
                     textureFormat: i == 0 ? circleOfConfusionTextureFormat : Constants.TEXTUREFORMAT_RGBA,
-                    useAsFrameGraphTask,
                 },
                 null,
                 this._circleOfConfusion,
@@ -198,7 +191,6 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
                     engine,
                     textureType: pipelineTextureType,
                     blockCompilation,
-                    useAsFrameGraphTask,
                 },
                 null,
                 this._circleOfConfusion,
@@ -228,7 +220,6 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
                 engine,
                 textureType: pipelineTextureType,
                 blockCompilation,
-                useAsFrameGraphTask,
             },
             null
         );

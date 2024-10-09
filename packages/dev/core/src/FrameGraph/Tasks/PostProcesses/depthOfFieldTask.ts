@@ -53,7 +53,7 @@ export class FrameGraphDepthOfFieldTask extends FrameGraphTask {
             }
         }
 
-        this._dofEffect = new DepthOfFieldEffect(engine, null, blurLevel, defaultPipelineTextureType, false, true, true);
+        this._dofEffect = new DepthOfFieldEffect(engine, null, blurLevel, defaultPipelineTextureType, false, true);
 
         this._circleOfConfusion = new FrameGraphCircleOfConfusionTask(
             `${name} Circle of Confusion`,

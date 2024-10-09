@@ -8,8 +8,9 @@ import { Logger } from "../Misc/logger";
 import { Constants } from "../Engines/constants";
 
 import { RegisterClass } from "../Misc/typeStore";
-import { serialize } from "../Misc/decorators";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { CircleOfConfusionPostProcessImpl } from "./circleOfConfusionPostProcessImpl";
+import type { Scene } from "core/scene";
 
 export interface CircleOfConfusionPostProcessOptions extends PostProcessOptions {
     depthNotNormalized?: boolean;
@@ -22,23 +23,46 @@ export class CircleOfConfusionPostProcess extends PostProcess {
     /**
      * Max lens size in scene units/1000 (eg. millimeter). Standard cameras are 50mm. (default: 50) The diameter of the resulting aperture can be computed by lensSize/fStop.
      */
-    @serialize()
-    public lensSize = 50;
+    public get lensSize() {
+        return this._impl.lensSize;
+    }
+
+    public set lensSize(value: number) {
+        this._impl.lensSize = value;
+    }
+
     /**
      * F-Stop of the effect's camera. The diameter of the resulting aperture can be computed by lensSize/fStop. (default: 1.4)
      */
-    @serialize()
-    public fStop = 1.4;
+    public get fStop() {
+        return this._impl.fStop;
+    }
+
+    public set fStop(value: number) {
+        this._impl.fStop = value;
+    }
+
     /**
      * Distance away from the camera to focus on in scene units/1000 (eg. millimeter). (default: 2000)
      */
-    @serialize()
-    public focusDistance = 2000;
+    public get focusDistance() {
+        return this._impl.focusDistance;
+    }
+
+    public set focusDistance(value: number) {
+        this._impl.focusDistance = value;
+    }
+
     /**
      * Focal length of the effect's camera in scene units/1000 (eg. millimeter). (default: 50)
      */
-    @serialize()
-    public focalLength = 50;
+    public get focalLength() {
+        return this._impl.focalLength;
+    }
+
+    public set focalLength(value: number) {
+        this._impl.focalLength = value;
+    }
 
     /**
      * Gets a string identifying the name of the class
@@ -48,7 +72,9 @@ export class CircleOfConfusionPostProcess extends PostProcess {
         return "CircleOfConfusionPostProcess";
     }
 
+    private _impl: CircleOfConfusionPostProcessImpl;
     private _depthTexture: Nullable<RenderTargetTexture> = null;
+
     /**
      * Creates a new instance CircleOfConfusionPostProcess
      * @param name The name of the effect.
@@ -72,10 +98,10 @@ export class CircleOfConfusionPostProcess extends PostProcess {
         textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false
     ) {
-        super(name, "circleOfConfusion", {
-            uniforms: ["cameraMinMaxZ", "focusDistance", "cocPrecalculation"],
-            samplers: ["depthSampler"],
-            defines: typeof options === "object" && options.depthNotNormalized ? "#define COC_DEPTH_NOT_NORMALIZED" : undefined,
+        super(name, CircleOfConfusionPostProcessImpl.FragmentUrl, {
+            uniforms: CircleOfConfusionPostProcessImpl.Uniforms,
+            samplers: CircleOfConfusionPostProcessImpl.Samplers,
+            defines: typeof options === "object" && options.depthNotNormalized ? CircleOfConfusionPostProcessImpl.DefinesDepthNotNormalized : undefined,
             size: typeof options === "number" ? options : undefined,
             camera,
             samplingMode,
@@ -85,26 +111,19 @@ export class CircleOfConfusionPostProcess extends PostProcess {
             blockCompilation,
             ...(options as CircleOfConfusionPostProcessOptions),
         });
+
+        this._impl = new CircleOfConfusionPostProcessImpl(this);
+
         this._depthTexture = depthTexture;
         this.onApplyObservable.add((effect: Effect) => {
-            if (!this.useAsFrameGraphTask) {
-                if (!this._depthTexture) {
-                    Logger.Warn("No depth texture set on CircleOfConfusionPostProcess");
-                    return;
-                }
-
-                effect.setTexture("depthSampler", this._depthTexture);
-
-                const activeCamera = this._depthTexture.activeCamera!;
-                effect.setFloat2("cameraMinMaxZ", activeCamera.minZ, activeCamera.maxZ - activeCamera.minZ);
+            if (!this._depthTexture) {
+                Logger.Warn("No depth texture set on CircleOfConfusionPostProcess");
+                return;
             }
 
-            // Circle of confusion calculation, See https://developer.nvidia.com/gpugems/GPUGems/gpugems_ch23.html
-            const aperture = this.lensSize / this.fStop;
-            const cocPrecalculation = (aperture * this.focalLength) / (this.focusDistance - this.focalLength); // * ((this.focusDistance - pixelDistance)/pixelDistance) [This part is done in shader]
+            effect.setTexture("depthSampler", this._depthTexture);
 
-            effect.setFloat("focusDistance", this.focusDistance);
-            effect.setFloat("cocPrecalculation", cocPrecalculation);
+            this._impl.bind(this._depthTexture.activeCamera!);
         });
     }
 
@@ -124,6 +143,17 @@ export class CircleOfConfusionPostProcess extends PostProcess {
      */
     public set depthTexture(value: RenderTargetTexture) {
         this._depthTexture = value;
+    }
+
+    /**
+     * @internal
+     */
+    public static override _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
+        const postProcess = super._Parse(parsedPostProcess, targetCamera, scene, rootUrl) as CircleOfConfusionPostProcess;
+
+        postProcess._impl.parse(parsedPostProcess, scene, rootUrl);
+
+        return postProcess;
     }
 }
 

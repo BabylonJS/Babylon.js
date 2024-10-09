@@ -10,6 +10,7 @@ import { NodeRenderGraphBloomPostProcessBlock } from "core/FrameGraph/Node/Block
 import { NodeRenderGraphBlurPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/blurPostProcessBlock";
 import { NodeRenderGraphCircleOfConfusionPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/circleOfConfusionPostProcessBlock";
 import { NodeRenderGraphDepthOfFieldPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/depthOfFieldPostProcessBlock";
+import { NodeRenderGraphExtractHighlightsPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/extractHighlightsPostProcessBlock";
 import { NodeRenderGraphClearBlock } from "core/FrameGraph/Node/Blocks/Textures/clearBlock";
 import { NodeRenderGraphCopyTextureBlock } from "core/FrameGraph/Node/Blocks/Textures/copyTextureBlock";
 import { NodeRenderGraphGenerateMipmapsBlock } from "core/FrameGraph/Node/Blocks/Textures/generateMipmapsBlock";
@@ -91,6 +92,9 @@ export class BlockTools {
             }
             case "DepthOfFieldBlock": {
                 return new NodeRenderGraphDepthOfFieldPostProcessBlock("Depth of Field", frameGraph, scene);
+            }
+            case "ExtractHighlightsBlock": {
+                return new NodeRenderGraphExtractHighlightsPostProcessBlock("Extract Highlights", frameGraph, scene);
             }
         }
 

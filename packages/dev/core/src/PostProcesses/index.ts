@@ -21,6 +21,7 @@ export * from "./imageProcessingPostProcess";
 export * from "./motionBlurPostProcess";
 export * from "./passPostProcess";
 export * from "./postProcess";
+export * from "./postProcessCore";
 export * from "./postProcessManager";
 export * from "./refractionPostProcess";
 export * from "./RenderPipeline/index";

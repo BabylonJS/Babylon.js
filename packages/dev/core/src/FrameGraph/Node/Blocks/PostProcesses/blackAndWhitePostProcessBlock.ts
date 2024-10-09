@@ -3,7 +3,6 @@ import type { NodeRenderGraphConnectionPoint } from "../../nodeRenderGraphBlockC
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
-import type { BlackAndWhitePostProcess } from "../../../../PostProcesses/blackAndWhitePostProcess";
 import type { Scene } from "../../../../scene";
 import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
 import type { FrameGraphTextureHandle } from "../../../frameGraphTypes";
@@ -15,20 +14,12 @@ import type { FrameGraph } from "core/FrameGraph/frameGraph";
  */
 export class NodeRenderGraphBlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
     protected override _frameGraphTask: FrameGraphBlackAndWhiteTask;
-    protected _postProcess: BlackAndWhitePostProcess;
 
     /**
      * Gets the frame graph task associated with this block
      */
     public override get task() {
         return this._frameGraphTask;
-    }
-
-    /**
-     * Gets the post process used by this block
-     */
-    public get postProcess() {
-        return this._postProcess;
     }
 
     /**
@@ -51,7 +42,6 @@ export class NodeRenderGraphBlackAndWhitePostProcessBlock extends NodeRenderGrap
         };
 
         this._frameGraphTask = new FrameGraphBlackAndWhiteTask(this.name, frameGraph, scene.getEngine());
-        this._postProcess = this._frameGraphTask.getPostProcess();
     }
 
     /** Sampling mode used to sample from the source texture */
@@ -67,11 +57,11 @@ export class NodeRenderGraphBlackAndWhitePostProcessBlock extends NodeRenderGrap
     /** Degree of conversion to black and white (default: 1 - full b&w conversion) */
     @editableInPropertyPage("Degree", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 1 })
     public get degree(): number {
-        return this._postProcess.degree;
+        return this._frameGraphTask.degree;
     }
 
     public set degree(value: number) {
-        this._postProcess.degree = value;
+        this._frameGraphTask.degree = value;
     }
 
     /**

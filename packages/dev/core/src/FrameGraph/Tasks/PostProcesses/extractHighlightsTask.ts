@@ -1,38 +1,38 @@
 import { FrameGraphPostProcessCoreTask } from "./postProcessCoreTask";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { FrameGraph } from "core/FrameGraph/frameGraph";
+import type { FrameGraphRenderPass } from "core/FrameGraph/Passes/renderPass";
 import type { PostProcessCoreOptions } from "core/PostProcesses/postProcessCore";
 import { PostProcessCore } from "core/PostProcesses/postProcessCore";
-import { BlackAndWhitePostProcessImpl } from "core/PostProcesses/blackAndWhitePostProcessImpl";
-import type { FrameGraphRenderPass } from "core/FrameGraph/Passes/renderPass";
+import { ExtractHighlightsPostProcessImpl } from "core/PostProcesses/extractHighlightsPostProcessImpl";
 
-export class FrameGraphBlackAndWhiteTask extends FrameGraphPostProcessCoreTask {
+export class FrameGraphExtractHighlightsTask extends FrameGraphPostProcessCoreTask {
     /**
-     * Linear about to convert he result to black and white (default: 1)
+     * The luminance threshold, pixels below this value will be set to black.
      */
-    public get degree() {
-        return this._impl.degree;
+    public get threshold() {
+        return this._impl.threshold;
     }
 
-    public set degree(value: number) {
-        this._impl.degree = value;
+    public set threshold(value: number) {
+        this._impl.threshold = value;
     }
 
-    protected override _impl: BlackAndWhitePostProcessImpl;
+    protected override _impl: ExtractHighlightsPostProcessImpl;
 
     constructor(name: string, frameGraph: FrameGraph, engine: AbstractEngine, options?: PostProcessCoreOptions) {
         super(
             name,
             frameGraph,
-            new BlackAndWhitePostProcessImpl(
-                new PostProcessCore(name, BlackAndWhitePostProcessImpl.FragmentUrl, engine, {
-                    uniforms: BlackAndWhitePostProcessImpl.Uniforms,
+            new ExtractHighlightsPostProcessImpl(
+                new PostProcessCore(name, ExtractHighlightsPostProcessImpl.FragmentUrl, engine, {
+                    uniforms: ExtractHighlightsPostProcessImpl.Uniforms,
                     ...options,
                     extraInitializations: (useWebGPU, promises) => {
                         if (useWebGPU) {
-                            promises.push(import("../../../ShadersWGSL/blackAndWhite.fragment"));
+                            promises.push(import("../../../ShadersWGSL/extractHighlights.fragment"));
                         } else {
-                            promises.push(import("../../../Shaders/blackAndWhite.fragment"));
+                            promises.push(import("../../../Shaders/extractHighlights.fragment"));
                         }
                     },
                 })

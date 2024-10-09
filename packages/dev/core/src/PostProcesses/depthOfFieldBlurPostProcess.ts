@@ -8,7 +8,6 @@ import { BlurPostProcess } from "./blurPostProcess";
 import type { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
 import { RegisterClass } from "../Misc/typeStore";
-import { serialize } from "../Misc/decorators";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
@@ -18,12 +17,6 @@ import type { AbstractEngine } from "core/Engines/abstractEngine";
  * See section 2.6.2 http://fileadmin.cs.lth.se/cs/education/edan35/lectures/12dof.pdf
  */
 export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
-    /**
-     * The direction the blur should be applied
-     */
-    @serialize()
-    public override direction: Vector2;
-
     /**
      * Gets a string identifying the name of the class
      * @returns "DepthOfFieldBlurPostProcess" string
@@ -78,17 +71,14 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
             samplingMode: (samplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE),
         });
 
-        this.direction = direction;
         this.externalTextureSamplerBinding = !!imageToBlur;
 
-        if (!this.useAsFrameGraphTask) {
-            this.onApplyObservable.add((effect: Effect) => {
-                if (imageToBlur != null) {
-                    effect.setTextureFromPostProcess("textureSampler", imageToBlur);
-                }
-                effect.setTextureFromPostProcessOutput("circleOfConfusionSampler", circleOfConfusion);
-            });
-        }
+        this.onApplyObservable.add((effect: Effect) => {
+            if (imageToBlur != null) {
+                effect.setTextureFromPostProcess("textureSampler", imageToBlur);
+            }
+            effect.setTextureFromPostProcessOutput("circleOfConfusionSampler", circleOfConfusion);
+        });
     }
 }
 

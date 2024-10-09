@@ -16,6 +16,9 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["NodeRenderGraphBlackAndWhitePostProcessBlock"] = PostProcessDisplayManager;
     DisplayLedger.RegisteredControls["NodeRenderGraphBloomPostProcessBlock"] = PostProcessDisplayManager;
     DisplayLedger.RegisteredControls["NodeRenderGraphBlurPostProcessBlock"] = PostProcessDisplayManager;
+    DisplayLedger.RegisteredControls["NodeRenderGraphCircleOfConfusionPostProcessBlock"] = PostProcessDisplayManager;
+    DisplayLedger.RegisteredControls["NodeRenderGraphDepthOfFieldPostProcessBlock"] = PostProcessDisplayManager;
+    DisplayLedger.RegisteredControls["NodeRenderGraphExtractHighlightsPostProcessBlock"] = PostProcessDisplayManager;
     DisplayLedger.RegisteredControls["NodeRenderGraphClearBlock"] = TextureDisplayManager;
     DisplayLedger.RegisteredControls["NodeRenderGraphCopyTextureBlock"] = TextureDisplayManager;
     DisplayLedger.RegisteredControls["NodeRenderGraphGenerateMipmapsBlock"] = TextureDisplayManager;

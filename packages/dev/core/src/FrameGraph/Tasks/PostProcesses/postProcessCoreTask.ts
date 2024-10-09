@@ -1,4 +1,4 @@
-import type { PostProcess } from "core/PostProcesses/postProcess";
+import type { PostProcessCore } from "core/PostProcesses/postProcessCore";
 import type { FrameGraph } from "../../frameGraph";
 import type { FrameGraphTextureHandle } from "../../frameGraphTypes";
 import type { DrawWrapper } from "core/Materials/drawWrapper";
@@ -6,8 +6,9 @@ import { Constants } from "core/Engines/constants";
 import type { FrameGraphRenderPass } from "core/FrameGraph/Passes/renderPass";
 import type { FrameGraphRenderContext } from "core/FrameGraph/frameGraphRenderContext";
 import { FrameGraphTask } from "../../frameGraphTask";
+import type { AbstractPostProcessImpl } from "core/PostProcesses/abstractPostProcessImpl";
 
-export class FrameGraphPostProcessTask extends FrameGraphTask {
+export class FrameGraphPostProcessCoreTask extends FrameGraphTask {
     public sourceTexture: FrameGraphTextureHandle;
 
     public sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
@@ -16,18 +17,18 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
 
     public readonly outputTexture: FrameGraphTextureHandle;
 
-    public getPostProcess<T extends PostProcess>() {
-        return this._postProcess as T;
-    }
+    protected readonly _impl: AbstractPostProcessImpl;
+    protected readonly _postProcess: PostProcessCore;
+    protected readonly _postProcessDrawWrapper: DrawWrapper;
+    protected _outputWidth: number;
+    protected _outputHeight: number;
 
-    protected _postProcess: PostProcess;
-    protected _postProcessDrawWrapper: DrawWrapper;
-
-    constructor(name: string, frameGraph: FrameGraph, postProcess: PostProcess) {
+    constructor(name: string, frameGraph: FrameGraph, postProcessImpl: AbstractPostProcessImpl) {
         super(name, frameGraph);
 
-        this._postProcess = postProcess;
-        this._postProcessDrawWrapper = postProcess.getDrawWrapper();
+        this._impl = postProcessImpl;
+        this._postProcess = postProcessImpl.postProcess;
+        this._postProcessDrawWrapper = this._postProcess.getDrawWrapper();
 
         this.outputTexture = this._frameGraph.createDanglingHandle();
     }
@@ -54,8 +55,8 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
 
         const outputTextureDescription = this._frameGraph.getTextureDescription(this.outputTexture);
 
-        this._postProcess.width = outputTextureDescription.size.width;
-        this._postProcess.height = outputTextureDescription.size.height;
+        this._outputWidth = outputTextureDescription.size.width;
+        this._outputHeight = outputTextureDescription.size.height;
 
         const pass = this._frameGraph.addRenderPass(this.name);
 

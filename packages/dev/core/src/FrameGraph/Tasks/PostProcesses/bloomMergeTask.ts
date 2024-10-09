@@ -1,16 +1,43 @@
-import type { FrameGraph } from "../../frameGraph";
-import type { FrameGraphTextureHandle } from "../../frameGraphTypes";
-import { FrameGraphPostProcessTask } from "./postProcessTask";
-import type { BloomMergePostProcess } from "../../../PostProcesses/bloomMergePostProcess";
-import type { FrameGraphRenderPass } from "core/FrameGraph/Passes/renderPass";
+// eslint-disable-next-line import/no-internal-modules
+import type { FrameGraph, FrameGraphTextureHandle, FrameGraphRenderPass, AbstractEngine, PostProcessCoreOptions } from "core/index";
+import { FrameGraphPostProcessCoreTask } from "./postProcessCoreTask";
+import { BloomMergePostProcessImpl } from "core/PostProcesses/bloomMergePostProcessImpl";
+import { PostProcessCore } from "core/PostProcesses/postProcessCore";
 
-export class FrameGraphBloomMergeTask extends FrameGraphPostProcessTask {
+export class FrameGraphBloomMergeTask extends FrameGraphPostProcessCoreTask {
     public blurTexture: FrameGraphTextureHandle;
 
-    protected override _postProcess: BloomMergePostProcess;
+    /** Weight of the bloom to be added to the original input. */
+    public get weight() {
+        return this._impl.weight;
+    }
 
-    constructor(name: string, frameGraph: FrameGraph, bloomMergePostProcess: BloomMergePostProcess) {
-        super(name, frameGraph, bloomMergePostProcess);
+    public set weight(value: number) {
+        this._impl.weight = value;
+    }
+
+    protected override _impl: BloomMergePostProcessImpl;
+
+    constructor(name: string, frameGraph: FrameGraph, engine: AbstractEngine, options?: PostProcessCoreOptions) {
+        super(
+            name,
+            frameGraph,
+            new BloomMergePostProcessImpl(
+                new PostProcessCore(name, BloomMergePostProcessImpl.FragmentUrl, engine, {
+                    uniforms: BloomMergePostProcessImpl.Uniforms,
+                    samplers: BloomMergePostProcessImpl.Samplers,
+                    blockCompilation: true,
+                    ...options,
+                    extraInitializations: (useWebGPU, promises) => {
+                        if (useWebGPU) {
+                            promises.push(import("../../../ShadersWGSL/bloomMerge.fragment"));
+                        } else {
+                            promises.push(import("../../../Shaders/bloomMerge.fragment"));
+                        }
+                    },
+                })
+            )
+        );
     }
 
     public override record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
@@ -19,8 +46,8 @@ export class FrameGraphBloomMergeTask extends FrameGraphPostProcessTask {
         }
 
         const pass = super.record(skipCreationOfDisabledPasses, undefined, (context) => {
+            this._impl.bind();
             context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "bloomBlur", this.blurTexture);
-            this._postProcessDrawWrapper.effect!.setFloat("bloomWeight", this._postProcess.weight);
         });
 
         pass.useTexture(this.blurTexture);

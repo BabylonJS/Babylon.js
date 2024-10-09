@@ -1,30 +1,78 @@
-import { FrameGraphPostProcessTask } from "./postProcessTask";
-import { BlurPostProcess } from "core/PostProcesses/blurPostProcess";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
-import { Vector2 } from "core/Maths/math.vector";
-import type { FrameGraph } from "core/FrameGraph/frameGraph";
+// eslint-disable-next-line import/no-internal-modules
+import type { AbstractEngine, FrameGraph, FrameGraphRenderPass, PostProcessCoreOptions, Vector2 } from "core/index";
+import { FrameGraphPostProcessCoreTask } from "./postProcessCoreTask";
+import { PostProcessCore } from "core/PostProcesses/postProcessCore";
+import { BlurPostProcessImpl } from "core/PostProcesses/blurPostProcessImpl";
 
-export class FrameGraphBlurTask extends FrameGraphPostProcessTask {
-    protected override _postProcess: BlurPostProcess;
+export class FrameGraphBlurTask extends FrameGraphPostProcessCoreTask {
+    /** The direction in which to blur the image. */
+    public get direction() {
+        return this._impl.direction;
+    }
 
-    constructor(name: string, frameGraph: FrameGraph, engine: AbstractEngine, direction: Vector2, kernel: number) {
+    public set direction(value: Vector2) {
+        this._impl.direction = value;
+    }
+
+    /**
+     * Sets the length in pixels of the blur sample region
+     */
+    public set kernel(v: number) {
+        this._impl.kernel = v;
+    }
+
+    /**
+     * Gets the length in pixels of the blur sample region
+     */
+    public get kernel(): number {
+        return this._impl.kernel;
+    }
+
+    /**
+     * Sets whether or not the blur needs to unpack/repack floats
+     */
+    public set packedFloat(v: boolean) {
+        this._impl.packedFloat = v;
+    }
+
+    /**
+     * Gets whether or not the blur is unpacking/repacking floats
+     */
+    public get packedFloat(): boolean {
+        return this._impl.packedFloat;
+    }
+
+    protected override _impl: BlurPostProcessImpl;
+
+    constructor(name: string, frameGraph: FrameGraph, engine: AbstractEngine, direction: Vector2, kernel: number, options?: PostProcessCoreOptions) {
         super(
             name,
             frameGraph,
-            new BlurPostProcess(
-                name,
-                new Vector2(0, 0),
-                1,
-                {
-                    useAsFrameGraphTask: true,
-                },
-                null,
-                undefined,
-                engine
+            new BlurPostProcessImpl(
+                new PostProcessCore(name, BlurPostProcessImpl.FragmentUrl, engine, {
+                    uniforms: BlurPostProcessImpl.Uniforms,
+                    samplers: BlurPostProcessImpl.Samplers,
+                    vertexUrl: BlurPostProcessImpl.VertexUrl,
+                    ...options,
+                    blockCompilation: true,
+                    extraInitializations: (useWebGPU, promises) => {
+                        if (useWebGPU) {
+                            promises.push(Promise.all([import("../../../ShadersWGSL/kernelBlur.fragment"), import("../../../ShadersWGSL/kernelBlur.vertex")]));
+                        } else {
+                            promises.push(Promise.all([import("../../../Shaders/kernelBlur.fragment"), import("../../../Shaders/kernelBlur.vertex")]));
+                        }
+                    },
+                })
             )
         );
 
-        this._postProcess.direction = direction;
-        this._postProcess.kernel = kernel;
+        this.direction = direction;
+        this.kernel = kernel;
+    }
+
+    public override record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
+        return super.record(skipCreationOfDisabledPasses, undefined, (_context) => {
+            this._impl.bind(this._outputWidth, this._outputHeight);
+        });
     }
 }

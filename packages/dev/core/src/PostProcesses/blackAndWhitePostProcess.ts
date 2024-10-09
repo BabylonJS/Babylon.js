@@ -1,15 +1,14 @@
 import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
 import type { Camera } from "../Cameras/camera";
-import type { Effect } from "../Materials/effect";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 
 import { RegisterClass } from "../Misc/typeStore";
-import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import type { Nullable } from "../types";
 
 import type { Scene } from "../scene";
+import { BlackAndWhitePostProcessImpl } from "./blackAndWhitePostProcessImpl";
 
 /**
  * Post process used to render in black and white
@@ -18,8 +17,13 @@ export class BlackAndWhitePostProcess extends PostProcess {
     /**
      * Linear about to convert he result to black and white (default: 1)
      */
-    @serialize()
-    public degree = 1;
+    public get degree() {
+        return this._impl.degree;
+    }
+
+    public set degree(value: number) {
+        this._impl.degree = value;
+    }
 
     /**
      * Gets a string identifying the name of the class
@@ -28,6 +32,8 @@ export class BlackAndWhitePostProcess extends PostProcess {
     public override getClassName(): string {
         return "BlackAndWhitePostProcess";
     }
+
+    private _impl: BlackAndWhitePostProcessImpl;
 
     /**
      * Creates a black and white post process
@@ -40,8 +46,8 @@ export class BlackAndWhitePostProcess extends PostProcess {
      * @param reusable If the post process can be reused on the same frame. (default: false)
      */
     constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera> = null, samplingMode?: number, engine?: AbstractEngine, reusable?: boolean) {
-        super(name, "blackAndWhite", {
-            uniforms: ["degree"],
+        super(name, BlackAndWhitePostProcessImpl.FragmentUrl, {
+            uniforms: BlackAndWhitePostProcessImpl.Uniforms,
             size: typeof options === "number" ? options : undefined,
             camera,
             samplingMode,
@@ -50,8 +56,10 @@ export class BlackAndWhitePostProcess extends PostProcess {
             ...(options as PostProcessOptions),
         });
 
-        this.onApplyObservable.add((effect: Effect) => {
-            effect.setFloat("degree", this.degree);
+        this._impl = new BlackAndWhitePostProcessImpl(this);
+
+        this.onApplyObservable.add(() => {
+            this._impl.bind();
         });
     }
 
@@ -70,7 +78,7 @@ export class BlackAndWhitePostProcess extends PostProcess {
      * @internal
      */
     public static override _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<BlackAndWhitePostProcess> {
-        return SerializationHelper.Parse(
+        const postProcess: BlackAndWhitePostProcess = SerializationHelper.Parse(
             () => {
                 return new BlackAndWhitePostProcess(
                     parsedPostProcess.name,
@@ -85,6 +93,10 @@ export class BlackAndWhitePostProcess extends PostProcess {
             scene,
             rootUrl
         );
+
+        postProcess._impl.parse(parsedPostProcess, scene, rootUrl);
+
+        return postProcess;
     }
 }
 

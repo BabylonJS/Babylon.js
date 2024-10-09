@@ -3,8 +3,8 @@ import type { FrameGraphTextureCreationOptions, FrameGraphTextureHandle } from "
 import { Constants } from "core/Engines/constants";
 import { BloomEffect } from "../../../PostProcesses/bloomEffect";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
-import { FrameGraphBloomMergeTask } from "./bloomMergeTask";
-import type { BloomMergePostProcess } from "core/PostProcesses/bloomMergePostProcess";
+//import { FrameGraphBloomMergeTask } from "./bloomMergeTask";
+//import type { BloomMergePostProcess } from "core/PostProcesses/bloomMergePostProcess";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { FrameGraphTask } from "../../frameGraphTask";
 
@@ -25,7 +25,7 @@ export class FrameGraphBloomTask extends FrameGraphTask {
     private _downscale: FrameGraphPostProcessTask;
     private _blurX: FrameGraphPostProcessTask;
     private _blurY: FrameGraphPostProcessTask;
-    private _merge: FrameGraphBloomMergeTask;
+    //private _merge: FrameGraphBloomMergeTask;
 
     constructor(name: string, frameGraph: FrameGraph, engine: AbstractEngine, weight: number, kernel: number, threshold: number, hdr = false, bloomScale = 0.5) {
         super(name, frameGraph);
@@ -40,19 +40,19 @@ export class FrameGraphBloomTask extends FrameGraphTask {
             }
         }
 
-        this._bloomEffect = new BloomEffect(engine, bloomScale, weight, kernel, defaultPipelineTextureType, false, true);
+        this._bloomEffect = new BloomEffect(engine, bloomScale, weight, kernel, defaultPipelineTextureType, false);
         this._bloomEffect.threshold = threshold;
 
         this._downscale = new FrameGraphPostProcessTask(`${name} Downscale`, this._frameGraph, this._bloomEffect._effects[0]);
         this._blurX = new FrameGraphPostProcessTask(`${name} Blur X`, this._frameGraph, this._bloomEffect._effects[1]);
         this._blurY = new FrameGraphPostProcessTask(`${name} Blur Y`, this._frameGraph, this._bloomEffect._effects[2]);
-        this._merge = new FrameGraphBloomMergeTask(`${name} Merge`, this._frameGraph, this._bloomEffect._effects[3] as BloomMergePostProcess);
+        //this._merge = new FrameGraphBloomMergeTask(`${name} Merge`, this._frameGraph, this._bloomEffect._effects[3] as BloomMergePostProcess);
 
         this.outputTexture = this._frameGraph.createDanglingHandle();
     }
 
     public override isReady() {
-        return this._downscale.isReady() && this._blurX.isReady() && this._blurY.isReady() && this._merge.isReady();
+        return this._downscale.isReady() && this._blurX.isReady() && this._blurY.isReady(); // && this._merge.isReady();
     }
 
     public override record(): void {
@@ -108,13 +108,13 @@ export class FrameGraphBloomTask extends FrameGraphTask {
         sourceTextureCreationOptions.options.generateStencilBuffer = false;
         sourceTextureCreationOptions.options.samples = 1;
 
-        this._frameGraph.resolveDanglingHandle(this.outputTexture, this.destinationTexture, this._merge.name, sourceTextureCreationOptions);
+        // this._frameGraph.resolveDanglingHandle(this.outputTexture, this.destinationTexture, this._merge.name, sourceTextureCreationOptions);
 
-        this._merge.sourceTexture = this.sourceTexture;
-        this._merge.sourceSamplingMode = this.sourceSamplingMode;
-        this._merge.blurTexture = blurYTextureHandle;
-        this._merge.destinationTexture = this.outputTexture;
-        this._merge.record(true);
+        // this._merge.sourceTexture = this.sourceTexture;
+        // this._merge.sourceSamplingMode = this.sourceSamplingMode;
+        // this._merge.blurTexture = blurYTextureHandle;
+        // this._merge.destinationTexture = this.outputTexture;
+        // this._merge.record(true);
 
         const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
 
@@ -128,7 +128,7 @@ export class FrameGraphBloomTask extends FrameGraphTask {
         this._downscale.dispose();
         this._blurX.dispose();
         this._blurY.dispose();
-        this._merge.dispose();
+        //this._merge.dispose();
         super.dispose();
     }
 }
