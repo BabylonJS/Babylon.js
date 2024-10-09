@@ -3,7 +3,7 @@ varying vUV: vec2f;
 
 var depthSampler: texture_2d<f32>;
 var worldNormalSampler: texture_2d<f32>;
-var textureSampler: texture_2d<f32>;
+var voxelTracingSampler : texture_2d<f32>;
 
 uniform blurParameters: vec4f;
 
@@ -34,7 +34,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         for(var x: i32 = 0; x < nbWeights; x++) {
             var Coords: vec2i = PixelCoord + i32(stridef) * vec2i(x - (nbWeights >> 1), y - (nbWeights >> 1));
 
-            var T: vec2f = textureLoad(textureSampler, Coords, 0).xy;
+            var T : vec2f = textureLoad(voxelTracingSampler, Coords, 0).xy;
             var ddepth: f32 = -textureLoad(depthSampler, Coords, 0).x - depth;
             var dN: vec3f = textureLoad(worldNormalSampler, Coords, 0).xyz - N;
             var w: f32 = weights[x] * weights[y] *

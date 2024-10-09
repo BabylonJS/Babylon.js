@@ -4,11 +4,13 @@ import type { Scene } from "../../scene";
 import { Vector4 } from "../../Maths/math.vector";
 import { PostProcess } from "../../PostProcesses/postProcess";
 import type { PostProcessOptions } from "../../PostProcesses/postProcess";
-import type { Effect } from "../../Materials/effect";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import type { RenderTargetCreationOptions } from "../../Materials/Textures/textureCreationOptions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { GeometryBufferRenderer } from "../../Rendering/geometryBufferRenderer";
+import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
+import type { IProceduralTextureCreationOptions } from "core/Materials/Textures/Procedurals/proceduralTexture";
+import type { IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
 
 /**
  * This should not be instanciated directly, as it is part of a scene component
@@ -17,9 +19,10 @@ import { GeometryBufferRenderer } from "../../Rendering/geometryBufferRenderer";
 export class _IblShadowsAccumulationPass {
     private _scene: Scene;
     private _engine: AbstractEngine;
+    private _renderPipeline: IblShadowsRenderPipeline;
 
     // First, render the accumulation pass with both position buffers, motion buffer, shadow buffer, and the previous accumulation buffer
-    private _outputPP: PostProcess;
+    private _outputTexture: ProceduralTexture;
     private _oldAccumulationRT: RenderTargetTexture;
     private _oldLocalPositionRT: RenderTargetTexture;
 
@@ -27,11 +30,11 @@ export class _IblShadowsAccumulationPass {
     public debugEnabled: boolean = false;
 
     /**
-     * Gets the pass post process
-     * @returns The post process
+     * Returns the output texture of the pass.
+     * @returns The output texture.
      */
-    public getPassPP(): PostProcess {
-        return this._outputPP;
+    public getOutputTexture(): ProceduralTexture {
+        return this._outputTexture;
     }
 
     /**
@@ -128,7 +131,7 @@ export class _IblShadowsAccumulationPass {
             this._debugPassPP.autoClear = false;
             this._debugPassPP.onApplyObservable.add((effect) => {
                 // update the caustic texture with what we just rendered.
-                effect.setTextureFromPostProcessOutput("debugSampler", this._outputPP);
+                effect.setTexture("debugSampler", this._outputTexture);
                 effect.setVector4("sizeParams", this._debugSizeParams);
             });
         }
@@ -137,11 +140,13 @@ export class _IblShadowsAccumulationPass {
     /**
      * Instantiates the accumulation pass
      * @param scene Scene to attach to
+     * @param iblShadowsRenderPipeline The IBL shadows render pipeline
      * @returns The accumulation pass
      */
-    constructor(scene: Scene) {
+    constructor(scene: Scene, iblShadowsRenderPipeline: IblShadowsRenderPipeline) {
         this._scene = scene;
         this._engine = scene.getEngine();
+        this._renderPipeline = iblShadowsRenderPipeline;
         this._createTextures();
     }
 
@@ -232,59 +237,102 @@ export class _IblShadowsAccumulationPass {
         const accumulationCopyPP = new PostProcess("Copy Accumulation Texture", "pass", accumulationCopyOptions);
         accumulationCopyPP.autoClear = false;
         accumulationCopyPP.onApplyObservable.add((effect) => {
-            if (this._outputPP._outputTexture?.texture) {
-                effect.setTextureFromPostProcessOutput("textureSampler", this._outputPP);
-            } else {
-                // We must set a texture. It's not the right one, but we must set something before the right one is available (see above), probably on next frame.
-                effect._bindTexture("textureSampler", this._outputPP.inputTexture.texture);
-            }
+            // if (this._outputTexture?._texture) {
+            effect.setTexture("textureSampler", this._outputTexture);
+            // } else {
+            //     // We must set a texture. It's not the right one, but we must set something before the right one is available (see above), probably on next frame.
+            //     effect._bindTexture("textureSampler", this._outputTexture);
+            // }
         });
         this._oldAccumulationRT.addPostProcess(accumulationCopyPP);
         this._oldAccumulationRT.skipInitialClear = true;
         this._oldAccumulationRT.noPrePassRenderer = true;
         this._scene.customRenderTargets.push(this._oldAccumulationRT);
 
-        // Now, create the accumulation pass
-        const ppOptions: PostProcessOptions = {
-            width: this._engine.getRenderWidth(),
-            height: this._engine.getRenderHeight(),
-            textureFormat: Constants.TEXTUREFORMAT_RG,
-            textureType: Constants.TEXTURETYPE_HALF_FLOAT,
+        const textureOptions: IProceduralTextureCreationOptions = {
+            type: Constants.TEXTURETYPE_HALF_FLOAT,
+            format: Constants.TEXTUREFORMAT_RGBA,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-            uniforms: ["accumulationParameters"],
-            samplers: ["oldAccumulationSampler", "prevLocalPositionSampler", "localPositionSampler", "motionSampler"],
-            engine: this._engine,
-            reusable: false,
+            generateDepthBuffer: false,
+            generateMipMaps: false,
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
-                if (useWebGPU) {
-                    list.push(import("../../ShadersWGSL/iblShadowAccumulation.fragment"));
+            extraInitializationsAsync: async () => {
+                if (isWebGPU) {
+                    await Promise.all([import("../../ShadersWGSL/iblShadowAccumulation.fragment")]);
                 } else {
-                    list.push(import("../../Shaders/iblShadowAccumulation.fragment"));
+                    await Promise.all([import("../../Shaders/iblShadowAccumulation.fragment")]);
                 }
             },
         };
-        this._outputPP = new PostProcess("accumulationPassPP", "iblShadowAccumulation", ppOptions);
-        this._outputPP.autoClear = false;
-        this._outputPP.resize(this._engine.getRenderWidth(), this._engine.getRenderHeight()); // make sure that _outputPP.inputTexture.texture is created right away
-        this._outputPP.onApplyObservable.add((effect) => {
-            this._updatePostProcess(effect);
+        this._outputTexture = new ProceduralTexture(
+            "shadowAccumulationPass",
+            {
+                width: this._engine.getRenderWidth(),
+                height: this._engine.getRenderHeight(),
+            },
+            "iblShadowAccumulation",
+            this._scene,
+            textureOptions,
+            false,
+            false,
+            Constants.TEXTURETYPE_UNSIGNED_INT
+        );
+        this._outputTexture.refreshRate = -1;
+        this._outputTexture.autoClear = false;
+
+        // Need to set all the textures first so that the effect gets created with the proper uniforms.
+        this._update();
+
+        this._scene.onBeforeCameraRenderObservable.add(() => {
+            this._scene.onAfterRenderTargetsRenderObservable.addOnce(() => {
+                if (this._outputTexture.isReady()) {
+                    this._update();
+                    this._outputTexture.render();
+                }
+            });
         });
+        // Now, create the accumulation pass
+        // const ppOptions: PostProcessOptions = {
+        //     width: this._engine.getRenderWidth(),
+        //     height: this._engine.getRenderHeight(),
+        //     textureFormat: Constants.TEXTUREFORMAT_RG,
+        //     textureType: Constants.TEXTURETYPE_HALF_FLOAT,
+        //     samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+        //     uniforms: ["accumulationParameters"],
+        //     samplers: ["oldAccumulationSampler", "prevLocalPositionSampler", "localPositionSampler", "motionSampler"],
+        //     engine: this._engine,
+        //     reusable: false,
+        //     shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+        //     extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
+        //         if (useWebGPU) {
+        //             list.push(import("../../ShadersWGSL/iblShadowAccumulation.fragment"));
+        //         } else {
+        //             list.push(import("../../Shaders/iblShadowAccumulation.fragment"));
+        //         }
+        //     },
+        // };
+        // this._outputTexture = new PostProcess("accumulationPassPP", "iblShadowAccumulation", ppOptions);
+        // this._outputTexture.autoClear = true;
+        // this._outputTexture.resize(this._engine.getRenderWidth(), this._engine.getRenderHeight()); // make sure that _outputPP.inputTexture.texture is created right away
+        // this._outputTexture.onApplyObservable.add((effect) => {
+        //     this._updatePostProcess(effect);
+        // });
     }
 
-    public _updatePostProcess(effect: Effect) {
-        effect.setVector4("accumulationParameters", new Vector4(this.remenance, this.reset ? 1.0 : 0.0, 0.0, 0.0));
-        effect.setTexture("oldAccumulationSampler", this._oldAccumulationRT);
-        effect.setTexture("prevLocalPositionSampler", this._oldLocalPositionRT);
+    public _update() {
+        this._outputTexture.setTexture("spatialBlurSampler", this._renderPipeline.getSpatialBlurTexture());
+        this._outputTexture.setVector4("accumulationParameters", new Vector4(this.remenance, this.reset ? 1.0 : 0.0, 0.0, 0.0));
+        this._outputTexture.setTexture("oldAccumulationSampler", this._oldAccumulationRT);
+        this._outputTexture.setTexture("prevLocalPositionSampler", this._oldLocalPositionRT);
 
         const geometryBufferRenderer = this._scene.geometryBufferRenderer;
         if (!geometryBufferRenderer) {
             return;
         }
         const velocityIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.VELOCITY_LINEAR_TEXTURE_TYPE);
-        effect.setTexture("motionSampler", geometryBufferRenderer.getGBuffer().textures[velocityIndex]);
+        this._outputTexture.setTexture("motionSampler", geometryBufferRenderer.getGBuffer().textures[velocityIndex]);
         const wPositionIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.POSITION_TEXTURE_TYPE);
-        effect.setTexture("localPositionSampler", geometryBufferRenderer.getGBuffer().textures[wPositionIndex]);
+        this._outputTexture.setTexture("localPositionSampler", geometryBufferRenderer.getGBuffer().textures[wPositionIndex]);
 
         this.reset = false;
     }
@@ -293,6 +341,7 @@ export class _IblShadowsAccumulationPass {
     public resize() {
         this._oldAccumulationRT.resize({ width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() });
         this._oldLocalPositionRT.resize({ width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() });
+        this._outputTexture.resize({ width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, false);
     }
 
     private _disposeTextures() {
@@ -310,7 +359,7 @@ export class _IblShadowsAccumulationPass {
             this._oldAccumulationRT.isReadyForRendering() &&
             this._oldLocalPositionRT &&
             this._oldLocalPositionRT.isReadyForRendering() &&
-            this._outputPP.isReady() &&
+            this._outputTexture.isReady() &&
             !(this._debugPassPP && !this._debugPassPP.isReady())
         );
     }
@@ -320,7 +369,7 @@ export class _IblShadowsAccumulationPass {
      */
     public dispose() {
         this._disposeTextures();
-        this._outputPP.dispose();
+        this._outputTexture.dispose();
         if (this._debugPassPP) {
             this._debugPassPP.dispose();
         }

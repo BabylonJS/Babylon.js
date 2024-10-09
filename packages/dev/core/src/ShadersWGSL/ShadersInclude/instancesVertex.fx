@@ -1,7 +1,7 @@
 ﻿#ifdef INSTANCES
 	var finalWorld = mat4x4<f32>(vertexInputs.world0, vertexInputs.world1, vertexInputs.world2, vertexInputs.world3);
 #if defined(PREPASS_VELOCITY) || defined(VELOCITY) ||                  \
-            defined(PREPASS_VELOCITY_LINEAR)
+            defined(PREPASS_VELOCITY_LINEAR) || defined(VELOCITY_LINEAR)
         var finalPreviousWorld = mat4x4<f32>(
             vertexInputs.previousWorld0, vertexInputs.previousWorld1,
             vertexInputs.previousWorld2, vertexInputs.previousWorld3);
@@ -23,8 +23,8 @@
 #else
 	    var finalWorld = mesh.world;
 #endif
-#if defined(PREPASS_VELOCITY) || defined(VELOCITY) ||  \
-                            defined(PREPASS_VELOCITY_LINEAR)
+#if defined(PREPASS_VELOCITY) || defined(VELOCITY) ||                  \
+            defined(PREPASS_VELOCITY_LINEAR) || defined(VELOCITY_LINEAR)
             var finalPreviousWorld = uniforms.previousWorld;
 #endif
 #endif

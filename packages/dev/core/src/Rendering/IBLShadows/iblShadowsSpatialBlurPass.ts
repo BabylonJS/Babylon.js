@@ -4,9 +4,11 @@ import type { Scene } from "../../scene";
 import { Vector4 } from "../../Maths/math.vector";
 import { PostProcess } from "../../PostProcesses/postProcess";
 import type { PostProcessOptions } from "../../PostProcesses/postProcess";
-import type { Effect } from "../../Materials/effect";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { GeometryBufferRenderer } from "../../Rendering/geometryBufferRenderer";
+import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
+import type { IProceduralTextureCreationOptions } from "core/Materials/Textures/Procedurals/proceduralTexture";
+import type { IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
 
 /**
  * This should not be instanciated directly, as it is part of a scene component
@@ -15,16 +17,16 @@ import { GeometryBufferRenderer } from "../../Rendering/geometryBufferRenderer";
 export class _IblShadowsSpatialBlurPass {
     private _scene: Scene;
     private _engine: AbstractEngine;
-    // private _renderPipeline: IblShadowsRenderPipeline;
-    private _outputPP: PostProcess;
+    private _renderPipeline: IblShadowsRenderPipeline;
+    private _outputTexture: ProceduralTexture;
     private _worldScale: number = 1.0;
 
     /**
-     * Gets the pass post process
-     * @returns The post process
+     * Returns the output texture of the pass.
+     * @returns The output texture.
      */
-    public getPassPP(): PostProcess {
-        return this._outputPP;
+    public getOutputTexture(): ProceduralTexture {
+        return this._outputTexture;
     }
 
     /**
@@ -98,7 +100,7 @@ export class _IblShadowsSpatialBlurPass {
             this._debugPassPP.autoClear = false;
             this._debugPassPP.onApplyObservable.add((effect) => {
                 // update the caustic texture with what we just rendered.
-                effect.setTextureFromPostProcessOutput("debugSampler", this._outputPP);
+                effect.setTexture("debugSampler", this._outputTexture);
                 effect.setVector4("sizeParams", this._debugSizeParams);
             });
         }
@@ -107,53 +109,79 @@ export class _IblShadowsSpatialBlurPass {
     /**
      * Instanciates the importance sampling renderer
      * @param scene Scene to attach to
+     * @param iblShadowsRenderPipeline The IBL shadows render pipeline
      * @returns The importance sampling renderer
      */
-    constructor(scene: Scene) {
+    constructor(scene: Scene, iblShadowsRenderPipeline: IblShadowsRenderPipeline) {
         this._scene = scene;
         this._engine = scene.getEngine();
+        this._renderPipeline = iblShadowsRenderPipeline;
         this._createTextures();
     }
 
     private _createTextures() {
         const isWebGPU = this._engine.isWebGPU;
-        const ppOptions: PostProcessOptions = {
-            width: this._engine.getRenderWidth(),
-            height: this._engine.getRenderHeight(),
-            textureFormat: Constants.TEXTUREFORMAT_RG,
-            textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
+        const textureOptions: IProceduralTextureCreationOptions = {
+            type: Constants.TEXTURETYPE_UNSIGNED_INT,
+            format: Constants.TEXTUREFORMAT_RGBA,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-            uniforms: ["blurParameters"],
-            samplers: ["shadowSampler", "worldNormalSampler", "depthSampler"],
-            engine: this._engine,
-            reusable: false,
+            generateDepthBuffer: false,
+            generateMipMaps: false,
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
-                if (useWebGPU) {
-                    list.push(import("../../ShadersWGSL/iblShadowSpatialBlur.fragment"));
+            extraInitializationsAsync: async () => {
+                if (isWebGPU) {
+                    await Promise.all([import("../../ShadersWGSL/iblShadowSpatialBlur.fragment")]);
                 } else {
-                    list.push(import("../../Shaders/iblShadowSpatialBlur.fragment"));
+                    await Promise.all([import("../../Shaders/iblShadowSpatialBlur.fragment")]);
                 }
             },
         };
-        this._outputPP = new PostProcess("spacialBlurPP", "iblShadowSpatialBlur", ppOptions);
-        this._outputPP.autoClear = false;
-        this._outputPP.onApplyObservable.add((effect) => {
-            this._updatePostProcess(effect);
+        this._outputTexture = new ProceduralTexture(
+            "spatialBlurPass",
+            {
+                width: this._engine.getRenderWidth(),
+                height: this._engine.getRenderHeight(),
+            },
+            "iblShadowSpatialBlur",
+            this._scene,
+            textureOptions,
+            false,
+            false,
+            Constants.TEXTURETYPE_UNSIGNED_INT
+        );
+        this._outputTexture.refreshRate = -1;
+        this._outputTexture.autoClear = false;
+
+        // Need to set all the textures first so that the effect gets created with the proper uniforms.
+        this._update();
+
+        this._scene.onBeforeCameraRenderObservable.add(() => {
+            this._scene.onAfterRenderTargetsRenderObservable.addOnce(() => {
+                if (this._outputTexture.isReady()) {
+                    this._update();
+                    this._outputTexture.render();
+                }
+            });
         });
     }
 
-    private _updatePostProcess(effect: Effect) {
+    private _update() {
+        this._outputTexture.setTexture("voxelTracingSampler", this._renderPipeline.getVoxelTracingTexture());
         const iterationCount = 1;
-        effect.setVector4("blurParameters", new Vector4(iterationCount, this._worldScale, 0.0, 0.0));
+        this._outputTexture.setVector4("blurParameters", new Vector4(iterationCount, this._worldScale, 0.0, 0.0));
         const geometryBufferRenderer = this._scene.geometryBufferRenderer;
         if (!geometryBufferRenderer) {
             return;
         }
         const depthIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE);
-        effect.setTexture("depthSampler", geometryBufferRenderer.getGBuffer().textures[depthIndex]);
+        this._outputTexture.setTexture("depthSampler", geometryBufferRenderer.getGBuffer().textures[depthIndex]);
         const wnormalIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.NORMAL_TEXTURE_TYPE);
-        effect.setTexture("worldNormalSampler", geometryBufferRenderer.getGBuffer().textures[wnormalIndex]);
+        this._outputTexture.setTexture("worldNormalSampler", geometryBufferRenderer.getGBuffer().textures[wnormalIndex]);
+    }
+
+    /** Called by render pipeline when canvas resized. */
+    public resize() {
+        this._outputTexture.resize({ width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, false);
     }
 
     /**
@@ -161,14 +189,14 @@ export class _IblShadowsSpatialBlurPass {
      * @returns true if the pass is ready
      */
     public isReady() {
-        return this._outputPP.isReady() && !(this._debugPassPP && !this._debugPassPP.isReady());
+        return this._outputTexture && this._outputTexture.isReady() && !(this._debugPassPP && !this._debugPassPP.isReady());
     }
 
     /**
      * Disposes the associated resources
      */
     public dispose() {
-        this._outputPP.dispose();
+        this._outputTexture.dispose();
         if (this._debugPassPP) {
             this._debugPassPP.dispose();
         }

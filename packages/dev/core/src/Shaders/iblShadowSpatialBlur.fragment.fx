@@ -4,7 +4,7 @@ varying vec2 vUV;
 
 uniform sampler2D depthSampler;
 uniform sampler2D worldNormalSampler;
-uniform sampler2D textureSampler;
+uniform sampler2D voxelTracingSampler;
 
 uniform vec4 blurParameters;
 
@@ -35,7 +35,7 @@ void main(void)
         for(int x = 0; x < nbWeights; ++x) {
             ivec2 Coords = PixelCoord +  int(stridef) * ivec2(x - (nbWeights >> 1), y - (nbWeights >> 1));
 
-            vec2 T = texelFetch(textureSampler, Coords, 0).xy;
+            vec2 T = texelFetch(voxelTracingSampler, Coords, 0).xy;
             float ddepth = -texelFetch(depthSampler, Coords, 0).x - depth;
             vec3 dN = texelFetch(worldNormalSampler, Coords, 0).xyz - N;
             float w = weights[x] * weights[y] *

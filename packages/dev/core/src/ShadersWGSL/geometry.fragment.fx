@@ -122,8 +122,8 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                                           input.vPreviousPosition.w) -
                                          (input.vCurrentPosition.xy /
                                           input.vCurrentPosition.w));
-        fragData[VELOCITY_LINEAR_INDEX] = vec4f(velocity, 0.0, writeGeometryInfo);
-    #endif
+        fragData[VELOCITY_LINEAR_INDEX] = vec4f(velocity, 0.0, 1.0);
+#endif
 
     #ifdef REFLECTIVITY
         var reflectivity: vec4f =  vec4f(0.0, 0.0, 0.0, 1.0);

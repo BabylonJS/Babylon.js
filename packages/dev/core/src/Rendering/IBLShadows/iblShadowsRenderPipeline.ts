@@ -22,6 +22,9 @@ import { PostProcessRenderEffect } from "core/PostProcesses/RenderPipeline/postP
 import type { Camera } from "core/Cameras/camera";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { GeometryBufferRenderer } from "core/Rendering/geometryBufferRenderer";
+import { RawTexture } from "core/Materials/Textures/rawTexture";
+import { RawTexture3D } from "core/Materials/Textures/rawTexture3D";
+import { Engine } from "core/Engines/engine";
 
 interface IblShadowsSettings {
     /**
@@ -113,6 +116,8 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     private _spatialBlurPass: _IblShadowsSpatialBlurPass;
     private _accumulationPass: _IblShadowsAccumulationPass;
     private _noiseTexture: Texture;
+    private _dummyTexture2d: RawTexture;
+    private _dummyTexture3d: RawTexture3D;
     private _shadowOpacity: number = 0.75;
     private _enabled: boolean = true;
 
@@ -240,25 +245,86 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     /**
      * Returns the texture containing the voxel grid data
      * @returns The texture containing the voxel grid data
+     * @internal
      */
     public getVoxelGridTexture(): Texture {
-        return this._voxelRenderer?.getVoxelGrid();
+        // return this._voxelRenderer?.getVoxelGrid();
+        const tex = this._voxelRenderer?.getVoxelGrid();
+        if (tex && tex.isReady()) {
+            return tex;
+        }
+        Logger.Warn("Voxel texture is not ready yet.");
+        return this._dummyTexture3d;
     }
 
     /**
      * Returns the texture containing the importance sampling CDF data for the IBL shadow pipeline
      * @returns The texture containing the importance sampling CDF data for the IBL shadow pipeline
+     * @internal
      */
     public getIcdfyTexture(): Texture {
-        return this._importanceSamplingRenderer!.getIcdfyTexture();
+        const tex = this._importanceSamplingRenderer!.getIcdfyTexture();
+        if (tex && tex.isReady()) {
+            return tex;
+        }
+        Logger.Warn("ICDFY texture is not ready yet.");
+        return this._dummyTexture2d;
     }
 
     /**
      * Returns the texture containing the importance sampling CDF data for the IBL shadow pipeline
      * @returns The texture containing the importance sampling CDF data for the IBL shadow pipeline
+     * @internal
      */
     public getIcdfxTexture(): Texture {
-        return this._importanceSamplingRenderer!.getIcdfxTexture();
+        const tex = this._importanceSamplingRenderer!.getIcdfxTexture();
+        if (tex && tex.isReady()) {
+            return tex;
+        }
+        Logger.Warn("ICDFX texture is not ready yet.");
+        return this._dummyTexture2d;
+    }
+
+    /**
+     * Returns the noise texture.
+     * @returns The noise texture.
+     * @internal
+     */
+    public getNoiseTexture(): Texture {
+        const tex = this._noiseTexture;
+        if (tex && tex.isReady()) {
+            return tex;
+        }
+        Logger.Warn("Noise texture is not ready yet.");
+        return this._dummyTexture2d;
+    }
+
+    /**
+     * Returns the voxel-tracing texture.
+     * @returns The voxel-tracing texture.
+     * @internal
+     */
+    public getVoxelTracingTexture(): Texture {
+        const tex = this._voxelTracingPass?.getOutputTexture();
+        if (tex && tex.isReady()) {
+            return tex;
+        }
+        Logger.Warn("Voxel Tracing texture is not ready yet.");
+        return this._dummyTexture2d;
+    }
+
+    /**
+     * Returns the spatial blur texture.
+     * @returns The spatial blur texture.
+     * @internal
+     */
+    public getSpatialBlurTexture(): Texture {
+        const tex = this._spatialBlurPass?.getOutputTexture();
+        if (tex && tex.isReady()) {
+            return tex;
+        }
+        Logger.Warn("Spatial Blur texture is not ready yet.");
+        return this._dummyTexture2d;
     }
 
     private _gbufferDebugPass: PostProcess;
@@ -574,6 +640,11 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     constructor(name: string, scene: Scene, options: Partial<IblShadowsSettings> = {}, cameras?: Camera[]) {
         super(scene.getEngine(), name);
         this.scene = scene;
+
+        const blackPixels = new Uint8Array([0, 0, 0, 255]);
+        this._dummyTexture2d = new RawTexture(blackPixels, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false);
+        this._dummyTexture3d = new RawTexture3D(blackPixels, 1, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false);
+
         // If there are specific formats needed per texture, you can create the
         // geometry buffer renderer outside of this pipeline.
         const geometryBufferRenderer = scene.enableGeometryBufferRenderer();
@@ -604,8 +675,8 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this.ssShadowSamples = options.ssShadowSampleCount || 16;
         this.ssShadowStride = options.ssShadowStride || 8;
         this.ssShadowThickness = options.ssShadowThickness || 0.5;
-        this._spatialBlurPass = new _IblShadowsSpatialBlurPass(this.scene);
-        this._accumulationPass = new _IblShadowsAccumulationPass(this.scene);
+        this._spatialBlurPass = new _IblShadowsSpatialBlurPass(this.scene, this);
+        this._accumulationPass = new _IblShadowsAccumulationPass(this.scene, this);
         this.shadowRemenance = options.shadowRemenance || 0.75;
         this._noiseTexture = new Texture("https://assets.babylonjs.com/textures/blue_noise/blue_noise_rgb.png", this.scene, false, true, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
         if (this.scene.environmentTexture) {
@@ -617,8 +688,8 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
 
         scene.postProcessRenderPipelineManager.addPipeline(this);
 
-        this.scene.onNewMeshAddedObservable.add(this.updateSceneBounds.bind(this));
-        this.scene.onMeshRemovedObservable.add(this.updateSceneBounds.bind(this));
+        // this.scene.onNewMeshAddedObservable.add(this.updateSceneBounds.bind(this));
+        // this.scene.onMeshRemovedObservable.add(this.updateSceneBounds.bind(this));
         this.scene.onActiveCameraChanged.add(this._listenForCameraChanges.bind(this));
         this.scene.onBeforeRenderObservable.add(this._updateBeforeRender.bind(this));
 
@@ -628,6 +699,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         // Only turn on the pipeline when the importance sampling RT's are ready
         this._importanceSamplingRenderer.onReadyObservable.addOnce(() => {
             this._createEffectPasses(cameras);
+            this.updateVoxelization();
             const checkVoxelRendererReady = () => {
                 if (this._voxelRenderer.isReady()) {
                     this.toggleShadow(this._enabled);
@@ -666,6 +738,8 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
 
     private _handleResize() {
         this._voxelRenderer.resize();
+        this._voxelTracingPass?.resize();
+        this._spatialBlurPass?.resize();
         this._accumulationPass?.resize();
     }
 
@@ -675,7 +749,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             width: this.scene.getEngine().getRenderWidth(),
             height: this.scene.getEngine().getRenderHeight(),
             uniforms: ["shadowOpacity"],
-            samplers: ["sceneTexture"],
+            samplers: ["shadowSampler"],
             samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
             engine: this.scene.getEngine(),
             textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
@@ -690,10 +764,10 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             },
         };
         this._shadowCompositePP = new PostProcess("iblShadowsCombine", "iblShadowsCombine", compositeOptions);
-        this._shadowCompositePP.autoClear = false;
+        this._shadowCompositePP.autoClear = true;
         this._shadowCompositePP.onApplyObservable.add((effect) => {
             // Setting the input of the tracing pass because this is the scene RT that we want to apply the shadows to.
-            effect.setTextureFromPostProcess("sceneTexture", this._voxelTracingPass.getPassPP());
+            effect.setTexture("shadowSampler", this._accumulationPass.getOutputTexture());
             effect.setFloat("shadowOpacity", this._shadowOpacity);
             if (
                 this._importanceSamplingRenderer?.isReady() &&
@@ -702,42 +776,12 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
                 this._spatialBlurPass?.isReady() &&
                 this._accumulationPass?.isReady()
             ) {
-                this.update();
+                // this.update();
             }
         });
     }
 
     private _createEffectPasses(cameras: Camera[] | undefined) {
-        this.addEffect(
-            new PostProcessRenderEffect(
-                this.scene.getEngine(),
-                "IBLShadowVoxelTracingPass",
-                () => {
-                    return this._voxelTracingPass.getPassPP();
-                },
-                true
-            )
-        );
-        this.addEffect(
-            new PostProcessRenderEffect(
-                this.scene.getEngine(),
-                "IBLShadowSpatialBlurPass",
-                () => {
-                    return this._spatialBlurPass.getPassPP();
-                },
-                true
-            )
-        );
-        this.addEffect(
-            new PostProcessRenderEffect(
-                this.scene.getEngine(),
-                "IBLShadowAccumulationBlurPass",
-                () => {
-                    return this._accumulationPass.getPassPP();
-                },
-                true
-            )
-        );
         this.addEffect(
             new PostProcessRenderEffect(
                 this.scene.getEngine(),
@@ -926,6 +970,11 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      */
     public updateVoxelization() {
         this._voxelizationDirty = true;
+        this._voxelRenderer.updateVoxelGrid(this._excludedMeshes);
+        this._voxelizationDirty = false;
+        // Update the SS shadow max distance based on the voxel grid size and resolution.
+        // The max distance should be just a little larger than the world size of a single voxel.
+        this.ssShadowMaxDist = (1.1 * this.voxelGridSize) / (1 << this.resolutionExp);
     }
 
     /**
@@ -933,8 +982,34 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * to be recalculated. This will also trigger a re-voxelization.
      */
     public updateSceneBounds() {
-        this._voxelizationDirty = true;
-        this._boundsNeedUpdate = true;
+        const bounds = this.scene.getWorldExtends((mesh) => {
+            return mesh instanceof Mesh && this._excludedMeshes.indexOf(mesh.uniqueId) === -1;
+        });
+        const size = bounds.max.subtract(bounds.min);
+        this.voxelGridSize = Math.max(size.x, Math.max(size.y, size.z));
+        if (!isFinite(this.voxelGridSize) || this.voxelGridSize === 0) {
+            Logger.Warn("IBL Shadows: Scene size is invalid. Can't update bounds.");
+            this._boundsNeedUpdate = false;
+            this.voxelGridSize = 1.0;
+            return;
+        }
+        const halfSize = this.voxelGridSize / 2.0;
+        const centre = bounds.max.add(bounds.min).multiplyByFloats(-0.5, -0.5, -0.5);
+        const invWorldScaleMatrix = Matrix.Compose(new Vector3(1.0 / halfSize, 1.0 / halfSize, 1.0 / halfSize), new Quaternion(), new Vector3(0, 0, 0));
+        const invTranslationMatrix = Matrix.Compose(new Vector3(1.0, 1.0, 1.0), new Quaternion(), centre);
+        invTranslationMatrix.multiplyToRef(invWorldScaleMatrix, invWorldScaleMatrix);
+        this._voxelTracingPass?.setWorldScaleMatrix(invWorldScaleMatrix);
+        this._voxelRenderer.setWorldScaleMatrix(invWorldScaleMatrix);
+        // Set world scale for spatial blur.
+        this._spatialBlurPass?.setWorldScale(halfSize * 2.0);
+        this._boundsNeedUpdate = false;
+        // Logger.Log("IBL Shadows: Scene size: " + size);
+        // Logger.Log("Half size: " + halfSize);
+        // Logger.Log("Centre translation: " + centre);
+
+        // Update the SS shadow max distance based on the voxel grid size and resolution.
+        // The max distance should be just a little larger than the world size of a single voxel.
+        this.ssShadowMaxDist = (1.1 * this.voxelGridSize) / (1 << this.resolutionExp);
     }
 
     private _updateBeforeRender() {
