@@ -2,7 +2,7 @@
 import type { Nullable } from "core/index";
 
 import type { PropertyValues } from "lit";
-import type { ViewerDetails } from "./viewer";
+import type { ViewerDetails, ViewerHotSpot, ViewerHotSpotQuery } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, html } from "lit";
@@ -64,6 +64,13 @@ export class HTML3DElement extends LitElement {
             position: relative;
             width: 100%;
             height: 100%;
+        }
+
+        .children-slot {
+            position: absolute;
+            top: 0;
+            background: transparent;
+            pointer-events: none;
         }
 
         .tool-bar {
@@ -217,6 +224,24 @@ export class HTML3DElement extends LitElement {
     }
 
     /**
+     * Get hotspot world and screen values from a named hotspot
+     * @param name slot of the hot spot
+     * @param result resulting world and screen positions
+     * @returns world and screen space coordinates
+     */
+    public queryHotSpot(name: string, result: ViewerHotSpot): boolean {
+        // Retrieve all hotspots inside the viewer element
+        let resultFound = false;
+        // Iterate through each hotspot to get the 'data-surface' and 'data-name' attributes
+        if (this._viewerDetails) {
+            const hotspot = this.hotspots?.[name];
+            if (hotspot) {
+                resultFound = this._viewerDetails.viewer.getHotSpotToRef(hotspot, result);
+            }
+        }
+        return resultFound;
+    }
+    /**
      * The engine to use for rendering.
      */
     @property({ reflect: true })
@@ -241,6 +266,36 @@ export class HTML3DElement extends LitElement {
      */
     @property({ reflect: true })
     public environment: Nullable<string> = null;
+
+    /**
+     * A string value that encodes one or more hotspots.
+     */
+    @property({
+        type: "string",
+        converter: (value) => {
+            if (!value) {
+                return null;
+            }
+
+            const array = value.split(" ");
+            if (array.length % 8 !== 0) {
+                throw new Error(
+                    `hotspots should be defined in sets of 8 elements: 'name meshIndex pointIndex1 pointIndex2 pointIndex3 barycentricCoord1 barycentricCoord2 barycentricCoord3', but a total of ${array.length} elements were found in '${value}'`
+                );
+            }
+
+            const hotspots: Record<string, ViewerHotSpotQuery> = {};
+            for (let offset = 0; offset < array.length; offset += 8) {
+                hotspots[array[offset]] = {
+                    meshIndex: Number(array[offset + 1]),
+                    pointIndex: [Number(array[offset + 2]), Number(array[offset + 3]), Number(array[offset + 4])],
+                    barycentric: [Number(array[offset + 5]), Number(array[offset + 6]), Number(array[offset + 7])],
+                };
+            }
+            return hotspots;
+        },
+    })
+    public hotspots: Nullable<Record<string, ViewerHotSpotQuery>> = null;
 
     /**
      * The list of animation names for the currently loaded model.
@@ -334,9 +389,11 @@ export class HTML3DElement extends LitElement {
 
     // eslint-disable-next-line babylonjs/available
     override render() {
+        // NOTE: The unnamed 'slot' element holds all child elements of the <babylon-viewer> that do not specify a 'slot' attribute.
         return html`
             <div class="full-size">
                 <div id="canvasContainer" class="full-size"></div>
+                <slot class="full-size children-slot"></slot>
                 ${this.animations.length === 0
                     ? ""
                     : html`
