@@ -277,7 +277,7 @@ export class HTML3DElement extends LitElement {
                 return null;
             }
 
-            const array = value.split(" ");
+            const array = value.split(/\s+/);
             if (array.length % 8 !== 0) {
                 throw new Error(
                     `hotspots should be defined in sets of 8 elements: 'name meshIndex pointIndex1 pointIndex2 pointIndex3 barycentricCoord1 barycentricCoord2 barycentricCoord3', but a total of ${array.length} elements were found in '${value}'`
