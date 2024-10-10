@@ -104,6 +104,12 @@ export class InputDisplayManager implements IDisplayManager {
                 case NodeGeometryContextualSources.Colors:
                     value = "Colors";
                     break;
+                case NodeGeometryContextualSources.LatticeID:
+                    value = "LatticeID";
+                    break;
+                case NodeGeometryContextualSources.LatticeControl:
+                    value = "LatticeControl";
+                    break;
             }
         } else {
             switch (inputBlock.type) {

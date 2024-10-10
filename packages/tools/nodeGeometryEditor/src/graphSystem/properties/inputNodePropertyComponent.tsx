@@ -141,6 +141,8 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 contextualSourcesOptions = [
                     { label: "Positions", value: NodeGeometryContextualSources.Positions },
                     { label: "Normals", value: NodeGeometryContextualSources.Normals },
+                    { label: "LatticeID", value: NodeGeometryContextualSources.LatticeID },
+                    { label: "LatticeControl", value: NodeGeometryContextualSources.LatticeControl },
                 ];
                 break;
             case NodeGeometryBlockConnectionPointTypes.Vector4:
