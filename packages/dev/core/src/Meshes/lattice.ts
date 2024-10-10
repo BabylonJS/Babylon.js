@@ -102,7 +102,7 @@ export class Lattice {
      * Creates a new Lattice
      * @param options options for creating
      */
-    public constructor(options: Partial<ILatticeOptions>) {
+    public constructor(options?: Partial<ILatticeOptions>) {
         const localOptions: ILatticeOptions = {
             resolutionX: 3,
             resolutionY: 3,
