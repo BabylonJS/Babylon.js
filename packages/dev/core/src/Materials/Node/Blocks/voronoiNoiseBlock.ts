@@ -3,7 +3,6 @@ import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBloc
 import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
-import { RegisterClass } from "../../../Misc/typeStore";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
@@ -133,5 +132,3 @@ export class VoronoiNoiseBlock extends NodeMaterialBlock {
         return this;
     }
 }
-
-RegisterClass("BABYLON.VoronoiNoiseBlock", VoronoiNoiseBlock);

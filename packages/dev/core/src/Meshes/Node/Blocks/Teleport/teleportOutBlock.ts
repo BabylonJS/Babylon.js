@@ -1,5 +1,4 @@
 import type { Nullable } from "../../../../types";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
@@ -129,5 +128,3 @@ export class TeleportOutBlock extends NodeGeometryBlock {
         this._tempEntryPointUniqueId = serializationObject.entryPoint;
     }
 }
-
-RegisterClass("BABYLON.TeleportOutBlock", TeleportOutBlock);

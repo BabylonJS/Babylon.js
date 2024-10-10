@@ -10,7 +10,6 @@ import { NodeMaterial } from "../../nodeMaterial";
 import { InputBlock } from "../Input/inputBlock";
 import type { Effect } from "../../../effect";
 import type { Nullable } from "../../../../types";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import { Texture } from "../../../Textures/texture";
 import type { Scene } from "../../../../scene";
 import { NodeMaterialModes } from "../../Enums/nodeMaterialModes";
@@ -715,5 +714,3 @@ export class TextureBlock extends NodeMaterialBlock {
         }
     }
 }
-
-RegisterClass("BABYLON.TextureBlock", TextureBlock);

@@ -1,6 +1,5 @@
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
-import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import type { VertexData } from "../../../Meshes/mesh.vertexData";
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
@@ -162,5 +161,3 @@ export class MergeGeometryBlock extends NodeGeometryBlock {
         this.evaluateContext = serializationObject.evaluateContext;
     }
 }
-
-RegisterClass("BABYLON.MergeGeometryBlock", MergeGeometryBlock);

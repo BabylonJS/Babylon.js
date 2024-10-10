@@ -15,7 +15,6 @@ import type { Light } from "../Lights/light";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Tools } from "../Misc/tools";
 import type { ThinEngine } from "../Engines/thinEngine";
-import { RegisterClass } from "../Misc/typeStore";
 
 Mesh._instancedMeshFactory = (name: string, mesh: Mesh): InstancedMesh => {
     const instance = new InstancedMesh(name, mesh);
@@ -824,6 +823,3 @@ Mesh.prototype._disposeInstanceSpecificData = function () {
 
     this.instancedBuffers = {};
 };
-
-// Register Class Name
-RegisterClass("BABYLON.InstancedMesh", InstancedMesh);

@@ -3,7 +3,6 @@ import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialB
 import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { RegisterClass } from "../../../../Misc/typeStore";
 /**
  * Block used to discard a pixel if a value is smaller than a cutoff
  */
@@ -55,5 +54,3 @@ export class DiscardBlock extends NodeMaterialBlock {
         return this;
     }
 }
-
-RegisterClass("BABYLON.DiscardBlock", DiscardBlock);

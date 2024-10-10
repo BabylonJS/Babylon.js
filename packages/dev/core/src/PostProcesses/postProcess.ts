@@ -13,7 +13,7 @@ import type { Color4 } from "../Maths/math.color";
 import type { NodeMaterial } from "../Materials/Node/nodeMaterial";
 import { serialize, serializeAsColor4 } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
-import { GetClass, RegisterClass } from "../Misc/typeStore";
+import { GetClass } from "../Misc/typeStore";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
@@ -1340,5 +1340,3 @@ export class PostProcess {
         );
     }
 }
-
-RegisterClass("BABYLON.PostProcess", PostProcess);

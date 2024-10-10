@@ -8,7 +8,6 @@ import type { NodeMaterialDefines, NodeMaterial } from "../../nodeMaterial";
 import { InputBlock } from "../Input/inputBlock";
 import type { BaseTexture } from "../../../Textures/baseTexture";
 import type { Nullable } from "../../../../types";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import { Texture } from "../../../Textures/texture";
 import type { Scene } from "../../../../scene";
 
@@ -217,5 +216,3 @@ export class ParticleTextureBlock extends NodeMaterialBlock {
         }
     }
 }
-
-RegisterClass("BABYLON.ParticleTextureBlock", ParticleTextureBlock);

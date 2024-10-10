@@ -16,7 +16,6 @@ import type { PostProcess } from "../PostProcesses/postProcess";
 import { BlurPostProcess } from "../PostProcesses/blurPostProcess";
 import { EffectLayer } from "./effectLayer";
 import { Constants } from "../Engines/constants";
-import { RegisterClass } from "../Misc/typeStore";
 import { Color4 } from "../Maths/math.color";
 import type { PBRMaterial } from "../Materials/PBR/pbrMaterial";
 
@@ -748,5 +747,3 @@ export class GlowLayer extends EffectLayer {
         return gl;
     }
 }
-
-RegisterClass("BABYLON.GlowLayer", GlowLayer);

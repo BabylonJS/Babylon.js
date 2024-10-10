@@ -3,7 +3,6 @@ import { Epsilon } from "./math.constants";
 import type { Viewport } from "./math.viewport";
 import type { DeepImmutable, Nullable, FloatArray, float, Tuple } from "../types";
 import { BuildTuple } from "../Misc/arrayTools";
-import { RegisterClass } from "../Misc/typeStore";
 import type { Plane } from "./math.plane";
 import { PerformanceConfigurator } from "../Engines/performanceConfigurator";
 import { EngineStore } from "../Engines/engineStore";
@@ -8901,10 +8900,5 @@ export class TmpVectors {
     /** 8 temp Matrices at once should be enough */
     public static Matrix = BuildTuple(8, Matrix.Identity);
 }
-
-RegisterClass("BABYLON.Vector2", Vector2);
-RegisterClass("BABYLON.Vector3", Vector3);
-RegisterClass("BABYLON.Vector4", Vector4);
-RegisterClass("BABYLON.Matrix", Matrix);
 
 const mtxConvertNDCToHalfZRange = Matrix.FromValues(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 1);

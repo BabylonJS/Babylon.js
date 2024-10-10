@@ -9,7 +9,6 @@ import { FlyCameraInputsManager } from "./flyCameraInputsManager";
 import type { FlyCameraMouseInput } from "../Cameras/Inputs/flyCameraMouseInput";
 import type { FlyCameraKeyboardInput } from "../Cameras/Inputs/flyCameraKeyboardInput";
 import { Tools } from "../Misc/tools";
-import { RegisterClass } from "../Misc/typeStore";
 
 import type { Collider } from "../Collisions/collider";
 import { AbstractEngine } from "core/Engines/abstractEngine";
@@ -452,6 +451,3 @@ export class FlyCamera extends TargetCamera {
         return "FlyCamera";
     }
 }
-
-// Register Class Name
-RegisterClass("BABYLON.FlyCamera", FlyCamera);

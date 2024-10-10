@@ -4,7 +4,6 @@ import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialB
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { TBNBlock } from "../Fragment/TBNBlock";
@@ -240,5 +239,3 @@ export class AnisotropyBlock extends NodeMaterialBlock {
         return this;
     }
 }
-
-RegisterClass("BABYLON.AnisotropyBlock", AnisotropyBlock);

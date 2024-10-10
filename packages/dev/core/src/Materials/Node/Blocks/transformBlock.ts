@@ -3,7 +3,6 @@ import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBloc
 import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
-import { RegisterClass } from "../../../Misc/typeStore";
 import type { Scene } from "../../../scene";
 import type { InputBlock } from "./Input/inputBlock";
 import type { AbstractMesh } from "../../../Meshes/abstractMesh";
@@ -190,5 +189,3 @@ export class TransformBlock extends NodeMaterialBlock {
         return codeString;
     }
 }
-
-RegisterClass("BABYLON.TransformBlock", TransformBlock);

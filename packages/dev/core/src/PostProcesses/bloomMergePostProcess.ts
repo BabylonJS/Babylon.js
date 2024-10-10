@@ -6,7 +6,6 @@ import type { Effect } from "../Materials/effect";
 import type { Camera } from "../Cameras/camera";
 import { Constants } from "../Engines/constants";
 
-import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 
 /**
@@ -78,5 +77,3 @@ export class BloomMergePostProcess extends PostProcess {
         super._gatherImports(useWebGPU, list);
     }
 }
-
-RegisterClass("BABYLON.BloomMergePostProcess", BloomMergePostProcess);

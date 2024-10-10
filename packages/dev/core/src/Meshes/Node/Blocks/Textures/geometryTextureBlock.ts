@@ -1,5 +1,4 @@
 import type { Nullable } from "core/types";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import type { INodeGeometryTextureData } from "../../Interfaces/nodeGeometryTextureData";
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
@@ -202,5 +201,3 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
         }
     }
 }
-
-RegisterClass("BABYLON.GeometryTextureBlock", GeometryTextureBlock);

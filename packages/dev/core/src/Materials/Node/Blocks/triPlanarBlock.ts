@@ -9,7 +9,6 @@ import type { NodeMaterialDefines } from "../nodeMaterial";
 import { NodeMaterial } from "../nodeMaterial";
 import type { Effect } from "../../effect";
 import type { Nullable } from "../../../types";
-import { RegisterClass } from "../../../Misc/typeStore";
 import { Texture } from "../../Textures/texture";
 import type { Scene } from "../../../scene";
 import { Constants } from "../../../Engines/constants";
@@ -563,5 +562,3 @@ export class TriPlanarBlock extends NodeMaterialBlock {
         }
     }
 }
-
-RegisterClass("BABYLON.TriPlanarBlock", TriPlanarBlock);

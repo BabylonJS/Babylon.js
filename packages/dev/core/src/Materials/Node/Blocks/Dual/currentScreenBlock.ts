@@ -7,7 +7,6 @@ import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import type { NodeMaterialDefines, NodeMaterial } from "../../nodeMaterial";
 import type { BaseTexture } from "../../../Textures/baseTexture";
 import type { Nullable } from "../../../../types";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import { Texture } from "../../../Textures/texture";
 import type { Scene } from "../../../../scene";
 import type { InputBlock } from "../Input/inputBlock";
@@ -312,5 +311,3 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
         }
     }
 }
-
-RegisterClass("BABYLON.CurrentScreenBlock", CurrentScreenBlock);

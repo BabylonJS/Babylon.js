@@ -3,7 +3,6 @@ import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBloc
 import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
-import { RegisterClass } from "../../../Misc/typeStore";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 /**
  * Block used to compute arc tangent of 2 values
@@ -61,5 +60,3 @@ export class ArcTan2Block extends NodeMaterialBlock {
         return this;
     }
 }
-
-RegisterClass("BABYLON.ArcTan2Block", ArcTan2Block);

@@ -3,7 +3,6 @@ import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialB
 import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Nullable } from "../../../../types";
 import type { Scene } from "../../../../scene";
 import type { Effect } from "../../../effect";
@@ -248,5 +247,3 @@ export class LightInformationBlock extends NodeMaterialBlock {
         }
     }
 }
-
-RegisterClass("BABYLON.LightInformationBlock", LightInformationBlock);

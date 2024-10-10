@@ -7,7 +7,6 @@ import type { Camera } from "../Cameras/camera";
 import { Logger } from "../Misc/logger";
 import { Constants } from "../Engines/constants";
 
-import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 
@@ -121,5 +120,3 @@ export class CircleOfConfusionPostProcess extends PostProcess {
         this._depthTexture = value;
     }
 }
-
-RegisterClass("BABYLON.CircleOfConfusionPostProcess", CircleOfConfusionPostProcess);

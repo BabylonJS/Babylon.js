@@ -4,7 +4,6 @@ import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import type { Mesh } from "../../../../Meshes/mesh";
@@ -445,5 +444,3 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         this.useObjectSpaceNormalMap = !!serializationObject.useObjectSpaceNormalMap;
     }
 }
-
-RegisterClass("BABYLON.PerturbNormalBlock", PerturbNormalBlock);

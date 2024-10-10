@@ -3,7 +3,6 @@ import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBloc
 import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
-import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Block used to transpose a matrix
@@ -53,5 +52,3 @@ export class MatrixTransposeBlock extends NodeMaterialBlock {
         return this;
     }
 }
-
-RegisterClass("BABYLON.MatrixTransposeBlock", MatrixTransposeBlock);

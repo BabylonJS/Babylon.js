@@ -22,7 +22,6 @@ import { BlurPostProcess } from "../PostProcesses/blurPostProcess";
 import { EffectLayer } from "./effectLayer";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
-import { RegisterClass } from "../Misc/typeStore";
 import { Color4, Color3 } from "../Maths/math.color";
 
 import { SerializationHelper } from "../Misc/decorators.serialization";
@@ -978,5 +977,3 @@ export class HighlightLayer extends EffectLayer {
         return hl;
     }
 }
-
-RegisterClass("BABYLON.HighlightLayer", HighlightLayer);
