@@ -282,19 +282,37 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                     break;
                 }
                 case PropertyTypeForEdition.Int: {
-                    components.push(
-                        <FloatLineComponent
-                            key={`int-${propertyName}`}
-                            lockObject={this.props.stateManager.lockObject}
-                            digits={0}
-                            step={"1"}
-                            isInteger={true}
-                            label={displayName}
-                            propertyName={propertyName}
-                            target={block}
-                            onChange={() => this.forceRebuild(propertyName, options.notifiers)}
-                        />
-                    );
+                    const cantDisplaySlider = isNaN(options.min as number) || isNaN(options.max as number) || options.min === options.max;
+                    if (cantDisplaySlider) {
+                        components.push(
+                            <FloatLineComponent
+                                key={`int-${propertyName}`}
+                                lockObject={this.props.stateManager.lockObject}
+                                digits={0}
+                                step={"1"}
+                                isInteger={true}
+                                label={displayName}
+                                propertyName={propertyName}
+                                target={block}
+                                onChange={() => this.forceRebuild(propertyName, options.notifiers)}
+                            />
+                        );
+                    } else {
+                        components.push(
+                            <SliderLineComponent
+                                key={`slider-${propertyName}`}
+                                lockObject={this.props.stateManager.lockObject}
+                                label={displayName}
+                                target={block}
+                                step={1}
+                                decimalCount={0}
+                                propertyName={propertyName}
+                                minimum={Math.min(options.min as number, options.max as number)}
+                                maximum={options.max as number}
+                                onChange={() => this.forceRebuild(propertyName, options.notifiers)}
+                            />
+                        );
+                    }
                     break;
                 }
                 case PropertyTypeForEdition.Vector2: {
