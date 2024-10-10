@@ -78,6 +78,9 @@ import { CurrentScreenBlock } from "core/Materials/Node/Blocks/Dual/currentScree
 import { ParticleTextureBlock } from "core/Materials/Node/Blocks/Particle/particleTextureBlock";
 import { ParticleRampGradientBlock } from "core/Materials/Node/Blocks/Particle/particleRampGradientBlock";
 import { ParticleBlendMultiplyBlock } from "core/Materials/Node/Blocks/Particle/particleBlendMultiplyBlock";
+import { GaussianSplattingBlock } from "core/Materials/Node/Blocks/GaussianSplatting/gaussianSplattingBlock";
+import { GaussianBlock } from "core/Materials/Node/Blocks/GaussianSplatting/gaussianBlock";
+import { SplatReaderBlock } from "core/Materials/Node/Blocks/GaussianSplatting/splatReaderBlock";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
 import { FragCoordBlock } from "core/Materials/Node/Blocks/Fragment/fragCoordBlock";
 import { ScreenSizeBlock } from "core/Materials/Node/Blocks/Fragment/screenSizeBlock";
@@ -445,6 +448,11 @@ export class BlockTools {
                 meshColor.setAsAttribute("instanceColor");
                 return meshColor;
             }
+            case "SplatIndexBlock": {
+                const splatIndex = new InputBlock("SplatIndex");
+                splatIndex.setAsAttribute("splatIndex");
+                return splatIndex;
+            }
             case "NormalBlock": {
                 const meshNormal = new InputBlock("normal");
                 meshNormal.setAsAttribute("normal");
@@ -672,6 +680,12 @@ export class BlockTools {
                 return new MatrixDeterminantBlock("Determinant");
             case "CurveBlock":
                 return new CurveBlock("Curve");
+            case "GaussianSplattingBlock":
+                return new GaussianSplattingBlock("GaussianSplatting");
+            case "GaussianBlock":
+                return new GaussianBlock("Gaussian");
+            case "SplatReaderBlock":
+                return new SplatReaderBlock("SplatReader");
         }
 
         return null;

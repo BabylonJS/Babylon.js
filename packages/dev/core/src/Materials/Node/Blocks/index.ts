@@ -66,3 +66,4 @@ export * from "./colorConverterBlock";
 export * from "./loopBlock";
 export * from "./storageReadBlock";
 export * from "./storageWriteBlock";
+export * from "./GaussianSplatting/index";
