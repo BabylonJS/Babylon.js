@@ -1,8 +1,8 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 
-import { Quaternion, Vector3 } from "../../Maths";
-import type { TransformNode } from "../..//Meshes";
+import { Quaternion, Vector3 } from "../../Maths/math.vector";
+import type { TransformNode } from "../../Meshes";
 import type { IDisposable } from "../../scene";
 import type { Nullable } from "../../types";
 
