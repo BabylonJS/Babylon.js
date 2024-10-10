@@ -1,6 +1,3 @@
-/* eslint-disable babylonjs/available */
-/* eslint-disable jsdoc/require-jsdoc */
-
 import type { AbstractAudioEngine } from "./abstractAudioEngine";
 import type { ISpatialAudioTransformOptions } from "./spatialAudioTransform";
 import { SpatialAudioTransform } from "./spatialAudioTransform";

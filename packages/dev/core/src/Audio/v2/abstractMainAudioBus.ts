@@ -1,6 +1,3 @@
-/* eslint-disable babylonjs/available */
-/* eslint-disable jsdoc/require-jsdoc */
-
 import { AbstractAudioBusNode } from "./abstractAudioBusNode";
 import type { AbstractAudioDevice } from "./abstractAudioDevice";
 import type { AbstractAudioEngine } from "./abstractAudioEngine";

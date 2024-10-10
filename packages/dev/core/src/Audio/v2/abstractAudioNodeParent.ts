@@ -1,6 +1,3 @@
-/* eslint-disable babylonjs/available */
-/* eslint-disable jsdoc/require-jsdoc */
-
 import type { AbstractAudioNode } from "./abstractAudioNode";
 import type { IDisposable } from "../../scene";
 

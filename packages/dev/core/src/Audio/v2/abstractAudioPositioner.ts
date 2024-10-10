@@ -1,6 +1,3 @@
-/* eslint-disable babylonjs/available */
-/* eslint-disable jsdoc/require-jsdoc */
-
 import { AbstractAudioNode, AudioNodeType } from "./abstractAudioNode";
 import type { SpatialAudioListener } from "./spatialAudioListener";
 import type { ISpatialAudioTransformOptions } from "./spatialAudioTransform";
