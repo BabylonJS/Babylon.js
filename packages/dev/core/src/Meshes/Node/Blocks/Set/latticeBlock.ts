@@ -128,7 +128,7 @@ export class LatticeBlock extends NodeGeometryBlock implements INodeGeometryExec
      * @returns the current control point being processed
      */
     public getOverrideNormalsContextualValue() {
-        return this._indexVector3;
+        return this._currentControl;
     }
 
     protected override _buildBlock(state: NodeGeometryBuildState) {
@@ -147,6 +147,7 @@ export class LatticeBlock extends NodeGeometryBlock implements INodeGeometryExec
                 return;
             }
             const positions = this._vertexData.positions;
+            const updates = new Float32Array(positions!.length);
             const boundingInfo = extractMinAndMax(positions!, 0, positions!.length / 3);
 
             // Building the lattice
@@ -173,7 +174,9 @@ export class LatticeBlock extends NodeGeometryBlock implements INodeGeometryExec
             }
 
             // Apply lattice
-            this._lattice.deform(positions);
+            this._lattice.deform(positions, updates);
+
+            this._vertexData.positions = updates;
 
             // Storage
             state.restoreExecutionContext();
