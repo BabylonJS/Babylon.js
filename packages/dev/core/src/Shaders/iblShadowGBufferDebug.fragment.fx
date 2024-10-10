@@ -8,7 +8,6 @@ uniform sampler2D textureSampler;
 uniform sampler2D depthSampler;
 uniform sampler2D normalSampler;
 uniform sampler2D positionSampler;
-uniform sampler2D prePass_LocalPosition;
 uniform sampler2D velocitySampler;
 uniform vec4 sizeParams;
 uniform float maxDepth;

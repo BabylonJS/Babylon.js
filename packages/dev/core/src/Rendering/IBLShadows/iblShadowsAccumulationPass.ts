@@ -109,7 +109,7 @@ export class _IblShadowsAccumulationPass {
             const debugOptions: PostProcessOptions = {
                 width: this._engine.getRenderWidth(),
                 height: this._engine.getRenderHeight(),
-                textureFormat: Constants.TEXTUREFORMAT_RG,
+                textureFormat: Constants.TEXTUREFORMAT_RGBA,
                 textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
                 samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
                 uniforms: ["sizeParams"],
@@ -261,8 +261,8 @@ export class _IblShadowsAccumulationPass {
     private _updateOutputTexture() {
         this._outputTexture.setTexture("spatialBlurSampler", this._renderPipeline.getSpatialBlurTexture());
         this._outputTexture.setVector4("accumulationParameters", new Vector4(this.remenance, this.reset ? 1.0 : 0.0, 0.0, 0.0));
-        this._outputTexture.setTexture("oldAccumulationSampler", this._oldAccumulationCopy);
-        this._outputTexture.setTexture("prevLocalPositionSampler", this._oldPositionCopy);
+        this._outputTexture.setTexture("oldAccumulationSampler", this._oldAccumulationCopy ? this._oldAccumulationCopy : (this._renderPipeline as any)._dummyTexture2d);
+        this._outputTexture.setTexture("prevPositionSampler", this._oldPositionCopy ? this._oldPositionCopy : (this._renderPipeline as any)._dummyTexture2d);
 
         const geometryBufferRenderer = this._scene.geometryBufferRenderer;
         if (!geometryBufferRenderer) {
@@ -271,7 +271,7 @@ export class _IblShadowsAccumulationPass {
         const velocityIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.VELOCITY_LINEAR_TEXTURE_TYPE);
         this._outputTexture.setTexture("motionSampler", geometryBufferRenderer.getGBuffer().textures[velocityIndex]);
         const wPositionIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.POSITION_TEXTURE_TYPE);
-        this._outputTexture.setTexture("localPositionSampler", geometryBufferRenderer.getGBuffer().textures[wPositionIndex]);
+        this._outputTexture.setTexture("positionSampler", geometryBufferRenderer.getGBuffer().textures[wPositionIndex]);
 
         this.reset = false;
     }

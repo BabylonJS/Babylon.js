@@ -8,8 +8,6 @@ var normalSampler: sampler;
 var normalTexture: texture_2d<f32>;
 var positionSampler: sampler;
 var positionTexture: texture_2d<f32>;
-var prePass_LocalPositionSampler: sampler;
-var prePass_LocalPosition: texture_2d<f32>;
 var velocitySampler: sampler;
 var velocityTexture: texture_2d<f32>;
 uniform sizeParams: vec4f;

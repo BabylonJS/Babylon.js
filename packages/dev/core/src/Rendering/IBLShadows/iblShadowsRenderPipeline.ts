@@ -253,7 +253,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         if (tex && tex.isReady()) {
             return tex;
         }
-        Logger.Warn("Voxel texture is not ready yet.");
         return this._dummyTexture3d;
     }
 
@@ -267,7 +266,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         if (tex && tex.isReady()) {
             return tex;
         }
-        Logger.Warn("ICDFY texture is not ready yet.");
         return this._dummyTexture2d;
     }
 
@@ -281,7 +279,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         if (tex && tex.isReady()) {
             return tex;
         }
-        Logger.Warn("ICDFX texture is not ready yet.");
         return this._dummyTexture2d;
     }
 
@@ -295,7 +292,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         if (tex && tex.isReady()) {
             return tex;
         }
-        Logger.Warn("Noise texture is not ready yet.");
         return this._dummyTexture2d;
     }
 
@@ -309,7 +305,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         if (tex && tex.isReady()) {
             return tex;
         }
-        Logger.Warn("Voxel Tracing texture is not ready yet.");
         return this._dummyTexture2d;
     }
 
@@ -323,7 +318,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         if (tex && tex.isReady()) {
             return tex;
         }
-        Logger.Warn("Spatial Blur texture is not ready yet.");
         return this._dummyTexture2d;
     }
 
@@ -645,9 +639,24 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._dummyTexture2d = new RawTexture(blackPixels, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false);
         this._dummyTexture3d = new RawTexture3D(blackPixels, 1, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false);
 
-        // If there are specific formats needed per texture, you can create the
-        // geometry buffer renderer outside of this pipeline.
-        const geometryBufferRenderer = scene.enableGeometryBufferRenderer();
+        const textureTypesAndFormats: { [key: number]: { textureType: number; textureFormat: number } } = {};
+        textureTypesAndFormats[GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE] = {
+            textureFormat: Constants.TEXTUREFORMAT_DEPTH32_FLOAT,
+            textureType: Constants.TEXTURETYPE_FLOAT,
+        };
+        textureTypesAndFormats[GeometryBufferRenderer.VELOCITY_LINEAR_TEXTURE_TYPE] = {
+            textureFormat: Constants.TEXTUREFORMAT_RG,
+            textureType: Constants.TEXTURETYPE_HALF_FLOAT,
+        };
+        textureTypesAndFormats[GeometryBufferRenderer.POSITION_TEXTURE_TYPE] = {
+            textureFormat: Constants.TEXTUREFORMAT_RGBA,
+            textureType: Constants.TEXTURETYPE_HALF_FLOAT,
+        };
+        textureTypesAndFormats[GeometryBufferRenderer.NORMAL_TEXTURE_TYPE] = {
+            textureFormat: Constants.TEXTUREFORMAT_RGBA,
+            textureType: Constants.TEXTURETYPE_HALF_FLOAT,
+        };
+        const geometryBufferRenderer = scene.enableGeometryBufferRenderer(undefined, undefined, textureTypesAndFormats);
         if (!geometryBufferRenderer) {
             Logger.Error("Geometry buffer renderer is required for IBL shadows to work.");
             return;

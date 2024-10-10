@@ -257,8 +257,8 @@ export class _IblShadowsVoxelTracingPass {
         }
         const isWebGPU = this._engine.isWebGPU;
         const textureOptions: IProceduralTextureCreationOptions = {
-            type: Constants.TEXTURETYPE_UNSIGNED_INT,
-            format: Constants.TEXTUREFORMAT_RGBA,
+            type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
+            format: Constants.TEXTUREFORMAT_RG,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             generateDepthBuffer: false,
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
