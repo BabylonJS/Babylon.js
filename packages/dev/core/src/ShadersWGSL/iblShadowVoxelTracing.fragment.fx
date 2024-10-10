@@ -274,7 +274,11 @@ fn anyHitVoxels(ray_vs: Ray) -> bool {
 fn screenSpaceShadow(csOrigin: vec3f, csDirection: vec3f, csZBufferSize: vec2f,
                         nearPlaneZ: f32, noise: f32) -> f32 {
   // Camera space Z direction
-  var csZDir: f32 = select(-1.0, 1.0, uniforms.projMtx[2][2] > 0.0);
+#ifdef RIGHT_HANDED
+  var csZDir : f32 = -1.0;
+#else // LEFT_HANDED
+  var csZDir : f32 = 1.0;
+#endif
   // Max sample count per ray
   var ssSamples: f32 = SSSsamples;
   // Max world space distance from ray origin
@@ -398,8 +402,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
       (frameId * u32(Resolution.y) + u32(PixelCoord.y)) * u32(Resolution.x) +
       u32(PixelCoord.x);
 
-  var N: vec3f = textureLoad(worldNormalSampler, PixelCoord, 0).xyz;
-  N = N *  vec3f(2.0) - vec3f(1.0);
+  var N : vec3f = textureLoad(worldNormalSampler, PixelCoord, 0).xyz;
   if (length(N) < 0.01) {
     fragmentOutputs.color = vec4f(1.0, 1.0, 0.0, 1.0);
     return fragmentOutputs;
@@ -436,6 +439,9 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
       T.y = textureSampleLevel(icdfySampler, icdfySamplerSampler, vec2f(T.x, r.y), 0.0).x;
       T.x -= normalizedRotation;
       L =  vec4f(uv_to_normal(T), 0);
+#ifndef RIGHT_HANDED
+      L.z *= -1.0;
+#endif
     }
     var edge_tint_const = -0.001;
     var cosNL: f32 = dot(N, L.xyz);
@@ -463,8 +469,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #endif
 
       // sss
-      var VL: vec3f = (uniforms.viewMtx * L).xyz;
-      // VL.y *= -1.0;
+      var VL : vec3f = (uniforms.viewMtx * L).xyz;
       var nearPlaneZ: f32 =
           -uniforms.projMtx[3][2] / uniforms.projMtx[2][2]; // retreive camera Z near value
       var ssShadow: f32 = uniforms.shadowOpacity.y *
