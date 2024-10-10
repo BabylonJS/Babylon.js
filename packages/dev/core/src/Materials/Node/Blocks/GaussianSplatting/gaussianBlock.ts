@@ -16,7 +16,7 @@ export class GaussianBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Fragment);
 
-        this._isUnique = true;
+        this._isUnique = false;
 
         this.registerInput("splatColor", NodeMaterialBlockConnectionPointTypes.Color4, false, NodeMaterialBlockTargets.Fragment);
 
@@ -59,26 +59,18 @@ export class GaussianBlock extends NodeMaterialBlock {
         if (state.target === NodeMaterialBlockTargets.Vertex) {
             return;
         }
-        /*
-        state._emit2DSampler("rampSampler", "RAMPGRADIENT");
-        state._emitVaryingFromString("remapRanges", NodeMaterialBlockConnectionPointTypes.Vector4, "RAMPGRADIENT");
 
-        state.compilationString += `
-            #ifdef RAMPGRADIENT
-                ${state._declareLocalVar("baseColor", NodeMaterialBlockConnectionPointTypes.Vector4)} = ${this.color.associatedVariableName};
-                ${state._declareLocalVar("alpha", NodeMaterialBlockConnectionPointTypes.Float)} = ${this.color.associatedVariableName}.a;
+        // Emit code
+        const comments = `//${this.name}`;
+        state._emitFunctionFromInclude("clipPlaneFragmentDeclaration", comments);
+        state._emitFunctionFromInclude("logDepthDeclaration", comments);
+        state._emitFunctionFromInclude("fogFragmentDeclaration", comments);
+        state._emitFunctionFromInclude("gaussianSplattingDeclaration", comments);
+        state._emitVaryingFromString("vPosition", NodeMaterialBlockConnectionPointTypes.Vector3);
+        const color = this.splatColor;
+        const output = this._outputs[0];
 
-                ${state._declareLocalVar("remappedColorIndex", NodeMaterialBlockConnectionPointTypes.Float)} = clamp((alpha - remapRanges.x) / remapRanges.y, 0.0, 1.0);
-
-                ${state._declareLocalVar("rampColor", NodeMaterialBlockConnectionPointTypes.Vector4)} = ${state._generateTextureSample("vec2(1.0 - remappedColorIndex, 0.)", "rampSampler")};
-
-                // Remapped alpha
-                ${state._declareOutput(this.rampColor)} = vec4${state.fSuffix}(baseColor.rgb * rampColor.rgb, clamp((alpha * rampColor.a - remapRanges.z) / remapRanges.w, 0.0, 1.0));
-            #else
-                ${state._declareOutput(this.rampColor)} = ${this.color.associatedVariableName};
-            #endif
-        `;
-*/
+        state.compilationString += `${state._declareOutput(output)} = gaussianColor(${color.associatedVariableName});\n`;
         return this;
     }
 }

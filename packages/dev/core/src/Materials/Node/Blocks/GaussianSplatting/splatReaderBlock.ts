@@ -72,29 +72,30 @@ export class SplatReaderBlock extends NodeMaterialBlock {
     protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        if (state.target === NodeMaterialBlockTargets.Vertex) {
+        if (state.target === NodeMaterialBlockTargets.Fragment) {
             return;
         }
-        /*
-        state._emit2DSampler("rampSampler", "RAMPGRADIENT");
-        state._emitVaryingFromString("remapRanges", NodeMaterialBlockConnectionPointTypes.Vector4, "RAMPGRADIENT");
 
-        state.compilationString += `
-            #ifdef RAMPGRADIENT
-                ${state._declareLocalVar("baseColor", NodeMaterialBlockConnectionPointTypes.Vector4)} = ${this.color.associatedVariableName};
-                ${state._declareLocalVar("alpha", NodeMaterialBlockConnectionPointTypes.Float)} = ${this.color.associatedVariableName}.a;
+        // Emit code
+        const comments = `//${this.name}`;
+        state._emit2DSampler("covariancesATexture");
+        state._emit2DSampler("covariancesBTexture");
+        state._emit2DSampler("centersTexture");
+        state._emit2DSampler("colorsTexture");
 
-                ${state._declareLocalVar("remappedColorIndex", NodeMaterialBlockConnectionPointTypes.Float)} = clamp((alpha - remapRanges.x) / remapRanges.y, 0.0, 1.0);
+        state._emitFunctionFromInclude("gaussianSplattingDeclaration", comments);
+        state._emitVaryingFromString("vPosition", NodeMaterialBlockConnectionPointTypes.Vector3);
+        state._emitUniformFromString("dataTextureSize", NodeMaterialBlockConnectionPointTypes.Vector2);
+        const splatIndex = this.splatIndex;
+        const splatPosition = this._outputs[0];
+        const splatColor = this._outputs[2];
 
-                ${state._declareLocalVar("rampColor", NodeMaterialBlockConnectionPointTypes.Vector4)} = ${state._generateTextureSample("vec2(1.0 - remappedColorIndex, 0.)", "rampSampler")};
+        const splatVariablename = state._getFreeVariableName("splat");
+        state.compilationString += `Splat ${splatVariablename} = readSplat(${splatIndex.associatedVariableName});\n`;
 
-                // Remapped alpha
-                ${state._declareOutput(this.rampColor)} = vec4${state.fSuffix}(baseColor.rgb * rampColor.rgb, clamp((alpha * rampColor.a - remapRanges.z) / remapRanges.w, 0.0, 1.0));
-            #else
-                ${state._declareOutput(this.rampColor)} = ${this.color.associatedVariableName};
-            #endif
-        `;
-*/
+        state.compilationString += `${state._declareOutput(splatPosition)} = ${splatVariablename}.center;\n`;
+        state.compilationString += `${state._declareOutput(splatColor)} = ${splatVariablename}.color;\n`;
+
         return this;
     }
 }

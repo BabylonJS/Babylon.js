@@ -2173,8 +2173,29 @@ export class NodeMaterial extends PushMaterial {
 
         // transforming datas into renderable positions
         const gs = new GaussianSplattingBlock("GaussianSplatting");
-        splatReader.connectTo(gs, { input: "splatPosition", output: "splatPosition" });
-        splatReader.connectTo(gs, { input: "splatScale", output: "splatScale" });
+        splatReader.connectTo(gs);
+        splatReader.connectTo(gs, { output: "splatScale" });
+
+        // world transformation
+        const worldInput = new InputBlock("World");
+        worldInput.setAsSystemValue(NodeMaterialSystemValues.World);
+
+        const worldPos = new TransformBlock("WorldPos");
+
+        splatReader.connectTo(worldPos);
+        worldInput.connectTo(worldPos);
+        worldPos.connectTo(gs, { output: "xyz", input: "splatPosition" });
+
+        // view and projections
+
+        const view = new InputBlock("View");
+        view.setAsSystemValue(NodeMaterialSystemValues.View);
+
+        const projection = new InputBlock("Projection");
+        projection.setAsSystemValue(NodeMaterialSystemValues.Projection);
+
+        view.connectTo(gs, { input: "view" });
+        projection.connectTo(gs, { input: "projection" });
 
         // from color to gaussian color
         const gaussian = new GaussianBlock("Gaussian");
@@ -2182,7 +2203,7 @@ export class NodeMaterial extends PushMaterial {
 
         // fragment and vertex outputs
         const fragmentOutput = new FragmentOutputBlock("FragmentOutput");
-        gaussian.connectTo(fragmentOutput, { input: "rgba", output: "rgba" });
+        gaussian.connectTo(fragmentOutput);
 
         const vertexOutput = new VertexOutputBlock("VertexOutput");
         gs.connectTo(vertexOutput);

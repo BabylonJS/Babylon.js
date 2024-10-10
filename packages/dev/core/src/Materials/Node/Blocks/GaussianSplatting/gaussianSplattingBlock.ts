@@ -20,6 +20,8 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
 
         this.registerInput("splatPosition", NodeMaterialBlockConnectionPointTypes.Vector3, false, NodeMaterialBlockTargets.Vertex);
         this.registerInput("splatScale", NodeMaterialBlockConnectionPointTypes.Vector3, false, NodeMaterialBlockTargets.Vertex);
+        this.registerInput("view", NodeMaterialBlockConnectionPointTypes.Matrix, false, NodeMaterialBlockTargets.Vertex);
+        this.registerInput("projection", NodeMaterialBlockConnectionPointTypes.Matrix, false, NodeMaterialBlockTargets.Vertex);
 
         this.registerOutput("splatVertex", NodeMaterialBlockConnectionPointTypes.Vector4, NodeMaterialBlockTargets.Vertex);
     }
@@ -35,27 +37,35 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
     /**
      * Gets the position input component
      */
-    public get position(): NodeMaterialConnectionPoint {
+    public get splatPosition(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
      * Gets the scale input component
      */
-    public get scale(): NodeMaterialConnectionPoint {
+    public get splatScale(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
+
     /**
-     * Gets the color input component
+     * Gets the view matrix input component
      */
-    public get color(): NodeMaterialConnectionPoint {
+    public get view(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the splatColor output component
+     * Gets the projection matrix input component
      */
-    public get splatColor(): NodeMaterialConnectionPoint {
+    public get projection(): NodeMaterialConnectionPoint {
+        return this._inputs[3];
+    }
+
+    /**
+     * Gets the splatVertex output component
+     */
+    public get splatVertex(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
 
@@ -63,9 +73,7 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
      * Initialize the block and prepare the context for build
      * @param state defines the state that will be used for the build
      */
-    public override initialize(state: NodeMaterialBuildState) {
-        //state._excludeVariableName("splatColor");
-    }
+    public override initialize(state: NodeMaterialBuildState) {}
 
     protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
@@ -73,26 +81,19 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
         if (state.target === NodeMaterialBlockTargets.Fragment) {
             return;
         }
-        /*
-        state._emit2DSampler("rampSampler", "RAMPGRADIENT");
-        state._emitVaryingFromString("remapRanges", NodeMaterialBlockConnectionPointTypes.Vector4, "RAMPGRADIENT");
 
-        state.compilationString += `
-            #ifdef RAMPGRADIENT
-                ${state._declareLocalVar("baseColor", NodeMaterialBlockConnectionPointTypes.Vector4)} = ${this.color.associatedVariableName};
-                ${state._declareLocalVar("alpha", NodeMaterialBlockConnectionPointTypes.Float)} = ${this.color.associatedVariableName}.a;
+        const comments = `//${this.name}`;
+        state._emitFunctionFromInclude("gaussianSplattingDeclaration", comments);
+        state._emitUniformFromString("focal", NodeMaterialBlockConnectionPointTypes.Vector2);
 
-                ${state._declareLocalVar("remappedColorIndex", NodeMaterialBlockConnectionPointTypes.Float)} = clamp((alpha - remapRanges.x) / remapRanges.y, 0.0, 1.0);
+        const splatPosition = this.splatPosition;
+        const splatScale = this.splatScale;
+        const view = this.view;
+        const projection = this.projection;
+        const output = this._outputs[0];
 
-                ${state._declareLocalVar("rampColor", NodeMaterialBlockConnectionPointTypes.Vector4)} = ${state._generateTextureSample("vec2(1.0 - remappedColorIndex, 0.)", "rampSampler")};
+        state.compilationString += `${state._declareOutput(output)} = gaussianSplatting(${splatPosition.associatedVariableName}, ${splatScale.associatedVariableName}, ${view.associatedVariableName}, ${projection.associatedVariableName});\n`;
 
-                // Remapped alpha
-                ${state._declareOutput(this.rampColor)} = vec4${state.fSuffix}(baseColor.rgb * rampColor.rgb, clamp((alpha * rampColor.a - remapRanges.z) / remapRanges.w, 0.0, 1.0));
-            #else
-                ${state._declareOutput(this.rampColor)} = ${this.color.associatedVariableName};
-            #endif
-        `;
-*/
         return this;
     }
 }
