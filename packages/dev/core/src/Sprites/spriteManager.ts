@@ -12,6 +12,7 @@ import { SceneComponentConstants } from "../sceneComponent";
 import { Logger } from "../Misc/logger";
 import { Tools } from "../Misc/tools";
 import { WebRequest } from "../Misc/webRequest";
+import type { SpriteRendererOptions } from "./spriteRenderer";
 import { SpriteRenderer } from "./spriteRenderer";
 import type { ThinSprite } from "./thinSprite";
 import type { ISize } from "../Maths/math.size";
@@ -105,6 +106,14 @@ export interface ISpriteManager extends IDisposable {
      * Serializes the sprite manager to a JSON object
      */
     serialize(serializeTexture?: boolean): any;
+}
+
+/**
+ * Options for the SpriteManager
+ */
+export interface SpriteManagerOptions {
+    /** Options for the sprite renderer */
+    spriteRendererOptions: SpriteRendererOptions;
 }
 
 /**
@@ -286,6 +295,7 @@ export class SpriteManager implements ISpriteManager {
      * @param samplingMode defines the sampling mode to use with spritesheet
      * @param fromPacked set to false; do not alter
      * @param spriteJSON null otherwise a JSON object defining sprite sheet data; do not alter
+     * @param options options used to create the SpriteManager instance
      */
     constructor(
         /** defines the manager's name */
@@ -297,7 +307,8 @@ export class SpriteManager implements ISpriteManager {
         epsilon: number = 0.01,
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
         fromPacked: boolean = false,
-        spriteJSON: any | null = null
+        spriteJSON: any | null = null,
+        options?: SpriteManagerOptions
     ) {
         if (!scene) {
             scene = EngineStore.LastCreatedScene!;
@@ -310,7 +321,7 @@ export class SpriteManager implements ISpriteManager {
 
         this._scene = scene;
         const engine = this._scene.getEngine();
-        this._spriteRenderer = new SpriteRenderer(engine, capacity, epsilon, scene);
+        this._spriteRenderer = new SpriteRenderer(engine, capacity, epsilon, scene, options?.spriteRendererOptions);
 
         if (cellSize.width && cellSize.height) {
             this.cellWidth = cellSize.width;
