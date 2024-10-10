@@ -6,22 +6,21 @@ import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnect
 import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
- * Block used for the Gaussian Splatting
+ * Block used for the Gaussian Splatting Fragment part
  */
-export class GaussianSplattingBlock extends NodeMaterialBlock {
+export class GaussianBlock extends NodeMaterialBlock {
     /**
-     * Create a new GaussianSplattingBlock
+     * Create a new GaussianBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name, NodeMaterialBlockTargets.Vertex);
+        super(name, NodeMaterialBlockTargets.Fragment);
 
         this._isUnique = true;
 
-        this.registerInput("splatPosition", NodeMaterialBlockConnectionPointTypes.Vector3, false, NodeMaterialBlockTargets.Vertex);
-        this.registerInput("splatScale", NodeMaterialBlockConnectionPointTypes.Vector3, false, NodeMaterialBlockTargets.Vertex);
+        this.registerInput("splatColor", NodeMaterialBlockConnectionPointTypes.Color4, false, NodeMaterialBlockTargets.Fragment);
 
-        this.registerOutput("splatVertex", NodeMaterialBlockConnectionPointTypes.Vector4, NodeMaterialBlockTargets.Vertex);
+        this.registerOutput("rgba", NodeMaterialBlockConnectionPointTypes.Color4, NodeMaterialBlockTargets.Fragment);
     }
 
     /**
@@ -29,33 +28,20 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
      * @returns the class name
      */
     public override getClassName() {
-        return "GaussianSplattingBlock";
+        return "GaussianBlock";
     }
 
     /**
-     * Gets the position input component
+     * Gets the color input component
      */
-    public get position(): NodeMaterialConnectionPoint {
+    public get splatColor(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the scale input component
+     * Gets the rgba output component
      */
-    public get scale(): NodeMaterialConnectionPoint {
-        return this._inputs[1];
-    }
-    /**
-     * Gets the color input component
-     */
-    public get color(): NodeMaterialConnectionPoint {
-        return this._inputs[2];
-    }
-
-    /**
-     * Gets the splatColor output component
-     */
-    public get splatColor(): NodeMaterialConnectionPoint {
+    public get rgba(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
 
@@ -70,7 +56,7 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
     protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        if (state.target === NodeMaterialBlockTargets.Fragment) {
+        if (state.target === NodeMaterialBlockTargets.Vertex) {
             return;
         }
         /*
@@ -97,4 +83,4 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
     }
 }
 
-RegisterClass("BABYLON.GaussianSplattingBlock", GaussianSplattingBlock);
+RegisterClass("BABYLON.GaussianBlock", GaussianBlock);

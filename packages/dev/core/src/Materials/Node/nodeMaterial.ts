@@ -36,6 +36,8 @@ import { ParticleTextureBlock } from "./Blocks/Particle/particleTextureBlock";
 import { ParticleRampGradientBlock } from "./Blocks/Particle/particleRampGradientBlock";
 import { ParticleBlendMultiplyBlock } from "./Blocks/Particle/particleBlendMultiplyBlock";
 import { GaussianSplattingBlock } from "./Blocks/GaussianSplatting/gaussianSplattingBlock";
+import { GaussianBlock } from "./Blocks/GaussianSplatting/gaussianBlock";
+import { SplatReaderBlock } from "./Blocks/GaussianSplatting/splatReaderBlock";
 import { EffectFallbacks } from "../effectFallbacks";
 import { WebRequest } from "../../Misc/webRequest";
 import type { PostProcessOptions } from "../../PostProcesses/postProcess";
@@ -2162,24 +2164,27 @@ export class NodeMaterial extends PushMaterial {
 
         this.editorData = null;
 
-        // Pixel
-        const position = new InputBlock("splat_position");
-        position.setAsAttribute("splat_position");
+        // reading splat datas
+        const splatIndex = new InputBlock("SplatIndex");
+        splatIndex.setAsAttribute("splatIndex");
 
-        const scale = new InputBlock("splat_scale");
-        scale.setAsAttribute("splat_scale");
+        const splatReader = new SplatReaderBlock("SplatReader");
+        splatIndex.connectTo(splatReader);
 
-        const color = new InputBlock("splat_color");
-        color.setAsAttribute("splat_color");
-
+        // transforming datas into renderable positions
         const gs = new GaussianSplattingBlock("GaussianSplatting");
-        position.connectTo(gs);
-        scale.connectTo(gs);
-        const vertexOutput = new VertexOutputBlock("VertexOutput");
+        splatReader.connectTo(gs, { input: "splatPosition", output: "splatPosition" });
+        splatReader.connectTo(gs, { input: "splatScale", output: "splatScale" });
 
+        // from color to gaussian color
+        const gaussian = new GaussianBlock("Gaussian");
+        splatReader.connectTo(gaussian, { input: "splatColor", output: "splatColor" });
+
+        // fragment and vertex outputs
         const fragmentOutput = new FragmentOutputBlock("FragmentOutput");
-        color.connectTo(fragmentOutput);
+        gaussian.connectTo(fragmentOutput, { input: "rgba", output: "rgba" });
 
+        const vertexOutput = new VertexOutputBlock("VertexOutput");
         gs.connectTo(vertexOutput);
 
         // Add to nodes
