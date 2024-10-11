@@ -46,11 +46,11 @@ Splat readSplat(float splatIndex)
     splat.covB = texture2D(covariancesBTexture, splatUV).xyz;
     return splat;
 }
-    
+/*    
 vec4 gaussianSplatting(vec3 worldPos, vec3 scale, mat4 view, mat4 projection)
 {
     mat4 modelView = view * world;
-    vec4 camspace = view * worldPos;
+    vec4 camspace = view * vec4(worldPos, 1.0);
     vec4 pos2d = projection * camspace;
 
     float bounds = 1.2 * pos2d.w;
@@ -95,3 +95,4 @@ vec4 gaussianSplatting(vec3 worldPos, vec3 scale, mat4 view, mat4 projection)
         + (position.x * majorAxis
         + position.y * minorAxis) * invViewport * pos2d.w, pos2d.zw);
 }
+*/

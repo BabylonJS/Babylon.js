@@ -99,7 +99,7 @@
             "type": "msedge",
             "request": "launch",
             "name": "Launch Playground (Edge)",
-            "url": "http://localhost:1338",
+            "url": "http://localhost:1338/#CID4NN#203",
             "preLaunchTask": "Playground Serve for core (Dev)"
         },
         {
@@ -109,7 +109,7 @@
             "type": "chrome",
             "request": "launch",
             "name": "Launch Playground (Chrome)",
-            "url": "http://localhost:1338",
+            "url": "http://localhost:1338/#WXWJKN#0",
             "preLaunchTask": "Playground Serve for core (Dev)"
         },
         {
@@ -120,7 +120,7 @@
             "type": "msedge",
             "request": "launch",
             "name": "Sandbox development (Edge)",
-            "url": "http://localhost:1339",
+            "url": "http://localhost:1339/",
             "preLaunchTask": "Sandbox Serve (Dev)"
         },
         {

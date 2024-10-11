@@ -83,7 +83,7 @@ export class SplatReaderBlock extends NodeMaterialBlock {
         state._emit2DSampler("centersTexture");
         state._emit2DSampler("colorsTexture");
 
-        state._emitFunctionFromInclude("gaussianSplattingDeclaration", comments);
+        state._emitFunctionFromInclude("gaussianSplattingVertexDeclaration", comments);
         state._emitVaryingFromString("vPosition", NodeMaterialBlockConnectionPointTypes.Vector3);
         state._emitUniformFromString("dataTextureSize", NodeMaterialBlockConnectionPointTypes.Vector2);
         const splatIndex = this.splatIndex;
@@ -91,7 +91,7 @@ export class SplatReaderBlock extends NodeMaterialBlock {
         const splatColor = this._outputs[2];
 
         const splatVariablename = state._getFreeVariableName("splat");
-        state.compilationString += `Splat ${splatVariablename} = readSplat(${splatIndex.associatedVariableName});\n`;
+        state.compilationString += `Splat ${splatVariablename} = readSplat(${splatIndex.associatedVariableName});vec3 covA = splat.covA; vec3 covB = splat.covB;\n`;
 
         state.compilationString += `${state._declareOutput(splatPosition)} = ${splatVariablename}.center;\n`;
         state.compilationString += `${state._declareOutput(splatColor)} = ${splatVariablename}.color;\n`;

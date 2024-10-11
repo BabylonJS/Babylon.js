@@ -83,7 +83,7 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
         }
 
         const comments = `//${this.name}`;
-        state._emitFunctionFromInclude("gaussianSplattingDeclaration", comments);
+        state._emitFunctionFromInclude("gaussianSplattingVertexDeclaration", comments);
         state._emitUniformFromString("focal", NodeMaterialBlockConnectionPointTypes.Vector2);
 
         const splatPosition = this.splatPosition;
@@ -92,7 +92,7 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
         const projection = this.projection;
         const output = this._outputs[0];
 
-        state.compilationString += `${state._declareOutput(output)} = gaussianSplatting(${splatPosition.associatedVariableName}, ${splatScale.associatedVariableName}, ${view.associatedVariableName}, ${projection.associatedVariableName});\n`;
+        state.compilationString += `${state._declareOutput(output)} = gaussianSplatting(${splatPosition.associatedVariableName}, ${splatScale.associatedVariableName}, covA, covB, ${view.associatedVariableName}, ${projection.associatedVariableName});\n`;
 
         return this;
     }
