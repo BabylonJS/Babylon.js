@@ -1,4 +1,4 @@
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { RegisterClass } from "../Misc/typeStore";
 import type { FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphConnection, FlowGraphConnectionType } from "./flowGraphConnection";
