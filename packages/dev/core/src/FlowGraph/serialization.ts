@@ -2,6 +2,7 @@ import { Color3, Color4 } from "../Maths/math.color";
 import { Matrix, Quaternion, Vector2, Vector3, Vector4 } from "../Maths/math.vector";
 import type { Scene } from "../scene";
 import { FlowGraphJsonPointerParserBlock } from "./Blocks/Data/Transformers";
+import { FlowGraphBlockNames } from "./Blocks/flowGraphBlockNames";
 import { FlowGraphInteger } from "./flowGraphInteger";
 
 function isMeshClassName(className: string) {
@@ -107,5 +108,5 @@ export function defaultValueParseFunction(key: string, serializationObject: any,
 export function needsPathConverter(className: string) {
     // I am not using the ClassName property here because it was causing a circular dependency
     // that jest didn't like!
-    return className === FlowGraphJsonPointerParserBlock.ClassName;
+    return className === FlowGraphBlockNames.JsonPointerParser;
 }

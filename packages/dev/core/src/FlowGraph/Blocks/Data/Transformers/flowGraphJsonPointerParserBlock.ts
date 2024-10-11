@@ -7,6 +7,8 @@ import { FlowGraphPathConverterComponent } from "core/FlowGraph/flowGraphPathCon
 import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes";
 import type { IObjectAccessor } from "core/FlowGraph/typeDefinitions";
 import type { IPathToObjectConverter } from "core/ObjectModel/objectModelInterfaces";
+import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
+import { RegisterClass } from "core/Misc/typeStore";
 
 export interface IFlowGraphJsonPointerParserBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
@@ -104,11 +106,8 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
      * @returns the class name
      */
     public override getClassName(): string {
-        return FlowGraphJsonPointerParserBlock.ClassName;
+        return FlowGraphBlockNames.JsonPointerParser;
     }
-
-    /**
-     * The name of the class
-     */
-    public static ClassName = "FlowGraphJsonPointerParserBlock";
 }
+
+RegisterClass(FlowGraphBlockNames.JsonPointerParser, FlowGraphJsonPointerParserBlock);

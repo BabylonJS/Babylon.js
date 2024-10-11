@@ -103,4 +103,5 @@ export const enum FlowGraphBlockNames {
     SetProperty = "FlowGraphSetPropertyBlock",
     GetVariable = "FlowGraphGetVariableBlock",
     SetVariable = "FlowGraphSetVariableBlock",
+    JsonPointerParser = "FlowGraphJsonPointerParserBlock",
 }

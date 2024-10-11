@@ -172,7 +172,7 @@ export class FlowGraphBlock {
      * @returns the class name
      */
     public getClassName() {
-        return "FGBlock";
+        return "FlowGraphBlock";
     }
 
     /**
