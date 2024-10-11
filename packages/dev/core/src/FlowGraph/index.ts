@@ -11,5 +11,8 @@ export * from "./flowGraphContextLogger";
 export * from "./flowGraphConnection";
 export * from "./flowGraphDataConnection";
 export * from "./flowGraphAssetsContext";
+export * from "./flowGraphParser";
+export * from "./flowGraphPathConverter";
+export * from "./flowGraphPathConverterComponent";
 // eslint-disable-next-line import/no-internal-modules
 export * from "./Blocks/index";

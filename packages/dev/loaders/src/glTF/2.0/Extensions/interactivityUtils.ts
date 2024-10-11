@@ -617,6 +617,23 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
             },
         },
     },
+    "babylon/log": {
+        types: [FlowGraphBlockNames.ConsoleLog],
+        configuration: {},
+        inputs: {
+            flows: {
+                in: { name: "in" },
+            },
+            values: {
+                message: { name: "message" },
+            },
+        },
+        outputs: {
+            flows: {
+                out: { name: "out" },
+            },
+        },
+    },
 };
 
 function getSimpleInputMapping(type: string, inputs: string[] = ["a"]): IGLTFToFlowGraphMapping {
