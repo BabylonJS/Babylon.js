@@ -15,46 +15,6 @@
                     "name": "Light"
                 }
             ]
-        },
-        "KHR_interactivity": {
-            "nodes": [
-                {
-                    "type": "lifecycle/onStart",
-                    "flows": [
-                        {
-                            "id": "out",
-                            "node": 2,
-                            "socket": "in"
-                        }
-                    ]
-                },
-                {
-                    "type": "math/add",
-                    "values": [
-                        {
-                            "id": "a",
-                            "value": [1, 2, 3, 4],
-                            "type": 0
-                        },
-                        {
-                            "id": "b",
-                            "value": [1, 2, 3, 4],
-                            "type": 0
-                        }
-                    ]
-                },
-                {
-                    "type": "log",
-                    "values": [
-                        {
-                            "id": "message",
-                            "node": 1,
-                            "socket": "value"
-                        }
-                    ]
-                }
-            ],
-            "types": [{ "signature": "float4" }]
         }
     },
     "scene": 0,
