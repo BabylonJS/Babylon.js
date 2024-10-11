@@ -30,7 +30,6 @@ export interface IFlowGraphJsonPointerParserBlockConfiguration extends IFlowGrap
  * The output is an object and a property name.
  * Optionally, the block can also output the value of the property. This is configurable.
  */
-
 export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphAssetType> extends FlowGraphBlock {
     /**
      * Output connection: The object that contains the property.
