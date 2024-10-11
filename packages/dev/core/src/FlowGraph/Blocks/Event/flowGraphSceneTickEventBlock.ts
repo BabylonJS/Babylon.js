@@ -3,6 +3,7 @@ import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
+import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 /**
  * @experimental
  * Block that triggers on scene tick (before each render).
@@ -49,12 +50,7 @@ export class FlowGraphSceneTickEventBlock extends FlowGraphEventBlock {
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return FlowGraphSceneTickEventBlock.ClassName;
+        return FlowGraphBlockNames.SceneTickEvent;
     }
-
-    /**
-     * the class name of the block.
-     */
-    public static ClassName = "FGSceneTickEventBlock";
 }
-RegisterClass(FlowGraphSceneTickEventBlock.ClassName, FlowGraphSceneTickEventBlock);
+RegisterClass(FlowGraphBlockNames.SceneTickEvent, FlowGraphSceneTickEventBlock);

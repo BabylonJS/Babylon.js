@@ -3,6 +3,7 @@ import { FlowGraphExecutionBlockWithOutSignal } from "../../flowGraphExecutionBl
 import type { FlowGraphContext } from "../../flowGraphContext";
 import { RegisterClass } from "../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
+import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 
 /**
  * @experimental
@@ -48,12 +49,7 @@ export class FlowGraphSendCustomEventBlock extends FlowGraphExecutionBlockWithOu
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return FlowGraphSendCustomEventBlock.ClassName;
+        return FlowGraphBlockNames.ReceiveCustomEvent;
     }
-
-    /**
-     * the class name of the block.
-     */
-    public static ClassName = "FGSendCustomEventBlock";
 }
-RegisterClass("FGSendCustomEventBlock", FlowGraphSendCustomEventBlock);
+RegisterClass(FlowGraphBlockNames.ReceiveCustomEvent, FlowGraphSendCustomEventBlock);

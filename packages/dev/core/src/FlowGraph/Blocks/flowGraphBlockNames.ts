@@ -7,6 +7,7 @@ export const enum FlowGraphBlockNames {
     SceneTickEvent = "FlowGraphSceneTickEventBlock",
     SendCustomEvent = "FlowGraphSendCustomEventBlock",
     ReceiveCustomEvent = "FlowGraphReceiveCustomEventBlock",
+    MeshPickEvent = "FlowGraphMeshPickEventBlock",
     E = "FlowGraphEBlock",
     PI = "FlowGraphPIBlock",
     Inf = "FlowGraphInfBlock",

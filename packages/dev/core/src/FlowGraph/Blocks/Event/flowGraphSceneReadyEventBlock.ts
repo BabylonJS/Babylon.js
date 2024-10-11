@@ -4,6 +4,7 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import type { Nullable } from "../../../types";
 import type { Observer } from "../../../Misc/observable";
 import type { Scene } from "../../../scene";
+import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 /**
  * @experimental
  * Block that triggers when a scene is ready.
@@ -36,12 +37,7 @@ export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
      * @returns class name of the block.
      */
     public override getClassName() {
-        return FlowGraphSceneReadyEventBlock.ClassName;
+        return FlowGraphBlockNames.SceneReadyEvent;
     }
-
-    /**
-     * the class name of the block.
-     */
-    public static ClassName = "FGSceneReadyEventBlock";
 }
-RegisterClass("FGSceneReadyEventBlock", FlowGraphSceneReadyEventBlock);
+RegisterClass(FlowGraphBlockNames.SceneReadyEvent, FlowGraphSceneReadyEventBlock);

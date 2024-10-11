@@ -6,6 +6,7 @@ import { Tools } from "../../../Misc/tools";
 import type { RichType } from "../../flowGraphRichTypes";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { RegisterClass } from "../../../Misc/typeStore";
+import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 /**
  * @experimental
  * Parameters used to create a FlowGraphReceiveCustomEventBlock.
@@ -69,22 +70,7 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return FlowGraphReceiveCustomEventBlock.ClassName;
-    }
-
-    /**
-     * the class name of the block.
-     */
-    public static ClassName = "FGReceiveCustomEventBlock";
-
-    /**
-     * Serializes this block
-     * @param serializationObject the object to serialize to
-     */
-    public override serialize(serializationObject?: any): void {
-        super.serialize(serializationObject);
-        serializationObject.eventId = this.config.eventId;
-        serializationObject.eventData = this.config.eventData;
+        return FlowGraphBlockNames.SendCustomEvent;
     }
 }
-RegisterClass(FlowGraphReceiveCustomEventBlock.ClassName, FlowGraphReceiveCustomEventBlock);
+RegisterClass(FlowGraphBlockNames.SendCustomEvent, FlowGraphReceiveCustomEventBlock);

@@ -56,8 +56,9 @@ function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKH
 }
 
 function convertBlock(id: number, gltfBlock: IKHRInteractivity_Node, definition: IKHRInteractivity): ISerializedFlowGraphBlock {
-    const className = gltfToFlowGraphMapping[gltfBlock.type].types[0];
-    if (!className) {
+    const mapping = gltfToFlowGraphMapping[gltfBlock.type];
+    const className = mapping.types[0];
+    if (!mapping || !className) {
         throw new Error(`/extensions/KHR_interactivity/nodes/${id}: Unknown block type: ${gltfBlock.type}`);
     }
     const uniqueId = id.toString();

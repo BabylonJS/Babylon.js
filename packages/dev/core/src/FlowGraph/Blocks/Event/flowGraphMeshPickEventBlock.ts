@@ -12,6 +12,7 @@ import type { Nullable } from "../../../types";
 import type { Mesh } from "../../../Meshes";
 import type { Observer } from "../../../Misc/observable";
 import type { Node } from "../../../node";
+import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 /**
  * @experimental
  */
@@ -100,21 +101,7 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return FlowGraphMeshPickEventBlock.ClassName;
+        return FlowGraphBlockNames.MeshPickEvent;
     }
-
-    /**
-     * Serializes the block to a JSON object.
-     * @param serializationObject the object to serialize to.
-     */
-    public override serialize(serializationObject?: any): void {
-        super.serialize(serializationObject);
-        serializationObject.config.path = this.config.path;
-    }
-
-    /**
-     * Class name of the block.
-     */
-    public static ClassName = "FGMeshPickEventBlock";
 }
-RegisterClass(FlowGraphMeshPickEventBlock.ClassName, FlowGraphMeshPickEventBlock);
+RegisterClass(FlowGraphBlockNames.MeshPickEvent, FlowGraphMeshPickEventBlock);
