@@ -5,6 +5,7 @@ import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
+import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 /**
  * @experimental
  * Configuration for the wait all block.
@@ -21,10 +22,6 @@ export interface IFlowGraphWaitAllBlockConfiguration extends IFlowGraphBlockConf
  * A block that waits for all input flows to be activated before activating its output flow.
  */
 export class FlowGraphWaitAllBlock extends FlowGraphExecutionBlockWithOutSignal {
-    /**
-     * The class name of the block.
-     */
-    public static readonly ClassName = "FGWaitAllBlock";
     /**
      * Input connection: Resets the block.
      */
@@ -109,7 +106,7 @@ export class FlowGraphWaitAllBlock extends FlowGraphExecutionBlockWithOutSignal 
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return FlowGraphWaitAllBlock.ClassName;
+        return FlowGraphBlockNames.WaitAll;
     }
 
     /**
@@ -121,4 +118,4 @@ export class FlowGraphWaitAllBlock extends FlowGraphExecutionBlockWithOutSignal 
         serializationObject.config.inputFlows = this.config.inputFlows;
     }
 }
-RegisterClass(FlowGraphWaitAllBlock.ClassName, FlowGraphWaitAllBlock);
+RegisterClass(FlowGraphBlockNames.WaitAll, FlowGraphWaitAllBlock);

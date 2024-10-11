@@ -127,8 +127,8 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
     }
 
     public override getClassName(): string {
-        return FlowGraphBlockNames.Interpolation;
+        return FlowGraphBlockNames.ValueInterpolation;
     }
 }
 
-RegisterClass(FlowGraphBlockNames.Interpolation, FlowGraphInterpolationBlock);
+RegisterClass(FlowGraphBlockNames.ValueInterpolation, FlowGraphInterpolationBlock);

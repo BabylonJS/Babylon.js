@@ -3,7 +3,7 @@ import type { IKHRInteractivity, IKHRInteractivity_Configuration, IKHRInteractiv
 import type { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import type { ISerializedFlowGraph, ISerializedFlowGraphBlock, ISerializedFlowGraphConnection, ISerializedFlowGraphContext } from "core/FlowGraph/typeDefinitions";
 import { RandomGUID } from "core/Misc/guid";
-import { gltfToFlowGraphTypeMap, gltfTypeToBabylonType } from "./interactivityUtils";
+import { gltfTypeToBabylonType, gltfToFlowGraphMapping } from "./interactivityUtils";
 import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
 
 function convertValueWithType(configObject: IKHRInteractivity_Configuration, definition: IKHRInteractivity, context: string) {
@@ -56,7 +56,7 @@ function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKH
 }
 
 function convertBlock(id: number, gltfBlock: IKHRInteractivity_Node, definition: IKHRInteractivity): ISerializedFlowGraphBlock {
-    const className = gltfToFlowGraphTypeMap[gltfBlock.type];
+    const className = gltfToFlowGraphMapping[gltfBlock.type].types[0];
     if (!className) {
         throw new Error(`/extensions/KHR_interactivity/nodes/${id}: Unknown block type: ${gltfBlock.type}`);
     }

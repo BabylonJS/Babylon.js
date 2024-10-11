@@ -1,4 +1,5 @@
 import { RegisterClass } from "../../../../Misc/typeStore";
+import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import type { FlowGraphContext } from "../../../flowGraphContext";
 import { FlowGraphExecutionBlock } from "../../../flowGraphExecutionBlock";
@@ -69,12 +70,8 @@ export class FlowGraphSequenceBlock extends FlowGraphExecutionBlock {
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return FlowGraphSequenceBlock.ClassName;
+        return FlowGraphBlockNames.Sequence;
     }
-
-    /**
-     * the class name of the block.
-     */
-    public static ClassName = "FGSequenceBlock";
 }
-RegisterClass(FlowGraphSequenceBlock.ClassName, FlowGraphSequenceBlock);
+
+RegisterClass(FlowGraphBlockNames.Sequence, FlowGraphSequenceBlock);

@@ -4,6 +4,7 @@ import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { RichTypeAny } from "../../flowGraphRichTypes";
 import { RegisterClass } from "../../../Misc/typeStore";
+import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 
 /**
  * @experimental
@@ -53,14 +54,6 @@ export class FlowGraphGetVariableBlock<T> extends FlowGraphBlock {
     }
 
     /**
-     * Gets the class name of this block
-     * @returns the class name
-     */
-    public override getClassName(): string {
-        return FlowGraphGetVariableBlock.ClassName;
-    }
-
-    /**
      * Serializes this block
      * @param serializationObject the object to serialize to
      */
@@ -69,9 +62,9 @@ export class FlowGraphGetVariableBlock<T> extends FlowGraphBlock {
         serializationObject.config.variable = this.config.variable;
     }
 
-    /**
-     * Class name of the block.
-     */
-    public static ClassName = "FGGetVariableBlock";
+    public override getClassName(): string {
+        return FlowGraphBlockNames.GetVariable;
+    }
 }
-RegisterClass(FlowGraphGetVariableBlock.ClassName, FlowGraphGetVariableBlock);
+
+RegisterClass(FlowGraphBlockNames.GetVariable, FlowGraphGetVariableBlock);

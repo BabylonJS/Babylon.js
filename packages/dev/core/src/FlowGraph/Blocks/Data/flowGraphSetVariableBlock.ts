@@ -1,8 +1,10 @@
+import { RegisterClass } from "core/Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import type { FlowGraphContext } from "../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphExecutionBlockWithOutSignal } from "../../flowGraphExecutionBlockWithOutSignal";
 import type { FlowGraphSignalConnection } from "../../flowGraphSignalConnection";
+import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 
 /**
  * @experimental
@@ -16,10 +18,6 @@ export interface IFlowGraphSetVariableBlockConfiguration extends IFlowGraphBlock
 }
 
 export class FlowGraphSetVariableBlock<T> extends FlowGraphExecutionBlockWithOutSignal {
-    /**
-     * The class name of this block.
-     */
-    public static readonly ClassName = "FGSetVariableBlock";
     /**
      * Input connection: The value to set.
      */
@@ -42,7 +40,7 @@ export class FlowGraphSetVariableBlock<T> extends FlowGraphExecutionBlockWithOut
     }
 
     public override getClassName(): string {
-        return FlowGraphSetVariableBlock.ClassName;
+        return FlowGraphBlockNames.SetVariable;
     }
 
     public override serialize(serializationObject?: any): void {
@@ -51,3 +49,5 @@ export class FlowGraphSetVariableBlock<T> extends FlowGraphExecutionBlockWithOut
         serializationObject.config.type = this.config.type;
     }
 }
+
+RegisterClass(FlowGraphBlockNames.SetVariable, FlowGraphSetVariableBlock);

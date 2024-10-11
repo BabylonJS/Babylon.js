@@ -6,12 +6,9 @@ import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphExecutionBlockWithOutSignal";
 import { RichTypeNumber } from "../../../flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
+import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 
 export class FlowGraphCancelDelayBlock extends FlowGraphExecutionBlockWithOutSignal {
-    /**
-     * The class name of the block
-     */
-    public static readonly ClassName = "FGCancelDelayBlock";
     /**
      * Input connection: The index value of the scheduled activation to be cancelled.
      */
@@ -38,8 +35,8 @@ export class FlowGraphCancelDelayBlock extends FlowGraphExecutionBlockWithOutSig
     }
 
     public override getClassName(): string {
-        return FlowGraphCancelDelayBlock.ClassName;
+        return FlowGraphBlockNames.CancelDelay;
     }
 }
 
-RegisterClass(FlowGraphCancelDelayBlock.ClassName, FlowGraphCancelDelayBlock);
+RegisterClass(FlowGraphBlockNames.CancelDelay, FlowGraphCancelDelayBlock);

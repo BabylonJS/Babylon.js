@@ -6,6 +6,8 @@ import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { RichTypeAny, RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
 import type { Nullable } from "core/types";
+import { FlowGraphBlockNames } from "../flowGraphBlockNames";
+import { RegisterClass } from "core/Misc/typeStore";
 
 /**
  * @experimental
@@ -63,4 +65,14 @@ export class FlowGraphGetAssetBlock<T extends FlowGraphAssetType> extends FlowGr
         const asset = GetFlowGraphAssetWithType(context.assetsContext, type, index);
         this.value.setValue(asset, context);
     }
+
+    /**
+     * Gets the class name of this block
+     * @returns the class name
+     */
+    public override getClassName(): string {
+        return FlowGraphBlockNames.GetAsset;
+    }
 }
+
+RegisterClass(FlowGraphBlockNames.GetAsset, FlowGraphGetAssetBlock);

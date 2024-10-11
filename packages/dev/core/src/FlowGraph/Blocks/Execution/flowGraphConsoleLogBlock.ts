@@ -5,6 +5,7 @@ import { RichTypeAny } from "../../flowGraphRichTypes";
 import { RegisterClass } from "../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { Logger } from "core/Misc/logger";
+import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 
 /**
  * @experimental
@@ -35,12 +36,8 @@ export class FlowGraphConsoleLogBlock extends FlowGraphExecutionBlockWithOutSign
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return FlowGraphConsoleLogBlock.ClassName;
+        return FlowGraphBlockNames.ConsoleLog;
     }
-
-    /**
-     * the class name of the block.
-     */
-    public static ClassName = "FGConsoleLogBlock";
 }
-RegisterClass(FlowGraphConsoleLogBlock.ClassName, FlowGraphConsoleLogBlock);
+
+RegisterClass(FlowGraphBlockNames.ConsoleLog, FlowGraphConsoleLogBlock);

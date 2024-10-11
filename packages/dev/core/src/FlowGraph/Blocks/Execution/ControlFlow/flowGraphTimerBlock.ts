@@ -10,6 +10,7 @@ import { RegisterClass } from "../../../../Misc/typeStore";
  * @experimental
  * Block that provides two different output flows. One is started immediately once the block is executed,
  * and the other is executed after a set time. The timer for this block runs based on the scene's render loop.
+ * @deprecated Use SetDelay instead
  */
 export class FlowGraphTimerBlock extends FlowGraphAsyncExecutionBlock {
     /**

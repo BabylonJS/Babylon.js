@@ -5,6 +5,7 @@ import { getRichTypeFromValue } from "core/FlowGraph/flowGraphRichTypes";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { defaultValueSerializationFunction } from "core/FlowGraph/serialization";
+import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 /**
  * @experimental
  * Configuration for a constant block.
@@ -45,7 +46,7 @@ export class FlowGraphConstantBlock<T> extends FlowGraphBlock {
      * @returns the class name
      */
     public override getClassName(): string {
-        return "FGConstantBlock";
+        return FlowGraphBlockNames.Constant;
     }
 
     /**
@@ -61,4 +62,4 @@ export class FlowGraphConstantBlock<T> extends FlowGraphBlock {
         valueSerializeFunction("value", this.config.value, serializationObject.config);
     }
 }
-RegisterClass("FGConstantBlock", FlowGraphConstantBlock);
+RegisterClass(FlowGraphBlockNames.Constant, FlowGraphConstantBlock);

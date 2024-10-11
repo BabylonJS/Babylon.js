@@ -5,16 +5,13 @@ import { FlowGraphExecutionBlock } from "../../../flowGraphExecutionBlock";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
+import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 
 /**
  * @experimental
  * A block that evaluates a condition and executes one of two branches.
  */
 export class FlowGraphBranchBlock extends FlowGraphExecutionBlock {
-    /**
-     * the class name of the block.
-     */
-    public static ClassName = "FGBranchBlock";
     /**
      * Input connection: The condition to evaluate.
      */
@@ -49,7 +46,7 @@ export class FlowGraphBranchBlock extends FlowGraphExecutionBlock {
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return FlowGraphBranchBlock.ClassName;
+        return FlowGraphBlockNames.Branch;
     }
 }
-RegisterClass("FGBranchBlock", FlowGraphBranchBlock);
+RegisterClass(FlowGraphBlockNames.Branch, FlowGraphBranchBlock);

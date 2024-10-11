@@ -5,6 +5,7 @@ import { RichTypeBoolean } from "core/FlowGraph/flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalConnection";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
+import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 
 /**
  * @experimental
@@ -49,7 +50,7 @@ export class FlowGraphFlipFlopBlock extends FlowGraphExecutionBlock {
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return "FGFlipFlopBlock";
+        return FlowGraphBlockNames.FlipFlop;
     }
 }
-RegisterClass("FGFlipFlopBlock", FlowGraphFlipFlopBlock);
+RegisterClass(FlowGraphBlockNames.FlipFlop, FlowGraphFlipFlopBlock);

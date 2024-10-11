@@ -5,6 +5,7 @@ import { FlowGraphExecutionBlockWithOutSignal } from "core/FlowGraph/flowGraphEx
 import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalConnection";
 import { RegisterClass } from "core/Misc/typeStore";
+import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 
 export interface IFlowGraphSetPropertyBlockConfiguration<O extends FlowGraphAssetType> {
     /**
@@ -30,10 +31,6 @@ export interface IFlowGraphSetPropertyBlockConfiguration<O extends FlowGraphAsse
  * Note that it is recommended to input the object on which you are working on (i.e. a material) than providing a mesh and then getting the material from it.
  */
 export class FlowGraphSetPropertyBlock<P extends any, O extends FlowGraphAssetType> extends FlowGraphExecutionBlockWithOutSignal {
-    /**
-     * The class name of this block.
-     */
-    public static readonly ClassName = "FGSetPropertyBlock";
     /**
      * Input connection: The value to set on the property.
      */
@@ -85,8 +82,8 @@ export class FlowGraphSetPropertyBlock<P extends any, O extends FlowGraphAssetTy
     }
 
     public override getClassName(): string {
-        return FlowGraphSetPropertyBlock.ClassName;
+        return FlowGraphBlockNames.SetProperty;
     }
 }
 
-RegisterClass(FlowGraphSetPropertyBlock.ClassName, FlowGraphSetPropertyBlock);
+RegisterClass(FlowGraphBlockNames.SetProperty, FlowGraphSetPropertyBlock);

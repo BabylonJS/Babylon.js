@@ -5,6 +5,7 @@ import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes";
 import { RegisterClass } from "core/Misc/typeStore";
+import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 
 export interface IFlowGraphGetPropertyBlockConfiguration<O extends FlowGraphAssetType> extends IFlowGraphBlockConfiguration {
     /**
@@ -33,10 +34,6 @@ export interface IFlowGraphGetPropertyBlockConfiguration<O extends FlowGraphAsse
  * Note that it is recommended to input the object on which you are working on (i.e. a material) than providing a mesh and then getting the material from it.
  */
 export class FlowGraphGetPropertyBlock<P extends any, O extends FlowGraphAssetType> extends FlowGraphBlock {
-    /**
-     * The class name of the block.
-     */
-    public static readonly ClassName = "FGGetPropertyBlock";
     /**
      * Output connection: The value of the property.
      */
@@ -96,8 +93,8 @@ export class FlowGraphGetPropertyBlock<P extends any, O extends FlowGraphAssetTy
     }
 
     public override getClassName(): string {
-        return FlowGraphGetPropertyBlock.ClassName;
+        return FlowGraphBlockNames.GetProperty;
     }
 }
 
-RegisterClass(FlowGraphGetPropertyBlock.ClassName, FlowGraphGetPropertyBlock);
+RegisterClass(FlowGraphBlockNames.GetProperty, FlowGraphGetPropertyBlock);

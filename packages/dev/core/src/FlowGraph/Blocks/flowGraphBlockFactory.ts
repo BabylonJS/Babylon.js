@@ -9,7 +9,7 @@ export function blockFactory(name: FlowGraphBlockNames): () => Promise<typeof Fl
             return async () => (await import("./Execution/Animation/flowGraphStopAnimationBlock")).FlowGraphStopAnimationBlock;
         case FlowGraphBlockNames.PauseAnimation:
             return async () => (await import("./Execution/Animation/flowGraphPauseAnimationBlock")).FlowGraphPauseAnimationBlock;
-        case FlowGraphBlockNames.Interpolation:
+        case FlowGraphBlockNames.ValueInterpolation:
             return async () => (await import("./Execution/Animation/flowGraphInterpolationBlock")).FlowGraphInterpolationBlock;
         default:
             throw new Error(`Unknown block name: ${name}`);

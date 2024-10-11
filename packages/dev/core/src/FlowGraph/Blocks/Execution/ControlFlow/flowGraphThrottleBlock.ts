@@ -5,15 +5,12 @@ import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnecti
 import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphExecutionBlockWithOutSignal";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
+import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 /**
  * @experimental
  * A block that throttles the execution of its output flow.
  */
 export class FlowGraphThrottleBlock extends FlowGraphExecutionBlockWithOutSignal {
-    /**
-     * The class name of the block.
-     */
-    public static readonly ClassName = "FGThrottleBlock";
     /**
      * Input connection: The duration of the throttle, in seconds.
      */
@@ -74,7 +71,7 @@ export class FlowGraphThrottleBlock extends FlowGraphExecutionBlockWithOutSignal
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return FlowGraphThrottleBlock.ClassName;
+        return FlowGraphBlockNames.Throttle;
     }
 }
-RegisterClass(FlowGraphThrottleBlock.ClassName, FlowGraphThrottleBlock);
+RegisterClass(FlowGraphBlockNames.Throttle, FlowGraphThrottleBlock);

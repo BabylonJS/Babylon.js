@@ -5,6 +5,7 @@ import { RichTypeAny } from "../../../flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
+import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 /**
  * @experimental
  * Configuration for a switch block.
@@ -21,10 +22,6 @@ export interface IFlowGraphSwitchBlockConfiguration<T> extends IFlowGraphBlockCo
  * A block that executes a branch based on a selection.
  */
 export class FlowGraphSwitchBlock<T = number> extends FlowGraphExecutionBlock {
-    /**
-     * The class name of the block.
-     */
-    public static readonly ClassName = "FGSwitchBlock";
     /**
      * Input connection: The value of the selection.
      */
@@ -96,7 +93,7 @@ export class FlowGraphSwitchBlock<T = number> extends FlowGraphExecutionBlock {
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return FlowGraphSwitchBlock.ClassName;
+        return FlowGraphBlockNames.Switch;
     }
 
     /**
@@ -108,4 +105,4 @@ export class FlowGraphSwitchBlock<T = number> extends FlowGraphExecutionBlock {
         serializationObject.cases = this.config.cases;
     }
 }
-RegisterClass(FlowGraphSwitchBlock.ClassName, FlowGraphSwitchBlock);
+RegisterClass(FlowGraphBlockNames.Switch, FlowGraphSwitchBlock);

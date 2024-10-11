@@ -5,6 +5,7 @@ import type { FlowGraphContext } from "../../../flowGraphContext";
 import { RichTypeNumber } from "../../../flowGraphRichTypes";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
+import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 
 export interface IFlowGraphForLoopBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
@@ -18,10 +19,6 @@ export interface IFlowGraphForLoopBlockConfiguration extends IFlowGraphBlockConf
  * Block that executes an action in a loop.
  */
 export class FlowGraphForLoopBlock extends FlowGraphExecutionBlockWithOutSignal {
-    /**
-     * The class name of the block.
-     */
-    public static readonly ClassName = "FGForLoopBlock";
     /**
      * Input connection: The start index of the loop.
      */
@@ -85,7 +82,7 @@ export class FlowGraphForLoopBlock extends FlowGraphExecutionBlockWithOutSignal 
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return FlowGraphForLoopBlock.ClassName;
+        return FlowGraphBlockNames.ForLoop;
     }
 }
-RegisterClass(FlowGraphForLoopBlock.ClassName, FlowGraphForLoopBlock);
+RegisterClass(FlowGraphBlockNames.ForLoop, FlowGraphForLoopBlock);

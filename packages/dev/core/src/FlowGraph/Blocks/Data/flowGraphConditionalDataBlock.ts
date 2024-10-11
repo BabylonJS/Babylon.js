@@ -4,6 +4,8 @@ import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { RichTypeBoolean, RichTypeAny } from "../../flowGraphRichTypes";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { RegisterClass } from "../../../Misc/typeStore";
+import { FlowGraphBlockNames } from "../flowGraphBlockNames";
+
 /**
  * @experimental
  * Block that returns a value based on a condition.
@@ -49,7 +51,7 @@ export class FlowGraphConditionalDataBlock<T> extends FlowGraphBlock {
      * @returns the class name
      */
     public override getClassName(): string {
-        return "FGConditionalDataBlock";
+        return FlowGraphBlockNames.Conditional;
     }
 }
-RegisterClass("FGConditionalDataBlock", FlowGraphConditionalDataBlock);
+RegisterClass(FlowGraphBlockNames.Conditional, FlowGraphConditionalDataBlock);

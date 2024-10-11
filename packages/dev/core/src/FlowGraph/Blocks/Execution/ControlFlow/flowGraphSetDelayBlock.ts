@@ -6,12 +6,10 @@ import { RichTypeNumber } from "../../../flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import { AdvancedTimer } from "../../../../Misc/timer";
 import { Logger } from "../../../../Misc/logger";
+import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
+import { RegisterClass } from "core/Misc/typeStore";
 
 export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
-    /**
-     * class name of the block.
-     */
-    public static readonly ClassName = "FGSetDelayBlock";
     /**
      * The maximum number of parallel delays that can be set per node.
      */
@@ -77,6 +75,7 @@ export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
         context._deleteExecutionVariable(this, "pendingDelays");
         this.lastDelayIndex.setValue(-1, context);
     }
+
     public _execute(context: FlowGraphContext, callingSignal: FlowGraphSignalConnection): void {
         if (callingSignal === this.cancel) {
             this._cancelPendingTasks(context);
@@ -88,7 +87,7 @@ export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
     }
 
     public override getClassName(): string {
-        return FlowGraphSetDelayBlock.ClassName;
+        return FlowGraphBlockNames.SetDelay;
     }
 
     private _onEnded(timer: AdvancedTimer, context: FlowGraphContext) {
@@ -103,3 +102,5 @@ export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
         this.done._activateSignal(context);
     }
 }
+
+RegisterClass(FlowGraphBlockNames.SetDelay, FlowGraphSetDelayBlock);

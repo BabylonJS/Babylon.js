@@ -6,6 +6,7 @@ import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphExecutio
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { FlowGraphInteger } from "../../../flowGraphInteger";
+import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 
 /**
  * @experimental
@@ -63,12 +64,7 @@ export class FlowGraphDoNBlock extends FlowGraphExecutionBlockWithOutSignal {
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return FlowGraphDoNBlock.ClassName;
+        return FlowGraphBlockNames.DoN;
     }
-
-    /**
-     * the class name of the block.
-     */
-    public static ClassName = "FGDoNBlock";
 }
-RegisterClass(FlowGraphDoNBlock.ClassName, FlowGraphDoNBlock);
+RegisterClass(FlowGraphBlockNames.DoN, FlowGraphDoNBlock);

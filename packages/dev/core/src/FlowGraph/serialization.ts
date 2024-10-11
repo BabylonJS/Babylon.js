@@ -47,18 +47,26 @@ function parseVector(className: string, value: Array<number>) {
  */
 export function defaultValueSerializationFunction(key: string, value: any, serializationObject: any) {
     const className = value?.getClassName?.() ?? "";
-    if (isMeshClassName(className)) {
-        serializationObject[key] = {
-            name: value.name,
-            className,
-        };
-    } else if (isVectorClassName(className)) {
+    if (isVectorClassName(className)) {
         serializationObject[key] = {
             value: value.asArray(),
             className,
         };
     } else {
-        serializationObject[key] = value;
+        if (className && (value.id || value.name)) {
+            serializationObject[key] = {
+                id: value.id,
+                name: value.name,
+                className,
+            };
+        } else {
+            // only if it is not an object
+            if (typeof value !== "object") {
+                serializationObject[key] = value;
+            } else {
+                throw new Error(`Could not serialize value ${value}`);
+            }
+        }
     }
 }
 
@@ -74,7 +82,7 @@ export function defaultValueParseFunction(key: string, serializationObject: any,
     let finalValue;
     const className = intermediateValue?.className;
     if (isMeshClassName(className)) {
-        finalValue = scene.getMeshByName(intermediateValue.name);
+        finalValue = intermediateValue.id ? scene.getMeshById(intermediateValue.id) : scene.getMeshByName(intermediateValue.name);
     } else if (isVectorClassName(className)) {
         finalValue = parseVector(className, intermediateValue.value);
     } else if (className === "Matrix") {

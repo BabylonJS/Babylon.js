@@ -5,6 +5,7 @@ import { FlowGraphExecutionBlock } from "../../../flowGraphExecutionBlock";
 import { RichTypeNumber } from "../../../flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
+import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 /**
  * @experimental
  * Configuration for the multi gate block.
@@ -29,10 +30,6 @@ export interface IFlowGraphMultiGateBlockConfiguration extends IFlowGraphBlockCo
  * @see https://docs.google.com/document/d/1MT7gL-IEn_PUw-4XGBazMxsyqsxqgAVGYcNeC4Cj_9Q/edit#heading=h.i2sn85fbjo60
  */
 export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
-    /**
-     * The class name of the block.
-     */
-    public static ClassName = "FGMultiGateBlock";
     /**
      * Input connection: Resets the gate.
      */
@@ -107,7 +104,7 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return FlowGraphMultiGateBlock.ClassName;
+        return FlowGraphBlockNames.MultiGate;
     }
 
     /**
@@ -122,4 +119,4 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
         serializationObject.config.startIndex = this.config.startIndex;
     }
 }
-RegisterClass(FlowGraphMultiGateBlock.ClassName, FlowGraphMultiGateBlock);
+RegisterClass(FlowGraphBlockNames.MultiGate, FlowGraphMultiGateBlock);
