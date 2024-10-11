@@ -2,7 +2,6 @@ import { Observable } from "core/Misc/observable";
 import type { Scene } from "../scene";
 import { FlowGraph } from "./flowGraph";
 import type { IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
-import { defaultValueParseFunction } from "./serialization";
 import type { IObjectAccessor } from "./typeDefinitions";
 
 /**
@@ -124,21 +123,6 @@ export class FlowGraphCoordinator {
             graph.serialize(serializedGraph, valueSerializeFunction);
             serializationObject._flowGraphs.push(serializedGraph);
         });
-    }
-
-    /**
-     * Parses a serialized coordinator.
-     * @param serializedObject the object to parse
-     * @param options the options to use when parsing
-     * @returns the parsed coordinator
-     */
-    public static Parse(serializedObject: any, options: FlowGraphCoordinatorParseOptions) {
-        const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
-        const coordinator = new FlowGraphCoordinator({ scene: options.scene });
-        serializedObject._flowGraphs?.forEach((serializedGraph: any) => {
-            FlowGraph.Parse(serializedGraph, { coordinator, valueParseFunction, pathConverter: options.pathConverter });
-        });
-        return coordinator;
     }
 
     /**

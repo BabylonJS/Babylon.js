@@ -1,100 +1,4 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { FlowGraphSceneReadyEventBlock } from "core/FlowGraph/Blocks/Event/flowGraphSceneReadyEventBlock";
-import { FlowGraphSceneTickEventBlock } from "core/FlowGraph/Blocks/Event/flowGraphSceneTickEventBlock";
-import { FlowGraphConsoleLogBlock } from "core/FlowGraph/Blocks/Execution/flowGraphConsoleLogBlock";
-import { FlowGraphTimerBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphTimerBlock";
-import { FlowGraphSendCustomEventBlock } from "core/FlowGraph/Blocks/Event/flowGraphSendCustomEventBlock";
-import { FlowGraphReceiveCustomEventBlock } from "core/FlowGraph/Blocks/Event/flowGraphReceiveCustomEventBlock";
-import { FlowGraphSequenceBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphSequenceBlock";
-// import { FlowGraphGetPropertyBlock } from "core/FlowGraph/Blocks/Data/flowGraphGetPropertyBlock";
-// import { FlowGraphSetPropertyBlock } from "core/FlowGraph/Blocks/Data/flowGraphSetPropertyBlock";
-import {
-    FlowGraphAddBlock,
-    FlowGraphRandomBlock,
-    FlowGraphLessThanBlock,
-    FlowGraphMultiplyBlock,
-    FlowGraphSubtractBlock,
-    FlowGraphDotBlock,
-    FlowGraphEBlock,
-    FlowGraphPiBlock,
-    FlowGraphInfBlock,
-    FlowGraphNaNBlock,
-    FlowGraphAbsBlock,
-    FlowGraphSignBlock,
-    FlowGraphTruncBlock,
-    FlowGraphFloorBlock,
-    FlowGraphCeilBlock,
-    FlowGraphFractBlock,
-    FlowGraphNegationBlock,
-    FlowGraphDivideBlock,
-    FlowGraphModuloBlock,
-    FlowGraphMinBlock,
-    FlowGraphMaxBlock,
-    FlowGraphClampBlock,
-    FlowGraphSaturateBlock,
-    FlowGraphMathInterpolationBlock,
-    FlowGraphEqualityBlock,
-    FlowGraphLessThanOrEqualBlock,
-    FlowGraphGreaterThanBlock,
-    FlowGraphGreaterThanOrEqualBlock,
-    FlowGraphIsNanBlock,
-    FlowGraphIsInfinityBlock,
-    FlowGraphDegToRadBlock,
-    FlowGraphRadToDegBlock,
-    FlowGraphSinBlock,
-    FlowGraphCosBlock,
-    FlowGraphTanBlock,
-    FlowGraphAsinBlock,
-    FlowGraphAcosBlock,
-    FlowGraphAtanBlock,
-    FlowGraphAtan2Block,
-    FlowGraphSinhBlock,
-    FlowGraphCoshBlock,
-    FlowGraphTanhBlock,
-    FlowGraphAsinhBlock,
-    FlowGraphAcoshBlock,
-    FlowGraphAtanhBlock,
-    FlowGraphExpBlock,
-    FlowGraphLog2Block,
-    FlowGraphLogBlock,
-    FlowGraphLog10Block,
-    FlowGraphSquareRootBlock,
-    FlowGraphCubeRootBlock,
-    FlowGraphPowerBlock,
-    FlowGraphLengthBlock,
-    FlowGraphNormalizeBlock,
-    FlowGraphCrossBlock,
-    FlowGraphRotate2DBlock,
-    FlowGraphRotate3DBlock,
-    FlowGraphTransposeBlock,
-    FlowGraphDeterminantBlock,
-    FlowGraphInvertMatrixBlock,
-    FlowGraphMatrixMultiplicationBlock,
-    FlowGraphBitwiseNotBlock,
-    FlowGraphBitwiseAndBlock,
-    FlowGraphBitwiseOrBlock,
-    FlowGraphBitwiseXorBlock,
-    FlowGraphBitwiseRightShiftBlock,
-    FlowGraphBitwiseLeftShiftBlock,
-    FlowGraphLeadingZerosBlock,
-    FlowGraphTrailingZerosBlock,
-    FlowGraphOneBitsCounterBlock,
-} from "core/FlowGraph/Blocks/Data/Math/flowGraphMathBlocks";
-import { FlowGraphDoNBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphDoNBlock";
-import { FlowGraphGetVariableBlock } from "core/FlowGraph/Blocks/Data/flowGraphGetVariableBlock";
-import { FlowGraphSetVariableBlock } from "core/FlowGraph/Blocks/Data/flowGraphSetVariableBlock";
-import { FlowGraphWhileLoopBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphWhileLoopBlock";
-import { FlowGraphBranchBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphBranchBlock";
-import { FlowGraphForLoopBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphForLoopBlock";
-import { FlowGraphMultiGateBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphMultiGateBlock";
-import { FlowGraphWaitAllBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphWaitAllBlock";
-import { FlowGraphThrottleBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphThrottleBlock";
-import { FlowGraphSetDelayBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphSetDelayBlock";
-import { FlowGraphCancelDelayBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphCancelDelayBlock";
-import { FlowGraphGetPropertyBlock } from "core/FlowGraph/Blocks/Data/flowGraphGetPropertyBlock";
-import { FlowGraphSetPropertyBlock } from "core/FlowGraph/Blocks/Data/flowGraphSetPropertyBlock";
-import { FlowGraphPlayAnimationBlock } from "core/FlowGraph/Blocks/Execution/Animation/flowGraphPlayAnimationBlock";
-import { FlowGraphStopAnimationBlock } from "core/FlowGraph/Blocks/Execution/Animation/flowGraphStopAnimationBlock";
 import { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
 
 interface IGLTFToFlowGraphMappingObject<I = any, O = any> {
@@ -186,7 +90,7 @@ interface IGLTFToFlowGraphMapping {
 // this mapper is just a way to convert the glTF nodes to FlowGraph nodes in terms of input/output connection names and values.
 export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "event/onStart": {
-        types: [FlowGraphSceneReadyEventBlock.ClassName],
+        types: [FlowGraphBlockNames.SceneReadyEvent],
         inputs: {},
         outputs: {
             flows: {
@@ -196,7 +100,7 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
         configuration: {},
     },
     "event/onTick": {
-        types: [FlowGraphSceneTickEventBlock.ClassName],
+        types: [FlowGraphBlockNames.SceneTickEvent],
         inputs: {},
         outputs: {
             values: {
@@ -210,7 +114,7 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
         configuration: {},
     },
     "event/send": {
-        types: [FlowGraphSendCustomEventBlock.ClassName],
+        types: [FlowGraphBlockNames.SendCustomEvent],
         configuration: {
             // event is an INDEX to the events array in the glTF data. so eventId will be taken from the array.
             event: { name: "eventId", gltfType: "number", flowGraphType: "string", inOptions: true },
@@ -232,7 +136,7 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
         },
     },
     "event/receive": {
-        types: [FlowGraphReceiveCustomEventBlock.ClassName],
+        types: [FlowGraphBlockNames.ReceiveCustomEvent],
         configuration: {
             // event is an INDEX to the events array in the glTF data. so eventId will be taken from the array.
             event: { name: "eventId", gltfType: "number", flowGraphType: "string", inOptions: true },
@@ -654,7 +558,7 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
         },
     },
     "animation/start": {
-        types: [FlowGraphPlayAnimationBlock.ClassName],
+        types: [FlowGraphBlockNames.PlayAnimation],
         configuration: {},
         inputs: {
             values: {
@@ -677,7 +581,7 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
         },
     },
     "animation/stop": {
-        types: [FlowGraphStopAnimationBlock.ClassName],
+        types: [FlowGraphBlockNames.StopAnimation],
         configuration: {},
         inputs: {
             values: {
@@ -695,7 +599,7 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
         },
     },
     "animation/stopAt": {
-        types: [FlowGraphStopAnimationBlock.ClassName],
+        types: [FlowGraphBlockNames.StopAnimation],
         configuration: {},
         inputs: {
             values: {

@@ -118,7 +118,7 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
      * Deserializes from an object
      * @param serializationObject the object to deserialize from
      */
-    public deserialize(serializationObject: any) {
+    public override deserialize(serializationObject: any) {
         for (let i = 0; i < serializationObject.signalInputs.length; i++) {
             const signalInput = this.getSignalInput(serializationObject.signalInputs[i].name);
             if (signalInput) {

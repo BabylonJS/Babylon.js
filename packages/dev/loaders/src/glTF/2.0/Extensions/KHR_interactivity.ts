@@ -3,7 +3,7 @@ import type { IKHRInteractivity } from "babylonjs-gltf2interface";
 import type { GLTFLoader } from "../glTFLoader";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
-import { FlowGraph } from "core/FlowGraph/flowGraph";
+import { ParseGraphAsync } from "core/FlowGraph/flowGraphParser";
 import { convertGLTFToSerializedFlowGraph } from "./interactivityFunctions";
 import { InteractivityPathToObjectConverter } from "./interactivityPathToObjectConverter";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
@@ -50,7 +50,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
         delete this._pathConverter;
     }
 
-    public onReady(): void {
+    public async onReady(): Promise<void> {
         if (!this._loader.babylonScene || !this._pathConverter) {
             return;
         }
@@ -59,7 +59,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
 
         const json = convertGLTFToSerializedFlowGraph(interactivityDefinition);
         const coordinator = new FlowGraphCoordinator({ scene });
-        FlowGraph.Parse(json, { coordinator, pathConverter: this._pathConverter });
+        await ParseGraphAsync(json, { coordinator, pathConverter: this._pathConverter });
 
         coordinator.start();
     }

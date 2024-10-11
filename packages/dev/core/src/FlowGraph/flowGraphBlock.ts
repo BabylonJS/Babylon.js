@@ -3,9 +3,8 @@ import { FlowGraphConnectionType } from "./flowGraphConnection";
 import type { FlowGraphContext } from "./flowGraphContext";
 import { FlowGraphDataConnection } from "./flowGraphDataConnection";
 import type { RichType } from "./flowGraphRichTypes";
-import { Tools } from "../Misc/tools";
 import type { ISerializedFlowGraphBlock, IObjectAccessor } from "./typeDefinitions";
-import { defaultValueParseFunction, defaultValueSerializationFunction, needsPathConverter } from "./serialization";
+import { defaultValueSerializationFunction } from "./serialization";
 import type { Scene } from "../scene";
 import type { IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
 
@@ -75,8 +74,9 @@ export class FlowGraphBlock {
 
     /** Constructor is protected so only subclasses can be instantiated
      * @param config optional configuration for this block
+     * @internal - do not use directly. Extend this class instead.
      */
-    protected constructor(
+    constructor(
         /**
          * the configuration of the block
          */
@@ -91,7 +91,7 @@ export class FlowGraphBlock {
      * @internal
      */
     public _updateOutputs(_context: FlowGraphContext): void {
-        // empty by default, overriden in data blocks
+        // empty by default, overridden in data blocks
     }
 
     /**
@@ -168,51 +168,18 @@ export class FlowGraphBlock {
     }
 
     /**
+     * Deserializes this block
+     * @param _serializationObject the object to deserialize from
+     */
+    public deserialize(_serializationObject: ISerializedFlowGraphBlock) {
+        // no-op by default
+    }
+
+    /**
      * Gets the class name of this block
      * @returns the class name
      */
     public getClassName() {
         return "FlowGraphBlock";
-    }
-
-    /**
-     * Parses a block from a serialization object
-     * @param serializationObject the object to parse from
-     * @param parseOptions options for parsing the block
-     * @returns the parsed block
-     */
-    public static Parse(serializationObject: ISerializedFlowGraphBlock, parseOptions: IFlowGraphBlockParseOptions): FlowGraphBlock {
-        const classType = Tools.Instantiate(serializationObject.className);
-        const parsedConfig: any = {};
-        const valueParseFunction = parseOptions.valueParseFunction ?? defaultValueParseFunction;
-        if (serializationObject.config) {
-            for (const key in serializationObject.config) {
-                parsedConfig[key] = valueParseFunction(key, serializationObject.config, parseOptions.scene);
-            }
-        }
-        if (needsPathConverter(serializationObject.className)) {
-            parsedConfig.pathConverter = parseOptions.pathConverter;
-        }
-        const obj = new classType(parsedConfig);
-        obj.uniqueId = serializationObject.uniqueId;
-        for (let i = 0; i < serializationObject.dataInputs.length; i++) {
-            const dataInput = obj.getDataInput(serializationObject.dataInputs[i].name);
-            if (dataInput) {
-                dataInput.deserialize(serializationObject.dataInputs[i]);
-            } else {
-                throw new Error("Could not find data input with name " + serializationObject.dataInputs[i].name + " in block " + serializationObject.className);
-            }
-        }
-        for (let i = 0; i < serializationObject.dataOutputs.length; i++) {
-            const dataOutput = obj.getDataOutput(serializationObject.dataOutputs[i].name);
-            if (dataOutput) {
-                dataOutput.deserialize(serializationObject.dataOutputs[i]);
-            } else {
-                throw new Error("Could not find data output with name " + serializationObject.dataOutputs[i].name + " in block " + serializationObject.className);
-            }
-        }
-        obj.metadata = serializationObject.metadata;
-        obj.deserialize && obj.deserialize(serializationObject);
-        return obj;
     }
 }

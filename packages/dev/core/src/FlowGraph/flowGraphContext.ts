@@ -5,8 +5,7 @@ import type { FlowGraphAsyncExecutionBlock } from "./flowGraphAsyncExecutionBloc
 import type { FlowGraphBlock } from "./flowGraphBlock";
 import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
 import type { FlowGraph } from "./flowGraph";
-import type { ISerializedFlowGraphContext } from "./typeDefinitions";
-import { defaultValueParseFunction, defaultValueSerializationFunction } from "./serialization";
+import { defaultValueSerializationFunction } from "./serialization";
 import type { FlowGraphCoordinator } from "./flowGraphCoordinator";
 import { Observable } from "../Misc/observable";
 import type { AssetType, FlowGraphAssetType } from "./flowGraphAssetsContext";
@@ -156,6 +155,14 @@ export class FlowGraphContext {
         return this._userVariables;
     }
 
+    /**
+     * Get the scene that the context belongs to.
+     * @returns the scene
+     */
+    public getScene() {
+        return this._configuration.scene;
+    }
+
     private _getUniqueIdPrefixedName(obj: FlowGraphBlock, name: string): string {
         return `${obj.uniqueId}_${name}`;
     }
@@ -269,6 +276,16 @@ export class FlowGraphContext {
     }
 
     /**
+     * Set a connection value by key
+     * @internal
+     * @param key the key of the connection value
+     * @param value the value of the connection
+     */
+    public _setConnectionValueByKey<T>(key: string, value: T) {
+        this._connectionValues[key] = value;
+    }
+
+    /**
      * Get a connection value
      * @internal
      * @param connectionPoint
@@ -378,28 +395,6 @@ export class FlowGraphContext {
      * @returns the class name of the object.
      */
     public getClassName() {
-        return "FGContext";
-    }
-
-    /**
-     * Parses a context
-     * @param serializationObject the object containing the context serialization values
-     * @param options the options for parsing the context
-     * @returns
-     */
-    public static Parse(serializationObject: ISerializedFlowGraphContext, options: IFlowGraphContextParseOptions): FlowGraphContext {
-        const result = options.graph.createContext();
-        const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
-        result.uniqueId = serializationObject.uniqueId;
-        for (const key in serializationObject._userVariables) {
-            const value = valueParseFunction(key, serializationObject._userVariables, result._configuration.scene);
-            result._userVariables[key] = value;
-        }
-        for (const key in serializationObject._connectionValues) {
-            const value = valueParseFunction(key, serializationObject._connectionValues, result._configuration.scene);
-            result._connectionValues[key] = value;
-        }
-
-        return result;
+        return "FlowGraphContext";
     }
 }

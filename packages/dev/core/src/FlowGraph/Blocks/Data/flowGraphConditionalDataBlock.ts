@@ -29,6 +29,10 @@ export class FlowGraphConditionalDataBlock<T> extends FlowGraphBlock {
      */
     public readonly output: FlowGraphDataConnection<T>;
 
+    /**
+     * Creates a new instance of the block
+     * @param config optional configuration for this block
+     */
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
 
