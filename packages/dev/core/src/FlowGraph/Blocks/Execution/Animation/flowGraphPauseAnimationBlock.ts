@@ -5,6 +5,7 @@ import { RichTypeAny } from "../../../flowGraphRichTypes";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { AnimationGroup } from "core/Animations/animationGroup";
+import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 /**
  * @experimental
  * Block that pauses a running animation
@@ -30,7 +31,7 @@ export class FlowGraphPauseAnimationBlock extends FlowGraphExecutionBlockWithOut
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return "FGPauseAnimationBlock";
+        return FlowGraphBlockNames.PauseAnimation;
     }
 }
-RegisterClass("FGPauseAnimationBlock", FlowGraphPauseAnimationBlock);
+RegisterClass(FlowGraphBlockNames.PauseAnimation, FlowGraphPauseAnimationBlock);

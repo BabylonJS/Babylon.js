@@ -11,7 +11,11 @@ import { RegisterClass } from "../../../../Misc/typeStore";
  */
 export class FlowGraphThrottleBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**
-     * Input connection: The duration of the throttle, in ms.
+     * The class name of the block.
+     */
+    public static readonly ClassName = "FGThrottleBlock";
+    /**
+     * Input connection: The duration of the throttle, in seconds.
      */
     public readonly duration: FlowGraphDataConnection<number>;
     /**
@@ -70,7 +74,7 @@ export class FlowGraphThrottleBlock extends FlowGraphExecutionBlockWithOutSignal
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return "FGThrottleBlock";
+        return FlowGraphThrottleBlock.ClassName;
     }
 }
-RegisterClass("FGThrottleBlock", FlowGraphThrottleBlock);
+RegisterClass(FlowGraphThrottleBlock.ClassName, FlowGraphThrottleBlock);

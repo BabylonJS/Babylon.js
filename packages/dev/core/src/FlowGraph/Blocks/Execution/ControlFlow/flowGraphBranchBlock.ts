@@ -12,6 +12,10 @@ import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
  */
 export class FlowGraphBranchBlock extends FlowGraphExecutionBlock {
     /**
+     * the class name of the block.
+     */
+    public static ClassName = "FGBranchBlock";
+    /**
      * Input connection: The condition to evaluate.
      */
     public readonly condition: FlowGraphDataConnection<boolean>;
@@ -45,7 +49,7 @@ export class FlowGraphBranchBlock extends FlowGraphExecutionBlock {
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return "FGBranchBlock";
+        return FlowGraphBranchBlock.ClassName;
     }
 }
 RegisterClass("FGBranchBlock", FlowGraphBranchBlock);

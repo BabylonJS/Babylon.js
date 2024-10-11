@@ -1,3 +1,4 @@
+import { Nullable } from "core/types";
 import { RegisterClass } from "../Misc/typeStore";
 import type { FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphConnection, FlowGraphConnectionType } from "./flowGraphConnection";
@@ -12,6 +13,12 @@ import { RichType } from "./flowGraphRichTypes";
  */
 export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlock, FlowGraphDataConnection<T>> {
     private _isDiabled: boolean = false;
+
+    /**
+     * a data transformer function, if needed.
+     * This can be used, for example, to force seconds into milliseconds output, if it makes sense in your case.
+     */
+    public dataTransformer: Nullable<(value: T) => T> = null;
     /**
      * Create a new data connection point.
      * @param name the name of the connection
@@ -105,11 +112,8 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
     }
 
     private _getValueOrDefault(context: FlowGraphContext): T {
-        if (context._hasConnectionValue(this)) {
-            return context._getConnectionValue(this);
-        } else {
-            return this._defaultValue;
-        }
+        const val = context._getConnectionValue(this) ? context._getConnectionValue(this) : this._defaultValue;
+        return this.dataTransformer ? this.dataTransformer(val) : val;
     }
 
     /**

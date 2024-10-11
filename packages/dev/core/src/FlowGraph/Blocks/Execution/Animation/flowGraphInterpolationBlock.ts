@@ -5,25 +5,15 @@ import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { getRichTypeByAnimationType, RichTypeAny, RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
 import { Animation } from "core/Animations/animation";
+import { RegisterClass } from "core/Misc/typeStore";
+import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 
-export interface IFlowGraphInterpolationBlockConfiguration<T> extends IFlowGraphBlockConfiguration {
+export interface IFlowGraphInterpolationBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
      * The number of keyframes to interpolate between.
      * Will default to 1 if not provided (i.e. from currentValue to a provided value in the time provided)
      */
-    numberOfKeyFrames?: number;
-
-    /**
-     * The value to interpolate from.
-     * If not provided, the default value of this type will be used.
-     */
-    initialValue?: T;
-
-    /**
-     * The value to interpolate to.
-     * If number of keyframes is more than 1, this will be the last value.
-     */
-    endValue?: T;
+    keyFramesCount?: number;
 
     /**
      * The duration of the interpolation.
@@ -34,11 +24,6 @@ export interface IFlowGraphInterpolationBlockConfiguration<T> extends IFlowGraph
      * The name of the property that will be interpolated.
      */
     propertyName?: string;
-
-    /**
-     * The easing function to use for the interpolation.
-     */
-    easingFunction?: EasingFunction;
 
     /**
      * The type of the animation to create.
@@ -62,7 +47,14 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
      * Optional. If not provided, the current value will be used.
      * Note that if provided, every time the animation is created this value will be used!
      */
-    public readonly from: FlowGraphDataConnection<T>;
+    public readonly initialValue: FlowGraphDataConnection<T>;
+
+    /**
+     * Input connection: The value to interpolate to.
+     * Optional. This can also be set using the KeyFrames input!
+     * If provided it will be set to the last keyframe value.
+     */
+    public readonly endValue: FlowGraphDataConnection<T>;
 
     /**
      * output connection: The animation that will be created when in is triggered.
@@ -79,23 +71,27 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
      */
     public readonly propertyName: FlowGraphDataConnection<string>;
 
+    /**
+     * The keyframes to interpolate between.
+     * Each keyframe has a duration input and a value input.
+     */
     public readonly keyFrames: {
         duration: FlowGraphDataConnection<number>;
         value: FlowGraphDataConnection<T>;
     }[] = [];
 
-    constructor(config: IFlowGraphInterpolationBlockConfiguration<T> = {}) {
+    constructor(config: IFlowGraphInterpolationBlockConfiguration = {}) {
         super(config);
         const type = getRichTypeByAnimationType(config?.animationType ?? Constants.ANIMATIONTYPE_FLOAT);
-        this.from = this.registerDataInput("from", type, config?.initialValue);
-        this.easingFunction = this.registerDataInput("easingFunction", RichTypeAny, config?.easingFunction);
+        this.initialValue = this.registerDataInput("initialValue", type);
+        this.easingFunction = this.registerDataInput("easingFunction", RichTypeAny);
         this.animation = this.registerDataOutput("animation", RichTypeAny);
         this.propertyName = this.registerDataInput("propertyName", RichTypeAny, config?.propertyName);
 
-        const numberOfKeyFrames = config?.numberOfKeyFrames ?? 1;
+        const numberOfKeyFrames = config?.keyFramesCount ?? 1;
         for (let i = 0; i < numberOfKeyFrames; i++) {
             const duration = this.registerDataInput(`Duration-${i + 1}`, RichTypeNumber, i === numberOfKeyFrames - 1 ? config.duration : undefined);
-            const value = this.registerDataInput(`Value-${i + 1}`, type, i === numberOfKeyFrames - 1 ? config.endValue : undefined);
+            const value = this.registerDataInput(`Value-${i + 1}`, type);
             this.keyFrames.push({ duration, value });
         }
     }
@@ -108,15 +104,18 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
     }
 
     private _createAnimation(context: FlowGraphContext, propertyName: string, easingFunction: EasingFunction): Animation {
-        const type = this.from.richType;
+        const type = this.initialValue.richType;
         const keys: { frame: number; value: T }[] = [];
         // add initial value
-        const currentValue = this.from.getValue(context) || type.defaultValue;
+        const currentValue = this.initialValue.getValue(context) || type.defaultValue;
         keys.push({ frame: 0, value: currentValue });
         const numberOfKeyFrames = this.config?.numberOfKeyFrames ?? 1;
         for (let i = 0; i < numberOfKeyFrames; i++) {
             const duration = this.getDataInput(`Duration-${i + 1}`)?.getValue(context);
-            const value = this.getDataInput(`Value-${i + 1}`)?.getValue(context);
+            let value = this.getDataInput(`Value-${i + 1}`)?.getValue(context);
+            if (i === numberOfKeyFrames - 1) {
+                value = this.endValue.getValue(context) || value || type.defaultValue;
+            }
             if (duration && value) {
                 // convert duration to frames, based on 60 fps
                 keys.push({ frame: duration * 60, value });
@@ -126,4 +125,10 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
         animation.setKeys(keys);
         return animation;
     }
+
+    public override getClassName(): string {
+        return FlowGraphBlockNames.Interpolation;
+    }
 }
+
+RegisterClass(FlowGraphBlockNames.Interpolation, FlowGraphInterpolationBlock);

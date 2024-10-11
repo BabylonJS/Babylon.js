@@ -35,7 +35,7 @@ export class FlowGraphWhileLoopBlock extends FlowGraphExecutionBlockWithOutSigna
     /**
      * Output connection: The loop body.
      */
-    public readonly loopBody: FlowGraphSignalConnection;
+    public readonly executionFlow: FlowGraphSignalConnection;
 
     /**
      * Output connection: The completed signal. Triggered when condition is false.
@@ -52,7 +52,7 @@ export class FlowGraphWhileLoopBlock extends FlowGraphExecutionBlockWithOutSigna
         super(config);
 
         this.condition = this.registerDataInput("condition", RichTypeBoolean);
-        this.loopBody = this._registerSignalOutput("loopBody");
+        this.executionFlow = this._registerSignalOutput("executionFlow");
         this.completed = this._registerSignalOutput("completed");
         // unregister "out" signal
         this._unregisterSignalOutput("out");
@@ -61,11 +61,11 @@ export class FlowGraphWhileLoopBlock extends FlowGraphExecutionBlockWithOutSigna
     public _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
         let conditionValue = this.condition.getValue(context);
         if (this.config?.isDo && !conditionValue) {
-            this.loopBody._activateSignal(context);
+            this.executionFlow._activateSignal(context);
         }
         let i = 0;
         while (conditionValue) {
-            this.loopBody._activateSignal(context);
+            this.executionFlow._activateSignal(context);
             ++i;
             if (i >= FlowGraphWhileLoopBlock.MaxLoopCount) {
                 Logger.Warn("FlowGraphWhileLoopBlock: Max loop count reached. Breaking.");
@@ -88,14 +88,5 @@ export class FlowGraphWhileLoopBlock extends FlowGraphExecutionBlockWithOutSigna
      * the class name of the block.
      */
     public static ClassName = "FGWhileLoopBlock";
-
-    /**
-     * Serializes the block to a JSON object.
-     * @param serializationObject the object to serialize to.
-     */
-    public override serialize(serializationObject?: any): void {
-        super.serialize(serializationObject);
-        serializationObject.isDo = this.config?.isDo;
-    }
 }
 RegisterClass(FlowGraphWhileLoopBlock.ClassName, FlowGraphWhileLoopBlock);

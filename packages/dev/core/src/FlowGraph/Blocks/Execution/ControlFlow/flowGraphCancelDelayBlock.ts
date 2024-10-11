@@ -1,3 +1,4 @@
+import { RegisterClass } from "core/Misc/typeStore";
 import type { AdvancedTimer } from "../../../../Misc/timer";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import type { FlowGraphContext } from "../../../flowGraphContext";
@@ -7,6 +8,9 @@ import { RichTypeNumber } from "../../../flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 
 export class FlowGraphCancelDelayBlock extends FlowGraphExecutionBlockWithOutSignal {
+    /**
+     * The class name of the block
+     */
     public static readonly ClassName = "FGCancelDelayBlock";
     /**
      * Input connection: The index value of the scheduled activation to be cancelled.
@@ -37,3 +41,5 @@ export class FlowGraphCancelDelayBlock extends FlowGraphExecutionBlockWithOutSig
         return FlowGraphCancelDelayBlock.ClassName;
     }
 }
+
+RegisterClass(FlowGraphCancelDelayBlock.ClassName, FlowGraphCancelDelayBlock);

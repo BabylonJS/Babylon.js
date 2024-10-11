@@ -30,6 +30,10 @@ export interface IFlowGraphMultiGateBlockConfiguration extends IFlowGraphBlockCo
  */
 export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
     /**
+     * The class name of the block.
+     */
+    public static ClassName = "FGMultiGateBlock";
+    /**
      * Input connection: Resets the gate.
      */
     public readonly reset: FlowGraphSignalConnection;
@@ -103,7 +107,7 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return "FGMultiGateBlock";
+        return FlowGraphMultiGateBlock.ClassName;
     }
 
     /**
@@ -118,4 +122,4 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
         serializationObject.config.startIndex = this.config.startIndex;
     }
 }
-RegisterClass("FGMultiGateBlock", FlowGraphMultiGateBlock);
+RegisterClass(FlowGraphMultiGateBlock.ClassName, FlowGraphMultiGateBlock);

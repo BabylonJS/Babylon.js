@@ -9,16 +9,6 @@ import type { Animation } from "core/Animations/animation";
 
 /**
  * @experimental
- */
-export interface IFlowGraphPlayAnimationBlockConfiguration extends IFlowGraphBlockConfiguration {
-    /**
-     * The animation group that will be played.
-     * If not provided an input connection will be available where you can connect (for example) a GetProperty block that returns an AnimationGroup.
-     */
-    animationGroup?: AnimationGroup;
-}
-/**
- * @experimental
  * A block that plays an animation on an animatable object.
  */
 export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
@@ -74,7 +64,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
         /**
          * the configuration of the block
          */
-        public override config: IFlowGraphPlayAnimationBlockConfiguration
+        public override config: IFlowGraphBlockConfiguration
     ) {
         super(config, ["animationLoop", "animationEnd", "animationGroupLoop"]);
 
@@ -188,16 +178,6 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
      */
     public override getClassName(): string {
         return FlowGraphPlayAnimationBlock.ClassName;
-    }
-
-    /**
-     * Serializes the block to a JSON object.
-     * @param serializationObject the object to serialize to.
-     */
-    public override serialize(serializationObject: any = {}) {
-        super.serialize(serializationObject);
-        serializationObject.config.targetPath = this.config.targetPath;
-        serializationObject.config.animationPath = this.config.animationPath;
     }
 
     /**

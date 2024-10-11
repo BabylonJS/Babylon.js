@@ -11,3 +11,5 @@ export * from "./flowGraphWhileLoopBlock";
 export * from "./flowGraphDebounceBlock";
 export * from "./flowGraphFlipFlopBlock";
 export * from "./flowGraphSequenceBlock";
+export * from "./flowGraphSetDelayBlock";
+export * from "./flowGraphCancelDelayBlock";

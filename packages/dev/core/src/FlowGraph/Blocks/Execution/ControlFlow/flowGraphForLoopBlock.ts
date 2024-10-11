@@ -19,6 +19,10 @@ export interface IFlowGraphForLoopBlockConfiguration extends IFlowGraphBlockConf
  */
 export class FlowGraphForLoopBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**
+     * The class name of the block.
+     */
+    public static readonly ClassName = "FGForLoopBlock";
+    /**
      * Input connection: The start index of the loop.
      */
     public readonly startIndex: FlowGraphDataConnection<number>;
@@ -37,7 +41,7 @@ export class FlowGraphForLoopBlock extends FlowGraphExecutionBlockWithOutSignal 
     /**
      * Output connection: The signal that is activated when the loop body is executed.
      */
-    public readonly loopBody: FlowGraphSignalConnection;
+    public readonly executionFlow: FlowGraphSignalConnection;
 
     /**
      * Output connection: The completed signal. Triggered when condition is false.
@@ -53,7 +57,7 @@ export class FlowGraphForLoopBlock extends FlowGraphExecutionBlockWithOutSignal 
         this.step = this.registerDataInput("step", RichTypeNumber, 1);
 
         this.index = this.registerDataOutput("index", RichTypeNumber, config?.initialIndex ?? 0);
-        this.loopBody = this._registerSignalOutput("loopBody");
+        this.executionFlow = this._registerSignalOutput("executionFlow");
         this.completed = this._registerSignalOutput("completed");
 
         this._unregisterSignalOutput("out");
@@ -68,7 +72,7 @@ export class FlowGraphForLoopBlock extends FlowGraphExecutionBlockWithOutSignal 
         let endIndex = this.endIndex.getValue(context);
         for (let i = index; i < endIndex; i += step) {
             this.index.setValue(i, context);
-            this.loopBody._activateSignal(context);
+            this.executionFlow._activateSignal(context);
             endIndex = this.endIndex.getValue(context);
         }
 
@@ -81,7 +85,7 @@ export class FlowGraphForLoopBlock extends FlowGraphExecutionBlockWithOutSignal 
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return "FGForLoopBlock";
+        return FlowGraphForLoopBlock.ClassName;
     }
 }
-RegisterClass("FGForLoopBlock", FlowGraphForLoopBlock);
+RegisterClass(FlowGraphForLoopBlock.ClassName, FlowGraphForLoopBlock);

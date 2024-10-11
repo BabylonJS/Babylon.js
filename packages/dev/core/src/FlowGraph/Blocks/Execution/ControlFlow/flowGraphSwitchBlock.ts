@@ -14,12 +14,6 @@ export interface IFlowGraphSwitchBlockConfiguration<T> extends IFlowGraphBlockCo
      * The possible values for the selection.
      */
     cases: Set<T>;
-
-    /**
-     * The default case to execute if the selection is not in the cases.
-     * If not set, the first case will be used as default.
-     */
-    defaultCase?: T;
 }
 
 /**
@@ -28,11 +22,18 @@ export interface IFlowGraphSwitchBlockConfiguration<T> extends IFlowGraphBlockCo
  */
 export class FlowGraphSwitchBlock<T = number> extends FlowGraphExecutionBlock {
     /**
+     * The class name of the block.
+     */
+    public static readonly ClassName = "FGSwitchBlock";
+    /**
      * Input connection: The value of the selection.
      */
     public readonly selection: FlowGraphDataConnection<T>;
 
-    private _defaultCase: T;
+    /**
+     * The default case to execute if no other case is found.
+     */
+    public readonly default: FlowGraphSignalConnection = this._registerSignalOutput("default");
 
     private _caseToOutputFlow: Map<T, FlowGraphSignalConnection> = new Map();
 
@@ -46,14 +47,9 @@ export class FlowGraphSwitchBlock<T = number> extends FlowGraphExecutionBlock {
 
         this.selection = this.registerDataInput("selection", RichTypeAny);
 
-        this._defaultCase = config.default;
         // iterate the set not using for of
         this.config.cases.forEach((caseValue) => {
             this._caseToOutputFlow.set(caseValue, this._registerSignalOutput(`out_${caseValue}`));
-            // if no defaultCase was set, use the first one as default
-            if (!this._defaultCase) {
-                this._defaultCase = caseValue;
-            }
         });
     }
 
@@ -64,10 +60,7 @@ export class FlowGraphSwitchBlock<T = number> extends FlowGraphExecutionBlock {
         if (outputFlow) {
             outputFlow._activateSignal(context);
         } else {
-            const defaultCase = this._getOutputFlowForCase(this._defaultCase);
-            if (defaultCase) {
-                defaultCase._activateSignal(context);
-            }
+            this.default._activateSignal(context);
         }
     }
 
@@ -103,7 +96,7 @@ export class FlowGraphSwitchBlock<T = number> extends FlowGraphExecutionBlock {
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return "FGSwitchBlock";
+        return FlowGraphSwitchBlock.ClassName;
     }
 
     /**
@@ -115,4 +108,4 @@ export class FlowGraphSwitchBlock<T = number> extends FlowGraphExecutionBlock {
         serializationObject.cases = this.config.cases;
     }
 }
-RegisterClass("FGSwitchBlock", FlowGraphSwitchBlock);
+RegisterClass(FlowGraphSwitchBlock.ClassName, FlowGraphSwitchBlock);

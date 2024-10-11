@@ -22,6 +22,10 @@ export interface IFlowGraphWaitAllBlockConfiguration extends IFlowGraphBlockConf
  */
 export class FlowGraphWaitAllBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**
+     * The class name of the block.
+     */
+    public static readonly ClassName = "FGWaitAllBlock";
+    /**
      * Input connection: Resets the block.
      */
     public reset: FlowGraphSignalConnection;
@@ -105,7 +109,7 @@ export class FlowGraphWaitAllBlock extends FlowGraphExecutionBlockWithOutSignal 
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return "FGWaitAllBlock";
+        return FlowGraphWaitAllBlock.ClassName;
     }
 
     /**
@@ -117,4 +121,4 @@ export class FlowGraphWaitAllBlock extends FlowGraphExecutionBlockWithOutSignal 
         serializationObject.config.inputFlows = this.config.inputFlows;
     }
 }
-RegisterClass("FGWaitAllBlock", FlowGraphWaitAllBlock);
+RegisterClass(FlowGraphWaitAllBlock.ClassName, FlowGraphWaitAllBlock);

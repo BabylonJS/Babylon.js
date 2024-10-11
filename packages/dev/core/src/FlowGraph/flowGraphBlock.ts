@@ -147,7 +147,14 @@ export class FlowGraphBlock {
         serializationObject.uniqueId = this.uniqueId;
         serializationObject.config = {};
         if (this.config) {
-            serializationObject.config["name"] = this.config.name;
+            const config = this.config;
+            // check this.config and only set primitives
+            serializationObject.config = Object.keys(this.config).reduce((acc, key) => {
+                if (typeof config[key] !== "object") {
+                    acc[key] = config[key];
+                }
+                return acc;
+            }, {} as any);
         }
         serializationObject.dataInputs = [];
         serializationObject.dataOutputs = [];

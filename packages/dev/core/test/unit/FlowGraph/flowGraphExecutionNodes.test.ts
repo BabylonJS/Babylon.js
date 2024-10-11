@@ -79,12 +79,12 @@ describe("Flow Graph Execution Nodes", () => {
 
         const nIsDone = new FlowGraphConsoleLogBlock();
         doN.out.connectTo(nIsDone.in);
-        doN.currentCount.connectTo(nIsDone.message);
+        doN.executionCount.connectTo(nIsDone.message);
 
         flowGraph.start();
 
         const numCalls = 5;
-        doN.n.setValue(new FlowGraphInteger(numCalls), flowGraphContext);
+        doN.maxExecutions.setValue(new FlowGraphInteger(numCalls), flowGraphContext);
 
         const extraCalls = 2;
 
