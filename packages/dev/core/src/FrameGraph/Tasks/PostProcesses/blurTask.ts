@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { AbstractEngine, FrameGraph, FrameGraphRenderPass, PostProcessCoreOptions, Vector2 } from "core/index";
+import type { AbstractEngine, FrameGraph, FrameGraphRenderContext, FrameGraphRenderPass, PostProcessCoreOptions, Vector2 } from "core/index";
 import { FrameGraphPostProcessCoreTask } from "./postProcessCoreTask";
 import { PostProcessCore } from "core/PostProcesses/postProcessCore";
 import { BlurPostProcessImpl } from "core/PostProcesses/blurPostProcessImpl";
@@ -69,9 +69,14 @@ export class FrameGraphBlurTask extends FrameGraphPostProcessCoreTask {
         this.kernel = kernel;
     }
 
-    public override record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
-        return super.record(skipCreationOfDisabledPasses, undefined, (_context) => {
+    public override record(
+        skipCreationOfDisabledPasses = false,
+        additionalExecute?: (context: FrameGraphRenderContext) => void,
+        additionalBindings?: (context: FrameGraphRenderContext) => void
+    ): FrameGraphRenderPass {
+        return super.record(skipCreationOfDisabledPasses, additionalExecute, (_context) => {
             this._impl.bind(this._outputWidth, this._outputHeight);
+            additionalBindings?.(_context);
         });
     }
 }

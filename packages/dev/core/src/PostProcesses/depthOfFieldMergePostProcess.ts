@@ -6,6 +6,7 @@ import { PostProcess } from "./postProcess";
 import { Constants } from "../Engines/constants";
 
 import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { DepthOfFieldMergePostProcessImpl } from "./depthOfFieldMergePostProcessImpl";
 
 /**
  * The DepthOfFieldMergePostProcess merges blurred images with the original based on the values of the circle of confusion.
@@ -46,13 +47,14 @@ export class DepthOfFieldMergePostProcess extends PostProcess {
         textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false
     ) {
-        super(name, "depthOfFieldMerge", {
-            samplers: ["circleOfConfusionSampler", "blurStep0", "blurStep1", "blurStep2"],
+        super(name, DepthOfFieldMergePostProcessImpl.FragmentUrl, {
+            samplers: DepthOfFieldMergePostProcessImpl.Samplers,
             camera,
             samplingMode,
             engine,
             reusable,
             textureType,
+            implementation: typeof options === "number" || !options.implementation ? new DepthOfFieldMergePostProcessImpl() : undefined,
             ...(options as PostProcessOptions),
             blockCompilation: true,
         });

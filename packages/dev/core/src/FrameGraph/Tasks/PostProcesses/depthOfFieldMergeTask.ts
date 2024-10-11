@@ -1,24 +1,42 @@
+import { DepthOfFieldMergePostProcessImpl } from "core/PostProcesses/depthOfFieldMergePostProcessImpl";
 import type { FrameGraph } from "../../frameGraph";
 import type { FrameGraphTextureHandle } from "../../frameGraphTypes";
-import { FrameGraphPostProcessTask } from "./postProcessTask";
-import type { DepthOfFieldMergePostProcess } from "core/PostProcesses/depthOfFieldMergePostProcess";
 import type { FrameGraphRenderPass } from "core/FrameGraph/Passes/renderPass";
+import type { PostProcessCoreOptions } from "core/PostProcesses/postProcessCore";
+import { PostProcessCore } from "core/PostProcesses/postProcessCore";
+import { FrameGraphPostProcessCoreTask } from "./postProcessCoreTask";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
 
-export class FrameGraphDepthOfFieldMergeTask extends FrameGraphPostProcessTask {
+export class FrameGraphDepthOfFieldMergeTask extends FrameGraphPostProcessCoreTask {
     public circleOfConfusionTexture: FrameGraphTextureHandle;
 
     public blurSteps: FrameGraphTextureHandle[] = [];
 
-    protected override _postProcess: DepthOfFieldMergePostProcess;
-
-    constructor(name: string, frameGraph: FrameGraph, depthOfFieldMergePostProcess: DepthOfFieldMergePostProcess) {
-        super(name, frameGraph, depthOfFieldMergePostProcess);
+    constructor(name: string, frameGraph: FrameGraph, engine: AbstractEngine, options?: PostProcessCoreOptions) {
+        super(
+            name,
+            frameGraph,
+            new PostProcessCore(name, DepthOfFieldMergePostProcessImpl.FragmentUrl, engine, {
+                samplers: DepthOfFieldMergePostProcessImpl.Samplers,
+                implementation: options?.implementation ?? new DepthOfFieldMergePostProcessImpl(),
+                ...options,
+                extraInitializations: (useWebGPU, promises) => {
+                    if (useWebGPU) {
+                        promises.push(import("../../../ShadersWGSL/depthOfFieldMerge.fragment"));
+                    } else {
+                        promises.push(import("../../../Shaders/depthOfFieldMerge.fragment"));
+                    }
+                },
+            })
+        );
     }
 
     public override record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
         if (this.sourceTexture === undefined || this.circleOfConfusionTexture === undefined || this.blurSteps.length === 0) {
             throw new Error(`FrameGraphBloomMergeTask "${this.name}": sourceTexture, circleOfConfusionTexture and blurSteps are required`);
         }
+
+        this._postProcess.updateEffect("#define BLUR_LEVEL " + (this.blurSteps.length - 1) + "\n");
 
         const pass = super.record(skipCreationOfDisabledPasses, undefined, (context) => {
             context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "circleOfConfusionSampler", this.circleOfConfusionTexture);

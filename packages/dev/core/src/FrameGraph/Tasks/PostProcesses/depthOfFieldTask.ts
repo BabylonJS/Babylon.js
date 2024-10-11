@@ -4,12 +4,12 @@ import { Constants } from "core/Engines/constants";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { FrameGraphTask } from "../../frameGraphTask";
 import { DepthOfFieldEffect, DepthOfFieldEffectBlurLevel } from "core/PostProcesses/depthOfFieldEffect";
-import { FrameGraphDepthOfFieldMergeTask } from "./depthOfFieldMergeTask";
-import type { DepthOfFieldMergePostProcess } from "core/PostProcesses/depthOfFieldMergePostProcess";
+import type { FrameGraphDepthOfFieldMergeTask } from "./depthOfFieldMergeTask";
+//import type { DepthOfFieldMergePostProcess } from "core/PostProcesses/depthOfFieldMergePostProcess";
 import { FrameGraphCircleOfConfusionTask } from "./circleOfConfusionTask";
 import type { CircleOfConfusionPostProcess } from "core/PostProcesses/circleOfConfusionPostProcess";
-import { FrameGraphDepthOfFieldBlurTask } from "./depthOfFieldBlurTask";
-import type { DepthOfFieldBlurPostProcess } from "core/PostProcesses";
+import type { FrameGraphDepthOfFieldBlurTask } from "./depthOfFieldBlurTask";
+//import type { DepthOfFieldBlurPostProcess } from "core/PostProcesses";
 import type { Camera } from "core/Cameras/camera";
 
 export class FrameGraphDepthOfFieldTask extends FrameGraphTask {
@@ -63,15 +63,15 @@ export class FrameGraphDepthOfFieldTask extends FrameGraphTask {
         );
 
         for (let i = 0; i < (this._dofEffect._effects.length - 2) / 2; i++) {
-            this._blurX.push(new FrameGraphDepthOfFieldBlurTask(`${name} Blur X`, this._frameGraph, this._dofEffect._effects[1 + i * 2 + 1] as DepthOfFieldBlurPostProcess));
-            this._blurY.push(new FrameGraphDepthOfFieldBlurTask(`${name} Blur Y`, this._frameGraph, this._dofEffect._effects[1 + i * 2] as DepthOfFieldBlurPostProcess));
+            //this._blurX.push(new FrameGraphDepthOfFieldBlurTask(`${name} Blur X`, this._frameGraph, this._dofEffect._effects[1 + i * 2 + 1] as DepthOfFieldBlurPostProcess));
+            //this._blurY.push(new FrameGraphDepthOfFieldBlurTask(`${name} Blur Y`, this._frameGraph, this._dofEffect._effects[1 + i * 2] as DepthOfFieldBlurPostProcess));
         }
 
-        this._merge = new FrameGraphDepthOfFieldMergeTask(
-            `${name} Merge`,
-            this._frameGraph,
-            this._dofEffect._effects[this._dofEffect._effects.length - 1] as DepthOfFieldMergePostProcess
-        );
+        // this._merge = new FrameGraphDepthOfFieldMergeTask(
+        //     `${name} Merge`,
+        //     this._frameGraph,
+        //     this._dofEffect._effects[this._dofEffect._effects.length - 1] as DepthOfFieldMergePostProcess
+        // );
 
         this.outputTexture = this._frameGraph.createDanglingHandle();
     }

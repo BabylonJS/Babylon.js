@@ -1,19 +1,22 @@
 import type { FrameGraph } from "../../frameGraph";
 import type { FrameGraphTextureHandle } from "../../frameGraphTypes";
-import { FrameGraphPostProcessTask } from "./postProcessTask";
 import type { FrameGraphRenderPass } from "core/FrameGraph/Passes/renderPass";
 import { Constants } from "core/Engines/constants";
-import type { DepthOfFieldBlurPostProcess } from "core/PostProcesses/depthOfFieldBlurPostProcess";
+import { FrameGraphBlurTask } from "./blurTask";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
+import type { Vector2 } from "core/Maths/math.vector";
+import type { PostProcessCoreOptions } from "core/PostProcesses/postProcessCore";
 
-export class FrameGraphDepthOfFieldBlurTask extends FrameGraphPostProcessTask {
+export class FrameGraphDepthOfFieldBlurTask extends FrameGraphBlurTask {
     public circleOfConfusionTexture: FrameGraphTextureHandle;
 
     public circleOfConfusionSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
 
-    protected override _postProcess: DepthOfFieldBlurPostProcess;
-
-    constructor(name: string, frameGraph: FrameGraph, depthOfFieldBlurPostProcess: DepthOfFieldBlurPostProcess) {
-        super(name, frameGraph, depthOfFieldBlurPostProcess);
+    constructor(name: string, frameGraph: FrameGraph, engine: AbstractEngine, direction: Vector2, kernel: number, options?: PostProcessCoreOptions) {
+        super(name, frameGraph, engine, direction, kernel, {
+            ...options,
+            defines: "#define DOF 1\n",
+        });
     }
 
     public override record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
