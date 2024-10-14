@@ -13,6 +13,8 @@ import { Constants } from "core/Engines/constants";
 import { Tools } from "core/Misc/tools";
 import "core/Meshes/thinInstanceMesh";
 import type { ThinEngine } from "core/Engines/thinEngine";
+import type { Material } from "core/Materials/material";
+import type { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 
 interface DelayedTextureUpdate {
     covA: Float32Array;
@@ -47,6 +49,8 @@ export class GaussianSplattingMesh extends Mesh {
 
     private _delayedTextureUpdate: Nullable<DelayedTextureUpdate> = null;
     private _oldDirection = new Vector3();
+    private _material: Nullable<Material> = null;
+
     /**
      * Gets the covariancesA texture
      */
@@ -76,6 +80,38 @@ export class GaussianSplattingMesh extends Mesh {
     }
 
     /**
+     * set rendering material
+     */
+    public override set material(value: Material) {
+        this._material = value;
+
+        this._clearObservable();
+        if (value.getClassName() === "NodeMaterial") {
+            value.onBindObservable.add(this._materialBindCallback, undefined, undefined, this);
+        }
+    }
+
+    private _materialBindCallback(mesh: AbstractMesh | undefined) {
+        if (!mesh) {
+            return;
+        }
+        const nodeMaterial = this.material as NodeMaterial;
+        const effect = nodeMaterial.getEffect();
+        GaussianSplattingMaterial.BindEffect(mesh as Mesh, effect, this._scene);
+    }
+
+    private _clearObservable(): void {
+        this._material?.onBindObservable.removeCallback(this._materialBindCallback);
+    }
+
+    /**
+     * get rendering material
+     */
+    public override get material(): Nullable<Material> {
+        return this._material;
+    }
+
+    /**
      * Creates a new gaussian splatting mesh
      * @param name defines the name of the mesh
      * @param url defines the url to load from (optional)
@@ -100,7 +136,7 @@ export class GaussianSplattingMesh extends Mesh {
         if (url) {
             this.loadFileAsync(url);
         }
-        this.material = new GaussianSplattingMaterial(this.name + "_material", this._scene);
+        this._material = new GaussianSplattingMaterial(this.name + "_material", this._scene);
     }
 
     /**
