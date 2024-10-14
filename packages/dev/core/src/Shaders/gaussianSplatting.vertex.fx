@@ -9,7 +9,6 @@
 #include<logDepthDeclaration>
 
 // Attributes
-attribute vec2 position;
 attribute float splatIndex;
 
 // Uniforms
@@ -42,7 +41,7 @@ void main () {
     vColor = splat.color;
     vPosition = position;
 
-    gl_Position = gaussianSplatting(worldPos.xyz, vec3(1.,1.,1.), covA, covB, view, projection);
+    gl_Position = gaussianSplatting(position, worldPos.xyz, vec3(1.,1.,1.), covA, covB, view, projection);
 
 #include<clipPlaneVertex>
 #include<fogVertex>

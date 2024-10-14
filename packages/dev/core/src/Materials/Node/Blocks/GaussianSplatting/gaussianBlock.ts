@@ -66,7 +66,7 @@ export class GaussianBlock extends NodeMaterialBlock {
         state._emitFunctionFromInclude("logDepthDeclaration", comments);
         state._emitFunctionFromInclude("fogFragmentDeclaration", comments);
         state._emitFunctionFromInclude("gaussianSplattingFragmentDeclaration", comments);
-        state._emitVaryingFromString("vPosition", NodeMaterialBlockConnectionPointTypes.Vector3);
+        state._emitVaryingFromString("vPosition", NodeMaterialBlockConnectionPointTypes.Vector2);
         const color = this.splatColor;
         const output = this._outputs[0];
 

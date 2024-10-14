@@ -1,3 +1,5 @@
+attribute vec2 position;
+
 #if !defined(WEBGL2) && !defined(WEBGPU) && !defined(NATIVE)
 mat3 transpose(mat3 matrix) {
     return mat3(matrix[0][0], matrix[1][0], matrix[2][0],
@@ -30,7 +32,7 @@ Splat readSplat(float splatIndex)
     return splat;
 }
     
-vec4 gaussianSplatting(vec3 worldPos, vec3 scale, vec3 covA, vec3 covB, mat4 viewMatrix, mat4 projectionMatrix)
+vec4 gaussianSplatting(vec2 position, vec3 worldPos, vec3 scale, vec3 covA, vec3 covB, mat4 viewMatrix, mat4 projectionMatrix)
 {
     mat4 modelView = viewMatrix;// * world;
     vec4 camspace = viewMatrix * vec4(worldPos,1.);

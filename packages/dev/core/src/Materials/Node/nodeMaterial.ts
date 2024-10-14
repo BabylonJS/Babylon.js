@@ -2174,7 +2174,6 @@ export class NodeMaterial extends PushMaterial {
         // transforming datas into renderable positions
         const gs = new GaussianSplattingBlock("GaussianSplatting");
         splatReader.connectTo(gs);
-        splatReader.connectTo(gs, { output: "splatScale" });
 
         // world transformation
         const worldInput = new InputBlock("World");

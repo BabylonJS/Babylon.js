@@ -19,7 +19,7 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
         this._isUnique = true;
 
         this.registerInput("splatPosition", NodeMaterialBlockConnectionPointTypes.Vector3, false, NodeMaterialBlockTargets.Vertex);
-        this.registerInput("splatScale", NodeMaterialBlockConnectionPointTypes.Vector3, false, NodeMaterialBlockTargets.Vertex);
+        this.registerInput("splatScale", NodeMaterialBlockConnectionPointTypes.Vector3, true, NodeMaterialBlockTargets.Vertex);
         this.registerInput("view", NodeMaterialBlockConnectionPointTypes.Matrix, false, NodeMaterialBlockTargets.Vertex);
         this.registerInput("projection", NodeMaterialBlockConnectionPointTypes.Matrix, false, NodeMaterialBlockTargets.Vertex);
 
@@ -85,14 +85,20 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
         const comments = `//${this.name}`;
         state._emitFunctionFromInclude("gaussianSplattingVertexDeclaration", comments);
         state._emitUniformFromString("focal", NodeMaterialBlockConnectionPointTypes.Vector2);
+        state._emitUniformFromString("invViewport", NodeMaterialBlockConnectionPointTypes.Vector2);
 
         const splatPosition = this.splatPosition;
         const splatScale = this.splatScale;
         const view = this.view;
         const projection = this.projection;
-        const output = this._outputs[0];
+        const output = this.splatVertex;
 
-        state.compilationString += `${state._declareOutput(output)} = gaussianSplatting(${splatPosition.associatedVariableName}, ${splatScale.associatedVariableName}, covA, covB, ${view.associatedVariableName}, ${projection.associatedVariableName});\n`;
+        let splatScaleParameter = "vec3(1.,1.,1.)";
+        if (splatScale.isConnected) {
+            splatScaleParameter = splatScale.associatedVariableName;
+        }
+
+        state.compilationString += `${state._declareOutput(output)} = gaussianSplatting(position, ${splatPosition.associatedVariableName}, ${splatScaleParameter}, covA, covB, ${view.associatedVariableName}, ${projection.associatedVariableName});\n`;
 
         return this;
     }

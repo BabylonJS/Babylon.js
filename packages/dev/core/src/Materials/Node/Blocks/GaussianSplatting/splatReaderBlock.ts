@@ -21,7 +21,6 @@ export class SplatReaderBlock extends NodeMaterialBlock {
         this.registerInput("splatIndex", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Vertex);
 
         this.registerOutput("splatPosition", NodeMaterialBlockConnectionPointTypes.Vector3, NodeMaterialBlockTargets.Vertex);
-        this.registerOutput("splatScale", NodeMaterialBlockConnectionPointTypes.Vector3, NodeMaterialBlockTargets.Vertex);
         this.registerOutput("splatColor", NodeMaterialBlockConnectionPointTypes.Color4, NodeMaterialBlockTargets.Vertex);
     }
 
@@ -48,17 +47,10 @@ export class SplatReaderBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the splatScale output component
-     */
-    public get splatScale(): NodeMaterialConnectionPoint {
-        return this._outputs[1];
-    }
-
-    /**
      * Gets the splatColor output component
      */
     public get splatColor(): NodeMaterialConnectionPoint {
-        return this._outputs[2];
+        return this._outputs[1];
     }
 
     /**
@@ -84,11 +76,11 @@ export class SplatReaderBlock extends NodeMaterialBlock {
         state._emit2DSampler("colorsTexture");
 
         state._emitFunctionFromInclude("gaussianSplattingVertexDeclaration", comments);
-        state._emitVaryingFromString("vPosition", NodeMaterialBlockConnectionPointTypes.Vector3);
+        state._emitVaryingFromString("vPosition", NodeMaterialBlockConnectionPointTypes.Vector2);
         state._emitUniformFromString("dataTextureSize", NodeMaterialBlockConnectionPointTypes.Vector2);
         const splatIndex = this.splatIndex;
-        const splatPosition = this._outputs[0];
-        const splatColor = this._outputs[2];
+        const splatPosition = this.splatPosition;
+        const splatColor = this.splatColor;
 
         const splatVariablename = state._getFreeVariableName("splat");
         state.compilationString += `Splat ${splatVariablename} = readSplat(${splatIndex.associatedVariableName});vec3 covA = splat.covA; vec3 covB = splat.covB;\n`;
