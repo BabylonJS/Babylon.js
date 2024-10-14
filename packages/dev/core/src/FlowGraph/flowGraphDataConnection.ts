@@ -10,6 +10,7 @@ import { RichType } from "./flowGraphRichTypes";
  * An unconnected input point can have a default value.
  * An output point will only have a value if it is connected to an input point. Furthermore,
  * if the point belongs to a "function" node, the node will run its function to update the value.
+ * TODO - if the default value is set to an object (vector type) unneeded objects might be generated when the default value is not set.
  */
 export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlock, FlowGraphDataConnection<T>> {
     private _isDiabled: boolean = false;
