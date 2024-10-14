@@ -4,7 +4,6 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import type { Scene } from "../../../../scene";
-import type { DepthOfFieldEffect } from "../../../../PostProcesses/depthOfFieldEffect";
 import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
 import type { FrameGraphTextureHandle } from "../../../frameGraphTypes";
 import { FrameGraphDepthOfFieldTask } from "../../../Tasks/PostProcesses/depthOfFieldTask";
@@ -17,20 +16,12 @@ import type { Camera } from "core/Cameras/camera";
  */
 export class NodeRenderGraphDepthOfFieldPostProcessBlock extends NodeRenderGraphBlock {
     protected override _frameGraphTask: FrameGraphDepthOfFieldTask;
-    protected _postProcess: DepthOfFieldEffect;
 
     /**
      * Gets the frame graph task associated with this block
      */
     public override get task() {
         return this._frameGraphTask;
-    }
-
-    /**
-     * Gets the post process used by this block
-     */
-    public get postProcess() {
-        return this._postProcess;
     }
 
     /**
@@ -59,7 +50,6 @@ export class NodeRenderGraphDepthOfFieldPostProcessBlock extends NodeRenderGraph
         };
 
         this._frameGraphTask = new FrameGraphDepthOfFieldTask(this.name, frameGraph, scene.getEngine(), blurLevel, hdr);
-        this._postProcess = this._frameGraphTask.depthOfField;
     }
 
     /** Sampling mode used to sample from the source texture */
@@ -85,41 +75,41 @@ export class NodeRenderGraphDepthOfFieldPostProcessBlock extends NodeRenderGraph
     /** The focal the length of the camera used in the effect in scene units/1000 (eg. millimeter). */
     @editableInPropertyPage("Focal length", PropertyTypeForEdition.Float, "PROPERTIES")
     public get focalLength(): number {
-        return this._postProcess.focalLength;
+        return this._frameGraphTask.focalLength;
     }
 
     public set focalLength(value: number) {
-        this._postProcess.focalLength = value;
+        this._frameGraphTask.focalLength = value;
     }
 
     /** F-Stop of the effect's camera. The diameter of the resulting aperture can be computed by lensSize/fStop. */
     @editableInPropertyPage("F-Stop", PropertyTypeForEdition.Float, "PROPERTIES")
     public get fStop(): number {
-        return this._postProcess.fStop;
+        return this._frameGraphTask.fStop;
     }
 
     public set fStop(value: number) {
-        this._postProcess.fStop = value;
+        this._frameGraphTask.fStop = value;
     }
 
     /** Distance away from the camera to focus on in scene units/1000 (eg. millimeter). */
     @editableInPropertyPage("Focus distance", PropertyTypeForEdition.Float, "PROPERTIES")
     public get focusDistance(): number {
-        return this._postProcess.focusDistance;
+        return this._frameGraphTask.focusDistance;
     }
 
     public set focusDistance(value: number) {
-        this._postProcess.focusDistance = value;
+        this._frameGraphTask.focusDistance = value;
     }
 
     /** Max lens size in scene units/1000 (eg. millimeter). Standard cameras are 50mm. The diameter of the resulting aperture can be computed by lensSize/fStop. */
     @editableInPropertyPage("Lens size", PropertyTypeForEdition.Float, "PROPERTIES")
     public get lensSize(): number {
-        return this._postProcess.lensSize;
+        return this._frameGraphTask.lensSize;
     }
 
     public set lensSize(value: number) {
-        this._postProcess.lensSize = value;
+        this._frameGraphTask.lensSize = value;
     }
 
     /**

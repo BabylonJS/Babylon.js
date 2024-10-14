@@ -3,14 +3,13 @@ import type { FrameGraphTextureCreationOptions, FrameGraphTextureHandle } from "
 import { Constants } from "core/Engines/constants";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { FrameGraphTask } from "../../frameGraphTask";
-import { DepthOfFieldEffect, DepthOfFieldEffectBlurLevel } from "core/PostProcesses/depthOfFieldEffect";
-import type { FrameGraphDepthOfFieldMergeTask } from "./depthOfFieldMergeTask";
-//import type { DepthOfFieldMergePostProcess } from "core/PostProcesses/depthOfFieldMergePostProcess";
+import { DepthOfFieldEffectBlurLevel } from "core/PostProcesses/depthOfFieldEffect";
+import { FrameGraphDepthOfFieldMergeTask } from "./depthOfFieldMergeTask";
 import { FrameGraphCircleOfConfusionTask } from "./circleOfConfusionTask";
-import type { CircleOfConfusionPostProcess } from "core/PostProcesses/circleOfConfusionPostProcess";
-import type { FrameGraphDepthOfFieldBlurTask } from "./depthOfFieldBlurTask";
-//import type { DepthOfFieldBlurPostProcess } from "core/PostProcesses";
+import { FrameGraphDepthOfFieldBlurTask } from "./depthOfFieldBlurTask";
 import type { Camera } from "core/Cameras/camera";
+import { DepthOfFieldEffectImpl } from "core/PostProcesses/depthOfFieldEffectImpl";
+import { Vector2 } from "core/Maths/math.vector";
 
 export class FrameGraphDepthOfFieldTask extends FrameGraphTask {
     public sourceTexture: FrameGraphTextureHandle;
@@ -27,66 +26,111 @@ export class FrameGraphDepthOfFieldTask extends FrameGraphTask {
 
     public readonly outputTexture: FrameGraphTextureHandle;
 
-    public get depthOfField() {
-        return this._dofEffect;
+    /**
+     * The focal the length of the camera used in the effect in scene units/1000 (eg. millimeter)
+     */
+    public set focalLength(value: number) {
+        this._impl.focalLength = value;
+    }
+    public get focalLength() {
+        return this._impl.focalLength;
+    }
+    /**
+     * F-Stop of the effect's camera. The diameter of the resulting aperture can be computed by lensSize/fStop. (default: 1.4)
+     */
+    public set fStop(value: number) {
+        this._impl.fStop = value;
+    }
+    public get fStop() {
+        return this._impl.fStop;
+    }
+    /**
+     * Distance away from the camera to focus on in scene units/1000 (eg. millimeter). (default: 2000)
+     */
+    public set focusDistance(value: number) {
+        this._impl.focusDistance = value;
+    }
+    public get focusDistance() {
+        return this._impl.focusDistance;
+    }
+    /**
+     * Max lens size in scene units/1000 (eg. millimeter). Standard cameras are 50mm. (default: 50) The diameter of the resulting aperture can be computed by lensSize/fStop.
+     */
+    public set lensSize(value: number) {
+        this._impl.lensSize = value;
+    }
+    public get lensSize() {
+        return this._impl.lensSize;
     }
 
     private _engine: AbstractEngine;
-    private _dofEffect: DepthOfFieldEffect;
     private _circleOfConfusion: FrameGraphCircleOfConfusionTask;
     private _blurX: FrameGraphDepthOfFieldBlurTask[] = [];
     private _blurY: FrameGraphDepthOfFieldBlurTask[] = [];
     private _merge: FrameGraphDepthOfFieldMergeTask;
+    private _defaultPipelineTextureType: number;
+
+    private _impl: DepthOfFieldEffectImpl;
 
     constructor(name: string, frameGraph: FrameGraph, engine: AbstractEngine, blurLevel: DepthOfFieldEffectBlurLevel = DepthOfFieldEffectBlurLevel.Low, hdr = false) {
         super(name, frameGraph);
 
         this._engine = engine;
 
-        let defaultPipelineTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        this._defaultPipelineTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         if (hdr) {
             const caps = engine.getCaps();
             if (caps.textureHalfFloatRender) {
-                defaultPipelineTextureType = Constants.TEXTURETYPE_HALF_FLOAT;
+                this._defaultPipelineTextureType = Constants.TEXTURETYPE_HALF_FLOAT;
             } else if (caps.textureFloatRender) {
-                defaultPipelineTextureType = Constants.TEXTURETYPE_FLOAT;
+                this._defaultPipelineTextureType = Constants.TEXTURETYPE_FLOAT;
             }
         }
 
-        this._dofEffect = new DepthOfFieldEffect(engine, null, blurLevel, defaultPipelineTextureType, false, true);
-
-        this._circleOfConfusion = new FrameGraphCircleOfConfusionTask(
-            `${name} Circle of Confusion`,
-            this._frameGraph,
-            engine,
-            this._dofEffect._effects[0] as CircleOfConfusionPostProcess
-        );
-
-        for (let i = 0; i < (this._dofEffect._effects.length - 2) / 2; i++) {
-            //this._blurX.push(new FrameGraphDepthOfFieldBlurTask(`${name} Blur X`, this._frameGraph, this._dofEffect._effects[1 + i * 2 + 1] as DepthOfFieldBlurPostProcess));
-            //this._blurY.push(new FrameGraphDepthOfFieldBlurTask(`${name} Blur Y`, this._frameGraph, this._dofEffect._effects[1 + i * 2] as DepthOfFieldBlurPostProcess));
+        let blurCount = 1;
+        let kernelSize = 15;
+        switch (blurLevel) {
+            case DepthOfFieldEffectBlurLevel.High: {
+                blurCount = 3;
+                kernelSize = 51;
+                break;
+            }
+            case DepthOfFieldEffectBlurLevel.Medium: {
+                blurCount = 2;
+                kernelSize = 31;
+                break;
+            }
+            default: {
+                kernelSize = 15;
+                blurCount = 1;
+                break;
+            }
         }
 
-        // this._merge = new FrameGraphDepthOfFieldMergeTask(
-        //     `${name} Merge`,
-        //     this._frameGraph,
-        //     this._dofEffect._effects[this._dofEffect._effects.length - 1] as DepthOfFieldMergePostProcess
-        // );
+        this._impl = new DepthOfFieldEffectImpl(blurCount);
+
+        this._circleOfConfusion = new FrameGraphCircleOfConfusionTask(`${name} Circle of Confusion`, this._frameGraph, engine, { implementation: this._impl.circleOfConfusion });
+
+        for (let i = 0; i < blurCount; i++) {
+            this._blurX.push(
+                new FrameGraphDepthOfFieldBlurTask(`${name} Blur X`, this._frameGraph, engine, new Vector2(1, 0), kernelSize, {
+                    implementation: this._impl.depthOfFieldBlurX[i],
+                })
+            );
+            this._blurY.push(
+                new FrameGraphDepthOfFieldBlurTask(`${name} Blur Y`, this._frameGraph, engine, new Vector2(0, 1), kernelSize, {
+                    implementation: this._impl.depthOfFieldBlurY[i],
+                })
+            );
+        }
+
+        this._merge = new FrameGraphDepthOfFieldMergeTask(`${name} Merge`, this._frameGraph, engine, { implementation: this._impl.dofMerge });
 
         this.outputTexture = this._frameGraph.createDanglingHandle();
     }
 
     public override isReady() {
-        let isReady = this._circleOfConfusion.isReady();
-
-        for (let i = 0; i < this._blurX.length; i++) {
-            isReady = this._blurX[i].isReady() && isReady;
-            isReady = this._blurY[i].isReady() && isReady;
-        }
-
-        isReady = this._merge.isReady() && isReady;
-
-        return isReady;
+        return this._impl.isReady();
     }
 
     public override record(): void {
@@ -106,7 +150,7 @@ export class FrameGraphDepthOfFieldTask extends FrameGraphTask {
             options: {
                 createMipMaps: false,
                 generateMipMaps: false,
-                types: [this._dofEffect._pipelineTextureType],
+                types: [this._defaultPipelineTextureType],
                 formats: [circleOfConfusionTextureFormat],
                 samples: 1,
                 useSRGBBuffers: [false],
