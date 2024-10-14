@@ -77,9 +77,22 @@ export async function ParseGraphAsync(serializationObject: ISerializedFlowGraph,
     const graph = options.coordinator.createGraph();
     const blocks: FlowGraphBlock[] = [];
     const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
+    // get all classes types needed for the blocks using the block factory
+    const resolvedClasses = await Promise.all(
+        serializationObject.allBlocks.map(async (serializedBlock) => {
+            const classFactory = blockFactory(serializedBlock.className as FlowGraphBlockNames);
+            return await classFactory();
+        })
+    );
     // Parse all blocks
-    for (const serializedBlock of serializationObject.allBlocks) {
-        const block = await ParseBlockAsync(serializedBlock, { scene: options.coordinator.config.scene, pathConverter: options.pathConverter, valueParseFunction });
+    // for (const serializedBlock of serializationObject.allBlocks) {
+    for (let i = 0; i < serializationObject.allBlocks.length; i++) {
+        const serializedBlock = serializationObject.allBlocks[i];
+        const block = ParseBlockWithClassType(
+            serializedBlock,
+            { scene: options.coordinator.config.scene, pathConverter: options.pathConverter, valueParseFunction },
+            resolvedClasses[i]
+        );
         blocks.push(block);
         if (block instanceof FlowGraphEventBlock) {
             graph.addEventBlock(block);
@@ -134,6 +147,7 @@ export function ParseContext(serializationObject: ISerializedFlowGraphContext, o
 
 /**
  * Parses a block from a serialization object
+ * This function is async due to the factory method that is used to create the block's class. If you load the class externally use ParseBlockWithClassType
  * @param serializationObject the object to parse from
  * @param parseOptions options for parsing the block
  * @returns the parsed block
@@ -141,6 +155,21 @@ export function ParseContext(serializationObject: ISerializedFlowGraphContext, o
 export async function ParseBlockAsync(serializationObject: ISerializedFlowGraphBlock, parseOptions: IFlowGraphBlockParseOptions): Promise<FlowGraphBlock> {
     const classFactory = blockFactory(serializationObject.className as FlowGraphBlockNames);
     const classType = await classFactory();
+    return ParseBlockWithClassType(serializationObject, parseOptions, classType);
+}
+
+/**
+ * Parses a block from a serialization object
+ * @param serializationObject the object to parse from
+ * @param parseOptions options for parsing the block
+ * @param classType the class type of the block. This is used when the class is not loaded asynchronously
+ * @returns the parsed block
+ */
+export function ParseBlockWithClassType(
+    serializationObject: ISerializedFlowGraphBlock,
+    parseOptions: IFlowGraphBlockParseOptions,
+    classType: typeof FlowGraphBlock
+): FlowGraphBlock {
     const parsedConfig: any = {};
     const valueParseFunction = parseOptions.valueParseFunction ?? defaultValueParseFunction;
     if (serializationObject.config) {
