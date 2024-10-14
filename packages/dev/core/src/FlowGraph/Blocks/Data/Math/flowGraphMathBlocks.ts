@@ -1,6 +1,15 @@
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
-import { RichTypeAny, RichTypeBoolean, RichTypeFlowGraphInteger, RichTypeMatrix, RichTypeNumber, RichTypeVector2, RichTypeVector3 } from "../../../flowGraphRichTypes";
+import {
+    RichTypeAny,
+    RichTypeBoolean,
+    RichTypeFlowGraphInteger,
+    RichTypeMatrix,
+    RichTypeNumber,
+    RichTypeVector2,
+    RichTypeVector3,
+    RichTypeVector4,
+} from "../../../flowGraphRichTypes";
 import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock";
 import { FlowGraphConstantOperationBlock } from "../flowGraphConstantOperationBlock";
 import { Matrix, Vector2, Vector3, Vector4 } from "../../../../Maths/math.vector";
@@ -1210,6 +1219,30 @@ export class FlowGraphRotate3DBlock extends FlowGraphTernaryOperationBlock<Vecto
     }
 }
 RegisterClass(FlowGraphBlockNames.Rotate3d, FlowGraphRotate3DBlock);
+
+/**
+ * @experimental
+ * Transform a vector3 by a matrix.
+ */
+export class FlowGraphTransformBlock extends FlowGraphBinaryOperationBlock<Vector3, Matrix, Vector3> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeVector3, RichTypeMatrix, RichTypeVector3, (a, b) => Vector3.TransformCoordinates(a, b), FlowGraphBlockNames.TransformVector3, config);
+    }
+}
+
+RegisterClass(FlowGraphBlockNames.TransformVector3, FlowGraphTransformBlock);
+
+/**
+ * @experimental
+ * Transform a vector4 by a matrix.
+ */
+export class FlowGraphTransformVector4Block extends FlowGraphBinaryOperationBlock<Vector4, Matrix, Vector4> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeVector4, RichTypeMatrix, RichTypeVector4, (a, b) => Vector4.TransformCoordinates(a.toVector3(), b), FlowGraphBlockNames.TransformVector4, config);
+    }
+}
+
+RegisterClass(FlowGraphBlockNames.TransformVector4, FlowGraphTransformVector4Block);
 
 /**
  * @experimental
