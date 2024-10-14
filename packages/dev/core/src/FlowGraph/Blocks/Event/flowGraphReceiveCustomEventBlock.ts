@@ -21,7 +21,7 @@ export interface IFlowGraphReceiveCustomEventBlockConfiguration extends IFlowGra
      * The names of the data outputs for that event. Should be in the same order as the event data in
      * SendCustomEvent
      */
-    eventData: { [key: string]: { type: RichType<any>; defaultValue?: any } };
+    eventData: { [key: string]: { type: RichType<any>; value?: any } };
 }
 
 /**
@@ -44,7 +44,7 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
         // }
         // use event data to register data outputs
         for (const key in this.config.eventData) {
-            this.registerDataOutput(key, this.config.eventData[key].type, this.config.eventData[key].defaultValue);
+            this.registerDataOutput(key, this.config.eventData[key].type, this.config.eventData[key].value);
         }
     }
 
