@@ -1055,6 +1055,8 @@ export class NullEngine extends Engine {
 
     public override set loadingUIText(_: string) {}
 
+    public override flushFramebuffer(): void {}
+
     /**
      * @internal
      */

@@ -254,7 +254,7 @@ export class SpriteRenderer {
     }
 
     private _createEffects() {
-        if (this._isDisposed) {
+        if (this._isDisposed || !this._shadersLoaded) {
             return;
         }
 
