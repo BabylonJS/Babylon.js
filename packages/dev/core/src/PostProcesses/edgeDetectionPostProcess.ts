@@ -29,16 +29,18 @@ export class EdgeDetectionPostProcess extends PostProcess {
     /**
      * Defines the intensity of the detected edges.
      * Higher values result in more pronounced edges.
+     * default value: 0.2
      */
     @serialize()
-    public edgeIntensity: number = 1.0;
+    public edgeIntensity: number = 0.2;
 
     /**
      * Defines the width of the detected edges.
      * Higher values result in thicker edges.
+     * default value: 0.2
      */
     @serialize()
-    public edgeWidth: number = 1.0;
+    public edgeWidth: number = 0.2;
 
     private _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
 
@@ -98,7 +100,7 @@ export class EdgeDetectionPostProcess extends PostProcess {
                 effect.setColor3("edgeColor", this.edgeColor);
 
                 const normalTexture = this._geometryBufferRenderer!.getGBuffer().textures[1];
-                const depthTexture = this._geometryBufferRenderer!.getGBuffer().textures[3];
+                const depthTexture = this._geometryBufferRenderer!.getGBuffer().textures[0];
 
                 effect.setTexture("normalSampler", normalTexture);
                 effect.setTexture("depthSampler", depthTexture);
