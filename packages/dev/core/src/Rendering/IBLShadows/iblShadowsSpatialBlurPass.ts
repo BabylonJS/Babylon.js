@@ -22,6 +22,11 @@ export class _IblShadowsSpatialBlurPass {
     private _worldScale: number = 1.0;
 
     /**
+     * Is the effect enabled
+     */
+    public enabled: boolean = true;
+
+    /**
      * Returns the output texture of the pass.
      * @returns The output texture.
      */
@@ -157,7 +162,7 @@ export class _IblShadowsSpatialBlurPass {
 
         this._scene.onBeforeCameraRenderObservable.add(() => {
             this._scene.onAfterRenderTargetsRenderObservable.addOnce(() => {
-                if (this._outputTexture.isReady()) {
+                if (this.enabled && this._outputTexture.isReady()) {
                     this._update();
                     this._outputTexture.render();
                 }

@@ -28,6 +28,11 @@ export class _IblShadowsAccumulationPass {
     public debugEnabled: boolean = false;
 
     /**
+     * Is the effect enabled
+     */
+    public enabled: boolean = true;
+
+    /**
      * Returns the output texture of the pass.
      * @returns The output texture.
      */
@@ -187,7 +192,7 @@ export class _IblShadowsAccumulationPass {
 
         this._scene.onBeforeCameraRenderObservable.add(() => {
             this._scene.onAfterRenderTargetsRenderObservable.addOnce(() => {
-                if (this._outputTexture.isReady()) {
+                if (this.enabled && this._outputTexture.isReady()) {
                     this._updateOutputTexture();
                     this._outputTexture.render();
                 }

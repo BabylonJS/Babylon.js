@@ -116,6 +116,11 @@ export class _IblShadowsVoxelTracingPass {
     private _sampleDirections: number = 4;
 
     /**
+     * Is the effect enabled
+     */
+    public enabled: boolean = true;
+
+    /**
      * The number of directions to sample for the voxel tracing.
      */
     public get sampleDirections(): number {
@@ -291,7 +296,7 @@ export class _IblShadowsVoxelTracingPass {
 
         this._scene.onBeforeCameraRenderObservable.add(() => {
             this._scene.onAfterRenderTargetsRenderObservable.addOnce(() => {
-                if (this._outputTexture.isReady()) {
+                if (this.enabled && this._outputTexture.isReady()) {
                     this._update(this._scene.activeCamera!);
                     this._outputTexture.render();
                 }

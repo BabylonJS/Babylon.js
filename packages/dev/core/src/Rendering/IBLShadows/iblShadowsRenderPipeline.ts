@@ -25,6 +25,8 @@ import { GeometryBufferRenderer } from "core/Rendering/geometryBufferRenderer";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { RawTexture3D } from "core/Materials/Textures/rawTexture3D";
 import { Engine } from "core/Engines/engine";
+import { IBLShadowsPluginMaterial } from "./iblShadowsPluginMaterial";
+import { Material } from "core/Materials/material";
 
 interface IblShadowsSettings {
     /**
@@ -99,13 +101,9 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      */
     public scene: Scene;
 
-    private _voxelizationDirty: boolean = true;
-    private _boundsNeedUpdate: boolean = true;
-
     private _allowDebugPasses: boolean = false;
     private _debugPasses: { pass: PostProcess; enabled: boolean }[] = [];
 
-    private _shadowCompositePP: PostProcess;
     private _geometryBufferRenderer: GeometryBufferRenderer;
 
     private _excludedMeshes: number[] = [];
@@ -120,6 +118,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     private _dummyTexture3d: RawTexture3D;
     private _shadowOpacity: number = 0.75;
     private _enabled: boolean = true;
+    private _materialsWithRenderPlugin: Material[] = [];
 
     /**
      * The current world-space size of that the voxel grid covers in the scene.
@@ -138,6 +137,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      */
     public set shadowOpacity(value: number) {
         this._shadowOpacity = value;
+        this._setPluginParameters();
     }
 
     /**
@@ -692,9 +692,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             this._importanceSamplingRenderer.iblSource = this.scene.environmentTexture;
         }
 
-        // Create post process that applies the shadows to the scene
-        this._createShadowCombinePostProcess();
-
         scene.postProcessRenderPipelineManager.addPipeline(this);
 
         // this.scene.onNewMeshAddedObservable.add(this.updateSceneBounds.bind(this));
@@ -707,22 +704,8 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
 
         // Only turn on the pipeline when the importance sampling RT's are ready
         this._importanceSamplingRenderer.onReadyObservable.addOnce(() => {
-            this._createEffectPasses(cameras);
             this.updateVoxelization();
-            const checkVoxelRendererReady = () => {
-                if (this._voxelRenderer.isReady()) {
-                    this.toggleShadow(this._enabled);
-                    if (this._enabled) {
-                        this._voxelizationDirty = true;
-                    }
-                } else {
-                    setTimeout(() => {
-                        checkVoxelRendererReady();
-                    }, 16);
-                }
-            };
-
-            checkVoxelRendererReady();
+            this.toggleShadow(this._enabled);
         });
     }
 
@@ -732,17 +715,16 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      */
     public toggleShadow(enabled: boolean) {
         this._enabled = enabled;
-        if (enabled) {
-            this._enableEffect("IBLShadowVoxelTracingPass", this.cameras);
-            this._enableEffect("IBLShadowSpatialBlurPass", this.cameras);
-            this._enableEffect("IBLShadowAccumulationBlurPass", this.cameras);
-            this._enableEffect("IBLShadowCompositePass", this.cameras);
-        } else {
-            this._disableEffect("IBLShadowVoxelTracingPass", null);
-            this._disableEffect("IBLShadowSpatialBlurPass", null);
-            this._disableEffect("IBLShadowAccumulationBlurPass", null);
-            this._disableEffect("IBLShadowCompositePass", null);
-        }
+        this._voxelTracingPass.enabled = enabled;
+        this._spatialBlurPass.enabled = enabled;
+        this._accumulationPass.enabled = enabled;
+        this._materialsWithRenderPlugin.forEach((mat) => {
+            if (mat.pluginManager) {
+                const plugin = mat.pluginManager.getPlugin(IBLShadowsPluginMaterial.Name) as IBLShadowsPluginMaterial;
+                plugin.isEnabled = enabled;
+            }
+        });
+        this._setPluginParameters();
     }
 
     private _handleResize() {
@@ -750,64 +732,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._voxelTracingPass?.resize();
         this._spatialBlurPass?.resize();
         this._accumulationPass?.resize();
-    }
-
-    private _createShadowCombinePostProcess() {
-        const isWebGPU = this.engine.isWebGPU;
-        const compositeOptions: PostProcessOptions = {
-            width: this.scene.getEngine().getRenderWidth(),
-            height: this.scene.getEngine().getRenderHeight(),
-            uniforms: ["shadowOpacity"],
-            samplers: ["shadowSampler"],
-            samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
-            engine: this.scene.getEngine(),
-            textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
-            reusable: false,
-            shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
-                if (useWebGPU) {
-                    list.push(import("../../ShadersWGSL/iblShadowsCombine.fragment"));
-                } else {
-                    list.push(import("../../Shaders/iblShadowsCombine.fragment"));
-                }
-            },
-        };
-        this._shadowCompositePP = new PostProcess("iblShadowsCombine", "iblShadowsCombine", compositeOptions);
-        this._shadowCompositePP.autoClear = true;
-        this._shadowCompositePP.onApplyObservable.add((effect) => {
-            // Setting the input of the tracing pass because this is the scene RT that we want to apply the shadows to.
-            effect.setTexture("shadowSampler", this._accumulationPass.getOutputTexture());
-            effect.setFloat("shadowOpacity", this._shadowOpacity);
-            if (
-                this._importanceSamplingRenderer?.isReady() &&
-                this._voxelRenderer?.isReady() &&
-                this._voxelTracingPass?.isReady() &&
-                this._spatialBlurPass?.isReady() &&
-                this._accumulationPass?.isReady()
-            ) {
-                // this.update();
-            }
-        });
-    }
-
-    private _createEffectPasses(cameras: Camera[] | undefined) {
-        this.addEffect(
-            new PostProcessRenderEffect(
-                this.scene.getEngine(),
-                "IBLShadowCompositePass",
-                () => {
-                    return this._shadowCompositePP;
-                },
-                true
-            )
-        );
-
-        if (cameras) {
-            this.scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this.name, cameras);
-        }
-
-        this.toggleShadow(false);
-        this._enabled = true;
     }
 
     private _getGBufferDebugPass(): PostProcess {
@@ -978,9 +902,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * Trigger the scene to be re-voxelized. This is useful when the scene has changed and the voxel grid needs to be updated.
      */
     public updateVoxelization() {
-        this._voxelizationDirty = true;
         this._voxelRenderer.updateVoxelGrid(this._excludedMeshes);
-        this._voxelizationDirty = false;
         // Update the SS shadow max distance based on the voxel grid size and resolution.
         // The max distance should be just a little larger than the world size of a single voxel.
         this.ssShadowMaxDist = (1.1 * this.voxelGridSize) / (1 << this.resolutionExp);
@@ -998,7 +920,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this.voxelGridSize = Math.max(size.x, Math.max(size.y, size.z));
         if (!isFinite(this.voxelGridSize) || this.voxelGridSize === 0) {
             Logger.Warn("IBL Shadows: Scene size is invalid. Can't update bounds.");
-            this._boundsNeedUpdate = false;
             this.voxelGridSize = 1.0;
             return;
         }
@@ -1011,7 +932,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._voxelRenderer.setWorldScaleMatrix(invWorldScaleMatrix);
         // Set world scale for spatial blur.
         this._spatialBlurPass?.setWorldScale(halfSize * 2.0);
-        this._boundsNeedUpdate = false;
         // Logger.Log("IBL Shadows: Scene size: " + size);
         // Logger.Log("Half size: " + halfSize);
         // Logger.Log("Centre translation: " + centre);
@@ -1019,6 +939,59 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         // Update the SS shadow max distance based on the voxel grid size and resolution.
         // The max distance should be just a little larger than the world size of a single voxel.
         this.ssShadowMaxDist = (1.1 * this.voxelGridSize) / (1 << this.resolutionExp);
+    }
+
+    /**
+     * Apply the shadows to a material.
+     * @param material Material that will be affected by the shadows. If not provided, all materials of the scene will be affected.
+     */
+    public addMaterial(material?: Material) {
+        if (material) {
+            this._addShadowSupportToMaterial(material);
+        } else {
+            this.scene.meshes.forEach((mesh) => {
+                if (mesh.getTotalVertices() > 0 && mesh.isEnabled() && mesh.material instanceof Material) {
+                    this._addShadowSupportToMaterial(mesh.material);
+                }
+            });
+        }
+    }
+
+    protected _addShadowSupportToMaterial(material: Material) {
+        if (material.pluginManager?.getPlugin(IBLShadowsPluginMaterial.Name)) {
+            return;
+        }
+
+        const plugin = new IBLShadowsPluginMaterial(material);
+
+        if (this._enabled) {
+            const shadowTexture = this._accumulationPass.getOutputTexture();
+            plugin.iblShadowsTexture = shadowTexture.getInternalTexture() ?? this._dummyTexture3d.getInternalTexture()!;
+            plugin.outputTextureWidth = shadowTexture.getSize().width;
+            plugin.outputTextureHeight = shadowTexture.getSize().height;
+            plugin.shadowOpacity = this.shadowOpacity;
+        }
+
+        plugin.isEnabled = this._enabled;
+
+        this._materialsWithRenderPlugin.push(material);
+    }
+
+    protected _setPluginParameters() {
+        if (!this._enabled) {
+            return;
+        }
+
+        this._materialsWithRenderPlugin.forEach((mat) => {
+            if (mat.pluginManager) {
+                const plugin = mat.pluginManager.getPlugin<IBLShadowsPluginMaterial>(IBLShadowsPluginMaterial.Name)!;
+                const shadowTexture = this._accumulationPass.getOutputTexture().getInternalTexture() ?? this._dummyTexture3d.getInternalTexture()!;
+                plugin.iblShadowsTexture = shadowTexture;
+                plugin.outputTextureWidth = shadowTexture.width;
+                plugin.outputTextureHeight = shadowTexture.height;
+                plugin.shadowOpacity = this.shadowOpacity;
+            }
+        });
     }
 
     private _updateBeforeRender() {
@@ -1071,58 +1044,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             (!this._spatialBlurPass || this._spatialBlurPass.isReady()) &&
             (!this._accumulationPass || this._accumulationPass.isReady())
         );
-    }
-
-    /**
-     * Renders accumulated shadows for IBL
-     */
-    public update() {
-        // This is called for every MRT in the customRenderTargets structure during voxelization. That doesn't make
-        // sense. We only want this to run after voxelization so we should put in some state logic here to return
-        // if voxelization is happening.
-        if (this._voxelRenderer.isVoxelizationInProgress()) {
-            return;
-        }
-
-        if (this._boundsNeedUpdate) {
-            const bounds = this.scene.getWorldExtends((mesh) => {
-                return mesh instanceof Mesh && this._excludedMeshes.indexOf(mesh.uniqueId) === -1;
-            });
-            const size = bounds.max.subtract(bounds.min);
-            this.voxelGridSize = Math.max(size.x, Math.max(size.y, size.z));
-            if (!isFinite(this.voxelGridSize) || this.voxelGridSize === 0) {
-                Logger.Warn("IBL Shadows: Scene size is invalid. Can't update bounds.");
-                this._boundsNeedUpdate = false;
-                this.voxelGridSize = 1.0;
-                return;
-            }
-            const halfSize = this.voxelGridSize / 2.0;
-            const centre = bounds.max.add(bounds.min).multiplyByFloats(-0.5, -0.5, -0.5);
-            const invWorldScaleMatrix = Matrix.Compose(new Vector3(1.0 / halfSize, 1.0 / halfSize, 1.0 / halfSize), new Quaternion(), new Vector3(0, 0, 0));
-            const invTranslationMatrix = Matrix.Compose(new Vector3(1.0, 1.0, 1.0), new Quaternion(), centre);
-            invTranslationMatrix.multiplyToRef(invWorldScaleMatrix, invWorldScaleMatrix);
-            this._voxelTracingPass?.setWorldScaleMatrix(invWorldScaleMatrix);
-            this._voxelRenderer.setWorldScaleMatrix(invWorldScaleMatrix);
-            // Set world scale for spatial blur.
-            this._spatialBlurPass?.setWorldScale(halfSize * 2.0);
-            this._boundsNeedUpdate = false;
-            // Logger.Log("IBL Shadows: Scene size: " + size);
-            // Logger.Log("Half size: " + halfSize);
-            // Logger.Log("Centre translation: " + centre);
-
-            // Update the SS shadow max distance based on the voxel grid size and resolution.
-            // The max distance should be just a little larger than the world size of a single voxel.
-            this.ssShadowMaxDist = (1.1 * this.voxelGridSize) / (1 << this.resolutionExp);
-        }
-
-        // If update is needed, render voxels
-        if (this._voxelizationDirty) {
-            this._voxelRenderer.updateVoxelGrid(this._excludedMeshes);
-            this._voxelizationDirty = false;
-            // Update the SS shadow max distance based on the voxel grid size and resolution.
-            // The max distance should be just a little larger than the world size of a single voxel.
-            this.ssShadowMaxDist = (1.1 * this.voxelGridSize) / (1 << this.resolutionExp);
-        }
     }
 
     /**
