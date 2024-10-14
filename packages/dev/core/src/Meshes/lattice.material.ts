@@ -1,10 +1,11 @@
-import type { UniformBuffer } from "core/Materials";
-import { ShaderLanguage, RawTexture3D } from "core/Materials";
+import { RawTexture3D } from "core/Materials/Textures/rawTexture3D";
 import type { Material } from "core/Materials/material";
 import { MaterialPluginBase } from "core/Materials/materialPluginBase";
 import type { Lattice } from "./lattice";
 import type { Nullable } from "core/types";
 import { Constants } from "core/Engines/constants";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import type { UniformBuffer } from "core/Materials/uniformBuffer";
 
 /**
  * Material plugin to add hardware accelerated lattice support
