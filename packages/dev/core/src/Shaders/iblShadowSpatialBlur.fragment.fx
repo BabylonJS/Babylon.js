@@ -19,31 +19,33 @@ vec2 max2(vec2 v, vec2 w) {
 
 void main(void)
 {
-    vec2 Resolution = vec2(textureSize(depthSampler, 0));
-    ivec2 PixelCoord = ivec2(vUV * Resolution);
+    vec2 gbufferRes = vec2(textureSize(depthSampler, 0));
+    ivec2 gbufferPixelCoord = ivec2(vUV * gbufferRes);
+    vec2 shadowRes = vec2(textureSize(voxelTracingSampler, 0));
+    ivec2 shadowPixelCoord = ivec2(vUV * shadowRes);
 
-    vec3 N = texelFetch(worldNormalSampler, PixelCoord, 0).xyz;
+    vec3 N = texelFetch(worldNormalSampler, gbufferPixelCoord, 0).xyz;
     if (length(N) < 0.01) {
       glFragColor = vec4(1.0, 1.0, 0.0, 1.0);
       return;
     }
 
-    float depth = -texelFetch(depthSampler, PixelCoord, 0).x;
+    float depth = -texelFetch(depthSampler, gbufferPixelCoord, 0).x;
 
     vec2 X = vec2(0.0);
     for(int y = 0; y < nbWeights; ++y) {
         for(int x = 0; x < nbWeights; ++x) {
-            ivec2 Coords = PixelCoord +  int(stridef) * ivec2(x - (nbWeights >> 1), y - (nbWeights >> 1));
+          ivec2 gBufferCoords = gbufferPixelCoord + int(stridef) * ivec2(x - (nbWeights >> 1), y - (nbWeights >> 1));
+          ivec2 shadowCoords = shadowPixelCoord + int(stridef) * ivec2(x - (nbWeights >> 1), y - (nbWeights >> 1));
+          vec2 T = texelFetch(voxelTracingSampler, shadowCoords, 0).xy;
+          float ddepth = -texelFetch(depthSampler, gBufferCoords, 0).x - depth;
+          vec3 dN = texelFetch(worldNormalSampler, gBufferCoords, 0).xyz - N;
+          float w = weights[x] * weights[y] *
+                    exp2(max(-1000.0 / (worldScale * worldScale), -0.5) *
+                             (ddepth * ddepth) -
+                         1e1 * dot(dN, dN));
 
-            vec2 T = texelFetch(voxelTracingSampler, Coords, 0).xy;
-            float ddepth = -texelFetch(depthSampler, Coords, 0).x - depth;
-            vec3 dN = texelFetch(worldNormalSampler, Coords, 0).xyz - N;
-            float w = weights[x] * weights[y] *
-                      exp2(max(-1000.0 / (worldScale * worldScale), -0.5) *
-                               (ddepth * ddepth) -
-                           1e1 * dot(dN, dN));
-
-            X += vec2(w * T.x, w);
+          X += vec2(w * T.x, w);
         }
     }
 

@@ -4,8 +4,7 @@ varying vUV: vec2f;
 #define DISABLE_UNIFORMITY_ANALYSIS
 
 var depthSampler: texture_2d<f32>;
-var worldNormalSampler: texture_2d<f32>;
-var worldPositionSampler: texture_2d<f32>;
+var worldNormalSampler : texture_2d<f32>;
 var blueNoiseSampler: texture_2d<f32>;
 // Importance sampling
 var icdfxSamplerSampler: sampler;
@@ -452,8 +451,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
       var VP2: vec4f = VP;
       VP2.y *= -1.0;
       // rte world-space normalization
-      var unormWP: vec4f = uniforms.invViewMtx * VP2;
-      // var unormWP: vec4f = texelFetch(worldPositionSampler, PixelCoord, 0);
+      var unormWP : vec4f = uniforms.invViewMtx * VP2;
       var WP: vec3f = (uniforms.wsNormalizationMtx * unormWP).xyz;
       var vxNoise: vec2f =
            vec2f(uint2float(hash(dirId * 2)), uint2float(hash(dirId * 2 + 1)));

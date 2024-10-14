@@ -59,6 +59,12 @@ interface IblShadowsSettings {
     triPlanarVoxelization: boolean;
 
     /**
+     * A multiplier for the render size of the shadows. Used for rendering lower-resolution shadows
+     * to increase performance. Should be a value between 0 and 1.
+     */
+    shadowRenderSizeFactor: number;
+
+    /**
      * Separate control for the opacity of the voxel shadows.
      */
     voxelShadowOpacity: number;
@@ -137,6 +143,23 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      */
     public set shadowOpacity(value: number) {
         this._shadowOpacity = value;
+        this._setPluginParameters();
+    }
+
+    private _renderSizeFactor: number = 1.0;
+
+    /**
+     * A multiplier for the render size of the shadows. Used for rendering lower-resolution shadows.
+     */
+    public get shadowRenderSizeFactor(): number {
+        return this._renderSizeFactor;
+    }
+
+    public set shadowRenderSizeFactor(value: number) {
+        this._renderSizeFactor = Math.max(Math.min(value, 1.0), 0.0);
+        this._voxelTracingPass?.resize(value);
+        this._spatialBlurPass?.resize(value);
+        this._accumulationPass?.resize(value);
         this._setPluginParameters();
     }
 
@@ -635,10 +658,12 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         super(scene.getEngine(), name);
         this.scene = scene;
 
+        // Create the dummy textures to be used when the pipeline is not ready
         const blackPixels = new Uint8Array([0, 0, 0, 255]);
         this._dummyTexture2d = new RawTexture(blackPixels, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false);
         this._dummyTexture3d = new RawTexture3D(blackPixels, 1, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false);
 
+        // Setup the geometry buffer target formats
         const textureTypesAndFormats: { [key: number]: { textureType: number; textureFormat: number } } = {};
         textureTypesAndFormats[GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE] = {
             textureFormat: Constants.TEXTUREFORMAT_DEPTH32_FLOAT,
@@ -679,6 +704,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._voxelTracingPass = new _IblShadowsVoxelTracingPass(this.scene, this);
         this.sampleDirections = options.sampleDirections || 2;
         this.voxelShadowOpacity = options.voxelShadowOpacity || 1.0;
+        this.shadowRenderSizeFactor = options.shadowRenderSizeFactor || 1.0;
         this.ssShadowOpacity = options.ssShadowsEnabled === undefined || options.ssShadowsEnabled ? 1.0 : 0.0;
         this.ssShadowMaxDist = options.ssShadowMaxDist || 0.05;
         this.ssShadowSamples = options.ssShadowSampleCount || 16;
@@ -729,9 +755,9 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
 
     private _handleResize() {
         this._voxelRenderer.resize();
-        this._voxelTracingPass?.resize();
-        this._spatialBlurPass?.resize();
-        this._accumulationPass?.resize();
+        this._voxelTracingPass?.resize(this.shadowRenderSizeFactor);
+        this._spatialBlurPass?.resize(this.shadowRenderSizeFactor);
+        this._accumulationPass?.resize(this.shadowRenderSizeFactor);
     }
 
     private _getGBufferDebugPass(): PostProcess {
@@ -987,8 +1013,8 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
                 const plugin = mat.pluginManager.getPlugin<IBLShadowsPluginMaterial>(IBLShadowsPluginMaterial.Name)!;
                 const shadowTexture = this._accumulationPass.getOutputTexture().getInternalTexture() ?? this._dummyTexture3d.getInternalTexture()!;
                 plugin.iblShadowsTexture = shadowTexture;
-                plugin.outputTextureWidth = shadowTexture.width;
-                plugin.outputTextureHeight = shadowTexture.height;
+                plugin.outputTextureWidth = this.engine.getRenderWidth();
+                plugin.outputTextureHeight = this.engine.getRenderHeight();
                 plugin.shadowOpacity = this.shadowOpacity;
             }
         });

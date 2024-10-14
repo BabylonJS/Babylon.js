@@ -7,7 +7,6 @@ varying vec2 vUV;
 
 uniform sampler2D depthSampler;
 uniform sampler2D worldNormalSampler;
-uniform sampler2D worldPositionSampler;
 uniform sampler2D blueNoiseSampler;
 // Importance sampling
 uniform sampler2D icdfxSampler;
@@ -423,7 +422,6 @@ void main(void) {
       VP2.y *= -1.0;
       // rte world-space normalization
       vec4 unormWP = invViewMtx * VP2;
-      // vec4 unormWP = texelFetch(worldPositionSampler, PixelCoord, 0);
       vec3 WP = (wsNormalizationMtx * unormWP).xyz;
       vec2 vxNoise =
           vec2(uint2float(hash(dirId * 2u)), uint2float(hash(dirId * 2u + 1u)));

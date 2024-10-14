@@ -18,25 +18,29 @@ fn max2(v: vec2f, w: vec2f) -> vec2f {
 
 @fragment
 fn main(input: FragmentInputs) -> FragmentOutputs {
-    var Resolution = vec2f(textureDimensions(depthSampler, 0));
-    var PixelCoord= vec2i(fragmentInputs.vUV * Resolution);
+    var gbufferRes = vec2f(textureDimensions(depthSampler, 0));
+    var gbufferPixelCoord= vec2i(fragmentInputs.vUV * gbufferRes);
 
-    var N: vec3f = textureLoad(worldNormalSampler, PixelCoord, 0).xyz;
+    var shadowRes = vec2f(textureDimensions(voxelTracingSampler, 0));
+    var shadowPixelCoord= vec2i(fragmentInputs.vUV * shadowRes);
+
+    var N: vec3f = textureLoad(worldNormalSampler, gbufferPixelCoord, 0).xyz;
     if (length(N) < 0.01) {
       fragmentOutputs.color = vec4f(1.0, 1.0, 0.0, 1.0);
       return fragmentOutputs;
     }
 
-    var depth: f32 = -textureLoad(depthSampler, PixelCoord, 0).x;
+    var depth: f32 = -textureLoad(depthSampler, gbufferPixelCoord, 0).x;
 
     var X: vec2f =  vec2f(0.0);
     for(var y: i32 = 0; y < nbWeights; y++) {
         for(var x: i32 = 0; x < nbWeights; x++) {
-            var Coords: vec2i = PixelCoord + i32(stridef) * vec2i(x - (nbWeights >> 1), y - (nbWeights >> 1));
+            var gBufferCoords: vec2i = gbufferPixelCoord + i32(stridef) * vec2i(x - (nbWeights >> 1), y - (nbWeights >> 1));
+            var shadowCoords: vec2i = shadowPixelCoord + i32(stridef) * vec2i(x - (nbWeights >> 1), y - (nbWeights >> 1));
 
-            var T : vec2f = textureLoad(voxelTracingSampler, Coords, 0).xy;
-            var ddepth: f32 = -textureLoad(depthSampler, Coords, 0).x - depth;
-            var dN: vec3f = textureLoad(worldNormalSampler, Coords, 0).xyz - N;
+            var T : vec2f = textureLoad(voxelTracingSampler, shadowCoords, 0).xy;
+            var ddepth: f32 = -textureLoad(depthSampler, gBufferCoords, 0).x - depth;
+            var dN: vec3f = textureLoad(worldNormalSampler, gBufferCoords, 0).xyz - N;
             var w: f32 = weights[x] * weights[y] *
                       exp2(max(-1000.0 / (worldScale * worldScale), -0.5) *
                                (ddepth * ddepth) -

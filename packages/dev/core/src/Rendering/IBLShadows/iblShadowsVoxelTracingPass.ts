@@ -346,13 +346,18 @@ export class _IblShadowsVoxelTracingPass {
         this._outputTexture.setTexture("depthSampler", geometryBufferRenderer.getGBuffer().textures[depthIndex]);
         const wnormalIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.NORMAL_TEXTURE_TYPE);
         this._outputTexture.setTexture("worldNormalSampler", geometryBufferRenderer.getGBuffer().textures[wnormalIndex]);
-        const wPositionIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.POSITION_TEXTURE_TYPE);
-        this._outputTexture.setTexture("worldPositionSampler", geometryBufferRenderer.getGBuffer().textures[wPositionIndex]);
     }
 
-    /** Called by render pipeline when canvas resized. */
-    public resize() {
-        this._outputTexture.resize({ width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, false);
+    /**
+     * Called by render pipeline when canvas resized.
+     * @param scaleFactor The factor by which to scale the canvas size.
+     */
+    public resize(scaleFactor: number = 1.0) {
+        const newSize = {
+            width: Math.max(1.0, Math.floor(this._engine.getRenderWidth() * scaleFactor)),
+            height: Math.max(1.0, Math.floor(this._engine.getRenderHeight() * scaleFactor)),
+        };
+        this._outputTexture.resize(newSize, false);
     }
 
     /**
