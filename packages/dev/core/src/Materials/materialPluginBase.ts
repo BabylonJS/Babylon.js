@@ -124,55 +124,50 @@ export class MaterialPluginBase {
 
     /**
      * Specifies that the submesh is ready to be used.
-     * @param defines the list of "defines" to update.
-     * @param scene defines the scene the material belongs to.
-     * @param engine the engine this scene belongs to.
-     * @param subMesh the submesh to check for readiness
+     * @param _defines the list of "defines" to update.
+     * @param _scene defines the scene the material belongs to.
+     * @param _engine the engine this scene belongs to.
+     * @param _subMesh the submesh to check for readiness
      * @returns - boolean indicating that the submesh is ready or not.
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public isReadyForSubMesh(defines: MaterialDefines, scene: Scene, engine: AbstractEngine, subMesh: SubMesh): boolean {
+    public isReadyForSubMesh(_defines: MaterialDefines, _scene: Scene, _engine: AbstractEngine, _subMesh: SubMesh): boolean {
         return true;
     }
 
     /**
      * Binds the material data (this function is called even if mustRebind() returns false)
-     * @param uniformBuffer defines the Uniform buffer to fill in.
-     * @param scene defines the scene the material belongs to.
-     * @param engine defines the engine the material belongs to.
-     * @param subMesh the submesh to bind data for
+     * @param _uniformBuffer defines the Uniform buffer to fill in.
+     * @param _scene defines the scene the material belongs to.
+     * @param _engine defines the engine the material belongs to.
+     * @param _subMesh the submesh to bind data for
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public hardBindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: AbstractEngine, subMesh: SubMesh): void {}
+    public hardBindForSubMesh(_uniformBuffer: UniformBuffer, _scene: Scene, _engine: AbstractEngine, _subMesh: SubMesh): void {}
 
     /**
      * Binds the material data.
-     * @param uniformBuffer defines the Uniform buffer to fill in.
-     * @param scene defines the scene the material belongs to.
-     * @param engine the engine this scene belongs to.
-     * @param subMesh the submesh to bind data for
+     * @param _uniformBuffer defines the Uniform buffer to fill in.
+     * @param _scene defines the scene the material belongs to.
+     * @param _engine the engine this scene belongs to.
+     * @param _subMesh the submesh to bind data for
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: AbstractEngine, subMesh: SubMesh): void {}
+    public bindForSubMesh(_uniformBuffer: UniformBuffer, _scene: Scene, _engine: AbstractEngine, _subMesh: SubMesh): void {}
 
     /**
      * Disposes the resources of the material.
-     * @param forceDisposeTextures - Forces the disposal of all textures.
+     * @param _forceDisposeTextures - Forces the disposal of all textures.
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public dispose(forceDisposeTextures?: boolean): void {}
+    public dispose(_forceDisposeTextures?: boolean): void {}
 
     /**
      * Returns a list of custom shader code fragments to customize the shader.
-     * @param shaderType "vertex" or "fragment"
-     * @param shaderLanguage The shader language to use.
+     * @param _shaderType "vertex" or "fragment"
+     * @param _shaderLanguage The shader language to use.
      * @returns null if no code to be added, or a list of pointName =\> code.
      * Note that `pointName` can also be a regular expression if it starts with a `!`.
      * In that case, the string found by the regular expression (if any) will be
      * replaced by the code provided.
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public getCustomCode(shaderType: string, shaderLanguage = ShaderLanguage.GLSL): Nullable<{ [pointName: string]: string }> {
+    public getCustomCode(_shaderType: string, _shaderLanguage = ShaderLanguage.GLSL): Nullable<{ [pointName: string]: string }> {
         return null;
     }
 
@@ -199,29 +194,26 @@ export class MaterialPluginBase {
 
     /**
      * Sets the defines for the next rendering. Called before PrepareDefinesForAttributes is called.
-     * @param defines the list of "defines" to update.
-     * @param scene defines the scene to the material belongs to.
-     * @param mesh the mesh being rendered
+     * @param _defines the list of "defines" to update.
+     * @param _scene defines the scene to the material belongs to.
+     * @param _mesh the mesh being rendered
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public prepareDefinesBeforeAttributes(defines: MaterialDefines, scene: Scene, mesh: AbstractMesh): void {}
+    public prepareDefinesBeforeAttributes(_defines: MaterialDefines, _scene: Scene, _mesh: AbstractMesh): void {}
 
     /**
      * Sets the defines for the next rendering
-     * @param defines the list of "defines" to update.
-     * @param scene defines the scene to the material belongs to.
-     * @param mesh the mesh being rendered
+     * @param _defines the list of "defines" to update.
+     * @param _scene defines the scene to the material belongs to.
+     * @param _mesh the mesh being rendered
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public prepareDefines(defines: MaterialDefines, scene: Scene, mesh: AbstractMesh): void {}
+    public prepareDefines(_defines: MaterialDefines, _scene: Scene, _mesh: AbstractMesh): void {}
 
     /**
      * Checks to see if a texture is used in the material.
-     * @param texture - Base texture to use.
+     * @param _texture - Base texture to use.
      * @returns - Boolean specifying if a texture is used in the material.
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public hasTexture(texture: BaseTexture): boolean {
+    public hasTexture(_texture: BaseTexture): boolean {
         return false;
     }
 
@@ -235,24 +227,21 @@ export class MaterialPluginBase {
 
     /**
      * Fills the list of render target textures.
-     * @param renderTargets the list of render targets to update
+     * @param _renderTargets the list of render targets to update
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public fillRenderTargetTextures(renderTargets: SmartArray<RenderTargetTexture>): void {}
+    public fillRenderTargetTextures(_renderTargets: SmartArray<RenderTargetTexture>): void {}
 
     /**
      * Returns an array of the actively used textures.
-     * @param activeTextures Array of BaseTextures
+     * @param _activeTextures Array of BaseTextures
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public getActiveTextures(activeTextures: BaseTexture[]): void {}
+    public getActiveTextures(_activeTextures: BaseTexture[]): void {}
 
     /**
      * Returns the animatable textures.
-     * @param animatables Array of animatable textures.
+     * @param _animatables Array of animatable textures.
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public getAnimatables(animatables: IAnimatable[]): void {}
+    public getAnimatables(_animatables: IAnimatable[]): void {}
 
     /**
      * Add fallbacks to the effect fallbacks list.
@@ -267,33 +256,30 @@ export class MaterialPluginBase {
 
     /**
      * Gets the samplers used by the plugin.
-     * @param samplers list that the sampler names should be added to.
+     * @param _samplers list that the sampler names should be added to.
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public getSamplers(samplers: string[]): void {}
+    public getSamplers(_samplers: string[]): void {}
 
     /**
      * Gets the attributes used by the plugin.
-     * @param attributes list that the attribute names should be added to.
-     * @param scene the scene that the material belongs to.
-     * @param mesh the mesh being rendered.
+     * @param _attributes list that the attribute names should be added to.
+     * @param _scene the scene that the material belongs to.
+     * @param _mesh the mesh being rendered.
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public getAttributes(attributes: string[], scene: Scene, mesh: AbstractMesh): void {}
+    public getAttributes(_attributes: string[], _scene: Scene, _mesh: AbstractMesh): void {}
 
     /**
      * Gets the uniform buffers names added by the plugin.
-     * @param ubos list that the ubo names should be added to.
+     * @param _ubos list that the ubo names should be added to.
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public getUniformBuffersNames(ubos: string[]): void {}
+    public getUniformBuffersNames(_ubos: string[]): void {}
 
     /**
      * Gets the description of the uniforms to add to the ubo (if engine supports ubos) or to inject directly in the vertex/fragment shaders (if engine does not support ubos)
-     * @param shaderLanguage The shader language to use.
+     * @param _shaderLanguage The shader language to use.
      * @returns the description of the uniforms
      */
-    public getUniforms(shaderLanguage = ShaderLanguage.GLSL): {
+    public getUniforms(_shaderLanguage = ShaderLanguage.GLSL): {
         ubo?: Array<{ name: string; size?: number; type?: string; arraySize?: number }>;
         vertex?: string;
         fragment?: string;

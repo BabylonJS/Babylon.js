@@ -7,6 +7,11 @@
             "referenceImage": "lattice.png"
         },
         {
+            "title": "HAL Lattice",
+            "playgroundId": "#HBZD72#7",
+            "referenceImage": "lattice-hal.png"
+        },
+        {
             "title": "NME Loop Block",
             "playgroundId": "#D8AK3Z#109",
             "referenceImage": "nme-loop.png",
