@@ -14,7 +14,7 @@ import type { Mesh } from "core/Meshes/mesh";
 import { DumpDataAsync } from "core/Misc/dumpTools";
 import { Tools } from "core/Misc/tools";
 import type { Scene } from "core/scene";
-import type { FloatArray } from "core/types";
+import type { FloatArray, Nullable } from "core/types";
 
 /**
  * Ported from https://github.com/mrdoob/three.js/blob/master/examples/jsm/exporters/USDZExporter.js
@@ -294,7 +294,14 @@ function BuildColor(color: Color3) {
     return `(${color.r}, ${color.g}, ${color.b})`;
 }
 
-function BuildTexture(texture: Texture, material: Material, mapType: string, color: Color3, textureToExports: { [key: string]: BaseTexture }, options: IUSDZExportOptions) {
+function BuildTexture(
+    texture: Texture,
+    material: Material,
+    mapType: string,
+    color: Nullable<Color3>,
+    textureToExports: { [key: string]: BaseTexture },
+    options: IUSDZExportOptions
+) {
     const id = texture.getInternalTexture()!.uniqueId + "_" + texture.invertY;
 
     textureToExports[id] = texture;
@@ -338,7 +345,7 @@ function BuildTexture(texture: Texture, material: Material, mapType: string, col
         uniform token info:id = "UsdUVTexture"
         asset inputs:file = @textures/Texture_${id}.png@
         float2 inputs:st.connect = </Materials/Material_${material.uniqueId}/Transform2d_${mapType}.outputs:result>
-        ${color !== undefined ? "float4 inputs:scale = " + BuildColor4(color) : ""}
+        ${color ? "float4 inputs:scale = " + BuildColor4(color) : ""}
         token inputs:sourceColorSpace = "${texture.gammaSpace ? "raw" : "sRGB"}"
         token inputs:wrapS = "${BuildWrapping(texture.wrapU)}"
         token inputs:wrapT = "${BuildWrapping(texture.wrapV)}"
@@ -350,38 +357,50 @@ function BuildTexture(texture: Texture, material: Material, mapType: string, col
     }`;
 }
 
-function ExtractTexturesInformations(material: Material) {
+function ExtractTextureInformations(material: Material) {
     const className = material.getClassName();
 
     switch (className) {
         case "StandardMaterial":
             return {
-                map: (material as StandardMaterial).diffuseTexture,
-                color: (material as StandardMaterial).diffuseColor,
+                diffuseMap: (material as StandardMaterial).diffuseTexture,
+                diffuse: (material as StandardMaterial).diffuseColor,
                 alphaCutOff: (material as StandardMaterial).alphaCutOff,
+                emissiveMap: (material as StandardMaterial).emissiveTexture,
+                emissive: (material as StandardMaterial).emissiveColor,
+                normalMap: null,
                 roughness: 1,
                 metalness: 0,
             };
         case "PBRMaterial":
             return {
-                map: (material as PBRMaterial).albedoTexture,
-                color: (material as PBRMaterial).albedoColor,
+                diffuseMap: (material as PBRMaterial).albedoTexture,
+                diffuse: (material as PBRMaterial).albedoColor,
                 alphaCutOff: (material as PBRMaterial).alphaCutOff,
+                emissiveMap: (material as PBRMaterial).emissiveTexture,
+                emissive: (material as PBRMaterial).emissiveColor,
+                normalMap: (material as PBRMaterial).bumpTexture,
                 roughness: (material as PBRMaterial).roughness,
                 metalness: (material as PBRMaterial).metallic,
             };
         case "PBRMetallicRoughnessMaterial":
             return {
-                map: (material as PBRMetallicRoughnessMaterial).baseTexture,
-                color: (material as PBRMetallicRoughnessMaterial).baseColor,
+                diffuseMap: (material as PBRMetallicRoughnessMaterial).baseTexture,
+                diffuse: (material as PBRMetallicRoughnessMaterial).baseColor,
                 alphaCutOff: (material as PBRMetallicRoughnessMaterial).alphaCutOff,
+                emissiveMap: (material as PBRMetallicRoughnessMaterial).emissiveTexture,
+                emissive: (material as PBRMetallicRoughnessMaterial).emissiveColor,
+                normalMap: (material as PBRMetallicRoughnessMaterial).normalTexture,
                 roughness: (material as PBRMetallicRoughnessMaterial).roughness,
                 metalness: (material as PBRMetallicRoughnessMaterial).metallic,
             };
         default:
             return {
-                map: null,
-                color: null,
+                diffuseMap: null,
+                diffuse: null,
+                emissiveMap: null,
+                emissemissiveiveColor: null,
+                normalMap: null,
                 alphaCutOff: 0,
                 roughness: 0,
                 metalness: 0,
@@ -396,42 +415,36 @@ function BuildMaterial(material: Material, textureToExports: { [key: string]: Ba
     const inputs = [];
     const samplers = [];
 
-    const { map, color, alphaCutOff, roughness, metalness } = ExtractTexturesInformations(material);
+    const { diffuseMap, diffuse, alphaCutOff, emissiveMap, emissive, normalMap, roughness, metalness } = ExtractTextureInformations(material);
 
-    if (map !== null) {
-        inputs.push(`${pad}color3f inputs:diffuseColor.connect = </Materials/Material_${material.uniqueId}/Texture_${map.uniqueId}_diffuse.outputs:rgb>`);
+    if (diffuseMap !== null) {
+        inputs.push(`${pad}color3f inputs:diffuseColor.connect = </Materials/Material_${material.uniqueId}/Texture_${diffuseMap.uniqueId}_diffuse.outputs:rgb>`);
 
         if (material.needAlphaBlending()) {
-            inputs.push(`${pad}float inputs:opacity.connect = </Materials/Material_${material.uniqueId}/Texture_${map.uniqueId}_diffuse.outputs:a>`);
+            inputs.push(`${pad}float inputs:opacity.connect = </Materials/Material_${material.uniqueId}/Texture_${diffuseMap.uniqueId}_diffuse.outputs:a>`);
         } else if (material.needAlphaTesting()) {
-            inputs.push(`${pad}float inputs:opacity.connect = </Materials/Material_${material.uniqueId}/Texture_${map.uniqueId}_diffuse.outputs:a>`);
+            inputs.push(`${pad}float inputs:opacity.connect = </Materials/Material_${material.uniqueId}/Texture_${diffuseMap.uniqueId}_diffuse.outputs:a>`);
             inputs.push(`${pad}float inputs:opacityThreshold = ${alphaCutOff}`);
         }
 
-        samplers.push(BuildTexture(map as Texture, material, "diffuse", color, textureToExports, options));
+        samplers.push(BuildTexture(diffuseMap as Texture, material, "diffuse", diffuse, textureToExports, options));
     } else {
-        inputs.push(`${pad}color3f inputs:diffuseColor = ${BuildColor(color || Color3.White())}`);
+        inputs.push(`${pad}color3f inputs:diffuseColor = ${BuildColor(diffuse || Color3.White())}`);
     }
 
-    // if (material.emissiveMap !== null) {
-    //     inputs.push(`${pad}color3f inputs:emissiveColor.connect = </Materials/Material_${material.id}/Texture_${material.emissiveMap.id}_emissive.outputs:rgb>`);
+    if (emissiveMap !== null) {
+        inputs.push(`${pad}color3f inputs:emissiveColor.connect = </Materials/Material_${material.id}/Texture_${emissiveMap.uniqueId}_emissive.outputs:rgb>`);
 
-    //     samplers.push(
-    //         buildTexture(
-    //             material.emissiveMap,
-    //             "emissive",
-    //             new Color(material.emissive.r * material.emissiveIntensity, material.emissive.g * material.emissiveIntensity, material.emissive.b * material.emissiveIntensity)
-    //         )
-    //     );
-    // } else if (material.emissive.getHex() > 0) {
-    //     inputs.push(`${pad}color3f inputs:emissiveColor = ${buildColor(material.emissive)}`);
-    // }
+        samplers.push(BuildTexture(emissiveMap as Texture, material, "emissive", emissive, textureToExports, options));
+    } else if (emissive && emissive.toLuminance() > 0) {
+        inputs.push(`${pad}color3f inputs:emissiveColor = ${BuildColor(emissive)}`);
+    }
 
-    // if (material.normalMap !== null) {
-    //     inputs.push(`${pad}normal3f inputs:normal.connect = </Materials/Material_${material.id}/Texture_${material.normalMap.id}_normal.outputs:rgb>`);
+    if (normalMap !== null) {
+        inputs.push(`${pad}normal3f inputs:normal.connect = </Materials/Material_${material.id}/Texture_${normalMap.uniqueId}_normal.outputs:rgb>`);
 
-    //     samplers.push(buildTexture(material.normalMap, "normal"));
-    // }
+        samplers.push(BuildTexture(normalMap as Texture, material, "normal", null, textureToExports, options));
+    }
 
     // if (material.aoMap !== null) {
     //     inputs.push(`${pad}float inputs:occlusion.connect = </Materials/Material_${material.id}/Texture_${material.aoMap.id}_occlusion.outputs:r>`);
@@ -512,6 +525,7 @@ ${samplers.join("\n")}
  * @returns a uint8 array containing the USDZ file
  * #H2G5XW#3 - Simple sphere
  * #H2G5XW#4 - Red sphere
+ * #5N3RWK#1 - Boombox
  */
 export async function USDZExportAsync(scene: Scene, options: Partial<IUSDZExportOptions>): Promise<Uint8Array> {
     const localOptions = {
