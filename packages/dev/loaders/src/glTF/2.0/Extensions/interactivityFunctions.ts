@@ -75,7 +75,7 @@ function convertBlock(id: number, gltfBlock: IKHRInteractivity_Node, definition:
         Logger.Warn(`/extensions/KHR_interactivity/nodes/${id}: Unknown block type: ${gltfBlock.type}`);
         return;
     }
-    const className = mapping.types[0];
+    const className = mapping.blocks[0];
     const uniqueId = id.toString();
     const config = convertConfiguration(gltfBlock, definition, uniqueId);
     const metadata = gltfBlock.metadata;
