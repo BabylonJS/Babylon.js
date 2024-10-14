@@ -148,7 +148,7 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
         },
         outputs: {
             values: {
-                "[custom]": { name: "eventData", gltfType: "array" },
+                "[custom]": { name: "eventData[$1]", gltfType: "array" },
             },
         },
     },
@@ -180,7 +180,9 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
     "math/ge": getSimpleInputMapping(FlowGraphBlockNames.GreaterThanOrEqual, ["a", "b"]),
     "math/isnan": getSimpleInputMapping(FlowGraphBlockNames.IsNaN),
     "math/isinf": getSimpleInputMapping(FlowGraphBlockNames.IsInfinity),
-    // TODO!!!
+    "math/sin": getSimpleInputMapping(FlowGraphBlockNames.Sin),
+    "math/cos": getSimpleInputMapping(FlowGraphBlockNames.Cos),
+    "math/tan": getSimpleInputMapping(FlowGraphBlockNames.Tan),
     "math/asin": getSimpleInputMapping(FlowGraphBlockNames.Asin),
     "math/acos": getSimpleInputMapping(FlowGraphBlockNames.Acos),
     "math/atan": getSimpleInputMapping(FlowGraphBlockNames.Atan),
@@ -204,22 +206,183 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
     "math/cross": getSimpleInputMapping(FlowGraphBlockNames.Cross, ["a", "b"]),
     "math/rotate2d": getSimpleInputMapping(FlowGraphBlockNames.Rotate2d, ["a", "b"]),
     "math/rotate3d": getSimpleInputMapping(FlowGraphBlockNames.Rotate3d, ["a", "b", "c"]),
-    "math/transform": getSimpleInputMapping("TODO"),
+    "math/transform": {
+        // glTF transform is vector4 to matrix4x4
+        types: [FlowGraphBlockNames.TransformVector4],
+        configuration: {},
+        inputs: {
+            values: {
+                a: { name: "a", gltfType: "float4" },
+                b: { name: "b", gltfType: "float4x4" },
+            },
+        },
+        outputs: {
+            values: {
+                value: { name: "value" },
+            },
+        },
+    },
     // TODO!!!
-    "math/combine2": getSimpleInputMapping("TODO"),
-    "math/combine3": getSimpleInputMapping("TODO"),
-    "math/combine4": getSimpleInputMapping("TODO"),
+    "math/combine2": {
+        types: [FlowGraphBlockNames.CombineVector2],
+        configuration: {},
+        inputs: {
+            values: {
+                a: { name: "input_0", gltfType: "number" },
+                b: { name: "input_1", gltfType: "number" },
+            },
+        },
+        outputs: {
+            values: {
+                value: { name: "value" },
+            },
+        },
+    },
+    "math/combine3": {
+        types: [FlowGraphBlockNames.CombineVector3],
+        configuration: {},
+        inputs: {
+            values: {
+                a: { name: "input_0", gltfType: "number" },
+                b: { name: "input_1", gltfType: "number" },
+                c: { name: "input_2", gltfType: "number" },
+            },
+        },
+        outputs: {
+            values: {
+                value: { name: "value" },
+            },
+        },
+    },
+    "math/combine4": {
+        types: [FlowGraphBlockNames.CombineVector4],
+        configuration: {},
+        inputs: {
+            values: {
+                a: { name: "input_0", gltfType: "number" },
+                b: { name: "input_1", gltfType: "number" },
+                c: { name: "input_2", gltfType: "number" },
+                d: { name: "input_3", gltfType: "number" },
+            },
+        },
+        outputs: {
+            values: {
+                value: { name: "value" },
+            },
+        },
+    },
     // one input, N outputs! outputs named using numbers.
-    "math/extract2": getSimpleInputMapping("TODO"),
-    "math/extract3": getSimpleInputMapping("TODO"),
-    "math/extract4": getSimpleInputMapping("TODO"),
+    "math/extract2": {
+        types: [FlowGraphBlockNames.ExtractVector2],
+        configuration: {},
+        inputs: {
+            values: {
+                a: { name: "input", gltfType: "number" },
+            },
+        },
+        outputs: {
+            values: {
+                "0": { name: "output_0" },
+                "1": { name: "output_1" },
+            },
+        },
+    },
+    "math/extract3": {
+        types: [FlowGraphBlockNames.ExtractVector3],
+        configuration: {},
+        inputs: {
+            values: {
+                a: { name: "input", gltfType: "number" },
+            },
+        },
+        outputs: {
+            values: {
+                "0": { name: "output_0" },
+                "1": { name: "output_1" },
+                "2": { name: "output_2" },
+            },
+        },
+    },
+    "math/extract4": {
+        types: [FlowGraphBlockNames.ExtractVector4],
+        configuration: {},
+        inputs: {
+            values: {
+                a: { name: "input", gltfType: "number" },
+            },
+        },
+        outputs: {
+            values: {
+                "0": { name: "output_0" },
+                "1": { name: "output_1" },
+                "2": { name: "output_2" },
+                "3": { name: "output_3" },
+            },
+        },
+    },
     "math/transpose": getSimpleInputMapping(FlowGraphBlockNames.Transpose),
     "math/determinant": getSimpleInputMapping(FlowGraphBlockNames.Determinant),
     "math/inverse": getSimpleInputMapping(FlowGraphBlockNames.InvertMatrix),
     "math/matmul": getSimpleInputMapping(FlowGraphBlockNames.MatrixMultiplication, ["a", "b"]),
     // TODO
-    "math/combine4x4": getSimpleInputMapping("TODO"),
-    "math/extract4x4": getSimpleInputMapping("TODO"),
+    "math/combine4x4": {
+        types: [FlowGraphBlockNames.CombineMatrix],
+        configuration: {},
+        inputs: {
+            values: {
+                a: { name: "input_0", gltfType: "number" },
+                b: { name: "input_1", gltfType: "number" },
+                c: { name: "input_2", gltfType: "number" },
+                d: { name: "input_3", gltfType: "number" },
+                e: { name: "input_4", gltfType: "number" },
+                f: { name: "input_5", gltfType: "number" },
+                g: { name: "input_6", gltfType: "number" },
+                h: { name: "input_7", gltfType: "number" },
+                i: { name: "input_8", gltfType: "number" },
+                j: { name: "input_9", gltfType: "number" },
+                k: { name: "input_10", gltfType: "number" },
+                l: { name: "input_11", gltfType: "number" },
+                m: { name: "input_12", gltfType: "number" },
+                n: { name: "input_13", gltfType: "number" },
+                o: { name: "input_14", gltfType: "number" },
+                p: { name: "input_15", gltfType: "number" },
+            },
+        },
+        outputs: {
+            values: {
+                value: { name: "value" },
+            },
+        },
+    },
+    "math/extract4x4": {
+        types: [FlowGraphBlockNames.ExtractMatrix],
+        configuration: {},
+        inputs: {
+            values: {
+                a: { name: "input", gltfType: "number" },
+            },
+        },
+        outputs: {
+            values: {
+                "0": { name: "output_0" },
+                "1": { name: "output_1" },
+                "2": { name: "output_2" },
+                "3": { name: "output_3" },
+                "4": { name: "output_4" },
+                "5": { name: "output_5" },
+                "6": { name: "output_6" },
+                "7": { name: "output_7" },
+                "8": { name: "output_8" },
+                "9": { name: "output_9" },
+                "10": { name: "output_10" },
+                "11": { name: "output_11" },
+                "12": { name: "output_12" },
+                "13": { name: "output_13" },
+                "14": { name: "output_14" },
+                "15": { name: "output_15" },
+            },
+        },
+    },
     // skipping some int-nodes as they repeat the float ones.
     "math/not": getSimpleInputMapping(FlowGraphBlockNames.BitwiseNot),
     "math/and": getSimpleInputMapping(FlowGraphBlockNames.BitwiseAnd, ["a", "b"]),

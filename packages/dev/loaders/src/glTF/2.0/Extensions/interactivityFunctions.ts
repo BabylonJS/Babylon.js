@@ -5,6 +5,7 @@ import type { ISerializedFlowGraph, ISerializedFlowGraphBlock, ISerializedFlowGr
 import { RandomGUID } from "core/Misc/guid";
 import { gltfTypeToBabylonType, gltfToFlowGraphMapping } from "./interactivityUtils";
 import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
+import { Logger } from "core/Misc/logger";
 
 function convertValueWithType(configObject: IKHRInteractivity_Configuration, definition: IKHRInteractivity, context: string) {
     if (configObject.type !== undefined) {
@@ -32,12 +33,25 @@ function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKH
     const configurationList: IKHRInteractivity_Configuration[] = gltfBlock.configuration ?? [];
     for (const configObject of configurationList) {
         if (configObject.id === "customEvent") {
-            const customEvent = definition.customEvents && definition.customEvents[configObject.value];
+            const customEvent = definition.events && definition.events[configObject.value];
             if (!customEvent) {
                 throw new Error(`/extensions/KHR_interactivity/nodes/${id}: Unknown custom event: ${configObject.value}`);
             }
             converted.eventId = customEvent.id;
-            converted.eventData = customEvent.values.map((v) => v.id);
+            if (customEvent.values) {
+                // eventData is a dictionary of the values of the custom event, so we need to convert it to an array
+                converted.eventData = customEvent.values.reduce(
+                    (acc, value, currIndex) => {
+                        acc[value.id] = customEvent.values[currIndex];
+                        // check if there is a type for the value
+                        if (value.type !== undefined && definition.types) {
+                            acc[value.id].type = gltfTypeToBabylonType[definition.types?.[value.type].signature];
+                        }
+                        return acc;
+                    },
+                    {} as Record<string, any>
+                );
+            }
         } else if (configObject.id === "variable") {
             const variable = definition.variables && definition.variables[configObject.value];
             if (!variable) {
@@ -55,12 +69,13 @@ function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKH
     return converted;
 }
 
-function convertBlock(id: number, gltfBlock: IKHRInteractivity_Node, definition: IKHRInteractivity): ISerializedFlowGraphBlock {
+function convertBlock(id: number, gltfBlock: IKHRInteractivity_Node, definition: IKHRInteractivity): ISerializedFlowGraphBlock | undefined {
     const mapping = gltfToFlowGraphMapping[gltfBlock.type];
-    const className = mapping.types[0];
-    if (!mapping || !className) {
-        throw new Error(`/extensions/KHR_interactivity/nodes/${id}: Unknown block type: ${gltfBlock.type}`);
+    if (!mapping) {
+        Logger.Warn(`/extensions/KHR_interactivity/nodes/${id}: Unknown block type: ${gltfBlock.type}`);
+        return;
     }
+    const className = mapping.types[0];
     const uniqueId = id.toString();
     const config = convertConfiguration(gltfBlock, definition, uniqueId);
     const metadata = gltfBlock.metadata;
@@ -101,6 +116,9 @@ export function convertGLTFToSerializedFlowGraph(gltf: IKHRInteractivity): ISeri
     for (let i = 0; i < gltf.nodes.length; i++) {
         const gltfBlock = gltf.nodes[i];
         const flowGraphJsonBlock = convertBlock(i, gltfBlock, gltf);
+        if (!flowGraphJsonBlock) {
+            continue;
+        }
         flowGraphJsonBlocks.push(flowGraphJsonBlock);
     }
 
