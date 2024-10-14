@@ -14,6 +14,7 @@ import type { Scene } from "../scene";
 import { EngineStore } from "../Engines/engineStore";
 
 import "../Shaders/edgeDetection.fragment";
+import { RenderTargetTexture } from "core/Materials";
 
 /**
  * The Edge Detection effect highlights the edges of objects in the scene like a toon.
@@ -29,7 +30,7 @@ export class EdgeDetectionPostProcess extends PostProcess {
     /**
      * Defines the intensity of the detected edges.
      * Higher values result in more pronounced edges.
-     * default value: 0.2
+     * default value: 0.2  (min:0, max:1)
      */
     @serialize()
     public edgeIntensity: number = 0.2;
@@ -37,10 +38,18 @@ export class EdgeDetectionPostProcess extends PostProcess {
     /**
      * Defines the width of the detected edges.
      * Higher values result in thicker edges.
-     * default value: 0.2
+     * default value: 0.2 (min:0.125, max:1)
      */
     @serialize()
     public edgeWidth: number = 0.2;
+
+    /**
+     * Defines the render mode.
+     * default value: 0
+     * 0: general, 1: normal, 2: depth, 3: outline only
+     */
+    @serialize()
+    public renderMode: number = 0;
 
     private _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
 
@@ -67,9 +76,9 @@ export class EdgeDetectionPostProcess extends PostProcess {
         scene: Scene,
         options: number | PostProcessOptions,
         camera: Nullable<Camera>,
-        samplingMode: number = Constants.TEXTURE_NEAREST_NEAREST,
-        reusable: boolean = false,
-        textureType: number = Constants.TEXTURETYPE_HALF_FLOAT
+        samplingMode?: number,
+        reusable?: boolean,
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT
     ) {
         super(
             name,
@@ -104,6 +113,30 @@ export class EdgeDetectionPostProcess extends PostProcess {
 
                 effect.setTexture("normalSampler", normalTexture);
                 effect.setTexture("depthSampler", depthTexture);
+
+                const h1 = new RenderTargetTexture("h1", { width: this.width, height: this.height }, scene, {
+                    samplingMode: Constants.TEXTURE_NEAREST_NEAREST,
+                    generateMipMaps: false,
+                    generateDepthBuffer: false,
+                    type: Constants.TEXTURETYPE_HALF_FLOAT,
+                });
+
+                switch (this.renderMode) {
+                    case 0:
+                        break;
+                    case 1:
+                        effect.setTexture("textureSampler", this._geometryBufferRenderer!.getGBuffer().textures[1]);
+                        effect.setFloat("edgeWidth", 0);
+                        break;
+                    case 2:
+                        effect.setTexture("textureSampler", this._geometryBufferRenderer!.getGBuffer().textures[0]);
+                        effect.setFloat("edgeWidth", 0);
+                        break;
+                    case 3:
+                        effect.setTexture("textureSampler", h1);
+                        break;
+                }
+                effect.setInt("renderMode", this.renderMode);
             };
         }
     }
