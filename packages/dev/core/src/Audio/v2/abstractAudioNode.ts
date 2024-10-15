@@ -1,6 +1,7 @@
+import { Observable } from "../../Misc/observable";
+import type { Nullable } from "../../types";
 import type { AbstractAudioEngine } from "./abstractAudioEngine";
 import { AbstractAudioNodeParent } from "./abstractAudioNodeParent";
-import type { Nullable } from "../../types";
 
 export enum AudioNodeType {
     /**
@@ -23,8 +24,6 @@ export abstract class AbstractAudioNode extends AbstractAudioNodeParent {
     // If parent is null, node is owned by audio engine.
     private _parent: Nullable<AbstractAudioNodeParent> = null;
 
-    public readonly engine: AbstractAudioEngine;
-
     /**
      * The connected downstream audio nodes.
      *
@@ -39,6 +38,9 @@ export abstract class AbstractAudioNode extends AbstractAudioNodeParent {
      */
     protected readonly _connectedUpstreamNodes?: Set<AbstractAudioNode> | undefined;
 
+    public readonly engine: AbstractAudioEngine;
+    public readonly onDisposeObservable = new Observable<AbstractAudioNode>();
+
     /**
      * Creates a new audio node.
      * @param engine - The audio engine this node will be added to
@@ -50,7 +52,7 @@ export abstract class AbstractAudioNode extends AbstractAudioNodeParent {
 
         this.engine = engine;
 
-        this._parent = parent;
+        this.parent = parent;
 
         if (nodeType | AudioNodeType.Input) {
             this._connectedDownstreamNodes = new Set<AbstractAudioNode>();
@@ -82,6 +84,8 @@ export abstract class AbstractAudioNode extends AbstractAudioNodeParent {
             }
             this._connectedUpstreamNodes.clear();
         }
+
+        this.onDisposeObservable.notifyObservers(this);
     }
 
     public get parent(): AbstractAudioNodeParent {

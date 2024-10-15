@@ -1,19 +1,19 @@
 import type { AbstractAudioEngine } from "./abstractAudioEngine";
 import type { AbstractAudioNode } from "./abstractAudioNode";
 import type { AbstractSoundInstance } from "./abstractSoundInstance";
-import type { ISoundSourceOptions } from "./abstractSoundSource";
-import { AbstractSoundSource } from "./abstractSoundSource";
+import type { ISoundOptions } from "./abstractSound";
+import { AbstractSound } from "./abstractSound";
 
 export type StreamingSoundPreloadType = "none" | "metadata" | "auto";
 
-export interface IStreamingSoundSourceOptions extends ISoundSourceOptions {
+export interface IStreamingSoundOptions extends ISoundOptions {
     preload?: StreamingSoundPreloadType;
 }
 
-export abstract class AbstractStreamingSoundSource extends AbstractSoundSource {
+export abstract class AbstractStreamingSound extends AbstractSound {
     private _preload: StreamingSoundPreloadType = "auto";
 
-    public constructor(name: string, engine: AbstractAudioEngine, options?: IStreamingSoundSourceOptions) {
+    public constructor(name: string, engine: AbstractAudioEngine, options?: IStreamingSoundOptions) {
         super(name, engine, options);
 
         this._preload = options?.preload ?? "auto";
@@ -32,6 +32,6 @@ export abstract class AbstractStreamingSoundSource extends AbstractSoundSource {
     }
 
     protected _createSoundInstance(inputNode: AbstractAudioNode): AbstractSoundInstance {
-        return this.engine.createStreamingSoundInstance(this, inputNode);
+        return {} as any; //this.engine.createStreamingSoundInstance(this, inputNode);
     }
 }

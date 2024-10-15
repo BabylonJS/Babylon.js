@@ -1,17 +1,15 @@
 import { AbstractAudioNode, AudioNodeType } from "./abstractAudioNode";
-import type { AbstractSoundSource } from "./abstractSoundSource";
+import type { AbstractSound } from "./abstractSound";
 
 /**
  * Owned by AbstractAudioEngine.
  * Output-only node that connects to a downstream input node.
  */
 export abstract class AbstractSoundInstance extends AbstractAudioNode {
-    protected _source: AbstractSoundSource;
+    protected _source: AbstractSound;
 
-    public constructor(source: AbstractSoundSource, inputNode: AbstractAudioNode) {
+    public constructor(source: AbstractSound, inputNode: AbstractAudioNode) {
         super(source.engine, AudioNodeType.Output);
-
-        this.engine.soundInstances.add(this);
 
         this._source = source;
 
@@ -23,7 +21,7 @@ export abstract class AbstractSoundInstance extends AbstractAudioNode {
 
         this.stop();
 
-        this.engine.soundInstances.delete(this);
+        this.onDisposeObservable.notifyObservers(this);
     }
 
     public abstract get currentTime(): number;

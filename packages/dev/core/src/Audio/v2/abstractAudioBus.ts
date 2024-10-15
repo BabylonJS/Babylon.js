@@ -1,10 +1,10 @@
+import type { Nullable } from "../../types";
 import type { IAudioBusNodeOptions } from "./abstractAudioBusNode";
 import { AbstractAudioBusNode } from "./abstractAudioBusNode";
 import type { AbstractAudioEngine } from "./abstractAudioEngine";
 import type { AbstractAudioPositioner } from "./abstractAudioPositioner";
 import type { AbstractAudioSender } from "./abstractAudioSender";
 import type { AbstractMainAudioBus } from "./abstractMainAudioBus";
-import type { Nullable } from "../../types";
 
 export type AbstractPrimaryAudioBus = AbstractMainAudioBus | AbstractAudioBus;
 
@@ -26,10 +26,10 @@ export abstract class AbstractAudioBus extends AbstractAudioBusNode {
             this.enablePositioner();
         }
 
-        this.sender = engine.createSender(this);
+        this.sender = {} as any; //engine.createSender(this);
 
         if (options?.outputBus) {
-            this.setOutputBus(options.outputBus);
+            this.outputBus = options.outputBus;
         }
     }
 
@@ -37,19 +37,19 @@ export abstract class AbstractAudioBus extends AbstractAudioBusNode {
         return this._positioner;
     }
 
-    public enablePositioner() {
+    public async enablePositioner() {
         if (this._positioner) {
             return;
         }
 
-        this._positioner = this.engine.createPositioner(this);
+        this._positioner = await this.engine.createPositioner(this);
     }
 
     public get outputBus(): Nullable<AbstractPrimaryAudioBus> {
         return this._outputBus;
     }
 
-    public setOutputBus(outputBus: Nullable<AbstractPrimaryAudioBus>) {
+    public set outputBus(outputBus: Nullable<AbstractPrimaryAudioBus>) {
         if (this._outputBus === outputBus) {
             return;
         }

@@ -1,19 +1,19 @@
 import type { AbstractAudioEngine } from "./abstractAudioEngine";
 import type { AbstractAudioNode } from "./abstractAudioNode";
 import type { AbstractSoundInstance } from "./abstractSoundInstance";
-import type { ISoundSourceOptions } from "./abstractSoundSource";
-import { AbstractSoundSource } from "./abstractSoundSource";
+import type { ISoundOptions } from "./abstractSound";
+import { AbstractSound } from "./abstractSound";
 
-export interface IStaticSoundSourceOptions extends ISoundSourceOptions {
+export interface IStaticSoundOptions extends ISoundOptions {
     loopStart?: number;
     loopEnd?: number;
 }
 
-export abstract class AbstractStaticSoundSource extends AbstractSoundSource {
+export abstract class AbstractStaticSound extends AbstractSound {
     private _loopStart: number;
     private _loopEnd: number;
 
-    public constructor(name: string, engine: AbstractAudioEngine, options?: IStaticSoundSourceOptions) {
+    public constructor(name: string, engine: AbstractAudioEngine, options?: IStaticSoundOptions) {
         super(name, engine, options);
 
         this._loopStart = options?.loopStart ?? 0;
@@ -37,6 +37,6 @@ export abstract class AbstractStaticSoundSource extends AbstractSoundSource {
     }
 
     protected _createSoundInstance(inputNode: AbstractAudioNode): AbstractSoundInstance {
-        return this.engine.createStaticSoundInstance(this, inputNode);
+        return {} as any; //this.engine.createStaticSoundInstance(this, inputNode);
     }
 }

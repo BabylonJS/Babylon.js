@@ -1,10 +1,11 @@
+import { Observable } from "../../Misc/observable";
+import type { IDisposable } from "../../scene";
+import type { Nullable } from "../../types";
 import type { AbstractAudioEngine } from "./abstractAudioEngine";
 import type { AbstractAudioNode } from "./abstractAudioNode";
 import type { AbstractSoundInstance } from "./abstractSoundInstance";
-import type { Nullable } from "../../types";
-import type { IDisposable } from "../../scene";
 
-export interface ISoundSourceOptions {
+export interface ISoundOptions {
     autoplay?: boolean;
     loop?: boolean;
     pitch?: number;
@@ -16,7 +17,7 @@ export interface ISoundSourceOptions {
 /**
  * Owned by AbstractAudioEngine.
  */
-export abstract class AbstractSoundSource implements IDisposable {
+export abstract class AbstractSound implements IDisposable {
     // Non-owning.
     protected _soundInstances: Nullable<Set<AbstractSoundInstance>> = null;
 
@@ -30,7 +31,9 @@ export abstract class AbstractSoundSource implements IDisposable {
     public stopTime: number;
     public volume: number;
 
-    public constructor(name: string, engine: AbstractAudioEngine, options: Nullable<ISoundSourceOptions> = null) {
+    public onDisposeObservable = new Observable<AbstractSound>();
+
+    public constructor(name: string, engine: AbstractAudioEngine, options: Nullable<ISoundOptions> = null) {
         this.name = name;
         this.engine = engine;
 
@@ -41,7 +44,7 @@ export abstract class AbstractSoundSource implements IDisposable {
         this.stopTime = options?.stopTime ?? 0;
         this.volume = options?.volume ?? 1;
 
-        this.engine.soundSources.add(this);
+        // this.engine.sounds.add(this);
     }
 
     public dispose(): void {
@@ -49,7 +52,7 @@ export abstract class AbstractSoundSource implements IDisposable {
 
         this._soundInstances?.clear();
 
-        this.engine.soundSources.delete(this);
+        this.onDisposeObservable.notifyObservers(this);
     }
 
     public abstract get currentTime(): number;

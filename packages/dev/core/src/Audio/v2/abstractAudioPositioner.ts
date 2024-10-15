@@ -10,12 +10,14 @@ export interface IAudioPositionerOptions extends ISpatialAudioTransformOptions {
 
 export abstract class AbstractAudioPositioner extends AbstractAudioNode {
     // Not owned
-    private _listeners: Nullable<Set<SpatialAudioListener>> = null;
     private _pannerGain: number = 1;
     private _pannerPosition: Nullable<Vector3> = null;
     private _spatialTransform: SpatialAudioTransform;
     private _spatializerGain: number = 1;
+
     // TODO: Add spatializer cone angles/volumes, etc ...
+
+    public readonly listeners = new Set<SpatialAudioListener>();
 
     public constructor(parent: AbstractAudioNode, options?: ISpatialAudioTransformOptions) {
         super(parent.engine, AudioNodeType.InputOutput, parent);
@@ -28,22 +30,7 @@ export abstract class AbstractAudioPositioner extends AbstractAudioNode {
 
         this._spatialTransform.dispose();
 
-        this._listeners?.clear();
-        this._listeners = null;
-    }
-
-    /** @internal */
-    public _addListener(listener: SpatialAudioListener): void {
-        if (!this._listeners) {
-            this._listeners = new Set();
-        }
-
-        this._listeners.add(listener);
-    }
-
-    /** @internal */
-    public _removeListener(listener: SpatialAudioListener): void {
-        this._listeners?.delete(listener);
+        this.listeners?.clear();
     }
 
     public get position(): Vector3 {

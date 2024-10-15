@@ -23,10 +23,10 @@ export abstract class AbstractAuxilliaryAudioBus extends AbstractAudioBusNode {
             this.enablePositioner();
         }
 
-        this.sender = engine.createSender(this);
+        this.sender = {} as any; //engine.createSender(this);
 
         if (options?.outputBus) {
-            this.setOutputBus(options.outputBus);
+            this.outputBus = options.outputBus;
         }
     }
 
@@ -34,19 +34,19 @@ export abstract class AbstractAuxilliaryAudioBus extends AbstractAudioBusNode {
         return this._positioner;
     }
 
-    public enablePositioner() {
+    public async enablePositioner() {
         if (this._positioner) {
             return;
         }
 
-        this._positioner = this.engine.createPositioner(this);
+        this._positioner = await this.engine.createPositioner(this);
     }
 
     public get outputBus(): Nullable<AbstractAudioBusNode> {
         return this._outputBus;
     }
 
-    public setOutputBus(outputBus: Nullable<AbstractAudioBusNode>) {
+    public set outputBus(outputBus: Nullable<AbstractAudioBusNode>) {
         if (this._outputBus === outputBus) {
             return;
         }
