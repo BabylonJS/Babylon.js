@@ -165,11 +165,18 @@ export class SetPositionsBlock extends NodeGeometryBlock implements INodeGeometr
                 // Indices remap
                 if (this._vertexData.indices) {
                     const newIndices: number[] = [];
-                    for (let index = 0; index < this._vertexData.indices.length; index++) {
-                        const remappedIndex = remap[this._vertexData.indices[index]];
+                    for (let index = 0; index < this._vertexData.indices.length; index += 3) {
+                        const a = this._vertexData.indices[index];
+                        const b = this._vertexData.indices[index + 1];
+                        const c = this._vertexData.indices[index + 2];
+                        const remappedA = remap[a];
+                        const remappedB = remap[b];
+                        const remappedC = remap[c];
 
-                        if (remappedIndex !== undefined) {
-                            newIndices.push(remappedIndex);
+                        if (remappedA !== undefined && remappedB !== undefined && remappedC !== undefined) {
+                            newIndices.push(remappedA);
+                            newIndices.push(remappedB);
+                            newIndices.push(remappedC);
                         }
                     }
 

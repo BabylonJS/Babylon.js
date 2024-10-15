@@ -1,5 +1,5 @@
 import * as React from "react";
-import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import type { IPropertyDescriptionForEdition, IEditablePropertyListOption, IEditablePropertyOption } from "core/Decorators/nodeDecorator";

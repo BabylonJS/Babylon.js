@@ -7,6 +7,27 @@ import type { Nullable } from "../../types";
  */
 export class RawTexture3D extends Texture {
     /**
+     * Gets the width of the texture
+     */
+    public get width(): number {
+        return this._texture ? this._texture.width : 0;
+    }
+
+    /**
+     * Gets the height of the texture
+     */
+    public get height(): number {
+        return this._texture ? this._texture.height : 0;
+    }
+
+    /**
+     * Gets the depth of the texture
+     */
+    public get depth(): number {
+        return this._texture ? this._texture.depth : 0;
+    }
+
+    /**
      * Create a new RawTexture3D
      * @param data defines the data of the texture
      * @param width defines the width of the texture

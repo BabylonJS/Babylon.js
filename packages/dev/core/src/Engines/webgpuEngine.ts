@@ -146,6 +146,11 @@ export interface GlslangOptions {
  */
 export interface WebGPUEngineOptions extends AbstractEngineOptions, GPURequestAdapterOptions {
     /**
+     * The featureLevel property of the GPURequestAdapterOptions interface
+     */
+    featureLevel?: string;
+
+    /**
      * Defines the category of adapter to use.
      * Is it the discrete or integrated device.
      */
@@ -639,10 +644,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                     this._adapterSupportedExtensions = [];
                     this._adapter.features?.forEach((feature) => this._adapterSupportedExtensions.push(feature as WebGPUConstants.FeatureName));
                     this._adapterSupportedLimits = this._adapter.limits;
-
-                    this._adapter.requestAdapterInfo().then((adapterInfo) => {
-                        this._adapterInfo = adapterInfo;
-                    });
+                    this._adapterInfo = this._adapter.info;
 
                     const deviceDescriptor = this._options.deviceDescriptor ?? {};
                     const requiredFeatures = deviceDescriptor?.requiredFeatures ?? (this._options.enableAllFeatures ? this._adapterSupportedExtensions : undefined);

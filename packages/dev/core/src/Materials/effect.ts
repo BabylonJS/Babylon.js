@@ -149,6 +149,13 @@ export class Effect implements IDisposable {
      * Enable logging of the shader code when a compilation error occurs
      */
     public static LogShaderCodeOnCompilationError = true;
+
+    /**
+     * Use this with caution
+     * See ClearCodeCache function comments
+     */
+    public static AutomaticallyClearCodeCache = false;
+
     /**
      * Name of the effect.
      */
@@ -746,6 +753,10 @@ export class Effect implements IDisposable {
         // Unbind mesh reference in fallbacks
         if (this._fallbacks) {
             this._fallbacks.unBindMesh();
+        }
+
+        if (Effect.AutomaticallyClearCodeCache) {
+            this.clearCodeCache();
         }
     }
 
@@ -1449,6 +1460,18 @@ export class Effect implements IDisposable {
     }
 
     /**
+     * Use this wisely: It will remove the cached code from this effect
+     * It is probably ok to call it if you are not using ShadowDepthWrapper or if everything is already up and running
+     * DO NOT CALL IT if you want to have support for context lost recovery
+     */
+    public clearCodeCache() {
+        this._vertexSourceCode = "";
+        this._fragmentSourceCode = "";
+        this._fragmentSourceCodeBeforeMigration = "";
+        this._vertexSourceCodeBeforeMigration = "";
+    }
+
+    /**
      * Release all associated resources.
      **/
     public dispose() {
@@ -1463,6 +1486,8 @@ export class Effect implements IDisposable {
             resetCachedPipeline(this._pipelineContext);
         }
         this._engine._releaseEffect(this);
+
+        this.clearCodeCache();
 
         this._isDisposed = true;
     }

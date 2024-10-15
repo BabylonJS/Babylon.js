@@ -36,6 +36,7 @@ export * from "./Blocks/computeNormalsBlock";
 export * from "./Blocks/vectorConverterBlock";
 export * from "./Blocks/normalizeVectorBlock";
 export * from "./Blocks/Set/setMaterialIDBlock";
+export * from "./Blocks/Set/latticeBlock";
 export * from "./Blocks/geometryTrigonometryBlock";
 export * from "./Blocks/geometryTransformBlock";
 export * from "./Blocks/Matrices/rotationXBlock";
