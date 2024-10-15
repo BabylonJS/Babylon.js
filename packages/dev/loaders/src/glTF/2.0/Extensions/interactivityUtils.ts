@@ -87,6 +87,9 @@ interface IGLTFToFlowGraphMapping {
      */
     typeToTypeMapping?: { [originName: string]: IGLTFToFlowGraphMappingObject };
 }
+
+export function convertGltfToFlowGraph(name: string, data: IGLTFToFlowGraphMappingObject, glTFValue: any): any {}
+
 // this mapper is just a way to convert the glTF nodes to FlowGraph nodes in terms of input/output connection names and values.
 export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "event/onStart": {
@@ -94,7 +97,7 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
         inputs: {},
         outputs: {
             flows: {
-                out: { name: "out" },
+                // out: { name: "out" },
             },
         },
         configuration: {},
@@ -108,7 +111,7 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
                 timeSinceLastTick: { name: "deltaTime", gltfType: "number", dataTransformer: (time: number) => time / 1000 },
             },
             flows: {
-                out: { name: "out" },
+                // out: { name: "out" },
             },
         },
         configuration: {},
@@ -126,12 +129,12 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
                 "[custom]": { name: "eventData[$1]", gltfType: "array", inOptions: true },
             },
             flows: {
-                in: { name: "in" },
+                // in: { name: "in" },
             },
         },
         outputs: {
             flows: {
-                out: { name: "out" },
+                // out: { name: "out" },
             },
         },
     },
@@ -143,7 +146,7 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
         },
         inputs: {
             flows: {
-                in: { name: "in" },
+                // in: { name: "in" },
             },
         },
         outputs: {
@@ -410,12 +413,12 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
         },
         inputs: {
             flows: {
-                in: { name: "in" },
+                // in: { name: "in" },
             },
         },
         outputs: {
             flows: {
-                "[name]": { name: "$1" },
+                // "[name]": { name: "$1" },
             },
         },
     },
@@ -427,7 +430,7 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
                 condition: { name: "condition", gltfType: "boolean" },
             },
             flows: {
-                in: { name: "in" },
+                // in: { name: "in" },
             },
         },
         outputs: {
@@ -447,13 +450,13 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
                 selection: { name: "selection", gltfType: "number" },
             },
             flows: {
-                in: { name: "in" },
+                // in: { name: "in" },
             },
         },
         outputs: {
             flows: {
                 "[case]": { name: "out_$1" },
-                default: { name: "default" },
+                // default: { name: "default" },
             },
         },
     },
@@ -465,13 +468,13 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
                 condition: { name: "condition", gltfType: "boolean" },
             },
             flows: {
-                in: { name: "in" },
+                // in: { name: "in" },
             },
         },
         outputs: {
             flows: {
                 loopBody: { name: "executionFlow" },
-                completed: { name: "completed" },
+                // completed: { name: "completed" },
             },
         },
     },
@@ -488,7 +491,7 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
                 // step: { name: "step", gltfType: "number" },
             },
             flows: {
-                in: { name: "in" },
+                // in: { name: "in" },
             },
         },
         outputs: {
@@ -496,8 +499,8 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
                 index: { name: "index" },
             },
             flows: {
-                loopBody: { name: "loopBody" },
-                completed: { name: "completed" },
+                // loopBody: { name: "loopBody" },
+                // completed: { name: "completed" },
             },
         },
     },
@@ -509,8 +512,8 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
                 n: { name: "maxExecutions", gltfType: "number" },
             },
             flows: {
-                reset: { name: "reset" },
-                in: { name: "in" },
+                // reset: { name: "reset" },
+                // in: { name: "in" },
             },
         },
         outputs: {
@@ -518,7 +521,7 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
                 currentCount: { name: "executionCount" },
             },
             flows: {
-                out: { name: "out" },
+                // out: { name: "out" },
             },
         },
     },
@@ -530,8 +533,8 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
         },
         inputs: {
             flows: {
-                reset: { name: "reset" },
-                in: { name: "in" },
+                // reset: { name: "reset" },
+                // in: { name: "in" },
             },
         },
         outputs: {
@@ -539,8 +542,8 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
                 lastIndex: { name: "lastIndex" },
             },
             flows: {
-                "[name]": { name: "$1" },
-                "pname].length": { name: "numberOutputFlows", inOptions: true },
+                // "[name]": { name: "$1" },
+                "[name].length": { name: "numberOutputFlows", inOptions: true },
             },
         },
     },
@@ -551,7 +554,7 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
         },
         inputs: {
             flows: {
-                reset: { name: "reset" },
+                // reset: { name: "reset" },
                 // or "in_$1" ?
                 "[i]": { name: "inFlows[$1]" },
             },
@@ -561,8 +564,8 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
                 remainingInputs: { name: "remainingInputs" },
             },
             flows: {
-                completed: { name: "completed" },
-                out: { name: "out" },
+                // completed: { name: "completed" },
+                // out: { name: "out" },
             },
         },
     },
@@ -574,8 +577,8 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
                 duration: { name: "duration", gltfType: "number" },
             },
             flows: {
-                in: { name: "in" },
-                reset: { name: "reset" },
+                // in: { name: "in" },
+                // reset: { name: "reset" },
             },
         },
         outputs: {
@@ -583,7 +586,7 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
                 lastRemainingTime: { name: "lastRemainingTime" },
             },
             flows: {
-                out: { name: "out" },
+                // out: { name: "out" },
                 err: { name: "error" },
             },
         },
@@ -596,8 +599,8 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
                 duration: { name: "duration", gltfType: "number" },
             },
             flows: {
-                in: { name: "in" },
-                cancel: { name: "cancel" },
+                // in: { name: "in" },
+                // cancel: { name: "cancel" },
             },
         },
         outputs: {
@@ -605,7 +608,7 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
                 lastDelayIndex: { name: "lastDelayIndex" },
             },
             flows: {
-                out: { name: "out" },
+                // out: { name: "out" },
                 err: { name: "error" },
             },
         },
@@ -618,13 +621,13 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
                 delayIndex: { name: "delayIndex", gltfType: "number" },
             },
             flows: {
-                in: { name: "cancel" },
+                // in: { name: "in" },
             },
         },
         outputs: {
-            flows: {
-                out: { name: "out" },
-            },
+            // flows: {
+            //     out: { name: "out" },
+            // },
         },
     },
     "variable/get": {
@@ -649,12 +652,12 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
                 value: { name: "value" },
             },
             flows: {
-                in: { name: "in" },
+                // in: { name: "in" },
             },
         },
         outputs: {
             flows: {
-                out: { name: "out" },
+                // out: { name: "out" },
             },
         },
     },
@@ -686,12 +689,12 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
                 "[segment]": { name: "$1", toBlock: "pointer" },
             },
             flows: {
-                in: { name: "in" },
+                // in: { name: "in" },
             },
         },
         outputs: {
             flows: {
-                out: { name: "out" },
+                // out: { name: "out" },
                 err: { name: "error" },
             },
         },
@@ -710,12 +713,12 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
                 p2: { name: "endValue", gltfType: "number" /*, inOptions: true*/ },
             },
             flows: {
-                in: { name: "in" },
+                // in: { name: "in" },
             },
         },
         outputs: {
             flows: {
-                out: { name: "out" },
+                // out: { name: "out" },
                 err: { name: "error" },
             },
         },
@@ -732,14 +735,14 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
                 endTime: { name: "to", gltfType: "number", dataTransformer: (time: number) => time / 60 },
             },
             flows: {
-                in: { name: "in" },
+                // in: { name: "in" },
             },
         },
         outputs: {
             flows: {
-                out: { name: "out" },
+                // out: { name: "out" },
                 err: { name: "error" },
-                done: { name: "done" },
+                // done: { name: "done" },
             },
         },
     },
@@ -751,12 +754,12 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
                 animation: { name: "animation", gltfType: "number", flowGraphType: "animation", isIndex: "animation" },
             },
             flows: {
-                in: { name: "in" },
+                // in: { name: "in" },
             },
         },
         outputs: {
             flows: {
-                out: { name: "out" },
+                // out: { name: "out" },
                 err: { name: "error" },
             },
         },
@@ -770,12 +773,12 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
                 stopTime: { name: "stopAtFrame", gltfType: "number", dataTransformer: (time: number) => time / 60 },
             },
             flows: {
-                in: { name: "in" },
+                // in: { name: "in" },
             },
         },
         outputs: {
             flows: {
-                out: { name: "out" },
+                // out: { name: "out" },
                 err: { name: "error" },
             },
         },
@@ -785,7 +788,7 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
         configuration: {},
         inputs: {
             flows: {
-                in: { name: "in" },
+                // in: { name: "in" },
             },
             values: {
                 message: { name: "message" },
@@ -793,7 +796,7 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
         },
         outputs: {
             flows: {
-                out: { name: "out" },
+                // out: { name: "out" },
             },
         },
     },

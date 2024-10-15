@@ -31,13 +31,14 @@ function convertValueWithType(configObject: IKHRInteractivity_Configuration, def
 function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKHRInteractivity, id: string): IFlowGraphBlockConfiguration {
     const converted: IFlowGraphBlockConfiguration = {};
     const configurationList: IKHRInteractivity_Configuration[] = gltfBlock.configuration ?? [];
+    let internalEventCounter = 0;
     for (const configObject of configurationList) {
         if (configObject.id === "customEvent") {
             const customEvent = definition.events && definition.events[configObject.value];
             if (!customEvent) {
                 throw new Error(`/extensions/KHR_interactivity/nodes/${id}: Unknown custom event: ${configObject.value}`);
             }
-            converted.eventId = customEvent.id;
+            converted.eventId = customEvent.id || "internalEvent_" + internalEventCounter++;
             if (customEvent.values) {
                 // eventData is a dictionary of the values of the custom event, so we need to convert it to an array
                 converted.eventData = customEvent.values.reduce(
@@ -85,6 +86,7 @@ function convertBlock(id: number, gltfBlock: IKHRInteractivity_Node, definition:
     const signalOutputs: ISerializedFlowGraphConnection[] = [];
     return {
         className,
+        type: gltfBlock.type,
         config,
         uniqueId,
         metadata,
@@ -127,10 +129,11 @@ export function convertGLTFToSerializedFlowGraph(gltf: IKHRInteractivity): ISeri
         const gltfBlock = gltf.nodes[i];
         // get the block that was created in the previous step
         const fgBlock = flowGraphJsonBlocks[i];
+        const outputMapper = gltfToFlowGraphMapping[fgBlock.type];
         const gltfFlows = gltfBlock.flows ?? [];
         // for each output flow of the gltf block
         for (const flow of gltfFlows) {
-            const socketOutName = flow.id;
+            const socketOutName = outputMapper.outputs.flows?.[flow.id].name || flow.id;
             // create an output connection for the flow graph block
             const socketOut: ISerializedFlowGraphConnection = {
                 uniqueId: RandomGUID(),
@@ -141,7 +144,6 @@ export function convertGLTFToSerializedFlowGraph(gltf: IKHRInteractivity): ISeri
             fgBlock.signalOutputs.push(socketOut);
             // get the input node of this flow
             const nodeInId = flow.node;
-            const nodeInSocketName = flow.socket;
             // find the corresponding flow graph node
             const nodeIn = flowGraphJsonBlocks[nodeInId];
             if (!nodeIn) {
@@ -149,6 +151,8 @@ export function convertGLTFToSerializedFlowGraph(gltf: IKHRInteractivity): ISeri
                     `/extensions/KHR_interactivity/nodes/${i}: Could not find node with id ${nodeInId} that connects its input with with node ${i}'s output ${socketOutName}`
                 );
             }
+            const inputMapper = gltfToFlowGraphMapping[nodeIn.type];
+            const nodeInSocketName = inputMapper.inputs.flows?.[flow.socket].name || flow.socket;
             // in all of the flow graph input connections, find the one with the same name as the socket
             let socketIn = nodeIn.signalInputs.find((s) => s.name === nodeInSocketName);
             // if the socket doesn't exist, create the input socket for the connection

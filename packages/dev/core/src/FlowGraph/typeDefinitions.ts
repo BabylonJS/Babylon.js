@@ -82,6 +82,10 @@ export interface ISerializedFlowGraphBlock {
      */
     className: string;
     /**
+     * The glTF type of the block
+     */
+    type: string;
+    /**
      * Configuration parameters for the block
      */
     config: any;
