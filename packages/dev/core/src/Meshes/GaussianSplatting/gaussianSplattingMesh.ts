@@ -13,12 +13,21 @@ import { Constants } from "core/Engines/constants";
 import { Tools } from "core/Misc/tools";
 import "core/Meshes/thinInstanceMesh";
 import type { ThinEngine } from "core/Engines/thinEngine";
+import { DeepCopier } from "core/Misc/deepCopier";
+import { Frustum } from "core/Maths/math.frustum";
 
 interface DelayedTextureUpdate {
     covA: Float32Array;
     covB: Float32Array;
     colors: Float32Array;
     centers: Float32Array;
+}
+
+export interface BoundingVolume {
+    aabbMin: Vector3;
+    aabbMax: Vector3;
+    firstSplat: number;
+    splatCount: number;
 }
 /**
  * Class used to render a gaussian splatting mesh
@@ -47,6 +56,7 @@ export class GaussianSplattingMesh extends Mesh {
 
     private _delayedTextureUpdate: Nullable<DelayedTextureUpdate> = null;
     private _oldDirection = new Vector3();
+    private _boundingVolumes = new Array<BoundingVolume>();
     /**
      * Gets the covariancesA texture
      */
@@ -73,6 +83,13 @@ export class GaussianSplattingMesh extends Mesh {
      */
     public get colorsTexture() {
         return this._colorsTexture;
+    }
+
+    /**
+     * @param boundingVolumes volumes
+     */
+    public setBoundingVolumes(boundingVolumes: Array<BoundingVolume>): void {
+        this._boundingVolumes = boundingVolumes;
     }
 
     /**
@@ -137,6 +154,25 @@ export class GaussianSplattingMesh extends Mesh {
         return true;
     }
 
+    protected _convertVolumesToArrays() {
+        const volumeCount = this._boundingVolumes.length;
+        const floatArray = new Float32Array(volumeCount * 6); // 2 positions of 3 float each
+        const uintArray = new Uint32Array(volumeCount * 2); // start, count
+        for (let i = 0; i < volumeCount; i++) {
+            const volume = this._boundingVolumes[i];
+            floatArray[i * 6 + 0] = volume.aabbMin.x;
+            floatArray[i * 6 + 1] = volume.aabbMin.y;
+            floatArray[i * 6 + 2] = volume.aabbMin.z;
+
+            floatArray[i * 6 + 3] = volume.aabbMax.x;
+            floatArray[i * 6 + 4] = volume.aabbMax.y;
+            floatArray[i * 6 + 5] = volume.aabbMax.z;
+
+            uintArray[i * 2 + 0] = volume.firstSplat;
+            uintArray[i * 2 + 1] = volume.splatCount;
+        }
+        return { bounds: floatArray, indices: uintArray };
+    }
     protected _postToWorker(forced = false): void {
         const frameId = this.getScene().getFrameId();
         if (frameId !== this._frameIdLastUpdate && this._worker && this._scene.activeCamera && this._canPostToWorker) {
@@ -149,12 +185,22 @@ export class GaussianSplattingMesh extends Mesh {
 
             const dot = Vector3.Dot(TmpVectors.Vector3[2], this._oldDirection);
             if (forced || Math.abs(dot - 1) >= 0.01) {
+                const planes = Frustum.GetPlanes(this._scene.activeCamera.getTransformationMatrix());
+                const frustumPlanes = new Float32Array(6 * 4); // 6 planes of 4 floats each
+                for (let i = 0; i < 6; i++) {
+                    frustumPlanes[i * 4 + 0] = planes[i].normal.x;
+                    frustumPlanes[i * 4 + 1] = planes[i].normal.y;
+                    frustumPlanes[i * 4 + 2] = planes[i].normal.z;
+                    frustumPlanes[i * 4 + 3] = planes[i].d;
+                }
+
                 this._oldDirection.copyFrom(TmpVectors.Vector3[2]);
                 this._frameIdLastUpdate = frameId;
                 this._canPostToWorker = false;
-                this._worker.postMessage({ view: this._modelViewMatrix.m, depthMix: this._depthMix, useRightHandedSystem: this._scene.useRightHandedSystem }, [
-                    this._depthMix.buffer,
-                ]);
+                this._worker.postMessage(
+                    { view: this._modelViewMatrix.m, depthMix: this._depthMix, useRightHandedSystem: this._scene.useRightHandedSystem, frustumPlanes: frustumPlanes },
+                    [this._depthMix.buffer, frustumPlanes.buffer]
+                );
             }
         }
     }
@@ -401,12 +447,17 @@ export class GaussianSplattingMesh extends Mesh {
         let depthMix: BigInt64Array;
         let indices: Uint32Array;
         let floatMix: Float32Array;
+        let bounds: Float32Array;
+        let boundIndices: Uint32Array;
+        let frustumPlanes: Float32Array;
 
         self.onmessage = (e: any) => {
             // updated on init
             if (e.data.positions) {
                 positions = e.data.positions;
                 vertexCount = e.data.vertexCount;
+                bounds = e.data.bounds;
+                boundIndices = e.data.indices;
             }
             // udpate on view changed
             else {
@@ -415,28 +466,73 @@ export class GaussianSplattingMesh extends Mesh {
                     // Sanity check, it shouldn't happen!
                     throw new Error("positions or view is not defined!");
                 }
-
+                frustumPlanes = e.data.frustumPlanes;
                 depthMix = e.data.depthMix;
                 indices = new Uint32Array(depthMix.buffer);
                 floatMix = new Float32Array(depthMix.buffer);
 
-                // Sort
-                for (let j = 0; j < vertexCount; j++) {
-                    indices[2 * j] = j;
+                const depthFactor = e.data.useRightHandedSystem ? 1 : -1;
+
+                if (bounds && bounds.length && boundIndices && boundIndices.length) {
+                    const volumeCount = bounds.length / 6;
+                    let totalIndices = 0;
+                    for (let volumeIndex = 0; volumeIndex < volumeCount; volumeIndex++) {
+                        // culling
+                        let outsideFrustum = false;
+                        const volumeMinx = bounds[volumeIndex * 6 + 0];
+                        const volumeMiny = bounds[volumeIndex * 6 + 1];
+                        const volumeMinz = bounds[volumeIndex * 6 + 2];
+                        const volumeMaxx = bounds[volumeIndex * 6 + 3];
+                        const volumeMaxy = bounds[volumeIndex * 6 + 4];
+                        const volumeMaxz = bounds[volumeIndex * 6 + 5];
+                        for (let planeIndex = 0; planeIndex < 6; planeIndex++) {
+                            const planeNormalx = frustumPlanes[planeIndex * 4 + 0];
+                            const planeNormaly = frustumPlanes[planeIndex * 4 + 1];
+                            const planeNormalz = frustumPlanes[planeIndex * 4 + 2];
+                            const planeOffset = frustumPlanes[planeIndex * 4 + 3];
+                            const nx = planeNormalx > 0 ? volumeMaxx : volumeMinx;
+                            const ny = planeNormaly > 0 ? volumeMaxy : volumeMiny;
+                            const nz = planeNormalz > 0 ? volumeMaxz : volumeMinz;
+
+                            const dotProduct = planeNormalx * nx + planeNormaly * ny + planeNormalz * nz;
+                            if (dotProduct < -planeOffset) {
+                                outsideFrustum = true;
+                                break;
+                            }
+                        }
+                        if (outsideFrustum) {
+                            continue; // skip volume
+                        }
+                        const splatStart = boundIndices[volumeIndex * 2 + 0];
+                        const splatCount = boundIndices[volumeIndex * 2 + 1];
+                        for (let j = 0; j < splatCount; j++) {
+                            const vertexIndex = 3 * (splatStart + j);
+                            const destinationIndex = (totalIndices + j) * 2;
+                            indices[destinationIndex] = splatStart + j;
+                            floatMix[destinationIndex + 1] =
+                                10000 +
+                                (viewProj[2] * positions[vertexIndex + 0] + viewProj[6] * positions[vertexIndex + 1] + viewProj[10] * positions[vertexIndex + 2]) * depthFactor;
+                        }
+                        totalIndices += splatCount;
+                    }
+                    const subset = Array.from(depthMix.slice(0, totalIndices + 1));
+                    subset.sort();
+                    for (let i = 0; i < subset.length; i++) {
+                        depthMix[i] = subset[i];
+                    }
+                    self.postMessage({ depthMix, subsetSize: subset.length }, [depthMix.buffer]);
+                } else {
+                    // Sort with a full GS continuous buffer and corresponding linear indices
+                    for (let j = 0; j < vertexCount; j++) {
+                        indices[2 * j] = j;
+                    }
+
+                    for (let j = 0; j < vertexCount; j++) {
+                        floatMix[2 * j + 1] = 10000 + (viewProj[2] * positions[3 * j + 0] + viewProj[6] * positions[3 * j + 1] + viewProj[10] * positions[3 * j + 2]) * depthFactor;
+                    }
+                    depthMix.sort();
+                    self.postMessage({ depthMix, subsetSize: depthMix.length }, [depthMix.buffer]);
                 }
-
-                let depthFactor = -1;
-                if (e.data.useRightHandedSystem) {
-                    depthFactor = 1;
-                }
-
-                for (let j = 0; j < vertexCount; j++) {
-                    floatMix[2 * j + 1] = 10000 + (viewProj[2] * positions[3 * j + 0] + viewProj[6] * positions[3 * j + 1] + viewProj[10] * positions[3 * j + 2]) * depthFactor;
-                }
-
-                depthMix.sort();
-
-                self.postMessage({ depthMix }, [depthMix.buffer]);
             }
         };
     };
@@ -587,7 +683,7 @@ export class GaussianSplattingMesh extends Mesh {
             return;
         }
         this._updateSplatIndexBuffer(this._vertexCount);
-
+        const boundingVolumesArrays = this._convertVolumesToArrays();
         // Start the worker thread
         this._worker?.terminate();
         this._worker = new Worker(
@@ -602,13 +698,18 @@ export class GaussianSplattingMesh extends Mesh {
         const positions = Float32Array.from(this._splatPositions!);
         const vertexCount = this._vertexCount;
 
-        this._worker.postMessage({ positions, vertexCount }, [positions.buffer]);
+        this._worker.postMessage({ positions, vertexCount, bounds: boundingVolumesArrays.bounds, indices: boundingVolumesArrays.indices }, [
+            positions.buffer,
+            boundingVolumesArrays.bounds.buffer,
+            boundingVolumesArrays.indices.buffer,
+        ]);
 
         this._worker.onmessage = (e) => {
             this._depthMix = e.data.depthMix;
             const indexMix = new Uint32Array(e.data.depthMix.buffer);
+            //Logger.Log(`ahahahah ${this._vertexCount} - ${e.data.subsetSize}`);
             if (this._splatIndex) {
-                for (let j = 0; j < this._vertexCount; j++) {
+                for (let j = 0; j < e.data.subsetSize; j++) {
                     this._splatIndex[j] = indexMix[2 * j];
                 }
             }
@@ -624,6 +725,7 @@ export class GaussianSplattingMesh extends Mesh {
                 this._delayedTextureUpdate = null;
             }
             this.thinInstanceBufferUpdated("splatIndex");
+            this.forcedInstanceCount = e.data.subsetSize;
             this._canPostToWorker = true;
             this._readyToDisplay = true;
         };

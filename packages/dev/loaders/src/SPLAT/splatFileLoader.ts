@@ -1,7 +1,7 @@
 import type { ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, ISceneLoaderAsyncResult, ISceneLoaderProgressEvent, SceneLoaderPluginOptions } from "core/Loading/sceneLoader";
 import { registerSceneLoaderPlugin } from "core/Loading/sceneLoader";
 import { SPLATFileLoaderMetadata } from "./splatFileLoader.metadata";
-import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
+import { GaussianSplattingMesh, type BoundingVolume } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
 import { AssetContainer } from "core/assetContainer";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
@@ -42,6 +42,7 @@ interface ParsedPLY {
     mode: Mode;
     faces?: number[];
     hasVertexColors?: boolean;
+    boundingVolumes?: Array<BoundingVolume>;
 }
 
 /** @internal */
@@ -203,6 +204,9 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                     const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
                     gaussianSplatting._parentContainer = this._assetContainer;
                     babylonMeshesArray.push(gaussianSplatting);
+                    if (parsedPLY.boundingVolumes && parsedPLY.boundingVolumes.length) {
+                        gaussianSplatting.setBoundingVolumes(parsedPLY.boundingVolumes);
+                    }
                     gaussianSplatting.loadDataAsync(parsedPLY.data);
                 }
                 break;
@@ -613,7 +617,20 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
 
         // early exit for chunked/quantized ply
         if (chunkCount) {
-            return { mode: Mode.Splat, data: buffer, faces: faces, hasVertexColors: false };
+            // build bounding volumes
+            const boundingVolumes = new Array<BoundingVolume>();
+            for (let i = 0; i < chunkCount; i++) {
+                const chunk = compressedChunks[i];
+                const boundingVolume = {
+                    aabbMin: chunk.min,
+                    aabbMax: chunk.max,
+                    firstSplat: i * 256,
+                    splatCount: 256,
+                };
+                boundingVolumes.push(boundingVolume);
+            }
+
+            return { mode: Mode.Splat, data: buffer, faces: faces, hasVertexColors: false, boundingVolumes: boundingVolumes };
         }
         // count available properties. if all necessary are present then it's a splat. Otherwise, it's a point cloud
         // if faces are found, then it's a standard mesh
