@@ -114,4 +114,6 @@ export const enum FlowGraphBlockNames {
     ExtractMatrix = "FlowGraphExtractMatrixBlock",
     TransformVector3 = "FlowGraphTransformVector3Block",
     TransformVector4 = "FlowGraphTransformVector4Block",
+    MatrixDecompose = "MatrixDecompose",
+    MatrixCompose = "MatrixCompose",
 }

@@ -52,9 +52,7 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
         super(config);
         this.reset = this._registerSignalInput("reset");
         this.lastIndex = this.registerDataOutput("lastIndex", RichTypeNumber, -1);
-        for (let i = 0; i < this.config.numberOutputFlows; i++) {
-            this.outFlows.push(this._registerSignalOutput(`out_${i}`));
-        }
+        this.setNumberOfOutputFlows(config?.numberOutputFlows);
     }
 
     private _getNextIndex(indexesUsed: boolean[]): number {
@@ -71,6 +69,25 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
         } else {
             const unusedIndexes = indexesUsed.map((used, index) => (used ? -1 : index)).filter((index) => index !== -1);
             return unusedIndexes[Math.floor(Math.random() * unusedIndexes.length)];
+        }
+    }
+
+    /**
+     * Sets the block's output flows. Would usually be passed from the constructor but can be changed afterwards.
+     * @param numberOutputFlows the number of output flows
+     */
+    public setNumberOfOutputFlows(numberOutputFlows: number = 1) {
+        // check the size of the outFlow Array, see if it is not larger than needed
+        while (this.outFlows.length > numberOutputFlows) {
+            const flow = this.outFlows.pop();
+            if (flow) {
+                flow.disconnectFromAll();
+                this._unregisterSignalOutput(flow.name);
+            }
+        }
+
+        while (this.outFlows.length < numberOutputFlows) {
+            this.outFlows.push(this._registerSignalOutput(`out_${this.outFlows.length}`));
         }
     }
 

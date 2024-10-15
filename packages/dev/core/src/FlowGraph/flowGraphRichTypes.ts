@@ -3,6 +3,22 @@ import { Color3, Color4 } from "../Maths/math.color";
 import { FlowGraphInteger } from "./flowGraphInteger";
 import { Constants } from "core/Engines/constants";
 
+export const enum FlowGraphTypes {
+    Any = "any",
+    String = "string",
+    Number = "number",
+    Boolean = "boolean",
+    Object = "object",
+    Integer = "FlowGraphInteger",
+    Vector2 = "Vector2",
+    Vector3 = "Vector3",
+    Vector4 = "Vector4",
+    Quaternion = "Quaternion",
+    Matrix = "Matrix",
+    Color3 = "Color3",
+    Color4 = "Color4",
+}
+
 /**
  * A rich type represents extra information about a type,
  * such as its name and a default value constructor.
@@ -44,29 +60,29 @@ export class RichType<T> {
     }
 }
 
-export const RichTypeAny: RichType<any> = new RichType("any", undefined);
+export const RichTypeAny: RichType<any> = new RichType(FlowGraphTypes.Any, undefined);
 
-export const RichTypeString: RichType<string> = new RichType("string", "");
+export const RichTypeString: RichType<string> = new RichType(FlowGraphTypes.String, "");
 
-export const RichTypeNumber: RichType<number> = new RichType("number", 0, Constants.ANIMATIONTYPE_FLOAT);
+export const RichTypeNumber: RichType<number> = new RichType(FlowGraphTypes.Number, 0, Constants.ANIMATIONTYPE_FLOAT);
 
-export const RichTypeBoolean: RichType<boolean> = new RichType("boolean", false);
+export const RichTypeBoolean: RichType<boolean> = new RichType(FlowGraphTypes.Boolean, false);
 
-export const RichTypeVector2: RichType<Vector2> = new RichType("Vector2", Vector2.Zero(), Constants.ANIMATIONTYPE_VECTOR2);
+export const RichTypeVector2: RichType<Vector2> = new RichType(FlowGraphTypes.Vector2, Vector2.Zero(), Constants.ANIMATIONTYPE_VECTOR2);
 
-export const RichTypeVector3: RichType<Vector3> = new RichType("Vector3", Vector3.Zero(), Constants.ANIMATIONTYPE_VECTOR3);
+export const RichTypeVector3: RichType<Vector3> = new RichType(FlowGraphTypes.Vector3, Vector3.Zero(), Constants.ANIMATIONTYPE_VECTOR3);
 
-export const RichTypeVector4: RichType<Vector4> = new RichType("Vector4", Vector4.Zero());
+export const RichTypeVector4: RichType<Vector4> = new RichType(FlowGraphTypes.Vector4, Vector4.Zero());
 
-export const RichTypeMatrix: RichType<Matrix> = new RichType("Matrix", Matrix.Identity(), Constants.ANIMATIONTYPE_MATRIX);
+export const RichTypeMatrix: RichType<Matrix> = new RichType(FlowGraphTypes.Matrix, Matrix.Identity(), Constants.ANIMATIONTYPE_MATRIX);
 
-export const RichTypeColor3: RichType<Color3> = new RichType("Color3", Color3.Black(), Constants.ANIMATIONTYPE_COLOR3);
+export const RichTypeColor3: RichType<Color3> = new RichType(FlowGraphTypes.Color3, Color3.Black(), Constants.ANIMATIONTYPE_COLOR3);
 
-export const RichTypeColor4: RichType<Color4> = new RichType("Color4", new Color4(0, 0, 0, 0), Constants.ANIMATIONTYPE_COLOR4);
+export const RichTypeColor4: RichType<Color4> = new RichType(FlowGraphTypes.Color4, new Color4(0, 0, 0, 0), Constants.ANIMATIONTYPE_COLOR4);
 
-export const RichTypeQuaternion: RichType<Quaternion> = new RichType("Quaternion", Quaternion.Identity(), Constants.ANIMATIONTYPE_QUATERNION);
+export const RichTypeQuaternion: RichType<Quaternion> = new RichType(FlowGraphTypes.Quaternion, Quaternion.Identity(), Constants.ANIMATIONTYPE_QUATERNION);
 
-export const RichTypeFlowGraphInteger: RichType<FlowGraphInteger> = new RichType("FlowGraphInteger", new FlowGraphInteger(0), Constants.ANIMATIONTYPE_FLOAT);
+export const RichTypeFlowGraphInteger: RichType<FlowGraphInteger> = new RichType(FlowGraphTypes.Integer, new FlowGraphInteger(0), Constants.ANIMATIONTYPE_FLOAT);
 
 /**
  * Given a value, try to deduce its rich type.
@@ -76,30 +92,30 @@ export const RichTypeFlowGraphInteger: RichType<FlowGraphInteger> = new RichType
 export function getRichTypeFromValue<T>(value: T): RichType<T> {
     const anyValue = value as any;
     switch (typeof value) {
-        case "string":
+        case FlowGraphTypes.String:
             return RichTypeString as RichType<T>;
-        case "number":
+        case FlowGraphTypes.Number:
             return RichTypeNumber as RichType<T>;
-        case "boolean":
+        case FlowGraphTypes.Boolean:
             return RichTypeBoolean as RichType<T>;
-        case "object":
+        case FlowGraphTypes.Object:
             if (anyValue.getClassName) {
                 switch (anyValue.getClassName() as string) {
-                    case "Vector2":
+                    case FlowGraphTypes.Vector2:
                         return RichTypeVector2 as RichType<T>;
-                    case "Vector3":
+                    case FlowGraphTypes.Vector3:
                         return RichTypeVector3 as RichType<T>;
-                    case "Vector4":
+                    case FlowGraphTypes.Vector4:
                         return RichTypeVector4 as RichType<T>;
-                    case "Matrix":
+                    case FlowGraphTypes.Matrix:
                         return RichTypeMatrix as RichType<T>;
-                    case "Color3":
+                    case FlowGraphTypes.Color3:
                         return RichTypeColor3 as RichType<T>;
-                    case "Color4":
+                    case FlowGraphTypes.Color4:
                         return RichTypeColor4 as RichType<T>;
-                    case "Quaternion":
+                    case FlowGraphTypes.Quaternion:
                         return RichTypeQuaternion as RichType<T>;
-                    case "FlowGraphInteger":
+                    case FlowGraphTypes.Integer:
                         return RichTypeFlowGraphInteger as RichType<T>;
                 }
             }

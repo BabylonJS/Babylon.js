@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
+import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
 
 interface IGLTFToFlowGraphMappingObject<I = any, O = any> {
     /**
@@ -19,7 +20,7 @@ interface IGLTFToFlowGraphMappingObject<I = any, O = any> {
     /**
      * A function that transforms the data from the glTF to the FlowGraph block.
      */
-    dataTransformer?: ((data: I) => O) | null;
+    dataTransformer?: ((data: I, array?: any[], container?: { [originName: string]: IGLTFToFlowGraphMappingObject }) => O) | null;
     /**
      * If the property is in the options passed to the constructor of the block.
      */
@@ -44,15 +45,16 @@ interface IGLTFToFlowGraphMappingObject<I = any, O = any> {
     toBlock?: string;
 }
 
-interface IGLTFToFlowGraphMapping {
+export interface IGLTFToFlowGraphMapping {
     /**
-     * The type of the FlowGraph block.
+     * The type of the FlowGraph block(s).
+     * Typically will be a single element in an array
      */
-    blocks: [string];
+    blocks: string[];
     /**
      * The inputs of the glTF node mapped to the FlowGraph block.
      */
-    inputs: {
+    inputs?: {
         /**
          * The value inputs of the glTF node mapped to the FlowGraph block.
          */
@@ -65,7 +67,7 @@ interface IGLTFToFlowGraphMapping {
     /**
      * The outputs of the glTF node mapped to the FlowGraph block.
      */
-    outputs: {
+    outputs?: {
         /**
          * The value outputs of the glTF node mapped to the FlowGraph block.
          */
@@ -79,27 +81,69 @@ interface IGLTFToFlowGraphMapping {
      * The configuration of the glTF node mapped to the FlowGraph block.
      * This information is usually passed to the constructor of the block.
      */
-    configuration: { [originName: string]: IGLTFToFlowGraphMappingObject };
+    configuration?: { [originName: string]: IGLTFToFlowGraphMappingObject };
 
     /**
      * If we generate more than one block for a single glTF node, this mapping will be used to map
      * between the flowGraph classes.
      */
     typeToTypeMapping?: { [originName: string]: IGLTFToFlowGraphMappingObject };
+
+    /**
+     * This is used if we need extra information for the constructor/options that is not provided directly by the glTF node.
+     * @param mapping the mapping that is currently being processed
+     * @param objectToWorkOn The object tat will be augmented
+     */
+    extraOptionsProcessor?: (mapping?: IGLTFToFlowGraphMapping, objectToWorkOn?: any) => void;
 }
 
-export function convertGltfToFlowGraph(name: string, data: IGLTFToFlowGraphMappingObject, glTFValue: any): any {}
+export function convertGLTFValueToFlowGraph(value: any, mapping: IGLTFToFlowGraphMappingObject, arrays?: { [arrayName: string]: any[] }) {
+    if (mapping.isPointer) {
+        throw new Error("Function not supporting glTF JSON pointers. Please use getJSONPointerNode instead");
+    }
+    const flowGraphKeyName = mapping.name;
+    let convertedValue = value;
+    if (mapping.isIndex) {
+        if (!arrays?.[mapping.isIndex]) {
+            throw new Error("missing array " + mapping.isIndex);
+        } else {
+            if (!mapping.dataTransformer) {
+                throw new Error("dataTransform must be defined if isIndex is set");
+            }
+            convertedValue = mapping.dataTransformer(value, arrays[mapping.isIndex]);
+        }
+    } else {
+        if (mapping.dataTransformer) {
+            convertedValue = mapping.dataTransformer(value);
+        }
+    }
+
+    return {
+        key: flowGraphKeyName,
+        value: convertedValue,
+    };
+}
+
+/**
+ * This function will add new mapping to glTF interactivity.
+ * Other extensions can define new types of blocks, this is the way to let interactivity know how to parse them.
+ * @param key the type of node, i.e. "variable/get"
+ * @param mapping The mapping object. See documentation or examples below.
+ */
+export function addNewInteractivityFlowGraphMapping(key: string, mapping: IGLTFToFlowGraphMapping) {
+    gltfToFlowGraphMapping[key] = gltfToFlowGraphMapping[key] || mapping;
+}
 
 // this mapper is just a way to convert the glTF nodes to FlowGraph nodes in terms of input/output connection names and values.
 export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "event/onStart": {
         blocks: [FlowGraphBlockNames.SceneReadyEvent],
-        inputs: {},
-        outputs: {
-            flows: {
-                // out: { name: "out" },
-            },
-        },
+        // inputs: {},
+        // outputs: {
+        //     flows: {
+        //         // out: { name: "out" },
+        //     },
+        // },
         configuration: {},
     },
     "event/onTick": {
@@ -108,11 +152,11 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
         outputs: {
             values: {
                 timeSinceStart: { name: "timeSinceStart", gltfType: "number" },
-                timeSinceLastTick: { name: "deltaTime", gltfType: "number", dataTransformer: (time: number) => time / 1000 },
+                timeSinceLastTick: { name: "deltaTime", gltfType: "number" /*, dataTransformer: (time: number) => time / 1000*/ },
             },
-            flows: {
-                // out: { name: "out" },
-            },
+            // flows: {
+            //     // out: { name: "out" },
+            // },
         },
         configuration: {},
     },
@@ -120,38 +164,38 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
         blocks: [FlowGraphBlockNames.SendCustomEvent],
         configuration: {
             // event is an INDEX to the events array in the glTF data. so eventId will be taken from the array.
-            event: { name: "eventId", gltfType: "number", flowGraphType: "string", inOptions: true },
+            event: { name: "eventId", gltfType: "number", flowGraphType: "string", inOptions: true, isIndex: "events", dataTransformer: (name, events) => events?.[name].eventId },
         },
         inputs: {
             values: {
                 // TODO the type(s) for the custom values here is defined by the event itself! will need to see how to handle this.
                 // TODO - do we want to add the mapping here?
-                "[custom]": { name: "eventData[$1]", gltfType: "array", inOptions: true },
+                "*": { name: "eventData.$1", gltfType: "array", inOptions: true },
             },
-            flows: {
-                // in: { name: "in" },
-            },
+            // flows: {
+            //     // in: { name: "in" },
+            // },
         },
-        outputs: {
-            flows: {
-                // out: { name: "out" },
-            },
-        },
+        // outputs: {
+        //     flows: {
+        //         // out: { name: "out" },
+        //     },
+        // },
     },
     "event/receive": {
         blocks: [FlowGraphBlockNames.ReceiveCustomEvent],
         configuration: {
             // event is an INDEX to the events array in the glTF data. so eventId will be taken from the array.
-            event: { name: "eventId", gltfType: "number", flowGraphType: "string", inOptions: true },
+            event: { name: "eventId", gltfType: "number", flowGraphType: "string", inOptions: true, isIndex: "events", dataTransformer: (name, events) => events?.[name].eventId },
         },
-        inputs: {
-            flows: {
-                // in: { name: "in" },
-            },
-        },
+        // inputs: {
+        //     flows: {
+        //         // in: { name: "in" },
+        //     },
+        // },
         outputs: {
             values: {
-                "[custom]": { name: "eventData[$1]", gltfType: "array" },
+                "[custom]": { name: "eventData.$1", gltfType: "array" },
             },
         },
     },
@@ -386,6 +430,38 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
             },
         },
     },
+    "math/compose": {
+        blocks: [FlowGraphBlockNames.MatrixCompose],
+        configuration: {},
+        inputs: {
+            values: {
+                a: { name: "position", gltfType: "float3" },
+                b: { name: "rotationQuaternion", gltfType: "float4" },
+                c: { name: "scaling", gltfType: "float3" },
+            },
+        },
+        outputs: {
+            values: {
+                value: { name: "output" },
+            },
+        },
+    },
+    "math/decompose": {
+        blocks: [FlowGraphBlockNames.MatrixDecompose],
+        configuration: {},
+        inputs: {
+            values: {
+                a: { name: "input", gltfType: "float4x4" },
+            },
+        },
+        outputs: {
+            values: {
+                translation: { name: "position" },
+                rotation: { name: "rotation" },
+                scale: { name: "scaling" },
+            },
+        },
+    },
     // skipping some int-nodes as they repeat the float ones.
     "math/not": getSimpleInputMapping(FlowGraphBlockNames.BitwiseNot),
     "math/and": getSimpleInputMapping(FlowGraphBlockNames.BitwiseAnd, ["a", "b"]),
@@ -407,18 +483,26 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
     // flows
     "flow/sequence": {
         blocks: [FlowGraphBlockNames.Sequence],
-        configuration: {
-            // the number of output flows.
-            "[name].length": { name: "numberOutputFlows", inOptions: true },
-        },
-        inputs: {
-            flows: {
-                // in: { name: "in" },
-            },
-        },
+        // configuration: {
+        //     // the number of output flows.
+        // },
+        // inputs: {
+        //     flows: {
+        //         // in: { name: "in" },
+        //     },
+        // },
         outputs: {
             flows: {
                 // "[name]": { name: "$1" },
+                "[*].length": {
+                    name: "numberOutputFlows",
+                    gltfType: "array",
+                    flowGraphType: "number",
+                    inOptions: true,
+                    dataTransformer(_data, _array, container) {
+                        return Object.keys(container || {}).length;
+                    },
+                },
             },
         },
     },
@@ -429,9 +513,9 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
             values: {
                 condition: { name: "condition", gltfType: "boolean" },
             },
-            flows: {
-                // in: { name: "in" },
-            },
+            // flows: {
+            //     // in: { name: "in" },
+            // },
         },
         outputs: {
             flows: {
@@ -456,7 +540,7 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
         outputs: {
             flows: {
                 "[case]": { name: "out_$1" },
-                // default: { name: "default" },
+                default: { name: "default" },
             },
         },
     },
@@ -467,9 +551,9 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
             values: {
                 condition: { name: "condition", gltfType: "boolean" },
             },
-            flows: {
-                // in: { name: "in" },
-            },
+            // flows: {
+            //     // in: { name: "in" },
+            // },
         },
         outputs: {
             flows: {
@@ -490,18 +574,18 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
                 // no step
                 // step: { name: "step", gltfType: "number" },
             },
-            flows: {
-                // in: { name: "in" },
-            },
+            // flows: {
+            //     // in: { name: "in" },
+            // },
         },
         outputs: {
             values: {
                 index: { name: "index" },
             },
-            flows: {
-                // loopBody: { name: "loopBody" },
-                // completed: { name: "completed" },
-            },
+            // flows: {
+            //     // loopBody: { name: "loopBody" },
+            //     // completed: { name: "completed" },
+            // },
         },
     },
     "flow/doN": {
@@ -511,18 +595,18 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
             values: {
                 n: { name: "maxExecutions", gltfType: "number" },
             },
-            flows: {
-                // reset: { name: "reset" },
-                // in: { name: "in" },
-            },
+            // flows: {
+            //     // reset: { name: "reset" },
+            //     // in: { name: "in" },
+            // },
         },
         outputs: {
             values: {
                 currentCount: { name: "executionCount" },
             },
-            flows: {
-                // out: { name: "out" },
-            },
+            // flows: {
+            //     // out: { name: "out" },
+            // },
         },
     },
     "flow/multiGate": {
@@ -532,10 +616,10 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
             isLoop: { name: "isLoop", gltfType: "boolean", inOptions: true },
         },
         inputs: {
-            flows: {
-                // reset: { name: "reset" },
-                // in: { name: "in" },
-            },
+            // flows: {
+            //     // reset: { name: "reset" },
+            //     // in: { name: "in" },
+            // },
         },
         outputs: {
             values: {
@@ -543,7 +627,15 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
             },
             flows: {
                 // "[name]": { name: "$1" },
-                "[name].length": { name: "numberOutputFlows", inOptions: true },
+                "[*].length": {
+                    name: "numberOutputFlows",
+                    gltfType: "array",
+                    flowGraphType: "number",
+                    inOptions: true,
+                    dataTransformer(_data, _array, container) {
+                        return Object.keys(container || {}).length;
+                    },
+                },
             },
         },
     },
@@ -556,7 +648,7 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
             flows: {
                 // reset: { name: "reset" },
                 // or "in_$1" ?
-                "[i]": { name: "inFlows[$1]" },
+                "[i]": { name: "inFlows.$1" },
             },
         },
         outputs: {
@@ -633,7 +725,16 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
     "variable/get": {
         blocks: [FlowGraphBlockNames.GetVariable],
         configuration: {
-            variable: { name: "variable", gltfType: "number", flowGraphType: "string", inOptions: true, dataTransformer: (index: number) => `variable_${index}` },
+            variable: {
+                name: "variable",
+                gltfType: "number",
+                flowGraphType: "string",
+                inOptions: true,
+                isIndex: "variables",
+                dataTransformer(index, variables) {
+                    return variables?.[index];
+                },
+            },
         },
         inputs: {},
         outputs: {
@@ -645,7 +746,16 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
     "variable/set": {
         blocks: [FlowGraphBlockNames.SetVariable],
         configuration: {
-            variable: { name: "variable", gltfType: "number", flowGraphType: "string", inOptions: true, dataTransformer: (index: number) => `variable_${index}` },
+            variable: {
+                name: "variable",
+                gltfType: "number",
+                flowGraphType: "string",
+                inOptions: true,
+                isIndex: "variables",
+                dataTransformer(index, variables) {
+                    return variables?.[index];
+                },
+            },
         },
         inputs: {
             values: {
@@ -728,7 +838,7 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
         configuration: {},
         inputs: {
             values: {
-                animation: { name: "animation", gltfType: "number", flowGraphType: "animation", isIndex: "animation" },
+                animation: { name: "animation", gltfType: "number", flowGraphType: "animation", isIndex: "animations" },
                 speed: { name: "speed", gltfType: "number" },
                 // 60 is a const from the glTF loader
                 startTime: { name: "from", gltfType: "number", dataTransformer: (time: number) => time / 60 },
@@ -751,7 +861,7 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
         configuration: {},
         inputs: {
             values: {
-                animation: { name: "animation", gltfType: "number", flowGraphType: "animation", isIndex: "animation" },
+                animation: { name: "animation", gltfType: "number", flowGraphType: "animation", isIndex: "animations" },
             },
             flows: {
                 // in: { name: "in" },
@@ -769,7 +879,7 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
         configuration: {},
         inputs: {
             values: {
-                animation: { name: "animation", gltfType: "number", flowGraphType: "animation", isIndex: "animation" },
+                animation: { name: "animation", gltfType: "number", flowGraphType: "animation", isIndex: "animations" },
                 stopTime: { name: "stopAtFrame", gltfType: "number", dataTransformer: (time: number) => time / 60 },
             },
             flows: {
@@ -824,13 +934,15 @@ function getSimpleInputMapping(type: string, inputs: string[] = ["a"]): IGLTFToF
 }
 
 export const gltfTypeToBabylonType: {
-    [key: string]: string;
+    [key: string]: FlowGraphTypes;
 } = {
-    float2: "Vector2",
-    float3: "Vector3",
-    float4: "Vector4",
-    float4x4: "Matrix",
-    int: "FlowGraphInteger",
+    float: FlowGraphTypes.Number,
+    bool: FlowGraphTypes.Boolean,
+    float2: FlowGraphTypes.Vector2,
+    float3: FlowGraphTypes.Vector3,
+    float4: FlowGraphTypes.Vector4,
+    float4x4: FlowGraphTypes.Matrix,
+    int: FlowGraphTypes.Integer,
 };
 
 /*

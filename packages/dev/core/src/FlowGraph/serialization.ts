@@ -3,6 +3,7 @@ import { Matrix, Quaternion, Vector2, Vector3, Vector4 } from "../Maths/math.vec
 import type { Scene } from "../scene";
 import { FlowGraphBlockNames } from "./Blocks/flowGraphBlockNames";
 import { FlowGraphInteger } from "./flowGraphInteger";
+import { FlowGraphTypes } from "./flowGraphRichTypes";
 
 function isMeshClassName(className: string) {
     return (
@@ -18,21 +19,28 @@ function isMeshClassName(className: string) {
 }
 
 function isVectorClassName(className: string) {
-    return className === "Vector2" || className === "Vector3" || className === "Vector4" || className === "Quaternion" || className === "Color3" || className === "Color4";
+    return (
+        className === FlowGraphTypes.Vector2 ||
+        className === FlowGraphTypes.Vector3 ||
+        className === FlowGraphTypes.Vector4 ||
+        className === FlowGraphTypes.Quaternion ||
+        className === FlowGraphTypes.Color3 ||
+        className === FlowGraphTypes.Color4
+    );
 }
 
 function parseVector(className: string, value: Array<number>) {
-    if (className === "Vector2") {
+    if (className === FlowGraphTypes.Vector2) {
         return Vector2.FromArray(value);
-    } else if (className === "Vector3") {
+    } else if (className === FlowGraphTypes.Vector3) {
         return Vector3.FromArray(value);
-    } else if (className === "Vector4") {
+    } else if (className === FlowGraphTypes.Vector4) {
         return Vector4.FromArray(value);
-    } else if (className === "Quaternion") {
+    } else if (className === FlowGraphTypes.Quaternion) {
         return Quaternion.FromArray(value);
-    } else if (className === "Color3") {
+    } else if (className === FlowGraphTypes.Color3) {
         return new Color3(value[0], value[1], value[2]);
-    } else if (className === "Color4") {
+    } else if (className === FlowGraphTypes.Color4) {
         return new Color4(value[0], value[1], value[2], value[3]);
     } else {
         throw new Error(`Unknown vector class name ${className}`);
@@ -85,7 +93,7 @@ export function defaultValueParseFunction(key: string, serializationObject: any,
         finalValue = intermediateValue.id ? scene.getMeshById(intermediateValue.id) : scene.getMeshByName(intermediateValue.name);
     } else if (isVectorClassName(className)) {
         finalValue = parseVector(className, intermediateValue.value);
-    } else if (className === "Matrix") {
+    } else if (className === FlowGraphTypes.Matrix) {
         finalValue = Matrix.FromArray(intermediateValue.value);
     } else if (className === FlowGraphInteger.ClassName) {
         finalValue = FlowGraphInteger.Parse(intermediateValue);

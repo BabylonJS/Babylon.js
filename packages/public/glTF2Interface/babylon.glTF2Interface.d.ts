@@ -1370,7 +1370,13 @@ declare module BABYLON.GLTF2 {
 
     interface IKHRInteractivity_Configuration {
         id: string;
+        /**
+         * Array size depends on the type. primitives have array size 1, rest depending on the object type (2,3,4,16)
+         */
         value: any;
+        /**
+         * Configuration nodes are implicitly typed. Type will probably be defined by the mapping object
+         */
         type?: number;
     }
 
@@ -1390,7 +1396,7 @@ declare module BABYLON.GLTF2 {
     interface IKHRInteractivity_CustomEventValue {
         id: string;
         type: number;
-        description: string;
+        description?: string;
     }
 
     interface IKHRInteractivity_Type {
@@ -1399,7 +1405,10 @@ declare module BABYLON.GLTF2 {
 
     interface IKHRInteractivity_Variable {
         id: string;
-        value: any;
+        /**
+         * Array size depends on the type. primitives have array size 1, rest depending on the object type (2,3,4,16)
+         */
+        value: any[];
         type: number;
     }
 }

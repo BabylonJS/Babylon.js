@@ -1,6 +1,7 @@
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import {
+    FlowGraphTypes,
     RichTypeAny,
     RichTypeBoolean,
     RichTypeFlowGraphInteger,
@@ -37,7 +38,7 @@ function _getClassNameOf(v: any) {
  * @returns
  */
 function _areSameVectorClass(className: string, className2: string) {
-    return className === className2 && (className === "Vector2" || className === "Vector3" || className === "Vector4");
+    return className === className2 && (className === FlowGraphTypes.Vector2 || className === FlowGraphTypes.Vector3 || className === FlowGraphTypes.Vector4);
 }
 
 /**
@@ -45,7 +46,7 @@ function _areSameVectorClass(className: string, className2: string) {
  * @returns
  */
 function _areSameMatrixClass(className: string, className2: string) {
-    return className === "Matrix" && className2 === "Matrix";
+    return className === FlowGraphTypes.Matrix && className2 === FlowGraphTypes.Matrix;
 }
 
 /**
@@ -271,16 +272,16 @@ function _componentWiseUnaryOperation(a: FlowGraphMathOperationType, op: (a: num
         case "FlowGraphInteger":
             a = a as FlowGraphInteger;
             return new FlowGraphInteger(op(a.value));
-        case "Vector2":
+        case FlowGraphTypes.Vector2:
             a = a as Vector2;
             return new Vector2(op(a.x), op(a.y));
-        case "Vector3":
+        case FlowGraphTypes.Vector3:
             a = a as Vector3;
             return new Vector3(op(a.x), op(a.y), op(a.z));
-        case "Vector4":
+        case FlowGraphTypes.Vector4:
             a = a as Vector4;
             return new Vector4(op(a.x), op(a.y), op(a.z), op(a.w));
-        case "Matrix":
+        case FlowGraphTypes.Matrix:
             a = a as Matrix;
             return Matrix.FromValues(
                 op(a.m[0]),
@@ -438,19 +439,19 @@ function _componentWiseBinaryOperation(a: FlowGraphMathOperationType, b: FlowGra
             a = a as FlowGraphInteger;
             b = b as FlowGraphInteger;
             return new FlowGraphInteger(op(a.value, b.value));
-        case "Vector2":
+        case FlowGraphTypes.Vector2:
             a = a as Vector2;
             b = b as Vector2;
             return new Vector2(op(a.x, b.x), op(a.y, b.y));
-        case "Vector3":
+        case FlowGraphTypes.Vector3:
             a = a as Vector3;
             b = b as Vector3;
             return new Vector3(op(a.x, b.x), op(a.y, b.y), op(a.z, b.z));
-        case "Vector4":
+        case FlowGraphTypes.Vector4:
             a = a as Vector4;
             b = b as Vector4;
             return new Vector4(op(a.x, b.x), op(a.y, b.y), op(a.z, b.z), op(a.w, b.w));
-        case "Matrix":
+        case FlowGraphTypes.Matrix:
             a = a as Matrix;
             b = b as Matrix;
             return Matrix.FromValues(
@@ -538,22 +539,22 @@ function _componentWiseTernaryOperation(
             b = b as FlowGraphInteger;
             c = c as FlowGraphInteger;
             return new FlowGraphInteger(op(a.value, b.value, c.value));
-        case "Vector2":
+        case FlowGraphTypes.Vector2:
             a = a as Vector2;
             b = b as Vector2;
             c = c as Vector2;
             return new Vector2(op(a.x, b.x, c.x), op(a.y, b.y, c.y));
-        case "Vector3":
+        case FlowGraphTypes.Vector3:
             a = a as Vector3;
             b = b as Vector3;
             c = c as Vector3;
             return new Vector3(op(a.x, b.x, c.x), op(a.y, b.y, c.y), op(a.z, b.z, c.z));
-        case "Vector4":
+        case FlowGraphTypes.Vector4:
             a = a as Vector4;
             b = b as Vector4;
             c = c as Vector4;
             return new Vector4(op(a.x, b.x, c.x), op(a.y, b.y, c.y), op(a.z, b.z, c.z), op(a.w, b.w, c.w));
-        case "Matrix":
+        case FlowGraphTypes.Matrix:
             a = a as Matrix;
             b = b as Matrix;
             c = c as Matrix;
@@ -1122,9 +1123,9 @@ export class FlowGraphLengthBlock extends FlowGraphUnaryOperationBlock<FlowGraph
     private _polymorphicLength(a: FlowGraphVector) {
         const aClassName = _getClassNameOf(a);
         switch (aClassName) {
-            case "Vector2":
-            case "Vector3":
-            case "Vector4":
+            case FlowGraphTypes.Vector2:
+            case FlowGraphTypes.Vector3:
+            case FlowGraphTypes.Vector4:
                 return (a as Vector3).length();
             default:
                 throw new Error(`Cannot compute length of value ${a}`);
@@ -1145,9 +1146,9 @@ export class FlowGraphNormalizeBlock extends FlowGraphUnaryOperationBlock<FlowGr
     private _polymorphicNormalize(a: FlowGraphVector) {
         const aClassName = _getClassNameOf(a);
         switch (aClassName) {
-            case "Vector2":
-            case "Vector3":
-            case "Vector4":
+            case FlowGraphTypes.Vector2:
+            case FlowGraphTypes.Vector3:
+            case FlowGraphTypes.Vector4:
                 return (a as Vector3).normalize();
             default:
                 throw new Error(`Cannot normalize value ${a}`);
@@ -1168,9 +1169,9 @@ export class FlowGraphDotBlock extends FlowGraphBinaryOperationBlock<FlowGraphVe
     private _polymorphicDot(a: FlowGraphVector, b: FlowGraphVector) {
         const className = _getClassNameOf(a);
         switch (className) {
-            case "Vector2":
-            case "Vector3":
-            case "Vector4":
+            case FlowGraphTypes.Vector2:
+            case FlowGraphTypes.Vector3:
+            case FlowGraphTypes.Vector4:
                 return (a as Vector3).dot(b as Vector3);
             default:
                 throw new Error(`Cannot get dot product of ${a} and ${b}`);
