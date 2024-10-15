@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { VertexBuffer } from "core/Buffers";
+import { VertexBuffer } from "core/Buffers/buffer";
 import { Constants } from "core/Engines/constants";
 import type { Material } from "core/Materials/material";
 import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
