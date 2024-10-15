@@ -1,4 +1,5 @@
 import type { Nullable } from "../../types";
+import type { AbstractPrimaryAudioBus } from "./abstractAudioBus";
 import type { AbstractAudioEngine } from "./abstractAudioEngine";
 import { AbstractNamedAudioNode, AudioNodeType } from "./abstractAudioNode";
 import type { AbstractSoundInstance } from "./abstractSoundInstance";
@@ -10,6 +11,8 @@ export interface ISoundOptions {
     startTime?: number;
     stopTime?: number;
     volume?: number;
+
+    outputBus?: AbstractPrimaryAudioBus;
 }
 
 /**
@@ -17,7 +20,9 @@ export interface ISoundOptions {
  */
 export abstract class AbstractSound extends AbstractNamedAudioNode {
     // Non-owning.
-    protected _soundInstances: Nullable<Set<AbstractSoundInstance>> = null;
+    protected _soundInstances = new Set<AbstractSoundInstance>();
+
+    protected _outputBus: Nullable<AbstractPrimaryAudioBus>;
 
     public readonly autoplay: boolean;
     public loop: boolean;
@@ -25,6 +30,26 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
     public startTime: number;
     public stopTime: number;
     public volume: number;
+
+    public get outputBus(): Nullable<AbstractPrimaryAudioBus> {
+        return this._outputBus;
+    }
+
+    public set outputBus(outputBus: Nullable<AbstractPrimaryAudioBus>) {
+        if (this._outputBus === outputBus) {
+            return;
+        }
+
+        if (this._outputBus) {
+            this._disconnect(this._outputBus);
+        }
+
+        this._outputBus = outputBus;
+
+        if (this._outputBus) {
+            this._connect(this._outputBus);
+        }
+    }
 
     public constructor(name: string, engine: AbstractAudioEngine, options: Nullable<ISoundOptions> = null) {
         super(name, engine, AudioNodeType.Output);
@@ -36,7 +61,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         this.stopTime = options?.stopTime ?? 0;
         this.volume = options?.volume ?? 1;
 
-        // this.engine.sounds.add(this);
+        this.outputBus = options?.outputBus ?? engine.defaultMainBus;
     }
 
     public override dispose(): void {
@@ -44,15 +69,10 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
 
         this.stop();
 
-        this._soundInstances?.clear();
+        this._outputBus = null;
+        this._soundInstances.clear();
 
         this.onDisposeObservable.notifyObservers(this);
-    }
-
-    public abstract get currentTime(): number;
-
-    public get soundInstances(): Nullable<IterableIterator<AbstractSoundInstance>> {
-        return this._soundInstances?.values() ?? null;
     }
 
     protected abstract _createSoundInstance(): Promise<AbstractSoundInstance>;
@@ -60,9 +80,9 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
     public async play(): Promise<AbstractSoundInstance> {
         const instance = await this._createSoundInstance();
 
-        instance.play();
+        await instance.play();
 
-        this._getSoundInstances().add(instance);
+        this._soundInstances.add(instance);
 
         return instance;
     }
@@ -99,14 +119,6 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
 
     /** @internal */
     public _onSoundInstanceEnded(instance: AbstractSoundInstance): void {
-        this._getSoundInstances().delete(instance);
-    }
-
-    private _getSoundInstances(): Set<AbstractSoundInstance> {
-        if (!this._soundInstances) {
-            this._soundInstances = new Set<AbstractSoundInstance>();
-        }
-
-        return this._soundInstances;
+        this._soundInstances.delete(instance);
     }
 }

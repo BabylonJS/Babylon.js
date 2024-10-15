@@ -23,8 +23,8 @@ export class WebAudioStreamingSoundInstance extends AbstractStreamingSoundInstan
         super(source);
     }
 
-    public play(): void {
-        //
+    public play(): Promise<void> {
+        return Promise.resolve();
     }
 
     public pause(): void {

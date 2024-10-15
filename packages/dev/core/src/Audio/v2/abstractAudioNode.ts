@@ -38,8 +38,12 @@ export abstract class AbstractAudioNode extends AbstractAudioNodeParent {
      */
     protected readonly _connectedUpstreamNodes?: Set<AbstractAudioNode> | undefined;
 
-    public readonly engine: AbstractAudioEngine;
+    protected readonly _engine: AbstractAudioEngine;
     public readonly onDisposeObservable = new Observable<AbstractAudioNode>();
+
+    public get engine(): AbstractAudioEngine {
+        return this._engine;
+    }
 
     /**
      * Creates a new audio node.
@@ -50,7 +54,7 @@ export abstract class AbstractAudioNode extends AbstractAudioNodeParent {
     public constructor(engine: AbstractAudioEngine, nodeType: AudioNodeType, parent: Nullable<AbstractAudioNodeParent> = null) {
         super();
 
-        this.engine = engine;
+        this._engine = engine;
 
         this.parent = parent;
 
@@ -89,7 +93,7 @@ export abstract class AbstractAudioNode extends AbstractAudioNodeParent {
     }
 
     public get parent(): AbstractAudioNodeParent {
-        return this._parent ?? this.engine;
+        return this._parent ?? this._engine;
     }
 
     public set parent(parent: Nullable<AbstractAudioNodeParent>) {

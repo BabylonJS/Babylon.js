@@ -26,7 +26,7 @@ export abstract class AbstractSoundInstance extends AbstractAudioNode {
 
     public abstract get currentTime(): number;
 
-    public abstract play(): void;
+    public abstract play(): Promise<void>;
     public abstract pause(): void;
     public abstract resume(): void;
 

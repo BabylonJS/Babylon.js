@@ -1,4 +1,4 @@
-import type { AbstractAudioDevice } from "./abstractAudioDevice";
+import type { AbstractAudioDevice, IAudioDeviceOptions } from "./abstractAudioDevice";
 import type { AbstractAudioNode } from "./abstractAudioNode";
 import { AbstractAudioNodeParent } from "./abstractAudioNodeParent";
 import type { AbstractAudioPositioner } from "./abstractAudioPositioner";
@@ -88,7 +88,7 @@ export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
         });
     }
 
-    public abstract createDevice(name: string): Promise<AbstractAudioDevice>;
+    public abstract createDevice(name: string, options?: IAudioDeviceOptions): Promise<AbstractAudioDevice>;
     public abstract createMainBus(name: string): Promise<AbstractMainAudioBus>;
     public abstract createPositioner(parent: AbstractAudioNode): Promise<AbstractAudioPositioner>;
     public abstract createSender(parent: AbstractAudioNode): Promise<AbstractAudioSender>;
