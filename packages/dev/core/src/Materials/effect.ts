@@ -1449,6 +1449,17 @@ export class Effect implements IDisposable {
     }
 
     /**
+     * Use this wisely: It will remove the cached code from this effect
+     * It is probably ok to call it if you are not using ShadowDepthWrapper or if everything is already up and running
+     */
+    public clearCodeCache() {
+        this._vertexSourceCode = "";
+        this._fragmentSourceCode = "";
+        this._fragmentSourceCodeBeforeMigration = "";
+        this._vertexSourceCodeBeforeMigration = "";
+    }
+
+    /**
      * Release all associated resources.
      **/
     public dispose() {
@@ -1463,6 +1474,8 @@ export class Effect implements IDisposable {
             resetCachedPipeline(this._pipelineContext);
         }
         this._engine._releaseEffect(this);
+
+        this.clearCodeCache();
 
         this._isDisposed = true;
     }
