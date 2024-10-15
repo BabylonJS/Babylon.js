@@ -18,6 +18,7 @@ import type { FloatArray, Nullable } from "core/types";
 
 /**
  * Ported from https://github.com/mrdoob/three.js/blob/master/examples/jsm/exporters/USDZExporter.js
+ * Thanks a lot to the three.js team for their amazing work!
  */
 
 // FFlate access
@@ -622,6 +623,10 @@ export async function USDZExportAsync(scene: Scene, options: Partial<IUSDZExport
     const textureToExports: { [key: string]: BaseTexture } = {};
     output += BuildMaterials(materialToExports, textureToExports, localOptions);
 
+    // Compress
+    files[localOptions.modelFileName] = fflate.strToU8(output);
+
+    // Textures
     for (const id in textureToExports) {
         const texture = textureToExports[id];
 
@@ -634,11 +639,8 @@ export async function USDZExportAsync(scene: Scene, options: Partial<IUSDZExport
 
         const fileContent = await DumpTools.DumpDataAsync(size.width, size.height, textureData, "image/png", undefined, false, true);
 
-        files[`textures/Texture_${id}.png`] = new Uint8Array(fileContent as ArrayBuffer);
+        files[`textures/Texture_${id}.png`] = new Uint8Array(fileContent as ArrayBuffer).slice(); // This is to avoid getting a link and not a copy
     }
-
-    // Compress
-    files[localOptions.modelFileName] = fflate.strToU8(output);
 
     // 64 byte alignment
     // https://github.com/101arrowz/fflate/issues/39#issuecomment-777263109
