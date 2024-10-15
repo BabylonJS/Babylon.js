@@ -24,18 +24,21 @@ fn lessThan(x: vec2f, y: vec2f) -> vec2<bool> {
 @fragment
 fn main(input: FragmentInputs) -> FragmentOutputs {
   var reset: bool =  bool(resetb);
-  var Resolution : vec2f = vec2f(textureDimensions(spatialBlurSampler, 0));
-  var currentPixel: vec2i =  vec2i(input.vUV * Resolution);
-  var LP: vec4f = textureLoad(positionSampler, currentPixel, 0);
+  var gbufferRes : vec2f = vec2f(textureDimensions(positionSampler, 0));
+  var gbufferPixelCoord: vec2i =  vec2i(input.vUV * gbufferRes);
+  var shadowRes : vec2f = vec2f(textureDimensions(spatialBlurSampler, 0));
+  var shadowPixelCoord: vec2i =  vec2i(input.vUV * shadowRes);
+
+  var LP: vec4f = textureLoad(positionSampler, gbufferPixelCoord, 0);
   if (0.0 == LP.w) {
     fragmentOutputs.color = vec4f(1.0, 0.0, 0.0, 1.0);
     return fragmentOutputs;
   }
-  var velocityColor: vec2f = textureLoad(motionSampler, currentPixel, 0).xy;
+  var velocityColor: vec2f = textureLoad(motionSampler, gbufferPixelCoord, 0).xy;
   var prevCoord: vec2f = input.vUV + velocityColor;
   var PrevLP: vec3f = textureSampleLevel(prevPositionSampler, prevPositionSamplerSampler, prevCoord, 0.0).xyz;
   var PrevShadows: vec2f = textureSampleLevel(oldAccumulationSampler, oldAccumulationSamplerSampler, prevCoord, 0.0).xy;
-  var newShadows : f32 = textureLoad(spatialBlurSampler, currentPixel, 0).x;
+  var newShadows : f32 = textureLoad(spatialBlurSampler, shadowPixelCoord, 0).x;
 
   PrevShadows.y = select(1.0, max(PrevShadows.y / (1.0 + PrevShadows.y), 1.0 - remanence), !reset && all(lessThan(abs(prevCoord -  vec2f(0.5)),  vec2f(0.5))) &&
               distance(LP.xyz, PrevLP) < 5e-2);

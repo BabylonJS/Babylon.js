@@ -657,7 +657,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     constructor(name: string, scene: Scene, options: Partial<IblShadowsSettings> = {}, cameras?: Camera[]) {
         super(scene.getEngine(), name);
         this.scene = scene;
-
+        this._cameras = cameras || [scene.activeCamera!];
         // Create the dummy textures to be used when the pipeline is not ready
         const blackPixels = new Uint8Array([0, 0, 0, 255]);
         this._dummyTexture2d = new RawTexture(blackPixels, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false);
