@@ -25,6 +25,13 @@ if (typeof globalObject !== "undefined") {
     }
 }
 
+import * as USDZSerializers from "../../../../dev/serializers/src/USDZ/index";
+if (typeof globalObject !== "undefined") {
+    for (const serializer in USDZSerializers) {
+        (<any>globalObject).BABYLON[serializer] = (<any>USDZSerializers)[serializer];
+    }
+}
+
 /* eslint-disable import/no-internal-modules */
 import * as Exporters from "../../../../dev/serializers/src/glTF/glTFFileExporter";
 import * as Datas from "../../../../dev/serializers/src/glTF/2.0/glTFData";
