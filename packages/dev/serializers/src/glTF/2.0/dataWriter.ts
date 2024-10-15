@@ -56,6 +56,12 @@ export class DataWriter {
         this._byteOffset += value.byteLength;
     }
 
+    public writeUint16Array(value: Uint16Array): void {
+        this._checkGrowBuffer(value.byteLength);
+        this._data.set(value, this._byteOffset);
+        this._byteOffset += value.byteLength;
+    }
+
     private _checkGrowBuffer(byteLength: number): void {
         const newByteLength = this.byteOffset + byteLength;
         if (newByteLength > this._data.byteLength) {

@@ -54,6 +54,11 @@ export interface IExportOptions {
      * @deprecated Please use removeNoopRootNodes instead
      */
     includeCoordinateSystemConversionNodes?: boolean;
+
+    /**
+     * If set to true it will export skin matrix index as Uint16.
+     */
+    userUint16SkinIndex?: boolean;
 }
 
 /**

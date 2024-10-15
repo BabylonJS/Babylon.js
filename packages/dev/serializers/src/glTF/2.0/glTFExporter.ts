@@ -21,7 +21,7 @@ import type {
 } from "babylonjs-gltf2interface";
 import { AccessorComponentType, AccessorType, CameraType, ImageMimeType } from "babylonjs-gltf2interface";
 
-import type { IndicesArray, Nullable } from "core/types";
+import type { FloatArray, IndicesArray, Nullable } from "core/types";
 import { TmpVectors, Quaternion } from "core/Maths/math.vector";
 import type { Matrix } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
@@ -78,14 +78,19 @@ class ExporterState {
     // Babylon vertex buffer, start, count -> glTF accessor index
     private _vertexAccessorMap = new Map<VertexBuffer, Map<number, Map<number, number>>>();
 
+    private _remappedBufferView = new Map<Buffer, Map<VertexBuffer, number>>();
+
     // Babylon mesh -> glTF mesh index
     private _meshMap = new Map<Mesh, number>();
 
-    public constructor(convertToRightHanded: boolean) {
+    public constructor(convertToRightHanded: boolean, userUint16SkinIndex: boolean) {
         this.convertToRightHanded = convertToRightHanded;
+        this.userUint16SkinIndex = userUint16SkinIndex;
     }
 
     public readonly convertToRightHanded: boolean;
+
+    public readonly userUint16SkinIndex: boolean;
 
     // Only used when convertToRightHanded is true.
     public readonly convertedToRightHandedBuffers = new Map<Buffer, Uint8Array>();
@@ -128,6 +133,15 @@ class ExporterState {
 
     public setVertexBufferView(buffer: Buffer, bufferViewIndex: number): void {
         this._vertexBufferViewMap.set(buffer, bufferViewIndex);
+    }
+
+    public setRemappedBufferView(buffer: Buffer, vertexBuffer: VertexBuffer, bufferViewIndex: number) {
+        this._remappedBufferView.set(buffer, new Map<VertexBuffer, number>());
+        this._remappedBufferView.get(buffer)?.set(vertexBuffer, bufferViewIndex);
+    }
+
+    public getRemappedBufferView(buffer: Buffer, vertexBuffer: VertexBuffer): number | undefined {
+        return this._remappedBufferView.get(buffer)?.get(vertexBuffer);
     }
 
     public getVertexAccessor(vertexBuffer: VertexBuffer, start: number, count: number): number | undefined {
@@ -341,6 +355,7 @@ export class GLTFExporter {
             exportUnusedUVs: false,
             removeNoopRootNodes: true,
             includeCoordinateSystemConversionNodes: false,
+            userUint16SkinIndex: false,
             ...options,
         };
 
@@ -1222,8 +1237,8 @@ export class GLTFExporter {
         this._listAvailableSkeletons();
 
         // await this._materialExporter.convertMaterialsToGLTFAsync(this._getMaterials(nodes));
-        scene.nodes.push(...(await this._exportNodesAsync(rootNodesLH, true)));
-        scene.nodes.push(...(await this._exportNodesAsync(rootNodesRH, false)));
+        scene.nodes.push(...(await this._exportNodesAsync(rootNodesLH, true, this._options.userUint16SkinIndex)));
+        scene.nodes.push(...(await this._exportNodesAsync(rootNodesRH, false, this._options.userUint16SkinIndex)));
         this._scenes.push(scene);
 
         this._exportAndAssignCameras();
@@ -1292,9 +1307,9 @@ export class GLTFExporter {
         return result;
     }
 
-    private async _exportNodesAsync(babylonRootNodes: Node[], convertToRightHanded: boolean): Promise<number[]> {
+    private async _exportNodesAsync(babylonRootNodes: Node[], convertToRightHanded: boolean, useUint16SkinIndex: boolean): Promise<number[]> {
         const nodes = new Array<number>();
-        const state = new ExporterState(convertToRightHanded);
+        const state = new ExporterState(convertToRightHanded, useUint16SkinIndex);
 
         this._exportBuffers(babylonRootNodes, convertToRightHanded, state);
 
@@ -1405,6 +1420,52 @@ export class GLTFExporter {
             this._dataWriter.writeUint8Array(bytes);
             this._bufferViews.push(createBufferView(0, byteOffset, bytes.length, byteStride));
             state.setVertexBufferView(buffer, this._bufferViews.length - 1);
+
+            const floatMatricesIndices = new Map<VertexBuffer, FloatArray>();
+
+            // If buffers are of type MatricesWeightsKind and have float values, we need to create a new buffer instead.
+            for (const vertexBuffer of vertexBuffers) {
+                switch (vertexBuffer.getKind()) {
+                    case VertexBuffer.MatricesIndicesKind:
+                    case VertexBuffer.MatricesIndicesExtraKind: {
+                        if (vertexBuffer.type == VertexBuffer.FLOAT) {
+                            for (const mesh of vertexBufferToMeshesMap.get(vertexBuffer)!) {
+                                const floatData = vertexBuffer.getFloatData(mesh.getTotalVertices());
+                                if (floatData !== null) {
+                                    floatMatricesIndices.set(vertexBuffer, floatData);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (floatMatricesIndices.size !== 0) {
+                Logger.Warn(
+                    `Joints conversion needed: some joints are stored as floats in Babylon but GLTF requires UNSIGNED BYTES. We will perform the conversion but this might lead to unused data in the buffer.`
+                );
+            }
+
+            for (const [vertexBuffer, array] of floatMatricesIndices) {
+                const byteOffset = this._dataWriter.byteOffset;
+                if (state.userUint16SkinIndex) {
+                    const newArray = new Uint16Array(array.length);
+                    for (let index = 0; index < array.length; index++) {
+                        newArray[index] = array[index];
+                    }
+                    this._dataWriter.writeUint16Array(newArray);
+                    this._bufferViews.push(createBufferView(0, byteOffset, newArray.byteLength, 4 * 2));
+                } else {
+                    const newArray = new Uint8Array(array.length);
+                    for (let index = 0; index < array.length; index++) {
+                        newArray[index] = array[index];
+                    }
+                    this._dataWriter.writeUint8Array(newArray);
+                    this._bufferViews.push(createBufferView(0, byteOffset, newArray.byteLength, 4));
+                }
+
+                state.setRemappedBufferView(buffer, vertexBuffer, this._bufferViews.length - 1);
+            }
         }
     }
 
@@ -1549,25 +1610,35 @@ export class GLTFExporter {
             }
         }
 
-        // TODO: StandardMaterial color spaces
-        // probably have to create new buffer view to store new colors during collectBuffers and figure out if only standardMaterial is using it
-        // separate map by color space
-
         let accessorIndex = state.getVertexAccessor(vertexBuffer, start, count);
+
         if (accessorIndex === undefined) {
             // Get min/max from converted or original data.
             const data = state.convertedToRightHandedBuffers.get(vertexBuffer._buffer) || vertexBuffer._buffer.getData()!;
             const minMax = kind === VertexBuffer.PositionKind ? getMinMax(data, vertexBuffer, start, count) : null;
 
-            const bufferViewIndex = state.getVertexBufferView(vertexBuffer._buffer)!;
-            const byteOffset = vertexBuffer.byteOffset + start * vertexBuffer.byteStride;
-            this._accessors.push(createAccessor(bufferViewIndex, getAccessorType(kind), vertexBuffer.type, count, byteOffset, minMax));
-            accessorIndex = this._accessors.length - 1;
+            if ((kind === VertexBuffer.MatricesIndicesKind || kind === VertexBuffer.MatricesIndicesExtraKind) && vertexBuffer.type === VertexBuffer.FLOAT) {
+                const bufferViewIndex = state.getRemappedBufferView(vertexBuffer._buffer, vertexBuffer);
+                if (bufferViewIndex !== undefined) {
+                    const byteOffset = vertexBuffer.byteOffset + start * vertexBuffer.byteStride;
+                    this._accessors.push(createAccessor(bufferViewIndex, getAccessorType(kind), VertexBuffer.UNSIGNED_BYTE, count, byteOffset, minMax));
+                    accessorIndex = this._accessors.length - 1;
+                    state.setVertexAccessor(vertexBuffer, start, count, accessorIndex);
+                    primitive.attributes[getAttributeType(kind)] = accessorIndex;
+                }
+            } else {
+                const bufferViewIndex = state.getVertexBufferView(vertexBuffer._buffer)!;
+                const byteOffset = vertexBuffer.byteOffset + start * vertexBuffer.byteStride;
+                this._accessors.push(createAccessor(bufferViewIndex, getAccessorType(kind), vertexBuffer.type, count, byteOffset, minMax));
+                accessorIndex = this._accessors.length - 1;
+                state.setVertexAccessor(vertexBuffer, start, count, accessorIndex);
+                primitive.attributes[getAttributeType(kind)] = accessorIndex;
+            }
         }
 
-        state.setVertexAccessor(vertexBuffer, start, count, accessorIndex);
-
-        primitive.attributes[getAttributeType(kind)] = accessorIndex;
+        // TODO: StandardMaterial color spaces
+        // probably have to create new buffer view to store new colors during collectBuffers and figure out if only standardMaterial is using it
+        // separate map by color space
     }
 
     private async _exportMaterialAsync(babylonMaterial: Material, vertexBuffers: { [kind: string]: VertexBuffer }, subMesh: SubMesh, primitive: IMeshPrimitive): Promise<void> {
