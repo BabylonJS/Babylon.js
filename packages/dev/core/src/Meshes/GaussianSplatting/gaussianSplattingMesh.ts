@@ -13,7 +13,6 @@ import { Constants } from "core/Engines/constants";
 import { Tools } from "core/Misc/tools";
 import "core/Meshes/thinInstanceMesh";
 import type { ThinEngine } from "core/Engines/thinEngine";
-import { DeepCopier } from "core/Misc/deepCopier";
 import { Frustum } from "core/Maths/math.frustum";
 
 interface DelayedTextureUpdate {
