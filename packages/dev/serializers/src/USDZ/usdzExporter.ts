@@ -368,9 +368,13 @@ function ExtractTextureInformations(material: Material) {
                 alphaCutOff: (material as StandardMaterial).alphaCutOff,
                 emissiveMap: (material as StandardMaterial).emissiveTexture,
                 emissive: (material as StandardMaterial).emissiveColor,
+                roughnessMap: null,
                 normalMap: null,
+                metalnessMap: null,
                 roughness: 1,
                 metalness: 0,
+                aoMap: null,
+                aoMapIntensity: 0,
             };
         case "PBRMaterial":
             return {
@@ -380,8 +384,15 @@ function ExtractTextureInformations(material: Material) {
                 emissiveMap: (material as PBRMaterial).emissiveTexture,
                 emissive: (material as PBRMaterial).emissiveColor,
                 normalMap: (material as PBRMaterial).bumpTexture,
-                roughness: (material as PBRMaterial).roughness,
-                metalness: (material as PBRMaterial).metallic,
+                roughnessMap: (material as PBRMaterial).metallicTexture,
+                roughnessChannel: (material as PBRMaterial).useRoughnessFromMetallicTextureAlpha ? "a" : "g",
+                roughness: (material as PBRMaterial).roughness || 1,
+                metalnessMap: (material as PBRMaterial).metallicTexture,
+                metalnessChannel: (material as PBRMaterial).useMetallnessFromMetallicTextureBlue ? "b" : "r",
+                metalness: (material as PBRMaterial).metallic || 0,
+                aoMap: (material as PBRMaterial).ambientTexture,
+                aoMapChannel: (material as PBRMaterial).useAmbientInGrayScale ? "r" : "rgb",
+                aoMapIntensity: (material as PBRMaterial).ambientTextureStrength,
             };
         case "PBRMetallicRoughnessMaterial":
             return {
@@ -391,8 +402,15 @@ function ExtractTextureInformations(material: Material) {
                 emissiveMap: (material as PBRMetallicRoughnessMaterial).emissiveTexture,
                 emissive: (material as PBRMetallicRoughnessMaterial).emissiveColor,
                 normalMap: (material as PBRMetallicRoughnessMaterial).normalTexture,
-                roughness: (material as PBRMetallicRoughnessMaterial).roughness,
-                metalness: (material as PBRMetallicRoughnessMaterial).metallic,
+                roughnessMap: (material as PBRMaterial).metallicTexture,
+                roughnessChannel: (material as PBRMaterial).useRoughnessFromMetallicTextureAlpha ? "a" : "g",
+                roughness: (material as PBRMetallicRoughnessMaterial).roughness || 1,
+                metalnessMap: (material as PBRMaterial).metallicTexture,
+                metalnessChannel: (material as PBRMaterial).useMetallnessFromMetallicTextureBlue ? "b" : "r",
+                metalness: (material as PBRMetallicRoughnessMaterial).metallic || 0,
+                aoMap: (material as PBRMaterial).ambientTexture,
+                aoMapChannel: (material as PBRMaterial).useAmbientInGrayScale ? "r" : "rgb",
+                aoMapIntensity: (material as PBRMaterial).ambientTextureStrength,
             };
         default:
             return {
@@ -401,9 +419,13 @@ function ExtractTextureInformations(material: Material) {
                 emissiveMap: null,
                 emissemissiveiveColor: null,
                 normalMap: null,
+                roughnessMap: null,
+                metalnessMap: null,
                 alphaCutOff: 0,
                 roughness: 0,
                 metalness: 0,
+                aoMap: null,
+                aoMapIntensity: 0,
             };
     }
 }
@@ -415,7 +437,23 @@ function BuildMaterial(material: Material, textureToExports: { [key: string]: Ba
     const inputs = [];
     const samplers = [];
 
-    const { diffuseMap, diffuse, alphaCutOff, emissiveMap, emissive, normalMap, roughness, metalness } = ExtractTextureInformations(material);
+    const {
+        diffuseMap,
+        diffuse,
+        alphaCutOff,
+        emissiveMap,
+        emissive,
+        normalMap,
+        roughnessMap,
+        roughnessChannel,
+        roughness,
+        metalnessMap,
+        metalnessChannel,
+        metalness,
+        aoMap,
+        aoMapChannel,
+        aoMapIntensity,
+    } = ExtractTextureInformations(material);
 
     if (diffuseMap !== null) {
         inputs.push(`${pad}color3f inputs:diffuseColor.connect = </Materials/Material_${material.uniqueId}/Texture_${diffuseMap.uniqueId}_diffuse.outputs:rgb>`);
@@ -446,27 +484,27 @@ function BuildMaterial(material: Material, textureToExports: { [key: string]: Ba
         samplers.push(BuildTexture(normalMap as Texture, material, "normal", null, textureToExports, options));
     }
 
-    // if (material.aoMap !== null) {
-    //     inputs.push(`${pad}float inputs:occlusion.connect = </Materials/Material_${material.uniqueId}/Texture_${material.aoMap.uniqueId}_occlusion.outputs:r>`);
+    if (aoMap !== null) {
+        inputs.push(`${pad}float inputs:occlusion.connect = </Materials/Material_${material.uniqueId}/Texture_${aoMap.uniqueId}_occlusion.outputs:${aoMapChannel}>`);
 
-    //     samplers.push(buildTexture(material.aoMap, "occlusion", new Color(material.aoMapIntensity, material.aoMapIntensity, material.aoMapIntensity)));
-    // }
+        samplers.push(BuildTexture(aoMap as Texture, material, "occlusion", new Color3(aoMapIntensity, aoMapIntensity, aoMapIntensity), textureToExports, options));
+    }
 
-    // if (material.roughnessMap !== null) {
-    //     inputs.push(`${pad}float inputs:roughness.connect = </Materials/Material_${material.uniqueId}/Texture_${material.roughnessMap.uniqueId}_roughness.outputs:g>`);
+    if (roughnessMap !== null) {
+        inputs.push(`${pad}float inputs:roughness.connect = </Materials/Material_${material.uniqueId}/Texture_${roughnessMap.uniqueId}_roughness.outputs:${roughnessChannel}>`);
 
-    //     samplers.push(buildTexture(material.roughnessMap, "roughness", new Color(material.roughness, material.roughness, material.roughness)));
-    // } else {
-    inputs.push(`${pad}float inputs:roughness = ${1}`);
-    // }
+        samplers.push(BuildTexture(roughnessMap as Texture, material, "roughness", new Color3(roughness, roughness, roughness), textureToExports, options));
+    } else {
+        inputs.push(`${pad}float inputs:roughness = ${roughness}`);
+    }
 
-    // if (material.metalnessMap !== null) {
-    //     inputs.push(`${pad}float inputs:metallic.connect = </Materials/Material_${material.uniqueId}/Texture_${material.metalnessMap.uniqueId}_metallic.outputs:b>`);
+    if (metalnessMap !== null) {
+        inputs.push(`${pad}float inputs:metallic.connect = </Materials/Material_${material.uniqueId}/Texture_${metalnessMap.uniqueId}_metallic.outputs:${metalnessChannel}>`);
 
-    //     samplers.push(buildTexture(material.metalnessMap, "metallic", new Color(material.metalness, material.metalness, material.metalness)));
-    // } else {
-    inputs.push(`${pad}float inputs:metallic = ${0}`);
-    // }
+        samplers.push(BuildTexture(metalnessMap as Texture, material, "metallic", new Color3(metalness, metalness, metalness), textureToExports, options));
+    } else {
+        inputs.push(`${pad}float inputs:metallic = ${metalness}`);
+    }
 
     // if (material.alphaMap !== null) {
     //     inputs.push(`${pad}float inputs:opacity.connect = </Materials/Material_${material.uniqueId}/Texture_${material.alphaMap.uniqueId}_opacity.outputs:r>`);
