@@ -32,9 +32,9 @@ Splat readSplat(float splatIndex)
     return splat;
 }
     
-vec4 gaussianSplatting(vec2 position, vec3 worldPos, vec3 scale, vec3 covA, vec3 covB, mat4 viewMatrix, mat4 projectionMatrix)
+vec4 gaussianSplatting(vec2 meshPos, vec3 worldPos, vec3 scale, vec3 covA, vec3 covB, mat4 viewMatrix, mat4 projectionMatrix)
 {
-    mat4 modelView = viewMatrix;// * world;
+    mat4 modelView = viewMatrix;
     vec4 camspace = viewMatrix * vec4(worldPos,1.);
     vec4 pos2d = projectionMatrix * camspace;
 
@@ -71,11 +71,9 @@ vec4 gaussianSplatting(vec2 position, vec3 worldPos, vec3 scale, vec3 covA, vec3
     vec2 majorAxis = min(sqrt(2.0 * lambda1), 1024.0) * diagonalVector;
     vec2 minorAxis = min(sqrt(2.0 * lambda2), 1024.0) * vec2(diagonalVector.y, -diagonalVector.x);
 
-    //vColor = color;
-    //vPosition = position;
     vec2 vCenter = vec2(pos2d);
     return vec4(
         vCenter 
-        + (position.x * majorAxis
-        + position.y * minorAxis) * invViewport * pos2d.w, pos2d.zw);
+        + (meshPos.x * majorAxis
+        + meshPos.y * minorAxis) * invViewport * pos2d.w, pos2d.zw);
 }

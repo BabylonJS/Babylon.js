@@ -4,6 +4,7 @@ import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
+import { VertexBuffer } from "core/Meshes/buffer";
 
 /**
  * Block used for the Gaussian Splatting
@@ -86,6 +87,8 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
         state._emitFunctionFromInclude("gaussianSplattingVertexDeclaration", comments);
         state._emitUniformFromString("focal", NodeMaterialBlockConnectionPointTypes.Vector2);
         state._emitUniformFromString("invViewport", NodeMaterialBlockConnectionPointTypes.Vector2);
+        state.attributes.push(VertexBuffer.PositionKind);
+        state.sharedData.nodeMaterial.backFaceCulling = false;
 
         const splatPosition = this.splatPosition;
         const splatScale = this.splatScale;
