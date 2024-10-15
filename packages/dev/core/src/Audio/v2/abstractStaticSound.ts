@@ -1,5 +1,4 @@
 import type { AbstractAudioEngine } from "./abstractAudioEngine";
-import type { AbstractAudioNode } from "./abstractAudioNode";
 import type { ISoundOptions } from "./abstractSound";
 import { AbstractSound } from "./abstractSound";
 import type { AbstractSoundInstance } from "./abstractSoundInstance";
@@ -36,7 +35,7 @@ export abstract class AbstractStaticSound extends AbstractSound {
         this._loopEnd = value;
     }
 
-    protected _createSoundInstance(inputNode: AbstractAudioNode): AbstractSoundInstance {
-        return {} as any; //this.engine.createStaticSoundInstance(this, inputNode);
+    protected _createSoundInstance(): Promise<AbstractSoundInstance> {
+        return this.engine.createSoundInstance(this);
     }
 }

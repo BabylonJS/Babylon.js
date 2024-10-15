@@ -8,12 +8,12 @@ import type { AbstractSound } from "./abstractSound";
 export abstract class AbstractSoundInstance extends AbstractAudioNode {
     protected _source: AbstractSound;
 
-    public constructor(source: AbstractSound, inputNode: AbstractAudioNode) {
+    public constructor(source: AbstractSound) {
         super(source.engine, AudioNodeType.Output);
 
         this._source = source;
 
-        this._connect(inputNode);
+        this._connect(source);
     }
 
     public override dispose(): void {

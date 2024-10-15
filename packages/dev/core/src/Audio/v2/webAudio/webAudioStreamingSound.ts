@@ -1,4 +1,3 @@
-import type { AbstractAudioNode } from "../abstractAudioNode";
 import { AbstractStreamingSound } from "../abstractStreamingSound";
 import { AbstractStreamingSoundInstance } from "../abstractStreamingSoundInstance";
 import type { IWebAudioStreamingSoundOptions, WebAudioEngine } from "./webAudioEngine";
@@ -20,8 +19,8 @@ export class WebAudioStreamingSoundInstance extends AbstractStreamingSoundInstan
         return 0;
     }
 
-    constructor(source: WebAudioStreamingSound, inputNode: AbstractAudioNode) {
-        super(source, inputNode);
+    constructor(source: WebAudioStreamingSound) {
+        super(source);
     }
 
     public play(): void {

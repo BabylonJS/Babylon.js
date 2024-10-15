@@ -1,8 +1,6 @@
-import { Observable } from "../../Misc/observable";
-import type { IDisposable } from "../../scene";
 import type { Nullable } from "../../types";
 import type { AbstractAudioEngine } from "./abstractAudioEngine";
-import type { AbstractAudioNode } from "./abstractAudioNode";
+import { AbstractNamedAudioNode, AudioNodeType } from "./abstractAudioNode";
 import type { AbstractSoundInstance } from "./abstractSoundInstance";
 
 export interface ISoundOptions {
@@ -17,12 +15,9 @@ export interface ISoundOptions {
 /**
  * Owned by AbstractAudioEngine.
  */
-export abstract class AbstractSound implements IDisposable {
+export abstract class AbstractSound extends AbstractNamedAudioNode {
     // Non-owning.
     protected _soundInstances: Nullable<Set<AbstractSoundInstance>> = null;
-
-    public name: string;
-    public readonly engine: AbstractAudioEngine;
 
     public readonly autoplay: boolean;
     public loop: boolean;
@@ -31,11 +26,8 @@ export abstract class AbstractSound implements IDisposable {
     public stopTime: number;
     public volume: number;
 
-    public onDisposeObservable = new Observable<AbstractSound>();
-
     public constructor(name: string, engine: AbstractAudioEngine, options: Nullable<ISoundOptions> = null) {
-        this.name = name;
-        this.engine = engine;
+        super(name, engine, AudioNodeType.Output);
 
         this.autoplay = options?.autoplay ?? false;
         this.loop = options?.loop ?? false;
@@ -47,7 +39,9 @@ export abstract class AbstractSound implements IDisposable {
         // this.engine.sounds.add(this);
     }
 
-    public dispose(): void {
+    public override dispose(): void {
+        super.dispose();
+
         this.stop();
 
         this._soundInstances?.clear();
@@ -61,8 +55,10 @@ export abstract class AbstractSound implements IDisposable {
         return this._soundInstances?.values() ?? null;
     }
 
-    public play(inputNode: AbstractAudioNode): AbstractSoundInstance {
-        const instance = this._createSoundInstance(inputNode);
+    protected abstract _createSoundInstance(): Promise<AbstractSoundInstance>;
+
+    public async play(): Promise<AbstractSoundInstance> {
+        const instance = await this._createSoundInstance();
 
         instance.play();
 
@@ -100,8 +96,6 @@ export abstract class AbstractSound implements IDisposable {
             instance.stop();
         }
     }
-
-    protected abstract _createSoundInstance(inputNode: AbstractAudioNode): AbstractSoundInstance;
 
     /** @internal */
     public _onSoundInstanceEnded(instance: AbstractSoundInstance): void {

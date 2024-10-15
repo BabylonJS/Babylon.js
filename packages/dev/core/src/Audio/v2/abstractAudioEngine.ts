@@ -20,6 +20,9 @@ export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
     // Not owned, but all items should be in parent's `children` container, too, which is owned.
     private readonly _devices = new Set<AbstractAudioDevice>();
 
+    // Not owned, but all items should be in parent's `children` container, too, which is owned.
+    private readonly _mainBuses = new Set<AbstractMainAudioBus>();
+
     // Owned
     private readonly _sounds = new Set<AbstractSound>();
 
@@ -28,6 +31,16 @@ export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
 
     // Owned
     public readonly listeners = new Set<SpatialAudioListener>();
+
+    public get defaultDevice() {
+        const [device] = this._devices;
+        return device;
+    }
+
+    public get defaultMainBus(): AbstractMainAudioBus {
+        const [bus] = this._mainBuses;
+        return bus;
+    }
 
     public override dispose(): void {
         super.dispose();
@@ -54,6 +67,13 @@ export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
         });
     }
 
+    protected _addMainBus(mainBus: AbstractMainAudioBus): void {
+        this._mainBuses.add(mainBus);
+        mainBus.onDisposeObservable.addOnce(() => {
+            this._mainBuses.delete(mainBus);
+        });
+    }
+
     protected _addSound(sound: AbstractSound): void {
         this._sounds.add(sound);
         sound.onDisposeObservable.addOnce(() => {
@@ -73,7 +93,7 @@ export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
     public abstract createPositioner(parent: AbstractAudioNode): Promise<AbstractAudioPositioner>;
     public abstract createSender(parent: AbstractAudioNode): Promise<AbstractAudioSender>;
     public abstract createSound(name: string, options?: IStaticSoundOptions): Promise<AbstractStaticSound>;
-    public abstract createSoundInstance(source: AbstractStaticSound, inputNode: AbstractAudioNode): Promise<AbstractStaticSoundInstance>;
+    public abstract createSoundInstance(source: AbstractStaticSound): Promise<AbstractStaticSoundInstance>;
     public abstract createStreamingSound(name: string, options?: IStreamingSoundOptions): Promise<AbstractStreamingSound>;
-    public abstract createStreamingSoundInstance(source: AbstractStreamingSound, inputNode: AbstractAudioNode): Promise<AbstractStreamingSoundInstance>;
+    public abstract createStreamingSoundInstance(source: AbstractStreamingSound): Promise<AbstractStreamingSoundInstance>;
 }

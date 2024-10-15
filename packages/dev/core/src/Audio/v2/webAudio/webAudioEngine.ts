@@ -13,6 +13,11 @@ import { WebAudioSender } from "./webAudioSender";
 import { WeAudioStaticSoundInstance, WebAudioStaticSound } from "./webAudioStaticSound";
 import { WebAudioStreamingSound, WebAudioStreamingSoundInstance } from "./webAudioStreamingSound";
 
+export interface IWebAudioEngineOptions {
+    defaultDevice?: WebAudioDevice;
+    defaultMainBus?: WebAudioMainBus;
+}
+
 export interface IWebAudioPositionerOptions extends IAudioPositionerOptions {
     //
 }
@@ -25,11 +30,29 @@ export interface IWebAudioStreamingSoundOptions extends IStreamingSoundOptions {
     //
 }
 
-export async function CreateAudioEngine(): Promise<AbstractAudioEngine> {
-    return new WebAudioEngine();
+export async function CreateAudioEngine(options?: IWebAudioEngineOptions): Promise<AbstractAudioEngine> {
+    return new WebAudioEngine(options);
 }
 
 export class WebAudioEngine extends AbstractAudioEngine {
+    public constructor(options?: IWebAudioEngineOptions) {
+        super();
+
+        if (options?.defaultDevice) {
+            this._addDevice(options.defaultDevice);
+        } else {
+            this.createDevice("default");
+        }
+
+        if (options?.defaultMainBus) {
+            this._addMainBus(options.defaultMainBus);
+        } else {
+            this.createMainBus("default");
+        }
+
+        this.defaultMainBus.device = this.defaultDevice;
+    }
+
     public async createDevice(name: string): Promise<AbstractAudioDevice> {
         const device = new WebAudioDevice(name, this);
         this._addDevice(device);
@@ -37,7 +60,9 @@ export class WebAudioEngine extends AbstractAudioEngine {
     }
 
     public override async createMainBus(name: string): Promise<AbstractMainAudioBus> {
-        return new WebAudioMainBus(name, this);
+        const bus = new WebAudioMainBus(name, this);
+        this._addMainBus(bus);
+        return bus;
     }
 
     public async createPositioner(parent: AbstractAudioNode, options?: IWebAudioPositionerOptions): Promise<AbstractAudioPositioner> {
@@ -54,8 +79,8 @@ export class WebAudioEngine extends AbstractAudioEngine {
         return sound;
     }
 
-    public async createSoundInstance(source: AbstractStaticSound, inputNode: AbstractAudioNode): Promise<WeAudioStaticSoundInstance> {
-        const soundInstance = new WeAudioStaticSoundInstance(source, inputNode);
+    public async createSoundInstance(source: AbstractStaticSound): Promise<WeAudioStaticSoundInstance> {
+        const soundInstance = new WeAudioStaticSoundInstance(source);
         this._addSoundInstance(soundInstance);
         return soundInstance;
     }
@@ -66,8 +91,8 @@ export class WebAudioEngine extends AbstractAudioEngine {
         return sound;
     }
 
-    public async createStreamingSoundInstance(source: AbstractStreamingSound, inputNode: AbstractAudioNode): Promise<WeAudioStaticSoundInstance> {
-        const soundInstance = new WebAudioStreamingSoundInstance(source, inputNode);
+    public async createStreamingSoundInstance(source: AbstractStreamingSound): Promise<WeAudioStaticSoundInstance> {
+        const soundInstance = new WebAudioStreamingSoundInstance(source);
         this._addSoundInstance(soundInstance);
         return soundInstance;
     }

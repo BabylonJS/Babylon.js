@@ -14,7 +14,7 @@ export abstract class AbstractMainAudioBus extends AbstractAudioBusNode {
         return this._device;
     }
 
-    public setDevice(device: Nullable<AbstractAudioDevice>) {
+    public set device(device: Nullable<AbstractAudioDevice>) {
         if (this._device == device) {
             return;
         }
