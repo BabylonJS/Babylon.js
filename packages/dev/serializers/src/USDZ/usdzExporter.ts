@@ -375,6 +375,8 @@ function ExtractTextureInformations(material: Material) {
                 metalness: 0,
                 aoMap: null,
                 aoMapIntensity: 0,
+                alphaMap: (material as StandardMaterial).opacityTexture,
+                ior: 1,
             };
         case "PBRMaterial":
             return {
@@ -393,6 +395,8 @@ function ExtractTextureInformations(material: Material) {
                 aoMap: (material as PBRMaterial).ambientTexture,
                 aoMapChannel: (material as PBRMaterial).useAmbientInGrayScale ? "r" : "rgb",
                 aoMapIntensity: (material as PBRMaterial).ambientTextureStrength,
+                alphaMap: (material as PBRMaterial).opacityTexture,
+                ior: (material as PBRMaterial).indexOfRefraction,
             };
         case "PBRMetallicRoughnessMaterial":
             return {
@@ -411,6 +415,8 @@ function ExtractTextureInformations(material: Material) {
                 aoMap: (material as PBRMaterial).ambientTexture,
                 aoMapChannel: (material as PBRMaterial).useAmbientInGrayScale ? "r" : "rgb",
                 aoMapIntensity: (material as PBRMaterial).ambientTextureStrength,
+                alphaMap: (material as PBRMaterial).opacityTexture,
+                ior: (material as PBRMaterial).indexOfRefraction,
             };
         default:
             return {
@@ -426,6 +432,8 @@ function ExtractTextureInformations(material: Material) {
                 metalness: 0,
                 aoMap: null,
                 aoMapIntensity: 0,
+                alphaMap: null,
+                ior: 1,
             };
     }
 }
@@ -453,6 +461,8 @@ function BuildMaterial(material: Material, textureToExports: { [key: string]: Ba
         aoMap,
         aoMapChannel,
         aoMapIntensity,
+        alphaMap,
+        ior,
     } = ExtractTextureInformations(material);
 
     if (diffuseMap !== null) {
@@ -506,36 +516,16 @@ function BuildMaterial(material: Material, textureToExports: { [key: string]: Ba
         inputs.push(`${pad}float inputs:metallic = ${metalness}`);
     }
 
-    // if (material.alphaMap !== null) {
-    //     inputs.push(`${pad}float inputs:opacity.connect = </Materials/Material_${material.uniqueId}/Texture_${material.alphaMap.uniqueId}_opacity.outputs:r>`);
-    //     inputs.push(`${pad}float inputs:opacityThreshold = 0.0001`);
+    if (alphaMap !== null) {
+        inputs.push(`${pad}float inputs:opacity.connect = </Materials/Material_${material.uniqueId}/Texture_${alphaMap.uniqueId}_opacity.outputs:r>`);
+        inputs.push(`${pad}float inputs:opacityThreshold = 0.0001`);
 
-    //     samplers.push(buildTexture(material.alphaMap, "opacity"));
-    // } else {
-    inputs.push(`${pad}float inputs:opacity = ${material.alpha}`);
-    // }
+        samplers.push(BuildTexture(alphaMap as Texture, material, "opacity", null, textureToExports, options));
+    } else {
+        inputs.push(`${pad}float inputs:opacity = ${material.alpha}`);
+    }
 
-    // if (material.isMeshPhysicalMaterial) {
-    //     if (material.clearcoatMap !== null) {
-    //         inputs.push(`${pad}float inputs:clearcoat.connect = </Materials/Material_${material.uniqueId}/Texture_${material.clearcoatMap.uniqueId}_clearcoat.outputs:r>`);
-    //         samplers.push(buildTexture(material.clearcoatMap, "clearcoat", new Color(material.clearcoat, material.clearcoat, material.clearcoat)));
-    //     } else {
-    //         inputs.push(`${pad}float inputs:clearcoat = ${material.clearcoat}`);
-    //     }
-
-    //     if (material.clearcoatRoughnessMap !== null) {
-    //         inputs.push(
-    //             `${pad}float inputs:clearcoatRoughness.connect = </Materials/Material_${material.uniqueId}/Texture_${material.clearcoatRoughnessMap.uniqueId}_clearcoatRoughness.outputs:g>`
-    //         );
-    //         samplers.push(
-    //             buildTexture(material.clearcoatRoughnessMap, "clearcoatRoughness", new Color(material.clearcoatRoughness, material.clearcoatRoughness, material.clearcoatRoughness))
-    //         );
-    //     } else {
-    //         inputs.push(`${pad}float inputs:clearcoatRoughness = ${material.clearcoatRoughness}`);
-    //     }
-
-    //     inputs.push(`${pad}float inputs:ior = ${material.ior}`);
-    // }
+    inputs.push(`${pad}float inputs:ior = ${ior}`);
 
     return `
 	def Material "Material_${material.uniqueId}"
