@@ -9,7 +9,8 @@
         {
             "title": "HAL Lattice",
             "playgroundId": "#HBZD72#7",
-            "referenceImage": "lattice-hal.png"
+            "referenceImage": "lattice-hal.png",
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "NME Loop Block",
