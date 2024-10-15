@@ -33,6 +33,7 @@ export class Lattice {
     private _resolutionZ: number;
     private _position: Vector3;
     private _size: Vector3;
+    private _cellSize = new Vector3();
 
     private _data: Vector3[][][];
 
@@ -96,6 +97,27 @@ export class Lattice {
      */
     public get data(): Vector3[][][] {
         return this._data;
+    }
+
+    /**
+     * Gets the size of each cell in the lattice
+     */
+    public get cellSize(): Vector3 {
+        return this._cellSize;
+    }
+
+    /**
+     * Gets the min bounds of the lattice
+     */
+    public get min(): Vector3 {
+        return this._min;
+    }
+
+    /**
+     * Gets the max bounds of the lattice
+     */
+    public get max(): Vector3 {
+        return this._max;
     }
 
     /**
@@ -172,6 +194,22 @@ export class Lattice {
     }
 
     /**
+     * Update the lattice internals (like min, max and cell size)
+     */
+    public updateInternals() {
+        const nx = this._resolutionX;
+        const ny = this._resolutionY;
+        const nz = this._resolutionZ;
+
+        // Calculate the size of each cell in the lattice
+        this._cellSize.set(this.size.x / (nx - 1), this.size.y / (ny - 1), this.size.z / (nz - 1));
+
+        // Calculate the lattice bounds
+        this._min.set(this.position.x - this.size.x / 2, this.position.y - this.size.y / 2, this.position.z - this.size.z / 2);
+        this._min.addToRef(this._size, this._max);
+    }
+
+    /**
      * Apply the lattice to a set of points
      * @param positions vertex data to deform
      * @param target optional target array to store the result (operation will be done in place in not defined)
@@ -181,12 +219,7 @@ export class Lattice {
         const ny = this._resolutionY;
         const nz = this._resolutionZ;
 
-        // Calculate the size of each cell in the lattice
-        const cellSize = new Vector3(this.size.x / (nx - 1), this.size.y / (ny - 1), this.size.z / (nz - 1));
-
-        // Calculate the lattice bounds
-        this._min.set(this.position.x - this.size.x / 2, this.position.y - this.size.y / 2, this.position.z - this.size.z / 2);
-        this._min.addToRef(this._size, this._max);
+        this.updateInternals();
 
         const min = this._min;
         const max = this._max;
@@ -204,7 +237,7 @@ export class Lattice {
             }
 
             // Map vertex position to lattice local coordinates
-            const localPos = this._localPos.set((vertex.x - min.x) / cellSize.x, (vertex.y - min.y) / cellSize.y, (vertex.z - min.z) / cellSize.z);
+            const localPos = this._localPos.set((vertex.x - min.x) / this._cellSize.x, (vertex.y - min.y) / this._cellSize.y, (vertex.z - min.z) / this._cellSize.z);
 
             // Get integer lattice indices
             const i0 = Math.floor(localPos.x);

@@ -23,6 +23,7 @@ export * from "./geodesicMesh";
 export * from "./subMesh";
 export * from "./subMesh.project";
 export * from "./lattice";
+export * from "./lattice.material";
 export * from "./meshLODLevel";
 export * from "./transformNode";
 export * from "./Builders/index";
