@@ -1,7 +1,7 @@
+import type { Nullable } from "../../types";
 import type { AbstractAudioEngine } from "./abstractAudioEngine";
 import { AbstractAudioNode, AudioNodeType } from "./abstractAudioNode";
 import type { AbstractAuxilliaryAudioBus } from "./abstractAuxilliaryAudioBus";
-import type { Nullable } from "../../types";
 
 export enum AudioSendType {
     PostFader,

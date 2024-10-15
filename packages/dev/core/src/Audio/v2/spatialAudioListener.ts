@@ -1,10 +1,10 @@
-import type { AbstractAudioEngine } from "./abstractAudioEngine";
-import type { ISpatialAudioTransformOptions } from "./spatialAudioTransform";
-import { SpatialAudioTransform } from "./spatialAudioTransform";
 import type { Quaternion, Vector3 } from "../../Maths/math.vector";
 import type { TransformNode } from "../../Meshes";
 import type { IDisposable } from "../../scene";
 import type { Nullable } from "../../types";
+import type { AbstractAudioEngine } from "./abstractAudioEngine";
+import type { ISpatialAudioTransformOptions } from "./spatialAudioTransform";
+import { SpatialAudioTransform } from "./spatialAudioTransform";
 
 export class SpatialAudioListener implements IDisposable {
     private _engine: AbstractAudioEngine;

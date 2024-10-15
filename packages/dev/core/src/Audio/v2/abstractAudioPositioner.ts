@@ -1,10 +1,10 @@
+import type { Quaternion, Vector3 } from "../../Maths/math.vector";
+import type { TransformNode } from "../../Meshes";
+import type { Nullable } from "../../types";
 import { AbstractAudioNode, AudioNodeType } from "./abstractAudioNode";
 import type { SpatialAudioListener } from "./spatialAudioListener";
 import type { ISpatialAudioTransformOptions } from "./spatialAudioTransform";
 import { SpatialAudioTransform } from "./spatialAudioTransform";
-import type { Quaternion, Vector3 } from "../../Maths/math.vector";
-import type { TransformNode } from "../../Meshes";
-import type { Nullable } from "../../types";
 
 export interface IAudioPositionerOptions extends ISpatialAudioTransformOptions {}
 

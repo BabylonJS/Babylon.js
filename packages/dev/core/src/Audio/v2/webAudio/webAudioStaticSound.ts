@@ -1,8 +1,7 @@
 import type { AbstractAudioNode } from "../abstractAudioNode";
 import { AbstractStaticSound } from "../abstractStaticSound";
 import { AbstractStaticSoundInstance } from "../abstractStaticSoundInstance";
-import type { WebAudioEngine } from "./webAudioEngine";
-import type { IWebAudioStaticSoundOptions } from "./webAudioEngine";
+import type { IWebAudioStaticSoundOptions, WebAudioEngine } from "./webAudioEngine";
 
 /** @internal */
 export class WebAudioStaticSound extends AbstractStaticSound {

@@ -10,7 +10,7 @@ import { WebAudioDevice } from "./webAudioDevice";
 import { WebAudioMainBus } from "./webAudioMainBus";
 import { WebAudioPositioner } from "./webAudioPositioner";
 import { WebAudioSender } from "./webAudioSender";
-import { WebAudioStaticSound, WeAudioStaticSoundInstance } from "./webAudioStaticSound";
+import { WeAudioStaticSoundInstance, WebAudioStaticSound } from "./webAudioStaticSound";
 import { WebAudioStreamingSound, WebAudioStreamingSoundInstance } from "./webAudioStreamingSound";
 
 export interface IWebAudioPositionerOptions extends IAudioPositionerOptions {

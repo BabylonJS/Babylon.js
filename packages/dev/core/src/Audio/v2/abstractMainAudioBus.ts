@@ -1,7 +1,7 @@
+import type { Nullable } from "../../types";
 import { AbstractAudioBusNode } from "./abstractAudioBusNode";
 import type { AbstractAudioDevice } from "./abstractAudioDevice";
 import type { AbstractAudioEngine } from "./abstractAudioEngine";
-import type { Nullable } from "../../types";
 
 export abstract class AbstractMainAudioBus extends AbstractAudioBusNode {
     private _device: Nullable<AbstractAudioDevice> = null;

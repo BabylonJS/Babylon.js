@@ -1,5 +1,5 @@
-import type { AbstractAudioNode } from "./abstractAudioNode";
 import type { IDisposable } from "../../scene";
+import type { AbstractAudioNode } from "./abstractAudioNode";
 
 export class AbstractAudioNodeParent implements IDisposable {
     public readonly children = new Set<AbstractAudioNode>();

@@ -1,9 +1,9 @@
+import type { Nullable } from "../../types";
 import type { IAudioBusNodeOptions } from "./abstractAudioBusNode";
 import { AbstractAudioBusNode } from "./abstractAudioBusNode";
 import type { AbstractAudioEngine } from "./abstractAudioEngine";
 import type { AbstractAudioPositioner } from "./abstractAudioPositioner";
 import type { AbstractAudioSender } from "./abstractAudioSender";
-import type { Nullable } from "../../types";
 
 export interface IAuxilliaryAudioBusOptions extends IAudioBusNodeOptions {
     enablePositioner?: boolean;

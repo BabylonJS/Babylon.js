@@ -1,8 +1,8 @@
 import type { AbstractAudioEngine } from "./abstractAudioEngine";
 import type { AbstractAudioNode } from "./abstractAudioNode";
-import type { AbstractSoundInstance } from "./abstractSoundInstance";
 import type { ISoundOptions } from "./abstractSound";
 import { AbstractSound } from "./abstractSound";
+import type { AbstractSoundInstance } from "./abstractSoundInstance";
 
 export interface IStaticSoundOptions extends ISoundOptions {
     loopStart?: number;

@@ -1,5 +1,5 @@
-import { AbstractAudioEngine } from "../abstractAudioEngine";
 import { AbstractAudioDevice } from "../abstractAudioDevice";
+import type { AbstractAudioEngine } from "../abstractAudioEngine";
 
 /**
  * WebAudio implementation of AbstractAudioDevice.
