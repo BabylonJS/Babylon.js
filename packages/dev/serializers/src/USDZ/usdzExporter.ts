@@ -433,7 +433,7 @@ function BuildMaterial(material: Material, textureToExports: { [key: string]: Ba
     }
 
     if (emissiveMap !== null) {
-        inputs.push(`${pad}color3f inputs:emissiveColor.connect = </Materials/Material_${material.id}/Texture_${emissiveMap.uniqueId}_emissive.outputs:rgb>`);
+        inputs.push(`${pad}color3f inputs:emissiveColor.connect = </Materials/Material_${material.uniqueId}/Texture_${emissiveMap.uniqueId}_emissive.outputs:rgb>`);
 
         samplers.push(BuildTexture(emissiveMap as Texture, material, "emissive", emissive, textureToExports, options));
     } else if (emissive && emissive.toLuminance() > 0) {
@@ -441,19 +441,19 @@ function BuildMaterial(material: Material, textureToExports: { [key: string]: Ba
     }
 
     if (normalMap !== null) {
-        inputs.push(`${pad}normal3f inputs:normal.connect = </Materials/Material_${material.id}/Texture_${normalMap.uniqueId}_normal.outputs:rgb>`);
+        inputs.push(`${pad}normal3f inputs:normal.connect = </Materials/Material_${material.uniqueId}/Texture_${normalMap.uniqueId}_normal.outputs:rgb>`);
 
         samplers.push(BuildTexture(normalMap as Texture, material, "normal", null, textureToExports, options));
     }
 
     // if (material.aoMap !== null) {
-    //     inputs.push(`${pad}float inputs:occlusion.connect = </Materials/Material_${material.id}/Texture_${material.aoMap.id}_occlusion.outputs:r>`);
+    //     inputs.push(`${pad}float inputs:occlusion.connect = </Materials/Material_${material.uniqueId}/Texture_${material.aoMap.uniqueId}_occlusion.outputs:r>`);
 
     //     samplers.push(buildTexture(material.aoMap, "occlusion", new Color(material.aoMapIntensity, material.aoMapIntensity, material.aoMapIntensity)));
     // }
 
     // if (material.roughnessMap !== null) {
-    //     inputs.push(`${pad}float inputs:roughness.connect = </Materials/Material_${material.id}/Texture_${material.roughnessMap.id}_roughness.outputs:g>`);
+    //     inputs.push(`${pad}float inputs:roughness.connect = </Materials/Material_${material.uniqueId}/Texture_${material.roughnessMap.uniqueId}_roughness.outputs:g>`);
 
     //     samplers.push(buildTexture(material.roughnessMap, "roughness", new Color(material.roughness, material.roughness, material.roughness)));
     // } else {
@@ -461,7 +461,7 @@ function BuildMaterial(material: Material, textureToExports: { [key: string]: Ba
     // }
 
     // if (material.metalnessMap !== null) {
-    //     inputs.push(`${pad}float inputs:metallic.connect = </Materials/Material_${material.id}/Texture_${material.metalnessMap.id}_metallic.outputs:b>`);
+    //     inputs.push(`${pad}float inputs:metallic.connect = </Materials/Material_${material.uniqueId}/Texture_${material.metalnessMap.uniqueId}_metallic.outputs:b>`);
 
     //     samplers.push(buildTexture(material.metalnessMap, "metallic", new Color(material.metalness, material.metalness, material.metalness)));
     // } else {
@@ -469,7 +469,7 @@ function BuildMaterial(material: Material, textureToExports: { [key: string]: Ba
     // }
 
     // if (material.alphaMap !== null) {
-    //     inputs.push(`${pad}float inputs:opacity.connect = </Materials/Material_${material.id}/Texture_${material.alphaMap.id}_opacity.outputs:r>`);
+    //     inputs.push(`${pad}float inputs:opacity.connect = </Materials/Material_${material.uniqueId}/Texture_${material.alphaMap.uniqueId}_opacity.outputs:r>`);
     //     inputs.push(`${pad}float inputs:opacityThreshold = 0.0001`);
 
     //     samplers.push(buildTexture(material.alphaMap, "opacity"));
@@ -479,7 +479,7 @@ function BuildMaterial(material: Material, textureToExports: { [key: string]: Ba
 
     // if (material.isMeshPhysicalMaterial) {
     //     if (material.clearcoatMap !== null) {
-    //         inputs.push(`${pad}float inputs:clearcoat.connect = </Materials/Material_${material.id}/Texture_${material.clearcoatMap.id}_clearcoat.outputs:r>`);
+    //         inputs.push(`${pad}float inputs:clearcoat.connect = </Materials/Material_${material.uniqueId}/Texture_${material.clearcoatMap.uniqueId}_clearcoat.outputs:r>`);
     //         samplers.push(buildTexture(material.clearcoatMap, "clearcoat", new Color(material.clearcoat, material.clearcoat, material.clearcoat)));
     //     } else {
     //         inputs.push(`${pad}float inputs:clearcoat = ${material.clearcoat}`);
@@ -487,7 +487,7 @@ function BuildMaterial(material: Material, textureToExports: { [key: string]: Ba
 
     //     if (material.clearcoatRoughnessMap !== null) {
     //         inputs.push(
-    //             `${pad}float inputs:clearcoatRoughness.connect = </Materials/Material_${material.id}/Texture_${material.clearcoatRoughnessMap.id}_clearcoatRoughness.outputs:g>`
+    //             `${pad}float inputs:clearcoatRoughness.connect = </Materials/Material_${material.uniqueId}/Texture_${material.clearcoatRoughnessMap.uniqueId}_clearcoatRoughness.outputs:g>`
     //         );
     //         samplers.push(
     //             buildTexture(material.clearcoatRoughnessMap, "clearcoatRoughness", new Color(material.clearcoatRoughness, material.clearcoatRoughness, material.clearcoatRoughness))
