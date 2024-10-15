@@ -8,10 +8,10 @@ import type { StandardMaterial } from "core/Materials/standardMaterial";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { Texture } from "core/Materials/Textures/texture";
 import { Color3 } from "core/Maths/math.color";
-import { Vector2, type Matrix } from "core/Maths/math.vector";
+import { Matrix, Vector2 } from "core/Maths/math.vector";
 import type { Geometry } from "core/Meshes";
 import type { Mesh } from "core/Meshes/mesh";
-import { DumpDataAsync } from "core/Misc/dumpTools";
+import { DumpTools } from "core/Misc/dumpTools";
 import { Tools } from "core/Misc/tools";
 import type { Scene } from "core/scene";
 import type { FloatArray, Nullable } from "core/types";
@@ -231,12 +231,12 @@ function BuildMatrixRow(array: number[], offset: number) {
 
 function BuildXform(mesh: Mesh) {
     const name = "Object_" + mesh.uniqueId;
-    const matrix = mesh.getWorldMatrix();
-    const transform = BuildMatrix(matrix);
+    const matrix = mesh.getWorldMatrix().clone();
 
     if (matrix.determinant() < 0) {
-        Tools.Warn("USDZ does not support negative scales: " + mesh.name);
+        matrix.multiplyToRef(Matrix.Scaling(-1, 1, 1), matrix);
     }
+    const transform = BuildMatrix(matrix);
 
     return `def Xform "${name}" (
 	prepend references = @./geometries/Geometry_${mesh.geometry!.uniqueId}.usda@</Geometry>
@@ -457,7 +457,7 @@ function BuildMaterial(material: Material, textureToExports: { [key: string]: Ba
 
     //     samplers.push(buildTexture(material.roughnessMap, "roughness", new Color(material.roughness, material.roughness, material.roughness)));
     // } else {
-    inputs.push(`${pad}float inputs:roughness = ${roughness}`);
+    inputs.push(`${pad}float inputs:roughness = ${1}`);
     // }
 
     // if (material.metalnessMap !== null) {
@@ -465,7 +465,7 @@ function BuildMaterial(material: Material, textureToExports: { [key: string]: Ba
 
     //     samplers.push(buildTexture(material.metalnessMap, "metallic", new Color(material.metalness, material.metalness, material.metalness)));
     // } else {
-    inputs.push(`${pad}float inputs:metallic = ${metalness}`);
+    inputs.push(`${pad}float inputs:metallic = ${0}`);
     // }
 
     // if (material.alphaMap !== null) {
@@ -522,12 +522,13 @@ ${samplers.join("\n")}
  *
  * @param scene scene to export
  * @param options options to configure the export
+ * @param meshPredicate predicate to filter the meshes to export
  * @returns a uint8 array containing the USDZ file
  * #H2G5XW#3 - Simple sphere
  * #H2G5XW#4 - Red sphere
  * #5N3RWK#1 - Boombox
  */
-export async function USDZExportAsync(scene: Scene, options: Partial<IUSDZExportOptions>): Promise<Uint8Array> {
+export async function USDZExportAsync(scene: Scene, options: Partial<IUSDZExportOptions>, meshPredicate?: (m: Mesh) => boolean): Promise<Uint8Array> {
     const localOptions = {
         fflateUrl: "https://unpkg.com/fflate@0.8.2",
         includeAnchoringProperties: true,
@@ -563,7 +564,7 @@ export async function USDZExportAsync(scene: Scene, options: Partial<IUSDZExport
         const geometry = mesh.geometry;
         const material = mesh.material;
 
-        if (!material || !geometry) {
+        if (!material || !geometry || (meshPredicate && !meshPredicate(mesh))) {
             continue;
         }
 
@@ -591,7 +592,7 @@ export async function USDZExportAsync(scene: Scene, options: Partial<IUSDZExport
 
     // Materials
     const textureToExports: { [key: string]: BaseTexture } = {};
-    output += BuildMaterials(materialToExports, textureToExports, options);
+    output += BuildMaterials(materialToExports, textureToExports, localOptions);
 
     for (const id in textureToExports) {
         const texture = textureToExports[id];
@@ -603,9 +604,9 @@ export async function USDZExportAsync(scene: Scene, options: Partial<IUSDZExport
             throw new Error("Texture data is not available");
         }
 
-        const fileContent = await DumpDataAsync(size.width, size.height, textureData, "image/png", undefined, false, true);
+        const fileContent = await DumpTools.DumpDataAsync(size.width, size.height, textureData, "image/png", undefined, false, true);
 
-        files[`textures/Texture_${id}.png`] = fileContent;
+        files[`textures/Texture_${id}.png`] = new Uint8Array(fileContent as ArrayBuffer);
     }
 
     // Compress
