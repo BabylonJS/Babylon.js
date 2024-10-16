@@ -7,25 +7,34 @@ import type { IWebAudioDeviceOptions } from "./webAudioEngine";
 export class WebAudioDevice extends AbstractAudioDevice {
     private _audioContext: AudioContext;
 
-    private async _initAudioContext(resolve: (audioContext: AudioContext) => void): Promise<void> {
-        this._audioContext = new AudioContext();
+    private async _initAudioContext(): Promise<void> {
+        if (this._audioContext === undefined) {
+            this._audioContext = new AudioContext();
+        }
+
         await this._audioContext.resume();
-        resolve(this._audioContext);
+        this._resolveAudioContext(this._audioContext);
+
+        document.removeEventListener("click", this._initAudioContext);
     }
 
+    private _resolveAudioContext: (audioContext: AudioContext) => void;
+
     public audioContext = new Promise<AudioContext>((resolve) => {
-        if (this._audioContext) {
-            resolve(this._audioContext);
-        } else {
-            document.addEventListener("click", this._initAudioContext.bind(this, resolve), { once: true });
-        }
+        this._resolveAudioContext = resolve;
+        document.addEventListener("click", this._initAudioContext.bind(this), { once: true });
     });
 
-    public get webAudioInputNode(): Nullable<AudioNode> {
-        return this._audioContext.destination ?? null;
+    public get webAudioInputNode(): AudioNode {
+        return this._audioContext.destination;
     }
 
     public constructor(name: string, engine: AbstractAudioEngine, options: Nullable<IWebAudioDeviceOptions> = null) {
         super(name, engine);
+
+        if (options?.audioContext) {
+            this._audioContext = options.audioContext;
+            this._initAudioContext();
+        }
     }
 }

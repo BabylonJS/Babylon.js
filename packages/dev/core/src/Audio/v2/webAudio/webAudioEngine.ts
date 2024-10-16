@@ -19,6 +19,7 @@ export interface IWebAudioDeviceOptions {
 }
 
 export interface IWebAudioEngineOptions {
+    audioContext?: AudioContext;
     noDefaultDevice?: boolean;
     noDefaultMainBus?: boolean;
 }
@@ -100,7 +101,7 @@ export class WebAudioEngine extends AbstractWebAudioEngine {
 
     public async init(options: Nullable<IWebAudioEngineOptions> = null): Promise<void> {
         if (!options?.noDefaultDevice) {
-            await this.createDevice("default");
+            await this.createDevice("default", { audioContext: options?.audioContext });
 
             if (!options?.noDefaultMainBus) {
                 await this.createMainBus("default");
