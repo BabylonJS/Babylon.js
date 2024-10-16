@@ -160,13 +160,17 @@ export class _IblShadowsSpatialBlurPass {
         // Need to set all the textures first so that the effect gets created with the proper uniforms.
         this._update();
 
-        this._scene.onBeforeCameraRenderObservable.add(() => {
-            this._scene.onAfterRenderTargetsRenderObservable.addOnce(() => {
+        let counter = 0;
+        this._scene.onBeforeRenderObservable.add(() => {
+            counter = 0;
+        });
+        this._scene.onAfterRenderTargetsRenderObservable.add(() => {
+            if (++counter == 2) {
                 if (this.enabled && this._outputTexture.isReady()) {
                     this._update();
                     this._outputTexture.render();
                 }
-            });
+            }
         });
     }
 

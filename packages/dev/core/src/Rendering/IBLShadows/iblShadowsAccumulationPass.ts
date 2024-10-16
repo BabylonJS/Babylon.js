@@ -190,13 +190,17 @@ export class _IblShadowsAccumulationPass {
         // Need to set all the textures first so that the effect gets created with the proper uniforms.
         this._updateOutputTexture();
 
-        this._scene.onBeforeCameraRenderObservable.add(() => {
-            this._scene.onAfterRenderTargetsRenderObservable.addOnce(() => {
+        let counter = 0;
+        this._scene.onBeforeRenderObservable.add(() => {
+            counter = 0;
+        });
+        this._scene.onAfterRenderTargetsRenderObservable.add(() => {
+            if (++counter == 2) {
                 if (this.enabled && this._outputTexture.isReady()) {
                     this._updateOutputTexture();
                     this._outputTexture.render();
                 }
-            });
+            }
         });
 
         // Create the accumulation texture for the previous frame.
