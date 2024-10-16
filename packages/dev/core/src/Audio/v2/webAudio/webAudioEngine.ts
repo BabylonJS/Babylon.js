@@ -36,7 +36,9 @@ export interface IWebAudioStreamingSoundOptions extends IStreamingSoundOptions {
 }
 
 export async function CreateAudioEngine(options: Nullable<IWebAudioEngineOptions> = null): Promise<WebAudioEngine> {
-    return new WebAudioEngine(options);
+    const engine = new WebAudioEngine(options);
+    await engine.init(options);
+    return engine;
 }
 
 /** @internal */
@@ -47,13 +49,14 @@ export class WebAudioEngine extends AbstractAudioEngine {
 
     public constructor(options: Nullable<IWebAudioEngineOptions> = null) {
         super();
+    }
 
+    public async init(options: Nullable<IWebAudioEngineOptions> = null): Promise<void> {
         if (!options?.noDefaultDevice) {
-            this.createDevice("default");
+            await this.createDevice("default");
 
             if (!options?.noDefaultMainBus) {
-                this.createMainBus("default");
-
+                await this.createMainBus("default");
                 this.defaultMainBus.device = this.defaultDevice;
             }
         }
@@ -67,6 +70,7 @@ export class WebAudioEngine extends AbstractAudioEngine {
 
     public override async createMainBus(name: string): Promise<AbstractMainAudioBus> {
         const bus = new WebAudioMainBus(name, this);
+        await bus.init();
         this._addMainBus(bus);
         return bus;
     }
