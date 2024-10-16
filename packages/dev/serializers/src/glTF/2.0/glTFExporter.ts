@@ -64,6 +64,7 @@ import { MultiMaterial, PBRMaterial, StandardMaterial } from "core/Materials";
 import { Logger } from "core/Misc/logger";
 import { enumerateFloatValues } from "core/Buffers/bufferUtils";
 import type { Bone, Skeleton } from "core/Bones";
+import { _GLTFAnimation } from "./glTFAnimation";
 
 // 180 degrees rotation in Y.
 const rotation180Y = new Quaternion(0, 1, 0, 0);
@@ -199,7 +200,7 @@ export class GLTFExporter {
     // /**
     //  * Baked animation sample rate
     //  */
-    // private _animationSampleRate: number;
+    private _animationSampleRate: number;
 
     private readonly _options: Required<IExportOptions>;
 
@@ -1526,6 +1527,42 @@ export class GLTFExporter {
             if (this._shouldExportNode(babylonChildNode)) {
                 node.children ||= [];
                 node.children.push(await this._exportNodeAsync(babylonChildNode, state, convertToRightHanded));
+            }
+        }
+
+        const runtimeGLTFAnimation: IAnimation = {
+            name: "runtime animations",
+            channels: [],
+            samplers: [],
+        };
+        const idleGLTFAnimations: IAnimation[] = [];
+
+        if (!this._babylonScene.animationGroups.length) {
+            _GLTFAnimation._CreateMorphTargetAnimationFromMorphTargetAnimations(
+                babylonNode,
+                runtimeGLTFAnimation,
+                idleGLTFAnimations,
+                this._nodeMap,
+                this._nodes,
+                this._dataWriter,
+                this._bufferViews,
+                this._accessors,
+                this._animationSampleRate,
+                this._options.shouldExportAnimation
+            );
+            if (babylonNode.animations.length) {
+                _GLTFAnimation._CreateNodeAnimationFromNodeAnimations(
+                    babylonNode,
+                    runtimeGLTFAnimation,
+                    idleGLTFAnimations,
+                    this._nodeMap,
+                    this._nodes,
+                    this._dataWriter,
+                    this._bufferViews,
+                    this._accessors,
+                    this._animationSampleRate,
+                    this._options.shouldExportAnimation
+                );
             }
         }
 
