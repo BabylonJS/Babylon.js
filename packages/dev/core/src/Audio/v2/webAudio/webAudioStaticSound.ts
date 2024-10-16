@@ -38,6 +38,10 @@ export class WebAudioStaticSound extends AbstractStaticSound {
         }
     }
 
+    public onSoundInstanceEnded(instance: AbstractSoundInstance): void {
+        this._onSoundInstanceEnded(instance);
+    }
+
     protected override _connect(node: AbstractAudioNode): void {
         super._connect(node);
 
@@ -87,6 +91,8 @@ export class WebAudioStaticSoundInstance extends AbstractStaticSoundInstance {
 
     public async play(): Promise<void> {
         await (this._source as WebAudioStaticSound).audioContext.resume();
+
+        this.sourceNode.addEventListener("ended", this._onEnded.bind(this), { once: true });
         this.sourceNode.start();
     }
 
@@ -121,5 +127,11 @@ export class WebAudioStaticSoundInstance extends AbstractStaticSoundInstance {
         } else {
             throw new Error("Unsupported node type.");
         }
+    }
+
+    protected override _onEnded(): void {
+        (this._source as WebAudioStaticSound).onSoundInstanceEnded(this);
+
+        this.sourceNode.removeEventListener("ended", this._onEnded.bind(this));
     }
 }

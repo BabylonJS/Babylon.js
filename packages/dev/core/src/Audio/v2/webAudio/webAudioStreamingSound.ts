@@ -39,4 +39,8 @@ export class WebAudioStreamingSoundInstance extends AbstractStreamingSoundInstan
     public override stop(): void {
         super.stop();
     }
+
+    protected _onEnded(): void {
+        //
+    }
 }

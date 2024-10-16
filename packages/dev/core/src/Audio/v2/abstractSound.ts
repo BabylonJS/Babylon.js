@@ -119,8 +119,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         }
     }
 
-    /** @internal */
-    public _onSoundInstanceEnded(instance: AbstractSoundInstance): void {
+    protected _onSoundInstanceEnded(instance: AbstractSoundInstance): void {
         this._soundInstances.delete(instance);
     }
 }
