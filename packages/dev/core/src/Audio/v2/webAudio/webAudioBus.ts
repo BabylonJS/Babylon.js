@@ -4,7 +4,7 @@ import { AbstractAudioBus } from "../abstractAudioBus";
 import type { AbstractAudioNode } from "../abstractAudioNode";
 import { AbstractMainAudioBus } from "../abstractMainAudioBus";
 import { WebAudioDevice } from "./webAudioDevice";
-import type { WebAudioEngine } from "./webAudioEngine";
+import type { AbstractWebAudioEngine } from "./webAudioEngine";
 
 export interface IWebAudioBusOptions extends IAudioBusOptions {}
 
@@ -19,7 +19,7 @@ export class WebAudioBus extends AbstractAudioBus {
         return this._gainNode;
     }
 
-    public constructor(name: string, engine: WebAudioEngine, options: Nullable<IWebAudioBusOptions> = null) {
+    public constructor(name: string, engine: AbstractWebAudioEngine, options: Nullable<IWebAudioBusOptions> = null) {
         super(name, engine, options);
     }
 
@@ -60,7 +60,7 @@ export class WebAudioMainBus extends AbstractMainAudioBus {
         return this._gainNode;
     }
 
-    public constructor(name: string, engine: WebAudioEngine) {
+    public constructor(name: string, engine: AbstractWebAudioEngine) {
         super(name, engine);
     }
 

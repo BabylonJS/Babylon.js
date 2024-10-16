@@ -35,33 +35,13 @@ export interface IWebAudioStreamingSoundOptions extends IStreamingSoundOptions {
     //
 }
 
-export async function CreateAudioEngine(options: Nullable<IWebAudioEngineOptions> = null): Promise<WebAudioEngine> {
-    const engine = new WebAudioEngine(options);
+export async function CreateAudioEngine(options: Nullable<IWebAudioEngineOptions> = null): Promise<AbstractWebAudioEngine> {
+    const engine = new WebAudioEngine();
     await engine.init(options);
     return engine;
 }
 
-/** @internal */
-export class WebAudioEngine extends AbstractAudioEngine {
-    public override get defaultDevice(): WebAudioDevice {
-        return super.defaultDevice as WebAudioDevice;
-    }
-
-    public constructor(options: Nullable<IWebAudioEngineOptions> = null) {
-        super();
-    }
-
-    public async init(options: Nullable<IWebAudioEngineOptions> = null): Promise<void> {
-        if (!options?.noDefaultDevice) {
-            await this.createDevice("default");
-
-            if (!options?.noDefaultMainBus) {
-                await this.createMainBus("default");
-                this.defaultMainBus.device = this.defaultDevice;
-            }
-        }
-    }
-
+export class AbstractWebAudioEngine extends AbstractAudioEngine {
     public async createDevice(name: string, options: Nullable<IWebAudioDeviceOptions> = null): Promise<AbstractAudioDevice> {
         const device = new WebAudioDevice(name, this, options);
         this._addDevice(device);
@@ -109,5 +89,23 @@ export class WebAudioEngine extends AbstractAudioEngine {
         await soundInstance.init();
         this._addSoundInstance(soundInstance);
         return soundInstance;
+    }
+}
+
+/** @internal */
+export class WebAudioEngine extends AbstractWebAudioEngine {
+    public override get defaultDevice(): WebAudioDevice {
+        return super.defaultDevice as WebAudioDevice;
+    }
+
+    public async init(options: Nullable<IWebAudioEngineOptions> = null): Promise<void> {
+        if (!options?.noDefaultDevice) {
+            await this.createDevice("default");
+
+            if (!options?.noDefaultMainBus) {
+                await this.createMainBus("default");
+                this.defaultMainBus.device = this.defaultDevice;
+            }
+        }
     }
 }

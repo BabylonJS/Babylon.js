@@ -5,7 +5,7 @@ import { AbstractStaticSound } from "../abstractStaticSound";
 import { AbstractStaticSoundInstance } from "../abstractStaticSoundInstance";
 import { WebAudioBus, WebAudioMainBus } from "./webAudioBus";
 import type { WebAudioDevice } from "./webAudioDevice";
-import type { IWebAudioStaticSoundOptions, WebAudioEngine } from "./webAudioEngine";
+import type { AbstractWebAudioEngine, IWebAudioStaticSoundOptions } from "./webAudioEngine";
 
 /** @internal */
 export class WebAudioStaticSound extends AbstractStaticSound {
@@ -22,7 +22,7 @@ export class WebAudioStaticSound extends AbstractStaticSound {
         return this._gainNode;
     }
 
-    constructor(name: string, engine: WebAudioEngine, options: Nullable<IWebAudioStaticSoundOptions> = null) {
+    constructor(name: string, engine: AbstractWebAudioEngine, options: Nullable<IWebAudioStaticSoundOptions> = null) {
         super(name, engine, options);
     }
 
