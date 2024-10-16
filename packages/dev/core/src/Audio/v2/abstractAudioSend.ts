@@ -19,7 +19,7 @@ export abstract class AbstractAudioSend extends AbstractAudioNode {
     private _outputBus: Nullable<AbstractAuxilliaryAudioBus> = null;
     private _sendType: AudioSendType;
 
-    public constructor(engine: AbstractAudioEngine, options?: IAudioSendOptions) {
+    public constructor(engine: AbstractAudioEngine, options: Nullable<IAudioSendOptions> = null) {
         super(engine, AudioNodeType.InputOutput);
 
         this._sendType = options?.sendType ?? AudioSendType.PostFader;

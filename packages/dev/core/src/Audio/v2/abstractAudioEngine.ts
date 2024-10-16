@@ -1,3 +1,4 @@
+import type { Nullable } from "../../types";
 import type { AbstractAudioDevice, IAudioDeviceOptions } from "./abstractAudioDevice";
 import type { AbstractAudioNode } from "./abstractAudioNode";
 import { AbstractAudioNodeParent } from "./abstractAudioNodeParent";
@@ -88,12 +89,12 @@ export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
         });
     }
 
-    public abstract createDevice(name: string, options?: IAudioDeviceOptions): Promise<AbstractAudioDevice>;
+    public abstract createDevice(name: string, options: Nullable<IAudioDeviceOptions>): Promise<AbstractAudioDevice>;
     public abstract createMainBus(name: string): Promise<AbstractMainAudioBus>;
     public abstract createPositioner(parent: AbstractAudioNode): Promise<AbstractAudioPositioner>;
     public abstract createSender(parent: AbstractAudioNode): Promise<AbstractAudioSender>;
-    public abstract createSound(name: string, options?: IStaticSoundOptions): Promise<AbstractStaticSound>;
+    public abstract createSound(name: string, options: Nullable<IStaticSoundOptions>): Promise<AbstractStaticSound>;
     public abstract createSoundInstance(source: AbstractStaticSound): Promise<AbstractStaticSoundInstance>;
-    public abstract createStreamingSound(name: string, options?: IStreamingSoundOptions): Promise<AbstractStreamingSound>;
+    public abstract createStreamingSound(name: string, options: Nullable<IStreamingSoundOptions>): Promise<AbstractStreamingSound>;
     public abstract createStreamingSoundInstance(source: AbstractStreamingSound): Promise<AbstractStreamingSoundInstance>;
 }

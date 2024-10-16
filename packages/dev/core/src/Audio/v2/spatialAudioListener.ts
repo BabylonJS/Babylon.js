@@ -10,7 +10,7 @@ export class SpatialAudioListener implements IDisposable {
     private _engine: AbstractAudioEngine;
     private _spatialTransform: SpatialAudioTransform;
 
-    public constructor(engine: AbstractAudioEngine, options?: ISpatialAudioTransformOptions) {
+    public constructor(engine: AbstractAudioEngine, options: Nullable<ISpatialAudioTransformOptions> = null) {
         this._engine = engine;
         this._spatialTransform = new SpatialAudioTransform(options);
 

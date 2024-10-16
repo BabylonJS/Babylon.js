@@ -19,7 +19,7 @@ export abstract class AbstractAudioPositioner extends AbstractAudioNode {
 
     public readonly listeners = new Set<SpatialAudioListener>();
 
-    public constructor(parent: AbstractAudioNode, options?: ISpatialAudioTransformOptions) {
+    public constructor(parent: AbstractAudioNode, options: Nullable<ISpatialAudioTransformOptions> = null) {
         super(parent.engine, AudioNodeType.InputOutput, parent);
 
         this._spatialTransform = new SpatialAudioTransform(options);

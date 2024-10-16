@@ -16,7 +16,7 @@ export class SpatialAudioTransform implements IDisposable {
     private _rotation: Quaternion;
     private _rotationDirty: boolean = false;
 
-    public constructor(options?: ISpatialAudioTransformOptions) {
+    public constructor(options: Nullable<ISpatialAudioTransformOptions> = null) {
         this._position = options?.position ?? Vector3.Zero();
         this._rotation = options?.rotation ?? Quaternion.Identity();
         this._attachedTransformNode = options?.attachedTransformNode ?? null;

@@ -1,3 +1,4 @@
+import type { Nullable } from "../../../types";
 import { AbstractStreamingSound } from "../abstractStreamingSound";
 import { AbstractStreamingSoundInstance } from "../abstractStreamingSoundInstance";
 import type { IWebAudioStreamingSoundOptions, WebAudioEngine } from "./webAudioEngine";
@@ -8,7 +9,7 @@ export class WebAudioStreamingSound extends AbstractStreamingSound {
         return 0;
     }
 
-    constructor(name: string, engine: WebAudioEngine, options?: IWebAudioStreamingSoundOptions) {
+    constructor(name: string, engine: WebAudioEngine, options: Nullable<IWebAudioStreamingSoundOptions> = null) {
         super(name, engine, options);
     }
 }

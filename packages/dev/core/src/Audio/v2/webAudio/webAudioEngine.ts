@@ -28,14 +28,14 @@ export interface IWebAudioPositionerOptions extends IAudioPositionerOptions {
 }
 
 export interface IWebAudioStaticSoundOptions extends IStaticSoundOptions {
-    sourceUrl: string;
+    sourceUrl?: string;
 }
 
 export interface IWebAudioStreamingSoundOptions extends IStreamingSoundOptions {
     //
 }
 
-export async function CreateAudioEngine(options?: IWebAudioEngineOptions): Promise<WebAudioEngine> {
+export async function CreateAudioEngine(options: Nullable<IWebAudioEngineOptions> = null): Promise<WebAudioEngine> {
     return new WebAudioEngine(options);
 }
 
@@ -45,7 +45,7 @@ export class WebAudioEngine extends AbstractAudioEngine {
         return super.defaultDevice as WebAudioDevice;
     }
 
-    public constructor(options?: IWebAudioEngineOptions) {
+    public constructor(options: Nullable<IWebAudioEngineOptions> = null) {
         super();
 
         if (!options?.noDefaultDevice) {
@@ -71,7 +71,7 @@ export class WebAudioEngine extends AbstractAudioEngine {
         return bus;
     }
 
-    public async createPositioner(parent: AbstractAudioNode, options?: IWebAudioPositionerOptions): Promise<AbstractAudioPositioner> {
+    public async createPositioner(parent: AbstractAudioNode, options: Nullable<IWebAudioPositionerOptions> = null): Promise<AbstractAudioPositioner> {
         return new WebAudioPositioner(parent, options);
     }
 
@@ -79,7 +79,7 @@ export class WebAudioEngine extends AbstractAudioEngine {
         return new WebAudioSender(parent);
     }
 
-    public async createSound(name: string, options?: IWebAudioStaticSoundOptions): Promise<AbstractStaticSound> {
+    public async createSound(name: string, options: Nullable<IWebAudioStaticSoundOptions> = null): Promise<AbstractStaticSound> {
         const sound = new WebAudioStaticSound(name, this, options);
         await sound.init(options);
         this._addSound(sound);
@@ -93,7 +93,7 @@ export class WebAudioEngine extends AbstractAudioEngine {
         return soundInstance;
     }
 
-    public async createStreamingSound(name: string, options?: IStreamingSoundOptions): Promise<AbstractStreamingSound> {
+    public async createStreamingSound(name: string, options: Nullable<IStreamingSoundOptions> = null): Promise<AbstractStreamingSound> {
         const sound = new WebAudioStreamingSound(name, this, options);
         await sound.init(options);
         this._addSound(sound);
