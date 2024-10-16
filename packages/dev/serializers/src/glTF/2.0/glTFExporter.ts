@@ -1254,7 +1254,7 @@ export class GLTFExporter {
                 this._bufferViews,
                 this._accessors,
                 this._animationSampleRate,
-                this._options.shouldExportAnimation
+                this._babylonScene.useRightHandedSystem
             );
         }
 
@@ -1561,6 +1561,7 @@ export class GLTFExporter {
                 this._bufferViews,
                 this._accessors,
                 this._animationSampleRate,
+                convertToRightHanded,
                 this._options.shouldExportAnimation
             );
             if (babylonNode.animations.length) {
@@ -1574,6 +1575,7 @@ export class GLTFExporter {
                     this._bufferViews,
                     this._accessors,
                     this._animationSampleRate,
+                    convertToRightHanded,
                     this._options.shouldExportAnimation
                 );
             }

@@ -239,6 +239,7 @@ export class _GLTFAnimation {
         bufferViews: IBufferView[],
         accessors: IAccessor[],
         animationSampleRate: number,
+        useRightHanded: boolean,
         shouldExportAnimation?: (animation: Animation) => boolean
     ) {
         let glTFAnimation: IAnimation;
@@ -267,7 +268,8 @@ export class _GLTFAnimation {
                             bufferViews,
                             accessors,
                             animationInfo.useQuaternion,
-                            animationSampleRate
+                            animationSampleRate,
+                            useRightHanded
                         );
                         if (glTFAnimation.samplers.length && glTFAnimation.channels.length) {
                             idleGLTFAnimations.push(glTFAnimation);
@@ -301,6 +303,7 @@ export class _GLTFAnimation {
         bufferViews: IBufferView[],
         accessors: IAccessor[],
         animationSampleRate: number,
+        useRightHanded: boolean,
         shouldExportAnimation?: (animation: Animation) => boolean
     ) {
         let glTFAnimation: IAnimation;
@@ -355,6 +358,7 @@ export class _GLTFAnimation {
                                 accessors,
                                 animationInfo.useQuaternion,
                                 animationSampleRate,
+                                useRightHanded,
                                 morphTargetManager.numTargets
                             );
                             if (glTFAnimation.samplers.length && glTFAnimation.channels.length) {
@@ -387,6 +391,7 @@ export class _GLTFAnimation {
         bufferViews: IBufferView[],
         accessors: IAccessor[],
         animationSampleRate: number,
+        useRightHanded: boolean,
         shouldExportAnimation?: (animation: Animation) => boolean
     ) {
         let glTFAnimation: IAnimation;
@@ -426,7 +431,8 @@ export class _GLTFAnimation {
                                     bufferViews,
                                     accessors,
                                     animationInfo.useQuaternion,
-                                    animationSampleRate
+                                    animationSampleRate,
+                                    useRightHanded
                                 );
                             }
                         }
@@ -523,6 +529,7 @@ export class _GLTFAnimation {
                             accessors,
                             animationInfo.useQuaternion,
                             animationSampleRate,
+                            useRightHanded,
                             morphTargetManager?.numTargets
                         );
                     }
@@ -547,6 +554,7 @@ export class _GLTFAnimation {
         accessors: IAccessor[],
         useQuaternion: boolean,
         animationSampleRate: number,
+        useRightHanded: boolean,
         morphAnimationChannels?: number
     ) {
         const animationData = _GLTFAnimation._CreateNodeAnimation(babylonTransformNode, animation, animationChannelTargetPath, useQuaternion, animationSampleRate);
@@ -604,17 +612,33 @@ export class _GLTFAnimation {
 
             // check for in and out tangents
             bufferView = createBufferView(0, binaryWriter.byteOffset, byteLength);
-            //bufferView = _GLTFUtilities._CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, undefined, `${name}  data view`);
             bufferViews.push(bufferView);
 
             animationData.outputs.forEach(function (output) {
-                output.forEach(function (entry) {
-                    binaryWriter.writeFloat32(entry);
-                });
+                if (useRightHanded) {
+                    switch (animationChannelTargetPath) {
+                        case AnimationChannelTargetPath.TRANSLATION:
+                            binaryWriter.writeFloat32(-output[0]);
+                            binaryWriter.writeFloat32(output[1]);
+                            binaryWriter.writeFloat32(output[2]);
+                            break;
+
+                        default:
+                            output.forEach(function (entry) {
+                                binaryWriter.writeFloat32(entry);
+                            });
+                            break;
+                    }
+                } else {
+                    output.forEach(function (entry) {
+                        binaryWriter.writeFloat32(entry);
+                    });
+                }
             });
 
+            //TODO: Handle right hand vs left hand here.
+
             accessor = createAccessor(bufferViews.length - 1, dataAccessorType, AccessorComponentType.FLOAT, outputLength, null);
-            //accessor = _GLTFUtilities._CreateAccessor(bufferViews.length - 1, `${name}  data`, dataAccessorType, AccessorComponentType.FLOAT, outputLength, null, null, null);
             accessors.push(accessor);
             dataAccessorIndex = accessors.length - 1;
 
