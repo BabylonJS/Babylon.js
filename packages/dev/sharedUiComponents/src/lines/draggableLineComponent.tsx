@@ -1,6 +1,7 @@
 import * as React from "react";
 
 export interface IButtonLineComponentProps {
+    format: string;
     data: string;
     tooltip: string;
 }
@@ -17,7 +18,7 @@ export class DraggableLineComponent extends React.Component<IButtonLineComponent
                 title={this.props.tooltip}
                 draggable={true}
                 onDragStart={(event) => {
-                    event.dataTransfer.setData("babylonjs-gui-node", this.props.data);
+                    event.dataTransfer.setData(this.props.format, this.props.data);
                 }}
             >
                 {this.props.data.replace("Block", "")}

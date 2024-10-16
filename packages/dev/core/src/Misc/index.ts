@@ -65,6 +65,7 @@ export * from "./PerformanceViewer/index";
 export * from "./coroutine";
 export * from "./guid";
 export * from "./error";
+export * from "./snapshotRenderingHelper";
 // eslint-disable-next-line import/export
 export * from "./observableCoroutine";
 export * from "./copyTextureToTexture";

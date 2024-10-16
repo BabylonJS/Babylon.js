@@ -195,6 +195,18 @@ export class NodeGeometryBuildState {
                 }
                 return this.geometryContext.metadata.collectionId || 0;
             }
+            case NodeGeometryContextualSources.LatticeID: {
+                if (this.executionContext.getOverridePositionsContextualValue) {
+                    return this.executionContext.getOverridePositionsContextualValue();
+                }
+                return Vector3.Zero();
+            }
+            case NodeGeometryContextualSources.LatticeControl: {
+                if (this.executionContext.getOverrideNormalsContextualValue) {
+                    return this.executionContext.getOverrideNormalsContextualValue();
+                }
+                return Vector3.Zero();
+            }
         }
 
         return null;

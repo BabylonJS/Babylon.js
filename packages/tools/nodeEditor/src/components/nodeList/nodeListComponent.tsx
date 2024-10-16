@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as React from "react";
 import type { GlobalState } from "../../globalState";
-import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import { DraggableLineComponent } from "../../sharedComponents/draggableLineComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
+import { DraggableLineComponent } from "shared-ui-components/lines/draggableLineComponent";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
 import type { Observer } from "core/Misc/observable";
 import type { Nullable } from "core/types";
-import { DraggableLineWithButtonComponent } from "../../sharedComponents/draggableLineWithButtonComponent";
-import { LineWithFileButtonComponent } from "../../sharedComponents/lineWithFileButtonComponent";
+import { DraggableLineWithButtonComponent } from "shared-ui-components/lines/draggableLineWithButtonComponent";
+import { LineWithFileButtonComponent } from "shared-ui-components/lines/lineWithFileButtonComponent";
 import { Tools } from "core/Misc/tools";
 import addButton from "../../imgs/add.svg";
 import deleteButton from "../../imgs/delete.svg";
@@ -537,6 +537,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                         return (
                             <DraggableLineWithButtonComponent
                                 key={block}
+                                format={"babylonjs-material-node"}
                                 data={block}
                                 tooltip={this._customFrameList[block] || ""}
                                 iconImage={deleteButton}
@@ -548,6 +549,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                         return (
                             <DraggableLineWithButtonComponent
                                 key={block}
+                                format={"babylonjs-material-node"}
                                 data={block}
                                 tooltip={this._customBlockList[block] || ""}
                                 iconImage={deleteButton}
@@ -557,7 +559,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                             />
                         );
                     }
-                    return <DraggableLineComponent key={block} data={block} tooltip={NodeListComponent._Tooltips[block] || ""} />;
+                    return <DraggableLineComponent key={block} format={"babylonjs-material-node"} data={block} tooltip={NodeListComponent._Tooltips[block] || ""} />;
                 });
 
             if (key === "Custom_Frames") {

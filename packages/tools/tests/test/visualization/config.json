@@ -7,6 +7,17 @@
             "referenceImage": "gsplat-nme.png"
         },
         {
+            "title": "Lattice",
+            "playgroundId": "#MDVD75#19",
+            "referenceImage": "lattice.png"
+        },
+        {
+            "title": "HAL Lattice",
+            "playgroundId": "#HBZD72#7",
+            "referenceImage": "lattice-hal.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "NME Loop Block",
             "playgroundId": "#D8AK3Z#109",
             "referenceImage": "nme-loop.png",
