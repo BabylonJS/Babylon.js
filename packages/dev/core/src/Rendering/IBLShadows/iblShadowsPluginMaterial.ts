@@ -36,18 +36,6 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
     public iblShadowsTexture: InternalTexture;
 
     /**
-     * The width of the output texture.
-     */
-    @serialize()
-    public outputTextureWidth: number;
-
-    /**
-     * The height of the output texture.
-     */
-    @serialize()
-    public outputTextureHeight: number;
-
-    /**
      * The opacity of the shadows.
      */
     @serialize()
@@ -95,11 +83,11 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
     public override getUniforms() {
         return {
             ubo: [
-                { name: "iblShadowsTextureSize", size: 2, type: "vec2" },
+                { name: "renderTargetSize", size: 2, type: "vec2" },
                 { name: "shadowOpacity", size: 1, type: "float" },
             ],
             fragment: `#ifdef RENDER_WITH_IBL_SHADOWS
-                    uniform vec2 iblShadowsTextureSize;
+                    uniform vec2 renderTargetSize;
                     uniform float shadowOpacity;
                 #endif`,
         };
@@ -112,7 +100,7 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
     public override bindForSubMesh(uniformBuffer: UniformBuffer) {
         if (this._isEnabled) {
             uniformBuffer.bindTexture("iblShadowsTexture", this.iblShadowsTexture);
-            uniformBuffer.updateFloat2("iblShadowsTextureSize", this.outputTextureWidth, this.outputTextureHeight);
+            uniformBuffer.updateFloat2("renderTargetSize", this._material.getScene().getEngine().getRenderWidth(), this._material.getScene().getEngine().getRenderHeight());
             uniformBuffer.updateFloat("shadowOpacity", this.shadowOpacity);
         }
     }
@@ -129,7 +117,7 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                     var iblShadowsTexture: texture_2d<f32>;
 
                     fn computeIndirectShadow() -> float {
-                        var uv = fragmentInputs.position.xy / uniforms.iblShadowsTextureSize;
+                        var uv = fragmentInputs.position.xy / uniforms.renderTargetSize;
                         return mix(textureSample(iblShadowsTexture, iblShadowsTextureSampler, uv).r, 1.0, 1.0 - uniforms.shadowOpacity);
                     }
                 #endif
@@ -160,7 +148,7 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                     uniform sampler2D iblShadowsTexture;
 
                     float computeIndirectShadow() {
-                        vec2 uv = gl_FragCoord.xy / iblShadowsTextureSize;
+                        vec2 uv = gl_FragCoord.xy / renderTargetSize;
                         return mix(texture2D(iblShadowsTexture, uv).r, 1.0, 1.0 - shadowOpacity);
                     }
                 #endif

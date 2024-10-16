@@ -739,6 +739,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._voxelTracingPass?.resize(this.shadowRenderSizeFactor);
         this._spatialBlurPass?.resize(this.shadowRenderSizeFactor);
         this._accumulationPass?.resize(this.shadowRenderSizeFactor);
+        this._setPluginParameters();
     }
 
     private _getGBufferDebugPass(): PostProcess {
@@ -978,8 +979,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         if (this._enabled) {
             const shadowTexture = this._accumulationPass.getOutputTexture();
             plugin.iblShadowsTexture = shadowTexture.getInternalTexture() ?? this._dummyTexture3d.getInternalTexture()!;
-            plugin.outputTextureWidth = shadowTexture.getSize().width;
-            plugin.outputTextureHeight = shadowTexture.getSize().height;
             plugin.shadowOpacity = this.shadowOpacity;
         }
 
@@ -998,8 +997,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
                 const plugin = mat.pluginManager.getPlugin<IBLShadowsPluginMaterial>(IBLShadowsPluginMaterial.Name)!;
                 const shadowTexture = this._accumulationPass.getOutputTexture().getInternalTexture() ?? this._dummyTexture3d.getInternalTexture()!;
                 plugin.iblShadowsTexture = shadowTexture;
-                plugin.outputTextureWidth = this.engine.getRenderWidth();
-                plugin.outputTextureHeight = this.engine.getRenderHeight();
                 plugin.shadowOpacity = this.shadowOpacity;
             }
         });
