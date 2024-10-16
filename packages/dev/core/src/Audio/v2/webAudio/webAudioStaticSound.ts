@@ -136,5 +136,7 @@ export class WebAudioStaticSoundInstance extends AbstractStaticSoundInstance {
         (this._source as WebAudioStaticSound).onSoundInstanceEnded(this);
 
         this.sourceNode?.removeEventListener("ended", this._onEnded.bind(this));
+
+        this.onEndedObservable.notifyObservers(this);
     }
 }

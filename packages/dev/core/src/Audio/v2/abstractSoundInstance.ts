@@ -1,3 +1,4 @@
+import { Observable } from "../../Misc/observable";
 import { AbstractAudioNode, AudioNodeType } from "./abstractAudioNode";
 import type { AbstractSound } from "./abstractSound";
 
@@ -7,6 +8,8 @@ import type { AbstractSound } from "./abstractSound";
  */
 export abstract class AbstractSoundInstance extends AbstractAudioNode {
     protected _source: AbstractSound;
+
+    public onEndedObservable = new Observable<AbstractSoundInstance>();
 
     public constructor(source: AbstractSound) {
         super(source.engine, AudioNodeType.Output);

@@ -1,3 +1,4 @@
+import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 import type { AbstractPrimaryAudioBus } from "./abstractAudioBus";
 import type { AbstractAudioEngine } from "./abstractAudioEngine";
@@ -30,6 +31,8 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
     public startTime: number;
     public stopTime: number;
     public volume: number;
+
+    public onEndedObservable = new Observable<AbstractSound>();
 
     public get outputBus(): Nullable<AbstractPrimaryAudioBus> {
         return this._outputBus;
@@ -117,5 +120,9 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
 
     protected _onSoundInstanceEnded(instance: AbstractSoundInstance): void {
         this._soundInstances.delete(instance);
+
+        if (this._soundInstances.size === 0) {
+            this.onEndedObservable.notifyObservers(this);
+        }
     }
 }
