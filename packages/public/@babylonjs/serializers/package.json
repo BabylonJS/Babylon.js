@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/serializers",
-    "version": "7.15.3",
+    "version": "7.15.4",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -21,7 +21,7 @@
         "@babylonjs/core": "^7.15.2",
         "@dev/build-tools": "^1.0.0",
         "@lts/serializers": "^1.0.0",
-        "babylonjs-gltf2interface": "^7.15.3"
+        "babylonjs-gltf2interface": "^7.15.4"
     },
     "peerDependencies": {
         "@babylonjs/core": "^7.0.0",

@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/node-editor",
-    "version": "7.15.3",
+    "version": "7.15.4",
     "main": "dist/babylon.nodeEditor.max.js",
     "module": "dist/babylon.nodeEditor.max.js",
     "esnext": "dist/babylon.nodeEditor.max.js",

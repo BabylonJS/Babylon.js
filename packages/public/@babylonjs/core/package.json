@@ -1,6 +1,6 @@
 {
     "name": "@urusgraphics/babylonjs-core",
-    "version": "7.15.3",
+    "version": "7.15.4",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",

@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/node-geometry-editor",
-    "version": "7.15.3",
+    "version": "7.15.4",
     "main": "dist/babylon.nodeGeometryEditor.max.js",
     "module": "dist/babylon.nodeGeometryEditor.max.js",
     "esnext": "dist/babylon.nodeGeometryEditor.max.js",
