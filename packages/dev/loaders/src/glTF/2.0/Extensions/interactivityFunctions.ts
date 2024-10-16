@@ -3,24 +3,11 @@ import type { IKHRInteractivity, IKHRInteractivity_Configuration, IKHRInteractiv
 import type { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import type { ISerializedFlowGraph, ISerializedFlowGraphBlock, ISerializedFlowGraphConnection, ISerializedFlowGraphContext } from "core/FlowGraph/typeDefinitions";
 import { RandomGUID } from "core/Misc/guid";
-import type { IGLTFToFlowGraphMapping } from "./interactivityUtils";
+import type { IConvertedInteractivityObject, IGLTFToFlowGraphMapping, InteractivityEvent, InteractivityVariable } from "./interactivityUtils";
 import { gltfTypeToBabylonType, gltfToFlowGraphMapping, convertGLTFValueToFlowGraph } from "./interactivityUtils";
 import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
 import { Logger } from "core/Misc/logger";
 import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
-
-interface InteractivityVariable {
-    name: string;
-    value: {
-        className: string;
-        value: any;
-    };
-}
-
-interface InteractivityEvent {
-    eventId: string;
-    eventData?: { [key: string]: string };
-}
 
 function convertVariableValueWithType(configObject: IKHRInteractivity_Variable, types: FlowGraphTypes[], index: number) {
     if (configObject.type !== undefined) {
@@ -49,62 +36,22 @@ function convertVariableValueWithType(configObject: IKHRInteractivity_Variable, 
     }
 }
 
-function convertConfiguration(
-    gltfBlock: IKHRInteractivity_Node,
-    mapping: IGLTFToFlowGraphMapping,
-    indexArray: { types: FlowGraphTypes[]; variables: InteractivityVariable[]; events: InteractivityEvent[] }
-): IFlowGraphBlockConfiguration {
+function convertConfiguration(gltfBlock: IKHRInteractivity_Node, mapping: IGLTFToFlowGraphMapping, convertedObject: IConvertedInteractivityObject): IFlowGraphBlockConfiguration {
     const converted: IFlowGraphBlockConfiguration = {};
     const configurationList: IKHRInteractivity_Configuration[] = gltfBlock.configuration ?? [];
     for (const configObject of configurationList) {
         // parse every configuration object, based on the mapping
         const configMapping = mapping.configuration?.[configObject.id];
         if (configMapping) {
-            const { key, value } = convertGLTFValueToFlowGraph(configObject.value, configMapping, indexArray);
+            const { key, value } = convertGLTFValueToFlowGraph(configObject.value, configMapping, convertedObject);
             converted[key] = value;
         }
     }
-    // now search for other connections that are set to be isOptions.
-
-    // let internalEventCounter = 0;
-    //     if (configObject.id === "customEvent") {
-    //         const customEvent = definition.events && definition.events[configObject.value];
-    //         if (!customEvent) {
-    //             throw new Error(`/extensions/KHR_interactivity/nodes/${id}: Unknown custom event: ${configObject.value}`);
-    //         }
-    //         converted.eventId = customEvent.id || "internalEvent_" + internalEventCounter++;
-    //         if (customEvent.values) {
-    //             // eventData is a dictionary of the values of the custom event, so we need to convert it to an array
-    //             converted.eventData = customEvent.values.reduce(
-    //                 (acc, value, currIndex) => {
-    //                     acc[value.id] = customEvent.values[currIndex];
-    //                     // check if there is a type for the value
-    //                     if (value.type !== undefined && definition.types) {
-    //                         acc[value.id].type = gltfTypeToBabylonType[definition.types?.[value.type].signature];
-    //                     }
-    //                     return acc;
-    //                 },
-    //                 {} as Record<string, any>
-    //             );
-    //         }
-    //     } else if (configObject.id === "variable") {
-    //         const variable = definition.variables && definition.variables[configObject.value];
-    //         if (!variable) {
-    //             throw new Error(`/extensions/KHR_interactivity/nodes/${id}: Unknown variable: ${configObject.value}`);
-    //         }
-    //         converted.variableName = variable.id;
-    //     } else if (configObject.id === "pointer") {
-    //         // Convert from a GLTF path to a reference to the Babylon.js object
-    //         const pathValue = configObject.value as string;
-    //         converted.path = pathValue;
-    //     } else {
-    //         converted[configObject.id] = convertVariableValueWithType(configObject, definition, `/extensions/KHR_interactivity/nodes/${id}`);
-    //     }
-    // }
+    // TODO - we need to deal with pointers here?
     return converted;
 }
 
-function convertBlock(id: number, gltfBlock: IKHRInteractivity_Node, definition: IKHRInteractivity): ISerializedFlowGraphBlock[] | undefined {
+function convertBlock(id: number, gltfBlock: IKHRInteractivity_Node, definition: IKHRInteractivity, convertedObject: IConvertedInteractivityObject) {
     const mapping = gltfToFlowGraphMapping[gltfBlock.type];
     if (!mapping) {
         Logger.Warn(`/extensions/KHR_interactivity/nodes/${id}: Unknown block type: ${gltfBlock.type}`);
@@ -112,13 +59,13 @@ function convertBlock(id: number, gltfBlock: IKHRInteractivity_Node, definition:
     }
     const className = mapping.blocks[0];
     const uniqueId = id.toString();
-    const config = convertConfiguration(gltfBlock, definition, uniqueId);
+    const config = convertConfiguration(gltfBlock, mapping, convertedObject);
     const metadata = gltfBlock.metadata;
     const dataInputs: ISerializedFlowGraphConnection[] = [];
     const dataOutputs: ISerializedFlowGraphConnection[] = [];
     const signalInputs: ISerializedFlowGraphConnection[] = [];
     const signalOutputs: ISerializedFlowGraphConnection[] = [];
-    return {
+    const block: ISerializedFlowGraphBlock = {
         className,
         type: gltfBlock.type,
         config,
@@ -129,6 +76,7 @@ function convertBlock(id: number, gltfBlock: IKHRInteractivity_Node, definition:
         signalInputs,
         signalOutputs,
     };
+    return block;
 }
 
 /**
@@ -193,13 +141,19 @@ export function convertGLTFToSerializedFlowGraph(gltf: IKHRInteractivity): ISeri
     // Blocks converted to the flow graph json format
     const flowGraphJsonBlocks: ISerializedFlowGraphBlock[] = [];
 
+    const converted: IConvertedInteractivityObject = {
+        types,
+        events,
+        variables,
+        nodes: flowGraphJsonBlocks,
+    };
+
     for (let i = 0; i < gltf.nodes.length; i++) {
         const gltfBlock = gltf.nodes[i];
-        const flowGraphJsonBlock = convertBlock(i, gltfBlock, gltf);
-        if (!flowGraphJsonBlock) {
-            continue;
+        const block = convertBlock(i, gltfBlock, gltf, converted);
+        if (block) {
+            flowGraphJsonBlocks.push(block);
         }
-        flowGraphJsonBlocks.push(...flowGraphJsonBlock);
     }
 
     // now that we have the arrays populated, we can do the connections and populate the context.
@@ -217,10 +171,14 @@ export function convertGLTFToSerializedFlowGraph(gltf: IKHRInteractivity): ISeri
         // get the block that was created in the previous step
         const fgBlock = flowGraphJsonBlocks[i];
         const outputMapper = gltfToFlowGraphMapping[fgBlock.type];
+        // make sure the mapper exists
+        if (!outputMapper) {
+            throw new Error(`/extensions/KHR_interactivity/nodes/${i}: Unknown block type: ${fgBlock.type}`);
+        }
         const gltfFlows = gltfBlock.flows ?? [];
         // for each output flow of the gltf block
         for (const flow of gltfFlows) {
-            const socketOutName = outputMapper.outputs.flows?.[flow.id].name || flow.id;
+            const socketOutName = outputMapper.outputs?.flows?.[flow.id].name || flow.id;
             // create an output connection for the flow graph block
             const socketOut: ISerializedFlowGraphConnection = {
                 uniqueId: RandomGUID(),
@@ -239,7 +197,10 @@ export function convertGLTFToSerializedFlowGraph(gltf: IKHRInteractivity): ISeri
                 );
             }
             const inputMapper = gltfToFlowGraphMapping[nodeIn.type];
-            const nodeInSocketName = inputMapper.inputs.flows?.[flow.socket].name || flow.socket;
+            if (!inputMapper) {
+                throw new Error(`/extensions/KHR_interactivity/nodes/${i}: Unknown block type: ${nodeIn.type}`);
+            }
+            const nodeInSocketName = inputMapper.inputs?.flows?.[flow.socket].name || flow.socket;
             // in all of the flow graph input connections, find the one with the same name as the socket
             let socketIn = nodeIn.signalInputs.find((s) => s.name === nodeInSocketName);
             // if the socket doesn't exist, create the input socket for the connection
@@ -270,7 +231,7 @@ export function convertGLTFToSerializedFlowGraph(gltf: IKHRInteractivity): ISeri
             fgBlock.dataInputs.push(socketIn);
             if (value.value !== undefined) {
                 // if the value is set on the socket itself, store it in the context
-                const convertedValue = convertVariableValueWithType(value as IKHRInteractivity_Configuration, gltf, `/extensions/KHR_interactivity/nodes/${i}`);
+                const convertedValue = convertVariableValueWithType(value as IKHRInteractivity_Variable, types, i);
                 // convertBlockInputType(gltfBlock, value, convertedValue, `/extensions/KHR_interactivity/nodes/${i}`);
                 context._connectionValues[socketIn.uniqueId] = convertedValue;
             } else if (value.node !== undefined && value.socket !== undefined) {
@@ -300,6 +261,16 @@ export function convertGLTFToSerializedFlowGraph(gltf: IKHRInteractivity): ISeri
                 socketOut.connectedPointIds.push(socketIn.uniqueId);
             } else {
                 throw new Error(`/extensions/KHR_interactivity/nodes/${i}: Invalid socket ${socketInName} in node ${i}`);
+            }
+        }
+
+        if (outputMapper.extraProcessor) {
+            const blocks = outputMapper.extraProcessor(fgBlock, outputMapper, converted, fgBlock);
+            // the first block is expected to already be a part of the nodes array, but further blocks need to be added to the array.
+            if (blocks.length > 1) {
+                for (let j = 1; j < blocks.length; j++) {
+                    flowGraphJsonBlocks.push(blocks[j]);
+                }
             }
         }
     }

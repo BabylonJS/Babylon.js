@@ -1,6 +1,28 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import type { IKHRInteractivity_Node } from "babylonjs-gltf2interface";
 import { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
 import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
+import type { ISerializedFlowGraphBlock } from "core/FlowGraph/typeDefinitions";
+
+export interface InteractivityVariable {
+    name: string;
+    value: {
+        className: string;
+        value: any;
+    };
+}
+
+export interface InteractivityEvent {
+    eventId: string;
+    eventData?: { [key: string]: string };
+}
+
+export interface IConvertedInteractivityObject {
+    variables: InteractivityVariable[];
+    events: InteractivityEvent[];
+    types: FlowGraphTypes[];
+    nodes: ISerializedFlowGraphBlock[];
+}
 
 interface IGLTFToFlowGraphMappingObject<I = any, O = any> {
     /**
@@ -36,7 +58,7 @@ interface IGLTFToFlowGraphMappingObject<I = any, O = any> {
      * If the property is an index to a value.
      * if defined this will be the name of the array to find the object in.
      */
-    isIndex?: string;
+    isIndex?: keyof IConvertedInteractivityObject;
 
     /**
      * the name of the class type this value will be mapped to.
@@ -91,26 +113,36 @@ export interface IGLTFToFlowGraphMapping {
 
     /**
      * This is used if we need extra information for the constructor/options that is not provided directly by the glTF node.
-     * @param mapping the mapping that is currently being processed
-     * @param objectToWorkOn The object tat will be augmented
+     * This function can return more than one node, if extra nodes are needed for this block to function correctly.
+     * Returning more than one block will usually happen when a json pointer was provided.
+     * @param gltfBlock the glTF node
+     * @param mapping the mapping object
+     * @param arrays the arrays of the interactivity object
+     * @param serializedObject the serialized object
+     * @returns an array of serialized nodes that will be added to the graph.
      */
-    extraOptionsProcessor?: (mapping?: IGLTFToFlowGraphMapping, objectToWorkOn?: any) => void;
+    extraProcessor?: (
+        gltfBlock: IKHRInteractivity_Node,
+        mapping: IGLTFToFlowGraphMapping,
+        arrays: IConvertedInteractivityObject,
+        serializedObject: ISerializedFlowGraphBlock
+    ) => ISerializedFlowGraphBlock[];
 }
 
-export function convertGLTFValueToFlowGraph(value: any, mapping: IGLTFToFlowGraphMappingObject, arrays?: { [arrayName: string]: any[] }) {
+export function convertGLTFValueToFlowGraph(value: any, mapping: IGLTFToFlowGraphMappingObject, convertedObject?: IConvertedInteractivityObject) {
     if (mapping.isPointer) {
         throw new Error("Function not supporting glTF JSON pointers. Please use getJSONPointerNode instead");
     }
     const flowGraphKeyName = mapping.name;
     let convertedValue = value;
     if (mapping.isIndex) {
-        if (!arrays?.[mapping.isIndex]) {
+        if (!convertedObject?.[mapping.isIndex]) {
             throw new Error("missing array " + mapping.isIndex);
         } else {
             if (!mapping.dataTransformer) {
                 throw new Error("dataTransform must be defined if isIndex is set");
             }
-            convertedValue = mapping.dataTransformer(value, arrays[mapping.isIndex]);
+            convertedValue = mapping.dataTransformer(value, convertedObject[mapping.isIndex]);
         }
     } else {
         if (mapping.dataTransformer) {
@@ -164,13 +196,13 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
         blocks: [FlowGraphBlockNames.SendCustomEvent],
         configuration: {
             // event is an INDEX to the events array in the glTF data. so eventId will be taken from the array.
-            event: { name: "eventId", gltfType: "number", flowGraphType: "string", inOptions: true, isIndex: "events", dataTransformer: (name, events) => events?.[name].eventId },
+            // event: { name: "eventId", gltfType: "number", flowGraphType: "string", inOptions: true, isIndex: "events", dataTransformer: (name, events) => events?.[name].eventId },
         },
         inputs: {
             values: {
                 // TODO the type(s) for the custom values here is defined by the event itself! will need to see how to handle this.
                 // TODO - do we want to add the mapping here?
-                "*": { name: "eventData.$1", gltfType: "array", inOptions: true },
+                // "*": { name: "eventData.$1", gltfType: "array", inOptions: true },
             },
             // flows: {
             //     // in: { name: "in" },
@@ -181,22 +213,48 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
         //         // out: { name: "out" },
         //     },
         // },
+        extraProcessor(gltfBlock, _mapping, arrays, serializedObject) {
+            // set eventId and eventData. The configuration object of the glTF shoudl have a single(!) object.
+            // validate that we are running it on the right block.
+            if (gltfBlock.type !== "event/send" || !gltfBlock.configuration || Object.keys(gltfBlock.configuration).length !== 1) {
+                throw new Error("Receive event should have a single configuration object, the event itself");
+            }
+            const eventConfiguration = gltfBlock.configuration[0];
+            const event: InteractivityEvent = arrays.events[eventConfiguration.value];
+            serializedObject.config = serializedObject.config || {};
+            serializedObject.config.eventId = event.eventId;
+            serializedObject.config.eventData = event.eventData;
+            return [serializedObject];
+        },
     },
     "event/receive": {
         blocks: [FlowGraphBlockNames.ReceiveCustomEvent],
-        configuration: {
-            // event is an INDEX to the events array in the glTF data. so eventId will be taken from the array.
-            event: { name: "eventId", gltfType: "number", flowGraphType: "string", inOptions: true, isIndex: "events", dataTransformer: (name, events) => events?.[name].eventId },
-        },
+        // configuration: {
+        //     // event is an INDEX to the events array in the glTF data. so eventId will be taken from the array.
+        //     // event: { name: "eventId", gltfType: "number", flowGraphType: "string", inOptions: true, isIndex: "events", dataTransformer: (name, events) => events?.[name].eventId },
+        // },
         // inputs: {
         //     flows: {
         //         // in: { name: "in" },
         //     },
         // },
-        outputs: {
-            values: {
-                "[custom]": { name: "eventData.$1", gltfType: "array" },
-            },
+        // outputs: {
+        //     values: {
+        //         // "[custom]": { name: "eventData.$1", gltfType: "array" },
+        //     },
+        // },
+        extraProcessor(gltfBlock, _mapping, arrays, serializedObject) {
+            // set eventId and eventData. The configuration object of the glTF shoudl have a single(!) object.
+            // validate that we are running it on the right block.
+            if (gltfBlock.type !== "event/receive" || !gltfBlock.configuration || Object.keys(gltfBlock.configuration).length !== 1) {
+                throw new Error("Receive event should have a single configuration object, the event itself");
+            }
+            const eventConfiguration = gltfBlock.configuration[0];
+            const event: InteractivityEvent = arrays.events[eventConfiguration.value];
+            serializedObject.config = serializedObject.config || {};
+            serializedObject.config.eventId = event.eventId;
+            serializedObject.config.eventData = event.eventData;
+            return [serializedObject];
         },
     },
     "math/e": getSimpleInputMapping(FlowGraphBlockNames.E),
@@ -494,16 +552,24 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
         outputs: {
             flows: {
                 // "[name]": { name: "$1" },
-                "[*].length": {
-                    name: "numberOutputFlows",
-                    gltfType: "array",
-                    flowGraphType: "number",
-                    inOptions: true,
-                    dataTransformer(_data, _array, container) {
-                        return Object.keys(container || {}).length;
-                    },
-                },
+                // "[*].length": {
+                //     name: "numberOutputFlows",
+                //     gltfType: "array",
+                //     flowGraphType: "number",
+                //     inOptions: true,
+                //     dataTransformer(_data, _array, container) {
+                //         return Object.keys(container || {}).length;
+                //     },
+                // },
             },
+        },
+        extraProcessor(gltfBlock, _mapping, _arrays, serializedObject) {
+            if (gltfBlock.type !== "flow/sequence" || !gltfBlock.flows || Object.keys(gltfBlock.flows).length === 0) {
+                throw new Error("Sequence should have a single configuration object, the number of output flows");
+            }
+            serializedObject.config = serializedObject.config || {};
+            serializedObject.config.numberOutputFlows = Object.keys(gltfBlock.flows).length;
+            return [serializedObject];
         },
     },
     "flow/branch": {
@@ -529,19 +595,31 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
         configuration: {
             cases: { name: "cases", gltfType: "array", inOptions: true },
         },
-        inputs: {
-            values: {
-                selection: { name: "selection", gltfType: "number" },
-            },
-            flows: {
-                // in: { name: "in" },
-            },
-        },
-        outputs: {
-            flows: {
-                "[case]": { name: "out_$1" },
-                default: { name: "default" },
-            },
+        // inputs: {
+        //     values: {
+        //         selection: { name: "selection", gltfType: "number" },
+        //     },
+        //     flows: {
+        //         // in: { name: "in" },
+        //     },
+        // },
+        // outputs: {
+        //     flows: {
+        //         // "[case]": { name: "out_$1" },
+        //         // default: { name: "default" },
+        //     },
+        // },
+        extraProcessor(gltfBlock, mapping, arrays, serializedObject) {
+            // convert all names of output flow to out_$1 apart from "default"
+            if (gltfBlock.type !== "flow/switch" || !gltfBlock.flows || Object.keys(gltfBlock.flows).length === 0) {
+                throw new Error("Switch should have a single configuration object, the cases array");
+            }
+            serializedObject.signalOutputs.forEach((output) => {
+                if (output.name !== "default") {
+                    output.name = "out_" + output.name;
+                }
+            });
+            return [serializedObject];
         },
     },
     "flow/while": {
@@ -625,31 +703,32 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
             values: {
                 lastIndex: { name: "lastIndex" },
             },
-            flows: {
-                // "[name]": { name: "$1" },
-                "[*].length": {
-                    name: "numberOutputFlows",
-                    gltfType: "array",
-                    flowGraphType: "number",
-                    inOptions: true,
-                    dataTransformer(_data, _array, container) {
-                        return Object.keys(container || {}).length;
-                    },
-                },
-            },
+            // flows: {
+            //     // "[name]": { name: "$1" },
+            //     // "[*].length": {
+            //     //     name: "numberOutputFlows",
+            //     //     gltfType: "array",
+            //     //     flowGraphType: "number",
+            //     //     inOptions: true,
+            //     //     dataTransformer(_data, _array, container) {
+            //     //         return Object.keys(container || {}).length;
+            //     //     },
+            //     // },
+            // },
+        },
+        extraProcessor(gltfBlock, _mapping, _arrays, serializedObject) {
+            if (gltfBlock.type !== "flow/multiGate" || !gltfBlock.flows || Object.keys(gltfBlock.flows).length === 0) {
+                throw new Error("MultiGate should have a single configuration object, the number of output flows");
+            }
+            serializedObject.config = serializedObject.config || {};
+            serializedObject.config.numberOutputFlows = Object.keys(gltfBlock.flows).length;
+            return [serializedObject];
         },
     },
     "flow/waitAll": {
         blocks: [FlowGraphBlockNames.WaitAll],
         configuration: {
             inputFlows: { name: "inputFlows", gltfType: "number", inOptions: true },
-        },
-        inputs: {
-            flows: {
-                // reset: { name: "reset" },
-                // or "in_$1" ?
-                "[i]": { name: "inFlows.$1" },
-            },
         },
         outputs: {
             values: {
@@ -659,6 +738,14 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
                 // completed: { name: "completed" },
                 // out: { name: "out" },
             },
+        },
+        extraProcessor(_gltfBlock, _mapping, _arrays, serializedObject) {
+            // process the input flows and add them to the inFlow array
+            // take all input flows and convert their names correctly to "in_$1"
+            serializedObject.signalInputs.forEach((input) => {
+                input.name = "in_" + input.name;
+            });
+            return [serializedObject];
         },
     },
     "flow/throttle": {
@@ -838,7 +925,8 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
         configuration: {},
         inputs: {
             values: {
-                animation: { name: "animation", gltfType: "number", flowGraphType: "animation", isIndex: "animations" },
+                // TODO - fix the animation reference
+                animation: { name: "animation", gltfType: "number", flowGraphType: "animation" /*isIndex: "animations"*/ },
                 speed: { name: "speed", gltfType: "number" },
                 // 60 is a const from the glTF loader
                 startTime: { name: "from", gltfType: "number", dataTransformer: (time: number) => time / 60 },
@@ -861,7 +949,7 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
         configuration: {},
         inputs: {
             values: {
-                animation: { name: "animation", gltfType: "number", flowGraphType: "animation", isIndex: "animations" },
+                animation: { name: "animation", gltfType: "number", flowGraphType: "animation" /*, isIndex: "animations"*/ },
             },
             flows: {
                 // in: { name: "in" },
@@ -879,7 +967,7 @@ export const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } 
         configuration: {},
         inputs: {
             values: {
-                animation: { name: "animation", gltfType: "number", flowGraphType: "animation", isIndex: "animations" },
+                animation: { name: "animation", gltfType: "number", flowGraphType: "animation" /*, isIndex: "animations"*/ },
                 stopTime: { name: "stopAtFrame", gltfType: "number", dataTransformer: (time: number) => time / 60 },
             },
             flows: {
