@@ -10,6 +10,7 @@ module.exports = (env) => {
             glTF2: "./src/glTF2.ts",
             obj: "./src/obj.ts",
             stl: "./src/stl.ts",
+            usdz: "./src/USDZ.ts",
         },
         alias: {
             serializers: path.resolve(__dirname, "../../../dev/serializers/src"),
