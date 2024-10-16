@@ -1,7 +1,8 @@
 import type { ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, ISceneLoaderAsyncResult, ISceneLoaderProgressEvent, SceneLoaderPluginOptions } from "core/Loading/sceneLoader";
 import { registerSceneLoaderPlugin } from "core/Loading/sceneLoader";
 import { SPLATFileLoaderMetadata } from "./splatFileLoader.metadata";
-import { GaussianSplattingMesh, type BoundingVolume } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
+import type { BoundingVolume } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
+import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
 import { AssetContainer } from "core/assetContainer";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";

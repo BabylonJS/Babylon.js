@@ -706,7 +706,6 @@ export class GaussianSplattingMesh extends Mesh {
         this._worker.onmessage = (e) => {
             this._depthMix = e.data.depthMix;
             const indexMix = new Uint32Array(e.data.depthMix.buffer);
-            //Logger.Log(`ahahahah ${this._vertexCount} - ${e.data.subsetSize}`);
             if (this._splatIndex) {
                 for (let j = 0; j < e.data.subsetSize; j++) {
                     this._splatIndex[j] = indexMix[2 * j];
