@@ -3,13 +3,13 @@ import type { AbstractAudioNode } from "../abstractAudioNode";
 import type { AbstractSoundInstance } from "../abstractSoundInstance";
 import { AbstractStaticSound } from "../abstractStaticSound";
 import { AbstractStaticSoundInstance } from "../abstractStaticSoundInstance";
-import { WebAudioBus, WebAudioMainBus, WebAudioPrimaryBus } from "./webAudioBus";
+import { WebAudioBus, WebAudioMainBus } from "./webAudioBus";
 import type { IWebAudioStaticSoundOptions, WebAudioEngine } from "./webAudioEngine";
 
 /** @internal */
 export class WebAudioStaticSound extends AbstractStaticSound {
     private _gainNode: GainNode;
-    private _audioBufferPromise: Nullable<Promise<AudioBuffer>> = null;
+    private _audioBuffer: Nullable<AudioBuffer> = null;
 
     public readonly audioContext: AudioContext;
 
@@ -21,28 +21,25 @@ export class WebAudioStaticSound extends AbstractStaticSound {
         return this._gainNode;
     }
 
-    constructor(name: string, engine: WebAudioEngine, options?: IWebAudioStaticSoundOptions) {
+    constructor(name: string, engine: WebAudioEngine, options: Nullable<IWebAudioStaticSoundOptions> = null) {
         super(name, engine, options);
 
         this.audioContext = engine.defaultDevice.audioContext;
         this._gainNode = new GainNode(this.audioContext);
+    }
 
-        this.webAudioInputNode.connect((this.outputBus as WebAudioPrimaryBus).webAudioInputNode);
+    public override async init(options: Nullable<IWebAudioStaticSoundOptions> = null): Promise<void> {
+        await super.init(options);
 
         if (options?.sourceUrl) {
-            this._audioBufferPromise = fetch(options.sourceUrl)
-                .then((response) => response.arrayBuffer())
-                .then((arrayBuffer) => this.audioContext.decodeAudioData(arrayBuffer));
+            const response = await fetch(options.sourceUrl);
+            const arrayBuffer = await response.arrayBuffer();
+            this._audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
         }
     }
 
     protected override _connect(node: AbstractAudioNode): void {
         super._connect(node);
-
-        const outputNode = this.webAudioOutputNode;
-        if (!outputNode) {
-            return;
-        }
 
         if (node instanceof WebAudioMainBus) {
             this.webAudioOutputNode.connect(node.webAudioInputNode);
@@ -64,7 +61,7 @@ export class WebAudioStaticSound extends AbstractStaticSound {
     protected override async _createSoundInstance(): Promise<AbstractSoundInstance> {
         const instance = (await super._createSoundInstance()) as WebAudioStaticSoundInstance;
 
-        instance.sourceNode.buffer = await this._audioBufferPromise;
+        instance.sourceNode.buffer = this._audioBuffer;
 
         return instance;
     }
@@ -86,8 +83,6 @@ export class WebAudioStaticSoundInstance extends AbstractStaticSoundInstance {
         super(source);
 
         this.sourceNode = new AudioBufferSourceNode(source.audioContext);
-
-        this._connect(source);
     }
 
     public async play(): Promise<void> {
@@ -111,13 +106,8 @@ export class WebAudioStaticSoundInstance extends AbstractStaticSoundInstance {
     protected override _connect(node: AbstractAudioNode): void {
         super._connect(node);
 
-        const outputNode = this.webAudioOutputNode;
-        if (!outputNode) {
-            return;
-        }
-
         if (node instanceof WebAudioStaticSound) {
-            outputNode.connect(node.webAudioInputNode);
+            this.webAudioOutputNode.connect(node.webAudioInputNode);
         } else {
             throw new Error("Unsupported node type.");
         }

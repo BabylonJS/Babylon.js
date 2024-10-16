@@ -1,3 +1,4 @@
+import type { Nullable } from "../../types";
 import type { AbstractAudioEngine } from "./abstractAudioEngine";
 import type { ISoundOptions } from "./abstractSound";
 import { AbstractSound } from "./abstractSound";
@@ -12,7 +13,7 @@ export abstract class AbstractStaticSound extends AbstractSound {
     private _loopStart: number;
     private _loopEnd: number;
 
-    public constructor(name: string, engine: AbstractAudioEngine, options?: IStaticSoundOptions) {
+    public constructor(name: string, engine: AbstractAudioEngine, options: Nullable<IStaticSoundOptions> = null) {
         super(name, engine, options);
 
         this._loopStart = options?.loopStart ?? 0;

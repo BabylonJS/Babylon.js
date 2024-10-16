@@ -12,8 +12,10 @@ export abstract class AbstractSoundInstance extends AbstractAudioNode {
         super(source.engine, AudioNodeType.Output);
 
         this._source = source;
+    }
 
-        this._connect(source);
+    public async init(): Promise<void> {
+        this._connect(this._source);
     }
 
     public override dispose(): void {

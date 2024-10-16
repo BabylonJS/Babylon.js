@@ -22,7 +22,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
     // Non-owning.
     protected _soundInstances = new Set<AbstractSoundInstance>();
 
-    protected _outputBus: Nullable<AbstractPrimaryAudioBus>;
+    protected _outputBus: Nullable<AbstractPrimaryAudioBus> = null;
 
     public readonly autoplay: boolean;
     public loop: boolean;
@@ -60,8 +60,10 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         this.startTime = options?.startTime ?? 0;
         this.stopTime = options?.stopTime ?? 0;
         this.volume = options?.volume ?? 1;
+    }
 
-        this.outputBus = options?.outputBus ?? engine.defaultMainBus;
+    public async init(options: Nullable<ISoundOptions> = null): Promise<void> {
+        this.outputBus = options?.outputBus ?? this.engine.defaultMainBus;
     }
 
     public override dispose(): void {

@@ -81,24 +81,28 @@ export class WebAudioEngine extends AbstractAudioEngine {
 
     public async createSound(name: string, options?: IWebAudioStaticSoundOptions): Promise<AbstractStaticSound> {
         const sound = new WebAudioStaticSound(name, this, options);
+        await sound.init(options);
         this._addSound(sound);
         return sound;
     }
 
     public async createSoundInstance(source: WebAudioStaticSound): Promise<WebAudioStaticSoundInstance> {
         const soundInstance = new WebAudioStaticSoundInstance(source);
+        await soundInstance.init();
         this._addSoundInstance(soundInstance);
         return soundInstance;
     }
 
     public async createStreamingSound(name: string, options?: IStreamingSoundOptions): Promise<AbstractStreamingSound> {
         const sound = new WebAudioStreamingSound(name, this, options);
+        await sound.init(options);
         this._addSound(sound);
         return sound;
     }
 
     public async createStreamingSoundInstance(source: WebAudioStreamingSound): Promise<WebAudioStreamingSoundInstance> {
         const soundInstance = new WebAudioStreamingSoundInstance(source);
+        await soundInstance.init();
         this._addSoundInstance(soundInstance);
         return soundInstance;
     }
