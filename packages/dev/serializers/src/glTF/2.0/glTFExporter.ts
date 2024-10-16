@@ -1245,6 +1245,19 @@ export class GLTFExporter {
         this._exportAndAssignCameras();
         this._exportAndAssignSkeletons();
 
+        if (this._babylonScene.animationGroups.length) {
+            _GLTFAnimation._CreateNodeAndMorphAnimationFromAnimationGroups(
+                this._babylonScene,
+                this._animations,
+                this._nodeMap,
+                this._dataWriter,
+                this._bufferViews,
+                this._accessors,
+                this._animationSampleRate,
+                this._options.shouldExportAnimation
+            );
+        }
+
         //     return this._exportNodesAndAnimationsAsync(nodes, convertToRightHandedMap, dataWriter).then((nodeMap) => {
         //         return this._createSkinsAsync(nodeMap, dataWriter).then((skinMap) => {
         //             for (const babylonNode of nodes) {
