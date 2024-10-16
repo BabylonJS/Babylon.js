@@ -2187,12 +2187,13 @@ export class NodeMaterial extends PushMaterial {
 
         // view and projections
 
-        const view = new InputBlock("View");
+        const view = new InputBlock("view");
         view.setAsSystemValue(NodeMaterialSystemValues.View);
 
         const projection = new InputBlock("Projection");
         projection.setAsSystemValue(NodeMaterialSystemValues.Projection);
 
+        worldInput.connectTo(gs, { input: "world" });
         view.connectTo(gs, { input: "view" });
         projection.connectTo(gs, { input: "projection" });
 

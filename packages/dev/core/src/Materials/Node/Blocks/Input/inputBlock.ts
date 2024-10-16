@@ -121,7 +121,6 @@ export class InputBlock extends NodeMaterialBlock {
                     case "normal":
                     case "particle_positionw":
                     case "splatPosition":
-                    case "splatScale":
                         this._type = NodeMaterialBlockConnectionPointTypes.Vector3;
                         return this._type;
                     case "uv":
@@ -132,6 +131,7 @@ export class InputBlock extends NodeMaterialBlock {
                     case "uv6":
                     case "position2d":
                     case "particle_uv":
+                    case "splatScale":
                         this._type = NodeMaterialBlockConnectionPointTypes.Vector2;
                         return this._type;
                     case "matricesIndices":

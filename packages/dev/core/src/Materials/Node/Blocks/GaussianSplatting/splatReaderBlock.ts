@@ -58,7 +58,9 @@ export class SplatReaderBlock extends NodeMaterialBlock {
      * @param state defines the state that will be used for the build
      */
     public override initialize(state: NodeMaterialBuildState) {
-        //state._excludeVariableName("splatColor");
+        state._excludeVariableName("covA");
+        state._excludeVariableName("covB");
+        state._excludeVariableName("vPosition");
     }
 
     protected override _buildBlock(state: NodeMaterialBuildState) {

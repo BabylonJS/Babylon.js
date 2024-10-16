@@ -3,7 +3,7 @@
     "tests": [
         {
             "title": "Gaussian Splatting NME",
-            "playgroundId": "#WXWJKN#3",
+            "playgroundId": "#WXWJKN#4",
             "referenceImage": "gsplat-nme.png"
         },
         {

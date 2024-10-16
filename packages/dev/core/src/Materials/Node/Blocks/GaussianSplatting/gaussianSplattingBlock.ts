@@ -20,7 +20,8 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
         this._isUnique = true;
 
         this.registerInput("splatPosition", NodeMaterialBlockConnectionPointTypes.Vector3, false, NodeMaterialBlockTargets.Vertex);
-        this.registerInput("splatScale", NodeMaterialBlockConnectionPointTypes.Vector3, true, NodeMaterialBlockTargets.Vertex);
+        this.registerInput("splatScale", NodeMaterialBlockConnectionPointTypes.Vector2, true, NodeMaterialBlockTargets.Vertex);
+        this.registerInput("world", NodeMaterialBlockConnectionPointTypes.Matrix, false, NodeMaterialBlockTargets.Vertex);
         this.registerInput("view", NodeMaterialBlockConnectionPointTypes.Matrix, false, NodeMaterialBlockTargets.Vertex);
         this.registerInput("projection", NodeMaterialBlockConnectionPointTypes.Matrix, false, NodeMaterialBlockTargets.Vertex);
 
@@ -50,17 +51,24 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the view matrix input component
+     * Gets the View matrix input component
+     */
+    public get world(): NodeMaterialConnectionPoint {
+        return this._inputs[2];
+    }
+
+    /**
+     * Gets the View matrix input component
      */
     public get view(): NodeMaterialConnectionPoint {
-        return this._inputs[2];
+        return this._inputs[3];
     }
 
     /**
      * Gets the projection matrix input component
      */
     public get projection(): NodeMaterialConnectionPoint {
-        return this._inputs[3];
+        return this._inputs[4];
     }
 
     /**
@@ -93,16 +101,17 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
 
         const splatPosition = this.splatPosition;
         const splatScale = this.splatScale;
+        const world = this.world;
         const view = this.view;
         const projection = this.projection;
         const output = this.splatVertex;
 
-        let splatScaleParameter = "vec3(1.,1.,1.)";
+        let splatScaleParameter = "vec2(1.,1.)";
         if (splatScale.isConnected) {
             splatScaleParameter = splatScale.associatedVariableName;
         }
 
-        state.compilationString += `${state._declareOutput(output)} = gaussianSplatting(position, ${splatPosition.associatedVariableName}, ${splatScaleParameter}, covA, covB, ${view.associatedVariableName}, ${projection.associatedVariableName});\n`;
+        state.compilationString += `${state._declareOutput(output)} = gaussianSplatting(position, ${splatPosition.associatedVariableName}, ${splatScaleParameter}, covA, covB, ${world.associatedVariableName}, ${view.associatedVariableName}, ${projection.associatedVariableName});\n`;
 
         return this;
     }

@@ -84,7 +84,8 @@ export class GaussianSplattingMesh extends Mesh {
      */
     public override set material(value: Material) {
         this._material = value;
-
+        this._material.backFaceCulling = true;
+        this._material.cullBackFaces = false;
         this._clearObservable();
         if (value.getClassName() === "NodeMaterial") {
             value.onBindObservable.add(this._materialBindCallback, undefined, undefined, this);
