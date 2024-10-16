@@ -245,8 +245,12 @@ bool anyHitVoxels(const Ray ray_vs) {
   return false;
 }
 
+float linearizeDepth(float depth, float near, float far) {
+    return (near * far) / (far - depth * (far - near));
+}
+
 float screenSpaceShadow(vec3 csOrigin, vec3 csDirection, vec2 csZBufferSize,
-                        float nearPlaneZ, float noise) {
+                        float nearPlaneZ, float farPlaneZ, float noise) {
   // Camera space Z direction
   #ifdef RIGHT_HANDED
     float csZDir = -1.0;
@@ -271,15 +275,10 @@ float screenSpaceShadow(vec3 csOrigin, vec3 csDirection, vec2 csZBufferSize,
 
   vec4 H0 = projMtx * vec4(csOrigin, 1.0);
   vec4 H1 = projMtx * vec4(csEndPoint, 1.0);
-#ifndef IS_NDC_HALF_ZRANGE
-  float Z0 = (0.5 * H0.z / H0.w + 0.5);
-  float Z1 = (0.5 * H1.z / H1.w + 0.5);
-#else
-  float Z0 = (H0.z / H0.w);
-  float Z1 = (H1.z / H1.w);
-#endif
-  vec2 P0 = csZBufferSize * (0.5 * H0.xy / H0.w + 0.5);
-  vec2 P1 = csZBufferSize * (0.5 * H1.xy / H1.w + 0.5);
+  vec2 Z0 = vec2(csOrigin.z  , 1.0) / H0.w;
+  vec2 Z1 = vec2(csEndPoint.z, 1.0) / H1.w;
+  vec2 P0 = csZBufferSize * (0.5 * H0.xy * Z0.y + 0.5);
+  vec2 P1 = csZBufferSize * (0.5 * H1.xy * Z1.y + 0.5);
 
   P1 += vec2(distanceSquared(P0, P1) < 0.0001 ? 0.01 : 0.0);
   vec2 delta = P1 - P0;
@@ -294,25 +293,30 @@ float screenSpaceShadow(vec3 csOrigin, vec3 csDirection, vec2 csZBufferSize,
   float stepDirection = sign(delta.x);
   float invdx = stepDirection / delta.x;
   vec2 dP = ssStride * vec2(stepDirection, invdx * delta.y);
-  float dZ = ssStride * invdx * (Z1 - Z0);
+  vec2 dZ = ssStride * invdx * (Z1 - Z0);
 
   float opacity = 0.0;
   vec2 P = P0 + noise * dP;
-  float Z = Z0 + noise * dZ;
+  vec2 Z = Z0 + noise * dZ;
   float end = P1.x * stepDirection;
+  float rayZMax = csZDir * Z.x / Z.y;
+  float sceneDepth = rayZMax;
   Z += dZ;
 
   for (float stepCount = 0.0;
-       opacity < 1.0 && P.x * stepDirection < end && stepCount < ssSamples;
+       opacity < 1.0 && P.x * stepDirection < end && sceneDepth > 0.0 && stepCount < ssSamples;
        stepCount++, P += dP,
              Z += dZ) { // 'sceneDepth > 0.0' instead of 'sceneDepth < 0.0'
     ivec2 coords = ivec2(permute ? P.yx : P);
-    float sceneDepth = texelFetch(depthSampler, coords, 0).x;
-    // Scale the thickness based on the scene depth to make it constant.
-    float thicknessScale = pow(1.0 - sceneDepth, 1.6);
-    opacity +=
-        max(opacity, step(Z + dZ, sceneDepth + thicknessScale * ssThickness) *
-                         step(sceneDepth, Z));
+    sceneDepth = texelFetch(depthSampler, coords, 0).x;
+    sceneDepth = linearizeDepth(sceneDepth, nearPlaneZ, farPlaneZ);
+    sceneDepth = csZDir * sceneDepth;
+    if (sceneDepth <= 0.0) {
+            break;
+    }
+    float rayZMin = rayZMax;
+    rayZMax = csZDir * Z.x / Z.y;
+    opacity += max(opacity, step(rayZMax, sceneDepth + ssThickness) * step(sceneDepth, rayZMin));
   }
 
   return opacity;
@@ -385,7 +389,6 @@ void main(void) {
     depth = depth * 2.0 - 1.0;
   #endif
   vec2 temp = (vec2(PixelCoord) + vec2(0.5)) * 2.0 / Resolution - vec2(1.0);
-  vec2 temp2 = vUV * vec2(2.0) - vec2(1.0);
   vec4 VP = invProjMtx * vec4(temp.x, -temp.y, depth, 1.0);
   VP /= VP.w;
 
@@ -438,10 +441,16 @@ void main(void) {
 
       // sss
       vec3 VL = (viewMtx * L).xyz;
-      float nearPlaneZ =
-          -projMtx[3][2] / projMtx[2][2]; // retreive camera Z near value
+      
+      #ifdef RIGHT_HANDED
+        float nearPlaneZ = -projMtx[3][2] / (projMtx[2][2] - 1.0); // retreive camera Z near value
+        float farPlaneZ = -projMtx[3][2] / (projMtx[2][2] + 1.0);
+      #else
+        float nearPlaneZ = -projMtx[3][2] / (projMtx[2][2] + 1.0); // retreive camera Z near value
+        float farPlaneZ = -projMtx[3][2] / (projMtx[2][2] - 1.0);
+      #endif
       float ssShadow = shadowOpacity.y *
-                       screenSpaceShadow(VP2.xyz, VL, Resolution, nearPlaneZ,
+                       screenSpaceShadow(VP2.xyz, VL, Resolution, nearPlaneZ, farPlaneZ,
                                          abs(2.0 * noise.z - 1.0));
       opacity = max(opacity, ssShadow);
       shadowAccum += min(1.0 - opacity, smoothstep(-0.1, 0.2, cosNL));
