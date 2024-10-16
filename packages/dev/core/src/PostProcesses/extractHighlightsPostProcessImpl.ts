@@ -1,4 +1,3 @@
-import { serialize } from "core/Misc";
 import { ToGammaSpace } from "../Maths/math.constants";
 import { AbstractPostProcessImpl } from "./abstractPostProcessImpl";
 
@@ -10,18 +9,18 @@ export class ExtractHighlightsPostProcessImpl extends AbstractPostProcessImpl {
 
     public static readonly Uniforms = ["threshold", "exposure"];
 
-    /**
-     * Gets a string identifying the name of the class
-     * @returns "ExtractHighlightsPostProcessImpl" string
-     */
-    public getClassName(): string {
-        return "ExtractHighlightsPostProcessImpl";
+    public gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
+        if (useWebGPU) {
+            this.postProcess._webGPUReady = true;
+            list.push(import("../ShadersWGSL/extractHighlights.fragment"));
+        } else {
+            list.push(import("../Shaders/extractHighlights.fragment"));
+        }
     }
 
     /**
      * The luminance threshold, pixels below this value will be set to black.
      */
-    @serialize()
     public threshold = 0.9;
 
     /** @internal */

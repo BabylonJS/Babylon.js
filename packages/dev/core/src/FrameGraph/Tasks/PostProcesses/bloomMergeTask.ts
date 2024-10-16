@@ -7,16 +7,7 @@ import { PostProcessCore } from "core/PostProcesses/postProcessCore";
 export class FrameGraphBloomMergeTask extends FrameGraphPostProcessCoreTask {
     public blurTexture: FrameGraphTextureHandle;
 
-    /** Weight of the bloom to be added to the original input. */
-    public get weight() {
-        return this._impl.weight;
-    }
-
-    public set weight(value: number) {
-        this._impl.weight = value;
-    }
-
-    protected override _impl: BloomMergePostProcessImpl;
+    public override readonly properties: BloomMergePostProcessImpl;
 
     constructor(name: string, frameGraph: FrameGraph, engine: AbstractEngine, options?: PostProcessCoreOptions) {
         super(
@@ -27,13 +18,6 @@ export class FrameGraphBloomMergeTask extends FrameGraphPostProcessCoreTask {
                 samplers: BloomMergePostProcessImpl.Samplers,
                 implementation: options?.implementation ?? new BloomMergePostProcessImpl(),
                 ...options,
-                extraInitializations: (useWebGPU, promises) => {
-                    if (useWebGPU) {
-                        promises.push(import("../../../ShadersWGSL/bloomMerge.fragment"));
-                    } else {
-                        promises.push(import("../../../Shaders/bloomMerge.fragment"));
-                    }
-                },
             })
         );
     }
@@ -44,7 +28,7 @@ export class FrameGraphBloomMergeTask extends FrameGraphPostProcessCoreTask {
         }
 
         const pass = super.record(skipCreationOfDisabledPasses, undefined, (context) => {
-            this._impl.bind();
+            this.properties.bind();
             context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "bloomBlur", this.blurTexture);
         });
 

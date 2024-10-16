@@ -1,6 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { PostProcessCore, Effect, Vector2, Nullable } from "core/index";
-import { serialize, serializeAsVector2 } from "core/Misc/decorators";
 import { AbstractPostProcessImpl } from "./abstractPostProcessImpl";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
 
@@ -16,23 +15,21 @@ export class BlurPostProcessImpl extends AbstractPostProcessImpl {
 
     public static readonly Samplers = ["circleOfConfusionSampler"];
 
-    /**
-     * Gets a string identifying the name of the class
-     * @returns "BlurPostProcessImpl" string
-     */
-    public getClassName(): string {
-        return "BlurPostProcessImpl";
+    public gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
+        if (useWebGPU) {
+            this.postProcess._webGPUReady = true;
+            list.push(Promise.all([import("../ShadersWGSL/kernelBlur.fragment"), import("../ShadersWGSL/kernelBlur.vertex")]));
+        } else {
+            list.push(Promise.all([import("../Shaders/kernelBlur.fragment"), import("../Shaders/kernelBlur.vertex")]));
+        }
     }
 
-    @serialize("kernel")
     protected _kernel: number;
     protected _idealKernel: number;
-    @serialize("packedFloat")
     protected _packedFloat: boolean = false;
     private _staticDefines: string = "";
 
     /** The direction in which to blur the image. */
-    @serializeAsVector2()
     public direction: Vector2;
 
     /**

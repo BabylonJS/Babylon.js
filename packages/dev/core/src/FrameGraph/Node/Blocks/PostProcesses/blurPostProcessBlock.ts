@@ -58,21 +58,21 @@ export class NodeRenderGraphBlurPostProcessBlock extends NodeRenderGraphBlock {
     /** The direction in which to blur the image */
     @editableInPropertyPage("Direction", PropertyTypeForEdition.Vector2, "PROPERTIES")
     public get direction(): Vector2 {
-        return this._frameGraphTask.direction;
+        return this._frameGraphTask.properties.direction;
     }
 
     public set direction(value: Vector2) {
-        this._frameGraphTask.direction = value;
+        this._frameGraphTask.properties.direction = value;
     }
 
     /** Length in pixels of the blur sample region */
     @editableInPropertyPage("Kernel", PropertyTypeForEdition.Int, "PROPERTIES", { min: 1, max: 256 })
     public get kernel(): number {
-        return this._frameGraphTask.kernel;
+        return this._frameGraphTask.properties.kernel;
     }
 
     public set kernel(value: number) {
-        this._frameGraphTask.kernel = value;
+        this._frameGraphTask.properties.kernel = value;
     }
 
     /**

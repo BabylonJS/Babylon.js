@@ -4,6 +4,7 @@ import type { Camera } from "../Cameras/camera";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 
 import { RegisterClass } from "../Misc/typeStore";
+import { serialize } from "core/Misc";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import type { Nullable } from "../types";
 
@@ -17,6 +18,7 @@ export class BlackAndWhitePostProcess extends PostProcess {
     /**
      * Linear about to convert he result to black and white (default: 1)
      */
+    @serialize()
     public get degree() {
         return this._impl.degree;
     }
@@ -62,22 +64,11 @@ export class BlackAndWhitePostProcess extends PostProcess {
         });
     }
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/blackAndWhite.fragment"));
-        } else {
-            list.push(import("../Shaders/blackAndWhite.fragment"));
-        }
-
-        super._gatherImports(useWebGPU, list);
-    }
-
     /**
      * @internal
      */
     public static override _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<BlackAndWhitePostProcess> {
-        const postProcess: BlackAndWhitePostProcess = SerializationHelper.Parse(
+        return SerializationHelper.Parse(
             () => {
                 return new BlackAndWhitePostProcess(
                     parsedPostProcess.name,
@@ -92,10 +83,6 @@ export class BlackAndWhitePostProcess extends PostProcess {
             scene,
             rootUrl
         );
-
-        postProcess._impl.parse(parsedPostProcess, scene, rootUrl);
-
-        return postProcess;
     }
 }
 

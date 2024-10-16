@@ -1,4 +1,3 @@
-import { serialize } from "core/Misc";
 import { AbstractPostProcessImpl } from "./abstractPostProcessImpl";
 
 /**
@@ -9,18 +8,18 @@ export class BlackAndWhitePostProcessImpl extends AbstractPostProcessImpl {
 
     public static readonly Uniforms = ["degree"];
 
-    /**
-     * Gets a string identifying the name of the class
-     * @returns "BlackAndWhitePostProcessImpl" string
-     */
-    public getClassName(): string {
-        return "BlackAndWhitePostProcessImpl";
+    public gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
+        if (useWebGPU) {
+            this.postProcess._webGPUReady = true;
+            list.push(import("../ShadersWGSL/blackAndWhite.fragment"));
+        } else {
+            list.push(import("../Shaders/blackAndWhite.fragment"));
+        }
     }
 
     /**
      * Linear about to convert he result to black and white (default: 1)
      */
-    @serialize()
     public degree = 1;
 
     public bind() {

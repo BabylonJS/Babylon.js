@@ -169,6 +169,13 @@ export type DeepImmutable<T> = T extends Primitive
         DeepImmutableObject<T>;
 
 /**
+ * Type modifier to make all the properties of an object NonNullable
+ */
+export type NonNullableFields<T> = {
+    [P in keyof T]: NonNullable<T[P]>;
+};
+
+/**
  * Type modifier to make object properties readonly.
  */
 export type DeepImmutableObject<T> = { readonly [K in keyof T]: DeepImmutable<T[K]> };

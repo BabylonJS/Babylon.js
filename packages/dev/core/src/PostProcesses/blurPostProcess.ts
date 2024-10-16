@@ -7,6 +7,7 @@ import type { Effect } from "../Materials/effect";
 import { Texture } from "../Materials/Textures/texture";
 import { Constants } from "../Engines/constants";
 import { RegisterClass } from "../Misc/typeStore";
+import { serialize, serializeAsVector2 } from "core/Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 
 import type { Scene } from "../scene";
@@ -19,6 +20,7 @@ import { BlurPostProcessImpl } from "./blurPostProcessImpl";
  */
 export class BlurPostProcess extends PostProcess {
     /** The direction in which to blur the image. */
+    @serializeAsVector2()
     public get direction() {
         return this._impl.direction;
     }
@@ -30,6 +32,7 @@ export class BlurPostProcess extends PostProcess {
     /**
      * Sets the length in pixels of the blur sample region
      */
+    @serialize()
     public set kernel(v: number) {
         this._impl.kernel = v;
     }
@@ -44,6 +47,7 @@ export class BlurPostProcess extends PostProcess {
     /**
      * Sets whether or not the blur needs to unpack/repack floats
      */
+    @serialize()
     public set packedFloat(v: boolean) {
         this._impl.packedFloat = v;
     }
@@ -122,17 +126,6 @@ export class BlurPostProcess extends PostProcess {
         this.kernel = kernel;
     }
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(Promise.all([import("../ShadersWGSL/kernelBlur.fragment"), import("../ShadersWGSL/kernelBlur.vertex")]));
-        } else {
-            list.push(Promise.all([import("../Shaders/kernelBlur.fragment"), import("../Shaders/kernelBlur.vertex")]));
-        }
-
-        super._gatherImports(useWebGPU, list);
-    }
-
     public override updateEffect(
         _defines: Nullable<string> = null,
         _uniforms: Nullable<string[]> = null,
@@ -148,7 +141,7 @@ export class BlurPostProcess extends PostProcess {
      * @internal
      */
     public static override _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<BlurPostProcess> {
-        const postProcess: BlurPostProcess = SerializationHelper.Parse(
+        return SerializationHelper.Parse(
             () => {
                 return new BlurPostProcess(
                     parsedPostProcess.name,
@@ -168,10 +161,6 @@ export class BlurPostProcess extends PostProcess {
             scene,
             rootUrl
         );
-
-        postProcess._impl.parse(parsedPostProcess, scene, rootUrl);
-
-        return postProcess;
     }
 }
 

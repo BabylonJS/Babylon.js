@@ -1,4 +1,3 @@
-import { serialize } from "core/Misc";
 import { AbstractPostProcessImpl } from "./abstractPostProcessImpl";
 
 /**
@@ -11,16 +10,16 @@ export class BloomMergePostProcessImpl extends AbstractPostProcessImpl {
 
     public static readonly Samplers = ["bloomBlur"];
 
-    /**
-     * Gets a string identifying the name of the class
-     * @returns "BloomMergePostProcessImpl" string
-     */
-    public getClassName(): string {
-        return "BloomMergePostProcessImpl";
+    public gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
+        if (useWebGPU) {
+            this.postProcess._webGPUReady = true;
+            list.push(import("../ShadersWGSL/bloomMerge.fragment"));
+        } else {
+            list.push(import("../Shaders/bloomMerge.fragment"));
+        }
     }
 
     /** Weight of the bloom to be added to the original input. */
-    @serialize()
     public weight = 1;
 
     public bind() {

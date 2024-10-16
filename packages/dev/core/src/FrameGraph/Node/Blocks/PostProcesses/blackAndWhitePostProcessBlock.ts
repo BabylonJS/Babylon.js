@@ -57,11 +57,11 @@ export class NodeRenderGraphBlackAndWhitePostProcessBlock extends NodeRenderGrap
     /** Degree of conversion to black and white (default: 1 - full b&w conversion) */
     @editableInPropertyPage("Degree", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 1 })
     public get degree(): number {
-        return this._frameGraphTask.degree;
+        return this._frameGraphTask.properties.degree;
     }
 
     public set degree(value: number) {
-        this._frameGraphTask.degree = value;
+        this._frameGraphTask.properties.degree = value;
     }
 
     /**

@@ -57,11 +57,11 @@ export class NodeRenderGraphExtractHighlightsPostProcessBlock extends NodeRender
     /** The luminance threshold, pixels below this value will be set to black. */
     @editableInPropertyPage("Threshold", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 1 })
     public get threshold(): number {
-        return this._frameGraphTask.threshold;
+        return this._frameGraphTask.properties.threshold;
     }
 
     public set threshold(value: number) {
-        this._frameGraphTask.threshold = value;
+        this._frameGraphTask.properties.threshold = value;
     }
 
     /**

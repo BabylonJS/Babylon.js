@@ -17,7 +17,8 @@ export class FrameGraphPostProcessCoreTask extends FrameGraphTask {
 
     public readonly outputTexture: FrameGraphTextureHandle;
 
-    protected readonly _impl: AbstractPostProcessImpl;
+    public readonly properties: AbstractPostProcessImpl;
+
     protected readonly _postProcess: PostProcessCore;
     protected readonly _postProcessDrawWrapper: DrawWrapper;
     protected _outputWidth: number;
@@ -26,7 +27,7 @@ export class FrameGraphPostProcessCoreTask extends FrameGraphTask {
     constructor(name: string, frameGraph: FrameGraph, postProcess: PostProcessCore) {
         super(name, frameGraph);
 
-        this._impl = postProcess.implementation;
+        this.properties = postProcess.implementation!;
         this._postProcess = postProcess;
         this._postProcessDrawWrapper = this._postProcess.getDrawWrapper();
 

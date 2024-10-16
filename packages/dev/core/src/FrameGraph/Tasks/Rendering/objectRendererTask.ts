@@ -6,6 +6,7 @@ import type { Scene } from "../../../scene";
 import type { Camera } from "../../../Cameras/camera";
 import { FrameGraphTask } from "../../frameGraphTask";
 import type { FrameGraphObjectList } from "core/FrameGraph/frameGraphObjectList";
+import type { FrameGraphRenderContext } from "core/FrameGraph/frameGraphRenderContext";
 
 export class FrameGraphObjectRendererTask extends FrameGraphTask {
     public destinationTexture: FrameGraphTextureHandle;
@@ -35,8 +36,8 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
 
     public readonly outputDepthTexture: FrameGraphTextureHandle;
 
-    private _scene: Scene;
-    private _rtt: RenderTargetTexture;
+    protected _scene: Scene;
+    protected _rtt: RenderTargetTexture;
 
     public get renderTargetTexture() {
         return this._rtt;
@@ -71,7 +72,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         return this._rtt.isReadyForRendering();
     }
 
-    public record() {
+    public record(skipCreationOfDisabledPasses = false, additionalExecute?: (context: FrameGraphRenderContext) => void) {
         if (this.destinationTexture === undefined || this.objectList === undefined) {
             throw new Error(`FrameGraphObjectRendererTask ${this.name}: destinationTexture and objectList are required`);
         }
@@ -120,20 +121,28 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
             this._scene.resetCachedMaterial();
             _context.setDepthStates(this.depthTest && depthEnabled, this.depthWrite && depthEnabled);
             _context.render(this._rtt);
+            additionalExecute?.(_context);
         });
-
-        const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
-
-        passDisabled.setRenderTarget(this.destinationTexture);
-        if (this.depthTexture !== undefined) {
-            passDisabled.setRenderTargetDepth(this.depthTexture);
-        }
-        passDisabled.setExecuteFunc((_context) => {});
 
         if (this.dependencies !== undefined) {
             for (const handle of this.dependencies) {
                 pass.useTexture(handle);
-                passDisabled.useTexture(handle);
+            }
+        }
+
+        if (!skipCreationOfDisabledPasses) {
+            const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
+
+            passDisabled.setRenderTarget(this.destinationTexture);
+            if (this.depthTexture !== undefined) {
+                passDisabled.setRenderTargetDepth(this.depthTexture);
+            }
+            passDisabled.setExecuteFunc((_context) => {});
+
+            if (this.dependencies !== undefined) {
+                for (const handle of this.dependencies) {
+                    passDisabled.useTexture(handle);
+                }
             }
         }
     }

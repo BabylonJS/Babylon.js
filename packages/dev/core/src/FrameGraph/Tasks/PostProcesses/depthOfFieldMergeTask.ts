@@ -20,13 +20,6 @@ export class FrameGraphDepthOfFieldMergeTask extends FrameGraphPostProcessCoreTa
                 samplers: DepthOfFieldMergePostProcessImpl.Samplers,
                 implementation: options?.implementation ?? new DepthOfFieldMergePostProcessImpl(),
                 ...options,
-                extraInitializations: (useWebGPU, promises) => {
-                    if (useWebGPU) {
-                        promises.push(import("../../../ShadersWGSL/depthOfFieldMerge.fragment"));
-                    } else {
-                        promises.push(import("../../../Shaders/depthOfFieldMerge.fragment"));
-                    }
-                },
             })
         );
     }

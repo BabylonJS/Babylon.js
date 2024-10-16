@@ -1,21 +1,10 @@
-import type { Nullable } from "../types";
+// eslint-disable-next-line import/no-internal-modules
+import type { Nullable, Effect, IVector2Like, IColor4Like, AbstractEngine, IInspectable, Animation, AbstractPostProcessImpl, NonNullableFields } from "core/index";
 import { Observable } from "../Misc/observable";
-import { Vector2 } from "../Maths/math.vector";
-import type { Effect } from "../Materials/effect";
 import { Constants } from "../Engines/constants";
-import type { Color4 } from "../Maths/math.color";
-import { serialize } from "../Misc/decorators";
-import { SerializationHelper } from "../Misc/decorators.serialization";
-import { GetClass } from "../Misc/typeStore";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
-import type { AbstractEngine } from "../Engines/abstractEngine";
 import { EngineStore } from "core/Engines/engineStore";
-import type { IInspectable } from "core/Misc/iInspectable";
-import type { Scene } from "core/scene";
-import type { Camera } from "core/Cameras/camera";
-import type { Animation } from "../Animations/animation";
-import type { AbstractPostProcessImpl } from "./abstractPostProcessImpl";
 
 /**
  * Allows for custom processing of the shader code used by a post process
@@ -90,10 +79,6 @@ export type PostProcessCoreOptions = {
     implementation?: AbstractPostProcessImpl;
 };
 
-type NonNullableFields<T> = {
-    [P in keyof T]: NonNullable<T[P]>;
-};
-
 export class PostProcessCore {
     /**
      * Force all the postprocesses to compile to glsl even on WebGPU engines.
@@ -122,20 +107,17 @@ export class PostProcessCore {
     }
 
     /** Name of the PostProcess. */
-    @serialize()
     public name: string;
 
     /**
      * Type of alpha mode to use when performing the post process (default: Engine.ALPHA_DISABLE)
      */
-    @serialize()
     public alphaMode = Constants.ALPHA_DISABLE;
 
     /**
      * Sets the setAlphaBlendConstants of the babylon engine
      */
-    @serialize()
-    public alphaConstants: Color4;
+    public alphaConstants: IColor4Like;
 
     /**
      * Animations to be used for the post processing
@@ -148,7 +130,8 @@ export class PostProcessCore {
      */
     public inspectableCustomProperties: IInspectable[];
 
-    public scaleRatio = new Vector2(1, 1);
+    /** @internal */
+    public _scaleRatio: IVector2Like = { x: 1, y: 1 };
 
     /**
      * Gets a string identifying the name of the class
@@ -216,7 +199,10 @@ export class PostProcessCore {
         return this._drawWrapper.effect?.isReady() ?? false;
     }
 
-    public options: Required<NonNullableFields<PostProcessCoreOptions>>;
+    /**
+     * Options used to create the post process
+     */
+    public readonly options: Required<NonNullableFields<PostProcessCoreOptions>>;
 
     /**
      * Executed when the effect was created
@@ -233,8 +219,9 @@ export class PostProcessCore {
     protected _fragmentUrl: string;
     protected _drawWrapper: DrawWrapper;
     protected _shadersLoaded = false;
-    protected _webGPUReady = false;
-    protected _impl: AbstractPostProcessImpl;
+    /** @internal */
+    public _webGPUReady = false;
+    protected _impl: Nullable<AbstractPostProcessImpl> = null;
 
     /**
      * Creates a new instance PostProcess
@@ -268,15 +255,14 @@ export class PostProcessCore {
         this.options.samplers.push("textureSampler");
         this.options.uniforms.push("scale");
 
+        this._impl = this.options.implementation ?? null;
+
         this._drawWrapper = new DrawWrapper(this._engine);
         this._webGPUReady = this.options.shaderLanguage === ShaderLanguage.WGSL;
 
         this._postConstructor();
 
-        if (this.options.implementation) {
-            this._impl = this.options.implementation;
-            this._impl.linkToPostProcess(this);
-        }
+        this._impl?.linkToPostProcess(this);
     }
 
     protected _gatherImports(useWebGPU = false, list: Promise<any>[]) {
@@ -294,6 +280,7 @@ export class PostProcessCore {
         const useWebGPU = this._engine.isWebGPU && !PostProcessCore.ForceGLSL;
 
         this._gatherImports(useWebGPU, this._importPromises);
+        this._impl?.gatherImports(useWebGPU, this._importPromises);
         if (this.options.extraInitializations !== undefined) {
             this.options.extraInitializations(useWebGPU, this._importPromises);
         }
@@ -378,7 +365,7 @@ export class PostProcessCore {
             this.getEngine().setAlphaConstants(this.alphaConstants.r, this.alphaConstants.g, this.alphaConstants.b, this.alphaConstants.a);
         }
 
-        this._drawWrapper.effect!.setVector2("scale", this.scaleRatio);
+        this._drawWrapper.effect!.setVector2("scale", this._scaleRatio);
 
         this.onApplyObservable.notifyObservers(this._drawWrapper.effect!);
 
@@ -391,68 +378,5 @@ export class PostProcessCore {
     public dispose(): void {
         this.onApplyObservable.clear();
         this.onEffectCreatedObservable.clear();
-    }
-
-    /**
-     * Serializes the post process to a JSON object
-     * @returns the JSON object
-     */
-    public serialize(): any {
-        const serializationObject = SerializationHelper.Serialize(this);
-        serializationObject.customType = "BABYLON." + this.getClassName();
-        serializationObject.options = { ...this.options };
-
-        return serializationObject;
-    }
-
-    /**
-     * Clones this post process
-     * @returns a new post process similar to this one
-     */
-    public clone(): Nullable<PostProcessCore> {
-        const serializationObject = this.serialize();
-        serializationObject._engine = this._engine;
-
-        const result = PostProcessCore.Parse(serializationObject, null, "");
-
-        if (!result) {
-            return null;
-        }
-
-        result.onApplyObservable = this.onApplyObservable.clone();
-        result.onEffectCreatedObservable = this.onEffectCreatedObservable.clone();
-
-        return result;
-    }
-
-    /**
-     * Creates a post process from parsed post process data
-     * @param parsedPostProcess defines parsed post process data
-     * @param scene defines the hosting scene
-     * @param rootUrl defines the root URL to use to load textures
-     * @returns a new post process
-     */
-    public static Parse(parsedPostProcess: any, scene: Nullable<Scene>, rootUrl: string): Nullable<PostProcessCore> {
-        const postProcessType = GetClass(parsedPostProcess.customType);
-
-        if (!postProcessType) {
-            return null;
-        }
-
-        return postProcessType._Parse(parsedPostProcess, null, scene, rootUrl);
-    }
-
-    /**
-     * @internal
-     */
-    public static _Parse(parsedPostProcess: any, _targetCamera: Nullable<Camera>, scene: Nullable<Scene>, rootUrl: string): Nullable<PostProcessCore> {
-        return SerializationHelper.Parse(
-            () => {
-                return new PostProcessCore(parsedPostProcess.name, parsedPostProcess.fragmentUrl, parsedPostProcess._engine, parsedPostProcess.options);
-            },
-            parsedPostProcess,
-            scene,
-            rootUrl
-        );
     }
 }

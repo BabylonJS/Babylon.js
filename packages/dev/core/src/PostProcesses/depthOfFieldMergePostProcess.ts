@@ -73,17 +73,6 @@ export class DepthOfFieldMergePostProcess extends PostProcess {
         }
     }
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/depthOfFieldMerge.fragment"));
-        } else {
-            list.push(import("../Shaders/depthOfFieldMerge.fragment"));
-        }
-
-        super._gatherImports(useWebGPU, list);
-    }
-
     /**
      * Updates the effect with the current post process compile time values and recompiles the shader.
      * @param defines Define statements that should be added at the beginning of the shader. (default: null)

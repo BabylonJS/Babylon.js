@@ -23,7 +23,7 @@ import type { PrePassEffectConfiguration } from "../Rendering/prePassEffectConfi
 import { AbstractEngine } from "../Engines/abstractEngine";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
 import type { IAssetContainer } from "core/IAssetContainer";
-import type { PostProcessCoreCustomShaderCodeProcessing, PostProcessCoreOptions } from "./postProcessCore";
+import type { PostProcessCoreOptions } from "./postProcessCore";
 import { PostProcessCore } from "./postProcessCore";
 import type { AbstractPostProcessImpl } from "./abstractPostProcessImpl";
 
@@ -105,7 +105,7 @@ Effect.prototype.setTextureFromPostProcessOutput = function (channel: string, po
 /**
  * Allows for custom processing of the shader code used by a post process
  */
-export type PostProcessCustomShaderCodeProcessing = PostProcessCoreCustomShaderCodeProcessing;
+export type { PostProcessCoreCustomShaderCodeProcessing as PostProcessCustomShaderCodeProcessing } from "./postProcessCore";
 
 /**
  * Options for the PostProcess constructor
@@ -797,10 +797,12 @@ export class PostProcess extends PostProcessCore {
 
         // Bind the input of this post process to be used as the output of the previous post process.
         if (this.enablePixelPerfectMode) {
-            this.scaleRatio.copyFromFloats(requiredWidth / desiredWidth, requiredHeight / desiredHeight);
+            this._scaleRatio.x = requiredWidth / desiredWidth;
+            this._scaleRatio.y = requiredHeight / desiredHeight;
             this._engine.bindFramebuffer(target, 0, requiredWidth, requiredHeight, this.forceFullscreenViewport);
         } else {
-            this.scaleRatio.copyFromFloats(1, 1);
+            this._scaleRatio.x = 1;
+            this._scaleRatio.y = 1;
             this._engine.bindFramebuffer(target, 0, undefined, undefined, this.forceFullscreenViewport);
         }
 
@@ -960,7 +962,7 @@ export class PostProcess extends PostProcessCore {
      * Serializes the post process to a JSON object
      * @returns the JSON object
      */
-    public override serialize(): any {
+    public serialize(): any {
         const serializationObject = SerializationHelper.Serialize(this);
         const camera = this.getCamera() || (this._scene && this._scene.activeCamera);
         serializationObject.customType = "BABYLON." + this.getClassName();
@@ -975,6 +977,9 @@ export class PostProcess extends PostProcessCore {
         serializationObject.textureFormat = this._textureFormat;
         serializationObject.vertexUrl = this.options.vertexUrl;
         serializationObject.indexParameters = this.options.indexParameters;
+        serializationObject.name = this.name;
+        serializationObject.alphaMode = this.alphaMode;
+        serializationObject.alphaConstants = this.alphaConstants;
 
         return serializationObject;
     }
@@ -983,7 +988,7 @@ export class PostProcess extends PostProcessCore {
      * Clones this post process
      * @returns a new post process similar to this one
      */
-    public override clone(): Nullable<PostProcess> {
+    public clone(): Nullable<PostProcess> {
         const serializationObject = this.serialize();
         serializationObject._engine = this._engine;
         serializationObject.cameraId = null;
@@ -1012,7 +1017,7 @@ export class PostProcess extends PostProcessCore {
      * @param rootUrl defines the root URL to use to load textures
      * @returns a new post process
      */
-    public static override Parse(parsedPostProcess: any, scene: Scene, rootUrl: string): Nullable<PostProcess> {
+    public static Parse(parsedPostProcess: any, scene: Scene, rootUrl: string): Nullable<PostProcess> {
         const postProcessType = GetClass(parsedPostProcess.customType);
 
         if (!postProcessType || !postProcessType._Parse) {
@@ -1026,8 +1031,8 @@ export class PostProcess extends PostProcessCore {
     /**
      * @internal
      */
-    public static override _Parse(parsedPostProcess: any, targetCamera: Nullable<Camera>, scene: Nullable<Scene>, rootUrl: string): Nullable<PostProcess> {
-        return SerializationHelper.Parse(
+    public static _Parse(parsedPostProcess: any, targetCamera: Nullable<Camera>, scene: Nullable<Scene>, rootUrl: string): Nullable<PostProcess> {
+        const postProcess = SerializationHelper.Parse(
             () => {
                 return new PostProcess(
                     parsedPostProcess.name,
@@ -1051,6 +1056,17 @@ export class PostProcess extends PostProcessCore {
             scene,
             rootUrl
         );
+
+        postProcess.name = parsedPostProcess.name;
+        postProcess.alphaMode = parsedPostProcess.alphaMode;
+        postProcess.alphaConstants = {
+            r: parsedPostProcess.alphaConstants.r,
+            g: parsedPostProcess.alphaConstants.g,
+            b: parsedPostProcess.alphaConstants.b,
+            a: parsedPostProcess.alphaConstants.a,
+        };
+
+        return postProcess;
     }
 }
 

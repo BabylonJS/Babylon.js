@@ -7,14 +7,15 @@ import type { Camera } from "../Cameras/camera";
 import { Constants } from "../Engines/constants";
 
 import { RegisterClass } from "../Misc/typeStore";
+import { serialize } from "core/Misc";
 import { BloomMergePostProcessImpl } from "./bloomMergePostProcessImpl";
-import type { Scene } from "core/scene";
 
 /**
  * The BloomMergePostProcess merges blurred images with the original based on the values of the circle of confusion.
  */
 export class BloomMergePostProcess extends PostProcess {
     /** Weight of the bloom to be added to the original input. */
+    @serialize()
     public get weight() {
         return this._impl.weight;
     }
@@ -85,28 +86,6 @@ export class BloomMergePostProcess extends PostProcess {
         if (!blockCompilation) {
             this.updateEffect();
         }
-    }
-
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/bloomMerge.fragment"));
-        } else {
-            list.push(import("../Shaders/bloomMerge.fragment"));
-        }
-
-        super._gatherImports(useWebGPU, list);
-    }
-
-    /**
-     * @internal
-     */
-    public static override _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
-        const postProcess = super._Parse(parsedPostProcess, targetCamera, scene, rootUrl) as BloomMergePostProcess;
-
-        postProcess._impl.parse(parsedPostProcess, scene, rootUrl);
-
-        return postProcess;
     }
 }
 

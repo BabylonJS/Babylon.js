@@ -8,9 +8,9 @@ import { Logger } from "../Misc/logger";
 import { Constants } from "../Engines/constants";
 
 import { RegisterClass } from "../Misc/typeStore";
+import { serialize } from "core/Misc";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { CircleOfConfusionPostProcessImpl } from "./circleOfConfusionPostProcessImpl";
-import type { Scene } from "core/scene";
 
 export interface CircleOfConfusionPostProcessOptions extends PostProcessOptions {
     depthNotNormalized?: boolean;
@@ -23,6 +23,7 @@ export class CircleOfConfusionPostProcess extends PostProcess {
     /**
      * Max lens size in scene units/1000 (eg. millimeter). Standard cameras are 50mm. (default: 50) The diameter of the resulting aperture can be computed by lensSize/fStop.
      */
+    @serialize()
     public get lensSize() {
         return this._impl.lensSize;
     }
@@ -34,6 +35,7 @@ export class CircleOfConfusionPostProcess extends PostProcess {
     /**
      * F-Stop of the effect's camera. The diameter of the resulting aperture can be computed by lensSize/fStop. (default: 1.4)
      */
+    @serialize()
     public get fStop() {
         return this._impl.fStop;
     }
@@ -45,6 +47,7 @@ export class CircleOfConfusionPostProcess extends PostProcess {
     /**
      * Distance away from the camera to focus on in scene units/1000 (eg. millimeter). (default: 2000)
      */
+    @serialize()
     public get focusDistance() {
         return this._impl.focusDistance;
     }
@@ -56,6 +59,7 @@ export class CircleOfConfusionPostProcess extends PostProcess {
     /**
      * Focal length of the effect's camera in scene units/1000 (eg. millimeter). (default: 50)
      */
+    @serialize()
     public get focalLength() {
         return this._impl.focalLength;
     }
@@ -126,33 +130,11 @@ export class CircleOfConfusionPostProcess extends PostProcess {
         });
     }
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/circleOfConfusion.fragment"));
-        } else {
-            list.push(import("../Shaders/circleOfConfusion.fragment"));
-        }
-
-        super._gatherImports(useWebGPU, list);
-    }
-
     /**
      * Depth texture to be used to compute the circle of confusion. This must be set here or in the constructor in order for the post process to function.
      */
     public set depthTexture(value: RenderTargetTexture) {
         this._depthTexture = value;
-    }
-
-    /**
-     * @internal
-     */
-    public static override _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
-        const postProcess = super._Parse(parsedPostProcess, targetCamera, scene, rootUrl) as CircleOfConfusionPostProcess;
-
-        postProcess._impl.parse(parsedPostProcess, scene, rootUrl);
-
-        return postProcess;
     }
 }
 

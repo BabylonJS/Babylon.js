@@ -16,51 +16,7 @@ export class FrameGraphCircleOfConfusionTask extends FrameGraphPostProcessCoreTa
 
     public camera: Camera;
 
-    /**
-     * Max lens size in scene units/1000 (eg. millimeter). Standard cameras are 50mm. (default: 50) The diameter of the resulting aperture can be computed by lensSize/fStop.
-     */
-    public get lensSize() {
-        return this._impl.lensSize;
-    }
-
-    public set lensSize(value: number) {
-        this._impl.lensSize = value;
-    }
-
-    /**
-     * F-Stop of the effect's camera. The diameter of the resulting aperture can be computed by lensSize/fStop. (default: 1.4)
-     */
-    public get fStop() {
-        return this._impl.fStop;
-    }
-
-    public set fStop(value: number) {
-        this._impl.fStop = value;
-    }
-
-    /**
-     * Distance away from the camera to focus on in scene units/1000 (eg. millimeter). (default: 2000)
-     */
-    public get focusDistance() {
-        return this._impl.focusDistance;
-    }
-
-    public set focusDistance(value: number) {
-        this._impl.focusDistance = value;
-    }
-
-    /**
-     * Focal length of the effect's camera in scene units/1000 (eg. millimeter). (default: 50)
-     */
-    public get focalLength() {
-        return this._impl.focalLength;
-    }
-
-    public set focalLength(value: number) {
-        this._impl.focalLength = value;
-    }
-
-    protected override _impl: CircleOfConfusionPostProcessImpl;
+    public override readonly properties: CircleOfConfusionPostProcessImpl;
 
     constructor(name: string, frameGraph: FrameGraph, engine: AbstractEngine, options?: CircleOfConfusionPostProcessOptions) {
         super(
@@ -73,13 +29,6 @@ export class FrameGraphCircleOfConfusionTask extends FrameGraphPostProcessCoreTa
                 depthNotNormalized: true,
                 implementation: options?.implementation ?? new CircleOfConfusionPostProcessImpl(),
                 ...options,
-                extraInitializations: (useWebGPU, promises) => {
-                    if (useWebGPU) {
-                        promises.push(import("../../../ShadersWGSL/circleOfConfusion.fragment"));
-                    } else {
-                        promises.push(import("../../../Shaders/circleOfConfusion.fragment"));
-                    }
-                },
             } as CircleOfConfusionPostProcessOptions)
         );
     }
@@ -95,7 +44,7 @@ export class FrameGraphCircleOfConfusionTask extends FrameGraphPostProcessCoreTa
                 context.setTextureSamplingMode(this.depthTexture, this.depthSamplingMode);
             },
             (context) => {
-                this._impl.bind(this.camera);
+                this.properties.bind(this.camera);
                 context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "depthSampler", this.depthTexture);
             }
         );

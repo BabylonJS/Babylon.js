@@ -75,41 +75,41 @@ export class NodeRenderGraphDepthOfFieldPostProcessBlock extends NodeRenderGraph
     /** The focal the length of the camera used in the effect in scene units/1000 (eg. millimeter). */
     @editableInPropertyPage("Focal length", PropertyTypeForEdition.Float, "PROPERTIES")
     public get focalLength(): number {
-        return this._frameGraphTask.focalLength;
+        return this._frameGraphTask.properties.focalLength;
     }
 
     public set focalLength(value: number) {
-        this._frameGraphTask.focalLength = value;
+        this._frameGraphTask.properties.focalLength = value;
     }
 
     /** F-Stop of the effect's camera. The diameter of the resulting aperture can be computed by lensSize/fStop. */
     @editableInPropertyPage("F-Stop", PropertyTypeForEdition.Float, "PROPERTIES")
     public get fStop(): number {
-        return this._frameGraphTask.fStop;
+        return this._frameGraphTask.properties.fStop;
     }
 
     public set fStop(value: number) {
-        this._frameGraphTask.fStop = value;
+        this._frameGraphTask.properties.fStop = value;
     }
 
     /** Distance away from the camera to focus on in scene units/1000 (eg. millimeter). */
     @editableInPropertyPage("Focus distance", PropertyTypeForEdition.Float, "PROPERTIES")
     public get focusDistance(): number {
-        return this._frameGraphTask.focusDistance;
+        return this._frameGraphTask.properties.focusDistance;
     }
 
     public set focusDistance(value: number) {
-        this._frameGraphTask.focusDistance = value;
+        this._frameGraphTask.properties.focusDistance = value;
     }
 
     /** Max lens size in scene units/1000 (eg. millimeter). Standard cameras are 50mm. The diameter of the resulting aperture can be computed by lensSize/fStop. */
     @editableInPropertyPage("Lens size", PropertyTypeForEdition.Float, "PROPERTIES")
     public get lensSize(): number {
-        return this._frameGraphTask.lensSize;
+        return this._frameGraphTask.properties.lensSize;
     }
 
     public set lensSize(value: number) {
-        this._frameGraphTask.lensSize = value;
+        this._frameGraphTask.properties.lensSize = value;
     }
 
     /**

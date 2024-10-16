@@ -6,10 +6,9 @@ import { PostProcess } from "./postProcess";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import { Constants } from "../Engines/constants";
 
+import { serialize } from "core/Misc";
 import { RegisterClass } from "../Misc/typeStore";
 import { ExtractHighlightsPostProcessImpl } from "./extractHighlightsPostProcessImpl";
-import type { Scene } from "core/scene";
-import { SerializationHelper } from "core/Misc/decorators.serialization";
 
 /**
  * The extract highlights post process sets all pixels to black except pixels above the specified luminance threshold. Used as the first step for a bloom effect.
@@ -18,6 +17,7 @@ export class ExtractHighlightsPostProcess extends PostProcess {
     /**
      * The luminance threshold, pixels below this value will be set to black.
      */
+    @serialize()
     public get threshold() {
         return this._impl.threshold;
     }
@@ -82,43 +82,6 @@ export class ExtractHighlightsPostProcess extends PostProcess {
             }
             this._impl.bind();
         });
-    }
-
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/extractHighlights.fragment"));
-        } else {
-            list.push(import("../Shaders/extractHighlights.fragment"));
-        }
-
-        super._gatherImports(useWebGPU, list);
-    }
-
-    /**
-     * @internal
-     */
-    public static override _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<ExtractHighlightsPostProcess> {
-        const postProcess: ExtractHighlightsPostProcess = SerializationHelper.Parse(
-            () => {
-                return new ExtractHighlightsPostProcess(
-                    parsedPostProcess.name,
-                    parsedPostProcess.options,
-                    targetCamera,
-                    parsedPostProcess.renderTargetSamplingMode,
-                    scene.getEngine(),
-                    parsedPostProcess.reusable,
-                    parsedPostProcess.textureType
-                );
-            },
-            parsedPostProcess,
-            scene,
-            rootUrl
-        );
-
-        postProcess._impl.parse(parsedPostProcess, scene, rootUrl);
-
-        return postProcess;
     }
 }
 
