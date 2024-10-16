@@ -14,10 +14,6 @@ export abstract class AbstractSoundInstance extends AbstractAudioNode {
         this._source = source;
     }
 
-    public async init(): Promise<void> {
-        this._connect(this._source);
-    }
-
     public override dispose(): void {
         super.dispose();
 
@@ -29,10 +25,5 @@ export abstract class AbstractSoundInstance extends AbstractAudioNode {
     public abstract play(): Promise<void>;
     public abstract pause(): void;
     public abstract resume(): void;
-
-    public stop(): void {
-        this._onEnded();
-    }
-
-    protected abstract _onEnded(): void;
+    public abstract stop(): void;
 }

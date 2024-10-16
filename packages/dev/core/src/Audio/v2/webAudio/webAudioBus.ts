@@ -1,5 +1,6 @@
-import { Nullable } from "core/types";
-import { AbstractAudioBus, IAudioBusOptions } from "../abstractAudioBus";
+import type { Nullable } from "core/types";
+import type { IAudioBusOptions } from "../abstractAudioBus";
+import { AbstractAudioBus } from "../abstractAudioBus";
 import type { AbstractAudioNode } from "../abstractAudioNode";
 import { AbstractMainAudioBus } from "../abstractMainAudioBus";
 import { WebAudioDevice } from "./webAudioDevice";
@@ -88,5 +89,3 @@ export class WebAudioMainBus extends AbstractMainAudioBus {
         }
     }
 }
-
-export type WebAudioPrimaryBus = WebAudioBus | WebAudioMainBus;

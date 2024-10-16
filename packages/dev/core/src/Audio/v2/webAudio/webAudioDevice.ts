@@ -5,7 +5,7 @@ import type { IWebAudioDeviceOptions } from "./webAudioEngine";
 
 /** @internal */
 export class WebAudioDevice extends AbstractAudioDevice {
-    private _audioContext: Nullable<AudioContext> = null;
+    private _audioContext: AudioContext;
 
     private async _initAudioContext(resolve: (audioContext: AudioContext) => void): Promise<void> {
         this._audioContext = new AudioContext();
@@ -22,7 +22,7 @@ export class WebAudioDevice extends AbstractAudioDevice {
     });
 
     public get webAudioInputNode(): Nullable<AudioNode> {
-        return this._audioContext?.destination ?? null;
+        return this._audioContext.destination ?? null;
     }
 
     public constructor(name: string, engine: AbstractAudioEngine, options: Nullable<IWebAudioDeviceOptions> = null) {

@@ -62,10 +62,6 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         this.volume = options?.volume ?? 1;
     }
 
-    public async init(options: Nullable<ISoundOptions> = null): Promise<void> {
-        this.outputBus = options?.outputBus ?? this.engine.defaultMainBus;
-    }
-
     public override dispose(): void {
         super.dispose();
 

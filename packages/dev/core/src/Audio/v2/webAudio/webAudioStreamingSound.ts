@@ -9,8 +9,12 @@ export class WebAudioStreamingSound extends AbstractStreamingSound {
         return 0;
     }
 
-    constructor(name: string, engine: WebAudioEngine, options: Nullable<IWebAudioStreamingSoundOptions> = null) {
+    public constructor(name: string, engine: WebAudioEngine, options: Nullable<IWebAudioStreamingSoundOptions> = null) {
         super(name, engine, options);
+    }
+
+    public async init(options: Nullable<IWebAudioStreamingSoundOptions> = null): Promise<void> {
+        //
     }
 }
 
@@ -20,8 +24,12 @@ export class WebAudioStreamingSoundInstance extends AbstractStreamingSoundInstan
         return 0;
     }
 
-    constructor(source: WebAudioStreamingSound) {
+    public constructor(source: WebAudioStreamingSound) {
         super(source);
+    }
+
+    public async init(): Promise<void> {
+        //
     }
 
     public play(): Promise<void> {
@@ -37,10 +45,6 @@ export class WebAudioStreamingSoundInstance extends AbstractStreamingSoundInstan
     }
 
     public override stop(): void {
-        super.stop();
-    }
-
-    protected _onEnded(): void {
         //
     }
 }
