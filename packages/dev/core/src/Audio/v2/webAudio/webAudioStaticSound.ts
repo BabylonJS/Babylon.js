@@ -3,8 +3,8 @@ import type { AbstractAudioNode } from "../abstractAudioNode";
 import type { AbstractSoundInstance } from "../abstractSoundInstance";
 import { AbstractStaticSound } from "../abstractStaticSound";
 import { AbstractStaticSoundInstance } from "../abstractStaticSoundInstance";
+import { WebAudioBus, WebAudioMainBus, WebAudioPrimaryBus } from "./webAudioBus";
 import type { IWebAudioStaticSoundOptions, WebAudioEngine } from "./webAudioEngine";
-import { WebAudioMainBus } from "./webAudioMainBus";
 
 /** @internal */
 export class WebAudioStaticSound extends AbstractStaticSound {
@@ -12,18 +12,6 @@ export class WebAudioStaticSound extends AbstractStaticSound {
     private _audioBufferPromise: Nullable<Promise<AudioBuffer>> = null;
 
     public readonly audioContext: AudioContext;
-
-    public override get engine(): WebAudioEngine {
-        return this._engine as WebAudioEngine;
-    }
-
-    public override get outputBus(): WebAudioMainBus {
-        return super.outputBus as WebAudioMainBus;
-    }
-
-    public override set outputBus(outputBus: WebAudioMainBus) {
-        super.outputBus = outputBus;
-    }
 
     public get webAudioInputNode() {
         return this._gainNode;
@@ -39,7 +27,7 @@ export class WebAudioStaticSound extends AbstractStaticSound {
         this.audioContext = engine.defaultDevice.audioContext;
         this._gainNode = new GainNode(this.audioContext);
 
-        this.webAudioInputNode.connect(this.outputBus.webAudioInputNode);
+        this.webAudioInputNode.connect((this.outputBus as WebAudioPrimaryBus).webAudioInputNode);
 
         if (options?.sourceUrl) {
             this._audioBufferPromise = fetch(options.sourceUrl)
@@ -66,7 +54,7 @@ export class WebAudioStaticSound extends AbstractStaticSound {
     protected override _disconnect(node: AbstractAudioNode): void {
         super._disconnect(node);
 
-        if (node instanceof WebAudioMainBus) {
+        if (node instanceof WebAudioMainBus || node instanceof WebAudioBus) {
             this.webAudioOutputNode.disconnect(node.webAudioInputNode);
         } else {
             throw new Error("Unsupported node type.");
@@ -94,20 +82,16 @@ export class WebAudioStaticSoundInstance extends AbstractStaticSoundInstance {
         return this.sourceNode;
     }
 
-    public get source(): WebAudioStaticSound {
-        return this._source as WebAudioStaticSound;
-    }
-
     constructor(source: WebAudioStaticSound) {
         super(source);
 
-        this.sourceNode = new AudioBufferSourceNode(source.engine.defaultDevice.audioContext);
+        this.sourceNode = new AudioBufferSourceNode(source.audioContext);
 
         this._connect(source);
     }
 
     public async play(): Promise<void> {
-        await this.source.audioContext.resume();
+        await (this._source as WebAudioStaticSound).audioContext.resume();
         this.sourceNode.start();
     }
 

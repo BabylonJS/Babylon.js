@@ -8,7 +8,7 @@ import type { AbstractMainAudioBus } from "../abstractMainAudioBus";
 import type { AbstractStaticSound, IStaticSoundOptions } from "../abstractStaticSound";
 import type { AbstractStreamingSound, IStreamingSoundOptions } from "../abstractStreamingSound";
 import { WebAudioDevice } from "./webAudioDevice";
-import { WebAudioMainBus } from "./webAudioMainBus";
+import { WebAudioMainBus } from "./webAudioBus";
 import { WebAudioPositioner } from "./webAudioPositioner";
 import { WebAudioSender } from "./webAudioSender";
 import { WebAudioStaticSoundInstance, WebAudioStaticSound } from "./webAudioStaticSound";

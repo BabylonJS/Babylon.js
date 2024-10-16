@@ -19,7 +19,7 @@ export abstract class AbstractAudioBus extends AbstractAudioBusNode {
 
     public readonly sender: AbstractAudioSender;
 
-    public constructor(name: string, engine: AbstractAudioEngine, options?: IAudioBusOptions) {
+    public constructor(name: string, engine: AbstractAudioEngine, options: Nullable<IAudioBusOptions> = null) {
         super(name, engine);
 
         if (options?.enablePositioner) {
