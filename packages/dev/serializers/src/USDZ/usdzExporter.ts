@@ -9,7 +9,7 @@ import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { Texture } from "core/Materials/Textures/texture";
 import { Color3 } from "core/Maths/math.color";
 import { Matrix, Vector2 } from "core/Maths/math.vector";
-import type { Geometry } from "core/Meshes";
+import type { Geometry } from "core/Meshes/geometry";
 import type { Mesh } from "core/Meshes/mesh";
 import { DumpTools } from "core/Misc/dumpTools";
 import { Tools } from "core/Misc/tools";
