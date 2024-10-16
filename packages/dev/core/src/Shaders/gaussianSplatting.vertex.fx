@@ -25,7 +25,7 @@ uniform sampler2D colorsTexture;
 varying vec4 vColor;
 varying vec2 vPosition;
 
-#include<gaussianSplattingVertexDeclaration>
+#include<gaussianSplatting>
 
 void main () {
     Splat splat = readSplat(splatIndex);

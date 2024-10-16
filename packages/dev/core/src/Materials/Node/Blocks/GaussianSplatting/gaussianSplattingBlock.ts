@@ -85,6 +85,7 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
 
         const comments = `//${this.name}`;
         state._emitFunctionFromInclude("gaussianSplattingVertexDeclaration", comments);
+        state._emitFunctionFromInclude("gaussianSplatting", comments);
         state._emitUniformFromString("focal", NodeMaterialBlockConnectionPointTypes.Vector2);
         state._emitUniformFromString("invViewport", NodeMaterialBlockConnectionPointTypes.Vector2);
         state.attributes.push(VertexBuffer.PositionKind);
