@@ -37,6 +37,10 @@ export class WebAudioStaticSound extends AbstractStaticSound {
             const arrayBuffer = await response.arrayBuffer();
             this._audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
         }
+
+        if (options?.autoplay) {
+            this.play();
+        }
     }
 
     public onSoundInstanceEnded(instance: AbstractSoundInstance): void {
