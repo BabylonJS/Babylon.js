@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { VertexBuffer } from "core/Buffers/buffer";
-import type { Camera } from "core/Cameras/camera";
 import { Constants } from "core/Engines/constants";
 import type { Material } from "core/Materials/material";
 import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
@@ -53,14 +52,6 @@ export interface IUSDZExportOptions {
      * Precision to use for number (5 by default)
      */
     precision?: number;
-    /**
-     * Export the camera (false by default)
-     */
-    exportCamera?: boolean;
-    /**
-     * Camera sensor width (35 by default)
-     */
-    cameraSensorWidth?: number;
 }
 
 function BuildHeader() {
@@ -556,45 +547,6 @@ ${samplers.join("\n")}
 `;
 }
 
-function BuildCamera(camera: Camera, options: IUSDZExportOptions) {
-    const name = "Camera_" + camera.uniqueId;
-    const matrix = Matrix.RotationY(Math.PI).multiply(camera.getWorldMatrix()); // work towards positive z
-
-    const transform = BuildMatrix(matrix);
-
-    if (camera.mode === Constants.ORTHOGRAPHIC_CAMERA) {
-        return `def Camera "${name}"
-		{
-			matrix4d xformOp:transform = ${transform}
-			uniform token[] xformOpOrder = ["xformOp:transform"]
-
-			float2 clippingRange = (${camera.minZ.toPrecision(options.precision)}, ${camera.maxZ.toPrecision(options.precision)})
-			float horizontalAperture = ${((Math.abs(camera.orthoLeft || 1) + Math.abs(camera.orthoRight || 1)) * 10).toPrecision(options.precision)}
-			float verticalAperture = ${((Math.abs(camera.orthoTop || 1) + Math.abs(camera.orthoBottom || 1)) * 10).toPrecision(options.precision)}
-			token projection = "orthographic"
-		}
-	
-	`;
-    } else {
-        const aspect = camera.getEngine().getAspectRatio(camera);
-        const sensorwidth = options.cameraSensorWidth || 35;
-
-        return `def Camera "${name}"
-		{
-			matrix4d xformOp:transform = ${transform}
-			uniform token[] xformOpOrder = ["xformOp:transform"]
-
-			float2 clippingRange = (${camera.minZ.toPrecision(options.precision)}, ${camera.maxZ.toPrecision(options.precision)})
-			float focalLength = ${(sensorwidth / (2 * Math.tan(camera.fov * 0.5))).toPrecision(options.precision)}
-            token projection = "perspective"
-			float horizontalAperture = ${(sensorwidth * aspect).toPrecision(options.precision)}
-			float verticalAperture = ${(sensorwidth / aspect).toPrecision(options.precision)}            
-		}
-	
-	`;
-    }
-}
-
 /**
  *
  * @param scene scene to export
@@ -603,7 +555,7 @@ function BuildCamera(camera: Camera, options: IUSDZExportOptions) {
  * @returns a uint8 array containing the USDZ file
  * #H2G5XW#3 - Simple sphere
  * #H2G5XW#4 - Red sphere
- * #5N3RWK#4 - Boombox
+ * #5N3RWK#1 - Boombox
  */
 export async function USDZExportAsync(scene: Scene, options: Partial<IUSDZExportOptions>, meshPredicate?: (m: Mesh) => boolean): Promise<Uint8Array> {
     const localOptions = {
@@ -613,8 +565,6 @@ export async function USDZExportAsync(scene: Scene, options: Partial<IUSDZExport
         planeAnchoringAlignment: "horizontal",
         modelFileName: "model.usda",
         precision: 5,
-        exportCamera: false,
-        cameraSensorWidth: 35,
         ...options,
     };
 
@@ -667,12 +617,6 @@ export async function USDZExportAsync(scene: Scene, options: Partial<IUSDZExport
         }
     }
 
-    // Camera
-    if (scene.activeCamera && localOptions.exportCamera) {
-        output += BuildCamera(scene.activeCamera, localOptions);
-    }
-
-    // Close scene
     output += BuildSceneEnd();
 
     // Materials
