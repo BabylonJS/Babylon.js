@@ -43,5 +43,5 @@ export class WebAudioStreamingSoundInstance extends AbstractStreamingSoundInstan
     public resume(): void {}
 
     /** @internal */
-    public override stop(): void {}
+    public override stop(waitTime: Nullable<number> = null): void {}
 }

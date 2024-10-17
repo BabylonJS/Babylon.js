@@ -125,8 +125,8 @@ export class WebAudioStaticSoundInstance extends AbstractStaticSoundInstance {
     }
 
     /** @internal */
-    public stop(): void {
-        this.sourceNode?.stop();
+    public stop(waitTime: Nullable<number> = null): void {
+        this.sourceNode?.stop(waitTime ? (this._source as WebAudioStaticSound).audioContext.currentTime + waitTime : 0);
         this._onEnded();
     }
 

@@ -171,14 +171,15 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
 
     /**
      * Stops the sound.
+     * @param waitTime - The time to wait before stopping the sound in seconds.
      */
-    public stop(): void {
+    public stop(waitTime: Nullable<number> = null): void {
         if (!this._soundInstances) {
             return;
         }
 
         for (const instance of this._soundInstances) {
-            instance.stop();
+            instance.stop(waitTime);
         }
     }
 
