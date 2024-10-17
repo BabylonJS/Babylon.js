@@ -6,7 +6,7 @@ import type { Nullable } from "../../types";
 /**
  * Options for creating a new spatial audio transform.
  */
-export interface ISpatialAudioTransformOptions {
+export interface SpatialAudioTransformOptions {
     /**
      * The position of the transform.
      */
@@ -30,7 +30,7 @@ export class SpatialAudioTransform implements IDisposable {
     private _rotationDirty: boolean = false;
 
     /** @internal */
-    constructor(options: Nullable<ISpatialAudioTransformOptions> = null) {
+    constructor(options: Nullable<SpatialAudioTransformOptions> = null) {
         this._position = options?.position ?? Vector3.Zero();
         this._rotation = options?.rotation ?? Quaternion.Identity();
         this._attachedTransformNode = options?.attachedTransformNode ?? null;

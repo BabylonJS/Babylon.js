@@ -3,13 +3,13 @@ import type { TransformNode } from "../../Meshes";
 import type { Nullable } from "../../types";
 import { AbstractAudioNode, AudioNodeType } from "./abstractAudioNode";
 import type { SpatialAudioListener } from "./spatialAudioListener";
-import type { ISpatialAudioTransformOptions } from "./spatialAudioTransform";
+import type { SpatialAudioTransformOptions } from "./spatialAudioTransform";
 import { SpatialAudioTransform } from "./spatialAudioTransform";
 
 /**
  * Options for creating a new audio positioner.
  */
-export interface IAudioPositionerOptions extends ISpatialAudioTransformOptions {}
+export interface AudioPositionerOptions extends SpatialAudioTransformOptions {}
 
 /**
  * Abstract base class for audio positioners.
@@ -29,7 +29,7 @@ export abstract class AbstractAudioPositioner extends AbstractAudioNode {
     public readonly listeners = new Set<SpatialAudioListener>();
 
     /** @internal */
-    constructor(parent: AbstractAudioNode, options: Nullable<ISpatialAudioTransformOptions> = null) {
+    constructor(parent: AbstractAudioNode, options: Nullable<SpatialAudioTransformOptions> = null) {
         super(parent.engine, AudioNodeType.InputOutput, parent);
 
         this._spatialTransform = new SpatialAudioTransform(options);

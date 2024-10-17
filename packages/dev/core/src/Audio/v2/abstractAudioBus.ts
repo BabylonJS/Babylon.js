@@ -1,5 +1,5 @@
 import type { Nullable } from "../../types";
-import type { IAudioBusNodeOptions } from "./abstractAudioBusNode";
+import type { AudioBusNodeOptions } from "./abstractAudioBusNode";
 import { AbstractAudioBusNode } from "./abstractAudioBusNode";
 import type { AbstractAudioEngine } from "./abstractAudioEngine";
 import type { AbstractAudioPositioner } from "./abstractAudioPositioner";
@@ -11,7 +11,7 @@ export type AbstractPrimaryAudioBus = AbstractMainAudioBus | AbstractAudioBus;
 /**
  * Options for creating a new audio bus.
  */
-export interface IAudioBusOptions extends IAudioBusNodeOptions {
+export interface AudioBusOptions extends AudioBusNodeOptions {
     /**
      * Whether to enable the positioner.
      */
@@ -35,7 +35,7 @@ export abstract class AbstractAudioBus extends AbstractAudioBusNode {
     public readonly sender: AbstractAudioSender;
 
     /** @internal */
-    constructor(name: string, engine: AbstractAudioEngine, options: Nullable<IAudioBusOptions> = null) {
+    constructor(name: string, engine: AbstractAudioEngine, options: Nullable<AudioBusOptions> = null) {
         super(name, engine);
 
         if (options?.enablePositioner) {

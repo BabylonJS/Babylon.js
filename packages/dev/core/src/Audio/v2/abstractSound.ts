@@ -8,7 +8,7 @@ import type { AbstractSoundInstance } from "./abstractSoundInstance";
 /**
  * Options for creating a new sound.
  */
-export interface ISoundOptions {
+export interface SoundOptions {
     /**
      * Whether the sound should start playing immediately.
      */
@@ -109,7 +109,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
     }
 
     /** @internal */
-    constructor(name: string, engine: AbstractAudioEngine, options: Nullable<ISoundOptions> = null) {
+    constructor(name: string, engine: AbstractAudioEngine, options: Nullable<SoundOptions> = null) {
         super(name, engine, AudioNodeType.Output);
 
         this.autoplay = options?.autoplay ?? false;

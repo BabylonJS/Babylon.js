@@ -1,7 +1,7 @@
 import type { Nullable } from "../../../types";
 import { AbstractStreamingSound } from "../abstractStreamingSound";
 import { AbstractStreamingSoundInstance } from "../abstractStreamingSoundInstance";
-import type { AbstractWebAudioEngine, IWebAudioStreamingSoundOptions } from "./webAudioEngine";
+import type { AbstractWebAudioEngine, WebAudioStreamingSoundOptions } from "./webAudioEngine";
 
 /** @internal */
 export class WebAudioStreamingSound extends AbstractStreamingSound {
@@ -11,12 +11,12 @@ export class WebAudioStreamingSound extends AbstractStreamingSound {
     }
 
     /** @internal */
-    constructor(name: string, engine: AbstractWebAudioEngine, options: Nullable<IWebAudioStreamingSoundOptions> = null) {
+    constructor(name: string, engine: AbstractWebAudioEngine, options: Nullable<WebAudioStreamingSoundOptions> = null) {
         super(name, engine, options);
     }
 
     /** @internal */
-    public async init(options: Nullable<IWebAudioStreamingSoundOptions> = null): Promise<void> {}
+    public async init(options: Nullable<WebAudioStreamingSoundOptions> = null): Promise<void> {}
 }
 
 /** @internal */

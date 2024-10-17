@@ -1,7 +1,7 @@
 import type { Nullable } from "../../../types";
 import { AbstractAudioDevice } from "../abstractAudioDevice";
 import type { AbstractAudioEngine } from "../abstractAudioEngine";
-import type { IWebAudioDeviceOptions } from "./webAudioEngine";
+import type { WebAudioDeviceOptions } from "./webAudioEngine";
 
 /** @internal */
 export class WebAudioDevice extends AbstractAudioDevice {
@@ -32,7 +32,7 @@ export class WebAudioDevice extends AbstractAudioDevice {
     }
 
     /** @internal */
-    constructor(name: string, engine: AbstractAudioEngine, options: Nullable<IWebAudioDeviceOptions> = null) {
+    constructor(name: string, engine: AbstractAudioEngine, options: Nullable<WebAudioDeviceOptions> = null) {
         super(name, engine);
 
         if (options?.audioContext) {

@@ -1,5 +1,5 @@
 import type { Nullable } from "../../types";
-import type { AbstractAudioDevice, IAudioDeviceOptions } from "./abstractAudioDevice";
+import type { AbstractAudioDevice, AudioDeviceOptions } from "./abstractAudioDevice";
 import type { AbstractAudioNode } from "./abstractAudioNode";
 import { AbstractAudioNodeParent } from "./abstractAudioNodeParent";
 import type { AbstractAudioPositioner } from "./abstractAudioPositioner";
@@ -7,9 +7,9 @@ import type { AbstractAudioSender } from "./abstractAudioSender";
 import type { AbstractMainAudioBus } from "./abstractMainAudioBus";
 import type { AbstractSound } from "./abstractSound";
 import type { AbstractSoundInstance } from "./abstractSoundInstance";
-import type { AbstractStaticSound, IStaticSoundOptions } from "./abstractStaticSound";
+import type { AbstractStaticSound, StaticSoundOptions } from "./abstractStaticSound";
 import type { AbstractStaticSoundInstance } from "./abstractStaticSoundInstance";
-import type { AbstractStreamingSound, IStreamingSoundOptions } from "./abstractStreamingSound";
+import type { AbstractStreamingSound, StreamingSoundOptions } from "./abstractStreamingSound";
 import type { AbstractStreamingSoundInstance } from "./abstractStreamingSoundInstance";
 import type { SpatialAudioListener } from "./spatialAudioListener";
 
@@ -99,12 +99,12 @@ export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
         });
     }
 
-    public abstract createDevice(name: string, options: Nullable<IAudioDeviceOptions>): Promise<AbstractAudioDevice>;
+    public abstract createDevice(name: string, options: Nullable<AudioDeviceOptions>): Promise<AbstractAudioDevice>;
     public abstract createMainBus(name: string): Promise<AbstractMainAudioBus>;
     public abstract createPositioner(parent: AbstractAudioNode): Promise<AbstractAudioPositioner>;
     public abstract createSender(parent: AbstractAudioNode): Promise<AbstractAudioSender>;
-    public abstract createSound(name: string, options: Nullable<IStaticSoundOptions>): Promise<AbstractStaticSound>;
+    public abstract createSound(name: string, options: Nullable<StaticSoundOptions>): Promise<AbstractStaticSound>;
     public abstract createSoundInstance(source: AbstractStaticSound): Promise<AbstractStaticSoundInstance>;
-    public abstract createStreamingSound(name: string, options: Nullable<IStreamingSoundOptions>): Promise<AbstractStreamingSound>;
+    public abstract createStreamingSound(name: string, options: Nullable<StreamingSoundOptions>): Promise<AbstractStreamingSound>;
     public abstract createStreamingSoundInstance(source: AbstractStreamingSound): Promise<AbstractStreamingSoundInstance>;
 }

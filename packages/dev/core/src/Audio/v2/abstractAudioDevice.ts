@@ -4,7 +4,7 @@ import { AbstractNamedAudioNode, AudioNodeType } from "./abstractAudioNode";
 /**
  * Options for creating a new audio device.
  */
-export interface IAudioDeviceOptions {}
+export interface AudioDeviceOptions {}
 
 /**
  * Abstract base class for audio devices in the audio engine.

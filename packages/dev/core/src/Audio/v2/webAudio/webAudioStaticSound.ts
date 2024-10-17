@@ -5,7 +5,7 @@ import { AbstractStaticSound } from "../abstractStaticSound";
 import { AbstractStaticSoundInstance } from "../abstractStaticSoundInstance";
 import { WebAudioBus } from "./webAudioBus";
 import type { WebAudioDevice } from "./webAudioDevice";
-import type { AbstractWebAudioEngine, IWebAudioStaticSoundOptions } from "./webAudioEngine";
+import type { AbstractWebAudioEngine, WebAudioStaticSoundOptions } from "./webAudioEngine";
 import { WebAudioMainBus } from "./webAudioMainBus";
 
 /** @internal */
@@ -27,12 +27,12 @@ export class WebAudioStaticSound extends AbstractStaticSound {
     }
 
     /** @internal */
-    constructor(name: string, engine: AbstractWebAudioEngine, options: Nullable<IWebAudioStaticSoundOptions> = null) {
+    constructor(name: string, engine: AbstractWebAudioEngine, options: Nullable<WebAudioStaticSoundOptions> = null) {
         super(name, engine, options);
     }
 
     /** @internal */
-    public async init(options: Nullable<IWebAudioStaticSoundOptions> = null): Promise<void> {
+    public async init(options: Nullable<WebAudioStaticSoundOptions> = null): Promise<void> {
         this.audioContext = await (this.engine.defaultDevice as WebAudioDevice).audioContext;
         this._gainNode = new GainNode(this.audioContext);
 
