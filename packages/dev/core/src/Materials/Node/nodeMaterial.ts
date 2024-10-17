@@ -354,7 +354,7 @@ export class NodeMaterial extends PushMaterial {
     /**
      * Observable raised when the material is built
      */
-    public onBuildObservable = new Observable<NodeMaterial>();
+    public onBuildObservable = new Observable<NodeMaterial>(undefined, true);
 
     /**
      * Observable raised when an error is detected
@@ -1618,6 +1618,16 @@ export class NodeMaterial extends PushMaterial {
         }
 
         return result;
+    }
+
+    /**
+     * Return the strings generated for the shader code
+     */
+    public get compilationStrings() {
+        return {
+            vertex: this._vertexCompilationState.compilationString,
+            fragment: this._fragmentCompilationState.compilationString,
+        };
     }
 
     /**

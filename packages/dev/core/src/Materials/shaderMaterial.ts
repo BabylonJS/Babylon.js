@@ -935,7 +935,7 @@ export class ShaderMaterial extends PushMaterial {
 
         drawWrapper!._wasPreviouslyUsingInstances = !!useInstances;
 
-        if (!effect?.isReady() ?? true) {
+        if (!effect?.isReady()) {
             return false;
         }
 

@@ -7,3 +7,4 @@ export * from "./nodeMaterial";
 export * from "./Blocks/index";
 export * from "./Optimizers/index";
 export * from "../../Decorators/nodeDecorator";
+export * from "./Replay/nodeMaterialRuntimeHelper";
