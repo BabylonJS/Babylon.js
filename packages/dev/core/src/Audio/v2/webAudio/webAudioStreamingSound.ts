@@ -32,7 +32,7 @@ export class WebAudioStreamingSoundInstance extends AbstractStreamingSoundInstan
     public async init(): Promise<void> {}
 
     /** @internal */
-    public play(): Promise<void> {
+    public play(waitTime: Nullable<number> = null, startOffset: Nullable<number> = null, duration: Nullable<number> = null): Promise<void> {
         return Promise.resolve();
     }
 

@@ -1,4 +1,5 @@
 import { Observable } from "../../Misc/observable";
+import type { Nullable } from "../../types";
 import { AbstractAudioNode, AudioNodeType } from "./abstractAudioNode";
 import type { AbstractSound } from "./abstractSound";
 
@@ -34,7 +35,7 @@ export abstract class AbstractSoundInstance extends AbstractAudioNode {
 
     public abstract get currentTime(): number;
 
-    public abstract play(): Promise<void>;
+    public abstract play(waitTime: Nullable<number>, startOffset: Nullable<number>, duration: Nullable<number>): Promise<void>;
     public abstract pause(): void;
     public abstract resume(): void;
     public abstract stop(): void;

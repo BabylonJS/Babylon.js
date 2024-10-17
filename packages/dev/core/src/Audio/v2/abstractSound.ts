@@ -26,14 +26,6 @@ export interface SoundOptions {
      */
     playbackRate?: number;
     /**
-     * The time at which the sound should start playing.
-     */
-    startTime?: number;
-    /**
-     * The time at which the sound should stop playing.
-     */
-    stopTime?: number;
-    /**
      * The volume of the sound.
      */
     volume?: number;
@@ -73,16 +65,6 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * The playback rate of the sound.
      */
     public playbackRate: number;
-
-    /**
-     * The time at which the sound should start playing.
-     */
-    public startTime: number;
-
-    /**
-     * The time at which the sound should stop playing.
-     */
-    public stopTime: number;
 
     /**
      * The volume of the sound.
@@ -125,8 +107,6 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         this.loop = options?.loop ?? false;
         this.pitch = options?.pitch ?? 0;
         this.playbackRate = options?.playbackRate ?? 1;
-        this.startTime = options?.startTime ?? 0;
-        this.stopTime = options?.stopTime ?? 0;
         this.volume = options?.volume ?? 1;
     }
 
@@ -148,12 +128,15 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
 
     /**
      * Plays the sound.
+     * @param waitTime - The time to wait before playing the sound in seconds.
+     * @param startOffset - The time within the sound source to start playing the sound in seconds.
+     * @param duration - How long to play the sound in seconds.
      * @returns A promise that resolves when the sound is playing.
      */
-    public async play(): Promise<AbstractSoundInstance> {
+    public async play(waitTime: Nullable<number> = null, startOffset: Nullable<number> = null, duration: Nullable<number> = null): Promise<AbstractSoundInstance> {
         const instance = await this._createSoundInstance();
 
-        await instance.play();
+        await instance.play(waitTime, startOffset, duration);
 
         this._soundInstances.add(instance);
 

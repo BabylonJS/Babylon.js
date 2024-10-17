@@ -109,9 +109,9 @@ export class WebAudioStaticSoundInstance extends AbstractStaticSoundInstance {
     }
 
     /** @internal */
-    public async play(): Promise<void> {
+    public async play(waitTime: Nullable<number> = null, startOffset: Nullable<number> = null, duration: Nullable<number> = null): Promise<void> {
         this.sourceNode.addEventListener("ended", this._onEnded.bind(this), { once: true });
-        this.sourceNode.start();
+        this.sourceNode.start(waitTime ? (this._source as WebAudioStaticSound).audioContext.currentTime + waitTime : 0, startOffset ?? 0, duration === null ? undefined : duration);
     }
 
     /** @internal */
