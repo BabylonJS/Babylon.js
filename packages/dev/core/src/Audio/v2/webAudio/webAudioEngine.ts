@@ -1,4 +1,5 @@
 import type { Nullable } from "../../../types";
+import type { IAudioBusOptions } from "../abstractAudioBus";
 import type { AbstractAudioDevice } from "../abstractAudioDevice";
 import { AbstractAudioEngine } from "../abstractAudioEngine";
 import type { AbstractAudioNode } from "../abstractAudioNode";
@@ -8,47 +9,102 @@ import type { AbstractMainAudioBus } from "../abstractMainAudioBus";
 import type { AbstractStaticSound, IStaticSoundOptions } from "../abstractStaticSound";
 import type { AbstractStreamingSound, IStreamingSoundOptions } from "../abstractStreamingSound";
 import { WebAudioDevice } from "./webAudioDevice";
-import { WebAudioMainBus } from "./webAudioBus";
+import { WebAudioMainBus } from "./webAudioMainBus";
 import { WebAudioPositioner } from "./webAudioPositioner";
 import { WebAudioSender } from "./webAudioSender";
-import { WebAudioStaticSoundInstance, WebAudioStaticSound } from "./webAudioStaticSound";
+import { WebAudioStaticSound, WebAudioStaticSoundInstance } from "./webAudioStaticSound";
 import { WebAudioStreamingSound, WebAudioStreamingSoundInstance } from "./webAudioStreamingSound";
 
+/**
+ * Options for creating a new WebAudioBus.
+ */
+export interface IWebAudioBusOptions extends IAudioBusOptions {}
+
+/**
+ * Options for creating a new WebAudioDevice.
+ */
 export interface IWebAudioDeviceOptions {
+    /**
+     * The audio context to be used by the device.
+     */
     audioContext?: AudioContext;
 }
 
+/**
+ * Options for creating a new WebAudioEngine.
+ */
 export interface IWebAudioEngineOptions {
+    /**
+     * The audio context to be used by the engine.
+     */
     audioContext?: AudioContext;
+    /**
+     * Whether to disable the default device.
+     */
     noDefaultDevice?: boolean;
+    /**
+     * Whether to disable the default main bus.
+     */
     noDefaultMainBus?: boolean;
 }
 
-export interface IWebAudioPositionerOptions extends IAudioPositionerOptions {
-    //
-}
+/**
+ * Options for creating a new WebAudioPositioner.
+ */
+export interface IWebAudioPositionerOptions extends IAudioPositionerOptions {}
 
+/**
+ * Options for creating a new WebAudioStaticSound.
+ */
 export interface IWebAudioStaticSoundOptions extends IStaticSoundOptions {
+    /**
+     * The URL of the sound source.
+     */
     sourceUrl?: string;
 }
 
+/**
+ * Options for creating a new WebAudioStreamingSound.
+ */
 export interface IWebAudioStreamingSoundOptions extends IStreamingSoundOptions {
-    //
+    /**
+     * The URL of the sound source.
+     */
+    sourceUrl?: string;
 }
 
+/**
+ * Creates a new WebAudioEngine.
+ * @param options - The options for creating the audio engine.
+ * @returns A promise that resolves with the created audio engine.
+ */
 export async function CreateAudioEngine(options: Nullable<IWebAudioEngineOptions> = null): Promise<AbstractWebAudioEngine> {
     const engine = new WebAudioEngine();
     await engine.init(options);
     return engine;
 }
 
+/**
+ * Abstract class for WebAudioEngine.
+ */
 export class AbstractWebAudioEngine extends AbstractAudioEngine {
+    /**
+     * Creates a new audio device.
+     * @param name - The name of the device.
+     * @param options - The options for creating the device.
+     * @returns A promise that resolves with the created device.
+     */
     public async createDevice(name: string, options: Nullable<IWebAudioDeviceOptions> = null): Promise<AbstractAudioDevice> {
         const device = new WebAudioDevice(name, this, options);
         this._addDevice(device);
         return device;
     }
 
+    /**
+     * Creates a new main audio bus.
+     * @param name - The name of the main bus.
+     * @returns A promise that resolves with the created main audio bus.
+     */
     public override async createMainBus(name: string): Promise<AbstractMainAudioBus> {
         const bus = new WebAudioMainBus(name, this);
         await bus.init();
@@ -56,14 +112,31 @@ export class AbstractWebAudioEngine extends AbstractAudioEngine {
         return bus;
     }
 
+    /**
+     * Creates a new audio positioner.
+     * @param parent - The parent node.
+     * @param options - The options for creating the positioner.
+     * @returns A promise that resolves with the created positioner.
+     */
     public async createPositioner(parent: AbstractAudioNode, options: Nullable<IWebAudioPositionerOptions> = null): Promise<AbstractAudioPositioner> {
         return new WebAudioPositioner(parent, options);
     }
 
+    /**
+     * Creates a new WebAudioSender.
+     * @param parent - The parent audio node.
+     * @returns A promise that resolves to the created WebAudioSender.
+     */
     public async createSender(parent: AbstractAudioNode): Promise<AbstractAudioSender> {
         return new WebAudioSender(parent);
     }
 
+    /**
+     * Creates a new static sound.
+     * @param name - The name of the sound.
+     * @param options - The options for the static sound.
+     * @returns A promise that resolves to the created static sound.
+     */
     public async createSound(name: string, options: Nullable<IWebAudioStaticSoundOptions> = null): Promise<AbstractStaticSound> {
         const sound = new WebAudioStaticSound(name, this, options);
         await sound.init(options);
@@ -71,6 +144,11 @@ export class AbstractWebAudioEngine extends AbstractAudioEngine {
         return sound;
     }
 
+    /**
+     * Creates a new instance of a static sound.
+     * @param source - The source static sound.
+     * @returns A promise that resolves to the created static sound instance.
+     */
     public async createSoundInstance(source: WebAudioStaticSound): Promise<WebAudioStaticSoundInstance> {
         const soundInstance = new WebAudioStaticSoundInstance(source);
         await soundInstance.init();
@@ -78,6 +156,12 @@ export class AbstractWebAudioEngine extends AbstractAudioEngine {
         return soundInstance;
     }
 
+    /**
+     * Creates a new streaming sound.
+     * @param name - The name of the sound.
+     * @param options - The options for the streaming sound.
+     * @returns A promise that resolves to the created streaming sound.
+     */
     public async createStreamingSound(name: string, options: Nullable<IStreamingSoundOptions> = null): Promise<AbstractStreamingSound> {
         const sound = new WebAudioStreamingSound(name, this, options);
         await sound.init(options);
@@ -85,6 +169,11 @@ export class AbstractWebAudioEngine extends AbstractAudioEngine {
         return sound;
     }
 
+    /**
+     * Creates a new instance of a streaming sound.
+     * @param source - The source streaming sound.
+     * @returns A promise that resolves to the created streaming sound instance.
+     */
     public async createStreamingSoundInstance(source: WebAudioStreamingSound): Promise<WebAudioStreamingSoundInstance> {
         const soundInstance = new WebAudioStreamingSoundInstance(source);
         await soundInstance.init();
@@ -95,10 +184,12 @@ export class AbstractWebAudioEngine extends AbstractAudioEngine {
 
 /** @internal */
 export class WebAudioEngine extends AbstractWebAudioEngine {
+    /** @internal */
     public override get defaultDevice(): WebAudioDevice {
         return super.defaultDevice as WebAudioDevice;
     }
 
+    /** @internal */
     public async init(options: Nullable<IWebAudioEngineOptions> = null): Promise<void> {
         if (!options?.noDefaultDevice) {
             await this.createDevice("default", { audioContext: options?.audioContext });

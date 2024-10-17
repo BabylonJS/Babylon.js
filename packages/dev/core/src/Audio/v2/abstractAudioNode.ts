@@ -20,6 +20,9 @@ export enum AudioNodeType {
     InputOutput = 3,
 }
 
+/**
+ * Abstract class for an audio node.
+ */
 export abstract class AbstractAudioNode extends AbstractAudioNodeParent {
     // If parent is null, node is owned by audio engine.
     private _parent: Nullable<AbstractAudioNodeParent> = null;
@@ -39,19 +42,21 @@ export abstract class AbstractAudioNode extends AbstractAudioNodeParent {
     protected readonly _connectedUpstreamNodes?: Set<AbstractAudioNode> | undefined;
 
     protected readonly _engine: AbstractAudioEngine;
+
+    /**
+     * Observable for when the audio node is disposed.
+     */
     public readonly onDisposeObservable = new Observable<AbstractAudioNode>();
 
+    /**
+     * The audio engine this node belongs to.
+     */
     public get engine(): AbstractAudioEngine {
         return this._engine;
     }
 
-    /**
-     * Creates a new audio node.
-     * @param engine - The audio engine this node will be added to
-     * @param nodeType - The type of audio node
-     * @param parent - The parent audio node. Defaults to `null` to make the the audio engine the parent
-     */
-    public constructor(engine: AbstractAudioEngine, nodeType: AudioNodeType, parent: Nullable<AbstractAudioNodeParent> = null) {
+    /** @internal */
+    constructor(engine: AbstractAudioEngine, nodeType: AudioNodeType, parent: Nullable<AbstractAudioNodeParent> = null) {
         super();
 
         this._engine = engine;
@@ -92,10 +97,16 @@ export abstract class AbstractAudioNode extends AbstractAudioNodeParent {
         this.onDisposeObservable.notifyObservers(this);
     }
 
+    /**
+     * The parent audio node.
+     */
     public get parent(): AbstractAudioNodeParent {
         return this._parent ?? this._engine;
     }
 
+    /**
+     * Sets the parent audio node.
+     */
     public set parent(parent: Nullable<AbstractAudioNodeParent>) {
         if (this._parent === parent) {
             return;
@@ -181,10 +192,16 @@ export abstract class AbstractAudioNode extends AbstractAudioNodeParent {
     }
 }
 
+/**
+ * Abstract class for an audio node with a name.
+ */
 export abstract class AbstractNamedAudioNode extends AbstractAudioNode {
+    /**
+     * The name of the audio node.
+     */
     public name: string;
 
-    public constructor(name: string, engine: AbstractAudioEngine, nodeType: AudioNodeType) {
+    constructor(name: string, engine: AbstractAudioEngine, nodeType: AudioNodeType) {
         super(engine, nodeType);
         this.name = name;
     }

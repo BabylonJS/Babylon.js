@@ -4,22 +4,38 @@ import type { ISoundOptions } from "./abstractSound";
 import { AbstractSound } from "./abstractSound";
 import type { AbstractSoundInstance } from "./abstractSoundInstance";
 
+/**
+ * Options for creating a new static sound.
+ */
 export interface IStaticSoundOptions extends ISoundOptions {
+    /**
+     * The start of the loop range in seconds.
+     */
     loopStart?: number;
+    /**
+     * The end of the loop range in seconds.
+     */
     loopEnd?: number;
 }
 
+/**
+ * Abstract class representing a static sound in the audio engine.
+ */
 export abstract class AbstractStaticSound extends AbstractSound {
     private _loopStart: number;
     private _loopEnd: number;
 
-    public constructor(name: string, engine: AbstractAudioEngine, options: Nullable<IStaticSoundOptions> = null) {
+    /** @internal */
+    constructor(name: string, engine: AbstractAudioEngine, options: Nullable<IStaticSoundOptions> = null) {
         super(name, engine, options);
 
         this._loopStart = options?.loopStart ?? 0;
         this._loopEnd = options?.loopEnd ?? 0;
     }
 
+    /**
+     * The start of the loop range in seconds.
+     */
     public get loopStart(): number {
         return this._loopStart;
     }
@@ -28,6 +44,9 @@ export abstract class AbstractStaticSound extends AbstractSound {
         this._loopStart = value;
     }
 
+    /**
+     * The end of the loop range in seconds.
+     */
     public get loopEnd(): number {
         return this._loopEnd;
     }

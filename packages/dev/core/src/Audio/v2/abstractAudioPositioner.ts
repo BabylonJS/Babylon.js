@@ -6,8 +6,14 @@ import type { SpatialAudioListener } from "./spatialAudioListener";
 import type { ISpatialAudioTransformOptions } from "./spatialAudioTransform";
 import { SpatialAudioTransform } from "./spatialAudioTransform";
 
+/**
+ * Options for creating a new audio positioner.
+ */
 export interface IAudioPositionerOptions extends ISpatialAudioTransformOptions {}
 
+/**
+ * Abstract base class for audio positioners.
+ */
 export abstract class AbstractAudioPositioner extends AbstractAudioNode {
     // Not owned
     private _pannerGain: number = 1;
@@ -17,14 +23,21 @@ export abstract class AbstractAudioPositioner extends AbstractAudioNode {
 
     // TODO: Add spatializer cone angles/volumes, etc ...
 
+    /**
+     * The spatial audio listeners.
+     */
     public readonly listeners = new Set<SpatialAudioListener>();
 
-    public constructor(parent: AbstractAudioNode, options: Nullable<ISpatialAudioTransformOptions> = null) {
+    /** @internal */
+    constructor(parent: AbstractAudioNode, options: Nullable<ISpatialAudioTransformOptions> = null) {
         super(parent.engine, AudioNodeType.InputOutput, parent);
 
         this._spatialTransform = new SpatialAudioTransform(options);
     }
 
+    /**
+     * Releases associated resources.
+     */
     public override dispose(): void {
         super.dispose();
 
@@ -33,6 +46,9 @@ export abstract class AbstractAudioPositioner extends AbstractAudioNode {
         this.listeners?.clear();
     }
 
+    /**
+     * The position of the audio positioner.
+     */
     public get position(): Vector3 {
         return this._spatialTransform.position;
     }
@@ -41,6 +57,9 @@ export abstract class AbstractAudioPositioner extends AbstractAudioNode {
         this._spatialTransform.position = position;
     }
 
+    /**
+     * The rotation of the audio positioner.
+     */
     public get rotation(): Quaternion {
         return this._spatialTransform.rotation;
     }
@@ -49,6 +68,9 @@ export abstract class AbstractAudioPositioner extends AbstractAudioNode {
         this._spatialTransform.rotation = rotation;
     }
 
+    /**
+     * The scale of the audio positioner.
+     */
     public get attachedTransformNode(): Nullable<TransformNode> {
         return this._spatialTransform.attachedTransformNode;
     }
@@ -57,6 +79,9 @@ export abstract class AbstractAudioPositioner extends AbstractAudioNode {
         this._spatialTransform.attachedTransformNode = node;
     }
 
+    /**
+     * The spatializer gain of the audio positioner.
+     */
     public get spatializerGain(): number {
         return this._spatializerGain;
     }
@@ -65,6 +90,9 @@ export abstract class AbstractAudioPositioner extends AbstractAudioNode {
         this._spatializerGain = value;
     }
 
+    /**
+     * The panner gain of the audio positioner.
+     */
     public get pannerGain(): number {
         return this._pannerGain;
     }
@@ -73,6 +101,9 @@ export abstract class AbstractAudioPositioner extends AbstractAudioNode {
         this._pannerGain = value;
     }
 
+    /**
+     * The panner position of the audio positioner.
+     */
     public get pannerPosition(): Nullable<Vector3> {
         return this._pannerPosition;
     }

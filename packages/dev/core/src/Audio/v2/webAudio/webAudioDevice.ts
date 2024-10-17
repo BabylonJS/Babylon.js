@@ -20,16 +20,19 @@ export class WebAudioDevice extends AbstractAudioDevice {
 
     private _resolveAudioContext: (audioContext: AudioContext) => void;
 
+    /** @internal */
     public audioContext = new Promise<AudioContext>((resolve) => {
         this._resolveAudioContext = resolve;
         document.addEventListener("click", this._initAudioContext.bind(this), { once: true });
     });
 
+    /** @internal */
     public get webAudioInputNode(): AudioNode {
         return this._audioContext.destination;
     }
 
-    public constructor(name: string, engine: AbstractAudioEngine, options: Nullable<IWebAudioDeviceOptions> = null) {
+    /** @internal */
+    constructor(name: string, engine: AbstractAudioEngine, options: Nullable<IWebAudioDeviceOptions> = null) {
         super(name, engine);
 
         if (options?.audioContext) {

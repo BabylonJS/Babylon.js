@@ -6,23 +6,27 @@ import type { AbstractAudioEngine } from "./abstractAudioEngine";
 import type { ISpatialAudioTransformOptions } from "./spatialAudioTransform";
 import { SpatialAudioTransform } from "./spatialAudioTransform";
 
+/** @internal */
 export class SpatialAudioListener implements IDisposable {
     private _engine: AbstractAudioEngine;
     private _spatialTransform: SpatialAudioTransform;
 
-    public constructor(engine: AbstractAudioEngine, options: Nullable<ISpatialAudioTransformOptions> = null) {
+    /** @internal */
+    constructor(engine: AbstractAudioEngine, options: Nullable<ISpatialAudioTransformOptions> = null) {
         this._engine = engine;
         this._spatialTransform = new SpatialAudioTransform(options);
 
         this._engine.listeners.add(this);
     }
 
+    /** @internal */
     public dispose(): void {
         this._engine.listeners.delete(this);
 
         this._spatialTransform.dispose();
     }
 
+    /** @internal */
     public get position(): Vector3 {
         return this._spatialTransform.position;
     }
@@ -31,6 +35,7 @@ export class SpatialAudioListener implements IDisposable {
         this._spatialTransform.position = position;
     }
 
+    /** @internal */
     public get rotation(): Quaternion {
         return this._spatialTransform.rotation;
     }
@@ -39,6 +44,7 @@ export class SpatialAudioListener implements IDisposable {
         this._spatialTransform.rotation = rotation;
     }
 
+    /** @internal */
     public get attachedTransformNode(): Nullable<TransformNode> {
         return this._spatialTransform.attachedTransformNode;
     }

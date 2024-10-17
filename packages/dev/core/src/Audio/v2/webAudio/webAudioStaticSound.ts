@@ -3,29 +3,35 @@ import type { AbstractAudioNode } from "../abstractAudioNode";
 import type { AbstractSoundInstance } from "../abstractSoundInstance";
 import { AbstractStaticSound } from "../abstractStaticSound";
 import { AbstractStaticSoundInstance } from "../abstractStaticSoundInstance";
-import { WebAudioBus, WebAudioMainBus } from "./webAudioBus";
+import { WebAudioBus } from "./webAudioBus";
 import type { WebAudioDevice } from "./webAudioDevice";
 import type { AbstractWebAudioEngine, IWebAudioStaticSoundOptions } from "./webAudioEngine";
+import { WebAudioMainBus } from "./webAudioMainBus";
 
 /** @internal */
 export class WebAudioStaticSound extends AbstractStaticSound {
     private _gainNode: GainNode;
     private _audioBuffer: AudioBuffer;
 
+    /** @internal */
     public audioContext: AudioContext;
 
+    /** @internal */
     public get webAudioInputNode() {
         return this._gainNode;
     }
 
+    /** @internal */
     public get webAudioOutputNode() {
         return this._gainNode;
     }
 
+    /** @internal */
     constructor(name: string, engine: AbstractWebAudioEngine, options: Nullable<IWebAudioStaticSoundOptions> = null) {
         super(name, engine, options);
     }
 
+    /** @internal */
     public async init(options: Nullable<IWebAudioStaticSoundOptions> = null): Promise<void> {
         this.audioContext = await (this.engine.defaultDevice as WebAudioDevice).audioContext;
         this._gainNode = new GainNode(this.audioContext);
@@ -43,6 +49,7 @@ export class WebAudioStaticSound extends AbstractStaticSound {
         }
     }
 
+    /** @internal */
     public onSoundInstanceEnded(instance: AbstractSoundInstance): void {
         this._onSoundInstanceEnded(instance);
     }
@@ -78,9 +85,11 @@ export class WebAudioStaticSound extends AbstractStaticSound {
 
 /** @internal */
 export class WebAudioStaticSoundInstance extends AbstractStaticSoundInstance {
+    /** @internal */
     public sourceNode: AudioBufferSourceNode;
 
-    public get currentTime(): number {
+    /** @internal */
+    get currentTime(): number {
         return 0;
     }
 
@@ -88,7 +97,7 @@ export class WebAudioStaticSoundInstance extends AbstractStaticSoundInstance {
         return this.sourceNode;
     }
 
-    public constructor(source: WebAudioStaticSound) {
+    constructor(source: WebAudioStaticSound) {
         super(source);
     }
 
@@ -98,19 +107,23 @@ export class WebAudioStaticSoundInstance extends AbstractStaticSoundInstance {
         this._connect(this._source);
     }
 
+    /** @internal */
     public async play(): Promise<void> {
         this.sourceNode.addEventListener("ended", this._onEnded.bind(this), { once: true });
         this.sourceNode.start();
     }
 
+    /** @internal */
     public pause(): void {
         //
     }
 
+    /** @internal */
     public resume(): void {
         //
     }
 
+    /** @internal */
     public stop(): void {
         this.sourceNode?.stop();
         this._onEnded();

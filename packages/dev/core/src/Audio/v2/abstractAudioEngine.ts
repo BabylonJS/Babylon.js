@@ -14,10 +14,12 @@ import type { AbstractStreamingSoundInstance } from "./abstractStreamingSoundIns
 import type { SpatialAudioListener } from "./spatialAudioListener";
 
 /**
- * Owns top-level AbstractAudioNode objects.
- * Owns all AbstractSound objects.
+ * Abstract base class for audio engines.
  */
 export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
+    // Owns top-level AbstractAudioNode objects.
+    // Owns all AbstractSound objects.
+
     // Not owned, but all items should be in parent's `children` container, too, which is owned.
     private readonly _devices = new Set<AbstractAudioDevice>();
 
@@ -30,19 +32,27 @@ export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
     // Not owned, but all items should be in parent's `children` container, too, which is owned.
     private readonly _soundInstances = new Set<AbstractSoundInstance>();
 
-    // Owned
-    public readonly listeners = new Set<SpatialAudioListener>();
+    /**
+     * The spatial audio listeners.
+     */
+    public readonly listeners = new Set<SpatialAudioListener>(); // Owned
 
     public get defaultDevice() {
         const [device] = this._devices;
         return device;
     }
 
+    /**
+     * The default main bus.
+     */
     public get defaultMainBus(): AbstractMainAudioBus {
         const [bus] = this._mainBuses;
         return bus;
     }
 
+    /**
+     * Releases associated resources.
+     */
     public override dispose(): void {
         super.dispose();
 

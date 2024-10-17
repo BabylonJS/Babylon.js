@@ -1,11 +1,10 @@
-import type { Nullable } from "core/types";
-import { AbstractAudioBus } from "../abstractAudioBus";
 import type { AbstractAudioNode } from "../abstractAudioNode";
+import { AbstractMainAudioBus } from "../abstractMainAudioBus";
 import { WebAudioDevice } from "./webAudioDevice";
-import type { AbstractWebAudioEngine, IWebAudioBusOptions } from "./webAudioEngine";
+import type { AbstractWebAudioEngine } from "./webAudioEngine";
 
 /** @internal */
-export class WebAudioBus extends AbstractAudioBus {
+export class WebAudioMainBus extends AbstractMainAudioBus {
     private _gainNode: GainNode;
 
     /** @internal */
@@ -19,8 +18,8 @@ export class WebAudioBus extends AbstractAudioBus {
     }
 
     /** @internal */
-    constructor(name: string, engine: AbstractWebAudioEngine, options: Nullable<IWebAudioBusOptions> = null) {
-        super(name, engine, options);
+    constructor(name: string, engine: AbstractWebAudioEngine) {
+        super(name, engine);
     }
 
     /** @internal */

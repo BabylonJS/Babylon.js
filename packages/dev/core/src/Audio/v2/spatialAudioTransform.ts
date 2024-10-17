@@ -3,12 +3,25 @@ import type { TransformNode } from "../../Meshes";
 import type { IDisposable } from "../../scene";
 import type { Nullable } from "../../types";
 
+/**
+ * Options for creating a new spatial audio transform.
+ */
 export interface ISpatialAudioTransformOptions {
+    /**
+     * The position of the transform.
+     */
     position?: Vector3;
+    /**
+     * The rotation of the transform.
+     */
     rotation?: Quaternion;
+    /**
+     * The transform node to attach to.
+     */
     attachedTransformNode?: Nullable<TransformNode>;
 }
 
+/** @internal */
 export class SpatialAudioTransform implements IDisposable {
     private _attachedTransformNode: Nullable<TransformNode> = null;
     private _position: Vector3;
@@ -16,17 +29,20 @@ export class SpatialAudioTransform implements IDisposable {
     private _rotation: Quaternion;
     private _rotationDirty: boolean = false;
 
-    public constructor(options: Nullable<ISpatialAudioTransformOptions> = null) {
+    /** @internal */
+    constructor(options: Nullable<ISpatialAudioTransformOptions> = null) {
         this._position = options?.position ?? Vector3.Zero();
         this._rotation = options?.rotation ?? Quaternion.Identity();
         this._attachedTransformNode = options?.attachedTransformNode ?? null;
     }
 
+    /** @internal */
     public dispose(): void {
         this._detachFromTransformNode();
         this._attachedTransformNode = null;
     }
 
+    /** @internal */
     public get position(): Vector3 {
         this._updatePosition();
         return this._position;
@@ -36,6 +52,7 @@ export class SpatialAudioTransform implements IDisposable {
         this._position.copyFrom(position);
     }
 
+    /** @internal */
     public get rotation(): Quaternion {
         this._updateRotation();
         return this._rotation;
@@ -45,6 +62,7 @@ export class SpatialAudioTransform implements IDisposable {
         this._rotation.copyFrom(rotation);
     }
 
+    /** @internal */
     public get attachedTransformNode(): Nullable<TransformNode> {
         return this._attachedTransformNode;
     }

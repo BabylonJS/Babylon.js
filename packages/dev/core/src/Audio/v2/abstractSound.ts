@@ -5,35 +5,89 @@ import type { AbstractAudioEngine } from "./abstractAudioEngine";
 import { AbstractNamedAudioNode, AudioNodeType } from "./abstractAudioNode";
 import type { AbstractSoundInstance } from "./abstractSoundInstance";
 
+/**
+ * Options for creating a new sound.
+ */
 export interface ISoundOptions {
+    /**
+     * Whether the sound should start playing immediately.
+     */
     autoplay?: boolean;
+    /**
+     * Whether the sound should loop.
+     */
     loop?: boolean;
+    /**
+     * The pitch of the sound.
+     */
     pitch?: number;
+    /**
+     * The time at which the sound should start playing.
+     */
     startTime?: number;
+    /**
+     * The time at which the sound should stop playing.
+     */
     stopTime?: number;
+    /**
+     * The volume of the sound.
+     */
     volume?: number;
-
+    /**
+     * The output bus for the sound.
+     */
     outputBus?: AbstractPrimaryAudioBus;
 }
 
 /**
- * Owned by AbstractAudioEngine.
+ * Abstract class representing a sound in the audio engine.
  */
 export abstract class AbstractSound extends AbstractNamedAudioNode {
+    // Owned by AbstractAudioEngine.
+
     // Non-owning.
     protected _soundInstances = new Set<AbstractSoundInstance>();
 
     protected _outputBus: Nullable<AbstractPrimaryAudioBus> = null;
 
+    /**
+     * Whether the sound should start playing immediately.
+     */
     public readonly autoplay: boolean;
+
+    /**
+     * Whether the sound should loop.
+     */
     public loop: boolean;
+
+    /**
+     * The pitch of the sound.
+     */
     public pitch: number;
+
+    /**
+     * The time at which the sound should start playing.
+     */
     public startTime: number;
+
+    /**
+     * The time at which the sound should stop playing.
+     */
     public stopTime: number;
+
+    /**
+     * The volume of the sound.
+     */
     public volume: number;
 
+    /**
+     * Observable for when the sound ends.
+     */
     public onEndedObservable = new Observable<AbstractSound>();
 
+    /**
+     * The output bus for the sound.
+     */
     public get outputBus(): Nullable<AbstractPrimaryAudioBus> {
         return this._outputBus;
     }
@@ -54,7 +108,8 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         }
     }
 
-    public constructor(name: string, engine: AbstractAudioEngine, options: Nullable<ISoundOptions> = null) {
+    /** @internal */
+    constructor(name: string, engine: AbstractAudioEngine, options: Nullable<ISoundOptions> = null) {
         super(name, engine, AudioNodeType.Output);
 
         this.autoplay = options?.autoplay ?? false;
@@ -65,6 +120,9 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         this.volume = options?.volume ?? 1;
     }
 
+    /**
+     * Releases associated resources.
+     */
     public override dispose(): void {
         super.dispose();
 
@@ -78,6 +136,10 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
 
     protected abstract _createSoundInstance(): Promise<AbstractSoundInstance>;
 
+    /**
+     * Plays the sound.
+     * @returns A promise that resolves when the sound is playing.
+     */
     public async play(): Promise<AbstractSoundInstance> {
         const instance = await this._createSoundInstance();
 
@@ -88,6 +150,9 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         return instance;
     }
 
+    /**
+     * Pauses the sound.
+     */
     public pause(): void {
         if (!this._soundInstances) {
             return;
@@ -98,6 +163,9 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         }
     }
 
+    /**
+     * Resumes the sound.
+     */
     public resume(): void {
         if (!this._soundInstances) {
             return;
@@ -108,6 +176,9 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         }
     }
 
+    /**
+     * Stops the sound.
+     */
     public stop(): void {
         if (!this._soundInstances) {
             return;

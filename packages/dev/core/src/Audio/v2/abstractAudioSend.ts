@@ -3,12 +3,27 @@ import type { AbstractAudioEngine } from "./abstractAudioEngine";
 import { AbstractAudioNode, AudioNodeType } from "./abstractAudioNode";
 import type { AbstractAuxilliaryAudioBus } from "./abstractAuxilliaryAudioBus";
 
+/**
+ * The type of send.
+ */
 export enum AudioSendType {
+    /**
+     * The send is post-fader.
+     */
     PostFader,
+    /**
+     * The send is pre-fader.
+     */
     PreFader,
 }
 
+/**
+ * Options for creating a new audio send.
+ */
 export interface IAudioSendOptions {
+    /**
+     * The type of send.
+     */
     sendType?: AudioSendType;
 }
 
@@ -19,12 +34,16 @@ export abstract class AbstractAudioSend extends AbstractAudioNode {
     private _outputBus: Nullable<AbstractAuxilliaryAudioBus> = null;
     private _sendType: AudioSendType;
 
-    public constructor(engine: AbstractAudioEngine, options: Nullable<IAudioSendOptions> = null) {
+    /** @internal */
+    constructor(engine: AbstractAudioEngine, options: Nullable<IAudioSendOptions> = null) {
         super(engine, AudioNodeType.InputOutput);
 
         this._sendType = options?.sendType ?? AudioSendType.PostFader;
     }
 
+    /**
+     * The output bus.
+     */
     public get outputBus(): Nullable<AbstractAuxilliaryAudioBus> {
         return this._outputBus;
     }
