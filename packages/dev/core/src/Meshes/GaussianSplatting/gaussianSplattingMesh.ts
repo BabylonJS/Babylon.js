@@ -14,7 +14,6 @@ import { Tools } from "core/Misc/tools";
 import "core/Meshes/thinInstanceMesh";
 import type { ThinEngine } from "core/Engines/thinEngine";
 import type { Material } from "core/Materials/material";
-import type { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 
 interface DelayedTextureUpdate {
     covA: Float32Array;
@@ -86,10 +85,6 @@ export class GaussianSplattingMesh extends Mesh {
         this._material = value;
         this._material.backFaceCulling = true;
         this._material.cullBackFaces = false;
-        this._clearObservable();
-        if (value.getClassName() === "NodeMaterial") {
-            value.onBindObservable.add(this._materialBindCallback, undefined, undefined, this);
-        }
     }
 
     /**
@@ -97,19 +92,6 @@ export class GaussianSplattingMesh extends Mesh {
      */
     public override get material(): Nullable<Material> {
         return this._material;
-    }
-
-    private _materialBindCallback(mesh: AbstractMesh | undefined) {
-        if (!mesh) {
-            return;
-        }
-        const nodeMaterial = this.material as NodeMaterial;
-        const effect = nodeMaterial.getEffect();
-        GaussianSplattingMaterial.BindEffect(mesh as Mesh, effect, this._scene);
-    }
-
-    private _clearObservable(): void {
-        this._material?.onBindObservable.removeCallback(this._materialBindCallback);
     }
 
     /**
@@ -385,8 +367,6 @@ export class GaussianSplattingMesh extends Mesh {
      * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
      */
     public override dispose(doNotRecurse?: boolean): void {
-        this._clearObservable();
-
         this._covariancesATexture?.dispose();
         this._covariancesBTexture?.dispose();
         this._centersTexture?.dispose();

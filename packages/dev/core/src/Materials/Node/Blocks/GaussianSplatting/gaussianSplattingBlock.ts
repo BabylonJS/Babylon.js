@@ -82,7 +82,10 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
      * Initialize the block and prepare the context for build
      * @param state defines the state that will be used for the build
      */
-    public override initialize(state: NodeMaterialBuildState) {}
+    public override initialize(state: NodeMaterialBuildState) {
+        state._excludeVariableName("focal");
+        state._excludeVariableName("invViewport");
+    }
 
     protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
