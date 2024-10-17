@@ -178,10 +178,10 @@ export class GaussianSplattingMaterial extends PushMaterial {
     }
 
     /**
-     *
-     * @param mesh
-     * @param effect
-     * @param scene
+     * Bind material effect for a specific Gaussian Splatting mesh
+     * @param mesh Gaussian splatting mesh
+     * @param effect Splatting material or node material
+     * @param scene scene that contains mesh and camera used for rendering
      */
     public static BindEffect(mesh: Mesh, effect: Effect, scene: Scene): void {
         const engine = scene.getEngine();
