@@ -90,8 +90,8 @@ export class MaterialPluginManager {
         }
 
         if (this._material._uniformBufferLayoutBuilt) {
-            // eslint-disable-next-line no-throw-literal
-            throw `The plugin "${plugin.name}" can't be added to the material "${this._material.name}" because this material has already been used for rendering! Please add plugins to materials before any rendering with this material occurs.`;
+            this._material.resetDrawCache();
+            this._material._createUniformBuffer();
         }
 
         if (!plugin.isCompatible(this._material.shaderLanguage)) {

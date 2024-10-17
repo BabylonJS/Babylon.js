@@ -942,18 +942,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * @param forceGLSL Use the GLSL code generation for the shader (even on WebGPU). Default is false
      */
     constructor(name: string, scene?: Scene, forceGLSL = false) {
-        super(name, scene);
-
-        const engine = this.getScene().getEngine();
-
-        if (engine.isWebGPU && !forceGLSL && !PBRBaseMaterial.ForceGLSL) {
-            // Switch main UBO to non UBO to connect to leftovers UBO in webgpu
-            if (this._uniformBuffer) {
-                this._uniformBuffer.dispose();
-            }
-            this._uniformBuffer = new UniformBuffer(engine, undefined, undefined, this.name, true);
-            this._shaderLanguage = ShaderLanguage.WGSL;
-        }
+        super(name, scene, undefined, forceGLSL || PBRBaseMaterial.ForceGLSL);
 
         this.brdf = new PBRBRDFConfiguration(this);
         this.clearCoat = new PBRClearCoatConfiguration(this);
