@@ -11,7 +11,9 @@ import { WebAudioMainBus } from "./webAudioMainBus";
 /** @internal */
 export class WebAudioStaticSound extends AbstractStaticSound {
     private _gainNode: GainNode;
-    private _audioBuffer: AudioBuffer;
+
+    /** @internal */
+    public audioBuffer: AudioBuffer;
 
     /** @internal */
     public audioContext: AudioContext;
@@ -41,7 +43,7 @@ export class WebAudioStaticSound extends AbstractStaticSound {
         if (options?.sourceUrl) {
             const response = await fetch(options.sourceUrl);
             const arrayBuffer = await response.arrayBuffer();
-            this._audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+            this.audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
         }
 
         if (options?.autoplay) {
@@ -73,14 +75,6 @@ export class WebAudioStaticSound extends AbstractStaticSound {
             throw new Error("Unsupported node type.");
         }
     }
-
-    protected override async _createSoundInstance(): Promise<AbstractSoundInstance> {
-        const instance = (await super._createSoundInstance()) as WebAudioStaticSoundInstance;
-
-        instance.sourceNode!.buffer = this._audioBuffer;
-
-        return instance;
-    }
 }
 
 /** @internal */
@@ -102,7 +96,14 @@ export class WebAudioStaticSoundInstance extends AbstractStaticSoundInstance {
     }
 
     public async init(): Promise<void> {
-        this.sourceNode = new AudioBufferSourceNode((this._source as WebAudioStaticSound).audioContext!);
+        this.sourceNode = new AudioBufferSourceNode((this._source as WebAudioStaticSound).audioContext, {
+            buffer: (this._source as WebAudioStaticSound).audioBuffer,
+            detune: this._source.pitch,
+            loop: this._source.loop,
+            loopEnd: (this._source as WebAudioStaticSound).loopEnd,
+            loopStart: (this._source as WebAudioStaticSound).loopStart,
+            playbackRate: this._source.playbackRate,
+        });
 
         this._connect(this._source);
     }
