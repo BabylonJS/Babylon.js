@@ -71,7 +71,7 @@ vec4 finalColor = glowColor;
 #endif
 
 #ifdef ALPHATEST
-    if (finalColor.a < ALPHATESTVALUE)
+    if (finalColor.a + 0.0000001 < ALPHATESTVALUE)
         discard;
 #endif
 
