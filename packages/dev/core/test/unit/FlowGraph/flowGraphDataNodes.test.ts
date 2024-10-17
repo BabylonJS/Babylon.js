@@ -33,7 +33,7 @@ describe("Flow Graph Data Nodes", () => {
         flowGraph.addEventBlock(sceneReady);
 
         const consoleLog = new FlowGraphConsoleLogBlock({ name: "Log" });
-        sceneReady.out.connectTo(consoleLog.in);
+        sceneReady.done.connectTo(consoleLog.in);
 
         const getVariable = new FlowGraphGetVariableBlock({ variable: "testVariable" });
 

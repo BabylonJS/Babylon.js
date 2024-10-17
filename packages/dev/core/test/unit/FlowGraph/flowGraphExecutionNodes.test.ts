@@ -15,6 +15,7 @@ import {
     FlowGraphSwitchBlock,
     FlowGraphThrottleBlock,
     FlowGraphTimerBlock,
+    FlowGraphSetDelayBlock,
 } from "core/FlowGraph";
 import { FlowGraphBranchBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphBranchBlock";
 import { FlowGraphInteger } from "core/FlowGraph/flowGraphInteger";
@@ -53,7 +54,7 @@ describe("Flow Graph Execution Nodes", () => {
         flowGraph.addEventBlock(sceneReady);
 
         const branch = new FlowGraphBranchBlock();
-        sceneReady.out.connectTo(branch.in);
+        sceneReady.done.connectTo(branch.in);
         branch.condition.setValue(true, flowGraphContext); // will execute onTrue
 
         const onTrue = new FlowGraphConsoleLogBlock();
@@ -75,7 +76,7 @@ describe("Flow Graph Execution Nodes", () => {
         flowGraph.addEventBlock(sceneReady);
 
         const doN = new FlowGraphDoNBlock();
-        sceneReady.out.connectTo(doN.in);
+        sceneReady.done.connectTo(doN.in);
 
         const nIsDone = new FlowGraphConsoleLogBlock();
         doN.out.connectTo(nIsDone.in);
@@ -100,17 +101,17 @@ describe("Flow Graph Execution Nodes", () => {
         flowGraph.addEventBlock(sceneReady);
 
         const forLoop = new FlowGraphForLoopBlock();
-        sceneReady.out.connectTo(forLoop.in);
+        sceneReady.done.connectTo(forLoop.in);
         forLoop.startIndex.setValue(1, flowGraphContext);
         forLoop.endIndex.setValue(7, flowGraphContext);
         forLoop.step.setValue(2, flowGraphContext);
 
         const loop = new FlowGraphConsoleLogBlock();
-        forLoop.out.connectTo(loop.in);
+        forLoop.executionFlow.connectTo(loop.in);
         forLoop.index.connectTo(loop.message);
 
         const done = new FlowGraphConsoleLogBlock();
-        forLoop.out.connectTo(done.in);
+        forLoop.completed.connectTo(done.in);
         done.message.setValue("done", flowGraphContext);
 
         flowGraph.start();
@@ -128,7 +129,7 @@ describe("Flow Graph Execution Nodes", () => {
         flowGraph.addEventBlock(sceneReady);
 
         const multiGate = new FlowGraphMultiGateBlock({ numberOutputFlows: 3, isLoop: true });
-        sceneReady.out.connectTo(multiGate.in);
+        sceneReady.done.connectTo(multiGate.in);
 
         const customFunction1 = new FlowGraphConsoleLogBlock();
         customFunction1.message.setValue("custom1", flowGraphContext);
@@ -162,7 +163,7 @@ describe("Flow Graph Execution Nodes", () => {
         flowGraph.addEventBlock(sceneReady);
 
         const switchBlock = new FlowGraphSwitchBlock({ cases: [1, 2, 3] });
-        sceneReady.out.connectTo(switchBlock.in);
+        sceneReady.done.connectTo(switchBlock.in);
         switchBlock.selection.setValue(2, flowGraphContext);
 
         const customFunctionBlock1 = new FlowGraphConsoleLogBlock();
@@ -189,9 +190,9 @@ describe("Flow Graph Execution Nodes", () => {
         const sceneReady = new FlowGraphSceneReadyEventBlock();
         flowGraph.addEventBlock(sceneReady);
 
-        const timer = new FlowGraphTimerBlock();
-        sceneReady.out.connectTo(timer.in);
-        timer.timeout.setValue(0, flowGraphContext);
+        const timer = new FlowGraphSetDelayBlock();
+        sceneReady.done.connectTo(timer.in);
+        timer.duration.setValue(0, flowGraphContext);
 
         const consoleLogBlock = new FlowGraphConsoleLogBlock();
         consoleLogBlock.message.setValue("custom", flowGraphContext);
@@ -214,7 +215,7 @@ describe("Flow Graph Execution Nodes", () => {
         flowGraph.addEventBlock(sceneTick);
 
         const flipFlop = new FlowGraphFlipFlopBlock();
-        sceneTick.out.connectTo(flipFlop.in);
+        sceneTick.done.connectTo(flipFlop.in);
 
         const onTrue = new FlowGraphConsoleLogBlock();
         onTrue.message.setValue("onTrue", flowGraphContext);
@@ -238,7 +239,7 @@ describe("Flow Graph Execution Nodes", () => {
 
         const throttle = new FlowGraphThrottleBlock();
         throttle.duration.setValue(1000, flowGraphContext);
-        sceneTick.out.connectTo(throttle.in);
+        sceneTick.done.connectTo(throttle.in);
 
         const customFunction = new FlowGraphConsoleLogBlock();
         throttle.out.connectTo(customFunction.in);
