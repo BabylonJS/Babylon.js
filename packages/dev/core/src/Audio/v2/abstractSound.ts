@@ -22,6 +22,10 @@ export interface SoundOptions {
      */
     pitch?: number;
     /**
+     * The playback rate of the sound.
+     */
+    playbackRate?: number;
+    /**
      * The time at which the sound should start playing.
      */
     startTime?: number;
@@ -64,6 +68,11 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * The pitch of the sound.
      */
     public pitch: number;
+
+    /**
+     * The playback rate of the sound.
+     */
+    public playbackRate: number;
 
     /**
      * The time at which the sound should start playing.
@@ -115,6 +124,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         this.autoplay = options?.autoplay ?? false;
         this.loop = options?.loop ?? false;
         this.pitch = options?.pitch ?? 0;
+        this.playbackRate = options?.playbackRate ?? 1;
         this.startTime = options?.startTime ?? 0;
         this.stopTime = options?.stopTime ?? 0;
         this.volume = options?.volume ?? 1;
