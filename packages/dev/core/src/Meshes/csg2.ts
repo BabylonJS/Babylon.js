@@ -6,21 +6,17 @@ import type { Mesh } from "./mesh";
 let Manifold: any;
 
 export interface ICSG2Options {
-    manifoldUrl: string;
+    manifoldUrl?: string;
+    manifoldInstance: any;
 }
 
 /**
  * Wrapper around the Manifold library
  * https://manifoldcad.org/
- * Use this class to perform performant boolean operations on meshes
- * #IW43EB#1
+ * Use this class to perform fast boolean operations on meshes
+ * #IW43EB#2
  */
 export class CSG2 {
-    /**
-     * Create a new CSG2 object
-     */
-    constructor() {}
-
     public fromMesh(mesh: Mesh): any {}
 
     public toMesh(): void {
@@ -41,14 +37,18 @@ export async function InitializeCSG2Async(options: Partial<ICSG2Options>) {
         ...options,
     };
 
-    await Tools.LoadScriptModuleAsync(
+    if (localOptions.manifoldInstance) {
+        Manifold = localOptions.manifoldInstance;
+        return;
+    }
+
+    Manifold = await Tools.LoadScriptModuleAsync(
         `
             import Module from '${localOptions.manifoldUrl}/manifold.js';
             const wasm = await Module();
             wasm.setup();
-            window._Manifold = wasm;
+            const {Manifold} = wasm;
+            const returnedValue = Manifold;
         `
     );
-
-    Manifold = (window as any)._Manifold;
 }

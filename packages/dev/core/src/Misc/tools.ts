@@ -608,23 +608,33 @@ export class Tools {
      * @param scriptUrl defines the url of the script to load
      * @param scriptId defines the id of the script element
      * @returns a promise request object
+     * It is up to the caller to provide a script that will do the import and prepare a "returnedValue" variable
      */
-    public static LoadScriptModuleAsync(scriptUrl: string, scriptId?: string): Promise<void> {
+    public static LoadScriptModuleAsync(scriptUrl: string, scriptId?: string): Promise<any> {
         return new Promise((resolve, reject) => {
-            if (!IsWindowObjectExist()) {
-                throw new Error(`Cannot load module outside of a window`);
+            // Need a relay
+            let windowAsAny: any;
+            let windowString: string;
+
+            if (IsWindowObjectExist()) {
+                windowAsAny = window;
+                windowString = "window";
+            } else if (typeof self !== "undefined") {
+                windowAsAny = self;
+                windowString = "self";
+            } else {
+                reject(new Error("Cannot load script module outside of a window or a worker"));
+                return;
             }
 
-            // Need a relay
-            const windowAsAny = window as any;
             if (!windowAsAny._LoadScriptModuleResolve) {
                 windowAsAny._LoadScriptModuleResolve = {};
-                windowAsAny._LoadScriptModuleResolve[this._UniqueResolveID] = resolve;
             }
+            windowAsAny._LoadScriptModuleResolve[this._UniqueResolveID] = resolve;
 
             scriptUrl += `
-                window._LoadScriptModuleResolve[${this._UniqueResolveID}]();
-                window._LoadScriptModuleResolve[${this._UniqueResolveID}] = undefined;
+                ${windowString}._LoadScriptModuleResolve[${this._UniqueResolveID}](returnedValue);
+                ${windowString}._LoadScriptModuleResolve[${this._UniqueResolveID}] = undefined;
             `;
             this._UniqueResolveID++;
 
