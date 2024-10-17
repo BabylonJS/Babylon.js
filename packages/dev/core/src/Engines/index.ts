@@ -22,6 +22,7 @@ export * from "./WebGPU/webgpuCacheRenderPipelineTree";
 export * from "./WebGPU/webgpuCacheBindGroups";
 export * from "./WebGPU/webgpuCacheSampler";
 export * from "./WebGPU/webgpuDrawContext";
+export * from "./WebGPU/webgpuPipelineContext";
 export * from "./WebGPU/webgpuRenderTargetWrapper";
 export * from "./WebGPU/webgpuShaderProcessor";
 export * from "./WebGPU/webgpuTintWASM";

@@ -72,6 +72,7 @@ declare class GPU {
 }
 
 interface GPURequestAdapterOptions {
+    featureLevel?: string;
     powerPreference?: GPUPowerPreference;
     forceFallbackAdapter?: boolean /* default=false */;
 }
@@ -83,10 +84,10 @@ declare class GPUAdapter {
     readonly name: string;
     readonly features: GPUSupportedFeatures;
     readonly limits: GPUSupportedLimits;
+    readonly info: GPUAdapterInfo;
     readonly isFallbackAdapter: boolean;
 
     requestDevice(descriptor?: GPUDeviceDescriptor): Promise<GPUDevice>;
-    requestAdapterInfo(unmaskHints?: string[]): Promise<GPUAdapterInfo>;
 }
 
 interface GPUDeviceDescriptor extends GPUObjectDescriptorBase {

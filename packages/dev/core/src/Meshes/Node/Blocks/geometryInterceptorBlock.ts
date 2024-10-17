@@ -6,12 +6,18 @@ import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnection
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 /**
  * Block used to trigger an observable when traversed
+ * It can also be used to execute a function when traversed
  */
 export class GeometryInterceptorBlock extends NodeGeometryBlock {
     /**
      * Observable triggered when the block is traversed
      */
     public onInterceptionObservable = new Observable<any>(undefined, true);
+
+    /**
+     * Custom function to execute when traversed
+     */
+    public customFunction?: (value: any, state: NodeGeometryBuildState) => any;
 
     /**
      * Creates a new GeometryInterceptorBlock
@@ -62,7 +68,11 @@ export class GeometryInterceptorBlock extends NodeGeometryBlock {
         const input = this._inputs[0];
 
         output._storedFunction = (state) => {
-            const value = input.getConnectedValue(state);
+            let value = input.getConnectedValue(state);
+
+            if (this.customFunction) {
+                value = this.customFunction(value, state);
+            }
 
             this.onInterceptionObservable.notifyObservers(value);
 
