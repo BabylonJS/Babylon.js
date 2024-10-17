@@ -209,6 +209,7 @@ abstract class GLTFLoaderOptions {
             this.useSRGBBuffers = options.useSRGBBuffers ?? this.useSRGBBuffers;
             this.targetFps = options.targetFps ?? this.targetFps;
             this.alwaysComputeSkeletonRootNode = options.alwaysComputeSkeletonRootNode ?? this.alwaysComputeSkeletonRootNode;
+            this.useGltfTextureNames = options.useGltfTextureNames ?? this.useGltfTextureNames;
             this.preprocessUrlAsync = options.preprocessUrlAsync ?? this.preprocessUrlAsync;
             this.customRootNode = options.customRootNode;
             this.onMeshLoaded = options.onMeshLoaded;
@@ -328,6 +329,12 @@ abstract class GLTFLoaderOptions {
      * Set this to true if loading assets with invalid `skin.skeleton` values.
      */
     public alwaysComputeSkeletonRootNode = false;
+
+    /**
+     * If true, the loader will derive the name for Babylon textures from the glTF texture name, image name, or image url. Defaults to false.
+     * Note that it is possible for multiple Babylon textures to share the same name when the Babylon textures load from the same glTF texture or image.
+     */
+    public useGltfTextureNames = false;
 
     /**
      * Function called before loading a url referenced by the asset.
