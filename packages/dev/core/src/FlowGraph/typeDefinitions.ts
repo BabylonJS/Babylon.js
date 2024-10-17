@@ -49,6 +49,11 @@ export interface ISerializedFlowGraphContext {
      * Values of the connection points
      */
     _connectionValues: { [key: string]: any };
+
+    /**
+     * Assets context, if not the scene
+     */
+    _assetsContext?: { [key: string]: any };
 }
 
 /**

@@ -1,3 +1,4 @@
+import type { IAssetContainer } from "core/IAssetContainer";
 import { Color3, Color4 } from "../Maths/math.color";
 import { Matrix, Quaternion, Vector2, Vector3, Vector4 } from "../Maths/math.vector";
 import type { Scene } from "../scene";
@@ -82,10 +83,11 @@ export function defaultValueSerializationFunction(key: string, value: any, seria
  * The default function that parses values stored in a serialization object
  * @param key the key to the value that will be parsed
  * @param serializationObject the object that will be parsed
+ * @param assetsContainer the assets container that will be used to find the objects
  * @param scene
  * @returns
  */
-export function defaultValueParseFunction(key: string, serializationObject: any, scene: Scene) {
+export function defaultValueParseFunction(key: string, serializationObject: any, assetsContainer: IAssetContainer, scene: Scene) {
     const intermediateValue = serializationObject[key];
     let finalValue;
     const className = intermediateValue?.className;
@@ -96,7 +98,7 @@ export function defaultValueParseFunction(key: string, serializationObject: any,
     } else if (className === FlowGraphTypes.Matrix) {
         finalValue = Matrix.FromArray(intermediateValue.value);
     } else if (className === FlowGraphInteger.ClassName) {
-        finalValue = FlowGraphInteger.Parse(intermediateValue);
+        finalValue = FlowGraphInteger.FromValue(intermediateValue.value);
     } else if (intermediateValue && intermediateValue.value !== undefined) {
         finalValue = intermediateValue.value;
     } else {

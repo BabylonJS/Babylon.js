@@ -7,6 +7,7 @@ import type { ISerializedFlowGraphBlock, IObjectAccessor } from "./typeDefinitio
 import { defaultValueSerializationFunction } from "./serialization";
 import type { Scene } from "../scene";
 import type { IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
+import type { IAssetContainer } from "core/IAssetContainer";
 
 /**
  * @experimental
@@ -20,7 +21,11 @@ export interface IFlowGraphBlockParseOptions {
      * @param scene the scene that the block is being parsed in
      * @returns the parsed value
      */
-    valueParseFunction?: (key: string, serializationObject: any, scene: Scene) => any;
+    valueParseFunction?: (key: string, serializationObject: any, assetsContainer: IAssetContainer, scene: Scene) => any;
+    /**
+     * The assets container to use when loading assets.
+     */
+    assetsContainer?: IAssetContainer;
     /**
      * The scene that the block is being parsed in.
      */
@@ -28,7 +33,7 @@ export interface IFlowGraphBlockParseOptions {
     /**
      * The path converter to use to convert the path to an object accessor.
      */
-    pathConverter: IPathToObjectConverter<IObjectAccessor>;
+    pathConverter?: IPathToObjectConverter<IObjectAccessor>;
 }
 
 /**

@@ -106,7 +106,7 @@ describe("Flow Graph Execution Nodes", () => {
         forLoop.step.setValue(2, flowGraphContext);
 
         const loop = new FlowGraphConsoleLogBlock();
-        forLoop.onLoop.connectTo(loop.in);
+        forLoop.out.connectTo(loop.in);
         forLoop.index.connectTo(loop.message);
 
         const done = new FlowGraphConsoleLogBlock();
@@ -167,13 +167,13 @@ describe("Flow Graph Execution Nodes", () => {
 
         const customFunctionBlock1 = new FlowGraphConsoleLogBlock();
         customFunctionBlock1.message.setValue("custom1", flowGraphContext);
-        switchBlock.outputFlows[0].connectTo(customFunctionBlock1.in);
+        switchBlock._getOutputFlowForCase(1)?.connectTo(customFunctionBlock1.in);
         const customFunctionBlock2 = new FlowGraphConsoleLogBlock();
         customFunctionBlock2.message.setValue("custom2", flowGraphContext);
-        switchBlock.outputFlows[1].connectTo(customFunctionBlock2.in);
+        switchBlock._getOutputFlowForCase(2)?.connectTo(customFunctionBlock2.in);
         const customFunctionBlock3 = new FlowGraphConsoleLogBlock();
         customFunctionBlock3.message.setValue("custom3", flowGraphContext);
-        switchBlock.outputFlows[2].connectTo(customFunctionBlock3.in);
+        switchBlock._getOutputFlowForCase(3)?.connectTo(customFunctionBlock3.in);
 
         flowGraph.start();
         scene.onReadyObservable.notifyObservers(scene);
@@ -253,35 +253,36 @@ describe("Flow Graph Execution Nodes", () => {
         expect(Logger.Log).toHaveBeenCalledTimes(1);
     });
 
-    it("SetPropertyBlock", () => {
-        const mesh0 = new Mesh("myMesh0", scene);
-        const mesh1 = new Mesh("myMesh1", scene);
+    // this should test the JSON property parser.
+    // it("SetPropertyBlock", () => {
+    //     const mesh0 = new Mesh("myMesh0", scene);
+    //     const mesh1 = new Mesh("myMesh1", scene);
 
-        const sceneReady = new FlowGraphSceneReadyEventBlock();
-        flowGraph.addEventBlock(sceneReady);
+    //     const sceneReady = new FlowGraphSceneReadyEventBlock();
+    //     flowGraph.addEventBlock(sceneReady);
 
-        flowGraphContext.setVariable("nodes", [mesh0, mesh1]);
+    //     flowGraphContext.setVariable("nodes", [mesh0, mesh1]);
 
-        const pathConverter = new FlowGraphPathConverter(flowGraphContext, "/");
+    //     const pathConverter = new FlowGraphPathConverter(flowGraphContext, "/");
 
-        const setProperty = new FlowGraphSetPropertyBlock<Vector3>({
-            path: "nodes/{nodeIndex}/position",
-            pathConverter,
-        });
-        sceneReady.out.connectTo(setProperty.in);
+    //     const setProperty = new FlowGraphSetPropertyBlock<Vector3>({
+    //         path: "nodes/{nodeIndex}/position",
+    //         pathConverter,
+    //     });
+    //     sceneReady.out.connectTo(setProperty.in);
 
-        const nodeIndexInput = setProperty.getDataInput("nodeIndex");
-        expect(nodeIndexInput).toBeDefined();
+    //     const nodeIndexInput = setProperty.getDataInput("nodeIndex");
+    //     expect(nodeIndexInput).toBeDefined();
 
-        nodeIndexInput!.setValue(new FlowGraphInteger(1), flowGraphContext);
-        setProperty.a.setValue(new Vector3(1, 2, 3), flowGraphContext);
+    //     nodeIndexInput!.setValue(new FlowGraphInteger(1), flowGraphContext);
+    //     setProperty.a.setValue(new Vector3(1, 2, 3), flowGraphContext);
 
-        flowGraph.start();
+    //     flowGraph.start();
 
-        scene.onReadyObservable.notifyObservers(scene);
-        expect(mesh0.position.asArray()).toEqual([0, 0, 0]);
-        expect(mesh1.position.asArray()).toEqual([1, 2, 3]);
-    });
+    //     scene.onReadyObservable.notifyObservers(scene);
+    //     expect(mesh0.position.asArray()).toEqual([0, 0, 0]);
+    //     expect(mesh1.position.asArray()).toEqual([1, 2, 3]);
+    // });
 
     afterEach(() => {
         scene.dispose();

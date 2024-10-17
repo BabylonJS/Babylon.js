@@ -1,36 +1,53 @@
-import { AbstractMesh } from "../../../Meshes/abstractMesh";
+import type { AbstractMesh } from "../../../Meshes/abstractMesh";
 import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
 import type { PointerInfo } from "../../../Events/pointerEvents";
-import { PointerEventTypes } from "../../../Events/pointerEvents";
 import type { FlowGraphContext } from "../../flowGraphContext";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { _isADescendantOf } from "../../utils";
-import type { IPathToObjectConverter } from "../../../ObjectModel/objectModelInterfaces";
-import type { IObjectAccessor } from "../../typeDefinitions";
-import type { Nullable } from "../../../types";
-import type { Mesh } from "../../../Meshes";
-import type { Observer } from "../../../Misc/observable";
-import type { Node } from "../../../node";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
+import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
+import { RichTypeAny, RichTypeNumber, RichTypeVector3 } from "core/FlowGraph/flowGraphRichTypes";
+import type { Vector3 } from "core/Maths/math.vector";
 /**
  * @experimental
  */
 export interface IFlowGraphMeshPickEventBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
-     * The path of the mesh to pick.
+     * Should this mesh block propagation of the event.
      */
-    path: string;
+    stopPropagation?: boolean;
+
     /**
-     * The path converter to use to convert the path to an object accessor.
+     * The mesh to listen to. Can also be set by the asset input.
      */
-    pathConverter: IPathToObjectConverter<IObjectAccessor>;
+    targetMesh?: AbstractMesh;
 }
 /**
  * @experimental
  * A block that activates when a mesh is picked.
  */
 export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
+    /**
+     * Input connection: The mesh to listen to.
+     */
+    public readonly asset: FlowGraphDataConnection<AbstractMesh>;
+
+    /**
+     * Output connection: The picked point.
+     */
+    public readonly pickedPoint: FlowGraphDataConnection<Vector3>;
+
+    /**
+     * Output connection: The picked origin.
+     */
+    public readonly pickOrigin: FlowGraphDataConnection<Vector3>;
+
+    /**
+     * Output connection: The pointer id.
+     */
+    public readonly pointerId: FlowGraphDataConnection<number>;
+
     public constructor(
         /**
          * the configuration of the block
@@ -38,63 +55,84 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
         public override config: IFlowGraphMeshPickEventBlockConfiguration
     ) {
         super(config);
+        this.asset = this.registerDataInput("asset", RichTypeAny, config.targetMesh);
+
+        this.pickedPoint = this.registerDataOutput("pickedPoint", RichTypeVector3);
+        this.pickOrigin = this.registerDataOutput("pickOrigin", RichTypeVector3);
+        this.pointerId = this.registerDataOutput("pointerId", RichTypeNumber);
     }
 
-    public _getReferencedMesh(): AbstractMesh {
-        const iAccessor = this.config.pathConverter.convert(this.config.path);
+    public _getReferencedMesh(context: FlowGraphContext): AbstractMesh {
+        return this.asset.getValue(context) as AbstractMesh;
+    }
 
-        const mesh = iAccessor.info.getObject(iAccessor.object) as AbstractMesh;
-        if (!mesh || !(mesh instanceof AbstractMesh)) {
-            throw new Error("Mesh pick event block requires a valid mesh");
+    public override _executeOnPicked(context: FlowGraphContext, pickedInfo: PointerInfo): boolean {
+        // check if the mesh is the picked mesh or a descendant
+        const mesh = this._getReferencedMesh(context);
+        if (mesh && pickedInfo.pickInfo?.pickedMesh && (pickedInfo.pickInfo?.pickedMesh === mesh || _isADescendantOf(pickedInfo.pickInfo?.pickedMesh, mesh))) {
+            this.pointerId.setValue((pickedInfo.event as PointerEvent).pointerId, context);
+            this.pickOrigin.setValue(pickedInfo.pickInfo.ray?.origin!, context);
+            this.pickedPoint.setValue(pickedInfo.pickInfo.pickedPoint!, context);
+            this._execute(context);
         }
-        return mesh;
+        return !this.config.stopPropagation;
     }
 
     /**
      * @internal
      */
-    public _preparePendingTasks(context: FlowGraphContext): void {
-        let pickObserver = context._getExecutionVariable<Nullable<Observer<PointerInfo>>>(this, "meshPickObserver", null);
-        if (!pickObserver) {
-            const mesh = this._getReferencedMesh();
-            context._setExecutionVariable(this, "mesh", mesh);
-            pickObserver = mesh.getScene().onPointerObservable.add((pointerInfo) => {
-                if (
-                    pointerInfo.type === PointerEventTypes.POINTERPICK &&
-                    pointerInfo.pickInfo?.pickedMesh &&
-                    (pointerInfo.pickInfo?.pickedMesh === mesh || _isADescendantOf(pointerInfo.pickInfo?.pickedMesh, mesh))
-                ) {
-                    this._execute(context);
-                }
-            });
-            const disposeObserver = mesh.onDisposeObservable.add(() => this._onDispose);
-            context._setExecutionVariable(this, "meshPickObserver", pickObserver);
-            context._setExecutionVariable(this, "meshDisposeObserver", disposeObserver);
-        }
+    public _preparePendingTasks(_context: FlowGraphContext): void {
+        // // check if block was initialized
+        // if (!context._getExecutionVariable(this, "valueChangedObserver", null)) {
+        //     const observer = this.asset.onValueChangedObservable.add(() => {
+        //         this._cancelPendingTasks(context);
+        //         this._preparePendingTasks(context);
+        //     });
+        //     context._setExecutionVariable(this, "valueChangedObserver", observer);
+        // }
+        // // check if the asset is defined
+        // const mesh = this.asset.getValue(context);
+        // if (!mesh) {
+        //     // no asset, ignore!
+        //     return;
+        // }
+        // let pickObserver = context._getExecutionVariable<Nullable<Observer<PointerInfo>>>(this, "meshPickObserver", null);
+        // if (!pickObserver) {
+        //     pickObserver = mesh.getScene().onPointerObservable.add((pointerInfo) => {
+        //         if (pointerInfo.pickInfo?.pickedMesh && (pointerInfo.pickInfo?.pickedMesh === mesh || _isADescendantOf(pointerInfo.pickInfo?.pickedMesh, mesh))) {
+        //             const pointerId = (pointerInfo.event as PointerEvent).pointerId;
+        //             this.pointerId.setValue(pointerId, context);
+        //             this.pickOrigin.setValue(pointerInfo.pickInfo.ray?.origin!, context);
+        //             this.pickedPoint.setValue(pointerInfo.pickInfo.pickedPoint!, context);
+        //             this._execute(context);
+        //         }
+        //     }, PointerEventTypes.POINTERPICK);
+        //     const disposeObserver = mesh.onDisposeObservable.add(() => this._onDispose);
+        //     context._setExecutionVariable(this, "meshPickObserver", pickObserver);
+        //     context._setExecutionVariable(this, "meshDisposeObserver", disposeObserver);
+        // }
     }
 
-    public _onDispose(context: FlowGraphContext) {
-        this._cancelPendingTasks(context);
-        context._removePendingBlock(this);
-    }
+    // public _onDispose(context: FlowGraphContext) {
+    //     this._cancelPendingTasks(context);
+    //     context._removePendingBlock(this);
+    // }
 
     /**
      * @internal
      */
-    public _cancelPendingTasks(context: FlowGraphContext): void {
-        const mesh = context._getExecutionVariable<Nullable<Mesh>>(this, "mesh", null);
-        if (!mesh) {
-            return;
-        }
-        const pickObserver = context._getExecutionVariable<Nullable<Observer<PointerInfo>>>(this, "meshPickObserver", null);
-        const disposeObserver = context._getExecutionVariable<Nullable<Observer<Node>>>(this, "meshDisposeObserver", null);
-
-        mesh.getScene().onPointerObservable.remove(pickObserver);
-        mesh.onDisposeObservable.remove(disposeObserver);
-
-        context._deleteExecutionVariable(this, "mesh");
-        context._deleteExecutionVariable(this, "meshPickObserver");
-        context._deleteExecutionVariable(this, "meshDisposeObserver");
+    public _cancelPendingTasks(_context: FlowGraphContext): void {
+        // const mesh = context._getExecutionVariable<Nullable<Mesh>>(this, "mesh", null);
+        // if (!mesh) {
+        //     return;
+        // }
+        // const pickObserver = context._getExecutionVariable<Nullable<Observer<PointerInfo>>>(this, "meshPickObserver", null);
+        // const disposeObserver = context._getExecutionVariable<Nullable<Observer<Node>>>(this, "meshDisposeObserver", null);
+        // mesh.getScene().onPointerObservable.remove(pickObserver);
+        // mesh.onDisposeObservable.remove(disposeObserver);
+        // context._deleteExecutionVariable(this, "mesh");
+        // context._deleteExecutionVariable(this, "meshPickObserver");
+        // context._deleteExecutionVariable(this, "meshDisposeObserver");
     }
 
     /**

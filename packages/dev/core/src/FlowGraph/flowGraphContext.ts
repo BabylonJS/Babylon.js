@@ -12,6 +12,10 @@ import type { AssetType, FlowGraphAssetType } from "./flowGraphAssetsContext";
 import { GetFlowGraphAssetWithType } from "./flowGraphAssetsContext";
 import type { IAssetContainer } from "core/IAssetContainer";
 import type { Nullable } from "core/types";
+import type { PointerInfo } from "core/Events/pointerEvents";
+import type { FlowGraphMeshPickEventBlock } from "./Blocks";
+import { FlowGraphBlockNames } from "./Blocks";
+import { _isADescendantOf } from "./utils";
 
 /**
  * Construction parameters for the context.
@@ -46,7 +50,7 @@ export interface IFlowGraphContextParseOptions {
      * @param scene the current scene
      * @returns
      */
-    readonly valueParseFunction?: (key: string, serializationObject: any, scene: Scene) => any;
+    readonly valueParseFunction?: (key: string, serializationObject: any, assetsContainer: IAssetContainer, scene: Scene) => any;
     /**
      * The graph that the context is being parsed in.
      */
@@ -328,6 +332,33 @@ export class FlowGraphContext {
         }
     }
 
+    _notifyPendingBlocksOnPointer(pointerInfo: PointerInfo) {
+        const order: FlowGraphAsyncExecutionBlock[] = [];
+        // TODO - improve pick sorting
+        for (const block1 of this._pendingBlocks) {
+            // If the block is a mesh pick, guarantee that picks of children meshes come before picks of parent meshes
+            if (block1.getClassName() === FlowGraphBlockNames.MeshPickEvent) {
+                const mesh1 = (block1 as FlowGraphMeshPickEventBlock)._getReferencedMesh(this);
+                let i = 0;
+                for (; i < order.length; i++) {
+                    const block2 = order[i];
+                    const mesh2 = (block2 as FlowGraphMeshPickEventBlock)._getReferencedMesh(this);
+                    if (mesh1 && mesh2 && _isADescendantOf(mesh1, mesh2)) {
+                        break;
+                    }
+                }
+                order.splice(i, 0, block1);
+            } else {
+                order.push(block1);
+            }
+        }
+        for (const block of order) {
+            if (!block._executeOnPicked(this, pointerInfo)) {
+                return;
+            }
+        }
+    }
+
     /**
      * Remove a block from the list of blocks that have pending tasks.
      * @internal
@@ -388,6 +419,23 @@ export class FlowGraphContext {
         serializationObject._connectionValues = {};
         for (const key in this._connectionValues) {
             valueSerializationFunction(key, this._connectionValues[key], serializationObject._connectionValues);
+        }
+        // serialize assets context, if not scene
+        if (this.assetsContext !== this.getScene()) {
+            serializationObject._assetsContext = {
+                meshes: this.assetsContext.meshes.map((m) => m.id),
+                materials: this.assetsContext.materials.map((m) => m.id),
+                textures: this.assetsContext.textures.map((m) => m.name),
+                animations: this.assetsContext.animations.map((m) => m.name),
+                lights: this.assetsContext.lights.map((m) => m.id),
+                cameras: this.assetsContext.cameras.map((m) => m.id),
+                sounds: this.assetsContext.sounds?.map((m) => m.name),
+                skeletons: this.assetsContext.skeletons.map((m) => m.id),
+                particleSystems: this.assetsContext.particleSystems.map((m) => m.name),
+                geometries: this.assetsContext.geometries.map((m) => m.id),
+                multiMaterials: this.assetsContext.multiMaterials.map((m) => m.id),
+                transformNodes: this.assetsContext.transformNodes.map((m) => m.id),
+            };
         }
     }
 

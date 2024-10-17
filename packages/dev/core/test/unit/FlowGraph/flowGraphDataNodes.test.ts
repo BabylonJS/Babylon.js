@@ -35,7 +35,7 @@ describe("Flow Graph Data Nodes", () => {
         const consoleLog = new FlowGraphConsoleLogBlock({ name: "Log" });
         sceneReady.out.connectTo(consoleLog.in);
 
-        const getVariable = new FlowGraphGetVariableBlock({ variableName: "testVariable" });
+        const getVariable = new FlowGraphGetVariableBlock({ variable: "testVariable" });
 
         flowGraphContext.setVariable("testVariable", 42);
         consoleLog.message.connectTo(getVariable.value);
@@ -66,7 +66,7 @@ describe("Flow Graph Data Nodes", () => {
         // log ther result
         const log = new FlowGraphConsoleLogBlock();
         log.message.connectTo(add.value);
-        sceneReady.out.connectTo(log.in);
+        sceneReady.done.connectTo(log.in);
 
         flowGraph.start();
 

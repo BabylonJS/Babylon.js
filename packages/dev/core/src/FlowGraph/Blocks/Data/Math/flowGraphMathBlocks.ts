@@ -215,7 +215,7 @@ RegisterClass(FlowGraphBlockNames.Divide, FlowGraphDivideBlock);
  * @experimental
  * Random number between 0 and 1.
  */
-export class FlowGraphRandomBlock extends FlowGraphConstantOperationBlock<number> {
+export class FlowGraphRandomBlock extends FlowGraphConstantOperationBlock<FlowGraphMathOperationType> {
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(RichTypeNumber, () => Math.random(), FlowGraphBlockNames.Random, config);
     }

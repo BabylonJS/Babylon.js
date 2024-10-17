@@ -18,7 +18,7 @@ export interface IFlowGraphSendCustomEventBlockConfiguration extends IFlowGraphB
     /**
      * The names of the data inputs for that event.
      */
-    eventData: { [key: string]: { type: RichType<any> } };
+    eventData: { [key: string]: { type: RichType<any>; value?: any } };
 }
 /**
  * @experimental
@@ -32,7 +32,7 @@ export class FlowGraphSendCustomEventBlock extends FlowGraphExecutionBlockWithOu
     ) {
         super(config);
         for (const key in this.config.eventData) {
-            this.registerDataInput(key, this.config.eventData[key].type);
+            this.registerDataInput(key, this.config.eventData[key].type, this.config.eventData[key].value);
         }
     }
 

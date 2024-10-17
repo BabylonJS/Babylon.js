@@ -6,6 +6,7 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { AnimationGroup } from "core/Animations/animationGroup";
 import type { Animation } from "core/Animations/animation";
+import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 
 /**
  * @experimental
@@ -64,7 +65,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
         /**
          * the configuration of the block
          */
-        public override config: IFlowGraphBlockConfiguration
+        public override config?: IFlowGraphBlockConfiguration
     ) {
         super(config, ["animationLoop", "animationEnd", "animationGroupLoop"]);
 
@@ -177,13 +178,8 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return FlowGraphPlayAnimationBlock.ClassName;
+        return FlowGraphBlockNames.PlayAnimation;
     }
-
-    /**
-     * Class name of the block.
-     */
-    public static ClassName = "FGPlayAnimationBlock";
 }
 
-RegisterClass(FlowGraphPlayAnimationBlock.ClassName, FlowGraphPlayAnimationBlock);
+RegisterClass(FlowGraphBlockNames.PlayAnimation, FlowGraphPlayAnimationBlock);

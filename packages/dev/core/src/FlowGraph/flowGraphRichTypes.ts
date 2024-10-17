@@ -49,15 +49,6 @@ export class RichType<T> {
         serializationObject.typeName = this.typeName;
         serializationObject.defaultValue = this.defaultValue;
     }
-
-    /**
-     * Parses a rich type from a serialization object.
-     * @param serializationObject a serialization object
-     * @returns the parsed rich type
-     */
-    static Parse(serializationObject: any): RichType<any> {
-        return new RichType(serializationObject.typeName, serializationObject.defaultValue);
-    }
 }
 
 export const RichTypeAny: RichType<any> = new RichType(FlowGraphTypes.Any, undefined);

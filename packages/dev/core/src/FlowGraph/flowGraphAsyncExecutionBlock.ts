@@ -2,6 +2,7 @@ import type { IFlowGraphBlockConfiguration } from "./flowGraphBlock";
 import type { FlowGraphContext } from "./flowGraphContext";
 import { FlowGraphExecutionBlockWithOutSignal } from "./flowGraphExecutionBlockWithOutSignal";
 import type { FlowGraphSignalConnection } from "./flowGraphSignalConnection";
+import type { PointerInfo } from "core/Events/pointerEvents";
 
 /**
  * An async execution block can start tasks that will be executed asynchronously.
@@ -41,14 +42,21 @@ export abstract class FlowGraphAsyncExecutionBlock extends FlowGraphExecutionBlo
      */
     public _executeOnFrame(_context: FlowGraphContext): void {}
 
+    public _executeOnPicked(_context: FlowGraphContext, _pickedInfo: PointerInfo): boolean {
+        return true;
+    }
+
     /**
      * @internal
      * @param context
      */
     public _startPendingTasks(context: FlowGraphContext) {
-        this._preparePendingTasks(context);
-        context._addPendingBlock(this);
-        this.out._activateSignal(context);
+        if (!context._getExecutionVariable(this, "_initialized", false)) {
+            this._preparePendingTasks(context);
+            context._addPendingBlock(this);
+            this.out._activateSignal(context);
+            context._setExecutionVariable(this, "_initialized", true);
+        }
     }
 
     public abstract _cancelPendingTasks(context: FlowGraphContext): void;

@@ -14,7 +14,7 @@ export interface IFlowGraphSwitchBlockConfiguration<T> extends IFlowGraphBlockCo
     /**
      * The possible values for the selection.
      */
-    cases: Set<T>;
+    cases: T[];
 }
 
 /**
@@ -66,10 +66,10 @@ export class FlowGraphSwitchBlock<T = number> extends FlowGraphExecutionBlock {
      * @param newCase the new case to add.
      */
     public addCase(newCase: T): void {
-        if (this.config.cases.has(newCase)) {
+        if (this.config.cases.includes(newCase)) {
             return;
         }
-        this.config.cases.add(newCase);
+        this.config.cases.push(newCase);
         this._caseToOutputFlow.set(newCase, this._registerSignalOutput(`out_${newCase}`));
     }
 
@@ -78,14 +78,18 @@ export class FlowGraphSwitchBlock<T = number> extends FlowGraphExecutionBlock {
      * @param caseToRemove the case to remove.
      */
     public removeCase(caseToRemove: T): void {
-        if (!this.config.cases.has(caseToRemove)) {
+        if (!this.config.cases.includes(caseToRemove)) {
             return;
         }
-        this.config.cases.delete(caseToRemove);
+        const index = this.config.cases.indexOf(caseToRemove);
+        this.config.cases.splice(index, 1);
         this._caseToOutputFlow.delete(caseToRemove);
     }
 
-    private _getOutputFlowForCase(caseValue: T) {
+    /**
+     * @internal
+     */
+    public _getOutputFlowForCase(caseValue: T) {
         return this._caseToOutputFlow.get(caseValue);
     }
 

@@ -3,7 +3,9 @@ import { RegisterClass } from "../Misc/typeStore";
 import type { FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphConnection, FlowGraphConnectionType } from "./flowGraphConnection";
 import type { FlowGraphContext } from "./flowGraphContext";
-import { RichType } from "./flowGraphRichTypes";
+import type { RichType } from "./flowGraphRichTypes";
+import { Observable } from "core/Misc/observable";
+import { defaultValueSerializationFunction } from "./serialization";
 /**
  * @experimental
  * Represents a connection point for data.
@@ -20,6 +22,11 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
      * This can be used, for example, to force seconds into milliseconds output, if it makes sense in your case.
      */
     public dataTransformer: Nullable<(value: T) => T> = null;
+
+    /**
+     * An observable that is triggered when the value of the connection changes.
+     */
+    public onValueChangedObservable = new Observable<T>();
     /**
      * Create a new data connection point.
      * @param name the name of the connection
@@ -90,7 +97,12 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
      * @param context the context to which the value is set
      */
     public setValue(value: T, context: FlowGraphContext): void {
+        // check if the value is different
+        if (context._getConnectionValue(this) === value) {
+            return;
+        }
         context._setConnectionValue(this, value);
+        this.onValueChangedObservable.notifyObservers(value);
     }
 
     /**
@@ -140,7 +152,7 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
      * @returns class name of the object.
      */
     public override getClassName(): string {
-        return "FGDataConnection";
+        return "FlowGraphDataConnection";
     }
 
     /**
@@ -151,19 +163,9 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
         super.serialize(serializationObject);
         serializationObject.richType = {};
         this.richType.serialize(serializationObject.richType);
-    }
-
-    /**
-     * Parses a data connection from a serialized object.
-     * @param serializationObject the object to parse from
-     * @param ownerBlock the block that owns the connection
-     * @returns the parsed connection
-     */
-    public static override Parse(serializationObject: any, ownerBlock: FlowGraphBlock): FlowGraphDataConnection<any> {
-        const obj = FlowGraphConnection.Parse(serializationObject, ownerBlock);
-        obj.richType = RichType.Parse(serializationObject.richType);
-        return obj;
+        serializationObject.optional = this._optional;
+        defaultValueSerializationFunction("defaultValue", this._defaultValue, serializationObject);
     }
 }
 
-RegisterClass("FGDataConnection", FlowGraphDataConnection);
+RegisterClass("FlowGraphDataConnection", FlowGraphDataConnection);

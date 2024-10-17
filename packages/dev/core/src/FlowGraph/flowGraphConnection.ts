@@ -1,6 +1,4 @@
-import { Tools } from "../Misc/tools";
 import { RandomGUID } from "../Misc/guid";
-import type { FlowGraphBlock } from "./flowGraphBlock";
 
 /**
  * @experimental
@@ -179,18 +177,5 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
         this.name = serializationObject.name;
         this._connectionType = serializationObject._connectionType;
         this.connectedPointIds = serializationObject.connectedPointIds;
-    }
-
-    /**
-     * Parses a connection from an object
-     * @param serializationObject the object to parse from.
-     * @param ownerBlock the block that owns the connection.
-     * @returns the parsed connection.
-     */
-    public static Parse(serializationObject: any = {}, ownerBlock: FlowGraphBlock) {
-        const type = Tools.Instantiate(serializationObject.className);
-        const connection = new type(serializationObject.name, serializationObject._connectionType, ownerBlock);
-        connection.deserialize(serializationObject);
-        return connection;
     }
 }

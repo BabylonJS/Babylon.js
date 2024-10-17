@@ -3,6 +3,7 @@ import type { Scene } from "../scene";
 import { FlowGraph } from "./flowGraph";
 import type { IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
 import type { IObjectAccessor } from "./typeDefinitions";
+import type { IAssetContainer } from "core/IAssetContainer";
 
 /**
  * @experimental
@@ -26,7 +27,7 @@ export interface FlowGraphCoordinatorParseOptions {
      * @param serializationObject the serialization object where the property is located
      * @param scene the scene that the block is being parsed in
      */
-    valueParseFunction?: (key: string, serializationObject: any, scene: Scene) => any;
+    valueParseFunction?: (key: string, serializationObject: any, assetsContainer: IAssetContainer, scene: Scene) => any;
     /**
      * The path converter to use to convert the path to an object accessor.
      */

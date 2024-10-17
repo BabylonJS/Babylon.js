@@ -1,16 +1,20 @@
+import type { IAssetContainer } from "core/IAssetContainer";
 import { blockFactory } from "./Blocks/flowGraphBlockFactory";
 import type { FlowGraphBlockNames } from "./Blocks/flowGraphBlockNames";
 import type { FlowGraph, IFlowGraphParseOptions } from "./flowGraph";
 import type { FlowGraphBlock, IFlowGraphBlockParseOptions } from "./flowGraphBlock";
+import type { FlowGraphConnection } from "./flowGraphConnection";
 import type { FlowGraphContext, IFlowGraphContextParseOptions } from "./flowGraphContext";
 import type { FlowGraphCoordinatorParseOptions } from "./flowGraphCoordinator";
 import { FlowGraphCoordinator } from "./flowGraphCoordinator";
 import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
 import { FlowGraphEventBlock } from "./flowGraphEventBlock";
 import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
+import { RichType } from "./flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "./flowGraphSignalConnection";
 import { defaultValueParseFunction, needsPathConverter } from "./serialization";
 import type { ISerializedFlowGraph, ISerializedFlowGraphBlock, ISerializedFlowGraphContext } from "./typeDefinitions";
+import type { Node } from "core/node";
 
 /**
  * Given a list of blocks, find an output data connection that has a specific unique id
@@ -62,7 +66,7 @@ export async function ParseCoordinatorAsync(serializedObject: any, options: Flow
     // });
     // async-parse the flow graphs. This can be done in parallel
     await Promise.all(
-        serializedObject._flowGraphs?.map((serializedGraph: any) => ParseGraphAsync(serializedGraph, { coordinator, valueParseFunction, pathConverter: options.pathConverter }))
+        serializedObject._flowGraphs?.map((serializedGraph: any) => ParseFlowGraphAsync(serializedGraph, { coordinator, valueParseFunction, pathConverter: options.pathConverter }))
     );
     return coordinator;
 }
@@ -73,10 +77,7 @@ export async function ParseCoordinatorAsync(serializedObject: any, options: Flow
  * @param options options for parsing the graph
  * @returns the parsed graph
  */
-export async function ParseGraphAsync(serializationObject: ISerializedFlowGraph, options: IFlowGraphParseOptions): Promise<FlowGraph> {
-    const graph = options.coordinator.createGraph();
-    const blocks: FlowGraphBlock[] = [];
-    const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
+export async function ParseFlowGraphAsync(serializationObject: ISerializedFlowGraph, options: IFlowGraphParseOptions): Promise<FlowGraph> {
     // get all classes types needed for the blocks using the block factory
     const resolvedClasses = await Promise.all(
         serializationObject.allBlocks.map(async (serializedBlock) => {
@@ -84,13 +85,28 @@ export async function ParseGraphAsync(serializationObject: ISerializedFlowGraph,
             return await classFactory();
         })
     );
+    // async will be used when we start using the block async factory
+    return ParseFlowGraph(serializationObject, options, resolvedClasses);
+}
+
+/**
+ * Parses a graph from a given serialization object
+ * @param serializationObject the object where the values are written
+ * @param options options for parsing the graph
+ * @param resolvedClasses the resolved classes for the blocks
+ * @returns the parsed graph
+ */
+export function ParseFlowGraph(serializationObject: ISerializedFlowGraph, options: IFlowGraphParseOptions, resolvedClasses: (typeof FlowGraphBlock)[]) {
+    const graph = options.coordinator.createGraph();
+    const blocks: FlowGraphBlock[] = [];
+    const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
     // Parse all blocks
     // for (const serializedBlock of serializationObject.allBlocks) {
     for (let i = 0; i < serializationObject.allBlocks.length; i++) {
         const serializedBlock = serializationObject.allBlocks[i];
-        const block = ParseBlockWithClassType(
+        const block = ParseFlowGraphBlockWithClassType(
             serializedBlock,
-            { scene: options.coordinator.config.scene, pathConverter: options.pathConverter, valueParseFunction },
+            { scene: options.coordinator.config.scene, pathConverter: options.pathConverter, assetsContainer: options.coordinator.config.scene, valueParseFunction },
             resolvedClasses[i]
         );
         blocks.push(block);
@@ -116,10 +132,9 @@ export async function ParseGraphAsync(serializationObject: ISerializedFlowGraph,
         }
     }
     for (const serializedContext of serializationObject.executionContexts) {
-        ParseContext(serializedContext, { graph, valueParseFunction });
+        ParseFlowGraphContext(serializedContext, { graph, valueParseFunction });
     }
-    // async will be used when we start using the block async factory
-    return Promise.resolve(graph);
+    return graph;
 }
 
 /**
@@ -128,17 +143,50 @@ export async function ParseGraphAsync(serializationObject: ISerializedFlowGraph,
  * @param options the options for parsing the context
  * @returns
  */
-export function ParseContext(serializationObject: ISerializedFlowGraphContext, options: IFlowGraphContextParseOptions): FlowGraphContext {
+export function ParseFlowGraphContext(serializationObject: ISerializedFlowGraphContext, options: IFlowGraphContextParseOptions): FlowGraphContext {
     const result = options.graph.createContext();
     const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
     result.uniqueId = serializationObject.uniqueId;
     const scene = result.getScene();
+    // check if assets context is available
+    if (serializationObject._assetsContext) {
+        const ac = serializationObject._assetsContext;
+        const assetsContext: IAssetContainer = {
+            meshes: ac.meshes?.map((m: string) => scene.getMeshById(m)),
+            lights: ac.lights?.map((l: string) => scene.getLightByName(l)),
+            cameras: ac.cameras?.map((c: string) => scene.getCameraByName(c)),
+            materials: ac.materials?.map((m: string) => scene.getMaterialById(m)),
+            textures: ac.textures?.map((t: string) => scene.getTextureByName(t)),
+            animations: ac.animations?.map((a: string) => scene.animations.find((anim) => anim.name === a)),
+            skeletons: ac.skeletons?.map((s: string) => scene.getSkeletonByName(s)),
+            particleSystems: ac.particleSystems?.map((ps: string) => scene.getParticleSystemById(ps)),
+            animationGroups: ac.animationGroups?.map((ag: string) => scene.getAnimationGroupByName(ag)),
+            transformNodes: ac.transformNodes?.map((tn: string) => scene.getTransformNodeById(tn)),
+            rootNodes: [],
+            multiMaterials: [],
+            morphTargetManagers: [],
+            geometries: [],
+            actionManagers: [],
+            environmentTexture: null,
+            postProcesses: [],
+            sounds: null,
+            effectLayers: [],
+            layers: [],
+            reflectionProbes: [],
+            lensFlareSystems: [],
+            proceduralTextures: [],
+            getNodes: function (): Array<Node> {
+                throw new Error("Function not implemented.");
+            },
+        };
+        result.assetsContext = assetsContext;
+    }
     for (const key in serializationObject._userVariables) {
-        const value = valueParseFunction(key, serializationObject._userVariables, scene);
+        const value = valueParseFunction(key, serializationObject._userVariables, result.assetsContext, scene);
         result.userVariables[key] = value;
     }
     for (const key in serializationObject._connectionValues) {
-        const value = valueParseFunction(key, serializationObject._connectionValues, scene);
+        const value = valueParseFunction(key, serializationObject._connectionValues, result.assetsContext, scene);
         result._setConnectionValueByKey(key, value);
     }
 
@@ -155,7 +203,7 @@ export function ParseContext(serializationObject: ISerializedFlowGraphContext, o
 export async function ParseBlockAsync(serializationObject: ISerializedFlowGraphBlock, parseOptions: IFlowGraphBlockParseOptions): Promise<FlowGraphBlock> {
     const classFactory = blockFactory(serializationObject.className as FlowGraphBlockNames);
     const classType = await classFactory();
-    return ParseBlockWithClassType(serializationObject, parseOptions, classType);
+    return ParseFlowGraphBlockWithClassType(serializationObject, parseOptions, classType);
 }
 
 /**
@@ -165,7 +213,7 @@ export async function ParseBlockAsync(serializationObject: ISerializedFlowGraphB
  * @param classType the class type of the block. This is used when the class is not loaded asynchronously
  * @returns the parsed block
  */
-export function ParseBlockWithClassType(
+export function ParseFlowGraphBlockWithClassType(
     serializationObject: ISerializedFlowGraphBlock,
     parseOptions: IFlowGraphBlockParseOptions,
     classType: typeof FlowGraphBlock
@@ -174,7 +222,7 @@ export function ParseBlockWithClassType(
     const valueParseFunction = parseOptions.valueParseFunction ?? defaultValueParseFunction;
     if (serializationObject.config) {
         for (const key in serializationObject.config) {
-            parsedConfig[key] = valueParseFunction(key, serializationObject.config, parseOptions.scene);
+            parsedConfig[key] = valueParseFunction(key, serializationObject.config, parseOptions.assetsContainer || parseOptions.scene, parseOptions.scene);
         }
     }
     if (needsPathConverter(serializationObject.className)) {
@@ -201,4 +249,41 @@ export function ParseBlockWithClassType(
     obj.metadata = serializationObject.metadata;
     obj.deserialize && obj.deserialize(serializationObject);
     return obj;
+}
+
+/**
+ * Parses a connection from an object
+ * @param serializationObject the object to parse from.
+ * @param ownerBlock the block that owns the connection.
+ * @param classType the class type of the connection.
+ * @returns the parsed connection.
+ */
+export function ParseGraphConnectionWithClassType<BlockT extends FlowGraphBlock>(serializationObject: any = {}, ownerBlock: BlockT, classType: typeof FlowGraphConnection) {
+    const connection = new classType(serializationObject.name, serializationObject._connectionType, ownerBlock);
+    connection.deserialize(serializationObject);
+    return connection;
+}
+
+/**
+ * Parses a data connection from a serialized object.
+ * @param serializationObject the object to parse from
+ * @param ownerBlock the block that owns the connection
+ * @param classType the class type of the data connection
+ * @returns the parsed connection
+ */
+export function ParseGraphDataConnection(serializationObject: any, ownerBlock: FlowGraphBlock, classType: typeof FlowGraphDataConnection): FlowGraphDataConnection<any> {
+    const richType = ParseRichType(serializationObject.richType);
+    const defaultValue = serializationObject.defaultValue;
+    const connection = new classType(serializationObject.name, serializationObject._connectionType, ownerBlock, richType, defaultValue, !!serializationObject._optional);
+    connection.deserialize(serializationObject);
+    return connection;
+}
+
+/**
+ * Parses a rich type from a serialization object.
+ * @param serializationObject a serialization object
+ * @returns the parsed rich type
+ */
+export function ParseRichType(serializationObject: any): RichType<any> {
+    return new RichType(serializationObject.typeName, serializationObject.defaultValue);
 }
