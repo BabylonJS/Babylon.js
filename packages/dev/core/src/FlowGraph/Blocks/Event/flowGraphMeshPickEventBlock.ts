@@ -48,6 +48,11 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
      */
     public readonly pointerId: FlowGraphDataConnection<number>;
 
+    /**
+     * Output connection: The picked mesh. Possibly NOT the same as the asset (could be a descendant).
+     */
+    public readonly pickedMesh: FlowGraphDataConnection<AbstractMesh>;
+
     public constructor(
         /**
          * the configuration of the block
@@ -60,6 +65,7 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
         this.pickedPoint = this.registerDataOutput("pickedPoint", RichTypeVector3);
         this.pickOrigin = this.registerDataOutput("pickOrigin", RichTypeVector3);
         this.pointerId = this.registerDataOutput("pointerId", RichTypeNumber);
+        this.pickedMesh = this.registerDataOutput("pickedMesh", RichTypeAny);
     }
 
     public _getReferencedMesh(context: FlowGraphContext): AbstractMesh {
@@ -73,7 +79,10 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
             this.pointerId.setValue((pickedInfo.event as PointerEvent).pointerId, context);
             this.pickOrigin.setValue(pickedInfo.pickInfo.ray?.origin!, context);
             this.pickedPoint.setValue(pickedInfo.pickInfo.pickedPoint!, context);
+            this.pickedMesh.setValue(pickedInfo.pickInfo.pickedMesh, context);
             this._execute(context);
+        } else {
+            // TODO - does it make sense to reset the values? The event will not be triggered anyway.
         }
         return !this.config.stopPropagation;
     }

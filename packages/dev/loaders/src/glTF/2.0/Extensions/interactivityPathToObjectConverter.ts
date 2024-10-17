@@ -33,6 +33,7 @@ const nodesTree = {
                 return "position";
             },
         },
+        // TODO Add more properties here
     },
 };
 

@@ -3,8 +3,8 @@
         "generator": "Khronos glTF Blender I/O v0.9.28",
         "version": "2.0"
     },
-    "extensionsUsed": ["KHR_lights_punctual", "KHR_interactivity"],
-    "extensionsRequired": ["KHR_lights_punctual", "KHR_interactivity"],
+    "extensionsUsed": ["KHR_lights_punctual", "KHR_interactivity", "KHR_selectability"],
+    "extensionsRequired": ["KHR_lights_punctual", "KHR_interactivity", "KHR_selectability"],
     "extensions": {
         "KHR_lights_punctual": {
             "lights": [
@@ -15,6 +15,72 @@
                     "name": "Light"
                 }
             ]
+        },
+        "KHR_interactivity": {
+            "nodes": [
+                {
+                    "type": "event/onSelect",
+                    "configuration": [
+                        {
+                            "id": "nodeIndex",
+                            "value": 4
+                        }
+                    ],
+                    "flows": [
+                        {
+                            "id": "out",
+                            "node": 3,
+                            "socket": "in"
+                        }
+                    ]
+                },
+                {
+                    "type": "event/onStart",
+                    "flows": [
+                        {
+                            "id": "out",
+                            "node": 4,
+                            "socket": "in"
+                        }
+                    ]
+                },
+                {
+                    "type": "math/add",
+                    "values": [
+                        {
+                            "id": "a",
+                            "value": [1, 2, 3, 4],
+                            "type": 0
+                        },
+                        {
+                            "id": "b",
+                            "value": [1, 2, 3, 4],
+                            "type": 0
+                        }
+                    ]
+                },
+                {
+                    "type": "babylon/log",
+                    "values": [
+                        {
+                            "id": "message",
+                            "node": 2,
+                            "socket": "value"
+                        }
+                    ]
+                },
+                {
+                    "type": "babylon/log",
+                    "values": [
+                        {
+                            "id": "message",
+                            "node": 2,
+                            "socket": "value"
+                        }
+                    ]
+                }
+            ],
+            "types": [{ "signature": "float4" }]
         }
     },
     "scene": 0,
