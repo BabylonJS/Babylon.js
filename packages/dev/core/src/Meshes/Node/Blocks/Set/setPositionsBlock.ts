@@ -1,6 +1,5 @@
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import type { INodeGeometryExecutionContext } from "../../Interfaces/nodeGeometryExecutionContext";
@@ -261,5 +260,3 @@ export class SetPositionsBlock extends NodeGeometryBlock implements INodeGeometr
         }
     }
 }
-
-RegisterClass("BABYLON.SetPositionsBlock", SetPositionsBlock);

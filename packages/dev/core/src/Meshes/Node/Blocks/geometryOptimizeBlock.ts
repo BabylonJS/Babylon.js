@@ -1,4 +1,3 @@
-import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
@@ -183,5 +182,3 @@ export class GeometryOptimizeBlock extends NodeGeometryBlock {
         this.optimizeFaces = serializationObject.optimizeFaces;
     }
 }
-
-RegisterClass("BABYLON.GeometryOptimizeBlock", GeometryOptimizeBlock);

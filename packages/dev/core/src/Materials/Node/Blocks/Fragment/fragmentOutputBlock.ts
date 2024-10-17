@@ -3,7 +3,6 @@ import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialB
 import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Scene } from "../../../../scene";
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import type { NodeMaterialDefines, NodeMaterial } from "../../nodeMaterial";
@@ -203,5 +202,3 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         this.useLogarithmicDepth = serializationObject.useLogarithmicDepth ?? false;
     }
 }
-
-RegisterClass("BABYLON.FragmentOutputBlock", FragmentOutputBlock);

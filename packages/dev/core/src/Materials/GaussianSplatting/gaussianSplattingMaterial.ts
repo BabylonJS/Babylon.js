@@ -9,7 +9,6 @@ import { SerializationHelper } from "../../Misc/decorators.serialization";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
-import { RegisterClass } from "../../Misc/typeStore";
 import { addClipPlaneUniforms, bindClipPlane } from "../clipPlaneMaterialHelper";
 import { Camera } from "core/Cameras/camera";
 
@@ -307,5 +306,3 @@ export class GaussianSplattingMaterial extends PushMaterial {
         return SerializationHelper.Parse(() => new GaussianSplattingMaterial(source.name, scene), source, scene, rootUrl);
     }
 }
-
-RegisterClass("BABYLON.GaussianSplattingMaterial", GaussianSplattingMaterial);

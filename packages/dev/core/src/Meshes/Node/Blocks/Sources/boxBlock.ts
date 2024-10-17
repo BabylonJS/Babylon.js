@@ -3,7 +3,6 @@ import { NodeGeometryBlock } from "../../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
 import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import { GeometryInputBlock } from "../geometryInputBlock";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import { CreateSegmentedBoxVertexData } from "core/Meshes/Builders/boxBuilder";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../../Decorators/nodeDecorator";
 
@@ -215,5 +214,3 @@ export class BoxBlock extends NodeGeometryBlock {
         this.evaluateContext = serializationObject.evaluateContext;
     }
 }
-
-RegisterClass("BABYLON.BoxBlock", BoxBlock);

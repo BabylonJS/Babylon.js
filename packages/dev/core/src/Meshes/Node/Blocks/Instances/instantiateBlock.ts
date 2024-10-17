@@ -1,5 +1,4 @@
 import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import type { VertexData } from "../../../mesh.vertexData";
@@ -153,5 +152,3 @@ export class InstantiateBlock extends InstantiateBaseBlock {
         }
     }
 }
-
-RegisterClass("BABYLON.InstantiateBlock", InstantiateBlock);

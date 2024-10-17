@@ -3,7 +3,6 @@ import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialB
 import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import type { NodeMaterial } from "../../nodeMaterial";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { InputBlock } from "../Input/inputBlock";
@@ -124,5 +123,3 @@ export class ScreenSpaceBlock extends NodeMaterialBlock {
         return this;
     }
 }
-
-RegisterClass("BABYLON.ScreenSpaceBlock", ScreenSpaceBlock);

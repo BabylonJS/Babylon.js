@@ -6,7 +6,6 @@ import type { FloatArray, Nullable } from "../types";
 import { MaterialDefines } from "./materialDefines";
 import type { PBRBaseMaterial } from "./PBR/pbrBaseMaterial";
 import type { StandardMaterial } from "./standardMaterial";
-import { RegisterClass } from "../Misc/typeStore";
 import { Color3 } from "core/Maths/math";
 import type { Mesh } from "core/Meshes/mesh";
 import { Logger } from "core/Misc/logger";
@@ -798,5 +797,3 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
         return rollback;
     }
 }
-
-RegisterClass("BABYLON.MeshDebugPluginMaterial", MeshDebugPluginMaterial);

@@ -3,7 +3,6 @@ import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBloc
 import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
-import { RegisterClass } from "../../../Misc/typeStore";
 import { InputBlock } from "./Input/inputBlock";
 import { MorphTargetsBlock } from "./Vertex/morphTargetsBlock";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
@@ -214,5 +213,3 @@ export class MeshAttributeExistsBlock extends NodeMaterialBlock {
         return codeString;
     }
 }
-
-RegisterClass("BABYLON.MeshAttributeExistsBlock", MeshAttributeExistsBlock);

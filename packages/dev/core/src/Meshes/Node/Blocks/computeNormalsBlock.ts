@@ -1,5 +1,4 @@
 import { VertexData } from "core/Meshes/mesh.vertexData";
-import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
@@ -57,5 +56,3 @@ export class ComputeNormalsBlock extends NodeGeometryBlock {
         };
     }
 }
-
-RegisterClass("BABYLON.ComputeNormalsBlock", ComputeNormalsBlock);

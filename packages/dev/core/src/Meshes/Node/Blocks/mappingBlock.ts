@@ -1,6 +1,5 @@
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
-import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
@@ -175,5 +174,3 @@ export class MappingBlock extends NodeGeometryBlock {
         this.mapping = serializationObject.mapping;
     }
 }
-
-RegisterClass("BABYLON.MappingBlock", MappingBlock);

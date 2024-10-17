@@ -1,5 +1,4 @@
 import { Vector4, type Vector2 } from "core/Maths/math.vector";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import type { INodeGeometryTextureData } from "../../Interfaces/nodeGeometryTextureData";
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
@@ -182,5 +181,3 @@ export class GeometryTextureFetchBlock extends NodeGeometryBlock {
         this.clampCoordinates = serializationObject.clampCoordinates;
     }
 }
-
-RegisterClass("BABYLON.GeometryTextureFetchBlock", GeometryTextureFetchBlock);

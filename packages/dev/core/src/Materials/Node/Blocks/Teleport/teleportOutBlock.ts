@@ -1,5 +1,4 @@
 import type { Nullable } from "../../../../types";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import type { NodeMaterialTeleportInBlock } from "./teleportInBlock";
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
@@ -150,5 +149,3 @@ export class NodeMaterialTeleportOutBlock extends NodeMaterialBlock {
         this._tempEntryPointUniqueId = serializationObject.entryPoint;
     }
 }
-
-RegisterClass("BABYLON.NodeMaterialTeleportOutBlock", NodeMaterialTeleportOutBlock);

@@ -3,7 +3,6 @@ import { Vector3 } from "../Maths/math.vector";
 import { Action } from "./action";
 import type { Condition } from "./condition";
 import { Constants } from "../Engines/constants";
-import { RegisterClass } from "../Misc/typeStore";
 
 import type { ActionEvent } from "./actionEvent";
 
@@ -567,15 +566,3 @@ export class SetParentAction extends Action {
         );
     }
 }
-
-RegisterClass("BABYLON.SetParentAction", SetParentAction);
-RegisterClass("BABYLON.ExecuteCodeAction", ExecuteCodeAction);
-RegisterClass("BABYLON.DoNothingAction", DoNothingAction);
-RegisterClass("BABYLON.StopAnimationAction", StopAnimationAction);
-RegisterClass("BABYLON.PlayAnimationAction", PlayAnimationAction);
-RegisterClass("BABYLON.IncrementValueAction", IncrementValueAction);
-RegisterClass("BABYLON.SetValueAction", SetValueAction);
-RegisterClass("BABYLON.SetStateAction", SetStateAction);
-RegisterClass("BABYLON.SetParentAction", SetParentAction);
-RegisterClass("BABYLON.SwitchBooleanAction", SwitchBooleanAction);
-RegisterClass("BABYLON.CombineAction", CombineAction);

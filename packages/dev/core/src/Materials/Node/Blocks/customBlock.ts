@@ -2,7 +2,6 @@ import { NodeMaterialBlock } from "../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
 import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
-import { RegisterClass } from "../../../Misc/typeStore";
 import type { Scene } from "../../../scene";
 import type { Nullable } from "../../../types";
 import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
@@ -189,5 +188,3 @@ export class CustomBlock extends NodeMaterialBlock {
         return null;
     }
 }
-
-RegisterClass("BABYLON.CustomBlock", CustomBlock);

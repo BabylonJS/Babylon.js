@@ -89,7 +89,6 @@ import type { Texture } from "./Materials/Textures/texture";
 import { PointerPickingConfiguration } from "./Inputs/pointerPickingConfiguration";
 import { Logger } from "./Misc/logger";
 import type { AbstractEngine } from "./Engines/abstractEngine";
-import { RegisterClass } from "./Misc/typeStore";
 import type { IAssetContainer } from "./IAssetContainer";
 
 import type { EffectLayer } from "./Layers/effectLayer";
@@ -5914,6 +5913,3 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         return this.getLastSkeletonById(id);
     }
 }
-
-// Register Class Name
-RegisterClass("BABYLON.Scene", Scene);
