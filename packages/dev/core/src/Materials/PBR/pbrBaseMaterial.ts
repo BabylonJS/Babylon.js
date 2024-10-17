@@ -67,7 +67,6 @@ import {
     PrepareUniformsAndSamplersList,
 } from "../materialHelper.functions";
 import { ShaderLanguage } from "../shaderLanguage";
-import { UniformBuffer } from "../uniformBuffer";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 

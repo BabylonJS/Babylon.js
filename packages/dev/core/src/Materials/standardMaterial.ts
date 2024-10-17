@@ -59,7 +59,6 @@ import {
     PrepareUniformsAndSamplersList,
 } from "./materialHelper.functions";
 import { SerializationHelper } from "../Misc/decorators.serialization";
-import { UniformBuffer } from "./uniformBuffer";
 import { ShaderLanguage } from "./shaderLanguage";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };

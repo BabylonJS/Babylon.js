@@ -47,7 +47,6 @@ import {
 } from "../materialHelper.functions";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
 import { ShaderLanguage } from "../shaderLanguage";
-import { UniformBuffer } from "../uniformBuffer";
 
 /**
  * Background material defines definition.
