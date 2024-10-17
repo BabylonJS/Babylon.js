@@ -623,7 +623,6 @@ export class Tools {
             }
 
             scriptUrl += `
-                console.log(window._LoadScriptModuleResolve[${this._UniqueResolveID}]);
                 window._LoadScriptModuleResolve[${this._UniqueResolveID}]();
                 window._LoadScriptModuleResolve[${this._UniqueResolveID}] = undefined;
             `;

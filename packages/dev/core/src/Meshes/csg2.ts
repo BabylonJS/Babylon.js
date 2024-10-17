@@ -13,6 +13,7 @@ export interface ICSG2Options {
  * Wrapper around the Manifold library
  * https://manifoldcad.org/
  * Use this class to perform performant boolean operations on meshes
+ * #IW43EB#1
  */
 export class CSG2 {
     /**
