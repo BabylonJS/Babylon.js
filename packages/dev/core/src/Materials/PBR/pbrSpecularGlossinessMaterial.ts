@@ -3,7 +3,6 @@ import type { Scene } from "../../scene";
 import type { Color3 } from "../../Maths/math.color";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { PBRBaseSimpleMaterial } from "./pbrBaseSimpleMaterial";
-import { RegisterClass } from "../../Misc/typeStore";
 import type { Nullable } from "../../types";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
 
@@ -143,5 +142,3 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
         return material;
     }
 }
-
-RegisterClass("BABYLON.PBRSpecularGlossinessMaterial", PBRSpecularGlossinessMaterial);

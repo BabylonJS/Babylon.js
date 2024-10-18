@@ -28,7 +28,6 @@ import { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { WebGPURenderTargetWrapper } from "core/Engines/WebGPU/webgpuRenderTargetWrapper";
 import { expandToProperty, serialize } from "core/Misc/decorators";
 import { MaterialDefines } from "core/Materials/materialDefines";
-import { RegisterClass } from "core/Misc/typeStore";
 
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
@@ -1048,5 +1047,3 @@ export class GIRSMRenderPluginMaterial extends MaterialPluginBase {
         return shaderType === "vertex" ? null : frag;
     }
 }
-
-RegisterClass(`BABYLON.GIRSMRenderPluginMaterial`, GIRSMRenderPluginMaterial);

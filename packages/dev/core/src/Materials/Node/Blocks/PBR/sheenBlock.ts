@@ -4,7 +4,6 @@ import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
@@ -228,5 +227,3 @@ export class SheenBlock extends NodeMaterialBlock {
         this.linkSheenWithAlbedo = serializationObject.linkSheenWithAlbedo;
     }
 }
-
-RegisterClass("BABYLON.SheenBlock", SheenBlock);

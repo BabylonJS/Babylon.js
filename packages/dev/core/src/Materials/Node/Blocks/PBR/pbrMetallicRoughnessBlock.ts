@@ -9,7 +9,6 @@ import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { InputBlock } from "../Input/inputBlock";
 import type { Light } from "../../../../Lights/light";
 import type { Nullable } from "../../../../types";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import type { Effect } from "../../../effect";
 import type { Mesh } from "../../../../Meshes/mesh";
@@ -1526,5 +1525,3 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         this._setTarget();
     }
 }
-
-RegisterClass("BABYLON.PBRMetallicRoughnessBlock", PBRMetallicRoughnessBlock);

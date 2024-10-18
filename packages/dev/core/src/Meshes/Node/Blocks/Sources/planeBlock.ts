@@ -3,7 +3,6 @@ import { NodeGeometryBlock } from "../../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
 import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import { GeometryInputBlock } from "../geometryInputBlock";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import { Matrix } from "../../../../Maths/math.vector";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../../Decorators/nodeDecorator";
 import { CreateGroundVertexData } from "core/Meshes/Builders/groundBuilder";
@@ -186,5 +185,3 @@ export class PlaneBlock extends NodeGeometryBlock {
         this.evaluateContext = serializationObject.evaluateContext;
     }
 }
-
-RegisterClass("BABYLON.PlaneBlock", PlaneBlock);

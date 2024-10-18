@@ -6,7 +6,6 @@ import { PostProcess } from "./postProcess";
 import { Constants } from "../Engines/constants";
 
 import "../Shaders/sharpen.fragment";
-import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 
@@ -99,5 +98,3 @@ export class SharpenPostProcess extends PostProcess {
         );
     }
 }
-
-RegisterClass("BABYLON.SharpenPostProcess", SharpenPostProcess);

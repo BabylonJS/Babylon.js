@@ -1,5 +1,4 @@
 import { Vector2 } from "core/Maths/math.vector";
-import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
@@ -65,5 +64,3 @@ export class GeometryRotate2dBlock extends NodeGeometryBlock {
         return this;
     }
 }
-
-RegisterClass("BABYLON.GeometryRotate2dBlock", GeometryRotate2dBlock);

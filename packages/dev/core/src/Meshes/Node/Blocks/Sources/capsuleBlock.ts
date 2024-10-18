@@ -3,7 +3,6 @@ import { NodeGeometryBlock } from "../../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
 import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import { GeometryInputBlock } from "../geometryInputBlock";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Vector3 } from "../../../../Maths/math.vector";
 import { CreateCapsuleVertexData } from "core/Meshes/Builders/capsuleBuilder";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../../Decorators/nodeDecorator";
@@ -149,5 +148,3 @@ export class CapsuleBlock extends NodeGeometryBlock {
         this.evaluateContext = serializationObject.evaluateContext;
     }
 }
-
-RegisterClass("BABYLON.CapsuleBlock", CapsuleBlock);

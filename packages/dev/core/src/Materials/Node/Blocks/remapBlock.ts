@@ -3,7 +3,6 @@ import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBloc
 import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
-import { RegisterClass } from "../../../Misc/typeStore";
 import { Vector2 } from "../../../Maths/math.vector";
 import type { Scene } from "../../../scene";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
@@ -133,5 +132,3 @@ export class RemapBlock extends NodeMaterialBlock {
         this.targetRange = Vector2.FromArray(serializationObject.targetRange);
     }
 }
-
-RegisterClass("BABYLON.RemapBlock", RemapBlock);

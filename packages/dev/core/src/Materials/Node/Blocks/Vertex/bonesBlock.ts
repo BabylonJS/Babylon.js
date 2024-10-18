@@ -9,7 +9,6 @@ import type { Effect } from "../../../effect";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import { InputBlock } from "../Input/inputBlock";
-import { RegisterClass } from "../../../../Misc/typeStore";
 
 import type { EffectFallbacks } from "../../../effectFallbacks";
 import { BindBonesParameters, PrepareDefinesForBones } from "../../../materialHelper.functions";
@@ -211,5 +210,3 @@ export class BonesBlock extends NodeMaterialBlock {
         return this;
     }
 }
-
-RegisterClass("BABYLON.BonesBlock", BonesBlock);
