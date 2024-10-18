@@ -26,9 +26,6 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
     private _depthOfFieldBlurY: Array<DepthOfFieldBlurPostProcess>;
     private _dofMerge: Nullable<DepthOfFieldMergePostProcess>;
 
-    /** @internal */
-    public _pipelineTextureType: number;
-
     /**
      * @internal Internal post processes in depth of field effect
      */
@@ -101,8 +98,6 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
         );
 
         this._thinDepthOfFieldEffect = new ThinDepthOfFieldEffect("Depth of Field", engine, blurLevel);
-
-        this._pipelineTextureType = pipelineTextureType;
 
         // Use R-only formats if supported to store the circle of confusion values.
         // This should be more space and bandwidth efficient than using RGBA.

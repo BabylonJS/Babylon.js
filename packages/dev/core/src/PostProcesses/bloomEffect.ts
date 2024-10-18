@@ -22,13 +22,9 @@ export class BloomEffect extends PostProcessRenderEffect {
      * @internal Internal
      */
     public _downscale: ExtractHighlightsPostProcess;
-
     private _blurX: BlurPostProcess;
     private _blurY: BlurPostProcess;
     private _merge: BloomMergePostProcess;
-
-    /** @internal */
-    public _pipelineTextureType: number;
 
     /**
      * The luminance threshold to find bright areas of the image to bloom.
@@ -87,8 +83,6 @@ export class BloomEffect extends PostProcessRenderEffect {
         );
 
         this._thinBloomEffect = new ThinBloomEffect("bloom", engine, bloomScale);
-
-        this._pipelineTextureType = pipelineTextureType;
 
         this._downscale = new ExtractHighlightsPostProcess("highlights", {
             size: 1.0,

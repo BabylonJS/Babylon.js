@@ -173,6 +173,9 @@ export class PostProcess {
         ThinPostProcess.ForceGLSL = force;
     }
 
+    /** @internal */
+    public _parentContainer: Nullable<IAssetContainer> = null;
+
     /**
      * Registers a shader code processing with a post process name.
      * @param postProcessName name of the post process. Use null for the fallback shader code processing. This is the shader code processing that will be used in case no specific shader code processing has been associated to a post process name
@@ -181,9 +184,6 @@ export class PostProcess {
     public static RegisterShaderCodeProcessing(postProcessName: Nullable<string>, customShaderCodeProcessing?: ThinPostProcessCustomShaderCodeProcessing) {
         ThinPostProcess.RegisterShaderCodeProcessing(postProcessName, customShaderCodeProcessing);
     }
-
-    /** @internal */
-    public _parentContainer: Nullable<IAssetContainer> = null;
 
     /**
      * Gets or sets the unique id of the post process
@@ -261,14 +261,7 @@ export class PostProcess {
     /**
      * Animations to be used for the post processing
      */
-    @serialize()
     public animations: Animation[] = [];
-
-    /**
-     * List of inspectable custom properties (used by the Inspector)
-     * @see https://doc.babylonjs.com/toolsAndResources/inspector#extensibility
-     */
-    public inspectableCustomProperties: IInspectable[];
 
     /**
      * Enable Pixel Perfect mode where texture is not scaled to be power of 2.
@@ -282,6 +275,12 @@ export class PostProcess {
      */
     @serialize()
     public forceFullscreenViewport = true;
+
+    /**
+     * List of inspectable custom properties (used by the Inspector)
+     * @see https://doc.babylonjs.com/toolsAndResources/inspector#extensibility
+     */
+    public inspectableCustomProperties: IInspectable[];
 
     /**
      * Scale mode for the post process (default: Engine.SCALEMODE_FLOOR)
@@ -700,7 +699,14 @@ export class PostProcess {
         }
     }
 
-    protected _gatherImports(_useWebGPU = false, _list: Promise<any>[]) {}
+    protected _gatherImports(useWebGPU = false, list: Promise<any>[]) {
+        // this._webGPUReady is used to detect when a postprocess is intended to be used with WebGPU
+        if (useWebGPU && this._webGPUReady) {
+            list.push(Promise.all([import("../ShadersWGSL/postprocess.vertex")]));
+        } else {
+            list.push(Promise.all([import("../Shaders/postprocess.vertex")]));
+        }
+    }
 
     /**
      * Gets a string identifying the name of the class

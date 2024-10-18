@@ -338,10 +338,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     public _pendingDebugCommands: Array<[string, Nullable<string>, number?]> = [];
     /** @internal */
     public _debugStackRenderPass: string[] = [];
-    /**
-     * Used for both the compatibilityMode=false and the snapshot rendering modes (as both can't be enabled at the same time)
-     * @internal
-     */
 
     // DrawCall Life Cycle
     // Effect is on the parent class
