@@ -10,7 +10,7 @@ if (window.location.search.indexOf("webgpu") !== -1) {
     localStorage.setItem("Engine", 1);
 }
 
-const useWebGPU = localStorage.getItem("Engine") === "1";
+let useWebGPU = localStorage.getItem("Engine") === "1";
 
 let loadScriptAsync = function (url, instantResolve) {
     return new Promise((resolve) => {
@@ -153,10 +153,12 @@ checkBabylonVersionAsync().then(() => {
                 let canvas = document.createElement("canvas");
                 let engine;
 
-                if (useWebGPU && (await BABYLON.WebGPUEngine.IsSupportedAsync())) {
+                if (useWebGPU && (await BABYLON.WebGPUEngine.IsSupportedAsync)) {
                     engine = new BABYLON.WebGPUEngine(canvas);
                     await engine.initAsync();
                 } else {
+                    localStorage.setItem("Engine", 0);
+                    useWebGPU = false;
                     engine = new BABYLON.Engine(canvas, false, { disableWebGL2Support: false });
                 }
 
