@@ -61,9 +61,8 @@ export function GetSignalInConnectionByUniqueId(blocks: FlowGraphBlock[], unique
 export async function ParseCoordinatorAsync(serializedObject: any, options: FlowGraphCoordinatorParseOptions) {
     const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
     const coordinator = new FlowGraphCoordinator({ scene: options.scene });
-    // serializedObject._flowGraphs?.forEach((serializedGraph: any) => {
-    //     FlowGraph.Parse(serializedGraph, { coordinator, valueParseFunction, pathConverter: options.pathConverter });
-    // });
+
+    await options.scene.whenReadyAsync();
     // async-parse the flow graphs. This can be done in parallel
     await Promise.all(
         serializedObject._flowGraphs?.map((serializedGraph: any) => ParseFlowGraphAsync(serializedGraph, { coordinator, valueParseFunction, pathConverter: options.pathConverter }))

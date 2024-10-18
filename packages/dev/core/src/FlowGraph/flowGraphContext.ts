@@ -342,9 +342,11 @@ export class FlowGraphContext {
                 let i = 0;
                 for (; i < order.length; i++) {
                     const block2 = order[i];
-                    const mesh2 = (block2 as FlowGraphMeshPickEventBlock)._getReferencedMesh(this);
-                    if (mesh1 && mesh2 && _isADescendantOf(mesh1, mesh2)) {
-                        break;
+                    if (block2.getClassName() === FlowGraphBlockNames.MeshPickEvent) {
+                        const mesh2 = (block2 as FlowGraphMeshPickEventBlock)._getReferencedMesh(this);
+                        if (mesh1 && mesh2 && _isADescendantOf(mesh1, mesh2)) {
+                            break;
+                        }
                     }
                 }
                 order.splice(i, 0, block1);

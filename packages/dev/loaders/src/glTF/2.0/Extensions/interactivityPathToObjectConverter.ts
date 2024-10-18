@@ -60,7 +60,7 @@ const nodesTree = {
             type: "Matrix",
             get: (node: INode) => node._babylonTransformNode?.getWorldMatrix(),
             getObject: (node: INode) => node._babylonTransformNode,
-            getPropertyName: (_node: INode) => "worldMatrix",
+            getPropertyName: (_node: INode) => "_worldMatrix",
         },
     },
 };

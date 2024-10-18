@@ -92,7 +92,7 @@ export function defaultValueParseFunction(key: string, serializationObject: any,
     let finalValue;
     const className = intermediateValue?.className;
     if (isMeshClassName(className)) {
-        finalValue = intermediateValue.id ? scene.getMeshById(intermediateValue.id) : scene.getMeshByName(intermediateValue.name);
+        finalValue = intermediateValue.id ? (scene.getMeshById(intermediateValue.id) ?? scene.getNodeById(intermediateValue.id)) : scene.getMeshByName(intermediateValue.name);
     } else if (isVectorClassName(className)) {
         finalValue = parseVector(className, intermediateValue.value);
     } else if (className === FlowGraphTypes.Matrix) {
