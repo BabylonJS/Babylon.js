@@ -120,6 +120,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
 
         this._outputBus = null;
         this._soundInstances.clear();
+        this.onEndedObservable.clear();
 
         this.onDisposeObservable.notifyObservers(this);
     }
@@ -135,6 +136,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      */
     public async play(waitTime: Nullable<number> = null, startOffset: Nullable<number> = null, duration: Nullable<number> = null): Promise<AbstractSoundInstance> {
         const instance = await this._createSoundInstance();
+        instance.onEndedObservable.addOnce(this._onSoundInstanceEnded.bind(this));
 
         await instance.play(waitTime, startOffset, duration);
 

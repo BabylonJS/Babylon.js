@@ -31,6 +31,7 @@ export abstract class AbstractSoundInstance extends AbstractAudioNode {
         super.dispose();
 
         this.stop();
+        this.onEndedObservable.clear();
     }
 
     public abstract get currentTime(): number;

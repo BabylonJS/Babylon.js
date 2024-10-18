@@ -1,6 +1,5 @@
 import type { Nullable } from "../../../types";
 import type { AbstractAudioNode } from "../abstractAudioNode";
-import type { AbstractSoundInstance } from "../abstractSoundInstance";
 import { AbstractStaticSound } from "../abstractStaticSound";
 import { AbstractStaticSoundInstance } from "../abstractStaticSoundInstance";
 import { WebAudioBus } from "./webAudioBus";
@@ -49,11 +48,6 @@ export class WebAudioStaticSound extends AbstractStaticSound {
         if (options?.autoplay) {
             this.play();
         }
-    }
-
-    /** @internal */
-    public onSoundInstanceEnded(instance: AbstractSoundInstance): void {
-        this._onSoundInstanceEnded(instance);
     }
 
     protected override _connect(node: AbstractAudioNode): void {
@@ -127,7 +121,6 @@ export class WebAudioStaticSoundInstance extends AbstractStaticSoundInstance {
     /** @internal */
     public stop(waitTime: Nullable<number> = null): void {
         this.sourceNode?.stop(waitTime ? (this._source as WebAudioStaticSound).audioContext.currentTime + waitTime : 0);
-        this._onEnded();
     }
 
     protected override _connect(node: AbstractAudioNode): void {
@@ -151,10 +144,7 @@ export class WebAudioStaticSoundInstance extends AbstractStaticSoundInstance {
     }
 
     protected _onEnded(): void {
-        (this._source as WebAudioStaticSound).onSoundInstanceEnded(this);
-
-        this.sourceNode?.removeEventListener("ended", this._onEnded.bind(this));
-
         this.onEndedObservable.notifyObservers(this);
+        this.sourceNode?.removeEventListener("ended", this._onEnded.bind(this));
     }
 }
