@@ -39,7 +39,7 @@ import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObj
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
-
+import { SetToDefaultGaussianSplatting } from "core/Materials/Node/nodeMaterialDefault";
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
     lockObject: LockObject;
@@ -363,6 +363,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 case NodeMaterialModes.ProceduralTexture:
                     this.props.globalState.nodeMaterial!.setToDefaultProceduralTexture();
                     break;
+                case NodeMaterialModes.GaussianSplatting:
+                    SetToDefaultGaussianSplatting(this.props.globalState.nodeMaterial!);
+                    break;
             }
         }
 
@@ -431,6 +434,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             { label: "Post Process", value: NodeMaterialModes.PostProcess },
             { label: "Particle", value: NodeMaterialModes.Particle },
             { label: "Procedural", value: NodeMaterialModes.ProceduralTexture },
+            { label: "Gaussian Splatting", value: NodeMaterialModes.GaussianSplatting },
         ];
 
         const engineList = [
@@ -506,6 +510,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                         break;
                                     case NodeMaterialModes.ProceduralTexture:
                                         this.props.globalState.nodeMaterial!.setToDefaultProceduralTexture();
+                                        break;
+                                    case NodeMaterialModes.GaussianSplatting:
+                                        SetToDefaultGaussianSplatting(this.props.globalState.nodeMaterial!);
                                         break;
                                 }
                                 this.props.globalState.onResetRequiredObservable.notifyObservers(true);

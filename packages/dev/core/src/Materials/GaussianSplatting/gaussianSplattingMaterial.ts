@@ -1,7 +1,7 @@
 import type { SubMesh } from "../../Meshes/subMesh";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { Mesh } from "../../Meshes/mesh";
-import type { IEffectCreationOptions } from "../../Materials/effect";
+import type { Effect, IEffectCreationOptions } from "../../Materials/effect";
 import type { Scene } from "../../scene";
 import type { Matrix } from "../../Maths/math.vector";
 import type { GaussianSplattingMesh } from "core/Meshes";
@@ -178,6 +178,57 @@ export class GaussianSplattingMaterial extends PushMaterial {
     }
 
     /**
+     * Bind material effect for a specific Gaussian Splatting mesh
+     * @param mesh Gaussian splatting mesh
+     * @param effect Splatting material or node material
+     * @param scene scene that contains mesh and camera used for rendering
+     */
+    public static BindEffect(mesh: Mesh, effect: Effect, scene: Scene): void {
+        const engine = scene.getEngine();
+        const camera = scene.activeCamera;
+
+        const renderWidth = engine.getRenderWidth();
+        const renderHeight = engine.getRenderHeight();
+
+        // check if rigcamera, get number of rigs
+        const numberOfRigs = camera?.rigParent?.rigCameras.length || 1;
+
+        effect.setFloat2("invViewport", 1 / (renderWidth / numberOfRigs), 1 / renderHeight);
+
+        let focal = 1000;
+
+        if (camera) {
+            /*
+            more explicit version:
+            const t = camera.getProjectionMatrix().m[5];
+            const FovY = Math.atan(1.0 / t) * 2.0;
+            focal = renderHeight / 2.0 / Math.tan(FovY / 2.0);
+            Using a shorter version here to not have tan(atan) and 2.0 factor
+            */
+            const t = camera.getProjectionMatrix().m[5];
+            if (camera.fovMode == Camera.FOVMODE_VERTICAL_FIXED) {
+                focal = (renderHeight * t) / 2.0;
+            } else {
+                focal = (renderWidth * t) / 2.0;
+            }
+        }
+
+        effect.setFloat2("focal", focal, focal);
+
+        const gsMesh = mesh as GaussianSplattingMesh;
+
+        if (gsMesh.covariancesATexture) {
+            const textureSize = gsMesh.covariancesATexture.getSize();
+
+            effect.setFloat2("dataTextureSize", textureSize.width, textureSize.height);
+
+            effect.setTexture("covariancesATexture", gsMesh.covariancesATexture);
+            effect.setTexture("covariancesBTexture", gsMesh.covariancesBTexture);
+            effect.setTexture("centersTexture", gsMesh.centersTexture);
+            effect.setTexture("colorsTexture", gsMesh.colorsTexture);
+        }
+    }
+    /**
      * Binds the submesh to this material by preparing the effect and shader to draw
      * @param world defines the world transformation matrix
      * @param mesh defines the mesh containing the submesh
@@ -207,51 +258,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
         if (mustRebind) {
             this.bindView(effect);
             this.bindViewProjection(effect);
-
-            const engine = scene.getEngine();
-            const camera = this.getScene().activeCamera;
-
-            const renderWidth = engine.getRenderWidth();
-            const renderHeight = engine.getRenderHeight();
-
-            // check if rigcamera, get number of rigs
-            const numberOfRigs = camera?.rigParent?.rigCameras.length || 1;
-
-            this._activeEffect.setFloat2("invViewport", 1 / (renderWidth / numberOfRigs), 1 / renderHeight);
-
-            let focal = 1000;
-
-            if (camera) {
-                /*
-                more explicit version:
-                const t = camera.getProjectionMatrix().m[5];
-                const FovY = Math.atan(1.0 / t) * 2.0;
-                focal = renderHeight / 2.0 / Math.tan(FovY / 2.0);
-                Using a shorter version here to not have tan(atan) and 2.0 factor
-                */
-                const t = camera.getProjectionMatrix().m[5];
-                if (camera.fovMode == Camera.FOVMODE_VERTICAL_FIXED) {
-                    focal = (renderHeight * t) / 2.0;
-                } else {
-                    focal = (renderWidth * t) / 2.0;
-                }
-            }
-
-            this._activeEffect.setFloat2("focal", focal, focal);
-
-            const gsMesh = mesh as GaussianSplattingMesh;
-
-            if (gsMesh.covariancesATexture) {
-                const textureSize = gsMesh.covariancesATexture.getSize();
-
-                effect.setFloat2("dataTextureSize", textureSize.width, textureSize.height);
-
-                effect.setTexture("covariancesATexture", gsMesh.covariancesATexture);
-                effect.setTexture("covariancesBTexture", gsMesh.covariancesBTexture);
-                effect.setTexture("centersTexture", gsMesh.centersTexture);
-                effect.setTexture("colorsTexture", gsMesh.colorsTexture);
-            }
-
+            GaussianSplattingMaterial.BindEffect(mesh, this._activeEffect, scene);
             // Clip plane
             bindClipPlane(effect, this, scene);
         } else if (scene.getEngine()._features.needToAlwaysBindUniformBuffers) {
