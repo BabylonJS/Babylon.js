@@ -107,6 +107,11 @@ export abstract class Light extends Node implements ISortableLight {
     public static readonly LIGHTTYPEID_HEMISPHERICLIGHT = LightConstants.LIGHTTYPEID_HEMISPHERICLIGHT;
 
     /**
+     * Light type const id of the area light.
+     */
+    public static readonly LIGHTTYPEID_AREALIGHT = LightConstants.LIGHTTYPEID_AREALIGHT;
+
+    /**
      * Diffuse gives the basic color to an object.
      */
     @serializeAsColor3()
