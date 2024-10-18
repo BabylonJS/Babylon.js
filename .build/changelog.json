@@ -1,5 +1,5 @@
 {
-    "fromTag": "7.28.0",
+    "fromTag": "7.29.0",
     "changelog": {
         "7.29.0": [
             {
@@ -245,6 +245,299 @@
                     "bug",
                     "rendering engine"
                 ]
+            }
+        ],
+        "7.30.0": [
+            {
+                "pr": "15708",
+                "title": "Export camera to usdz",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/serializers/src/USDZ/usdzExporter.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15707",
+                "title": "Usdz exporter",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/serializers/src/USDZ/index.ts",
+                    "packages/dev/serializers/src/USDZ/usdzExporter.ts",
+                    "packages/dev/serializers/src/index.ts",
+                    "packages/lts/serializers/src/legacy/legacy-usdzSerializer.ts",
+                    "packages/lts/serializers/src/legacy/legacy.ts",
+                    "packages/public/umd/babylonjs-serializers/src/USDZ.ts",
+                    "packages/public/umd/babylonjs-serializers/webpack.config.js",
+                    "packages/tools/babylonServer/src/serializers/legacy-dev.ts",
+                    "packages/tools/babylonServer/src/serializers/legacy-lts.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15706",
+                "title": "Allow users to clear code cache",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/effect.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15702",
+                "title": "WebGPU: Fix requestAdapterInfo removed from the spec",
+                "description": "See https://forum.babylonjs.com/t/https-playground-babylonjs-com-webgpu-yx6ib8-758-is-calling-requestadapterinfo/54116",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/LibDeclarations/webgpu.d.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "15701",
+                "title": "WebGPU: Fix crash when using lightmaps",
+                "description": "See https://forum.babylonjs.com/t/lightmaptexture-issue-of-material-in-webgpu/54121",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/ShadersWGSL/default.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "15704",
+                "title": "make sure to export everything from the serializers index if not included in the others",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/lts/serializers/src/legacy/legacy.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15700",
+                "title": "Add shader rendering support for Lattice",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/rawTexture3D.ts",
+                    "packages/dev/core/src/Materials/materialPluginBase.ts",
+                    "packages/dev/core/src/Meshes/index.ts",
+                    "packages/dev/core/src/Meshes/lattice.material.ts",
+                    "packages/dev/core/src/Meshes/lattice.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/lattice-hal.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15696",
+                "title": "Prevent multiple SpriteRenderers from repeatedly initializing the same shader",
+                "description": "A race condition existed due to asynchronous loading of shader code as a side effect of the SpriteRenderer constructor.\r\n\r\nhttps://forum.babylonjs.com/t/spriterenderer-tries-to-use-shader-before-its-loaded/54035",
+                "author": {
+                    "name": "bmcbarron",
+                    "url": "https://github.com/bmcbarron"
+                },
+                "files": [
+                    "packages/dev/core/src/Sprites/spriteRenderer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15695",
+                "title": "Null engine: no flushFramebuffer",
+                "description": "See https://forum.babylonjs.com/t/null-engine-calls-this-gl-flush-on-ios/54080",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/nullEngine.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "15697",
+                "title": "Fix local d.ts generation",
+                "description": "Under certain conditions we require return definitions, otherwise typescript uses `import(\"whatever\").type`, which messes up with our UMD d.ts processing.\n\nThis fixes it for the associated functions.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinItemAdapter.tsx",
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinSceneTree.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15694",
+                "title": "WebGPU: Remove \"unreachable code\" warnings",
+                "description": "See https://forum.babylonjs.com/t/compatibility-issue-of-material-in-webgpu/54067",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "15693",
+                "title": "Fix screen capture bug with webgpu",
+                "description": "We do not need to render as this is happening out of the begin/end cycle. Tested with WebGPU / WebGL",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/screenshotTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15691",
+                "title": "Button to display world axis in the preview window",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeGeometryEditor/src/components/preview/previewManager.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15690",
+                "title": "Add lattice support for NGE",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/latticeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryInputBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Enums/nodeGeometryContextualSources.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBuildState.ts",
+                    "packages/dev/core/src/Meshes/lattice.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/inputDisplayManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15688",
+                "title": "Added options to SpriteManager",
+                "description": "#YCY2IL#2292\r\n\r\nhttps://forum.babylonjs.com/t/spriterenderer-tries-to-use-shader-before-its-loaded/54035",
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Sprites/spriteManager.ts",
+                    "packages/dev/core/src/Sprites/spritePackedManager.ts",
+                    "packages/dev/core/src/Sprites/spriteRenderer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15687",
+                "title": "Clamp Node - Expose Min, Max as Inputs",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryClampBlock.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15685",
+                "title": "Fix pbr shader",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/ShadersWGSL/pbr.fragment.fx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15684",
+                "title": "Viewer snapshot rendering mode",
+                "description": "This change mostly is about using the new `SnapshotRenderingHelper` to enable WebGPUEngine snapshot rendering mode. Unfortunately there are some mysteries with the perf impact, most notably, when I was testing all this on my MacBook two weeks ago, I was seeing the frame rate on my test model (20x20x20 cubes) go from ~60fps to ~95fps (on my 120hz display). Now, I am seeing ~58fps -> 66fps, even if I checkout the same branch from two weeks ago (not just the version that is using `SnapshotRenderingHelper`). I have no explanation for this. The only thing I can think of is that I installed a MacOS update since then. Behavior is the same in Chrome and Edge. With an even heavier model (25x25x25 cubes), I am seeing these results:\r\n\r\n### MacBook\r\n- WebGL: 45fps\r\n- WebGPU: 25fps\r\n- WebGPU w/snapshot: 27fps\r\n\r\n### Windows\r\n- WebGL: 48fps\r\n- WebGPU: 40fps\r\n- WebGPU w/snapshot: 55fps\r\n\r\nSo snapshot rendering as is still improves perf for the viewer, but not as dramatically as when previously tested, and it's now worse than `Engine` (WebGL) on my MacBook, so it would be good to investigate more separately.\r\n\r\nI included a couple other small changes in this PR as well:\r\n- When ViewerElement parses the hotspots string, it splits on any amount of white space, not just a single white space (@CedricGuillemet).\r\n- I changed the default engine for the Viewer test app to be WebGPU for now.\r\n- Disabled the test hotspot in the Viewer test app by default since it kind of gets in the way when testing other models.\r\n- Added a published.html test file to make it easy to test the published viewer package.\r\n",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/public/@babylonjs/viewer-alpha/test/apps/web/published.html",
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts",
+                    "packages/tools/viewer-alpha/test/apps/web/index.html"
+                ],
+                "tags": []
             }
         ],
         "7.28.0": [

@@ -153,7 +153,7 @@ checkBabylonVersionAsync().then(() => {
                 let canvas = document.createElement("canvas");
                 let engine;
 
-                if (useWebGPU) {
+                if (useWebGPU && (await BABYLON.WebGPUEngine.IsSupportedAsync())) {
                     engine = new BABYLON.WebGPUEngine(canvas);
                     await engine.initAsync();
                 } else {
