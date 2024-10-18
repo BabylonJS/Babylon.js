@@ -8,7 +8,7 @@ import { SubMesh } from "./subMesh";
 import type { Material } from "core/Materials/material";
 import { _LoadScriptModuleAsync } from "core/Misc/tools.internals";
 import type { FloatArray } from "core/types";
-import { Matrix, Vector3 } from "core/Maths";
+import { Vector3 } from "core/Maths";
 
 /**
  * Main manifold library
@@ -58,6 +58,16 @@ export interface IMeshRebuildOptions {
      * True to center the mesh on 0,0,0
      */
     centerMesh?: boolean;
+}
+
+/**
+ * Interface to customize the vertex data rebuild options
+ */
+export interface IVertexDataRebuildOptions {
+    /**
+     * Rebuild normals
+     */
+    rebuildNormals: boolean;
 }
 
 interface IManifoldMesh {
@@ -146,16 +156,13 @@ export class CSG2 implements IDisposable {
     }
 
     /**
-     * Generate a mesh from the CSG
-     * @param name defines the name of the mesh
-     * @param scene defines the scene to use to create the mesh
-     * @param options defines the options to use to rebuild the mesh
-     * @returns a new Mesh
+     * Generate a vertex data from the CSG
+     * @param options defines the options to use to rebuild the vertex data
+     * @returns a new vertex data
      */
-    public toMesh(name: string, scene?: Scene, options: Partial<IMeshRebuildOptions> = {}): Mesh {
+    public toVertexData(options?: Partial<IVertexDataRebuildOptions>): VertexData {
         const localOptions = {
             rebuildNormals: false,
-            centerMesh: true,
             ...options,
         };
         const vertexData = new VertexData();
@@ -209,6 +216,28 @@ export class CSG2 implements IDisposable {
                 offset += component.stride;
             }
         }
+
+        // Rebuild mesh from vertex data
+        return vertexData;
+    }
+
+    /**
+     * Generate a mesh from the CSG
+     * @param name defines the name of the mesh
+     * @param scene defines the scene to use to create the mesh
+     * @param options defines the options to use to rebuild the mesh
+     * @returns a new Mesh
+     */
+    public toMesh(name: string, scene?: Scene, options?: Partial<IMeshRebuildOptions>): Mesh {
+        const localOptions = {
+            rebuildNormals: false,
+            centerMesh: true,
+            ...options,
+        };
+        const vertexData = this.toVertexData({ rebuildNormals: localOptions.rebuildNormals });
+        const normalComponent = this._vertexStructure.find((c) => c.kind === VertexBuffer.NormalKind);
+        const manifoldMesh: IManifoldMesh = this._manifold.getMesh(localOptions.rebuildNormals && normalComponent ? [3, 4, 5] : undefined);
+        const vertexCount = manifoldMesh.vertProperties.length / manifoldMesh.numProp;
 
         // Rebuild mesh from vertex data
         const output = new Mesh(name, scene);
@@ -297,7 +326,7 @@ export class CSG2 implements IDisposable {
      * @param vertexData defines the vertexData to use to create the CSG
      * @returns a new CSG2 class
      */
-    public static FromVertexData(vertexData: VertexData): any {
+    public static FromVertexData(vertexData: VertexData): CSG2 {
         const sourceVertices = vertexData.positions;
         const sourceIndices = vertexData.indices;
 
@@ -326,8 +355,8 @@ export class CSG2 implements IDisposable {
         }
 
         // UVs
-        for (const kind of ["uvs", "uvs2", "uvs3", "uvs4", "uvs5", "uvs6"]) {
-            const sourceUV = (vertexData as any)[kind] as FloatArray;
+        for (const kind of [VertexBuffer.UVKind, VertexBuffer.UV2Kind, VertexBuffer.UV3Kind, VertexBuffer.UV4Kind, VertexBuffer.UV5Kind, VertexBuffer.UV6Kind]) {
+            const sourceUV = (vertexData as any)[kind === VertexBuffer.UVKind ? "uvs" : kind] as FloatArray;
             if (sourceUV) {
                 numProp += 2;
                 structure.push({ stride: 2, kind: kind, data: sourceUV });
@@ -444,10 +473,18 @@ export class CSG2 implements IDisposable {
 }
 
 /**
+ * Checks if the Manifold library is ready
+ * @returns true if the Manifold library is ready
+ */
+export function IsCSG2Ready() {
+    return Manifold !== undefined;
+}
+
+/**
  * Initialize the Manifold library
  * @param options defines the options to use to initialize the library
  */
-export async function InitializeCSG2Async(options: Partial<ICSG2Options>) {
+export async function InitializeCSG2Async(options?: Partial<ICSG2Options>) {
     const localOptions = {
         manifoldUrl: "https://unpkg.com/manifold-3d@2.5.1",
         ...options,
