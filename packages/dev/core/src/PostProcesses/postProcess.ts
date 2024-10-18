@@ -104,11 +104,6 @@ Effect.prototype.setTextureFromPostProcessOutput = function (channel: string, po
 };
 
 /**
- * Allows for custom processing of the shader code used by a post process
- */
-export type { ThinPostProcessCustomShaderCodeProcessing as PostProcessCustomShaderCodeProcessing } from "./thinPostProcess";
-
-/**
  * Options for the PostProcess constructor
  */
 export type PostProcessOptions = ThinPostProcessOptions & {

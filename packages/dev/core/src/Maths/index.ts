@@ -1,4 +1,3 @@
-export * from "./math.like";
 export * from "./math.scalar";
 export * from "./math.functions";
 export * from "./math.polar";
