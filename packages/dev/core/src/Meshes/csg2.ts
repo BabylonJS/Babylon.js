@@ -8,7 +8,7 @@ import { SubMesh } from "./subMesh";
 import type { Material } from "core/Materials/material";
 import { _LoadScriptModuleAsync } from "core/Misc/tools.internals";
 import type { FloatArray } from "core/types";
-import { Vector3 } from "core/Maths";
+import { Vector3 } from "core/Maths/math.vector";
 
 /**
  * Main manifold library
