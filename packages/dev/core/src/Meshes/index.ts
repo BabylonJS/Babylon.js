@@ -32,6 +32,7 @@ export * from "./WebGPU/webgpuDataBuffer";
 export * from "./GreasedLine/greasedLineMesh";
 export * from "./GreasedLine/greasedLineRibbonMesh";
 export * from "./GreasedLine/greasedLineBaseMesh";
+export * from "./csg2";
 import "./thinInstanceMesh";
 // eslint-disable-next-line no-duplicate-imports
 export * from "./thinInstanceMesh";
