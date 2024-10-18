@@ -95,6 +95,7 @@ export abstract class AbstractAudioNode extends AbstractAudioNodeParent {
         }
 
         this.onDisposeObservable.notifyObservers(this);
+        this.onDisposeObservable.clear();
     }
 
     /**
