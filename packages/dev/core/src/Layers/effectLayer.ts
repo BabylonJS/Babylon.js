@@ -595,7 +595,7 @@ export abstract class EffectLayer {
 
         // Diffuse
         if (material) {
-            const needAlphaTest = material.needAlphaTesting();
+            const needAlphaTest = material.needAlphaTestingForMesh(mesh);
 
             const diffuseTexture = material.getAlphaTestTexture();
             const needAlphaBlendFromDiffuse =
@@ -986,7 +986,7 @@ export abstract class EffectLayer {
             }
 
             if (!renderingMaterial) {
-                const needAlphaTest = material.needAlphaTesting();
+                const needAlphaTest = material.needAlphaTestingForMesh(effectiveMesh);
 
                 const diffuseTexture = material.getAlphaTestTexture();
                 const needAlphaBlendFromDiffuse =
