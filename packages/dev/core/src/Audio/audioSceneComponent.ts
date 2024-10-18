@@ -46,10 +46,6 @@ AddParser(SceneComponentConstants.NAME_AUDIO, (parsedData: any, scene: Scene, co
 declare module "../scene" {
     export interface Scene {
         /**
-         * The list of sounds used in the scene.
-         */
-        sounds: Nullable<Array<Sound>>;
-        /**
          * @internal
          * Backing field
          */

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import type { LightInformationBlock } from "core/Materials/Node/Blocks/Vertex/lightInformationBlock";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
 import type { Light } from "core/Lights/light";

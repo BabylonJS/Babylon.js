@@ -559,8 +559,6 @@ export class MorphTargetManager implements IDisposable {
     public static Parse(serializationObject: any, scene: Scene): MorphTargetManager {
         const result = new MorphTargetManager(scene);
 
-        result._uniqueId = serializationObject.id;
-
         for (const targetData of serializationObject.targets) {
             result.addTarget(MorphTarget.Parse(targetData, scene));
         }

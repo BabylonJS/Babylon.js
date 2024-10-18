@@ -5,7 +5,7 @@ import type { Scene } from "../scene";
 import type { Nullable } from "../types";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { RawTexture } from "../Materials/Textures/rawTexture";
-import type { Animatable } from "../Animations/animatable";
+import type { Animatable } from "../Animations/animatable.core";
 import type { AnimationPropertiesOverride } from "../Animations/animationPropertiesOverride";
 import { Animation } from "../Animations/animation";
 import { AnimationRange } from "../Animations/animationRange";

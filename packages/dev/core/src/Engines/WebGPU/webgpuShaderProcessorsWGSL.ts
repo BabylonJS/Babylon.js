@@ -336,6 +336,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
         vertexCode =
             (needDiagnosticOff ? "diagnostic(off, derivative_uniformity);\n" : "") +
+            "diagnostic(off, chromium.unreachable_code);\n" +
             InjectStartingAndEndingCode(vertexCode, "fn main", vertexMainStartingCode, vertexMainEndingCode);
 
         // fragment code
@@ -423,7 +424,9 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         needDiagnosticOff = fragmentCode.indexOf(Constants.DISABLEUA) !== -1;
 
         fragmentCode =
-            (needDiagnosticOff ? "diagnostic(off, derivative_uniformity);\n" : "") + InjectStartingAndEndingCode(fragmentCode, "fn main", fragmentStartingCode, fragmentEndingCode);
+            (needDiagnosticOff ? "diagnostic(off, derivative_uniformity);\n" : "") +
+            "diagnostic(off, chromium.unreachable_code);\n" +
+            InjectStartingAndEndingCode(fragmentCode, "fn main", fragmentStartingCode, fragmentEndingCode);
 
         this._collectBindingNames();
         this._preCreateBindGroupEntries();

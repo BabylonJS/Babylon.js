@@ -27,7 +27,7 @@ function getTwinItemFromNode(node: AccessibilityEntity, scene: Scene) {
  * @param props the props of the adapter
  * @returns
  */
-export function HTMLTwinItemAdapter(props: { node: AccessibilityEntity; scene: Scene; options: IHTMLTwinRendererOptions }) {
+export function HTMLTwinItemAdapter(props: { node: AccessibilityEntity; scene: Scene; options: IHTMLTwinRendererOptions }): JSX.Element | null {
     const { node, scene, options } = props;
     if (!node) {
         return null;

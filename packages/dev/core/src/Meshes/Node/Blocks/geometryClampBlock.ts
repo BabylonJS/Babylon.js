@@ -24,6 +24,8 @@ export class GeometryClampBlock extends NodeGeometryBlock {
         super(name);
 
         this.registerInput("value", NodeGeometryBlockConnectionPointTypes.AutoDetect);
+        this.registerInput("min", NodeGeometryBlockConnectionPointTypes.Float, true);
+        this.registerInput("max", NodeGeometryBlockConnectionPointTypes.Float, true);
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.BasedOnInput);
 
         this._outputs[0]._typeConnectionSource = this._inputs[0];
@@ -48,6 +50,20 @@ export class GeometryClampBlock extends NodeGeometryBlock {
     }
 
     /**
+     * Gets the min input component
+     */
+    public get min(): NodeGeometryConnectionPoint {
+        return this._inputs[1];
+    }
+
+    /**
+     * Gets the max input component
+     */
+    public get max(): NodeGeometryConnectionPoint {
+        return this._inputs[2];
+    }
+
+    /**
      * Gets the output component
      */
     public get output(): NodeGeometryConnectionPoint {
@@ -61,25 +77,28 @@ export class GeometryClampBlock extends NodeGeometryBlock {
             return;
         }
 
-        const func = (value: number) => {
-            return Math.max(this.minimum, Math.min(value, this.maximum));
+        const func = (value: number, min: number, max: number) => {
+            return Math.max(min, Math.min(value, max));
         };
 
         this.output._storedFunction = (state) => {
             const value = this.value.getConnectedValue(state);
+            const min = this.min.isConnected ? this.min.getConnectedValue(state) : this.minimum;
+            const max = this.max.isConnected ? this.max.getConnectedValue(state) : this.maximum;
+
             switch (this.value.type) {
                 case NodeGeometryBlockConnectionPointTypes.Int:
                 case NodeGeometryBlockConnectionPointTypes.Float: {
-                    return func!(value);
+                    return func!(value, min, max);
                 }
                 case NodeGeometryBlockConnectionPointTypes.Vector2: {
-                    return new Vector2(func!(value.x), func!(value.y));
+                    return new Vector2(func!(value.x, min, max), func!(value.y, min, max));
                 }
                 case NodeGeometryBlockConnectionPointTypes.Vector3: {
-                    return new Vector3(func!(value.x), func!(value.y), func!(value.z));
+                    return new Vector3(func!(value.x, min, max), func!(value.y, min, max), func!(value.z, min, max));
                 }
                 case NodeGeometryBlockConnectionPointTypes.Vector4: {
-                    return new Vector4(func!(value.x), func!(value.y), func!(value.z), func!(value.w));
+                    return new Vector4(func!(value.x, min, max), func!(value.y, min, max), func!(value.z, min, max), func!(value.w, min, max));
                 }
             }
 

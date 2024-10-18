@@ -66,7 +66,7 @@ import type { Skeleton } from "./Bones/skeleton";
 import type { Bone } from "./Bones/bone";
 import type { Camera } from "./Cameras/camera";
 import type { Collider } from "./Collisions/collider";
-import type { Ray, MeshPredicate, TrianglePickingPredicate } from "./Culling/ray";
+import type { Ray, MeshPredicate, TrianglePickingPredicate } from "./Culling/ray.core";
 import type { Light } from "./Lights/light";
 import type { PerformanceViewerCollector } from "./Misc/PerformanceViewer/performanceViewerCollector";
 import type { MorphTarget } from "./Morph/morphTarget";
@@ -84,7 +84,7 @@ import type { Mesh } from "./Meshes/mesh";
 import type { SubMesh } from "./Meshes/subMesh";
 import type { Node } from "./node";
 import type { Animation } from "./Animations/animation";
-import type { Animatable } from "./Animations/animatable";
+import type { Animatable } from "./Animations/animatable.core";
 import type { Texture } from "./Materials/Textures/texture";
 import { PointerPickingConfiguration } from "./Inputs/pointerPickingConfiguration";
 import { Logger } from "./Misc/logger";
@@ -92,6 +92,12 @@ import type { AbstractEngine } from "./Engines/abstractEngine";
 import { RegisterClass } from "./Misc/typeStore";
 import type { FrameGraph } from "./FrameGraph/frameGraph";
 import type { IAssetContainer } from "./IAssetContainer";
+
+import type { EffectLayer } from "./Layers/effectLayer";
+import type { Sound } from "./Audio/sound";
+import type { Layer } from "./Layers/layer";
+import type { LensFlareSystem } from "./LensFlares/lensFlareSystem";
+import type { ProceduralTexture } from "./Materials/Textures/Procedurals/proceduralTexture";
 
 /**
  * Define an interface for all classes that will hold resources
@@ -184,6 +190,15 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     }
 
     // Members
+
+    /** @internal */
+    public _tempPickingRay: Nullable<Ray>;
+
+    /** @internal */
+    public _cachedRayForTransform: Ray;
+
+    /** @internal */
+    public _pickWithRayInverseMatrix: Matrix;
 
     /** @internal */
     public _inputManager = new InputManager(this);
@@ -291,6 +306,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     }
 
     private _forceWireframe = false;
+
     /**
      * Gets or sets a boolean indicating if all rendering must be done in wireframe
      */
@@ -398,6 +414,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     public particleSystems: IParticleSystem[] = [];
 
     /**
+     * Gets the current delta time used by animation engine
+     */
+    deltaTime: number;
+
+    /**
      * Gets a list of Animations associated with the scene
      */
     public animations: Animation[] = [];
@@ -482,6 +503,35 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * The list of postprocesses added to the scene
      */
     public postProcesses: PostProcess[] = [];
+
+    /**
+     * The list of effect layers (highlights/glow) added to the scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/highlightLayer
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/glowLayer
+     */
+    public effectLayers: Array<EffectLayer> = [];
+
+    /**
+     * The list of sounds used in the scene.
+     */
+    public sounds: Nullable<Array<Sound>> = null;
+
+    /**
+     * The list of layers (background and foreground) of the scene
+     */
+    public layers: Array<Layer> = [];
+
+    /**
+     * The list of lens flare system added to the scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/lenseFlare
+     */
+    public lensFlareSystems: Array<LensFlareSystem> = [];
+
+    /**
+     * The list of procedural textures added to the scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/proceduralTextures
+     */
+    public proceduralTextures: Array<ProceduralTexture> = [];
 
     /**
      * @returns all meshes, lights, cameras, transformNodes and bones
@@ -5064,7 +5114,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         this.importedMeshesFiles = [] as string[];
 
-        if (this.stopAllAnimations) {
+        if (this._activeAnimatables && this.stopAllAnimations) {
             // Ensures that no animatable notifies a callback that could start a new animation group, constantly adding new animatables to the active list...
             this._activeAnimatables.forEach((animatable) => {
                 animatable.onAnimationEndObservable.clear();
@@ -5377,11 +5427,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      */
     public createPickingRayInCameraSpaceToRef(x: number, y: number, result: Ray, camera?: Camera): Scene {
         throw _WarnImport("Ray");
-    }
-
-    /** @internal */
-    public get _pickingAvailable(): boolean {
-        return false;
     }
 
     /** @internal */

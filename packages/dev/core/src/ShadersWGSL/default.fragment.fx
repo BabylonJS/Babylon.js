@@ -198,7 +198,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #ifdef RGBDLIGHTMAP
         lightmapColor = vec4f(fromRGBD(lightmapColor), lightmapColor.a);
     #endif
-	lightmapColor = vec4f(lightmapColor.rgb * vLightmapInfos.y, lightmapColor.a);
+	lightmapColor = vec4f(lightmapColor.rgb * uniforms.vLightmapInfos.y, lightmapColor.a);
 #endif
 
 #include<lightFragment>[0..maxSimultaneousLights]

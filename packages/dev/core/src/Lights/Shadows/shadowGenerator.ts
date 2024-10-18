@@ -1041,8 +1041,9 @@ export class ShadowGenerator implements IShadowGenerator {
             if (shadowMap) {
                 this._scene.postProcessManager.directRender(this._blurPostProcesses, shadowMap.renderTarget, true);
                 engine.unBindFramebuffer(shadowMap.renderTarget!, true);
-                engine._debugPopGroup?.(1);
             }
+
+            engine._debugPopGroup?.(1);
         });
 
         // Clear according to the chosen filter.

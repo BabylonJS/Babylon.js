@@ -1,4 +1,4 @@
-import type { Animatable } from "./animatable";
+import type { Animatable } from "./animatable.core";
 import { Animation } from "./animation";
 import type { IMakeAnimationAdditiveOptions } from "./animation";
 import type { IAnimationKey } from "./animationKey";

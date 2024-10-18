@@ -1,5 +1,82 @@
 # Changelog
 
+## 7.30.0
+
+### Core
+
+- Allow users to clear code cache - by [deltakosh](https://github.com/deltakosh) ([#15706](https://github.com/BabylonJS/Babylon.js/pull/15706))
+- WebGPU: Fix requestAdapterInfo removed from the spec - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15702](https://github.com/BabylonJS/Babylon.js/pull/15702))
+- WebGPU: Fix crash when using lightmaps - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15701](https://github.com/BabylonJS/Babylon.js/pull/15701))
+- Add shader rendering support for Lattice - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15700](https://github.com/BabylonJS/Babylon.js/pull/15700))
+- Prevent multiple SpriteRenderers from repeatedly initializing the same shader - by [bmcbarron](https://github.com/bmcbarron) ([#15696](https://github.com/BabylonJS/Babylon.js/pull/15696))
+- Null engine: no flushFramebuffer - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15695](https://github.com/BabylonJS/Babylon.js/pull/15695))
+- WebGPU: Remove "unreachable code" warnings - by [Popov72](https://github.com/Popov72) ([#15694](https://github.com/BabylonJS/Babylon.js/pull/15694))
+- Fix screen capture bug with webgpu - by [deltakosh](https://github.com/deltakosh) ([#15693](https://github.com/BabylonJS/Babylon.js/pull/15693))
+- Add lattice support for NGE - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15690](https://github.com/BabylonJS/Babylon.js/pull/15690))
+- Added options to SpriteManager - by [RolandCsibrei](https://github.com/RolandCsibrei) ([#15688](https://github.com/BabylonJS/Babylon.js/pull/15688))
+- Clamp Node - Expose Min, Max as Inputs - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15687](https://github.com/BabylonJS/Babylon.js/pull/15687))
+
+### Serializers
+
+- Export camera to usdz - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15708](https://github.com/BabylonJS/Babylon.js/pull/15708))
+- Usdz exporter - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15707](https://github.com/BabylonJS/Babylon.js/pull/15707))
+- make sure to export everything from the serializers index if not included in the others - by [RaananW](https://github.com/RaananW) ([#15704](https://github.com/BabylonJS/Babylon.js/pull/15704))
+
+## 7.29.0
+
+### Core
+
+- Mesh HotSpot - [_New Feature_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#15558](https://github.com/BabylonJS/Babylon.js/pull/15558))
+- WebGPU Snapshot rendering: add SnapshotRenderingHelper class - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#15676](https://github.com/BabylonJS/Babylon.js/pull/15676))
+- Add support for Lattice modifier - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15681](https://github.com/BabylonJS/Babylon.js/pull/15681))
+- Sprite maps: add fog and logarithmic depth support - by [Popov72](https://github.com/Popov72) ([#15675](https://github.com/BabylonJS/Babylon.js/pull/15675))
+- GreasedLine - setPoints update - by [RolandCsibrei](https://github.com/RolandCsibrei) ([#15674](https://github.com/BabylonJS/Babylon.js/pull/15674))
+- Erroneous morph target manager ids - by [HoferMarkus](https://github.com/HoferMarkus) ([#15669](https://github.com/BabylonJS/Babylon.js/pull/15669))
+- Global Illumination: Fix WGSL code - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15670](https://github.com/BabylonJS/Babylon.js/pull/15670))
+
+### GUI Editor
+
+- De-dupe some shared UI components - by [alexchuber](https://github.com/alexchuber) ([#15682](https://github.com/BabylonJS/Babylon.js/pull/15682))
+
+### Inspector
+
+- Typo in the Particle Editor - by [KarlKeiser](https://github.com/KarlKeiser) ([#15672](https://github.com/BabylonJS/Babylon.js/pull/15672))
+
+### Loaders
+
+- Supersplat file loading - [_New Feature_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#15673](https://github.com/BabylonJS/Babylon.js/pull/15673))
+
+### Node Editor
+
+- De-dupe some shared UI components - by [alexchuber](https://github.com/alexchuber) ([#15682](https://github.com/BabylonJS/Babylon.js/pull/15682))
+
+## 7.28.0
+
+### Core
+
+- Add an extractor node for NGE - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15666](https://github.com/BabylonJS/Babylon.js/pull/15666))
+- WebGPU: Fix buffer memory leak - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15662](https://github.com/BabylonJS/Babylon.js/pull/15662))
+
+## 7.27.3
+
+### Core
+
+- Fix es6 build - by [sebavan](https://github.com/sebavan) ([#15660](https://github.com/BabylonJS/Babylon.js/pull/15660))
+- Remove animation side effects - by [deltakosh](https://github.com/deltakosh) ([#15656](https://github.com/BabylonJS/Babylon.js/pull/15656))
+- Add a no side effect support for Ray - by [deltakosh](https://github.com/deltakosh) ([#15659](https://github.com/BabylonJS/Babylon.js/pull/15659))
+- The PointerInfo provided in onPointerObservable has an undefined pointerType on MacOS Safari - by [RolandCsibrei](https://github.com/RolandCsibrei) ([#15645](https://github.com/BabylonJS/Babylon.js/pull/15645))
+
+### Node Editor
+
+- Remove animation side effects - by [deltakosh](https://github.com/deltakosh) ([#15656](https://github.com/BabylonJS/Babylon.js/pull/15656))
+
+## 7.27.2
+
+### Core
+
+- Update effectRenderer.ts - by [RaananW](https://github.com/RaananW) ([#15657](https://github.com/BabylonJS/Babylon.js/pull/15657))
+- Allow users to provide their own custom rendering function for the scene - by [deltakosh](https://github.com/deltakosh) ([#15655](https://github.com/BabylonJS/Babylon.js/pull/15655))
+
 ## 7.27.1
 
 ### Core

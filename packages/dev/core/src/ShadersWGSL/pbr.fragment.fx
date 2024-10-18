@@ -169,7 +169,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         #endif
 
         #ifndef METALLIC_REFLECTANCE_USE_ALPHA_ONLY
-            metallicReflectanceFactors = vec4f(metallicReflectanceFactors.rgb * reflectanceFactorsMap.rgb, metallicReflectanceFactors.a);
+            metallicReflectanceFactors = vec4f(metallicReflectanceFactors.rgb * metallicReflectanceFactorsMap.rgb, metallicReflectanceFactors.a);
         #endif
         metallicReflectanceFactors *= metallicReflectanceFactorsMap.a;
     #endif
