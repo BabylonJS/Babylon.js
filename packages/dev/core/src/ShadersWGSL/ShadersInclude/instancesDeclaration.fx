@@ -10,7 +10,7 @@
         uniform world : mat4x4<f32>;
     #endif
 #if defined(VELOCITY) || defined(PREPASS_VELOCITY) ||                  \
-            defined(PREPASS_VELOCITY_LINEAR)
+            defined(PREPASS_VELOCITY_LINEAR) || defined(VELOCITY_LINEAR)
         attribute previousWorld0 : vec4<f32>;
         attribute previousWorld1 : vec4<f32>;
         attribute previousWorld2 : vec4<f32>;
@@ -24,7 +24,7 @@
 	    uniform world : mat4x4<f32>;
     #endif
 #if defined(VELOCITY) || defined(PREPASS_VELOCITY) ||              \
-                defined(PREPASS_VELOCITY_LINEAR)
+                defined(PREPASS_VELOCITY_LINEAR) || defined(VELOCITY_LINEAR)
             uniform previousWorld : mat4x4<f32>;
 #endif
 #endif
