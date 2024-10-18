@@ -61,7 +61,7 @@ export class FlowGraphGetPropertyBlock<P extends any, O extends FlowGraphAssetTy
         public override config: IFlowGraphGetPropertyBlockConfiguration<O>
     ) {
         super(config);
-        this.object = this.registerDataInput("target", RichTypeAny, config.object);
+        this.object = this.registerDataInput("object", RichTypeAny, config.object);
         this.propertyName = this.registerDataInput("propertyName", RichTypeAny, config.propertyName);
         this.value = this.registerDataOutput("value", RichTypeAny);
         this.isValid = this.registerDataOutput("isValid", RichTypeAny, false);

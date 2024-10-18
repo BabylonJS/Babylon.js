@@ -926,24 +926,30 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "pointer/get": {
         blocks: [FlowGraphBlockNames.GetProperty, FlowGraphBlockNames.JsonPointerParser],
         configuration: {
-            pointer: { name: "object;propertyName", isPointer: true },
+            pointer: { name: "jsonPointer", toBlock: FlowGraphBlockNames.JsonPointerParser },
         },
         inputs: {
             values: {
                 "[segment]": { name: "$1", toBlock: FlowGraphBlockNames.JsonPointerParser },
             },
         },
-        outputs: {
-            values: {
-                value: { name: "value" },
-                isValid: { name: "isValid" },
-            },
+        extraProcessor(_gltfBlock, _mapping, arrays, serializedObjects, _context, _globalGLTF) {
+            // connect the pointer to the getProperty block
+            connectFlowGraphNodes("object", "object", serializedObjects[0], serializedObjects[1], true);
+            connectFlowGraphNodes("propertyName", "propertyName", serializedObjects[0], serializedObjects[1], true);
+            return serializedObjects;
         },
+        // outputs: {
+        //     values: {
+        //         value: { name: "value" },
+        //         isValid: { name: "isValid" },
+        //     },
+        // },
     },
     "pointer/set": {
         blocks: [FlowGraphBlockNames.SetProperty],
         configuration: {
-            pointer: { name: "object;propertyName", isPointer: true },
+            pointer: { name: "jsonPointer", toBlock: FlowGraphBlockNames.JsonPointerParser },
         },
         inputs: {
             values: {
@@ -964,7 +970,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "pointer/interpolate": {
         blocks: [FlowGraphBlockNames.ValueInterpolation],
         configuration: {
-            pointer: { name: "object;propertyName", isPointer: true },
+            pointer: { name: "object;propertyName" },
         },
         inputs: {
             values: {

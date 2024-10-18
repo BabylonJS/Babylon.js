@@ -69,7 +69,7 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
         if (config.outputValue) {
             this.value = this.registerDataOutput("value", RichTypeAny);
         }
-        this.templateComponent = new FlowGraphPathConverterComponent(config.path, this);
+        this.templateComponent = new FlowGraphPathConverterComponent(config.jsonPointer, this);
     }
 
     public override _updateOutputs(context: FlowGraphContext) {

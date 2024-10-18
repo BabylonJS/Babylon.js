@@ -45,8 +45,20 @@ export class GLTFPathToObjectConverter<T> implements IPathToObjectConverter<T> {
         const parts = path.split("/");
         parts.shift();
 
+        //if the last part has ".length" in it, seperate that as an extra part
+        if (parts[parts.length - 1].includes(".length")) {
+            const lastPart = parts[parts.length - 1];
+            const split = lastPart.split(".");
+            parts.pop();
+            parts.push(...split);
+        }
+
         for (const part of parts) {
-            if (infoTree.__array__) {
+            const isLength = part === "length";
+            if (isLength && !infoTree.__array__) {
+                throw new Error(`Path ${path} is invalid`);
+            }
+            if (infoTree.__array__ && !isLength) {
                 infoTree = infoTree.__array__;
             } else {
                 infoTree = infoTree[part];
@@ -57,9 +69,11 @@ export class GLTFPathToObjectConverter<T> implements IPathToObjectConverter<T> {
             if (objectTree === undefined) {
                 throw new Error(`Path ${path} is invalid`);
             }
-            objectTree = objectTree[part];
+            if (!isLength) {
+                objectTree = objectTree[part];
+            }
 
-            if (infoTree.__target__) {
+            if (infoTree.__target__ || isLength) {
                 target = objectTree;
             }
         }
