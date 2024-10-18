@@ -1,11 +1,13 @@
-import { AbstractPostProcessImpl } from "./abstractPostProcessImpl";
-import type { Camera } from "core/Cameras";
-import type { CircleOfConfusionPostProcessOptions } from "./circleOfConfusionPostProcess";
+// eslint-disable-next-line import/no-internal-modules
+import type { Nullable, AbstractEngine, ThinPostProcessOptions } from "core/index";
+import { ThinPostProcess } from "./thinPostProcess";
+import type { Camera } from "core/Cameras/camera";
 
-/**
- * @internal
- */
-export class CircleOfConfusionPostProcessImpl extends AbstractPostProcessImpl {
+export interface ThinCircleOfConfusionPostProcessOptions extends ThinPostProcessOptions {
+    depthNotNormalized?: boolean;
+}
+
+export class ThinCircleOfConfusionPostProcess extends ThinPostProcess {
     public static readonly FragmentUrl = "circleOfConfusion";
 
     public static readonly Uniforms = ["cameraMinMaxZ", "focusDistance", "cocPrecalculation"];
@@ -14,14 +16,25 @@ export class CircleOfConfusionPostProcessImpl extends AbstractPostProcessImpl {
 
     public static readonly DefinesDepthNotNormalized = "#define COC_DEPTH_NOT_NORMALIZED";
 
-    public gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
+    public override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
-            this.postProcess._webGPUReady = true;
+            this._webGPUReady = true;
             list.push(import("../ShadersWGSL/circleOfConfusion.fragment"));
         } else {
             list.push(import("../Shaders/circleOfConfusion.fragment"));
         }
     }
+
+    constructor(name: string, engine: Nullable<AbstractEngine> = null, options?: ThinCircleOfConfusionPostProcessOptions) {
+        super(name, ThinCircleOfConfusionPostProcess.FragmentUrl, engine, {
+            uniforms: ThinCircleOfConfusionPostProcess.Uniforms,
+            samplers: ThinCircleOfConfusionPostProcess.Samplers,
+            defines: options?.depthNotNormalized ? ThinCircleOfConfusionPostProcess.DefinesDepthNotNormalized : undefined,
+            ...options,
+        });
+    }
+
+    public camera: Camera;
 
     /**
      * Max lens size in scene units/1000 (eg. millimeter). Standard cameras are 50mm. (default: 50) The diameter of the resulting aperture can be computed by lensSize/fStop.
@@ -43,13 +56,15 @@ export class CircleOfConfusionPostProcessImpl extends AbstractPostProcessImpl {
      */
     public focalLength = 50;
 
-    public bind(camera: Camera) {
-        const options = this.postProcess.options as CircleOfConfusionPostProcessOptions;
+    public override bind() {
+        super.bind();
+
+        const options = this.options as ThinCircleOfConfusionPostProcessOptions;
 
         const effect = this._drawWrapper.effect!;
 
         if (!options.depthNotNormalized) {
-            effect.setFloat2("cameraMinMaxZ", camera.minZ, camera.maxZ - camera.minZ);
+            effect.setFloat2("cameraMinMaxZ", this.camera.minZ, this.camera.maxZ - this.camera.minZ);
         }
 
         // Circle of confusion calculation, See https://developer.nvidia.com/gpugems/GPUGems/gpugems_ch23.html

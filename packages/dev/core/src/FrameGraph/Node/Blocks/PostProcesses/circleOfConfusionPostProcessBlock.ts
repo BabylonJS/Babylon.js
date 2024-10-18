@@ -9,6 +9,7 @@ import type { FrameGraphTextureHandle } from "../../../frameGraphTypes";
 import { FrameGraphCircleOfConfusionTask } from "core/FrameGraph/Tasks/PostProcesses/circleOfConfusionTask";
 import type { Camera } from "core/Cameras/camera";
 import type { FrameGraph } from "core/FrameGraph/frameGraph";
+import { ThinCircleOfConfusionPostProcess } from "core/PostProcesses/thinCircleOfConfusionPostProcess";
 
 /**
  * Block that implements the circle of confusion post process
@@ -44,7 +45,11 @@ export class NodeRenderGraphCircleOfConfusionPostProcessBlock extends NodeRender
             return this.destination.isConnected ? this.destination : this.source;
         };
 
-        this._frameGraphTask = new FrameGraphCircleOfConfusionTask(this.name, frameGraph, scene.getEngine());
+        this._frameGraphTask = new FrameGraphCircleOfConfusionTask(
+            this.name,
+            frameGraph,
+            new ThinCircleOfConfusionPostProcess(name, scene.getEngine(), { depthNotNormalized: true })
+        );
     }
 
     /** Sampling mode used to sample from the source texture */
@@ -70,41 +75,41 @@ export class NodeRenderGraphCircleOfConfusionPostProcessBlock extends NodeRender
     /** Max lens size in scene units/1000 (eg. millimeter). Standard cameras are 50mm. The diameter of the resulting aperture can be computed by lensSize/fStop. */
     @editableInPropertyPage("Lens size", PropertyTypeForEdition.Float, "PROPERTIES")
     public get lensSize(): number {
-        return this._frameGraphTask.properties.lensSize;
+        return this._frameGraphTask.postProcess.lensSize;
     }
 
     public set lensSize(value: number) {
-        this._frameGraphTask.properties.lensSize = value;
+        this._frameGraphTask.postProcess.lensSize = value;
     }
 
     /** F-Stop of the effect's camera. The diameter of the resulting aperture can be computed by lensSize/fStop */
     @editableInPropertyPage("F-Stop", PropertyTypeForEdition.Float, "PROPERTIES")
     public get fStop(): number {
-        return this._frameGraphTask.properties.fStop;
+        return this._frameGraphTask.postProcess.fStop;
     }
 
     public set fStop(value: number) {
-        this._frameGraphTask.properties.fStop = value;
+        this._frameGraphTask.postProcess.fStop = value;
     }
 
     /** Distance away from the camera to focus on in scene units/1000 (eg. millimeter) */
     @editableInPropertyPage("Focus distance", PropertyTypeForEdition.Float, "PROPERTIES")
     public get focusDistance(): number {
-        return this._frameGraphTask.properties.focusDistance;
+        return this._frameGraphTask.postProcess.focusDistance;
     }
 
     public set focusDistance(value: number) {
-        this._frameGraphTask.properties.focusDistance = value;
+        this._frameGraphTask.postProcess.focusDistance = value;
     }
 
     /** Focal length of the effect's camera in scene units/1000 (eg. millimeter) */
     @editableInPropertyPage("Focal length", PropertyTypeForEdition.Float, "PROPERTIES")
     public get focalLength(): number {
-        return this._frameGraphTask.properties.focalLength;
+        return this._frameGraphTask.postProcess.focalLength;
     }
 
     public set focalLength(value: number) {
-        this._frameGraphTask.properties.focalLength = value;
+        this._frameGraphTask.postProcess.focalLength = value;
     }
 
     /**

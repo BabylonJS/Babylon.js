@@ -1,21 +1,27 @@
+// eslint-disable-next-line import/no-internal-modules
+import type { Nullable, AbstractEngine, ThinPostProcessOptions } from "core/index";
+import { ThinPostProcess } from "./thinPostProcess";
 import { ToGammaSpace } from "../Maths/math.constants";
-import { AbstractPostProcessImpl } from "./abstractPostProcessImpl";
 
-/**
- * @internal
- */
-export class ExtractHighlightsPostProcessImpl extends AbstractPostProcessImpl {
+export class ThinExtractHighlightsPostProcess extends ThinPostProcess {
     public static readonly FragmentUrl = "extractHighlights";
 
     public static readonly Uniforms = ["threshold", "exposure"];
 
-    public gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
+    public override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
-            this.postProcess._webGPUReady = true;
+            this._webGPUReady = true;
             list.push(import("../ShadersWGSL/extractHighlights.fragment"));
         } else {
             list.push(import("../Shaders/extractHighlights.fragment"));
         }
+    }
+
+    constructor(name: string, engine: Nullable<AbstractEngine> = null, options?: ThinPostProcessOptions) {
+        super(name, ThinExtractHighlightsPostProcess.FragmentUrl, engine, {
+            uniforms: ThinExtractHighlightsPostProcess.Uniforms,
+            ...options,
+        });
     }
 
     /**
@@ -26,7 +32,9 @@ export class ExtractHighlightsPostProcessImpl extends AbstractPostProcessImpl {
     /** @internal */
     public _exposure = 1;
 
-    public bind() {
+    public override bind() {
+        super.bind();
+
         const effect = this._drawWrapper.effect!;
 
         effect.setFloat("threshold", Math.pow(this.threshold, ToGammaSpace));

@@ -6,7 +6,7 @@ import { PostProcess } from "./postProcess";
 import { Constants } from "../Engines/constants";
 
 import type { AbstractEngine } from "core/Engines/abstractEngine";
-import { DepthOfFieldMergePostProcessImpl } from "./depthOfFieldMergePostProcessImpl";
+import { ThinDepthOfFieldMergePostProcess } from "./thinDepthOfFieldMergePostProcess";
 
 /**
  * The DepthOfFieldMergePostProcess merges blurred images with the original based on the values of the circle of confusion.
@@ -47,16 +47,21 @@ export class DepthOfFieldMergePostProcess extends PostProcess {
         textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false
     ) {
-        super(name, DepthOfFieldMergePostProcessImpl.FragmentUrl, {
-            samplers: DepthOfFieldMergePostProcessImpl.Samplers,
+        const localOptions = {
+            samplers: ThinDepthOfFieldMergePostProcess.Samplers,
+            size: typeof options === "number" ? options : undefined,
             camera,
             samplingMode,
             engine,
             reusable,
             textureType,
-            implementation: typeof options === "number" || !options.implementation ? new DepthOfFieldMergePostProcessImpl() : undefined,
             ...(options as PostProcessOptions),
             blockCompilation: true,
+        };
+
+        super(name, ThinDepthOfFieldMergePostProcess.FragmentUrl, {
+            thinPostProcess: typeof options === "number" || !options.thinPostProcess ? new ThinDepthOfFieldMergePostProcess(name, engine, localOptions) : undefined,
+            ...localOptions,
         });
 
         this.externalTextureSamplerBinding = true;

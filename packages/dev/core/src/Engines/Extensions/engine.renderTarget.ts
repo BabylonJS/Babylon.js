@@ -306,8 +306,8 @@ ThinEngine.prototype._setupDepthStencilTexture = function (
     comparisonFunction: number,
     samples = 1
 ) {
-    const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
-    const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
+    const width = (<{ width: number; height: number; layers?: number }>size).width ?? <number>size;
+    const height = (<{ width: number; height: number; layers?: number }>size).height ?? <number>size;
     const layers = (<{ width: number; height: number; depth?: number; layers?: number }>size).layers || 0;
     const depth = (<{ width: number; height: number; depth?: number; layers?: number }>size).depth || 0;
 

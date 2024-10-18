@@ -219,8 +219,8 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
     const framebuffer = gl.createFramebuffer();
     this._bindUnboundFramebuffer(framebuffer);
 
-    const width = (<{ width: number; height: number }>size).width || <number>size;
-    const height = (<{ width: number; height: number }>size).height || <number>size;
+    const width = (<{ width: number; height: number }>size).width ?? <number>size;
+    const height = (<{ width: number; height: number }>size).height ?? <number>size;
 
     const textures: InternalTexture[] = [];
     const attachments: number[] = [];

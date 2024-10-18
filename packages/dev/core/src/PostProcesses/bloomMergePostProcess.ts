@@ -8,7 +8,7 @@ import { Constants } from "../Engines/constants";
 
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "core/Misc";
-import { BloomMergePostProcessImpl } from "./bloomMergePostProcessImpl";
+import { ThinBloomMergePostProcess } from "./thinBloomMergePostProcess";
 
 /**
  * The BloomMergePostProcess merges blurred images with the original based on the values of the circle of confusion.
@@ -17,11 +17,11 @@ export class BloomMergePostProcess extends PostProcess {
     /** Weight of the bloom to be added to the original input. */
     @serialize()
     public get weight() {
-        return this._impl.weight;
+        return this._thinPostProcess.weight;
     }
 
     public set weight(value: number) {
-        this._impl.weight = value;
+        this._thinPostProcess.weight = value;
     }
 
     /**
@@ -32,7 +32,7 @@ export class BloomMergePostProcess extends PostProcess {
         return "BloomMergePostProcess";
     }
 
-    protected override _impl: BloomMergePostProcessImpl;
+    protected override _thinPostProcess: ThinBloomMergePostProcess;
 
     /**
      * Creates a new instance of @see BloomMergePostProcess
@@ -61,9 +61,9 @@ export class BloomMergePostProcess extends PostProcess {
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false
     ) {
-        super(name, BloomMergePostProcessImpl.FragmentUrl, {
-            uniforms: BloomMergePostProcessImpl.Uniforms,
-            samplers: BloomMergePostProcessImpl.Samplers,
+        const localOptions = {
+            uniforms: ThinBloomMergePostProcess.Uniforms,
+            samplers: ThinBloomMergePostProcess.Samplers,
             size: typeof options === "number" ? options : undefined,
             camera,
             samplingMode,
@@ -71,8 +71,12 @@ export class BloomMergePostProcess extends PostProcess {
             reusable,
             textureType,
             blockCompilation: true,
-            implementation: typeof options === "number" || !options.implementation ? new BloomMergePostProcessImpl() : undefined,
             ...(options as PostProcessOptions),
+        };
+
+        super(name, ThinBloomMergePostProcess.FragmentUrl, {
+            thinPostProcess: typeof options === "number" || !options.thinPostProcess ? new ThinBloomMergePostProcess(name, engine, localOptions) : undefined,
+            ...localOptions,
         });
 
         this.weight = weight;
@@ -80,7 +84,6 @@ export class BloomMergePostProcess extends PostProcess {
         this.onApplyObservable.add((effect: Effect) => {
             effect.setTextureFromPostProcess("textureSampler", originalFromInput);
             effect.setTextureFromPostProcessOutput("bloomBlur", blurred);
-            this._impl.bind();
         });
 
         if (!blockCompilation) {

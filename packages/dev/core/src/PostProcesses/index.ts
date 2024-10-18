@@ -1,5 +1,4 @@
 /* eslint-disable import/no-internal-modules */
-export * from "./abstractPostProcessImpl";
 export * from "./anaglyphPostProcess";
 export * from "./blackAndWhitePostProcess";
 export * from "./bloomEffect";
@@ -22,7 +21,6 @@ export * from "./imageProcessingPostProcess";
 export * from "./motionBlurPostProcess";
 export * from "./passPostProcess";
 export * from "./postProcess";
-export * from "./postProcessCore";
 export * from "./postProcessManager";
 export * from "./refractionPostProcess";
 export * from "./RenderPipeline/index";
@@ -34,6 +32,14 @@ export * from "./vrDistortionCorrectionPostProcess";
 export * from "./vrMultiviewToSingleviewPostProcess";
 export * from "./screenSpaceReflectionPostProcess";
 export * from "./screenSpaceCurvaturePostProcess";
+
+export * from "./thinBlackAndWhitePostProcess";
+export * from "./thinBloomEffect";
+export * from "./thinBlurPostProcess";
+export * from "./thinCircleOfConfusionPostProcess";
+export * from "./thinDepthOfFieldEffect";
+export * from "./thinExtractHighlightsPostProcess";
+export * from "./thinPostProcess";
 
 // Postprocess
 export * from "../Shaders/postprocess.vertex";

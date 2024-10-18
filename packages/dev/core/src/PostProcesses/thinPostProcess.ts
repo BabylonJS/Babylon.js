@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { Nullable, Effect, IVector2Like, IColor4Like, AbstractEngine, IInspectable, Animation, AbstractPostProcessImpl, NonNullableFields } from "core/index";
-import { Observable } from "../Misc/observable";
+import type { Nullable, Effect, AbstractEngine, NonNullableFields } from "core/index";
 import { Constants } from "../Engines/constants";
+import { Observable } from "../Misc/observable";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
 import { EngineStore } from "core/Engines/engineStore";
@@ -9,7 +9,7 @@ import { EngineStore } from "core/Engines/engineStore";
 /**
  * Allows for custom processing of the shader code used by a post process
  */
-export type PostProcessCoreCustomShaderCodeProcessing = {
+export type ThinPostProcessCustomShaderCodeProcessing = {
     /**
      * If provided, will be called two times with the vertex and fragment code so that this code can be updated after the #include have been processed
      */
@@ -31,7 +31,7 @@ export type PostProcessCoreCustomShaderCodeProcessing = {
 /**
  * Options for the PostProcess constructor
  */
-export type PostProcessCoreOptions = {
+export type ThinPostProcessOptions = {
     /**
      * The list of uniforms used in the shader (if any)
      */
@@ -48,12 +48,6 @@ export type PostProcessCoreOptions = {
      * String of defines that will be set when running the fragment shader. (default: null)
      */
     defines?: Nullable<string>;
-    /**
-     * The size of the post process texture.
-     * It is either a ratio to downscale or upscale the texture create for this post process, or an object containing width and height values.
-     * Default: 1
-     */
-    size?: number | { width: number; height: number };
     /**
      * The url of the vertex shader to be used. (default: "postprocess")
      */
@@ -75,35 +69,33 @@ export type PostProcessCoreOptions = {
      * Defines additional code to call to prepare the shader code
      */
     extraInitializations?: (useWebGPU: boolean, list: Promise<any>[]) => void;
-
-    implementation?: AbstractPostProcessImpl;
 };
 
-export class PostProcessCore {
+export class ThinPostProcess {
     /**
      * Force all the postprocesses to compile to glsl even on WebGPU engines.
      * False by default. This is mostly meant for backward compatibility.
      */
     public static ForceGLSL = false;
 
-    private static _CustomShaderCodeProcessing: { [postProcessName: string]: PostProcessCoreCustomShaderCodeProcessing } = {};
+    private static _CustomShaderCodeProcessing: { [postProcessName: string]: ThinPostProcessCustomShaderCodeProcessing } = {};
 
     /**
      * Registers a shader code processing with a post process name.
      * @param postProcessName name of the post process. Use null for the fallback shader code processing. This is the shader code processing that will be used in case no specific shader code processing has been associated to a post process name
      * @param customShaderCodeProcessing shader code processing to associate to the post process name
      */
-    public static RegisterShaderCodeProcessing(postProcessName: Nullable<string>, customShaderCodeProcessing?: PostProcessCoreCustomShaderCodeProcessing) {
+    public static RegisterShaderCodeProcessing(postProcessName: Nullable<string>, customShaderCodeProcessing?: ThinPostProcessCustomShaderCodeProcessing) {
         if (!customShaderCodeProcessing) {
-            delete PostProcessCore._CustomShaderCodeProcessing[postProcessName ?? ""];
+            delete ThinPostProcess._CustomShaderCodeProcessing[postProcessName ?? ""];
             return;
         }
 
-        PostProcessCore._CustomShaderCodeProcessing[postProcessName ?? ""] = customShaderCodeProcessing;
+        ThinPostProcess._CustomShaderCodeProcessing[postProcessName ?? ""] = customShaderCodeProcessing;
     }
 
     private static _GetShaderCodeProcessing(postProcessName: string) {
-        return PostProcessCore._CustomShaderCodeProcessing[postProcessName] ?? PostProcessCore._CustomShaderCodeProcessing[""];
+        return ThinPostProcess._CustomShaderCodeProcessing[postProcessName] ?? ThinPostProcess._CustomShaderCodeProcessing[""];
     }
 
     /** Name of the PostProcess. */
@@ -115,113 +107,38 @@ export class PostProcessCore {
     public alphaMode = Constants.ALPHA_DISABLE;
 
     /**
-     * Sets the setAlphaBlendConstants of the babylon engine
-     */
-    public alphaConstants: IColor4Like;
-
-    /**
-     * Animations to be used for the post processing
-     */
-    public animations: Animation[] = [];
-
-    /**
-     * List of inspectable custom properties (used by the Inspector)
-     * @see https://doc.babylonjs.com/toolsAndResources/inspector#extensibility
-     */
-    public inspectableCustomProperties: IInspectable[];
-
-    /** @internal */
-    public _scaleRatio: IVector2Like = { x: 1, y: 1 };
-
-    /**
-     * Gets a string identifying the name of the class
-     * @returns "PostProcessCore" string
-     */
-    public getClassName(): string {
-        return "PostProcessCore";
-    }
-
-    /**
-     * Gets the engine which this post process belongs to.
-     * @returns The engine the post process was enabled with.
-     */
-    public getEngine(): AbstractEngine {
-        return this._engine;
-    }
-
-    /**
-     * The effect that is created when initializing the post process.
-     * @returns The created effect corresponding to the postprocess.
-     */
-    public getEffect(): Effect {
-        return this._drawWrapper.effect!;
-    }
-
-    /**
-     * The drawWrapper that is created when initializing the post process.
-     * @returns The created drawWrapper corresponding to the postprocess.
-     */
-    public getDrawWrapper(): DrawWrapper {
-        return this._drawWrapper;
-    }
-
-    /**
-     * Returns the fragment url or shader name used in the post process.
-     * @returns the fragment url or name in the shader store.
-     */
-    public getEffectName(): string {
-        return this._fragmentUrl;
-    }
-
-    /**
-     * Gets the shader language type used to generate vertex and fragment source code.
-     */
-    public get shaderLanguage(): ShaderLanguage {
-        return this.options.shaderLanguage;
-    }
-
-    /**
-     * If the post process is supported.
-     */
-    public get isSupported(): boolean {
-        return this._drawWrapper.effect!.isSupported;
-    }
-
-    public get implementation() {
-        return this._impl;
-    }
-
-    /**
-     * Get a value indicating if the post-process is ready to be used
-     * @returns true if the post-process is ready (shader is compiled)
-     */
-    public isReady(): boolean {
-        return this._drawWrapper.effect?.isReady() ?? false;
-    }
-
-    /**
-     * Options used to create the post process
-     */
-    public readonly options: Required<NonNullableFields<PostProcessCoreOptions>>;
-
-    /**
      * Executed when the effect was created
      * @returns effect that was created for this post process
      */
     public onEffectCreatedObservable = new Observable<Effect>(undefined, true);
 
     /**
-     * An event triggered when the postprocess applies its effect.
+     * Options used to create the post process
      */
-    public onApplyObservable = new Observable<Effect>();
+    public readonly options: Required<NonNullableFields<ThinPostProcessOptions>>;
+
+    /**
+     * Get a value indicating if the post-process is ready to be used
+     * @returns true if the post-process is ready (shader is compiled)
+     */
+    public isReady() {
+        return this._drawWrapper.effect?.isReady() ?? false;
+    }
+
+    /**
+     * Get the draw wrapper associated with the post process
+     * @returns the draw wrapper associated with the post process
+     */
+    public get drawWrapper() {
+        return this._drawWrapper;
+    }
 
     protected _engine: AbstractEngine;
-    protected _fragmentUrl: string;
     protected _drawWrapper: DrawWrapper;
+    protected _fragmentUrl: string;
     protected _shadersLoaded = false;
     /** @internal */
     public _webGPUReady = false;
-    protected _impl: Nullable<AbstractPostProcessImpl> = null;
 
     /**
      * Creates a new instance PostProcess
@@ -230,7 +147,7 @@ export class PostProcessCore {
      * @param engine The engine which the post process will be applied. (default: current engine)
      * @param options The options to be used when constructing the post process.
      */
-    constructor(name: string, fragmentUrl: string, engine: Nullable<AbstractEngine> = null, options?: PostProcessCoreOptions) {
+    constructor(name: string, fragmentUrl: string, engine: Nullable<AbstractEngine> = null, options?: ThinPostProcessOptions) {
         engine = engine || EngineStore.LastCreatedEngine;
 
         this.name = name;
@@ -243,26 +160,24 @@ export class PostProcessCore {
             samplers: options?.samplers ?? [],
             uniformBuffers: options?.uniformBuffers ?? [],
             defines: options?.defines ?? "",
-            size: options?.size ?? 1,
             vertexUrl: options?.vertexUrl ?? "postprocess",
             indexParameters: options?.indexParameters,
             blockCompilation: options?.blockCompilation ?? false,
             shaderLanguage: options?.shaderLanguage ?? ShaderLanguage.GLSL,
             extraInitializations: options?.extraInitializations ?? (undefined as any),
-            implementation: options?.implementation ?? (undefined as any),
         };
 
-        this.options.samplers.push("textureSampler");
-        this.options.uniforms.push("scale");
-
-        this._impl = this.options.implementation ?? null;
+        if (this.options.uniforms.indexOf("textureSampler") === -1) {
+            this.options.samplers.push("textureSampler");
+        }
+        if (this.options.uniforms.indexOf("scale") === -1) {
+            this.options.uniforms.push("scale");
+        }
 
         this._drawWrapper = new DrawWrapper(this._engine);
         this._webGPUReady = this.options.shaderLanguage === ShaderLanguage.WGSL;
 
-        this._postConstructor();
-
-        this._impl?.linkToPostProcess(this);
+        this._postConstructor(this.options.blockCompilation, this.options.defines, this.options.extraInitializations);
     }
 
     protected _gatherImports(useWebGPU = false, list: Promise<any>[]) {
@@ -276,21 +191,32 @@ export class PostProcessCore {
 
     private _importPromises: Array<Promise<any>> = [];
 
-    private _postConstructor() {
-        const useWebGPU = this._engine.isWebGPU && !PostProcessCore.ForceGLSL;
+    /** @internal */
+    public _postConstructor(
+        blockCompilation: boolean,
+        defines: Nullable<string> = null,
+        extraInitializations?: (useWebGPU: boolean, list: Promise<any>[]) => void,
+        importPromises?: Array<Promise<any>>
+    ) {
+        this._importPromises.length = 0;
+
+        if (importPromises) {
+            this._importPromises.push(...importPromises);
+        }
+
+        const useWebGPU = this._engine.isWebGPU && !ThinPostProcess.ForceGLSL;
 
         this._gatherImports(useWebGPU, this._importPromises);
-        this._impl?.gatherImports(useWebGPU, this._importPromises);
-        if (this.options.extraInitializations !== undefined) {
-            this.options.extraInitializations(useWebGPU, this._importPromises);
+        if (extraInitializations !== undefined) {
+            extraInitializations(useWebGPU, this._importPromises);
         }
 
         if (useWebGPU && this._webGPUReady) {
             this.options.shaderLanguage = ShaderLanguage.WGSL;
         }
 
-        if (!this.options.blockCompilation) {
-            this.updateEffect(this.options.defines);
+        if (!blockCompilation) {
+            this.updateEffect(defines);
         }
     }
 
@@ -315,7 +241,7 @@ export class PostProcessCore {
         vertexUrl?: string,
         fragmentUrl?: string
     ) {
-        const customShaderCodeProcessing = PostProcessCore._GetShaderCodeProcessing(this.name);
+        const customShaderCodeProcessing = ThinPostProcess._GetShaderCodeProcessing(this.name);
         if (customShaderCodeProcessing?.defineCustomBindings) {
             const newUniforms = uniforms?.slice() ?? [];
             newUniforms.push(...this.options.uniforms);
@@ -327,6 +253,8 @@ export class PostProcessCore {
             uniforms = newUniforms;
             samplers = newSamplers;
         }
+
+        this.options.defines = defines || "";
 
         this._drawWrapper.effect = this._engine.createEffect(
             { vertex: vertexUrl ?? this.options.vertexUrl, fragment: fragmentUrl ?? this._fragmentUrl },
@@ -359,24 +287,21 @@ export class PostProcessCore {
         this.onEffectCreatedObservable.notifyObservers(this._drawWrapper.effect);
     }
 
+    /**
+     * Binds the data to the effect.
+     */
     public bind() {
-        this._engine.setAlphaMode(this.alphaMode, true);
-        if (this.alphaConstants) {
-            this.getEngine().setAlphaConstants(this.alphaConstants.r, this.alphaConstants.g, this.alphaConstants.b, this.alphaConstants.a);
-        }
+        this._engine.setAlphaMode(this.alphaMode);
 
-        this._drawWrapper.effect!.setVector2("scale", this._scaleRatio);
+        this.drawWrapper.effect!.setFloat2("scale", 1, 1);
 
-        this.onApplyObservable.notifyObservers(this._drawWrapper.effect!);
-
-        PostProcessCore._GetShaderCodeProcessing(this.name)?.bindCustomBindings?.(this.name, this._drawWrapper.effect!);
+        ThinPostProcess._GetShaderCodeProcessing(this.name)?.bindCustomBindings?.(this.name, this._drawWrapper.effect!);
     }
 
     /**
      * Disposes the post process.
      */
     public dispose(): void {
-        this.onApplyObservable.clear();
         this.onEffectCreatedObservable.clear();
     }
 }

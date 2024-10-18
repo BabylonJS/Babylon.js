@@ -1,5 +1,4 @@
 import type { Nullable } from "../types";
-import { Vector2 } from "../Maths/math.vector";
 import type { Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
@@ -11,25 +10,10 @@ import { DepthOfFieldMergePostProcess } from "./depthOfFieldMergePostProcess";
 import type { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
-import { DepthOfFieldEffectImpl } from "./depthOfFieldEffectImpl";
+import { ThinDepthOfFieldEffectBlurLevel, ThinDepthOfFieldEffect } from "./thinDepthOfFieldEffect";
 
-/**
- * Specifies the level of max blur that should be applied when using the depth of field effect
- */
-export const enum DepthOfFieldEffectBlurLevel {
-    /**
-     * Subtle blur
-     */
-    Low,
-    /**
-     * Medium blur
-     */
-    Medium,
-    /**
-     * Large blur
-     */
-    High,
-}
+export { ThinDepthOfFieldEffectBlurLevel as DepthOfFieldEffectBlurLevel } from "./thinDepthOfFieldEffect";
+
 /**
  * The depth of field effect applies a blur to objects that are closer or further from where the camera is focusing.
  */
@@ -54,40 +38,40 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
      * The focal the length of the camera used in the effect in scene units/1000 (eg. millimeter)
      */
     public set focalLength(value: number) {
-        this._impl.focalLength = value;
+        this._thinDepthOfFieldEffect.focalLength = value;
     }
     public get focalLength() {
-        return this._impl.focalLength;
+        return this._thinDepthOfFieldEffect.focalLength;
     }
     /**
      * F-Stop of the effect's camera. The diameter of the resulting aperture can be computed by lensSize/fStop. (default: 1.4)
      */
     public set fStop(value: number) {
-        this._impl.fStop = value;
+        this._thinDepthOfFieldEffect.fStop = value;
     }
     public get fStop() {
-        return this._impl.fStop;
+        return this._thinDepthOfFieldEffect.fStop;
     }
     /**
      * Distance away from the camera to focus on in scene units/1000 (eg. millimeter). (default: 2000)
      */
     public set focusDistance(value: number) {
-        this._impl.focusDistance = value;
+        this._thinDepthOfFieldEffect.focusDistance = value;
     }
     public get focusDistance() {
-        return this._impl.focusDistance;
+        return this._thinDepthOfFieldEffect.focusDistance;
     }
     /**
      * Max lens size in scene units/1000 (eg. millimeter). Standard cameras are 50mm. (default: 50) The diameter of the resulting aperture can be computed by lensSize/fStop.
      */
     public set lensSize(value: number) {
-        this._impl.lensSize = value;
+        this._thinDepthOfFieldEffect.lensSize = value;
     }
     public get lensSize() {
-        return this._impl.lensSize;
+        return this._thinDepthOfFieldEffect.lensSize;
     }
 
-    private _impl: DepthOfFieldEffectImpl;
+    private _thinDepthOfFieldEffect: ThinDepthOfFieldEffect;
 
     /**
      * Creates a new instance DepthOfFieldEffect
@@ -101,7 +85,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
     constructor(
         sceneOrEngine: Scene | AbstractEngine,
         depthTexture: Nullable<RenderTargetTexture>,
-        blurLevel: DepthOfFieldEffectBlurLevel = DepthOfFieldEffectBlurLevel.Low,
+        blurLevel: ThinDepthOfFieldEffectBlurLevel = ThinDepthOfFieldEffectBlurLevel.Low,
         pipelineTextureType = 0,
         blockCompilation = false,
         depthNotNormalized = false
@@ -116,27 +100,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
             true
         );
 
-        let blurCount = 1;
-        let kernelSize = 15;
-        switch (blurLevel) {
-            case DepthOfFieldEffectBlurLevel.High: {
-                blurCount = 3;
-                kernelSize = 51;
-                break;
-            }
-            case DepthOfFieldEffectBlurLevel.Medium: {
-                blurCount = 2;
-                kernelSize = 31;
-                break;
-            }
-            default: {
-                kernelSize = 15;
-                blurCount = 1;
-                break;
-            }
-        }
-
-        this._impl = new DepthOfFieldEffectImpl(blurCount);
+        this._thinDepthOfFieldEffect = new ThinDepthOfFieldEffect("Depth of Field", engine, blurLevel);
 
         this._pipelineTextureType = pipelineTextureType;
 
@@ -155,7 +119,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
                 textureType: pipelineTextureType,
                 blockCompilation,
                 depthNotNormalized,
-                implementation: this._impl.circleOfConfusion,
+                thinPostProcess: this._thinDepthOfFieldEffect.circleOfConfusion,
             },
             null
         );
@@ -165,41 +129,44 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
         // See section 2.6.2 http://fileadmin.cs.lth.se/cs/education/edan35/lectures/12dof.pdf
         this._depthOfFieldBlurY = [];
         this._depthOfFieldBlurX = [];
-        const adjustedKernelSize = kernelSize / Math.pow(2, blurCount - 1);
-        let ratio = 1.0;
+
+        const blurCount = this._thinDepthOfFieldEffect.depthOfFieldBlurX.length;
+
         for (let i = 0; i < blurCount; i++) {
+            const [thinBlurY, ratioY] = this._thinDepthOfFieldEffect.depthOfFieldBlurY[i];
             const blurY = new DepthOfFieldBlurPostProcess(
                 "vertical blur",
                 null,
-                new Vector2(0, 1.0),
-                adjustedKernelSize,
+                thinBlurY.direction,
+                thinBlurY.kernel,
                 {
-                    size: ratio,
+                    size: ratioY,
                     samplingMode: Texture.BILINEAR_SAMPLINGMODE,
                     engine,
                     textureType: pipelineTextureType,
                     blockCompilation,
                     textureFormat: i == 0 ? circleOfConfusionTextureFormat : Constants.TEXTUREFORMAT_RGBA,
-                    implementation: this._impl.depthOfFieldBlurY[i],
+                    thinPostProcess: thinBlurY,
                 },
                 null,
                 this._circleOfConfusion,
                 i == 0 ? this._circleOfConfusion : null
             );
             blurY.autoClear = false;
-            ratio = 0.75 / Math.pow(2, i);
+
+            const [thinBlurX, ratioX] = this._thinDepthOfFieldEffect.depthOfFieldBlurX[i];
             const blurX = new DepthOfFieldBlurPostProcess(
                 "horizontal blur",
                 null,
-                new Vector2(1.0, 0),
-                adjustedKernelSize,
+                thinBlurX.direction,
+                thinBlurX.kernel,
                 {
-                    size: ratio,
+                    size: ratioX,
                     samplingMode: Texture.BILINEAR_SAMPLINGMODE,
                     engine,
                     textureType: pipelineTextureType,
                     blockCompilation,
-                    implementation: this._impl.depthOfFieldBlurX[i],
+                    thinPostProcess: thinBlurX,
                 },
                 null,
                 this._circleOfConfusion,
@@ -224,12 +191,12 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
             this._circleOfConfusion,
             this._depthOfFieldBlurX,
             {
-                size: ratio,
+                size: this._thinDepthOfFieldEffect.depthOfFieldBlurX[blurCount - 1][1],
                 samplingMode: Texture.BILINEAR_SAMPLINGMODE,
                 engine,
                 textureType: pipelineTextureType,
                 blockCompilation,
-                implementation: this._impl.dofMerge,
+                thinPostProcess: this._thinDepthOfFieldEffect.dofMerge,
             },
             null
         );
@@ -277,6 +244,6 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
      * @internal
      */
     public _isReady() {
-        return this._impl.isReady();
+        return this._thinDepthOfFieldEffect.isReady();
     }
 }

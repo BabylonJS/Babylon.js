@@ -10,11 +10,10 @@ import { Constants } from "../Engines/constants";
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "core/Misc";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
-import { CircleOfConfusionPostProcessImpl } from "./circleOfConfusionPostProcessImpl";
+import type { ThinCircleOfConfusionPostProcessOptions } from "./thinCircleOfConfusionPostProcess";
+import { ThinCircleOfConfusionPostProcess } from "./thinCircleOfConfusionPostProcess";
 
-export interface CircleOfConfusionPostProcessOptions extends PostProcessOptions {
-    depthNotNormalized?: boolean;
-}
+export type CircleOfConfusionPostProcessOptions = ThinCircleOfConfusionPostProcessOptions & PostProcessOptions;
 
 /**
  * The CircleOfConfusionPostProcess computes the circle of confusion value for each pixel given required lens parameters. See https://en.wikipedia.org/wiki/Circle_of_confusion
@@ -25,11 +24,11 @@ export class CircleOfConfusionPostProcess extends PostProcess {
      */
     @serialize()
     public get lensSize() {
-        return this._impl.lensSize;
+        return this._thinPostProcess.lensSize;
     }
 
     public set lensSize(value: number) {
-        this._impl.lensSize = value;
+        this._thinPostProcess.lensSize = value;
     }
 
     /**
@@ -37,11 +36,11 @@ export class CircleOfConfusionPostProcess extends PostProcess {
      */
     @serialize()
     public get fStop() {
-        return this._impl.fStop;
+        return this._thinPostProcess.fStop;
     }
 
     public set fStop(value: number) {
-        this._impl.fStop = value;
+        this._thinPostProcess.fStop = value;
     }
 
     /**
@@ -49,11 +48,11 @@ export class CircleOfConfusionPostProcess extends PostProcess {
      */
     @serialize()
     public get focusDistance() {
-        return this._impl.focusDistance;
+        return this._thinPostProcess.focusDistance;
     }
 
     public set focusDistance(value: number) {
-        this._impl.focusDistance = value;
+        this._thinPostProcess.focusDistance = value;
     }
 
     /**
@@ -61,11 +60,11 @@ export class CircleOfConfusionPostProcess extends PostProcess {
      */
     @serialize()
     public get focalLength() {
-        return this._impl.focalLength;
+        return this._thinPostProcess.focalLength;
     }
 
     public set focalLength(value: number) {
-        this._impl.focalLength = value;
+        this._thinPostProcess.focalLength = value;
     }
 
     /**
@@ -76,7 +75,7 @@ export class CircleOfConfusionPostProcess extends PostProcess {
         return "CircleOfConfusionPostProcess";
     }
 
-    protected override _impl: CircleOfConfusionPostProcessImpl;
+    protected override _thinPostProcess: ThinCircleOfConfusionPostProcess;
     private _depthTexture: Nullable<RenderTargetTexture> = null;
 
     /**
@@ -102,10 +101,10 @@ export class CircleOfConfusionPostProcess extends PostProcess {
         textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false
     ) {
-        super(name, CircleOfConfusionPostProcessImpl.FragmentUrl, {
-            uniforms: CircleOfConfusionPostProcessImpl.Uniforms,
-            samplers: CircleOfConfusionPostProcessImpl.Samplers,
-            defines: typeof options === "object" && options.depthNotNormalized ? CircleOfConfusionPostProcessImpl.DefinesDepthNotNormalized : undefined,
+        const localOptions = {
+            uniforms: ThinCircleOfConfusionPostProcess.Uniforms,
+            samplers: ThinCircleOfConfusionPostProcess.Samplers,
+            defines: typeof options === "object" && options.depthNotNormalized ? ThinCircleOfConfusionPostProcess.DefinesDepthNotNormalized : undefined,
             size: typeof options === "number" ? options : undefined,
             camera,
             samplingMode,
@@ -113,8 +112,12 @@ export class CircleOfConfusionPostProcess extends PostProcess {
             reusable,
             textureType,
             blockCompilation,
-            implementation: typeof options === "number" || !options.implementation ? new CircleOfConfusionPostProcessImpl() : undefined,
-            ...(options as CircleOfConfusionPostProcessOptions),
+            ...(options as PostProcessOptions),
+        };
+
+        super(name, ThinCircleOfConfusionPostProcess.FragmentUrl, {
+            thinPostProcess: typeof options === "number" || !options.thinPostProcess ? new ThinCircleOfConfusionPostProcess(name, engine, localOptions) : undefined,
+            ...localOptions,
         });
 
         this._depthTexture = depthTexture;
@@ -126,7 +129,7 @@ export class CircleOfConfusionPostProcess extends PostProcess {
 
             effect.setTexture("depthSampler", this._depthTexture);
 
-            this._impl.bind(this._depthTexture.activeCamera!);
+            this._thinPostProcess.camera = this._depthTexture.activeCamera!;
         });
     }
 

@@ -142,8 +142,8 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
         samples = options.samples ?? samples;
     }
 
-    const width = (<{ width: number; height: number }>size).width || <number>size;
-    const height = (<{ width: number; height: number }>size).height || <number>size;
+    const width = (<{ width: number; height: number }>size).width ?? <number>size;
+    const height = (<{ width: number; height: number }>size).height ?? <number>size;
 
     const textures: InternalTexture[] = [];
     const attachments: number[] = [];

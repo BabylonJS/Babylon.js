@@ -8,7 +8,7 @@ import { Constants } from "../Engines/constants";
 
 import { serialize } from "core/Misc";
 import { RegisterClass } from "../Misc/typeStore";
-import { ExtractHighlightsPostProcessImpl } from "./extractHighlightsPostProcessImpl";
+import { ThinExtractHighlightsPostProcess } from "./thinExtractHighlightsPostProcess";
 
 /**
  * The extract highlights post process sets all pixels to black except pixels above the specified luminance threshold. Used as the first step for a bloom effect.
@@ -19,21 +19,21 @@ export class ExtractHighlightsPostProcess extends PostProcess {
      */
     @serialize()
     public get threshold() {
-        return this._impl.threshold;
+        return this._thinPostProcess.threshold;
     }
 
     public set threshold(value: number) {
-        this._impl.threshold = value;
+        this._thinPostProcess.threshold = value;
     }
 
     /** @internal */
     public get _exposure() {
-        return this._impl._exposure;
+        return this._thinPostProcess._exposure;
     }
 
     /** @internal */
     public set _exposure(value: number) {
-        this._impl._exposure = value;
+        this._thinPostProcess._exposure = value;
     }
 
     /**
@@ -50,7 +50,7 @@ export class ExtractHighlightsPostProcess extends PostProcess {
         return "ExtractHighlightsPostProcess";
     }
 
-    protected override _impl: ExtractHighlightsPostProcessImpl;
+    protected override _thinPostProcess: ThinExtractHighlightsPostProcess;
 
     constructor(
         name: string,
@@ -62,8 +62,8 @@ export class ExtractHighlightsPostProcess extends PostProcess {
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false
     ) {
-        super(name, ExtractHighlightsPostProcessImpl.FragmentUrl, {
-            uniforms: ExtractHighlightsPostProcessImpl.Uniforms,
+        const localOptions = {
+            uniforms: ThinExtractHighlightsPostProcess.Uniforms,
             size: typeof options === "number" ? options : undefined,
             camera,
             samplingMode,
@@ -71,8 +71,12 @@ export class ExtractHighlightsPostProcess extends PostProcess {
             reusable,
             textureType,
             blockCompilation,
-            implementation: typeof options === "number" || !options.implementation ? new ExtractHighlightsPostProcessImpl() : undefined,
             ...(options as PostProcessOptions),
+        };
+
+        super(name, ThinExtractHighlightsPostProcess.FragmentUrl, {
+            thinPostProcess: typeof options === "number" || !options.thinPostProcess ? new ThinExtractHighlightsPostProcess(name, engine, localOptions) : undefined,
+            ...localOptions,
         });
 
         this.onApplyObservable.add((effect: Effect) => {
@@ -80,7 +84,6 @@ export class ExtractHighlightsPostProcess extends PostProcess {
             if (this._inputPostProcess) {
                 effect.setTextureFromPostProcess("textureSampler", this._inputPostProcess);
             }
-            this._impl.bind();
         });
     }
 }

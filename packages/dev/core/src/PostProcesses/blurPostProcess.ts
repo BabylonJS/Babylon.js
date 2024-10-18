@@ -12,7 +12,7 @@ import { SerializationHelper } from "../Misc/decorators.serialization";
 
 import type { Scene } from "../scene";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
-import { BlurPostProcessImpl } from "./blurPostProcessImpl";
+import { ThinBlurPostProcess } from "./thinBlurPostProcess";
 
 /**
  * The Blur Post Process which blurs an image based on a kernel and direction.
@@ -22,11 +22,11 @@ export class BlurPostProcess extends PostProcess {
     /** The direction in which to blur the image. */
     @serializeAsVector2()
     public get direction() {
-        return this._impl.direction;
+        return this._thinPostProcess.direction;
     }
 
     public set direction(value: Vector2) {
-        this._impl.direction = value;
+        this._thinPostProcess.direction = value;
     }
 
     /**
@@ -34,14 +34,14 @@ export class BlurPostProcess extends PostProcess {
      */
     @serialize()
     public set kernel(v: number) {
-        this._impl.kernel = v;
+        this._thinPostProcess.kernel = v;
     }
 
     /**
      * Gets the length in pixels of the blur sample region
      */
     public get kernel(): number {
-        return this._impl.kernel;
+        return this._thinPostProcess.kernel;
     }
 
     /**
@@ -49,14 +49,14 @@ export class BlurPostProcess extends PostProcess {
      */
     @serialize()
     public set packedFloat(v: boolean) {
-        this._impl.packedFloat = v;
+        this._thinPostProcess.packedFloat = v;
     }
 
     /**
      * Gets whether or not the blur is unpacking/repacking floats
      */
     public get packedFloat(): boolean {
-        return this._impl.packedFloat;
+        return this._thinPostProcess.packedFloat;
     }
 
     /**
@@ -67,7 +67,7 @@ export class BlurPostProcess extends PostProcess {
         return "BlurPostProcess";
     }
 
-    protected override _impl: BlurPostProcessImpl;
+    protected override _thinPostProcess: ThinBlurPostProcess;
 
     /**
      * Creates a new instance BlurPostProcess
@@ -98,29 +98,31 @@ export class BlurPostProcess extends PostProcess {
         _blockCompilation = false,
         textureFormat = Constants.TEXTUREFORMAT_RGBA
     ) {
-        super(name, BlurPostProcessImpl.FragmentUrl, {
-            uniforms: BlurPostProcessImpl.Uniforms,
-            samplers: BlurPostProcessImpl.Samplers,
+        const localOptions = {
+            uniforms: ThinBlurPostProcess.Uniforms,
+            samplers: ThinBlurPostProcess.Samplers,
             size: typeof options === "number" ? options : undefined,
             camera,
             samplingMode,
             engine,
             reusable,
             textureType,
-            vertexUrl: BlurPostProcessImpl.VertexUrl,
+            vertexUrl: ThinBlurPostProcess.VertexUrl,
             indexParameters: { varyingCount: 0, depCount: 0 },
             textureFormat,
             defines,
-            implementation: typeof options === "number" || !options.implementation ? new BlurPostProcessImpl() : undefined,
             ...(options as PostProcessOptions),
-            blockCompilation: true,
-        });
+        };
 
-        this._impl.updateEffectFunc = super.updateEffect.bind(this);
+        super(name, ThinBlurPostProcess.FragmentUrl, {
+            thinPostProcess: typeof options === "number" || !options.thinPostProcess ? new ThinBlurPostProcess(name, engine, direction, kernel, localOptions) : undefined,
+            ...localOptions,
+        });
 
         this.direction = direction;
         this.onApplyObservable.add(() => {
-            this._impl.bind(this._outputTexture ? this._outputTexture.width : this.width, this._outputTexture ? this._outputTexture.height : this.height);
+            this._thinPostProcess.textureWidth = this._outputTexture ? this._outputTexture.width : this.width;
+            this._thinPostProcess.textureHeight = this._outputTexture ? this._outputTexture.height : this.height;
         });
 
         this.kernel = kernel;
@@ -134,7 +136,7 @@ export class BlurPostProcess extends PostProcess {
         onCompiled?: (effect: Effect) => void,
         onError?: (effect: Effect, errors: string) => void
     ) {
-        this._impl.updateParameters(onCompiled, onError);
+        this._thinPostProcess.updateParameters(onCompiled, onError);
     }
 
     /**

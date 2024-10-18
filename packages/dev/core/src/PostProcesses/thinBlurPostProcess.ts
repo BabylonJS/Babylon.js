@@ -1,12 +1,12 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { PostProcessCore, Effect, Vector2, Nullable } from "core/index";
-import { AbstractPostProcessImpl } from "./abstractPostProcessImpl";
+import type { Nullable, AbstractEngine, ThinPostProcessOptions, Vector2, Effect } from "core/index";
+import { ThinPostProcess } from "./thinPostProcess";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
 
 /**
  * @internal
  */
-export class BlurPostProcessImpl extends AbstractPostProcessImpl {
+export class ThinBlurPostProcess extends ThinPostProcess {
     public static readonly VertexUrl = "kernelBlur";
 
     public static readonly FragmentUrl = "kernelBlur";
@@ -15,9 +15,9 @@ export class BlurPostProcessImpl extends AbstractPostProcessImpl {
 
     public static readonly Samplers = ["circleOfConfusionSampler"];
 
-    public gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
+    public override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
-            this.postProcess._webGPUReady = true;
+            this._webGPUReady = true;
             list.push(Promise.all([import("../ShadersWGSL/kernelBlur.fragment"), import("../ShadersWGSL/kernelBlur.vertex")]));
         } else {
             list.push(Promise.all([import("../Shaders/kernelBlur.fragment"), import("../Shaders/kernelBlur.vertex")]));
@@ -28,6 +28,25 @@ export class BlurPostProcessImpl extends AbstractPostProcessImpl {
     protected _idealKernel: number;
     protected _packedFloat: boolean = false;
     private _staticDefines: string = "";
+
+    constructor(name: string, engine: Nullable<AbstractEngine> = null, direction: Vector2, kernel: number, options?: ThinPostProcessOptions) {
+        super(name, ThinBlurPostProcess.FragmentUrl, engine, {
+            uniforms: ThinBlurPostProcess.Uniforms,
+            samplers: ThinBlurPostProcess.Samplers,
+            vertexUrl: ThinBlurPostProcess.VertexUrl,
+            ...options,
+            blockCompilation: true,
+        });
+
+        this.options.blockCompilation = false;
+
+        this.direction = direction;
+        this.kernel = kernel;
+    }
+
+    public textureWidth: number = 0;
+
+    public textureHeight: number = 0;
 
     /** The direction in which to blur the image. */
     public direction: Vector2;
@@ -43,7 +62,7 @@ export class BlurPostProcessImpl extends AbstractPostProcessImpl {
         v = Math.max(v, 1);
         this._idealKernel = v;
         this._kernel = this._nearestBestKernel(v);
-        if (!this.postProcess.options.blockCompilation) {
+        if (!this.options.blockCompilation) {
             this.updateParameters();
         }
     }
@@ -63,7 +82,7 @@ export class BlurPostProcessImpl extends AbstractPostProcessImpl {
             return;
         }
         this._packedFloat = v;
-        if (!this.postProcess.options.blockCompilation) {
+        if (!this.options.blockCompilation) {
             this.updateParameters();
         }
     }
@@ -75,22 +94,9 @@ export class BlurPostProcessImpl extends AbstractPostProcessImpl {
         return this._packedFloat;
     }
 
-    public updateEffectFunc?: (
-        defines: Nullable<string>,
-        uniforms: Nullable<string[]>,
-        samplers: Nullable<string[]>,
-        indexParameters?: any,
-        onCompiled?: (effect: Effect) => void,
-        onError?: (effect: Effect, errors: string) => void
-    ) => void;
-
-    public override linkToPostProcess(postProcess: PostProcessCore): void {
-        super.linkToPostProcess(postProcess);
-        this.postProcess.options.blockCompilation = false;
-    }
-
-    public bind(width: number, height: number) {
-        this._drawWrapper.effect!.setFloat2("delta", (1 / width) * this.direction.x, (1 / height) * this.direction.y);
+    public override bind() {
+        super.bind();
+        this._drawWrapper.effect!.setFloat2("delta", (1 / this.textureWidth) * this.direction.x, (1 / this.textureHeight) * this.direction.y);
     }
 
     public updateParameters(onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): void {
@@ -155,7 +161,7 @@ export class BlurPostProcessImpl extends AbstractPostProcessImpl {
         weights = linearSamplingWeights;
 
         // Generate shaders
-        const maxVaryingRows = this.postProcess.getEngine().getCaps().maxVaryingVectors - (this.postProcess.options.shaderLanguage === ShaderLanguage.WGSL ? 1 : 0); // Because of the additional builtins
+        const maxVaryingRows = this._engine.getCaps().maxVaryingVectors - (this.options.shaderLanguage === ShaderLanguage.WGSL ? 1 : 0); // Because of the additional builtins
         const freeVaryingVec2 = Math.max(maxVaryingRows, 0) - 1; // Because of sampleCenter
 
         let varyingCount = Math.min(offsets.length, freeVaryingVec2);
@@ -185,13 +191,9 @@ export class BlurPostProcessImpl extends AbstractPostProcessImpl {
             defines += `#define PACKEDFLOAT 1`;
         }
 
-        this.postProcess.options.blockCompilation = false;
+        this.options.blockCompilation = false;
 
-        if (!this.updateEffectFunc) {
-            this.updateEffectFunc = this.postProcess.updateEffect.bind(this.postProcess);
-        }
-
-        this.updateEffectFunc!(
+        this.updateEffect(
             defines,
             null,
             null,

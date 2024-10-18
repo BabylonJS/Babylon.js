@@ -7,8 +7,9 @@ import type { Scene } from "../../../../scene";
 import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
 import type { FrameGraphTextureHandle } from "../../../frameGraphTypes";
 import { FrameGraphBlurTask } from "core/FrameGraph/Tasks/PostProcesses/blurTask";
-import { Vector2 } from "core/Maths";
 import type { FrameGraph } from "core/FrameGraph/frameGraph";
+import { ThinBlurPostProcess } from "core/PostProcesses/thinBlurPostProcess";
+import { Vector2 } from "core/Maths/math.vector";
 
 /**
  * Block that implements the blur post process
@@ -42,7 +43,7 @@ export class NodeRenderGraphBlurPostProcessBlock extends NodeRenderGraphBlock {
             return this.destination.isConnected ? this.destination : this.source;
         };
 
-        this._frameGraphTask = new FrameGraphBlurTask(this.name, frameGraph, scene.getEngine(), new Vector2(1, 0), 32);
+        this._frameGraphTask = new FrameGraphBlurTask(this.name, frameGraph, new ThinBlurPostProcess(name, scene.getEngine(), new Vector2(1, 0), 32));
     }
 
     /** Sampling mode used to sample from the source texture */
@@ -58,21 +59,21 @@ export class NodeRenderGraphBlurPostProcessBlock extends NodeRenderGraphBlock {
     /** The direction in which to blur the image */
     @editableInPropertyPage("Direction", PropertyTypeForEdition.Vector2, "PROPERTIES")
     public get direction(): Vector2 {
-        return this._frameGraphTask.properties.direction;
+        return this._frameGraphTask.postProcess.direction;
     }
 
     public set direction(value: Vector2) {
-        this._frameGraphTask.properties.direction = value;
+        this._frameGraphTask.postProcess.direction = value;
     }
 
     /** Length in pixels of the blur sample region */
     @editableInPropertyPage("Kernel", PropertyTypeForEdition.Int, "PROPERTIES", { min: 1, max: 256 })
     public get kernel(): number {
-        return this._frameGraphTask.properties.kernel;
+        return this._frameGraphTask.postProcess.kernel;
     }
 
     public set kernel(value: number) {
-        this._frameGraphTask.properties.kernel = value;
+        this._frameGraphTask.postProcess.kernel = value;
     }
 
     /**

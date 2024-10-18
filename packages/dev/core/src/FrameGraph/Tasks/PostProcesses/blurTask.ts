@@ -1,28 +1,13 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { AbstractEngine, FrameGraph, FrameGraphRenderContext, FrameGraphRenderPass, PostProcessCoreOptions, Vector2 } from "core/index";
-import { FrameGraphPostProcessCoreTask } from "./postProcessCoreTask";
-import { PostProcessCore } from "core/PostProcesses/postProcessCore";
-import { BlurPostProcessImpl } from "core/PostProcesses/blurPostProcessImpl";
+import type { FrameGraph, FrameGraphRenderContext, FrameGraphRenderPass } from "core/index";
+import type { ThinBlurPostProcess } from "core/PostProcesses/thinBlurPostProcess";
+import { FrameGraphThinPostProcessTask } from "./thinPostProcessTask";
 
-export class FrameGraphBlurTask extends FrameGraphPostProcessCoreTask {
-    public override readonly properties: BlurPostProcessImpl;
+export class FrameGraphBlurTask extends FrameGraphThinPostProcessTask {
+    public override readonly postProcess: ThinBlurPostProcess;
 
-    constructor(name: string, frameGraph: FrameGraph, engine: AbstractEngine, direction: Vector2, kernel: number, options?: PostProcessCoreOptions) {
-        super(
-            name,
-            frameGraph,
-            new PostProcessCore(name, BlurPostProcessImpl.FragmentUrl, engine, {
-                uniforms: BlurPostProcessImpl.Uniforms,
-                samplers: BlurPostProcessImpl.Samplers,
-                vertexUrl: BlurPostProcessImpl.VertexUrl,
-                implementation: options?.implementation ?? new BlurPostProcessImpl(),
-                ...options,
-                blockCompilation: true,
-            })
-        );
-
-        this.properties.direction = direction;
-        this.properties.kernel = kernel;
+    constructor(name: string, frameGraph: FrameGraph, thinPostProcess: ThinBlurPostProcess) {
+        super(name, frameGraph, thinPostProcess);
     }
 
     public override record(
@@ -30,9 +15,11 @@ export class FrameGraphBlurTask extends FrameGraphPostProcessCoreTask {
         additionalExecute?: (context: FrameGraphRenderContext) => void,
         additionalBindings?: (context: FrameGraphRenderContext) => void
     ): FrameGraphRenderPass {
-        return super.record(skipCreationOfDisabledPasses, additionalExecute, (_context) => {
-            this.properties.bind(this._outputWidth, this._outputHeight);
-            additionalBindings?.(_context);
-        });
+        const pass = super.record(skipCreationOfDisabledPasses, additionalExecute, additionalBindings);
+
+        this.postProcess.textureWidth = this._outputWidth;
+        this.postProcess.textureHeight = this._outputHeight;
+
+        return pass;
     }
 }

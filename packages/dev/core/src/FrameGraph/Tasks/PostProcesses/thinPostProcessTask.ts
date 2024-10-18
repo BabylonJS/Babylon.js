@@ -1,4 +1,3 @@
-import type { PostProcessCore } from "core/PostProcesses/postProcessCore";
 import type { FrameGraph } from "../../frameGraph";
 import type { FrameGraphTextureHandle } from "../../frameGraphTypes";
 import type { DrawWrapper } from "core/Materials/drawWrapper";
@@ -6,9 +5,9 @@ import { Constants } from "core/Engines/constants";
 import type { FrameGraphRenderPass } from "core/FrameGraph/Passes/renderPass";
 import type { FrameGraphRenderContext } from "core/FrameGraph/frameGraphRenderContext";
 import { FrameGraphTask } from "../../frameGraphTask";
-import type { AbstractPostProcessImpl } from "core/PostProcesses/abstractPostProcessImpl";
+import type { ThinPostProcess } from "core/PostProcesses/thinPostProcess";
 
-export class FrameGraphPostProcessCoreTask extends FrameGraphTask {
+export class FrameGraphThinPostProcessTask extends FrameGraphTask {
     public sourceTexture: FrameGraphTextureHandle;
 
     public sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
@@ -17,25 +16,23 @@ export class FrameGraphPostProcessCoreTask extends FrameGraphTask {
 
     public readonly outputTexture: FrameGraphTextureHandle;
 
-    public readonly properties: AbstractPostProcessImpl;
+    public readonly postProcess: ThinPostProcess;
 
-    protected readonly _postProcess: PostProcessCore;
     protected readonly _postProcessDrawWrapper: DrawWrapper;
     protected _outputWidth: number;
     protected _outputHeight: number;
 
-    constructor(name: string, frameGraph: FrameGraph, postProcess: PostProcessCore) {
+    constructor(name: string, frameGraph: FrameGraph, postProcess: ThinPostProcess) {
         super(name, frameGraph);
 
-        this.properties = postProcess.implementation!;
-        this._postProcess = postProcess;
-        this._postProcessDrawWrapper = this._postProcess.getDrawWrapper();
+        this.postProcess = postProcess;
+        this._postProcessDrawWrapper = this.postProcess.drawWrapper;
 
         this.outputTexture = this._frameGraph.createDanglingHandle();
     }
 
     public override isReady() {
-        return this._postProcess.isReady();
+        return this.postProcess.isReady();
     }
 
     public override record(
@@ -67,9 +64,9 @@ export class FrameGraphPostProcessCoreTask extends FrameGraphTask {
             context.setTextureSamplingMode(this.sourceTexture, this.sourceSamplingMode);
             additionalExecute?.(context);
             context.applyFullScreenEffect(this._postProcessDrawWrapper, () => {
-                this._postProcess.bind();
                 context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "textureSampler", this.sourceTexture);
                 additionalBindings?.(context);
+                this.postProcess.bind();
             });
         });
 
@@ -86,7 +83,7 @@ export class FrameGraphPostProcessCoreTask extends FrameGraphTask {
     }
 
     public override dispose(): void {
-        this._postProcess.dispose();
+        this.postProcess.dispose();
         super.dispose();
     }
 }

@@ -8,6 +8,7 @@ import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState"
 import type { FrameGraphTextureHandle } from "../../../frameGraphTypes";
 import { FrameGraphBlackAndWhiteTask } from "core/FrameGraph/Tasks/PostProcesses/blackAndWhiteTask";
 import type { FrameGraph } from "core/FrameGraph/frameGraph";
+import { ThinBlackAndWhitePostProcess } from "core/PostProcesses/thinBlackAndWhitePostProcess";
 
 /**
  * Block that implements the black and white post process
@@ -41,7 +42,7 @@ export class NodeRenderGraphBlackAndWhitePostProcessBlock extends NodeRenderGrap
             return this.destination.isConnected ? this.destination : this.source;
         };
 
-        this._frameGraphTask = new FrameGraphBlackAndWhiteTask(this.name, frameGraph, scene.getEngine());
+        this._frameGraphTask = new FrameGraphBlackAndWhiteTask(this.name, frameGraph, new ThinBlackAndWhitePostProcess(name, scene.getEngine()));
     }
 
     /** Sampling mode used to sample from the source texture */
@@ -57,11 +58,11 @@ export class NodeRenderGraphBlackAndWhitePostProcessBlock extends NodeRenderGrap
     /** Degree of conversion to black and white (default: 1 - full b&w conversion) */
     @editableInPropertyPage("Degree", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 1 })
     public get degree(): number {
-        return this._frameGraphTask.properties.degree;
+        return this._frameGraphTask.postProcess.degree;
     }
 
     public set degree(value: number) {
-        this._frameGraphTask.properties.degree = value;
+        this._frameGraphTask.postProcess.degree = value;
     }
 
     /**

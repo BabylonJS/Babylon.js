@@ -8,6 +8,7 @@ import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState"
 import type { FrameGraphTextureHandle } from "../../../frameGraphTypes";
 import { FrameGraphExtractHighlightsTask } from "core/FrameGraph/Tasks/PostProcesses/extractHighlightsTask";
 import type { FrameGraph } from "core/FrameGraph/frameGraph";
+import { ThinExtractHighlightsPostProcess } from "core/PostProcesses/thinExtractHighlightsPostProcess";
 
 /**
  * Block that implements the extract highlights post process
@@ -41,7 +42,7 @@ export class NodeRenderGraphExtractHighlightsPostProcessBlock extends NodeRender
             return this.destination.isConnected ? this.destination : this.source;
         };
 
-        this._frameGraphTask = new FrameGraphExtractHighlightsTask(this.name, frameGraph, scene.getEngine());
+        this._frameGraphTask = new FrameGraphExtractHighlightsTask(this.name, frameGraph, new ThinExtractHighlightsPostProcess(name, scene.getEngine()));
     }
 
     /** Sampling mode used to sample from the source texture */
@@ -57,11 +58,11 @@ export class NodeRenderGraphExtractHighlightsPostProcessBlock extends NodeRender
     /** The luminance threshold, pixels below this value will be set to black. */
     @editableInPropertyPage("Threshold", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 1 })
     public get threshold(): number {
-        return this._frameGraphTask.properties.threshold;
+        return this._frameGraphTask.postProcess.threshold;
     }
 
     public set threshold(value: number) {
-        this._frameGraphTask.properties.threshold = value;
+        this._frameGraphTask.postProcess.threshold = value;
     }
 
     /**

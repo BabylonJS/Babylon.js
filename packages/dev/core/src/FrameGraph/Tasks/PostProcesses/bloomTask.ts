@@ -4,10 +4,9 @@ import { Constants } from "core/Engines/constants";
 import { FrameGraphBloomMergeTask } from "./bloomMergeTask";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { FrameGraphTask } from "../../frameGraphTask";
-import { BloomEffectImpl } from "core/PostProcesses/bloomEffectImpl";
+import { ThinBloomEffect } from "core/PostProcesses/thinBloomEffect";
 import { FrameGraphExtractHighlightsTask } from "./extractHighlightsTask";
 import { FrameGraphBlurTask } from "./blurTask";
-import { Vector2 } from "core/Maths/math.vector";
 
 export class FrameGraphBloomTask extends FrameGraphTask {
     public sourceTexture: FrameGraphTextureHandle;
@@ -18,7 +17,7 @@ export class FrameGraphBloomTask extends FrameGraphTask {
 
     public readonly outputTexture: FrameGraphTextureHandle;
 
-    public readonly properties: BloomEffectImpl;
+    public readonly bloom: ThinBloomEffect;
 
     private _downscale: FrameGraphExtractHighlightsTask;
     private _blurX: FrameGraphBlurTask;
@@ -39,21 +38,23 @@ export class FrameGraphBloomTask extends FrameGraphTask {
             }
         }
 
-        this.properties = new BloomEffectImpl(bloomScale);
+        this.bloom = new ThinBloomEffect(name, engine, bloomScale);
 
-        this._downscale = new FrameGraphExtractHighlightsTask(`${name} Downscale`, this._frameGraph, engine, { implementation: this.properties.downscale });
-        this._blurX = new FrameGraphBlurTask(`${name} Blur X`, this._frameGraph, engine, new Vector2(1, 0), kernel, { implementation: this.properties.blurX });
-        this._blurY = new FrameGraphBlurTask(`${name} Blur Y`, this._frameGraph, engine, new Vector2(0, 1), kernel, { implementation: this.properties.blurY });
-        this._merge = new FrameGraphBloomMergeTask(`${name} Merge`, this._frameGraph, engine, { implementation: this.properties.merge });
+        this._downscale = new FrameGraphExtractHighlightsTask(`${name} Downscale`, this._frameGraph, this.bloom.downscale);
+        this._blurX = new FrameGraphBlurTask(`${name} Blur X`, this._frameGraph, this.bloom.blurX);
+        this._blurY = new FrameGraphBlurTask(`${name} Blur Y`, this._frameGraph, this.bloom.blurY);
+        this._merge = new FrameGraphBloomMergeTask(`${name} Merge`, this._frameGraph, this.bloom.merge);
 
-        this._downscale.properties.threshold = threshold;
-        this._merge.properties.weight = weight;
+        this._downscale.postProcess.threshold = threshold;
+        this._blurX.postProcess.kernel = kernel;
+        this._blurY.postProcess.kernel = kernel;
+        this._merge.postProcess.weight = weight;
 
         this.outputTexture = this._frameGraph.createDanglingHandle();
     }
 
     public override isReady() {
-        return this.properties.isReady();
+        return this.bloom.isReady();
     }
 
     public override record(): void {
@@ -65,8 +66,8 @@ export class FrameGraphBloomTask extends FrameGraphTask {
 
         const textureCreationOptions: FrameGraphTextureCreationOptions = {
             size: {
-                width: Math.floor(sourceTextureDescription.size.width * this.properties.bloomScale),
-                height: Math.floor(sourceTextureDescription.size.height * this.properties.bloomScale),
+                width: Math.floor(sourceTextureDescription.size.width * this.bloom.bloomScale),
+                height: Math.floor(sourceTextureDescription.size.height * this.bloom.bloomScale),
             },
             options: {
                 createMipMaps: false,

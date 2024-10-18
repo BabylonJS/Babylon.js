@@ -1,27 +1,16 @@
-import { DepthOfFieldMergePostProcessImpl } from "core/PostProcesses/depthOfFieldMergePostProcessImpl";
+import type { ThinDepthOfFieldMergePostProcess } from "core/PostProcesses/thinDepthOfFieldMergePostProcess";
 import type { FrameGraph } from "../../frameGraph";
 import type { FrameGraphTextureHandle } from "../../frameGraphTypes";
 import type { FrameGraphRenderPass } from "core/FrameGraph/Passes/renderPass";
-import type { PostProcessCoreOptions } from "core/PostProcesses/postProcessCore";
-import { PostProcessCore } from "core/PostProcesses/postProcessCore";
-import { FrameGraphPostProcessCoreTask } from "./postProcessCoreTask";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { FrameGraphThinPostProcessTask } from "./thinPostProcessTask";
 
-export class FrameGraphDepthOfFieldMergeTask extends FrameGraphPostProcessCoreTask {
+export class FrameGraphDepthOfFieldMergeTask extends FrameGraphThinPostProcessTask {
     public circleOfConfusionTexture: FrameGraphTextureHandle;
 
     public blurSteps: FrameGraphTextureHandle[] = [];
 
-    constructor(name: string, frameGraph: FrameGraph, engine: AbstractEngine, options?: PostProcessCoreOptions) {
-        super(
-            name,
-            frameGraph,
-            new PostProcessCore(name, DepthOfFieldMergePostProcessImpl.FragmentUrl, engine, {
-                samplers: DepthOfFieldMergePostProcessImpl.Samplers,
-                implementation: options?.implementation ?? new DepthOfFieldMergePostProcessImpl(),
-                ...options,
-            })
-        );
+    constructor(name: string, frameGraph: FrameGraph, thinPostProcess: ThinDepthOfFieldMergePostProcess) {
+        super(name, frameGraph, thinPostProcess);
     }
 
     public override record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
@@ -29,7 +18,7 @@ export class FrameGraphDepthOfFieldMergeTask extends FrameGraphPostProcessCoreTa
             throw new Error(`FrameGraphBloomMergeTask "${this.name}": sourceTexture, circleOfConfusionTexture and blurSteps are required`);
         }
 
-        this._postProcess.updateEffect("#define BLUR_LEVEL " + (this.blurSteps.length - 1) + "\n");
+        this.postProcess.updateEffect("#define BLUR_LEVEL " + (this.blurSteps.length - 1) + "\n");
 
         const pass = super.record(skipCreationOfDisabledPasses, undefined, (context) => {
             context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "circleOfConfusionSampler", this.circleOfConfusionTexture);

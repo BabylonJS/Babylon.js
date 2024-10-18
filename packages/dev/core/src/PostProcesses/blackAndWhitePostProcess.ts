@@ -9,7 +9,7 @@ import { SerializationHelper } from "../Misc/decorators.serialization";
 import type { Nullable } from "../types";
 
 import type { Scene } from "../scene";
-import { BlackAndWhitePostProcessImpl } from "./blackAndWhitePostProcessImpl";
+import { ThinBlackAndWhitePostProcess } from "./thinBlackAndWhitePostProcess";
 
 /**
  * Post process used to render in black and white
@@ -20,11 +20,11 @@ export class BlackAndWhitePostProcess extends PostProcess {
      */
     @serialize()
     public get degree() {
-        return this._impl.degree;
+        return this._thinPostProcess.degree;
     }
 
     public set degree(value: number) {
-        this._impl.degree = value;
+        this._thinPostProcess.degree = value;
     }
 
     /**
@@ -35,7 +35,7 @@ export class BlackAndWhitePostProcess extends PostProcess {
         return "BlackAndWhitePostProcess";
     }
 
-    protected override _impl: BlackAndWhitePostProcessImpl;
+    protected override _thinPostProcess: ThinBlackAndWhitePostProcess;
 
     /**
      * Creates a black and white post process
@@ -48,19 +48,19 @@ export class BlackAndWhitePostProcess extends PostProcess {
      * @param reusable If the post process can be reused on the same frame. (default: false)
      */
     constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera> = null, samplingMode?: number, engine?: AbstractEngine, reusable?: boolean) {
-        super(name, BlackAndWhitePostProcessImpl.FragmentUrl, {
-            uniforms: BlackAndWhitePostProcessImpl.Uniforms,
+        const localOptions = {
+            uniforms: ThinBlackAndWhitePostProcess.Uniforms,
             size: typeof options === "number" ? options : undefined,
             camera,
             samplingMode,
             engine,
             reusable,
-            implementation: typeof options === "number" || !options.implementation ? new BlackAndWhitePostProcessImpl() : undefined,
             ...(options as PostProcessOptions),
-        });
+        };
 
-        this.onApplyObservable.add(() => {
-            this._impl.bind();
+        super(name, ThinBlackAndWhitePostProcess.FragmentUrl, {
+            thinPostProcess: typeof options === "number" || !options.thinPostProcess ? new ThinBlackAndWhitePostProcess(name, engine, localOptions) : undefined,
+            ...localOptions,
         });
     }
 

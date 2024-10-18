@@ -75,41 +75,41 @@ export class NodeRenderGraphDepthOfFieldPostProcessBlock extends NodeRenderGraph
     /** The focal the length of the camera used in the effect in scene units/1000 (eg. millimeter). */
     @editableInPropertyPage("Focal length", PropertyTypeForEdition.Float, "PROPERTIES")
     public get focalLength(): number {
-        return this._frameGraphTask.properties.focalLength;
+        return this._frameGraphTask.depthOfField.focalLength;
     }
 
     public set focalLength(value: number) {
-        this._frameGraphTask.properties.focalLength = value;
+        this._frameGraphTask.depthOfField.focalLength = value;
     }
 
     /** F-Stop of the effect's camera. The diameter of the resulting aperture can be computed by lensSize/fStop. */
     @editableInPropertyPage("F-Stop", PropertyTypeForEdition.Float, "PROPERTIES")
     public get fStop(): number {
-        return this._frameGraphTask.properties.fStop;
+        return this._frameGraphTask.depthOfField.fStop;
     }
 
     public set fStop(value: number) {
-        this._frameGraphTask.properties.fStop = value;
+        this._frameGraphTask.depthOfField.fStop = value;
     }
 
     /** Distance away from the camera to focus on in scene units/1000 (eg. millimeter). */
     @editableInPropertyPage("Focus distance", PropertyTypeForEdition.Float, "PROPERTIES")
     public get focusDistance(): number {
-        return this._frameGraphTask.properties.focusDistance;
+        return this._frameGraphTask.depthOfField.focusDistance;
     }
 
     public set focusDistance(value: number) {
-        this._frameGraphTask.properties.focusDistance = value;
+        this._frameGraphTask.depthOfField.focusDistance = value;
     }
 
     /** Max lens size in scene units/1000 (eg. millimeter). Standard cameras are 50mm. The diameter of the resulting aperture can be computed by lensSize/fStop. */
     @editableInPropertyPage("Lens size", PropertyTypeForEdition.Float, "PROPERTIES")
     public get lensSize(): number {
-        return this._frameGraphTask.properties.lensSize;
+        return this._frameGraphTask.depthOfField.lensSize;
     }
 
     public set lensSize(value: number) {
-        this._frameGraphTask.properties.lensSize = value;
+        this._frameGraphTask.depthOfField.lensSize = value;
     }
 
     /**

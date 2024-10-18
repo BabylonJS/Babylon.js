@@ -8,8 +8,7 @@ import { FrameGraphDepthOfFieldMergeTask } from "./depthOfFieldMergeTask";
 import { FrameGraphCircleOfConfusionTask } from "./circleOfConfusionTask";
 import { FrameGraphDepthOfFieldBlurTask } from "./depthOfFieldBlurTask";
 import type { Camera } from "core/Cameras/camera";
-import { DepthOfFieldEffectImpl } from "core/PostProcesses/depthOfFieldEffectImpl";
-import { Vector2 } from "core/Maths/math.vector";
+import { ThinDepthOfFieldEffect } from "core/PostProcesses/thinDepthOfFieldEffect";
 
 export class FrameGraphDepthOfFieldTask extends FrameGraphTask {
     public sourceTexture: FrameGraphTextureHandle;
@@ -26,7 +25,7 @@ export class FrameGraphDepthOfFieldTask extends FrameGraphTask {
 
     public readonly outputTexture: FrameGraphTextureHandle;
 
-    public readonly properties: DepthOfFieldEffectImpl;
+    public readonly depthOfField: ThinDepthOfFieldEffect;
 
     private _engine: AbstractEngine;
     private _circleOfConfusion: FrameGraphCircleOfConfusionTask;
@@ -50,52 +49,24 @@ export class FrameGraphDepthOfFieldTask extends FrameGraphTask {
             }
         }
 
-        let blurCount = 1;
-        let kernelSize = 15;
-        switch (blurLevel) {
-            case DepthOfFieldEffectBlurLevel.High: {
-                blurCount = 3;
-                kernelSize = 51;
-                break;
-            }
-            case DepthOfFieldEffectBlurLevel.Medium: {
-                blurCount = 2;
-                kernelSize = 31;
-                break;
-            }
-            default: {
-                kernelSize = 15;
-                blurCount = 1;
-                break;
-            }
-        }
+        this.depthOfField = new ThinDepthOfFieldEffect(name, engine, blurLevel);
 
-        this.properties = new DepthOfFieldEffectImpl(blurCount);
+        this._circleOfConfusion = new FrameGraphCircleOfConfusionTask(`${name} Circle of Confusion`, this._frameGraph, this.depthOfField.circleOfConfusion);
 
-        this._circleOfConfusion = new FrameGraphCircleOfConfusionTask(`${name} Circle of Confusion`, this._frameGraph, engine, {
-            implementation: this.properties.circleOfConfusion,
-        });
+        const blurCount = this.depthOfField.depthOfFieldBlurX.length;
 
         for (let i = 0; i < blurCount; i++) {
-            this._blurX.push(
-                new FrameGraphDepthOfFieldBlurTask(`${name} Blur X`, this._frameGraph, engine, new Vector2(1, 0), kernelSize, {
-                    implementation: this.properties.depthOfFieldBlurX[i],
-                })
-            );
-            this._blurY.push(
-                new FrameGraphDepthOfFieldBlurTask(`${name} Blur Y`, this._frameGraph, engine, new Vector2(0, 1), kernelSize, {
-                    implementation: this.properties.depthOfFieldBlurY[i],
-                })
-            );
+            this._blurX.push(new FrameGraphDepthOfFieldBlurTask(`${name} Blur X`, this._frameGraph, this.depthOfField.depthOfFieldBlurX[i][0]));
+            this._blurY.push(new FrameGraphDepthOfFieldBlurTask(`${name} Blur Y`, this._frameGraph, this.depthOfField.depthOfFieldBlurY[i][0]));
         }
 
-        this._merge = new FrameGraphDepthOfFieldMergeTask(`${name} Merge`, this._frameGraph, engine, { implementation: this.properties.dofMerge });
+        this._merge = new FrameGraphDepthOfFieldMergeTask(`${name} Merge`, this._frameGraph, this.depthOfField.dofMerge);
 
         this.outputTexture = this._frameGraph.createDanglingHandle();
     }
 
     public override isReady() {
-        return this.properties.isReady();
+        return this.depthOfField.isReady();
     }
 
     public override record(): void {
@@ -140,7 +111,7 @@ export class FrameGraphDepthOfFieldTask extends FrameGraphTask {
         const blurSteps: FrameGraphTextureHandle[] = [];
 
         for (let i = 0; i < this._blurX.length; i++) {
-            const ratio = 0.75 / (1 << i);
+            const ratio = this.depthOfField.depthOfFieldBlurX[i][1];
 
             textureSize.width = Math.floor(sourceTextureDescription.size.width * ratio);
             textureSize.height = Math.floor(sourceTextureDescription.size.height * ratio);

@@ -61,31 +61,31 @@ export class NodeRenderGraphBloomPostProcessBlock extends NodeRenderGraphBlock {
     /** The luminance threshold to find bright areas of the image to bloom. */
     @editableInPropertyPage("Threshold", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 2 })
     public get threshold(): number {
-        return this._frameGraphTask.properties.threshold;
+        return this._frameGraphTask.bloom.threshold;
     }
 
     public set threshold(value: number) {
-        this._frameGraphTask.properties.threshold = value;
+        this._frameGraphTask.bloom.threshold = value;
     }
 
     /** The strength of the bloom. */
     @editableInPropertyPage("Weight", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 3 })
     public get weight(): number {
-        return this._frameGraphTask.properties.weight;
+        return this._frameGraphTask.bloom.weight;
     }
 
     public set weight(value: number) {
-        this._frameGraphTask.properties.weight = value;
+        this._frameGraphTask.bloom.weight = value;
     }
 
     /** Specifies the size of the bloom blur kernel, relative to the final output size */
     @editableInPropertyPage("Kernel", PropertyTypeForEdition.Int, "PROPERTIES", { min: 1, max: 128 })
     public get kernel(): number {
-        return this._frameGraphTask.properties.kernel;
+        return this._frameGraphTask.bloom.kernel;
     }
 
     public set kernel(value: number) {
-        this._frameGraphTask.properties.kernel = value;
+        this._frameGraphTask.bloom.kernel = value;
     }
 
     /**

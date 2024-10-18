@@ -3,12 +3,11 @@ import type { PostProcess } from "./postProcess";
 import { ExtractHighlightsPostProcess } from "./extractHighlightsPostProcess";
 import { BlurPostProcess } from "./blurPostProcess";
 import { BloomMergePostProcess } from "./bloomMergePostProcess";
-import { Vector2 } from "../Maths/math.vector";
 import type { Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
 import type { Scene } from "../scene";
 import type { AbstractEngine } from "../Engines/abstractEngine";
-import { BloomEffectImpl } from "./bloomEffectImpl";
+import { ThinBloomEffect } from "./thinBloomEffect";
 
 /**
  * The bloom effect spreads bright areas of an image to simulate artifacts seen in cameras
@@ -35,37 +34,37 @@ export class BloomEffect extends PostProcessRenderEffect {
      * The luminance threshold to find bright areas of the image to bloom.
      */
     public get threshold(): number {
-        return this._impl.threshold;
+        return this._thinBloomEffect.threshold;
     }
     public set threshold(value: number) {
-        this._impl.threshold = value;
+        this._thinBloomEffect.threshold = value;
     }
 
     /**
      * The strength of the bloom.
      */
     public get weight(): number {
-        return this._impl.weight;
+        return this._thinBloomEffect.weight;
     }
     public set weight(value: number) {
-        this._impl.weight = value;
+        this._thinBloomEffect.weight = value;
     }
 
     /**
      * Specifies the size of the bloom blur kernel, relative to the final output size
      */
     public get kernel(): number {
-        return this._impl.kernel;
+        return this._thinBloomEffect.kernel;
     }
     public set kernel(value: number) {
-        this._impl.kernel = value;
+        this._thinBloomEffect.kernel = value;
     }
 
     public get bloomScale() {
-        return this._impl.bloomScale;
+        return this._thinBloomEffect.bloomScale;
     }
 
-    private _impl: BloomEffectImpl;
+    private _thinBloomEffect: ThinBloomEffect;
 
     /**
      * Creates a new instance of @see BloomEffect
@@ -87,7 +86,7 @@ export class BloomEffect extends PostProcessRenderEffect {
             true
         );
 
-        this._impl = new BloomEffectImpl(bloomScale);
+        this._thinBloomEffect = new ThinBloomEffect("bloom", engine, bloomScale);
 
         this._pipelineTextureType = pipelineTextureType;
 
@@ -97,27 +96,27 @@ export class BloomEffect extends PostProcessRenderEffect {
             engine,
             textureType: pipelineTextureType,
             blockCompilation,
-            implementation: this._impl.downscale,
+            thinPostProcess: this._thinBloomEffect.downscale,
         });
 
-        this._blurX = new BlurPostProcess("horizontal blur", new Vector2(1.0, 0), 10.0, {
+        this._blurX = new BlurPostProcess("horizontal blur", this._thinBloomEffect.blurX.direction, this._thinBloomEffect.blurX.kernel, {
             size: bloomScale,
             samplingMode: Texture.BILINEAR_SAMPLINGMODE,
             engine,
             textureType: pipelineTextureType,
             blockCompilation,
-            implementation: this._impl.blurX,
+            thinPostProcess: this._thinBloomEffect.blurX,
         });
         this._blurX.alwaysForcePOT = true;
         this._blurX.autoClear = false;
 
-        this._blurY = new BlurPostProcess("vertical blur", new Vector2(0, 1.0), 10.0, {
+        this._blurY = new BlurPostProcess("vertical blur", this._thinBloomEffect.blurY.direction, this._thinBloomEffect.blurY.kernel, {
             size: bloomScale,
             samplingMode: Texture.BILINEAR_SAMPLINGMODE,
             engine,
             textureType: pipelineTextureType,
             blockCompilation,
-            implementation: this._impl.blurY,
+            thinPostProcess: this._thinBloomEffect.blurY,
         });
         this._blurY.alwaysForcePOT = true;
         this._blurY.autoClear = false;
@@ -132,7 +131,7 @@ export class BloomEffect extends PostProcessRenderEffect {
             engine,
             textureType: pipelineTextureType,
             blockCompilation,
-            implementation: this._impl.merge,
+            thinPostProcess: this._thinBloomEffect.merge,
         });
         this._merge.autoClear = false;
         this._effects.push(this._merge);
@@ -163,6 +162,6 @@ export class BloomEffect extends PostProcessRenderEffect {
      * @internal
      */
     public _isReady() {
-        return this._impl.isReady();
+        return this._thinBloomEffect.isReady();
     }
 }

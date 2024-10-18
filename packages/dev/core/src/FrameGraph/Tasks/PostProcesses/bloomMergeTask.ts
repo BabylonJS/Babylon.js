@@ -1,25 +1,15 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { FrameGraph, FrameGraphTextureHandle, FrameGraphRenderPass, AbstractEngine, PostProcessCoreOptions } from "core/index";
-import { FrameGraphPostProcessCoreTask } from "./postProcessCoreTask";
-import { BloomMergePostProcessImpl } from "core/PostProcesses/bloomMergePostProcessImpl";
-import { PostProcessCore } from "core/PostProcesses/postProcessCore";
+import type { FrameGraph, FrameGraphTextureHandle, FrameGraphRenderPass } from "core/index";
+import type { ThinBloomMergePostProcess } from "core/PostProcesses/thinBloomMergePostProcess";
+import { FrameGraphThinPostProcessTask } from "./thinPostProcessTask";
 
-export class FrameGraphBloomMergeTask extends FrameGraphPostProcessCoreTask {
+export class FrameGraphBloomMergeTask extends FrameGraphThinPostProcessTask {
     public blurTexture: FrameGraphTextureHandle;
 
-    public override readonly properties: BloomMergePostProcessImpl;
+    public override readonly postProcess: ThinBloomMergePostProcess;
 
-    constructor(name: string, frameGraph: FrameGraph, engine: AbstractEngine, options?: PostProcessCoreOptions) {
-        super(
-            name,
-            frameGraph,
-            new PostProcessCore(name, BloomMergePostProcessImpl.FragmentUrl, engine, {
-                uniforms: BloomMergePostProcessImpl.Uniforms,
-                samplers: BloomMergePostProcessImpl.Samplers,
-                implementation: options?.implementation ?? new BloomMergePostProcessImpl(),
-                ...options,
-            })
-        );
+    constructor(name: string, frameGraph: FrameGraph, thinPostProcess: ThinBloomMergePostProcess) {
+        super(name, frameGraph, thinPostProcess);
     }
 
     public override record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
@@ -28,7 +18,6 @@ export class FrameGraphBloomMergeTask extends FrameGraphPostProcessCoreTask {
         }
 
         const pass = super.record(skipCreationOfDisabledPasses, undefined, (context) => {
-            this.properties.bind();
             context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "bloomBlur", this.blurTexture);
         });
 
