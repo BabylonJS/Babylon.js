@@ -39,12 +39,18 @@ export class FlowGraphSetPropertyBlock<P extends any, O extends FlowGraphAssetTy
     /**
      * Input connection: The target asset from which the property will be retrieved
      */
-    public readonly target: FlowGraphDataConnection<AssetType<O>>;
+    public readonly object: FlowGraphDataConnection<AssetType<O>>;
 
     /**
      * Input connection: The name of the property that will be set
      */
     public readonly propertyName: FlowGraphDataConnection<string>;
+
+    /**
+     * Input connection: A function that can be used to set the value of the property.
+     * If set it will be used instead of the default set function.
+     */
+    public readonly customSetFunction: FlowGraphDataConnection<(target: AssetType<O>, propertyName: string, value: P, context: FlowGraphContext) => void>;
 
     constructor(
         /**
@@ -53,15 +59,22 @@ export class FlowGraphSetPropertyBlock<P extends any, O extends FlowGraphAssetTy
         public override config: IFlowGraphSetPropertyBlockConfiguration<O>
     ) {
         super(config);
-        this.target = this.registerDataInput("target", RichTypeAny, config.target);
+        this.object = this.registerDataInput("object", RichTypeAny, config.target);
         this.value = this.registerDataInput("value", RichTypeAny);
         this.propertyName = this.registerDataInput("propertyName", RichTypeAny, config.propertyName);
+        this.customSetFunction = this.registerDataInput("customSetFunction", RichTypeAny);
     }
     public override _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
         try {
-            const target = this.target.getValue(context);
+            const target = this.object.getValue(context);
             const value = this.value.getValue(context);
-            this._setPropertyValue(target, this.propertyName.getValue(context), value);
+
+            const setFunction = this.customSetFunction.getValue(context);
+            if (setFunction) {
+                setFunction(target, this.propertyName.getValue(context), value, context);
+            } else {
+                this._setPropertyValue(target, this.propertyName.getValue(context), value);
+            }
         } catch (e) {
             this.error._activateSignal(context);
         }

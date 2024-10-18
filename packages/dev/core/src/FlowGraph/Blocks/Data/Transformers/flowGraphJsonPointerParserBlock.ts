@@ -47,6 +47,11 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
     public readonly value: FlowGraphDataConnection<P>;
 
     /**
+     * Output connection: A function that can be used to update the value of the property.
+     */
+    public readonly updateFunction: FlowGraphDataConnection<(target: O, propertyName: string, value: P, context: FlowGraphContext) => void>;
+
+    /**
      * Output connection: Whether the value is valid.
      */
     public readonly isValid: FlowGraphDataConnection<boolean>;
@@ -69,6 +74,7 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
         if (config.outputValue) {
             this.value = this.registerDataOutput("value", RichTypeAny);
         }
+        this.updateFunction = this.registerDataOutput("setFunction", RichTypeAny, this._setPropertyValue.bind(this));
         this.templateComponent = new FlowGraphPathConverterComponent(config.jsonPointer, this);
     }
 
@@ -98,6 +104,11 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
             this.isValid.setValue(false, context);
             return;
         }
+    }
+
+    private _setPropertyValue(_target: O, _propertyName: string, value: P, context: FlowGraphContext): void {
+        const accessorContainer = this.templateComponent.getAccessor(this.config.pathConverter, context);
+        accessorContainer.info.set(value, accessorContainer.object);
     }
 
     /**
