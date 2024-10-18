@@ -187,7 +187,7 @@ checkBabylonVersionAsync().then(() => {
                             nodeMaterial.setToDefaultProceduralTexture();
                             break;
                         case BABYLON.NodeMaterialModes.GaussianSplatting:
-                            nodeMaterial.setToDefaultGaussianSplatting();
+                            SetToDefaultGaussianSplatting(nodeMaterial);
                             break;
                     }
                     nodeMaterial.build(true);

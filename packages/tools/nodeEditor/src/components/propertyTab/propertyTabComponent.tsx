@@ -39,7 +39,7 @@ import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObj
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
-
+import { SetToDefaultGaussianSplatting } from "core/Materials/Node/nodeMaterialDefault";
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
     lockObject: LockObject;
@@ -364,7 +364,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     this.props.globalState.nodeMaterial!.setToDefaultProceduralTexture();
                     break;
                 case NodeMaterialModes.GaussianSplatting:
-                    this.props.globalState.nodeMaterial!.setToDefaultGaussianSplatting();
+                    SetToDefaultGaussianSplatting(this.props.globalState.nodeMaterial!);
                     break;
             }
         }
@@ -512,7 +512,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                         this.props.globalState.nodeMaterial!.setToDefaultProceduralTexture();
                                         break;
                                     case NodeMaterialModes.GaussianSplatting:
-                                        this.props.globalState.nodeMaterial!.setToDefaultGaussianSplatting();
+                                        SetToDefaultGaussianSplatting(this.props.globalState.nodeMaterial!);
                                         break;
                                 }
                                 this.props.globalState.onResetRequiredObservable.notifyObservers(true);

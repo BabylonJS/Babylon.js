@@ -35,9 +35,6 @@ import { CurrentScreenBlock } from "./Blocks/Dual/currentScreenBlock";
 import { ParticleTextureBlock } from "./Blocks/Particle/particleTextureBlock";
 import { ParticleRampGradientBlock } from "./Blocks/Particle/particleRampGradientBlock";
 import { ParticleBlendMultiplyBlock } from "./Blocks/Particle/particleBlendMultiplyBlock";
-import { GaussianSplattingBlock } from "./Blocks/GaussianSplatting/gaussianSplattingBlock";
-import { GaussianBlock } from "./Blocks/GaussianSplatting/gaussianBlock";
-import { SplatReaderBlock } from "./Blocks/GaussianSplatting/splatReaderBlock";
 import { EffectFallbacks } from "../effectFallbacks";
 import { WebRequest } from "../../Misc/webRequest";
 import type { PostProcessOptions } from "../../PostProcesses/postProcess";
@@ -2154,65 +2151,6 @@ export class NodeMaterial extends PushMaterial {
         this.addOutputNode(fragmentOutput);
 
         this._mode = NodeMaterialModes.Particle;
-    }
-
-    /**
-     * Clear the current material and set it to a default state for gaussian splatting
-     */
-    public setToDefaultGaussianSplatting() {
-        this.clear();
-
-        this.editorData = null;
-
-        // reading splat datas
-        const splatIndex = new InputBlock("SplatIndex");
-        splatIndex.setAsAttribute("splatIndex");
-
-        const splatReader = new SplatReaderBlock("SplatReader");
-        splatIndex.connectTo(splatReader);
-
-        // transforming datas into renderable positions
-        const gs = new GaussianSplattingBlock("GaussianSplatting");
-        splatReader.connectTo(gs);
-
-        // world transformation
-        const worldInput = new InputBlock("World");
-        worldInput.setAsSystemValue(NodeMaterialSystemValues.World);
-
-        const worldPos = new TransformBlock("WorldPos");
-
-        splatReader.connectTo(worldPos);
-        worldInput.connectTo(worldPos);
-        worldPos.connectTo(gs, { output: "xyz", input: "splatPosition" });
-
-        // view and projections
-
-        const view = new InputBlock("view");
-        view.setAsSystemValue(NodeMaterialSystemValues.View);
-
-        const projection = new InputBlock("Projection");
-        projection.setAsSystemValue(NodeMaterialSystemValues.Projection);
-
-        worldInput.connectTo(gs, { input: "world" });
-        view.connectTo(gs, { input: "view" });
-        projection.connectTo(gs, { input: "projection" });
-
-        // from color to gaussian color
-        const gaussian = new GaussianBlock("Gaussian");
-        splatReader.connectTo(gaussian, { input: "splatColor", output: "splatColor" });
-
-        // fragment and vertex outputs
-        const fragmentOutput = new FragmentOutputBlock("FragmentOutput");
-        gaussian.connectTo(fragmentOutput);
-
-        const vertexOutput = new VertexOutputBlock("VertexOutput");
-        gs.connectTo(vertexOutput);
-
-        // Add to nodes
-        this.addOutputNode(vertexOutput);
-        this.addOutputNode(fragmentOutput);
-
-        this._mode = NodeMaterialModes.GaussianSplatting;
     }
 
     /**
