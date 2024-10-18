@@ -247,7 +247,15 @@ export class CSG2 implements IDisposable {
         }
     }
 
-    private static _ProcessData(vertexCount: number, triVerts: Uint32Array, mergeData: FloatArray[], structure: IManifoldVertexComponent[], numProp: number) {
+    private static _ProcessData(
+        vertexCount: number,
+        triVerts: Uint32Array,
+        mergeData: FloatArray[],
+        structure: IManifoldVertexComponent[],
+        numProp: number,
+        runIndex?: Uint32Array,
+        runOriginalID?: Uint32Array
+    ) {
         const vertProperties = new Float32Array(mergeData.reduce((acc, cur) => acc + cur.length, 0));
 
         for (let i = 0; i < vertexCount; i++) {
@@ -263,7 +271,7 @@ export class CSG2 implements IDisposable {
             }
         }
 
-        const manifoldMesh = new ManifoldMesh({ numProp: numProp, vertProperties, triVerts });
+        const manifoldMesh = new ManifoldMesh({ numProp: numProp, vertProperties, triVerts, runIndex, runOriginalID });
         manifoldMesh.merge();
 
         return new CSG2(new Manifold(manifoldMesh), numProp, structure);
@@ -424,7 +432,7 @@ export class CSG2 implements IDisposable {
             numProp += 4;
             structure.push({ stride: 4, kind: VertexBuffer.ColorKind });
         }
-        return this._ProcessData(sourceVertices.length / 3, triVerts, mergeData, structure, numProp);
+        return this._ProcessData(sourceVertices.length / 3, triVerts, mergeData, structure, numProp, runIndex, runOriginalID);
     }
 }
 
