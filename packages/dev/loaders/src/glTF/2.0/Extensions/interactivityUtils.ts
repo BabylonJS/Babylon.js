@@ -17,7 +17,12 @@ export interface InteractivityVariable {
 
 export interface InteractivityEvent {
     eventId: string;
-    eventData?: { [key: string]: string };
+    eventData?: {
+        eventData: boolean;
+        id: string;
+        type: string;
+        value?: any;
+    }[];
 }
 
 export interface IConvertedInteractivityObject {
@@ -163,7 +168,7 @@ export function convertGLTFValueToFlowGraph(value: any, mapping: IGLTFToFlowGrap
 
     return {
         key: flowGraphKeyName,
-        value: convertedValue,
+        value: convertedValue.length && convertedValue.length === 1 ? convertedValue[0] : convertedValue,
     };
 }
 
@@ -229,6 +234,11 @@ const gltfExtensionsToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping
 const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "event/onStart": {
         blocks: [FlowGraphBlockNames.SceneReadyEvent],
+        outputs: {
+            flows: {
+                out: { name: "done" },
+            },
+        },
     },
     "event/onTick": {
         blocks: [FlowGraphBlockNames.SceneTickEvent],
@@ -237,11 +247,19 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             values: {
                 timeSinceLastTick: { name: "deltaTime", gltfType: "number" /*, dataTransformer: (time: number) => time / 1000*/ },
             },
+            flows: {
+                out: { name: "done" },
+            },
         },
         configuration: {},
     },
     "event/send": {
         blocks: [FlowGraphBlockNames.SendCustomEvent],
+        outputs: {
+            flows: {
+                out: { name: "done" },
+            },
+        },
         extraProcessor(gltfBlock, _mapping, arrays, serializedObjects) {
             // set eventId and eventData. The configuration object of the glTF shoudl have a single(!) object.
             // validate that we are running it on the right block.
@@ -259,6 +277,11 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "event/receive": {
         blocks: [FlowGraphBlockNames.ReceiveCustomEvent],
+        outputs: {
+            flows: {
+                out: { name: "done" },
+            },
+        },
         extraProcessor(gltfBlock, _mapping, arrays, serializedObjects) {
             // set eventId and eventData. The configuration object of the glTF shoudl have a single(!) object.
             // validate that we are running it on the right block.
@@ -510,9 +533,9 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         configuration: {},
         inputs: {
             values: {
-                a: { name: "position", gltfType: "float3" },
-                b: { name: "rotationQuaternion", gltfType: "float4" },
-                c: { name: "scaling", gltfType: "float3" },
+                translation: { name: "position", gltfType: "float3" },
+                rotation: { name: "rotationQuaternion", gltfType: "float4" },
+                scale: { name: "scaling", gltfType: "float3" },
             },
         },
         outputs: {
@@ -532,7 +555,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         outputs: {
             values: {
                 translation: { name: "position" },
-                rotation: { name: "rotation" },
+                rotation: { name: "rotationQuaternion" },
                 scale: { name: "scaling" },
             },
         },

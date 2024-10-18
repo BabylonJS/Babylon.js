@@ -50,7 +50,7 @@ function convertConfiguration(
         // parse every configuration object, based on the mapping
         const configMapping = mapping.configuration?.[configObject.id];
         if (configMapping) {
-            const belongsToBlock = configMapping.toBlock === blockType || mapping.blocks.indexOf(blockType) === 0;
+            const belongsToBlock = configMapping.toBlock ? configMapping.toBlock === blockType : mapping.blocks.indexOf(blockType) === 0;
             if (belongsToBlock) {
                 const { key, value } = convertGLTFValueToFlowGraph(configObject.value, configMapping, convertedObject);
                 converted[key] = value;
@@ -119,18 +119,13 @@ export function convertGLTFToSerializedFlowGraph(gltf: IKHRInteractivity, refere
                 eventId: customEvent.id || "internalEvent_" + internalEventCounter++,
             };
             if (customEvent.values) {
-                // eventData is a dictionary of the values of the custom event, so we need to convert it to an array
-                converted.eventData = customEvent.values.reduce(
-                    (acc, value, currIndex) => {
-                        acc[value.id] = customEvent.values[currIndex];
-                        // check if there is a type for the value
-                        if (value.type !== undefined) {
-                            acc[value.id].type = types[value.type];
-                        }
-                        return acc;
-                    },
-                    {} as Record<string, any>
-                );
+                converted.eventData = customEvent.values.map((value) => {
+                    return {
+                        id: value.id,
+                        type: types[value.type],
+                        eventData: true,
+                    };
+                });
             }
             events.push(converted);
         }
@@ -248,7 +243,7 @@ export function convertGLTFToSerializedFlowGraph(gltf: IKHRInteractivity, refere
         // for each input value of the gltf block
         const gltfValues = gltfBlock.values ?? [];
         for (const value of gltfValues) {
-            const valueMapping = outputMapper.outputs?.values?.[value.id];
+            const valueMapping = outputMapper.inputs?.values?.[value.id];
             const socketInName = valueMapping?.name || value.id;
             // create an input data connection for the flow graph block
             const socketIn: ISerializedFlowGraphConnection = {

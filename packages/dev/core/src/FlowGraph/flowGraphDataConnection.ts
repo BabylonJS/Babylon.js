@@ -125,7 +125,7 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
     }
 
     private _getValueOrDefault(context: FlowGraphContext): T {
-        const val = context._getConnectionValue(this) ? context._getConnectionValue(this) : this._defaultValue;
+        const val = context._getConnectionValue(this) ?? this._defaultValue;
         return this.dataTransformer ? this.dataTransformer(val) : val;
     }
 

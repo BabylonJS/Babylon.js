@@ -37,7 +37,9 @@ export class FlowGraphBinaryOperationBlock<LeftT, RightT, ResultT> extends FlowG
      * @returns the result of the operation
      */
     public override _doOperation(context: FlowGraphContext): ResultT {
-        return this._operation(this.a.getValue(context), this.b.getValue(context));
+        const a = this.a.getValue(context);
+        const b = this.b.getValue(context);
+        return this._operation(a, b);
     }
 
     /**

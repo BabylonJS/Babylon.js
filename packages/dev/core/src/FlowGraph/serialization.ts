@@ -4,7 +4,7 @@ import { Matrix, Quaternion, Vector2, Vector3, Vector4 } from "../Maths/math.vec
 import type { Scene } from "../scene";
 import { FlowGraphBlockNames } from "./Blocks/flowGraphBlockNames";
 import { FlowGraphInteger } from "./flowGraphInteger";
-import { FlowGraphTypes } from "./flowGraphRichTypes";
+import { FlowGraphTypes, getRichTypeByFlowGraphType, getRichTypeFromValue } from "./flowGraphRichTypes";
 
 function isMeshClassName(className: string) {
     return (
@@ -102,7 +102,20 @@ export function defaultValueParseFunction(key: string, serializationObject: any,
     } else if (intermediateValue && intermediateValue.value !== undefined) {
         finalValue = intermediateValue.value;
     } else {
-        finalValue = intermediateValue;
+        if (Array.isArray(intermediateValue)) {
+            // configuration data of an event
+            finalValue = intermediateValue.reduce((acc, val) => {
+                if (!val.eventData) {
+                    return acc;
+                }
+                acc[val.id] = {
+                    type: getRichTypeByFlowGraphType(val.className),
+                };
+                return acc;
+            }, {});
+        } else {
+            finalValue = intermediateValue;
+        }
     }
     return finalValue;
 }

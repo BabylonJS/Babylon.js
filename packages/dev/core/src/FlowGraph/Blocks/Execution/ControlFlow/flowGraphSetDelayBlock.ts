@@ -61,9 +61,9 @@ export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
         timer.start();
         const newIndex = lastDelayIndex + 1;
         this.lastDelayIndex.setValue(newIndex, context);
-        context._setGlobalContextVariable("lastDelayIndex", lastDelayIndex);
+        context._setGlobalContextVariable("lastDelayIndex", newIndex);
 
-        timers[lastDelayIndex] = timer;
+        timers[newIndex] = timer;
         context._setExecutionVariable(this, "pendingDelays", timers);
     }
 

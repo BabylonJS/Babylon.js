@@ -117,6 +117,40 @@ export function getRichTypeFromValue<T>(value: T): RichType<T> {
 }
 
 /**
+ * Given a flow graph type, return the rich type that corresponds to it.
+ * @param flowGraphType the flow graph type
+ * @returns the rich type that corresponds to the flow graph type
+ */
+export function getRichTypeByFlowGraphType(flowGraphType: string): RichType<any> {
+    switch (flowGraphType) {
+        case FlowGraphTypes.String:
+            return RichTypeString;
+        case FlowGraphTypes.Number:
+            return RichTypeNumber;
+        case FlowGraphTypes.Boolean:
+            return RichTypeBoolean;
+        case FlowGraphTypes.Vector2:
+            return RichTypeVector2;
+        case FlowGraphTypes.Vector3:
+            return RichTypeVector3;
+        case FlowGraphTypes.Vector4:
+            return RichTypeVector4;
+        case FlowGraphTypes.Matrix:
+            return RichTypeMatrix;
+        case FlowGraphTypes.Color3:
+            return RichTypeColor3;
+        case FlowGraphTypes.Color4:
+            return RichTypeColor4;
+        case FlowGraphTypes.Quaternion:
+            return RichTypeQuaternion;
+        case FlowGraphTypes.Integer:
+            return RichTypeFlowGraphInteger;
+        default:
+            return RichTypeAny;
+    }
+}
+
+/**
  * Given an animation type, return the rich type that corresponds to it.
  * @param animationType the animation type
  * @returns the rich type that corresponds to the animation type

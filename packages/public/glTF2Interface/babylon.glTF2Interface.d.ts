@@ -1396,7 +1396,6 @@ declare module BABYLON.GLTF2 {
     interface IKHRInteractivity_CustomEventValue {
         id: string;
         type: number;
-        description?: string;
     }
 
     interface IKHRInteractivity_Type {
