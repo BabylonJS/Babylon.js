@@ -229,49 +229,19 @@ const gltfExtensionsToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping
 const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "event/onStart": {
         blocks: [FlowGraphBlockNames.SceneReadyEvent],
-        // inputs: {},
-        // outputs: {
-        //     flows: {
-        //         // out: { name: "out" },
-        //     },
-        // },
-        configuration: {},
     },
     "event/onTick": {
         blocks: [FlowGraphBlockNames.SceneTickEvent],
         inputs: {},
         outputs: {
             values: {
-                timeSinceStart: { name: "timeSinceStart", gltfType: "number" },
                 timeSinceLastTick: { name: "deltaTime", gltfType: "number" /*, dataTransformer: (time: number) => time / 1000*/ },
             },
-            // flows: {
-            //     // out: { name: "out" },
-            // },
         },
         configuration: {},
     },
     "event/send": {
         blocks: [FlowGraphBlockNames.SendCustomEvent],
-        configuration: {
-            // event is an INDEX to the events array in the glTF data. so eventId will be taken from the array.
-            // event: { name: "eventId", gltfType: "number", flowGraphType: "string", inOptions: true, isIndex: "events", dataTransformer: (name, events) => events?.[name].eventId },
-        },
-        inputs: {
-            values: {
-                // TODO the type(s) for the custom values here is defined by the event itself! will need to see how to handle this.
-                // TODO - do we want to add the mapping here?
-                // "*": { name: "eventData.$1", gltfType: "array", inOptions: true },
-            },
-            // flows: {
-            //     // in: { name: "in" },
-            // },
-        },
-        // outputs: {
-        //     flows: {
-        //         // out: { name: "out" },
-        //     },
-        // },
         extraProcessor(gltfBlock, _mapping, arrays, serializedObjects) {
             // set eventId and eventData. The configuration object of the glTF shoudl have a single(!) object.
             // validate that we are running it on the right block.
@@ -289,20 +259,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "event/receive": {
         blocks: [FlowGraphBlockNames.ReceiveCustomEvent],
-        // configuration: {
-        //     // event is an INDEX to the events array in the glTF data. so eventId will be taken from the array.
-        //     // event: { name: "eventId", gltfType: "number", flowGraphType: "string", inOptions: true, isIndex: "events", dataTransformer: (name, events) => events?.[name].eventId },
-        // },
-        // inputs: {
-        //     flows: {
-        //         // in: { name: "in" },
-        //     },
-        // },
-        // outputs: {
-        //     values: {
-        //         // "[custom]": { name: "eventData.$1", gltfType: "array" },
-        //     },
-        // },
         extraProcessor(gltfBlock, _mapping, arrays, serializedObjects) {
             // set eventId and eventData. The configuration object of the glTF shoudl have a single(!) object.
             // validate that we are running it on the right block.
@@ -570,7 +526,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         configuration: {},
         inputs: {
             values: {
-                a: { name: "input", gltfType: "float4x4" },
+                a: { name: "input" },
             },
         },
         outputs: {
@@ -591,60 +547,32 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "math/clz": getSimpleInputMapping(FlowGraphBlockNames.LeadingZeros),
     "math/ctz": getSimpleInputMapping(FlowGraphBlockNames.TrailingZeros),
     "math/popcnt": getSimpleInputMapping(FlowGraphBlockNames.OneBitsCounter),
-    // TODO
-    // "type/boolToInt": getSimpleInputMapping("TODO"),
-    // "type/boolToFloat": getSimpleInputMapping("TODO"),
-    // "type/intToBool": getSimpleInputMapping("TODO"),
-    // "type/intToFloat": getSimpleInputMapping("TODO"),
-    // "type/floatToInt": getSimpleInputMapping("TODO"),
-    // "type/floatToBool": getSimpleInputMapping("TODO"),
+    "type/boolToInt": getSimpleInputMapping(FlowGraphBlockNames.BooleanToInt),
+    "type/boolToFloat": getSimpleInputMapping(FlowGraphBlockNames.BooleanToFloat),
+    "type/intToBool": getSimpleInputMapping(FlowGraphBlockNames.IntToBoolean),
+    "type/intToFloat": getSimpleInputMapping(FlowGraphBlockNames.IntToFloat),
+    "type/floatToInt": getSimpleInputMapping(FlowGraphBlockNames.FloatToInt),
+    "type/floatToBool": getSimpleInputMapping(FlowGraphBlockNames.FloatToBoolean),
 
     // flows
     "flow/sequence": {
         blocks: [FlowGraphBlockNames.Sequence],
-        // configuration: {
-        //     // the number of output flows.
-        // },
-        // inputs: {
-        //     flows: {
-        //         // in: { name: "in" },
-        //     },
-        // },
-        outputs: {
-            flows: {
-                // "[name]": { name: "$1" },
-                // "[*].length": {
-                //     name: "numberOutputFlows",
-                //     gltfType: "array",
-                //     flowGraphType: "number",
-                //     inOptions: true,
-                //     dataTransformer(_data, _array, container) {
-                //         return Object.keys(container || {}).length;
-                //     },
-                // },
-            },
-        },
         extraProcessor(gltfBlock, _mapping, _arrays, serializedObjects) {
-            if (gltfBlock.type !== "flow/sequence" || !gltfBlock.flows || Object.keys(gltfBlock.flows).length === 0) {
-                throw new Error("Sequence should have a single configuration object, the number of output flows");
-            }
+            // TODO - removing this prevents proper validation
+            // if (gltfBlock.type !== "flow/sequence" || !gltfBlock.flows || Object.keys(gltfBlock.flows).length === 0) {
+            //     throw new Error("Sequence should have a single configuration object, the number of output flows");
+            // }
             const serializedObject = serializedObjects[0];
             serializedObject.config = serializedObject.config || {};
-            serializedObject.config.numberOutputFlows = Object.keys(gltfBlock.flows).length;
+            serializedObject.config.numberOutputFlows = Object.keys(gltfBlock.flows || []).length || 1;
+            serializedObject.signalOutputs.forEach((output, index) => {
+                output.name = "out_" + index;
+            });
             return serializedObjects;
         },
     },
     "flow/branch": {
         blocks: [FlowGraphBlockNames.Branch],
-        configuration: {},
-        inputs: {
-            values: {
-                condition: { name: "condition", gltfType: "boolean" },
-            },
-            // flows: {
-            //     // in: { name: "in" },
-            // },
-        },
         outputs: {
             flows: {
                 true: { name: "onTrue" },
@@ -657,20 +585,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         configuration: {
             cases: { name: "cases", gltfType: "array", inOptions: true },
         },
-        // inputs: {
-        //     values: {
-        //         selection: { name: "selection", gltfType: "number" },
-        //     },
-        //     flows: {
-        //         // in: { name: "in" },
-        //     },
-        // },
-        // outputs: {
-        //     flows: {
-        //         // "[case]": { name: "out_$1" },
-        //         // default: { name: "default" },
-        //     },
-        // },
         extraProcessor(gltfBlock, _mapping, _arrays, serializedObjects) {
             // convert all names of output flow to out_$1 apart from "default"
             if (gltfBlock.type !== "flow/switch" || !gltfBlock.flows || Object.keys(gltfBlock.flows).length === 0) {
@@ -687,19 +601,9 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "flow/while": {
         blocks: [FlowGraphBlockNames.WhileLoop],
-        configuration: {},
-        inputs: {
-            values: {
-                condition: { name: "condition", gltfType: "boolean" },
-            },
-            // flows: {
-            //     // in: { name: "in" },
-            // },
-        },
         outputs: {
             flows: {
                 loopBody: { name: "executionFlow" },
-                // completed: { name: "completed" },
             },
         },
     },
@@ -712,21 +616,14 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             values: {
                 startIndex: { name: "startIndex", gltfType: "number" },
                 endIndex: { name: "endIndex", gltfType: "number" },
-                // no step
+                // TODO no step available
                 // step: { name: "step", gltfType: "number" },
             },
-            // flows: {
-            //     // in: { name: "in" },
-            // },
         },
         outputs: {
             values: {
                 index: { name: "index" },
             },
-            // flows: {
-            //     // loopBody: { name: "loopBody" },
-            //     // completed: { name: "completed" },
-            // },
         },
     },
     "flow/doN": {
@@ -736,18 +633,11 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             values: {
                 n: { name: "maxExecutions", gltfType: "number" },
             },
-            // flows: {
-            //     // reset: { name: "reset" },
-            //     // in: { name: "in" },
-            // },
         },
         outputs: {
             values: {
                 currentCount: { name: "executionCount" },
             },
-            // flows: {
-            //     // out: { name: "out" },
-            // },
         },
     },
     "flow/multiGate": {
@@ -755,29 +645,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         configuration: {
             isRandom: { name: "isRandom", gltfType: "boolean", inOptions: true },
             isLoop: { name: "isLoop", gltfType: "boolean", inOptions: true },
-        },
-        inputs: {
-            // flows: {
-            //     // reset: { name: "reset" },
-            //     // in: { name: "in" },
-            // },
-        },
-        outputs: {
-            values: {
-                lastIndex: { name: "lastIndex" },
-            },
-            // flows: {
-            //     // "[name]": { name: "$1" },
-            //     // "[*].length": {
-            //     //     name: "numberOutputFlows",
-            //     //     gltfType: "array",
-            //     //     flowGraphType: "number",
-            //     //     inOptions: true,
-            //     //     dataTransformer(_data, _array, container) {
-            //     //         return Object.keys(container || {}).length;
-            //     //     },
-            //     // },
-            // },
         },
         extraProcessor(gltfBlock, _mapping, _arrays, serializedObjects) {
             if (gltfBlock.type !== "flow/multiGate" || !gltfBlock.flows || Object.keys(gltfBlock.flows).length === 0) {
@@ -794,15 +661,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         configuration: {
             inputFlows: { name: "inputFlows", gltfType: "number", inOptions: true },
         },
-        outputs: {
-            values: {
-                remainingInputs: { name: "remainingInputs" },
-            },
-            flows: {
-                // completed: { name: "completed" },
-                // out: { name: "out" },
-            },
-        },
         extraProcessor(_gltfBlock, _mapping, _arrays, serializedObjects) {
             // process the input flows and add them to the inFlow array
             // take all input flows and convert their names correctly to "in_$1"
@@ -815,20 +673,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "flow/throttle": {
         blocks: [FlowGraphBlockNames.Throttle],
-        configuration: {},
-        inputs: {
-            values: {
-                duration: { name: "duration", gltfType: "number" },
-            },
-            flows: {
-                // in: { name: "in" },
-                // reset: { name: "reset" },
-            },
-        },
         outputs: {
-            values: {
-                lastRemainingTime: { name: "lastRemainingTime" },
-            },
             flows: {
                 // out: { name: "out" },
                 err: { name: "error" },
@@ -837,42 +682,14 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "flow/setDelay": {
         blocks: [FlowGraphBlockNames.SetDelay],
-        configuration: {},
-        inputs: {
-            values: {
-                duration: { name: "duration", gltfType: "number" },
-            },
-            flows: {
-                // in: { name: "in" },
-                // cancel: { name: "cancel" },
-            },
-        },
         outputs: {
-            values: {
-                lastDelayIndex: { name: "lastDelayIndex" },
-            },
             flows: {
-                // out: { name: "out" },
                 err: { name: "error" },
             },
         },
     },
     "flow/cancelDelay": {
         blocks: [FlowGraphBlockNames.CancelDelay],
-        configuration: {},
-        inputs: {
-            values: {
-                delayIndex: { name: "delayIndex", gltfType: "number" },
-            },
-            flows: {
-                // in: { name: "in" },
-            },
-        },
-        outputs: {
-            // flows: {
-            //     out: { name: "out" },
-            // },
-        },
     },
     "variable/get": {
         blocks: [FlowGraphBlockNames.GetVariable],
@@ -884,14 +701,8 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 inOptions: true,
                 isIndex: "variables",
                 dataTransformer(index, variables) {
-                    return variables?.[index];
+                    return variables?.[index].name;
                 },
-            },
-        },
-        inputs: {},
-        outputs: {
-            values: {
-                value: { name: "value" },
             },
         },
     },
@@ -905,21 +716,8 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 inOptions: true,
                 isIndex: "variables",
                 dataTransformer(index, variables) {
-                    return variables?.[index];
+                    return variables?.[index].name;
                 },
-            },
-        },
-        inputs: {
-            values: {
-                value: { name: "value" },
-            },
-            flows: {
-                // in: { name: "in" },
-            },
-        },
-        outputs: {
-            flows: {
-                // out: { name: "out" },
             },
         },
     },
@@ -939,12 +737,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             connectFlowGraphNodes("propertyName", "propertyName", serializedObjects[0], serializedObjects[1], true);
             return serializedObjects;
         },
-        // outputs: {
-        //     values: {
-        //         value: { name: "value" },
-        //         isValid: { name: "isValid" },
-        //     },
-        // },
     },
     "pointer/set": {
         blocks: [FlowGraphBlockNames.SetProperty],
@@ -956,13 +748,9 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 value: { name: "value" },
                 "[segment]": { name: "$1", toBlock: FlowGraphBlockNames.JsonPointerParser },
             },
-            flows: {
-                // in: { name: "in" },
-            },
         },
         outputs: {
             flows: {
-                // out: { name: "out" },
                 err: { name: "error" },
             },
         },
@@ -980,20 +768,15 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 p1: { name: "initialValue", gltfType: "number" /*, inOptions: true*/ },
                 p2: { name: "endValue", gltfType: "number" /*, inOptions: true*/ },
             },
-            flows: {
-                // in: { name: "in" },
-            },
         },
         outputs: {
             flows: {
-                // out: { name: "out" },
                 err: { name: "error" },
             },
         },
     },
     "animation/start": {
         blocks: [FlowGraphBlockNames.PlayAnimation],
-        configuration: {},
         inputs: {
             values: {
                 // TODO - fix the animation reference
@@ -1003,32 +786,22 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 startTime: { name: "from", gltfType: "number", dataTransformer: (time: number) => time / 60 },
                 endTime: { name: "to", gltfType: "number", dataTransformer: (time: number) => time / 60 },
             },
-            flows: {
-                // in: { name: "in" },
-            },
         },
         outputs: {
             flows: {
-                // out: { name: "out" },
                 err: { name: "error" },
-                // done: { name: "done" },
             },
         },
     },
     "animation/stop": {
         blocks: [FlowGraphBlockNames.StopAnimation],
-        configuration: {},
         inputs: {
             values: {
                 animation: { name: "animation", gltfType: "number", flowGraphType: "animation" /*, isIndex: "animations"*/ },
             },
-            flows: {
-                // in: { name: "in" },
-            },
         },
         outputs: {
             flows: {
-                // out: { name: "out" },
                 err: { name: "error" },
             },
         },

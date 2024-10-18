@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { IGLTF, INode } from "../glTFLoaderInterfaces";
+import type { IAnimation, IGLTF, INode } from "../glTFLoaderInterfaces";
 import { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
-import type { TransformNode } from "core/Meshes";
 import type { IObjectAccessor } from "core/FlowGraph/typeDefinitions";
 import type { Vector3, Quaternion } from "core/Maths/math.vector";
 
@@ -30,86 +29,58 @@ const nodesTree = {
         __target__: true,
         translation: {
             type: "Vector3",
-            get: (node: INode) => {
-                const babylonObject = node._babylonTransformNode as TransformNode;
-                return babylonObject.position;
-            },
-            set: (value: Vector3, node: INode) => {
-                const babylonObject = node._babylonTransformNode as TransformNode;
-                babylonObject.position = value;
-            },
-            getObject(node: INode) {
-                return node._babylonTransformNode;
-            },
-            getPropertyName(_node: INode) {
-                return "position";
-            },
+            get: (node: INode) => node._babylonTransformNode?.position,
+            set: (value: Vector3, node: INode) => node._babylonTransformNode?.position.copyFrom(value),
+            getObject: (node: INode) => node._babylonTransformNode,
+            getPropertyName: (_node: INode) => "position",
         },
         rotation: {
             type: "Quaternion",
-            get: (node: INode) => {
-                const babylonObject = node._babylonTransformNode as TransformNode;
-                return babylonObject.rotationQuaternion;
-            },
-            set: (value: Quaternion, node: INode) => {
-                const babylonObject = node._babylonTransformNode as TransformNode;
-                babylonObject.rotationQuaternion = value;
-            },
-            getObject(node: INode) {
-                return node._babylonTransformNode;
-            },
-            getPropertyName(_node: INode) {
-                return "rotationQuaternion";
-            },
+            get: (node: INode) => node._babylonTransformNode?.rotationQuaternion,
+            set: (value: Quaternion, node: INode) => node._babylonTransformNode?.rotationQuaternion?.copyFrom(value),
+            getObject: (node: INode) => node._babylonTransformNode,
+            getPropertyName: (_node: INode) => "rotationQuaternion",
         },
         scale: {
             type: "Vector3",
-            get: (node: INode) => {
-                const babylonObject = node._babylonTransformNode as TransformNode;
-                return babylonObject.scaling;
-            },
-            set: (value: Vector3, node: INode) => {
-                const babylonObject = node._babylonTransformNode as TransformNode;
-                babylonObject.scaling = value;
-            },
-            getObject(node: INode) {
-                return node._babylonTransformNode;
-            },
-            getPropertyName(_node: INode) {
-                return "scaling";
-            },
+            get: (node: INode) => node._babylonTransformNode?.scaling,
+            set: (value: Vector3, node: INode) => node._babylonTransformNode?.scaling.copyFrom(value),
+            getObject: (node: INode) => node._babylonTransformNode,
+            getPropertyName: (_node: INode) => "scaling",
         },
         // weights?
         // readonly!
         matrix: {
             type: "Matrix",
-            get: (node: INode) => {
-                const babylonObject = node._babylonTransformNode as TransformNode;
-                return babylonObject.getPoseMatrix();
-            },
-            getObject(node: INode) {
-                return node._babylonTransformNode;
-            },
-            getPropertyName(_node: INode) {
-                return "_poseMatrix";
-            },
+            get: (node: INode) => node._babylonTransformNode?.getPoseMatrix(),
+            getObject: (node: INode) => node._babylonTransformNode,
+            getPropertyName: (_node: INode) => "_poseMatrix",
         },
         globalMatrix: {
             type: "Matrix",
-            get: (node: INode) => {
-                const babylonObject = node._babylonTransformNode as TransformNode;
-                return babylonObject.getWorldMatrix();
-            },
-            getObject(node: INode) {
-                return node._babylonTransformNode;
-            },
-            getPropertyName(_node: INode) {
-                return "_worldMatrix";
-            },
+            get: (node: INode) => node._babylonTransformNode?.getWorldMatrix(),
+            getObject: (node: INode) => node._babylonTransformNode,
+            getPropertyName: (_node: INode) => "worldMatrix",
         },
     },
 };
 
+const animationsTree = {
+    length: {
+        get: (animations: IAnimation[]) => {
+            return animations.length;
+        },
+        getObject(animations: IAnimation[]) {
+            return animations;
+        },
+        getPropertyName(_animations: IAnimation[]) {
+            return "length";
+        },
+    },
+    __array__: {},
+};
+
 const gltfTree = {
     nodes: nodesTree,
+    animations: animationsTree,
 };

@@ -213,6 +213,42 @@ export function blockFactory(name: FlowGraphBlockNames): () => Promise<typeof Fl
             return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphTrailingZerosBlock;
         case FlowGraphBlockNames.OneBitsCounter:
             return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphOneBitsCounterBlock;
+        case FlowGraphBlockNames.CombineVector2:
+            return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphCombineVector2Block;
+        case FlowGraphBlockNames.CombineVector3:
+            return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphCombineVector3Block;
+        case FlowGraphBlockNames.CombineVector4:
+            return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphCombineVector4Block;
+        case FlowGraphBlockNames.CombineMatrix:
+            return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphCombineMatrixBlock;
+        case FlowGraphBlockNames.ExtractVector2:
+            return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphExtractVector2Block;
+        case FlowGraphBlockNames.ExtractVector3:
+            return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphExtractVector3Block;
+        case FlowGraphBlockNames.ExtractVector4:
+            return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphExtractVector4Block;
+        case FlowGraphBlockNames.ExtractMatrix:
+            return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphExtractMatrixBlock;
+        case FlowGraphBlockNames.TransformVector3:
+            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphTransformBlock;
+        case FlowGraphBlockNames.TransformVector4:
+            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphTransformVector4Block;
+        case FlowGraphBlockNames.MatrixDecompose:
+            return async () => (await import("./Data/Math/flowGraphMatrixMathBlocks")).FlowGraphMatrixDecomposeBlock;
+        case FlowGraphBlockNames.MatrixCompose:
+            return async () => (await import("./Data/Math/flowGraphMatrixMathBlocks")).FlowGraphMatrixComposeBlock;
+        case FlowGraphBlockNames.BooleanToFloat:
+            return async () => (await import("./Data/Transformers/flowGraphTypeToTypeBlockks")).FlowGraphBooleanToFloat;
+        case FlowGraphBlockNames.BooleanToInt:
+            return async () => (await import("./Data/Transformers/flowGraphTypeToTypeBlockks")).FlowGraphBooleanToInt;
+        case FlowGraphBlockNames.FloatToBoolean:
+            return async () => (await import("./Data/Transformers/flowGraphTypeToTypeBlockks")).FlowGraphFloatToBoolean;
+        case FlowGraphBlockNames.IntToBoolean:
+            return async () => (await import("./Data/Transformers/flowGraphTypeToTypeBlockks")).FlowGraphIntToBoolean;
+        case FlowGraphBlockNames.IntToFloat:
+            return async () => (await import("./Data/Transformers/flowGraphTypeToTypeBlockks")).FlowGraphIntToFloat;
+        case FlowGraphBlockNames.FloatToInt:
+            return async () => (await import("./Data/Transformers/flowGraphTypeToTypeBlockks")).FlowGraphFloatToInt;
         default:
             throw new Error(`Unknown block name ${name}`);
     }

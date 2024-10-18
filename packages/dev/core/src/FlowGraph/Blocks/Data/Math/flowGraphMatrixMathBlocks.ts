@@ -5,6 +5,7 @@ import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnec
 import { RichTypeMatrix, RichTypeQuaternion, RichTypeVector3 } from "core/FlowGraph/flowGraphRichTypes";
 import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
+import { RegisterClass } from "core/Misc";
 
 /**
  * Matrix decompose block
@@ -66,6 +67,8 @@ export class FlowGraphMatrixDecomposeBlock extends FlowGraphBlock {
     }
 }
 
+RegisterClass(FlowGraphBlockNames.MatrixDecompose, FlowGraphMatrixDecomposeBlock);
+
 /**
  * Matrix compose block
  */
@@ -112,3 +115,5 @@ export class FlowGraphMatrixComposeBlock extends FlowGraphBlock {
         return FlowGraphBlockNames.MatrixCompose;
     }
 }
+
+RegisterClass(FlowGraphBlockNames.MatrixCompose, FlowGraphMatrixComposeBlock);

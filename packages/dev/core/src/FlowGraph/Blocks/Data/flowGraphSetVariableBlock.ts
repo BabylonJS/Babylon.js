@@ -5,6 +5,7 @@ import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphExecutionBlockWithOutSignal } from "../../flowGraphExecutionBlockWithOutSignal";
 import type { FlowGraphSignalConnection } from "../../flowGraphSignalConnection";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
+import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes";
 
 /**
  * @experimental
@@ -12,7 +13,7 @@ import { FlowGraphBlockNames } from "../flowGraphBlockNames";
  */
 export interface IFlowGraphSetVariableBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
-     * The name of the variable to get.
+     * The name of the variable to set.
      */
     variable: string;
 }
@@ -31,7 +32,7 @@ export class FlowGraphSetVariableBlock<T> extends FlowGraphExecutionBlockWithOut
     ) {
         super(config);
 
-        this.value = this.registerDataInput("value", config.type);
+        this.value = this.registerDataInput("value", RichTypeAny);
     }
 
     public override _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {

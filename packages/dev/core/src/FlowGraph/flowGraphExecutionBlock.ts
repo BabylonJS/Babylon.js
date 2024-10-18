@@ -141,6 +141,6 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
      * @returns the class name
      */
     public override getClassName(): string {
-        return "FGExecutionBlock";
+        return "FlowGraphExecutionBlock";
     }
 }
