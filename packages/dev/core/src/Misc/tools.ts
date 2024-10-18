@@ -534,12 +534,15 @@ export class Tools {
      * @param onSuccess defines the callback called when the script is loaded
      * @param onError defines the callback to call if an error occurs
      * @param scriptId defines the id of the script element
+     * @param useModule defines if we should use the module strategy to load the script
      */
-    public static LoadScript(scriptUrl: string, onSuccess: () => void, onError?: (message?: string, exception?: any) => void, scriptId?: string) {
+    public static LoadScript(scriptUrl: string, onSuccess?: () => void, onError?: (message?: string, exception?: any) => void, scriptId?: string, useModule = false) {
         if (typeof importScripts === "function") {
             try {
                 importScripts(scriptUrl);
-                onSuccess();
+                if (onSuccess) {
+                    onSuccess();
+                }
             } catch (e) {
                 onError?.(`Unable to load script '${scriptUrl}' in worker`, e);
             }
@@ -550,8 +553,13 @@ export class Tools {
         }
         const head = document.getElementsByTagName("head")[0];
         const script = document.createElement("script");
-        script.setAttribute("type", "text/javascript");
-        script.setAttribute("src", scriptUrl);
+        if (useModule) {
+            script.setAttribute("type", "module");
+            script.innerText = scriptUrl;
+        } else {
+            script.setAttribute("type", "text/javascript");
+            script.setAttribute("src", scriptUrl);
+        }
         if (scriptId) {
             script.id = scriptId;
         }

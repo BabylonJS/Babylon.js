@@ -200,7 +200,7 @@
         },
         {
             "title": "CSGVertColor",
-            "playgroundId": "#R0H1IX#0",
+            "playgroundId": "#R0H1IX#4",
             "referenceImage": "csgVertColor.png"
         },
         {
@@ -500,8 +500,7 @@
         },
         {
             "title": "CSG",
-            "scriptToRun": "/Demos/CSG/csg.js",
-            "functionToCall": "CreateCSGTestScene",
+            "playgroundId": "#R0H1IX#8",
             "referenceImage": "csg.png"
         },
         {

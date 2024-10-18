@@ -5,7 +5,8 @@ import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConn
 import type { VertexData } from "../../mesh.vertexData";
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
-import { CSG } from "core/Meshes/csg";
+import { CSG2, InitializeCSG2Async, IsCSG2Ready } from "core/Meshes/csg2";
+import type { Nullable } from "core/types";
 
 /**
  * Operations supported by the boolean block
@@ -42,6 +43,22 @@ export class BooleanGeometryBlock extends NodeGeometryBlock {
         ],
     })
     public operation = BooleanGeometryOperations.Intersect;
+
+    private _csg2LoadingPromise: Promise<void>;
+    /**
+     * @internal
+     */
+    public override get _isReadyState(): Nullable<Promise<void>> {
+        if (IsCSG2Ready()) {
+            return null;
+        }
+
+        if (!this._csg2LoadingPromise) {
+            this._csg2LoadingPromise = InitializeCSG2Async();
+        }
+
+        return this._csg2LoadingPromise;
+    }
 
     /**
      * Create a new BooleanGeometryBlock
@@ -115,10 +132,10 @@ export class BooleanGeometryBlock extends NodeGeometryBlock {
                 vertexData1.colors = new Array<number>(vertexCount * 4);
             }
 
-            const CSG0 = CSG.FromVertexData(vertexData0);
-            const CSG1 = CSG.FromVertexData(vertexData1);
+            const CSG0 = CSG2.FromVertexData(vertexData0);
+            const CSG1 = CSG2.FromVertexData(vertexData1);
 
-            let boolCSG: CSG;
+            let boolCSG: CSG2;
 
             switch (this.operation) {
                 case BooleanGeometryOperations.Intersect:
@@ -128,7 +145,7 @@ export class BooleanGeometryBlock extends NodeGeometryBlock {
                     boolCSG = CSG0.subtract(CSG1);
                     break;
                 case BooleanGeometryOperations.Union:
-                    boolCSG = CSG0.union(CSG1);
+                    boolCSG = CSG0.add(CSG1);
                     break;
             }
 
