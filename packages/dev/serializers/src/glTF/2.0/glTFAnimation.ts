@@ -16,7 +16,7 @@ import { AnimationKeyInterpolation } from "core/Animations/animationKey";
 import { Camera } from "core/Cameras/camera";
 import { Light } from "core/Lights/light";
 import type { DataWriter } from "./dataWriter";
-import { createAccessor, createBufferView, getAccessorElementCount } from "./glTFUtilities";
+import { createAccessor, createBufferView, getAccessorElementCount, convertToRightHandedRotation } from "./glTFUtilities";
 
 /**
  * @internal
@@ -592,7 +592,6 @@ export class _GLTFAnimation {
             let byteLength = animationData.inputs.length * 4;
             const offset = binaryWriter.byteOffset;
             bufferView = createBufferView(0, offset, byteLength);
-            //bufferView = _GLTFUtilities._CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, undefined, `${name}  keyframe data view`);
             bufferViews.push(bufferView);
             animationData.inputs.forEach(function (input) {
                 binaryWriter.writeFloat32(input);
@@ -614,13 +613,27 @@ export class _GLTFAnimation {
             bufferView = createBufferView(0, binaryWriter.byteOffset, byteLength);
             bufferViews.push(bufferView);
 
+            const rotationQuaternion = new Quaternion();
+            const tempQuaterionArray = [0, 0, 0, 0];
+
             animationData.outputs.forEach(function (output) {
                 if (useRightHanded) {
                     switch (animationChannelTargetPath) {
                         case AnimationChannelTargetPath.TRANSLATION:
+                        case AnimationChannelTargetPath.SCALE:
                             binaryWriter.writeFloat32(-output[0]);
                             binaryWriter.writeFloat32(output[1]);
                             binaryWriter.writeFloat32(output[2]);
+                            break;
+
+                        case AnimationChannelTargetPath.ROTATION:
+                            Quaternion.FromArrayToRef(output, 0, rotationQuaternion);
+                            convertToRightHandedRotation(rotationQuaternion);
+                            rotationQuaternion.normalize().toArray(tempQuaterionArray);
+                            binaryWriter.writeFloat32(tempQuaterionArray[0]);
+                            binaryWriter.writeFloat32(tempQuaterionArray[1]);
+                            binaryWriter.writeFloat32(tempQuaterionArray[2]);
+                            binaryWriter.writeFloat32(tempQuaterionArray[2]);
                             break;
 
                         default:
