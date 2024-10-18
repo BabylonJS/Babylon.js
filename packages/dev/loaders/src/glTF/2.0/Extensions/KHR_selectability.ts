@@ -1,10 +1,8 @@
 import { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
 import type { GLTFLoader } from "../glTFLoader";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import { addNewInteractivityFlowGraphMapping } from "./interactivityUtils";
+import { addNewInteractivityFlowGraphMapping, connectFlowGraphNodes } from "./interactivityUtils";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
-import { RandomGUID } from "core/Misc/guid";
-import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
 
 const NAME = "KHR_selectability";
 
@@ -45,31 +43,15 @@ export function updateInteractivity() {
                 out: { name: "done" },
             },
         },
-        extraProcessor(gltfBlock, mapping, arrays, serializedObjects, context, globalGLTF) {
+        extraProcessor(gltfBlock, _mapping, _arrays, serializedObjects, context, globalGLTF) {
+            // TODO - clean this up!
             const nodeIndex = gltfBlock.configuration?.find((config) => config.id === "nodeIndex")?.value;
             if (nodeIndex === undefined) {
                 throw new Error("nodeIndex not found in configuration");
             }
             const variableName = "pickedMesh_" + nodeIndex;
             // connect the mesh to the asset input
-            const socketIn = {
-                uniqueId: RandomGUID(),
-                name: "asset",
-                _connectionType: FlowGraphConnectionType.Input,
-                connectedPointIds: [] as string[],
-            };
-            serializedObjects[0].dataInputs.push(socketIn);
-            const socketOut = {
-                uniqueId: RandomGUID(),
-                name: variableName,
-                _connectionType: FlowGraphConnectionType.Output,
-                connectedPointIds: [] as string[],
-            };
-            serializedObjects[1].dataOutputs.push(socketOut);
-
-            // connect the sockets
-            socketIn.connectedPointIds.push(socketOut.uniqueId);
-            socketOut.connectedPointIds.push(socketIn.uniqueId);
+            connectFlowGraphNodes("asset", "value", serializedObjects[0], serializedObjects[1], true);
 
             // find the nodeIndex value
             serializedObjects[1].config.variable = variableName;

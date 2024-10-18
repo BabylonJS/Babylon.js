@@ -18,7 +18,7 @@ function convertVariableValueWithType(configObject: IKHRInteractivity_Variable, 
         if (!className) {
             throw new Error(`/extensions/KHR_interactivity/variables/${index}: Unknown type: ${configObject.type}`);
         }
-        const value = () => {
+        const value = (() => {
             switch (className) {
                 case FlowGraphTypes.Boolean:
                 case FlowGraphTypes.Integer:
@@ -28,7 +28,7 @@ function convertVariableValueWithType(configObject: IKHRInteractivity_Variable, 
                 default:
                     return configObject.value;
             }
-        };
+        })();
         return {
             value,
             className,

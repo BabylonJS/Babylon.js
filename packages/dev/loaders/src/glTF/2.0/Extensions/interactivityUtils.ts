@@ -4,6 +4,8 @@ import { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
 import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
 import type { ISerializedFlowGraphBlock, ISerializedFlowGraphContext } from "core/FlowGraph/typeDefinitions";
 import type { IGLTF } from "../glTFLoaderInterfaces";
+import { RandomGUID } from "core/Misc/guid";
+import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
 
 export interface InteractivityVariable {
     name: string;
@@ -163,6 +165,43 @@ export function convertGLTFValueToFlowGraph(value: any, mapping: IGLTFToFlowGrap
         key: flowGraphKeyName,
         value: convertedValue,
     };
+}
+
+/**
+ * Add a new serialized connection to the serialized objects.
+ * This is mainly used for the extraProcessor function in the mapping.
+ * If more than one node is returned from the extraProcessor, this function should be used to add the connections between the different nodes.
+ * @param input The name of the input connection. If not found i n the array a new connection will be created.
+ * @param output The name of the output connection. If not found in the array a new connection will be created.
+ * @param serializedInput The serialized input object
+ * @param serializedOutput The serialized output object
+ * @param isVariable if true a new value will be added,, otherwise a flow will be added
+ */
+export function connectFlowGraphNodes(input: string, output: string, serializedInput: ISerializedFlowGraphBlock, serializedOutput: ISerializedFlowGraphBlock, isVariable: boolean) {
+    const inputArray = isVariable ? serializedInput.dataInputs : serializedInput.signalInputs;
+    const outputArray = isVariable ? serializedOutput.dataOutputs : serializedOutput.signalOutputs;
+    const inputConnection = inputArray.find((s) => s.name === input) || {
+        uniqueId: RandomGUID(),
+        name: input,
+        _connectionType: FlowGraphConnectionType.Input, // Input
+        connectedPointIds: [] as string[],
+    };
+    const outputConnection = outputArray.find((s) => s.name === output) || {
+        uniqueId: RandomGUID(),
+        name: output,
+        _connectionType: FlowGraphConnectionType.Output, // Output
+        connectedPointIds: [] as string[],
+    };
+    // of not found add it to the array
+    if (!inputArray.find((s) => s.name === input)) {
+        inputArray.push(inputConnection);
+    }
+    if (!outputArray.find((s) => s.name === output)) {
+        outputArray.push(outputConnection);
+    }
+    // connect the sockets
+    inputConnection.connectedPointIds.push(outputConnection.uniqueId);
+    outputConnection.connectedPointIds.push(inputConnection.uniqueId);
 }
 
 /**
