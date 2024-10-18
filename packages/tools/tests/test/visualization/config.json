@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Gaussian Splatting NME",
+            "playgroundId": "#WXWJKN#4",
+            "referenceImage": "gsplat-nme.png"
+        },
+        {
             "title": "Lattice",
             "playgroundId": "#MDVD75#19",
             "referenceImage": "lattice.png"
