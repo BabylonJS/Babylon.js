@@ -8,7 +8,7 @@ import { SubMesh } from "./subMesh";
 import type { Material } from "core/Materials/material";
 import { _LoadScriptModuleAsync } from "core/Misc/tools.internals";
 import type { FloatArray } from "core/types";
-import { Vector3 } from "core/Maths";
+import { Matrix, Vector3 } from "core/Maths";
 
 /**
  * Main manifold library
@@ -54,6 +54,10 @@ export interface IMeshRebuildOptions {
      * Rebuild normals
      */
     rebuildNormals: boolean;
+    /**
+     * True to center the mesh on 0,0,0
+     */
+    centerMesh?: boolean;
 }
 
 interface IManifoldMesh {
@@ -68,6 +72,7 @@ interface IManifoldMesh {
 interface IManifoldVertexComponent {
     stride: number;
     kind: string;
+    data?: FloatArray;
 }
 
 /**
@@ -150,6 +155,7 @@ export class CSG2 implements IDisposable {
     public toMesh(name: string, scene?: Scene, options: Partial<IMeshRebuildOptions> = {}): Mesh {
         const localOptions = {
             rebuildNormals: false,
+            centerMesh: true,
             ...options,
         };
         const vertexData = new VertexData();
@@ -208,6 +214,13 @@ export class CSG2 implements IDisposable {
         const output = new Mesh(name, scene);
         vertexData.applyToMesh(output);
 
+        // Center mesh
+        if (localOptions.centerMesh) {
+            const extents = output.getBoundingInfo().boundingSphere.center;
+            output.position.set(-extents.x, -extents.y, -extents.z);
+            output.bakeCurrentTransformIntoVertices();
+        }
+
         // Submeshes
         let id = manifoldMesh.runOriginalID[0];
         let start = manifoldMesh.runIndex[0];
@@ -250,22 +263,20 @@ export class CSG2 implements IDisposable {
     private static _ProcessData(
         vertexCount: number,
         triVerts: Uint32Array,
-        mergeData: FloatArray[],
         structure: IManifoldVertexComponent[],
         numProp: number,
         runIndex?: Uint32Array,
         runOriginalID?: Uint32Array
     ) {
-        const vertProperties = new Float32Array(mergeData.reduce((acc, cur) => acc + cur.length, 0));
+        const vertProperties = new Float32Array(vertexCount * structure.reduce((acc, cur) => acc + cur.stride, 0));
 
         for (let i = 0; i < vertexCount; i++) {
             let offset = 0;
-            for (let idx = 0; idx < mergeData.length; idx++) {
-                const source = mergeData[idx];
+            for (let idx = 0; idx < structure.length; idx++) {
                 const component = structure[idx];
 
                 for (let strideIndex = 0; strideIndex < component.stride; strideIndex++) {
-                    vertProperties[i * numProp + offset + strideIndex] = source[i * component.stride + strideIndex];
+                    vertProperties[i * numProp + offset + strideIndex] = component.data![i * component.stride + strideIndex];
                 }
                 offset += component.stride;
             }
@@ -274,7 +285,11 @@ export class CSG2 implements IDisposable {
         const manifoldMesh = new ManifoldMesh({ numProp: numProp, vertProperties, triVerts, runIndex, runOriginalID });
         manifoldMesh.merge();
 
-        return new CSG2(new Manifold(manifoldMesh), numProp, structure);
+        try {
+            return new CSG2(new Manifold(manifoldMesh), numProp, structure);
+        } catch (e) {
+            throw new Error("Error while creating the CSG: " + e.message);
+        }
     }
 
     /**
@@ -300,39 +315,33 @@ export class CSG2 implements IDisposable {
             triVerts[i + 2] = sourceIndices[i];
         }
 
-        const mergeData: FloatArray[] = [];
-
         // Positions
         let numProp = 3;
-        const structure: IManifoldVertexComponent[] = [{ stride: 3, kind: VertexBuffer.PositionKind }];
-        mergeData.push(vertexData.positions!);
+        const structure: IManifoldVertexComponent[] = [{ stride: 3, kind: VertexBuffer.PositionKind, data: vertexData.positions! }];
 
         // Normals
         if (vertexData.normals) {
             numProp += 3;
-            structure.push({ stride: 3, kind: VertexBuffer.NormalKind });
-            mergeData.push(vertexData.normals);
+            structure.push({ stride: 3, kind: VertexBuffer.NormalKind, data: vertexData.normals });
         }
 
         // UVs
         for (const kind of ["uvs", "uvs2", "uvs3", "uvs4", "uvs5", "uvs6"]) {
             const sourceUV = (vertexData as any)[kind] as FloatArray;
             if (sourceUV) {
-                mergeData.push(sourceUV);
                 numProp += 2;
-                structure.push({ stride: 2, kind: kind });
+                structure.push({ stride: 2, kind: kind, data: sourceUV });
             }
         }
 
         // Colors
         const sourceColors = vertexData.colors;
         if (sourceColors) {
-            mergeData.push(sourceColors);
             numProp += 4;
-            structure.push({ stride: 4, kind: VertexBuffer.ColorKind });
+            structure.push({ stride: 4, kind: VertexBuffer.ColorKind, data: sourceColors });
         }
 
-        return this._ProcessData(sourceVertices.length / 3, triVerts, mergeData, structure, numProp);
+        return this._ProcessData(sourceVertices.length / 3, triVerts, structure, numProp);
     }
 
     /**
@@ -380,22 +389,20 @@ export class CSG2 implements IDisposable {
             triVerts[i + 2] = sourceIndices[i];
         }
 
-        const mergeData: FloatArray[] = [];
-
         // Positions
         const tempVector3 = new Vector3();
         let numProp = 3;
         const structure: IManifoldVertexComponent[] = [{ stride: 3, kind: VertexBuffer.PositionKind }];
 
         if (ignoreWorldMatrix) {
-            mergeData.push(sourceVertices);
+            structure[0].data = sourceVertices;
         } else {
             const positions = new Float32Array(sourceVertices.length);
             for (let i = 0; i < sourceVertices.length; i += 3) {
                 Vector3.TransformCoordinatesFromFloatsToRef(sourceVertices[i], sourceVertices[i + 1], sourceVertices[i + 2], worldMatrix, tempVector3);
                 tempVector3.toArray(positions, i);
             }
-            mergeData.push(positions);
+            structure[0].data = positions;
         }
 
         // Normals
@@ -404,14 +411,14 @@ export class CSG2 implements IDisposable {
             numProp += 3;
             structure.push({ stride: 3, kind: VertexBuffer.NormalKind });
             if (ignoreWorldMatrix) {
-                mergeData.push(sourceNormals);
+                structure[1].data = sourceNormals;
             } else {
                 const normals = new Float32Array(sourceNormals.length);
                 for (let i = 0; i < sourceNormals.length; i += 3) {
                     Vector3.TransformNormalFromFloatsToRef(sourceNormals[i], sourceNormals[i + 1], sourceNormals[i + 2], worldMatrix, tempVector3);
                     tempVector3.toArray(normals, i);
                 }
-                mergeData.push(normals);
+                structure[1].data = normals;
             }
         }
 
@@ -419,20 +426,20 @@ export class CSG2 implements IDisposable {
         for (const kind of [VertexBuffer.UVKind, VertexBuffer.UV2Kind, VertexBuffer.UV3Kind, VertexBuffer.UV4Kind, VertexBuffer.UV5Kind, VertexBuffer.UV6Kind]) {
             const sourceUV = mesh.getVerticesData(kind);
             if (sourceUV) {
-                mergeData.push(sourceUV);
                 numProp += 2;
-                structure.push({ stride: 2, kind: kind });
+                structure.push({ stride: 2, kind: kind, data: sourceUV });
             }
         }
 
         // Colors
         const sourceColors = mesh.getVerticesData(VertexBuffer.ColorKind);
         if (sourceColors) {
-            mergeData.push(sourceColors);
             numProp += 4;
-            structure.push({ stride: 4, kind: VertexBuffer.ColorKind });
+            structure.push({ stride: 4, kind: VertexBuffer.ColorKind, data: sourceColors });
         }
-        return this._ProcessData(sourceVertices.length / 3, triVerts, mergeData, structure, numProp, runIndex, runOriginalID);
+
+        // Process
+        return this._ProcessData(sourceVertices.length / 3, triVerts, structure, numProp, runIndex, runOriginalID);
     }
 }
 
