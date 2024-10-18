@@ -90,7 +90,7 @@ import { PointerPickingConfiguration } from "./Inputs/pointerPickingConfiguratio
 import { Logger } from "./Misc/logger";
 import type { AbstractEngine } from "./Engines/abstractEngine";
 import { RegisterClass } from "./Misc/typeStore";
-import type { FrameGraph } from "./FrameGraph";
+import type { FrameGraph } from "./FrameGraph/frameGraph";
 import type { IAssetContainer } from "./IAssetContainer";
 
 /**
