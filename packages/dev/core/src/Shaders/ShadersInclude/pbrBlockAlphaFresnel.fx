@@ -33,7 +33,7 @@
         outParams.alpha = getReflectanceFromAnalyticalBRDFLookup_Jones(saturate(dot(viewDirectionW, normalForward)), vec3(opacity0), vec3(opacity90), sqrt(microSurface)).x;
 
         #ifdef ALPHATEST
-            if (outParams.alpha < ALPHATESTVALUE)
+            if (outParams.alpha + 0.0000001 < ALPHATESTVALUE)
                 discard;
 
             #ifndef ALPHABLEND
