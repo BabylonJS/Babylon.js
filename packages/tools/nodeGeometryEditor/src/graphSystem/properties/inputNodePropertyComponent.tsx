@@ -4,7 +4,7 @@ import { FloatPropertyTabComponent } from "../../components/propertyTab/properti
 import { Vector2PropertyTabComponent } from "../../components/propertyTab/properties/vector2PropertyTabComponent";
 import { Vector3PropertyTabComponent } from "../../components/propertyTab/properties/vector3PropertyTabComponent";
 import { Vector4PropertyTabComponent } from "../../components/propertyTab/properties/vector4PropertyTabComponent";
-import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import type { Nullable } from "core/types";
@@ -141,6 +141,8 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 contextualSourcesOptions = [
                     { label: "Positions", value: NodeGeometryContextualSources.Positions },
                     { label: "Normals", value: NodeGeometryContextualSources.Normals },
+                    { label: "LatticeID", value: NodeGeometryContextualSources.LatticeID },
+                    { label: "LatticeControl", value: NodeGeometryContextualSources.LatticeControl },
                 ];
                 break;
             case NodeGeometryBlockConnectionPointTypes.Vector4:

@@ -159,7 +159,7 @@ export class ActionTabsComponent extends React.Component<IActionTabsComponentPro
                 id="actionTabs"
                 minWidth={300}
                 maxWidth={600}
-                size={{ height: "100%" }}
+                defaultSize={{ height: "100%" }}
                 minHeight="100%"
                 enable={{ top: false, right: false, bottom: false, left: true, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false }}
             >

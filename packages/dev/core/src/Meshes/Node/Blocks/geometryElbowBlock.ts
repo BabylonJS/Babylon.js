@@ -24,7 +24,7 @@ export class GeometryElbowBlock extends NodeGeometryBlock {
      * Gets the time spent to build this block (in ms)
      */
     public override get buildExecutionTime() {
-        return 0;
+        return -1;
     }
 
     /**

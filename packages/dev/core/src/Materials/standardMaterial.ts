@@ -59,7 +59,6 @@ import {
     PrepareUniformsAndSamplersList,
 } from "./materialHelper.functions";
 import { SerializationHelper } from "../Misc/decorators.serialization";
-import { UniformBuffer } from "./uniformBuffer";
 import { ShaderLanguage } from "./shaderLanguage";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
@@ -173,8 +172,8 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public PREPASS_ALBEDO_SQRT_INDEX = -1;
     public PREPASS_DEPTH = false;
     public PREPASS_DEPTH_INDEX = -1;
-    public PREPASS_NDC_DEPTH = false;
-    public PREPASS_NDC_DEPTH_INDEX = -1;
+    public PREPASS_SCREENSPACE_DEPTH = false;
+    public PREPASS_SCREENSPACE_DEPTH_INDEX = -1;
     public PREPASS_NORMAL = false;
     public PREPASS_NORMAL_INDEX = -1;
     public PREPASS_NORMAL_WORLDSPACE = false;
@@ -812,16 +811,7 @@ export class StandardMaterial extends PushMaterial {
      * @param forceGLSL Use the GLSL code generation for the shader (even on WebGPU). Default is false
      */
     constructor(name: string, scene?: Scene, forceGLSL = false) {
-        super(name, scene);
-        const engine = this.getScene().getEngine();
-        if (engine.isWebGPU && !forceGLSL && !StandardMaterial.ForceGLSL) {
-            // Switch main UBO to non UBO to connect to leftovers UBO in webgpu
-            if (this._uniformBuffer) {
-                this._uniformBuffer.dispose();
-            }
-            this._uniformBuffer = new UniformBuffer(engine, undefined, undefined, this.name, true);
-            this._shaderLanguage = ShaderLanguage.WGSL;
-        }
+        super(name, scene, undefined, forceGLSL || StandardMaterial.ForceGLSL);
 
         this.detailMap = new DetailMapConfiguration(this);
 

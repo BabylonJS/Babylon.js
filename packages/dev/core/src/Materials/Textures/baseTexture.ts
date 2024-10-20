@@ -13,12 +13,10 @@ import { RandomGUID } from "../../Misc/guid";
 import "../../Misc/fileTools";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import { ThinTexture } from "./thinTexture";
-import type { AbstractScene } from "../../abstractScene";
 
 import type { Animation } from "../../Animations/animation";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
-
-import "../../Engines/Extensions/engine.readTexture";
+import type { IAssetContainer } from "core/IAssetContainer";
 
 /**
  * Base class of all the textures in babylon.
@@ -505,7 +503,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     }
 
     /** @internal */
-    public _parentContainer: Nullable<AbstractScene> = null;
+    public _parentContainer: Nullable<IAssetContainer> = null;
 
     protected _loadingError: boolean = false;
     protected _errorObject?: {

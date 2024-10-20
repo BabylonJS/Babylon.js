@@ -31,9 +31,6 @@
         text-align: center;
         display: grid;
         grid-template-columns: 30px 1fr;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
         user-select: none;
 
         #logo {
@@ -70,7 +67,6 @@
         border-radius: 5px;
         outline: none;
         opacity: 0.7;
-        -webkit-transition: 0.2s;
         transition: opacity 0.2s;
         padding: 0;
     }
@@ -176,10 +172,6 @@
         margin: 0;
     }
 
-    .hasArrows input[type="number"] {
-        -moz-appearance: textfield;
-    }
-
     .sliderLine {
         height: var(--spacingHeight);
         display: grid;
@@ -241,7 +233,6 @@
 
                 input[type="number"] {
                     -webkit-appearance: textfield;
-                    -moz-appearance: textfield;
                     appearance: textfield;
                 }
             }
@@ -814,10 +805,6 @@
                 -webkit-appearance: none;
                 margin: 0;
             }
-
-            input[type="number"] {
-                -moz-appearance: textfield;
-            }
         }
 
         .copy {
@@ -1219,9 +1206,6 @@
             margin: 5px;
             margin-top: 6px;
             max-width: 200px;
-            -webkit-user-select: text;
-            -moz-user-select: text;
-            -ms-user-select: text;
             user-select: text;
 
             &.check {

@@ -44,13 +44,13 @@ export class SerializationTools {
     }
 
     public static Deserialize(serializationObject: any, globalState: GlobalState) {
-        globalState.nodeMaterial!.loadFromSerialization(serializationObject, "");
+        globalState.nodeMaterial!.parseSerializedObject(serializationObject, "");
         globalState.onIsLoadingChanged.notifyObservers(false);
     }
 
     public static AddFrameToMaterial(serializationObject: any, globalState: GlobalState, currentMaterial: NodeMaterial) {
         this.UpdateLocations(currentMaterial, globalState);
-        globalState.nodeMaterial!.loadFromSerialization(serializationObject, "", true);
+        globalState.nodeMaterial!.parseSerializedObject(serializationObject, "", true);
         globalState.onImportFrameObservable.notifyObservers(serializationObject);
         globalState.onIsLoadingChanged.notifyObservers(false);
     }

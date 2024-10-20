@@ -351,7 +351,7 @@ export class LightBlock extends NodeMaterialBlock {
             state.sharedData.dynamicUniformBlocks.push(this);
         }
         // Fragment
-        const accessor = state.shaderLanguage === ShaderLanguage.WGSL ? "fragmentInputs." : "";
+        const accessor = isWGSL ? "fragmentInputs." : "";
         state.sharedData.forcedBindableBlocks.push(this);
         state.sharedData.blocksWithDefines.push(this);
         const worldPos = this.worldPosition;
@@ -372,12 +372,18 @@ export class LightBlock extends NodeMaterialBlock {
 
         state._emitFunctionFromInclude("helperFunctions", comments);
 
+        let replaceString = { search: /vPositionW/g, replace: worldPosVariableName };
+
+        if (isWGSL) {
+            replaceString = { search: /fragmentInputs\.vPositionW/g, replace: worldPosVariableName };
+        }
+
         state._emitFunctionFromInclude("lightsFragmentFunctions", comments, {
-            replaceStrings: [{ search: /vPositionW/g, replace: worldPosVariableName }],
+            replaceStrings: [replaceString],
         });
 
         state._emitFunctionFromInclude("shadowsFragmentFunctions", comments, {
-            replaceStrings: [{ search: /vPositionW/g, replace: worldPosVariableName }],
+            replaceStrings: [replaceString],
         });
 
         this._injectUBODeclaration(state);
@@ -400,16 +406,24 @@ export class LightBlock extends NodeMaterialBlock {
         }
 
         if (this.light) {
+            let replaceString = { search: /vPositionW/g, replace: worldPosVariableName + ".xyz" };
+
+            if (isWGSL) {
+                replaceString = { search: /fragmentInputs\.vPositionW/g, replace: worldPosVariableName + ".xyz" };
+            }
+
             state.compilationString += state._emitCodeFromInclude("lightFragment", comments, {
-                replaceStrings: [
-                    { search: /{X}/g, replace: this._lightId.toString() },
-                    { search: /vPositionW/g, replace: worldPosVariableName + ".xyz" },
-                ],
+                replaceStrings: [{ search: /{X}/g, replace: this._lightId.toString() }, replaceString],
             });
         } else {
+            let substitutionVars = `vPositionW,${worldPosVariableName}.xyz`;
+
+            if (isWGSL) {
+                substitutionVars = `fragmentInputs.vPositionW,${worldPosVariableName}.xyz`;
+            }
             state.compilationString += state._emitCodeFromInclude("lightFragment", comments, {
                 repeatKey: "maxSimultaneousLights",
-                substitutionVars: `vPositionW,${worldPosVariableName}.xyz`,
+                substitutionVars: substitutionVars,
             });
         }
 

@@ -1,9 +1,9 @@
 import * as React from "react";
 import type { GlobalState } from "../../globalState";
 import type { Nullable } from "core/types";
-import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { StringTools } from "shared-ui-components/stringTools";
-import { FileButtonLineComponent } from "../../sharedComponents/fileButtonLineComponent";
+import { FileButtonLine } from "shared-ui-components/lines/fileButtonLineComponent";
 import { Tools } from "core/Misc/tools";
 import { SerializationTools } from "../../serializationTools";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
@@ -168,6 +168,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 this.props.globalState.onResetRequiredObservable.notifyObservers(false);
                 this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
                 this.props.globalState.onFrame.notifyObservers();
+                this.props.globalState.onClearUndoStack.notifyObservers();
             },
             undefined,
             true
@@ -281,6 +282,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             .then(() => {
                 geometry.build();
                 this.props.globalState.onFrame.notifyObservers();
+                this.props.globalState.onClearUndoStack.notifyObservers();
             })
             .catch((err) => {
                 this.props.globalState.hostDocument.defaultView!.alert("Unable to load your node geometry: " + err);
@@ -355,6 +357,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 this.props.globalState.nodeGeometry!.setToDefault();
                                 this.props.globalState.onResetRequiredObservable.notifyObservers(true);
                                 this.props.globalState.onFrame.notifyObservers();
+                                this.props.globalState.onClearUndoStack.notifyObservers();
                             }}
                         />
                     </LineContainerComponent>
@@ -429,7 +432,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <ButtonLineComponent label="Rebuild" onClick={() => this.props.globalState.stateManager.onRebuildRequiredObservable.notifyObservers()} />
                     </LineContainerComponent>
                     <LineContainerComponent title="FILE">
-                        <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />
+                        <FileButtonLine label="Load" onClick={(file) => this.load(file)} accept=".json" />
                         <ButtonLineComponent
                             label="Save"
                             onClick={() => {
@@ -454,7 +457,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 <TextLineComponent label="(*) Mesh and texture data will NOT be serialized by default" ignoreValue={true} additionalClass="label-center" />
                             </>
                         )}
-                        <FileButtonLineComponent label="Load Frame" uploadName={"frame-upload"} onClick={(file) => this.loadFrame(file)} accept=".json" />
+                        <FileButtonLine label="Load Frame" onClick={(file) => this.loadFrame(file)} accept=".json" />
                         <ButtonLineComponent
                             label="Export as GLB"
                             onClick={() => {

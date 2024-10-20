@@ -9,6 +9,7 @@ import { DeepCopier } from "../../Misc/deepCopier";
 import { GreasedLineSimpleMaterial } from "../../Materials/GreasedLine/greasedLineSimpleMaterial";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import type { FloatArray, IndicesArray } from "../../types";
+import { GreasedLineTools } from "../../Misc/greasedLineTools";
 
 /**
  * In POINTS_MODE_POINTS every array of points will become the center (backbone) of the ribbon. The ribbon will be expanded by `width / 2` to `+direction` and `-direction` as well.
@@ -86,6 +87,19 @@ export type GreasedLineRibbonOptions = {
 export type GreasedLinePoints = Vector3[] | Vector3[][] | Float32Array | Float32Array[] | number[][] | number[];
 
 /**
+ * Options for converting the points to the internal number[][] format used by GreasedLine
+ */
+export interface GreasedLinePointsOptions {
+    /**
+     * If defined and a Float32Array is used for the points parameter,
+     * it will create multiple disconnected lines.
+     * This parameter defines how many entries from the array to use for one line.
+     * One entry = 3 float values.
+     */
+    floatArrayStride?: number;
+}
+
+/**
  * Options for creating a GreasedLineMesh
  */
 export interface GreasedLineMeshOptions {
@@ -128,6 +142,10 @@ export interface GreasedLineMeshOptions {
      * If this option is set the line switches automatically to a non camera facing mode.
      */
     ribbonOptions?: GreasedLineRibbonOptions;
+    /**
+     * Options for converting the points.
+     */
+    pointsOptions?: GreasedLinePointsOptions;
 }
 
 /**
@@ -203,7 +221,7 @@ export abstract class GreasedLineBaseMesh extends Mesh {
             this._updateColorPointers();
         }
         this._createVertexBuffers(this._options.ribbonOptions?.smoothShading);
-        this.refreshBoundingInfo();
+        !this.doNotSyncBoundingInfo && this.refreshBoundingInfo();
 
         this.greasedLineMaterial?.updateLazy();
     }
@@ -340,13 +358,13 @@ export abstract class GreasedLineBaseMesh extends Mesh {
      * @param points points table
      * @param options optional options
      */
-    public setPoints(points: number[][], options?: GreasedLineMeshOptions) {
-        this._points = points;
+    public setPoints(points: GreasedLinePoints, options?: GreasedLineMeshOptions) {
+        this._points = GreasedLineTools.ConvertPoints(points, options?.pointsOptions ?? this._options.pointsOptions);
         this._updateWidths();
         if (!options?.colorPointers) {
             this._updateColorPointers();
         }
-        this._setPoints(points, options);
+        this._setPoints(this._points, options);
     }
 
     protected _initGreasedLine() {

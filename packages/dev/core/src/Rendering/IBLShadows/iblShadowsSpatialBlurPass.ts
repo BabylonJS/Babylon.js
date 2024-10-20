@@ -2,11 +2,10 @@ import { Constants } from "../../Engines/constants";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import type { Scene } from "../../scene";
 import { Vector4 } from "../../Maths/math.vector";
-import "../../Shaders/iblShadowSpatialBlur.fragment";
-import "../../Shaders/iblShadowDebug.fragment";
 import { PostProcess } from "../../PostProcesses/postProcess";
 import type { PostProcessOptions } from "../../PostProcesses/postProcess";
 import type { Effect } from "../../Materials/effect";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * This should not be instanciated directly, as it is part of a scene component
@@ -74,6 +73,7 @@ export class _IblShadowsSpatialBlurPass {
      */
     private _createDebugPass() {
         if (!this._debugPassPP) {
+            const isWebGPU = this._engine.isWebGPU;
             const debugOptions: PostProcessOptions = {
                 width: this._engine.getRenderWidth(),
                 height: this._engine.getRenderHeight(),
@@ -84,6 +84,14 @@ export class _IblShadowsSpatialBlurPass {
                 samplers: ["debugSampler"],
                 engine: this._engine,
                 reusable: false,
+                shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+                extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
+                    if (useWebGPU) {
+                        list.push(import("../../ShadersWGSL/iblShadowDebug.fragment"));
+                    } else {
+                        list.push(import("../../Shaders/iblShadowDebug.fragment"));
+                    }
+                },
             };
             this._debugPassPP = new PostProcess(this.debugPassName, "iblShadowDebug", debugOptions);
             this._debugPassPP.autoClear = false;
@@ -107,6 +115,7 @@ export class _IblShadowsSpatialBlurPass {
     }
 
     private _createTextures() {
+        const isWebGPU = this._engine.isWebGPU;
         const ppOptions: PostProcessOptions = {
             width: this._engine.getRenderWidth(),
             height: this._engine.getRenderHeight(),
@@ -117,6 +126,14 @@ export class _IblShadowsSpatialBlurPass {
             samplers: ["shadowSampler", "worldNormalSampler", "linearDepthSampler"],
             engine: this._engine,
             reusable: false,
+            shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
+                if (useWebGPU) {
+                    list.push(import("../../ShadersWGSL/iblShadowSpatialBlur.fragment"));
+                } else {
+                    list.push(import("../../Shaders/iblShadowSpatialBlur.fragment"));
+                }
+            },
         };
         this._outputPP = new PostProcess("spacialBlurPP", "iblShadowSpatialBlur", ppOptions);
         this._outputPP.autoClear = false;

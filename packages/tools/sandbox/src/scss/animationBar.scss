@@ -51,6 +51,7 @@
     }
 
     .slider {
+        // Since 15.4, 2022 the prefix is not needed.
         -webkit-appearance: none;
         cursor: pointer;
         width: 100%;
@@ -93,37 +94,6 @@
     .slider::-moz-range-track {
         background: white;
         height: 2px;
-    }
-
-    /** IE -ms */
-    .slider::-ms-track {
-        height: 2px;
-
-        /*remove bg colour from the track, we'll use ms-fill-lower and ms-fill-upper instead */
-        background: transparent;
-
-        /*leave room for the larger thumb to overflow with a transparent border */
-        border-color: transparent;
-        border-width: 10px 0;
-
-        /*remove default tick marks*/
-        color: transparent;
-    }
-    .slider::-ms-fill-lower {
-        background: white;
-        border-radius: 5px;
-    }
-    .slider::-ms-fill-upper {
-        background: white;
-        border-radius: 5px;
-    }
-    .slider::-ms-thumb {
-        width: 16px;
-        height: 16px;
-        border: 2px solid white;
-        border-radius: 50%;
-        background: var(--footer-background);
-        margin-top: 0px;
     }
 }
 

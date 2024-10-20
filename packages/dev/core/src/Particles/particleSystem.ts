@@ -17,7 +17,6 @@ import { SerializationHelper } from "../Misc/decorators.serialization";
 import { MeshParticleEmitter } from "./EmitterTypes/meshParticleEmitter";
 import { CustomParticleEmitter } from "./EmitterTypes/customParticleEmitter";
 import { BoxParticleEmitter } from "./EmitterTypes/boxParticleEmitter";
-import type { Engine } from "../Engines/engine";
 import { PointParticleEmitter } from "./EmitterTypes/pointParticleEmitter";
 import { HemisphericParticleEmitter } from "./EmitterTypes/hemisphericParticleEmitter";
 import { SphereDirectedParticleEmitter, SphereParticleEmitter } from "./EmitterTypes/sphereParticleEmitter";
@@ -1058,7 +1057,7 @@ export class ParticleSystem extends ThinParticleSystem {
     public override clone(name: string, newEmitter: any, cloneTexture = false): ParticleSystem {
         const custom = { ...this._customWrappers };
         let program: any = null;
-        const engine = this._engine as Engine;
+        const engine = this._engine;
         if (engine.createEffectForParticles) {
             if (this.customShader != null) {
                 program = this.customShader;

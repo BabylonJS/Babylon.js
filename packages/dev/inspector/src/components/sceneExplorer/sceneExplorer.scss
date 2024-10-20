@@ -53,9 +53,6 @@
         text-align: center;
         display: grid;
         grid-template-columns: 30px 1fr 50px;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
         user-select: none;
 
         #logo {
@@ -143,9 +140,6 @@
         margin-bottom: 0px;
         height: 24px;
 
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
         user-select: none;
 
         align-self: center;
@@ -203,9 +197,6 @@
         margin-top: 0px;
         margin-bottom: 0px;
         height: 24px;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
         user-select: none;
         display: grid;
         grid-template-columns: 20px 1fr;

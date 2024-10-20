@@ -2,13 +2,12 @@ import { Constants } from "../../Engines/constants";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import type { Scene } from "../../scene";
 import { Matrix, Vector2, Vector4 } from "../../Maths/math.vector";
-import "../../Shaders/iblShadowVoxelTracing.fragment";
-import "../../Shaders/iblShadowDebug.fragment";
 import { PostProcess } from "../../PostProcesses/postProcess";
 import type { PostProcessOptions } from "../../PostProcesses/postProcess";
 import type { IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
 import type { Effect } from "../../Materials/effect";
 import type { Camera } from "../../Cameras/camera";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Build cdf maps for IBL importance sampling during IBL shadow computation.
@@ -35,7 +34,7 @@ export class _IblShadowsVoxelTracingPass {
     private _sssSamples: number = 16;
     private _sssStride: number = 8;
     private _sssMaxDist: number = 0.05;
-    private _sssThickness: number = 0.01;
+    private _sssThickness: number = 0.5;
 
     private _ssShadowOpacity: number = 1.0;
     /**
@@ -205,6 +204,7 @@ export class _IblShadowsVoxelTracingPass {
      * Creates the debug post process effect for this pass
      */
     private _createDebugPass() {
+        const isWebGPU = this._engine.isWebGPU;
         if (!this._debugPassPP) {
             const debugOptions: PostProcessOptions = {
                 width: this._engine.getRenderWidth(),
@@ -213,6 +213,14 @@ export class _IblShadowsVoxelTracingPass {
                 samplers: ["debugSampler"],
                 engine: this._engine,
                 reusable: false,
+                shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+                extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
+                    if (useWebGPU) {
+                        list.push(import("../../ShadersWGSL/iblShadowDebug.fragment"));
+                    } else {
+                        list.push(import("../../Shaders/iblShadowDebug.fragment"));
+                    }
+                },
             };
             this._debugPassPP = new PostProcess(this.debugPassName, "iblShadowDebug", debugOptions);
             this._debugPassPP.autoClear = false;
@@ -239,9 +247,13 @@ export class _IblShadowsVoxelTracingPass {
 
     private _createTextures() {
         let defines = "";
+        if (this._scene.useRightHandedSystem) {
+            defines += "#define RIGHT_HANDED\n";
+        }
         if (this._debugVoxelMarchEnabled) {
             defines += "#define VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION 1u\n";
         }
+        const isWebGPU = this._engine.isWebGPU;
         const ppOptions: PostProcessOptions = {
             width: this._engine.getRenderWidth(),
             height: this._engine.getRenderHeight(),
@@ -249,10 +261,18 @@ export class _IblShadowsVoxelTracingPass {
             textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             uniforms: ["viewMtx", "projMtx", "invProjMtx", "invViewMtx", "wsNormalizationMtx", "shadowParameters", "offsetDataParameters", "sssParameters", "shadowOpacity"],
-            samplers: ["voxelGridSampler", "icdfySampler", "icdfxSampler", "blueNoiseSampler", "worldNormalSampler", "linearDepthSampler", "depthSampler", "worldPositionSampler"],
+            samplers: ["voxelGridSampler", "icdfySampler", "icdfxSampler", "blueNoiseSampler", "worldNormalSampler", "depthSampler", "worldPositionSampler"],
             defines: defines,
             engine: this._engine,
             reusable: false,
+            shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
+                if (useWebGPU) {
+                    list.push(import("../../ShadersWGSL/iblShadowVoxelTracing.fragment"));
+                } else {
+                    list.push(import("../../Shaders/iblShadowVoxelTracing.fragment"));
+                }
+            },
         };
         this._outputPP = new PostProcess("voxelTracingPass", "iblShadowVoxelTracing", ppOptions);
         this._outputPP.autoClear = false;
@@ -262,6 +282,9 @@ export class _IblShadowsVoxelTracingPass {
     }
 
     private _updatePostProcess(effect: Effect, camera: Camera) {
+        if (this._scene.useRightHandedSystem) {
+            effect.defines = "#define RIGHT_HANDED\n";
+        }
         effect.setMatrix("viewMtx", camera.getViewMatrix());
         effect.setMatrix("projMtx", camera.getProjectionMatrix());
         camera.getProjectionMatrix().invertToRef(this._cameraInvProj);
@@ -273,7 +296,7 @@ export class _IblShadowsVoxelTracingPass {
         this._frameId++;
 
         const downscaleSquared = this._downscale * this._downscale;
-        let rotation = this._scene.useRightHandedSystem ? -this._envRotation - 0.5 * Math.PI : -this._envRotation - Math.PI;
+        let rotation = this._scene.useRightHandedSystem ? -(this._envRotation + 0.5 * Math.PI) : this._envRotation - 0.5 * Math.PI;
         rotation = rotation % (2.0 * Math.PI);
         effect.setVector4("shadowParameters", new Vector4(this._sampleDirections, this._frameId / downscaleSquared, this._downscale, rotation));
         const offset = new Vector2(0.0, 0.0);
@@ -282,27 +305,22 @@ export class _IblShadowsVoxelTracingPass {
         effect.setVector4("offsetDataParameters", new Vector4(offset.x, offset.y, highestMip, 0.0));
 
         // SSS Options.
-        const worldScale = (1.0 / this._invWorldScaleMatrix.m[0]) * 2.0;
-        const maxDist = this._sssMaxDist * worldScale;
-        const thickness = this._sssThickness * worldScale;
-        effect.setVector4("sssParameters", new Vector4(this._sssSamples, this._sssStride, maxDist, thickness));
+        effect.setVector4("sssParameters", new Vector4(this._sssSamples, this._sssStride, this._sssMaxDist, this._sssThickness));
         effect.setVector4("shadowOpacity", new Vector4(this._voxelShadowOpacity, this._ssShadowOpacity, 0.0, 0.0));
         effect.setTexture("voxelGridSampler", voxelGrid);
         effect.setTexture("blueNoiseSampler", (this._renderPipeline as any)._noiseTexture);
         effect.setTexture("icdfySampler", this._renderPipeline!.getIcdfyTexture());
         effect.setTexture("icdfxSampler", this._renderPipeline!.getIcdfxTexture());
         if (this._debugVoxelMarchEnabled) {
-            effect.defines = "#define VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION 1u\n";
+            effect.defines += "#define VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION 1u\n";
         }
 
         const prePassRenderer = this._scene.prePassRenderer;
         if (prePassRenderer) {
             const wnormalIndex = prePassRenderer.getIndex(Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE);
-            const depthIndex = prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
-            const clipDepthIndex = prePassRenderer.getIndex(Constants.PREPASS_NDC_DEPTH_TEXTURE_TYPE);
+            const clipDepthIndex = prePassRenderer.getIndex(Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE);
             const wPositionIndex = prePassRenderer.getIndex(Constants.PREPASS_POSITION_TEXTURE_TYPE);
             if (wnormalIndex >= 0) effect.setTexture("worldNormalSampler", prePassRenderer.getRenderTarget().textures[wnormalIndex]);
-            if (depthIndex >= 0) effect.setTexture("linearDepthSampler", prePassRenderer.getRenderTarget().textures[depthIndex]);
             if (clipDepthIndex >= 0) effect.setTexture("depthSampler", prePassRenderer.getRenderTarget().textures[clipDepthIndex]);
             if (wPositionIndex >= 0) effect.setTexture("worldPositionSampler", prePassRenderer.getRenderTarget().textures[wPositionIndex]);
         }

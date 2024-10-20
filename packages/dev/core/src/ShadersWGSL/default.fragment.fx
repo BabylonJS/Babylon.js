@@ -198,7 +198,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #ifdef RGBDLIGHTMAP
         lightmapColor = vec4f(fromRGBD(lightmapColor), lightmapColor.a);
     #endif
-	lightmapColor = vec4f(lightmapColor.rgb * vLightmapInfos.y, lightmapColor.a);
+	lightmapColor = vec4f(lightmapColor.rgb * uniforms.vLightmapInfos.y, lightmapColor.a);
 #endif
 
 #include<lightFragment>[0..maxSimultaneousLights]
@@ -432,7 +432,7 @@ color = vec4f(max(color.rgb, vec3f(0.)), color.a);
 
 #ifdef PREPASS_LOCAL_POSITION
     fragData[PREPASS_LOCAL_POSITION_INDEX] =
-        vec4f(fragmentInputs.vPosition * 0.5 + 0.5, writeGeometryInfo);
+        vec4f(fragmentInputs.vPosition, writeGeometryInfo);
 #endif
 
 #ifdef PREPASS_VELOCITY
@@ -461,6 +461,11 @@ color = vec4f(max(color.rgb, vec3f(0.)), color.a);
 #ifdef PREPASS_DEPTH
     fragData[PREPASS_DEPTH_INDEX] = vec4f(fragmentInputs.vViewPos.z, 0.0, 0.0,
                                           writeGeometryInfo); // Linear depth
+#endif
+
+#ifdef PREPASS_SCREENSPACE_DEPTH
+    fragData[PREPASS_SCREENSPACE_DEPTH_INDEX] =
+        vec4f(fragmentInputs.position.z, 0.0, 0.0, writeGeometryInfo);
 #endif
 
 #ifdef PREPASS_NORMAL

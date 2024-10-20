@@ -10,14 +10,23 @@ import type { ISize } from "../Maths/math.size";
 
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { Scene } from "../scene";
-
-import "../Engines/Extensions/engine.alpha";
-import "../Engines/Extensions/engine.dynamicBuffer";
-
 import type { ThinEngine } from "../Engines/thinEngine";
-import { Logger } from "core/Misc/logger";
-import { BindLogDepth } from "core/Materials/materialHelper.functions";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { Logger } from "../Misc/logger";
+import { BindLogDepth } from "../Materials/materialHelper.functions";
+import { ShaderLanguage } from "../Materials/shaderLanguage";
+
+/**
+ * Options for the SpriteRenderer
+ */
+export interface SpriteRendererOptions {
+    /**
+     * Sets a boolean indicating if the renderer must render sprites with pixel perfect rendering.
+     * In this mode, sprites are rendered as "pixel art", which means that they appear as pixelated but remain stable when moving or when rotated or scaled.
+     * Note that for this mode to work as expected, the sprite texture must use the BILINEAR sampling mode, not NEAREST!
+     * Default is false.
+     */
+    pixelPerfect?: boolean;
+}
 
 /**
  * Class used to render sprites.
@@ -161,13 +170,15 @@ export class SpriteRenderer {
     private _isDisposed = false;
 
     /**
-     * Creates a new sprite Renderer
+     * Creates a new sprite renderer
      * @param engine defines the engine the renderer works with
      * @param capacity defines the maximum allowed number of sprites
      * @param epsilon defines the epsilon value to align texture (0.01 by default)
      * @param scene defines the hosting scene
+     * @param rendererOptions options for the sprite renderer
      */
-    constructor(engine: AbstractEngine, capacity: number, epsilon: number = 0.01, scene: Nullable<Scene> = null) {
+    constructor(engine: AbstractEngine, capacity: number, epsilon: number = 0.01, scene: Nullable<Scene> = null, rendererOptions?: SpriteRendererOptions) {
+        this._pixelPerfect = rendererOptions?.pixelPerfect ?? false;
         this._capacity = capacity;
         this._epsilon = epsilon;
 
@@ -194,7 +205,16 @@ export class SpriteRenderer {
         let offsets: VertexBuffer;
 
         if (this._useInstancing) {
-            const spriteData = new Float32Array([0, 0, 1, 0, 0, 1, 1, 1]);
+            const spriteData = new Float32Array([
+                this._epsilon,
+                this._epsilon,
+                1 - this._epsilon,
+                this._epsilon,
+                this._epsilon,
+                1 - this._epsilon,
+                1 - this._epsilon,
+                1 - this._epsilon,
+            ]);
             this._spriteBuffer = new Buffer(engine, spriteData, false, 2);
             offsets = this._spriteBuffer.createVertexBuffer("offsets", 0, 2);
         } else {
@@ -234,7 +254,7 @@ export class SpriteRenderer {
     }
 
     private _createEffects() {
-        if (this._isDisposed) {
+        if (this._isDisposed || !this._shadersLoaded) {
             return;
         }
 
@@ -312,7 +332,6 @@ export class SpriteRenderer {
 
         const engine = this._engine;
         const useRightHandedSystem = !!(this._scene && this._scene.useRightHandedSystem);
-        const baseSize = this.texture.getBaseSize();
 
         // Sprites
         const max = Math.min(this._capacity, sprites.length);
@@ -327,6 +346,7 @@ export class SpriteRenderer {
 
             noSprite = false;
             sprite._animate(deltaTime);
+            const baseSize = this.texture.getBaseSize(); // This could be change by the user inside the animate callback (like onAnimationEnd)
 
             this._appendSpriteVertex(offset++, sprite, 0, 0, baseSize, useRightHandedSystem, customSpriteUpdate);
             if (!this._useInstancing) {

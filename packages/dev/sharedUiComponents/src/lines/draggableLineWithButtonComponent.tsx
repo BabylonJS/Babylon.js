@@ -1,6 +1,7 @@
 import * as React from "react";
 
 export interface IDraggableLineWithButtonComponent {
+    format: string;
     data: string;
     tooltip: string;
     iconImage: any;
@@ -21,7 +22,7 @@ export class DraggableLineWithButtonComponent extends React.Component<IDraggable
                 title={this.props.tooltip}
                 draggable={true}
                 onDragStart={(event) => {
-                    event.dataTransfer.setData("babylonjs-material-node", this.props.data);
+                    event.dataTransfer.setData(this.props.format, this.props.data);
                 }}
             >
                 {this.props.data.substring(0, this.props.data.length - (this.props.lenSuffixToRemove ?? 6))}

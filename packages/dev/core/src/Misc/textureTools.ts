@@ -8,9 +8,7 @@ import { Constants } from "../Engines/constants";
 import type { Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess";
 import type { AbstractEngine } from "../Engines/abstractEngine";
-
-import "../Shaders/lod.fragment";
-import "../Shaders/lodCube.fragment";
+import { ShaderLanguage } from "core/Materials";
 
 /**
  * Uses the GPU to create a copy texture rescaled at a given size
@@ -244,13 +242,38 @@ const ProcessAsync = async (texture: BaseTexture, width: number, height: number,
     const scene = texture.getScene()!;
     const engine = scene.getEngine();
 
+    if (!engine.isWebGPU) {
+        if (texture.isCube) {
+            await import("../Shaders/lodCube.fragment");
+        } else {
+            await import("../Shaders/lod.fragment");
+        }
+    } else {
+        if (texture.isCube) {
+            await import("../ShadersWGSL/lodCube.fragment");
+        } else {
+            await import("../ShadersWGSL/lod.fragment");
+        }
+    }
+
     let lodPostProcess: PostProcess;
 
     if (!texture.isCube) {
-        lodPostProcess = new PostProcess("lod", "lod", ["lod", "gamma"], null, 1.0, null, Texture.NEAREST_NEAREST_MIPNEAREST, engine);
+        lodPostProcess = new PostProcess("lod", "lod", {
+            uniforms: ["lod", "gamma"],
+            samplingMode: Texture.NEAREST_NEAREST_MIPNEAREST,
+            engine,
+            shaderLanguage: engine.isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+        });
     } else {
         const faceDefines = ["#define POSITIVEX", "#define NEGATIVEX", "#define POSITIVEY", "#define NEGATIVEY", "#define POSITIVEZ", "#define NEGATIVEZ"];
-        lodPostProcess = new PostProcess("lodCube", "lodCube", ["lod", "gamma"], null, 1.0, null, Texture.NEAREST_NEAREST_MIPNEAREST, engine, false, faceDefines[face]);
+        lodPostProcess = new PostProcess("lodCube", "lodCube", {
+            uniforms: ["lod", "gamma"],
+            samplingMode: Texture.NEAREST_NEAREST_MIPNEAREST,
+            engine,
+            defines: faceDefines[face],
+            shaderLanguage: engine.isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+        });
     }
 
     await new Promise((resolve) => {
@@ -266,7 +289,7 @@ const ProcessAsync = async (texture: BaseTexture, width: number, height: number,
     lodPostProcess.onApply = function (effect) {
         effect.setTexture("textureSampler", texture);
         effect.setFloat("lod", lod);
-        effect.setBool("gamma", texture.gammaSpace);
+        effect.setInt("gamma", texture.gammaSpace ? 1 : 0);
     };
 
     const internalTexture = texture.getInternalTexture();

@@ -1,4 +1,4 @@
-import type { Animatable } from "./animatable";
+import type { Animatable } from "./animatable.core";
 import { Animation } from "./animation";
 import type { IMakeAnimationAdditiveOptions } from "./animation";
 import type { IAnimationKey } from "./animationKey";
@@ -8,9 +8,10 @@ import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import { EngineStore } from "../Engines/engineStore";
 
-import type { AbstractScene } from "../abstractScene";
 import { Tags } from "../Misc/tags";
 import type { AnimationGroupMask } from "./animationGroupMask";
+import "./animatable";
+import type { IAssetContainer } from "core/IAssetContainer";
 
 /**
  * This class defines the direct association between an animation and a target
@@ -83,7 +84,7 @@ export class AnimationGroup implements IDisposable {
     private _shouldStart = true;
 
     /** @internal */
-    public _parentContainer: Nullable<AbstractScene> = null;
+    public _parentContainer: Nullable<IAssetContainer> = null;
 
     /**
      * Gets or sets the unique id of the node

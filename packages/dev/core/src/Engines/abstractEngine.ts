@@ -1107,6 +1107,9 @@ export abstract class AbstractEngine {
         useTextureWidthAndHeight?: boolean
     ): void;
 
+    /** @internal */
+    public abstract _unpackFlipY(value: boolean): void;
+
     /**
      * Reads pixels from the current frame buffer. Please note that this function can be slow
      * @param x defines the x coordinate of the rectangle where pixels must be read
@@ -1786,14 +1789,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@7.24.0";
+        return "babylonjs@7.30.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "7.24.0";
+        return "7.30.0";
     }
 
     /**

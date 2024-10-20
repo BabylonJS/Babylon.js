@@ -72,6 +72,9 @@ export class NodeMaterialConnectionPoint {
     }
 
     /** @internal */
+    public _preventBubbleUp = false;
+
+    /** @internal */
     public readonly _ownerBlock: NodeMaterialBlock;
 
     private _connectedPointBackingField: Nullable<NodeMaterialConnectionPoint> = null;
@@ -98,6 +101,9 @@ export class NodeMaterialConnectionPoint {
     private readonly _endpoints = new Array<NodeMaterialConnectionPoint>();
     private _associatedVariableName: string;
     private readonly _direction: NodeMaterialConnectionPointDirection;
+
+    /** @internal */
+    public _redirectedSource: Nullable<NodeMaterialConnectionPoint> = null;
 
     private _typeConnectionSourceBackingField: Nullable<NodeMaterialConnectionPoint> = null;
     private _typeConnectionSourceTypeChangedObserver: Nullable<Observer<NodeMaterialBlockConnectionPointTypes>>;
@@ -164,6 +170,9 @@ export class NodeMaterialConnectionPoint {
 
     /** @internal */
     public _enforceAssociatedVariableName = false;
+
+    /** @internal */
+    public _forPostBuild = false;
 
     /** Gets the direction of the point */
     public get direction() {
@@ -255,6 +264,9 @@ export class NodeMaterialConnectionPoint {
             }
 
             if (this._linkedConnectionSource && this._linkedConnectionSource.isConnected) {
+                if (this._linkedConnectionSource.connectedPoint!._redirectedSource && this._linkedConnectionSource.connectedPoint!._redirectedSource.isConnected) {
+                    return this._linkedConnectionSource.connectedPoint!._redirectedSource.type;
+                }
                 return this._linkedConnectionSource.type;
             }
         }
@@ -638,7 +650,9 @@ export class NodeMaterialConnectionPoint {
         const serializationObject: any = {};
 
         serializationObject.name = this.name;
-        serializationObject.displayName = this.displayName;
+        if (this.displayName) {
+            serializationObject.displayName = this.displayName;
+        }
 
         if (isInput && this.connectedPoint) {
             serializationObject.inputName = this.name;

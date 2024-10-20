@@ -206,7 +206,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
 
         if (!this._lazy) {
             this._createVertexBuffers();
-            this.refreshBoundingInfo();
+            !this.doNotSyncBoundingInfo && this.refreshBoundingInfo();
         }
     }
 
