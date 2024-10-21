@@ -141,7 +141,7 @@ export interface IGLTFToFlowGraphMapping {
         arrays: IConvertedInteractivityObject,
         serializedObjects: ISerializedFlowGraphBlock[],
         context: ISerializedFlowGraphContext,
-        globalGLTF: IGLTF
+        globalGLTF?: IGLTF
     ) => ISerializedFlowGraphBlock[];
 }
 
@@ -765,6 +765,8 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         inputs: {
             values: {
+                // must be defined due to the array taking over
+                value: { name: "value" },
                 "[segment]": { name: "$1", toBlock: FlowGraphBlockNames.JsonPointerParser },
             },
         },

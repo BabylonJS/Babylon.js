@@ -96,7 +96,7 @@ function convertBlocks(id: number, gltfBlock: IKHRInteractivity_Node, _definitio
  * @param gltf the interactivity data
  * @returns a serialized flow graph
  */
-export function convertGLTFToSerializedFlowGraph(gltf: IKHRInteractivity, referenceGLTF: IGLTF): ISerializedFlowGraph {
+export function convertGLTFToSerializedFlowGraph(gltf: IKHRInteractivity, referenceGLTF?: IGLTF): ISerializedFlowGraph {
     // tasks for this function - parse types, events, variables and nodes, and then convert them all to the corresponding babylon types
 
     // Types - convert the types array to a babylon types array
@@ -241,8 +241,19 @@ export function convertGLTFToSerializedFlowGraph(gltf: IKHRInteractivity, refere
         // for each input value of the gltf block
         const gltfValues = gltfBlock.values ?? [];
         for (const value of gltfValues) {
-            const valueMapping = outputMapper.inputs?.values?.[value.id];
-            const socketInName = valueMapping?.name || value.id;
+            let valueMapping = outputMapper.inputs?.values?.[value.id];
+            let arrayMapping = false;
+            // check if there is an array mapping defined
+            if (!valueMapping) {
+                // search for a value mapping that has an array mapping
+                for (const key in outputMapper.inputs?.values) {
+                    if (key.startsWith("[") && key.endsWith("]")) {
+                        arrayMapping = true;
+                        valueMapping = outputMapper.inputs?.values?.[key];
+                    }
+                }
+            }
+            const socketInName = valueMapping ? (arrayMapping ? valueMapping.name.replace("$1", value.id) : valueMapping.name) : value.id;
             // create an input data connection for the flow graph block
             const socketIn: ISerializedFlowGraphConnection = {
                 uniqueId: RandomGUID(),
@@ -271,8 +282,19 @@ export function convertGLTFToSerializedFlowGraph(gltf: IKHRInteractivity, refere
                 if (!outputMapper) {
                     throw new Error(`/extensions/KHR_interactivity/nodes/${i}: Unknown block type: ${nodeOut.type}`);
                 }
-                const valueMapping = outputMapper.outputs?.values?.[nodeOutSocketName];
-                const socketOutName = valueMapping?.name || nodeOutSocketName;
+                let valueMapping = outputMapper.outputs?.values?.[nodeOutSocketName];
+                let arrayMapping = false;
+                // check if there is an array mapping defined
+                if (!valueMapping) {
+                    // search for a value mapping that has an array mapping
+                    for (const key in outputMapper.outputs?.values) {
+                        if (key.startsWith("[") && key.endsWith("]")) {
+                            arrayMapping = true;
+                            valueMapping = outputMapper.outputs?.values?.[key];
+                        }
+                    }
+                }
+                const socketOutName = valueMapping ? (arrayMapping ? valueMapping.name.replace("$1", nodeOutSocketName) : valueMapping?.name) : nodeOutSocketName;
                 const outBlock = (valueMapping && valueMapping.toBlock && nodeOut.blocks.find((b) => b.className === valueMapping.toBlock)) || nodeOut.blocks[0];
                 let socketOut = outBlock.dataOutputs.find((s) => s.name === socketOutName);
                 // if the socket doesn't exist, create it

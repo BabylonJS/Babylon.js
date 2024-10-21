@@ -56,7 +56,7 @@ export function updateInteractivity() {
             serializedObjects[1].config.variable = variableName;
             context._userVariables[variableName] = {
                 className: "Mesh",
-                id: globalGLTF.nodes?.[nodeIndex]._babylonTransformNode?.id,
+                id: globalGLTF?.nodes?.[nodeIndex]._babylonTransformNode?.id,
             };
             return serializedObjects;
         },
