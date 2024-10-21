@@ -1937,13 +1937,15 @@ export class AreaLight extends Light {
         const ltc1InternalTexture = AREALIGHTS_LTC1?.getInternalTexture();
 
         if (ltc1InternalTexture !== undefined) {
-            this._uniformBuffer.bindTexture("areaLightsLTC1", ltc1InternalTexture);
+            //this._uniformBuffer.bindTexture("areaLightsLTC1", ltc1InternalTexture);
+            effect.setTexture("areaLightsLTC1", AREALIGHTS_LTC1);
         }
 
         const ltc2InternalTexture = AREALIGHTS_LTC2?.getInternalTexture();
 
         if (ltc2InternalTexture !== undefined) {
-            this._uniformBuffer.bindTexture("areaLightsLTC2", ltc2InternalTexture);
+            //this._uniformBuffer.bindTexture("areaLightsLTC2", ltc2InternalTexture);
+            effect.setTexture("areaLightsLTC2", AREALIGHTS_LTC2);
         }
 
         return this;
