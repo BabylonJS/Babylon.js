@@ -33,6 +33,10 @@ export interface SoundOptions {
      * The output bus for the sound.
      */
     outputBus?: AbstractPrimaryAudioBus;
+    /**
+     * The sound's start offset in seconds.
+     */
+    startOffset?: number;
 }
 
 /**
@@ -72,6 +76,11 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
     public volume: number;
 
     /**
+     * The sound's start offset in seconds.
+     */
+    public startOffset: number;
+
+    /**
      * Observable for when the sound ends.
      */
     public onEndedObservable = new Observable<AbstractSound>();
@@ -108,6 +117,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         this.pitch = options?.pitch ?? 0;
         this.playbackRate = options?.playbackRate ?? 1;
         this.volume = options?.volume ?? 1;
+        this.startOffset = options?.startOffset ?? 0;
     }
 
     /**

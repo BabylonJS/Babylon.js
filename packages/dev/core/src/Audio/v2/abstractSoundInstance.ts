@@ -11,6 +11,7 @@ export abstract class AbstractSoundInstance extends AbstractAudioNode {
     // Output-only node that connects to a downstream input node.
 
     protected _source: AbstractSound;
+    protected _startOffset: number = 0;
 
     /**
      * The sound that the sound instance is playing.
@@ -22,6 +23,7 @@ export abstract class AbstractSoundInstance extends AbstractAudioNode {
         super(source.engine, AudioNodeType.Output);
 
         this._source = source;
+        this._startOffset = source.startOffset;
     }
 
     /**

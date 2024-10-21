@@ -2,6 +2,7 @@ import type { Nullable } from "../../../types";
 import type { AbstractAudioNode } from "../abstractAudioNode";
 import { AbstractStaticSound } from "../abstractStaticSound";
 import { AbstractStaticSoundInstance } from "../abstractStaticSoundInstance";
+import { SoundState } from "../soundState";
 import { WebAudioBus } from "./webAudioBus";
 import type { WebAudioDevice } from "./webAudioDevice";
 import type { AbstractWebAudioEngine, WebAudioStaticSoundOptions } from "./webAudioEngine";
@@ -73,12 +74,21 @@ export class WebAudioStaticSound extends AbstractStaticSound {
 
 /** @internal */
 export class WebAudioStaticSoundInstance extends AbstractStaticSoundInstance {
+    private _state: SoundState = SoundState.Stopped;
+    private _currentTime: number = 0;
+    private _startTime: number = 0;
+
     /** @internal */
     public sourceNode: AudioBufferSourceNode;
 
     /** @internal */
     get currentTime(): number {
-        return 0;
+        if (this._state === SoundState.Stopped) {
+            return 0;
+        }
+
+        const timeSinceLastStart = this._state === SoundState.Paused ? 0 : (this._source as WebAudioStaticSound).audioContext.currentTime - this._startTime;
+        return this._currentTime + timeSinceLastStart;
     }
 
     public get webAudioOutputNode() {
@@ -104,23 +114,65 @@ export class WebAudioStaticSoundInstance extends AbstractStaticSoundInstance {
 
     /** @internal */
     public async play(waitTime: Nullable<number> = null, startOffset: Nullable<number> = null, duration: Nullable<number> = null): Promise<void> {
+        if (this._state === SoundState.Playing) {
+            return;
+        }
+
+        if (this._state === SoundState.Paused) {
+            this.resume();
+            return;
+        }
+
+        this._state = SoundState.Playing;
+
         this.sourceNode.addEventListener("ended", this._onEnded.bind(this), { once: true });
-        this.sourceNode.start(waitTime ? (this._source as WebAudioStaticSound).audioContext.currentTime + waitTime : 0, startOffset ?? 0, duration === null ? undefined : duration);
+
+        this._startTime = (this._source as WebAudioStaticSound).audioContext.currentTime + (waitTime ?? 0);
+        this.sourceNode.start(this._startTime, startOffset ?? 0, duration === null ? undefined : duration);
     }
 
     /** @internal */
     public pause(): void {
-        //
+        if (this._state === SoundState.Paused) {
+            return;
+        }
+        this._state = SoundState.Paused;
+
+        this._source.stop();
+        this._currentTime += (this._source as WebAudioStaticSound).audioContext.currentTime - this._startTime;
     }
 
     /** @internal */
     public resume(): void {
-        //
+        if (this._state !== SoundState.Paused) {
+            return;
+        }
+
+        // TODO: Make this fall within loop points when loop start/end is set.
+        const startOffset = (this.currentTime + this._startOffset) % (this._source as WebAudioStaticSound).audioBuffer.duration;
+
+        this.play(0, startOffset);
     }
 
     /** @internal */
     public stop(waitTime: Nullable<number> = null): void {
+        if (this._state === SoundState.Stopped) {
+            return;
+        }
+        this._state = SoundState.Stopped;
+
         this.sourceNode?.stop(waitTime ? (this._source as WebAudioStaticSound).audioContext.currentTime + waitTime : 0);
+    }
+
+    protected _onEnded(): void {
+        this._startTime = 0;
+
+        if (this._state === SoundState.Paused) {
+            return;
+        }
+
+        this.onEndedObservable.notifyObservers(this);
+        this.sourceNode?.removeEventListener("ended", this._onEnded.bind(this));
     }
 
     protected override _connect(node: AbstractAudioNode): void {
@@ -141,10 +193,5 @@ export class WebAudioStaticSoundInstance extends AbstractStaticSoundInstance {
         } else {
             throw new Error("Unsupported node type.");
         }
-    }
-
-    protected _onEnded(): void {
-        this.onEndedObservable.notifyObservers(this);
-        this.sourceNode?.removeEventListener("ended", this._onEnded.bind(this));
     }
 }
