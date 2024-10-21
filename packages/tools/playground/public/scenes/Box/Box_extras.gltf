@@ -29,7 +29,7 @@
                     "flows": [
                         {
                             "id": "out",
-                            "node": 3,
+                            "node": 6,
                             "socket": "in"
                         }
                     ]
@@ -49,12 +49,12 @@
                     "values": [
                         {
                             "id": "a",
-                            "value": [1, 2, 3, 4],
-                            "type": 0
+                            "node": 5,
+                            "socket": "value"
                         },
                         {
                             "id": "b",
-                            "value": [1, 2, 3, 4],
+                            "value": [0, 1, 0],
                             "type": 0
                         }
                     ]
@@ -64,8 +64,8 @@
                     "values": [
                         {
                             "id": "message",
-                            "node": 2,
-                            "socket": "value"
+                            "node": 0,
+                            "socket": "selectionPoint"
                         }
                     ]
                 },
@@ -74,13 +74,47 @@
                     "values": [
                         {
                             "id": "message",
+                            "node": 5,
+                            "socket": "value"
+                        }
+                    ]
+                },
+                {
+                    "type": "pointer/get",
+                    "configuration": [
+                        {
+                            "id": "pointer",
+                            "type": 2,
+                            "value": "/nodes/4/translation"
+                        }
+                    ]
+                },
+                {
+                    "type": "pointer/set",
+                    "configuration": [
+                        {
+                            "id": "pointer",
+                            "type": 2,
+                            "value": "/nodes/4/translation"
+                        }
+                    ],
+                    "values": [
+                        {
+                            "id": "value",
                             "node": 2,
                             "socket": "value"
+                        }
+                    ],
+                    "flows": [
+                        {
+                            "id": "out",
+                            "node": 4,
+                            "socket": "in"
                         }
                     ]
                 }
             ],
-            "types": [{ "signature": "float4" }]
+            "types": [{ "signature": "float3" }]
         }
     },
     "scene": 0,
