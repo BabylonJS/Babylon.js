@@ -13,6 +13,7 @@ import { Constants } from "core/Engines/constants";
 import { Tools } from "core/Misc/tools";
 import "core/Meshes/thinInstanceMesh";
 import type { ThinEngine } from "core/Engines/thinEngine";
+import { ToHalfFloat } from "core/Misc/textureTools";
 
 interface DelayedTextureUpdate {
     covA: Uint16Array;
@@ -528,55 +529,12 @@ export class GaussianSplattingMesh extends Mesh {
             this._splatPositions[4 * i + 3] = factor;
             const transform = factor;
 
-            // overflow checks removed for best performance
-            const toFloat16 = function (val: number) {
-                float32[0] = val;
-                const x = uint32[0];
-
-                const sign = (x >> 31) & 0x1;
-                let exponent = (x >> 23) & 0xff;
-                let mantissa = x & 0x7fffff;
-
-                // Handle special cases: zero, infinity, and NaN
-                if (exponent === 0xff) {
-                    if (mantissa !== 0) {
-                        // NaN (Not a Number)
-                        return (sign << 15) | 0x7e00;
-                    } else {
-                        // Infinity
-                        return (sign << 15) | 0x7c00;
-                    }
-                }
-
-                // Shift exponent from float32 bias (127) to float16 bias (15)
-                exponent -= 127;
-                exponent += 15;
-
-                // Handle overflow (to infinity) and underflow (to zero or subnormal)
-                if (exponent >= 31) {
-                    // Overflow to infinity
-                    return (sign << 15) | 0x7c00;
-                }
-                if (exponent <= 0) {
-                    // Subnormal values or underflow to zero
-                    if (exponent < -10) {
-                        // Too small, underflows to zero
-                        return sign << 15;
-                    }
-                    // Subnormal number
-                    mantissa = (mantissa | 0x800000) >> (1 - exponent);
-                    return (sign << 15) | (mantissa >> 13);
-                }
-
-                return (sign << 15) | (exponent << 10) | (mantissa >> 13);
-            };
-
-            covA[i * 4 + 0] = toFloat16(covariances[0] / transform);
-            covA[i * 4 + 1] = toFloat16(covariances[1] / transform);
-            covA[i * 4 + 2] = toFloat16(covariances[2] / transform);
-            covA[i * 4 + 3] = toFloat16(covariances[3] / transform);
-            covB[i * covBSplatSize + 0] = toFloat16(covariances[4] / transform);
-            covB[i * covBSplatSize + 1] = toFloat16(covariances[5] / transform);
+            covA[i * 4 + 0] = ToHalfFloat(covariances[0] / transform);
+            covA[i * 4 + 1] = ToHalfFloat(covariances[1] / transform);
+            covA[i * 4 + 2] = ToHalfFloat(covariances[2] / transform);
+            covA[i * 4 + 3] = ToHalfFloat(covariances[3] / transform);
+            covB[i * covBSplatSize + 0] = ToHalfFloat(covariances[4] / transform);
+            covB[i * covBSplatSize + 1] = ToHalfFloat(covariances[5] / transform);
         }
 
         // Update the mesh
