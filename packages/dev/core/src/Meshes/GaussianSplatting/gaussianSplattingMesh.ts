@@ -471,8 +471,8 @@ export class GaussianSplattingMesh extends Mesh {
         const textureLength = textureSize.x * textureSize.y;
 
         this._splatPositions = new Float32Array(4 * textureLength);
-        const covA = new Uint16Array(3 * textureLength);
-        const covB = new Uint16Array(3 * textureLength);
+        const covA = new Uint16Array(4 * textureLength);
+        const covB = new Uint16Array(2 * textureLength);
 
         const matrixRotation = TmpVectors.Matrix[0];
         const matrixScale = TmpVectors.Matrix[1];
@@ -568,12 +568,12 @@ export class GaussianSplattingMesh extends Mesh {
                 return (sign << 15) | (exponent << 10) | (mantissa >> 13);
             };
 
-            covA[i * 3 + 0] = toFloat16(covariances[0] / transform);
-            covA[i * 3 + 1] = toFloat16(covariances[1] / transform);
-            covA[i * 3 + 2] = toFloat16(covariances[2] / transform);
-            covB[i * 3 + 0] = toFloat16(covariances[3] / transform);
-            covB[i * 3 + 1] = toFloat16(covariances[4] / transform);
-            covB[i * 3 + 2] = toFloat16(covariances[5] / transform);
+            covA[i * 4 + 0] = toFloat16(covariances[0] / transform);
+            covA[i * 4 + 1] = toFloat16(covariances[1] / transform);
+            covA[i * 4 + 2] = toFloat16(covariances[2] / transform);
+            covA[i * 4 + 3] = toFloat16(covariances[3] / transform);
+            covB[i * 2 + 0] = toFloat16(covariances[4] / transform);
+            covB[i * 2 + 1] = toFloat16(covariances[5] / transform);
         }
 
         // Update the mesh
@@ -616,8 +616,8 @@ export class GaussianSplattingMesh extends Mesh {
 
             this._postToWorker(true);
         } else {
-            this._covariancesATexture = createTextureFromDataF16(covA, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGB);
-            this._covariancesBTexture = createTextureFromDataF16(covB, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGB);
+            this._covariancesATexture = createTextureFromDataF16(covA, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+            this._covariancesBTexture = createTextureFromDataF16(covB, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RG);
             this._centersTexture = createTextureFromData(this._splatPositions, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
             this._colorsTexture = createTextureFromDataU8(colorArray, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
             this._instanciateWorker();

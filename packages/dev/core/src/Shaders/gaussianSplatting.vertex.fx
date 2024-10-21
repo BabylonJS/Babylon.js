@@ -44,8 +44,8 @@ void main () {
     vec2 splatUV = getDataUV(splatIndex, dataTextureSize);
     vec4 center = texture2D(centersTexture, splatUV);
     vec4 color = texture2D(colorsTexture, splatUV);
-    vec3 covA = texture2D(covariancesATexture, splatUV).xyz * center.w;
-    vec3 covB = texture2D(covariancesBTexture, splatUV).xyz * center.w;
+    vec4 covA = texture2D(covariancesATexture, splatUV) * center.w;
+    vec4 covB = texture2D(covariancesBTexture, splatUV) * center.w;
 
     vec4 worldPos = world * vec4(center.xyz, 1.0);
 
@@ -62,8 +62,8 @@ void main () {
 
     mat3 Vrk = mat3(
         covA.x, covA.y, covA.z, 
-        covA.y, covB.x, covB.y,
-        covA.z, covB.y, covB.z
+        covA.y, covA.w, covB.x,
+        covA.z, covB.x, covB.y
     );
 
     mat3 J = mat3(
