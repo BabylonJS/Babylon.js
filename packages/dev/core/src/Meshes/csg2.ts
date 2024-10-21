@@ -2,7 +2,7 @@ import { Mesh } from "./mesh";
 import type { IDisposable, Scene } from "core/scene";
 import { VertexData } from "./mesh.vertexData";
 import { VertexBuffer } from "../Buffers/buffer";
-import { Logger } from "core/Misc";
+import { Logger } from "core/Misc/logger";
 import { MultiMaterial } from "core/Materials/multiMaterial";
 import { SubMesh } from "./subMesh";
 import type { Material } from "core/Materials/material";
