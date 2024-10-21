@@ -8,7 +8,7 @@
     },
     "devDependencies": {
         "@alex_neo/jest-expect-message": "~1.0.5",
-        "@dev/build-tools": "^1.0.0",
+        "@dev/build-tools": "file:packages/dev/buildTools",
         "@nrwl/tao": "^18.0.4",
         "@nrwl/workspace": "^18.0.4",
         "@playwright/test": "1.46.1",

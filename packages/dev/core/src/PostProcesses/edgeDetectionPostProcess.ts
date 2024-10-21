@@ -14,7 +14,7 @@ import type { Scene } from "../scene";
 import { EngineStore } from "../Engines/engineStore";
 
 import "../Shaders/edgeDetection.fragment";
-import { RenderTargetTexture } from "core/Materials";
+import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 
 /**
  * The Edge Detection effect highlights the edges of objects in the scene like a toon.
