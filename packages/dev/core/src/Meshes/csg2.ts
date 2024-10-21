@@ -1,5 +1,6 @@
 import { Mesh } from "./mesh";
 import type { IDisposable, Scene } from "core/scene";
+import type { IVertexDataLike } from "./mesh.vertexData";
 import { VertexData } from "./mesh.vertexData";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Logger } from "core/Misc/logger";
@@ -7,7 +8,8 @@ import { MultiMaterial } from "core/Materials/multiMaterial";
 import { SubMesh } from "./subMesh";
 import type { Material } from "core/Materials/material";
 import { _LoadScriptModuleAsync } from "core/Misc/tools.internals";
-import type { FloatArray } from "core/types";
+import type { FloatArray, Nullable } from "core/types";
+import type { Matrix } from "core/Maths/math.vector";
 import { Vector3 } from "core/Maths/math.vector";
 
 /**
@@ -179,42 +181,19 @@ export class CSG2 implements IDisposable {
 
         const vertexCount = manifoldMesh.vertProperties.length / manifoldMesh.numProp;
 
-        // Positions (first one is always position)
-        const positions = new Float32Array(vertexCount * this._vertexStructure[0].stride);
-        for (let i = 0; i < vertexCount; i++) {
-            positions[i * 3] = manifoldMesh.vertProperties[i * manifoldMesh.numProp];
-            positions[i * 3 + 1] = manifoldMesh.vertProperties[i * manifoldMesh.numProp + 1];
-            positions[i * 3 + 2] = manifoldMesh.vertProperties[i * manifoldMesh.numProp + 2];
-        }
-        vertexData.positions = positions;
-
-        // Other attributes
-        let offset = 3;
-        for (let componentIndex = 1; componentIndex < this._vertexStructure.length; componentIndex++) {
+        // Attributes
+        let offset = 0;
+        for (let componentIndex = 0; componentIndex < this._vertexStructure.length; componentIndex++) {
             const component = this._vertexStructure[componentIndex];
-            // Normals (special case as we need to convert the data)
-            if (component.kind === VertexBuffer.NormalKind) {
-                const normals = new Float32Array(vertexCount * 3);
 
-                for (let i = 0; i < vertexCount; i++) {
-                    normals[i * 3] = manifoldMesh.vertProperties[i * manifoldMesh.numProp + offset + 2];
-                    normals[i * 3 + 1] = manifoldMesh.vertProperties[i * manifoldMesh.numProp + offset + 1];
-                    normals[i * 3 + 2] = manifoldMesh.vertProperties[i * manifoldMesh.numProp + offset];
+            const data = new Float32Array(vertexCount * component.stride);
+            for (let i = 0; i < vertexCount; i++) {
+                for (let strideIndex = 0; strideIndex < component.stride; strideIndex++) {
+                    data[i * component.stride + strideIndex] = manifoldMesh.vertProperties[i * manifoldMesh.numProp + offset + strideIndex];
                 }
-
-                vertexData.normals = normals;
-                offset += 3;
-            } else {
-                // Other properties
-                const data = new Float32Array(vertexCount * component.stride);
-                for (let i = 0; i < vertexCount; i++) {
-                    for (let strideIndex = 0; strideIndex < component.stride; strideIndex++) {
-                        data[i * component.stride + strideIndex] = manifoldMesh.vertProperties[i * manifoldMesh.numProp + offset + strideIndex];
-                    }
-                }
-                vertexData.set(data, component.kind);
-                offset += component.stride;
             }
+            vertexData.set(data, component.kind);
+            offset += component.stride;
         }
 
         // Rebuild mesh from vertex data
@@ -321,6 +300,68 @@ export class CSG2 implements IDisposable {
         }
     }
 
+    private static _Construct(data: IVertexDataLike, worldMatrix: Nullable<Matrix>, runIndex?: Uint32Array, runOriginalID?: Uint32Array) {
+        // Create the MeshGL for I/O with Manifold library.
+        const triVerts = new Uint32Array(data.indices!.length);
+
+        // Revert order
+        for (let i = 0; i < data.indices!.length; i += 3) {
+            triVerts[i] = data.indices![i + 2];
+            triVerts[i + 1] = data.indices![i + 1];
+            triVerts[i + 2] = data.indices![i];
+        }
+
+        const tempVector3 = new Vector3();
+        let numProp = 3;
+        const structure: IManifoldVertexComponent[] = [{ stride: 3, kind: VertexBuffer.PositionKind }];
+
+        if (!worldMatrix) {
+            structure[0].data = data.positions!;
+        } else {
+            const positions = new Float32Array(data.positions!.length);
+            for (let i = 0; i < data.positions!.length; i += 3) {
+                Vector3.TransformCoordinatesFromFloatsToRef(data.positions![i], data.positions![i + 1], data.positions![i + 2], worldMatrix, tempVector3);
+                tempVector3.toArray(positions, i);
+            }
+            structure[0].data = positions;
+        }
+
+        // Normals
+        const sourceNormals = data.normals!;
+        if (sourceNormals) {
+            numProp += 3;
+            structure.push({ stride: 3, kind: VertexBuffer.NormalKind });
+            if (!worldMatrix) {
+                structure[1].data = sourceNormals;
+            } else {
+                const normals = new Float32Array(sourceNormals.length);
+                for (let i = 0; i < sourceNormals.length; i += 3) {
+                    Vector3.TransformNormalFromFloatsToRef(sourceNormals[i], sourceNormals[i + 1], sourceNormals[i + 2], worldMatrix, tempVector3);
+                    tempVector3.toArray(normals, i);
+                }
+                structure[1].data = normals;
+            }
+        }
+
+        // UVs
+        for (const kind of [VertexBuffer.UVKind, VertexBuffer.UV2Kind, VertexBuffer.UV3Kind, VertexBuffer.UV4Kind, VertexBuffer.UV5Kind, VertexBuffer.UV6Kind]) {
+            const sourceUV = (data as any)[kind === VertexBuffer.UVKind ? "uvs" : kind];
+            if (sourceUV) {
+                numProp += 2;
+                structure.push({ stride: 2, kind: kind, data: sourceUV });
+            }
+        }
+
+        // Colors
+        const sourceColors = data.colors;
+        if (sourceColors) {
+            numProp += 4;
+            structure.push({ stride: 4, kind: VertexBuffer.ColorKind, data: sourceColors });
+        }
+
+        return this._ProcessData(data.positions!.length / 3, triVerts, structure, numProp, runIndex, runOriginalID);
+    }
+
     /**
      * Create a new Constructive Solid Geometry from a vertexData
      * @param vertexData defines the vertexData to use to create the CSG
@@ -334,43 +375,7 @@ export class CSG2 implements IDisposable {
             throw new Error("The vertexData must at least have positions and indices");
         }
 
-        // Create the MeshGL for I/O with Manifold library.
-        const triVerts = new Uint32Array(sourceIndices.length);
-
-        // Revert order
-        for (let i = 0; i < sourceIndices.length; i += 3) {
-            triVerts[i] = sourceIndices[i + 2];
-            triVerts[i + 1] = sourceIndices[i + 1];
-            triVerts[i + 2] = sourceIndices[i];
-        }
-
-        // Positions
-        let numProp = 3;
-        const structure: IManifoldVertexComponent[] = [{ stride: 3, kind: VertexBuffer.PositionKind, data: vertexData.positions! }];
-
-        // Normals
-        if (vertexData.normals) {
-            numProp += 3;
-            structure.push({ stride: 3, kind: VertexBuffer.NormalKind, data: vertexData.normals });
-        }
-
-        // UVs
-        for (const kind of [VertexBuffer.UVKind, VertexBuffer.UV2Kind, VertexBuffer.UV3Kind, VertexBuffer.UV4Kind, VertexBuffer.UV5Kind, VertexBuffer.UV6Kind]) {
-            const sourceUV = (vertexData as any)[kind === VertexBuffer.UVKind ? "uvs" : kind] as FloatArray;
-            if (sourceUV) {
-                numProp += 2;
-                structure.push({ stride: 2, kind: kind, data: sourceUV });
-            }
-        }
-
-        // Colors
-        const sourceColors = vertexData.colors;
-        if (sourceColors) {
-            numProp += 4;
-            structure.push({ stride: 4, kind: VertexBuffer.ColorKind, data: sourceColors });
-        }
-
-        return this._ProcessData(sourceVertices.length / 3, triVerts, structure, numProp);
+        return this._Construct(vertexData, null);
     }
 
     /**
@@ -408,67 +413,20 @@ export class CSG2 implements IDisposable {
         const runIndex = new Uint32Array(indices.map((i) => starts[i]));
         const runOriginalID = new Uint32Array(indices.map((i) => originalIDs[i]));
 
-        // Create the MeshGL for I/O with Manifold library.
-        const triVerts = new Uint32Array(sourceIndices.length);
-
-        // Revert order
-        for (let i = 0; i < sourceIndices.length; i += 3) {
-            triVerts[i] = sourceIndices[i + 2];
-            triVerts[i + 1] = sourceIndices[i + 1];
-            triVerts[i + 2] = sourceIndices[i];
-        }
-
-        // Positions
-        const tempVector3 = new Vector3();
-        let numProp = 3;
-        const structure: IManifoldVertexComponent[] = [{ stride: 3, kind: VertexBuffer.PositionKind }];
-
-        if (ignoreWorldMatrix) {
-            structure[0].data = sourceVertices;
-        } else {
-            const positions = new Float32Array(sourceVertices.length);
-            for (let i = 0; i < sourceVertices.length; i += 3) {
-                Vector3.TransformCoordinatesFromFloatsToRef(sourceVertices[i], sourceVertices[i + 1], sourceVertices[i + 2], worldMatrix, tempVector3);
-                tempVector3.toArray(positions, i);
-            }
-            structure[0].data = positions;
-        }
-
-        // Normals
-        const sourceNormals = mesh.getVerticesData(VertexBuffer.NormalKind);
-        if (sourceNormals) {
-            numProp += 3;
-            structure.push({ stride: 3, kind: VertexBuffer.NormalKind });
-            if (ignoreWorldMatrix) {
-                structure[1].data = sourceNormals;
-            } else {
-                const normals = new Float32Array(sourceNormals.length);
-                for (let i = 0; i < sourceNormals.length; i += 3) {
-                    Vector3.TransformNormalFromFloatsToRef(sourceNormals[i], sourceNormals[i + 1], sourceNormals[i + 2], worldMatrix, tempVector3);
-                    tempVector3.toArray(normals, i);
-                }
-                structure[1].data = normals;
-            }
-        }
-
-        // UVs
-        for (const kind of [VertexBuffer.UVKind, VertexBuffer.UV2Kind, VertexBuffer.UV3Kind, VertexBuffer.UV4Kind, VertexBuffer.UV5Kind, VertexBuffer.UV6Kind]) {
-            const sourceUV = mesh.getVerticesData(kind);
-            if (sourceUV) {
-                numProp += 2;
-                structure.push({ stride: 2, kind: kind, data: sourceUV });
-            }
-        }
-
-        // Colors
-        const sourceColors = mesh.getVerticesData(VertexBuffer.ColorKind);
-        if (sourceColors) {
-            numProp += 4;
-            structure.push({ stride: 4, kind: VertexBuffer.ColorKind, data: sourceColors });
-        }
-
         // Process
-        return this._ProcessData(sourceVertices.length / 3, triVerts, structure, numProp, runIndex, runOriginalID);
+        const data = {
+            positions: sourceVertices,
+            indices: sourceIndices,
+            normals: mesh.getVerticesData(VertexBuffer.NormalKind),
+            colors: mesh.getVerticesData(VertexBuffer.ColorKind),
+            uvs: mesh.getVerticesData(VertexBuffer.UVKind),
+            uvs2: mesh.getVerticesData(VertexBuffer.UV2Kind),
+            uvs3: mesh.getVerticesData(VertexBuffer.UV3Kind),
+            uvs4: mesh.getVerticesData(VertexBuffer.UV4Kind),
+            uvs5: mesh.getVerticesData(VertexBuffer.UV5Kind),
+            uvs6: mesh.getVerticesData(VertexBuffer.UV6Kind),
+        };
+        return this._Construct(data, ignoreWorldMatrix ? null : worldMatrix, runIndex, runOriginalID);
     }
 }
 
