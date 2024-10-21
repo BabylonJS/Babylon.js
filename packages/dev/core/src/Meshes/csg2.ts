@@ -53,7 +53,7 @@ export interface IMeshRebuildOptions {
     /**
      * Rebuild normals
      */
-    rebuildNormals: boolean;
+    rebuildNormals?: boolean;
     /**
      * True to center the mesh on 0,0,0
      */
