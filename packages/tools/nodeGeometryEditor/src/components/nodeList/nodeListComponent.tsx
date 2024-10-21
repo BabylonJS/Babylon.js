@@ -146,6 +146,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         LengthBlock: "Outputs the length of an input vector",
         InterceptorBlock: "Block used to trigger an observable when traversed",
         LatticeBlock: "Block used to apply Lattice on geometry",
+        AggregatorBlock: "Block used to aggregate values from a geometry",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -323,6 +324,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "OptimizeBlock",
                 "MappingBlock",
                 "LatticeBlock",
+                "AggregatorBlock",
             ],
             Noises: ["RandomBlock", "NoiseBlock"],
             Textures: ["TextureBlock", "TextureFetchBlock"],

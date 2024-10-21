@@ -80,3 +80,4 @@ export * from "./Blocks/geometryDotBlock";
 export * from "./Blocks/geometryLengthBlock";
 export * from "./Blocks/geometryRotate2dBlock";
 export * from "./Blocks/geometryInterceptorBlock";
+export * from "./Blocks/Set/aggregatorBlock";
