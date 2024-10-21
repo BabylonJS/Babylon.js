@@ -15,9 +15,9 @@ import "core/Meshes/thinInstanceMesh";
 import type { ThinEngine } from "core/Engines/thinEngine";
 
 interface DelayedTextureUpdate {
-    covA: Float32Array;
-    covB: Float32Array;
-    colors: Float32Array;
+    covA: Uint16Array;
+    covB: Uint16Array;
+    colors: Uint8Array;
     centers: Float32Array;
 }
 /**
@@ -38,11 +38,11 @@ export class GaussianSplattingMesh extends Mesh {
     private _splatPositions: Nullable<Float32Array> = null;
     private _splatIndex: Nullable<Float32Array> = null;
     //@ts-expect-error
-    private _covariancesA: Nullable<Float32Array> = null;
+    private _covariancesA: Nullable<Uint16Array> = null;
     //@ts-expect-error
-    private _covariancesB: Nullable<Float32Array> = null;
+    private _covariancesB: Nullable<Uint16Array> = null;
     //@ts-expect-error
-    private _colors: Nullable<Float32Array> = null;
+    private _colors: Nullable<Uint8Array> = null;
     private readonly _keepInRam: boolean = false;
 
     private _delayedTextureUpdate: Nullable<DelayedTextureUpdate> = null;
@@ -431,7 +431,7 @@ export class GaussianSplattingMesh extends Mesh {
                 }
 
                 for (let j = 0; j < vertexCount; j++) {
-                    floatMix[2 * j + 1] = 10000 + (viewProj[2] * positions[3 * j + 0] + viewProj[6] * positions[3 * j + 1] + viewProj[10] * positions[3 * j + 2]) * depthFactor;
+                    floatMix[2 * j + 1] = 10000 + (viewProj[2] * positions[4 * j + 0] + viewProj[6] * positions[4 * j + 1] + viewProj[10] * positions[4 * j + 2]) * depthFactor;
                 }
 
                 depthMix.sort();
@@ -470,9 +470,9 @@ export class GaussianSplattingMesh extends Mesh {
         const textureSize = this._getTextureSize(vertexCount);
         const textureLength = textureSize.x * textureSize.y;
 
-        this._splatPositions = new Float32Array(3 * textureLength);
-        const covA = new Float32Array(3 * textureLength);
-        const covB = new Float32Array(3 * textureLength);
+        this._splatPositions = new Float32Array(4 * textureLength);
+        const covA = new Uint16Array(3 * textureLength);
+        const covB = new Uint16Array(3 * textureLength);
 
         const matrixRotation = TmpVectors.Matrix[0];
         const matrixScale = TmpVectors.Matrix[1];
@@ -481,14 +481,18 @@ export class GaussianSplattingMesh extends Mesh {
         const minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
         const maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
+        const covariances = [0, 0, 0, 0, 0, 0];
+        const float32 = new Float32Array(1);
+        const uint32 = new Uint32Array(float32.buffer);
+
         for (let i = 0; i < vertexCount; i++) {
             const x = fBuffer[8 * i + 0];
             const y = -fBuffer[8 * i + 1];
             const z = fBuffer[8 * i + 2];
 
-            this._splatPositions[3 * i + 0] = x;
-            this._splatPositions[3 * i + 1] = y;
-            this._splatPositions[3 * i + 2] = z;
+            this._splatPositions[4 * i + 0] = x;
+            this._splatPositions[4 * i + 1] = y;
+            this._splatPositions[4 * i + 2] = z;
 
             minimum.minimizeInPlaceFromFloats(x, y, z);
             maximum.maximizeInPlaceFromFloats(x, y, z);
@@ -505,12 +509,71 @@ export class GaussianSplattingMesh extends Mesh {
 
             const M = matrixRotation.multiplyToRef(matrixScale, TmpVectors.Matrix[0]).m;
 
-            covA[i * 3 + 0] = M[0] * M[0] + M[1] * M[1] + M[2] * M[2];
-            covA[i * 3 + 1] = M[0] * M[4] + M[1] * M[5] + M[2] * M[6];
-            covA[i * 3 + 2] = M[0] * M[8] + M[1] * M[9] + M[2] * M[10];
-            covB[i * 3 + 0] = M[4] * M[4] + M[5] * M[5] + M[6] * M[6];
-            covB[i * 3 + 1] = M[4] * M[8] + M[5] * M[9] + M[6] * M[10];
-            covB[i * 3 + 2] = M[8] * M[8] + M[9] * M[9] + M[10] * M[10];
+            covariances[0] = M[0] * M[0] + M[1] * M[1] + M[2] * M[2];
+            covariances[1] = M[0] * M[4] + M[1] * M[5] + M[2] * M[6];
+            covariances[2] = M[0] * M[8] + M[1] * M[9] + M[2] * M[10];
+            covariances[3] = M[4] * M[4] + M[5] * M[5] + M[6] * M[6];
+            covariances[4] = M[4] * M[8] + M[5] * M[9] + M[6] * M[10];
+            covariances[5] = M[8] * M[8] + M[9] * M[9] + M[10] * M[10];
+
+            // normalize covA, covB
+            let factor = -10000;
+            for (let covIndex = 0; covIndex < 6; covIndex++) {
+                factor = Math.max(factor, Math.abs(covariances[covIndex]));
+            }
+
+            this._splatPositions[4 * i + 3] = factor;
+            const transform = factor;
+
+            // overflow checks removed for best performance
+            const toFloat16 = function (val: number) {
+                float32[0] = val;
+                const x = uint32[0];
+
+                const sign = (x >> 31) & 0x1;
+                let exponent = (x >> 23) & 0xff;
+                let mantissa = x & 0x7fffff;
+
+                // Handle special cases: zero, infinity, and NaN
+                if (exponent === 0xff) {
+                    if (mantissa !== 0) {
+                        // NaN (Not a Number)
+                        return (sign << 15) | 0x7e00;
+                    } else {
+                        // Infinity
+                        return (sign << 15) | 0x7c00;
+                    }
+                }
+
+                // Shift exponent from float32 bias (127) to float16 bias (15)
+                exponent -= 127;
+                exponent += 15;
+
+                // Handle overflow (to infinity) and underflow (to zero or subnormal)
+                if (exponent >= 31) {
+                    // Overflow to infinity
+                    return (sign << 15) | 0x7c00;
+                }
+                if (exponent <= 0) {
+                    // Subnormal values or underflow to zero
+                    if (exponent < -10) {
+                        // Too small, underflows to zero
+                        return sign << 15;
+                    }
+                    // Subnormal number
+                    mantissa = (mantissa | 0x800000) >> (1 - exponent);
+                    return (sign << 15) | (mantissa >> 13);
+                }
+
+                return (sign << 15) | (exponent << 10) | (mantissa >> 13);
+            };
+
+            covA[i * 3 + 0] = toFloat16(covariances[0] / transform);
+            covA[i * 3 + 1] = toFloat16(covariances[1] / transform);
+            covA[i * 3 + 2] = toFloat16(covariances[2] / transform);
+            covB[i * 3 + 0] = toFloat16(covariances[3] / transform);
+            covB[i * 3 + 1] = toFloat16(covariances[4] / transform);
+            covB[i * 3 + 2] = toFloat16(covariances[5] / transform);
         }
 
         // Update the mesh
@@ -524,24 +587,20 @@ export class GaussianSplattingMesh extends Mesh {
             return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
         };
 
-        const convertRgbToRgba = (rgb: Float32Array) => {
-            const count = rgb.length / 3;
-            const rgba = new Float32Array(count * 4);
-            for (let i = 0; i < count; ++i) {
-                rgba[i * 4 + 0] = rgb[i * 3 + 0];
-                rgba[i * 4 + 1] = rgb[i * 3 + 1];
-                rgba[i * 4 + 2] = rgb[i * 3 + 2];
-                rgba[i * 4 + 3] = 1.0;
-            }
-            return rgba;
+        const createTextureFromDataU8 = (data: Uint8Array, width: number, height: number, format: number) => {
+            return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_UNSIGNED_BYTE);
         };
 
-        const colorArray = new Float32Array(textureSize.x * textureSize.y * 4);
+        const createTextureFromDataF16 = (data: Uint16Array, width: number, height: number, format: number) => {
+            return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_HALF_FLOAT);
+        };
+
+        const colorArray = new Uint8Array(textureSize.x * textureSize.y * 4);
         for (let i = 0; i < this._vertexCount; ++i) {
-            colorArray[i * 4 + 0] = uBuffer[32 * i + 24 + 0] / 255;
-            colorArray[i * 4 + 1] = uBuffer[32 * i + 24 + 1] / 255;
-            colorArray[i * 4 + 2] = uBuffer[32 * i + 24 + 2] / 255;
-            colorArray[i * 4 + 3] = uBuffer[32 * i + 24 + 3] / 255;
+            colorArray[i * 4 + 0] = uBuffer[32 * i + 24 + 0];
+            colorArray[i * 4 + 1] = uBuffer[32 * i + 24 + 1];
+            colorArray[i * 4 + 2] = uBuffer[32 * i + 24 + 2];
+            colorArray[i * 4 + 3] = uBuffer[32 * i + 24 + 3];
         }
 
         if (this._keepInRam) {
@@ -550,17 +609,17 @@ export class GaussianSplattingMesh extends Mesh {
             this._colors = colorArray;
         }
         if (this._covariancesATexture) {
-            this._delayedTextureUpdate = { covA: convertRgbToRgba(covA), covB: convertRgbToRgba(covB), colors: colorArray, centers: convertRgbToRgba(this._splatPositions) };
+            this._delayedTextureUpdate = { covA: covA, covB: covB, colors: colorArray, centers: this._splatPositions };
             const positions = Float32Array.from(this._splatPositions!);
             const vertexCount = this._vertexCount;
             this._worker!.postMessage({ positions, vertexCount }, [positions.buffer]);
 
             this._postToWorker(true);
         } else {
-            this._covariancesATexture = createTextureFromData(convertRgbToRgba(covA), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
-            this._covariancesBTexture = createTextureFromData(convertRgbToRgba(covB), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
-            this._centersTexture = createTextureFromData(convertRgbToRgba(this._splatPositions), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
-            this._colorsTexture = createTextureFromData(colorArray, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+            this._covariancesATexture = createTextureFromDataF16(covA, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGB);
+            this._covariancesBTexture = createTextureFromDataF16(covB, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGB);
+            this._centersTexture = createTextureFromData(this._splatPositions, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+            this._colorsTexture = createTextureFromDataU8(colorArray, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
             this._instanciateWorker();
         }
     }
@@ -616,11 +675,18 @@ export class GaussianSplattingMesh extends Mesh {
                 const updateTextureFromData = (texture: BaseTexture, data: Float32Array, width: number, height: number) => {
                     (this.getEngine() as ThinEngine).updateTextureData(texture.getInternalTexture()!, data, 0, 0, width, height, 0, 0, false);
                 };
+                const updateTextureFromDataU8 = (texture: BaseTexture, data: Uint8Array, width: number, height: number) => {
+                    (this.getEngine() as ThinEngine).updateTextureData(texture.getInternalTexture()!, data, 0, 0, width, height, 0, 0, false);
+                };
+
+                const updateTextureFromDataF16 = (texture: BaseTexture, data: Uint16Array, width: number, height: number) => {
+                    (this.getEngine() as ThinEngine).updateTextureData(texture.getInternalTexture()!, data, 0, 0, width, height, 0, 0, false);
+                };
                 const textureSize = this._getTextureSize(vertexCount);
-                updateTextureFromData(this._covariancesATexture!, this._delayedTextureUpdate.covA, textureSize.x, textureSize.y);
-                updateTextureFromData(this._covariancesBTexture!, this._delayedTextureUpdate.covB, textureSize.x, textureSize.y);
+                updateTextureFromDataF16(this._covariancesATexture!, this._delayedTextureUpdate.covA, textureSize.x, textureSize.y);
+                updateTextureFromDataF16(this._covariancesBTexture!, this._delayedTextureUpdate.covB, textureSize.x, textureSize.y);
                 updateTextureFromData(this._centersTexture!, this._delayedTextureUpdate.centers, textureSize.x, textureSize.y);
-                updateTextureFromData(this._colorsTexture!, this._delayedTextureUpdate.colors, textureSize.x, textureSize.y);
+                updateTextureFromDataU8(this._colorsTexture!, this._delayedTextureUpdate.colors, textureSize.x, textureSize.y);
                 this._delayedTextureUpdate = null;
             }
             this.thinInstanceBufferUpdated("splatIndex");

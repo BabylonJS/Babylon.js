@@ -42,12 +42,12 @@ vec2 getDataUV(float index, vec2 textureSize) {
 
 void main () {
     vec2 splatUV = getDataUV(splatIndex, dataTextureSize);
-    vec3 center = texture2D(centersTexture, splatUV).xyz;
+    vec4 center = texture2D(centersTexture, splatUV);
     vec4 color = texture2D(colorsTexture, splatUV);
-    vec3 covA = texture2D(covariancesATexture, splatUV).xyz;
-    vec3 covB = texture2D(covariancesBTexture, splatUV).xyz;
+    vec3 covA = texture2D(covariancesATexture, splatUV).xyz * center.w;
+    vec3 covB = texture2D(covariancesBTexture, splatUV).xyz * center.w;
 
-    vec4 worldPos = world * vec4(center, 1.0);
+    vec4 worldPos = world * vec4(center.xyz, 1.0);
 
     mat4 modelView = view * world;
     vec4 camspace = view * worldPos;
