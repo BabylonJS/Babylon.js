@@ -1,13 +1,13 @@
 import { NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 import { loggerExample, mathExample, customEventExample, worldPointerExample, doNExample, intMathExample, matrixMathExample } from "./testData";
-import { convertGLTFToSerializedFlowGraph } from "loaders/glTF/2.0/Extensions/interactivityFunctions";
+import { convertGLTFToSerializedFlowGraph } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityFunctions";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { FlowGraph } from "core/FlowGraph/flowGraph";
 import { Vector3, Vector4 } from "core/Maths";
 import { Mesh } from "core/Meshes";
 import { ArcRotateCamera } from "core/Cameras";
-import { InteractivityPathToObjectConverter } from "loaders/glTF/2.0/Extensions/interactivityPathToObjectConverter";
+import { InteractivityPathToObjectConverter } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityPathToObjectConverter";
 import { Logger } from "core/Misc";
 import { FlowGraphInteger } from "core/FlowGraph/flowGraphInteger";
 

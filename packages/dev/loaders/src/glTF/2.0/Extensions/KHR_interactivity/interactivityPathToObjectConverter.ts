@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { IAnimation, IGLTF, INode } from "../glTFLoaderInterfaces";
-import { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
+import type { IAnimation, IGLTF, INode } from "../../glTFLoaderInterfaces";
+import { GLTFPathToObjectConverter } from "../gltfPathToObjectConverter";
 import type { IObjectAccessor } from "core/FlowGraph/typeDefinitions";
 import type { Vector3, Quaternion } from "core/Maths/math.vector";
 

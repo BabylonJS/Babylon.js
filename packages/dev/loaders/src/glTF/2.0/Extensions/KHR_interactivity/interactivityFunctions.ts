@@ -9,7 +9,7 @@ import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
 import { Logger } from "core/Misc/logger";
 import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
 import type { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
-import type { IGLTF } from "../glTFLoaderInterfaces";
+import type { IGLTF } from "../../glTFLoaderInterfaces";
 
 function convertVariableValueWithType(configObject: IKHRInteractivity_Variable, types: FlowGraphTypes[], index: number) {
     if (configObject.type !== undefined) {
@@ -49,12 +49,10 @@ function convertConfiguration(
     for (const configObject of configurationList) {
         // parse every configuration object, based on the mapping
         const configMapping = mapping.configuration?.[configObject.id];
-        if (configMapping) {
-            const belongsToBlock = configMapping.toBlock ? configMapping.toBlock === blockType : mapping.blocks.indexOf(blockType) === 0;
-            if (belongsToBlock) {
-                const { key, value } = convertGLTFValueToFlowGraph(configObject.value, configMapping, convertedObject);
-                converted[key] = value;
-            }
+        const belongsToBlock = configMapping && configMapping.toBlock ? configMapping.toBlock === blockType : mapping.blocks.indexOf(blockType) === 0;
+        if (belongsToBlock) {
+            const { key, value } = convertGLTFValueToFlowGraph(configObject.id, configObject.value, configMapping, convertedObject);
+            converted[key] = value;
         }
     }
     // TODO - we need to deal with pointers here?

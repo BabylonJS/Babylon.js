@@ -3,7 +3,7 @@ import type { IKHRInteractivity_Node } from "babylonjs-gltf2interface";
 import { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
 import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
 import type { ISerializedFlowGraphBlock, ISerializedFlowGraphContext } from "core/FlowGraph/typeDefinitions";
-import type { IGLTF } from "../glTFLoaderInterfaces";
+import type { IGLTF } from "../../glTFLoaderInterfaces";
 import { RandomGUID } from "core/Misc/guid";
 import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
 
@@ -145,13 +145,10 @@ export interface IGLTFToFlowGraphMapping {
     ) => ISerializedFlowGraphBlock[];
 }
 
-export function convertGLTFValueToFlowGraph(value: any, mapping: IGLTFToFlowGraphMappingObject, convertedObject?: IConvertedInteractivityObject) {
-    if (mapping.isPointer) {
-        throw new Error("Function not supporting glTF JSON pointers. Please use getJSONPointerNode instead");
-    }
-    const flowGraphKeyName = mapping.name;
+export function convertGLTFValueToFlowGraph(name: string, value: any, mapping?: IGLTFToFlowGraphMappingObject, convertedObject?: IConvertedInteractivityObject) {
+    const flowGraphKeyName = mapping?.name || name;
     let convertedValue = value;
-    if (mapping.isIndex) {
+    if (mapping?.isIndex) {
         if (!convertedObject?.[mapping.isIndex]) {
             throw new Error("missing array " + mapping.isIndex);
         } else {
@@ -161,7 +158,7 @@ export function convertGLTFValueToFlowGraph(value: any, mapping: IGLTFToFlowGrap
             convertedValue = mapping.dataTransformer(value, convertedObject[mapping.isIndex]);
         }
     } else {
-        if (mapping.dataTransformer) {
+        if (mapping?.dataTransformer) {
             convertedValue = mapping.dataTransformer(value);
         }
     }

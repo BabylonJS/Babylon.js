@@ -1,7 +1,7 @@
 import { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
 import type { GLTFLoader } from "../glTFLoader";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import { addNewInteractivityFlowGraphMapping, connectFlowGraphNodes } from "./interactivityUtils";
+import { addNewInteractivityFlowGraphMapping, connectFlowGraphNodes } from "./KHR_interactivity/interactivityUtils";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "KHR_selectability";
@@ -44,7 +44,6 @@ export function updateInteractivity() {
             },
         },
         extraProcessor(gltfBlock, _mapping, _arrays, serializedObjects, context, globalGLTF) {
-            // TODO - clean this up!
             const nodeIndex = gltfBlock.configuration?.find((config) => config.id === "nodeIndex")?.value;
             if (nodeIndex === undefined) {
                 throw new Error("nodeIndex not found in configuration");

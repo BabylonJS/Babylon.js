@@ -4,8 +4,8 @@ import type { GLTFLoader } from "../glTFLoader";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { ParseFlowGraphAsync } from "core/FlowGraph/flowGraphParser";
-import { convertGLTFToSerializedFlowGraph } from "./interactivityFunctions";
-import { InteractivityPathToObjectConverter } from "./interactivityPathToObjectConverter";
+import { convertGLTFToSerializedFlowGraph } from "./KHR_interactivity/interactivityFunctions";
+import { InteractivityPathToObjectConverter } from "./KHR_interactivity/interactivityPathToObjectConverter";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "KHR_interactivity";
