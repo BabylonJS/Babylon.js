@@ -7,6 +7,7 @@ import type { RenderTargetTextureOptions } from "../../Materials/Textures/render
 import type { TextureSize } from "../../Materials/Textures/textureCreationOptions";
 import { Color4 } from "../../Maths/math.color";
 import { Matrix, Vector3, Vector4 } from "../../Maths/math.vector";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
 import type { Scene } from "../../scene";
 import { Texture } from "../../Materials/Textures/texture";
@@ -39,7 +40,8 @@ export class _IblShadowsVoxelRenderer {
     private _voxelMrtsZaxis: MultiRenderTarget[] = [];
     private _isVoxelGrid3D: boolean = true;
     private _renderInFlight = false;
-    private _voxelMaterials: ShaderMaterial[] = [];
+    private _voxelMaterial: ShaderMaterial;
+    private _voxelSlabDebugMaterial: ShaderMaterial;
 
     /**
      * Return the voxel grid texture.
@@ -192,18 +194,21 @@ export class _IblShadowsVoxelRenderer {
         }
         this._voxelDebugEnabled = enabled;
         if (enabled) {
-            this._voxelSlabDebugRT = new RenderTargetTexture("voxelSlabDebug", { ratio: 1 }, this._scene, {
+            this._voxelSlabDebugRT = new RenderTargetTexture("voxelSlabDebug", { width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, this._scene, {
                 generateDepthBuffer: true,
                 generateMipMaps: false,
                 type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
-                format: Constants.TEXTUREFORMAT_R,
+                format: Constants.TEXTUREFORMAT_RGBA,
                 samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             });
             this._voxelSlabDebugRT.noPrePassRenderer = true;
-        } else {
-            if (this._voxelSlabDebugRT) {
-                this._removeVoxelRTs([this._voxelSlabDebugRT]);
-            }
+        }
+        if (this._voxelSlabDebugRT) {
+            this._removeVoxelRTs([this._voxelSlabDebugRT]);
+        }
+        // Add the slab debug RT if needed.
+        if (this._voxelDebugEnabled) {
+            this._addRTsForRender([this._voxelSlabDebugRT], [], this._voxelDebugAxis, 1, true);
         }
     }
 
@@ -216,7 +221,7 @@ export class _IblShadowsVoxelRenderer {
             const debugOptions: PostProcessOptions = {
                 width: this._engine.getRenderWidth(),
                 height: this._engine.getRenderHeight(),
-                textureFormat: Constants.TEXTUREFORMAT_R,
+                textureFormat: Constants.TEXTUREFORMAT_RGBA,
                 textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
                 samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
                 uniforms: ["sizeParams", "mipNumber"],
@@ -443,6 +448,8 @@ export class _IblShadowsVoxelRenderer {
             mipTarget.setTexture("srcMip", mipIdx > 1 ? this._mipArray[mipIdx - 2] : this.getVoxelGrid());
             mipTarget.setInt("layerNum", 0);
         }
+
+        this._createVoxelMaterials();
     }
 
     private _createVoxelMRTs(name: string, voxelRT: RenderTargetTexture, numSlabs: number): MultiRenderTarget[] {
@@ -508,19 +515,17 @@ export class _IblShadowsVoxelRenderer {
         this._mipArray.forEach((mip) => {
             mip.dispose();
         });
-        this._voxelMaterials.forEach((material) => {
-            material.dispose();
-        });
-        this._voxelMaterials = [];
+        this._voxelMaterial?.dispose();
+        this._voxelSlabDebugMaterial?.dispose();
         this._mipArray = [];
         this._voxelMrtsXaxis = [];
         this._voxelMrtsYaxis = [];
         this._voxelMrtsZaxis = [];
     }
 
-    private _createVoxelMaterial(): ShaderMaterial {
+    private _createVoxelMaterials(): void {
         const isWebGPU = this._engine.isWebGPU;
-        const voxelMaterial = new ShaderMaterial("voxelization", this._scene, "iblVoxelGrid", {
+        this._voxelMaterial = new ShaderMaterial("voxelization", this._scene, "iblVoxelGrid", {
             uniforms: ["world", "viewMatrix", "invWorldScale", "nearPlane", "farPlane", "stepSize"],
             defines: ["MAX_DRAW_BUFFERS " + this._maxDrawBuffers],
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
@@ -532,10 +537,26 @@ export class _IblShadowsVoxelRenderer {
                 }
             },
         });
-        voxelMaterial.cullBackFaces = false;
-        voxelMaterial.backFaceCulling = false;
-        voxelMaterial.depthFunction = Engine.ALWAYS;
-        return voxelMaterial;
+        this._voxelMaterial.cullBackFaces = false;
+        this._voxelMaterial.backFaceCulling = false;
+        this._voxelMaterial.depthFunction = Engine.ALWAYS;
+
+        this._voxelSlabDebugMaterial = new ShaderMaterial("voxelSlabDebug", this._scene, "iblVoxelSlabDebug", {
+            uniforms: ["world", "viewMatrix", "cameraViewMatrix", "projection", "invWorldScale", "nearPlane", "farPlane", "stepSize"],
+            defines: ["MAX_DRAW_BUFFERS " + this._maxDrawBuffers],
+            shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            extraInitializationsAsync: async () => {
+                if (isWebGPU) {
+                    await Promise.all([import("../../ShadersWGSL/iblVoxelSlabDebug.fragment"), import("../../ShadersWGSL/iblVoxelSlabDebug.vertex")]);
+                } else {
+                    await Promise.all([import("../../Shaders/iblVoxelSlabDebug.fragment"), import("../../Shaders/iblVoxelSlabDebug.vertex")]);
+                }
+            },
+        });
+        this._scene.onBeforeRenderObservable.add(() => {
+            this._voxelSlabDebugMaterial.setMatrix("projection", this._scene.activeCamera!.getProjectionMatrix());
+            this._voxelSlabDebugMaterial.setMatrix("cameraViewMatrix", this._scene.activeCamera!.getViewMatrix());
+        });
     }
 
     /**
@@ -603,12 +624,6 @@ export class _IblShadowsVoxelRenderer {
             this._addRTsForRender(this._voxelMrtsZaxis, includedMeshes, 2);
         }
 
-        // Add the slab debug RT if needed.
-        if (this._voxelDebugEnabled) {
-            this._removeVoxelRTs([this._voxelSlabDebugRT]);
-            this._addRTsForRender([this._voxelSlabDebugRT], [], this._voxelDebugAxis, 1, true);
-        }
-
         (this as any).boundVoxelGridRenderFn = this._renderVoxelGrid.bind(this);
         this._scene.onAfterRenderTargetsRenderObservable.addOnce((this as any).boundVoxelGridRenderFn);
     }
@@ -649,7 +664,12 @@ export class _IblShadowsVoxelRenderer {
 
     private _addRTsForRender(mrts: RenderTargetTexture[], includedMeshes: Mesh[], axis: number, shaderType: number = 0, continuousRender: boolean = false) {
         const slabSize = 1.0 / this._computeNumberOfSlabs();
-        const meshes = this._scene.meshes;
+        let voxelMaterial: ShaderMaterial;
+        if (shaderType === 0) {
+            voxelMaterial = this._voxelMaterial;
+        } else {
+            voxelMaterial = this._voxelSlabDebugMaterial;
+        }
 
         // We need to update the world scale uniform for every mesh being rendered to the voxel grid.
         mrts.forEach((mrt, mrtIndex) => {
@@ -658,29 +678,6 @@ export class _IblShadowsVoxelRenderer {
             const farPlane = (mrtIndex + 1) * slabSize;
             const stepSize = slabSize / this._maxDrawBuffers;
 
-            let voxelMaterial: ShaderMaterial;
-            if (shaderType === 0) {
-                voxelMaterial = this._createVoxelMaterial();
-            } else {
-                const isWebGPU = this._engine.isWebGPU;
-                voxelMaterial = new ShaderMaterial("voxelSlabDebug", this._scene, "iblVoxelSlabDebug", {
-                    uniforms: ["world", "viewMatrix", "cameraViewMatrix", "projection", "invWorldScale", "nearPlane", "farPlane", "stepSize"],
-                    defines: ["MAX_DRAW_BUFFERS " + this._maxDrawBuffers],
-                    shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-                    extraInitializationsAsync: async () => {
-                        if (isWebGPU) {
-                            await Promise.all([import("../../ShadersWGSL/iblVoxelSlabDebug.fragment"), import("../../ShadersWGSL/iblVoxelSlabDebug.vertex")]);
-                        } else {
-                            await Promise.all([import("../../Shaders/iblVoxelSlabDebug.fragment"), import("../../Shaders/iblVoxelSlabDebug.vertex")]);
-                        }
-                    },
-                });
-                this._scene.onBeforeRenderObservable.add(() => {
-                    voxelMaterial.setMatrix("projection", this._scene.activeCamera!.getProjectionMatrix());
-                    voxelMaterial.setMatrix("cameraViewMatrix", this._scene.activeCamera!.getViewMatrix());
-                });
-            }
-            this._voxelMaterials.push(voxelMaterial);
             const cameraPosition = new Vector3(0, 0, 0);
             let targetPosition = new Vector3(0, 0, 1);
             if (axis === 0) {
@@ -692,13 +689,18 @@ export class _IblShadowsVoxelRenderer {
             if (axis === 1) {
                 upDirection = new Vector3(1, 0, 0);
             }
-            voxelMaterial.setMatrix("viewMatrix", Matrix.LookAtLH(cameraPosition, targetPosition, upDirection));
-            voxelMaterial.setMatrix("invWorldScale", this._invWorldScaleMatrix);
-            voxelMaterial.setFloat("nearPlane", nearPlane);
-            voxelMaterial.setFloat("farPlane", farPlane);
-            voxelMaterial.setFloat("stepSize", stepSize);
+            mrt.onBeforeRenderObservable.add(() => {
+                voxelMaterial.setMatrix("viewMatrix", Matrix.LookAtLH(cameraPosition, targetPosition, upDirection));
+                voxelMaterial.setMatrix("invWorldScale", this._invWorldScaleMatrix);
+                voxelMaterial.setFloat("nearPlane", nearPlane);
+                voxelMaterial.setFloat("farPlane", farPlane);
+                voxelMaterial.setFloat("stepSize", stepSize);
+            });
 
             // Set this material on every mesh in the scene (for this RT)
+            if (includedMeshes.length === 0) {
+                includedMeshes = this._scene.meshes.filter((mesh: AbstractMesh) => mesh instanceof Mesh) as Mesh[];
+            }
             includedMeshes.forEach((mesh) => {
                 if (mesh instanceof Mesh && mesh.material) {
                     mrt.renderList?.push(mesh);

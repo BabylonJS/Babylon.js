@@ -22,8 +22,6 @@ class MaterialIBLShadowsRenderDefines extends MaterialDefines {
  * Plugin used to render the global illumination contribution.
  */
 export class IBLShadowsPluginMaterial extends MaterialPluginBase {
-    private _isPBR: boolean;
-
     /**
      * Defines the name of the plugin.
      */
