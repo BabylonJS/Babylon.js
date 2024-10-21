@@ -47,6 +47,7 @@ export class GaussianSplattingMesh extends Mesh {
 
     private _delayedTextureUpdate: Nullable<DelayedTextureUpdate> = null;
     private _oldDirection = new Vector3();
+    private _useRGBACovariants = false;
     /**
      * Gets the covariancesA texture
      */
@@ -95,6 +96,8 @@ export class GaussianSplattingMesh extends Mesh {
         new SubMesh(0, 0, 4, 0, 6, this);
 
         this.setEnabled(false);
+        // webGL2 and webGPU support for RG texture with float16 is fine. not webGL1
+        this._useRGBACovariants = !this.getEngine().isWebGPU && this.getEngine().version === 1.0;
 
         this._keepInRam = keepInRam;
         if (url) {
@@ -472,7 +475,7 @@ export class GaussianSplattingMesh extends Mesh {
 
         this._splatPositions = new Float32Array(4 * textureLength);
         const covA = new Uint16Array(4 * textureLength);
-        const covB = new Uint16Array(2 * textureLength);
+        const covB = new Uint16Array((this._useRGBACovariants ? 4 : 2) * textureLength);
 
         const matrixRotation = TmpVectors.Matrix[0];
         const matrixScale = TmpVectors.Matrix[1];
@@ -484,7 +487,7 @@ export class GaussianSplattingMesh extends Mesh {
         const covariances = [0, 0, 0, 0, 0, 0];
         const float32 = new Float32Array(1);
         const uint32 = new Uint32Array(float32.buffer);
-
+        const covBSplatSize = this._useRGBACovariants ? 4 : 2;
         for (let i = 0; i < vertexCount; i++) {
             const x = fBuffer[8 * i + 0];
             const y = -fBuffer[8 * i + 1];
@@ -572,8 +575,8 @@ export class GaussianSplattingMesh extends Mesh {
             covA[i * 4 + 1] = toFloat16(covariances[1] / transform);
             covA[i * 4 + 2] = toFloat16(covariances[2] / transform);
             covA[i * 4 + 3] = toFloat16(covariances[3] / transform);
-            covB[i * 2 + 0] = toFloat16(covariances[4] / transform);
-            covB[i * 2 + 1] = toFloat16(covariances[5] / transform);
+            covB[i * covBSplatSize + 0] = toFloat16(covariances[4] / transform);
+            covB[i * covBSplatSize + 1] = toFloat16(covariances[5] / transform);
         }
 
         // Update the mesh
@@ -617,7 +620,12 @@ export class GaussianSplattingMesh extends Mesh {
             this._postToWorker(true);
         } else {
             this._covariancesATexture = createTextureFromDataF16(covA, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
-            this._covariancesBTexture = createTextureFromDataF16(covB, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RG);
+            this._covariancesBTexture = createTextureFromDataF16(
+                covB,
+                textureSize.x,
+                textureSize.y,
+                this._useRGBACovariants ? Constants.TEXTUREFORMAT_RGBA : Constants.TEXTUREFORMAT_RG
+            );
             this._centersTexture = createTextureFromData(this._splatPositions, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
             this._colorsTexture = createTextureFromDataU8(colorArray, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
             this._instanciateWorker();
