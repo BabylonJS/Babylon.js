@@ -83,6 +83,11 @@
     uniform sampler2D environmentBrdfSampler;
 #endif
 
+#ifdef AREALIGHT
+	uniform sampler2D areaLightsLCT1;
+    uniform sampler2D areaLightsLCT2;
+#endif
+
 // SUBSURFACE
 #ifdef SUBSURFACE
     #ifdef SS_REFRACTION

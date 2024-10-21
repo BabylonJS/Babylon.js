@@ -1957,16 +1957,16 @@ export class AreaLight extends Light {
     public transferToEffect(effect: Effect, lightIndex: string): AreaLight {
         this.computeTransformedInformation();
         this._uniformBuffer.updateMatrix("vLightData", this.pointsMatrix);
-        effect._bindTexture("areaLights_ltc1", AREALIGHTS_LTC1);
-        effect._bindTexture("areaLights_ltc2", AREALIGHTS_LTC2);
+        effect._bindTexture("areaLightsLCT1", AREALIGHTS_LTC1);
+        effect._bindTexture("areaLightsLCT2", AREALIGHTS_LTC2);
         return this;
     }
 
     public transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string) {
         this.computeTransformedInformation();
         effect.setMatrix(lightDataUniformName, this.pointsMatrix);
-        effect._bindTexture("areaLights_ltc1", AREALIGHTS_LTC1);
-        effect._bindTexture("areaLights_ltc2", AREALIGHTS_LTC2);
+        effect._bindTexture("areaLightsLCT1", AREALIGHTS_LTC1);
+        effect._bindTexture("areaLightsLCT2", AREALIGHTS_LTC2);
         return this;
     }
 
@@ -1977,6 +1977,7 @@ export class AreaLight extends Light {
      */
     public prepareLightSpecificDefines(defines: any, lightIndex: number): void {
         defines["AREALIGHT" + lightIndex] = true;
+        defines["AREALIGHT"] = true;
     }
 }
 
