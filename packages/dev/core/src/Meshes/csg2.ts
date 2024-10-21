@@ -67,7 +67,7 @@ export interface IVertexDataRebuildOptions {
     /**
      * Rebuild normals
      */
-    rebuildNormals: boolean;
+    rebuildNormals?: boolean;
 }
 
 interface IManifoldMesh {
