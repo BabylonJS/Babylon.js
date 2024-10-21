@@ -1,5 +1,9 @@
 ﻿#ifdef LIGHT{X}
+#ifdef AREALIGHT{X}
+    uniform mat4 vLightData{X};
+#else
 	uniform vec4 vLightData{X};
+#endif
 	uniform vec4 vLightDiffuse{X};
 
 	#ifdef SPECULARTERM
