@@ -55,7 +55,7 @@ export class GuiListComponent extends React.Component<IGuiListComponentProps, { 
                 .filter((b: string) => !this.state.filter || b.toLowerCase().indexOf(this.state.filter.toLowerCase()) !== -1)
                 .sort((a: string, b: string) => a.localeCompare(b))
                 .map((block: any) => {
-                    return <DraggableLineComponent key={block} data={block} tooltip={GuiListComponent._Tooltips[block] || ""} />;
+                    return <DraggableLineComponent key={block} format={"babylonjs-gui-node"} data={block} tooltip={GuiListComponent._Tooltips[block] || ""} />;
                 });
 
             if (blockList.length) {

@@ -37,7 +37,7 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
         super(props);
 
         const value = this.getCurrentValue();
-        this.state = { isExpanded: false, value: value ? value.clone() : Vector3.Zero() };
+        this.state = { isExpanded: false, value: value && value.clone ? value.clone() : Vector3.Zero() };
     }
 
     getCurrentValue() {

@@ -1,4 +1,8 @@
-﻿#if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
+﻿#ifdef LOGARITHMICDEPTH
+#extension GL_EXT_frag_depth : enable
+#endif
+
+#if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
     #define TEXTUREFUNC(s, c, l) texture2DLodEXT(s, c, l)
 #else
     #define TEXTUREFUNC(s, c, b) texture2D(s, c, b)
@@ -23,6 +27,10 @@ uniform sampler2D tileMaps[LAYERS];
 uniform sampler2D animationMap;
 
 uniform vec3 colorMul;
+
+#include<fogFragmentDeclaration>
+
+#include<logDepthDeclaration>
 
 float mt;
 
@@ -106,6 +114,9 @@ void main(){
     }
 
     color.xyz *= colorMul;
+
+#include<logDepthFragment>
+#include<fogFragment>
 
     gl_FragColor = color;
 }

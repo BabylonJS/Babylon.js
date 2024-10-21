@@ -79,6 +79,8 @@ export class GeometryInputBlock extends NodeGeometryBlock {
         switch (value) {
             case NodeGeometryContextualSources.Positions:
             case NodeGeometryContextualSources.Normals:
+            case NodeGeometryContextualSources.LatticeID:
+            case NodeGeometryContextualSources.LatticeControl:
                 this._type = NodeGeometryBlockConnectionPointTypes.Vector3;
                 break;
             case NodeGeometryContextualSources.Colors:

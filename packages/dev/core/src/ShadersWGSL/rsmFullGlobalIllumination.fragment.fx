@@ -51,7 +51,7 @@ fn computeIndirect(p: vec3f, n: vec3f) -> vec3f {
         }
     }
 
-    return clamp(indirectDiffuse * intensity, 0.0, 1.0);
+    return clamp(indirectDiffuse * intensity, vec3f(0.0), vec3f(1.0));
 }
 
 

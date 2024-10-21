@@ -12,6 +12,7 @@ import { EngineStore } from "core/Engines/engineStore";
 import type { Scene } from "core/scene";
 import type { Camera } from "core/Cameras/camera";
 import type { Mesh } from "core/Meshes/mesh";
+import { _ImportHelper } from "core/import.helper";
 
 /**
  * Type used to define predicate for selecting meshes and instances (if exist)
@@ -22,6 +23,32 @@ export type MeshPredicate = (mesh: AbstractMesh, thinInstanceIndex: number) => b
  * Type used to define predicate used to select faces when a mesh intersection is detected
  */
 export type TrianglePickingPredicate = (p0: Vector3, p1: Vector3, p2: Vector3, ray: Ray, i0: number, i1: number, i2: number) => boolean;
+
+/**
+ * This class allows user to customize internal picking mechanism
+ */
+export interface IPickingCustomization {
+    /**
+     * Predicate to select faces when a mesh intersection is detected
+     */
+    internalPickerForMesh?: (
+        pickingInfo: Nullable<PickingInfo>,
+        rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray,
+        mesh: AbstractMesh,
+        world: Matrix,
+        fastCheck?: boolean,
+        onlyBoundingInfo?: boolean,
+        trianglePredicate?: TrianglePickingPredicate,
+        skipBoundingInfo?: boolean
+    ) => PickingInfo;
+}
+
+/**
+ * Use this object to customize mesh picking behavior
+ */
+export const PickingCustomization: IPickingCustomization = {
+    internalPickerForMesh: undefined,
+};
 
 /**
  * Class representing a ray with position and direction
@@ -825,6 +852,7 @@ function InternalPick(
 
     const computeWorldMatrixForCamera = !!(scene.activeCameras && scene.activeCameras.length > 1 && scene.cameraToUseForPointers !== scene.activeCamera);
     const currentCamera = scene.cameraToUseForPointers || scene.activeCamera;
+    const picker = PickingCustomization.internalPickerForMesh || InternalPickForMesh;
 
     for (let meshIndex = 0; meshIndex < scene.meshes.length; meshIndex++) {
         const mesh = scene.meshes[meshIndex];
@@ -842,7 +870,7 @@ function InternalPick(
 
         if (mesh.hasThinInstances && (mesh as Mesh).thinInstanceEnablePicking) {
             // first check if the ray intersects the whole bounding box/sphere of the mesh
-            const result = InternalPickForMesh(pickingInfo, rayFunction, mesh, world, true, true, trianglePredicate);
+            const result = picker(pickingInfo, rayFunction, mesh, world, true, true, trianglePredicate);
             if (result) {
                 if (onlyBoundingInfo) {
                     // the user only asked for a bounding info check so we can return
@@ -856,7 +884,7 @@ function InternalPick(
                     }
                     const thinMatrix = thinMatrices[index];
                     thinMatrix.multiplyToRef(world, tmpMatrix);
-                    const result = InternalPickForMesh(pickingInfo, rayFunction, mesh, tmpMatrix, fastCheck, onlyBoundingInfo, trianglePredicate, true);
+                    const result = picker(pickingInfo, rayFunction, mesh, tmpMatrix, fastCheck, onlyBoundingInfo, trianglePredicate, true);
 
                     if (result) {
                         pickingInfo = result;
@@ -869,7 +897,7 @@ function InternalPick(
                 }
             }
         } else {
-            const result = InternalPickForMesh(pickingInfo, rayFunction, mesh, world, fastCheck, onlyBoundingInfo, trianglePredicate);
+            const result = picker(pickingInfo, rayFunction, mesh, world, fastCheck, onlyBoundingInfo, trianglePredicate);
 
             if (result) {
                 pickingInfo = result;
@@ -896,6 +924,7 @@ function InternalMultiPick(
     const pickingInfos: PickingInfo[] = [];
     const computeWorldMatrixForCamera = !!(scene.activeCameras && scene.activeCameras.length > 1 && scene.cameraToUseForPointers !== scene.activeCamera);
     const currentCamera = scene.cameraToUseForPointers || scene.activeCamera;
+    const picker = PickingCustomization.internalPickerForMesh || InternalPickForMesh;
 
     for (let meshIndex = 0; meshIndex < scene.meshes.length; meshIndex++) {
         const mesh = scene.meshes[meshIndex];
@@ -912,7 +941,7 @@ function InternalMultiPick(
         const world = mesh.computeWorldMatrix(forceCompute, currentCamera);
 
         if (mesh.hasThinInstances && (mesh as Mesh).thinInstanceEnablePicking) {
-            const result = InternalPickForMesh(null, rayFunction, mesh, world, true, true, trianglePredicate);
+            const result = picker(null, rayFunction, mesh, world, true, true, trianglePredicate);
             if (result) {
                 const tmpMatrix = TmpVectors.Matrix[1];
                 const thinMatrices = (mesh as Mesh).thinInstanceGetWorldMatrices();
@@ -922,7 +951,7 @@ function InternalMultiPick(
                     }
                     const thinMatrix = thinMatrices[index];
                     thinMatrix.multiplyToRef(world, tmpMatrix);
-                    const result = InternalPickForMesh(null, rayFunction, mesh, tmpMatrix, false, false, trianglePredicate, true);
+                    const result = picker(null, rayFunction, mesh, tmpMatrix, false, false, trianglePredicate, true);
 
                     if (result) {
                         result.thinInstanceIndex = index;
@@ -931,7 +960,7 @@ function InternalMultiPick(
                 }
             }
         } else {
-            const result = InternalPickForMesh(null, rayFunction, mesh, world, false, false, trianglePredicate);
+            const result = picker(null, rayFunction, mesh, world, false, false, trianglePredicate);
 
             if (result) {
                 pickingInfos.push(result);
@@ -974,12 +1003,6 @@ export function PickWithBoundingInfo(scene: Scene, x: number, y: number, predica
     }
     return result;
 }
-
-// Object.defineProperty(Scene.prototype, "_pickingAvailable", {
-//     get: () => true,
-//     enumerable: false,
-//     configurable: false,
-// });
 
 /** Launch a ray to try to pick a mesh in the scene
  * @param scene defines the scene to use for the picking
@@ -1164,6 +1187,8 @@ export function AddRayExtensions(sceneClass: typeof Scene, cameraClass: typeof C
     if (!sceneClass) {
         return;
     }
+
+    _ImportHelper._IsPickingAvailable = true;
 
     sceneClass.prototype.createPickingRay = function (x: number, y: number, world: Nullable<Matrix>, camera: Nullable<Camera>, cameraViewSpace = false): Ray {
         return CreatePickingRay(this, x, y, world, camera, cameraViewSpace);

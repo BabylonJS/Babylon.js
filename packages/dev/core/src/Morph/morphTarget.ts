@@ -92,6 +92,7 @@ export class MorphTarget implements IAnimatable {
         influence = 0,
         scene: Nullable<Scene> = null
     ) {
+        this.id = name;
         this._scene = scene || EngineStore.LastCreatedScene;
         this.influence = influence;
 

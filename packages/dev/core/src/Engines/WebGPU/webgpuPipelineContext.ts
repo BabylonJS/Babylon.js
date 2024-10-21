@@ -134,6 +134,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
             return;
         }
 
+        this.uniformBuffer?.dispose();
         this.uniformBuffer = new UniformBuffer(this.engine, undefined, undefined, "leftOver-" + this._name);
 
         for (const leftOverUniform of this.shaderProcessingContext.leftOverUniforms) {
