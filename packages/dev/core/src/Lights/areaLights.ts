@@ -6,16 +6,17 @@ import type { Effect } from "../Materials/effect";
 import { RegisterClass } from "../Misc/typeStore";
 import { Constants } from "core/Engines/constants";
 import type { Nullable } from "core/types";
-import type { InternalTexture } from "core/Materials/Textures";
+import { InternalTexture, RawTexture } from "core/Materials/Textures";
 
 Node.AddNodeConstructor("Light_Type_4", (name, scene) => {
     return () => new AreaLight(name, Vector3.Zero(), new Vector3(1, 0, 0), new Vector3(0, 1, 0), scene);
 });
 
 let AREALIGHTS_ISINITIALIZED = false;
-let AREALIGHTS_LTC1: Nullable<InternalTexture> = null;
-let AREALIGHTS_LTC2: Nullable<InternalTexture> = null;
+let AREALIGHTS_LTC1: Nullable<RawTexture> = null;
+let AREALIGHTS_LTC2: Nullable<RawTexture> = null;
 
+// float32 to float16
 function init(scene: Scene): void {
     if (AREALIGHTS_ISINITIALIZED) return;
 
@@ -1848,8 +1849,8 @@ function init(scene: Scene): void {
     const ltc_float_2 = new Float32Array(LTC_MAT_2);
 
     const engine = scene.getEngine();
-    AREALIGHTS_LTC1 = engine.createRawTexture(ltc_float_1, 64, 64, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
-    AREALIGHTS_LTC2 = engine.createRawTexture(ltc_float_2, 64, 64, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+    AREALIGHTS_LTC1 = RawTexture.CreateRGBATexture(ltc_float_1, 64, 64, engine, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
+    AREALIGHTS_LTC2 = RawTexture.CreateRGBATexture(ltc_float_2, 64, 64, engine, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
 }
 
 /**
@@ -1933,15 +1934,34 @@ export class AreaLight extends Light {
             this._uniformBuffer.updateFloat4("vLightHeight", this._height.x, this._height.y, this._height.z, 0.0, lightIndex);
         }
 
-        this._uniformBuffer.bindTexture("areaLightsLTC1", AREALIGHTS_LTC1);
-        this._uniformBuffer.bindTexture("areaLightsLTC2", AREALIGHTS_LTC2);
+        const ltc1InternalTexture = AREALIGHTS_LTC1?.getInternalTexture();
+
+        if (ltc1InternalTexture !== undefined) {
+            this._uniformBuffer.bindTexture("areaLightsLTC1", ltc1InternalTexture);
+        }
+
+        const ltc2InternalTexture = AREALIGHTS_LTC2?.getInternalTexture();
+
+        if (ltc2InternalTexture !== undefined) {
+            this._uniformBuffer.bindTexture("areaLightsLTC2", ltc2InternalTexture);
+        }
+
         return this;
     }
 
     public transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string) {
         //TO DO: Implement this correctly.
-        effect._bindTexture("areaLightsLTC1", AREALIGHTS_LTC1);
-        effect._bindTexture("areaLightsLTC2", AREALIGHTS_LTC2);
+        const ltc1InternalTexture = AREALIGHTS_LTC1?.getInternalTexture();
+
+        if (ltc1InternalTexture !== undefined) {
+            effect._bindTexture("areaLightsLTC1", ltc1InternalTexture);
+        }
+
+        const ltc2InternalTexture = AREALIGHTS_LTC2?.getInternalTexture();
+
+        if (ltc2InternalTexture !== undefined) {
+            effect._bindTexture("areaLightsLTC2", ltc2InternalTexture);
+        }
         return this;
     }
 
