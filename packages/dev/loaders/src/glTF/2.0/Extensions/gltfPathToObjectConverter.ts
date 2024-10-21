@@ -27,6 +27,7 @@ export class GLTFPathToObjectConverter<T> implements IPathToObjectConverter<T> {
      *
      * Examples:
      *  - "/nodes/0/rotation"
+     * - "/nodes.length"
      *  - "/materials/2/emissiveFactor"
      *  - "/materials/2/pbrMetallicRoughness/baseColorFactor"
      *  - "/materials/2/extensions/KHR_materials_emissive_strength/emissiveStrength"
@@ -45,7 +46,7 @@ export class GLTFPathToObjectConverter<T> implements IPathToObjectConverter<T> {
         const parts = path.split("/");
         parts.shift();
 
-        //if the last part has ".length" in it, seperate that as an extra part
+        //if the last part has ".length" in it, separate that as an extra part
         if (parts[parts.length - 1].includes(".length")) {
             const lastPart = parts[parts.length - 1];
             const split = lastPart.split(".");

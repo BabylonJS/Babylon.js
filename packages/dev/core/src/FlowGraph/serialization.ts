@@ -4,7 +4,7 @@ import { Matrix, Quaternion, Vector2, Vector3, Vector4 } from "../Maths/math.vec
 import type { Scene } from "../scene";
 import { FlowGraphBlockNames } from "./Blocks/flowGraphBlockNames";
 import { FlowGraphInteger } from "./flowGraphInteger";
-import { FlowGraphTypes, getRichTypeByFlowGraphType, getRichTypeFromValue } from "./flowGraphRichTypes";
+import { FlowGraphTypes, getRichTypeByFlowGraphType } from "./flowGraphRichTypes";
 
 function isMeshClassName(className: string) {
     return (
