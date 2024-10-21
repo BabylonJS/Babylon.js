@@ -95,9 +95,89 @@ export class VertexDataMaterialInfo {
 }
 
 /**
+ * Interface used to define a object like a vertex data structure
+ */
+export interface IVertexDataLike {
+    /**
+     * An array of the x, y, z position of each vertex  [...., x, y, z, .....]
+     */
+    positions: Nullable<FloatArray>;
+
+    /**
+     * An array of the x, y, z normal vector of each vertex  [...., x, y, z, .....]
+     */
+    normals?: Nullable<FloatArray>;
+
+    /**
+     * An array of the x, y, z tangent vector of each vertex  [...., x, y, z, .....]
+     */
+    tangents?: Nullable<FloatArray>;
+
+    /**
+     * An array of u,v which maps a texture image onto each vertex  [...., u, v, .....]
+     */
+    uvs?: Nullable<FloatArray>;
+
+    /**
+     * A second array of u,v which maps a texture image onto each vertex  [...., u, v, .....]
+     */
+    uvs2?: Nullable<FloatArray>;
+
+    /**
+     * A third array of u,v which maps a texture image onto each vertex  [...., u, v, .....]
+     */
+    uvs3?: Nullable<FloatArray>;
+
+    /**
+     * A fourth array of u,v which maps a texture image onto each vertex  [...., u, v, .....]
+     */
+    uvs4?: Nullable<FloatArray>;
+
+    /**
+     * A fifth array of u,v which maps a texture image onto each vertex  [...., u, v, .....]
+     */
+    uvs5?: Nullable<FloatArray>;
+
+    /**
+     * A sixth array of u,v which maps a texture image onto each vertex  [...., u, v, .....]
+     */
+    uvs6?: Nullable<FloatArray>;
+
+    /**
+     * An array of the r, g, b, a, color of each vertex  [...., r, g, b, a, .....]
+     */
+    colors?: Nullable<FloatArray>;
+
+    /**
+     * An array containing the list of indices to the array of matrices produced by bones, each vertex have up to 4 indices (8 if the matricesIndicesExtra is set).
+     */
+    matricesIndices?: Nullable<FloatArray>;
+
+    /**
+     * An array containing the list of weights defining the weight of each indexed matrix in the final computation
+     */
+    matricesWeights?: Nullable<FloatArray>;
+
+    /**
+     * An array extending the number of possible indices
+     */
+    matricesIndicesExtra?: Nullable<FloatArray>;
+
+    /**
+     * An array extending the number of possible weights when the number of indices is extended
+     */
+    matricesWeightsExtra?: Nullable<FloatArray>;
+
+    /**
+     * An array of i, j, k the three vertex indices required for each triangular facet  [...., i, j, k .....]
+     */
+    indices?: Nullable<IndicesArray>;
+}
+
+/**
  * This class contains the various kinds of data on every vertex of a mesh used in determining its shape and appearance
  */
-export class VertexData {
+export class VertexData implements IVertexDataLike {
     /**
      * Mesh side orientation : usually the external or front surface
      */
