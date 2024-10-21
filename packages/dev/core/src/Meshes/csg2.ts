@@ -1,8 +1,8 @@
 import { Mesh } from "./mesh";
 import type { IDisposable, Scene } from "core/scene";
 import { VertexData } from "./mesh.vertexData";
-import { VertexBuffer } from "./buffer";
-import { Logger } from "core/Misc";
+import { VertexBuffer } from "../Buffers/buffer";
+import { Logger } from "core/Misc/logger";
 import { MultiMaterial } from "core/Materials/multiMaterial";
 import { SubMesh } from "./subMesh";
 import type { Material } from "core/Materials/material";
@@ -53,7 +53,7 @@ export interface IMeshRebuildOptions {
     /**
      * Rebuild normals
      */
-    rebuildNormals: boolean;
+    rebuildNormals?: boolean;
     /**
      * True to center the mesh on 0,0,0
      */
@@ -67,7 +67,7 @@ export interface IVertexDataRebuildOptions {
     /**
      * Rebuild normals
      */
-    rebuildNormals: boolean;
+    rebuildNormals?: boolean;
 }
 
 interface IManifoldMesh {
@@ -90,8 +90,8 @@ interface IManifoldVertexComponent {
  * https://manifoldcad.org/
  * Use this class to perform fast boolean operations on meshes
  * #IW43EB#15 - basic operations
- * #JUKXQD#6104 - skill vs box
- * #JUKXQD#6111 - skill vs vertex data
+ * #JUKXQD#6104 - skull vs box
+ * #JUKXQD#6111 - skull vs vertex data
  */
 export class CSG2 implements IDisposable {
     private _manifold: any;
