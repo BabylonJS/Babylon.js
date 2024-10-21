@@ -169,7 +169,7 @@ export class CSG2 implements IDisposable {
         const normalComponent = this._vertexStructure.find((c) => c.kind === VertexBuffer.NormalKind);
         const manifoldMesh: IManifoldMesh = this._manifold.getMesh(localOptions.rebuildNormals && normalComponent ? [3, 4, 5] : undefined);
 
-        vertexData.indices = new Uint16Array(manifoldMesh.triVerts);
+        vertexData.indices = manifoldMesh.triVerts.length > 65535 ? new Uint32Array(manifoldMesh.triVerts) : new Uint16Array(manifoldMesh.triVerts);
 
         for (let i = 0; i < manifoldMesh.triVerts.length; i += 3) {
             vertexData.indices[i] = manifoldMesh.triVerts[i + 2];
@@ -197,9 +197,9 @@ export class CSG2 implements IDisposable {
                 const normals = new Float32Array(vertexCount * 3);
 
                 for (let i = 0; i < vertexCount; i++) {
-                    normals[i * 3] = manifoldMesh.vertProperties[i * manifoldMesh.numProp + offset];
+                    normals[i * 3] = manifoldMesh.vertProperties[i * manifoldMesh.numProp + offset + 2];
                     normals[i * 3 + 1] = manifoldMesh.vertProperties[i * manifoldMesh.numProp + offset + 1];
-                    normals[i * 3 + 2] = manifoldMesh.vertProperties[i * manifoldMesh.numProp + offset + 2];
+                    normals[i * 3 + 2] = manifoldMesh.vertProperties[i * manifoldMesh.numProp + offset];
                 }
 
                 vertexData.normals = normals;
