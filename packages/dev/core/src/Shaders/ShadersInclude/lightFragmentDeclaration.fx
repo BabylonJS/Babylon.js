@@ -1,9 +1,5 @@
 ﻿#ifdef LIGHT{X}
-#ifdef AREALIGHT{X}
-    uniform mat4 vLightData{X};
-#else
 	uniform vec4 vLightData{X};
-#endif
 	uniform vec4 vLightDiffuse{X};
 
 	#ifdef SPECULARTERM
@@ -82,7 +78,12 @@
 		uniform vec4 vLightFalloff{X};
 	#elif defined(HEMILIGHT{X})
 		uniform vec3 vLightGround{X};
-	#endif
+    #endif
+    #if defined(AREALIGHT{X})
+        uniform vec4 vLightWidth{X};
+        uniform vec4 vLightHeight{X};
+    #endif
+    #else
 	#ifdef PROJECTEDLIGHTTEXTURE{X}
 		uniform mat4 textureProjectionMatrix{X};
 		uniform sampler2D projectionLightTexture{X};

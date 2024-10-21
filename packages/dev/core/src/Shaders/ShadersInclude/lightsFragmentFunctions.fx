@@ -10,6 +10,8 @@ struct lightingInfo
 #endif
 };
 
+
+
 // Area Light
 
 // Real-Time Polygonal-Light Shading with Linearly Transformed Cosines
@@ -62,7 +64,6 @@ vec3 LTCEdgeVectorFormFactor( const in vec3 v1, const in vec3 v2 ) {
 	{
 		thetaSintheta = 0.5 * inversesqrt( max( 1.0 - x * x, 1e-7 ) ) - v;
 	}
-
 	return cross( v1, v2 ) * thetaSintheta;
 }
 
@@ -106,39 +107,10 @@ vec3 LTCEvaluate( const in vec3 N, const in vec3 V, const in vec3 P, const in ma
 
 	// adjust for horizon clipping
 	float result = LTCClippedSphereFormFactor( vectorFormFactor );
-
-/*
-	// alternate method of adjusting for horizon clipping (see referece)
-	// refactoring required
-	float len = length( vectorFormFactor );
-	float z = vectorFormFactor.z / len;
-
-	const float LUTSIZE = 64.0;
-	const float LUTSCALE = ( LUTSIZE - 1.0 ) / LUTSIZE;
-	const float LUTBIAS = 0.5 / LUTSIZE;
-
-	// tabulated horizon-clipped sphere, apparently...
-	vec2 uv = vec2( z * 0.5 + 0.5, len );
-	uv = uv * LUTSCALE + LUTBIAS;
-
-	float scale = texture2D( ltc2, uv ).w;
-
-	float result = len * scale;
-*/
 	return vec3( result );
 }
 
 // End Area Light
-
-vec3 IntegrateEdge(vec3 v1, vec3 v2, vec3 N) {
-    float x = dot(v1, v2);
-    float y = abs(x);
-    float a = 0.8543985 + (0.4965155 + 0.0145206*y)*y;
-    float b = 3.4175940 + (4.1616724 + y)*y;
-    float v = a / b;
-    float theta sintheta = (x > 0.0) ? v : 0.5*inversesqrt(max(1.0 - x*x, 1e-7)) - v;
-    return dot(cross(v1, v2)*theta sintheta, N);
-}
 
 lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, vec3 diffuseColor, vec3 specularColor, float range, float glossiness) {
 	lightingInfo result;
@@ -247,23 +219,28 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
 	return textureColor;
 }
 
-lightingInfo computeAreaLighting( vec3 viewDirectionW, vec3 vNormal, vec3 vPosition, mat4 lightData, vec3 diffuseColor, vec3 specularColor, float range, float glossiness ) 
+#ifdef AREALIGHTUSED
+
+uniform sampler2D areaLightsLTC1;
+uniform sampler2D areaLightsLTC2;
+lightingInfo computeAreaLighting( vec3 viewDirectionW, vec3 vNormal, vec3 vPosition, vec4 lightData, vec3 halfWidth, vec3 halfHeight, vec3 diffuseColor, vec3 specularColor, float glossiness ) 
 {
 	lightingInfo result;
 	vec3 normal = vNormal;
 	vec3 viewDir = viewDirectionW;
 	vec3 position = vPosition;
-	float roughness = 1 - glossiness;
+	vec3 lightPos = lightData.xyz;
+	float roughness = 1.0 - glossiness;
 
 	vec3 rectCoords[ 4 ];
-	rectCoords[ 0 ] = lightData[0].xyz;
-	rectCoords[ 1 ] = lightData[1].xyz;
-	rectCoords[ 2 ] = lightData[2].xyz;
-	rectCoords[ 3 ] = lightData[3].xyz;
+	rectCoords[ 0 ] = lightPos + halfWidth - halfHeight; // counterclockwise; light shines in local neg z direction
+	rectCoords[ 1 ] = lightPos - halfWidth - halfHeight;
+	rectCoords[ 2 ] = lightPos - halfWidth + halfHeight;
+	rectCoords[ 3 ] = lightPos + halfWidth + halfHeight;
 
 	vec2 uv = LTCUv( normal, viewDir, roughness );
 
-	vec4 t1 = texture2D( areaLightsLCT1, uv );
+	vec4 t1 = texture2D( areaLightsLTC1, uv );
 	vec4 t2 = texture2D( areaLightsLTC2, uv );
 
 	mat3 mInv = mat3(
@@ -278,5 +255,7 @@ lightingInfo computeAreaLighting( vec3 viewDirectionW, vec3 vNormal, vec3 vPosit
 	vec3 fresnel = ( specularColor * t2.x + ( vec3( 1.0 ) - specularColor ) * t2.y );
 	result.specular += specularColor * fresnel * LTCEvaluate( normal, viewDir, position, mInv, rectCoords );
 #endif
-	result.diffuse += diffuseColor * material.diffuseColor * LTCEvaluate( normal, viewDir, position, mat3( 1.0 ), rectCoords );
+	result.diffuse += diffuseColor * LTCEvaluate( normal, viewDir, position, mat3( 1.0 ), rectCoords );
+	return result;
 }
+#endif

@@ -130,6 +130,8 @@
                 info = computeHemisphericLighting(viewDirectionW, normalW, light{X}.vLightData, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, light{X}.vLightGround, glossiness);
             #elif defined(POINTLIGHT{X}) || defined(DIRLIGHT{X})
                 info = computeLighting(viewDirectionW, normalW, light{X}.vLightData, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, diffuse{X}.a, glossiness);
+            #elif defined(AREALIGHT{X})
+                info = computeAreaLighting(viewDirectionW, normalW, vPositionW, light{X}.vLightData, light{X}.vLightWidth.rgb, light{X}.vLightHeight.rgb, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, glossiness);
             #endif
         #endif
 

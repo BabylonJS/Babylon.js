@@ -9,7 +9,7 @@ import type { Nullable } from "core/types";
 import type { InternalTexture } from "core/Materials/Textures";
 
 Node.AddNodeConstructor("Light_Type_4", (name, scene) => {
-    return () => new AreaLight(name, Vector3.Zero(), 1, 1, scene);
+    return () => new AreaLight(name, Vector3.Zero(), new Vector3(1, 0, 0), new Vector3(0, 1, 0), scene);
 });
 
 let AREALIGHTS_ISINITIALIZED = false;
@@ -1859,15 +1859,15 @@ function init(scene: Scene): void {
  * Documentation: https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction
  */
 export class AreaLight extends Light {
-    readonly position: Vector3;
-    readonly width: number;
-    readonly height: number;
+    protected _position: Vector3;
+    protected _width: Vector3;
+    protected _height: Vector3;
 
-    constructor(name: string, position: Vector3, width: number, height: number, scene?: Scene) {
+    constructor(name: string, position: Vector3, width: Vector3, height: Vector3, scene?: Scene) {
         super(name, scene);
-        this.position = position;
-        this.width = width;
-        this.height = height;
+        this._position = position;
+        this._width = width;
+        this._height = height;
         init(this.getScene());
     }
 
@@ -1888,64 +1888,32 @@ export class AreaLight extends Light {
     }
 
     protected _buildUniformLayout(): void {
-        this._uniformBuffer.addUniform("vLightData", 16);
+        this._uniformBuffer.addUniform("vLightData", 4);
         this._uniformBuffer.addUniform("vLightDiffuse", 4);
         this._uniformBuffer.addUniform("vLightSpecular", 4);
+        this._uniformBuffer.addUniform("vLightWidth", 4);
+        this._uniformBuffer.addUniform("vLightHeight", 4);
         this._uniformBuffer.create();
     }
 
-    pointA: Vector3;
-    pointB: Vector3;
-    pointC: Vector3;
-    pointD: Vector3;
+    protected _pointTransformedPosition: Vector3;
+    protected _pointTransformedWidth: Vector3;
+    protected _pointCTransformedHeight: Vector3;
 
-    pointATransformedPosition: Vector3;
-    pointBTransformedPosition: Vector3;
-    pointCTransformedPosition: Vector3;
-    pointDTransformedPosition: Vector3;
-
-    pointsMatrix: Matrix;
-
-    /**
-     * The transformed direction. Direction of the light in world space taking parenting in account.
-     */
-    public transformedDirection: Vector3;
-
-    /**
-     * Computes the transformed information (transformedPosition and transformedDirection in World space) of the current light
-     */
-    public computeTransformedInformation(): void {
-        if (!this.pointA) {
-            this.pointA = Vector3.Zero();
-            this.pointB = Vector3.Zero();
-            this.pointC = Vector3.Zero();
-            this.pointD = Vector3.Zero();
-            this.pointsMatrix = Matrix.Zero();
-        }
-
-        this.position.subtractToRef(new Vector3(-this.width, -this.height, 0), this.pointA);
-        this.position.subtractToRef(new Vector3(this.width, -this.height, 0), this.pointB);
-        this.position.subtractToRef(new Vector3(-this.width, this.height, 0), this.pointC);
-        this.position.subtractToRef(new Vector3(this.width, this.height, 0), this.pointD);
-
+    protected _computeTransformedInformation(): boolean {
         if (this.parent && this.parent.getWorldMatrix) {
-            if (!this.pointATransformedPosition) {
-                this.pointBTransformedPosition = Vector3.Zero();
-                this.pointCTransformedPosition = Vector3.Zero();
-                this.pointCTransformedPosition = Vector3.Zero();
-                this.pointDTransformedPosition = Vector3.Zero();
+            if (!this._pointTransformedPosition) {
+                this._pointTransformedPosition = Vector3.Zero();
+                this._pointTransformedWidth = Vector3.Zero();
+                this._pointCTransformedHeight = Vector3.Zero();
             }
-
-            Vector3.TransformCoordinatesToRef(this.pointA, this.parent.getWorldMatrix(), this.pointATransformedPosition);
-            Vector3.TransformCoordinatesToRef(this.pointB, this.parent.getWorldMatrix(), this.pointBTransformedPosition);
-            Vector3.TransformCoordinatesToRef(this.pointC, this.parent.getWorldMatrix(), this.pointCTransformedPosition);
-            Vector3.TransformCoordinatesToRef(this.pointD, this.parent.getWorldMatrix(), this.pointDTransformedPosition);
-
-            this.pointsMatrix.setRow(0, Vector4.FromVector3(this.pointATransformedPosition));
-            this.pointsMatrix.setRow(0, Vector4.FromVector3(this.pointBTransformedPosition));
-            this.pointsMatrix.setRow(0, Vector4.FromVector3(this.pointCTransformedPosition));
-            this.pointsMatrix.setRow(0, Vector4.FromVector3(this.pointDTransformedPosition));
+            Vector3.TransformCoordinatesToRef(this._position, this.parent.getWorldMatrix(), this._pointTransformedPosition);
+            Vector3.TransformNormalToRef(this._width, this.parent.getWorldMatrix(), this._pointTransformedWidth);
+            Vector3.TransformNormalToRef(this._height, this.parent.getWorldMatrix(), this._pointCTransformedHeight);
+            return true;
         }
+
+        return false;
     }
 
     /**
@@ -1955,18 +1923,25 @@ export class AreaLight extends Light {
      * @returns The point light
      */
     public transferToEffect(effect: Effect, lightIndex: string): AreaLight {
-        this.computeTransformedInformation();
-        this._uniformBuffer.updateMatrix("vLightData", this.pointsMatrix);
-        effect._bindTexture("areaLightsLCT1", AREALIGHTS_LTC1);
-        effect._bindTexture("areaLightsLCT2", AREALIGHTS_LTC2);
+        if (this._computeTransformedInformation()) {
+            this._uniformBuffer.updateFloat4("vLightData", this._pointTransformedPosition.x, this._pointTransformedPosition.y, this._pointTransformedPosition.z, 0, lightIndex);
+            this._uniformBuffer.updateFloat4("vLightWidth", this._pointTransformedWidth.x, this._pointTransformedWidth.y, this._pointTransformedWidth.z, 0, lightIndex);
+            this._uniformBuffer.updateFloat4("vLightHeight", this._pointCTransformedHeight.x, this._pointCTransformedHeight.y, this._pointCTransformedHeight.z, 0, lightIndex);
+        } else {
+            this._uniformBuffer.updateFloat4("vLightData", this._position.x, this._position.y, this._position.z, 0.0, lightIndex);
+            this._uniformBuffer.updateFloat4("vLightWidth", this._width.x, this._width.y, this._width.z, 0.0, lightIndex);
+            this._uniformBuffer.updateFloat4("vLightHeight", this._height.x, this._height.y, this._height.z, 0.0, lightIndex);
+        }
+
+        this._uniformBuffer.bindTexture("areaLightsLTC1", AREALIGHTS_LTC1);
+        this._uniformBuffer.bindTexture("areaLightsLTC2", AREALIGHTS_LTC2);
         return this;
     }
 
     public transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string) {
-        this.computeTransformedInformation();
-        effect.setMatrix(lightDataUniformName, this.pointsMatrix);
-        effect._bindTexture("areaLightsLCT1", AREALIGHTS_LTC1);
-        effect._bindTexture("areaLightsLCT2", AREALIGHTS_LTC2);
+        //TO DO: Implement this correctly.
+        effect._bindTexture("areaLightsLTC1", AREALIGHTS_LTC1);
+        effect._bindTexture("areaLightsLTC2", AREALIGHTS_LTC2);
         return this;
     }
 
@@ -1977,7 +1952,7 @@ export class AreaLight extends Light {
      */
     public prepareLightSpecificDefines(defines: any, lightIndex: number): void {
         defines["AREALIGHT" + lightIndex] = true;
-        defines["AREALIGHT"] = true;
+        defines["AREALIGHTUSED"] = true;
     }
 }
 
