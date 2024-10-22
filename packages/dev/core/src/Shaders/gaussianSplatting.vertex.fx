@@ -29,10 +29,10 @@ varying vec2 vPosition;
 
 void main () {
     Splat splat = readSplat(splatIndex);
-    vec3 covA = splat.covA;
-    vec3 covB = splat.covB;
+    vec3 covA = splat.covA.xyz;
+    vec3 covB = vec3(splat.covA.w, splat.covB.xy);
 
-    vec4 worldPos = world * vec4(splat.center, 1.0);
+    vec4 worldPos = world * vec4(splat.center.xyz, 1.0);
 
     vColor = splat.color;
     vPosition = position;

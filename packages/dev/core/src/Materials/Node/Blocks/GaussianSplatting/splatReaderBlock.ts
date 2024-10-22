@@ -107,9 +107,9 @@ export class SplatReaderBlock extends NodeMaterialBlock {
         const splatVariablename = state._getFreeVariableName("splat");
         state.compilationString += `Splat ${splatVariablename} = readSplat(${splatIndex.associatedVariableName});\n`;
 
-        state.compilationString += "vec3 covA = splat.covA; vec3 covB = splat.covB;\n";
+        state.compilationString += "vec3 covA = splat.covA.xyz; vec3 covB = vec3(splat.covA.w, splat.covB.xy);\n";
         state.compilationString += "vPosition = position;";
-        state.compilationString += `${state._declareOutput(splatPosition)} = ${splatVariablename}.center;\n`;
+        state.compilationString += `${state._declareOutput(splatPosition)} = ${splatVariablename}.center.xyz;\n`;
         state.compilationString += `${state._declareOutput(splatColor)} = ${splatVariablename}.color;\n`;
 
         return this;

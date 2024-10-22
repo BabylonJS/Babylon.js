@@ -13,20 +13,20 @@ vec2 getDataUV(float index, vec2 textureSize) {
 }
 
 struct Splat {
-    vec3 center;
+    vec4 center;
     vec4 color;
-    vec3 covA;
-    vec3 covB;
+    vec4 covA;
+    vec4 covB;
 };
 
 Splat readSplat(float splatIndex)
 {
     Splat splat;
     vec2 splatUV = getDataUV(splatIndex, dataTextureSize);
-    splat.center = texture2D(centersTexture, splatUV).xyz;
+    splat.center = texture2D(centersTexture, splatUV);
     splat.color = texture2D(colorsTexture, splatUV);
-    splat.covA = texture2D(covariancesATexture, splatUV).xyz;
-    splat.covB = texture2D(covariancesBTexture, splatUV).xyz;
+    splat.covA = texture2D(covariancesATexture, splatUV) * splat.center.w;
+    splat.covB = texture2D(covariancesBTexture, splatUV) * splat.center.w;
     return splat;
 }
     
