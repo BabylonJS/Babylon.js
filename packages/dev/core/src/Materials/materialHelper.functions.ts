@@ -928,6 +928,7 @@ export function PrepareDefinesForCamera(scene: Scene, defines: any): boolean {
  * @param uniformsList The uniform list
  * @param samplersList The sampler list
  * @param projectedLightTexture defines if projected texture must be used
+ * @param areaLightTextures defines if area light texture must be used
  * @param uniformBuffersList defines an optional list of uniform buffers
  * @param updateOnlyBuffersList True to only update the uniformBuffersList array
  */
@@ -936,6 +937,7 @@ export function PrepareUniformsAndSamplersForLight(
     uniformsList: string[],
     samplersList: string[],
     projectedLightTexture?: any,
+    areaLightTextures?: any,
     uniformBuffersList: Nullable<string[]> = null,
     updateOnlyBuffersList = false
 ) {
@@ -975,6 +977,11 @@ export function PrepareUniformsAndSamplersForLight(
         samplersList.push("projectionLightTexture" + lightIndex);
         uniformsList.push("textureProjectionMatrix" + lightIndex);
     }
+
+    if (areaLightTextures) {
+        samplersList.push("areaLightsLTC1" + lightIndex);
+        samplersList.push("areaLightsLTC2" + lightIndex);
+    }
 }
 
 /**
@@ -1006,7 +1013,14 @@ export function PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] |
         if (!defines["LIGHT" + lightIndex]) {
             break;
         }
-        PrepareUniformsAndSamplersForLight(lightIndex, uniformsList, samplersList, defines["PROJECTEDLIGHTTEXTURE" + lightIndex], uniformBuffersList);
+        PrepareUniformsAndSamplersForLight(
+            lightIndex,
+            uniformsList,
+            samplersList,
+            defines["PROJECTEDLIGHTTEXTURE" + lightIndex],
+            defines["AREALIGHT" + lightIndex],
+            uniformBuffersList
+        );
     }
 
     if (defines["NUM_MORPH_INFLUENCERS"]) {

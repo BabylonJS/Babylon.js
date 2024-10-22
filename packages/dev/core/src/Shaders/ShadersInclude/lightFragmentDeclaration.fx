@@ -88,4 +88,8 @@
 		uniform mat4 textureProjectionMatrix{X};
 		uniform sampler2D projectionLightTexture{X};
 	#endif
+    #if defined(AREALIGHT{X})
+        uniform sampler2D areaLightsLTC1{X};
+        uniform sampler2D areaLightsLTC2{X};
+    #endif
 #endif

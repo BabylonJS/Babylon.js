@@ -257,6 +257,7 @@ export class MaterialHelper {
      * @param uniformsList The uniform list
      * @param samplersList The sampler list
      * @param projectedLightTexture defines if projected texture must be used
+     * @param areaLightTextures defines if area lights texture must be used
      * @param uniformBuffersList defines an optional list of uniform buffers
      * @param updateOnlyBuffersList True to only update the uniformBuffersList array
      */
@@ -265,6 +266,7 @@ export class MaterialHelper {
         uniformsList: string[],
         samplersList: string[],
         projectedLightTexture?: any,
+        areaLightTextures?: any,
         uniformBuffersList?: Nullable<string[]>,
         updateOnlyBuffersList?: boolean
     ) => void = PrepareUniformsAndSamplersForLight;

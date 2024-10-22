@@ -221,9 +221,7 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
 
 #ifdef AREALIGHTUSED
 
-uniform sampler2D areaLightsLTC1;
-uniform sampler2D areaLightsLTC2;
-lightingInfo computeAreaLighting( vec3 viewDirectionW, vec3 vNormal, vec3 vPosition, vec4 lightData, vec3 halfWidth, vec3 halfHeight, vec3 diffuseColor, vec3 specularColor, float glossiness ) 
+lightingInfo computeAreaLighting(sampler2D areaLightsLTC1, sampler2D areaLightsLTC2, vec3 viewDirectionW, vec3 vNormal, vec3 vPosition, vec4 lightData, vec3 halfWidth, vec3 halfHeight, vec3 diffuseColor, vec3 specularColor, float glossiness ) 
 {
 	lightingInfo result;
 	vec3 normal = vNormal;
@@ -249,12 +247,10 @@ lightingInfo computeAreaLighting( vec3 viewDirectionW, vec3 vNormal, vec3 vPosit
 		vec3( t1.z, 0, t1.w )
 	);
 
-#ifdef SPECULARTERM
 		// LTC Fresnel Approximation by Stephen Hill
 	// http://blog.selfshadow.com/publications/s2016-advances/s2016_ltc_fresnel.pdf
 	vec3 fresnel = ( specularColor * t2.x + ( vec3( 1.0 ) - specularColor ) * t2.y );
 	result.specular += specularColor * fresnel * LTCEvaluate( normal, viewDir, position, mInv, rectCoords );
-#endif
 	result.diffuse += diffuseColor * LTCEvaluate( normal, viewDir, position, mat3( 1.0 ), rectCoords );
 	return result;
 }

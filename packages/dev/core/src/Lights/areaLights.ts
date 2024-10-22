@@ -1,12 +1,12 @@
 import type { Scene } from "../scene";
-import { Matrix, Vector3, Vector4 } from "../Maths/math.vector";
+import { Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
 import { Light } from "./light";
 import type { Effect } from "../Materials/effect";
 import { RegisterClass } from "../Misc/typeStore";
 import { Constants } from "core/Engines/constants";
 import type { Nullable } from "core/types";
-import { InternalTexture, RawTexture } from "core/Materials/Textures";
+import { RawTexture } from "core/Materials/Textures";
 
 Node.AddNodeConstructor("Light_Type_4", (name, scene) => {
     return () => new AreaLight(name, Vector3.Zero(), new Vector3(1, 0, 0), new Vector3(0, 1, 0), scene);
@@ -16,7 +16,7 @@ let AREALIGHTS_ISINITIALIZED = false;
 let AREALIGHTS_LTC1: Nullable<RawTexture> = null;
 let AREALIGHTS_LTC2: Nullable<RawTexture> = null;
 
-// float32 to float16
+// init LTC textures.
 function init(scene: Scene): void {
     if (AREALIGHTS_ISINITIALIZED) return;
 
@@ -1864,6 +1864,15 @@ export class AreaLight extends Light {
     protected _width: Vector3;
     protected _height: Vector3;
 
+    /**
+     * Creates a area light object.
+     * Documentation : https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction
+     * @param name The friendly name of the light
+     * @param position The position of the area light.
+     * @param width The width of the area light.
+     * @param height The height of the area light.
+     * @param scene The scene the light belongs to
+     */
     constructor(name: string, position: Vector3, width: Vector3, height: Vector3, scene?: Scene) {
         super(name, scene);
         this._position = position;
@@ -1894,6 +1903,8 @@ export class AreaLight extends Light {
         this._uniformBuffer.addUniform("vLightSpecular", 4);
         this._uniformBuffer.addUniform("vLightWidth", 4);
         this._uniformBuffer.addUniform("vLightHeight", 4);
+        this._uniformBuffer.addUniform("shadowsInfo", 3);
+        this._uniformBuffer.addUniform("depthValues", 2);
         this._uniformBuffer.create();
     }
 
@@ -1930,24 +1941,23 @@ export class AreaLight extends Light {
             this._uniformBuffer.updateFloat4("vLightHeight", this._pointCTransformedHeight.x, this._pointCTransformedHeight.y, this._pointCTransformedHeight.z, 0, lightIndex);
         } else {
             this._uniformBuffer.updateFloat4("vLightData", this._position.x, this._position.y, this._position.z, 0.0, lightIndex);
-            this._uniformBuffer.updateFloat4("vLightWidth", this._width.x, this._width.y, this._width.z, 0.0, lightIndex);
-            this._uniformBuffer.updateFloat4("vLightHeight", this._height.x, this._height.y, this._height.z, 0.0, lightIndex);
+            this._uniformBuffer.updateFloat4("vLightWidth", this._width.x / 2, this._width.y / 2, this._width.z / 2, 0.0, lightIndex);
+            this._uniformBuffer.updateFloat4("vLightHeight", this._height.x / 2, this._height.y / 2, this._height.z / 2, 0.0, lightIndex);
         }
+        return this;
+    }
 
-        const ltc1InternalTexture = AREALIGHTS_LTC1?.getInternalTexture();
-
-        if (ltc1InternalTexture !== undefined) {
-            //this._uniformBuffer.bindTexture("areaLightsLTC1", ltc1InternalTexture);
-            effect.setTexture("areaLightsLTC1", AREALIGHTS_LTC1);
+    /**
+     * Sets the passed Effect "effect" with the Light textures.
+     * @param effect The effect to update
+     * @param lightIndex The index of the light in the effect to update
+     * @returns The light
+     */
+    public override transferTexturesToEffect(effect: Effect, lightIndex: string): Light {
+        if (AREALIGHTS_LTC1 && AREALIGHTS_LTC2) {
+            effect.setTexture("areaLightsLTC1" + lightIndex, AREALIGHTS_LTC1);
+            effect.setTexture("areaLightsLTC2" + lightIndex, AREALIGHTS_LTC2);
         }
-
-        const ltc2InternalTexture = AREALIGHTS_LTC2?.getInternalTexture();
-
-        if (ltc2InternalTexture !== undefined) {
-            //this._uniformBuffer.bindTexture("areaLightsLTC2", ltc2InternalTexture);
-            effect.setTexture("areaLightsLTC2", AREALIGHTS_LTC2);
-        }
-
         return this;
     }
 
