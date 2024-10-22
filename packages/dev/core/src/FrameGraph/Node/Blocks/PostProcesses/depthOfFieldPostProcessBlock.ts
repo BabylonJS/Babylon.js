@@ -52,8 +52,55 @@ export class NodeRenderGraphDepthOfFieldPostProcessBlock extends NodeRenderGraph
         this._frameGraphTask = new FrameGraphDepthOfFieldTask(this.name, frameGraph, scene.getEngine(), blurLevel, hdr);
     }
 
+    private _createTask(blurLevel: DepthOfFieldEffectBlurLevel, hdr: boolean) {
+        const sourceSamplingMode = this._frameGraphTask.sourceSamplingMode;
+        const depthSamplingMode = this._frameGraphTask.depthSamplingMode;
+        const focalLength = this._frameGraphTask.depthOfField.focalLength;
+        const fStop = this._frameGraphTask.depthOfField.fStop;
+        const focusDistance = this._frameGraphTask.depthOfField.focusDistance;
+        const lensSize = this._frameGraphTask.depthOfField.lensSize;
+
+        this._frameGraphTask.dispose();
+
+        this._frameGraphTask = new FrameGraphDepthOfFieldTask(this.name, this._frameGraph, this._scene.getEngine(), blurLevel, hdr);
+        this._frameGraphTask.sourceSamplingMode = sourceSamplingMode;
+        this._frameGraphTask.depthSamplingMode = depthSamplingMode;
+        this._frameGraphTask.depthOfField.focalLength = focalLength;
+        this._frameGraphTask.depthOfField.fStop = fStop;
+        this._frameGraphTask.depthOfField.focusDistance = focusDistance;
+        this._frameGraphTask.depthOfField.lensSize = lensSize;
+
+        this._additionalConstructionParameters = [blurLevel, hdr];
+    }
+
+    /** The quality of the blur effect */
+    @editableInPropertyPage("Blur level", PropertyTypeForEdition.List, "PROPERTIES", {
+        options: [
+            { label: "Low", value: DepthOfFieldEffectBlurLevel.Low },
+            { label: "Medium", value: DepthOfFieldEffectBlurLevel.Medium },
+            { label: "High", value: DepthOfFieldEffectBlurLevel.High },
+        ],
+    })
+    public get blurLevel(): DepthOfFieldEffectBlurLevel {
+        return this._frameGraphTask.depthOfField.blurLevel;
+    }
+
+    public set blurLevel(value: DepthOfFieldEffectBlurLevel) {
+        this._createTask(value, this._frameGraphTask.hdr);
+    }
+
+    /** If high dynamic range textures should be used */
+    @editableInPropertyPage("HDR", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public get hdr(): boolean {
+        return this._frameGraphTask.hdr;
+    }
+
+    public set hdr(value: boolean) {
+        this._createTask(this._frameGraphTask.depthOfField.blurLevel, value);
+    }
+
     /** Sampling mode used to sample from the source texture */
-    @editableInPropertyPage("Source sampling mode", PropertyTypeForEdition.SamplingMode)
+    @editableInPropertyPage("Source sampling mode", PropertyTypeForEdition.SamplingMode, "PROPERTIES")
     public get sourceSamplingMode() {
         return this._frameGraphTask.sourceSamplingMode;
     }

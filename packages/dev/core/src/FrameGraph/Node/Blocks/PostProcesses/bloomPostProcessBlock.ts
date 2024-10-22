@@ -48,6 +48,40 @@ export class NodeRenderGraphBloomPostProcessBlock extends NodeRenderGraphBlock {
         this._frameGraphTask = new FrameGraphBloomTask(this.name, frameGraph, scene.getEngine(), 0.75, 64, 0.2, hdr, bloomScale);
     }
 
+    private _createTask(bloomScale: number, hdr: boolean) {
+        const sourceSamplingMode = this._frameGraphTask.sourceSamplingMode;
+        const threshold = this._frameGraphTask.bloom.threshold;
+        const weight = this._frameGraphTask.bloom.weight;
+        const kernel = this._frameGraphTask.bloom.kernel;
+
+        this._frameGraphTask.dispose();
+
+        this._frameGraphTask = new FrameGraphBloomTask(this.name, this._frameGraph, this._scene.getEngine(), weight, kernel, threshold, hdr, bloomScale);
+        this._frameGraphTask.sourceSamplingMode = sourceSamplingMode;
+
+        this._additionalConstructionParameters = [hdr, bloomScale];
+    }
+
+    /** The quality of the blur effect */
+    @editableInPropertyPage("Bloom scale", PropertyTypeForEdition.Float, "PROPERTIES")
+    public get bloomScale() {
+        return this._frameGraphTask.bloom.scale;
+    }
+
+    public set bloomScale(value: number) {
+        this._createTask(value, this._frameGraphTask.hdr);
+    }
+
+    /** If high dynamic range textures should be used */
+    @editableInPropertyPage("HDR", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public get hdr(): boolean {
+        return this._frameGraphTask.hdr;
+    }
+
+    public set hdr(value: boolean) {
+        this._createTask(this._frameGraphTask.bloom.scale, value);
+    }
+
     /** Sampling mode used to sample from the source texture */
     @editableInPropertyPage("Source sampling mode", PropertyTypeForEdition.SamplingMode)
     public get sourceSamplingMode() {

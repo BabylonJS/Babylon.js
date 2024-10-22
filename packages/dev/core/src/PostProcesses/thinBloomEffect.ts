@@ -35,28 +35,23 @@ export class ThinBloomEffect {
      * Specifies the size of the bloom blur kernel, relative to the final output size
      */
     public get kernel(): number {
-        return this.blurX.kernel / this._scale;
+        return this.blurX.kernel / this.scale;
     }
     public set kernel(value: number) {
-        this.blurX.kernel = value * this._scale;
-        this.blurY.kernel = value * this._scale;
+        this.blurX.kernel = value * this.scale;
+        this.blurY.kernel = value * this.scale;
     }
 
-    public get bloomScale() {
-        return this._scale;
-    }
+    public readonly scale: number;
 
     /**
      * Creates a new instance of @see ThinBloomEffect
      * @param name The name of the bloom render effect
      * @param engine The engine which the render effect will be applied. (default: current engine)
-     * @param _scale The ratio of the blur texture to the input texture that should be used to compute the bloom.
+     * @param scale The ratio of the blur texture to the input texture that should be used to compute the bloom.
      */
-    constructor(
-        name: string,
-        engine: Nullable<AbstractEngine>,
-        private _scale: number
-    ) {
+    constructor(name: string, engine: Nullable<AbstractEngine>, scale: number) {
+        this.scale = scale;
         this.downscale = new ThinExtractHighlightsPostProcess(name + "_downscale", engine);
         this.blurX = new ThinBlurPostProcess(name + "_blurX", engine, new Vector2(1, 0), 10);
         this.blurY = new ThinBlurPostProcess(name + "_blurY", engine, new Vector2(0, 1), 10);

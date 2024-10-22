@@ -66,6 +66,8 @@ export class ThinDepthOfFieldEffect {
         return this.circleOfConfusion.lensSize;
     }
 
+    public readonly blurLevel: ThinDepthOfFieldEffectBlurLevel;
+
     /**
      * Creates a new instance of @see ThinDepthOfFieldEffect
      * @param name The name of the depth of field render effect
@@ -74,6 +76,7 @@ export class ThinDepthOfFieldEffect {
      */
     constructor(name: string, engine: Nullable<AbstractEngine>, blurLevel: ThinDepthOfFieldEffectBlurLevel = ThinDepthOfFieldEffectBlurLevel.Low) {
         this.circleOfConfusion = new ThinCircleOfConfusionPostProcess(name, engine);
+        this.blurLevel = blurLevel;
 
         let blurCount = 1;
         let kernelSize = 15;

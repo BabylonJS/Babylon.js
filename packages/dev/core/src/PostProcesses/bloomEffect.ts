@@ -57,7 +57,7 @@ export class BloomEffect extends PostProcessRenderEffect {
     }
 
     public get bloomScale() {
-        return this._thinBloomEffect.bloomScale;
+        return this._thinBloomEffect.scale;
     }
 
     private _thinBloomEffect: ThinBloomEffect;

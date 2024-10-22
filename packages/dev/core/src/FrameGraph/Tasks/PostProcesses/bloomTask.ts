@@ -19,6 +19,8 @@ export class FrameGraphBloomTask extends FrameGraphTask {
 
     public readonly bloom: ThinBloomEffect;
 
+    public readonly hdr: boolean;
+
     private _downscale: FrameGraphExtractHighlightsTask;
     private _blurX: FrameGraphBlurTask;
     private _blurY: FrameGraphBlurTask;
@@ -27,6 +29,8 @@ export class FrameGraphBloomTask extends FrameGraphTask {
 
     constructor(name: string, frameGraph: FrameGraph, engine: AbstractEngine, weight: number, kernel: number, threshold: number, hdr = false, bloomScale = 0.5) {
         super(name, frameGraph);
+
+        this.hdr = hdr;
 
         this._defaultPipelineTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         if (hdr) {
@@ -39,16 +43,14 @@ export class FrameGraphBloomTask extends FrameGraphTask {
         }
 
         this.bloom = new ThinBloomEffect(name, engine, bloomScale);
+        this.bloom.threshold = threshold;
+        this.bloom.kernel = kernel;
+        this.bloom.weight = weight;
 
         this._downscale = new FrameGraphExtractHighlightsTask(`${name} Downscale`, this._frameGraph, this.bloom.downscale);
         this._blurX = new FrameGraphBlurTask(`${name} Blur X`, this._frameGraph, this.bloom.blurX);
         this._blurY = new FrameGraphBlurTask(`${name} Blur Y`, this._frameGraph, this.bloom.blurY);
         this._merge = new FrameGraphBloomMergeTask(`${name} Merge`, this._frameGraph, this.bloom.merge);
-
-        this._downscale.postProcess.threshold = threshold;
-        this._blurX.postProcess.kernel = kernel;
-        this._blurY.postProcess.kernel = kernel;
-        this._merge.postProcess.weight = weight;
 
         this.outputTexture = this._frameGraph.createDanglingHandle();
     }
@@ -66,8 +68,8 @@ export class FrameGraphBloomTask extends FrameGraphTask {
 
         const textureCreationOptions: FrameGraphTextureCreationOptions = {
             size: {
-                width: Math.floor(sourceTextureDescription.size.width * this.bloom.bloomScale),
-                height: Math.floor(sourceTextureDescription.size.height * this.bloom.bloomScale),
+                width: Math.floor(sourceTextureDescription.size.width * this.bloom.scale),
+                height: Math.floor(sourceTextureDescription.size.height * this.bloom.scale),
             },
             options: {
                 createMipMaps: false,

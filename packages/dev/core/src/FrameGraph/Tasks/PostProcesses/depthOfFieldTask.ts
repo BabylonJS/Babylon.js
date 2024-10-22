@@ -27,6 +27,8 @@ export class FrameGraphDepthOfFieldTask extends FrameGraphTask {
 
     public readonly depthOfField: ThinDepthOfFieldEffect;
 
+    public readonly hdr: boolean;
+
     private _engine: AbstractEngine;
     private _circleOfConfusion: FrameGraphCircleOfConfusionTask;
     private _blurX: FrameGraphDepthOfFieldBlurTask[] = [];
@@ -38,6 +40,7 @@ export class FrameGraphDepthOfFieldTask extends FrameGraphTask {
         super(name, frameGraph);
 
         this._engine = engine;
+        this.hdr = hdr;
 
         this._defaultPipelineTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         if (hdr) {
