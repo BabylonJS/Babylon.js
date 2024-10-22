@@ -25,8 +25,8 @@ Splat readSplat(float splatIndex)
     vec2 splatUV = getDataUV(splatIndex, dataTextureSize);
     splat.center = texture2D(centersTexture, splatUV);
     splat.color = texture2D(colorsTexture, splatUV);
-    splat.covA = texture2D(covariancesATexture, splatUV) * center.w;
-    splat.covB = texture2D(covariancesBTexture, splatUV) * center.w;
+    splat.covA = texture2D(covariancesATexture, splatUV) * splat.center.w;
+    splat.covB = texture2D(covariancesBTexture, splatUV) * splat.center.w;
     return splat;
 }
     
