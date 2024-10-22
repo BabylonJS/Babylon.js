@@ -4,6 +4,9 @@ import { ThinPostProcess } from "./thinPostProcess";
 import type { Camera } from "core/Cameras/camera";
 
 export interface ThinCircleOfConfusionPostProcessOptions extends ThinPostProcessOptions {
+    /**
+     * If the (view) depth is normalized (0.0 to 1.0 from near to far) or not (0 to camera max distance)
+     */
     depthNotNormalized?: boolean;
 }
 

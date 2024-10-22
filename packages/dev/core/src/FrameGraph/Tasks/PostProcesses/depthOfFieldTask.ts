@@ -52,7 +52,7 @@ export class FrameGraphDepthOfFieldTask extends FrameGraphTask {
             }
         }
 
-        this.depthOfField = new ThinDepthOfFieldEffect(name, engine, blurLevel);
+        this.depthOfField = new ThinDepthOfFieldEffect(name, engine, blurLevel, true);
 
         this._circleOfConfusion = new FrameGraphCircleOfConfusionTask(`${name} Circle of Confusion`, this._frameGraph, this.depthOfField.circleOfConfusion);
 

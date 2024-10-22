@@ -73,9 +73,10 @@ export class ThinDepthOfFieldEffect {
      * @param name The name of the depth of field render effect
      * @param engine The engine which the render effect will be applied. (default: current engine)
      * @param blurLevel The quality of the effect. (default: DepthOfFieldEffectBlurLevel.Low)
+     * @param depthNotNormalized If the (view) depth used in circle of confusion post-process is normalized (0.0 to 1.0 from near to far) or not (0 to camera max distance) (default: false)
      */
-    constructor(name: string, engine: Nullable<AbstractEngine>, blurLevel: ThinDepthOfFieldEffectBlurLevel = ThinDepthOfFieldEffectBlurLevel.Low) {
-        this.circleOfConfusion = new ThinCircleOfConfusionPostProcess(name, engine);
+    constructor(name: string, engine: Nullable<AbstractEngine>, blurLevel: ThinDepthOfFieldEffectBlurLevel = ThinDepthOfFieldEffectBlurLevel.Low, depthNotNormalized = false) {
+        this.circleOfConfusion = new ThinCircleOfConfusionPostProcess(name, engine, { depthNotNormalized });
         this.blurLevel = blurLevel;
 
         let blurCount = 1;
