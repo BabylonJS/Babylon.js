@@ -261,7 +261,7 @@ export function convertGLTFToSerializedFlowGraph(gltf: IKHRInteractivity, refere
                 _connectionType: FlowGraphConnectionType.Input,
                 connectedPointIds: [],
             };
-            const block = (valueMapping && valueMapping.toBlock && flowGraphBlocks.blocks.find((b) => b.className === valueMapping.toBlock)) || flowGraphBlocks.blocks[0];
+            const block = (valueMapping && valueMapping.toBlock && flowGraphBlocks.blocks.find((b) => b.className === valueMapping!.toBlock)) || flowGraphBlocks.blocks[0];
             block.dataInputs.push(socketIn);
             if (value.value !== undefined) {
                 // if the value is set on the socket itself, store it in the context
@@ -295,7 +295,7 @@ export function convertGLTFToSerializedFlowGraph(gltf: IKHRInteractivity, refere
                     }
                 }
                 const socketOutName = valueMapping ? (arrayMapping ? valueMapping.name.replace("$1", nodeOutSocketName) : valueMapping?.name) : nodeOutSocketName;
-                const outBlock = (valueMapping && valueMapping.toBlock && nodeOut.blocks.find((b) => b.className === valueMapping.toBlock)) || nodeOut.blocks[0];
+                const outBlock = (valueMapping && valueMapping.toBlock && nodeOut.blocks.find((b) => b.className === valueMapping!.toBlock)) || nodeOut.blocks[0];
                 let socketOut = outBlock.dataOutputs.find((s) => s.name === socketOutName);
                 // if the socket doesn't exist, create it
                 if (!socketOut) {

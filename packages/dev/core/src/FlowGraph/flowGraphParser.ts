@@ -3,14 +3,12 @@ import { blockFactory } from "./Blocks/flowGraphBlockFactory";
 import type { FlowGraphBlockNames } from "./Blocks/flowGraphBlockNames";
 import type { FlowGraph, IFlowGraphParseOptions } from "./flowGraph";
 import type { FlowGraphBlock, IFlowGraphBlockParseOptions } from "./flowGraphBlock";
-import type { FlowGraphConnection } from "./flowGraphConnection";
 import type { FlowGraphContext, IFlowGraphContextParseOptions } from "./flowGraphContext";
 import type { FlowGraphCoordinatorParseOptions } from "./flowGraphCoordinator";
 import { FlowGraphCoordinator } from "./flowGraphCoordinator";
 import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
 import { FlowGraphEventBlock } from "./flowGraphEventBlock";
 import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
-import { RichType } from "./flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "./flowGraphSignalConnection";
 import { defaultValueParseFunction, needsPathConverter } from "./serialization";
 import type { ISerializedFlowGraph, ISerializedFlowGraphBlock, ISerializedFlowGraphContext } from "./typeDefinitions";
@@ -81,7 +79,7 @@ export async function ParseFlowGraphAsync(serializationObject: ISerializedFlowGr
     const resolvedClasses = await Promise.all(
         serializationObject.allBlocks.map(async (serializedBlock) => {
             const classFactory = blockFactory(serializedBlock.className as FlowGraphBlockNames);
-            return await classFactory();
+            return classFactory();
         })
     );
     // async will be used when we start using the block async factory
@@ -142,7 +140,7 @@ export function ParseFlowGraph(serializationObject: ISerializedFlowGraph, option
  * @param options the options for parsing the context
  * @returns
  */
-export function ParseFlowGraphContext(serializationObject: ISerializedFlowGraphContext, options: IFlowGraphContextParseOptions): FlowGraphContext {
+function ParseFlowGraphContext(serializationObject: ISerializedFlowGraphContext, options: IFlowGraphContextParseOptions): FlowGraphContext {
     const result = options.graph.createContext();
     const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
     result.uniqueId = serializationObject.uniqueId;
@@ -199,11 +197,11 @@ export function ParseFlowGraphContext(serializationObject: ISerializedFlowGraphC
  * @param parseOptions options for parsing the block
  * @returns the parsed block
  */
-export async function ParseBlockAsync(serializationObject: ISerializedFlowGraphBlock, parseOptions: IFlowGraphBlockParseOptions): Promise<FlowGraphBlock> {
-    const classFactory = blockFactory(serializationObject.className as FlowGraphBlockNames);
-    const classType = await classFactory();
-    return ParseFlowGraphBlockWithClassType(serializationObject, parseOptions, classType);
-}
+// async function ParseBlockAsync(serializationObject: ISerializedFlowGraphBlock, parseOptions: IFlowGraphBlockParseOptions): Promise<FlowGraphBlock> {
+//     const classFactory = blockFactory(serializationObject.className as FlowGraphBlockNames);
+//     const classType = await classFactory();
+//     return ParseFlowGraphBlockWithClassType(serializationObject, parseOptions, classType);
+// }
 
 /**
  * Parses a block from a serialization object
@@ -212,7 +210,7 @@ export async function ParseBlockAsync(serializationObject: ISerializedFlowGraphB
  * @param classType the class type of the block. This is used when the class is not loaded asynchronously
  * @returns the parsed block
  */
-export function ParseFlowGraphBlockWithClassType(
+function ParseFlowGraphBlockWithClassType(
     serializationObject: ISerializedFlowGraphBlock,
     parseOptions: IFlowGraphBlockParseOptions,
     classType: typeof FlowGraphBlock
@@ -250,39 +248,39 @@ export function ParseFlowGraphBlockWithClassType(
     return obj;
 }
 
-/**
- * Parses a connection from an object
- * @param serializationObject the object to parse from.
- * @param ownerBlock the block that owns the connection.
- * @param classType the class type of the connection.
- * @returns the parsed connection.
- */
-export function ParseGraphConnectionWithClassType<BlockT extends FlowGraphBlock>(serializationObject: any = {}, ownerBlock: BlockT, classType: typeof FlowGraphConnection) {
-    const connection = new classType(serializationObject.name, serializationObject._connectionType, ownerBlock);
-    connection.deserialize(serializationObject);
-    return connection;
-}
+// /**
+//  * Parses a connection from an object
+//  * @param serializationObject the object to parse from.
+//  * @param ownerBlock the block that owns the connection.
+//  * @param classType the class type of the connection.
+//  * @returns the parsed connection.
+//  */
+// function ParseGraphConnectionWithClassType<BlockT extends FlowGraphBlock>(serializationObject: any = {}, ownerBlock: BlockT, classType: typeof FlowGraphConnection) {
+//     const connection = new classType(serializationObject.name, serializationObject._connectionType, ownerBlock);
+//     connection.deserialize(serializationObject);
+//     return connection;
+// }
 
-/**
- * Parses a data connection from a serialized object.
- * @param serializationObject the object to parse from
- * @param ownerBlock the block that owns the connection
- * @param classType the class type of the data connection
- * @returns the parsed connection
- */
-export function ParseGraphDataConnection(serializationObject: any, ownerBlock: FlowGraphBlock, classType: typeof FlowGraphDataConnection): FlowGraphDataConnection<any> {
-    const richType = ParseRichType(serializationObject.richType);
-    const defaultValue = serializationObject.defaultValue;
-    const connection = new classType(serializationObject.name, serializationObject._connectionType, ownerBlock, richType, defaultValue, !!serializationObject._optional);
-    connection.deserialize(serializationObject);
-    return connection;
-}
+// /**
+//  * Parses a data connection from a serialized object.
+//  * @param serializationObject the object to parse from
+//  * @param ownerBlock the block that owns the connection
+//  * @param classType the class type of the data connection
+//  * @returns the parsed connection
+//  */
+// function ParseGraphDataConnection(serializationObject: any, ownerBlock: FlowGraphBlock, classType: typeof FlowGraphDataConnection): FlowGraphDataConnection<any> {
+//     const richType = ParseRichType(serializationObject.richType);
+//     const defaultValue = serializationObject.defaultValue;
+//     const connection = new classType(serializationObject.name, serializationObject._connectionType, ownerBlock, richType, defaultValue, !!serializationObject._optional);
+//     connection.deserialize(serializationObject);
+//     return connection;
+// }
 
-/**
- * Parses a rich type from a serialization object.
- * @param serializationObject a serialization object
- * @returns the parsed rich type
- */
-export function ParseRichType(serializationObject: any): RichType<any> {
-    return new RichType(serializationObject.typeName, serializationObject.defaultValue);
-}
+// /**
+//  * Parses a rich type from a serialization object.
+//  * @param serializationObject a serialization object
+//  * @returns the parsed rich type
+//  */
+// function ParseRichType(serializationObject: any): RichType<any> {
+//     return new RichType(serializationObject.typeName, serializationObject.defaultValue);
+// }
