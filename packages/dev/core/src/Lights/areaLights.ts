@@ -1849,8 +1849,8 @@ function init(scene: Scene): void {
     const ltc_float_2 = new Float32Array(LTC_MAT_2);
 
     const engine = scene.getEngine();
-    AREALIGHTS_LTC1 = RawTexture.CreateRGBATexture(ltc_float_1, 64, 64, engine, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
-    AREALIGHTS_LTC2 = RawTexture.CreateRGBATexture(ltc_float_2, 64, 64, engine, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
+    AREALIGHTS_LTC1 = RawTexture.CreateRGBATexture(ltc_float_1, 64, 64, engine, false, false, Constants.TEXTURE_LINEAR_LINEAR, Constants.TEXTURETYPE_FLOAT);
+    AREALIGHTS_LTC2 = RawTexture.CreateRGBATexture(ltc_float_2, 64, 64, engine, false, false, Constants.TEXTURE_LINEAR_LINEAR, Constants.TEXTURETYPE_FLOAT);
 }
 
 /**

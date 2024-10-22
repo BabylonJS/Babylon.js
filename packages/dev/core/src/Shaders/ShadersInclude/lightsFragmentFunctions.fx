@@ -228,7 +228,7 @@ lightingInfo computeAreaLighting(sampler2D areaLightsLTC1, sampler2D areaLightsL
 	vec3 viewDir = viewDirectionW;
 	vec3 position = vPosition;
 	vec3 lightPos = lightData.xyz;
-	float roughness = 1.0 - max(1., glossiness);
+	float roughness = 1. - glossiness;
 
 	vec3 rectCoords[ 4 ];
 	rectCoords[ 0 ] = lightPos + halfWidth - halfHeight; // counterclockwise; light shines in local neg z direction

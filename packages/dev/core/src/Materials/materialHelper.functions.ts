@@ -528,6 +528,7 @@ export function PrepareDefinesForLight(
     defines["HEMILIGHT" + lightIndex] = false;
     defines["POINTLIGHT" + lightIndex] = false;
     defines["DIRLIGHT" + lightIndex] = false;
+    defines["AREALIGHT" + lightIndex] = false;
 
     light.prepareLightSpecificDefines(defines, lightIndex);
 
