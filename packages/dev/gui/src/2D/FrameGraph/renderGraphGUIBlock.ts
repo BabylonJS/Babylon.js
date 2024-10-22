@@ -46,7 +46,7 @@ export class NodeRenderGraphGUIBlock extends NodeRenderGraphBlock {
         this.output._typeConnectionSource = this.destination;
 
         this._gui = AdvancedDynamicTexture.CreateFullscreenUI(this.name, undefined, {
-            useAsFrameGraphTask: true,
+            useStandalone: true,
         });
         this._frameGraphTask = new FrameGraphGUITask(this.name, frameGraph, this._gui);
     }

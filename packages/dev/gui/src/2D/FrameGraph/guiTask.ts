@@ -26,8 +26,8 @@ export class FrameGraphGUITask extends FrameGraphTask {
     constructor(name: string, frameGraph: FrameGraph, adt: AdvancedDynamicTexture) {
         super(name, frameGraph);
 
-        if (!adt.useAsFrameGraphTask) {
-            throw new Error(`AdvancedDynamicTexture "${name}": the texture must have been created with the useAsFrameGraphTask property set to true`);
+        if (!adt.useStandalone) {
+            throw new Error(`AdvancedDynamicTexture "${name}": the texture must have been created with the useStandalone property set to true`);
         }
         this._adt = adt;
 

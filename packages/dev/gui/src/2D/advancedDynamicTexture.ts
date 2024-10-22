@@ -34,8 +34,12 @@ import type { StandardMaterial } from "core/Materials/standardMaterial";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 
 export interface IAdvancedDynamicTextureOptions extends IDynamicTextureOptions {
-    /** indicates that the ADT will be used as a frame graph task (default: false) */
-    useAsFrameGraphTask?: boolean;
+    /**
+     * Indicates whether the ADT will be used autonomously. In this mode:
+     * - _checkUpdate() is not called
+     * - the layer is not rendered (so, the ADT is not visible)
+     */
+    useStandalone?: boolean;
 }
 
 /**
@@ -49,7 +53,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     /** Indicates if some optimizations can be performed in GUI GPU management (the downside is additional memory/GPU texture memory used) */
     public static AllowGPUOptimizations = true;
 
-    public readonly useAsFrameGraphTask: boolean = false;
+    /** Indicates whether the ADT is used autonomously */
+    public readonly useStandalone: boolean = false;
 
     /** Snippet ID if the content was created from the snippet server */
     public snippetId: string;
@@ -446,9 +451,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
 
         const adtOptions = widthOrOptions as IAdvancedDynamicTextureOptions;
 
-        this.useAsFrameGraphTask = !!adtOptions?.useAsFrameGraphTask;
+        this.useStandalone = !!adtOptions?.useStandalone;
 
-        if (!this.useAsFrameGraphTask) {
+        if (!this.useStandalone) {
             this._renderObserver = scene.onBeforeCameraRenderObservable.add((camera: Camera) => this._checkUpdate(camera));
         }
 
@@ -1643,9 +1648,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         result._layerToDispose = layer;
         result._isFullscreen = true;
 
-        if (result.useAsFrameGraphTask) {
+        if (result.useStandalone) {
             // Make sure the layer is not rendered by the layer component!
-            // We will render it ourselves in the frame graph render pass
             layer.layerMask = 0;
         }
 
