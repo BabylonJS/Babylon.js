@@ -1385,7 +1385,27 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         return this._texturesEnabled;
     }
 
-    public useFrameGraph = false;
+    private _useFrameGraph = false;
+    /**
+     * Gets or sets a boolean indicating if the frame graph should be used
+     */
+    public get useFrameGraph(): boolean {
+        return this._useFrameGraph;
+    }
+
+    public set useFrameGraph(value: boolean) {
+        if (this._useFrameGraph === value) {
+            return;
+        }
+
+        this._useFrameGraph = value;
+
+        if (this._useFrameGraph) {
+            this.customRenderFunction = this._renderWithFrameGraph;
+        } else {
+            this.customRenderFunction = undefined;
+        }
+    }
 
     public frameGraph: Nullable<FrameGraph> = null;
 
@@ -4714,60 +4734,13 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     /**
      * If this function is defined it will take precedence over the standard render() function.
      */
-    public customRenderFunction?: () => void;
-
-    /**
-     * Render the scene
-     * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)
-     * @param ignoreAnimations defines a boolean indicating if animations should not be executed (false by default)
-     */
-    public render(updateCameras = true, ignoreAnimations = false): void {
-        if (this.isDisposed) {
-            return;
-        }
-
-        if (this.useFrameGraph) {
-            this._renderWithFrameGraph(updateCameras, ignoreAnimations);
-        } else {
-            this._render(updateCameras, ignoreAnimations);
-        }
-    }
+    public customRenderFunction?: (updateCameras: boolean, ignoreAnimations: boolean) => void;
 
     private _renderWithFrameGraph(updateCameras = true, ignoreAnimations = false): void {
-        this._frameId++;
-
         this.activeCamera = null;
-
-        // Register components that have been associated lately to the scene.
-        this._registerTransientComponents();
-
-        this._activeParticles.fetchNewFrame();
-        this._totalVertices.fetchNewFrame();
-        this._activeIndices.fetchNewFrame();
-        this._activeBones.fetchNewFrame();
-        this._meshesForIntersections.reset();
-        this.resetCachedMaterial();
 
         this._activeParticleSystems.reset();
         this._activeSkeletons.reset();
-
-        this.onBeforeAnimationsObservable.notifyObservers(this);
-
-        // Actions
-        if (this.actionManager) {
-            this.actionManager.processTrigger(Constants.ACTION_OnEveryFrameTrigger);
-        }
-
-        // Animations
-        if (!ignoreAnimations) {
-            this.animate();
-        }
-
-        // Before camera update steps
-        // We must keep these steps because gamepad and mesh simplification components rely on them.
-        for (const step of this._beforeCameraUpdateStage) {
-            step.action();
-        }
 
         // Update Cameras
         if (updateCameras) {
@@ -4781,9 +4754,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
                 }
             }
         }
-
-        // Before render
-        this.onBeforeRenderObservable.notifyObservers(this);
 
         // We must keep these steps because the procedural texture component relies on them.
         // TODO: move the procedural texture component to the frame graph.
@@ -4834,40 +4804,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         // Render the graph
         this.frameGraph?.execute();
-
-        // Intersection checks
-        this._checkIntersections();
-
-        // Executes the after render stage actions.
-        // We must keep these steps because the audio component relies on them.
-        for (const step of this._afterRenderStage) {
-            step.action();
-        }
-
-        // After render
-        if (this.afterRender) {
-            this.afterRender();
-        }
-
-        this.onAfterRenderObservable.notifyObservers(this);
-
-        // Cleaning
-        if (this._toBeDisposed.length) {
-            for (let index = 0; index < this._toBeDisposed.length; index++) {
-                const data = this._toBeDisposed[index];
-                if (data) {
-                    data.dispose();
-                }
-            }
-
-            this._toBeDisposed.length = 0;
-        }
-
-        this._activeBones.addCount(0, true);
-        this._activeIndices.addCount(0, true);
-        this._activeParticles.addCount(0, true);
-
-        this._engine.restoreDefaultFramebuffer();
     }
 
     /**
@@ -4875,7 +4811,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)
      * @param ignoreAnimations defines a boolean indicating if animations should not be executed (false by default)
      */
-    private _render(updateCameras = true, ignoreAnimations = false): void {
+    public render(updateCameras = true, ignoreAnimations = false): void {
+        if (this.isDisposed) {
+            return;
+        }
+
         if (this.onReadyObservable.hasObservers() && this._executeWhenReadyTimeoutId === null) {
             this._checkIsReady();
         }
@@ -4945,7 +4885,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             this._renderId++;
             this._engine.currentRenderPassId = Constants.RENDERPASS_MAIN;
 
-            this.customRenderFunction();
+            this.customRenderFunction(updateCameras, ignoreAnimations);
         } else {
             const engine = this.getEngine();
 
