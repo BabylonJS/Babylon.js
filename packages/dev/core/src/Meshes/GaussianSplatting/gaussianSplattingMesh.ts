@@ -14,6 +14,7 @@ import { Tools } from "core/Misc/tools";
 import "core/Meshes/thinInstanceMesh";
 import type { ThinEngine } from "core/Engines/thinEngine";
 import { ToHalfFloat } from "core/Misc/textureTools";
+import type { Material } from "core/Materials/material";
 
 interface DelayedTextureUpdate {
     covA: Uint16Array;
@@ -49,6 +50,8 @@ export class GaussianSplattingMesh extends Mesh {
     private _delayedTextureUpdate: Nullable<DelayedTextureUpdate> = null;
     private _oldDirection = new Vector3();
     private _useRGBACovariants = false;
+    private _material: Nullable<Material> = null;
+
     /**
      * Gets the covariancesA texture
      */
@@ -78,6 +81,22 @@ export class GaussianSplattingMesh extends Mesh {
     }
 
     /**
+     * set rendering material
+     */
+    public override set material(value: Material) {
+        this._material = value;
+        this._material.backFaceCulling = true;
+        this._material.cullBackFaces = false;
+    }
+
+    /**
+     * get rendering material
+     */
+    public override get material(): Nullable<Material> {
+        return this._material;
+    }
+
+    /**
      * Creates a new gaussian splatting mesh
      * @param name defines the name of the mesh
      * @param url defines the url to load from (optional)
@@ -104,7 +123,7 @@ export class GaussianSplattingMesh extends Mesh {
         if (url) {
             this.loadFileAsync(url);
         }
-        this.material = new GaussianSplattingMaterial(this.name + "_material", this._scene);
+        this._material = new GaussianSplattingMaterial(this.name + "_material", this._scene);
     }
 
     /**
@@ -486,8 +505,6 @@ export class GaussianSplattingMesh extends Mesh {
         const maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
         const covariances = [0, 0, 0, 0, 0, 0];
-        const float32 = new Float32Array(1);
-        const uint32 = new Uint32Array(float32.buffer);
         const covBSplatSize = this._useRGBACovariants ? 4 : 2;
         for (let i = 0; i < vertexCount; i++) {
             const x = fBuffer[8 * i + 0];
