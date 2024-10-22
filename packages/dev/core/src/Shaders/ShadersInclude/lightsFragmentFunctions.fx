@@ -228,7 +228,7 @@ lightingInfo computeAreaLighting(sampler2D areaLightsLTC1, sampler2D areaLightsL
 	vec3 viewDir = viewDirectionW;
 	vec3 position = vPosition;
 	vec3 lightPos = lightData.xyz;
-	float roughness = 1.0 - glossiness;
+	float roughness = 1.0 - max(1., glossiness);
 
 	vec3 rectCoords[ 4 ];
 	rectCoords[ 0 ] = lightPos + halfWidth - halfHeight; // counterclockwise; light shines in local neg z direction
@@ -247,10 +247,13 @@ lightingInfo computeAreaLighting(sampler2D areaLightsLTC1, sampler2D areaLightsL
 		vec3( t1.z, 0, t1.w )
 	);
 
-		// LTC Fresnel Approximation by Stephen Hill
+#ifdef SPECULARTERM
+	// LTC Fresnel Approximation by Stephen Hill
 	// http://blog.selfshadow.com/publications/s2016-advances/s2016_ltc_fresnel.pdf
 	vec3 fresnel = ( specularColor * t2.x + ( vec3( 1.0 ) - specularColor ) * t2.y );
 	result.specular += specularColor * fresnel * LTCEvaluate( normal, viewDir, position, mInv, rectCoords );
+#endif
+	
 	result.diffuse += diffuseColor * LTCEvaluate( normal, viewDir, position, mat3( 1.0 ), rectCoords );
 	return result;
 }
