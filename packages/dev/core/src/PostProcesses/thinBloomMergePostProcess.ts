@@ -1,11 +1,12 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { Nullable, AbstractEngine, ThinPostProcessOptions } from "core/index";
-import { ThinPostProcess } from "./thinPostProcess";
+import type { Nullable, AbstractEngine, EffectWrapperCreationOptions } from "core/index";
+import { EffectWrapper } from "../Materials/effectRenderer";
+import { Engine } from "../Engines/engine";
 
 /**
  * @internal
  */
-export class ThinBloomMergePostProcess extends ThinPostProcess {
+export class ThinBloomMergePostProcess extends EffectWrapper {
     public static readonly FragmentUrl = "bloomMerge";
 
     public static readonly Uniforms = ["bloomWeight"];
@@ -21,11 +22,16 @@ export class ThinBloomMergePostProcess extends ThinPostProcess {
         }
     }
 
-    constructor(name: string, engine: Nullable<AbstractEngine> = null, options?: ThinPostProcessOptions) {
-        super(name, ThinBloomMergePostProcess.FragmentUrl, engine, {
+    constructor(name: string, engine: Nullable<AbstractEngine> = null, options?: EffectWrapperCreationOptions) {
+        super({
+            ...options,
+            name,
+            engine: engine || Engine.LastCreatedEngine!,
+            useShaderStore: true,
+            _useAsPostProcess: true,
+            fragmentShader: ThinBloomMergePostProcess.FragmentUrl,
             uniforms: ThinBloomMergePostProcess.Uniforms,
             samplers: ThinBloomMergePostProcess.Samplers,
-            ...options,
         });
     }
 

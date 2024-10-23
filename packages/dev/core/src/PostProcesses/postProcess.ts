@@ -25,8 +25,8 @@ import type { PrePassEffectConfiguration } from "../Rendering/prePassEffectConfi
 import { AbstractEngine } from "../Engines/abstractEngine";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
 import type { IAssetContainer } from "core/IAssetContainer";
-import type { ThinPostProcessCustomShaderCodeProcessing, ThinPostProcessOptions } from "./thinPostProcess";
-import { ThinPostProcess } from "./thinPostProcess";
+import type { EffectWrapperCustomShaderCodeProcessing, EffectWrapperCreationOptions } from "../Materials/effectRenderer";
+import { EffectWrapper } from "../Materials/effectRenderer";
 
 declare module "../Engines/abstractEngine" {
     export interface AbstractEngine {
@@ -106,7 +106,7 @@ Effect.prototype.setTextureFromPostProcessOutput = function (channel: string, po
 /**
  * Options for the PostProcess constructor
  */
-export type PostProcessOptions = ThinPostProcessOptions & {
+export type PostProcessOptions = EffectWrapperCreationOptions & {
     /**
      * The width of the texture created for this post process.
      * This parameter (and height) is only used when passing a value for the 5th parameter (options) to the PostProcess constructor function.
@@ -150,8 +150,10 @@ export type PostProcessOptions = ThinPostProcessOptions & {
      * Format of the texture created for this post process (default: TEXTUREFORMAT_RGBA)
      */
     textureFormat?: number;
-
-    thinPostProcess?: ThinPostProcess;
+    /**
+     * The effect wrapper instance used by the post process. If not provided, a new one will be created.
+     */
+    effectWrapper?: EffectWrapper;
 };
 
 type TextureCache = { texture: RenderTargetWrapper; postProcessChannel: number; lastUsedRenderId: number };
@@ -166,11 +168,11 @@ export class PostProcess {
      * False by default. This is mostly meant for backward compatibility.
      */
     public static get ForceGLSL(): boolean {
-        return ThinPostProcess.ForceGLSL;
+        return EffectWrapper.ForceGLSL;
     }
 
     public static set ForceGLSL(force: boolean) {
-        ThinPostProcess.ForceGLSL = force;
+        EffectWrapper.ForceGLSL = force;
     }
 
     /** @internal */
@@ -181,8 +183,8 @@ export class PostProcess {
      * @param postProcessName name of the post process. Use null for the fallback shader code processing. This is the shader code processing that will be used in case no specific shader code processing has been associated to a post process name
      * @param customShaderCodeProcessing shader code processing to associate to the post process name
      */
-    public static RegisterShaderCodeProcessing(postProcessName: Nullable<string>, customShaderCodeProcessing?: ThinPostProcessCustomShaderCodeProcessing) {
-        ThinPostProcess.RegisterShaderCodeProcessing(postProcessName, customShaderCodeProcessing);
+    public static RegisterShaderCodeProcessing(postProcessName: Nullable<string>, customShaderCodeProcessing?: EffectWrapperCustomShaderCodeProcessing) {
+        EffectWrapper.RegisterShaderCodeProcessing(postProcessName, customShaderCodeProcessing);
     }
 
     /**
@@ -193,7 +195,13 @@ export class PostProcess {
 
     /** Name of the PostProcess. */
     @serialize()
-    public name: string;
+    public get name() {
+        return this._effectWrapper.name;
+    }
+
+    public set name(value: string) {
+        this._effectWrapper.name = value;
+    }
 
     /**
      * Width of the texture to apply the post process on
@@ -245,11 +253,11 @@ export class PostProcess {
      */
     @serialize()
     public get alphaMode() {
-        return this._thinPostProcess.alphaMode;
+        return this._effectWrapper.alphaMode;
     }
 
     public set alphaMode(value: number) {
-        this._thinPostProcess.alphaMode = value;
+        this._effectWrapper.alphaMode = value;
     }
 
     /**
@@ -532,7 +540,7 @@ export class PostProcess {
         return this._texelSize;
     }
 
-    protected readonly _thinPostProcess: ThinPostProcess;
+    protected readonly _effectWrapper: EffectWrapper;
 
     /**
      * Creates a new instance PostProcess
@@ -602,10 +610,9 @@ export class PostProcess {
         shaderLanguage?: ShaderLanguage,
         extraInitializations?: (useWebGPU: boolean, list: Promise<any>[]) => void
     ) {
-        this.name = name;
         let size: number | { width: number; height: number } = 1;
         let uniformBuffers: Nullable<string[]> = null;
-        let thinPostProcess: ThinPostProcess | undefined;
+        let effectWrapper: EffectWrapper | undefined;
         if (parameters && !Array.isArray(parameters)) {
             const options = parameters;
             parameters = options.uniforms ?? null;
@@ -615,7 +622,7 @@ export class PostProcess {
             samplingMode = options.samplingMode ?? Constants.TEXTURE_NEAREST_SAMPLINGMODE;
             engine = options.engine;
             reusable = options.reusable;
-            defines = options.defines ?? null;
+            defines = Array.isArray(options.defines) ? options.defines.join("\n") : (options.defines ?? null);
             textureType = options.textureType ?? Constants.TEXTURETYPE_UNSIGNED_INT;
             vertexUrl = options.vertexUrl ?? "postprocess";
             indexParameters = options.indexParameters;
@@ -624,7 +631,7 @@ export class PostProcess {
             shaderLanguage = options.shaderLanguage ?? ShaderLanguage.GLSL;
             uniformBuffers = options.uniformBuffers ?? null;
             extraInitializations = options.extraInitializations;
-            thinPostProcess = options.thinPostProcess;
+            effectWrapper = options.effectWrapper;
         } else if (_size) {
             if (typeof _size === "number") {
                 size = _size;
@@ -633,11 +640,16 @@ export class PostProcess {
             }
         }
 
-        const useExistingThinPostProcess = !!thinPostProcess;
+        const useExistingThinPostProcess = !!effectWrapper;
 
-        this._thinPostProcess =
-            thinPostProcess ??
-            new ThinPostProcess(this.name, fragmentUrl, engine, {
+        this._effectWrapper =
+            effectWrapper ??
+            new EffectWrapper({
+                name,
+                useShaderStore: true,
+                _useAsPostProcess: true,
+                fragmentShader: fragmentUrl,
+                engine: engine || camera?.getScene().getEngine(),
                 uniforms: parameters,
                 samplers,
                 uniformBuffers,
@@ -649,7 +661,8 @@ export class PostProcess {
                 extraInitializations,
             });
 
-        this.onEffectCreatedObservable = this._thinPostProcess.onEffectCreatedObservable;
+        this.name = name;
+        this.onEffectCreatedObservable = this._effectWrapper.onEffectCreatedObservable;
 
         if (camera != null) {
             this._camera = camera;
@@ -694,8 +707,8 @@ export class PostProcess {
 
             this._gatherImports(this._engine.isWebGPU && !PostProcess.ForceGLSL, importPromises);
 
-            this._thinPostProcess._webGPUReady = this._webGPUReady;
-            this._thinPostProcess._postConstructor(blockCompilation, defines, extraInitializations, importPromises);
+            this._effectWrapper._webGPUReady = this._webGPUReady;
+            this._effectWrapper._postConstructor(blockCompilation, defines, extraInitializations, importPromises);
         }
     }
 
@@ -729,7 +742,7 @@ export class PostProcess {
      * @returns The created effect corresponding to the postprocess.
      */
     public getEffect(): Effect {
-        return this._thinPostProcess.drawWrapper.effect!;
+        return this._effectWrapper.drawWrapper.effect!;
     }
 
     /**
@@ -778,8 +791,8 @@ export class PostProcess {
         vertexUrl?: string,
         fragmentUrl?: string
     ) {
-        this._thinPostProcess.updateEffect(defines, uniforms, samplers, indexParameters, onCompiled, onError, vertexUrl, fragmentUrl);
-        this._postProcessDefines = this._thinPostProcess.options.defines;
+        this._effectWrapper.updateEffect(defines, uniforms, samplers, indexParameters, onCompiled, onError, vertexUrl, fragmentUrl);
+        this._postProcessDefines = Array.isArray(this._effectWrapper.options.defines) ? this._effectWrapper.options.defines.join("\n") : this._effectWrapper.options.defines;
     }
 
     /**
@@ -1007,7 +1020,7 @@ export class PostProcess {
      * If the post process is supported.
      */
     public get isSupported(): boolean {
-        return this._thinPostProcess.drawWrapper.effect!.isSupported;
+        return this._effectWrapper.drawWrapper.effect!.isSupported;
     }
 
     /**
@@ -1029,7 +1042,7 @@ export class PostProcess {
      * @returns true if the post-process is ready (shader is compiled)
      */
     public isReady(): boolean {
-        return this._thinPostProcess.isReady();
+        return this._effectWrapper.isReady();
     }
 
     /**
@@ -1038,12 +1051,12 @@ export class PostProcess {
      */
     public apply(): Nullable<Effect> {
         // Check
-        if (!this._thinPostProcess.isReady()) {
+        if (!this._effectWrapper.isReady()) {
             return null;
         }
 
         // States
-        this._engine.enableEffect(this._thinPostProcess.drawWrapper);
+        this._engine.enableEffect(this._effectWrapper.drawWrapper);
         this._engine.setState(false);
         this._engine.setDepthBuffer(false);
         this._engine.setDepthWrite(false);
@@ -1064,16 +1077,16 @@ export class PostProcess {
         }
 
         if (!this.externalTextureSamplerBinding) {
-            this._thinPostProcess.drawWrapper.effect!._bindTexture("textureSampler", source?.texture);
+            this._effectWrapper.drawWrapper.effect!._bindTexture("textureSampler", source?.texture);
         }
 
         // Parameters
-        this._thinPostProcess.drawWrapper.effect!.setVector2("scale", this._scaleRatio);
-        this.onApplyObservable.notifyObservers(this._thinPostProcess.drawWrapper.effect!);
+        this._effectWrapper.drawWrapper.effect!.setVector2("scale", this._scaleRatio);
+        this.onApplyObservable.notifyObservers(this._effectWrapper.drawWrapper.effect!);
 
-        this._thinPostProcess.bind();
+        this._effectWrapper.bind();
 
-        return this._thinPostProcess.drawWrapper.effect;
+        return this._effectWrapper.drawWrapper.effect;
     }
 
     private _disposeTextures() {

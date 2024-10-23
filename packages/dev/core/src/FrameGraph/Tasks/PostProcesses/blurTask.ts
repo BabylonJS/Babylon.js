@@ -1,13 +1,14 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { FrameGraph, FrameGraphRenderContext, FrameGraphRenderPass } from "core/index";
-import type { ThinBlurPostProcess } from "core/PostProcesses/thinBlurPostProcess";
-import { FrameGraphThinPostProcessTask } from "./thinPostProcessTask";
+import { ThinBlurPostProcess } from "core/PostProcesses/thinBlurPostProcess";
+import { FrameGraphPostProcessTask } from "./postProcessTask";
+import { Vector2 } from "core/Maths/math.vector";
 
-export class FrameGraphBlurTask extends FrameGraphThinPostProcessTask {
+export class FrameGraphBlurTask extends FrameGraphPostProcessTask {
     public override readonly postProcess: ThinBlurPostProcess;
 
-    constructor(name: string, frameGraph: FrameGraph, thinPostProcess: ThinBlurPostProcess) {
-        super(name, frameGraph, thinPostProcess);
+    constructor(name: string, frameGraph: FrameGraph, thinPostProcess?: ThinBlurPostProcess) {
+        super(name, frameGraph, thinPostProcess || new ThinBlurPostProcess(name, frameGraph.engine, new Vector2(1, 0), 10));
     }
 
     public override record(

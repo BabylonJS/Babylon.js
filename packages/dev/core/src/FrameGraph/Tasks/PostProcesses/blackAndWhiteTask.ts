@@ -1,11 +1,11 @@
 import type { FrameGraph } from "core/FrameGraph/frameGraph";
-import type { ThinBlackAndWhitePostProcess } from "core/PostProcesses/thinBlackAndWhitePostProcess";
-import { FrameGraphThinPostProcessTask } from "./thinPostProcessTask";
+import { ThinBlackAndWhitePostProcess } from "core/PostProcesses/thinBlackAndWhitePostProcess";
+import { FrameGraphPostProcessTask } from "./postProcessTask";
 
-export class FrameGraphBlackAndWhiteTask extends FrameGraphThinPostProcessTask {
+export class FrameGraphBlackAndWhiteTask extends FrameGraphPostProcessTask {
     public override readonly postProcess: ThinBlackAndWhitePostProcess;
 
-    constructor(name: string, frameGraph: FrameGraph, thinPostProcess: ThinBlackAndWhitePostProcess) {
-        super(name, frameGraph, thinPostProcess);
+    constructor(name: string, frameGraph: FrameGraph, thinPostProcess?: ThinBlackAndWhitePostProcess) {
+        super(name, frameGraph, thinPostProcess || new ThinBlackAndWhitePostProcess(name, frameGraph.engine));
     }
 }

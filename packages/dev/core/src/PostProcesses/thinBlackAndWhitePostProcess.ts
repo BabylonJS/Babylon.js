@@ -1,8 +1,9 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { Nullable, AbstractEngine, ThinPostProcessOptions } from "core/index";
-import { ThinPostProcess } from "./thinPostProcess";
+import type { Nullable, AbstractEngine, EffectWrapperCreationOptions } from "core/index";
+import { EffectWrapper } from "../Materials/effectRenderer";
+import { Engine } from "../Engines/engine";
 
-export class ThinBlackAndWhitePostProcess extends ThinPostProcess {
+export class ThinBlackAndWhitePostProcess extends EffectWrapper {
     public static readonly FragmentUrl = "blackAndWhite";
 
     public static readonly Uniforms = ["degree"];
@@ -16,10 +17,15 @@ export class ThinBlackAndWhitePostProcess extends ThinPostProcess {
         }
     }
 
-    constructor(name: string, engine: Nullable<AbstractEngine> = null, options?: ThinPostProcessOptions) {
-        super(name, ThinBlackAndWhitePostProcess.FragmentUrl, engine, {
-            uniforms: ThinBlackAndWhitePostProcess.Uniforms,
+    constructor(name: string, engine: Nullable<AbstractEngine> = null, options?: EffectWrapperCreationOptions) {
+        super({
             ...options,
+            name,
+            engine: engine || Engine.LastCreatedEngine!,
+            useShaderStore: true,
+            _useAsPostProcess: true,
+            fragmentShader: ThinBlackAndWhitePostProcess.FragmentUrl,
+            uniforms: ThinBlackAndWhitePostProcess.Uniforms,
         });
     }
 

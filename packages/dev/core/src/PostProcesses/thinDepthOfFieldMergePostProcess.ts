@@ -1,11 +1,12 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { Nullable, AbstractEngine, ThinPostProcessOptions } from "core/index";
-import { ThinPostProcess } from "./thinPostProcess";
+import type { Nullable, AbstractEngine, EffectWrapperCreationOptions } from "core/index";
+import { EffectWrapper } from "../Materials/effectRenderer";
+import { Engine } from "../Engines/engine";
 
 /**
  * @internal
  */
-export class ThinDepthOfFieldMergePostProcess extends ThinPostProcess {
+export class ThinDepthOfFieldMergePostProcess extends EffectWrapper {
     public static readonly FragmentUrl = "depthOfFieldMerge";
 
     public static readonly Samplers = ["circleOfConfusionSampler", "blurStep0", "blurStep1", "blurStep2"];
@@ -19,10 +20,15 @@ export class ThinDepthOfFieldMergePostProcess extends ThinPostProcess {
         }
     }
 
-    constructor(name: string, engine: Nullable<AbstractEngine> = null, options?: ThinPostProcessOptions) {
-        super(name, ThinDepthOfFieldMergePostProcess.FragmentUrl, engine, {
-            samplers: ThinDepthOfFieldMergePostProcess.Samplers,
+    constructor(name: string, engine: Nullable<AbstractEngine> = null, options?: EffectWrapperCreationOptions) {
+        super({
             ...options,
+            name,
+            engine: engine || Engine.LastCreatedEngine!,
+            useShaderStore: true,
+            _useAsPostProcess: true,
+            fragmentShader: ThinDepthOfFieldMergePostProcess.FragmentUrl,
+            samplers: ThinDepthOfFieldMergePostProcess.Samplers,
         });
     }
 }

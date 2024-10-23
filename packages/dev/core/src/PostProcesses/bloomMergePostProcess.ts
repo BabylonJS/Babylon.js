@@ -17,11 +17,11 @@ export class BloomMergePostProcess extends PostProcess {
     /** Weight of the bloom to be added to the original input. */
     @serialize()
     public get weight() {
-        return this._thinPostProcess.weight;
+        return this._effectWrapper.weight;
     }
 
     public set weight(value: number) {
-        this._thinPostProcess.weight = value;
+        this._effectWrapper.weight = value;
     }
 
     /**
@@ -32,7 +32,7 @@ export class BloomMergePostProcess extends PostProcess {
         return "BloomMergePostProcess";
     }
 
-    protected override _thinPostProcess: ThinBloomMergePostProcess;
+    protected override _effectWrapper: ThinBloomMergePostProcess;
 
     /**
      * Creates a new instance of @see BloomMergePostProcess
@@ -75,7 +75,7 @@ export class BloomMergePostProcess extends PostProcess {
         };
 
         super(name, ThinBloomMergePostProcess.FragmentUrl, {
-            thinPostProcess: typeof options === "number" || !options.thinPostProcess ? new ThinBloomMergePostProcess(name, engine, localOptions) : undefined,
+            effectWrapper: typeof options === "number" || !options.effectWrapper ? new ThinBloomMergePostProcess(name, engine, localOptions) : undefined,
             ...localOptions,
         });
 

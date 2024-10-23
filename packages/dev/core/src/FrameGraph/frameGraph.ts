@@ -39,6 +39,10 @@ export class FrameGraph {
      */
     public onBuildObservable = new Observable<FrameGraph>();
 
+    public get engine() {
+        return this._engine;
+    }
+
     /**
      * Constructs the frame graph
      * @param engine defines the hosting engine

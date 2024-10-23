@@ -19,21 +19,21 @@ export class ExtractHighlightsPostProcess extends PostProcess {
      */
     @serialize()
     public get threshold() {
-        return this._thinPostProcess.threshold;
+        return this._effectWrapper.threshold;
     }
 
     public set threshold(value: number) {
-        this._thinPostProcess.threshold = value;
+        this._effectWrapper.threshold = value;
     }
 
     /** @internal */
     public get _exposure() {
-        return this._thinPostProcess._exposure;
+        return this._effectWrapper._exposure;
     }
 
     /** @internal */
     public set _exposure(value: number) {
-        this._thinPostProcess._exposure = value;
+        this._effectWrapper._exposure = value;
     }
 
     /**
@@ -50,7 +50,7 @@ export class ExtractHighlightsPostProcess extends PostProcess {
         return "ExtractHighlightsPostProcess";
     }
 
-    protected override _thinPostProcess: ThinExtractHighlightsPostProcess;
+    protected override _effectWrapper: ThinExtractHighlightsPostProcess;
 
     constructor(
         name: string,
@@ -75,7 +75,7 @@ export class ExtractHighlightsPostProcess extends PostProcess {
         };
 
         super(name, ThinExtractHighlightsPostProcess.FragmentUrl, {
-            thinPostProcess: typeof options === "number" || !options.thinPostProcess ? new ThinExtractHighlightsPostProcess(name, engine, localOptions) : undefined,
+            effectWrapper: typeof options === "number" || !options.effectWrapper ? new ThinExtractHighlightsPostProcess(name, engine, localOptions) : undefined,
             ...localOptions,
         });
 

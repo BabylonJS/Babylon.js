@@ -1,16 +1,17 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { Nullable, AbstractEngine, ThinPostProcessOptions } from "core/index";
-import { ThinPostProcess } from "./thinPostProcess";
+import type { Nullable, AbstractEngine, EffectWrapperCreationOptions } from "core/index";
+import { EffectWrapper } from "../Materials/effectRenderer";
 import type { Camera } from "core/Cameras/camera";
+import { Engine } from "../Engines/engine";
 
-export interface ThinCircleOfConfusionPostProcessOptions extends ThinPostProcessOptions {
+export interface ThinCircleOfConfusionPostProcessOptions extends EffectWrapperCreationOptions {
     /**
      * If the (view) depth is normalized (0.0 to 1.0 from near to far) or not (0 to camera max distance)
      */
     depthNotNormalized?: boolean;
 }
 
-export class ThinCircleOfConfusionPostProcess extends ThinPostProcess {
+export class ThinCircleOfConfusionPostProcess extends EffectWrapper {
     public static readonly FragmentUrl = "circleOfConfusion";
 
     public static readonly Uniforms = ["cameraMinMaxZ", "focusDistance", "cocPrecalculation"];
@@ -29,11 +30,16 @@ export class ThinCircleOfConfusionPostProcess extends ThinPostProcess {
     }
 
     constructor(name: string, engine: Nullable<AbstractEngine> = null, options?: ThinCircleOfConfusionPostProcessOptions) {
-        super(name, ThinCircleOfConfusionPostProcess.FragmentUrl, engine, {
+        super({
+            ...options,
+            name,
+            engine: engine || Engine.LastCreatedEngine!,
+            useShaderStore: true,
+            _useAsPostProcess: true,
+            fragmentShader: ThinCircleOfConfusionPostProcess.FragmentUrl,
             uniforms: ThinCircleOfConfusionPostProcess.Uniforms,
             samplers: ThinCircleOfConfusionPostProcess.Samplers,
             defines: options?.depthNotNormalized ? ThinCircleOfConfusionPostProcess.DefinesDepthNotNormalized : undefined,
-            ...options,
         });
     }
 

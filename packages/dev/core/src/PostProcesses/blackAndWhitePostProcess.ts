@@ -20,11 +20,11 @@ export class BlackAndWhitePostProcess extends PostProcess {
      */
     @serialize()
     public get degree() {
-        return this._thinPostProcess.degree;
+        return this._effectWrapper.degree;
     }
 
     public set degree(value: number) {
-        this._thinPostProcess.degree = value;
+        this._effectWrapper.degree = value;
     }
 
     /**
@@ -35,7 +35,7 @@ export class BlackAndWhitePostProcess extends PostProcess {
         return "BlackAndWhitePostProcess";
     }
 
-    protected override _thinPostProcess: ThinBlackAndWhitePostProcess;
+    protected override _effectWrapper: ThinBlackAndWhitePostProcess;
 
     /**
      * Creates a black and white post process
@@ -59,7 +59,7 @@ export class BlackAndWhitePostProcess extends PostProcess {
         };
 
         super(name, ThinBlackAndWhitePostProcess.FragmentUrl, {
-            thinPostProcess: typeof options === "number" || !options.thinPostProcess ? new ThinBlackAndWhitePostProcess(name, engine, localOptions) : undefined,
+            effectWrapper: typeof options === "number" || !options.effectWrapper ? new ThinBlackAndWhitePostProcess(name, engine, localOptions) : undefined,
             ...localOptions,
         });
     }

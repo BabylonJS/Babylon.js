@@ -3,15 +3,16 @@ import type { FrameGraphTextureHandle } from "../../frameGraphTypes";
 import type { FrameGraphRenderPass } from "core/FrameGraph/Passes/renderPass";
 import { Constants } from "core/Engines/constants";
 import { FrameGraphBlurTask } from "./blurTask";
-import type { ThinDepthOfFieldBlurPostProcess } from "core/PostProcesses/thinDepthOfFieldBlurPostProcess";
+import { ThinDepthOfFieldBlurPostProcess } from "core/PostProcesses/thinDepthOfFieldBlurPostProcess";
+import { Vector2 } from "core/Maths/math.vector";
 
 export class FrameGraphDepthOfFieldBlurTask extends FrameGraphBlurTask {
     public circleOfConfusionTexture: FrameGraphTextureHandle;
 
     public circleOfConfusionSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
 
-    constructor(name: string, frameGraph: FrameGraph, thinPostProcess: ThinDepthOfFieldBlurPostProcess) {
-        super(name, frameGraph, thinPostProcess);
+    constructor(name: string, frameGraph: FrameGraph, thinPostProcess?: ThinDepthOfFieldBlurPostProcess) {
+        super(name, frameGraph, thinPostProcess || new ThinDepthOfFieldBlurPostProcess(name, frameGraph.engine, new Vector2(1, 0), 10));
     }
 
     public override record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {

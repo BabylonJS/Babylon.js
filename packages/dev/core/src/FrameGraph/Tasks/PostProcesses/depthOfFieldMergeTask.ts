@@ -1,16 +1,16 @@
-import type { ThinDepthOfFieldMergePostProcess } from "core/PostProcesses/thinDepthOfFieldMergePostProcess";
+import { ThinDepthOfFieldMergePostProcess } from "core/PostProcesses/thinDepthOfFieldMergePostProcess";
 import type { FrameGraph } from "../../frameGraph";
 import type { FrameGraphTextureHandle } from "../../frameGraphTypes";
 import type { FrameGraphRenderPass } from "core/FrameGraph/Passes/renderPass";
-import { FrameGraphThinPostProcessTask } from "./thinPostProcessTask";
+import { FrameGraphPostProcessTask } from "./postProcessTask";
 
-export class FrameGraphDepthOfFieldMergeTask extends FrameGraphThinPostProcessTask {
+export class FrameGraphDepthOfFieldMergeTask extends FrameGraphPostProcessTask {
     public circleOfConfusionTexture: FrameGraphTextureHandle;
 
     public blurSteps: FrameGraphTextureHandle[] = [];
 
-    constructor(name: string, frameGraph: FrameGraph, thinPostProcess: ThinDepthOfFieldMergePostProcess) {
-        super(name, frameGraph, thinPostProcess);
+    constructor(name: string, frameGraph: FrameGraph, thinPostProcess?: ThinDepthOfFieldMergePostProcess) {
+        super(name, frameGraph, thinPostProcess || new ThinDepthOfFieldMergePostProcess(name, frameGraph.engine));
     }
 
     public override record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {

@@ -1,9 +1,10 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { Nullable, AbstractEngine, ThinPostProcessOptions } from "core/index";
-import { ThinPostProcess } from "./thinPostProcess";
+import type { Nullable, AbstractEngine, EffectWrapperCreationOptions } from "core/index";
+import { EffectWrapper } from "../Materials/effectRenderer";
 import { ToGammaSpace } from "../Maths/math.constants";
+import { Engine } from "../Engines/engine";
 
-export class ThinExtractHighlightsPostProcess extends ThinPostProcess {
+export class ThinExtractHighlightsPostProcess extends EffectWrapper {
     public static readonly FragmentUrl = "extractHighlights";
 
     public static readonly Uniforms = ["threshold", "exposure"];
@@ -17,10 +18,15 @@ export class ThinExtractHighlightsPostProcess extends ThinPostProcess {
         }
     }
 
-    constructor(name: string, engine: Nullable<AbstractEngine> = null, options?: ThinPostProcessOptions) {
-        super(name, ThinExtractHighlightsPostProcess.FragmentUrl, engine, {
-            uniforms: ThinExtractHighlightsPostProcess.Uniforms,
+    constructor(name: string, engine: Nullable<AbstractEngine> = null, options?: EffectWrapperCreationOptions) {
+        super({
             ...options,
+            name,
+            engine: engine || Engine.LastCreatedEngine!,
+            useShaderStore: true,
+            _useAsPostProcess: true,
+            fragmentShader: ThinExtractHighlightsPostProcess.FragmentUrl,
+            uniforms: ThinExtractHighlightsPostProcess.Uniforms,
         });
     }
 

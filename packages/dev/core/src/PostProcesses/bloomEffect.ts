@@ -90,7 +90,7 @@ export class BloomEffect extends PostProcessRenderEffect {
             engine,
             textureType: pipelineTextureType,
             blockCompilation,
-            thinPostProcess: this._thinBloomEffect.downscale,
+            effectWrapper: this._thinBloomEffect.downscale,
         });
 
         this._blurX = new BlurPostProcess("horizontal blur", this._thinBloomEffect.blurX.direction, this._thinBloomEffect.blurX.kernel, {
@@ -99,7 +99,7 @@ export class BloomEffect extends PostProcessRenderEffect {
             engine,
             textureType: pipelineTextureType,
             blockCompilation,
-            thinPostProcess: this._thinBloomEffect.blurX,
+            effectWrapper: this._thinBloomEffect.blurX,
         });
         this._blurX.alwaysForcePOT = true;
         this._blurX.autoClear = false;
@@ -110,7 +110,7 @@ export class BloomEffect extends PostProcessRenderEffect {
             engine,
             textureType: pipelineTextureType,
             blockCompilation,
-            thinPostProcess: this._thinBloomEffect.blurY,
+            effectWrapper: this._thinBloomEffect.blurY,
         });
         this._blurY.alwaysForcePOT = true;
         this._blurY.autoClear = false;
@@ -125,7 +125,7 @@ export class BloomEffect extends PostProcessRenderEffect {
             engine,
             textureType: pipelineTextureType,
             blockCompilation,
-            thinPostProcess: this._thinBloomEffect.merge,
+            effectWrapper: this._thinBloomEffect.merge,
         });
         this._merge.autoClear = false;
         this._effects.push(this._merge);

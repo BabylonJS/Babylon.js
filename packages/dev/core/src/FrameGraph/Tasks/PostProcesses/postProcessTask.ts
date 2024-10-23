@@ -5,9 +5,9 @@ import { Constants } from "core/Engines/constants";
 import type { FrameGraphRenderPass } from "core/FrameGraph/Passes/renderPass";
 import type { FrameGraphRenderContext } from "core/FrameGraph/frameGraphRenderContext";
 import { FrameGraphTask } from "../../frameGraphTask";
-import type { ThinPostProcess } from "core/PostProcesses/thinPostProcess";
+import type { EffectWrapper } from "core/Materials/effectRenderer";
 
-export class FrameGraphThinPostProcessTask extends FrameGraphTask {
+export class FrameGraphPostProcessTask extends FrameGraphTask {
     public sourceTexture: FrameGraphTextureHandle;
 
     public sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
@@ -16,13 +16,13 @@ export class FrameGraphThinPostProcessTask extends FrameGraphTask {
 
     public readonly outputTexture: FrameGraphTextureHandle;
 
-    public readonly postProcess: ThinPostProcess;
+    public readonly postProcess: EffectWrapper;
 
     protected readonly _postProcessDrawWrapper: DrawWrapper;
     protected _outputWidth: number;
     protected _outputHeight: number;
 
-    constructor(name: string, frameGraph: FrameGraph, postProcess: ThinPostProcess) {
+    constructor(name: string, frameGraph: FrameGraph, postProcess: EffectWrapper) {
         super(name, frameGraph);
 
         this.postProcess = postProcess;

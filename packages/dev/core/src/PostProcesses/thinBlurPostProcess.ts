@@ -1,12 +1,13 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { Nullable, AbstractEngine, ThinPostProcessOptions, Vector2, Effect } from "core/index";
-import { ThinPostProcess } from "./thinPostProcess";
+import type { Nullable, AbstractEngine, EffectWrapperCreationOptions, Vector2, Effect } from "core/index";
+import { EffectWrapper } from "../Materials/effectRenderer";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
+import { Engine } from "../Engines/engine";
 
 /**
  * @internal
  */
-export class ThinBlurPostProcess extends ThinPostProcess {
+export class ThinBlurPostProcess extends EffectWrapper {
     public static readonly VertexUrl = "kernelBlur";
 
     public static readonly FragmentUrl = "kernelBlur";
@@ -29,12 +30,17 @@ export class ThinBlurPostProcess extends ThinPostProcess {
     protected _packedFloat: boolean = false;
     private _staticDefines: string = "";
 
-    constructor(name: string, engine: Nullable<AbstractEngine> = null, direction: Vector2, kernel: number, options?: ThinPostProcessOptions) {
-        super(name, ThinBlurPostProcess.FragmentUrl, engine, {
+    constructor(name: string, engine: Nullable<AbstractEngine> = null, direction: Vector2, kernel: number, options?: EffectWrapperCreationOptions) {
+        super({
+            ...options,
+            name,
+            engine: engine || Engine.LastCreatedEngine!,
+            useShaderStore: true,
+            _useAsPostProcess: true,
+            fragmentShader: ThinBlurPostProcess.FragmentUrl,
             uniforms: ThinBlurPostProcess.Uniforms,
             samplers: ThinBlurPostProcess.Samplers,
             vertexUrl: ThinBlurPostProcess.VertexUrl,
-            ...options,
             blockCompilation: true,
         });
 
@@ -161,7 +167,7 @@ export class ThinBlurPostProcess extends ThinPostProcess {
         weights = linearSamplingWeights;
 
         // Generate shaders
-        const maxVaryingRows = this._engine.getCaps().maxVaryingVectors - (this.options.shaderLanguage === ShaderLanguage.WGSL ? 1 : 0); // Because of the additional builtins
+        const maxVaryingRows = this.options.engine.getCaps().maxVaryingVectors - (this.options.shaderLanguage === ShaderLanguage.WGSL ? 1 : 0); // Because of the additional builtins
         const freeVaryingVec2 = Math.max(maxVaryingRows, 0) - 1; // Because of sampleCenter
 
         let varyingCount = Math.min(offsets.length, freeVaryingVec2);

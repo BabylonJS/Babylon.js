@@ -60,7 +60,7 @@ export class DepthOfFieldMergePostProcess extends PostProcess {
         };
 
         super(name, ThinDepthOfFieldMergePostProcess.FragmentUrl, {
-            thinPostProcess: typeof options === "number" || !options.thinPostProcess ? new ThinDepthOfFieldMergePostProcess(name, engine, localOptions) : undefined,
+            effectWrapper: typeof options === "number" || !options.effectWrapper ? new ThinDepthOfFieldMergePostProcess(name, engine, localOptions) : undefined,
             ...localOptions,
         });
 

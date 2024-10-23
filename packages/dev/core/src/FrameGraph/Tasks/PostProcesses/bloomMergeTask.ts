@@ -1,15 +1,15 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { FrameGraph, FrameGraphTextureHandle, FrameGraphRenderPass } from "core/index";
-import type { ThinBloomMergePostProcess } from "core/PostProcesses/thinBloomMergePostProcess";
-import { FrameGraphThinPostProcessTask } from "./thinPostProcessTask";
+import { ThinBloomMergePostProcess } from "core/PostProcesses/thinBloomMergePostProcess";
+import { FrameGraphPostProcessTask } from "./postProcessTask";
 
-export class FrameGraphBloomMergeTask extends FrameGraphThinPostProcessTask {
+export class FrameGraphBloomMergeTask extends FrameGraphPostProcessTask {
     public blurTexture: FrameGraphTextureHandle;
 
     public override readonly postProcess: ThinBloomMergePostProcess;
 
-    constructor(name: string, frameGraph: FrameGraph, thinPostProcess: ThinBloomMergePostProcess) {
-        super(name, frameGraph, thinPostProcess);
+    constructor(name: string, frameGraph: FrameGraph, thinPostProcess?: ThinBloomMergePostProcess) {
+        super(name, frameGraph, thinPostProcess || new ThinBloomMergePostProcess(name, frameGraph.engine));
     }
 
     public override record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {

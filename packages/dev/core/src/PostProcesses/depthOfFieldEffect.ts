@@ -114,7 +114,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
                 textureType: pipelineTextureType,
                 blockCompilation,
                 depthNotNormalized,
-                thinPostProcess: this._thinDepthOfFieldEffect.circleOfConfusion,
+                effectWrapper: this._thinDepthOfFieldEffect.circleOfConfusion,
             },
             null
         );
@@ -141,7 +141,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
                     textureType: pipelineTextureType,
                     blockCompilation,
                     textureFormat: i == 0 ? circleOfConfusionTextureFormat : Constants.TEXTUREFORMAT_RGBA,
-                    thinPostProcess: thinBlurY,
+                    effectWrapper: thinBlurY,
                 },
                 null,
                 this._circleOfConfusion,
@@ -161,7 +161,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
                     engine,
                     textureType: pipelineTextureType,
                     blockCompilation,
-                    thinPostProcess: thinBlurX,
+                    effectWrapper: thinBlurX,
                 },
                 null,
                 this._circleOfConfusion,
@@ -191,7 +191,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
                 engine,
                 textureType: pipelineTextureType,
                 blockCompilation,
-                thinPostProcess: this._thinDepthOfFieldEffect.dofMerge,
+                effectWrapper: this._thinDepthOfFieldEffect.dofMerge,
             },
             null
         );

@@ -455,7 +455,7 @@ export class DepthPeelingRenderer {
         this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
         this._engine.applyStates();
 
-        this._engine.enableEffect(this._finalEffectWrapper._drawWrapper);
+        this._engine.enableEffect(this._finalEffectWrapper.drawWrapper);
         this._finalEffectWrapper.effect.setTexture("uFrontColor", this._thinTextures[writeId * 3 + 1]);
         this._finalEffectWrapper.effect.setTexture("uBackColor", this._thinTextures[6]);
         this._effectRenderer.render(this._finalEffectWrapper);
@@ -612,7 +612,7 @@ export class DepthPeelingRenderer {
             this._engine.applyStates();
 
             const blendBackEffectWrapper = writeId === 0 || !this._useRenderPasses ? this._blendBackEffectWrapper : this._blendBackEffectWrapperPingPong;
-            this._engine.enableEffect(blendBackEffectWrapper._drawWrapper);
+            this._engine.enableEffect(blendBackEffectWrapper.drawWrapper);
             blendBackEffectWrapper.effect.setTexture("uBackColor", this._thinTextures[writeId * 3 + 2]);
             this._effectRenderer.render(blendBackEffectWrapper);
             this._engine.unBindFramebuffer(this._blendBackMrt.renderTarget!);

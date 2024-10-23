@@ -1,12 +1,12 @@
 import type { FrameGraph } from "../../frameGraph";
 import type { FrameGraphTextureHandle } from "../../frameGraphTypes";
-import { FrameGraphThinPostProcessTask } from "./thinPostProcessTask";
+import { FrameGraphPostProcessTask } from "./postProcessTask";
 import type { FrameGraphRenderPass } from "core/FrameGraph/Passes/renderPass";
 import type { Camera } from "core/Cameras/camera";
 import { Constants } from "core/Engines/constants";
-import type { ThinCircleOfConfusionPostProcess } from "core/PostProcesses/thinCircleOfConfusionPostProcess";
+import { ThinCircleOfConfusionPostProcess } from "core/PostProcesses/thinCircleOfConfusionPostProcess";
 
-export class FrameGraphCircleOfConfusionTask extends FrameGraphThinPostProcessTask {
+export class FrameGraphCircleOfConfusionTask extends FrameGraphPostProcessTask {
     public depthTexture: FrameGraphTextureHandle; // should store camera space depth (Z coordinate)
 
     public depthSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
@@ -15,8 +15,8 @@ export class FrameGraphCircleOfConfusionTask extends FrameGraphThinPostProcessTa
 
     public override readonly postProcess: ThinCircleOfConfusionPostProcess;
 
-    constructor(name: string, frameGraph: FrameGraph, thinPostProcess: ThinCircleOfConfusionPostProcess) {
-        super(name, frameGraph, thinPostProcess);
+    constructor(name: string, frameGraph: FrameGraph, thinPostProcess?: ThinCircleOfConfusionPostProcess) {
+        super(name, frameGraph, thinPostProcess || new ThinCircleOfConfusionPostProcess(name, frameGraph.engine));
     }
 
     public override record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {

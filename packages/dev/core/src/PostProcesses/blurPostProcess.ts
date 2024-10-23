@@ -22,11 +22,11 @@ export class BlurPostProcess extends PostProcess {
     /** The direction in which to blur the image. */
     @serializeAsVector2()
     public get direction() {
-        return this._thinPostProcess.direction;
+        return this._effectWrapper.direction;
     }
 
     public set direction(value: Vector2) {
-        this._thinPostProcess.direction = value;
+        this._effectWrapper.direction = value;
     }
 
     /**
@@ -34,14 +34,14 @@ export class BlurPostProcess extends PostProcess {
      */
     @serialize()
     public set kernel(v: number) {
-        this._thinPostProcess.kernel = v;
+        this._effectWrapper.kernel = v;
     }
 
     /**
      * Gets the length in pixels of the blur sample region
      */
     public get kernel(): number {
-        return this._thinPostProcess.kernel;
+        return this._effectWrapper.kernel;
     }
 
     /**
@@ -49,14 +49,14 @@ export class BlurPostProcess extends PostProcess {
      */
     @serialize()
     public set packedFloat(v: boolean) {
-        this._thinPostProcess.packedFloat = v;
+        this._effectWrapper.packedFloat = v;
     }
 
     /**
      * Gets whether or not the blur is unpacking/repacking floats
      */
     public get packedFloat(): boolean {
-        return this._thinPostProcess.packedFloat;
+        return this._effectWrapper.packedFloat;
     }
 
     /**
@@ -67,7 +67,7 @@ export class BlurPostProcess extends PostProcess {
         return "BlurPostProcess";
     }
 
-    protected override _thinPostProcess: ThinBlurPostProcess;
+    protected override _effectWrapper: ThinBlurPostProcess;
 
     /**
      * Creates a new instance BlurPostProcess
@@ -115,14 +115,14 @@ export class BlurPostProcess extends PostProcess {
         };
 
         super(name, ThinBlurPostProcess.FragmentUrl, {
-            thinPostProcess: typeof options === "number" || !options.thinPostProcess ? new ThinBlurPostProcess(name, engine, direction, kernel, localOptions) : undefined,
+            effectWrapper: typeof options === "number" || !options.effectWrapper ? new ThinBlurPostProcess(name, engine, direction, kernel, localOptions) : undefined,
             ...localOptions,
         });
 
         this.direction = direction;
         this.onApplyObservable.add(() => {
-            this._thinPostProcess.textureWidth = this._outputTexture ? this._outputTexture.width : this.width;
-            this._thinPostProcess.textureHeight = this._outputTexture ? this._outputTexture.height : this.height;
+            this._effectWrapper.textureWidth = this._outputTexture ? this._outputTexture.width : this.width;
+            this._effectWrapper.textureHeight = this._outputTexture ? this._outputTexture.height : this.height;
         });
 
         this.kernel = kernel;
@@ -136,7 +136,7 @@ export class BlurPostProcess extends PostProcess {
         onCompiled?: (effect: Effect) => void,
         onError?: (effect: Effect, errors: string) => void
     ) {
-        this._thinPostProcess.updateParameters(onCompiled, onError);
+        this._effectWrapper.updateParameters(onCompiled, onError);
     }
 
     /**
