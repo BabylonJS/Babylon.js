@@ -90,12 +90,15 @@ export function getAccessorElementCount(accessorType: AccessorType): number {
     }
 }
 
-export function getAccessorType(kind: string): AccessorType {
+export function getAccessorType(kind: string, hasVertexColorAlpha: boolean): AccessorType {
+    if (kind == VertexBuffer.ColorKind) {
+        return hasVertexColorAlpha ? AccessorType.VEC4 : AccessorType.VEC3;
+    }
+
     switch (kind) {
         case VertexBuffer.PositionKind:
         case VertexBuffer.NormalKind:
             return AccessorType.VEC3;
-        case VertexBuffer.ColorKind:
         case VertexBuffer.TangentKind:
         case VertexBuffer.MatricesIndicesKind:
         case VertexBuffer.MatricesIndicesExtraKind:

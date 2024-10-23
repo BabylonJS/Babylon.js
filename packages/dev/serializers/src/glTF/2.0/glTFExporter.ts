@@ -86,6 +86,8 @@ class ExporterState {
 
     private _meshMorphTargetMap = new Map<Mesh, GlTFMorphTarget[]>();
 
+    private _vertexMapColorAlpha = new Map<VertexBuffer, boolean>();
+
     // Babylon mesh -> glTF mesh index
     private _meshMap = new Map<Mesh, number>();
 
@@ -168,6 +170,14 @@ class ExporterState {
         }
 
         map2.set(count, accessorIndex);
+    }
+
+    public hasVertexColorAlpha(vertexBuffer: VertexBuffer): boolean {
+        return this._vertexMapColorAlpha.get(vertexBuffer) || false;
+    }
+
+    public setHasVertexColorAlpha(vertexBuffer: VertexBuffer, hasAlpha: boolean) {
+        return this._vertexMapColorAlpha.set(vertexBuffer, hasAlpha);
     }
 
     public getMesh(mesh: Mesh): number | undefined {
@@ -1357,7 +1367,8 @@ export class GLTFExporter {
         babylonNode: Node,
         bufferToVertexBuffersMap: Map<Buffer, VertexBuffer[]>,
         vertexBufferToMeshesMap: Map<VertexBuffer, Mesh[]>,
-        morphTargetsToMeshesMap: Map<MorphTarget, Mesh[]>
+        morphTargetsToMeshesMap: Map<MorphTarget, Mesh[]>,
+        state: ExporterState
     ): void {
         if (!this._shouldExportNode(babylonNode)) {
             return;
@@ -1368,7 +1379,7 @@ export class GLTFExporter {
             if (vertexBuffers) {
                 for (const kind in vertexBuffers) {
                     const vertexBuffer = vertexBuffers[kind];
-
+                    state.setHasVertexColorAlpha(vertexBuffer, babylonNode.hasVertexAlpha);
                     const buffer = vertexBuffer._buffer;
                     const vertexBufferArray = bufferToVertexBuffersMap.get(buffer) || [];
                     bufferToVertexBuffersMap.set(buffer, vertexBufferArray);
@@ -1400,7 +1411,7 @@ export class GLTFExporter {
         }
 
         for (const babylonChildNode of babylonNode.getChildren()) {
-            this._collectBuffers(babylonChildNode, bufferToVertexBuffersMap, vertexBufferToMeshesMap, morphTargetsToMeshesMap);
+            this._collectBuffers(babylonChildNode, bufferToVertexBuffersMap, vertexBufferToMeshesMap, morphTargetsToMeshesMap, state);
         }
     }
 
@@ -1410,7 +1421,7 @@ export class GLTFExporter {
         const morphTagetsMeshesMap = new Map<MorphTarget, Mesh[]>();
 
         for (const babylonNode of babylonRootNodes) {
-            this._collectBuffers(babylonNode, bufferToVertexBuffersMap, vertexBufferToMeshesMap, morphTagetsMeshesMap);
+            this._collectBuffers(babylonNode, bufferToVertexBuffersMap, vertexBufferToMeshesMap, morphTagetsMeshesMap, state);
         }
 
         for (const [buffer, vertexBuffers] of bufferToVertexBuffersMap) {
@@ -1718,7 +1729,9 @@ export class GLTFExporter {
                 const bufferViewIndex = state.getRemappedBufferView(vertexBuffer._buffer, vertexBuffer);
                 if (bufferViewIndex !== undefined) {
                     const byteOffset = vertexBuffer.byteOffset + start * vertexBuffer.byteStride;
-                    this._accessors.push(createAccessor(bufferViewIndex, getAccessorType(kind), VertexBuffer.UNSIGNED_BYTE, count, byteOffset, minMax));
+                    this._accessors.push(
+                        createAccessor(bufferViewIndex, getAccessorType(kind, state.hasVertexColorAlpha(vertexBuffer)), VertexBuffer.UNSIGNED_BYTE, count, byteOffset, minMax)
+                    );
                     accessorIndex = this._accessors.length - 1;
                     state.setVertexAccessor(vertexBuffer, start, count, accessorIndex);
                     primitive.attributes[getAttributeType(kind)] = accessorIndex;
@@ -1726,7 +1739,7 @@ export class GLTFExporter {
             } else {
                 const bufferViewIndex = state.getVertexBufferView(vertexBuffer._buffer)!;
                 const byteOffset = vertexBuffer.byteOffset + start * vertexBuffer.byteStride;
-                this._accessors.push(createAccessor(bufferViewIndex, getAccessorType(kind), vertexBuffer.type, count, byteOffset, minMax));
+                this._accessors.push(createAccessor(bufferViewIndex, getAccessorType(kind, state.hasVertexColorAlpha(vertexBuffer)), vertexBuffer.type, count, byteOffset, minMax));
                 accessorIndex = this._accessors.length - 1;
                 state.setVertexAccessor(vertexBuffer, start, count, accessorIndex);
                 primitive.attributes[getAttributeType(kind)] = accessorIndex;
@@ -1821,7 +1834,12 @@ export class GLTFExporter {
 
         if (morphTargets) {
             mesh.weights = [];
+
+            if (!mesh.extras) {
+                mesh.extras = {};
+            }
             mesh.extras.targetNames = [];
+
             for (const gltfMorphTarget of morphTargets) {
                 mesh.weights.push(gltfMorphTarget.influence);
                 mesh.extras.targetNames.push(gltfMorphTarget.name);
