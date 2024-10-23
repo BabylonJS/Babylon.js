@@ -65,6 +65,9 @@ import { Logger } from "core/Misc/logger";
 import { enumerateFloatValues } from "core/Buffers/bufferUtils";
 import type { Bone, Skeleton } from "core/Bones";
 import { _GLTFAnimation } from "./glTFAnimation";
+import type { MorphTarget } from "core/Morph";
+import { buildMorphTargetBuffers } from "./glTFMorphTargetsUtilities";
+import type { GlTFMorphTarget } from "./glTFMorphTargetsUtilities";
 
 // 180 degrees rotation in Y.
 const rotation180Y = new Quaternion(0, 1, 0, 0);
@@ -80,6 +83,8 @@ class ExporterState {
     private _vertexAccessorMap = new Map<VertexBuffer, Map<number, Map<number, number>>>();
 
     private _remappedBufferView = new Map<Buffer, Map<VertexBuffer, number>>();
+
+    private _meshMorphTargetMap = new Map<Mesh, GlTFMorphTarget[]>();
 
     // Babylon mesh -> glTF mesh index
     private _meshMap = new Map<Mesh, number>();
@@ -171,6 +176,18 @@ class ExporterState {
 
     public setMesh(mesh: Mesh, meshIndex: number): void {
         this._meshMap.set(mesh, meshIndex);
+    }
+
+    public bindMorphDataToMesh(mesh: Mesh, morphData: GlTFMorphTarget) {
+        const morphTargets = this._meshMorphTargetMap.get(mesh) || [];
+        this._meshMorphTargetMap.set(mesh, morphTargets);
+        if (morphTargets.indexOf(morphData) === -1) {
+            morphTargets.push(morphData);
+        }
+    }
+
+    public getMorphTargetsFromMesh(mesh: Mesh): GlTFMorphTarget[] | undefined {
+        return this._meshMorphTargetMap.get(mesh);
     }
 }
 
@@ -1336,7 +1353,12 @@ export class GLTFExporter {
         return nodes;
     }
 
-    private _collectBuffers(babylonNode: Node, bufferToVertexBuffersMap: Map<Buffer, VertexBuffer[]>, vertexBufferToMeshesMap: Map<VertexBuffer, Mesh[]>): void {
+    private _collectBuffers(
+        babylonNode: Node,
+        bufferToVertexBuffersMap: Map<Buffer, VertexBuffer[]>,
+        vertexBufferToMeshesMap: Map<VertexBuffer, Mesh[]>,
+        morphTargetsToMeshesMap: Map<MorphTarget, Mesh[]>
+    ): void {
         if (!this._shouldExportNode(babylonNode)) {
             return;
         }
@@ -1361,19 +1383,34 @@ export class GLTFExporter {
                     }
                 }
             }
+
+            const morphTargetManager = babylonNode.morphTargetManager;
+
+            if (morphTargetManager) {
+                for (let morphIndex = 0; morphIndex < morphTargetManager.numTargets; morphIndex++) {
+                    const morphTarget = morphTargetManager.getTarget(morphIndex);
+
+                    const meshes = morphTargetsToMeshesMap.get(morphTarget) || [];
+                    morphTargetsToMeshesMap.set(morphTarget, meshes);
+                    if (meshes.indexOf(babylonNode) === -1) {
+                        meshes.push(babylonNode);
+                    }
+                }
+            }
         }
 
         for (const babylonChildNode of babylonNode.getChildren()) {
-            this._collectBuffers(babylonChildNode, bufferToVertexBuffersMap, vertexBufferToMeshesMap);
+            this._collectBuffers(babylonChildNode, bufferToVertexBuffersMap, vertexBufferToMeshesMap, morphTargetsToMeshesMap);
         }
     }
 
     private _exportBuffers(babylonRootNodes: Node[], convertToRightHanded: boolean, state: ExporterState): void {
         const bufferToVertexBuffersMap = new Map<Buffer, VertexBuffer[]>();
         const vertexBufferToMeshesMap = new Map<VertexBuffer, Mesh[]>();
+        const morphTagetsMeshesMap = new Map<MorphTarget, Mesh[]>();
 
         for (const babylonNode of babylonRootNodes) {
-            this._collectBuffers(babylonNode, bufferToVertexBuffersMap, vertexBufferToMeshesMap);
+            this._collectBuffers(babylonNode, bufferToVertexBuffersMap, vertexBufferToMeshesMap, morphTagetsMeshesMap);
         }
 
         for (const [buffer, vertexBuffers] of bufferToVertexBuffersMap) {
@@ -1479,6 +1516,14 @@ export class GLTFExporter {
                 }
 
                 state.setRemappedBufferView(buffer, vertexBuffer, this._bufferViews.length - 1);
+            }
+        }
+
+        for (const [morphTarget, meshes] of morphTagetsMeshesMap) {
+            const glTFMorphTarget = buildMorphTargetBuffers(morphTarget, this._dataWriter, this._bufferViews, this._accessors, convertToRightHanded);
+
+            for (const mesh of meshes) {
+                state.bindMorphDataToMesh(mesh, glTFMorphTarget);
             }
         }
     }
@@ -1742,6 +1787,7 @@ export class GLTFExporter {
 
         const indices = babylonMesh.isUnIndexed ? null : babylonMesh.getIndices();
         const vertexBuffers = babylonMesh.geometry?.getVertexBuffers();
+        const morphTargets = state.getMorphTargetsFromMesh(babylonMesh);
 
         const subMeshes = babylonMesh.subMeshes;
         if (vertexBuffers && subMeshes && subMeshes.length > 0) {
@@ -1763,27 +1809,24 @@ export class GLTFExporter {
                 }
 
                 mesh.primitives.push(primitive);
+
+                if (morphTargets) {
+                    primitive.targets = [];
+                    for (const gltfMorphTarget of morphTargets) {
+                        primitive.targets.push(gltfMorphTarget.attributes);
+                    }
+                }
             }
         }
 
-        // TO DO: Add support for morph targets.
-        // const morphTargetManager = babylonMesh.morphTargetManager;
-        // if (morphTargetManager) {
-        //     // By convention, morph target names are stored in the mesh extras.
-        //     if (!mesh.extras) {
-        //         mesh.extras = {};
-        //     }
-        //     mesh.extras.targetNames = [];
-
-        //     for (let i = 0; i < morphTargetManager.numTargets; ++i) {
-        //         const target = morphTargetManager.getTarget(i);
-        //         this._setMorphTargetAttributes(submesh, meshPrimitive, target, dataWriter);
-        //         mesh.extras.targetNames.push(target.name);
-        //     }
-        // }
-
-        // TODO: handle morph targets
-        // TODO: handle skeleton
+        if (morphTargets) {
+            mesh.weights = [];
+            mesh.extras.targetNames = [];
+            for (const gltfMorphTarget of morphTargets) {
+                mesh.weights.push(gltfMorphTarget.influence);
+                mesh.extras.targetNames.push(gltfMorphTarget.name);
+            }
+        }
 
         return meshIndex;
     }
