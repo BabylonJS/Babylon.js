@@ -1,32 +1,27 @@
-import type { Nullable } from "../types";
-import type { AbstractEngine } from "../Engines/abstractEngine";
+// eslint-disable-next-line import/no-internal-modules
+import type { Nullable, AbstractEngine, DrawWrapper, IColor4Like, Layer, FrameGraphTextureHandle, Effect, FrameGraphTextureManager, RenderTargetTexture } from "core/index";
 import { Constants } from "../Engines/constants";
 import { EffectRenderer } from "../Materials/effectRenderer";
-import type { DrawWrapper } from "../Materials/drawWrapper";
 import { CopyTextureToTexture } from "../Misc/copyTextureToTexture";
-import type { IColor4Like } from "../Maths/math.like";
 import { FrameGraphContext } from "./frameGraphContext";
-import type { Layer } from "../Layers/layer";
-import type { FrameGraphTextureHandle } from "./frameGraphTypes";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "./frameGraphTypes";
-import type { Effect } from "../Materials/effect";
-import type { FrameGraphTextureManager } from "./frameGraphTextureManager";
-import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 
-/*
+/**
+ * Frame graph context used render passes.
  * @experimental
  */
 export class FrameGraphRenderContext extends FrameGraphContext {
-    private _effectRenderer: EffectRenderer;
+    private readonly _effectRenderer: EffectRenderer;
     private _currentRenderTargetHandle: FrameGraphTextureHandle;
     private _debugMessageWhenTargetBound: string | undefined;
     private _debugMessageHasBeenPushed = false;
     private _renderTargetIsBound = true;
-    private _copyTexture: CopyTextureToTexture;
+    private readonly _copyTexture: CopyTextureToTexture;
 
+    /** @internal */
     constructor(
-        private _engine: AbstractEngine,
-        private _textureManager: FrameGraphTextureManager
+        private readonly _engine: AbstractEngine,
+        private readonly _textureManager: FrameGraphTextureManager
     ) {
         super();
         this._effectRenderer = new EffectRenderer(this._engine);
@@ -34,36 +29,60 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         this._currentRenderTargetHandle = backbufferColorTextureHandle;
     }
 
+    /**
+     * Checks whether a texture handle points to the backbuffer's color or depth texture
+     * @param handle The handle to check
+     * @returns True if the handle points to the backbuffer's color or depth texture, otherwise false
+     */
     public isBackbuffer(handle: FrameGraphTextureHandle): boolean {
         return this._textureManager.isBackbuffer(handle);
     }
 
+    /**
+     * Checks whether a texture handle points to the backbuffer's color texture
+     * @param handle The handle to check
+     * @returns True if the handle points to the backbuffer's color texture, otherwise false
+     */
     public isBackbufferColor(handle: FrameGraphTextureHandle): boolean {
         return this._textureManager.isBackbufferColor(handle);
     }
 
+    /**
+     * Checks whether a texture handle points to the backbuffer's depth texture
+     * @param handle The handle to check
+     * @returns True if the handle points to the backbuffer's depth texture, otherwise false
+     */
     public isBackbufferDepthStencil(handle: FrameGraphTextureHandle): boolean {
         return this._textureManager.isBackbufferDepthStencil(handle);
     }
 
     /**
      * Clears the current render buffer or the current render target (if any is set up)
-     * @param color defines the color to use
-     * @param backBuffer defines if the back buffer must be cleared
-     * @param depth defines if the depth buffer must be cleared
-     * @param stencil defines if the stencil buffer must be cleared
+     * @param color Defines the color to use
+     * @param backBuffer Defines if the back buffer must be cleared
+     * @param depth Defines if the depth buffer must be cleared
+     * @param stencil Defines if the stencil buffer must be cleared
      */
     public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil?: boolean): void {
         this._applyRenderTarget();
         this._engine.clear(color, backBuffer, depth, stencil);
     }
 
+    /**
+     * Clears the color attachments of the current render target
+     * @param color Defines the color to use
+     * @param attachments The attachments to clear
+     */
     public clearColorAttachments(color: Nullable<IColor4Like>, attachments: number[]): void {
         this._applyRenderTarget();
         this._engine.bindAttachments(attachments);
         this._engine.clear(color, true, false, false);
     }
 
+    /**
+     * Binds the attachments to the current render target
+     * @param attachments The attachments to bind
+     */
     public bindAttachments(attachments: number[]): void {
         this._applyRenderTarget();
         this._engine.bindAttachments(attachments);
@@ -87,6 +106,11 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         this._engine.generateMipmaps(texture.texture!);
     }
 
+    /**
+     * Sets the texture sampling mode for a given texture handle
+     * @param handle Handle of the texture to set the sampling mode for
+     * @param samplingMode Sampling mode to set
+     */
     public setTextureSamplingMode(handle: FrameGraphTextureHandle, samplingMode: number): void {
         const internalTexture = this._textureManager.getTextureFromHandle(handle)?.texture!;
         if (internalTexture && internalTexture.samplingMode !== samplingMode) {
@@ -94,6 +118,12 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         }
     }
 
+    /**
+     * Binds a texture handle to a given effect (resolves the handle to a texture and binds it to the effect)
+     * @param effect The effect to bind the texture to
+     * @param name The name of the texture in the effect
+     * @param handle The handle of the texture to bind
+     */
     public bindTextureHandle(effect: Effect, name: string, handle: FrameGraphTextureHandle): void {
         const texture = this._textureManager.getTextureFromHandle(handle);
         if (texture) {
@@ -101,15 +131,20 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         }
     }
 
+    /**
+     * Sets the depth states for the current render target
+     * @param depthTest If true, depth testing is enabled
+     * @param depthWrite If true, depth writing is enabled
+     */
     public setDepthStates(depthTest: boolean, depthWrite: boolean): void {
         this._engine.setDepthBuffer(depthTest);
         this._engine.setDepthWrite(depthWrite);
     }
 
     /**
-     * Applies a fullscreen effect to the current render target
+     * Applies a full-screen effect to the current render target
      * @param drawWrapper The draw wrapper containing the effect to apply
-     * @param customBindings The custom bindings to use when applying the effect
+     * @param customBindings The custom bindings to use when applying the effect (optional)
      * @returns True if the effect was applied, otherwise false (effect not ready)
      */
     public applyFullScreenEffect(drawWrapper: DrawWrapper, customBindings?: () => void): boolean {
@@ -182,9 +217,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         this._renderTargetIsBound = false;
     }
 
-    /**
-     * @internal
-     */
+    /** @internal */
     public _flushDebugMessages() {
         if (this._debugMessageHasBeenPushed) {
             this._engine._debugPopGroup?.(2);
@@ -233,9 +266,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         this._renderTargetIsBound = true;
     }
 
-    /**
-     * @internal
-     */
+    /** @internal */
     public _dispose() {
         this._effectRenderer.dispose();
         this._copyTexture.dispose();

@@ -1,11 +1,13 @@
-import type { FrameGraph } from "../../frameGraph";
-import type { FrameGraphTextureHandle } from "../../frameGraphTypes";
-import type { FrameGraphRenderPass } from "core/FrameGraph/Passes/renderPass";
+// eslint-disable-next-line import/no-internal-modules
+import type { FrameGraph, FrameGraphTextureHandle, FrameGraphRenderPass } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { FrameGraphBlurTask } from "./blurTask";
 import { ThinDepthOfFieldBlurPostProcess } from "core/PostProcesses/thinDepthOfFieldBlurPostProcess";
 import { Vector2 } from "core/Maths/math.vector";
 
+/**
+ * @internal
+ */
 export class FrameGraphDepthOfFieldBlurTask extends FrameGraphBlurTask {
     public circleOfConfusionTexture: FrameGraphTextureHandle;
 

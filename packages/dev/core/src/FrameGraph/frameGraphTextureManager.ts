@@ -1,11 +1,16 @@
-import type { Scene } from "../scene";
-import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
-import type { RenderTargetCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
+/* eslint-disable import/no-internal-modules */
+import type {
+    Scene,
+    AbstractEngine,
+    RenderTargetWrapper,
+    RenderTargetCreationOptions,
+    TextureSize,
+    Nullable,
+    FrameGraphTextureCreationOptions,
+    FrameGraphTextureHandle,
+} from "core/index";
 import { getDimensionsFromTextureSize } from "../Materials/Textures/textureCreationOptions";
 import { Texture } from "../Materials/Textures/texture";
-import type { Nullable } from "../types";
-import type { FrameGraphTextureCreationOptions, FrameGraphTextureHandle } from "./frameGraphTypes";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "./frameGraphTypes";
 import { Constants } from "../Engines/constants";
 
@@ -26,19 +31,15 @@ enum FrameGraphTextureNamespace {
     External,
 }
 
-/*
+/**
  * @experimental
  * @internal
  */
 export class FrameGraphTextureManager {
     private static _Counter = 2; // 0 and 1 are reserved for backbuffer textures
 
-    /** @internal */
     public _textures: Map<FrameGraphTextureHandle, TextureEntry> = new Map();
 
-    /**
-     * @internal
-     */
     constructor(
         private _engine: AbstractEngine,
         private _debugTextures = false,

@@ -1,17 +1,12 @@
+// eslint-disable-next-line import/no-internal-modules
+import type { NodeRenderGraphBuildState, Nullable, NodeRenderGraphInputBlock, AbstractEngine, Scene, FrameGraphTask, FrameGraph } from "core/index";
 import { GetClass } from "../../Misc/typeStore";
 import { serialize } from "../../Misc/decorators";
 import { UniqueIdGenerator } from "../../Misc/uniqueIdGenerator";
 import { NodeRenderGraphBlockConnectionPointTypes, NodeRenderGraphConnectionPointDirection } from "./Types/nodeRenderGraphTypes";
-import type { NodeRenderGraphBuildState } from "./nodeRenderGraphBuildState";
 import { Observable } from "../../Misc/observable";
-import type { Nullable } from "../../types";
-import type { NodeRenderGraphInputBlock } from "./Blocks/inputBlock";
 import { Logger } from "../../Misc/logger";
 import { NodeRenderGraphConnectionPoint } from "./nodeRenderGraphBlockConnectionPoint";
-import type { AbstractEngine } from "../../Engines/abstractEngine";
-import type { Scene } from "../../scene";
-import type { FrameGraphTask } from "../frameGraphTask";
-import type { FrameGraph } from "../frameGraph";
 
 /**
  * Defines a block that can be used inside a node render graph
@@ -331,18 +326,6 @@ export class NodeRenderGraphBlock {
         if (this._frameGraphTask) {
             this._frameGraph.addTask(this._frameGraphTask);
         }
-
-        // Note: I don't know why we have the code below in the node frameworks.
-        // Apparently this isn't necessary; we'll collect/build all the required blocks by simply calling “build” on the output block.
-        // The loop below will potentially call "build" for blocks that are not connected to the output block, adding unwanted tasks to the frame graph.
-        // for (const output of this._outputs) {
-        //     for (const endpoint of output.endpoints) {
-        //         const block = endpoint.ownerBlock;
-        //         if (block) {
-        //             block.build(state);
-        //         }
-        //     }
-        // }
 
         this.onBuildObservable.notifyObservers(this);
 

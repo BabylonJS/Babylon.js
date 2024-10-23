@@ -3,6 +3,9 @@ import type { FrameGraph, FrameGraphTextureHandle, FrameGraphRenderPass } from "
 import { ThinBloomMergePostProcess } from "core/PostProcesses/thinBloomMergePostProcess";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 
+/**
+ * @internal
+ */
 export class FrameGraphBloomMergeTask extends FrameGraphPostProcessTask {
     public blurTexture: FrameGraphTextureHandle;
 

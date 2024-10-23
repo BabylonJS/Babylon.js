@@ -1,6 +1,5 @@
-import type { Nullable } from "../../types";
-import type { NodeRenderGraphConnectionPoint } from "./nodeRenderGraphBlockConnectionPoint";
-import type { Observable } from "../../Misc/observable";
+// eslint-disable-next-line import/no-internal-modules
+import type { Nullable, NodeRenderGraphConnectionPoint, Observable } from "core/index";
 import { Logger } from "../../Misc/logger";
 
 /**

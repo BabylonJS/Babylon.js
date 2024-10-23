@@ -1,11 +1,18 @@
-import type { FrameGraphTextureHandle } from "../../frameGraphTypes";
+// eslint-disable-next-line import/no-internal-modules
+import type { FrameGraphTextureHandle } from "core/index";
 import { backbufferColorTextureHandle } from "../../frameGraphTypes";
 import { FrameGraphTask } from "../../frameGraphTask";
 
+/**
+ * Task which copies a texture to the backbuffer color texture.
+ */
 export class FrameGraphCopyToBackbufferColorTask extends FrameGraphTask {
+    /**
+     * The source texture to copy to the backbuffer color texture.
+     */
     public sourceTexture: FrameGraphTextureHandle;
 
-    public override record() {
+    public record() {
         if (this.sourceTexture === undefined) {
             throw new Error(`FrameGraphCopyToBackbufferColorTask "${this.name}": sourceTexture is required`);
         }

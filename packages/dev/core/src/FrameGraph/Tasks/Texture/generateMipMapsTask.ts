@@ -1,19 +1,33 @@
-import type { FrameGraph } from "core/FrameGraph/frameGraph";
-import type { FrameGraphTextureHandle } from "../../frameGraphTypes";
+// eslint-disable-next-line import/no-internal-modules
+import type { FrameGraph, FrameGraphTextureHandle } from "core/index";
 import { FrameGraphTask } from "../../frameGraphTask";
 
+/**
+ * Task which generates mipmaps for a texture.
+ */
 export class FrameGraphGenerateMipMapsTask extends FrameGraphTask {
+    /**
+     * The texture to generate mipmaps for.
+     */
     public destinationTexture: FrameGraphTextureHandle;
 
+    /**
+     * The output texture (same as destinationTexture, but the handle may be different).
+     */
     public readonly outputTexture: FrameGraphTextureHandle;
 
+    /**
+     * Constructs a new FrameGraphGenerateMipMapsTask.
+     * @param name The name of the task.
+     * @param frameGraph The frame graph the task belongs to.
+     */
     constructor(name: string, frameGraph: FrameGraph) {
         super(name, frameGraph);
 
         this.outputTexture = this._frameGraph.createDanglingHandle();
     }
 
-    public override record() {
+    public record() {
         if (this.destinationTexture === undefined) {
             throw new Error(`FrameGraphGenerateMipMapsTask ${this.name}: destinationTexture is required`);
         }

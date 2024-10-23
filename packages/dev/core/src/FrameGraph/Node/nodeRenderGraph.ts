@@ -1,8 +1,18 @@
+/* eslint-disable import/no-internal-modules */
+import type {
+    Observer,
+    Nullable,
+    NodeRenderGraphBlock,
+    NodeRenderGraphTeleportOutBlock,
+    NodeRenderGraphTeleportInBlock,
+    AbstractEngine,
+    INodeRenderGraphCreateOptions,
+    INodeRenderGraphEditorOptions,
+    Scene,
+    WritableObject,
+} from "core/index";
 import { Observable } from "../../Misc/observable";
-import type { Observer } from "../../Misc/observable";
-import type { Nullable } from "../../types";
 import { NodeRenderGraphOutputBlock } from "./Blocks/outputBlock";
-import type { NodeRenderGraphBlock } from "./nodeRenderGraphBlock";
 import { FrameGraph } from "../frameGraph";
 import { GetClass } from "../../Misc/typeStore";
 import { serialize } from "../../Misc/decorators";
@@ -10,16 +20,11 @@ import { SerializationHelper } from "../../Misc/decorators.serialization";
 import { Constants } from "../../Engines/constants";
 import { WebRequest } from "../../Misc/webRequest";
 import { NodeRenderGraphInputBlock } from "./Blocks/inputBlock";
-import type { NodeRenderGraphTeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
-import type { NodeRenderGraphTeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
 import { Tools } from "../../Misc/tools";
 import { Engine } from "../../Engines/engine";
 import { NodeRenderGraphBlockConnectionPointTypes } from "./Types/nodeRenderGraphTypes";
 import { NodeRenderGraphClearBlock } from "./Blocks/Textures/clearBlock";
-import type { AbstractEngine } from "../../Engines/abstractEngine";
 import { NodeRenderGraphBuildState } from "./nodeRenderGraphBuildState";
-import type { INodeRenderGraphCreateOptions, INodeRenderGraphEditorOptions } from "./Types/nodeRenderGraphTypes";
-import type { Scene } from "../../scene";
 
 // declare NODERENDERGRAPHEDITOR namespace for compilation issue
 declare let NODERENDERGRAPHEDITOR: any;
@@ -98,11 +103,11 @@ export class NodeRenderGraph {
     @serialize("comment")
     public comment: string;
 
-    private _engine: AbstractEngine;
-    private _scene: Scene;
-    private _resizeObserver: Nullable<Observer<AbstractEngine>> = null;
-    private _frameGraph: FrameGraph;
-    private _options: INodeRenderGraphCreateOptions;
+    private readonly _engine: AbstractEngine;
+    private readonly _scene: Scene;
+    private readonly _resizeObserver: Nullable<Observer<AbstractEngine>> = null;
+    private readonly _frameGraph: FrameGraph;
+    private readonly _options: INodeRenderGraphCreateOptions;
 
     /**
      * Gets the frame graph used by this node render graph
@@ -656,10 +661,10 @@ export class NodeRenderGraph {
         }
 
         this._frameGraph.dispose();
-        this._frameGraph = undefined as any;
+        (this._frameGraph as WritableObject<FrameGraph>) = undefined as any;
 
         this._engine.onResizeObservable.remove(this._resizeObserver);
-        this._resizeObserver = null;
+        (this._resizeObserver as WritableObject<Nullable<Observer<AbstractEngine>>>) = null;
 
         this.attachedBlocks.length = 0;
         this.onBuildObservable.clear();

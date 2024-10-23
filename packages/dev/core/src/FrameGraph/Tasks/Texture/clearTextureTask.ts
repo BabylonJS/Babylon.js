@@ -1,19 +1,40 @@
-import type { FrameGraph } from "core/FrameGraph/frameGraph";
+// eslint-disable-next-line import/no-internal-modules
+import type { FrameGraph, FrameGraphTextureHandle } from "core/index";
 import { Color4 } from "../../../Maths/math.color";
-import type { FrameGraphTextureHandle } from "../../frameGraphTypes";
 import { FrameGraphTask } from "../../frameGraphTask";
 
+/**
+ * Task used to clear a texture.
+ */
 export class FrameGraphClearTextureTask extends FrameGraphTask {
+    /**
+     * The color to clear the texture with.
+     */
     public color = new Color4(0.2, 0.2, 0.3, 1);
 
+    /**
+     * If the color should be cleared.
+     */
     public clearColor = true;
 
+    /**
+     * If the depth should be cleared.
+     */
     public clearDepth = false;
 
+    /**
+     * If the stencil should be cleared.
+     */
     public clearStencil = false;
 
+    /**
+     * The texture to clear.
+     */
     public destinationTexture: FrameGraphTextureHandle;
 
+    /**
+     * The output texture (same as destinationTexture, but the handle may be different).
+     */
     public readonly outputTexture: FrameGraphTextureHandle;
 
     constructor(name: string, frameGraph: FrameGraph) {
@@ -22,7 +43,7 @@ export class FrameGraphClearTextureTask extends FrameGraphTask {
         this.outputTexture = this._frameGraph.createDanglingHandle();
     }
 
-    public override record() {
+    public record() {
         if (this.destinationTexture === undefined) {
             throw new Error(`FrameGraphClearTextureTask ${this.name}: destinationTexture is required`);
         }

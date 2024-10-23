@@ -1,12 +1,8 @@
-import type { Nullable } from "../../../../types";
+// eslint-disable-next-line import/no-internal-modules
+import type { NodeRenderGraphConnectionPoint, Scene, Nullable, FrameGraph, NodeRenderGraphTeleportInBlock, NodeRenderGraphBuildState } from "core/index";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
-import type { NodeRenderGraphConnectionPoint } from "../../nodeRenderGraphBlockConnectionPoint";
-import type { NodeRenderGraphTeleportInBlock } from "./teleportInBlock";
-import type { Scene } from "../../../../scene";
-import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
-import type { FrameGraph } from "core/FrameGraph/frameGraph";
 
 /**
  * Defines a block used to receive a value from a teleport entry point

@@ -1,20 +1,37 @@
-import type { FrameGraph } from "../../frameGraph";
-import type { FrameGraphTextureHandle } from "../../frameGraphTypes";
+// eslint-disable-next-line import/no-internal-modules
+import type { FrameGraph, FrameGraphTextureHandle, FrameGraphRenderPass, Camera } from "core/index";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
-import type { FrameGraphRenderPass } from "core/FrameGraph/Passes/renderPass";
-import type { Camera } from "core/Cameras/camera";
 import { Constants } from "core/Engines/constants";
 import { ThinCircleOfConfusionPostProcess } from "core/PostProcesses/thinCircleOfConfusionPostProcess";
 
+/**
+ * Task which applies a circle of confusion post process.
+ */
 export class FrameGraphCircleOfConfusionTask extends FrameGraphPostProcessTask {
-    public depthTexture: FrameGraphTextureHandle; // should store camera space depth (Z coordinate)
+    /**
+     * The depth texture to use for the circle of confusion effect.
+     * It must store camera space depth (Z coordinate)
+     */
+    public depthTexture: FrameGraphTextureHandle;
 
+    /**
+     * The sampling mode to use for the depth texture.
+     */
     public depthSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
 
+    /**
+     * The camera to use for the circle of confusion effect.
+     */
     public camera: Camera;
 
     public override readonly postProcess: ThinCircleOfConfusionPostProcess;
 
+    /**
+     * Constructs a new circle of confusion task.
+     * @param name The name of the task.
+     * @param frameGraph The frame graph this task belongs to.
+     * @param thinPostProcess The thin post process to use for the task. If not provided, a new one will be created.
+     */
     constructor(name: string, frameGraph: FrameGraph, thinPostProcess?: ThinCircleOfConfusionPostProcess) {
         super(name, frameGraph, thinPostProcess || new ThinCircleOfConfusionPostProcess(name, frameGraph.engine));
     }

@@ -1,27 +1,48 @@
-import type { FrameGraph } from "../../frameGraph";
-import type { FrameGraphTextureHandle } from "../../frameGraphTypes";
-import type { DrawWrapper } from "core/Materials/drawWrapper";
+// eslint-disable-next-line import/no-internal-modules
+import type { FrameGraph, FrameGraphTextureHandle, DrawWrapper, FrameGraphRenderPass, FrameGraphRenderContext, EffectWrapper } from "core/index";
 import { Constants } from "core/Engines/constants";
-import type { FrameGraphRenderPass } from "core/FrameGraph/Passes/renderPass";
-import type { FrameGraphRenderContext } from "core/FrameGraph/frameGraphRenderContext";
 import { FrameGraphTask } from "../../frameGraphTask";
-import type { EffectWrapper } from "core/Materials/effectRenderer";
 
+/**
+ * Task which applies a post process.
+ */
 export class FrameGraphPostProcessTask extends FrameGraphTask {
+    /**
+     * The source texture to apply the post process on.
+     */
     public sourceTexture: FrameGraphTextureHandle;
 
+    /**
+     * The sampling mode to use for the source texture.
+     */
     public sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
 
+    /**
+     * The destination texture to render the post process to.
+     * If not supplied, a texture with the same configuration as the source texture will be created.
+     */
     public destinationTexture?: FrameGraphTextureHandle;
 
+    /**
+     * The output texture of the post process.
+     */
     public readonly outputTexture: FrameGraphTextureHandle;
 
+    /**
+     * The post process to apply.
+     */
     public readonly postProcess: EffectWrapper;
 
     protected readonly _postProcessDrawWrapper: DrawWrapper;
     protected _outputWidth: number;
     protected _outputHeight: number;
 
+    /**
+     * Constructs a new post process task.
+     * @param name Name of the task.
+     * @param frameGraph The frame graph this task is associated with.
+     * @param postProcess The post process to apply.
+     */
     constructor(name: string, frameGraph: FrameGraph, postProcess: EffectWrapper) {
         super(name, frameGraph);
 
@@ -35,7 +56,7 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
         return this.postProcess.isReady();
     }
 
-    public override record(
+    public record(
         skipCreationOfDisabledPasses = false,
         additionalExecute?: (context: FrameGraphRenderContext) => void,
         additionalBindings?: (context: FrameGraphRenderContext) => void

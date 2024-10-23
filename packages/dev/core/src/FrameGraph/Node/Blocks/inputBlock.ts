@@ -1,20 +1,24 @@
+/* eslint-disable import/no-internal-modules */
+import type {
+    NodeRenderGraphConnectionPoint,
+    Scene,
+    FrameGraph,
+    NodeRenderGraphBuildState,
+    Camera,
+    RenderTargetWrapper,
+    InternalTexture,
+    Nullable,
+    FrameGraphTextureCreationOptions,
+    FrameGraphTextureHandle,
+    FrameGraphObjectList,
+} from "core/index";
 import { Observable } from "../../../Misc/observable";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGraphTypes";
 import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
-import type { NodeRenderGraphConnectionPoint } from "../nodeRenderGraphBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
-import type { Camera } from "../../../Cameras/camera";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
-import type { RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
-import type { InternalTexture } from "../../../Materials/Textures/internalTexture";
-import type { Nullable } from "../../../types";
-import type { Scene } from "../../../scene";
-import type { NodeRenderGraphBuildState } from "../nodeRenderGraphBuildState";
-import type { FrameGraphTextureCreationOptions, FrameGraphTextureHandle } from "../../../FrameGraph/frameGraphTypes";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../../FrameGraph/frameGraphTypes";
 import { Constants } from "../../../Engines/constants";
-import type { FrameGraphObjectList } from "core/FrameGraph/frameGraphObjectList";
-import type { FrameGraph } from "core/FrameGraph/frameGraph";
 
 export type NodeRenderGraphValueType = RenderTargetWrapper | Camera | FrameGraphObjectList;
 

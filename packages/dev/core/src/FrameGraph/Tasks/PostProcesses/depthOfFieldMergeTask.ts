@@ -1,9 +1,11 @@
+// eslint-disable-next-line import/no-internal-modules
+import type { FrameGraph, FrameGraphTextureHandle, FrameGraphRenderPass } from "core/index";
 import { ThinDepthOfFieldMergePostProcess } from "core/PostProcesses/thinDepthOfFieldMergePostProcess";
-import type { FrameGraph } from "../../frameGraph";
-import type { FrameGraphTextureHandle } from "../../frameGraphTypes";
-import type { FrameGraphRenderPass } from "core/FrameGraph/Passes/renderPass";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 
+/**
+ * @internal
+ */
 export class FrameGraphDepthOfFieldMergeTask extends FrameGraphPostProcessTask {
     public circleOfConfusionTexture: FrameGraphTextureHandle;
 

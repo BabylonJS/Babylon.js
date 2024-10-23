@@ -1,12 +1,10 @@
-import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
-import type { FrameGraph } from "./frameGraph";
-import type { FrameGraphObjectList } from "./frameGraphObjectList";
-import type { IFrameGraphPass } from "./frameGraphTypes";
+// eslint-disable-next-line import/no-internal-modules
+import type { RenderTargetWrapper, FrameGraph, FrameGraphObjectList, IFrameGraphPass, Nullable } from "core/index";
 import { FrameGraphCullPass } from "./Passes/cullPass";
 import { FrameGraphRenderPass } from "./Passes/renderPass";
-import type { Nullable } from "core/types";
 
-/*
+/**
+ * Represents a task in a frame graph.
  * @experimental
  */
 export abstract class FrameGraphTask {
@@ -15,8 +13,12 @@ export abstract class FrameGraphTask {
     private _passes: IFrameGraphPass[] = [];
     private _passesDisabled: IFrameGraphPass[] = [];
 
+    // Note: must be a getter/setter even if there's no specific processing, otherwise inherited classes can't make it a getter/setter!
     protected _name: string;
 
+    /**
+     * The name of the task.
+     */
     public get name() {
         return this._name;
     }
@@ -25,29 +27,36 @@ export abstract class FrameGraphTask {
         this._name = value;
     }
 
-    protected _disabled = false;
-
-    public get disabled() {
-        return this._disabled;
-    }
-
-    public set disabled(value: boolean) {
-        this._disabled = value;
-    }
+    /**
+     * Whether the task is disabled.
+     */
+    public disabled = false;
 
     /**
-     * Use this function to add content (render passes, ...) to the task
+     * Records the task in the frame graph. Use this function to add content (render passes, ...) to the task.
      */
     public abstract record(): void;
 
+    /**
+     * Checks if the task is ready to be executed.
+     * @returns True if the task is ready to be executed, else false.
+     */
     public isReady(): boolean {
         return true;
     }
 
+    /**
+     * Disposes of the task.
+     */
     public dispose() {
         this._reset();
     }
 
+    /**
+     * Constructs a new frame graph task.
+     * @param name The name of the task.
+     * @param frameGraph The frame graph this task is associated with.
+     */
     constructor(name: string, frameGraph: FrameGraph) {
         this.name = name;
         this._frameGraph = frameGraph;

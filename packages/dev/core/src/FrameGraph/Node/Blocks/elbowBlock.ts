@@ -1,10 +1,8 @@
-import type { Scene } from "../../../scene";
+// eslint-disable-next-line import/no-internal-modules
+import type { NodeRenderGraphConnectionPoint, Scene, FrameGraph, NodeRenderGraphBuildState } from "core/index";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGraphTypes";
 import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
-import type { NodeRenderGraphConnectionPoint } from "../nodeRenderGraphBlockConnectionPoint";
-import type { NodeRenderGraphBuildState } from "../nodeRenderGraphBuildState";
-import type { FrameGraph } from "core/FrameGraph/frameGraph";
 
 /**
  * Block used as a pass through

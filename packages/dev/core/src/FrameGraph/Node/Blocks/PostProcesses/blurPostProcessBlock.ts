@@ -1,13 +1,10 @@
+// eslint-disable-next-line import/no-internal-modules
+import type { NodeRenderGraphConnectionPoint, Scene, NodeRenderGraphBuildState, FrameGraphTextureHandle, FrameGraph } from "core/index";
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
-import type { NodeRenderGraphConnectionPoint } from "../../nodeRenderGraphBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
-import type { Scene } from "../../../../scene";
-import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
-import type { FrameGraphTextureHandle } from "../../../frameGraphTypes";
 import { FrameGraphBlurTask } from "core/FrameGraph/Tasks/PostProcesses/blurTask";
-import type { FrameGraph } from "core/FrameGraph/frameGraph";
 import { ThinBlurPostProcess } from "core/PostProcesses/thinBlurPostProcess";
 import { Vector2 } from "core/Maths/math.vector";
 

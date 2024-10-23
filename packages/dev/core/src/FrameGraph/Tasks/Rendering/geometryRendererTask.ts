@@ -1,30 +1,49 @@
-import type { FrameGraphTextureHandle } from "../../frameGraphTypes";
+// eslint-disable-next-line import/no-internal-modules
+import type { FrameGraphTextureHandle, Scene, Camera, AbstractEngine, FrameGraph, TextureClearType, FrameGraphObjectList } from "core/index";
 import { backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
 import { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture";
-import type { Scene } from "../../../scene";
-import type { Camera } from "../../../Cameras/camera";
 import { Color4 } from "core/Maths/math.color";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
-import type { FrameGraph } from "core/FrameGraph/frameGraph";
-import type { TextureClearType } from "core/Materials/materialHelper.geometryrendering";
 import { MaterialHelperGeometryRendering } from "core/Materials/materialHelper.geometryrendering";
 import { Constants } from "core/Engines/constants";
 import { FrameGraphTask } from "../../frameGraphTask";
-import type { FrameGraphObjectList } from "core/FrameGraph/frameGraphObjectList";
 
+/**
+ * Description of a texture used by the geometry renderer task.
+ */
 export interface IFrameGraphGeometryRendererTextureDescription {
+    /**
+     * The type of the texture.
+     * The value should be one of the Constants.PREPASS_XXX_TEXTURE_TYPE values.
+     */
     type: number;
+
+    /**
+     * The type of the texture.
+     */
     textureType: number;
+
+    /**
+     * The format of the texture.
+     */
     textureFormat: number;
 }
 
 const clearColors: Color4[] = [new Color4(0, 0, 0, 0), new Color4(1, 1, 1, 1), new Color4(1e8, 1e8, 1e8, 1e8)];
 
+/**
+ * Task used to render geometry to a set of textures.
+ */
 export class FrameGraphGeometryRendererTask extends FrameGraphTask {
+    /**
+     * The depth texture attachment to use for rendering (optional).
+     */
     public depthTexture?: FrameGraphTextureHandle;
 
     private _camera: Camera;
 
+    /**
+     * Gets or sets the camera used for rendering.
+     */
     public get camera() {
         return this._camera;
     }
@@ -34,46 +53,108 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
         this._rtt.activeCamera = this.camera;
     }
 
+    /**
+     * The object list used for rendering.
+     */
     public objectList: FrameGraphObjectList;
 
+    /**
+     * Whether depth testing is enabled (default is true).
+     */
     public depthTest = true;
 
+    /**
+     * Whether depth writing is enabled (default is true).
+     */
     public depthWrite = true;
 
+    /**
+     * The size of the output textures (default is 100% of the back buffer texture size).
+     */
     public size: { width: number; height: number } = { width: 100, height: 100 };
 
+    /**
+     * Whether the size is a percentage of the back buffer size (default is true).
+     */
     public sizeIsPercentage = true;
 
+    /**
+     * The number of samples to use for the output textures (default is 1).
+     */
     public samples = 1;
 
+    /**
+     * The list of texture descriptions used by the geometry renderer task.
+     */
     public textureDescriptions: IFrameGraphGeometryRendererTextureDescription[] = [];
 
+    /**
+     * The output depth texture attachment texture.
+     * This texture will point to the same texture than the depthTexture property if it is set.
+     * Note, however, that the handle itself will be different!
+     */
     public readonly outputDepthTexture: FrameGraphTextureHandle;
 
+    /**
+     * The depth (in view space) output texture. Will point to a valid texture only if that texture has been requested in textureDescriptions!
+     */
     public readonly geometryViewDepthTexture: FrameGraphTextureHandle;
 
+    /**
+     * The depth (in screen space) output texture. Will point to a valid texture only if that texture has been requested in textureDescriptions!
+     */
     public readonly geometryScreenDepthTexture: FrameGraphTextureHandle;
 
+    /**
+     * The normal (in view space) output texture. Will point to a valid texture only if that texture has been requested in textureDescriptions!
+     */
     public readonly geometryViewNormalTexture: FrameGraphTextureHandle;
 
+    /**
+     * The normal (in world space) output texture. Will point to a valid texture only if that texture has been requested in textureDescriptions!
+     */
     public readonly geometryWorldNormalTexture: FrameGraphTextureHandle;
 
+    /**
+     * The position (in local space) output texture. Will point to a valid texture only if that texture has been requested in textureDescriptions!
+     */
     public readonly geometryLocalPositionTexture: FrameGraphTextureHandle;
 
+    /**
+     * The position (in world space) output texture. Will point to a valid texture only if that texture has been requested in textureDescriptions!
+     */
     public readonly geometryWorldPositionTexture: FrameGraphTextureHandle;
 
+    /**
+     * The albedo output texture. Will point to a valid texture only if that texture has been requested in textureDescriptions!
+     */
     public readonly geometryAlbedoTexture: FrameGraphTextureHandle;
 
+    /**
+     * The reflectivity output texture. Will point to a valid texture only if that texture has been requested in textureDescriptions!
+     */
     public readonly geometryReflectivityTexture: FrameGraphTextureHandle;
 
+    /**
+     * The velocity output texture. Will point to a valid texture only if that texture has been requested in textureDescriptions!
+     */
     public readonly geometryVelocityTexture: FrameGraphTextureHandle;
 
+    /**
+     * The linear velocity output texture. Will point to a valid texture only if that texture has been requested in textureDescriptions!
+     */
     public readonly geometryLinearVelocityTexture: FrameGraphTextureHandle;
 
+    /**
+     * The render target texture used by the geometry renderer task.
+     */
     public get renderTargetTexture() {
         return this._rtt;
     }
 
+    /**
+     * Gets or sets the name of the task.
+     */
     public override get name() {
         return this._name;
     }
@@ -91,6 +172,12 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
     private _clearAttachmentsLayout: Map<TextureClearType, number[]>;
     private _allAttachmentsLayout: number[];
 
+    /**
+     * Constructs a new geometry renderer task.
+     * @param name The name of the task.
+     * @param frameGraph The frame graph the task belongs to.
+     * @param scene The scene the frame graph is associated with.
+     */
     constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
         super(name, frameGraph);
 
@@ -121,6 +208,9 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
         this.geometryLinearVelocityTexture = this._frameGraph.createDanglingHandle();
     }
 
+    /**
+     * Gets the list of excluded meshes from the velocity texture.
+     */
     public get excludedSkinnedMeshFromVelocityTexture() {
         return MaterialHelperGeometryRendering.GetConfiguration(this._rtt.renderPassId).excludedSkinnedMesh;
     }

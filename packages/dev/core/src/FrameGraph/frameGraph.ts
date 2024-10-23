@@ -1,7 +1,14 @@
-import type { Scene } from "../scene";
-import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
-import type { FrameGraphTextureCreationOptions, FrameGraphTextureHandle, FrameGraphTextureDescription } from "./frameGraphTypes";
+/* eslint-disable import/no-internal-modules */
+import type {
+    Scene,
+    AbstractEngine,
+    RenderTargetWrapper,
+    FrameGraphTextureCreationOptions,
+    FrameGraphTextureHandle,
+    FrameGraphTextureDescription,
+    Nullable,
+    FrameGraphTask,
+} from "core/index";
 import { FrameGraphPass } from "./Passes/pass";
 import { FrameGraphRenderPass } from "./Passes/renderPass";
 import { FrameGraphCullPass } from "./Passes/cullPass";
@@ -10,8 +17,6 @@ import { FrameGraphContext } from "./frameGraphContext";
 import { FrameGraphTextureManager } from "./frameGraphTextureManager";
 import { Observable } from "core/Misc/observable";
 import { getDimensionsFromTextureSize, textureSizeIsObject } from "../Materials/Textures/textureCreationOptions";
-import type { Nullable } from "../types";
-import type { FrameGraphTask } from "./frameGraphTask";
 
 enum FrameGraphPassType {
     Render = 0,
@@ -20,17 +25,17 @@ enum FrameGraphPassType {
 }
 
 /**
- * Class used to implement the frame graph
+ * Class used to implement a frame graph
  * @experimental
  */
 export class FrameGraph {
-    private _engine: AbstractEngine;
-    private _textureManager: FrameGraphTextureManager;
     /** @internal */
-    public _passContext: FrameGraphContext;
+    public readonly _passContext: FrameGraphContext;
     /** @internal */
-    public _renderContext: FrameGraphRenderContext;
+    public readonly _renderContext: FrameGraphRenderContext;
 
+    private readonly _engine: AbstractEngine;
+    private readonly _textureManager: FrameGraphTextureManager;
     private _tasks: FrameGraphTask[] = [];
     private _currentProcessedTask: FrameGraphTask | null = null;
 
@@ -39,6 +44,9 @@ export class FrameGraph {
      */
     public onBuildObservable = new Observable<FrameGraph>();
 
+    /**
+     * Gets the engine used by the frame graph
+     */
     public get engine() {
         return this._engine;
     }
@@ -56,29 +64,50 @@ export class FrameGraph {
         this._renderContext = new FrameGraphRenderContext(this._engine, this._textureManager);
     }
 
+    /**
+     * Gets a task by name
+     * @param name Name of the task to get
+     * @returns The task or undefined if not found
+     */
     public getTaskByName<T extends FrameGraphTask>(name: string): T | undefined {
         return this._tasks.find((t) => t.name === name) as T;
     }
 
+    /**
+     * Adds a task to the frame graph
+     * @param task Task to add
+     */
     public addTask(task: FrameGraphTask): void {
         if (this._currentProcessedTask !== null) {
-            throw new Error(`addTask: Can't add the task "${task.name}" while another task is currently building (task: ${this._currentProcessedTask.name}).`);
+            throw new Error(`FrameGraph.addTask: Can't add the task "${task.name}" while another task is currently building (task: ${this._currentProcessedTask.name}).`);
         }
 
         this._tasks.push(task);
     }
 
+    /**
+     * Adds a render pass to a task. This method can only be called during a Task.record execution.
+     * @param name The name of the pass
+     * @param whenTaskDisabled If true, the pass will be added to the list of passes to execute when the task is disabled (default is false)
+     * @returns The render pass created
+     */
     public addRenderPass(name: string, whenTaskDisabled = false): FrameGraphRenderPass {
         return this._addPass(name, FrameGraphPassType.Render, whenTaskDisabled) as FrameGraphRenderPass;
     }
 
+    /**
+     * Adds a cull pass to a task. This method can only be called during a Task.record execution.
+     * @param name The name of the pass
+     * @param whenTaskDisabled If true, the pass will be added to the list of passes to execute when the task is disabled (default is false)
+     * @returns The cull pass created
+     */
     public addCullPass(name: string, whenTaskDisabled = false): FrameGraphCullPass {
         return this._addPass(name, FrameGraphPassType.Cull, whenTaskDisabled) as FrameGraphCullPass;
     }
 
     private _addPass(name: string, passType: FrameGraphPassType, whenTaskDisabled = false): FrameGraphPass<FrameGraphContext> | FrameGraphRenderPass {
         if (!this._currentProcessedTask) {
-            throw new Error("A pass must be created during a Task.recordFrameGraph execution.");
+            throw new Error("FrameGraph: A pass must be created during a Task.record execution only.");
         }
 
         let pass: FrameGraphPass<FrameGraphContext> | FrameGraphRenderPass;
@@ -100,6 +129,10 @@ export class FrameGraph {
         return pass;
     }
 
+    /**
+     * Builds the frame graph.
+     * This method should be called after all tasks have been added to the frame graph (FrameGraph.addTask) and before the graph is executed (FrameGraph.execute).
+     */
     public build(): void {
         this._textureManager.releaseTextures(false);
 
@@ -146,6 +179,9 @@ export class FrameGraph {
         });
     }
 
+    /**
+     * Executes the frame graph.
+     */
     public execute(): void {
         this._renderContext._bindRenderTarget();
 
@@ -158,10 +194,23 @@ export class FrameGraph {
         }
     }
 
+    /**
+     * Imports a texture into the frame graph
+     * @param name Name of the texture
+     * @param texture Texture to import
+     * @param handle Existing handle to use for the texture. If not provided (default), a new handle will be created.
+     * @returns The handle to the texture
+     */
     public importTexture(name: string, texture: RenderTargetWrapper, handle?: FrameGraphTextureHandle): FrameGraphTextureHandle {
         return this._textureManager.importTexture(name, texture, handle);
     }
 
+    /**
+     * Gets the creation options of a texture
+     * @param handle Handle of the texture
+     * @param cloneOptions If true, the options will be cloned before being returned (default is false)
+     * @returns The creation options of the texture
+     */
     public getTextureCreationOptions(handle: FrameGraphTextureHandle, cloneOptions = false): FrameGraphTextureCreationOptions {
         const creationOptions = this._textureManager.getTextureCreationOptions(handle);
 
@@ -174,6 +223,11 @@ export class FrameGraph {
             : creationOptions;
     }
 
+    /**
+     * Gets the description of a texture
+     * @param handle Handle of the texture
+     * @returns The description of the texture
+     */
     public getTextureDescription(handle: FrameGraphTextureHandle): FrameGraphTextureDescription {
         const creationOptions = this.getTextureCreationOptions(handle);
 
@@ -189,6 +243,13 @@ export class FrameGraph {
         };
     }
 
+    /**
+     * Gets a texture handle or creates a new texture if the handle is not provided.
+     * @param handle If provided, will simply return the handle
+     * @param newTextureName Name of the new texture to create
+     * @param creationOptions Options to use when creating the new texture
+     * @returns The handle to the texture. If handle is not provided, newTextureName and creationOptions must be provided.
+     */
     public getTextureHandleOrCreateTexture(handle?: FrameGraphTextureHandle, newTextureName?: string, creationOptions?: FrameGraphTextureCreationOptions): FrameGraphTextureHandle {
         if (handle === undefined) {
             if (newTextureName === undefined || creationOptions === undefined) {
@@ -199,18 +260,42 @@ export class FrameGraph {
         return handle;
     }
 
+    /**
+     * Gets a texture from a handle
+     * @param handle The handle of the texture
+     * @returns The texture or null if not found
+     */
     public getTexture(handle: FrameGraphTextureHandle): Nullable<RenderTargetWrapper> {
         return this._textureManager.getTextureFromHandle(handle);
     }
 
+    /**
+     * Creates a new render target texture
+     * @param name Name of the texture
+     * @param creationOptions Options to use when creating the texture
+     * @param multiTargetMode If true, the texture will be created in multi target mode (default is false). In this mode, a handle is created for each target separately, in addition to the handle created for the main render target texture itself.
+     * @returns The handle to the texture
+     */
     public createRenderTargetTexture(name: string, creationOptions: FrameGraphTextureCreationOptions, multiTargetMode = false): FrameGraphTextureHandle {
         return this._textureManager.createRenderTargetTexture(name, !!this._currentProcessedTask, creationOptions, multiTargetMode);
     }
 
+    /**
+     * Creates a handle which is not associated with any texture.
+     * Call resolveDanglingHandle to associate the handle with a valid texture handle.
+     * @returns The dangling handle
+     */
     public createDanglingHandle(): FrameGraphTextureHandle {
         return this._textureManager.createDanglingHandle();
     }
 
+    /**
+     * Associates a texture with a dangling handle
+     * @param danglingHandle The dangling handle
+     * @param handle The handle to associate with the dangling handle (if not provided, a new texture handle will be created)
+     * @param newTextureName The name of the new texture to create (if handle is not provided)
+     * @param creationOptions The options to use when creating the new texture (if handle is not provided)
+     */
     public resolveDanglingHandle(
         danglingHandle: FrameGraphTextureHandle,
         handle?: FrameGraphTextureHandle,
@@ -228,6 +313,10 @@ export class FrameGraph {
         this._textureManager.resolveDanglingHandle(danglingHandle, handle);
     }
 
+    /**
+     * Clears the frame graph (remove the tasks and release the textures).
+     * The frame graph can be built again after this method is called.
+     */
     public clear(): void {
         for (const task of this._tasks) {
             task._reset();
@@ -238,6 +327,9 @@ export class FrameGraph {
         this._currentProcessedTask = null;
     }
 
+    /**
+     * Disposes the frame graph
+     */
     public dispose(): void {
         this.clear();
         this._textureManager.dispose();

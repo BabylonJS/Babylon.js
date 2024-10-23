@@ -39,24 +39,40 @@ export interface INodeRenderGraphCreateOptions {
 export enum NodeRenderGraphBlockConnectionPointTypes {
     /** General purpose texture */
     Texture = 0x00000001,
-    /** Depth stencil attachment texture */
+    /** Back buffer color texture */
     TextureBackBuffer = 0x00000002,
+    /** Back buffer depth/stencil attachment */
     TextureBackBufferDepthStencilAttachment = 0x00000004,
+    /** Depth/stencil attachment */
     TextureDepthStencilAttachment = 0x00000008,
+    /** Depth (in view space) geometry texture */
     TextureViewDepth = 0x00000010,
+    /** Normal (in view space) geometry texture */
     TextureViewNormal = 0x00000020,
+    /** Albedo geometry texture */
     TextureAlbedo = 0x00000040,
+    /** Reflectivity geometry texture */
     TextureReflectivity = 0x00000080,
+    /** Position (in world space) geometry texture */
     TextureWorldPosition = 0x00000100,
+    /** Velocity geometry texture */
     TextureVelocity = 0x00000200,
+    /** Irradiance geometry texture */
     TextureIrradiance = 0x00000400,
+    /** Albedo (sqrt) geometry texture */
     TextureAlbedoSqrt = 0x00000800,
+    /** Depth (in screen space) geometry texture */
     TextureScreenDepth = 0x00001000,
+    /** Normal (in world space) geometry texture */
     TextureWorldNormal = 0x00002000,
+    /** Position (in local space) geometry texture */
     TextureLocalPosition = 0x00004000,
+    /** Linear velocity geometry texture */
     TextureLinearVelocity = 0x00008000,
 
+    /** Bit field for all textures but back buffer depth/stencil */
     TextureAllButBackBufferDepthStencil = 0x00fffffb,
+    /** Bit field for all textures but back buffer */
     TextureAllButBackBuffer = 0x00fffff9,
     TextureAll = 0x00ffffff,
 
@@ -97,4 +113,7 @@ export const enum NodeRenderGraphConnectionPointDirection {
     Output,
 }
 
+/**
+ * Defines the type of a connection point value
+ */
 export type NodeRenderGraphBlockConnectionPointValueType = FrameGraphTextureHandle | Camera | FrameGraphObjectList;

@@ -1,18 +1,34 @@
-import type { Scene } from "../../../scene";
-import type { Camera } from "../../../Cameras/camera";
-import type { FrameGraph } from "../../frameGraph";
-import type { FrameGraphObjectList } from "../../frameGraphObjectList";
+// eslint-disable-next-line import/no-internal-modules
+import type { Scene, Camera, FrameGraph, FrameGraphObjectList } from "core/index";
 import { FrameGraphTask } from "../../frameGraphTask";
 
+/**
+ * Task used to cull objects that are not visible.
+ */
 export class FrameGraphCullObjectsTask extends FrameGraphTask {
+    /**
+     * The object list to cull.
+     */
     public objectList: FrameGraphObjectList;
 
+    /**
+     * The camera to use for culling.
+     */
     public camera: Camera;
 
+    /**
+     * The output object list containing the culled objects.
+     */
     public readonly outputObjectList: FrameGraphObjectList;
 
     private _scene: Scene;
 
+    /**
+     * Creates a new cull objects task.
+     * @param name The name of the task.
+     * @param frameGraph The frame graph the task belongs to.
+     * @param scene The scene to cull objects from.
+     */
     constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
         super(name, frameGraph);
         this._scene = scene;
@@ -22,7 +38,7 @@ export class FrameGraphCullObjectsTask extends FrameGraphTask {
         };
     }
 
-    public override record() {
+    public record() {
         if (this.objectList === undefined || this.camera === undefined) {
             throw new Error(`FrameGraphCullObjectsTask ${this.name}: objectList and camera are required`);
         }

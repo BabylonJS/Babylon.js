@@ -1,24 +1,20 @@
-import type { Nullable } from "../../types";
-import type { NodeRenderGraphBlock } from "./nodeRenderGraphBlock";
+// eslint-disable-next-line import/no-internal-modules
+import type { Nullable, NodeRenderGraphBlock, NodeRenderGraphBlockConnectionPointValueType, NodeRenderGraphInputBlock } from "core/index";
 import { Observable } from "../../Misc/observable";
-import type { NodeRenderGraphBlockConnectionPointValueType } from "./Types/nodeRenderGraphTypes";
 import { NodeRenderGraphBlockConnectionPointTypes, NodeRenderGraphConnectionPointCompatibilityStates, NodeRenderGraphConnectionPointDirection } from "./Types/nodeRenderGraphTypes";
-import type { NodeRenderGraphInputBlock } from "./Blocks/inputBlock";
 
 /**
  * Defines a connection point for a block
  */
 export class NodeRenderGraphConnectionPoint {
-    /** @internal */
-    public _ownerBlock: NodeRenderGraphBlock;
-    /** @internal */
-    public _connectedPoint: Nullable<NodeRenderGraphConnectionPoint> = null;
+    private readonly _ownerBlock: NodeRenderGraphBlock;
+    private _connectedPoint: Nullable<NodeRenderGraphConnectionPoint> = null;
 
     /** @internal */
     public _acceptedConnectionPointType: Nullable<NodeRenderGraphConnectionPoint> = null;
 
     private _endpoints = new Array<NodeRenderGraphConnectionPoint>();
-    private _direction: NodeRenderGraphConnectionPointDirection;
+    private readonly _direction: NodeRenderGraphConnectionPointDirection;
     private _type = NodeRenderGraphBlockConnectionPointTypes.Undefined;
 
     /** @internal */

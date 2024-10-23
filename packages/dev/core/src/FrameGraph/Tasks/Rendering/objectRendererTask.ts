@@ -1,22 +1,33 @@
-import type { FrameGraph } from "../../frameGraph";
-import type { FrameGraphTextureHandle } from "../../frameGraphTypes";
+// eslint-disable-next-line import/no-internal-modules
+import type { FrameGraph, FrameGraphTextureHandle, Scene, Camera, FrameGraphObjectList, FrameGraphRenderContext } from "core/index";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
 import { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture";
-import type { Scene } from "../../../scene";
-import type { Camera } from "../../../Cameras/camera";
 import { FrameGraphTask } from "../../frameGraphTask";
-import type { FrameGraphObjectList } from "core/FrameGraph/frameGraphObjectList";
-import type { FrameGraphRenderContext } from "core/FrameGraph/frameGraphRenderContext";
 
+/**
+ * Task used to render objects to a texture.
+ */
 export class FrameGraphObjectRendererTask extends FrameGraphTask {
+    /**
+     * The destination texture where the objects will be rendered.
+     */
     public destinationTexture: FrameGraphTextureHandle;
 
+    /**
+     * The depth attachment texture where the objects will be rendered (optional).
+     */
     public depthTexture?: FrameGraphTextureHandle;
 
+    /**
+     * The dependencies of the task (optional).
+     */
     public dependencies?: FrameGraphTextureHandle[] = [];
 
     private _camera: Camera;
 
+    /**
+     * Gets or sets the camera used to render the objects.
+     */
     public get camera() {
         return this._camera;
     }
@@ -26,19 +37,39 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         this._rtt.activeCamera = this.camera;
     }
 
+    /**
+     * The list of objects to render.
+     */
     public objectList: FrameGraphObjectList;
 
+    /**
+     * If depth testing should be enabled (default is true).
+     */
     public depthTest = true;
 
+    /**
+     * If depth writing should be enabled (default is true).
+     */
     public depthWrite = true;
 
+    /**
+     * The output texture.
+     */
     public readonly outputTexture: FrameGraphTextureHandle;
 
+    /**
+     * The output depth attachment texture.
+     * This texture will point to the same texture than the depthTexture property if it is set.
+     * Note, however, that the handle itself will be different!
+     */
     public readonly outputDepthTexture: FrameGraphTextureHandle;
 
     protected _scene: Scene;
     protected _rtt: RenderTargetTexture;
 
+    /**
+     * The render target texture used to render the objects.
+     */
     public get renderTargetTexture() {
         return this._rtt;
     }
@@ -54,6 +85,12 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         }
     }
 
+    /**
+     * Constructs a new object renderer task.
+     * @param name The name of the task.
+     * @param frameGraph The frame graph the task belongs to.
+     * @param scene The scene the frame graph is associated with.
+     */
     constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
         super(name, frameGraph);
 

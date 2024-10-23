@@ -1,24 +1,46 @@
-import type { FrameGraph } from "../../frameGraph";
-import type { FrameGraphTextureCreationOptions, FrameGraphTextureHandle } from "../../frameGraphTypes";
+// eslint-disable-next-line import/no-internal-modules
+import type { FrameGraph, FrameGraphTextureCreationOptions, FrameGraphTextureHandle, AbstractEngine } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { FrameGraphBloomMergeTask } from "./bloomMergeTask";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { FrameGraphTask } from "../../frameGraphTask";
 import { ThinBloomEffect } from "core/PostProcesses/thinBloomEffect";
 import { FrameGraphExtractHighlightsTask } from "./extractHighlightsTask";
 import { FrameGraphBlurTask } from "./blurTask";
 
+/**
+ * Task which applies a bloom render effect.
+ */
 export class FrameGraphBloomTask extends FrameGraphTask {
+    /**
+     * The source texture to apply the bloom effect on.
+     */
     public sourceTexture: FrameGraphTextureHandle;
 
+    /**
+     * The sampling mode to use for the source texture.
+     */
     public sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
 
+    /**
+     * The destination texture to render the bloom effect to.
+     * If not supplied, a texture with the same configuration as the source texture will be created.
+     */
     public destinationTexture?: FrameGraphTextureHandle;
 
+    /**
+     * The output texture of the bloom effect.
+     */
     public readonly outputTexture: FrameGraphTextureHandle;
 
+    /**
+     * The bloom effect to apply.
+     */
     public readonly bloom: ThinBloomEffect;
 
+    /**
+     * Whether the bloom effect is HDR.
+     * When true, the bloom effect will use a higher precision texture format (half float or float). Else, it will use unsigned byte.
+     */
     public readonly hdr: boolean;
 
     private _downscale: FrameGraphExtractHighlightsTask;
@@ -27,6 +49,17 @@ export class FrameGraphBloomTask extends FrameGraphTask {
     private _merge: FrameGraphBloomMergeTask;
     private _defaultPipelineTextureType: number;
 
+    /**
+     * Constructs a new bloom task.
+     * @param name Name of the task.
+     * @param frameGraph The frame graph this task is associated with.
+     * @param engine The engine to use for the bloom effect.
+     * @param weight Weight of the bloom effect.
+     * @param kernel Kernel size of the bloom effect.
+     * @param threshold Threshold of the bloom effect.
+     * @param hdr Whether the bloom effect is HDR.
+     * @param bloomScale The scale of the bloom effect. This value is multiplied by the source texture size to determine the bloom texture size.
+     */
     constructor(name: string, frameGraph: FrameGraph, engine: AbstractEngine, weight: number, kernel: number, threshold: number, hdr = false, bloomScale = 0.5) {
         super(name, frameGraph);
 
@@ -59,7 +92,7 @@ export class FrameGraphBloomTask extends FrameGraphTask {
         return this.bloom.isReady();
     }
 
-    public override record(): void {
+    public record(): void {
         if (this.sourceTexture === undefined) {
             throw new Error("FrameGraphBloomTask: sourceTexture is required");
         }

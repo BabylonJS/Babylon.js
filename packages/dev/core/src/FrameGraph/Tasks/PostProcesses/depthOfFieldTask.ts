@@ -1,32 +1,62 @@
-import type { FrameGraph } from "../../frameGraph";
-import type { FrameGraphTextureCreationOptions, FrameGraphTextureHandle } from "../../frameGraphTypes";
+// eslint-disable-next-line import/no-internal-modules
+import type { FrameGraph, FrameGraphTextureCreationOptions, FrameGraphTextureHandle, AbstractEngine, Camera } from "core/index";
 import { Constants } from "core/Engines/constants";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { FrameGraphTask } from "../../frameGraphTask";
 import { DepthOfFieldEffectBlurLevel } from "core/PostProcesses/depthOfFieldEffect";
 import { FrameGraphDepthOfFieldMergeTask } from "./depthOfFieldMergeTask";
 import { FrameGraphCircleOfConfusionTask } from "./circleOfConfusionTask";
 import { FrameGraphDepthOfFieldBlurTask } from "./depthOfFieldBlurTask";
-import type { Camera } from "core/Cameras/camera";
 import { ThinDepthOfFieldEffect } from "core/PostProcesses/thinDepthOfFieldEffect";
 
+/**
+ * Task which applies a depth of field effect.
+ */
 export class FrameGraphDepthOfFieldTask extends FrameGraphTask {
+    /**
+     * The source texture to apply the depth of field effect on.
+     */
     public sourceTexture: FrameGraphTextureHandle;
 
+    /**
+     * The sampling mode to use for the source texture.
+     */
     public sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
 
-    public depthTexture: FrameGraphTextureHandle; // should store camera space depth (Z coordinate)
+    /**
+     * The depth texture to use for the depth of field effect.
+     * Should store camera space depth (Z coordinate).
+     */
+    public depthTexture: FrameGraphTextureHandle;
 
+    /**
+     * The sampling mode to use for the depth texture.
+     */
     public depthSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
 
+    /**
+     * The camera used to render the scene.
+     */
     public camera: Camera;
 
+    /**
+     * The destination texture to render the depth of field effect to.
+     */
     public destinationTexture?: FrameGraphTextureHandle;
 
+    /**
+     * The output texture of the depth of field effect.
+     */
     public readonly outputTexture: FrameGraphTextureHandle;
 
+    /**
+     * The depth of field effect.
+     */
     public readonly depthOfField: ThinDepthOfFieldEffect;
 
+    /**
+     * Whether the depth of field effect is applied on HDR textures.
+     * When true, the depth of field effect will use a higher precision texture format (half float or float). Else, it will use unsigned byte.
+     */
     public readonly hdr: boolean;
 
     private _engine: AbstractEngine;
@@ -36,6 +66,14 @@ export class FrameGraphDepthOfFieldTask extends FrameGraphTask {
     private _merge: FrameGraphDepthOfFieldMergeTask;
     private _defaultPipelineTextureType: number;
 
+    /**
+     * Constructs a depth of field task.
+     * @param name The name of the task.
+     * @param frameGraph The frame graph this task belongs to.
+     * @param engine The engine to use for the depth of field effect.
+     * @param blurLevel The blur level of the depth of field effect (default: DepthOfFieldEffectBlurLevel.Low).
+     * @param hdr Whether the depth of field effect is HDR.
+     */
     constructor(name: string, frameGraph: FrameGraph, engine: AbstractEngine, blurLevel: DepthOfFieldEffectBlurLevel = DepthOfFieldEffectBlurLevel.Low, hdr = false) {
         super(name, frameGraph);
 
@@ -72,7 +110,7 @@ export class FrameGraphDepthOfFieldTask extends FrameGraphTask {
         return this.depthOfField.isReady();
     }
 
-    public override record(): void {
+    public record(): void {
         if (this.sourceTexture === undefined || this.depthTexture === undefined || this.camera === undefined) {
             throw new Error("FrameGraphDepthOfFieldTask: sourceTexture, depthTexture and camera are required");
         }

@@ -28,6 +28,7 @@ export * from "./thinTexture";
 export * from "./thinRenderTargetTexture";
 export * from "./videoTexture";
 export * from "./ktx2decoderTypes";
+export * from "./textureCreationOptions";
 
 // Shaders for procedural textures
 export * from "../../ShadersWGSL/procedural.vertex";
