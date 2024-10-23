@@ -5,7 +5,7 @@ import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineCo
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
-import copyIcon from "shared-ui-components/lines/copy.svg";
+import copyIcon from "shared-ui-components/imgs/copy.svg";
 
 import "./metadataPropertyGrid.scss";
 import { Logger } from "core/Misc/logger";
