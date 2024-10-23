@@ -167,7 +167,7 @@ export class ThinPostProcess {
             extraInitializations: options?.extraInitializations ?? (undefined as any),
         };
 
-        if (this.options.uniforms.indexOf("textureSampler") === -1) {
+        if (this.options.samplers.indexOf("textureSampler") === -1) {
             this.options.samplers.push("textureSampler");
         }
         if (this.options.uniforms.indexOf("scale") === -1) {
