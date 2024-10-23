@@ -341,7 +341,6 @@ export class GaussianSplattingMesh extends Mesh {
                         value = dataView.getFloat32(property.offset + offset, true);
                         break;
                     default:
-                        //throw new Error(`Unsupported property type: ${property.type}`);
                         continue;
                 }
 
