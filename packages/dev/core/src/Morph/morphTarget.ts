@@ -27,6 +27,7 @@ export class MorphTarget implements IAnimatable {
     private _normals: Nullable<FloatArray> = null;
     private _tangents: Nullable<FloatArray> = null;
     private _uvs: Nullable<FloatArray> = null;
+    private _uv2s: Nullable<FloatArray> = null;
     private _influence: number;
     private _uniqueId = 0;
 
@@ -137,6 +138,13 @@ export class MorphTarget implements IAnimatable {
     }
 
     /**
+     * Gets a boolean defining if the target contains texture coordinates 2 data
+     */
+    public get hasUV2s(): boolean {
+        return !!this._uv2s;
+    }
+
+    /**
      * Affects position data to this target
      * @param data defines the position data to use
      */
@@ -225,6 +233,28 @@ export class MorphTarget implements IAnimatable {
     }
 
     /**
+     * Affects texture coordinates 2 data to this target
+     * @param data defines the texture coordinates 2 data to use
+     */
+    public setUV2s(data: Nullable<FloatArray>) {
+        const hadUV2s = this.hasUV2s;
+
+        this._uv2s = data;
+
+        if (hadUV2s !== this.hasUV2s) {
+            this._onDataLayoutChanged.notifyObservers(undefined);
+        }
+    }
+
+    /**
+     * Gets the texture coordinates 2 data stored in this target
+     * @returns a FloatArray containing the texture coordinates 2 data (or null if not present)
+     */
+    public getUV2s(): Nullable<FloatArray> {
+        return this._uv2s;
+    }
+
+    /**
      * Clone the current target
      * @returns a new MorphTarget
      */
@@ -235,6 +265,7 @@ export class MorphTarget implements IAnimatable {
         newOne._normals = this._normals;
         newOne._tangents = this._tangents;
         newOne._uvs = this._uvs;
+        newOne._uv2s = this._uv2s;
 
         return newOne;
     }
@@ -261,6 +292,9 @@ export class MorphTarget implements IAnimatable {
         }
         if (this.hasUVs) {
             serializationObject.uvs = Array.prototype.slice.call(this.getUVs());
+        }
+        if (this.hasUV2s) {
+            serializationObject.uv2s = Array.prototype.slice.call(this.getUV2s());
         }
 
         // Animations
@@ -301,6 +335,9 @@ export class MorphTarget implements IAnimatable {
         }
         if (serializationObject.uvs) {
             result.setUVs(serializationObject.uvs);
+        }
+        if (serializationObject.uv2s) {
+            result.setUV2s(serializationObject.uv2s);
         }
 
         // Animations
@@ -351,6 +388,9 @@ export class MorphTarget implements IAnimatable {
         }
         if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
             result.setUVs(<FloatArray>mesh.getVerticesData(VertexBuffer.UVKind));
+        }
+        if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
+            result.setUV2s(<FloatArray>mesh.getVerticesData(VertexBuffer.UV2Kind));
         }
 
         return result;

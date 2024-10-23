@@ -89,6 +89,9 @@ export class MeshAttributeExistsBlock extends NodeMaterialBlock {
                     case "uvOutput":
                         this.attributeType = MeshAttributeExistsBlockTypes.UV1;
                         break;
+                    case "uv2Output":
+                        this.attributeType = MeshAttributeExistsBlockTypes.UV2;
+                        break;
                 }
             }
         });
