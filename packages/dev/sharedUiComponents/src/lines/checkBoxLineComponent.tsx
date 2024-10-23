@@ -5,7 +5,7 @@ import { copyCommandToClipboard, getClassNameWithNamespace } from "../copyComman
 import type { IconDefinition } from "@fortawesome/fontawesome-common-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { conflictingValuesPlaceholder } from "./targetsProxy";
-import copyIcon from "./copy.svg";
+import copyIcon from "../imgs/copy.svg";
 
 export interface ICheckBoxLineComponentProps {
     label?: string;

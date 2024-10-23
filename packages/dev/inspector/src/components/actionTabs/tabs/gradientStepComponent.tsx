@@ -5,7 +5,7 @@ import type { GradientBlockColorStep } from "core/Materials/Node/Blocks/gradient
 import { ColorPickerLine } from "shared-ui-components/lines/colorPickerComponent";
 
 import deleteButton from "../lines/delete.svg";
-import copyIcon from "../lines/copyStep.svg";
+import copyIcon from "shared-ui-components/imgs/copyStep.svg";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
 interface IGradientStepComponentProps {
