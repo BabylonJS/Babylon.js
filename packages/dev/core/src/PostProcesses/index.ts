@@ -32,7 +32,6 @@ export * from "./vrDistortionCorrectionPostProcess";
 export * from "./vrMultiviewToSingleviewPostProcess";
 export * from "./screenSpaceReflectionPostProcess";
 export * from "./screenSpaceCurvaturePostProcess";
-export * from "./edgeDetectionPostProcess";
 
 // Postprocess
 export * from "../Shaders/postprocess.vertex";

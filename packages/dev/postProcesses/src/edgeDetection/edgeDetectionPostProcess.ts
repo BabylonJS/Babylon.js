@@ -1,20 +1,20 @@
-import type { Nullable } from "../types";
-import { Logger } from "../Misc/logger";
-import type { Camera } from "../Cameras/camera";
-import type { Effect } from "../Materials/effect";
-import type { PostProcessOptions } from "./postProcess";
-import { PostProcess } from "./postProcess";
-import { Constants } from "../Engines/constants";
-import type { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer";
-import { Color3 } from "../Maths/math.color";
-import { serialize } from "../Misc/decorators";
-import { SerializationHelper } from "../Misc/decorators.serialization";
-import { RegisterClass } from "../Misc/typeStore";
-import type { Scene } from "../scene";
-import { EngineStore } from "../Engines/engineStore";
-
-import "../Shaders/edgeDetection.fragment";
-import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import type { Nullable } from "core/types";
+import { Logger } from "core/Misc/logger";
+import type { Camera } from "core/Cameras/camera";
+import type { Effect } from "core/Materials/effect";
+import type { PostProcessOptions } from "core/PostProcesses/postProcess";
+import { PostProcess } from "core/PostProcesses/postProcess";
+import { Constants } from "core/Engines/constants";
+import "core/Rendering/geometryBufferRendererSceneComponent";
+import type { GeometryBufferRenderer } from "core/Rendering/geometryBufferRenderer";
+import { Color3 } from "core/Maths/math.color";
+import { serialize } from "core/Misc/decorators";
+import { SerializationHelper } from "core/Misc/decorators.serialization";
+import { RegisterClass } from "core/Misc/typeStore";
+import { EngineStore } from "core/Engines/engineStore";
+import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
+import type { Scene } from "core/scene";
+import "./edgeDetection.fragment";
 
 /**
  * The Edge Detection effect highlights the edges of objects in the scene like a toon.
