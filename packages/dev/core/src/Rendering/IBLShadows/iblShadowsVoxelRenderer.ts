@@ -619,6 +619,9 @@ export class _IblShadowsVoxelRenderer {
         } else {
             this._addRTsForRender(this._voxelMrtsZaxis, includedMeshes, 2);
         }
+        if (this._voxelDebugEnabled) {
+            this._addRTsForRender([this._voxelSlabDebugRT], includedMeshes, this._voxelDebugAxis, 1, true);
+        }
 
         (this as any).boundVoxelGridRenderFn = this._renderVoxelGrid.bind(this);
         this._scene.onAfterRenderTargetsRenderObservable.addOnce((this as any).boundVoxelGridRenderFn);
@@ -711,7 +714,11 @@ export class _IblShadowsVoxelRenderer {
 
         // Add the MRT's to render.
         if (continuousRender) {
-            this._scene.customRenderTargets = this._scene.customRenderTargets.concat(mrts);
+            mrts.forEach((mrt) => {
+                if (this._scene.customRenderTargets.indexOf(mrt) === -1) {
+                    this._scene.customRenderTargets.push(mrt);
+                }
+            });
         } else {
             this._renderTargets = this._renderTargets.concat(mrts);
         }
