@@ -229,7 +229,7 @@ export class NodeGeometry {
     }
 
     /**
-     * Build the final geometry
+     * Build the final geometry. Please note that the geometry MAY not be ready until the onBuildObservable is raised.
      * @param verbose defines if the build should log activity
      * @param updateBuildId defines if the internal build Id should be updated (default is true)
      * @param autoConfigure defines if the autoConfigure method should be called when initializing blocks (default is false)
@@ -244,6 +244,21 @@ export class NodeGeometry {
         const now = PrecisionDate.Now;
         // Initialize blocks
         this._initializeBlock(this.outputBlock, autoConfigure);
+
+        // Check async states
+        const promises: Promise<void>[] = [];
+        for (const block of this.attachedBlocks) {
+            if (block._isReadyState) {
+                promises.push(block._isReadyState);
+            }
+        }
+
+        if (promises.length) {
+            Promise.all(promises).then(() => {
+                this.build(verbose, updateBuildId, autoConfigure);
+            });
+            return;
+        }
 
         // Build
         const state = new NodeGeometryBuildState();
