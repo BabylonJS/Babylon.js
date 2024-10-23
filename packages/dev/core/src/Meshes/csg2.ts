@@ -60,6 +60,10 @@ export interface IMeshRebuildOptions {
      * True to center the mesh on 0,0,0
      */
     centerMesh?: boolean;
+    /**
+     * Defines a material to use for that mesh. When not defined the system will either reuse the one from the source or create a multimaterial if several materials were involved
+     */
+    materialToUse?: Material;
 }
 
 /**
@@ -247,12 +251,16 @@ export class CSG2 implements IDisposable {
             }
         }
 
-        if (materials.length > 1) {
-            const multiMaterial = new MultiMaterial(name, scene);
-            multiMaterial.subMaterials = materials;
-            output.material = multiMaterial;
+        if (localOptions.materialToUse) {
+            output.material = localOptions.materialToUse;
         } else {
-            output.material = materials[0];
+            if (materials.length > 1) {
+                const multiMaterial = new MultiMaterial(name, scene);
+                multiMaterial.subMaterials = materials;
+                output.material = multiMaterial;
+            } else {
+                output.material = materials[0];
+            }
         }
 
         return output;
