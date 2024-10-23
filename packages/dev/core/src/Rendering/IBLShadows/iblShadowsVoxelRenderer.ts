@@ -7,8 +7,7 @@ import type { RenderTargetTextureOptions } from "../../Materials/Textures/render
 import type { TextureSize } from "../../Materials/Textures/textureCreationOptions";
 import { Color4 } from "../../Maths/math.color";
 import { Matrix, Vector3, Vector4 } from "../../Maths/math.vector";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
-import { Mesh } from "../../Meshes/mesh";
+import type { Mesh } from "../../Meshes/mesh";
 import type { Scene } from "../../scene";
 import { Texture } from "../../Materials/Textures/texture";
 import { Logger } from "../../Misc/logger";
@@ -30,7 +29,6 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
 export class _IblShadowsVoxelRenderer {
     private _scene: Scene;
     private _engine: Engine;
-    private _renderPipeline: IblShadowsRenderPipeline;
     private _voxelGridRT: ProceduralTexture;
     private _voxelGridXaxis: RenderTargetTexture;
     private _voxelGridYaxis: RenderTargetTexture;
@@ -88,7 +86,6 @@ export class _IblShadowsVoxelRenderer {
         this._triPlanarVoxelization = enabled;
         this._disposeVoxelTextures();
         this._createTextures();
-        this._renderPipeline.updateVoxelization();
     }
 
     private _voxelizationInProgress: boolean = false;
@@ -275,7 +272,6 @@ export class _IblShadowsVoxelRenderer {
         this._scene = scene;
         this._engine = scene.getEngine() as Engine;
         this._triPlanarVoxelization = triPlanarVoxelization;
-        this._renderPipeline = iblShadowsRenderPipeline;
         if (!this._engine.getCaps().drawBuffersExtension) {
             Logger.Error("Can't do voxel rendering without the draw buffers extension.");
         }
@@ -699,15 +695,16 @@ export class _IblShadowsVoxelRenderer {
 
             // Set this material on every mesh in the scene (for this RT)
             if (includedMeshes.length === 0) {
-                includedMeshes = this._scene.meshes.filter((mesh: AbstractMesh) => mesh instanceof Mesh) as Mesh[];
+                return;
             }
             includedMeshes.forEach((mesh) => {
-                if (mesh instanceof Mesh && mesh.material) {
-                    mrt.renderList?.push(mesh);
-
-                    // TODO - if the mesh already has a voxel material applied, don't create a new one.
-                    // mesh.getMaterialForRenderPass(mrt.renderPassIds)
-                    mrt.setMaterialForRendering(mesh, voxelMaterial);
+                if (mesh) {
+                    mesh.getChildMeshes().forEach((childMesh) => {
+                        if (childMesh.subMeshes && childMesh.subMeshes.length > 0) {
+                            mrt.renderList?.push(childMesh);
+                            mrt.setMaterialForRendering(childMesh, voxelMaterial);
+                        }
+                    });
                 }
             });
         });

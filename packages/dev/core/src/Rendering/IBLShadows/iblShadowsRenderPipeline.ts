@@ -518,7 +518,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * @param mesh A mesh that you want to cast shadows
      */
     public addShadowCastingMesh(mesh: Mesh): void {
-        if (this._shadowCastingMeshes.indexOf(mesh) === -1) {
+        if (mesh && mesh instanceof Mesh && this._shadowCastingMeshes.indexOf(mesh) === -1) {
             this._shadowCastingMeshes.push(mesh);
         }
     }
@@ -555,7 +555,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             return;
         }
         this._voxelRenderer.voxelResolutionExp = newResolution;
-        this.updateVoxelization();
         this._accumulationPass.reset = true;
     }
 
@@ -674,7 +673,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             textureFormat: Constants.TEXTUREFORMAT_RGBA,
             textureType: Constants.TEXTURETYPE_HALF_FLOAT,
         };
-        const geometryBufferRenderer = scene.enableGeometryBufferRenderer(undefined, undefined, textureTypesAndFormats);
+        const geometryBufferRenderer = scene.enableGeometryBufferRenderer(undefined, Constants.TEXTUREFORMAT_DEPTH32_FLOAT, textureTypesAndFormats);
         if (!geometryBufferRenderer) {
             Logger.Error("Geometry buffer renderer is required for IBL shadows to work.");
             return;
@@ -718,12 +717,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
 
         this._listenForCameraChanges();
         this.scene.getEngine().onResizeObservable.add(this._handleResize.bind(this));
-
-        // Only turn on the pipeline when the importance sampling RT's are ready
-        this._importanceSamplingRenderer.onReadyObservable.addOnce(() => {
-            this.updateVoxelization();
-            this.toggleShadow(this._enabled);
-        });
     }
 
     /**
@@ -834,10 +827,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
 
     private _disposeEffectPasses() {
         this.scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this.name, this.cameras);
-        this._disableEffect("IBLShadowVoxelTracingPass", this.cameras);
-        this._disableEffect("IBLShadowSpatialBlurPass", this.cameras);
-        this._disableEffect("IBLShadowAccumulationBlurPass", this.cameras);
-        this._disableEffect("IBLShadowCompositePass", this.cameras);
         this._disposeDebugPasses();
         this._reset();
     }
@@ -920,6 +909,10 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * Trigger the scene to be re-voxelized. This is useful when the scene has changed and the voxel grid needs to be updated.
      */
     public updateVoxelization() {
+        if (this._shadowCastingMeshes.length === 0) {
+            Logger.Warn("IBL Shadows: updateVoxelization called with no shadow-casting meshes to voxelize.");
+            return;
+        }
         this._voxelRenderer.updateVoxelGrid(this._shadowCastingMeshes);
         // Update the SS shadow max distance based on the voxel grid size and resolution.
         // The max distance should be just a little larger than the world size of a single voxel.
@@ -931,12 +924,19 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * to be recalculated. This will also trigger a re-voxelization.
      */
     public updateSceneBounds() {
-        const bounds = this.scene.getWorldExtends((mesh) => {
-            return mesh instanceof Mesh && this._shadowCastingMeshes.indexOf(mesh) !== -1;
+        const bounds: { min: Vector3; max: Vector3 } = {
+            min: new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE),
+            max: new Vector3(Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE),
+        };
+        this._shadowCastingMeshes.forEach((mesh) => {
+            const localBounds = mesh.getHierarchyBoundingVectors(true);
+            bounds.min = Vector3.Minimize(bounds.min, localBounds.min);
+            bounds.max = Vector3.Maximize(bounds.max, localBounds.max);
         });
+
         const size = bounds.max.subtract(bounds.min);
         this.voxelGridSize = Math.max(size.x, Math.max(size.y, size.z));
-        if (!isFinite(this.voxelGridSize) || this.voxelGridSize === 0) {
+        if (this._shadowCastingMeshes.length === 0 || !isFinite(this.voxelGridSize) || this.voxelGridSize === 0) {
             Logger.Warn("IBL Shadows: Scene size is invalid. Can't update bounds.");
             this.voxelGridSize = 1.0;
             return;
@@ -993,11 +993,13 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     }
 
     protected _addShadowSupportToMaterial(material: Material) {
-        if (material.pluginManager?.getPlugin(IBLShadowsPluginMaterial.Name)) {
+        let plugin = material.pluginManager?.getPlugin(IBLShadowsPluginMaterial.Name) as IBLShadowsPluginMaterial;
+        if (!plugin) {
+            plugin = new IBLShadowsPluginMaterial(material);
+        }
+        if (this._materialsWithRenderPlugin.indexOf(material) !== -1) {
             return;
         }
-
-        const plugin = new IBLShadowsPluginMaterial(material);
 
         if (this._enabled) {
             plugin.iblShadowsTexture = this.getAccumulatedTexture().getInternalTexture()!;
@@ -1087,6 +1089,10 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * Disposes the IBL shadow pipeline and associated resources
      */
     public override dispose() {
+        const materials = this._materialsWithRenderPlugin.splice(0);
+        materials.forEach((mat) => {
+            this.removeShadowReceivingMaterial(mat);
+        });
         this._disposeEffectPasses();
         this._noiseTexture.dispose();
         this._voxelRenderer.dispose();
