@@ -360,9 +360,9 @@ fn voxelShadow(wsOrigin: vec3f, wsDirection: vec3f, wsNormal: vec3f,
   genTB(wsDirection, &T, &B);
   var DitherXY: vec2f = sqrt(DitherNoise.x) *  vec2f(cos(2.0 * PI * DitherNoise.y),
                                              sin(2.0 * PI * DitherNoise.y));
-  var Dithering: vec3f =
-      (2.0 * wsNormal + 3.0 * wsDirection + DitherXY.x * T + DitherXY.y * B) /
-      vxResolution;
+  var Dithering : vec3f = (1.0 * wsNormal + 1.25 * wsDirection +
+                           DitherXY.x * T + DitherXY.y * B) /
+                          vxResolution;
   var O: vec3f = 0.5 * wsOrigin + 0.5 + Dithering;
 
   var ray_vs = make_ray(O, wsDirection, 0.0, 10.0);

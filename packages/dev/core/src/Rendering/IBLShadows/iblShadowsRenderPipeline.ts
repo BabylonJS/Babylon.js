@@ -121,7 +121,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     private _noiseTexture: Texture;
     private _dummyTexture2d: RawTexture;
     private _dummyTexture3d: RawTexture3D;
-    private _shadowOpacity: number = 0.75;
+    private _shadowOpacity: number = 0.8;
     private _enabled: boolean = true;
     private _materialsWithRenderPlugin: Material[] = [];
 
@@ -685,7 +685,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._geometryBufferRenderer.enableNormal = true;
         this._geometryBufferRenderer.generateNormalsInWorldSpace = true;
 
-        this.shadowOpacity = options.shadowOpacity || 0.75;
+        this.shadowOpacity = options.shadowOpacity || 0.8;
         this._voxelRenderer = new _IblShadowsVoxelRenderer(
             this.scene,
             this,

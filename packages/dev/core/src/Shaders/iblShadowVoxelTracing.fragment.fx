@@ -336,7 +336,7 @@ float voxelShadow(vec3 wsOrigin, vec3 wsDirection, vec3 wsNormal,
   vec2 DitherXY = sqrt(DitherNoise.x) * vec2(cos(2.0 * PI * DitherNoise.y),
                                              sin(2.0 * PI * DitherNoise.y));
   vec3 Dithering =
-      (2.0 * wsNormal + 3.0 * wsDirection + DitherXY.x * T + DitherXY.y * B) /
+      (1.0 * wsNormal + 1.25 * wsDirection + DitherXY.x * T + DitherXY.y * B) /
       vxResolution;
   vec3 O = 0.5 * wsOrigin + 0.5 + Dithering;
 
