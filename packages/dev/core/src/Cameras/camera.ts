@@ -439,7 +439,8 @@ export class Camera extends Node {
     public _computedViewMatrix = Matrix.Identity();
     private _doNotComputeProjectionMatrix = false;
     private _transformMatrix = Matrix.Zero();
-    private _frustumPlanes: Plane[];
+    /** @internal */
+    public _frustumPlanes: Plane[];
     private _refreshFrustumPlanes = true;
     private _storedFov: number;
     private _stateStored: boolean;
@@ -1061,7 +1062,8 @@ export class Camera extends Node {
         return (arcRotateCamera.radius || (targetCamera.target ? Vector3.Distance(this.position, targetCamera.target) : this.position.length())) + offset;
     }
 
-    private _updateFrustumPlanes(): void {
+    /** @internal */
+    public _updateFrustumPlanes(): void {
         if (!this._refreshFrustumPlanes) {
             return;
         }

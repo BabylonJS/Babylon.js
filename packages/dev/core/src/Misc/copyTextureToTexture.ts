@@ -4,6 +4,7 @@ import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
 import type { IRenderTargetTexture, RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import { Constants } from "core/Engines/constants";
+import type { Nullable } from "core/types";
 
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
@@ -86,6 +87,9 @@ export class CopyTextureToTexture {
                 engine.setDepthBuffer(true);
                 engine.depthCullingState.depthMask = true;
                 engine.depthCullingState.depthFunc = Constants.ALWAYS;
+            } else {
+                engine.depthCullingState.depthMask = false;
+                // other states are already set by EffectRenderer.applyEffectWrapper
             }
 
             if (this._textureIsInternal(this._source)) {
@@ -108,11 +112,11 @@ export class CopyTextureToTexture {
     /**
      * Copy one texture into another
      * @param source The source texture
-     * @param destination The destination texture
+     * @param destination The destination texture. If null, copy the source to the currently bound framebuffer
      * @param conversion The conversion mode that should be applied when copying
      * @returns
      */
-    public copy(source: InternalTexture | ThinTexture, destination: RenderTargetWrapper | IRenderTargetTexture, conversion = ConversionMode.None): boolean {
+    public copy(source: InternalTexture | ThinTexture, destination: Nullable<RenderTargetWrapper | IRenderTargetTexture> = null, conversion = ConversionMode.None): boolean {
         if (!this.isReady()) {
             return false;
         }
@@ -120,12 +124,15 @@ export class CopyTextureToTexture {
         this._source = source;
         this._conversion = conversion;
 
-        const engineDepthFunc = this._engine.depthCullingState.depthFunc;
+        const engineDepthFunc = this._engine.getDepthFunction();
+        const engineDepthMask = this._engine.getDepthWrite(); // for some reasons, depthWrite is not restored by EffectRenderer.restoreStates
 
         this._renderer.render(this._effectWrapper, destination);
 
+        this._engine.setDepthWrite(engineDepthMask);
+
         if (this._isDepthTexture && engineDepthFunc) {
-            this._engine.depthCullingState.depthFunc = engineDepthFunc;
+            this._engine.setDepthFunction(engineDepthFunc);
         }
 
         return true;
@@ -135,7 +142,7 @@ export class CopyTextureToTexture {
      * Releases all the resources used by the class
      */
     public dispose(): void {
-        this._effectWrapper.dispose();
+        this._effectWrapper?.dispose();
         this._renderer.dispose();
     }
 }

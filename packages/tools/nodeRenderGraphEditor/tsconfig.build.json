@@ -1,0 +1,24 @@
+{
+    "extends": "../../../tsconfig.build.json",
+
+    "compilerOptions": {
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "composite": true,
+        "paths": {
+            "core/*": ["dev/core/dist/*"],
+            "gui/*": ["dev/gui/dist/*"],
+            "serializers/*": ["dev/serializers/dist/*"],
+            "shared-ui-components/*": ["dev/sharedUiComponents/dist/*"],
+            "node-render-graph-editor/*": ["tools/nodeRenderGraphEditor/src/*"]
+        }
+    },
+
+    "references": [
+        {
+            "path": "../../dev/core/tsconfig.build.json"
+        }
+    ],
+
+    "include": ["./src/**/*.ts", "./src/**/*.tsx"]
+}

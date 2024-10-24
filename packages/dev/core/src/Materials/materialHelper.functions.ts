@@ -874,6 +874,8 @@ export function PrepareDefinesForPrePass(scene: Scene, defines: any, canRenderTo
         defines.PREPASS = true;
         defines.SCENE_MRT_COUNT = scene.prePassRenderer.mrtCount;
         defines.PREPASS_NORMAL_WORLDSPACE = scene.prePassRenderer.generateNormalsInWorldSpace;
+        defines.PREPASS_COLOR = true;
+        defines.PREPASS_COLOR_INDEX = 0;
 
         for (let i = 0; i < texturesList.length; i++) {
             const index = scene.prePassRenderer.getIndex(texturesList[i].type);

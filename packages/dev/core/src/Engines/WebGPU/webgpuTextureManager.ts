@@ -1002,7 +1002,14 @@ export class WebGPUTextureManager {
         }
     }
 
-    public createGPUTextureForInternalTexture(texture: InternalTexture, width?: number, height?: number, depth?: number, creationFlags?: number): WebGPUHardwareTexture {
+    public createGPUTextureForInternalTexture(
+        texture: InternalTexture,
+        width?: number,
+        height?: number,
+        depth?: number,
+        creationFlags?: number,
+        dontCreateMSAATexture?: boolean
+    ): WebGPUHardwareTexture {
         if (!texture._hardwareTexture) {
             texture._hardwareTexture = new WebGPUHardwareTexture();
         }
@@ -1125,12 +1132,14 @@ export class WebGPUTextureManager {
         texture.height = texture.baseHeight = height;
         texture.depth = texture.baseDepth = depth;
 
-        this.createMSAATexture(texture, texture.samples);
+        if (!dontCreateMSAATexture) {
+            this.createMSAATexture(texture, texture.samples);
+        }
 
         return gpuTextureWrapper;
     }
 
-    public createMSAATexture(texture: InternalTexture, samples: number, releaseExisting = true, index = -1): void {
+    public createMSAATexture(texture: InternalTexture, samples: number, releaseExisting = true, index = 0): void {
         const gpuTextureWrapper = texture._hardwareTexture as Nullable<WebGPUHardwareTexture>;
 
         if (releaseExisting) {

@@ -38,6 +38,7 @@ export * from "./GreasedLine/greasedLineMaterialDefaults";
 export * from "./meshDebugPluginMaterial";
 export * from "./GaussianSplatting/gaussianSplattingMaterial";
 export * from "./materialHelper.functions";
+export * from "./materialHelper.geometryrendering";
 import "./material.decalMap";
 
 // async-loaded shaders

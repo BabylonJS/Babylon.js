@@ -2,11 +2,24 @@ import { Logger } from "../../Misc/logger";
 import type { Nullable } from "../../types";
 import type { Scene } from "../../scene";
 import type { ISize } from "../../Maths/math.size";
+import type { ITextureCreationOptions } from "../../Materials/Textures/texture";
 import { Texture } from "../../Materials/Textures/texture";
 import { Constants } from "../../Engines/constants";
 import type { ICanvas, ICanvasRenderingContext } from "../../Engines/ICanvas";
 
 import "../../Engines/Extensions/engine.dynamicTexture";
+
+/**
+ * Interface defining options used to create a dynamic texture
+ */
+export interface IDynamicTextureOptions extends ITextureCreationOptions {
+    /** defines the width of the texture (default: 0) */
+    width?: number;
+    /** defines the height of the texture (default: 0) */
+    height?: number;
+    /** defines the hosting scene (default: null) */
+    scene?: Nullable<Scene>;
+}
 
 /**
  * A class extending Texture allowing drawing on a texture
@@ -21,6 +34,14 @@ export class DynamicTexture extends Texture {
     /**
      * Creates a DynamicTexture
      * @param name defines the name of the texture
+     * @param canvasOrSize provides 3 alternatives for width and height of texture, a canvas, object with width and height properties, number for both width and height
+     * @param options The options to be used when constructing the dynamic texture
+     */
+    constructor(name: string, canvasOrSize: ICanvas | { width: number; height: number } | number, options?: IDynamicTextureOptions);
+
+    /**
+     * Creates a DynamicTexture
+     * @param name defines the name of the texture
      * @param options provides 3 alternatives for width and height of texture, a canvas, object with width and height properties, number for both width and height
      * @param scene defines the scene where you want the texture
      * @param generateMipMaps defines the use of MinMaps or not (default is false)
@@ -28,17 +49,42 @@ export class DynamicTexture extends Texture {
      * @param format defines the texture format to use (default is Engine.TEXTUREFORMAT_RGBA)
      * @param invertY defines if the texture needs to be inverted on the y axis during loading
      */
-
     constructor(
         name: string,
-        options: any,
-        scene: Nullable<Scene> = null,
+        options: ICanvas | { width: number; height: number } | number,
+        scene?: Nullable<Scene>,
+        generateMipMaps?: boolean,
+        samplingMode?: number,
+        format?: number,
+        invertY?: boolean
+    );
+
+    /** @internal */
+    constructor(
+        name: string,
+        canvasOrSize: ICanvas | { width: number; height: number } | number,
+        sceneOrOptions?: Nullable<Scene> | IDynamicTextureOptions,
+        generateMipMaps?: boolean,
+        samplingMode?: number,
+        format?: number,
+        invertY?: boolean
+    );
+
+    /** @internal */
+    constructor(
+        name: string,
+        canvasOrSize: ICanvas | { width: number; height: number } | number,
+        sceneOrOptions?: Nullable<Scene> | IDynamicTextureOptions,
         generateMipMaps: boolean = false,
         samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         format: number = Constants.TEXTUREFORMAT_RGBA,
         invertY?: boolean
     ) {
-        super(null, scene, !generateMipMaps, invertY, samplingMode, undefined, undefined, undefined, undefined, format);
+        const isScene = !sceneOrOptions || (sceneOrOptions as Scene)._isScene;
+        const scene = isScene ? (sceneOrOptions as Scene) : (sceneOrOptions as IDynamicTextureOptions)?.scene;
+        const noMipmap = isScene ? !generateMipMaps : (sceneOrOptions as IDynamicTextureOptions);
+
+        super(null, scene, noMipmap, invertY, samplingMode, undefined, undefined, undefined, undefined, format);
 
         this.name = name;
         this.wrapU = Texture.CLAMP_ADDRESSMODE;
@@ -51,18 +97,19 @@ export class DynamicTexture extends Texture {
             return;
         }
 
-        if (options.getContext) {
-            this._canvas = options;
+        if ((canvasOrSize as ICanvas).getContext) {
+            this._canvas = canvasOrSize as ICanvas;
             this._ownCanvas = false;
-            this._texture = engine.createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
+            this._texture = engine.createDynamicTexture(this._canvas.width, this._canvas.height, generateMipMaps, samplingMode);
         } else {
             this._canvas = engine.createCanvas(1, 1);
             this._ownCanvas = true;
 
-            if (options.width || options.width === 0) {
-                this._texture = engine.createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
+            const optionsAsSize = canvasOrSize as ISize;
+            if (optionsAsSize.width || optionsAsSize.width === 0) {
+                this._texture = engine.createDynamicTexture(optionsAsSize.width, optionsAsSize.height, generateMipMaps, samplingMode);
             } else {
-                this._texture = engine.createDynamicTexture(options, options, generateMipMaps, samplingMode);
+                this._texture = engine.createDynamicTexture(canvasOrSize as number, canvasOrSize as number, generateMipMaps, samplingMode);
             }
         }
 

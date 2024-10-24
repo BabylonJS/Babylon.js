@@ -133,10 +133,10 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
 #include<instancesVertex>
 
-#if defined(PREPASS) && (defined(PREPASS_VELOCITY) && !defined(BONES_VELOCITY_ENABLED) || defined(PREPASS_VELOCITY_LINEAR))
+#if defined(PREPASS) && ((defined(PREPASS_VELOCITY) || defined(PREPASS_VELOCITY_LINEAR)) && !defined(BONES_VELOCITY_ENABLED)
     // Compute velocity before bones computation
-    vertexOutputs.vCurrentPosition = scene.viewProjection * finalWorld *  vec4f(positionUpdated, 1.0);
-    vertexOutputs.vPreviousPosition = uniforms.previousViewProjection * finalPreviousWorld *  vec4f(positionUpdated, 1.0);
+    vertexOutputs.vCurrentPosition = scene.viewProjection * finalWorld * vec4f(positionUpdated, 1.0);
+    vertexOutputs.vPreviousPosition = uniforms.previousViewProjection * finalPreviousWorld * vec4f(positionUpdated, 1.0);
 #endif
 
 #include<bonesVertex>
@@ -145,7 +145,9 @@ fn main(input : VertexInputs) -> FragmentInputs {
     var worldPos: vec4f = finalWorld *  vec4f(positionUpdated, 1.0);
     vertexOutputs.vPositionW =  worldPos.xyz;
 
-#include<prePassVertex>
+#ifdef PREPASS
+    #include<prePassVertex>
+#endif
 
 #ifdef NORMAL
     var normalWorld: mat3x3f =  mat3x3f(finalWorld[0].xyz, finalWorld[1].xyz, finalWorld[2].xyz);

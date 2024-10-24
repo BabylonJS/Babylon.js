@@ -60,6 +60,7 @@ import {
 } from "./materialHelper.functions";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { ShaderLanguage } from "./shaderLanguage";
+import { MaterialHelperGeometryRendering } from "./materialHelper.geometryrendering";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -166,8 +167,12 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public ALPHABLEND = true;
 
     public PREPASS = false;
+    public PREPASS_COLOR = false;
+    public PREPASS_COLOR_INDEX = -1;
     public PREPASS_IRRADIANCE = false;
     public PREPASS_IRRADIANCE_INDEX = -1;
+    public PREPASS_ALBEDO = false;
+    public PREPASS_ALBEDO_INDEX = -1;
     public PREPASS_ALBEDO_SQRT = false;
     public PREPASS_ALBEDO_SQRT_INDEX = -1;
     public PREPASS_DEPTH = false;
@@ -959,6 +964,8 @@ export class StandardMaterial extends PushMaterial {
         // Order independant transparency
         PrepareDefinesForOIT(scene, defines, oit);
 
+        MaterialHelperGeometryRendering.PrepareDefines(engine.currentRenderPassId, mesh, defines);
+
         // Textures
         if (defines._areTexturesDirty) {
             this._eventInfo.hasRenderTargetTextures = false;
@@ -1429,6 +1436,8 @@ export class StandardMaterial extends PushMaterial {
             this._eventInfo.indexParameters = indexParameters;
             this._callbackPluginEventGeneric(MaterialPluginEvent.PrepareEffect, this._eventInfo);
 
+            MaterialHelperGeometryRendering.AddUniformsAndSamplers(uniforms, samplers);
+
             PrePassConfiguration.AddUniforms(uniforms);
             PrePassConfiguration.AddSamplers(samplers);
 
@@ -1606,6 +1615,8 @@ export class StandardMaterial extends PushMaterial {
         this._uniformBuffer.bindToEffect(effect, "Material");
 
         this.prePassConfiguration.bindForSubMesh(this._activeEffect, scene, mesh, world, this.isFrozen);
+
+        MaterialHelperGeometryRendering.Bind(scene.getEngine().currentRenderPassId, this._activeEffect, mesh, world);
 
         this._eventInfo.subMesh = subMesh;
         this._callbackPluginEventHardBindForSubMesh(this._eventInfo);

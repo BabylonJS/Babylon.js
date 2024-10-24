@@ -295,7 +295,7 @@ export class Layer {
 
         const currentEffect = this._drawWrapper.effect;
 
-        return currentEffect?.isReady() && (!this.texture || this.texture.isReady());
+        return !!currentEffect?.isReady() && (!this.texture || this.texture.isReady());
     }
 
     /**
