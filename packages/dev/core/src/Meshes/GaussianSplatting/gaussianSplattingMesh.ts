@@ -140,15 +140,41 @@ type PlyProperty = {
     offset: number;
 };
 
-// @internal
-interface PLYHeader {
+/**
+ * meta info on Splat file
+ */
+export interface PLYHeader {
+    /**
+     * number of splats
+     */
     vertexCount: number;
+    /**
+     * number of spatial chunks for compressed ply
+     */
     chunkCount: number;
+    /**
+     * length in bytes of the vertex info
+     */
     rowVertexLength: number;
+    /**
+     * length in bytes of the chunk
+     */
     rowChunkLength: number;
+    /**
+     * array listing properties per vertex
+     */
     vertexProperties: PlyProperty[];
+    /**
+     * array listing properties per chunk
+     */
     chunkProperties: PlyProperty[];
+    /**
+     * data view for parsing chunks and vertices
+     */
     dataView: DataView;
+    /**
+     * buffer for the data view
+     */
     buffer: ArrayBuffer;
 }
 /**
@@ -180,6 +206,8 @@ export class GaussianSplattingMesh extends Mesh {
     private _oldDirection = new Vector3();
     private _useRGBACovariants = false;
     private _material: Nullable<Material> = null;
+
+    private _tmpCovariances = [0, 0, 0, 0, 0, 0];
 
     private static _RowOutputLength = 3 * 4 + 3 * 4 + 4 + 4; // Vector3 position, Vector3 scale, 1 u8 quaternion, 1 color with alpha
     private static _SH_C0 = 0.28209479177387814;
@@ -418,7 +446,12 @@ export class GaussianSplattingMesh extends Mesh {
 
         return PLYValue.UNDEFINED;
     }
-    private static _GetHeader(data: ArrayBuffer): PLYHeader | null {
+    /**
+     * Parse a PLY file header and returns metas infos on splats and chunks
+     * @param data the loaded buffer
+     * @returns a PLYHeader
+     */
+    static ParseHeader(data: ArrayBuffer): PLYHeader | null {
         const ubuf = new Uint8Array(data);
         const header = new TextDecoder().decode(ubuf.slice(0, 1024 * 10));
         const headerEnd = "end_header\n";
@@ -703,7 +736,7 @@ export class GaussianSplattingMesh extends Mesh {
      * @returns the loaded splat buffer
      */
     public static ConvertPLYToSplat(data: ArrayBuffer): ArrayBuffer {
-        const header = GaussianSplattingMesh._GetHeader(data);
+        const header = GaussianSplattingMesh.ParseHeader(data);
         if (!header) {
             return data;
         }
@@ -726,7 +759,7 @@ export class GaussianSplattingMesh extends Mesh {
      */
     public static async ConvertPLYToSplatAsync(data: ArrayBuffer): Promise<ArrayBuffer> {
         return new Promise(async (resolve) => {
-            const header = GaussianSplattingMesh._GetHeader(data);
+            const header = GaussianSplattingMesh.ParseHeader(data);
             if (!header) {
                 resolve(data);
                 return;
@@ -740,7 +773,6 @@ export class GaussianSplattingMesh extends Mesh {
 
                 // todo: this number should be part of the loading options
                 if (i % 30000 === 0) {
-                    Logger.Log("time it");
                     await new Promise((resolve) => setTimeout(resolve, 1));
                 }
             }
@@ -869,6 +901,167 @@ export class GaussianSplattingMesh extends Mesh {
         };
     };
 
+    private _makeSplat(
+        index: number,
+        fBuffer: Float32Array,
+        uBuffer: Uint8Array,
+        covA: Uint16Array,
+        covB: Uint16Array,
+        colorArray: Uint8Array,
+        minimum: Vector3,
+        maximum: Vector3
+    ): void {
+        const i = index;
+        const matrixRotation = TmpVectors.Matrix[0];
+        const matrixScale = TmpVectors.Matrix[1];
+        const quaternion = TmpVectors.Quaternion[0];
+        const covBSplatSize = this._useRGBACovariants ? 4 : 2;
+
+        const x = fBuffer[8 * i + 0];
+        const y = -fBuffer[8 * i + 1];
+        const z = fBuffer[8 * i + 2];
+
+        this._splatPositions![4 * i + 0] = x;
+        this._splatPositions![4 * i + 1] = y;
+        this._splatPositions![4 * i + 2] = z;
+
+        minimum.minimizeInPlaceFromFloats(x, y, z);
+        maximum.maximizeInPlaceFromFloats(x, y, z);
+
+        quaternion.set(
+            (uBuffer[32 * i + 28 + 1] - 128) / 128,
+            (uBuffer[32 * i + 28 + 2] - 128) / 128,
+            (uBuffer[32 * i + 28 + 3] - 128) / 128,
+            -(uBuffer[32 * i + 28 + 0] - 128) / 128
+        );
+        quaternion.toRotationMatrix(matrixRotation);
+
+        Matrix.ScalingToRef(fBuffer[8 * i + 3 + 0] * 2, fBuffer[8 * i + 3 + 1] * 2, fBuffer[8 * i + 3 + 2] * 2, matrixScale);
+
+        const M = matrixRotation.multiplyToRef(matrixScale, TmpVectors.Matrix[0]).m;
+
+        const covariances = this._tmpCovariances;
+        covariances[0] = M[0] * M[0] + M[1] * M[1] + M[2] * M[2];
+        covariances[1] = M[0] * M[4] + M[1] * M[5] + M[2] * M[6];
+        covariances[2] = M[0] * M[8] + M[1] * M[9] + M[2] * M[10];
+        covariances[3] = M[4] * M[4] + M[5] * M[5] + M[6] * M[6];
+        covariances[4] = M[4] * M[8] + M[5] * M[9] + M[6] * M[10];
+        covariances[5] = M[8] * M[8] + M[9] * M[9] + M[10] * M[10];
+
+        // normalize covA, covB
+        let factor = -10000;
+        for (let covIndex = 0; covIndex < 6; covIndex++) {
+            factor = Math.max(factor, Math.abs(covariances[covIndex]));
+        }
+
+        this._splatPositions![4 * i + 3] = factor;
+        const transform = factor;
+
+        covA[i * 4 + 0] = ToHalfFloat(covariances[0] / transform);
+        covA[i * 4 + 1] = ToHalfFloat(covariances[1] / transform);
+        covA[i * 4 + 2] = ToHalfFloat(covariances[2] / transform);
+        covA[i * 4 + 3] = ToHalfFloat(covariances[3] / transform);
+        covB[i * covBSplatSize + 0] = ToHalfFloat(covariances[4] / transform);
+        covB[i * covBSplatSize + 1] = ToHalfFloat(covariances[5] / transform);
+
+        // colors
+        colorArray[i * 4 + 0] = uBuffer[32 * i + 24 + 0];
+        colorArray[i * 4 + 1] = uBuffer[32 * i + 24 + 1];
+        colorArray[i * 4 + 2] = uBuffer[32 * i + 24 + 2];
+        colorArray[i * 4 + 3] = uBuffer[32 * i + 24 + 3];
+    }
+
+    private _updateTextures(covA: Uint16Array, covB: Uint16Array, colorArray: Uint8Array): void {
+        const textureSize = this._getTextureSize(this._vertexCount);
+        // Update the textures
+        const createTextureFromData = (data: Float32Array, width: number, height: number, format: number) => {
+            return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
+        };
+
+        const createTextureFromDataU8 = (data: Uint8Array, width: number, height: number, format: number) => {
+            return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_UNSIGNED_BYTE);
+        };
+
+        const createTextureFromDataF16 = (data: Uint16Array, width: number, height: number, format: number) => {
+            return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_HALF_FLOAT);
+        };
+
+        if (this._keepInRam) {
+            this._covariancesA = covA;
+            this._covariancesB = covB;
+            this._colors = colorArray;
+        }
+        if (this._covariancesATexture) {
+            this._delayedTextureUpdate = { covA: covA, covB: covB, colors: colorArray, centers: this._splatPositions! };
+            const positions = Float32Array.from(this._splatPositions!);
+            const vertexCount = this._vertexCount;
+            this._worker!.postMessage({ positions, vertexCount }, [positions.buffer]);
+
+            this._postToWorker(true);
+        } else {
+            this._covariancesATexture = createTextureFromDataF16(covA, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+            this._covariancesBTexture = createTextureFromDataF16(
+                covB,
+                textureSize.x,
+                textureSize.y,
+                this._useRGBACovariants ? Constants.TEXTUREFORMAT_RGBA : Constants.TEXTUREFORMAT_RG
+            );
+            this._centersTexture = createTextureFromData(this._splatPositions!, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+            this._colorsTexture = createTextureFromDataU8(colorArray, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+            this._instanciateWorker();
+        }
+    }
+
+    /**
+     *
+     * @param data
+     */
+    public async updateDataAsync(data: ArrayBuffer): Promise<void> {
+        return new Promise(async (resolve) => {
+            // if a covariance texture is present, then it's not a creation but an update
+            if (!this._covariancesATexture) {
+                this._readyToDisplay = false;
+            }
+
+            // Parse the data
+            const uBuffer = new Uint8Array(data);
+            const fBuffer = new Float32Array(uBuffer.buffer);
+
+            const rowLength = 3 * 4 + 3 * 4 + 4 + 4;
+            const vertexCount = uBuffer.length / rowLength;
+            if (vertexCount != this._vertexCount) {
+                this._updateSplatIndexBuffer(vertexCount);
+            }
+            this._vertexCount = vertexCount;
+
+            const textureSize = this._getTextureSize(vertexCount);
+            const textureLength = textureSize.x * textureSize.y;
+
+            this._splatPositions = new Float32Array(4 * textureLength);
+            const covA = new Uint16Array(4 * textureLength);
+            const covB = new Uint16Array((this._useRGBACovariants ? 4 : 2) * textureLength);
+
+            const minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+            const maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+            const colorArray = new Uint8Array(textureSize.x * textureSize.y * 4);
+
+            for (let i = 0; i < vertexCount; i++) {
+                this._makeSplat(i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum);
+                // todo: this number should be part of the loading options
+                if (i % 30000 === 0) {
+                    await new Promise((resolve) => setTimeout(resolve, 1));
+                }
+            }
+
+            // Update the mesh
+            const binfo = this.getBoundingInfo();
+            binfo.reConstruct(minimum, maximum, this.getWorldMatrix());
+            this.setEnabled(true);
+            // textures
+            this._updateTextures(covA, covB, colorArray);
+            resolve();
+        });
+    }
     /**
      * @experimental
      * Update data from GS (position, orientation, color, scaling)
@@ -902,114 +1095,20 @@ export class GaussianSplattingMesh extends Mesh {
         const covA = new Uint16Array(4 * textureLength);
         const covB = new Uint16Array((this._useRGBACovariants ? 4 : 2) * textureLength);
 
-        const matrixRotation = TmpVectors.Matrix[0];
-        const matrixScale = TmpVectors.Matrix[1];
-        const quaternion = TmpVectors.Quaternion[0];
-
         const minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
         const maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+        const colorArray = new Uint8Array(textureSize.x * textureSize.y * 4);
 
-        const covariances = [0, 0, 0, 0, 0, 0];
-        const covBSplatSize = this._useRGBACovariants ? 4 : 2;
         for (let i = 0; i < vertexCount; i++) {
-            const x = fBuffer[8 * i + 0];
-            const y = -fBuffer[8 * i + 1];
-            const z = fBuffer[8 * i + 2];
-
-            this._splatPositions[4 * i + 0] = x;
-            this._splatPositions[4 * i + 1] = y;
-            this._splatPositions[4 * i + 2] = z;
-
-            minimum.minimizeInPlaceFromFloats(x, y, z);
-            maximum.maximizeInPlaceFromFloats(x, y, z);
-
-            quaternion.set(
-                (uBuffer[32 * i + 28 + 1] - 128) / 128,
-                (uBuffer[32 * i + 28 + 2] - 128) / 128,
-                (uBuffer[32 * i + 28 + 3] - 128) / 128,
-                -(uBuffer[32 * i + 28 + 0] - 128) / 128
-            );
-            quaternion.toRotationMatrix(matrixRotation);
-
-            Matrix.ScalingToRef(fBuffer[8 * i + 3 + 0] * 2, fBuffer[8 * i + 3 + 1] * 2, fBuffer[8 * i + 3 + 2] * 2, matrixScale);
-
-            const M = matrixRotation.multiplyToRef(matrixScale, TmpVectors.Matrix[0]).m;
-
-            covariances[0] = M[0] * M[0] + M[1] * M[1] + M[2] * M[2];
-            covariances[1] = M[0] * M[4] + M[1] * M[5] + M[2] * M[6];
-            covariances[2] = M[0] * M[8] + M[1] * M[9] + M[2] * M[10];
-            covariances[3] = M[4] * M[4] + M[5] * M[5] + M[6] * M[6];
-            covariances[4] = M[4] * M[8] + M[5] * M[9] + M[6] * M[10];
-            covariances[5] = M[8] * M[8] + M[9] * M[9] + M[10] * M[10];
-
-            // normalize covA, covB
-            let factor = -10000;
-            for (let covIndex = 0; covIndex < 6; covIndex++) {
-                factor = Math.max(factor, Math.abs(covariances[covIndex]));
-            }
-
-            this._splatPositions[4 * i + 3] = factor;
-            const transform = factor;
-
-            covA[i * 4 + 0] = ToHalfFloat(covariances[0] / transform);
-            covA[i * 4 + 1] = ToHalfFloat(covariances[1] / transform);
-            covA[i * 4 + 2] = ToHalfFloat(covariances[2] / transform);
-            covA[i * 4 + 3] = ToHalfFloat(covariances[3] / transform);
-            covB[i * covBSplatSize + 0] = ToHalfFloat(covariances[4] / transform);
-            covB[i * covBSplatSize + 1] = ToHalfFloat(covariances[5] / transform);
+            this._makeSplat(i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum);
         }
 
         // Update the mesh
         const binfo = this.getBoundingInfo();
         binfo.reConstruct(minimum, maximum, this.getWorldMatrix());
-
         this.setEnabled(true);
-
-        // Update the material
-        const createTextureFromData = (data: Float32Array, width: number, height: number, format: number) => {
-            return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
-        };
-
-        const createTextureFromDataU8 = (data: Uint8Array, width: number, height: number, format: number) => {
-            return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_UNSIGNED_BYTE);
-        };
-
-        const createTextureFromDataF16 = (data: Uint16Array, width: number, height: number, format: number) => {
-            return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_HALF_FLOAT);
-        };
-
-        const colorArray = new Uint8Array(textureSize.x * textureSize.y * 4);
-        for (let i = 0; i < this._vertexCount; ++i) {
-            colorArray[i * 4 + 0] = uBuffer[32 * i + 24 + 0];
-            colorArray[i * 4 + 1] = uBuffer[32 * i + 24 + 1];
-            colorArray[i * 4 + 2] = uBuffer[32 * i + 24 + 2];
-            colorArray[i * 4 + 3] = uBuffer[32 * i + 24 + 3];
-        }
-
-        if (this._keepInRam) {
-            this._covariancesA = covA;
-            this._covariancesB = covB;
-            this._colors = colorArray;
-        }
-        if (this._covariancesATexture) {
-            this._delayedTextureUpdate = { covA: covA, covB: covB, colors: colorArray, centers: this._splatPositions };
-            const positions = Float32Array.from(this._splatPositions!);
-            const vertexCount = this._vertexCount;
-            this._worker!.postMessage({ positions, vertexCount }, [positions.buffer]);
-
-            this._postToWorker(true);
-        } else {
-            this._covariancesATexture = createTextureFromDataF16(covA, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
-            this._covariancesBTexture = createTextureFromDataF16(
-                covB,
-                textureSize.x,
-                textureSize.y,
-                this._useRGBACovariants ? Constants.TEXTUREFORMAT_RGBA : Constants.TEXTUREFORMAT_RG
-            );
-            this._centersTexture = createTextureFromData(this._splatPositions, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
-            this._colorsTexture = createTextureFromDataU8(colorArray, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
-            this._instanciateWorker();
-        }
+        // textures
+        this._updateTextures(covA, covB, colorArray);
     }
 
     private _loadData(data: ArrayBuffer): void {
