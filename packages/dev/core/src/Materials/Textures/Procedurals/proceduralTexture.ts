@@ -16,7 +16,6 @@ import { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTex
 import { ProceduralTextureSceneComponent } from "./proceduralTextureSceneComponent";
 
 import type { DataBuffer } from "../../../Buffers/dataBuffer";
-import { RegisterClass } from "../../../Misc/typeStore";
 import type { NodeMaterial } from "../../Node/nodeMaterial";
 import type { TextureSize } from "../../../Materials/Textures/textureCreationOptions";
 import { EngineStore } from "../../../Engines/engineStore";
@@ -849,5 +848,3 @@ export class ProceduralTexture extends Texture {
         super.dispose();
     }
 }
-
-RegisterClass("BABYLON.ProceduralTexture", ProceduralTexture);

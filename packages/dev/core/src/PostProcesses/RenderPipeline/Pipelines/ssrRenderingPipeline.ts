@@ -8,7 +8,6 @@ import { PostProcess } from "../../postProcess";
 import { PostProcessRenderPipeline } from "../postProcessRenderPipeline";
 import { PostProcessRenderEffect } from "../postProcessRenderEffect";
 import type { Scene } from "../../../scene";
-import { RegisterClass } from "../../../Misc/typeStore";
 import { ScreenSpaceReflections2Configuration } from "../../../Rendering/screenSpaceReflections2Configuration";
 import type { PrePassRenderer } from "../../../Rendering/prePassRenderer";
 import { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRenderer";
@@ -1309,5 +1308,3 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         return SerializationHelper.Parse(() => new SSRRenderingPipeline(source._name, scene, source._ratio), source, scene, rootUrl);
     }
 }
-
-RegisterClass("BABYLON.SSRRenderingPipeline", SSRRenderingPipeline);

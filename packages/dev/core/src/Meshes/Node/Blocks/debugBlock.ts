@@ -1,5 +1,4 @@
 import { Vector2ToFixed, Vector3ToFixed, Vector4ToFixed } from "../../../Maths/math.vector.functions";
-import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
@@ -101,5 +100,3 @@ export class DebugBlock extends NodeGeometryBlock {
         }
     }
 }
-
-RegisterClass("BABYLON.DebugBlock", DebugBlock);

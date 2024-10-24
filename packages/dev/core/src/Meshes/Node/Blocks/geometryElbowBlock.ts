@@ -1,4 +1,3 @@
-import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
@@ -60,5 +59,3 @@ export class GeometryElbowBlock extends NodeGeometryBlock {
         };
     }
 }
-
-RegisterClass("BABYLON.GeometryElbowBlock", GeometryElbowBlock);

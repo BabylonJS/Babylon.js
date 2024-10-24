@@ -3,7 +3,6 @@ import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialB
 import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import type { Scene } from "../../../../scene";
 import { Logger } from "../../../../Misc/logger";
@@ -189,5 +188,3 @@ export class HeightToNormalBlock extends NodeMaterialBlock {
         this.automaticNormalizationTangent = serializationObject.automaticNormalizationTangent;
     }
 }
-
-RegisterClass("BABYLON.HeightToNormalBlock", HeightToNormalBlock);

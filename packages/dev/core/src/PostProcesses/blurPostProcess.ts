@@ -7,7 +7,6 @@ import type { Camera } from "../Cameras/camera";
 import type { Effect } from "../Materials/effect";
 import { Texture } from "../Materials/Textures/texture";
 import { Constants } from "../Engines/constants";
-import { RegisterClass } from "../Misc/typeStore";
 import { serialize, serializeAsVector2 } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 
@@ -353,5 +352,3 @@ export class BlurPostProcess extends PostProcess {
         );
     }
 }
-
-RegisterClass("BABYLON.BlurPostProcess", BlurPostProcess);

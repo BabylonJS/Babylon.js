@@ -7,7 +7,6 @@ import type { PostProcess, PostProcessOptions } from "./postProcess";
 import { BlurPostProcess } from "./blurPostProcess";
 import type { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
-import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 
@@ -92,5 +91,3 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
         });
     }
 }
-
-RegisterClass("BABYLON.DepthOfFieldBlurPostProcess", DepthOfFieldBlurPostProcess);

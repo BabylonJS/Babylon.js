@@ -5,7 +5,6 @@ import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockCon
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
-import { RegisterClass } from "../../../../Misc/typeStore";
 import type { NodeMaterial } from "../../nodeMaterial";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { Constants } from "../../../../Engines/constants";
@@ -284,5 +283,3 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
         }
     }
 }
-
-RegisterClass("BABYLON.PrePassTextureBlock", PrePassTextureBlock);

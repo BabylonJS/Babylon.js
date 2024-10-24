@@ -10,7 +10,6 @@ import type { Material } from "../material";
 import { MaterialDefines } from "../materialDefines";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { BaseTexture } from "../Textures/baseTexture";
-import { RegisterClass } from "../../Misc/typeStore";
 import type { GreasedLineMaterialOptions, IGreasedLineMaterial } from "./greasedLineMaterialInterfaces";
 import { GreasedLineMeshColorDistributionType, GreasedLineMeshColorMode } from "./greasedLineMaterialInterfaces";
 import { GreasedLineMaterialDefaults } from "./greasedLineMaterialDefaults";
@@ -731,5 +730,3 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
         dest.markAllDefinesAsDirty();
     }
 }
-
-RegisterClass(`BABYLON.${GreasedLinePluginMaterial.GREASED_LINE_MATERIAL_NAME}`, GreasedLinePluginMaterial);

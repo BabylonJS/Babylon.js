@@ -3,7 +3,6 @@ import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBloc
 import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
-import { RegisterClass } from "../../../Misc/typeStore";
 import type { Scene } from "../../../scene";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
 import { ShaderLanguage } from "../../../Materials/shaderLanguage";
@@ -302,5 +301,3 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
         this.manhattanDistance = serializationObject.manhattanDistance;
     }
 }
-
-RegisterClass("BABYLON.WorleyNoise3DBlock", WorleyNoise3DBlock);

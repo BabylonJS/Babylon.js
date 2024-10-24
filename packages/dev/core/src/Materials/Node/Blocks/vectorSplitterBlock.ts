@@ -3,7 +3,6 @@ import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBloc
 import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
-import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Block used to expand a Vector3/4 into 4 outputs (one for each component)
@@ -174,5 +173,3 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
         return this;
     }
 }
-
-RegisterClass("BABYLON.VectorSplitterBlock", VectorSplitterBlock);

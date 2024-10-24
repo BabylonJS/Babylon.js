@@ -15,7 +15,6 @@ import "../Animations/animatable";
 import "../Rendering/geometryBufferRendererSceneComponent";
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
-import { RegisterClass } from "../Misc/typeStore";
 
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Scene } from "../scene";
@@ -364,5 +363,3 @@ export class MotionBlurPostProcess extends PostProcess {
         );
     }
 }
-
-RegisterClass("BABYLON.MotionBlurPostProcess", MotionBlurPostProcess);

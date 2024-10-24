@@ -9,7 +9,6 @@ import { VertexBuffer } from "../Buffers/buffer";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import type { Effect, IEffectCreationOptions, IShaderPath } from "./effect";
-import { RegisterClass } from "../Misc/typeStore";
 import { Color3, Color4 } from "../Maths/math.color";
 import { EffectFallbacks } from "./effectFallbacks";
 import { WebRequest } from "../Misc/webRequest";
@@ -1867,5 +1866,3 @@ export class ShaderMaterial extends PushMaterial {
      */
     public static CreateFromSnippetAsync = ShaderMaterial.ParseFromSnippetAsync;
 }
-
-RegisterClass("BABYLON.ShaderMaterial", ShaderMaterial);

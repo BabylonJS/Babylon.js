@@ -1,5 +1,4 @@
 import { Action } from "./action";
-import { RegisterClass } from "../Misc/typeStore";
 
 import type { ActionManager } from "./actionManager";
 
@@ -287,7 +286,3 @@ export class StateCondition extends Condition {
         });
     }
 }
-
-RegisterClass("BABYLON.ValueCondition", ValueCondition);
-RegisterClass("BABYLON.PredicateCondition", PredicateCondition);
-RegisterClass("BABYLON.StateCondition", StateCondition);

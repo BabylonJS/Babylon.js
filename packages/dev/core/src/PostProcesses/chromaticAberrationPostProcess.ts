@@ -7,7 +7,6 @@ import type { Camera } from "../Cameras/camera";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import { Constants } from "../Engines/constants";
 
-import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 
@@ -148,5 +147,3 @@ export class ChromaticAberrationPostProcess extends PostProcess {
         );
     }
 }
-
-RegisterClass("BABYLON.ChromaticAberrationPostProcess", ChromaticAberrationPostProcess);
