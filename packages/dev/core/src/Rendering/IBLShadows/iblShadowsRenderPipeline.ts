@@ -698,7 +698,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this.voxelShadowOpacity = options.voxelShadowOpacity || 1.0;
         this.shadowRenderSizeFactor = options.shadowRenderSizeFactor || 1.0;
         this.ssShadowOpacity = options.ssShadowsEnabled === undefined || options.ssShadowsEnabled ? 1.0 : 0.0;
-        this.ssShadowDistanceScale = options.ssShadowDistanceScale || 1.0;
+        this.ssShadowDistanceScale = options.ssShadowDistanceScale || 1.25;
         this.ssShadowSamples = options.ssShadowSampleCount || 16;
         this.ssShadowStride = options.ssShadowStride || 8;
         this.ssShadowThicknessScale = options.ssShadowThicknessScale || 1.0;

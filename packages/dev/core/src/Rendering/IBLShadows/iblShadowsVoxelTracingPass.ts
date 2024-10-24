@@ -126,7 +126,7 @@ export class _IblShadowsVoxelTracingPass {
         this._voxelNormalBias = value;
     }
 
-    private _voxelDirectionBias: number = 1.0;
+    private _voxelDirectionBias: number = 1.75;
     /**
      * The bias to apply to the voxel sampling in the direction of the light.
      */
