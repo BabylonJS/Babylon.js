@@ -788,7 +788,7 @@ export class GaussianSplattingMesh extends Mesh {
      */
 
     public loadDataAsync(data: ArrayBuffer): Promise<void> {
-        return Promise.resolve(this._loadData(data));
+        return this.updateDataAsync(data);
     }
 
     /**
@@ -798,8 +798,8 @@ export class GaussianSplattingMesh extends Mesh {
      * @deprecated Please use SceneLoader.ImportMeshAsync instead
      */
     public loadFileAsync(url: string): Promise<void> {
-        return Tools.LoadFileAsync(url, true).then((data) => {
-            this._loadData(GaussianSplattingMesh.ConvertPLYToSplat(data));
+        return Tools.LoadFileAsync(url, true).then(async (data) => {
+            await this.updateData(GaussianSplattingMesh.ConvertPLYToSplat(data));
         });
     }
 
@@ -1109,13 +1109,6 @@ export class GaussianSplattingMesh extends Mesh {
         this.setEnabled(true);
         // textures
         this._updateTextures(covA, covB, colorArray);
-    }
-
-    private _loadData(data: ArrayBuffer): void {
-        if (!data.byteLength) {
-            return;
-        }
-        this.updateData(data);
     }
 
     // in case size is different
