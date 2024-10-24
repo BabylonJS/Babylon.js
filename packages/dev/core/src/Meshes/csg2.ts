@@ -315,15 +315,15 @@ export class CSG2 implements IDisposable {
         return returnValue;
     }
 
-    private static _Construct(data: IVertexDataLike, worldMatrix: Nullable<Matrix>, revertIndices: boolean, runIndex?: Uint32Array, runOriginalID?: Uint32Array) {
+    private static _Construct(data: IVertexDataLike, worldMatrix: Nullable<Matrix>, runIndex?: Uint32Array, runOriginalID?: Uint32Array) {
         // Create the MeshGL for I/O with Manifold library.
         const triVerts = new Uint32Array(data.indices!.length);
 
         // Revert order
         for (let i = 0; i < data.indices!.length; i += 3) {
-            triVerts[i] = data.indices![i + (revertIndices ? 2 : 0)];
+            triVerts[i] = data.indices![i + 2];
             triVerts[i + 1] = data.indices![i + 1];
-            triVerts[i + 2] = data.indices![i + (revertIndices ? 0 : 2)];
+            triVerts[i + 2] = data.indices![i + 0];
         }
 
         const tempVector3 = new Vector3();
@@ -390,7 +390,7 @@ export class CSG2 implements IDisposable {
             throw new Error("The vertexData must at least have positions and indices");
         }
 
-        return this._Construct(vertexData, null, false);
+        return this._Construct(vertexData, null);
     }
 
     /**
@@ -441,7 +441,7 @@ export class CSG2 implements IDisposable {
             uvs5: mesh.getVerticesData(VertexBuffer.UV5Kind),
             uvs6: mesh.getVerticesData(VertexBuffer.UV6Kind),
         };
-        return this._Construct(data, ignoreWorldMatrix ? null : worldMatrix, worldMatrix.determinant() >= 0, runIndex, runOriginalID);
+        return this._Construct(data, ignoreWorldMatrix ? null : worldMatrix, runIndex, runOriginalID);
     }
 }
 
