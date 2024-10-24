@@ -1,15 +1,15 @@
 import type { Nullable } from "../../../types";
 import type { AudioBusOptions } from "../abstractAudioBus";
-import type { AbstractAudioDevice } from "../abstractAudioDevice";
 import { AbstractAudioEngine } from "../abstractAudioEngine";
 import type { AbstractAudioNode } from "../abstractAudioNode";
 import type { AbstractAudioPositioner, AudioPositionerOptions } from "../abstractAudioPositioner";
 import type { AbstractAudioSender } from "../abstractAudioSender";
 import type { AbstractMainAudioBus } from "../abstractMainAudioBus";
+import type { AbstractMainAudioOutput } from "../abstractMainAudioOutput";
 import type { AbstractStaticSound, StaticSoundOptions } from "../abstractStaticSound";
 import type { AbstractStreamingSound, StreamingSoundOptions } from "../abstractStreamingSound";
-import { WebAudioDevice } from "./webAudioDevice";
 import { WebAudioMainBus } from "./webAudioMainBus";
+import { WebAudioMainOutput } from "./webAudioMainOutput";
 import { WebAudioPositioner } from "./webAudioPositioner";
 import { WebAudioSender } from "./webAudioSender";
 import { WebAudioStaticSound, WebAudioStaticSoundInstance } from "./webAudioStaticSound";
@@ -21,16 +21,6 @@ import { WebAudioStreamingSound, WebAudioStreamingSoundInstance } from "./webAud
 export interface WebAudioBusOptions extends AudioBusOptions {}
 
 /**
- * Options for creating a new WebAudioDevice.
- */
-export interface WebAudioDeviceOptions {
-    /**
-     * The audio context to be used by the device.
-     */
-    audioContext?: AudioContext;
-}
-
-/**
  * Options for creating a new WebAudioEngine.
  */
 export interface WebAudioEngineOptions {
@@ -38,14 +28,6 @@ export interface WebAudioEngineOptions {
      * The audio context to be used by the engine.
      */
     audioContext?: AudioContext;
-    /**
-     * Whether to disable the default device.
-     */
-    noDefaultDevice?: boolean;
-    /**
-     * Whether to disable the default main bus.
-     */
-    noDefaultMainBus?: boolean;
 }
 
 /**
@@ -87,19 +69,7 @@ export async function CreateAudioEngine(options: Nullable<WebAudioEngineOptions>
 /**
  * Abstract class for WebAudioEngine.
  */
-export class AbstractWebAudioEngine extends AbstractAudioEngine {
-    /**
-     * Creates a new audio device.
-     * @param name - The name of the device.
-     * @param options - The options for creating the device.
-     * @returns A promise that resolves with the created device.
-     */
-    public async createDevice(name: string, options: Nullable<WebAudioDeviceOptions> = null): Promise<AbstractAudioDevice> {
-        const device = new WebAudioDevice(name, this, options);
-        this._addDevice(device);
-        return device;
-    }
-
+export abstract class AbstractWebAudioEngine extends AbstractAudioEngine {
     /**
      * Creates a new main audio bus.
      * @param name - The name of the main bus.
@@ -110,6 +80,16 @@ export class AbstractWebAudioEngine extends AbstractAudioEngine {
         await bus.init();
         this._addMainBus(bus);
         return bus;
+    }
+
+    /**
+     * Creates a new main audio output.
+     * @returns A promise that resolves with the created audio output.
+     */
+    public async createMainOutput(): Promise<AbstractMainAudioOutput> {
+        const mainAudioOutput = new WebAudioMainOutput(this);
+        await mainAudioOutput.init();
+        return mainAudioOutput;
     }
 
     /**
@@ -184,20 +164,47 @@ export class AbstractWebAudioEngine extends AbstractAudioEngine {
 
 /** @internal */
 export class WebAudioEngine extends AbstractWebAudioEngine {
+    private _audioContext: AudioContext;
+    private _mainOutput: Nullable<WebAudioMainOutput> = null;
+
     /** @internal */
-    public override get defaultDevice(): WebAudioDevice {
-        return super.defaultDevice as WebAudioDevice;
+    public get mainOutput(): Nullable<WebAudioMainOutput> {
+        return this._mainOutput;
+    }
+
+    private async _initAudioContext(): Promise<void> {
+        if (this._audioContext === undefined) {
+            this._audioContext = new AudioContext();
+        }
+
+        await this._audioContext.resume();
+        this._resolveAudioContext(this._audioContext);
+
+        document.removeEventListener("click", this._initAudioContext);
+    }
+
+    private _resolveAudioContext: (audioContext: AudioContext) => void;
+
+    /** @internal */
+    public audioContext = new Promise<AudioContext>((resolve) => {
+        this._resolveAudioContext = resolve;
+        document.addEventListener("click", this._initAudioContext.bind(this), { once: true });
+    });
+
+    /** @internal */
+    public get webAudioInputNode(): AudioNode {
+        return this._audioContext.destination;
     }
 
     /** @internal */
     public async init(options: Nullable<WebAudioEngineOptions> = null): Promise<void> {
-        if (!options?.noDefaultDevice) {
-            await this.createDevice("default", { audioContext: options?.audioContext });
-
-            if (!options?.noDefaultMainBus) {
-                await this.createMainBus("default");
-                this.defaultMainBus.device = this.defaultDevice;
-            }
+        if (options?.audioContext) {
+            this._audioContext = options.audioContext;
+            this._initAudioContext();
         }
+
+        this._mainOutput = (await this.createMainOutput()) as WebAudioMainOutput;
+
+        await this.createMainBus("default");
     }
 }

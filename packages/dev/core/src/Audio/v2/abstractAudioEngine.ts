@@ -1,10 +1,10 @@
 import type { Nullable } from "../../types";
-import type { AbstractAudioDevice, AudioDeviceOptions } from "./abstractAudioDevice";
 import type { AbstractAudioNode } from "./abstractAudioNode";
 import { AbstractAudioNodeParent } from "./abstractAudioNodeParent";
 import type { AbstractAudioPositioner } from "./abstractAudioPositioner";
 import type { AbstractAudioSender } from "./abstractAudioSender";
 import type { AbstractMainAudioBus } from "./abstractMainAudioBus";
+import type { AbstractMainAudioOutput } from "./abstractMainAudioOutput";
 import type { AbstractSound } from "./abstractSound";
 import type { AbstractSoundInstance } from "./abstractSoundInstance";
 import type { AbstractStaticSound, StaticSoundOptions } from "./abstractStaticSound";
@@ -21,9 +21,6 @@ export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
     // Owns all AbstractSound objects.
 
     // Not owned, but all items should be in parent's `children` container, too, which is owned.
-    private readonly _devices = new Set<AbstractAudioDevice>();
-
-    // Not owned, but all items should be in parent's `children` container, too, which is owned.
     private readonly _mainBuses = new Set<AbstractMainAudioBus>();
 
     // Owned
@@ -37,15 +34,19 @@ export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
      */
     public readonly listeners = new Set<SpatialAudioListener>(); // Owned
 
-    public get defaultDevice() {
-        const [device] = this._devices;
-        return device;
-    }
+    /**
+     * The main output node.
+     */
+    public abstract get mainOutput(): Nullable<AbstractAudioNode>;
 
     /**
      * The default main bus.
      */
-    public get defaultMainBus(): AbstractMainAudioBus {
+    public get defaultMainBus(): Nullable<AbstractMainAudioBus> {
+        if (this._mainBuses.size === 0) {
+            return null;
+        }
+
         const [bus] = this._mainBuses;
         return bus;
     }
@@ -71,13 +72,6 @@ export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
         this._sounds.clear();
     }
 
-    protected _addDevice(device: AbstractAudioDevice): void {
-        this._devices.add(device);
-        device.onDisposeObservable.addOnce(() => {
-            this._devices.delete(device);
-        });
-    }
-
     protected _addMainBus(mainBus: AbstractMainAudioBus): void {
         this._mainBuses.add(mainBus);
         mainBus.onDisposeObservable.addOnce(() => {
@@ -99,8 +93,8 @@ export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
         });
     }
 
-    public abstract createDevice(name: string, options: Nullable<AudioDeviceOptions>): Promise<AbstractAudioDevice>;
     public abstract createMainBus(name: string): Promise<AbstractMainAudioBus>;
+    public abstract createMainOutput(): Promise<AbstractMainAudioOutput>;
     public abstract createPositioner(parent: AbstractAudioNode): Promise<AbstractAudioPositioner>;
     public abstract createSender(parent: AbstractAudioNode): Promise<AbstractAudioSender>;
     public abstract createSound(name: string, options: Nullable<StaticSoundOptions>): Promise<AbstractStaticSound>;
