@@ -15,6 +15,7 @@ import "core/Meshes/thinInstanceMesh";
 import type { ThinEngine } from "core/Engines/thinEngine";
 import { ToHalfFloat } from "core/Misc/textureTools";
 import type { Material } from "core/Materials/material";
+import { Scalar } from "core/Maths/math.scalar";
 
 interface DelayedTextureUpdate {
     covA: Uint16Array;
@@ -207,11 +208,17 @@ export class GaussianSplattingMesh extends Mesh {
         const headerEnd = "end_header\n";
         const headerEndIndex = header.indexOf(headerEnd);
         if (headerEndIndex < 0 || !header) {
+            // standard splat
             return data;
         }
         const vertexCount = parseInt(/element vertex (\d+)\n/.exec(header)![1]);
-
-        let rowOffset = 0;
+        const chunkElement = /element chunk (\d+)\n/.exec(header);
+        let chunkCount = 0;
+        if (chunkElement) {
+            chunkCount = parseInt(chunkElement[1]);
+        }
+        let rowVertexOffset = 0;
+        let rowChunkOffset = 0;
         const offsets: Record<string, number> = {
             double: 8,
             int: 4,
@@ -220,6 +227,7 @@ export class GaussianSplattingMesh extends Mesh {
             short: 2,
             ushort: 2,
             uchar: 1,
+            list: 0,
         };
 
         type PlyProperty = {
@@ -227,55 +235,223 @@ export class GaussianSplattingMesh extends Mesh {
             type: string;
             offset: number;
         };
-        const properties: PlyProperty[] = [];
-        const filtered = header
-            .slice(0, headerEndIndex)
-            .split("\n")
-            .filter((k) => k.startsWith("property "));
+
+        const enum ElementMode {
+            Vertex = 0,
+            Chunk = 1,
+        }
+        let chunkMode = ElementMode.Chunk;
+        const vertexProperties: PlyProperty[] = [];
+        const chunkProperties: PlyProperty[] = [];
+        const filtered = header.slice(0, headerEndIndex).split("\n");
         for (const prop of filtered) {
-            const [, type, name] = prop.split(" ");
-            properties.push({ name, type, offset: rowOffset });
-            if (offsets[type]) {
-                rowOffset += offsets[type];
-            } else {
-                Logger.Error(`Unsupported property type: ${type}. Are you sure it's a valid Gaussian Splatting file?`);
-                return new ArrayBuffer(0);
+            if (prop.startsWith("property ")) {
+                const [, type, name] = prop.split(" ");
+
+                if (chunkMode == ElementMode.Chunk) {
+                    chunkProperties.push({ name, type, offset: rowChunkOffset });
+                    rowChunkOffset += offsets[type];
+                } else if (chunkMode == ElementMode.Vertex) {
+                    vertexProperties.push({ name, type, offset: rowVertexOffset });
+                    rowVertexOffset += offsets[type];
+                }
+
+                if (!offsets[type]) {
+                    Logger.Warn(`Unsupported property type: ${type}.`);
+                }
+            } else if (prop.startsWith("element ")) {
+                const [, type] = prop.split(" ");
+                if (type == "chunk") {
+                    chunkMode = ElementMode.Chunk;
+                } else if (type == "vertex") {
+                    chunkMode = ElementMode.Vertex;
+                }
             }
         }
 
-        const rowLength = 3 * 4 + 3 * 4 + 4 + 4;
+        const rowVertexLength = rowVertexOffset;
+        const rowChunkLength = rowChunkOffset;
+
+        const rowOutputLength = 3 * 4 + 3 * 4 + 4 + 4; // Vector3 position, Vector3 scale, 1 u8 quaternion, 1 color with alpha
         const SH_C0 = 0.28209479177387814;
+        let offset = 0;
 
         const dataView = new DataView(data, headerEndIndex + headerEnd.length);
-        const buffer = new ArrayBuffer(rowLength * vertexCount);
+        const buffer = new ArrayBuffer(rowOutputLength * vertexCount);
         const q = new Quaternion();
+        const temp3 = TmpVectors.Vector3[0];
+
+        const unpackUnorm = (value: number, bits: number) => {
+            const t = (1 << bits) - 1;
+            return (value & t) / t;
+        };
+
+        const unpack111011 = (value: number, result: Vector3) => {
+            result.x = unpackUnorm(value >>> 21, 11);
+            result.y = unpackUnorm(value >>> 11, 10);
+            result.z = unpackUnorm(value, 11);
+        };
+
+        const unpack8888 = (value: number, result: Uint8ClampedArray) => {
+            result[0] = unpackUnorm(value >>> 24, 8) * 255;
+            result[1] = unpackUnorm(value >>> 16, 8) * 255;
+            result[2] = unpackUnorm(value >>> 8, 8) * 255;
+            result[3] = unpackUnorm(value, 8) * 255;
+        };
+
+        // unpack quaternion with 2,10,10,10 format (largest element, 3x10bit element)
+        const unpackRot = (value: number, result: Quaternion) => {
+            const norm = 1.0 / (Math.sqrt(2) * 0.5);
+            const a = (unpackUnorm(value >>> 20, 10) - 0.5) * norm;
+            const b = (unpackUnorm(value >>> 10, 10) - 0.5) * norm;
+            const c = (unpackUnorm(value, 10) - 0.5) * norm;
+            const m = Math.sqrt(1.0 - (a * a + b * b + c * c));
+
+            switch (value >>> 30) {
+                case 0:
+                    result.set(m, a, b, c);
+                    break;
+                case 1:
+                    result.set(a, m, b, c);
+                    break;
+                case 2:
+                    result.set(a, b, m, c);
+                    break;
+                case 3:
+                    result.set(a, b, c, m);
+                    break;
+            }
+        };
+
+        interface CompressedPLYChunk {
+            min: Vector3;
+            max: Vector3;
+            minScale: Vector3;
+            maxScale: Vector3;
+        }
+        const compressedChunks = new Array<CompressedPLYChunk>(chunkCount);
+        for (let i = 0; i < chunkCount; i++) {
+            const currentChunk = { min: new Vector3(), max: new Vector3(), minScale: new Vector3(), maxScale: new Vector3() };
+            compressedChunks[i] = currentChunk;
+            for (let propertyIndex = 0; propertyIndex < chunkProperties.length; propertyIndex++) {
+                const property = chunkProperties[propertyIndex];
+                let value;
+                switch (property.type) {
+                    case "float":
+                        value = dataView.getFloat32(property.offset + offset, true);
+                        break;
+                    default:
+                        continue;
+                }
+
+                switch (property.name) {
+                    case "min_x":
+                        currentChunk.min.x = value;
+                        break;
+                    case "min_y":
+                        currentChunk.min.y = value;
+                        break;
+                    case "min_z":
+                        currentChunk.min.z = value;
+                        break;
+                    case "max_x":
+                        currentChunk.max.x = value;
+                        break;
+                    case "max_y":
+                        currentChunk.max.y = value;
+                        break;
+                    case "max_z":
+                        currentChunk.max.z = value;
+                        break;
+                    case "min_scale_x":
+                        currentChunk.minScale.x = value;
+                        break;
+                    case "min_scale_y":
+                        currentChunk.minScale.y = value;
+                        break;
+                    case "min_scale_z":
+                        currentChunk.minScale.z = value;
+                        break;
+                    case "max_scale_x":
+                        currentChunk.maxScale.x = value;
+                        break;
+                    case "max_scale_y":
+                        currentChunk.maxScale.y = value;
+                        break;
+                    case "max_scale_z":
+                        currentChunk.maxScale.z = value;
+                        break;
+                }
+            }
+            offset += rowChunkLength;
+        }
 
         for (let i = 0; i < vertexCount; i++) {
-            const position = new Float32Array(buffer, i * rowLength, 3);
-            const scale = new Float32Array(buffer, i * rowLength + 12, 3);
-            const rgba = new Uint8ClampedArray(buffer, i * rowLength + 24, 4);
-            const rot = new Uint8ClampedArray(buffer, i * rowLength + 28, 4);
-
+            const position = new Float32Array(buffer, i * rowOutputLength, 3);
+            const scale = new Float32Array(buffer, i * rowOutputLength + 12, 3);
+            const rgba = new Uint8ClampedArray(buffer, i * rowOutputLength + 24, 4);
+            const rot = new Uint8ClampedArray(buffer, i * rowOutputLength + 28, 4);
+            const chunkIndex = i >> 8;
             let r0: number = 255;
             let r1: number = 0;
             let r2: number = 0;
             let r3: number = 0;
 
-            for (let propertyIndex = 0; propertyIndex < properties.length; propertyIndex++) {
-                const property = properties[propertyIndex];
+            for (let propertyIndex = 0; propertyIndex < vertexProperties.length; propertyIndex++) {
+                const property = vertexProperties[propertyIndex];
                 let value;
                 switch (property.type) {
                     case "float":
-                        value = dataView.getFloat32(property.offset + i * rowOffset, true);
+                        value = dataView.getFloat32(offset + property.offset, true);
                         break;
                     case "int":
-                        value = dataView.getInt32(property.offset + i * rowOffset, true);
+                        value = dataView.getInt32(offset + property.offset, true);
+                        break;
+                    case "uint":
+                        value = dataView.getUint32(offset + property.offset, true);
+                        break;
+                    case "double":
+                        value = dataView.getFloat64(offset + property.offset, true);
+                        break;
+                    case "uchar":
+                        value = dataView.getUint8(offset + property.offset);
                         break;
                     default:
-                        throw new Error(`Unsupported property type: ${property.type}`);
+                        //throw new Error(`Unsupported property type: ${property.type}`);
+                        continue;
                 }
 
                 switch (property.name) {
+                    case "packed_position":
+                        {
+                            const compressedChunk = compressedChunks[chunkIndex];
+                            unpack111011(value, temp3);
+                            position[0] = Scalar.Lerp(compressedChunk.min.x, compressedChunk.max.x, temp3.x);
+                            position[1] = -Scalar.Lerp(compressedChunk.min.y, compressedChunk.max.y, temp3.y);
+                            position[2] = Scalar.Lerp(compressedChunk.min.z, compressedChunk.max.z, temp3.z);
+                        }
+                        break;
+                    case "packed_rotation":
+                        {
+                            unpackRot(value, q);
+                            r0 = q.w;
+                            r1 = q.z;
+                            r2 = q.y;
+                            r3 = q.x;
+                        }
+                        break;
+                    case "packed_scale":
+                        {
+                            const compressedChunk = compressedChunks[chunkIndex];
+                            unpack111011(value, temp3);
+                            scale[0] = Math.exp(Scalar.Lerp(compressedChunk.minScale.x, compressedChunk.maxScale.x, temp3.x));
+                            scale[1] = Math.exp(Scalar.Lerp(compressedChunk.minScale.y, compressedChunk.maxScale.y, temp3.y));
+                            scale[2] = Math.exp(Scalar.Lerp(compressedChunk.minScale.z, compressedChunk.maxScale.z, temp3.z));
+                        }
+                        break;
+                    case "packed_color":
+                        unpack8888(value, rgba);
+                        break;
                     case "x":
                         position[0] = value;
                         break;
@@ -294,12 +470,15 @@ export class GaussianSplattingMesh extends Mesh {
                     case "scale_2":
                         scale[2] = Math.exp(value);
                         break;
+                    case "diffuse_red":
                     case "red":
                         rgba[0] = value;
                         break;
+                    case "diffuse_green":
                     case "green":
                         rgba[1] = value;
                         break;
+                    case "diffuse_blue":
                     case "blue":
                         rgba[2] = value;
                         break;
@@ -339,6 +518,7 @@ export class GaussianSplattingMesh extends Mesh {
             rot[1] = q.x * 128 + 128;
             rot[2] = q.y * 128 + 128;
             rot[3] = q.z * 128 + 128;
+            offset += rowVertexLength;
         }
 
         return buffer;
