@@ -143,7 +143,6 @@ export class FrameGraphBloomTask extends FrameGraphTask {
         const sourceTextureCreationOptions = this._frameGraph.getTextureCreationOptions(this.sourceTexture, true);
         sourceTextureCreationOptions.options.generateDepthBuffer = false;
         sourceTextureCreationOptions.options.generateStencilBuffer = false;
-        sourceTextureCreationOptions.options.samples = 1;
 
         this._frameGraph.resolveDanglingHandle(this.outputTexture, this.destinationTexture, this._merge.name, sourceTextureCreationOptions);
 
