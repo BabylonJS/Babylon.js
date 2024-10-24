@@ -119,7 +119,7 @@ export class CSG2 implements IDisposable {
 
     private _process(operation: "difference" | "intersection" | "union", csg: CSG2) {
         if (this.numProp !== csg.numProp) {
-            throw new Error("CSG must have the same number of properties");
+            throw new Error("CSG must be used with geometries having the same number of properties");
         }
         return new CSG2(Manifold[operation](this._manifold, csg._manifold), this.numProp, this._vertexStructure);
     }
@@ -180,7 +180,7 @@ export class CSG2 implements IDisposable {
         for (let i = 0; i < manifoldMesh.triVerts.length; i += 3) {
             vertexData.indices[i] = manifoldMesh.triVerts[i + 2];
             vertexData.indices[i + 1] = manifoldMesh.triVerts[i + 1];
-            vertexData.indices[i + 2] = manifoldMesh.triVerts[i];
+            vertexData.indices[i + 2] = manifoldMesh.triVerts[i + 0];
         }
 
         const vertexCount = manifoldMesh.vertProperties.length / manifoldMesh.numProp;
@@ -301,22 +301,29 @@ export class CSG2 implements IDisposable {
         const manifoldMesh = new ManifoldMesh({ numProp: numProp, vertProperties, triVerts, runIndex, runOriginalID });
         manifoldMesh.merge();
 
+        let returnValue: CSG2;
         try {
-            return new CSG2(new Manifold(manifoldMesh), numProp, structure);
+            returnValue = new CSG2(new Manifold(manifoldMesh), numProp, structure);
         } catch (e) {
             throw new Error("Error while creating the CSG: " + e.message);
         }
+
+        if (returnValue._manifold.genus() < 0) {
+            throw new Error("Incorrect volume detected. Make sure you are not using a double sided geometry");
+        }
+
+        return returnValue;
     }
 
-    private static _Construct(data: IVertexDataLike, worldMatrix: Nullable<Matrix>, runIndex?: Uint32Array, runOriginalID?: Uint32Array) {
+    private static _Construct(data: IVertexDataLike, worldMatrix: Nullable<Matrix>, revertIndices: boolean, runIndex?: Uint32Array, runOriginalID?: Uint32Array) {
         // Create the MeshGL for I/O with Manifold library.
         const triVerts = new Uint32Array(data.indices!.length);
 
         // Revert order
         for (let i = 0; i < data.indices!.length; i += 3) {
-            triVerts[i] = data.indices![i + 2];
+            triVerts[i] = data.indices![i + (revertIndices ? 2 : 0)];
             triVerts[i + 1] = data.indices![i + 1];
-            triVerts[i + 2] = data.indices![i];
+            triVerts[i + 2] = data.indices![i + (revertIndices ? 0 : 2)];
         }
 
         const tempVector3 = new Vector3();
@@ -383,7 +390,7 @@ export class CSG2 implements IDisposable {
             throw new Error("The vertexData must at least have positions and indices");
         }
 
-        return this._Construct(vertexData, null);
+        return this._Construct(vertexData, null, false);
     }
 
     /**
@@ -434,7 +441,7 @@ export class CSG2 implements IDisposable {
             uvs5: mesh.getVerticesData(VertexBuffer.UV5Kind),
             uvs6: mesh.getVerticesData(VertexBuffer.UV6Kind),
         };
-        return this._Construct(data, ignoreWorldMatrix ? null : worldMatrix, runIndex, runOriginalID);
+        return this._Construct(data, ignoreWorldMatrix ? null : worldMatrix, worldMatrix.determinant() >= 0, runIndex, runOriginalID);
     }
 }
 
