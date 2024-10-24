@@ -24,7 +24,7 @@ import { Color3 } from "core/Maths/math.color";
 import { WebGPUEngine } from "core/Engines/webgpuEngine";
 import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
 
-const useWebGPU = false;
+const useWebGPU = true;
 const debugTextures = false;
 
 export class PreviewManager {

@@ -1,6 +1,6 @@
-import type { FrameGraphTextureHandle } from "core/FrameGraph/frameGraphTypes";
-import type { AdvancedDynamicTexture } from "../advancedDynamicTexture";
-import type { FrameGraph } from "core/FrameGraph/frameGraph";
+// eslint-disable-next-line import/no-internal-modules
+import type { FrameGraphTextureHandle, FrameGraph } from "core/index";
+import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import { FrameGraphTask } from "core/FrameGraph/frameGraphTask";
 
 /**
@@ -40,13 +40,17 @@ export class FrameGraphGUITask extends FrameGraphTask {
      * Constructs a new GUI task.
      * @param name Name of the task
      * @param frameGraph Frame graph the task belongs to
-     * @param adt The GUI texture
+     * @param adt The GUI texture. If not provided, a new fullscreen GUI will be created.
      */
-    constructor(name: string, frameGraph: FrameGraph, adt: AdvancedDynamicTexture) {
+    constructor(name: string, frameGraph: FrameGraph, adt?: AdvancedDynamicTexture) {
         super(name, frameGraph);
 
-        if (!adt.useStandalone) {
-            throw new Error(`AdvancedDynamicTexture "${name}": the texture must have been created with the useStandalone property set to true`);
+        if (adt) {
+            if (!adt.useStandalone) {
+                throw new Error(`AdvancedDynamicTexture "${name}": the texture must have been created with the useStandalone property set to true`);
+            }
+        } else {
+            adt = AdvancedDynamicTexture.CreateFullscreenUI(name, undefined, { useStandalone: true });
         }
         this._adt = adt;
 
