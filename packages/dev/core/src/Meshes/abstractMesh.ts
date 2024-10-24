@@ -1249,6 +1249,8 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public override markAsDirty(property?: string): AbstractMesh {
         this._currentRenderId = Number.MAX_VALUE;
+        // Make sure to call super.markAsDirty before setting the _isDirty flag, otherwise it might early out.
+        super.markAsDirty(property);
         this._isDirty = true;
         return this;
     }
