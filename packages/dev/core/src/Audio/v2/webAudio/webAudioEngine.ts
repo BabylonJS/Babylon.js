@@ -12,7 +12,7 @@ import { WebAudioMainBus } from "./webAudioMainBus";
 import { WebAudioMainOutput } from "./webAudioMainOutput";
 import { WebAudioPositioner } from "./webAudioPositioner";
 import { WebAudioSender } from "./webAudioSender";
-import { WebAudioStaticSound, WebAudioStaticSoundInstance } from "./webAudioStaticSound";
+import { WebAudioStaticSound, WebAudioStaticSoundBuffer, WebAudioStaticSoundInstance } from "./webAudioStaticSound";
 import { WebAudioStreamingSound, WebAudioStreamingSoundInstance } from "./webAudioStreamingSound";
 
 /**
@@ -39,6 +39,16 @@ export interface WebAudioPositionerOptions extends AudioPositionerOptions {}
  * Options for creating a new WebAudioStaticSound.
  */
 export interface WebAudioStaticSoundOptions extends StaticSoundOptions {
+    /**
+     * The URL of the sound source.
+     */
+    sourceUrl?: string;
+}
+
+/**
+ * Options for creating a new WebAudioStaticSoundBuffer.
+ */
+export interface WebAudioStaticSoundBufferOptions {
     /**
      * The URL of the sound source.
      */
@@ -122,6 +132,17 @@ export abstract class AbstractWebAudioEngine extends AbstractAudioEngine {
         await sound.init(options);
         this._addSound(sound);
         return sound;
+    }
+
+    /**
+     * Creates a new static sound buffer.
+     * @param options - The options for the static sound buffer.
+     * @returns A promise that resolves to the created static sound buffer.
+     */
+    public async createSoundBuffer(options: Nullable<WebAudioStaticSoundBufferOptions> = null): Promise<WebAudioStaticSoundBuffer> {
+        const buffer = new WebAudioStaticSoundBuffer(this);
+        await buffer.init(options);
+        return buffer;
     }
 
     /**

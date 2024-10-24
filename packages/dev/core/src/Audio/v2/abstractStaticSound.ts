@@ -3,6 +3,7 @@ import type { AbstractAudioEngine } from "./abstractAudioEngine";
 import type { SoundOptions } from "./abstractSound";
 import { AbstractSound } from "./abstractSound";
 import type { AbstractSoundInstance } from "./abstractSoundInstance";
+import type { AbstractStaticSoundBuffer } from "./abstractStaticSoundBuffer";
 
 /**
  * Options for creating a new static sound.
@@ -24,6 +25,8 @@ export interface StaticSoundOptions extends SoundOptions {
 export abstract class AbstractStaticSound extends AbstractSound {
     private _loopStart: number;
     private _loopEnd: number;
+
+    public abstract readonly buffer: AbstractStaticSoundBuffer;
 
     /** @internal */
     constructor(name: string, engine: AbstractAudioEngine, options: Nullable<StaticSoundOptions> = null) {

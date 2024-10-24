@@ -1,10 +1,11 @@
 import type { Nullable } from "../../../types";
 import type { AbstractAudioNode } from "../abstractAudioNode";
 import { AbstractStaticSound } from "../abstractStaticSound";
+import { AbstractStaticSoundBuffer } from "../abstractStaticSoundBuffer";
 import { AbstractStaticSoundInstance } from "../abstractStaticSoundInstance";
 import { SoundState } from "../soundState";
 import { WebAudioBus } from "./webAudioBus";
-import type { AbstractWebAudioEngine, WebAudioEngine, WebAudioStaticSoundOptions } from "./webAudioEngine";
+import type { AbstractWebAudioEngine, WebAudioEngine, WebAudioStaticSoundBufferOptions, WebAudioStaticSoundOptions } from "./webAudioEngine";
 import { WebAudioMainBus } from "./webAudioMainBus";
 
 /** @internal */
@@ -12,10 +13,14 @@ export class WebAudioStaticSound extends AbstractStaticSound {
     private _gainNode: GainNode;
 
     /** @internal */
-    public audioBuffer: AudioBuffer;
+    public audioContext: AudioContext;
+
+    private _buffer: WebAudioStaticSoundBuffer;
 
     /** @internal */
-    public audioContext: AudioContext;
+    public get buffer(): WebAudioStaticSoundBuffer {
+        return this._buffer;
+    }
 
     /** @internal */
     public get webAudioInputNode() {
@@ -36,14 +41,8 @@ export class WebAudioStaticSound extends AbstractStaticSound {
     public async init(options: Nullable<WebAudioStaticSoundOptions> = null): Promise<void> {
         this.audioContext = await (this.engine as WebAudioEngine).audioContext;
         this._gainNode = new GainNode(this.audioContext);
-
+        this._buffer = (await this.engine.createSoundBuffer(options)) as WebAudioStaticSoundBuffer;
         this.outputBus = options?.outputBus ?? this.engine.defaultMainBus;
-
-        if (options?.sourceUrl) {
-            const response = await fetch(options.sourceUrl);
-            const arrayBuffer = await response.arrayBuffer();
-            this.audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
-        }
 
         if (options?.autoplay) {
             this.play();
@@ -67,6 +66,46 @@ export class WebAudioStaticSound extends AbstractStaticSound {
             this.webAudioOutputNode.disconnect(node.webAudioInputNode);
         } else {
             throw new Error("Unsupported node type.");
+        }
+    }
+}
+
+/** @internal */
+export class WebAudioStaticSoundBuffer extends AbstractStaticSoundBuffer {
+    /** @internal */
+    public audioBuffer: AudioBuffer;
+
+    /** @internal */
+    public get sampleRate(): number {
+        return this.audioBuffer.sampleRate;
+    }
+
+    /** @internal */
+    public get length(): number {
+        return this.audioBuffer.length;
+    }
+
+    /** @internal */
+    public get duration(): number {
+        return this.audioBuffer.duration;
+    }
+
+    /** @internal */
+    public get numberOfChannels(): number {
+        return this.audioBuffer.numberOfChannels;
+    }
+
+    /** @internal */
+    constructor(engine: AbstractWebAudioEngine) {
+        super(engine);
+    }
+
+    public async init(options: Nullable<WebAudioStaticSoundBufferOptions> = null): Promise<void> {
+        if (options?.sourceUrl) {
+            const response = await fetch(options.sourceUrl);
+            const arrayBuffer = await response.arrayBuffer();
+            const audioContext = await (this.engine as WebAudioEngine).audioContext;
+            this.audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
         }
     }
 }
@@ -100,7 +139,7 @@ export class WebAudioStaticSoundInstance extends AbstractStaticSoundInstance {
 
     public async init(): Promise<void> {
         this.sourceNode = new AudioBufferSourceNode((this._source as WebAudioStaticSound).audioContext, {
-            buffer: (this._source as WebAudioStaticSound).audioBuffer,
+            buffer: (this._source as WebAudioStaticSound).buffer.audioBuffer,
             detune: this._source.pitch,
             loop: this._source.loop,
             loopEnd: (this._source as WebAudioStaticSound).loopEnd,
@@ -148,7 +187,7 @@ export class WebAudioStaticSoundInstance extends AbstractStaticSoundInstance {
         }
 
         // TODO: Make this fall within loop points when loop start/end is set.
-        const startOffset = (this.currentTime + this._startOffset) % (this._source as WebAudioStaticSound).audioBuffer.duration;
+        const startOffset = (this.currentTime + this._startOffset) % (this._source as WebAudioStaticSound).buffer.duration;
 
         this.play(0, startOffset);
     }
