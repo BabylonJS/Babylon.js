@@ -1,7 +1,7 @@
 import { Constants } from "../../Engines/constants";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import type { Scene } from "../../scene";
-import { Matrix, Vector2, Vector4 } from "../../Maths/math.vector";
+import { Matrix, Vector4 } from "../../Maths/math.vector";
 import { PostProcess } from "../../PostProcesses/postProcess";
 import type { PostProcessOptions } from "../../PostProcesses/postProcess";
 import type { IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
@@ -115,6 +115,28 @@ export class _IblShadowsVoxelTracingPass {
     private _frameId: number = 0;
     private _sampleDirections: number = 4;
 
+    private _voxelNormalBias: number = 1.0;
+    /**
+     * The bias to apply to the voxel sampling in the direction of the surface normal of the geometry.
+     */
+    public get voxelNormalBias(): number {
+        return this._voxelNormalBias;
+    }
+    public set voxelNormalBias(value: number) {
+        this._voxelNormalBias = value;
+    }
+
+    private _voxelDirectionBias: number = 1.0;
+    /**
+     * The bias to apply to the voxel sampling in the direction of the light.
+     */
+    public get voxelDirectionBias(): number {
+        return this._voxelDirectionBias;
+    }
+    public set voxelDirectionBias(value: number) {
+        this._voxelDirectionBias = value;
+    }
+
     /**
      * Is the effect enabled
      */
@@ -182,7 +204,7 @@ export class _IblShadowsVoxelTracingPass {
 
     /** The default rotation of the environment map will align the shadows with the default lighting orientation */
     private _envRotation: number = 0.0;
-    private _downscale: number = 1.0;
+    // private _downscale: number = 1.0;
 
     /**
      * Set the matrix to use for scaling the world space to voxel space
@@ -322,14 +344,14 @@ export class _IblShadowsVoxelTracingPass {
 
         this._frameId++;
 
-        const downscaleSquared = this._downscale * this._downscale;
+        // const downscaleSquared = this._downscale * this._downscale;
         let rotation = this._scene.useRightHandedSystem ? -(this._envRotation + 0.5 * Math.PI) : this._envRotation - 0.5 * Math.PI;
         rotation = rotation % (2.0 * Math.PI);
-        this._outputTexture.setVector4("shadowParameters", new Vector4(this._sampleDirections, this._frameId / downscaleSquared, this._downscale, rotation));
-        const offset = new Vector2(0.0, 0.0);
+        this._outputTexture.setVector4("shadowParameters", new Vector4(this._sampleDirections, this._frameId, 1.0, rotation));
         const voxelGrid = this._renderPipeline!.getVoxelGridTexture();
         const highestMip = Math.floor(Math.log2(voxelGrid!.getSize().width));
-        this._outputTexture.setVector4("offsetDataParameters", new Vector4(offset.x, offset.y, highestMip, 0.0));
+        // this._outputTexture.setVector4("offsetDataParameters", new Vector4(offset.x, offset.y, highestMip, 0.0));
+        this._outputTexture.setVector4("voxelBiasParameters", new Vector4(this._voxelNormalBias, this._voxelDirectionBias, highestMip, 0.0));
 
         // SSS Options.
         this._outputTexture.setVector4("sssParameters", new Vector4(this._sssSamples, this._sssStride, this._sssMaxDist, this._sssThickness));

@@ -13,19 +13,18 @@ uniform sampler2D icdfxSampler;
 uniform sampler2D icdfySampler;
 uniform sampler3D voxelGridSampler;
 
-// shadow parameters: int nbDirs, int frameId, int downscale, float envRot
+// shadow parameters: int nbDirs, int frameId, unused, float envRot
 uniform vec4 shadowParameters;
 
 #define SHADOWdirs shadowParameters.x
 #define SHADOWframe shadowParameters.y
-#define SHADOWdownscale shadowParameters.z
 #define SHADOWenvRot shadowParameters.w
 
-// morton code offset, max voxel grid mip
-uniform vec4 offsetDataParameters;
+// voxel tracing bias parameters (normal bias, direction bias, unused, max
+// mip count)
+uniform vec4 voxelBiasParameters;
 
-#define PixelOffset offsetDataParameters.xy
-#define highestMipLevel offsetDataParameters.z
+#define highestMipLevel voxelBiasParameters.z
 
 // screen space shadow parameters
 uniform vec4 sssParameters;
@@ -335,8 +334,11 @@ float voxelShadow(vec3 wsOrigin, vec3 wsDirection, vec3 wsNormal,
   genTB(wsDirection, T, B);
   vec2 DitherXY = sqrt(DitherNoise.x) * vec2(cos(2.0 * PI * DitherNoise.y),
                                              sin(2.0 * PI * DitherNoise.y));
+  float sceneScale = wsNormalizationMtx[0][0];
+
   vec3 Dithering =
-      (1.0 * wsNormal + 1.25 * wsDirection + DitherXY.x * T + DitherXY.y * B) /
+      (voxelBiasParameters.x * wsNormal + voxelBiasParameters.y * wsDirection +
+       DitherXY.x * T + DitherXY.y * B) /
       vxResolution;
   vec3 O = 0.5 * wsOrigin + 0.5 + Dithering;
 
@@ -365,17 +367,15 @@ float voxelShadow(vec3 wsOrigin, vec3 wsDirection, vec3 wsNormal,
 void main(void) {
   uint nbDirs = uint(SHADOWdirs);
   uint frameId = uint(SHADOWframe);
-  int downscale = int(SHADOWdownscale);
   float envRot = SHADOWenvRot;
 
   vec2 Resolution = vec2(textureSize(depthSampler, 0));
   ivec2 currentPixel = ivec2(vUV * Resolution);
-  ivec2 PixelCoord = ivec2(vec2(currentPixel * downscale) + PixelOffset.xy);
-  uint GlobalIndex =
-      (frameId * uint(Resolution.y) + uint(PixelCoord.y)) * uint(Resolution.x) +
-      uint(PixelCoord.x);
+  uint GlobalIndex = (frameId * uint(Resolution.y) + uint(currentPixel.y)) *
+                         uint(Resolution.x) +
+                     uint(currentPixel.x);
 
-  vec3 N = texelFetch(worldNormalSampler, PixelCoord, 0).xyz;
+  vec3 N = texelFetch(worldNormalSampler, currentPixel, 0).xyz;
   // N = N * vec3(2.0) - vec3(1.0);
   if (length(N) < 0.01) {
     glFragColor = vec4(1.0, 1.0, 0.0, 1.0);
@@ -384,16 +384,16 @@ void main(void) {
 
   float normalizedRotation = envRot / (2.0 * PI);
 
-  float depth = texelFetch(depthSampler, PixelCoord, 0).x;
-  #ifndef IS_NDC_HALF_ZRANGE
-    depth = depth * 2.0 - 1.0;
-  #endif
-  vec2 temp = (vec2(PixelCoord) + vec2(0.5)) * 2.0 / Resolution - vec2(1.0);
+  float depth = texelFetch(depthSampler, currentPixel, 0).x;
+#ifndef IS_NDC_HALF_ZRANGE
+  depth = depth * 2.0 - 1.0;
+#endif
+  vec2 temp = (vec2(currentPixel) + vec2(0.5)) * 2.0 / Resolution - vec2(1.0);
   vec4 VP = invProjMtx * vec4(temp.x, -temp.y, depth, 1.0);
   VP /= VP.w;
 
   N = normalize(N);
-  vec3 noise = texelFetch(blueNoiseSampler, PixelCoord & 0xFF, 0).xyz;
+  vec3 noise = texelFetch(blueNoiseSampler, currentPixel & 0xFF, 0).xyz;
   noise.z = fract(noise.z + goldenSequence(frameId * nbDirs));
 
 #ifdef VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
