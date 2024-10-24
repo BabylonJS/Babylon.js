@@ -180,7 +180,7 @@ export class CSG2 implements IDisposable {
         for (let i = 0; i < manifoldMesh.triVerts.length; i += 3) {
             vertexData.indices[i] = manifoldMesh.triVerts[i + 2];
             vertexData.indices[i + 1] = manifoldMesh.triVerts[i + 1];
-            vertexData.indices[i + 2] = manifoldMesh.triVerts[i + 0];
+            vertexData.indices[i + 2] = manifoldMesh.triVerts[i];
         }
 
         const vertexCount = manifoldMesh.vertProperties.length / manifoldMesh.numProp;
