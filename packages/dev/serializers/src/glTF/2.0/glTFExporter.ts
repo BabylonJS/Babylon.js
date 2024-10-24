@@ -1531,7 +1531,7 @@ export class GLTFExporter {
         }
 
         for (const [morphTarget, meshes] of morphTagetsMeshesMap) {
-            const glTFMorphTarget = buildMorphTargetBuffers(morphTarget, this._dataWriter, this._bufferViews, this._accessors, convertToRightHanded);
+            const glTFMorphTarget = buildMorphTargetBuffers(morphTarget, meshes[0], this._dataWriter, this._bufferViews, this._accessors, convertToRightHanded);
 
             for (const mesh of meshes) {
                 state.bindMorphDataToMesh(mesh, glTFMorphTarget);
@@ -1658,7 +1658,7 @@ export class GLTFExporter {
 
         // Flip if triangle winding order is not CCW as glTF is always CCW.
         const flip = isTriangleFillMode(fillMode) && sideOrientation !== Material.CounterClockWiseSideOrientation;
-        if ((flip && !convertToRightHanded) || (!flip && convertToRightHanded)) {
+        if (flip && convertToRightHanded) {
             if (fillMode === Material.TriangleStripDrawMode || fillMode === Material.TriangleFanDrawMode) {
                 throw new Error("Triangle strip/fan fill mode is not implemented");
             }
