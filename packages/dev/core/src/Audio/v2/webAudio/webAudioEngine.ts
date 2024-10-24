@@ -189,6 +189,11 @@ export class WebAudioEngine extends AbstractWebAudioEngine {
     private _mainOutput: Nullable<WebAudioMainOutput> = null;
 
     /** @internal */
+    public get currentTime(): number {
+        return this._audioContext.currentTime;
+    }
+
+    /** @internal */
     public get mainOutput(): Nullable<WebAudioMainOutput> {
         return this._mainOutput;
     }

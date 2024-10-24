@@ -40,8 +40,15 @@ export class WebAudioStaticSound extends AbstractStaticSound {
     /** @internal */
     public async init(options: Nullable<WebAudioStaticSoundOptions> = null): Promise<void> {
         this.audioContext = await (this.engine as WebAudioEngine).audioContext;
+
         this._gainNode = new GainNode(this.audioContext);
-        this._buffer = (await this.engine.createSoundBuffer(options)) as WebAudioStaticSoundBuffer;
+
+        if (options?.sourceBuffer) {
+            this._buffer = options.sourceBuffer as WebAudioStaticSoundBuffer;
+        } else if (options?.sourceUrl) {
+            this._buffer = (await this.engine.createSoundBuffer(options)) as WebAudioStaticSoundBuffer;
+        }
+
         this.outputBus = options?.outputBus ?? this.engine.defaultMainBus;
 
         if (options?.autoplay) {
@@ -125,7 +132,7 @@ export class WebAudioStaticSoundInstance extends AbstractStaticSoundInstance {
             return 0;
         }
 
-        const timeSinceLastStart = this._state === SoundState.Paused ? 0 : (this._source as WebAudioStaticSound).audioContext.currentTime - this._startTime;
+        const timeSinceLastStart = this._state === SoundState.Paused ? 0 : this.engine.currentTime - this._startTime;
         return this._currentTime + timeSinceLastStart;
     }
 
@@ -165,7 +172,7 @@ export class WebAudioStaticSoundInstance extends AbstractStaticSoundInstance {
 
         this.sourceNode.addEventListener("ended", this._onEnded.bind(this), { once: true });
 
-        this._startTime = (this._source as WebAudioStaticSound).audioContext.currentTime + (waitTime ?? 0);
+        this._startTime = this.engine.currentTime + (waitTime ?? 0);
         this.sourceNode.start(this._startTime, startOffset ?? 0, duration === null ? undefined : duration);
     }
 
@@ -177,7 +184,7 @@ export class WebAudioStaticSoundInstance extends AbstractStaticSoundInstance {
         this._state = SoundState.Paused;
 
         this._source.stop();
-        this._currentTime += (this._source as WebAudioStaticSound).audioContext.currentTime - this._startTime;
+        this._currentTime += this.engine.currentTime - this._startTime;
     }
 
     /** @internal */
@@ -199,7 +206,7 @@ export class WebAudioStaticSoundInstance extends AbstractStaticSoundInstance {
         }
         this._state = SoundState.Stopped;
 
-        this.sourceNode?.stop(waitTime ? (this._source as WebAudioStaticSound).audioContext.currentTime + waitTime : 0);
+        this.sourceNode?.stop(waitTime ? this.engine.currentTime + waitTime : 0);
     }
 
     protected _onEnded(): void {

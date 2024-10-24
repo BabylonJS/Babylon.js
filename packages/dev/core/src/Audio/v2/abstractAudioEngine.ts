@@ -36,6 +36,11 @@ export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
     public readonly listeners = new Set<SpatialAudioListener>(); // Owned
 
     /**
+     * The current time in seconds.
+     */
+    public abstract get currentTime(): number;
+
+    /**
      * The main output node.
      */
     public abstract get mainOutput(): Nullable<AbstractAudioNode>;
