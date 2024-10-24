@@ -323,7 +323,7 @@ export class CSG2 implements IDisposable {
         for (let i = 0; i < data.indices!.length; i += 3) {
             triVerts[i] = data.indices![i + 2];
             triVerts[i + 1] = data.indices![i + 1];
-            triVerts[i + 2] = data.indices![i + 0];
+            triVerts[i + 2] = data.indices![i];
         }
 
         const tempVector3 = new Vector3();
