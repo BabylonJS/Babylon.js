@@ -1,6 +1,100 @@
 {
-    "fromTag": "7.30.0",
+    "fromTag": "7.30.1",
     "changelog": {
+        "7.31.0": [
+            {
+                "pr": "15732",
+                "title": "De-dupe copy.svg and copyStep.svg",
+                "description": "Remove copies (ha!) of copy.svg and copyStep.svg. Use copy.svg and copyStep.svg from shared-ui-components instead.",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/lines/copy.svg",
+                    "packages/dev/inspector/src/components/actionTabs/lines/quaternionLineComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/gradientStepComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/metadata/metadataPropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/imgs/copyStep.svg",
+                    "packages/dev/sharedUiComponents/src/lines/checkBoxLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/colorLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/copy.svg",
+                    "packages/dev/sharedUiComponents/src/lines/copyStep.svg",
+                    "packages/dev/sharedUiComponents/src/lines/floatLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/optionsLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/sliderLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/vector3LineComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/gradientStepComponent.tsx",
+                    "packages/tools/nodeEditor/src/imgs/copy.svg",
+                    "packages/tools/nodeEditor/src/sharedComponents/copy.svg",
+                    "packages/tools/nodeGeometryEditor/src/imgs/copy.svg",
+                    "packages/tools/nodeGeometryEditor/src/sharedComponents/copy.svg"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15729",
+                "title": "Update GS parsing for back compatibility loading",
+                "description": "Quick patch to unblock partner. This change adds compressed ply support to back compatibility loading.\r\nI'll work on factorizing more duplicated code ASAP.\r\n\r\nOnce merged, partial updates like this are possible:\r\n\r\nhttps://playground.babylonjs.com/#EUY1MS",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts",
+                    "packages/dev/loaders/src/SPLAT/splatFileLoader.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15731",
+                "title": "Allow user to specify material for csg2",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/csg2.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15728",
+                "title": "Inspector: Fix crash when viewing texture in inspector with WebGL1",
+                "description": "See https://forum.babylonjs.com/t/inspector-unable-to-preview-texture-in-webgl1-engine/54298",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/lod.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "15727",
+                "title": "Update gltf_validator.js to 2.0.0-dev.3.10",
+                "description": "See https://github.com/KhronosGroup/glTF-Validator/pull/240.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/tools/babylonServer/public/gltf_validator.js"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            }
+        ],
         "7.30.1": [
             {
                 "pr": "15720",

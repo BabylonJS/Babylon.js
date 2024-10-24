@@ -1,5 +1,22 @@
 # Changelog
 
+## 7.31.0
+
+### Core
+
+- Inspector: Fix crash when viewing texture in inspector with WebGL1 - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15728](https://github.com/BabylonJS/Babylon.js/pull/15728))
+
+### Inspector
+
+- De-dupe copy.svg and copyStep.svg - by [alexchuber](https://github.com/alexchuber) ([#15732](https://github.com/BabylonJS/Babylon.js/pull/15732))
+
+### Loaders
+
+
+### Node Editor
+
+- De-dupe copy.svg and copyStep.svg - by [alexchuber](https://github.com/alexchuber) ([#15732](https://github.com/BabylonJS/Babylon.js/pull/15732))
+
 ## 7.30.1
 
 ### Core
