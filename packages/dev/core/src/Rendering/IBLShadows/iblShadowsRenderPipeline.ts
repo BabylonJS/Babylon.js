@@ -717,6 +717,11 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
 
         this._listenForCameraChanges();
         this.scene.getEngine().onResizeObservable.add(this._handleResize.bind(this));
+
+        // Assigning the shadow texture to the materials needs to be done after the RT's are created.
+        this._importanceSamplingRenderer.onReadyObservable.addOnce(() => {
+            this._setPluginParameters();
+        });
     }
 
     /**

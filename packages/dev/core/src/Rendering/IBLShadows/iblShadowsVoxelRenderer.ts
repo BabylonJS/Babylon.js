@@ -702,6 +702,10 @@ export class _IblShadowsVoxelRenderer {
             }
             includedMeshes.forEach((mesh) => {
                 if (mesh) {
+                    if (mesh.subMeshes && mesh.subMeshes.length > 0) {
+                        mrt.renderList?.push(mesh);
+                        mrt.setMaterialForRendering(mesh, voxelMaterial);
+                    }
                     mesh.getChildMeshes().forEach((childMesh) => {
                         if (childMesh.subMeshes && childMesh.subMeshes.length > 0) {
                             mrt.renderList?.push(childMesh);
