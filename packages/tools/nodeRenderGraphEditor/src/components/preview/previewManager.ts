@@ -25,7 +25,7 @@ import { WebGPUEngine } from "core/Engines/webgpuEngine";
 import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
 
 const useWebGPU = false;
-const debugTextures = true;
+const debugTextures = false;
 
 export class PreviewManager {
     private _nodeRenderGraph: NodeRenderGraph;
@@ -247,7 +247,7 @@ export class PreviewManager {
                 continue;
             }
             if ((input.type & NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer) !== 0) {
-                // TODO: Implement this
+                // TODO: Implement this?
             } else if (input.isCamera()) {
                 const camera = new ArcRotateCamera("PreviewCamera", 0, 0.8, 4, Vector3.Zero(), this._scene);
 
