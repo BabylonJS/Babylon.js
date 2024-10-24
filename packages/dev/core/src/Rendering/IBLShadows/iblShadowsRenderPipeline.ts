@@ -93,7 +93,7 @@ interface IblShadowsSettings {
     /**
      * Screen-space shadow thickness. This value controls the perceived thickness of the SS shadows.
      */
-    ssShadowThickness: number;
+    ssShadowThicknessScale: number;
 }
 
 /**
@@ -218,21 +218,21 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     }
 
     public set ssShadowDistanceScale(value: number) {
-        if (!this._voxelTracingPass) return;
         this._sssMaxDistScale = value;
-        this._updateShadowMaxDist();
+        this._updateSSShadowParams();
     }
 
+    private _sssThicknessScale: number;
     /**
      * Screen-space shadow thickness. This value controls the perceived thickness of the SS shadows.
      */
-    public get ssShadowThickness(): number {
-        return this._voxelTracingPass?.sssThickness;
+    public get ssShadowThicknessScale(): number {
+        return this._sssThicknessScale;
     }
 
-    public set ssShadowThickness(value: number) {
-        if (!this._voxelTracingPass) return;
-        this._voxelTracingPass.sssThickness = value;
+    public set ssShadowThicknessScale(value: number) {
+        this._sssThicknessScale = value;
+        this._updateSSShadowParams();
     }
 
     /**
@@ -698,10 +698,10 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this.voxelShadowOpacity = options.voxelShadowOpacity || 1.0;
         this.shadowRenderSizeFactor = options.shadowRenderSizeFactor || 1.0;
         this.ssShadowOpacity = options.ssShadowsEnabled === undefined || options.ssShadowsEnabled ? 1.0 : 0.0;
-        this.ssShadowDistanceScale = options.ssShadowDistanceScale || 2.5;
+        this.ssShadowDistanceScale = options.ssShadowDistanceScale || 1.0;
         this.ssShadowSamples = options.ssShadowSampleCount || 16;
         this.ssShadowStride = options.ssShadowStride || 8;
-        this.ssShadowThickness = options.ssShadowThickness || 0.02;
+        this.ssShadowThicknessScale = options.ssShadowThicknessScale || 1.0;
         this._spatialBlurPass = new _IblShadowsSpatialBlurPass(this.scene, this);
         this._accumulationPass = new _IblShadowsAccumulationPass(this.scene, this);
         this.shadowRemenance = options.shadowRemenance || 0.75;
@@ -919,9 +919,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             return;
         }
         this._voxelRenderer.updateVoxelGrid(this._shadowCastingMeshes);
-        // Update the SS shadow max distance based on the voxel grid size and resolution.
-        // The max distance should be just a little larger than the world size of a single voxel.
-        this._updateShadowMaxDist();
+        this._updateSSShadowParams();
     }
 
     /**
@@ -959,13 +957,16 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         // Logger.Log("Half size: " + halfSize);
         // Logger.Log("Centre translation: " + centre);
 
-        // Update the SS shadow max distance based on the voxel grid size and resolution.
-        // The max distance should be just a little larger than the world size of a single voxel.
-        this._updateShadowMaxDist();
+        this._updateSSShadowParams();
     }
 
-    private _updateShadowMaxDist(): void {
+    /**
+     * Update the SS shadow max distance and thickness based on the voxel grid size and resolution.
+     * The max distance should be just a little larger than the world size of a single voxel.
+     */
+    private _updateSSShadowParams(): void {
         this._voxelTracingPass.sssMaxDist = (this._sssMaxDistScale * this.voxelGridSize) / (1 << this.resolutionExp);
+        this._voxelTracingPass.sssThickness = this._sssThicknessScale * 0.005 * this.voxelGridSize;
     }
 
     /**
