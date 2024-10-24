@@ -27,7 +27,7 @@ import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { computeMaxExtents } from "core/Meshes/meshUtils";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { Observable } from "core/Misc/observable";
-import { Scene, ScenePerformancePriority } from "core/scene";
+import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 import { Viewport } from "core/Maths/math.viewport";
 import { GetHotSpotToRef } from "core/Meshes/abstractMesh.hotSpot";
@@ -204,7 +204,6 @@ export class Viewer implements IDisposable {
             scene: new Scene(this._engine),
             model: null,
         };
-        this._details.scene.performancePriority = ScenePerformancePriority.Aggressive;
         this._details.scene.clearColor = finalOptions.backgroundColor;
         this._snapshotHelper = new SnapshotRenderingHelper(this._details.scene, { morphTargetsNumMaxInfluences: 30 });
         this._camera = new ArcRotateCamera("camera1", 0, 0, 1, Vector3.Zero(), this._details.scene);
