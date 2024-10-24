@@ -27,7 +27,7 @@ void main(void)
     #endif
 
     #ifdef ALPHATESTVALUE
-        if (alphaFromAlphaTexture < ALPHATESTVALUE)
+        if (alphaFromAlphaTexture + 0.0000001 < ALPHATESTVALUE)
             discard;
     #endif
 #endif
