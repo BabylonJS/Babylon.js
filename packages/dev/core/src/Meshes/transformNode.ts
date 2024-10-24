@@ -209,7 +209,7 @@ export class TransformNode extends Node {
 
     public set position(newPosition: Vector3) {
         this._position = newPosition;
-        this._isDirty = true;
+        this._markAsDirtyInternal();
     }
 
     /**
@@ -238,7 +238,7 @@ export class TransformNode extends Node {
     public set rotation(newRotation: Vector3) {
         this._rotation = newRotation;
         this._rotationQuaternion = null;
-        this._isDirty = true;
+        this._markAsDirtyInternal();
     }
 
     /**
@@ -250,7 +250,7 @@ export class TransformNode extends Node {
 
     public set scaling(newScaling: Vector3) {
         this._scaling = newScaling;
-        this._isDirty = true;
+        this._markAsDirtyInternal();
     }
 
     /**
@@ -267,7 +267,7 @@ export class TransformNode extends Node {
         if (quaternion) {
             this._rotation.setAll(0.0);
         }
-        this._isDirty = true;
+        this._markAsDirtyInternal();
     }
 
     /**
@@ -764,6 +764,19 @@ export class TransformNode extends Node {
             }
         }
         return super.markAsDirty(property);
+    }
+
+    private _markAsDirtyInternal(): void {
+        if (this._isDirty) return;
+        this._isDirty = true;
+        if (this._children) {
+            for (const child of this._children) {
+                if ((child as any)._isWorldMatrixFrozen && child instanceof TransformNode) {
+                    // Dirty the child if it is a transform node and has world matrix freezing (otherwise the dirtying is not necessary)
+                    child._markAsDirtyInternal();
+                }
+            }
+        }
     }
 
     /**
