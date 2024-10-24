@@ -180,7 +180,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
     }
 
     private _parse(meshesNames: any, scene: Scene, data: any, rootUrl: string): Promise<Array<AbstractMesh>> {
-        return SPLATFileLoader._ConvertPLYToSplat(data as ArrayBuffer).then((parsedPLY) => {
+        return SPLATFileLoader._ConvertPLYToSplat(data as ArrayBuffer).then(async (parsedPLY) => {
             const babylonMeshesArray: Array<Mesh> = []; //The mesh for babylon
             switch (parsedPLY.mode) {
                 case Mode.Splat:
@@ -188,11 +188,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                         const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
                         gaussianSplatting._parentContainer = this._assetContainer;
                         babylonMeshesArray.push(gaussianSplatting);
-                        return gaussianSplatting.updateDataAsync(parsedPLY.data).then(() => {
-                            return new Promise((resolve) => {
-                                resolve(babylonMeshesArray);
-                            });
-                        });
+                        await gaussianSplatting.updateDataAsync(parsedPLY.data);
                     }
                     break;
                 case Mode.PointCloud:
