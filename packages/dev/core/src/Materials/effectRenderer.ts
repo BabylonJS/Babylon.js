@@ -279,7 +279,7 @@ export interface EffectWrapperCreationOptions {
      */
     onCompiled?: Nullable<(effect: Effect) => void>;
     /**
-     * The friendly name of the effect displayed in Spector.
+     * The friendly name of the effect (default: "effectWrapper")
      */
     name?: string;
     /**
@@ -294,8 +294,10 @@ export interface EffectWrapperCreationOptions {
      * Additional async code to run before preparing the effect
      */
     extraInitializationsAsync?: () => Promise<void>;
-    /** @internal */
-    _useAsPostProcess?: boolean;
+    /**
+     * If the effect should be used as a post process (default: false). If true, the effect will be created with a "scale" uniform and a "textureSampler" sampler
+     */
+    useAsPostProcess?: boolean;
 }
 
 /**
@@ -421,14 +423,14 @@ export class EffectWrapper {
             onCompiled: creationOptions.onCompiled || (undefined as any),
             extraInitializations: creationOptions.extraInitializations || (undefined as any),
             extraInitializationsAsync: creationOptions.extraInitializationsAsync || (undefined as any),
-            _useAsPostProcess: creationOptions._useAsPostProcess ?? false,
+            useAsPostProcess: creationOptions.useAsPostProcess ?? false,
         };
 
         this.options.uniformNames = this.options.uniforms;
         this.options.samplerNames = this.options.samplers;
         this.options.vertexShader = this.options.vertexUrl;
 
-        if (this.options._useAsPostProcess) {
+        if (this.options.useAsPostProcess) {
             if (this.options.samplers.indexOf("textureSampler") === -1) {
                 this.options.samplers.push("textureSampler");
             }
@@ -442,7 +444,7 @@ export class EffectWrapper {
                 vertexSource: this.options.vertexShader,
             };
         } else {
-            if (!this.options._useAsPostProcess) {
+            if (!this.options.useAsPostProcess) {
                 this.options.uniforms.push("scale");
 
                 this.onApplyObservable.add(() => {
@@ -631,7 +633,7 @@ export class EffectWrapper {
     public bind() {
         this.options.engine.setAlphaMode(this.alphaMode);
 
-        if (this.options._useAsPostProcess) {
+        if (this.options.useAsPostProcess) {
             this.drawWrapper.effect!.setFloat2("scale", 1, 1);
         }
 

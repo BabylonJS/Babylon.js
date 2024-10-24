@@ -11,7 +11,7 @@ export class ThinDepthOfFieldMergePostProcess extends EffectWrapper {
 
     public static readonly Samplers = ["circleOfConfusionSampler", "blurStep0", "blurStep1", "blurStep2"];
 
-    public override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
             list.push(import("../ShadersWGSL/depthOfFieldMerge.fragment"));
@@ -26,7 +26,7 @@ export class ThinDepthOfFieldMergePostProcess extends EffectWrapper {
             name,
             engine: engine || Engine.LastCreatedEngine!,
             useShaderStore: true,
-            _useAsPostProcess: true,
+            useAsPostProcess: true,
             fragmentShader: ThinDepthOfFieldMergePostProcess.FragmentUrl,
             samplers: ThinDepthOfFieldMergePostProcess.Samplers,
         });

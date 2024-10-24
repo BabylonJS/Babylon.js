@@ -90,27 +90,27 @@ export class BloomEffect extends PostProcessRenderEffect {
             engine,
             textureType: pipelineTextureType,
             blockCompilation,
-            effectWrapper: this._thinBloomEffect.downscale,
+            effectWrapper: this._thinBloomEffect._downscale,
         });
 
-        this._blurX = new BlurPostProcess("horizontal blur", this._thinBloomEffect.blurX.direction, this._thinBloomEffect.blurX.kernel, {
+        this._blurX = new BlurPostProcess("horizontal blur", this._thinBloomEffect._blurX.direction, this._thinBloomEffect._blurX.kernel, {
             size: bloomScale,
             samplingMode: Texture.BILINEAR_SAMPLINGMODE,
             engine,
             textureType: pipelineTextureType,
             blockCompilation,
-            effectWrapper: this._thinBloomEffect.blurX,
+            effectWrapper: this._thinBloomEffect._blurX,
         });
         this._blurX.alwaysForcePOT = true;
         this._blurX.autoClear = false;
 
-        this._blurY = new BlurPostProcess("vertical blur", this._thinBloomEffect.blurY.direction, this._thinBloomEffect.blurY.kernel, {
+        this._blurY = new BlurPostProcess("vertical blur", this._thinBloomEffect._blurY.direction, this._thinBloomEffect._blurY.kernel, {
             size: bloomScale,
             samplingMode: Texture.BILINEAR_SAMPLINGMODE,
             engine,
             textureType: pipelineTextureType,
             blockCompilation,
-            effectWrapper: this._thinBloomEffect.blurY,
+            effectWrapper: this._thinBloomEffect._blurY,
         });
         this._blurY.alwaysForcePOT = true;
         this._blurY.autoClear = false;
@@ -125,7 +125,7 @@ export class BloomEffect extends PostProcessRenderEffect {
             engine,
             textureType: pipelineTextureType,
             blockCompilation,
-            effectWrapper: this._thinBloomEffect.merge,
+            effectWrapper: this._thinBloomEffect._merge,
         });
         this._merge.autoClear = false;
         this._effects.push(this._merge);

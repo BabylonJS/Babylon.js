@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { FrameGraphTextureHandle, Scene, Camera, AbstractEngine, FrameGraph, TextureClearType, FrameGraphObjectList } from "core/index";
+import type { FrameGraphTextureHandle, Scene, Camera, AbstractEngine, FrameGraph, GeometryRenderingTextureClearType, FrameGraphObjectList } from "core/index";
 import { backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
 import { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture";
 import { Color4 } from "core/Maths/math.color";
@@ -169,7 +169,7 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
     private _engine: AbstractEngine;
     private _scene: Scene;
     private _rtt: RenderTargetTexture;
-    private _clearAttachmentsLayout: Map<TextureClearType, number[]>;
+    private _clearAttachmentsLayout: Map<GeometryRenderingTextureClearType, number[]>;
     private _allAttachmentsLayout: number[];
 
     /**
@@ -374,7 +374,7 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
     }
 
     private _buildClearAttachmentsLayout() {
-        const clearAttachmentsLayout = new Map<TextureClearType, boolean[]>();
+        const clearAttachmentsLayout = new Map<GeometryRenderingTextureClearType, boolean[]>();
         const allAttachmentsLayout: boolean[] = [];
 
         for (let i = 0; i < this.textureDescriptions.length; i++) {

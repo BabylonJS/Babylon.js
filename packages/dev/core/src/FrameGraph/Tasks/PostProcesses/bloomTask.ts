@@ -80,10 +80,10 @@ export class FrameGraphBloomTask extends FrameGraphTask {
         this.bloom.kernel = kernel;
         this.bloom.weight = weight;
 
-        this._downscale = new FrameGraphExtractHighlightsTask(`${name} Downscale`, this._frameGraph, this.bloom.downscale);
-        this._blurX = new FrameGraphBlurTask(`${name} Blur X`, this._frameGraph, this.bloom.blurX);
-        this._blurY = new FrameGraphBlurTask(`${name} Blur Y`, this._frameGraph, this.bloom.blurY);
-        this._merge = new FrameGraphBloomMergeTask(`${name} Merge`, this._frameGraph, this.bloom.merge);
+        this._downscale = new FrameGraphExtractHighlightsTask(`${name} Downscale`, this._frameGraph, this.bloom._downscale);
+        this._blurX = new FrameGraphBlurTask(`${name} Blur X`, this._frameGraph, this.bloom._blurX);
+        this._blurY = new FrameGraphBlurTask(`${name} Blur Y`, this._frameGraph, this.bloom._blurY);
+        this._merge = new FrameGraphBloomMergeTask(`${name} Merge`, this._frameGraph, this.bloom._merge);
 
         this.outputTexture = this._frameGraph.createDanglingHandle();
     }

@@ -14,6 +14,7 @@ export abstract class FrameGraphTask {
     private _passesDisabled: IFrameGraphPass[] = [];
 
     // Note: must be a getter/setter even if there's no specific processing, otherwise inherited classes can't make it a getter/setter!
+    // Same thing for the disabled property
     protected _name: string;
 
     /**
@@ -27,10 +28,18 @@ export abstract class FrameGraphTask {
         this._name = value;
     }
 
+    protected _disabled = false;
+
     /**
      * Whether the task is disabled.
      */
-    public disabled = false;
+    public get disabled() {
+        return this._disabled;
+    }
+
+    public set disabled(value: boolean) {
+        this._disabled = value;
+    }
 
     /**
      * Records the task in the frame graph. Use this function to add content (render passes, ...) to the task.

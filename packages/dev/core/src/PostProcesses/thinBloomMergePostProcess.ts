@@ -13,7 +13,7 @@ export class ThinBloomMergePostProcess extends EffectWrapper {
 
     public static readonly Samplers = ["bloomBlur"];
 
-    public override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
             list.push(import("../ShadersWGSL/bloomMerge.fragment"));
@@ -28,7 +28,7 @@ export class ThinBloomMergePostProcess extends EffectWrapper {
             name,
             engine: engine || Engine.LastCreatedEngine!,
             useShaderStore: true,
-            _useAsPostProcess: true,
+            useAsPostProcess: true,
             fragmentShader: ThinBloomMergePostProcess.FragmentUrl,
             uniforms: ThinBloomMergePostProcess.Uniforms,
             samplers: ThinBloomMergePostProcess.Samplers,

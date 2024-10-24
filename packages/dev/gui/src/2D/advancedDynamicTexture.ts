@@ -33,11 +33,15 @@ import { DecodeBase64ToBinary } from "core/Misc/stringTools";
 import type { StandardMaterial } from "core/Materials/standardMaterial";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 
+/**
+ * Interface used to define options to create an AdvancedDynamicTexture
+ */
 export interface IAdvancedDynamicTextureOptions extends IDynamicTextureOptions {
     /**
      * Indicates whether the ADT will be used autonomously. In this mode:
      * - _checkUpdate() is not called
      * - the layer is not rendered (so, the ADT is not visible)
+     * It's up to the user to perform the required calls manually to update the ADT.
      */
     useStandalone?: boolean;
 }

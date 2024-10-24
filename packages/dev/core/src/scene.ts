@@ -1407,6 +1407,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         }
     }
 
+    /**
+     * Gets or sets the frame graph used to render the scene. You must enable useFrameGraph to use it.
+     */
     public frameGraph: Nullable<FrameGraph> = null;
 
     // Physics

@@ -3,12 +3,21 @@ import type { Nullable, AbstractEngine, EffectWrapperCreationOptions } from "cor
 import { EffectWrapper } from "../Materials/effectRenderer";
 import { Engine } from "../Engines/engine";
 
+/**
+ * Post process used to render in black and white
+ */
 export class ThinBlackAndWhitePostProcess extends EffectWrapper {
+    /**
+     * The fragment shader url
+     */
     public static readonly FragmentUrl = "blackAndWhite";
 
+    /**
+     * The list of uniforms used by the effect
+     */
     public static readonly Uniforms = ["degree"];
 
-    public override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
             list.push(import("../ShadersWGSL/blackAndWhite.fragment"));
@@ -17,20 +26,26 @@ export class ThinBlackAndWhitePostProcess extends EffectWrapper {
         }
     }
 
+    /**
+     * Constructs a new black and white post process
+     * @param name Name of the effect
+     * @param engine Engine to use to render the effect. If not provided, the last created engine will be used
+     * @param options Options to configure the effect
+     */
     constructor(name: string, engine: Nullable<AbstractEngine> = null, options?: EffectWrapperCreationOptions) {
         super({
             ...options,
             name,
             engine: engine || Engine.LastCreatedEngine!,
             useShaderStore: true,
-            _useAsPostProcess: true,
+            useAsPostProcess: true,
             fragmentShader: ThinBlackAndWhitePostProcess.FragmentUrl,
             uniforms: ThinBlackAndWhitePostProcess.Uniforms,
         });
     }
 
     /**
-     * Linear about to convert he result to black and white (default: 1)
+     * Effect intensity (default: 1)
      */
     public degree = 1;
 

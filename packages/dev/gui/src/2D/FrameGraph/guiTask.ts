@@ -3,9 +3,19 @@ import type { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import type { FrameGraph } from "core/FrameGraph/frameGraph";
 import { FrameGraphTask } from "core/FrameGraph/frameGraphTask";
 
+/**
+ * Task that renders a GUI texture.
+ */
 export class FrameGraphGUITask extends FrameGraphTask {
+    /**
+     * The destination texture to render the GUI to.
+     */
     public destinationTexture: FrameGraphTextureHandle;
 
+    /**
+     * The output texture of the task.
+     * This is the same texture as the destination texture, but the handles are different!
+     */
     public readonly outputTexture: FrameGraphTextureHandle;
 
     public override get disabled() {
@@ -17,12 +27,21 @@ export class FrameGraphGUITask extends FrameGraphTask {
         this._adt.disablePicking = value;
     }
 
+    /**
+     * Gets the underlying advanced dynamic texture.
+     */
     public get gui() {
         return this._adt;
     }
 
     protected _adt: AdvancedDynamicTexture;
 
+    /**
+     * Constructs a new GUI task.
+     * @param name Name of the task
+     * @param frameGraph Frame graph the task belongs to
+     * @param adt The GUI texture
+     */
     constructor(name: string, frameGraph: FrameGraph, adt: AdvancedDynamicTexture) {
         super(name, frameGraph);
 

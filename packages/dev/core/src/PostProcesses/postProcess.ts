@@ -647,7 +647,7 @@ export class PostProcess {
             new EffectWrapper({
                 name,
                 useShaderStore: true,
-                _useAsPostProcess: true,
+                useAsPostProcess: true,
                 fragmentShader: fragmentUrl,
                 engine: engine || camera?.getScene().getEngine(),
                 uniforms: parameters,

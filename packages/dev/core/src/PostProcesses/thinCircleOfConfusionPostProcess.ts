@@ -4,6 +4,9 @@ import { EffectWrapper } from "../Materials/effectRenderer";
 import type { Camera } from "core/Cameras/camera";
 import { Engine } from "../Engines/engine";
 
+/**
+ * Options used to create a ThinCircleOfConfusionPostProcess.
+ */
 export interface ThinCircleOfConfusionPostProcessOptions extends EffectWrapperCreationOptions {
     /**
      * If the (view) depth is normalized (0.0 to 1.0 from near to far) or not (0 to camera max distance)
@@ -11,16 +14,31 @@ export interface ThinCircleOfConfusionPostProcessOptions extends EffectWrapperCr
     depthNotNormalized?: boolean;
 }
 
+/**
+ * Post process used to calculate the circle of confusion (used for depth of field, for example)
+ */
 export class ThinCircleOfConfusionPostProcess extends EffectWrapper {
+    /**
+     * The fragment shader url
+     */
     public static readonly FragmentUrl = "circleOfConfusion";
 
+    /**
+     * The list of uniforms used by the effect
+     */
     public static readonly Uniforms = ["cameraMinMaxZ", "focusDistance", "cocPrecalculation"];
 
+    /**
+     * The list of samplers used by the effect
+     */
     public static readonly Samplers = ["depthSampler"];
 
+    /**
+     * Defines if the depth is normalized or not
+     */
     public static readonly DefinesDepthNotNormalized = "#define COC_DEPTH_NOT_NORMALIZED";
 
-    public override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
             list.push(import("../ShadersWGSL/circleOfConfusion.fragment"));
@@ -29,13 +47,19 @@ export class ThinCircleOfConfusionPostProcess extends EffectWrapper {
         }
     }
 
+    /**
+     * Constructs a new circle of confusion post process
+     * @param name Name of the effect
+     * @param engine Engine to use to render the effect. If not provided, the last created engine will be used
+     * @param options Options to configure the effect
+     */
     constructor(name: string, engine: Nullable<AbstractEngine> = null, options?: ThinCircleOfConfusionPostProcessOptions) {
         super({
             ...options,
             name,
             engine: engine || Engine.LastCreatedEngine!,
             useShaderStore: true,
-            _useAsPostProcess: true,
+            useAsPostProcess: true,
             fragmentShader: ThinCircleOfConfusionPostProcess.FragmentUrl,
             uniforms: ThinCircleOfConfusionPostProcess.Uniforms,
             samplers: ThinCircleOfConfusionPostProcess.Samplers,
@@ -43,6 +67,9 @@ export class ThinCircleOfConfusionPostProcess extends EffectWrapper {
         });
     }
 
+    /**
+     * The camera to use to calculate the circle of confusion
+     */
     public camera: Camera;
 
     /**

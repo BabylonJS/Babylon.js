@@ -5,18 +5,30 @@ import { ShaderLanguage } from "../Materials/shaderLanguage";
 import { Engine } from "../Engines/engine";
 
 /**
- * @internal
+ * Post process used to apply a blur effect
  */
 export class ThinBlurPostProcess extends EffectWrapper {
+    /**
+     * The vertex shader url
+     */
     public static readonly VertexUrl = "kernelBlur";
 
+    /**
+     * The fragment shader url
+     */
     public static readonly FragmentUrl = "kernelBlur";
 
+    /**
+     * The list of uniforms used by the effect
+     */
     public static readonly Uniforms = ["delta", "direction"];
 
+    /**
+     * The list of samplers used by the effect
+     */
     public static readonly Samplers = ["circleOfConfusionSampler"];
 
-    public override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
             list.push(Promise.all([import("../ShadersWGSL/kernelBlur.fragment"), import("../ShadersWGSL/kernelBlur.vertex")]));
@@ -30,13 +42,21 @@ export class ThinBlurPostProcess extends EffectWrapper {
     protected _packedFloat: boolean = false;
     private _staticDefines: string = "";
 
+    /**
+     * Constructs a new blur post process
+     * @param name Name of the effect
+     * @param engine Engine to use to render the effect. If not provided, the last created engine will be used
+     * @param direction Direction in which to apply the blur
+     * @param kernel Kernel size of the blur
+     * @param options Options to configure the effect
+     */
     constructor(name: string, engine: Nullable<AbstractEngine> = null, direction: Vector2, kernel: number, options?: EffectWrapperCreationOptions) {
         super({
             ...options,
             name,
             engine: engine || Engine.LastCreatedEngine!,
             useShaderStore: true,
-            _useAsPostProcess: true,
+            useAsPostProcess: true,
             fragmentShader: ThinBlurPostProcess.FragmentUrl,
             uniforms: ThinBlurPostProcess.Uniforms,
             samplers: ThinBlurPostProcess.Samplers,
@@ -50,8 +70,14 @@ export class ThinBlurPostProcess extends EffectWrapper {
         this.kernel = kernel;
     }
 
+    /**
+     * Width of the texture to apply the blur on
+     */
     public textureWidth: number = 0;
 
+    /**
+     * Height of the texture to apply the blur on
+     */
     public textureHeight: number = 0;
 
     /** The direction in which to blur the image. */
@@ -69,7 +95,7 @@ export class ThinBlurPostProcess extends EffectWrapper {
         this._idealKernel = v;
         this._kernel = this._nearestBestKernel(v);
         if (!this.options.blockCompilation) {
-            this.updateParameters();
+            this._updateParameters();
         }
     }
 
@@ -89,7 +115,7 @@ export class ThinBlurPostProcess extends EffectWrapper {
         }
         this._packedFloat = v;
         if (!this.options.blockCompilation) {
-            this.updateParameters();
+            this._updateParameters();
         }
     }
 
@@ -105,7 +131,8 @@ export class ThinBlurPostProcess extends EffectWrapper {
         this._drawWrapper.effect!.setFloat2("delta", (1 / this.textureWidth) * this.direction.x, (1 / this.textureHeight) * this.direction.y);
     }
 
-    public updateParameters(onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): void {
+    /** @internal */
+    public _updateParameters(onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): void {
         // Generate sampling offsets and weights
         const N = this._kernel;
         const centerIndex = (N - 1) / 2;

@@ -114,7 +114,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
                 textureType: pipelineTextureType,
                 blockCompilation,
                 depthNotNormalized,
-                effectWrapper: this._thinDepthOfFieldEffect.circleOfConfusion,
+                effectWrapper: this._thinDepthOfFieldEffect._circleOfConfusion,
             },
             null
         );
@@ -125,10 +125,10 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
         this._depthOfFieldBlurY = [];
         this._depthOfFieldBlurX = [];
 
-        const blurCount = this._thinDepthOfFieldEffect.depthOfFieldBlurX.length;
+        const blurCount = this._thinDepthOfFieldEffect._depthOfFieldBlurX.length;
 
         for (let i = 0; i < blurCount; i++) {
-            const [thinBlurY, ratioY] = this._thinDepthOfFieldEffect.depthOfFieldBlurY[i];
+            const [thinBlurY, ratioY] = this._thinDepthOfFieldEffect._depthOfFieldBlurY[i];
             const blurY = new DepthOfFieldBlurPostProcess(
                 "vertical blur",
                 null,
@@ -149,7 +149,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
             );
             blurY.autoClear = false;
 
-            const [thinBlurX, ratioX] = this._thinDepthOfFieldEffect.depthOfFieldBlurX[i];
+            const [thinBlurX, ratioX] = this._thinDepthOfFieldEffect._depthOfFieldBlurX[i];
             const blurX = new DepthOfFieldBlurPostProcess(
                 "horizontal blur",
                 null,
@@ -186,12 +186,12 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
             this._circleOfConfusion,
             this._depthOfFieldBlurX,
             {
-                size: this._thinDepthOfFieldEffect.depthOfFieldBlurX[blurCount - 1][1],
+                size: this._thinDepthOfFieldEffect._depthOfFieldBlurX[blurCount - 1][1],
                 samplingMode: Texture.BILINEAR_SAMPLINGMODE,
                 engine,
                 textureType: pipelineTextureType,
                 blockCompilation,
-                effectWrapper: this._thinDepthOfFieldEffect.dofMerge,
+                effectWrapper: this._thinDepthOfFieldEffect._dofMerge,
             },
             null
         );

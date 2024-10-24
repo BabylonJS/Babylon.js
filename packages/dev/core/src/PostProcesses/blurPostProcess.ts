@@ -136,7 +136,7 @@ export class BlurPostProcess extends PostProcess {
         onCompiled?: (effect: Effect) => void,
         onError?: (effect: Effect, errors: string) => void
     ) {
-        this._effectWrapper.updateParameters(onCompiled, onError);
+        this._effectWrapper._updateParameters(onCompiled, onError);
     }
 
     /**
