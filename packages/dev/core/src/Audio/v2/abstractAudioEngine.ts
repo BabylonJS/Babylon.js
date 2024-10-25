@@ -105,7 +105,7 @@ export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
     public abstract createSender(parent: AbstractAudioNode): Promise<AbstractAudioSender>;
     public abstract createSound(name: string, options: Nullable<StaticSoundOptions>): Promise<AbstractStaticSound>;
     public abstract createSoundBuffer(options: Nullable<StaticSoundBufferOptions>): Promise<AbstractStaticSoundBuffer>;
-    public abstract createSoundInstance(source: AbstractStaticSound): Promise<AbstractStaticSoundInstance>;
+    public abstract createSoundInstance(source: AbstractStaticSound): AbstractStaticSoundInstance;
     public abstract createStreamingSound(name: string, options: Nullable<StreamingSoundOptions>): Promise<AbstractStreamingSound>;
-    public abstract createStreamingSoundInstance(source: AbstractStreamingSound): Promise<AbstractStreamingSoundInstance>;
+    public abstract createStreamingSoundInstance(source: AbstractStreamingSound): AbstractStreamingSoundInstance;
 }

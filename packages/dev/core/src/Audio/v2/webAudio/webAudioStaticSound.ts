@@ -150,9 +150,7 @@ export class WebAudioStaticSoundInstance extends AbstractStaticSoundInstance {
 
     constructor(source: WebAudioStaticSound) {
         super(source);
-    }
 
-    public async init(): Promise<void> {
         this.sourceNode = new AudioBufferSourceNode(this._source.audioContext, {
             buffer: this._source.buffer.audioBuffer,
             detune: this._source.pitch,
@@ -166,7 +164,7 @@ export class WebAudioStaticSoundInstance extends AbstractStaticSoundInstance {
     }
 
     /** @internal */
-    public async play(waitTime: Nullable<number> = null, startOffset: Nullable<number> = null, duration: Nullable<number> = null): Promise<void> {
+    public play(waitTime: Nullable<number> = null, startOffset: Nullable<number> = null, duration: Nullable<number> = null): void {
         if (this._state === SoundState.Playing) {
             return;
         }

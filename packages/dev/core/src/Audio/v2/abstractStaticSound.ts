@@ -58,7 +58,7 @@ export abstract class AbstractStaticSound extends AbstractSound {
         this._loopEnd = value;
     }
 
-    protected async _createSoundInstance(): Promise<AbstractSoundInstance> {
+    protected _createSoundInstance(): AbstractSoundInstance {
         return this.engine.createSoundInstance(this);
     }
 }

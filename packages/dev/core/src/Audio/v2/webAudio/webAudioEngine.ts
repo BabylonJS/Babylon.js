@@ -155,9 +155,8 @@ export abstract class AbstractWebAudioEngine extends AbstractAudioEngine {
      * @param source - The source static sound.
      * @returns A promise that resolves to the created static sound instance.
      */
-    public async createSoundInstance(source: WebAudioStaticSound): Promise<WebAudioStaticSoundInstance> {
+    public createSoundInstance(source: WebAudioStaticSound): WebAudioStaticSoundInstance {
         const soundInstance = new WebAudioStaticSoundInstance(source);
-        await soundInstance.init();
         this._addSoundInstance(soundInstance);
         return soundInstance;
     }
@@ -180,9 +179,8 @@ export abstract class AbstractWebAudioEngine extends AbstractAudioEngine {
      * @param source - The source streaming sound.
      * @returns A promise that resolves to the created streaming sound instance.
      */
-    public async createStreamingSoundInstance(source: WebAudioStreamingSound): Promise<WebAudioStreamingSoundInstance> {
+    public createStreamingSoundInstance(source: WebAudioStreamingSound): WebAudioStreamingSoundInstance {
         const soundInstance = new WebAudioStreamingSoundInstance(source);
-        await soundInstance.init();
         this._addSoundInstance(soundInstance);
         return soundInstance;
     }

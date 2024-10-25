@@ -44,7 +44,7 @@ export abstract class AbstractStreamingSound extends AbstractSound {
         this._preload = preload;
     }
 
-    protected _createSoundInstance(): Promise<AbstractSoundInstance> {
+    protected _createSoundInstance(): AbstractSoundInstance {
         return this.engine.createStreamingSoundInstance(this);
     }
 }
