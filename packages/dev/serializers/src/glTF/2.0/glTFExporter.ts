@@ -239,7 +239,9 @@ export class GLTFExporter {
 
     private readonly _shouldExportNodeMap = new Map<Node, boolean>();
 
-    // Babylon node -> glTF node index
+    /**
+     * Babylon node -> glTF node index
+     */
     private readonly _nodeMap = new Map<Node, number>();
 
     // Babylon material -> glTF material index
@@ -297,7 +299,7 @@ export class GLTFExporter {
         );
     }
 
-    public _extensionsPostExportNodeAsync(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap: { [key: number]: number }): Promise<Nullable<INode>> {
+    public _extensionsPostExportNodeAsync(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap: Map<Node, number>): Promise<Nullable<INode>> {
         return this._applyExtensions(node, (extension, node) => extension.postExportNodeAsync && extension.postExportNodeAsync(context, node, babylonNode, nodeMap));
     }
 
@@ -1636,6 +1638,8 @@ export class GLTFExporter {
                 );
             }
         }
+
+        this._extensionsPostExportNodeAsync("exportNodeAsync", this._nodes[nodeIndex], babylonNode, this._nodeMap);
 
         return nodeIndex;
     }
