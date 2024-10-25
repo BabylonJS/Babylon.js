@@ -355,6 +355,7 @@ export class GLTFExporter {
                     }
                 }
 
+                this._glTF.extensions ||= {};
                 if (extension.onExporting) {
                     extension.onExporting();
                 }
