@@ -3,7 +3,7 @@ import type { AbstractWebAudioEngine } from "./webAudio/webAudioEngine";
 /**
  * Options for creating a new static sound buffer.
  */
-export interface AbstractStaticSoundBufferOptions {
+export interface StaticSoundBufferOptions {
     /**
      * The URL of the sound source.
      */
