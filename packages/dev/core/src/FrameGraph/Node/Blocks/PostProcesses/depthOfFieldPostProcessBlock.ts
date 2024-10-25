@@ -5,7 +5,7 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphDepthOfFieldTask } from "../../../Tasks/PostProcesses/depthOfFieldTask";
-import { DepthOfFieldEffectBlurLevel } from "core/PostProcesses/depthOfFieldEffect";
+import { ThinDepthOfFieldEffectBlurLevel } from "core/PostProcesses/thinDepthOfFieldEffect";
 
 /**
  * Block that implements the depth of field post process
@@ -25,10 +25,10 @@ export class NodeRenderGraphDepthOfFieldPostProcessBlock extends NodeRenderGraph
      * @param name defines the block name
      * @param frameGraph defines the hosting frame graph
      * @param scene defines the hosting scene
-     * @param blurLevel The quality of the depth of field effect (default: DepthOfFieldEffectBlurLevel.Low)
+     * @param blurLevel The quality of the depth of field effect (default: ThinDepthOfFieldEffectBlurLevel.Low)
      * @param hdr If high dynamic range textures should be used (default: false)
      */
-    public constructor(name: string, frameGraph: FrameGraph, scene: Scene, blurLevel: DepthOfFieldEffectBlurLevel = DepthOfFieldEffectBlurLevel.Low, hdr = false) {
+    public constructor(name: string, frameGraph: FrameGraph, scene: Scene, blurLevel: ThinDepthOfFieldEffectBlurLevel = ThinDepthOfFieldEffectBlurLevel.Low, hdr = false) {
         super(name, frameGraph, scene);
 
         this._additionalConstructionParameters = [blurLevel, hdr];
@@ -48,7 +48,7 @@ export class NodeRenderGraphDepthOfFieldPostProcessBlock extends NodeRenderGraph
         this._frameGraphTask = new FrameGraphDepthOfFieldTask(this.name, frameGraph, scene.getEngine(), blurLevel, hdr);
     }
 
-    private _createTask(blurLevel: DepthOfFieldEffectBlurLevel, hdr: boolean) {
+    private _createTask(blurLevel: ThinDepthOfFieldEffectBlurLevel, hdr: boolean) {
         const sourceSamplingMode = this._frameGraphTask.sourceSamplingMode;
         const depthSamplingMode = this._frameGraphTask.depthSamplingMode;
         const focalLength = this._frameGraphTask.depthOfField.focalLength;
@@ -72,16 +72,16 @@ export class NodeRenderGraphDepthOfFieldPostProcessBlock extends NodeRenderGraph
     /** The quality of the blur effect */
     @editableInPropertyPage("Blur level", PropertyTypeForEdition.List, "PROPERTIES", {
         options: [
-            { label: "Low", value: DepthOfFieldEffectBlurLevel.Low },
-            { label: "Medium", value: DepthOfFieldEffectBlurLevel.Medium },
-            { label: "High", value: DepthOfFieldEffectBlurLevel.High },
+            { label: "Low", value: ThinDepthOfFieldEffectBlurLevel.Low },
+            { label: "Medium", value: ThinDepthOfFieldEffectBlurLevel.Medium },
+            { label: "High", value: ThinDepthOfFieldEffectBlurLevel.High },
         ],
     })
-    public get blurLevel(): DepthOfFieldEffectBlurLevel {
+    public get blurLevel(): ThinDepthOfFieldEffectBlurLevel {
         return this._frameGraphTask.depthOfField.blurLevel;
     }
 
-    public set blurLevel(value: DepthOfFieldEffectBlurLevel) {
+    public set blurLevel(value: ThinDepthOfFieldEffectBlurLevel) {
         this._createTask(value, this._frameGraphTask.hdr);
     }
 

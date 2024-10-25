@@ -10,7 +10,8 @@ import { DepthOfFieldMergePostProcess } from "./depthOfFieldMergePostProcess";
 import type { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
-import { ThinDepthOfFieldEffectBlurLevel, ThinDepthOfFieldEffect } from "./thinDepthOfFieldEffect";
+import type { ThinDepthOfFieldEffectBlurLevel } from "./thinDepthOfFieldEffect";
+import { ThinDepthOfFieldEffect } from "./thinDepthOfFieldEffect";
 
 /**
  * Specifies the level of max blur that should be applied when using the depth of field effect
@@ -98,7 +99,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
     constructor(
         sceneOrEngine: Scene | AbstractEngine,
         depthTexture: Nullable<RenderTargetTexture>,
-        blurLevel: ThinDepthOfFieldEffectBlurLevel = ThinDepthOfFieldEffectBlurLevel.Low,
+        blurLevel: DepthOfFieldEffectBlurLevel = DepthOfFieldEffectBlurLevel.Low,
         pipelineTextureType = 0,
         blockCompilation = false,
         depthNotNormalized = false
@@ -113,7 +114,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
             true
         );
 
-        this._thinDepthOfFieldEffect = new ThinDepthOfFieldEffect("Depth of Field", engine, blurLevel);
+        this._thinDepthOfFieldEffect = new ThinDepthOfFieldEffect("Depth of Field", engine, blurLevel as unknown as ThinDepthOfFieldEffectBlurLevel);
 
         // Use R-only formats if supported to store the circle of confusion values.
         // This should be more space and bandwidth efficient than using RGBA.
