@@ -119,7 +119,7 @@ export class CSG2 implements IDisposable {
 
     private _process(operation: "difference" | "intersection" | "union", csg: CSG2) {
         if (this.numProp !== csg.numProp) {
-            throw new Error("CSG must have the same number of properties");
+            throw new Error("CSG must be used with geometries having the same number of properties");
         }
         return new CSG2(Manifold[operation](this._manifold, csg._manifold), this.numProp, this._vertexStructure);
     }
@@ -301,11 +301,18 @@ export class CSG2 implements IDisposable {
         const manifoldMesh = new ManifoldMesh({ numProp: numProp, vertProperties, triVerts, runIndex, runOriginalID });
         manifoldMesh.merge();
 
+        let returnValue: CSG2;
         try {
-            return new CSG2(new Manifold(manifoldMesh), numProp, structure);
+            returnValue = new CSG2(new Manifold(manifoldMesh), numProp, structure);
         } catch (e) {
             throw new Error("Error while creating the CSG: " + e.message);
         }
+
+        if (returnValue._manifold.genus() < 0) {
+            throw new Error("Incorrect volume detected. Make sure you are not using a double sided geometry");
+        }
+
+        return returnValue;
     }
 
     private static _Construct(data: IVertexDataLike, worldMatrix: Nullable<Matrix>, runIndex?: Uint32Array, runOriginalID?: Uint32Array) {
