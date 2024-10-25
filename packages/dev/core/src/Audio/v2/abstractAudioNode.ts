@@ -41,26 +41,21 @@ export abstract class AbstractAudioNode extends AbstractAudioNodeParent {
      */
     protected readonly _connectedUpstreamNodes?: Set<AbstractAudioNode> | undefined;
 
-    protected readonly _engine: AbstractAudioEngine;
+    /**
+     * The audio engine this node belongs to.
+     */
+    public readonly engine: AbstractAudioEngine;
 
     /**
      * Observable for when the audio node is disposed.
      */
     public readonly onDisposeObservable = new Observable<AbstractAudioNode>();
 
-    /**
-     * The audio engine this node belongs to.
-     */
-    public get engine(): AbstractAudioEngine {
-        return this._engine;
-    }
-
     /** @internal */
     constructor(engine: AbstractAudioEngine, nodeType: AudioNodeType, parent: Nullable<AbstractAudioNodeParent> = null) {
         super();
 
-        this._engine = engine;
-
+        this.engine = engine;
         this.parent = parent;
 
         if (nodeType | AudioNodeType.Input) {
@@ -102,7 +97,7 @@ export abstract class AbstractAudioNode extends AbstractAudioNodeParent {
      * The parent audio node.
      */
     public get parent(): AbstractAudioNodeParent {
-        return this._parent ?? this._engine;
+        return this._parent ?? this.engine;
     }
 
     /**

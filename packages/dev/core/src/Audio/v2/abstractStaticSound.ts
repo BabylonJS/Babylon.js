@@ -10,10 +10,6 @@ import type { AbstractStaticSoundBuffer } from "./abstractStaticSoundBuffer";
  */
 export interface StaticSoundOptions extends SoundOptions {
     /**
-     * The buffer to be used as the sound source.
-     */
-    sourceBuffer?: AbstractStaticSoundBuffer;
-    /**
      * The start of the loop range in seconds.
      */
     loopStart?: number;

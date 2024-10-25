@@ -7,7 +7,7 @@ import type { AbstractAudioSender } from "../abstractAudioSender";
 import type { AbstractMainAudioBus } from "../abstractMainAudioBus";
 import type { AbstractMainAudioOutput } from "../abstractMainAudioOutput";
 import type { AbstractStaticSound, StaticSoundOptions } from "../abstractStaticSound";
-import type { StaticSoundBufferOptions } from "../abstractStaticSoundBuffer";
+import type { AbstractStaticSoundBuffer, StaticSoundBufferOptions } from "../abstractStaticSoundBuffer";
 import type { AbstractStreamingSound, StreamingSoundOptions } from "../abstractStreamingSound";
 import { WebAudioMainBus } from "./webAudioMainBus";
 import { WebAudioMainOutput } from "./webAudioMainOutput";
@@ -40,6 +40,10 @@ export interface WebAudioPositionerOptions extends AudioPositionerOptions {}
  * Options for creating a new WebAudioStaticSound.
  */
 export interface WebAudioStaticSoundOptions extends StaticSoundOptions {
+    /**
+     * The buffer to be used as the sound source.
+     */
+    sourceBuffer?: AbstractStaticSoundBuffer;
     /**
      * The URL of the sound source.
      */
