@@ -1037,35 +1037,9 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
 
     private _listenForCameraChanges() {
         // We want to listen for camera changes and change settings while the camera is moving.
-        if (this.scene.activeCamera instanceof ArcRotateCamera) {
-            this.scene.onBeforeCameraRenderObservable.add((camera) => {
-                let isMoving: boolean = false;
-                if (camera instanceof ArcRotateCamera) {
-                    isMoving =
-                        camera.inertialAlphaOffset !== 0 ||
-                        camera.inertialBetaOffset !== 0 ||
-                        camera.inertialRadiusOffset !== 0 ||
-                        camera.inertialPanningX !== 0 ||
-                        camera.inertialPanningY !== 0;
-                } else if (camera instanceof FreeCamera) {
-                    isMoving =
-                        camera.cameraDirection.x !== 0 ||
-                        camera.cameraDirection.y !== 0 ||
-                        camera.cameraDirection.z !== 0 ||
-                        camera.cameraRotation.x !== 0 ||
-                        camera.cameraRotation.y !== 0;
-                }
-                if (this._accumulationPass) {
-                    if (isMoving) {
-                        // this._accumulationPass.reset = true;
-                        // this._accumulationPass.remenance = 1.0;
-                    } else {
-                        // this._accumulationPass.reset = false;
-                        // this._accumulationPass.remenance = 0.9;
-                    }
-                }
-            });
-        }
+        this.scene.activeCamera?.onViewMatrixChangedObservable.add(() => {
+            this._accumulationPass.isMoving = true;
+        });
     }
 
     /**

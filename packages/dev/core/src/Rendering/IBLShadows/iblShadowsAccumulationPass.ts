@@ -91,6 +91,16 @@ export class _IblShadowsAccumulationPass {
         this._reset = value;
     }
     private _reset: boolean = true;
+
+    /**
+     * Tell the pass that the camera is moving. This will cause the accumulation
+     * rate to change.
+     */
+    public set isMoving(value: boolean) {
+        this._isMoving = value;
+    }
+    private _isMoving: boolean = false;
+
     private _debugPassPP: PostProcess;
     private _debugSizeParams: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
 
@@ -268,8 +278,9 @@ export class _IblShadowsAccumulationPass {
     }
 
     private _updateOutputTexture() {
+        const remenance = this._isMoving ? this.remenance : 1.0;
         this._outputTexture.setTexture("spatialBlurSampler", this._renderPipeline.getSpatialBlurTexture());
-        this._outputTexture.setVector4("accumulationParameters", new Vector4(this.remenance, this.reset ? 1.0 : 0.0, 0.0, 0.0));
+        this._outputTexture.setVector4("accumulationParameters", new Vector4(remenance, this.reset ? 1.0 : 0.0, 0.0, 0.0));
         this._outputTexture.setTexture("oldAccumulationSampler", this._oldAccumulationCopy ? this._oldAccumulationCopy : (this._renderPipeline as any)._dummyTexture2d);
         this._outputTexture.setTexture("prevPositionSampler", this._oldPositionCopy ? this._oldPositionCopy : (this._renderPipeline as any)._dummyTexture2d);
 
@@ -283,6 +294,7 @@ export class _IblShadowsAccumulationPass {
         this._outputTexture.setTexture("positionSampler", geometryBufferRenderer.getGBuffer().textures[wPositionIndex]);
 
         this.reset = false;
+        this._isMoving = false;
     }
 
     private _updatePositionCopy() {
