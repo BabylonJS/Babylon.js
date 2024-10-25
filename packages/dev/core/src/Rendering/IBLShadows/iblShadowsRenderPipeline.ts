@@ -14,8 +14,6 @@ import type { PostProcessOptions } from "../../PostProcesses/postProcess";
 import { _IblShadowsImportanceSamplingRenderer } from "./iblShadowsImportanceSamplingRenderer";
 import { _IblShadowsSpatialBlurPass } from "./iblShadowsSpatialBlurPass";
 import { _IblShadowsAccumulationPass } from "./iblShadowsAccumulationPass";
-import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
-import { FreeCamera } from "../../Cameras/freeCamera";
 import { PostProcessRenderPipeline } from "../../PostProcesses/RenderPipeline/postProcessRenderPipeline";
 import { PostProcessRenderEffect } from "core/PostProcesses/RenderPipeline/postProcessRenderEffect";
 import type { Camera } from "core/Cameras/camera";
@@ -601,6 +599,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     public set envRotation(value: number) {
         if (!this._voxelTracingPass) return;
         this._voxelTracingPass.envRotation = value;
+        this._accumulationPass.reset = true;
     }
 
     /**
