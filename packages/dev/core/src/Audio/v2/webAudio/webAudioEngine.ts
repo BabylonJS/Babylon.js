@@ -48,6 +48,10 @@ export interface WebAudioStaticSoundOptions extends StaticSoundOptions {
      * The URL of the sound source.
      */
     sourceUrl?: string;
+    /**
+     * Potential URLs of the sound source. The first one that is successfully loaded will be used.
+     */
+    sourceUrls?: string[];
 }
 
 /**
@@ -55,9 +59,13 @@ export interface WebAudioStaticSoundOptions extends StaticSoundOptions {
  */
 export interface WebAudioStaticSoundBufferOptions extends StaticSoundBufferOptions {
     /**
-     * The URL of the sound source.
+     * The URL of the sound buffer.
      */
     sourceUrl?: string;
+    /**
+     * Potential URLs of the sound buffer. The first one that is successfully loaded will be used.
+     */
+    sourceUrls?: string[];
 }
 
 /**
@@ -184,12 +192,16 @@ export abstract class AbstractWebAudioEngine extends AbstractAudioEngine {
         this._addSoundInstance(soundInstance);
         return soundInstance;
     }
+
+    public abstract formatIsInvalid(format: string): boolean;
 }
 
 /** @internal */
 export class WebAudioEngine extends AbstractWebAudioEngine {
     private _audioContext: AudioContext;
     private _mainOutput: Nullable<WebAudioMainOutput> = null;
+
+    private _invalidFormats = new Set<string>();
 
     /** @internal */
     public get currentTime(): number {
@@ -235,5 +247,15 @@ export class WebAudioEngine extends AbstractWebAudioEngine {
         this._mainOutput = (await this.createMainOutput()) as WebAudioMainOutput;
 
         await this.createMainBus("default");
+    }
+
+    /** @internal */
+    public flagInvalidFormat(format: string): void {
+        this._invalidFormats.add(format);
+    }
+
+    /** @internal */
+    public formatIsInvalid(format: string): boolean {
+        return this._invalidFormats.has(format);
     }
 }

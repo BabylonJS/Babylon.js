@@ -8,6 +8,8 @@ import { WebAudioBus } from "./webAudioBus";
 import type { AbstractWebAudioEngine, WebAudioEngine, WebAudioStaticSoundBufferOptions, WebAudioStaticSoundOptions } from "./webAudioEngine";
 import { WebAudioMainBus } from "./webAudioMainBus";
 
+const fileExtensionRegex = new RegExp("\\.(\\w{3,4}$|\\?)");
+
 /** @internal */
 export class WebAudioStaticSound extends AbstractStaticSound {
     private _gainNode: GainNode;
@@ -48,7 +50,7 @@ export class WebAudioStaticSound extends AbstractStaticSound {
 
         if (options?.sourceBuffer) {
             this._buffer = options.sourceBuffer as WebAudioStaticSoundBuffer;
-        } else if (options?.sourceUrl) {
+        } else if (options?.sourceUrl || options?.sourceUrls) {
             this._buffer = await this.engine.createSoundBuffer(options);
         }
 
@@ -119,6 +121,26 @@ export class WebAudioStaticSoundBuffer extends AbstractStaticSoundBuffer {
             const arrayBuffer = await response.arrayBuffer();
             const audioContext = await this.engine.audioContext;
             this.audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        } else if (options?.sourceUrls) {
+            const audioContext = await this.engine.audioContext;
+            for (const sourceUrl of options.sourceUrls) {
+                const format = sourceUrl.match(fileExtensionRegex)?.at(1);
+                if (format && this.engine.formatIsInvalid(format)) {
+                    continue;
+                }
+                const response = await fetch(sourceUrl);
+                const arrayBuffer = await response.arrayBuffer();
+                try {
+                    this.audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                } catch (e) {
+                    if (format && 0 < format.length) {
+                        this.engine.flagInvalidFormat(format);
+                    }
+                }
+                if (this.audioBuffer) {
+                    break;
+                }
+            }
         }
     }
 }
