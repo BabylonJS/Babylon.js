@@ -12,7 +12,10 @@ import { Constants } from "../Engines/constants";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { ThinDepthOfFieldEffectBlurLevel, ThinDepthOfFieldEffect } from "./thinDepthOfFieldEffect";
 
-export { ThinDepthOfFieldEffectBlurLevel as DepthOfFieldEffectBlurLevel } from "./thinDepthOfFieldEffect";
+/**
+ * Specifies the level of max blur that should be applied when using the depth of field effect
+ */
+export type DepthOfFieldEffectBlurLevel = ThinDepthOfFieldEffectBlurLevel;
 
 /**
  * The depth of field effect applies a blur to objects that are closer or further from where the camera is focusing.
