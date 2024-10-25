@@ -24,7 +24,7 @@ import { Color3 } from "core/Maths/math.color";
 import { WebGPUEngine } from "core/Engines/webgpuEngine";
 import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
 
-const useWebGPU = true;
+const useWebGPU = false;
 const debugTextures = false;
 
 export class PreviewManager {
@@ -142,9 +142,6 @@ export class PreviewManager {
             },
             false
         );
-
-        this._scene.activeCamera = null;
-        this._scene.useFrameGraph = true;
 
         this._lightParent = new TransformNode("LightParent", this._scene);
 
@@ -271,8 +268,6 @@ export class PreviewManager {
                 input.value = { meshes: this._scene.meshes, particleSystems: this._scene.particleSystems };
             }
         }
-
-        this._scene.activeCamera = null;
 
         this._frameCamera();
 

@@ -1385,32 +1385,30 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         return this._texturesEnabled;
     }
 
-    private _useFrameGraph = false;
+    private _frameGraph: Nullable<FrameGraph> = null;
+    private _currentCustomRenderFunction?: (updateCameras: boolean, ignoreAnimations: boolean) => void;
     /**
-     * Gets or sets a boolean indicating if the frame graph should be used
+     * Gets or sets the frame graph used to render the scene. If set, the scene will use the frame graph to render the scene instead of the default render loop.
      */
-    public get useFrameGraph(): boolean {
-        return this._useFrameGraph;
+    public get frameGraph() {
+        return this._frameGraph;
     }
 
-    public set useFrameGraph(value: boolean) {
-        if (this._useFrameGraph === value) {
+    public set frameGraph(value: Nullable<FrameGraph>) {
+        if (this._frameGraph) {
+            this._frameGraph = value;
+            if (!value) {
+                this.customRenderFunction = this._currentCustomRenderFunction;
+            }
             return;
         }
 
-        this._useFrameGraph = value;
-
-        if (this._useFrameGraph) {
+        this._frameGraph = value;
+        if (value) {
+            this._currentCustomRenderFunction = this.customRenderFunction;
             this.customRenderFunction = this._renderWithFrameGraph;
-        } else {
-            this.customRenderFunction = undefined;
         }
     }
-
-    /**
-     * Gets or sets the frame graph used to render the scene. You must enable useFrameGraph to use it.
-     */
-    public frameGraph: Nullable<FrameGraph> = null;
 
     // Physics
     /**
@@ -4319,7 +4317,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         }
 
         if (!mesh.computeBonesUsingShaders) {
-            if (this._softwareSkinnedMeshes.pushNoDuplicate(<Mesh>mesh) && this.useFrameGraph) {
+            if (this._softwareSkinnedMeshes.pushNoDuplicate(<Mesh>mesh) && this.frameGraph) {
                 (<Mesh>mesh).applySkeleton(mesh.skeleton);
             }
         }
