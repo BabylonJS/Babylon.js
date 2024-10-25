@@ -30,7 +30,7 @@ export class EdgeDetectionPostProcess extends PostProcess {
     /**
      * Defines the intensity of the detected edges.
      * Higher values result in more pronounced edges.
-     * default value: 0.2  (min:0, max:1)
+     * default: 0.2  (min:0, max:1)
      */
     @serialize()
     public edgeIntensity: number = 0.2;
@@ -38,14 +38,14 @@ export class EdgeDetectionPostProcess extends PostProcess {
     /**
      * Defines the width of the detected edges.
      * Higher values result in thicker edges.
-     * default value: 0.2 (min:0.125, max:1)
+     * default: 0.2 (min:0.125, max:1)
      */
     @serialize()
     public edgeWidth: number = 0.2;
 
     /**
      * Defines the render mode.
-     * default value: 0
+     * default: 0
      * 0: general, 1: normal, 2: depth, 3: outline only
      */
     @serialize()
