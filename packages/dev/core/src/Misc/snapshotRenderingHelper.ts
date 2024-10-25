@@ -55,15 +55,13 @@ export class SnapshotRenderingHelper {
         this.fixMeshes();
 
         this._onResizeObserver = this._engine.onResizeObservable.add(() => {
-            const save = this._engine.snapshotRendering;
-            this._engine.snapshotRendering = false;
-            if (save) {
-                this.enableSnapshotRendering();
-            }
+            // enableSnapshotRendering() will delay the actual enabling of snapshot rendering by at least a frame, so these two lines are not redundant!
+            this.disableSnapshotRendering();
+            this.enableSnapshotRendering();
         });
 
         this._scene.onBeforeRenderObservable.add(() => {
-            if (!this._engine.snapshotRendering || this._engine.snapshotRenderingMode !== Constants.SNAPSHOTRENDERING_FAST) {
+            if (!this._fastSnapshotRenderingEnabled) {
                 return;
             }
 
@@ -161,6 +159,25 @@ export class SnapshotRenderingHelper {
     }
 
     /**
+     * Call this method to update a mesh on the GPU after some properties have changed (position, rotation, scaling, visibility).
+     * @param mesh The mesh to update. Can be a single mesh or an array of meshes to update.
+     */
+    public updateMesh(mesh: AbstractMesh | AbstractMesh[]) {
+        if (!this._fastSnapshotRenderingEnabled) {
+            return;
+        }
+
+        if (Array.isArray(mesh)) {
+            for (const m of mesh) {
+                m.transferToEffect(m.computeWorldMatrix(true));
+            }
+            return;
+        }
+
+        mesh.transferToEffect(mesh.computeWorldMatrix(true));
+    }
+
+    /**
      * Update the meshes used in an effect layer to ensure that snapshot rendering works correctly for these meshes in this layer.
      * @param effectLayer The effect layer
      * @param autoUpdate If true, the helper will automatically update the effect layer meshes with each frame. If false, you'll need to call this method manually when the camera or layer meshes move or rotate.
@@ -194,7 +211,15 @@ export class SnapshotRenderingHelper {
         this._engine.onResizeObservable.remove(this._onResizeObserver);
     }
 
+    private get _fastSnapshotRenderingEnabled() {
+        return this._engine.snapshotRendering && this._engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST;
+    }
+
     private _updateMeshMatricesForRenderPassId(renderPassId: number) {
+        if (!this._fastSnapshotRenderingEnabled) {
+            return;
+        }
+
         const sceneTransformationMatrix = this._scene.getTransformMatrix();
 
         for (let i = 0; i < this._scene.meshes.length; ++i) {
