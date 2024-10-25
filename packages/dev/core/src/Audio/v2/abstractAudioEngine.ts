@@ -1,34 +1,69 @@
-import type { AbstractAudioDevice } from "./abstractAudioDevice";
+import type { Nullable } from "../../types";
 import type { AbstractAudioNode } from "./abstractAudioNode";
 import { AbstractAudioNodeParent } from "./abstractAudioNodeParent";
 import type { AbstractAudioPositioner } from "./abstractAudioPositioner";
 import type { AbstractAudioSender } from "./abstractAudioSender";
 import type { AbstractMainAudioBus } from "./abstractMainAudioBus";
-import type { AbstractSoundSource } from "./abstractSoundSource";
+import type { AbstractMainAudioOutput } from "./abstractMainAudioOutput";
+import type { AbstractSound } from "./abstractSound";
+import type { AbstractSoundInstance } from "./abstractSoundInstance";
+import type { AbstractStaticSound, StaticSoundOptions } from "./abstractStaticSound";
+import type { AbstractStaticSoundBuffer, StaticSoundBufferOptions } from "./abstractStaticSoundBuffer";
 import type { AbstractStaticSoundInstance } from "./abstractStaticSoundInstance";
-import type { AbstractStaticSoundSource } from "./abstractStaticSoundSource";
+import type { AbstractStreamingSound, StreamingSoundOptions } from "./abstractStreamingSound";
 import type { AbstractStreamingSoundInstance } from "./abstractStreamingSoundInstance";
-import type { AbstractStreamingSoundSource } from "./abstractStreamingSoundSource";
 import type { SpatialAudioListener } from "./spatialAudioListener";
 
 /**
- * Owns top-level AbstractAudioNode objects.
- * Owns all AbstractSoundSource objects.
+ * Abstract base class for audio engines.
  */
 export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
+    // Owns top-level AbstractAudioNode objects.
+    // Owns all AbstractSound objects.
+
+    // Not owned, but all items should be in parent's `children` container, too, which is owned.
+    private readonly _mainBuses = new Set<AbstractMainAudioBus>();
+
     // Owned
-    public readonly listeners = new Set<SpatialAudioListener>();
+    private readonly _sounds = new Set<AbstractSound>();
 
-    // Not owned, but all items should in parent's `children` container, too, which is owned.
-    public readonly soundInstances = new Set<AbstractStaticSoundInstance>();
+    // Not owned, but all items should be in parent's `children` container, too, which is owned.
+    private readonly _soundInstances = new Set<AbstractSoundInstance>();
 
-    // Owned
-    public readonly soundSources = new Set<AbstractSoundSource>();
+    /**
+     * The spatial audio listeners.
+     */
+    public readonly listeners = new Set<SpatialAudioListener>(); // Owned
 
+    /**
+     * The current time in seconds.
+     */
+    public abstract get currentTime(): number;
+
+    /**
+     * The main output node.
+     */
+    public abstract get mainOutput(): Nullable<AbstractAudioNode>;
+
+    /**
+     * The default main bus.
+     */
+    public get defaultMainBus(): Nullable<AbstractMainAudioBus> {
+        if (this._mainBuses.size === 0) {
+            return null;
+        }
+
+        const [bus] = this._mainBuses;
+        return bus;
+    }
+
+    /**
+     * Releases associated resources.
+     */
     public override dispose(): void {
         super.dispose();
 
-        this.soundInstances.clear();
+        this._soundInstances.clear();
 
         if (this.listeners) {
             for (const listener of this.listeners) {
@@ -37,16 +72,40 @@ export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
             this.listeners.clear();
         }
 
-        for (const source of this.soundSources) {
+        for (const source of this._sounds) {
             source.dispose();
         }
-        this.soundSources.clear();
+        this._sounds.clear();
     }
 
-    public abstract createDevice(name: string): AbstractAudioDevice;
-    public abstract createMainBus(name: string): AbstractMainAudioBus;
-    public abstract createPositioner(parent: AbstractAudioNode): AbstractAudioPositioner;
-    public abstract createSender(parent: AbstractAudioNode): AbstractAudioSender;
-    public abstract createStaticSoundInstance(source: AbstractStaticSoundSource, inputNode: AbstractAudioNode): AbstractStaticSoundInstance;
-    public abstract createStreamingSoundInstance(source: AbstractStreamingSoundSource, inputNode: AbstractAudioNode): AbstractStreamingSoundInstance;
+    protected _addMainBus(mainBus: AbstractMainAudioBus): void {
+        this._mainBuses.add(mainBus);
+        mainBus.onDisposeObservable.addOnce(() => {
+            this._mainBuses.delete(mainBus);
+        });
+    }
+
+    protected _addSound(sound: AbstractSound): void {
+        this._sounds.add(sound);
+        sound.onDisposeObservable.addOnce(() => {
+            this._sounds.delete(sound);
+        });
+    }
+
+    protected _addSoundInstance(soundInstance: AbstractSoundInstance): void {
+        this._soundInstances.add(soundInstance);
+        soundInstance.onDisposeObservable.addOnce(() => {
+            this._soundInstances.delete(soundInstance);
+        });
+    }
+
+    public abstract createMainBus(name: string): Promise<AbstractMainAudioBus>;
+    public abstract createMainOutput(): Promise<AbstractMainAudioOutput>;
+    public abstract createPositioner(parent: AbstractAudioNode): Promise<AbstractAudioPositioner>;
+    public abstract createSender(parent: AbstractAudioNode): Promise<AbstractAudioSender>;
+    public abstract createSound(name: string, options: Nullable<StaticSoundOptions>): Promise<AbstractStaticSound>;
+    public abstract createSoundBuffer(options: Nullable<StaticSoundBufferOptions>): Promise<AbstractStaticSoundBuffer>;
+    public abstract createSoundInstance(source: AbstractStaticSound): Promise<AbstractStaticSoundInstance>;
+    public abstract createStreamingSound(name: string, options: Nullable<StreamingSoundOptions>): Promise<AbstractStreamingSound>;
+    public abstract createStreamingSoundInstance(source: AbstractStreamingSound): Promise<AbstractStreamingSoundInstance>;
 }

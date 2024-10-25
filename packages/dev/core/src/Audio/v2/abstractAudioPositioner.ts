@@ -1,51 +1,54 @@
-import { AbstractAudioNode, AudioNodeType } from "./abstractAudioNode";
-import type { SpatialAudioListener } from "./spatialAudioListener";
-import type { ISpatialAudioTransformOptions } from "./spatialAudioTransform";
-import { SpatialAudioTransform } from "./spatialAudioTransform";
 import type { Quaternion, Vector3 } from "../../Maths/math.vector";
 import type { TransformNode } from "../../Meshes";
 import type { Nullable } from "../../types";
+import { AbstractAudioNode, AudioNodeType } from "./abstractAudioNode";
+import type { SpatialAudioListener } from "./spatialAudioListener";
+import type { SpatialAudioTransformOptions } from "./spatialAudioTransform";
+import { SpatialAudioTransform } from "./spatialAudioTransform";
 
-export interface IAudioPositionerOptions extends ISpatialAudioTransformOptions {}
+/**
+ * Options for creating a new audio positioner.
+ */
+export interface AudioPositionerOptions extends SpatialAudioTransformOptions {}
 
+/**
+ * Abstract base class for audio positioners.
+ */
 export abstract class AbstractAudioPositioner extends AbstractAudioNode {
     // Not owned
-    private _listeners: Nullable<Set<SpatialAudioListener>> = null;
     private _pannerGain: number = 1;
     private _pannerPosition: Nullable<Vector3> = null;
     private _spatialTransform: SpatialAudioTransform;
     private _spatializerGain: number = 1;
+
     // TODO: Add spatializer cone angles/volumes, etc ...
 
-    public constructor(parent: AbstractAudioNode, options?: ISpatialAudioTransformOptions) {
+    /**
+     * The spatial audio listeners.
+     */
+    public readonly listeners = new Set<SpatialAudioListener>();
+
+    /** @internal */
+    constructor(parent: AbstractAudioNode, options: Nullable<SpatialAudioTransformOptions> = null) {
         super(parent.engine, AudioNodeType.InputOutput, parent);
 
         this._spatialTransform = new SpatialAudioTransform(options);
     }
 
+    /**
+     * Releases associated resources.
+     */
     public override dispose(): void {
         super.dispose();
 
         this._spatialTransform.dispose();
 
-        this._listeners?.clear();
-        this._listeners = null;
+        this.listeners?.clear();
     }
 
-    /** @internal */
-    public _addListener(listener: SpatialAudioListener): void {
-        if (!this._listeners) {
-            this._listeners = new Set();
-        }
-
-        this._listeners.add(listener);
-    }
-
-    /** @internal */
-    public _removeListener(listener: SpatialAudioListener): void {
-        this._listeners?.delete(listener);
-    }
-
+    /**
+     * The position of the audio positioner.
+     */
     public get position(): Vector3 {
         return this._spatialTransform.position;
     }
@@ -54,6 +57,9 @@ export abstract class AbstractAudioPositioner extends AbstractAudioNode {
         this._spatialTransform.position = position;
     }
 
+    /**
+     * The rotation of the audio positioner.
+     */
     public get rotation(): Quaternion {
         return this._spatialTransform.rotation;
     }
@@ -62,6 +68,9 @@ export abstract class AbstractAudioPositioner extends AbstractAudioNode {
         this._spatialTransform.rotation = rotation;
     }
 
+    /**
+     * The scale of the audio positioner.
+     */
     public get attachedTransformNode(): Nullable<TransformNode> {
         return this._spatialTransform.attachedTransformNode;
     }
@@ -70,6 +79,9 @@ export abstract class AbstractAudioPositioner extends AbstractAudioNode {
         this._spatialTransform.attachedTransformNode = node;
     }
 
+    /**
+     * The spatializer gain of the audio positioner.
+     */
     public get spatializerGain(): number {
         return this._spatializerGain;
     }
@@ -78,6 +90,9 @@ export abstract class AbstractAudioPositioner extends AbstractAudioNode {
         this._spatializerGain = value;
     }
 
+    /**
+     * The panner gain of the audio positioner.
+     */
     public get pannerGain(): number {
         return this._pannerGain;
     }
@@ -86,6 +101,9 @@ export abstract class AbstractAudioPositioner extends AbstractAudioNode {
         this._pannerGain = value;
     }
 
+    /**
+     * The panner position of the audio positioner.
+     */
     public get pannerPosition(): Nullable<Vector3> {
         return this._pannerPosition;
     }

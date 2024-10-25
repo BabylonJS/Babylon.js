@@ -1,6 +1,7 @@
+import { Observable } from "../../Misc/observable";
+import type { Nullable } from "../../types";
 import type { AbstractAudioEngine } from "./abstractAudioEngine";
 import { AbstractAudioNodeParent } from "./abstractAudioNodeParent";
-import type { Nullable } from "../../types";
 
 export enum AudioNodeType {
     /**
@@ -19,11 +20,12 @@ export enum AudioNodeType {
     InputOutput = 3,
 }
 
+/**
+ * Abstract class for an audio node.
+ */
 export abstract class AbstractAudioNode extends AbstractAudioNodeParent {
     // If parent is null, node is owned by audio engine.
     private _parent: Nullable<AbstractAudioNodeParent> = null;
-
-    public readonly engine: AbstractAudioEngine;
 
     /**
      * The connected downstream audio nodes.
@@ -39,18 +41,27 @@ export abstract class AbstractAudioNode extends AbstractAudioNodeParent {
      */
     protected readonly _connectedUpstreamNodes?: Set<AbstractAudioNode> | undefined;
 
+    protected readonly _engine: AbstractAudioEngine;
+
     /**
-     * Creates a new audio node.
-     * @param engine - The audio engine this node will be added to
-     * @param nodeType - The type of audio node
-     * @param parent - The parent audio node. Defaults to `null` to make the the audio engine the parent
+     * Observable for when the audio node is disposed.
      */
-    public constructor(engine: AbstractAudioEngine, nodeType: AudioNodeType, parent: Nullable<AbstractAudioNodeParent> = null) {
+    public readonly onDisposeObservable = new Observable<AbstractAudioNode>();
+
+    /**
+     * The audio engine this node belongs to.
+     */
+    public get engine(): AbstractAudioEngine {
+        return this._engine;
+    }
+
+    /** @internal */
+    constructor(engine: AbstractAudioEngine, nodeType: AudioNodeType, parent: Nullable<AbstractAudioNodeParent> = null) {
         super();
 
-        this.engine = engine;
+        this._engine = engine;
 
-        this._parent = parent;
+        this.parent = parent;
 
         if (nodeType | AudioNodeType.Input) {
             this._connectedDownstreamNodes = new Set<AbstractAudioNode>();
@@ -82,12 +93,21 @@ export abstract class AbstractAudioNode extends AbstractAudioNodeParent {
             }
             this._connectedUpstreamNodes.clear();
         }
+
+        this.onDisposeObservable.notifyObservers(this);
+        this.onDisposeObservable.clear();
     }
 
+    /**
+     * The parent audio node.
+     */
     public get parent(): AbstractAudioNodeParent {
-        return this._parent ?? this.engine;
+        return this._parent ?? this._engine;
     }
 
+    /**
+     * Sets the parent audio node.
+     */
     public set parent(parent: Nullable<AbstractAudioNodeParent>) {
         if (this._parent === parent) {
             return;
@@ -173,10 +193,16 @@ export abstract class AbstractAudioNode extends AbstractAudioNodeParent {
     }
 }
 
+/**
+ * Abstract class for an audio node with a name.
+ */
 export abstract class AbstractNamedAudioNode extends AbstractAudioNode {
+    /**
+     * The name of the audio node.
+     */
     public name: string;
 
-    public constructor(name: string, engine: AbstractAudioEngine, nodeType: AudioNodeType) {
+    constructor(name: string, engine: AbstractAudioEngine, nodeType: AudioNodeType) {
         super(engine, nodeType);
         this.name = name;
     }

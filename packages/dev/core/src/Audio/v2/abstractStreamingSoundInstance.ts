@@ -1,9 +1,12 @@
-import type { AbstractAudioNode } from "./abstractAudioNode";
+import type { AbstractSound } from "./abstractSound";
 import { AbstractSoundInstance } from "./abstractSoundInstance";
-import type { AbstractSoundSource } from "./abstractSoundSource";
 
+/**
+ * Abstract class representing a streaming sound instance in the audio engine.
+ */
 export abstract class AbstractStreamingSoundInstance extends AbstractSoundInstance {
-    constructor(source: AbstractSoundSource, inputNode: AbstractAudioNode) {
-        super(source, inputNode);
+    /** @internal */
+    constructor(source: AbstractSound) {
+        super(source);
     }
 }
