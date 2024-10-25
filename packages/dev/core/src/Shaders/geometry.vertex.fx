@@ -56,7 +56,7 @@ varying vec4 vViewPos;
 varying vec3 vPositionW;
 #endif
 
-#ifdef VELOCITY
+#if defined(VELOCITY) || defined(VELOCITY_LINEAR)
 uniform mat4 previousViewProjection;
 
 varying vec4 vCurrentPosition;
@@ -79,7 +79,7 @@ void main(void)
 
 #include<instancesVertex>
 
-	#if defined(VELOCITY) && !defined(BONES_VELOCITY_ENABLED)
+	#if (defined(VELOCITY) || defined(VELOCITY_LINEAR)) && !defined(BONES_VELOCITY_ENABLED)
 	// Compute velocity before bones computation
 	vCurrentPosition = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
 	vPreviousPosition = previousViewProjection * finalPreviousWorld * vec4(positionUpdated, 1.0);
@@ -102,7 +102,7 @@ void main(void)
 
 	vViewPos = view * worldPos;
 
-	#if defined(VELOCITY) && defined(BONES_VELOCITY_ENABLED)
+	#if (defined(VELOCITY) || defined(VELOCITY_LINEAR)) && defined(BONES_VELOCITY_ENABLED)
 		vCurrentPosition = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
 
 		#if NUM_BONE_INFLUENCERS > 0
