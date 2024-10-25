@@ -211,6 +211,13 @@ export class GaussianSplattingMesh extends Mesh {
 
     private static _RowOutputLength = 3 * 4 + 3 * 4 + 4 + 4; // Vector3 position, Vector3 scale, 1 u8 quaternion, 1 color with alpha
     private static _SH_C0 = 0.28209479177387814;
+
+    /**
+     * Set the number of batch (a batch is 16384 splats) after which a display update is performed
+     * A value of 0 (default) means display update will not happens before splat is ready.
+     */
+    public static ProgressiveUpdateAmount = 0;
+
     /**
      * Gets the covariancesA texture
      */
@@ -902,7 +909,8 @@ export class GaussianSplattingMesh extends Mesh {
     };
 
     private _makeSplat(
-        index: number,
+        sourceIndex: number,
+        destinationIndex: number,
         fBuffer: Float32Array,
         uBuffer: Uint8Array,
         covA: Uint16Array,
@@ -911,32 +919,31 @@ export class GaussianSplattingMesh extends Mesh {
         minimum: Vector3,
         maximum: Vector3
     ): void {
-        const i = index;
         const matrixRotation = TmpVectors.Matrix[0];
         const matrixScale = TmpVectors.Matrix[1];
         const quaternion = TmpVectors.Quaternion[0];
-        const covBSplatSize = this._useRGBACovariants ? 4 : 2;
+        const covBSItemSize = this._useRGBACovariants ? 4 : 2;
 
-        const x = fBuffer[8 * i + 0];
-        const y = -fBuffer[8 * i + 1];
-        const z = fBuffer[8 * i + 2];
+        const x = fBuffer[8 * sourceIndex + 0];
+        const y = -fBuffer[8 * sourceIndex + 1];
+        const z = fBuffer[8 * sourceIndex + 2];
 
-        this._splatPositions![4 * i + 0] = x;
-        this._splatPositions![4 * i + 1] = y;
-        this._splatPositions![4 * i + 2] = z;
+        this._splatPositions![4 * sourceIndex + 0] = x;
+        this._splatPositions![4 * sourceIndex + 1] = y;
+        this._splatPositions![4 * sourceIndex + 2] = z;
 
         minimum.minimizeInPlaceFromFloats(x, y, z);
         maximum.maximizeInPlaceFromFloats(x, y, z);
 
         quaternion.set(
-            (uBuffer[32 * i + 28 + 1] - 128) / 128,
-            (uBuffer[32 * i + 28 + 2] - 128) / 128,
-            (uBuffer[32 * i + 28 + 3] - 128) / 128,
-            -(uBuffer[32 * i + 28 + 0] - 128) / 128
+            (uBuffer[32 * sourceIndex + 28 + 1] - 128) / 128,
+            (uBuffer[32 * sourceIndex + 28 + 2] - 128) / 128,
+            (uBuffer[32 * sourceIndex + 28 + 3] - 128) / 128,
+            -(uBuffer[32 * sourceIndex + 28 + 0] - 128) / 128
         );
         quaternion.toRotationMatrix(matrixRotation);
 
-        Matrix.ScalingToRef(fBuffer[8 * i + 3 + 0] * 2, fBuffer[8 * i + 3 + 1] * 2, fBuffer[8 * i + 3 + 2] * 2, matrixScale);
+        Matrix.ScalingToRef(fBuffer[8 * sourceIndex + 3 + 0] * 2, fBuffer[8 * sourceIndex + 3 + 1] * 2, fBuffer[8 * sourceIndex + 3 + 2] * 2, matrixScale);
 
         const M = matrixRotation.multiplyToRef(matrixScale, TmpVectors.Matrix[0]).m;
 
@@ -954,21 +961,21 @@ export class GaussianSplattingMesh extends Mesh {
             factor = Math.max(factor, Math.abs(covariances[covIndex]));
         }
 
-        this._splatPositions![4 * i + 3] = factor;
+        this._splatPositions![4 * sourceIndex + 3] = factor;
         const transform = factor;
 
-        covA[i * 4 + 0] = ToHalfFloat(covariances[0] / transform);
-        covA[i * 4 + 1] = ToHalfFloat(covariances[1] / transform);
-        covA[i * 4 + 2] = ToHalfFloat(covariances[2] / transform);
-        covA[i * 4 + 3] = ToHalfFloat(covariances[3] / transform);
-        covB[i * covBSplatSize + 0] = ToHalfFloat(covariances[4] / transform);
-        covB[i * covBSplatSize + 1] = ToHalfFloat(covariances[5] / transform);
+        covA[destinationIndex * 4 + 0] = ToHalfFloat(covariances[0] / transform);
+        covA[destinationIndex * 4 + 1] = ToHalfFloat(covariances[1] / transform);
+        covA[destinationIndex * 4 + 2] = ToHalfFloat(covariances[2] / transform);
+        covA[destinationIndex * 4 + 3] = ToHalfFloat(covariances[3] / transform);
+        covB[destinationIndex * covBSItemSize + 0] = ToHalfFloat(covariances[4] / transform);
+        covB[destinationIndex * covBSItemSize + 1] = ToHalfFloat(covariances[5] / transform);
 
         // colors
-        colorArray[i * 4 + 0] = uBuffer[32 * i + 24 + 0];
-        colorArray[i * 4 + 1] = uBuffer[32 * i + 24 + 1];
-        colorArray[i * 4 + 2] = uBuffer[32 * i + 24 + 2];
-        colorArray[i * 4 + 3] = uBuffer[32 * i + 24 + 3];
+        colorArray[destinationIndex * 4 + 0] = uBuffer[32 * sourceIndex + 24 + 0];
+        colorArray[destinationIndex * 4 + 1] = uBuffer[32 * sourceIndex + 24 + 1];
+        colorArray[destinationIndex * 4 + 2] = uBuffer[32 * sourceIndex + 24 + 2];
+        colorArray[destinationIndex * 4 + 3] = uBuffer[32 * sourceIndex + 24 + 3];
     }
 
     private _updateTextures(covA: Uint16Array, covB: Uint16Array, colorArray: Uint8Array): void {
@@ -1027,8 +1034,7 @@ export class GaussianSplattingMesh extends Mesh {
             const uBuffer = new Uint8Array(data);
             const fBuffer = new Float32Array(uBuffer.buffer);
 
-            const rowLength = 3 * 4 + 3 * 4 + 4 + 4;
-            const vertexCount = uBuffer.length / rowLength;
+            const vertexCount = uBuffer.length / GaussianSplattingMesh._RowOutputLength;
             if (vertexCount != this._vertexCount) {
                 this._updateSplatIndexBuffer(vertexCount);
             }
@@ -1036,29 +1042,52 @@ export class GaussianSplattingMesh extends Mesh {
 
             const textureSize = this._getTextureSize(vertexCount);
             const textureLength = textureSize.x * textureSize.y;
+            const lineCountUpdate = GaussianSplattingMesh.ProgressiveUpdateAmount ?? textureSize.y;
+            const textureLengthPerUpdate = textureSize.x * lineCountUpdate;
 
             this._splatPositions = new Float32Array(4 * textureLength);
-            const covA = new Uint16Array(4 * textureLength);
+            const covA = new Uint16Array(textureLength * 4);
             const covB = new Uint16Array((this._useRGBACovariants ? 4 : 2) * textureLength);
+            const colorArray = new Uint8Array(textureLength * 4);
 
             const minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             const maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
-            const colorArray = new Uint8Array(textureSize.x * textureSize.y * 4);
 
-            for (let i = 0; i < vertexCount; i++) {
-                this._makeSplat(i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum);
-                // todo: this number should be part of the loading options
-                if (i % 30000 === 0) {
+            if (GaussianSplattingMesh.ProgressiveUpdateAmount) {
+                // create textures with not filled-yet array, then update directly portions of it
+                this._updateTextures(covA, covB, colorArray);
+                this.setEnabled(true);
+
+                const partCount = Math.ceil(textureSize.y / lineCountUpdate);
+                for (let partIndex = 0; partIndex < partCount; partIndex++) {
+                    const updateLine = partIndex * lineCountUpdate;
+                    const splatIndexBase = updateLine * textureSize.x;
+                    for (let i = 0; i < textureLengthPerUpdate; i++) {
+                        this._makeSplat(splatIndexBase + i, splatIndexBase + i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum);
+                    }
+                    this._updateSubTextures(this._splatPositions, covA, covB, colorArray, updateLine, Math.min(lineCountUpdate, textureSize.y - updateLine));
+                    // Update the binfo
+                    this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
                     await new Promise((resolve) => setTimeout(resolve, 1));
                 }
+                const positions = Float32Array.from(this._splatPositions!);
+                const vertexCount = this._vertexCount;
+                this._worker!.postMessage({ positions, vertexCount }, [positions.buffer]);
+            } else {
+                for (let i = 0; i < vertexCount; i++) {
+                    this._makeSplat(i, i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum);
+                    if (i % 327680 === 0) {
+                        await new Promise((resolve) => setTimeout(resolve, 1));
+                    }
+                }
+                // textures
+                this._updateTextures(covA, covB, colorArray);
+                // Update the binfo
+                this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
+                this.setEnabled(true);
             }
+            this._postToWorker(true);
 
-            // Update the mesh
-            const binfo = this.getBoundingInfo();
-            binfo.reConstruct(minimum, maximum, this.getWorldMatrix());
-            this.setEnabled(true);
-            // textures
-            this._updateTextures(covA, covB, colorArray);
             resolve();
         });
     }
@@ -1081,8 +1110,7 @@ export class GaussianSplattingMesh extends Mesh {
         const uBuffer = new Uint8Array(data);
         const fBuffer = new Float32Array(uBuffer.buffer);
 
-        const rowLength = 3 * 4 + 3 * 4 + 4 + 4;
-        const vertexCount = uBuffer.length / rowLength;
+        const vertexCount = uBuffer.length / GaussianSplattingMesh._RowOutputLength;
         if (vertexCount != this._vertexCount) {
             this._updateSplatIndexBuffer(vertexCount);
         }
@@ -1100,7 +1128,7 @@ export class GaussianSplattingMesh extends Mesh {
         const colorArray = new Uint8Array(textureSize.x * textureSize.y * 4);
 
         for (let i = 0; i < vertexCount; i++) {
-            this._makeSplat(i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum);
+            this._makeSplat(i, i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum);
         }
 
         // Update the mesh
@@ -1121,6 +1149,30 @@ export class GaussianSplattingMesh extends Mesh {
         this.forcedInstanceCount = vertexCount;
     }
 
+    private _updateSubTextures(centers: Float32Array, covA: Uint16Array, covB: Uint16Array, colors: Uint8Array, lineStart: number, lineCount: number): void {
+        const updateTextureFromData = (texture: BaseTexture, data: Float32Array, width: number, lineStart: number, lineCount: number) => {
+            (this.getEngine() as ThinEngine).updateTextureData(texture.getInternalTexture()!, data, 0, lineStart, width, lineCount, 0, 0, false);
+        };
+        const updateTextureFromDataU8 = (texture: BaseTexture, data: Uint8Array, width: number, lineStart: number, lineCount: number) => {
+            (this.getEngine() as ThinEngine).updateTextureData(texture.getInternalTexture()!, data, 0, lineStart, width, lineCount, 0, 0, false);
+        };
+        const updateTextureFromDataF16 = (texture: BaseTexture, data: Uint16Array, width: number, lineStart: number, lineCount: number) => {
+            (this.getEngine() as ThinEngine).updateTextureData(texture.getInternalTexture()!, data, 0, lineStart, width, lineCount, 0, 0, false);
+        };
+
+        const textureSize = this._getTextureSize(this._vertexCount);
+        const covBSItemSize = this._useRGBACovariants ? 4 : 2;
+        const texelStart = lineStart * textureSize.x;
+        const texelCount = lineCount * textureSize.x;
+        const covAView = new Uint16Array(covA.buffer, texelStart * 4 * Uint16Array.BYTES_PER_ELEMENT, texelCount * 4);
+        const covBView = new Uint16Array(covB.buffer, texelStart * covBSItemSize * Uint16Array.BYTES_PER_ELEMENT, texelCount * covBSItemSize);
+        const colorsView = new Uint8Array(colors.buffer, texelStart * 4, texelCount * 4);
+        const centersView = new Float32Array(centers.buffer, texelStart * 4 * Float32Array.BYTES_PER_ELEMENT, texelCount * 4);
+        updateTextureFromDataF16(this._covariancesATexture!, covAView, textureSize.x, lineStart, lineCount);
+        updateTextureFromDataF16(this._covariancesBTexture!, covBView, textureSize.x, lineStart, lineCount);
+        updateTextureFromData(this._centersTexture!, centersView, textureSize.x, lineStart, lineCount);
+        updateTextureFromDataU8(this._colorsTexture!, colorsView, textureSize.x, lineStart, lineCount);
+    }
     private _instanciateWorker(): void {
         if (!this._vertexCount) {
             return;
@@ -1152,21 +1204,15 @@ export class GaussianSplattingMesh extends Mesh {
                 }
             }
             if (this._delayedTextureUpdate) {
-                const updateTextureFromData = (texture: BaseTexture, data: Float32Array, width: number, height: number) => {
-                    (this.getEngine() as ThinEngine).updateTextureData(texture.getInternalTexture()!, data, 0, 0, width, height, 0, 0, false);
-                };
-                const updateTextureFromDataU8 = (texture: BaseTexture, data: Uint8Array, width: number, height: number) => {
-                    (this.getEngine() as ThinEngine).updateTextureData(texture.getInternalTexture()!, data, 0, 0, width, height, 0, 0, false);
-                };
-
-                const updateTextureFromDataF16 = (texture: BaseTexture, data: Uint16Array, width: number, height: number) => {
-                    (this.getEngine() as ThinEngine).updateTextureData(texture.getInternalTexture()!, data, 0, 0, width, height, 0, 0, false);
-                };
                 const textureSize = this._getTextureSize(vertexCount);
-                updateTextureFromDataF16(this._covariancesATexture!, this._delayedTextureUpdate.covA, textureSize.x, textureSize.y);
-                updateTextureFromDataF16(this._covariancesBTexture!, this._delayedTextureUpdate.covB, textureSize.x, textureSize.y);
-                updateTextureFromData(this._centersTexture!, this._delayedTextureUpdate.centers, textureSize.x, textureSize.y);
-                updateTextureFromDataU8(this._colorsTexture!, this._delayedTextureUpdate.colors, textureSize.x, textureSize.y);
+                this._updateSubTextures(
+                    this._delayedTextureUpdate.centers,
+                    this._delayedTextureUpdate.covA,
+                    this._delayedTextureUpdate.covB,
+                    this._delayedTextureUpdate.colors,
+                    0,
+                    textureSize.y
+                );
                 this._delayedTextureUpdate = null;
             }
             this.thinInstanceBufferUpdated("splatIndex");
