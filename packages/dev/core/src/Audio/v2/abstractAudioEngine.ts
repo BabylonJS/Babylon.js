@@ -9,9 +9,7 @@ import type { AbstractSound } from "./abstractSound";
 import type { AbstractSoundInstance } from "./abstractSoundInstance";
 import type { AbstractStaticSound, StaticSoundOptions } from "./abstractStaticSound";
 import type { AbstractStaticSoundBuffer, StaticSoundBufferOptions } from "./abstractStaticSoundBuffer";
-import type { AbstractStaticSoundInstance } from "./abstractStaticSoundInstance";
 import type { AbstractStreamingSound, StreamingSoundOptions } from "./abstractStreamingSound";
-import type { AbstractStreamingSoundInstance } from "./abstractStreamingSoundInstance";
 import type { SpatialAudioListener } from "./spatialAudioListener";
 
 /**
@@ -105,7 +103,5 @@ export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
     public abstract createSender(parent: AbstractAudioNode): Promise<AbstractAudioSender>;
     public abstract createSound(name: string, options: Nullable<StaticSoundOptions>): Promise<AbstractStaticSound>;
     public abstract createSoundBuffer(options: Nullable<StaticSoundBufferOptions>): Promise<AbstractStaticSoundBuffer>;
-    public abstract createSoundInstance(source: AbstractStaticSound): AbstractStaticSoundInstance;
     public abstract createStreamingSound(name: string, options: Nullable<StreamingSoundOptions>): Promise<AbstractStreamingSound>;
-    public abstract createStreamingSoundInstance(source: AbstractStreamingSound): AbstractStreamingSoundInstance;
 }

@@ -2,7 +2,6 @@ import type { Nullable } from "../../types";
 import type { AbstractAudioEngine } from "./abstractAudioEngine";
 import type { SoundOptions } from "./abstractSound";
 import { AbstractSound } from "./abstractSound";
-import type { AbstractSoundInstance } from "./abstractSoundInstance";
 import type { AbstractStaticSoundBuffer } from "./abstractStaticSoundBuffer";
 
 /**
@@ -56,9 +55,5 @@ export abstract class AbstractStaticSound extends AbstractSound {
 
     public set loopEnd(value: number) {
         this._loopEnd = value;
-    }
-
-    protected _createSoundInstance(): AbstractSoundInstance {
-        return this.engine.createSoundInstance(this);
     }
 }

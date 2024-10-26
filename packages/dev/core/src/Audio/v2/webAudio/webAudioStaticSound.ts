@@ -61,6 +61,10 @@ export class WebAudioStaticSound extends AbstractStaticSound {
         }
     }
 
+    protected _createSoundInstance(): WebAudioStaticSoundInstance {
+        return this.engine.createStaticSoundInstance(this);
+    }
+
     protected override _connect(node: AbstractAudioNode): void {
         super._connect(node);
 

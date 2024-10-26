@@ -159,17 +159,6 @@ export abstract class AbstractWebAudioEngine extends AbstractAudioEngine {
     }
 
     /**
-     * Creates a new instance of a static sound.
-     * @param source - The source static sound.
-     * @returns A promise that resolves to the created static sound instance.
-     */
-    public createSoundInstance(source: WebAudioStaticSound): WebAudioStaticSoundInstance {
-        const soundInstance = new WebAudioStaticSoundInstance(source);
-        this._addSoundInstance(soundInstance);
-        return soundInstance;
-    }
-
-    /**
      * Creates a new streaming sound.
      * @param name - The name of the sound.
      * @param options - The options for the streaming sound.
@@ -180,17 +169,6 @@ export abstract class AbstractWebAudioEngine extends AbstractAudioEngine {
         await sound.init(options);
         this._addSound(sound);
         return sound;
-    }
-
-    /**
-     * Creates a new instance of a streaming sound.
-     * @param source - The source streaming sound.
-     * @returns A promise that resolves to the created streaming sound instance.
-     */
-    public createStreamingSoundInstance(source: WebAudioStreamingSound): WebAudioStreamingSoundInstance {
-        const soundInstance = new WebAudioStreamingSoundInstance(source);
-        this._addSoundInstance(soundInstance);
-        return soundInstance;
     }
 
     public abstract formatIsInvalid(format: string): boolean;
@@ -247,6 +225,20 @@ export class WebAudioEngine extends AbstractWebAudioEngine {
         this._mainOutput = (await this.createMainOutput()) as WebAudioMainOutput;
 
         await this.createMainBus("default");
+    }
+
+    /** @internal */
+    public createStaticSoundInstance(source: WebAudioStaticSound): WebAudioStaticSoundInstance {
+        const soundInstance = new WebAudioStaticSoundInstance(source);
+        this._addSoundInstance(soundInstance);
+        return soundInstance;
+    }
+
+    /** @internal */
+    public createStreamingSoundInstance(source: WebAudioStreamingSound): WebAudioStreamingSoundInstance {
+        const soundInstance = new WebAudioStreamingSoundInstance(source);
+        this._addSoundInstance(soundInstance);
+        return soundInstance;
     }
 
     /** @internal */

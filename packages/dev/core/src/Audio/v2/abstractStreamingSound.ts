@@ -2,7 +2,6 @@ import type { Nullable } from "../../types";
 import type { AbstractAudioEngine } from "./abstractAudioEngine";
 import type { SoundOptions } from "./abstractSound";
 import { AbstractSound } from "./abstractSound";
-import type { AbstractSoundInstance } from "./abstractSoundInstance";
 
 export type StreamingSoundPreloadType = "none" | "metadata" | "auto";
 
@@ -42,9 +41,5 @@ export abstract class AbstractStreamingSound extends AbstractSound {
         }
 
         this._preload = preload;
-    }
-
-    protected _createSoundInstance(): AbstractSoundInstance {
-        return this.engine.createStreamingSoundInstance(this);
     }
 }
