@@ -38,7 +38,7 @@ export abstract class AbstractSoundInstance extends AbstractAudioNode {
 
     public abstract get currentTime(): number;
 
-    public abstract play(waitTime: Nullable<number>, startOffset: Nullable<number>, duration: Nullable<number>): void;
+    public abstract play(waitTime?: Nullable<number>, startOffset?: Nullable<number>, duration?: Nullable<number>): void;
     public abstract pause(): void;
     public abstract resume(): void;
     public abstract stop(waitTime?: Nullable<number>): void;

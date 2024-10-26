@@ -154,7 +154,7 @@ export class WebAudioStaticSoundInstance extends AbstractStaticSoundInstance {
     protected override _source: WebAudioStaticSound;
 
     /** @internal */
-    public sourceNode: AudioBufferSourceNode;
+    public sourceNode: Nullable<AudioBufferSourceNode>;
 
     /** @internal */
     get currentTime(): number {
@@ -172,6 +172,97 @@ export class WebAudioStaticSoundInstance extends AbstractStaticSoundInstance {
 
     constructor(source: WebAudioStaticSound) {
         super(source);
+        this._initSourceNode();
+    }
+
+    /** @internal */
+    public override dispose(): void {
+        super.dispose();
+        this.stop();
+        this._deinitSourceNode();
+    }
+
+    /** @internal */
+    public play(waitTime: Nullable<number> = null, startOffset: Nullable<number> = null, duration: Nullable<number> = null): void {
+        if (this._state === SoundState.Playing) {
+            return;
+        }
+
+        if (this._state === SoundState.Paused) {
+            // TODO: Make this fall within loop points when loop start/end is set.
+            startOffset = (this.currentTime + this._startOffset) % this._source.buffer.duration;
+            waitTime = 0;
+        }
+
+        this._state = SoundState.Playing;
+        this._startTime = this.engine.currentTime + (waitTime ?? 0);
+
+        this._initSourceNode();
+        this.sourceNode?.start(this._startTime, startOffset ?? 0, duration === null ? undefined : duration);
+    }
+
+    /** @internal */
+    public pause(): void {
+        if (this._state === SoundState.Paused) {
+            return;
+        }
+
+        this._state = SoundState.Paused;
+        this._currentTime += this.engine.currentTime - this._startTime;
+
+        this.sourceNode?.stop();
+        this._deinitSourceNode();
+    }
+
+    /** @internal */
+    public resume(): void {
+        if (this._state === SoundState.Paused) {
+            this.play();
+        }
+    }
+
+    /** @internal */
+    public stop(waitTime: Nullable<number> = null): void {
+        if (this._state === SoundState.Stopped) {
+            return;
+        }
+
+        this._state = SoundState.Stopped;
+
+        this.sourceNode?.stop(waitTime ? this.engine.currentTime + waitTime : 0);
+    }
+
+    protected _onEnded = (() => {
+        this._startTime = 0;
+
+        this.onEndedObservable.notifyObservers(this);
+        this._deinitSourceNode();
+    }).bind(this);
+
+    protected override _connect(node: AbstractAudioNode): void {
+        super._connect(node);
+
+        if (node instanceof WebAudioStaticSound && node.webAudioInputNode) {
+            this.webAudioOutputNode?.connect(node.webAudioInputNode);
+        } else {
+            throw new Error("Unsupported node type.");
+        }
+    }
+
+    protected override _disconnect(node: AbstractAudioNode): void {
+        super._disconnect(node);
+
+        if (node instanceof WebAudioStaticSound && node.webAudioInputNode) {
+            this.webAudioOutputNode?.disconnect(node.webAudioInputNode);
+        } else {
+            throw new Error("Unsupported node type.");
+        }
+    }
+
+    private _initSourceNode(): void {
+        if (this.sourceNode) {
+            return;
+        }
 
         this.sourceNode = new AudioBufferSourceNode(this._source.audioContext, {
             buffer: this._source.buffer.audioBuffer,
@@ -182,89 +273,18 @@ export class WebAudioStaticSoundInstance extends AbstractStaticSoundInstance {
             playbackRate: this._source.playbackRate,
         });
 
+        this.sourceNode.addEventListener("ended", this._onEnded, { once: true });
         this._connect(this._source);
     }
 
-    /** @internal */
-    public play(waitTime: Nullable<number> = null, startOffset: Nullable<number> = null, duration: Nullable<number> = null): void {
-        if (this._state === SoundState.Playing) {
+    private _deinitSourceNode(): void {
+        if (!this.sourceNode) {
             return;
         }
 
-        if (this._state === SoundState.Paused) {
-            this.resume();
-            return;
-        }
+        this._disconnect(this._source);
+        this.sourceNode.removeEventListener("ended", this._onEnded);
 
-        this._state = SoundState.Playing;
-
-        this.sourceNode.addEventListener("ended", this._onEnded.bind(this), { once: true });
-
-        this._startTime = this.engine.currentTime + (waitTime ?? 0);
-        this.sourceNode.start(this._startTime, startOffset ?? 0, duration === null ? undefined : duration);
-    }
-
-    /** @internal */
-    public pause(): void {
-        if (this._state === SoundState.Paused) {
-            return;
-        }
-        this._state = SoundState.Paused;
-
-        this._source.stop();
-        this._currentTime += this.engine.currentTime - this._startTime;
-    }
-
-    /** @internal */
-    public resume(): void {
-        if (this._state !== SoundState.Paused) {
-            return;
-        }
-
-        // TODO: Make this fall within loop points when loop start/end is set.
-        const startOffset = (this.currentTime + this._startOffset) % this._source.buffer.duration;
-
-        this.play(0, startOffset);
-    }
-
-    /** @internal */
-    public stop(waitTime: Nullable<number> = null): void {
-        if (this._state === SoundState.Stopped) {
-            return;
-        }
-        this._state = SoundState.Stopped;
-
-        this.sourceNode?.stop(waitTime ? this.engine.currentTime + waitTime : 0);
-    }
-
-    protected _onEnded(): void {
-        this._startTime = 0;
-
-        if (this._state === SoundState.Paused) {
-            return;
-        }
-
-        this.onEndedObservable.notifyObservers(this);
-        this.sourceNode?.removeEventListener("ended", this._onEnded.bind(this));
-    }
-
-    protected override _connect(node: AbstractAudioNode): void {
-        super._connect(node);
-
-        if (node instanceof WebAudioStaticSound && node.webAudioInputNode) {
-            this.webAudioOutputNode.connect(node.webAudioInputNode);
-        } else {
-            throw new Error("Unsupported node type.");
-        }
-    }
-
-    protected override _disconnect(node: AbstractAudioNode): void {
-        super._disconnect(node);
-
-        if (node instanceof WebAudioStaticSound && node.webAudioInputNode) {
-            this.webAudioOutputNode.disconnect(node.webAudioInputNode);
-        } else {
-            throw new Error("Unsupported node type.");
-        }
+        this.sourceNode = null;
     }
 }

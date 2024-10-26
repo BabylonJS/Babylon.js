@@ -4,6 +4,7 @@ import type { AbstractPrimaryAudioBus } from "./abstractAudioBus";
 import type { AbstractAudioEngine } from "./abstractAudioEngine";
 import { AbstractNamedAudioNode, AudioNodeType } from "./abstractAudioNode";
 import type { AbstractSoundInstance } from "./abstractSoundInstance";
+import { SoundState } from "./soundState";
 
 /**
  * Options for creating a new sound.
@@ -43,6 +44,8 @@ export interface SoundOptions {
  * Abstract class representing a sound in the audio engine.
  */
 export abstract class AbstractSound extends AbstractNamedAudioNode {
+    private _state: SoundState = SoundState.Stopped;
+
     // Owned by AbstractAudioEngine.
 
     // Non-owning.
@@ -84,6 +87,13 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * Observable for when the sound ends.
      */
     public onEndedObservable = new Observable<AbstractSound>();
+
+    /**
+     * The state of the sound.
+     */
+    public get state(): SoundState {
+        return this._state;
+    }
 
     /**
      * The output bus for the sound.
@@ -144,7 +154,14 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * @param duration - How long to play the sound in seconds.
      * @returns A promise that resolves when the sound is playing.
      */
-    public play(waitTime: Nullable<number> = null, startOffset: Nullable<number> = null, duration: Nullable<number> = null): AbstractSoundInstance {
+    public play(waitTime: Nullable<number> = null, startOffset: Nullable<number> = null, duration: Nullable<number> = null): Nullable<AbstractSoundInstance> {
+        if (this._state === SoundState.Paused) {
+            this.resume();
+            return null;
+        }
+
+        this._state = SoundState.Playing;
+
         const instance = this._createSoundInstance();
         instance.onEndedObservable.addOnce(this._onSoundInstanceEnded.bind(this));
 
@@ -159,6 +176,8 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * Pauses the sound.
      */
     public pause(): void {
+        this._state = SoundState.Paused;
+
         if (!this._soundInstances) {
             return;
         }
@@ -172,6 +191,12 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * Resumes the sound.
      */
     public resume(): void {
+        if (this._state !== SoundState.Paused) {
+            return;
+        }
+
+        this._state = SoundState.Playing;
+
         if (!this._soundInstances) {
             return;
         }
@@ -186,6 +211,8 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * @param waitTime - The time to wait before stopping the sound in seconds.
      */
     public stop(waitTime: Nullable<number> = null): void {
+        this._state = SoundState.Stopped;
+
         if (!this._soundInstances) {
             return;
         }
