@@ -152,12 +152,11 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * @param waitTime - The time to wait before playing the sound in seconds.
      * @param startOffset - The time within the sound source to start playing the sound in seconds.
      * @param duration - How long to play the sound in seconds.
-     * @returns A promise that resolves when the sound is playing.
      */
-    public play(waitTime: Nullable<number> = null, startOffset: Nullable<number> = null, duration: Nullable<number> = null): Nullable<AbstractSoundInstance> {
-        if (this._state === SoundState.Paused) {
+    public play(waitTime: Nullable<number> = null, startOffset: Nullable<number> = null, duration: Nullable<number> = null): void {
+        if (this._state === SoundState.Paused && this._soundInstances.size > 0) {
             this.resume();
-            return null;
+            return;
         }
 
         this._state = SoundState.Playing;
@@ -168,8 +167,6 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         instance.play(waitTime, startOffset, duration);
 
         this._soundInstances.add(instance);
-
-        return instance;
     }
 
     /**

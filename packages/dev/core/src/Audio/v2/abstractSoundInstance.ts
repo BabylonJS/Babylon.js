@@ -3,9 +3,7 @@ import type { Nullable } from "../../types";
 import { AbstractAudioNode, AudioNodeType } from "./abstractAudioNode";
 import type { AbstractSound } from "./abstractSound";
 
-/**
- * Abstract class representing a sound instance in the audio engine.
- */
+/** @internal */
 export abstract class AbstractSoundInstance extends AbstractAudioNode {
     // Owned by AbstractAudioEngine.
     // Output-only node that connects to a downstream input node.
@@ -13,9 +11,7 @@ export abstract class AbstractSoundInstance extends AbstractAudioNode {
     protected _source: AbstractSound;
     protected _startOffset: number = 0;
 
-    /**
-     * The sound that the sound instance is playing.
-     */
+    /** @internal */
     public onEndedObservable = new Observable<AbstractSoundInstance>();
 
     /** @internal */
@@ -26,9 +22,7 @@ export abstract class AbstractSoundInstance extends AbstractAudioNode {
         this._startOffset = source.startOffset;
     }
 
-    /**
-     * Releases held resources.
-     */
+    /** @internal */
     public override dispose(): void {
         super.dispose();
 
