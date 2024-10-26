@@ -152,7 +152,7 @@ export abstract class AbstractWebAudioEngine extends AbstractAudioEngine {
      * @param options - The options for the static sound buffer.
      * @returns A promise that resolves to the created static sound buffer.
      */
-    public async createSoundBuffer(options: Nullable<WebAudioStaticSoundBufferOptions> = null): Promise<WebAudioStaticSoundBuffer> {
+    public async createSoundBuffer(options: Nullable<WebAudioStaticSoundBufferOptions> = null): Promise<AbstractStaticSoundBuffer> {
         const buffer = new WebAudioStaticSoundBuffer(this);
         await buffer.init(options);
         return buffer;

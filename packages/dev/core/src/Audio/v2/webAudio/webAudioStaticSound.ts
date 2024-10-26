@@ -51,7 +51,7 @@ export class WebAudioStaticSound extends AbstractStaticSound {
         if (options?.sourceBuffer) {
             this._buffer = options.sourceBuffer as WebAudioStaticSoundBuffer;
         } else if (options?.sourceUrl || options?.sourceUrls) {
-            this._buffer = await this.engine.createSoundBuffer(options);
+            this._buffer = (await this.engine.createSoundBuffer(options)) as WebAudioStaticSoundBuffer;
         }
 
         this.outputBus = options?.outputBus ?? this.engine.defaultMainBus;
