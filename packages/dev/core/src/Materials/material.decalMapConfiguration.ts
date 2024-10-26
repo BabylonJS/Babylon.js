@@ -84,7 +84,7 @@ export class DecalMapConfiguration extends MaterialPluginBase {
         return decalMap.isReady();
     }
 
-    public override prepareDefines(defines: DecalMapDefines, scene: Scene, mesh: AbstractMesh): void {
+    public override prepareDefinesBeforeAttributes(defines: DecalMapDefines, scene: Scene, mesh: AbstractMesh): void {
         const decalMap = mesh.decalMap;
 
         if (!this._isEnabled || !decalMap?.texture || !MaterialFlags.DecalMapEnabled || !scene.texturesEnabled) {

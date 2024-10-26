@@ -209,6 +209,13 @@ export class NodeGeometryBlock {
     }
 
     /**
+     * @internal
+     */
+    public get _isReadyState(): Nullable<Promise<void>> {
+        return null;
+    }
+
+    /**
      * Creates a new NodeGeometryBlock
      * @param name defines the block name
      */

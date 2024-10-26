@@ -17,7 +17,6 @@ import { AnimationGroup } from "../../Animations/animationGroup";
 import { Light } from "../../Lights/light";
 import { SceneComponentConstants } from "../../sceneComponent";
 import { SceneLoader } from "../../Loading/sceneLoader";
-import { AbstractScene } from "../../abstractScene";
 import { AssetContainer } from "../../assetContainer";
 import { ActionManager } from "../../Actions/actionManager";
 import type { IParticleSystem } from "../../Particles/IParticleSystem";
@@ -31,6 +30,7 @@ import { GetClass } from "../../Misc/typeStore";
 import { Tools } from "../../Misc/tools";
 import { PostProcess } from "../../PostProcesses/postProcess";
 import { SpriteManager } from "core/Sprites/spriteManager";
+import { GetIndividualParser, Parse } from "./babylonFileParser.function";
 
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention, no-var
@@ -50,6 +50,7 @@ export class BabylonFileLoaderConfiguration {
 
 let tempIndexContainer: { [key: string]: Node } = {};
 let tempMaterialIndexContainer: { [key: string]: Material } = {};
+let tempMorphTargetManagerIndexContainer: { [key: string]: MorphTargetManager } = {};
 
 const parseMaterialByPredicate = (predicate: (parsedMaterial: any) => boolean, parsedData: any, scene: Scene, rootUrl: string) => {
     if (!parsedData.materials) {
@@ -318,8 +319,9 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
 
         // Morph targets
         if (parsedData.morphTargetManagers !== undefined && parsedData.morphTargetManagers !== null) {
-            for (const managerData of parsedData.morphTargetManagers) {
-                const manager = MorphTargetManager.Parse(managerData, scene);
+            for (const parsedManager of parsedData.morphTargetManagers) {
+                const manager = MorphTargetManager.Parse(parsedManager, scene);
+                tempMorphTargetManagerIndexContainer[parsedManager.id] = manager;
                 container.morphTargetManagers.push(manager);
                 manager._parentContainer = container;
             }
@@ -493,6 +495,14 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
             }
         });
 
+        // link meshes with morph target managers
+        scene.meshes.forEach((mesh) => {
+            if (mesh._waitingMorphTargetManagerId !== null) {
+                mesh.morphTargetManager = tempMorphTargetManagerIndexContainer[mesh._waitingMorphTargetManagerId];
+                mesh._waitingMorphTargetManagerId = null;
+            }
+        });
+
         // link skeleton transform nodes
         for (index = 0, cache = scene.skeletons.length; index < cache; index++) {
             const skeleton = scene.skeletons[index];
@@ -558,7 +568,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
             g._loadedUniqueId = "";
         });
 
-        AbstractScene.Parse(parsedData, scene, container, rootUrl);
+        Parse(parsedData, scene, container, rootUrl);
 
         // Actions (scene) Done last as it can access other objects.
         for (index = 0, cache = scene.meshes.length; index < cache; index++) {
@@ -582,6 +592,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
     } finally {
         tempIndexContainer = {};
         tempMaterialIndexContainer = {};
+        tempMorphTargetManagerIndexContainer = {};
 
         if (!addToScene) {
             container.removeAllFromScene();
@@ -649,7 +660,7 @@ SceneLoader.RegisterPlugin({
                 const loadedSkeletonsIds = [];
                 const loadedMaterialsIds: string[] = [];
                 const loadedMaterialsUniqueIds: string[] = [];
-                const loadedMorphTargetsIds = [];
+                const loadedMorphTargetManagerIds: number[] = [];
                 for (let index = 0, cache = parsedData.meshes.length; index < cache; index++) {
                     const parsedMesh = parsedData.meshes[index];
 
@@ -773,14 +784,15 @@ SceneLoader.RegisterPlugin({
 
                         // Morph targets ?
                         if (parsedMesh.morphTargetManagerId > -1 && parsedData.morphTargetManagers !== undefined && parsedData.morphTargetManagers !== null) {
-                            const morphTargetAlreadyLoaded = loadedMorphTargetsIds.indexOf(parsedMesh.morphTargetManagerId) > -1;
-                            if (!morphTargetAlreadyLoaded) {
-                                for (let morphTargetIndex = 0, morphTargetCache = parsedData.morphTargetManagers.length; morphTargetIndex < morphTargetCache; morphTargetIndex++) {
-                                    const parsedMorphTarget = parsedData.morphTargetManagers[morphTargetIndex];
-                                    if (parsedMorphTarget.id === parsedMesh.morphTargetManagerId) {
-                                        const morphTarget = MorphTargetManager.Parse(parsedMorphTarget, scene);
-                                        loadedMorphTargetsIds.push(morphTarget.uniqueId);
-                                        log += "\nMorph target " + morphTarget.toString();
+                            const morphTargetManagerAlreadyLoaded = loadedMorphTargetManagerIds.indexOf(parsedMesh.morphTargetManagerId) > -1;
+                            if (!morphTargetManagerAlreadyLoaded) {
+                                for (let morphTargetManagerIndex = 0; morphTargetManagerIndex < parsedData.morphTargetManagers.length; morphTargetManagerIndex++) {
+                                    const parsedManager = parsedData.morphTargetManagers[morphTargetManagerIndex];
+                                    if (parsedManager.id === parsedMesh.morphTargetManagerId) {
+                                        const morphTargetManager = MorphTargetManager.Parse(parsedManager, scene);
+                                        tempMorphTargetManagerIndexContainer[parsedManager.id] = morphTargetManager;
+                                        loadedMorphTargetManagerIds.push(parsedManager.id);
+                                        log += "\nMorph target manager" + morphTargetManager.toString();
                                     }
                                 }
                             }
@@ -807,6 +819,14 @@ SceneLoader.RegisterPlugin({
                     if (mesh._waitingMaterialId !== null) {
                         mesh.material = findMaterial(mesh._waitingMaterialId, scene);
                         mesh._waitingMaterialId = null;
+                    }
+                });
+
+                // link meshes with morph target managers
+                scene.meshes.forEach((mesh) => {
+                    if (mesh._waitingMorphTargetManagerId !== null) {
+                        mesh.morphTargetManager = tempMorphTargetManagerIndexContainer[mesh._waitingMorphTargetManagerId];
+                        mesh._waitingMorphTargetManagerId = null;
                     }
                 });
 
@@ -841,12 +861,6 @@ SceneLoader.RegisterPlugin({
                             currentMesh._waitingParentInstanceIndex = null;
                         }
                         currentMesh.parent = parentNode;
-                        if (currentMesh.parent?.getClassName() === "TransformNode") {
-                            const loadedTransformNodeIndex = loadedTransformNodes.indexOf(currentMesh.parent as TransformNode);
-                            if (loadedTransformNodeIndex > -1) {
-                                loadedTransformNodes.splice(loadedTransformNodeIndex, 1);
-                            }
-                        }
                         currentMesh._waitingParentId = null;
                     }
                     if (currentMesh._waitingData.lods) {
@@ -856,7 +870,10 @@ SceneLoader.RegisterPlugin({
 
                 // Remove unused transform nodes
                 for (const transformNode of loadedTransformNodes) {
-                    transformNode.dispose();
+                    const childMeshes = transformNode.getChildMeshes(false);
+                    if (!childMeshes.length) {
+                        transformNode.dispose();
+                    }
                 }
 
                 // link skeleton transform nodes
@@ -893,7 +910,7 @@ SceneLoader.RegisterPlugin({
 
             // Particles
             if (parsedData.particleSystems !== undefined && parsedData.particleSystems !== null) {
-                const parser = AbstractScene.GetIndividualParser(SceneComponentConstants.NAME_PARTICLESYSTEM);
+                const parser = GetIndividualParser(SceneComponentConstants.NAME_PARTICLESYSTEM);
                 if (parser) {
                     for (let index = 0, cache = parsedData.particleSystems.length; index < cache; index++) {
                         const parsedParticleSystem = parsedData.particleSystems[index];
@@ -922,6 +939,7 @@ SceneLoader.RegisterPlugin({
                 Logger.Log(logOperation("importMesh", parsedData ? parsedData.producer : "Unknown") + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
             }
             tempMaterialIndexContainer = {};
+            tempMorphTargetManagerIndexContainer = {};
         }
 
         return false;

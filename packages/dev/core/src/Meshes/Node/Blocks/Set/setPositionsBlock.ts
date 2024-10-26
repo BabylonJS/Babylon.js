@@ -7,6 +7,7 @@ import type { INodeGeometryExecutionContext } from "../../Interfaces/nodeGeometr
 import type { VertexData } from "../../../../Meshes/mesh.vertexData";
 import type { Vector3 } from "../../../../Maths/math.vector";
 import { PropertyTypeForEdition, editableInPropertyPage } from "core/Decorators/nodeDecorator";
+import type { FloatArray } from "core/types";
 
 /**
  * Block used to set positions for a geometry
@@ -88,6 +89,42 @@ export class SetPositionsBlock extends NodeGeometryBlock implements INodeGeometr
         return this._outputs[0];
     }
 
+    private _remapVector3Data(source: FloatArray, remap: { [key: number]: number }): FloatArray {
+        const newData: FloatArray = [];
+        for (let index = 0; index < source.length; index += 3) {
+            const remappedIndex = remap[index / 3];
+
+            if (remappedIndex !== undefined) {
+                newData.push(source[index], source[index + 1], source[index + 2]);
+            }
+        }
+        return newData;
+    }
+
+    private _remapVector4Data(source: FloatArray, remap: { [key: number]: number }): FloatArray {
+        const newData: FloatArray = [];
+        for (let index = 0; index < source.length; index += 4) {
+            const remappedIndex = remap[index / 4];
+
+            if (remappedIndex !== undefined) {
+                newData.push(source[index], source[index + 1], source[index + 2], source[index + 3]);
+            }
+        }
+        return newData;
+    }
+
+    private _remapVector2Data(source: FloatArray, remap: { [key: number]: number }): FloatArray {
+        const newData: FloatArray = [];
+        for (let index = 0; index < source.length; index += 2) {
+            const remappedIndex = remap[index / 2];
+
+            if (remappedIndex !== undefined) {
+                newData.push(source[index], source[index + 1]);
+            }
+        }
+        return newData;
+    }
+
     protected override _buildBlock(state: NodeGeometryBuildState) {
         const func = (state: NodeGeometryBuildState) => {
             state.pushExecutionContext(this);
@@ -108,13 +145,82 @@ export class SetPositionsBlock extends NodeGeometryBlock implements INodeGeometr
             }
 
             // Processing
+            const remap: { [key: number]: number } = {};
             const vertexCount = this._vertexData.positions.length / 3;
+            const newPositions: FloatArray = [];
+            let activeIndex = 0;
+            let resize = false;
             for (this._currentIndex = 0; this._currentIndex < vertexCount; this._currentIndex++) {
                 const tempVector3 = this.positions.getConnectedValue(state) as Vector3;
                 if (tempVector3) {
-                    tempVector3.toArray(this._vertexData.positions, this._currentIndex * 3);
+                    tempVector3.toArray(newPositions, activeIndex * 3);
+                    remap[this._currentIndex] = activeIndex;
+                    activeIndex++;
+                } else {
+                    resize = true;
                 }
             }
+
+            if (resize) {
+                // Indices remap
+                if (this._vertexData.indices) {
+                    const newIndices: number[] = [];
+                    for (let index = 0; index < this._vertexData.indices.length; index += 3) {
+                        const a = this._vertexData.indices[index];
+                        const b = this._vertexData.indices[index + 1];
+                        const c = this._vertexData.indices[index + 2];
+                        const remappedA = remap[a];
+                        const remappedB = remap[b];
+                        const remappedC = remap[c];
+
+                        if (remappedA !== undefined && remappedB !== undefined && remappedC !== undefined) {
+                            newIndices.push(remappedA);
+                            newIndices.push(remappedB);
+                            newIndices.push(remappedC);
+                        }
+                    }
+
+                    this._vertexData.indices = newIndices;
+                }
+
+                // Normals remap
+                if (this._vertexData.normals) {
+                    this._vertexData.normals = this._remapVector3Data(this._vertexData.normals, remap);
+                }
+
+                // Tangents remap
+                if (this._vertexData.tangents) {
+                    this._vertexData.tangents = this._remapVector4Data(this._vertexData.tangents, remap);
+                }
+
+                // Colors remap
+                if (this._vertexData.colors) {
+                    this._vertexData.colors = this._remapVector4Data(this._vertexData.colors, remap);
+                }
+
+                // UVs remap
+                if (this._vertexData.uvs) {
+                    this._vertexData.uvs = this._remapVector2Data(this._vertexData.uvs, remap);
+                }
+                if (this._vertexData.uvs2) {
+                    this._vertexData.uvs2 = this._remapVector2Data(this._vertexData.uvs2, remap);
+                }
+                if (this._vertexData.uvs3) {
+                    this._vertexData.uvs3 = this._remapVector2Data(this._vertexData.uvs3, remap);
+                }
+                if (this._vertexData.uvs4) {
+                    this._vertexData.uvs4 = this._remapVector2Data(this._vertexData.uvs4, remap);
+                }
+                if (this._vertexData.uvs5) {
+                    this._vertexData.uvs5 = this._remapVector2Data(this._vertexData.uvs5, remap);
+                }
+                if (this._vertexData.uvs6) {
+                    this._vertexData.uvs6 = this._remapVector2Data(this._vertexData.uvs6, remap);
+                }
+            }
+
+            // Update positions
+            this._vertexData.positions = newPositions;
 
             // Storage
             state.restoreGeometryContext();

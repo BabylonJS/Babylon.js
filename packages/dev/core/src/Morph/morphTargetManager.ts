@@ -9,7 +9,7 @@ import { MorphTarget } from "./morphTarget";
 import { Constants } from "../Engines/constants";
 import type { Effect } from "../Materials/effect";
 import { RawTexture2DArray } from "../Materials/Textures/rawTexture2DArray";
-import type { AbstractScene } from "../abstractScene";
+import type { IAssetContainer } from "core/IAssetContainer";
 /**
  * This class is used to deform meshes using morphing between different targets
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/morphTargets
@@ -49,7 +49,7 @@ export class MorphTargetManager implements IDisposable {
     public _morphTargetTextureIndices: Float32Array;
 
     /** @internal */
-    public _parentContainer: Nullable<AbstractScene> = null;
+    public _parentContainer: Nullable<IAssetContainer> = null;
 
     /** @internal */
     public _targetStoreTexture: Nullable<RawTexture2DArray>;
@@ -558,8 +558,6 @@ export class MorphTargetManager implements IDisposable {
      */
     public static Parse(serializationObject: any, scene: Scene): MorphTargetManager {
         const result = new MorphTargetManager(scene);
-
-        result._uniqueId = serializationObject.id;
 
         for (const targetData of serializationObject.targets) {
             result.addTarget(MorphTarget.Parse(targetData, scene));

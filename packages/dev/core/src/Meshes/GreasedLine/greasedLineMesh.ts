@@ -201,7 +201,7 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
                 this._updateColorPointers();
             }
             this._createVertexBuffers();
-            this.refreshBoundingInfo();
+            !this.doNotSyncBoundingInfo && this.refreshBoundingInfo();
         }
     }
 

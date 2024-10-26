@@ -15,7 +15,6 @@ import { serialize, serializeAsColor4 } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { GetClass, RegisterClass } from "../Misc/typeStore";
 import { DrawWrapper } from "../Materials/drawWrapper";
-import type { AbstractScene } from "../abstractScene";
 import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
 
@@ -26,6 +25,7 @@ import type { PrePassRenderer } from "../Rendering/prePassRenderer";
 import type { PrePassEffectConfiguration } from "../Rendering/prePassEffectConfiguration";
 import { AbstractEngine } from "../Engines/abstractEngine";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
+import type { IAssetContainer } from "core/IAssetContainer";
 
 declare module "../Engines/abstractEngine" {
     export interface AbstractEngine {
@@ -224,7 +224,7 @@ export class PostProcess {
     public static ForceGLSL = false;
 
     /** @internal */
-    public _parentContainer: Nullable<AbstractScene> = null;
+    public _parentContainer: Nullable<IAssetContainer> = null;
 
     private static _CustomShaderCodeProcessing: { [postProcessName: string]: PostProcessCustomShaderCodeProcessing } = {};
 

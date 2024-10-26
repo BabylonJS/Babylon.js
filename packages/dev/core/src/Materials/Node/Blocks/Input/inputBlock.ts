@@ -114,9 +114,13 @@ export class InputBlock extends NodeMaterialBlock {
 
             if (this.isAttribute) {
                 switch (this.name) {
+                    case "splatIndex":
+                        this._type = NodeMaterialBlockConnectionPointTypes.Float;
+                        return this._type;
                     case "position":
                     case "normal":
                     case "particle_positionw":
+                    case "splatPosition":
                         this._type = NodeMaterialBlockConnectionPointTypes.Vector3;
                         return this._type;
                     case "uv":
@@ -127,6 +131,7 @@ export class InputBlock extends NodeMaterialBlock {
                     case "uv6":
                     case "position2d":
                     case "particle_uv":
+                    case "splatScale":
                         this._type = NodeMaterialBlockConnectionPointTypes.Vector2;
                         return this._type;
                     case "matricesIndices":
@@ -144,6 +149,7 @@ export class InputBlock extends NodeMaterialBlock {
                     case "instanceColor":
                     case "particle_color":
                     case "particle_texturemask":
+                    case "splatColor":
                         this._type = NodeMaterialBlockConnectionPointTypes.Color4;
                         return this._type;
                 }

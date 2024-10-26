@@ -1,10 +1,9 @@
-import { AbstractScene } from "./abstractScene";
 import type { Scene } from "./scene";
 import { Mesh } from "./Meshes/mesh";
 import { TransformNode } from "./Meshes/transformNode";
 import type { Skeleton } from "./Bones/skeleton";
 import type { AnimationGroup } from "./Animations/animationGroup";
-import type { Animatable } from "./Animations/animatable";
+import { type Animatable } from "./Animations/animatable.core";
 import { AbstractMesh } from "./Meshes/abstractMesh";
 import type { MultiMaterial } from "./Materials/multiMaterial";
 import type { Material } from "./Materials/material";
@@ -18,11 +17,183 @@ import { InstancedMesh } from "./Meshes/instancedMesh";
 import { Light } from "./Lights/light";
 import { Camera } from "./Cameras/camera";
 import { Tools } from "./Misc/tools";
+import type { IParticleSystem } from "./Particles/IParticleSystem";
+import type { IAssetContainer } from "./IAssetContainer";
+import type { Animation } from "./Animations/animation";
+import type { MorphTargetManager } from "./Morph/morphTargetManager";
+import type { Geometry } from "./Meshes/geometry";
+import type { AbstractActionManager } from "./Actions/abstractActionManager";
+import type { BaseTexture } from "./Materials/Textures/baseTexture";
+import type { PostProcess } from "./PostProcesses/postProcess";
+import type { Sound } from "./Audio/sound";
+import type { Layer } from "./Layers/layer";
+import type { EffectLayer } from "./Layers/effectLayer";
+import type { ReflectionProbe } from "./Probes/reflectionProbe";
+import type { LensFlareSystem } from "./LensFlares/lensFlareSystem";
+import type { ProceduralTexture } from "./Materials/Textures/Procedurals/proceduralTexture";
+
+/**
+ * Root class for AssetContainer and KeepAssets
+ */
+export class AbstractAssetContainer implements IAssetContainer {
+    /**
+     * Gets the list of root nodes (ie. nodes with no parent)
+     */
+    public rootNodes: Node[] = [];
+
+    /** All of the cameras added to this scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras
+     */
+    public cameras: Camera[] = [];
+
+    /**
+     * All of the lights added to this scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction
+     */
+    public lights: Light[] = [];
+
+    /**
+     * All of the (abstract) meshes added to this scene
+     */
+    public meshes: AbstractMesh[] = [];
+
+    /**
+     * The list of skeletons added to the scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/bonesSkeletons
+     */
+    public skeletons: Skeleton[] = [];
+
+    /**
+     * All of the particle systems added to this scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/particle_system_intro
+     */
+    public particleSystems: IParticleSystem[] = [];
+
+    /**
+     * Gets a list of Animations associated with the scene
+     */
+    public animations: Animation[] = [];
+
+    /**
+     * All of the animation groups added to this scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/groupAnimations
+     */
+    public animationGroups: AnimationGroup[] = [];
+
+    /**
+     * All of the multi-materials added to this scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/multiMaterials
+     */
+    public multiMaterials: MultiMaterial[] = [];
+
+    /**
+     * All of the materials added to this scene
+     * In the context of a Scene, it is not supposed to be modified manually.
+     * Any addition or removal should be done using the addMaterial and removeMaterial Scene methods.
+     * Note also that the order of the Material within the array is not significant and might change.
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/materials_introduction
+     */
+    public materials: Material[] = [];
+
+    /**
+     * The list of morph target managers added to the scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/dynamicMeshMorph
+     */
+    public morphTargetManagers: MorphTargetManager[] = [];
+
+    /**
+     * The list of geometries used in the scene.
+     */
+    public geometries: Geometry[] = [];
+
+    /**
+     * All of the transform nodes added to this scene
+     * In the context of a Scene, it is not supposed to be modified manually.
+     * Any addition or removal should be done using the addTransformNode and removeTransformNode Scene methods.
+     * Note also that the order of the TransformNode within the array is not significant and might change.
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/parent_pivot/transform_node
+     */
+    public transformNodes: TransformNode[] = [];
+
+    /**
+     * ActionManagers available on the scene.
+     * @deprecated
+     */
+    public actionManagers: AbstractActionManager[] = [];
+
+    /**
+     * Textures to keep.
+     */
+    public textures: BaseTexture[] = [];
+
+    /** @internal */
+    protected _environmentTexture: Nullable<BaseTexture> = null;
+    /**
+     * Texture used in all pbr material as the reflection texture.
+     * As in the majority of the scene they are the same (exception for multi room and so on),
+     * this is easier to reference from here than from all the materials.
+     */
+    public get environmentTexture(): Nullable<BaseTexture> {
+        return this._environmentTexture;
+    }
+
+    public set environmentTexture(value: Nullable<BaseTexture>) {
+        this._environmentTexture = value;
+    }
+
+    /**
+     * The list of postprocesses added to the scene
+     */
+    public postProcesses: PostProcess[] = [];
+
+    /**
+     * The list of sounds
+     */
+    public sounds: Nullable<Sound[]> = null;
+
+    /**
+     * The list of effect layers added to the scene
+     */
+    public effectLayers: EffectLayer[] = [];
+
+    /**
+     * The list of layers added to the scene
+     */
+    public layers: Layer[] = [];
+
+    /**
+     * The list of reflection probes added to the scene
+     */
+    public reflectionProbes: ReflectionProbe[] = [];
+
+    /**
+     * The list of lens flare systems added to the scene
+     */
+    public lensFlareSystems: LensFlareSystem[];
+
+    /**
+     * The list of procedural textures added to the scene
+     */
+    public proceduralTextures: ProceduralTexture[];
+
+    /**
+     * @returns all meshes, lights, cameras, transformNodes and bones
+     */
+    public getNodes(): Array<Node> {
+        let nodes: Node[] = [];
+        nodes = nodes.concat(this.meshes);
+        nodes = nodes.concat(this.lights);
+        nodes = nodes.concat(this.cameras);
+        nodes = nodes.concat(this.transformNodes); // dummies
+        this.skeletons.forEach((skeleton) => (nodes = nodes.concat(skeleton.bones)));
+        return nodes;
+    }
+}
 
 /**
  * Set of assets to keep when moving a scene into an asset container.
  */
-export class KeepAssets extends AbstractScene {}
+export class KeepAssets extends AbstractAssetContainer {}
 
 /**
  * Class used to store the output of the AssetContainer.instantiateAllMeshesToScene function
@@ -67,7 +238,7 @@ export class InstantiatedEntries {
 /**
  * Container with a set of assets that can be added or removed from a scene.
  */
-export class AssetContainer extends AbstractScene {
+export class AssetContainer extends AbstractAssetContainer {
     private _wasAddedToScene = false;
     private _onContextRestoredObserver: Nullable<Observer<AbstractEngine>>;
 
@@ -87,12 +258,7 @@ export class AssetContainer extends AbstractScene {
             return;
         }
         this.scene = scene;
-        this["sounds"] = [];
-        this["effectLayers"] = [];
-        this["layers"] = [];
-        this["lensFlareSystems"] = [];
         this["proceduralTextures"] = [];
-        this["reflectionProbes"] = [];
 
         scene.onDisposeObservable.add(() => {
             if (!this._wasAddedToScene) {

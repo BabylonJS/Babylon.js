@@ -247,6 +247,9 @@ export class _IblShadowsVoxelTracingPass {
 
     private _createTextures() {
         let defines = "";
+        if (this._scene.useRightHandedSystem) {
+            defines += "#define RIGHT_HANDED\n";
+        }
         if (this._debugVoxelMarchEnabled) {
             defines += "#define VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION 1u\n";
         }
@@ -279,6 +282,9 @@ export class _IblShadowsVoxelTracingPass {
     }
 
     private _updatePostProcess(effect: Effect, camera: Camera) {
+        if (this._scene.useRightHandedSystem) {
+            effect.defines = "#define RIGHT_HANDED\n";
+        }
         effect.setMatrix("viewMtx", camera.getViewMatrix());
         effect.setMatrix("projMtx", camera.getProjectionMatrix());
         camera.getProjectionMatrix().invertToRef(this._cameraInvProj);
@@ -290,7 +296,7 @@ export class _IblShadowsVoxelTracingPass {
         this._frameId++;
 
         const downscaleSquared = this._downscale * this._downscale;
-        let rotation = this._scene.useRightHandedSystem ? -this._envRotation - 0.5 * Math.PI : -this._envRotation - Math.PI;
+        let rotation = this._scene.useRightHandedSystem ? -(this._envRotation + 0.5 * Math.PI) : this._envRotation - 0.5 * Math.PI;
         rotation = rotation % (2.0 * Math.PI);
         effect.setVector4("shadowParameters", new Vector4(this._sampleDirections, this._frameId / downscaleSquared, this._downscale, rotation));
         const offset = new Vector2(0.0, 0.0);
@@ -306,7 +312,7 @@ export class _IblShadowsVoxelTracingPass {
         effect.setTexture("icdfySampler", this._renderPipeline!.getIcdfyTexture());
         effect.setTexture("icdfxSampler", this._renderPipeline!.getIcdfxTexture());
         if (this._debugVoxelMarchEnabled) {
-            effect.defines = "#define VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION 1u\n";
+            effect.defines += "#define VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION 1u\n";
         }
 
         const prePassRenderer = this._scene.prePassRenderer;

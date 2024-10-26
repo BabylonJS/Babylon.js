@@ -1,4 +1,8 @@
-﻿#if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
+﻿#ifdef LOGARITHMICDEPTH
+#extension GL_EXT_frag_depth : enable
+#endif
+
+#if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
     #define TEXTUREFUNC(s, c, l) texture2DLodEXT(s, c, l)
 #else
     #define TEXTUREFUNC(s, c, b) texture2D(s, c, b)
@@ -24,6 +28,10 @@ uniform sampler2D animationMap;
 
 uniform vec3 colorMul;
 
+#include<fogFragmentDeclaration>
+
+#include<logDepthDeclaration>
+
 float mt;
 
 const float fdStep = 1. / 4.;
@@ -42,9 +50,7 @@ mat4 getFrameData(float frameID){
 void main(){
     vec4 color = vec4(0.);
     vec2 tileUV = fract(tUV);
-    #ifdef FLIPU
-        tileUV.y = 1.0 - tileUV.y;
-    #endif
+
 
     vec2 tileID = floor(tUV);
     vec2 sheetUnits = 1. / spriteMapSize;
@@ -56,16 +62,13 @@ void main(){
         #define LAYER_ID_SWITCH
 
         vec4 animationData = TEXTUREFUNC(animationMap, vec2((frameID + 0.5) / spriteCount, 0.), 0.);
-
         if(animationData.y > 0.) {
-
             mt = mod(time*animationData.z, 1.0);
             for(float f = 0.; f < MAX_ANIMATION_FRAMES; f++){
                 if(animationData.y > mt){
                     frameID = animationData.x;
                     break;
                 }
-
                 animationData = TEXTUREFUNC(animationMap, vec2((frameID + 0.5) / spriteCount, aFrameSteps * f), 0.);
             }
         }
@@ -77,9 +80,28 @@ void main(){
         vec2 ratio = frameData[2].xy / frameData[0].zw;
 
         //rotated
-        if (frameData[2].z == 1.){
-            tileUV.xy = tileUV.yx;
-        }
+        #ifdef FR_CW
+            if (frameData[2].z == 1.){
+                tileUV.xy = tileUV.yx;
+            } else {
+                tileUV.xy = fract(tUV).xy;
+            }
+            #ifdef FLIPU
+                tileUV.y = 1.0 - tileUV.y;
+            #endif
+        #else
+            if (frameData[2].z == 1.){
+                #ifdef FLIPU
+                    tileUV.y = 1.0 - tileUV.y;
+                #endif
+                tileUV.xy = tileUV.yx;
+            } else {
+                tileUV.xy = fract(tUV).xy;
+                #ifdef FLIPU
+                    tileUV.y = 1.0 - tileUV.y;
+                #endif
+            }
+        #endif
 
         vec4 nc = texture2D(spriteSheet, tileUV * frameSize+offset);
         if (i == 0){
@@ -92,6 +114,9 @@ void main(){
     }
 
     color.xyz *= colorMul;
+
+#include<logDepthFragment>
+#include<fogFragment>
 
     gl_FragColor = color;
 }

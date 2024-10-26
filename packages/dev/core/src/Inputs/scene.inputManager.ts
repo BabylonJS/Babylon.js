@@ -14,6 +14,7 @@ import { DeviceSourceManager } from "../DeviceInput/InputDevices/deviceSourceMan
 import { EngineStore } from "../Engines/engineStore";
 
 import type { Scene } from "../scene";
+import { _ImportHelper } from "core/import.helper";
 
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -262,7 +263,7 @@ export class InputManager {
     /** @internal */
     public _setRayOnPointerInfo(pickInfo: Nullable<PickingInfo>, event: IMouseEvent) {
         const scene = this._scene;
-        if (pickInfo && scene._pickingAvailable) {
+        if (pickInfo && _ImportHelper._IsPickingAvailable) {
             if (!pickInfo.ray) {
                 pickInfo.ray = scene.createPickingRay(event.offsetX, event.offsetY, Matrix.Identity(), scene.activeCamera);
             }

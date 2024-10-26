@@ -266,23 +266,22 @@ export function CreateScreenshotUsingRenderTarget(
                         texture.dispose();
                     });
                 } else {
-                    ApplyPostProcess("pass", texture.getInternalTexture()!, scene, undefined, undefined, undefined, finalWidth, finalHeight).then((texture) => {
-                        engine._readTexturePixels(texture, finalWidth, finalHeight, -1, 0, null, true, false, 0, 0).then((data) => {
-                            DumpData(finalWidth, finalHeight, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true, undefined, quality);
-                            texture.dispose();
-                        });
-                    });
+                    const importPromise = engine.isWebGPU ? import("../ShadersWGSL/pass.fragment") : import("../Shaders/pass.fragment");
+                    importPromise.then(() =>
+                        ApplyPostProcess("pass", texture.getInternalTexture()!, scene, undefined, undefined, undefined, finalWidth, finalHeight).then((texture) => {
+                            engine._readTexturePixels(texture, finalWidth, finalHeight, -1, 0, null, true, false, 0, 0).then((data) => {
+                                DumpData(finalWidth, finalHeight, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true, undefined, quality);
+                                texture.dispose();
+                            });
+                        })
+                    );
                 }
             });
-
-            // re-render the scene after the camera has been reset to the original camera to avoid a flicker that could occur
-            // if the camera used for the RTT rendering stays in effect for the next frame (and if that camera was different from the original camera)
             scene.incrementRenderId();
             scene.resetCachedMaterial();
             texture.render(true);
             engine.setSize(originalSize.width, originalSize.height);
             camera.getProjectionMatrix(true); // Force cache refresh;
-            scene.render();
         } else {
             setTimeout(renderWhenReady, 16);
         }

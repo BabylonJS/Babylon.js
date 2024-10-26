@@ -11,14 +11,14 @@ import { EngineStore } from "./Engines/engineStore";
 import { _WarnImport } from "./Misc/devTools";
 import type { AbstractActionManager } from "./Actions/abstractActionManager";
 import type { IInspectable } from "./Misc/iInspectable";
-import type { AbstractScene } from "./abstractScene";
 import type { IAccessibilityTag } from "./IAccessibilityTag";
 import type { AnimationRange } from "./Animations/animationRange";
 import type { AnimationPropertiesOverride } from "./Animations/animationPropertiesOverride";
 import type { AbstractMesh } from "./Meshes/abstractMesh";
 import type { Animation } from "./Animations/animation";
-import type { Animatable } from "./Animations/animatable";
+import type { Animatable } from "./Animations/animatable.core";
 import { SerializationHelper } from "./Misc/decorators.serialization";
+import type { IAssetContainer } from "./IAssetContainer";
 
 /**
  * Defines how a node can be built from a string name.
@@ -164,7 +164,7 @@ export class Node implements IBehaviorAware<Node> {
     }
 
     /** @internal */
-    public _parentContainer: Nullable<AbstractScene> = null;
+    public _parentContainer: Nullable<IAssetContainer> = null;
 
     /**
      * Gets a list of Animations associated with the node

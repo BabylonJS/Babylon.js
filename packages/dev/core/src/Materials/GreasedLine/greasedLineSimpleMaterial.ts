@@ -352,7 +352,7 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
      * Gets the color of the line
      */
     get color() {
-        return this.color;
+        return this._color;
     }
 
     /**

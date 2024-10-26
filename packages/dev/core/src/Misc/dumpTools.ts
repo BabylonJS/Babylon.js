@@ -224,6 +224,7 @@ export function Dispose() {
             dumpToolsEngine.engine.dispose();
         });
     }
+    _enginePromise = null;
     _dumpToolsEngine = null;
 }
 
