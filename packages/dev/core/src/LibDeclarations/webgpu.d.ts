@@ -980,7 +980,7 @@ declare class GPUCanvasContext {
     configure(configuration?: GPUCanvasConfiguration): void;
     unconfigure(): void;
 
-    getConfiguration(): GPUCanvasConfiguration?;
+    getConfiguration(): GPUCanvasConfiguration | undefined;
     getCurrentTexture(): GPUTexture;
 }
 
