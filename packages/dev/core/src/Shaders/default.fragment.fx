@@ -495,6 +495,7 @@ color.rgb = max(color.rgb, 0.);
 				gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(toLinearSpace(specularColor), 1.0) * writeGeometryInfo;
 #endif
 #endif
+#endif
 
 #if !defined(PREPASS) || defined(WEBGL2)
 	gl_FragColor = color;
