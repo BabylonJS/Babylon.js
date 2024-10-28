@@ -43,7 +43,9 @@ mat4 getFrameData(float frameID) {
     );
 }
 
+
 void main() {
+
     vec4 color = vec4(0.0);
     vec2 tileUV = fract(tUV);
     vec2 tileID = floor(tUV);
