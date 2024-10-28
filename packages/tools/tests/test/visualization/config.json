@@ -909,6 +909,11 @@
             "referenceImage": "glTFSerializerKhrGpuInstancing.png"
         },
         {
+            "title": "GLTF Serializer KHR punctual light, directional",
+            "playgroundId": "#FLXW8B#4",
+            "referenceImage": "glTFSerializerKHRPunctualLightDirectional.png"
+        },
+        {
             "title": "GLTF Buggy with Draco Mesh Compression",
             "playgroundId": "#JNW207#1",
             "referenceImage": "gltfBuggyDraco.png"
