@@ -3,6 +3,8 @@ uniform mat4 viewProjection;
 #ifdef MULTIVIEW
     uniform mat4 viewProjectionR;
 #endif
+
+
 uniform float shadowLevel;
 
 #ifdef DIFFUSE
