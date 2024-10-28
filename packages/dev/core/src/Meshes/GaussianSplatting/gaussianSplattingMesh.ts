@@ -226,6 +226,7 @@ export class GaussianSplattingMesh extends Mesh {
     private _material: Nullable<Material> = null;
 
     private _tmpCovariances = [0, 0, 0, 0, 0, 0];
+    private _sortIsDirty = false;
 
     private static _RowOutputLength = 3 * 4 + 3 * 4 + 4 + 4; // Vector3 position, Vector3 scale, 1 u8 quaternion, 1 color with alpha
     private static _SH_C0 = 0.28209479177387814;
@@ -354,7 +355,7 @@ export class GaussianSplattingMesh extends Mesh {
 
     protected _postToWorker(forced = false): void {
         const frameId = this.getScene().getFrameId();
-        if (frameId !== this._frameIdLastUpdate && this._worker && this._scene.activeCamera && this._canPostToWorker) {
+        if ((forced || frameId !== this._frameIdLastUpdate) && this._worker && this._scene.activeCamera && this._canPostToWorker) {
             const cameraMatrix = this._scene.activeCamera.getViewMatrix();
             this.getWorldMatrix().multiplyToRef(cameraMatrix, this._modelViewMatrix);
             cameraMatrix.invertToRef(TmpVectors.Matrix[0]);
@@ -1075,9 +1076,12 @@ export class GaussianSplattingMesh extends Mesh {
                 this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
                 yield;
             }
+
+            // sort will be dirty here as just finished filled positions will not be sorted
             const positions = Float32Array.from(this._splatPositions!);
             const vertexCount = this._vertexCount;
             this._worker!.postMessage({ positions, vertexCount }, [positions.buffer]);
+            this._sortIsDirty = true;
         } else {
             for (let i = 0; i < vertexCount; i++) {
                 this._makeSplat(i, i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum);
@@ -1230,6 +1234,12 @@ export class GaussianSplattingMesh extends Mesh {
             this.thinInstanceBufferUpdated("splatIndex");
             this._canPostToWorker = true;
             this._readyToDisplay = true;
+            // sort is dirty when GS is visible for progressive update with a this message arriving but positions were partially filled
+            // another update needs to be kicked. The kick can't happen just when the position buffer is ready because _canPostToWorker might be false.
+            if (this._sortIsDirty) {
+                this._postToWorker(true);
+                this._sortIsDirty = false;
+            }
         };
     }
 
