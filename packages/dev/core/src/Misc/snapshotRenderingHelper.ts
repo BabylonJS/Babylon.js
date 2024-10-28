@@ -152,7 +152,7 @@ export class SnapshotRenderingHelper {
                     this._executeAtFrame(
                         this._engine.frameId + 2,
                         () => {
-                            // if this._disableRenderingRefCount === 0 snapshot rendering has been enabled in the meantime, so do nothing
+                            // if this._disableRenderingRefCount === 0, snapshot rendering has been enabled in the meantime, so do nothing
                             if (this._disableRenderingRefCount > 0 && this._pendingCurrentPerformancePriorityMode !== undefined) {
                                 this._scene.performancePriority = this._pendingCurrentPerformancePriorityMode;
                             }
