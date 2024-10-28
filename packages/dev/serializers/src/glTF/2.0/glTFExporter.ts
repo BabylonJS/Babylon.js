@@ -239,9 +239,7 @@ export class GLTFExporter {
 
     private readonly _shouldExportNodeMap = new Map<Node, boolean>();
 
-    /**
-     * Babylon node -> glTF node index
-     */
+    // Babylon node -> glTF node index
     private readonly _nodeMap = new Map<Node, number>();
 
     // Babylon material -> glTF material index
