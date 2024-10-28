@@ -4,7 +4,7 @@ import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { addNewInteractivityFlowGraphMapping, connectFlowGraphNodes } from "./KHR_interactivity/interactivityUtils";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
-const NAME = "KHR_selectability";
+const NAME = "KHR_node_selectability";
 
 declare module "../../glTFFileLoader" {
     // eslint-disable-next-line jsdoc/require-jsdoc
@@ -13,7 +13,7 @@ declare module "../../glTFFileLoader" {
          * Defines options for the KHR_selectability extension.
          */
         // NOTE: Don't use NAME here as it will break the UMD type declarations.
-        ["KHR_selectability"]: {};
+        ["KHR_node_selectability"]: {};
     }
 }
 
