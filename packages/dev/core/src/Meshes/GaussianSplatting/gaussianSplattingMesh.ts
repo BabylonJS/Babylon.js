@@ -17,6 +17,7 @@ import type { ThinEngine } from "core/Engines/thinEngine";
 import { ToHalfFloat } from "core/Misc/textureTools";
 import type { Material } from "core/Materials/material";
 import { Scalar } from "core/Maths/math.scalar";
+import { runCoroutineSync, runCoroutineAsync, createYieldingScheduler, type Coroutine } from "core/Misc/coroutine";
 
 interface DelayedTextureUpdate {
     covA: Uint16Array;
@@ -765,9 +766,10 @@ export class GaussianSplattingMesh extends Mesh {
      * Converts a .ply data array buffer to splat
      * if data array buffer is not ply, returns the original buffer
      * @param data the .ply data to load
+     * @param useCoroutine use coroutine and yield
      * @returns the loaded splat buffer
      */
-    public static ConvertPLYToSplat(data: ArrayBuffer): ArrayBuffer {
+    public static *ConvertPLYToSplat(data: ArrayBuffer, useCoroutine = false) {
         const header = GaussianSplattingMesh.ParseHeader(data);
         if (!header) {
             return data;
@@ -778,6 +780,9 @@ export class GaussianSplattingMesh extends Mesh {
 
         for (let i = 0; i < header.vertexCount; i++) {
             GaussianSplattingMesh._GetSplat(header, i, compressedChunks, offset);
+            if (i % 30000 === 0 && useCoroutine) {
+                yield;
+            }
         }
 
         return header.buffer;
@@ -789,28 +794,8 @@ export class GaussianSplattingMesh extends Mesh {
      * @param data the .ply data to load
      * @returns the loaded splat buffer
      */
-    public static async ConvertPLYToSplatAsync(data: ArrayBuffer): Promise<ArrayBuffer> {
-        return new Promise(async (resolve) => {
-            const header = GaussianSplattingMesh.ParseHeader(data);
-            if (!header) {
-                resolve(data);
-                return;
-            }
-
-            const offset = { value: 0 };
-            const compressedChunks = GaussianSplattingMesh._GetCompressedChunks(header, offset);
-
-            for (let i = 0; i < header.vertexCount; i++) {
-                GaussianSplattingMesh._GetSplat(header, i, compressedChunks, offset);
-
-                // todo: this number should be part of the loading options
-                if (i % 30000 === 0) {
-                    await new Promise((resolve) => setTimeout(resolve, 1));
-                }
-            }
-
-            resolve(header.buffer);
-        });
+    public static async ConvertPLYToSplatAsync(data: ArrayBuffer) {
+        return runCoroutineAsync(GaussianSplattingMesh.ConvertPLYToSplat(data, true), createYieldingScheduler());
     }
 
     /**
@@ -831,7 +816,7 @@ export class GaussianSplattingMesh extends Mesh {
      */
     public loadFileAsync(url: string): Promise<void> {
         return Tools.LoadFileAsync(url, true).then(async (data) => {
-            await this.updateData(GaussianSplattingMesh.ConvertPLYToSplat(data));
+            await this.updateData(runCoroutineSync(GaussianSplattingMesh.ConvertPLYToSplat(data, false)));
         });
     }
 
@@ -1044,78 +1029,80 @@ export class GaussianSplattingMesh extends Mesh {
         }
     }
 
-    /**
-     *
-     * @param data
-     */
-    public async updateDataAsync(data: ArrayBuffer): Promise<void> {
-        return new Promise(async (resolve) => {
-            // if a covariance texture is present, then it's not a creation but an update
-            if (!this._covariancesATexture) {
-                this._readyToDisplay = false;
-            }
+    private *_updateDataAsync(data: ArrayBuffer): Coroutine<void> {
+        // if a covariance texture is present, then it's not a creation but an update
+        if (!this._covariancesATexture) {
+            this._readyToDisplay = false;
+        }
 
-            // Parse the data
-            const uBuffer = new Uint8Array(data);
-            const fBuffer = new Float32Array(uBuffer.buffer);
+        // Parse the data
+        const uBuffer = new Uint8Array(data);
+        const fBuffer = new Float32Array(uBuffer.buffer);
 
-            const vertexCount = uBuffer.length / GaussianSplattingMesh._RowOutputLength;
-            if (vertexCount != this._vertexCount) {
-                this._updateSplatIndexBuffer(vertexCount);
-            }
-            this._vertexCount = vertexCount;
+        const vertexCount = uBuffer.length / GaussianSplattingMesh._RowOutputLength;
+        if (vertexCount != this._vertexCount) {
+            this._updateSplatIndexBuffer(vertexCount);
+        }
+        this._vertexCount = vertexCount;
 
-            const textureSize = this._getTextureSize(vertexCount);
-            const textureLength = textureSize.x * textureSize.y;
-            const lineCountUpdate = GaussianSplattingMesh.ProgressiveUpdateAmount ?? textureSize.y;
-            const textureLengthPerUpdate = textureSize.x * lineCountUpdate;
+        const textureSize = this._getTextureSize(vertexCount);
+        const textureLength = textureSize.x * textureSize.y;
+        const lineCountUpdate = GaussianSplattingMesh.ProgressiveUpdateAmount ?? textureSize.y;
+        const textureLengthPerUpdate = textureSize.x * lineCountUpdate;
 
-            this._splatPositions = new Float32Array(4 * textureLength);
-            const covA = new Uint16Array(textureLength * 4);
-            const covB = new Uint16Array((this._useRGBACovariants ? 4 : 2) * textureLength);
-            const colorArray = new Uint8Array(textureLength * 4);
+        this._splatPositions = new Float32Array(4 * textureLength);
+        const covA = new Uint16Array(textureLength * 4);
+        const covB = new Uint16Array((this._useRGBACovariants ? 4 : 2) * textureLength);
+        const colorArray = new Uint8Array(textureLength * 4);
 
-            const minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-            const maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+        const minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+        const maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
-            if (GaussianSplattingMesh.ProgressiveUpdateAmount) {
-                // create textures with not filled-yet array, then update directly portions of it
-                this._updateTextures(covA, covB, colorArray);
-                this.setEnabled(true);
+        if (GaussianSplattingMesh.ProgressiveUpdateAmount) {
+            // create textures with not filled-yet array, then update directly portions of it
+            this._updateTextures(covA, covB, colorArray);
+            this.setEnabled(true);
 
-                const partCount = Math.ceil(textureSize.y / lineCountUpdate);
-                for (let partIndex = 0; partIndex < partCount; partIndex++) {
-                    const updateLine = partIndex * lineCountUpdate;
-                    const splatIndexBase = updateLine * textureSize.x;
-                    for (let i = 0; i < textureLengthPerUpdate; i++) {
-                        this._makeSplat(splatIndexBase + i, splatIndexBase + i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum);
-                    }
-                    this._updateSubTextures(this._splatPositions, covA, covB, colorArray, updateLine, Math.min(lineCountUpdate, textureSize.y - updateLine));
-                    // Update the binfo
-                    this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
-                    await new Promise((resolve) => setTimeout(resolve, 1));
+            const partCount = Math.ceil(textureSize.y / lineCountUpdate);
+            for (let partIndex = 0; partIndex < partCount; partIndex++) {
+                const updateLine = partIndex * lineCountUpdate;
+                const splatIndexBase = updateLine * textureSize.x;
+                for (let i = 0; i < textureLengthPerUpdate; i++) {
+                    this._makeSplat(splatIndexBase + i, splatIndexBase + i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum);
                 }
-                const positions = Float32Array.from(this._splatPositions!);
-                const vertexCount = this._vertexCount;
-                this._worker!.postMessage({ positions, vertexCount }, [positions.buffer]);
-            } else {
-                for (let i = 0; i < vertexCount; i++) {
-                    this._makeSplat(i, i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum);
-                    if (i % 327680 === 0) {
-                        await new Promise((resolve) => setTimeout(resolve, 1));
-                    }
-                }
-                // textures
-                this._updateTextures(covA, covB, colorArray);
+                this._updateSubTextures(this._splatPositions, covA, covB, colorArray, updateLine, Math.min(lineCountUpdate, textureSize.y - updateLine));
                 // Update the binfo
                 this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
-                this.setEnabled(true);
+                yield;
             }
-            this._postToWorker(true);
-
-            resolve();
-        });
+            const positions = Float32Array.from(this._splatPositions!);
+            const vertexCount = this._vertexCount;
+            this._worker!.postMessage({ positions, vertexCount }, [positions.buffer]);
+        } else {
+            for (let i = 0; i < vertexCount; i++) {
+                this._makeSplat(i, i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum);
+                if (i % 327680 === 0) {
+                    yield;
+                }
+            }
+            // textures
+            this._updateTextures(covA, covB, colorArray);
+            // Update the binfo
+            this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
+            this.setEnabled(true);
+        }
+        this._postToWorker(true);
     }
+
+    /**
+     * Update asynchronously the buffer
+     * @param data array buffer containing center, color, orientation and scale of splats
+     * @returns a promise
+     */
+    public async updateDataAsync(data: ArrayBuffer): Promise<void> {
+        return runCoroutineAsync(this._updateDataAsync(data), createYieldingScheduler());
+    }
+
     /**
      * @experimental
      * Update data from GS (position, orientation, color, scaling)
