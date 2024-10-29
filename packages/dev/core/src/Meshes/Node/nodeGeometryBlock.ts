@@ -321,17 +321,6 @@ export class NodeGeometryBlock {
         this._buildBlock(state);
         this._buildExecutionTime = PrecisionDate.Now - now;
 
-        // Compile connected blocks
-        for (const output of this._outputs) {
-            for (const endpoint of output.endpoints) {
-                const block = endpoint.ownerBlock;
-
-                if (block) {
-                    block.build(state);
-                }
-            }
-        }
-
         this.onBuildObservable.notifyObservers(this);
 
         return false;

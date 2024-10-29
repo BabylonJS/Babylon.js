@@ -147,6 +147,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         InterceptorBlock: "Block used to trigger an observable when traversed",
         LatticeBlock: "Block used to apply Lattice on geometry",
         AggregatorBlock: "Block used to aggregate values from a geometry",
+        CleanGeometryBlock: "try to clean a geometry and reorient faces",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -322,6 +323,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "CollectionBlock",
                 "ComputeNormalsBlock",
                 "OptimizeBlock",
+                "CleanGeometryBlock",
                 "MappingBlock",
                 "LatticeBlock",
                 "AggregatorBlock",
