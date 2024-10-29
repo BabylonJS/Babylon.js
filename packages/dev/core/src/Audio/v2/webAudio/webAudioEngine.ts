@@ -41,6 +41,14 @@ export interface WebAudioPositionerOptions extends AudioPositionerOptions {}
  */
 export interface WebAudioStaticSoundOptions extends StaticSoundOptions {
     /**
+     * The ArrayBuffer to be used as the sound source.
+     */
+    sourceArrayBuffer?: ArrayBuffer;
+    /**
+     * The AudioBuffer to be used as the sound source.
+     */
+    sourceAudioBuffer?: AudioBuffer;
+    /**
      * The buffer to be used as the sound source.
      */
     sourceBuffer?: AbstractStaticSoundBuffer;
@@ -58,6 +66,14 @@ export interface WebAudioStaticSoundOptions extends StaticSoundOptions {
  * Options for creating a new WebAudioStaticSoundBuffer.
  */
 export interface WebAudioStaticSoundBufferOptions extends StaticSoundBufferOptions {
+    /**
+     * The ArrayBuffer to be used as the sound source.
+     */
+    sourceArrayBuffer?: ArrayBuffer;
+    /**
+     * The AudioBuffer to be used as the sound source.
+     */
+    sourceAudioBuffer?: AudioBuffer;
     /**
      * The URL of the sound buffer.
      */

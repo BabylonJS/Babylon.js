@@ -61,7 +61,7 @@ export class WebAudioStaticSound extends AbstractStaticSound {
 
         if (options?.sourceBuffer) {
             this._buffer = options.sourceBuffer as WebAudioStaticSoundBuffer;
-        } else if (options?.sourceUrl || options?.sourceUrls) {
+        } else if (options?.sourceUrl || options?.sourceUrls || options?.sourceArrayBuffer || options?.sourceAudioBuffer) {
             this._buffer = (await this.engine.createSoundBuffer(options)) as WebAudioStaticSoundBuffer;
         }
 
@@ -156,6 +156,11 @@ export class WebAudioStaticSoundBuffer extends AbstractStaticSoundBuffer {
                     break;
                 }
             }
+        } else if (options?.sourceArrayBuffer) {
+            const audioContext = await this.engine.audioContext;
+            this.audioBuffer = await audioContext.decodeAudioData(options.sourceArrayBuffer);
+        } else if (options?.sourceAudioBuffer) {
+            this.audioBuffer = options.sourceAudioBuffer;
         }
     }
 }
