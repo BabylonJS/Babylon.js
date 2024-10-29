@@ -1,6 +1,163 @@
 {
-    "fromTag": "7.30.1",
+    "fromTag": "7.31.0",
     "changelog": {
+        "7.31.1": [
+            {
+                "pr": "15744",
+                "title": "WebGPU: Sync with specification",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheRenderPipeline.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuConstants.ts",
+                    "packages/dev/core/src/Engines/constants.ts",
+                    "packages/dev/core/src/LibDeclarations/webgpu.d.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "15743",
+                "title": "SnapshotRenderingHelper: Fix interaction with performance priority mode",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/snapshotRenderingHelper.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "15741",
+                "title": "SpriteMap LOD Sampling Fix",
+                "description": "Per this conversation:\r\nhttps://forum.babylonjs.com/t/seams-artifacts-between-texture-tiles-when-using-mipmaps/54269/4",
+                "author": {
+                    "name": "Pryme8",
+                    "url": "https://github.com/Pryme8"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/spriteMap.fragment.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15745",
+                "title": "Fix missing matrix",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/backgroundVertexDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/defaultVertexDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrVertexDeclaration.fx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15740",
+                "title": "Skip frustum clipping in viewer",
+                "description": "I recently removed the code that was setting performancePriority to Aggressive because it broke some rendering scenarios (still investigating). However removing it also breaks other things. Specifically, we need to skip frustum culling (render all meshes) for WebGPU snapshot mode. So I'm adding this back explicitly (along with one other performancePriority related setting) for now. Also I updated the published.html test file to use jsdelivr instead of unpkg as it is faster and easier to use when testing.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/public/@babylonjs/viewer-alpha/test/apps/web/published.html",
+                    "packages/tools/viewer-alpha/src/viewer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15721",
+                "title": "Edge Detection Post Process",
+                "description": "https://forum.babylonjs.com/t/outline-post-process/50488\r\n\r\nI wrote this article with my different accout.\r\n\r\nThis PR adds a new EdgeDetectionPostProcess to BabylonJS.\r\nThis post-process applies an edge detection effect based on normals and depth buffers from the geometry buffer renderer, providing developers with a versatile way to highlight object outlines.\r\n\r\nKey Features\r\nConfigurable edge color, width, and intensity for flexible stylization.\r\nSupports different render modes:\r\n\r\nGeneral\r\nNormal\r\nDepth\r\nOnly Outline\r\nUses Geometry Buffer Renderer to access normals and depth textures for precise edge detection.\r\n\r\nWhy this is needed?\r\nThis post-process enhances the visual rendering capabilities of BabylonJS by allowing developers to add stylized edge detection, which is commonly used in cartoon rendering, technical visualizations, and architectural previews.\r\n\r\nHow to Use\r\nEnable the geometry buffer renderer and apply the post-process:\r\n\r\n// edge detection post process\r\nconst edgeDetectionPP = new BABYLON.EdgeDetectionPostProcess(\"\", scene, 1, camera);\r\nedgeDetectionPP.samples = 4;\r\n// Defines the intensity of the detected edges. Higher values result in more pronounced edges.\r\nedgeDetectionPP.edgeIntensity = .3;\r\n// Defines the width of the detected edges. Higher values result in thicker edges.\r\nedgeDetectionPP.edgeWidth = .2;\r\n// Defines the color of the detected edges\r\nedgeDetectionPP.edgeColor = new BABYLON.Color3(0, 0, 0);\r\n\r\n\r\nhttps://github.com/user-attachments/assets/f988c4cf-aef2-4ff3-a3de-0bdcf804631d\r\n\r\n",
+                "author": {
+                    "name": "UN1TOne",
+                    "url": "https://github.com/UN1TOne"
+                },
+                "files": [
+                    "packages/dev/postProcesses/src/edgeDetection/edgeDetection.fragment.fx",
+                    "packages/dev/postProcesses/src/edgeDetection/edgeDetectionPostProcess.ts",
+                    "packages/dev/postProcesses/src/edgeDetection/index.ts",
+                    "packages/dev/postProcesses/src/index.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15739",
+                "title": "Allow users to extend the dirty system",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Meshes/transformNode.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15738",
+                "title": "SnapshotRenderingHelper: Add new helper method",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/snapshotRenderingHelper.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "15736",
+                "title": "Add warning when detecting negative genus",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/csg2.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15737",
+                "title": "Disable performancePriorty for Viewer",
+                "description": "When I initially enabled this, I missed that it breaks rendering of some models. After a chat with @deltakosh, I tried deferring setting the performancePriority to Aggressive until after the scene is ready and at least one frame has rendered and that seemed to fix this issue for WebGL, but when using WebGPUEngine it's still broken. This PR will at least unbreak the Viewer while we continue investigating performancePriority + WebGPUEngine.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer-alpha/src/viewer.ts"
+                ],
+                "tags": []
+            }
+        ],
         "7.31.0": [
             {
                 "pr": "15732",

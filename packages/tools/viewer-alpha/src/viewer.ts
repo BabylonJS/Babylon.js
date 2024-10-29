@@ -204,6 +204,8 @@ export class Viewer implements IDisposable {
             scene: new Scene(this._engine),
             model: null,
         };
+        this._details.scene.skipFrustumClipping = true;
+        this._details.scene.skipPointerMovePicking = true;
         this._details.scene.clearColor = finalOptions.backgroundColor;
         this._snapshotHelper = new SnapshotRenderingHelper(this._details.scene, { morphTargetsNumMaxInfluences: 30 });
         this._camera = new ArcRotateCamera("camera1", 0, 0, 1, Vector3.Zero(), this._details.scene);

@@ -173,20 +173,17 @@ void main(void) {
 
 #define CUSTOM_FRAGMENT_BEFORE_LIGHTS
 
-	// Specular map
-#ifdef SPECULARTERM
 	float glossiness = vSpecularColor.a;
 	vec3 specularColor = vSpecularColor.rgb;
-
-#ifdef SPECULAR
-	vec4 specularMapColor = texture2D(specularSampler, vSpecularUV + uvOffset);
-	specularColor = specularMapColor.rgb;
-#ifdef GLOSSINESS
-	glossiness = glossiness * specularMapColor.a;
-#endif
-#endif
-#else
-	float glossiness = 0.;
+	// Specular map
+#ifdef SPECULARTERM
+	#ifdef SPECULAR
+		vec4 specularMapColor = texture2D(specularSampler, vSpecularUV + uvOffset);
+		specularColor = specularMapColor.rgb;
+		#ifdef GLOSSINESS
+			glossiness = glossiness * specularMapColor.a;
+		#endif
+	#endif
 #endif
 
 	// Lighting
@@ -486,14 +483,10 @@ color.rgb = max(color.rgb, 0.);
 	#endif
 
 	#ifdef PREPASS_REFLECTIVITY
-		#if defined(SPECULARTERM)
-			#if defined(SPECULAR)
-				gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(toLinearSpace(specularMapColor)) * writeGeometryInfo; // no specularity if no visibility
-			#else
-				gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(toLinearSpace(specularColor), 1.0) * writeGeometryInfo;
-			#endif
+		#if defined(SPECULAR)
+			gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(toLinearSpace(specularMapColor)) * writeGeometryInfo; // no specularity if no visibility
 		#else
-			gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(0.0, 0.0, 0.0, 1.0) * writeGeometryInfo;
+			gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(toLinearSpace(specularColor), 1.0) * writeGeometryInfo;
 		#endif
 	#endif
 #endif
