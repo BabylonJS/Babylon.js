@@ -36,14 +36,14 @@ export class SkyMaterialPropertyGridComponent extends React.Component<ISkyMateri
                 label: "Azimuth",
                 property: "azimuth",
                 minimum: 0,
-                maximum: 1,
+                maximum: Math.PI * 2,
                 step: 0.001,
             },
             {
                 label: "Inclination",
                 property: "inclination",
                 minimum: 0,
-                maximum: 1,
+                maximum: Math.PI / 2,
                 step: 0.001,
             },
             {
@@ -64,7 +64,7 @@ export class SkyMaterialPropertyGridComponent extends React.Component<ISkyMateri
                 label: "Rayleigh",
                 property: "rayleight",
                 minimum: 0,
-                maximum: 1,
+                maximum: 4,
                 step: 0.001,
             },
             {
