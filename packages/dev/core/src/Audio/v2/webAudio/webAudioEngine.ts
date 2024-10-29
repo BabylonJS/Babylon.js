@@ -56,6 +56,10 @@ export interface WebAudioStaticSoundBufferOptions extends StaticSoundBufferOptio
      * Potential URLs of the sound buffer. The first one that is successfully loaded will be used.
      */
     sourceUrls?: string[];
+    /**
+     * Whether to skip codec checking when before attempting to load each source URL in `sourceUrls`.
+     */
+    sourceUrlsSkipCodecCheck?: boolean;
 }
 
 /**

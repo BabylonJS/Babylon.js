@@ -135,7 +135,7 @@ export class WebAudioStaticSoundBuffer extends AbstractStaticSoundBuffer {
         } else if (options?.sourceUrl) {
             await this._initFromUrl(options.sourceUrl);
         } else if (options?.sourceUrls) {
-            await this._initFromUrls(options.sourceUrls);
+            await this._initFromUrls(options.sourceUrls, options.sourceUrlsSkipCodecCheck ?? false);
         } else if (options?.sourceArrayBuffer) {
             await this._initFromArrayBuffer(options.sourceArrayBuffer);
         }
@@ -145,17 +145,21 @@ export class WebAudioStaticSoundBuffer extends AbstractStaticSoundBuffer {
         await this._initFromArrayBuffer(await (await fetch(url)).arrayBuffer());
     }
 
-    private async _initFromUrls(urls: string[]): Promise<void> {
+    private async _initFromUrls(urls: string[], skipCodecCheck: boolean): Promise<void> {
         for (const url of urls) {
-            const format = url.match(fileExtensionRegex)?.at(1);
-            if (format && this.engine.formatIsInvalid(format)) {
-                continue;
-            }
-            try {
+            if (skipCodecCheck) {
                 await this._initFromUrl(url);
-            } catch (e) {
-                if (format && 0 < format.length) {
-                    this.engine.flagInvalidFormat(format);
+            } else {
+                const format = url.match(fileExtensionRegex)?.at(1);
+                if (format && this.engine.formatIsInvalid(format)) {
+                    continue;
+                }
+                try {
+                    await this._initFromUrl(url);
+                } catch (e) {
+                    if (format && 0 < format.length) {
+                        this.engine.flagInvalidFormat(format);
+                    }
                 }
             }
             if (this.audioBuffer) {
