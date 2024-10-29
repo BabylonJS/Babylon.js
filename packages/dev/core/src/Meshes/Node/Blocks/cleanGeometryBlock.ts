@@ -5,7 +5,7 @@ import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnection
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import type { VertexData } from "core/Meshes/mesh.vertexData";
-import { FixFlippedFaces } from "core/Maths";
+import { FixFlippedFaces } from "core/Maths/math.functions";
 
 /**
  * Block used to clean a geometry
