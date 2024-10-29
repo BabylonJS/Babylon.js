@@ -216,6 +216,7 @@ $line-padding-left: 2px;
                         opacity: 0.7;
                         transition: opacity 0.2s;
                     }
+
                     .range::-webkit-slider-thumb {
                         -webkit-appearance: none;
                         appearance: none;
@@ -1081,6 +1082,10 @@ $line-padding-left: 2px;
                             outline: none;
                             opacity: 0.7;
                             transition: opacity 0.2s;
+
+                            &.overflow {
+                                background-color: red;
+                            }
                         }
 
                         .range:hover {
