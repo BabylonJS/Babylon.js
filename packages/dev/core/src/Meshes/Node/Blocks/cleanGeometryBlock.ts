@@ -5,20 +5,12 @@ import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnection
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import type { VertexData } from "core/Meshes/mesh.vertexData";
-import { Vector3 } from "core/Maths";
+import { FixFlippedFaces } from "core/Maths";
 
 /**
  * Block used to clean a geometry
  */
 export class CleanGeometryBlock extends NodeGeometryBlock {
-    private _tmpVectorA = new Vector3();
-    private _tmpVectorB = new Vector3();
-    private _tmpVectorC = new Vector3();
-    private _tmpVectorAB = new Vector3();
-    private _tmpVectorAC = new Vector3();
-    private _tmpVectorCross = new Vector3();
-    private _tmpVectorToView = new Vector3();
-
     /**
      * Gets or sets a boolean indicating that this block can evaluate context
      * Build performance is improved when this value is set to false as the system will cache values instead of reevaluating everything per context change
@@ -67,38 +59,14 @@ export class CleanGeometryBlock extends NodeGeometryBlock {
 
             const vertexData = (this.geometry.getConnectedValue(state) as VertexData).clone();
 
-            if (!vertexData.positions || !vertexData.indices) {
+            if (!vertexData.positions || !vertexData.indices || !vertexData.normals) {
                 return vertexData;
             }
 
             const indices = vertexData.indices;
             const positions = vertexData.positions;
 
-            this._tmpVectorToView.set(0, 0, 1);
-
-            // Clean indices
-            for (let index = 0; index < indices.length; index += 3) {
-                const a = indices[index];
-                const b = indices[index + 1];
-                const c = indices[index + 2];
-
-                this._tmpVectorA.fromArray(positions, a * 3);
-                this._tmpVectorB.fromArray(positions, b * 3);
-                this._tmpVectorC.fromArray(positions, c * 3);
-
-                this._tmpVectorB.subtractToRef(this._tmpVectorA, this._tmpVectorAB);
-                this._tmpVectorC.subtractToRef(this._tmpVectorA, this._tmpVectorAC);
-
-                Vector3.CrossToRef(this._tmpVectorAB, this._tmpVectorAC, this._tmpVectorCross);
-
-                this._tmpVectorCross.normalize();
-
-                if (Vector3.Dot(this._tmpVectorCross, this._tmpVectorToView) > 0) {
-                    // CW!
-                    indices[index] = c;
-                    indices[index + 2] = a;
-                }
-            }
+            FixFlippedFaces(positions, indices);
 
             return vertexData;
         };
