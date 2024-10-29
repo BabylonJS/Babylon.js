@@ -10,7 +10,7 @@ import { SliderLineComponent } from "shared-ui-components/lines/sliderLineCompon
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import type { GlobalState } from "../../../../globalState";
-import { Vector3LineComponent } from "shared-ui-components//lines/vector3LineComponent";
+import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
 
 interface ISkyMaterialPropertyGridComponentProps {
     globalState: GlobalState;
