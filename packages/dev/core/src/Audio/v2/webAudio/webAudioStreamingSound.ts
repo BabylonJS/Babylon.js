@@ -11,6 +11,9 @@ export class WebAudioStreamingSound extends AbstractStreamingSound {
     public override readonly engine: WebAudioEngine;
 
     /** @internal */
+    public audioContext: AudioContext;
+
+    /** @internal */
     public get volume(): number {
         return this._gainNode.gain.value;
     }
@@ -27,12 +30,16 @@ export class WebAudioStreamingSound extends AbstractStreamingSound {
     /** @internal */
     constructor(name: string, engine: AbstractWebAudioEngine, options: Nullable<WebAudioStreamingSoundOptions> = null) {
         super(name, engine, options);
-
-        this.volume = options?.volume ?? 1;
     }
 
     /** @internal */
-    public async init(options: Nullable<WebAudioStreamingSoundOptions> = null): Promise<void> {}
+    public async init(options: Nullable<WebAudioStreamingSoundOptions> = null): Promise<void> {
+        this.audioContext = await this.engine.audioContext;
+
+        this._gainNode = new GainNode(this.audioContext);
+
+        this.volume = options?.volume ?? 1;
+    }
 
     protected _createSoundInstance(): WebAudioStreamingSoundInstance {
         return this.engine.createStreamingSoundInstance(this);

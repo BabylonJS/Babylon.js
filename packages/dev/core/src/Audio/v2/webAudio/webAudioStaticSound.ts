@@ -49,8 +49,6 @@ export class WebAudioStaticSound extends AbstractStaticSound {
     /** @internal */
     constructor(name: string, engine: AbstractWebAudioEngine, options: Nullable<WebAudioStaticSoundOptions> = null) {
         super(name, engine, options);
-
-        this.volume = options?.volume ?? 1;
     }
 
     /** @internal */
@@ -66,6 +64,7 @@ export class WebAudioStaticSound extends AbstractStaticSound {
         }
 
         this.outputBus = options?.outputBus ?? this.engine.defaultMainBus;
+        this.volume = options?.volume ?? 1;
 
         if (options?.autoplay) {
             this.play();
