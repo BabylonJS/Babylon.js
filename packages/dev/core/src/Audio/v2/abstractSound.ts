@@ -15,6 +15,10 @@ export interface SoundOptions {
      */
     autoplay?: boolean;
     /**
+     * How long to play the sound in seconds.
+     */
+    duration?: number;
+    /**
      * Whether the sound should loop.
      */
     loop?: boolean;
@@ -57,6 +61,11 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * Whether the sound should start playing immediately.
      */
     public readonly autoplay: boolean;
+
+    /**
+     * How long to play the sound in seconds.
+     */
+    public duration: number;
 
     /**
      * Whether the sound should loop.
@@ -124,6 +133,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         super(name, engine, AudioNodeType.Output);
 
         this.autoplay = options?.autoplay ?? false;
+        this.duration = options?.duration ?? 0;
         this.loop = options?.loop ?? false;
         this.pitch = options?.pitch ?? 0;
         this.playbackRate = options?.playbackRate ?? 1;

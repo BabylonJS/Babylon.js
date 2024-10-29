@@ -67,7 +67,7 @@ export class WebAudioStaticSound extends AbstractStaticSound {
         this.volume = options?.volume ?? 1;
 
         if (options?.autoplay) {
-            this.play();
+            this.play(null, this.startOffset, this.duration > 0 ? this.duration : null);
         }
     }
 
