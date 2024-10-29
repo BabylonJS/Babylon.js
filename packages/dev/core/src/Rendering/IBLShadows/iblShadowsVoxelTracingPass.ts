@@ -114,7 +114,10 @@ export class _IblShadowsVoxelTracingPass {
     private _invWorldScaleMatrix: Matrix = Matrix.Identity();
     private _frameId: number = 0;
     private _sampleDirections: number = 4;
-
+    private _shadowParameters: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
+    private _sssParameters: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
+    private _opacityParameters: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
+    private _voxelBiasParameters: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
     private _voxelNormalBias: number = 1.0;
     /**
      * The bias to apply to the voxel sampling in the direction of the surface normal of the geometry.
@@ -347,15 +350,18 @@ export class _IblShadowsVoxelTracingPass {
         // const downscaleSquared = this._downscale * this._downscale;
         let rotation = this._scene.useRightHandedSystem ? -(this._envRotation + 0.5 * Math.PI) : this._envRotation - 0.5 * Math.PI;
         rotation = rotation % (2.0 * Math.PI);
-        this._outputTexture.setVector4("shadowParameters", new Vector4(this._sampleDirections, this._frameId, 1.0, rotation));
+        this._shadowParameters.set(this._sampleDirections, this._frameId, 1.0, rotation);
+        this._outputTexture.setVector4("shadowParameters", this._shadowParameters);
         const voxelGrid = this._renderPipeline!.getVoxelGridTexture();
         const highestMip = Math.floor(Math.log2(voxelGrid!.getSize().width));
-        // this._outputTexture.setVector4("offsetDataParameters", new Vector4(offset.x, offset.y, highestMip, 0.0));
-        this._outputTexture.setVector4("voxelBiasParameters", new Vector4(this._voxelNormalBias, this._voxelDirectionBias, highestMip, 0.0));
+        this._voxelBiasParameters.set(this._voxelNormalBias, this._voxelDirectionBias, highestMip, 0.0);
+        this._outputTexture.setVector4("voxelBiasParameters", this._voxelBiasParameters);
 
         // SSS Options.
-        this._outputTexture.setVector4("sssParameters", new Vector4(this._sssSamples, this._sssStride, this._sssMaxDist, this._sssThickness));
-        this._outputTexture.setVector4("shadowOpacity", new Vector4(this._voxelShadowOpacity, this._ssShadowOpacity, 0.0, 0.0));
+        this._sssParameters.set(this._sssSamples, this._sssStride, this._sssMaxDist, this._sssThickness);
+        this._outputTexture.setVector4("sssParameters", this._sssParameters);
+        this._opacityParameters.set(this._voxelShadowOpacity, this._ssShadowOpacity, 0.0, 0.0);
+        this._outputTexture.setVector4("shadowOpacity", this._opacityParameters);
         this._outputTexture.setTexture("voxelGridSampler", voxelGrid);
         this._outputTexture.setTexture("blueNoiseSampler", this._renderPipeline!.getNoiseTexture());
         this._outputTexture.setTexture("icdfySampler", this._renderPipeline!.getIcdfyTexture());
@@ -392,7 +398,6 @@ export class _IblShadowsVoxelTracingPass {
      */
     public isReady() {
         return (
-            this._outputTexture &&
             this._outputTexture.isReady() &&
             !(this._debugPassPP && !this._debugPassPP.isReady()) &&
             this._renderPipeline!.getIcdfyTexture().isReady() &&

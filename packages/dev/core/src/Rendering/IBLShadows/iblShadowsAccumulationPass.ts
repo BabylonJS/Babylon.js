@@ -23,6 +23,7 @@ export class _IblShadowsAccumulationPass {
     private _outputTexture: ProceduralTexture;
     private _oldAccumulationCopy: ProceduralTexture;
     private _oldPositionCopy: ProceduralTexture;
+    private _accumulationParams: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
 
     /** Enable the debug view for this pass */
     public debugEnabled: boolean = false;
@@ -189,16 +190,13 @@ export class _IblShadowsAccumulationPass {
             },
             "iblShadowAccumulation",
             this._scene,
-            outputTextureOptions,
-            false,
-            false,
-            Constants.TEXTURETYPE_UNSIGNED_INT
+            outputTextureOptions
         );
         this._outputTexture.refreshRate = -1;
         this._outputTexture.autoClear = false;
 
         // Need to set all the textures first so that the effect gets created with the proper uniforms.
-        this._updateOutputTexture();
+        this._setOutputTextureBindings();
 
         let counter = 0;
         this._scene.onBeforeRenderObservable.add(() => {
@@ -207,7 +205,7 @@ export class _IblShadowsAccumulationPass {
         this._scene.onAfterRenderTargetsRenderObservable.add(() => {
             if (++counter == 2) {
                 if (this.enabled && this._outputTexture.isReady()) {
-                    this._updateOutputTexture();
+                    this._setOutputTextureBindings();
                     this._outputTexture.render();
                 }
             }
@@ -242,8 +240,8 @@ export class _IblShadowsAccumulationPass {
 
         this._oldAccumulationCopy.autoClear = false;
         this._oldAccumulationCopy.refreshRate = 1;
-        this._oldAccumulationCopy.onBeforeGenerationObservable.add(this._updateAccumulationCopy.bind(this));
-        this._updateAccumulationCopy();
+        this._oldAccumulationCopy.onBeforeGenerationObservable.add(this._setAccumulationCopyBindings.bind(this));
+        this._setAccumulationCopyBindings();
 
         // Create the local position texture for the previous frame.
         // We'll copy the previous local position texture to this texture at the start of every frame.
@@ -277,12 +275,13 @@ export class _IblShadowsAccumulationPass {
         this._oldPositionCopy.onBeforeGenerationObservable.add(this._updatePositionCopy.bind(this));
     }
 
-    private _updateOutputTexture() {
+    private _setOutputTextureBindings() {
         const remenance = this._isMoving ? this.remenance : 1.0;
+        this._accumulationParams.set(remenance, this.reset ? 1.0 : 0.0, 0.0, 0.0);
         this._outputTexture.setTexture("spatialBlurSampler", this._renderPipeline.getSpatialBlurTexture());
-        this._outputTexture.setVector4("accumulationParameters", new Vector4(remenance, this.reset ? 1.0 : 0.0, 0.0, 0.0));
-        this._outputTexture.setTexture("oldAccumulationSampler", this._oldAccumulationCopy ? this._oldAccumulationCopy : (this._renderPipeline as any)._dummyTexture2d);
-        this._outputTexture.setTexture("prevPositionSampler", this._oldPositionCopy ? this._oldPositionCopy : (this._renderPipeline as any)._dummyTexture2d);
+        this._outputTexture.setVector4("accumulationParameters", this._accumulationParams);
+        this._outputTexture.setTexture("oldAccumulationSampler", this._oldAccumulationCopy ? this._oldAccumulationCopy : this._renderPipeline._dummyTexture2d);
+        this._outputTexture.setTexture("prevPositionSampler", this._oldPositionCopy ? this._oldPositionCopy : this._renderPipeline._dummyTexture2d);
 
         const geometryBufferRenderer = this._scene.geometryBufferRenderer;
         if (!geometryBufferRenderer) {
@@ -303,7 +302,7 @@ export class _IblShadowsAccumulationPass {
         this._oldPositionCopy.setTexture("textureSampler", geometryBufferRenderer!.getGBuffer().textures[index]);
     }
 
-    private _updateAccumulationCopy() {
+    private _setAccumulationCopyBindings() {
         this._oldAccumulationCopy.setTexture("textureSampler", this._outputTexture);
     }
 

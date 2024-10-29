@@ -117,7 +117,11 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     private _spatialBlurPass: _IblShadowsSpatialBlurPass;
     private _accumulationPass: _IblShadowsAccumulationPass;
     private _noiseTexture: Texture;
-    private _dummyTexture2d: RawTexture;
+    /**
+     * Raw texture to be used before final data is available.
+     * @internal
+     */
+    public _dummyTexture2d: RawTexture;
     private _dummyTexture3d: RawTexture3D;
     private _shadowOpacity: number = 0.8;
     private _enabled: boolean = true;
