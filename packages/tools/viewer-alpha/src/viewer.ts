@@ -63,10 +63,6 @@ function updateSkybox(skybox: Nullable<Mesh>, camera: Camera): void {
     skybox?.scaling.setAll((camera.maxZ - camera.minZ) / 2);
 }
 
-const defaultViewerOptions = {
-    backgroundColor: new Color4(0.1, 0.1, 0.2, 1.0),
-} as const;
-
 export type ViewerDetails = {
     /**
      * Gets the Viewer instance.
@@ -85,13 +81,12 @@ export type ViewerDetails = {
 };
 
 export type ViewerOptions = Partial<
-    typeof defaultViewerOptions &
-        Readonly<{
-            /**
-             * Called once when the viewer is initialized and provides viewer details that can be used for advanced customization.
-             */
-            onInitialized: (details: Readonly<ViewerDetails>) => void;
-        }>
+    Readonly<{
+        /**
+         * Called once when the viewer is initialized and provides viewer details that can be used for advanced customization.
+         */
+        onInitialized: (details: Readonly<ViewerDetails>) => void;
+    }>
 >;
 
 export type ViewerHotSpotQuery = {
@@ -198,7 +193,6 @@ export class Viewer implements IDisposable {
         private readonly _engine: AbstractEngine,
         options?: ViewerOptions
     ) {
-        const finalOptions = { ...defaultViewerOptions, ...options };
         this._details = {
             viewer: this,
             scene: new Scene(this._engine),
@@ -206,7 +200,6 @@ export class Viewer implements IDisposable {
         };
         this._details.scene.skipFrustumClipping = true;
         this._details.scene.skipPointerMovePicking = true;
-        this._details.scene.clearColor = finalOptions.backgroundColor;
         this._snapshotHelper = new SnapshotRenderingHelper(this._details.scene, { morphTargetsNumMaxInfluences: 30 });
         this._camera = new ArcRotateCamera("camera1", 0, 0, 1, Vector3.Zero(), this._details.scene);
         this._camera.attachControl();
