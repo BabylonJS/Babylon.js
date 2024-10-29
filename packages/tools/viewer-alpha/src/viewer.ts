@@ -20,7 +20,6 @@ import { loadAssetContainerAsync } from "core/Loading/sceneLoader";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Texture } from "core/Materials/Textures/texture";
-import { Color4 } from "core/Maths/math.color";
 import { Clamp } from "core/Maths/math.scalar.functions";
 import { TmpVectors, Vector3 } from "core/Maths/math.vector";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
