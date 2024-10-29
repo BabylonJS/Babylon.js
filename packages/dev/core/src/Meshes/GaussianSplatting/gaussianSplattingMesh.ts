@@ -816,8 +816,10 @@ export class GaussianSplattingMesh extends Mesh {
      * @deprecated Please use SceneLoader.ImportMeshAsync instead
      */
     public loadFileAsync(url: string): Promise<void> {
-        return Tools.LoadFileAsync(url, true).then(async (data) => {
-            await this.updateData(runCoroutineSync(GaussianSplattingMesh.ConvertPLYToSplat(data, false)));
+        return Tools.LoadFileAsync(url, true).then(async (plyBuffer) => {
+            GaussianSplattingMesh.ConvertPLYToSplatAsync(plyBuffer).then((splatsData) => {
+                this.updateDataAsync(splatsData);
+            });
         });
     }
 
