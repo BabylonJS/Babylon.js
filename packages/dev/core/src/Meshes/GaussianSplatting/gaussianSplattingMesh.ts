@@ -1032,7 +1032,7 @@ export class GaussianSplattingMesh extends Mesh {
         }
     }
 
-    private *_updateDataAsync(data: ArrayBuffer): Coroutine<void> {
+    private *_updateData(data: ArrayBuffer, isAsync: boolean): Coroutine<void> {
         // if a covariance texture is present, then it's not a creation but an update
         if (!this._covariancesATexture) {
             this._readyToDisplay = false;
@@ -1076,7 +1076,9 @@ export class GaussianSplattingMesh extends Mesh {
                 this._updateSubTextures(this._splatPositions, covA, covB, colorArray, updateLine, Math.min(lineCountUpdate, textureSize.y - updateLine));
                 // Update the binfo
                 this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
-                yield;
+                if (isAsync) {
+                    yield;
+                }
             }
 
             // sort will be dirty here as just finished filled positions will not be sorted
@@ -1087,7 +1089,7 @@ export class GaussianSplattingMesh extends Mesh {
         } else {
             for (let i = 0; i < vertexCount; i++) {
                 this._makeSplat(i, i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum);
-                if (i % 327680 === 0) {
+                if (isAsync && i % 327680 === 0) {
                     yield;
                 }
             }
@@ -1106,7 +1108,7 @@ export class GaussianSplattingMesh extends Mesh {
      * @returns a promise
      */
     public async updateDataAsync(data: ArrayBuffer): Promise<void> {
-        return runCoroutineAsync(this._updateDataAsync(data), createYieldingScheduler());
+        return runCoroutineAsync(this._updateData(data, true), createYieldingScheduler());
     }
 
     /**
@@ -1115,46 +1117,7 @@ export class GaussianSplattingMesh extends Mesh {
      * @param data array that contain all the datas
      */
     public updateData(data: ArrayBuffer): void {
-        if (!data.byteLength) {
-            return;
-        }
-
-        // if a covariance texture is present, then it's not a creation but an update
-        if (!this._covariancesATexture) {
-            this._readyToDisplay = false;
-        }
-
-        // Parse the data
-        const uBuffer = new Uint8Array(data);
-        const fBuffer = new Float32Array(uBuffer.buffer);
-
-        const vertexCount = uBuffer.length / GaussianSplattingMesh._RowOutputLength;
-        if (vertexCount != this._vertexCount) {
-            this._updateSplatIndexBuffer(vertexCount);
-        }
-        this._vertexCount = vertexCount;
-
-        const textureSize = this._getTextureSize(vertexCount);
-        const textureLength = textureSize.x * textureSize.y;
-
-        this._splatPositions = new Float32Array(4 * textureLength);
-        const covA = new Uint16Array(4 * textureLength);
-        const covB = new Uint16Array((this._useRGBACovariants ? 4 : 2) * textureLength);
-
-        const minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-        const maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
-        const colorArray = new Uint8Array(textureSize.x * textureSize.y * 4);
-
-        for (let i = 0; i < vertexCount; i++) {
-            this._makeSplat(i, i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum);
-        }
-
-        // Update the mesh
-        const binfo = this.getBoundingInfo();
-        binfo.reConstruct(minimum, maximum, this.getWorldMatrix());
-        this.setEnabled(true);
-        // textures
-        this._updateTextures(covA, covB, colorArray);
+        runCoroutineSync(this._updateData(data, false));
     }
 
     // in case size is different
