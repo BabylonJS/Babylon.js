@@ -63,7 +63,7 @@ export interface WebAudioStaticSoundBufferOptions extends StaticSoundBufferOptio
  */
 export type WebAudioStaticSoundOptions = StaticSoundOptions &
     WebAudioStaticSoundBufferOptions & {
-        sourceBuffer?: WebAudioStaticSoundBuffer;
+        sourceBuffer?: AbstractStaticSoundBuffer;
     };
 
 /**
