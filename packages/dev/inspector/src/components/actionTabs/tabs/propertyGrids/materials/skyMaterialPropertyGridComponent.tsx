@@ -62,7 +62,7 @@ export class SkyMaterialPropertyGridComponent extends React.Component<ISkyMateri
             },
             {
                 label: "Rayleigh",
-                property: "rayleight",
+                property: "rayleigh",
                 minimum: 0,
                 maximum: 4,
                 step: 0.001,
