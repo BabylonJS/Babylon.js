@@ -248,6 +248,7 @@ export class WebAudioEngine extends AbstractWebAudioEngine {
 
     /** @internal */
     public formatIsInvalid(format: string): boolean {
+        // TODO: Use <audio>.canPlayType() to check if the format is supported instead of waiting for AudioContext.decodeAudioData to fail.
         return this._invalidFormats.has(format);
     }
 }
