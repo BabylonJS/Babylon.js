@@ -170,15 +170,7 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
                 />
                 <div className="slider">
                     <input
-                        className={
-                            "range" +
-                            (this.props.allowOverflow &&
-                            this.props.minimum &&
-                            this.props.maximum &&
-                            (this.state.value > this.props.maximum || this.state.value < this.props.minimum)
-                                ? " overflow"
-                                : "")
-                        }
+                        className={"range" + (this.props.allowOverflow && (this.state.value > this.props.maximum || this.state.value < this.props.minimum) ? " overflow" : "")}
                         type="range"
                         step={this.props.step}
                         min={this.prepareDataToRead(this.props.minimum)}
