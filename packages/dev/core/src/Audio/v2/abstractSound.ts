@@ -76,7 +76,8 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
     /**
      * The volume of the sound.
      */
-    public volume: number;
+    public abstract get volume(): number;
+    public abstract set volume(value: number);
 
     /**
      * The sound's start offset in seconds.
@@ -126,7 +127,6 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         this.loop = options?.loop ?? false;
         this.pitch = options?.pitch ?? 0;
         this.playbackRate = options?.playbackRate ?? 1;
-        this.volume = options?.volume ?? 1;
         this.startOffset = options?.startOffset ?? 0;
     }
 

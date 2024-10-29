@@ -5,8 +5,19 @@ import type { AbstractWebAudioEngine, WebAudioEngine, WebAudioStreamingSoundOpti
 
 /** @internal */
 export class WebAudioStreamingSound extends AbstractStreamingSound {
+    private _gainNode: GainNode;
+
     /** @internal */
     public override readonly engine: WebAudioEngine;
+
+    /** @internal */
+    public get volume(): number {
+        return this._gainNode.gain.value;
+    }
+
+    public set volume(value: number) {
+        this._gainNode.gain.value = value;
+    }
 
     /** @internal */
     public get currentTime(): number {
@@ -16,6 +27,8 @@ export class WebAudioStreamingSound extends AbstractStreamingSound {
     /** @internal */
     constructor(name: string, engine: AbstractWebAudioEngine, options: Nullable<WebAudioStreamingSoundOptions> = null) {
         super(name, engine, options);
+
+        this.volume = options?.volume ?? 1;
     }
 
     /** @internal */

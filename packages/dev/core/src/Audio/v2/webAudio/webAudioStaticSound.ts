@@ -28,6 +28,15 @@ export class WebAudioStaticSound extends AbstractStaticSound {
     }
 
     /** @internal */
+    public get volume(): number {
+        return this._gainNode.gain.value;
+    }
+
+    public set volume(value: number) {
+        this._gainNode.gain.value = value;
+    }
+
+    /** @internal */
     public get webAudioInputNode() {
         return this._gainNode;
     }
@@ -40,6 +49,8 @@ export class WebAudioStaticSound extends AbstractStaticSound {
     /** @internal */
     constructor(name: string, engine: AbstractWebAudioEngine, options: Nullable<WebAudioStaticSoundOptions> = null) {
         super(name, engine, options);
+
+        this.volume = options?.volume ?? 1;
     }
 
     /** @internal */
