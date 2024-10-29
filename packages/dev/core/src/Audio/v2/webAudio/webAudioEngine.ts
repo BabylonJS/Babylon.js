@@ -173,8 +173,20 @@ export abstract class AbstractWebAudioEngine extends AbstractAudioEngine {
         return sound;
     }
 
-    public abstract formatIsInvalid(format: string): boolean;
+    public abstract formatIsValid(format: string): boolean;
 }
+
+const formatMimeTypeMap = new Map<string, string>([
+    ["aac", "audio/aac"],
+    ["ac3", "audio/ac3"],
+    ["flac", "audio/flac"],
+    ["m4a", "audio/mp4"],
+    ["mp3", 'audio/mpeg; codecs="mp3"'],
+    ["mp4", "audio/mp4"],
+    ["ogg", 'audio/ogg; codecs="vorbis"'],
+    ["wav", "audio/wav"],
+    ["webm", 'audio/webm; codecs="vorbis"'],
+]);
 
 /** @internal */
 export class WebAudioEngine extends AbstractWebAudioEngine {
@@ -182,6 +194,7 @@ export class WebAudioEngine extends AbstractWebAudioEngine {
     private _mainOutput: Nullable<WebAudioMainOutput> = null;
 
     private _invalidFormats = new Set<string>();
+    private _validFormats = new Set<string>();
 
     /** @internal */
     public get currentTime(): number {
@@ -249,8 +262,28 @@ export class WebAudioEngine extends AbstractWebAudioEngine {
     }
 
     /** @internal */
-    public formatIsInvalid(format: string): boolean {
-        // TODO: Use <audio>.canPlayType() to check if the format is supported instead of waiting for AudioContext.decodeAudioData to fail.
-        return this._invalidFormats.has(format);
+    public formatIsValid(format: string): boolean {
+        if (this._validFormats.has(format)) {
+            return true;
+        }
+
+        if (this._invalidFormats.has(format)) {
+            return false;
+        }
+
+        const mimeType = formatMimeTypeMap.get(format);
+        if (mimeType === undefined) {
+            return false;
+        }
+
+        const audio = new Audio();
+        if (audio.canPlayType(mimeType) === "") {
+            this._invalidFormats.add(format);
+            return false;
+        }
+
+        this._validFormats.add(format);
+
+        return true;
     }
 }

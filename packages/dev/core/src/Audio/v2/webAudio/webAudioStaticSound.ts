@@ -151,17 +151,17 @@ export class WebAudioStaticSoundBuffer extends AbstractStaticSoundBuffer {
                 await this._initFromUrl(url);
             } else {
                 const format = url.match(fileExtensionRegex)?.at(1);
-                if (format && this.engine.formatIsInvalid(format)) {
-                    continue;
-                }
-                try {
-                    await this._initFromUrl(url);
-                } catch (e) {
-                    if (format && 0 < format.length) {
-                        this.engine.flagInvalidFormat(format);
+                if (format && this.engine.formatIsValid(format)) {
+                    try {
+                        await this._initFromUrl(url);
+                    } catch (e) {
+                        if (format && 0 < format.length) {
+                            this.engine.flagInvalidFormat(format);
+                        }
                     }
                 }
             }
+
             if (this.audioBuffer) {
                 break;
             }
