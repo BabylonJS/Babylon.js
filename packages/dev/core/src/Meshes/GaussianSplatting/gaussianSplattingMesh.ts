@@ -272,7 +272,7 @@ export class GaussianSplattingMesh extends Mesh {
         this._material = value;
         this._material.backFaceCulling = true;
         this._material.cullBackFaces = false;
-        this.subMeshes[0].materialDefines = null;
+        value.resetDrawCache();
     }
 
     /**
