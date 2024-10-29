@@ -108,9 +108,12 @@ import { LayerPropertyGridComponent } from "./propertyGrids/layers/layerProperty
 import type { EffectLayer } from "core/Layers/effectLayer";
 import { EmptyPropertyGridComponent } from "./propertyGrids/emptyPropertyGridComponent";
 import { MetadataGridComponent } from "inspector/components/actionTabs/tabs/propertyGrids/metadata/metadataPropertyGridComponent";
-import type { SkyMaterial } from "../../../../../materials/src/sky/skyMaterial";
+import type { SkyMaterial } from "materials/sky/skyMaterial";
 import { SkyMaterialPropertyGridComponent } from "./propertyGrids/materials/skyMaterialPropertyGridComponent";
 
+/**
+ *
+ */
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
     private _lockObject = new LockObject();
