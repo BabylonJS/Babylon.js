@@ -50,8 +50,8 @@ export class SkyMaterialPropertyGridComponent extends React.Component<ISkyMateri
                 label: "Turbidity",
                 property: "turbidity",
                 minimum: 0,
-                maximum: 10,
-                step: 0.01,
+                maximum: 100,
+                step: 0.1,
             },
             {
                 label: "Luminance",
