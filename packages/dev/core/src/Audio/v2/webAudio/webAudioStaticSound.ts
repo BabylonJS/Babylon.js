@@ -130,37 +130,42 @@ export class WebAudioStaticSoundBuffer extends AbstractStaticSoundBuffer {
     }
 
     public async init(options: Nullable<WebAudioStaticSoundBufferOptions> = null): Promise<void> {
-        if (options?.sourceUrl) {
-            const response = await fetch(options.sourceUrl);
-            const arrayBuffer = await response.arrayBuffer();
-            const audioContext = await this.engine.audioContext;
-            this.audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        if (options?.sourceAudioBuffer) {
+            this.audioBuffer = options.sourceAudioBuffer;
+        } else if (options?.sourceUrl) {
+            await this._initFromUrl(options.sourceUrl);
         } else if (options?.sourceUrls) {
-            const audioContext = await this.engine.audioContext;
-            for (const sourceUrl of options.sourceUrls) {
-                const format = sourceUrl.match(fileExtensionRegex)?.at(1);
-                if (format && this.engine.formatIsInvalid(format)) {
-                    continue;
-                }
-                const response = await fetch(sourceUrl);
-                const arrayBuffer = await response.arrayBuffer();
-                try {
-                    this.audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-                } catch (e) {
-                    if (format && 0 < format.length) {
-                        this.engine.flagInvalidFormat(format);
-                    }
-                }
-                if (this.audioBuffer) {
-                    break;
+            await this._initFromUrls(options.sourceUrls);
+        } else if (options?.sourceArrayBuffer) {
+            await this._initFromArrayBuffer(options.sourceArrayBuffer);
+        }
+    }
+
+    private async _initFromUrl(url: string): Promise<void> {
+        await this._initFromArrayBuffer(await (await fetch(url)).arrayBuffer());
+    }
+
+    private async _initFromUrls(urls: string[]): Promise<void> {
+        for (const url of urls) {
+            const format = url.match(fileExtensionRegex)?.at(1);
+            if (format && this.engine.formatIsInvalid(format)) {
+                continue;
+            }
+            try {
+                await this._initFromUrl(url);
+            } catch (e) {
+                if (format && 0 < format.length) {
+                    this.engine.flagInvalidFormat(format);
                 }
             }
-        } else if (options?.sourceArrayBuffer) {
-            const audioContext = await this.engine.audioContext;
-            this.audioBuffer = await audioContext.decodeAudioData(options.sourceArrayBuffer);
-        } else if (options?.sourceAudioBuffer) {
-            this.audioBuffer = options.sourceAudioBuffer;
+            if (this.audioBuffer) {
+                break;
+            }
         }
+    }
+
+    private async _initFromArrayBuffer(arrayBuffer: ArrayBuffer): Promise<void> {
+        this.audioBuffer = await (await this.engine.audioContext).decodeAudioData(arrayBuffer);
     }
 }
 
