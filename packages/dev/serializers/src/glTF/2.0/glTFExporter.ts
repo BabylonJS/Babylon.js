@@ -1206,8 +1206,13 @@ export class GLTFExporter {
         primitive.mode = getPrimitiveMode(fillMode);
 
         // Flip if triangle winding order is not CCW as glTF is always CCW.
-        const flip = isTriangleFillMode(fillMode) && sideOrientation !== Material.CounterClockWiseSideOrientation;
-        if (flip && convertToRightHanded) {
+        let flip = isTriangleFillMode(fillMode) && sideOrientation !== Material.CounterClockWiseSideOrientation;
+
+        if (convertToRightHanded) {
+            flip = !flip;
+        }
+
+        if (flip) {
             if (fillMode === Material.TriangleStripDrawMode || fillMode === Material.TriangleFanDrawMode) {
                 throw new Error("Triangle strip/fan fill mode is not implemented");
             }
@@ -1362,6 +1367,7 @@ export class GLTFExporter {
 
                 // Index buffer
                 const fillMode = babylonMesh.overrideRenderingFillMode ?? babylonMaterial.fillMode;
+
                 const sideOrientation = babylonMaterial._getEffectiveOrientation(babylonMesh);
                 this._exportIndices(indices, subMesh.indexStart, subMesh.indexCount, -subMesh.verticesStart, fillMode, sideOrientation, state, primitive, convertToRightHanded);
 

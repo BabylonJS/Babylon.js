@@ -16,7 +16,7 @@ import { AnimationKeyInterpolation } from "core/Animations/animationKey";
 import { Camera } from "core/Cameras/camera";
 import { Light } from "core/Lights/light";
 import type { DataWriter } from "./dataWriter";
-import { createAccessor, createBufferView, getAccessorElementCount, convertToRightHandedRotation } from "./glTFUtilities";
+import { createAccessor, createBufferView, getAccessorElementCount, convertToRightHandedRotation, convertToRightHandedPosition } from "./glTFUtilities";
 
 /**
  * @internal
@@ -614,26 +614,41 @@ export class _GLTFAnimation {
             bufferViews.push(bufferView);
 
             const rotationQuaternion = new Quaternion();
+            const eulerVec3 = new Vector3();
+            const position = new Vector3();
             const tempQuaterionArray = [0, 0, 0, 0];
 
             animationData.outputs.forEach(function (output) {
                 if (useRightHanded) {
                     switch (animationChannelTargetPath) {
                         case AnimationChannelTargetPath.TRANSLATION:
-                        case AnimationChannelTargetPath.SCALE:
-                            binaryWriter.writeFloat32(-output[0]);
-                            binaryWriter.writeFloat32(output[1]);
-                            binaryWriter.writeFloat32(output[2]);
+                            Vector3.FromArrayToRef(output, 0, position);
+                            convertToRightHandedPosition(position);
+                            binaryWriter.writeFloat32(position.x);
+                            binaryWriter.writeFloat32(position.y);
+                            binaryWriter.writeFloat32(position.z);
                             break;
 
                         case AnimationChannelTargetPath.ROTATION:
-                            Quaternion.FromArrayToRef(output, 0, rotationQuaternion);
-                            convertToRightHandedRotation(rotationQuaternion);
-                            rotationQuaternion.normalize().toArray(tempQuaterionArray);
-                            binaryWriter.writeFloat32(tempQuaterionArray[0]);
-                            binaryWriter.writeFloat32(tempQuaterionArray[1]);
-                            binaryWriter.writeFloat32(tempQuaterionArray[2]);
-                            binaryWriter.writeFloat32(tempQuaterionArray[2]);
+                            if (output.length === 4) {
+                                Quaternion.FromArrayToRef(output, 0, rotationQuaternion);
+                                convertToRightHandedRotation(rotationQuaternion);
+                                rotationQuaternion.toArray(tempQuaterionArray);
+                                binaryWriter.writeFloat32(tempQuaterionArray[0]);
+                                binaryWriter.writeFloat32(tempQuaterionArray[1]);
+                                binaryWriter.writeFloat32(tempQuaterionArray[2]);
+                                binaryWriter.writeFloat32(tempQuaterionArray[3]);
+                            } else {
+                                Vector3.FromArrayToRef(output, 0, eulerVec3);
+                                Quaternion.FromEulerVectorToRef(eulerVec3, rotationQuaternion);
+                                convertToRightHandedRotation(rotationQuaternion);
+                                rotationQuaternion.toArray(tempQuaterionArray);
+                                binaryWriter.writeFloat32(tempQuaterionArray[0]);
+                                binaryWriter.writeFloat32(tempQuaterionArray[1]);
+                                binaryWriter.writeFloat32(tempQuaterionArray[2]);
+                                binaryWriter.writeFloat32(tempQuaterionArray[3]);
+                            }
+
                             break;
 
                         default:
