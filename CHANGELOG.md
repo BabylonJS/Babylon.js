@@ -1,5 +1,25 @@
 # Changelog
 
+## 7.31.2
+
+### Core
+
+- Async loading and parsing of GS - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#15734](https://github.com/BabylonJS/Babylon.js/pull/15734))
+- Standard material: use the specular color of the material for reflectivity when there's no light - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15742](https://github.com/BabylonJS/Babylon.js/pull/15742))
+
+### Inspector
+
+- inspecting sky material - by [RolandCsibrei](https://github.com/RolandCsibrei) ([#15748](https://github.com/BabylonJS/Babylon.js/pull/15748))
+- Allow sliders to go overflow - by [deltakosh](https://github.com/deltakosh) ([#15750](https://github.com/BabylonJS/Babylon.js/pull/15750))
+
+### Loaders
+
+- Async loading and parsing of GS - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#15734](https://github.com/BabylonJS/Babylon.js/pull/15734))
+
+### Playground
+
+- Typo - by [sebavan](https://github.com/sebavan) ([#15746](https://github.com/BabylonJS/Babylon.js/pull/15746))
+
 ## 7.31.1
 
 ### Core

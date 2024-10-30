@@ -1,6 +1,144 @@
 {
-    "fromTag": "7.31.0",
+    "fromTag": "7.31.1",
     "changelog": {
+        "7.31.2": [
+            {
+                "pr": "15751",
+                "title": "fix several bugs",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    ".build/config.json",
+                    "package-lock.json",
+                    "packages/dev/core/src/Maths/math.functions.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/cleanGeometryBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlock.ts",
+                    "packages/tools/nodeGeometryEditor/package.json",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/components/preview/previewAreaComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/components/preview/previewManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/preview/previewMode.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/preview/svgs/doubleSided.svg",
+                    "packages/tools/nodeGeometryEditor/src/main.scss",
+                    "packages/tools/nodeGeometryEditor/tsconfig.build.json",
+                    "packages/tools/nodeGeometryEditor/webpack.config.js"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15752",
+                "title": "Viewer: add clear-color attribute",
+                "description": "This change adds a `clear-color` attribute to the Viewer html element. Since it is in the html layer, it relies on WebAPI to convert an arbitrary color string to a Babylon Color4. It is transparent by default. I also made one other small change to have the root div (`:host` in css) inherit all from the outer babylon-viewer element. I think this should be safe, and it lets you do things like this in CSS:\r\n\r\n```css\r\nbabylon-viewer {\r\n  background-image: url(\"https://raw.githubusercontent.com/BabylonJS/Assets/master/textures/Checker_albedo.png\");\r\n}\r\n```\r\n\r\nCombining these two things together, with the default transparent `clear-color` you can get this:\r\n\r\n![image](https://github.com/user-attachments/assets/5310c258-94fa-4271-9b5d-c53749089ca7)\r\n",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15748",
+                "title": "inspecting sky material",
+                "description": "Hi!\r\nThis introduces a dependency on the materials library. I'm not sure if this is a correct approach. Please comment!",
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGridTabComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/skyMaterialPropertyGridComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15750",
+                "title": "Allow sliders to go overflow",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/actionTabs.scss",
+                    "packages/dev/sharedUiComponents/src/lines/sliderLineComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15734",
+                "title": "Async loading and parsing of GS",
+                "description": "- replace string comparison with enum (60% faster)\r\n- added async parsing method with coroutines\r\n- update SPLAT loader accordingly\r\n- async `updateData`",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts",
+                    "packages/dev/loaders/src/SPLAT/splatFileLoader.ts"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "15742",
+                "title": "Standard material: use the specular color of the material for reflectivity when there's no light",
+                "description": "See https://forum.babylonjs.com/t/prepass-renderer-giving-inconsistent-reflectivity-texture-based-on-lights-in-the-scene/54387\r\n\r\nWe align with what the geometry buffer renderer is doing in this case.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/defaultFragmentDeclaration.fx",
+                    "packages/dev/core/src/Shaders/default.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/default.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "15746",
+                "title": "Typo",
+                "description": "https://forum.babylonjs.com/t/edit-released-what-about-a-code-generator-for-the-playground/50396/72",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/tools/playground/public/templates.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15747",
+                "title": "solidify nge",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryTransformBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
         "7.31.1": [
             {
                 "pr": "15744",
