@@ -9,15 +9,15 @@ declare module "../../glTFFileLoader" {
     // eslint-disable-next-line jsdoc/require-jsdoc
     export interface GLTFLoaderExtensionOptions {
         /**
-         * Defines options for the KHR_selectability extension.
+         * Defines options for the KHR_node_visibility extension.
          */
         // NOTE: Don't use NAME here as it will break the UMD type declarations.
-        ["KHR_node_selectability"]: {};
+        ["KHR_node_visibility"]: {};
     }
 }
 
 /**
- * Loader extension for KHR_selectability
+ * Loader extension for KHR_node_visibility
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_node_visibility implements IGLTFLoaderExtension {
@@ -45,6 +45,7 @@ export class KHR_node_visibility implements IGLTFLoaderExtension {
             node._primitiveBabylonMeshes?.forEach((mesh) => {
                 mesh.inheritVisibility = true;
             });
+            // When the JSON Pointer is used we need to change both the transform node and the primitive meshes to the new value.
             if (node.extensions?.KHR_node_visibility) {
                 if (node.extensions?.KHR_node_visibility.visible === false) {
                     if (node._babylonTransformNode) {
@@ -54,7 +55,6 @@ export class KHR_node_visibility implements IGLTFLoaderExtension {
                         mesh.isVisible = false;
                     });
                 }
-                // When the JSON Pointer is used we need to change both the transform node and the primitive meshes to the new value.
             }
         });
     }
