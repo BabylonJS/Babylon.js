@@ -337,3 +337,15 @@ export function getMinMax(data: DataArray, vertexBuffer: VertexBuffer, start: nu
 
     return { min, max };
 }
+
+export function omitDefaultValues<T extends Object>(object: T, defaultValues: Partial<T>): T {
+    return Object.fromEntries(
+        Object.entries(object).filter(([key, value]) => {
+            const defaultValue = defaultValues[key as keyof T];
+            if (Array.isArray(value) && Array.isArray(defaultValue) && value.length === defaultValue.length) {
+                return value.every((val, i) => val !== defaultValue[i]);
+            }
+            return value !== defaultValue;
+        })
+    ) as T;
+}

@@ -10,8 +10,28 @@ import { KHRLightsPunctual_LightType } from "babylonjs-gltf2interface";
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
 import { Logger } from "core/Misc/logger";
+import { omitDefaultValues } from "../glTFUtilities";
 
 const NAME = "KHR_lights_punctual";
+
+const DEFAULTS: Partial<IKHRLightsPunctual_Light> = {
+    name: "",
+    color: [1, 1, 1],
+    intensity: 1,
+    range: Number.MAX_VALUE,
+};
+
+const SPOTDEFAULTS: IKHRLightsPunctual_Light["spot"] = {
+    innerConeAngle: 0,
+    outerConeAngle: Math.PI / 4.0,
+};
+
+// TODO: Move elsewhere, since this is common
+const NODEDEFAULTS: Partial<INode> = {
+    translation: [0, 0, 0],
+    rotation: [0, 0, 0, 1],
+    scale: [1, 1, 1],
+};
 
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md)
@@ -63,124 +83,121 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
      */
     public postExportNodeAsync(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap: Map<Node, number>): Promise<Nullable<INode>> {
         return new Promise((resolve) => {
-            if (node && babylonNode instanceof ShadowLight) {
-                let light: IKHRLightsPunctual_Light;
+            if (!node || !(babylonNode instanceof ShadowLight)) {
+                resolve(node);
+                return;
+            }
 
-                const lightType =
-                    babylonNode.getTypeID() == Light.LIGHTTYPEID_POINTLIGHT
-                        ? KHRLightsPunctual_LightType.POINT
-                        : babylonNode.getTypeID() == Light.LIGHTTYPEID_DIRECTIONALLIGHT
-                          ? KHRLightsPunctual_LightType.DIRECTIONAL
-                          : babylonNode.getTypeID() == Light.LIGHTTYPEID_SPOTLIGHT
-                            ? KHRLightsPunctual_LightType.SPOT
-                            : null;
-                if (lightType == null) {
-                    Logger.Warn(`${context}: Light ${babylonNode.name} is not supported in ${NAME}`);
-                } else {
-                    if (!babylonNode.position.equalsToFloats(0, 0, 0)) {
-                        node.translation = babylonNode.position.asArray();
-                    }
-                    if (lightType !== KHRLightsPunctual_LightType.POINT) {
-                        const localAxis = babylonNode.direction;
-                        const yaw = -Math.atan2(localAxis.z, localAxis.x) + Math.PI / 2;
-                        const len = Math.sqrt(localAxis.x * localAxis.x + localAxis.z * localAxis.z);
-                        const pitch = -Math.atan2(localAxis.y, len);
-                        const lightRotationQuaternion = Quaternion.RotationYawPitchRoll(yaw + Math.PI, pitch, 0);
-                        if (!Quaternion.IsIdentity(lightRotationQuaternion)) {
-                            node.rotation = lightRotationQuaternion.asArray();
-                        }
-                    }
+            const lightType =
+                babylonNode.getTypeID() == Light.LIGHTTYPEID_POINTLIGHT
+                    ? KHRLightsPunctual_LightType.POINT
+                    : babylonNode.getTypeID() == Light.LIGHTTYPEID_DIRECTIONALLIGHT
+                      ? KHRLightsPunctual_LightType.DIRECTIONAL
+                      : babylonNode.getTypeID() == Light.LIGHTTYPEID_SPOTLIGHT
+                        ? KHRLightsPunctual_LightType.SPOT
+                        : null;
+            if (!lightType) {
+                Logger.Warn(`${context}: Light ${babylonNode.name} is not supported in ${NAME}`);
+                resolve(node);
+                return;
+            }
 
-                    if (babylonNode.falloffType !== Light.FALLOFF_GLTF) {
-                        Logger.Warn(`${context}: Light falloff for ${babylonNode.name} does not match the ${NAME} specification!`);
-                    }
-                    light = {
-                        type: lightType,
-                    };
-                    if (!babylonNode.diffuse.equals(Color3.White())) {
-                        light.color = babylonNode.diffuse.asArray();
-                    }
-                    if (babylonNode.intensity !== 1.0) {
-                        light.intensity = babylonNode.intensity;
-                    }
-                    if (babylonNode.range !== Number.MAX_VALUE) {
-                        light.range = babylonNode.range;
-                    }
+            if (babylonNode.falloffType !== Light.FALLOFF_GLTF) {
+                Logger.Warn(`${context}: Light falloff for ${babylonNode.name} does not match the ${NAME} specification!`);
+            }
 
-                    if (lightType === KHRLightsPunctual_LightType.SPOT) {
-                        const babylonSpotLight = babylonNode as SpotLight;
-                        if (babylonSpotLight.angle !== Math.PI / 2.0) {
-                            if (light.spot == null) {
-                                light.spot = {};
-                            }
-                            light.spot.outerConeAngle = babylonSpotLight.angle / 2.0;
-                        }
-                        if (babylonSpotLight.innerAngle !== 0) {
-                            if (light.spot == null) {
-                                light.spot = {};
-                            }
-                            light.spot.innerConeAngle = babylonSpotLight.innerAngle / 2.0;
-                        }
-                    }
+            // TODO: Is this needed?
+            // if (!babylonNode.position.equalsToFloats(0, 0, 0)) {
+            //     node.translation = babylonNode.position.asArray();
+            // }
 
-                    this._lights ||= {
-                        lights: [],
-                    };
-
-                    this._lights.lights.push(light);
-
-                    const lightReference: IKHRLightsPunctual_LightReference = {
-                        light: this._lights.lights.length - 1,
-                    };
-
-                    // Avoid duplicating the Light's parent node if possible.
-                    const parentBabylonNode = babylonNode.parent;
-                    if (parentBabylonNode && parentBabylonNode.getChildren().length == 1) {
-                        const parentNode = this._exporter._nodes[nodeMap.get(parentBabylonNode)!];
-                        if (parentNode) {
-                            const parentTranslation = Vector3.FromArrayToRef(parentNode.translation || [0, 0, 0], 0, TmpVectors.Vector3[0]);
-                            const parentRotation = Quaternion.FromArrayToRef(parentNode.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[0]);
-                            const parentScale = Vector3.FromArrayToRef(parentNode.scale || [1, 1, 1], 0, TmpVectors.Vector3[1]);
-                            const parentMatrix = Matrix.ComposeToRef(parentScale, parentRotation, parentTranslation, TmpVectors.Matrix[0]);
-
-                            const translation = Vector3.FromArrayToRef(node.translation || [0, 0, 0], 0, TmpVectors.Vector3[2]);
-                            const rotation = Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
-                            const matrix = Matrix.ComposeToRef(Vector3.OneReadOnly, rotation, translation, TmpVectors.Matrix[1]);
-
-                            parentMatrix.multiplyToRef(matrix, matrix);
-                            matrix.decompose(parentScale, parentRotation, parentTranslation);
-
-                            if (parentTranslation.equalsToFloats(0, 0, 0)) {
-                                delete parentNode.translation;
-                            } else {
-                                parentNode.translation = parentTranslation.asArray();
-                            }
-
-                            if (Quaternion.IsIdentity(parentRotation)) {
-                                delete parentNode.rotation;
-                            } else {
-                                parentNode.rotation = parentRotation.asArray();
-                            }
-
-                            if (parentScale.equalsToFloats(1, 1, 1)) {
-                                delete parentNode.scale;
-                            } else {
-                                parentNode.scale = parentScale.asArray();
-                            }
-
-                            parentNode.extensions ||= {};
-                            parentNode.extensions[NAME] = lightReference;
-
-                            // Do not export the original node
-                            resolve(null);
-                            return;
-                        }
-                    }
-
-                    node.extensions ||= {};
-                    node.extensions[NAME] = lightReference;
+            // Override the node's rotation with the light's direction, since glTF uses a constant light direction
+            if (lightType !== KHRLightsPunctual_LightType.POINT) {
+                const localAxis = babylonNode.direction;
+                const yaw = -Math.atan2(localAxis.z, localAxis.x) + Math.PI / 2;
+                const len = Math.sqrt(localAxis.x * localAxis.x + localAxis.z * localAxis.z);
+                const pitch = -Math.atan2(localAxis.y, len);
+                const lightRotationQuaternion = Quaternion.RotationYawPitchRoll(yaw + Math.PI, pitch, 0);
+                if (!Quaternion.IsIdentity(lightRotationQuaternion)) {
+                    node.rotation = lightRotationQuaternion.asArray();
                 }
             }
+
+            let light: IKHRLightsPunctual_Light = {
+                type: lightType,
+                name: babylonNode.name,
+                color: babylonNode.diffuse.asArray(),
+                intensity: babylonNode.intensity,
+                range: babylonNode.range,
+            };
+            light = omitDefaultValues(light, DEFAULTS);
+
+            if (lightType === KHRLightsPunctual_LightType.SPOT) {
+                const babylonSpotLight = babylonNode as SpotLight;
+                light.spot = {
+                    innerConeAngle: babylonSpotLight.innerAngle,
+                    outerConeAngle: babylonSpotLight.angle,
+                };
+                light.spot = omitDefaultValues(light.spot, SPOTDEFAULTS!);
+            }
+
+            this._lights ||= {
+                lights: [],
+            };
+            this._lights.lights.push(light);
+
+            const lightReference: IKHRLightsPunctual_LightReference = {
+                light: this._lights.lights.length - 1,
+            };
+
+            // Assign the light to its parent node, if possible
+            const parentBabylonNode = babylonNode.parent;
+            if (parentBabylonNode && parentBabylonNode.getChildren().length == 1) {
+                const parentNode = this._exporter._nodes[nodeMap.get(parentBabylonNode)!];
+                if (parentNode) {
+                    // Consolidate the light's transformation with the parent's
+                    const parentTranslation = Vector3.FromArrayToRef(parentNode.translation || [0, 0, 0], 0, TmpVectors.Vector3[0]);
+                    const parentRotation = Quaternion.FromArrayToRef(parentNode.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[0]);
+                    const parentScale = Vector3.FromArrayToRef(parentNode.scale || [1, 1, 1], 0, TmpVectors.Vector3[1]);
+                    const parentMatrix = Matrix.ComposeToRef(parentScale, parentRotation, parentTranslation, TmpVectors.Matrix[0]);
+
+                    const translation = Vector3.FromArrayToRef(node.translation || [0, 0, 0], 0, TmpVectors.Vector3[2]);
+                    const rotation = Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
+                    const matrix = Matrix.ComposeToRef(Vector3.OneReadOnly, rotation, translation, TmpVectors.Matrix[1]);
+
+                    parentMatrix.multiplyToRef(matrix, matrix);
+                    matrix.decompose(parentScale, parentRotation, parentTranslation);
+
+                    // Remove default values
+                    if (parentTranslation.equalsToFloats(0, 0, 0)) {
+                        delete parentNode.translation;
+                    } else {
+                        parentNode.translation = parentTranslation.asArray();
+                    }
+
+                    if (Quaternion.IsIdentity(parentRotation)) {
+                        delete parentNode.rotation;
+                    } else {
+                        parentNode.rotation = parentRotation.asArray();
+                    }
+
+                    if (parentScale.equalsToFloats(1, 1, 1)) {
+                        delete parentNode.scale;
+                    } else {
+                        parentNode.scale = parentScale.asArray();
+                    }
+
+                    parentNode.extensions ||= {};
+                    parentNode.extensions[NAME] = lightReference;
+
+                    // Do not export the original node
+                    resolve(null);
+                    return;
+                }
+            }
+
+            node.extensions ||= {};
+            node.extensions[NAME] = lightReference;
             resolve(node);
         });
     }

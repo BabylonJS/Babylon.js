@@ -1638,7 +1638,7 @@ export class GLTFExporter {
             }
         }
 
-        this._extensionsPostExportNodeAsync("exportNodeAsync", this._nodes[nodeIndex], babylonNode, this._nodeMap);
+        this._extensionsPostExportNodeAsync("exportNodeAsync", node, babylonNode, this._nodeMap);
 
         return nodeIndex;
     }
