@@ -124,10 +124,10 @@ export class GeometryTransformBlock extends NodeGeometryBlock {
             if (this.matrix.isConnected) {
                 matrix = this.matrix.getConnectedValue(state);
             } else {
-                const scaling = this.scaling.getConnectedValue(state);
-                const rotation = this.rotation.getConnectedValue(state);
-                const translation = this.translation.getConnectedValue(state);
-                const pivot = this.pivot.getConnectedValue(state);
+                const scaling = this.scaling.getConnectedValue(state) || Vector3.OneReadOnly;
+                const rotation = this.rotation.getConnectedValue(state) || Vector3.ZeroReadOnly;
+                const translation = this.translation.getConnectedValue(state) || Vector3.ZeroReadOnly;
+                const pivot = this.pivot.getConnectedValue(state) || Vector3.ZeroReadOnly;
 
                 // Transform
                 Matrix.TranslationToRef(-pivot.x, -pivot.y, -pivot.z, this._pivotMatrix);

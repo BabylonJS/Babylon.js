@@ -1743,9 +1743,7 @@ export class StandardMaterial extends PushMaterial {
                     ubo.updateFloat("pointSize", this.pointSize);
                 }
 
-                if (defines.SPECULARTERM) {
-                    ubo.updateColor4("vSpecularColor", this.specularColor, this.specularPower);
-                }
+                ubo.updateColor4("vSpecularColor", this.specularColor, this.specularPower);
 
                 ubo.updateColor3("vEmissiveColor", StandardMaterial.EmissiveTextureEnabled ? this.emissiveColor : Color3.BlackReadOnly);
                 ubo.updateColor4("vDiffuseColor", this.diffuseColor, this.alpha);

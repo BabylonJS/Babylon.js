@@ -1,5 +1,8 @@
 uniform mat4 view;
 uniform mat4 viewProjection;
+#ifdef MULTIVIEW
+	mat4 viewProjectionR;
+#endif 
 
 #ifdef ALBEDO
 uniform mat4 albedoMatrix;

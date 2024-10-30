@@ -368,6 +368,11 @@ export class PreviewManager {
                 this._globalState.particleSystemBlendMode = this._particleSystem?.blendMode ?? ParticleSystem.BLENDMODE_STANDARD;
                 break;
             }
+            case NodeMaterialModes.GaussianSplatting: {
+                this._camera.radius = 6;
+                this._camera.upperRadiusLimit = 5000;
+                break;
+            }
         }
 
         // Material
@@ -546,9 +551,28 @@ export class PreviewManager {
                         );
                         return;
                 }
+            } else if (this._globalState.mode === NodeMaterialModes.GaussianSplatting) {
+                switch (this._globalState.previewType) {
+                    case PreviewType.Parrot:
+                        SceneLoader.AppendAsync("https://assets.babylonjs.com/splats/", "gs_Sqwakers_trimed.splat", this._scene).then(() => {
+                            this._meshes.push(...this._scene.meshes);
+                            this._prepareScene();
+                        });
+                        break;
+                    case PreviewType.BricksSkull:
+                        SceneLoader.AppendAsync("https://assets.babylonjs.com/splats/", "gs_Skull.splat", this._scene).then(() => {
+                            this._meshes.push(...this._scene.meshes);
+                            this._prepareScene();
+                        });
+                        break;
+                    case PreviewType.Plants:
+                        SceneLoader.AppendAsync("https://assets.babylonjs.com/splats/", "gs_Plants.splat", this._scene).then(() => {
+                            this._meshes.push(...this._scene.meshes);
+                            this._prepareScene();
+                        });
+                        break;
+                }
             }
-
-            this._prepareScene();
         }
     }
 

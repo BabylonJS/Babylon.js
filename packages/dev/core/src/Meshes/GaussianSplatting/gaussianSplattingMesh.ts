@@ -5,7 +5,8 @@ import { SubMesh } from "../subMesh";
 import type { AbstractMesh } from "../abstractMesh";
 import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
-import { Matrix, Quaternion, TmpVectors, Vector2, Vector3 } from "core/Maths/math.vector";
+import { Matrix, TmpVectors, Vector2, Vector3 } from "core/Maths/math.vector";
+import type { Quaternion } from "core/Maths/math.vector";
 import { Logger } from "core/Misc/logger";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
@@ -13,12 +14,186 @@ import { Constants } from "core/Engines/constants";
 import { Tools } from "core/Misc/tools";
 import "core/Meshes/thinInstanceMesh";
 import type { ThinEngine } from "core/Engines/thinEngine";
+import { ToHalfFloat } from "core/Misc/textureTools";
+import type { Material } from "core/Materials/material";
+import { Scalar } from "core/Maths/math.scalar";
+import { runCoroutineSync, runCoroutineAsync, createYieldingScheduler, type Coroutine } from "core/Misc/coroutine";
 
 interface DelayedTextureUpdate {
-    covA: Float32Array;
-    covB: Float32Array;
-    colors: Float32Array;
+    covA: Uint16Array;
+    covB: Uint16Array;
+    colors: Uint8Array;
     centers: Float32Array;
+}
+
+// @internal
+const unpackUnorm = (value: number, bits: number) => {
+    const t = (1 << bits) - 1;
+    return (value & t) / t;
+};
+
+// @internal
+const unpack111011 = (value: number, result: Vector3) => {
+    result.x = unpackUnorm(value >>> 21, 11);
+    result.y = unpackUnorm(value >>> 11, 10);
+    result.z = unpackUnorm(value, 11);
+};
+
+// @internal
+const unpack8888 = (value: number, result: Uint8ClampedArray) => {
+    result[0] = unpackUnorm(value >>> 24, 8) * 255;
+    result[1] = unpackUnorm(value >>> 16, 8) * 255;
+    result[2] = unpackUnorm(value >>> 8, 8) * 255;
+    result[3] = unpackUnorm(value, 8) * 255;
+};
+
+// @internal
+// unpack quaternion with 2,10,10,10 format (largest element, 3x10bit element)
+const unpackRot = (value: number, result: Quaternion) => {
+    const norm = 1.0 / (Math.sqrt(2) * 0.5);
+    const a = (unpackUnorm(value >>> 20, 10) - 0.5) * norm;
+    const b = (unpackUnorm(value >>> 10, 10) - 0.5) * norm;
+    const c = (unpackUnorm(value, 10) - 0.5) * norm;
+    const m = Math.sqrt(1.0 - (a * a + b * b + c * c));
+
+    switch (value >>> 30) {
+        case 0:
+            result.set(m, a, b, c);
+            break;
+        case 1:
+            result.set(a, m, b, c);
+            break;
+        case 2:
+            result.set(a, b, m, c);
+            break;
+        case 3:
+            result.set(a, b, c, m);
+            break;
+    }
+};
+
+// @internal
+interface CompressedPLYChunk {
+    min: Vector3;
+    max: Vector3;
+    minScale: Vector3;
+    maxScale: Vector3;
+}
+
+/**
+ * Representation of the types
+ */
+const enum PLYType {
+    FLOAT,
+    INT,
+    UINT,
+    DOUBLE,
+    UCHAR,
+    UNDEFINED,
+}
+
+/**
+ * Usage types of the PLY values
+ */
+const enum PLYValue {
+    MIN_X,
+    MIN_Y,
+    MIN_Z,
+    MAX_X,
+    MAX_Y,
+    MAX_Z,
+
+    MIN_SCALE_X,
+    MIN_SCALE_Y,
+    MIN_SCALE_Z,
+
+    MAX_SCALE_X,
+    MAX_SCALE_Y,
+    MAX_SCALE_Z,
+
+    PACKED_POSITION,
+    PACKED_ROTATION,
+    PACKED_SCALE,
+    PACKED_COLOR,
+    X,
+    Y,
+    Z,
+    SCALE_0,
+    SCALE_1,
+    SCALE_2,
+
+    DIFFUSE_RED,
+    DIFFUSE_GREEN,
+    DIFFUSE_BLUE,
+    OPACITY,
+
+    F_DC_0,
+    F_DC_1,
+    F_DC_2,
+    F_DC_3,
+
+    ROT_0,
+    ROT_1,
+    ROT_2,
+    ROT_3,
+
+    UNDEFINED,
+}
+
+/**
+ * Property field found in PLY header
+ */
+export type PlyProperty = {
+    /**
+     * Value usage
+     */
+    value: PLYValue;
+    /**
+     * Value type
+     */
+    type: PLYType;
+    /**
+     * offset in byte from te beginning of the splat
+     */
+    offset: number;
+};
+
+/**
+ * meta info on Splat file
+ */
+export interface PLYHeader {
+    /**
+     * number of splats
+     */
+    vertexCount: number;
+    /**
+     * number of spatial chunks for compressed ply
+     */
+    chunkCount: number;
+    /**
+     * length in bytes of the vertex info
+     */
+    rowVertexLength: number;
+    /**
+     * length in bytes of the chunk
+     */
+    rowChunkLength: number;
+    /**
+     * array listing properties per vertex
+     */
+    vertexProperties: PlyProperty[];
+    /**
+     * array listing properties per chunk
+     */
+    chunkProperties: PlyProperty[];
+    /**
+     * data view for parsing chunks and vertices
+     */
+    dataView: DataView;
+    /**
+     * buffer for the data view
+     */
+    buffer: ArrayBuffer;
 }
 /**
  * Class used to render a gaussian splatting mesh
@@ -38,15 +213,30 @@ export class GaussianSplattingMesh extends Mesh {
     private _splatPositions: Nullable<Float32Array> = null;
     private _splatIndex: Nullable<Float32Array> = null;
     //@ts-expect-error
-    private _covariancesA: Nullable<Float32Array> = null;
+    private _covariancesA: Nullable<Uint16Array> = null;
     //@ts-expect-error
-    private _covariancesB: Nullable<Float32Array> = null;
+    private _covariancesB: Nullable<Uint16Array> = null;
     //@ts-expect-error
-    private _colors: Nullable<Float32Array> = null;
+    private _colors: Nullable<Uint8Array> = null;
     private readonly _keepInRam: boolean = false;
 
     private _delayedTextureUpdate: Nullable<DelayedTextureUpdate> = null;
     private _oldDirection = new Vector3();
+    private _useRGBACovariants = false;
+    private _material: Nullable<Material> = null;
+
+    private _tmpCovariances = [0, 0, 0, 0, 0, 0];
+    private _sortIsDirty = false;
+
+    private static _RowOutputLength = 3 * 4 + 3 * 4 + 4 + 4; // Vector3 position, Vector3 scale, 1 u8 quaternion, 1 color with alpha
+    private static _SH_C0 = 0.28209479177387814;
+
+    /**
+     * Set the number of batch (a batch is 16384 splats) after which a display update is performed
+     * A value of 0 (default) means display update will not happens before splat is ready.
+     */
+    public static ProgressiveUpdateAmount = 0;
+
     /**
      * Gets the covariancesA texture
      */
@@ -76,6 +266,23 @@ export class GaussianSplattingMesh extends Mesh {
     }
 
     /**
+     * set rendering material
+     */
+    public override set material(value: Material) {
+        this._material = value;
+        this._material.backFaceCulling = true;
+        this._material.cullBackFaces = false;
+        value.resetDrawCache();
+    }
+
+    /**
+     * get rendering material
+     */
+    public override get material(): Nullable<Material> {
+        return this._material;
+    }
+
+    /**
      * Creates a new gaussian splatting mesh
      * @param name defines the name of the mesh
      * @param url defines the url to load from (optional)
@@ -87,20 +294,29 @@ export class GaussianSplattingMesh extends Mesh {
 
         const vertexData = new VertexData();
 
-        vertexData.positions = [-2, -2, 0, 2, -2, 0, 2, 2, 0, -2, 2, 0];
-        vertexData.indices = [0, 1, 2, 0, 2, 3];
+        // Use an intanced quad or triangle. Triangle might be a bit faster because of less shader invocation but I didn't see any difference.
+        // Keeping both and use triangle for now.
+        // for quad, use following lines
+        //vertexData.positions = [-2, -2, 0, 2, -2, 0, 2, 2, 0, -2, 2, 0];
+        //vertexData.indices = [0, 1, 2, 0, 2, 3];
+        vertexData.positions = [-3, -2, 0, 3, -2, 0, 0, 4, 0];
+        vertexData.indices = [0, 1, 2];
         vertexData.applyToMesh(this);
 
         this.subMeshes = [];
-        new SubMesh(0, 0, 4, 0, 6, this);
+        // for quad, use following line
+        //new SubMesh(0, 0, 4, 0, 6, this);
+        new SubMesh(0, 0, 3, 0, 3, this);
 
         this.setEnabled(false);
+        // webGL2 and webGPU support for RG texture with float16 is fine. not webGL1
+        this._useRGBACovariants = !this.getEngine().isWebGPU && this.getEngine().version === 1.0;
 
         this._keepInRam = keepInRam;
         if (url) {
             this.loadFileAsync(url);
         }
-        this.material = new GaussianSplattingMaterial(this.name + "_material", this._scene);
+        this._material = new GaussianSplattingMaterial(this.name + "_material", this._scene);
     }
 
     /**
@@ -139,7 +355,7 @@ export class GaussianSplattingMesh extends Mesh {
 
     protected _postToWorker(forced = false): void {
         const frameId = this.getScene().getFrameId();
-        if (frameId !== this._frameIdLastUpdate && this._worker && this._scene.activeCamera && this._canPostToWorker) {
+        if ((forced || frameId !== this._frameIdLastUpdate) && this._worker && this._scene.activeCamera && this._canPostToWorker) {
             const cameraMatrix = this._scene.activeCamera.getViewMatrix();
             this.getWorldMatrix().multiplyToRef(cameraMatrix, this._modelViewMatrix);
             cameraMatrix.invertToRef(TmpVectors.Matrix[0]);
@@ -170,25 +386,122 @@ export class GaussianSplattingMesh extends Mesh {
         return super.render(subMesh, enableAlphaMode, effectiveMeshReplacement);
     }
 
+    private static _TypeNameToEnum(name: string): PLYType {
+        switch (name) {
+            case "float":
+                return PLYType.FLOAT;
+            case "int":
+                return PLYType.INT;
+                break;
+            case "uint":
+                return PLYType.UINT;
+            case "double":
+                return PLYType.DOUBLE;
+            case "uchar":
+                return PLYType.UCHAR;
+        }
+        return PLYType.UNDEFINED;
+    }
+
+    private static _ValueNameToEnum(name: string): PLYValue {
+        switch (name) {
+            case "min_x":
+                return PLYValue.MIN_X;
+            case "min_y":
+                return PLYValue.MIN_Y;
+            case "min_z":
+                return PLYValue.MIN_Z;
+            case "max_x":
+                return PLYValue.MAX_X;
+            case "max_y":
+                return PLYValue.MAX_Y;
+            case "max_z":
+                return PLYValue.MAX_Z;
+            case "min_scale_x":
+                return PLYValue.MIN_SCALE_X;
+            case "min_scale_y":
+                return PLYValue.MIN_SCALE_Y;
+            case "min_scale_z":
+                return PLYValue.MIN_SCALE_Z;
+            case "max_scale_x":
+                return PLYValue.MAX_SCALE_X;
+            case "max_scale_y":
+                return PLYValue.MAX_SCALE_Y;
+            case "max_scale_z":
+                return PLYValue.MAX_SCALE_Z;
+            case "packed_position":
+                return PLYValue.PACKED_POSITION;
+            case "packed_rotation":
+                return PLYValue.PACKED_ROTATION;
+            case "packed_scale":
+                return PLYValue.PACKED_SCALE;
+            case "packed_color":
+                return PLYValue.PACKED_COLOR;
+            case "x":
+                return PLYValue.X;
+            case "y":
+                return PLYValue.Y;
+            case "z":
+                return PLYValue.Z;
+            case "scale_0":
+                return PLYValue.SCALE_0;
+            case "scale_1":
+                return PLYValue.SCALE_1;
+            case "scale_2":
+                return PLYValue.SCALE_2;
+            case "diffuse_red":
+            case "red":
+                return PLYValue.DIFFUSE_RED;
+            case "diffuse_green":
+            case "green":
+                return PLYValue.DIFFUSE_GREEN;
+            case "diffuse_blue":
+            case "blue":
+                return PLYValue.DIFFUSE_BLUE;
+            case "f_dc_0":
+                return PLYValue.F_DC_0;
+            case "f_dc_1":
+                return PLYValue.F_DC_1;
+            case "f_dc_2":
+                return PLYValue.F_DC_2;
+            case "f_dc_3":
+                return PLYValue.F_DC_3;
+            case "opacity":
+                return PLYValue.OPACITY;
+            case "rot_0":
+                return PLYValue.ROT_0;
+            case "rot_1":
+                return PLYValue.ROT_1;
+            case "rot_2":
+                return PLYValue.ROT_2;
+            case "rot_3":
+                return PLYValue.ROT_3;
+        }
+
+        return PLYValue.UNDEFINED;
+    }
     /**
-     * Code from https://github.com/dylanebert/gsplat.js/blob/main/src/loaders/PLYLoader.ts Under MIT license
-     * Converts a .ply data array buffer to splat
-     * if data array buffer is not ply, returns the original buffer
-     * @param data the .ply data to load
-     * @returns the loaded splat buffer
-     * @deprecated Please use SceneLoader.ImportMeshAsync instead
+     * Parse a PLY file header and returns metas infos on splats and chunks
+     * @param data the loaded buffer
+     * @returns a PLYHeader
      */
-    public static ConvertPLYToSplat(data: ArrayBuffer): ArrayBuffer {
+    static ParseHeader(data: ArrayBuffer): PLYHeader | null {
         const ubuf = new Uint8Array(data);
         const header = new TextDecoder().decode(ubuf.slice(0, 1024 * 10));
         const headerEnd = "end_header\n";
         const headerEndIndex = header.indexOf(headerEnd);
         if (headerEndIndex < 0 || !header) {
-            return data;
+            // standard splat
+            return null;
         }
         const vertexCount = parseInt(/element vertex (\d+)\n/.exec(header)![1]);
-
-        let rowOffset = 0;
+        const chunkElement = /element chunk (\d+)\n/.exec(header);
+        let chunkCount = 0;
+        if (chunkElement) {
+            chunkCount = parseInt(chunkElement[1]);
+        }
+        let rowVertexOffset = 0;
+        let rowChunkOffset = 0;
         const offsets: Record<string, number> = {
             double: 8,
             int: 4,
@@ -197,128 +510,293 @@ export class GaussianSplattingMesh extends Mesh {
             short: 2,
             ushort: 2,
             uchar: 1,
+            list: 0,
         };
 
-        type PlyProperty = {
-            name: string;
-            type: string;
-            offset: number;
-        };
-        const properties: PlyProperty[] = [];
-        const filtered = header
-            .slice(0, headerEndIndex)
-            .split("\n")
-            .filter((k) => k.startsWith("property "));
+        const enum ElementMode {
+            Vertex = 0,
+            Chunk = 1,
+        }
+        let chunkMode = ElementMode.Chunk;
+        const vertexProperties: PlyProperty[] = [];
+        const chunkProperties: PlyProperty[] = [];
+        const filtered = header.slice(0, headerEndIndex).split("\n");
         for (const prop of filtered) {
-            const [, type, name] = prop.split(" ");
-            properties.push({ name, type, offset: rowOffset });
-            if (offsets[type]) {
-                rowOffset += offsets[type];
-            } else {
-                Logger.Error(`Unsupported property type: ${type}. Are you sure it's a valid Gaussian Splatting file?`);
-                return new ArrayBuffer(0);
+            if (prop.startsWith("property ")) {
+                const [, typeName, name] = prop.split(" ");
+
+                const value = GaussianSplattingMesh._ValueNameToEnum(name);
+                const type = GaussianSplattingMesh._TypeNameToEnum(typeName);
+                if (chunkMode == ElementMode.Chunk) {
+                    chunkProperties.push({ value, type, offset: rowChunkOffset });
+                    rowChunkOffset += offsets[typeName];
+                } else if (chunkMode == ElementMode.Vertex) {
+                    vertexProperties.push({ value, type, offset: rowVertexOffset });
+                    rowVertexOffset += offsets[typeName];
+                }
+
+                if (!offsets[typeName]) {
+                    Logger.Warn(`Unsupported property type: ${typeName}.`);
+                }
+            } else if (prop.startsWith("element ")) {
+                const [, type] = prop.split(" ");
+                if (type == "chunk") {
+                    chunkMode = ElementMode.Chunk;
+                } else if (type == "vertex") {
+                    chunkMode = ElementMode.Vertex;
+                }
             }
         }
-
-        const rowLength = 3 * 4 + 3 * 4 + 4 + 4;
-        const SH_C0 = 0.28209479177387814;
 
         const dataView = new DataView(data, headerEndIndex + headerEnd.length);
-        const buffer = new ArrayBuffer(rowLength * vertexCount);
-        const q = new Quaternion();
+        const buffer = new ArrayBuffer(GaussianSplattingMesh._RowOutputLength * vertexCount);
 
-        for (let i = 0; i < vertexCount; i++) {
-            const position = new Float32Array(buffer, i * rowLength, 3);
-            const scale = new Float32Array(buffer, i * rowLength + 12, 3);
-            const rgba = new Uint8ClampedArray(buffer, i * rowLength + 24, 4);
-            const rot = new Uint8ClampedArray(buffer, i * rowLength + 28, 4);
-
-            let r0: number = 255;
-            let r1: number = 0;
-            let r2: number = 0;
-            let r3: number = 0;
-
-            for (let propertyIndex = 0; propertyIndex < properties.length; propertyIndex++) {
-                const property = properties[propertyIndex];
+        return {
+            vertexCount: vertexCount,
+            chunkCount: chunkCount,
+            rowVertexLength: rowVertexOffset,
+            rowChunkLength: rowChunkOffset,
+            vertexProperties: vertexProperties,
+            chunkProperties: chunkProperties,
+            dataView: dataView,
+            buffer: buffer,
+        };
+    }
+    private static _GetCompressedChunks(header: PLYHeader, offset: { value: number }): Array<CompressedPLYChunk> | null {
+        if (!header.chunkCount) {
+            return null;
+        }
+        const dataView = header.dataView;
+        const compressedChunks = new Array<CompressedPLYChunk>(header.chunkCount);
+        for (let i = 0; i < header.chunkCount; i++) {
+            const currentChunk = { min: new Vector3(), max: new Vector3(), minScale: new Vector3(), maxScale: new Vector3() };
+            compressedChunks[i] = currentChunk;
+            for (let propertyIndex = 0; propertyIndex < header.chunkProperties.length; propertyIndex++) {
+                const property = header.chunkProperties[propertyIndex];
                 let value;
                 switch (property.type) {
-                    case "float":
-                        value = dataView.getFloat32(property.offset + i * rowOffset, true);
-                        break;
-                    case "int":
-                        value = dataView.getInt32(property.offset + i * rowOffset, true);
+                    case PLYType.FLOAT:
+                        value = dataView.getFloat32(property.offset + offset.value, true);
                         break;
                     default:
-                        throw new Error(`Unsupported property type: ${property.type}`);
+                        continue;
                 }
 
-                switch (property.name) {
-                    case "x":
-                        position[0] = value;
+                switch (property.value) {
+                    case PLYValue.MIN_X:
+                        currentChunk.min.x = value;
                         break;
-                    case "y":
-                        position[1] = value;
+                    case PLYValue.MIN_Y:
+                        currentChunk.min.y = value;
                         break;
-                    case "z":
-                        position[2] = value;
+                    case PLYValue.MIN_Z:
+                        currentChunk.min.z = value;
                         break;
-                    case "scale_0":
-                        scale[0] = Math.exp(value);
+                    case PLYValue.MAX_X:
+                        currentChunk.max.x = value;
                         break;
-                    case "scale_1":
-                        scale[1] = Math.exp(value);
+                    case PLYValue.MAX_Y:
+                        currentChunk.max.y = value;
                         break;
-                    case "scale_2":
-                        scale[2] = Math.exp(value);
+                    case PLYValue.MAX_Z:
+                        currentChunk.max.z = value;
                         break;
-                    case "red":
-                        rgba[0] = value;
+                    case PLYValue.MIN_SCALE_X:
+                        currentChunk.minScale.x = value;
                         break;
-                    case "green":
-                        rgba[1] = value;
+                    case PLYValue.MIN_SCALE_Y:
+                        currentChunk.minScale.y = value;
                         break;
-                    case "blue":
-                        rgba[2] = value;
+                    case PLYValue.MIN_SCALE_Z:
+                        currentChunk.minScale.z = value;
                         break;
-                    case "f_dc_0":
-                        rgba[0] = (0.5 + SH_C0 * value) * 255;
+                    case PLYValue.MAX_SCALE_X:
+                        currentChunk.maxScale.x = value;
                         break;
-                    case "f_dc_1":
-                        rgba[1] = (0.5 + SH_C0 * value) * 255;
+                    case PLYValue.MAX_SCALE_Y:
+                        currentChunk.maxScale.y = value;
                         break;
-                    case "f_dc_2":
-                        rgba[2] = (0.5 + SH_C0 * value) * 255;
-                        break;
-                    case "f_dc_3":
-                        rgba[3] = (0.5 + SH_C0 * value) * 255;
-                        break;
-                    case "opacity":
-                        rgba[3] = (1 / (1 + Math.exp(-value))) * 255;
-                        break;
-                    case "rot_0":
-                        r0 = value;
-                        break;
-                    case "rot_1":
-                        r1 = value;
-                        break;
-                    case "rot_2":
-                        r2 = value;
-                        break;
-                    case "rot_3":
-                        r3 = value;
+                    case PLYValue.MAX_SCALE_Z:
+                        currentChunk.maxScale.z = value;
                         break;
                 }
             }
+            offset.value += header.rowChunkLength;
+        }
+        return compressedChunks;
+    }
 
-            q.set(r1, r2, r3, r0);
-            q.normalize();
-            rot[0] = q.w * 128 + 128;
-            rot[1] = q.x * 128 + 128;
-            rot[2] = q.y * 128 + 128;
-            rot[3] = q.z * 128 + 128;
+    private static _GetSplat(header: PLYHeader, index: number, compressedChunks: Array<CompressedPLYChunk> | null, offset: { value: number }): void {
+        const q = TmpVectors.Quaternion[0];
+        const temp3 = TmpVectors.Vector3[0];
+
+        const rowOutputLength = GaussianSplattingMesh._RowOutputLength;
+        const buffer = header.buffer;
+        const dataView = header.dataView;
+        const position = new Float32Array(buffer, index * rowOutputLength, 3);
+        const scale = new Float32Array(buffer, index * rowOutputLength + 12, 3);
+        const rgba = new Uint8ClampedArray(buffer, index * rowOutputLength + 24, 4);
+        const rot = new Uint8ClampedArray(buffer, index * rowOutputLength + 28, 4);
+        const chunkIndex = index >> 8;
+        let r0: number = 255;
+        let r1: number = 0;
+        let r2: number = 0;
+        let r3: number = 0;
+
+        for (let propertyIndex = 0; propertyIndex < header.vertexProperties.length; propertyIndex++) {
+            const property = header.vertexProperties[propertyIndex];
+            let value;
+            switch (property.type) {
+                case PLYType.FLOAT:
+                    value = dataView.getFloat32(offset.value + property.offset, true);
+                    break;
+                case PLYType.INT:
+                    value = dataView.getInt32(offset.value + property.offset, true);
+                    break;
+                case PLYType.UINT:
+                    value = dataView.getUint32(offset.value + property.offset, true);
+                    break;
+                case PLYType.DOUBLE:
+                    value = dataView.getFloat64(offset.value + property.offset, true);
+                    break;
+                case PLYType.UCHAR:
+                    value = dataView.getUint8(offset.value + property.offset);
+                    break;
+                default:
+                    continue;
+            }
+
+            switch (property.value) {
+                case PLYValue.PACKED_POSITION:
+                    {
+                        const compressedChunk = compressedChunks![chunkIndex];
+                        unpack111011(value, temp3);
+                        position[0] = Scalar.Lerp(compressedChunk.min.x, compressedChunk.max.x, temp3.x);
+                        position[1] = -Scalar.Lerp(compressedChunk.min.y, compressedChunk.max.y, temp3.y);
+                        position[2] = Scalar.Lerp(compressedChunk.min.z, compressedChunk.max.z, temp3.z);
+                    }
+                    break;
+                case PLYValue.PACKED_ROTATION:
+                    {
+                        unpackRot(value, q);
+                        r0 = q.w;
+                        r1 = q.z;
+                        r2 = q.y;
+                        r3 = q.x;
+                    }
+                    break;
+                case PLYValue.PACKED_SCALE:
+                    {
+                        const compressedChunk = compressedChunks![chunkIndex];
+                        unpack111011(value, temp3);
+                        scale[0] = Math.exp(Scalar.Lerp(compressedChunk.minScale.x, compressedChunk.maxScale.x, temp3.x));
+                        scale[1] = Math.exp(Scalar.Lerp(compressedChunk.minScale.y, compressedChunk.maxScale.y, temp3.y));
+                        scale[2] = Math.exp(Scalar.Lerp(compressedChunk.minScale.z, compressedChunk.maxScale.z, temp3.z));
+                    }
+                    break;
+                case PLYValue.PACKED_COLOR:
+                    unpack8888(value, rgba);
+                    break;
+                case PLYValue.X:
+                    position[0] = value;
+                    break;
+                case PLYValue.Y:
+                    position[1] = value;
+                    break;
+                case PLYValue.Z:
+                    position[2] = value;
+                    break;
+                case PLYValue.SCALE_0:
+                    scale[0] = Math.exp(value);
+                    break;
+                case PLYValue.SCALE_1:
+                    scale[1] = Math.exp(value);
+                    break;
+                case PLYValue.SCALE_2:
+                    scale[2] = Math.exp(value);
+                    break;
+                case PLYValue.DIFFUSE_RED:
+                    rgba[0] = value;
+                    break;
+                case PLYValue.DIFFUSE_GREEN:
+                    rgba[1] = value;
+                    break;
+                case PLYValue.DIFFUSE_BLUE:
+                    rgba[2] = value;
+                    break;
+                case PLYValue.F_DC_0:
+                    rgba[0] = (0.5 + GaussianSplattingMesh._SH_C0 * value) * 255;
+                    break;
+                case PLYValue.F_DC_1:
+                    rgba[1] = (0.5 + GaussianSplattingMesh._SH_C0 * value) * 255;
+                    break;
+                case PLYValue.F_DC_2:
+                    rgba[2] = (0.5 + GaussianSplattingMesh._SH_C0 * value) * 255;
+                    break;
+                case PLYValue.F_DC_3:
+                    rgba[3] = (0.5 + GaussianSplattingMesh._SH_C0 * value) * 255;
+                    break;
+                case PLYValue.OPACITY:
+                    rgba[3] = (1 / (1 + Math.exp(-value))) * 255;
+                    break;
+                case PLYValue.ROT_0:
+                    r0 = value;
+                    break;
+                case PLYValue.ROT_1:
+                    r1 = value;
+                    break;
+                case PLYValue.ROT_2:
+                    r2 = value;
+                    break;
+                case PLYValue.ROT_3:
+                    r3 = value;
+                    break;
+            }
         }
 
-        return buffer;
+        q.set(r1, r2, r3, r0);
+        q.normalize();
+        rot[0] = q.w * 128 + 128;
+        rot[1] = q.x * 128 + 128;
+        rot[2] = q.y * 128 + 128;
+        rot[3] = q.z * 128 + 128;
+        offset.value += header.rowVertexLength;
+    }
+
+    /**
+     * Converts a .ply data array buffer to splat
+     * if data array buffer is not ply, returns the original buffer
+     * @param data the .ply data to load
+     * @param useCoroutine use coroutine and yield
+     * @returns the loaded splat buffer
+     */
+    public static *ConvertPLYToSplat(data: ArrayBuffer, useCoroutine = false) {
+        const header = GaussianSplattingMesh.ParseHeader(data);
+        if (!header) {
+            return data;
+        }
+
+        const offset = { value: 0 };
+        const compressedChunks = GaussianSplattingMesh._GetCompressedChunks(header, offset);
+
+        for (let i = 0; i < header.vertexCount; i++) {
+            GaussianSplattingMesh._GetSplat(header, i, compressedChunks, offset);
+            if (i % 30000 === 0 && useCoroutine) {
+                yield;
+            }
+        }
+
+        return header.buffer;
+    }
+
+    /**
+     * Converts a .ply data array buffer to splat
+     * if data array buffer is not ply, returns the original buffer
+     * @param data the .ply data to load
+     * @returns the loaded splat buffer
+     */
+    public static async ConvertPLYToSplatAsync(data: ArrayBuffer) {
+        return runCoroutineAsync(GaussianSplattingMesh.ConvertPLYToSplat(data, true), createYieldingScheduler());
     }
 
     /**
@@ -328,7 +806,7 @@ export class GaussianSplattingMesh extends Mesh {
      */
 
     public loadDataAsync(data: ArrayBuffer): Promise<void> {
-        return Promise.resolve(this._loadData(data));
+        return this.updateDataAsync(data);
     }
 
     /**
@@ -338,8 +816,10 @@ export class GaussianSplattingMesh extends Mesh {
      * @deprecated Please use SceneLoader.ImportMeshAsync instead
      */
     public loadFileAsync(url: string): Promise<void> {
-        return Tools.LoadFileAsync(url, true).then((data) => {
-            this._loadData(GaussianSplattingMesh.ConvertPLYToSplat(data));
+        return Tools.LoadFileAsync(url, true).then(async (plyBuffer) => {
+            GaussianSplattingMesh.ConvertPLYToSplatAsync(plyBuffer).then((splatsData) => {
+                this.updateDataAsync(splatsData);
+            });
         });
     }
 
@@ -431,7 +911,7 @@ export class GaussianSplattingMesh extends Mesh {
                 }
 
                 for (let j = 0; j < vertexCount; j++) {
-                    floatMix[2 * j + 1] = 10000 + (viewProj[2] * positions[3 * j + 0] + viewProj[6] * positions[3 * j + 1] + viewProj[10] * positions[3 * j + 2]) * depthFactor;
+                    floatMix[2 * j + 1] = 10000 + (viewProj[2] * positions[4 * j + 0] + viewProj[6] * positions[4 * j + 1] + viewProj[10] * positions[4 * j + 2]) * depthFactor;
                 }
 
                 depthMix.sort();
@@ -441,16 +921,118 @@ export class GaussianSplattingMesh extends Mesh {
         };
     };
 
-    /**
-     * @experimental
-     * Update data from GS (position, orientation, color, scaling)
-     * @param data array that contain all the datas
-     */
-    public updateData(data: ArrayBuffer): void {
-        if (!data.byteLength) {
-            return;
+    private _makeSplat(
+        sourceIndex: number,
+        destinationIndex: number,
+        fBuffer: Float32Array,
+        uBuffer: Uint8Array,
+        covA: Uint16Array,
+        covB: Uint16Array,
+        colorArray: Uint8Array,
+        minimum: Vector3,
+        maximum: Vector3
+    ): void {
+        const matrixRotation = TmpVectors.Matrix[0];
+        const matrixScale = TmpVectors.Matrix[1];
+        const quaternion = TmpVectors.Quaternion[0];
+        const covBSItemSize = this._useRGBACovariants ? 4 : 2;
+
+        const x = fBuffer[8 * sourceIndex + 0];
+        const y = -fBuffer[8 * sourceIndex + 1];
+        const z = fBuffer[8 * sourceIndex + 2];
+
+        this._splatPositions![4 * sourceIndex + 0] = x;
+        this._splatPositions![4 * sourceIndex + 1] = y;
+        this._splatPositions![4 * sourceIndex + 2] = z;
+
+        minimum.minimizeInPlaceFromFloats(x, y, z);
+        maximum.maximizeInPlaceFromFloats(x, y, z);
+
+        quaternion.set(
+            (uBuffer[32 * sourceIndex + 28 + 1] - 128) / 128,
+            (uBuffer[32 * sourceIndex + 28 + 2] - 128) / 128,
+            (uBuffer[32 * sourceIndex + 28 + 3] - 128) / 128,
+            -(uBuffer[32 * sourceIndex + 28 + 0] - 128) / 128
+        );
+        quaternion.toRotationMatrix(matrixRotation);
+
+        Matrix.ScalingToRef(fBuffer[8 * sourceIndex + 3 + 0] * 2, fBuffer[8 * sourceIndex + 3 + 1] * 2, fBuffer[8 * sourceIndex + 3 + 2] * 2, matrixScale);
+
+        const M = matrixRotation.multiplyToRef(matrixScale, TmpVectors.Matrix[0]).m;
+
+        const covariances = this._tmpCovariances;
+        covariances[0] = M[0] * M[0] + M[1] * M[1] + M[2] * M[2];
+        covariances[1] = M[0] * M[4] + M[1] * M[5] + M[2] * M[6];
+        covariances[2] = M[0] * M[8] + M[1] * M[9] + M[2] * M[10];
+        covariances[3] = M[4] * M[4] + M[5] * M[5] + M[6] * M[6];
+        covariances[4] = M[4] * M[8] + M[5] * M[9] + M[6] * M[10];
+        covariances[5] = M[8] * M[8] + M[9] * M[9] + M[10] * M[10];
+
+        // normalize covA, covB
+        let factor = -10000;
+        for (let covIndex = 0; covIndex < 6; covIndex++) {
+            factor = Math.max(factor, Math.abs(covariances[covIndex]));
         }
 
+        this._splatPositions![4 * sourceIndex + 3] = factor;
+        const transform = factor;
+
+        covA[destinationIndex * 4 + 0] = ToHalfFloat(covariances[0] / transform);
+        covA[destinationIndex * 4 + 1] = ToHalfFloat(covariances[1] / transform);
+        covA[destinationIndex * 4 + 2] = ToHalfFloat(covariances[2] / transform);
+        covA[destinationIndex * 4 + 3] = ToHalfFloat(covariances[3] / transform);
+        covB[destinationIndex * covBSItemSize + 0] = ToHalfFloat(covariances[4] / transform);
+        covB[destinationIndex * covBSItemSize + 1] = ToHalfFloat(covariances[5] / transform);
+
+        // colors
+        colorArray[destinationIndex * 4 + 0] = uBuffer[32 * sourceIndex + 24 + 0];
+        colorArray[destinationIndex * 4 + 1] = uBuffer[32 * sourceIndex + 24 + 1];
+        colorArray[destinationIndex * 4 + 2] = uBuffer[32 * sourceIndex + 24 + 2];
+        colorArray[destinationIndex * 4 + 3] = uBuffer[32 * sourceIndex + 24 + 3];
+    }
+
+    private _updateTextures(covA: Uint16Array, covB: Uint16Array, colorArray: Uint8Array): void {
+        const textureSize = this._getTextureSize(this._vertexCount);
+        // Update the textures
+        const createTextureFromData = (data: Float32Array, width: number, height: number, format: number) => {
+            return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
+        };
+
+        const createTextureFromDataU8 = (data: Uint8Array, width: number, height: number, format: number) => {
+            return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_UNSIGNED_BYTE);
+        };
+
+        const createTextureFromDataF16 = (data: Uint16Array, width: number, height: number, format: number) => {
+            return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_HALF_FLOAT);
+        };
+
+        if (this._keepInRam) {
+            this._covariancesA = covA;
+            this._covariancesB = covB;
+            this._colors = colorArray;
+        }
+        if (this._covariancesATexture) {
+            this._delayedTextureUpdate = { covA: covA, covB: covB, colors: colorArray, centers: this._splatPositions! };
+            const positions = Float32Array.from(this._splatPositions!);
+            const vertexCount = this._vertexCount;
+            this._worker!.postMessage({ positions, vertexCount }, [positions.buffer]);
+
+            this._postToWorker(true);
+        } else {
+            this._covariancesATexture = createTextureFromDataF16(covA, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+            this._covariancesBTexture = createTextureFromDataF16(
+                covB,
+                textureSize.x,
+                textureSize.y,
+                this._useRGBACovariants ? Constants.TEXTUREFORMAT_RGBA : Constants.TEXTUREFORMAT_RG
+            );
+            this._centersTexture = createTextureFromData(this._splatPositions!, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+            this._colorsTexture = createTextureFromDataU8(colorArray, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+            this._instanciateWorker();
+        }
+    }
+
+    private *_updateData(data: ArrayBuffer, isAsync: boolean): Coroutine<void> {
         // if a covariance texture is present, then it's not a creation but an update
         if (!this._covariancesATexture) {
             this._readyToDisplay = false;
@@ -460,8 +1042,7 @@ export class GaussianSplattingMesh extends Mesh {
         const uBuffer = new Uint8Array(data);
         const fBuffer = new Float32Array(uBuffer.buffer);
 
-        const rowLength = 3 * 4 + 3 * 4 + 4 + 4;
-        const vertexCount = uBuffer.length / rowLength;
+        const vertexCount = uBuffer.length / GaussianSplattingMesh._RowOutputLength;
         if (vertexCount != this._vertexCount) {
             this._updateSplatIndexBuffer(vertexCount);
         }
@@ -469,107 +1050,74 @@ export class GaussianSplattingMesh extends Mesh {
 
         const textureSize = this._getTextureSize(vertexCount);
         const textureLength = textureSize.x * textureSize.y;
+        const lineCountUpdate = GaussianSplattingMesh.ProgressiveUpdateAmount ?? textureSize.y;
+        const textureLengthPerUpdate = textureSize.x * lineCountUpdate;
 
-        this._splatPositions = new Float32Array(3 * textureLength);
-        const covA = new Float32Array(3 * textureLength);
-        const covB = new Float32Array(3 * textureLength);
-
-        const matrixRotation = TmpVectors.Matrix[0];
-        const matrixScale = TmpVectors.Matrix[1];
-        const quaternion = TmpVectors.Quaternion[0];
+        this._splatPositions = new Float32Array(4 * textureLength);
+        const covA = new Uint16Array(textureLength * 4);
+        const covB = new Uint16Array((this._useRGBACovariants ? 4 : 2) * textureLength);
+        const colorArray = new Uint8Array(textureLength * 4);
 
         const minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
         const maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
-        for (let i = 0; i < vertexCount; i++) {
-            const x = fBuffer[8 * i + 0];
-            const y = -fBuffer[8 * i + 1];
-            const z = fBuffer[8 * i + 2];
+        if (GaussianSplattingMesh.ProgressiveUpdateAmount) {
+            // create textures with not filled-yet array, then update directly portions of it
+            this._updateTextures(covA, covB, colorArray);
+            this.setEnabled(true);
 
-            this._splatPositions[3 * i + 0] = x;
-            this._splatPositions[3 * i + 1] = y;
-            this._splatPositions[3 * i + 2] = z;
-
-            minimum.minimizeInPlaceFromFloats(x, y, z);
-            maximum.maximizeInPlaceFromFloats(x, y, z);
-
-            quaternion.set(
-                (uBuffer[32 * i + 28 + 1] - 128) / 128,
-                (uBuffer[32 * i + 28 + 2] - 128) / 128,
-                (uBuffer[32 * i + 28 + 3] - 128) / 128,
-                -(uBuffer[32 * i + 28 + 0] - 128) / 128
-            );
-            quaternion.toRotationMatrix(matrixRotation);
-
-            Matrix.ScalingToRef(fBuffer[8 * i + 3 + 0] * 2, fBuffer[8 * i + 3 + 1] * 2, fBuffer[8 * i + 3 + 2] * 2, matrixScale);
-
-            const M = matrixRotation.multiplyToRef(matrixScale, TmpVectors.Matrix[0]).m;
-
-            covA[i * 3 + 0] = M[0] * M[0] + M[1] * M[1] + M[2] * M[2];
-            covA[i * 3 + 1] = M[0] * M[4] + M[1] * M[5] + M[2] * M[6];
-            covA[i * 3 + 2] = M[0] * M[8] + M[1] * M[9] + M[2] * M[10];
-            covB[i * 3 + 0] = M[4] * M[4] + M[5] * M[5] + M[6] * M[6];
-            covB[i * 3 + 1] = M[4] * M[8] + M[5] * M[9] + M[6] * M[10];
-            covB[i * 3 + 2] = M[8] * M[8] + M[9] * M[9] + M[10] * M[10];
-        }
-
-        // Update the mesh
-        const binfo = this.getBoundingInfo();
-        binfo.reConstruct(minimum, maximum, this.getWorldMatrix());
-
-        this.setEnabled(true);
-
-        // Update the material
-        const createTextureFromData = (data: Float32Array, width: number, height: number, format: number) => {
-            return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
-        };
-
-        const convertRgbToRgba = (rgb: Float32Array) => {
-            const count = rgb.length / 3;
-            const rgba = new Float32Array(count * 4);
-            for (let i = 0; i < count; ++i) {
-                rgba[i * 4 + 0] = rgb[i * 3 + 0];
-                rgba[i * 4 + 1] = rgb[i * 3 + 1];
-                rgba[i * 4 + 2] = rgb[i * 3 + 2];
-                rgba[i * 4 + 3] = 1.0;
+            const partCount = Math.ceil(textureSize.y / lineCountUpdate);
+            for (let partIndex = 0; partIndex < partCount; partIndex++) {
+                const updateLine = partIndex * lineCountUpdate;
+                const splatIndexBase = updateLine * textureSize.x;
+                for (let i = 0; i < textureLengthPerUpdate; i++) {
+                    this._makeSplat(splatIndexBase + i, splatIndexBase + i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum);
+                }
+                this._updateSubTextures(this._splatPositions, covA, covB, colorArray, updateLine, Math.min(lineCountUpdate, textureSize.y - updateLine));
+                // Update the binfo
+                this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
+                if (isAsync) {
+                    yield;
+                }
             }
-            return rgba;
-        };
 
-        const colorArray = new Float32Array(textureSize.x * textureSize.y * 4);
-        for (let i = 0; i < this._vertexCount; ++i) {
-            colorArray[i * 4 + 0] = uBuffer[32 * i + 24 + 0] / 255;
-            colorArray[i * 4 + 1] = uBuffer[32 * i + 24 + 1] / 255;
-            colorArray[i * 4 + 2] = uBuffer[32 * i + 24 + 2] / 255;
-            colorArray[i * 4 + 3] = uBuffer[32 * i + 24 + 3] / 255;
-        }
-
-        if (this._keepInRam) {
-            this._covariancesA = covA;
-            this._covariancesB = covB;
-            this._colors = colorArray;
-        }
-        if (this._covariancesATexture) {
-            this._delayedTextureUpdate = { covA: convertRgbToRgba(covA), covB: convertRgbToRgba(covB), colors: colorArray, centers: convertRgbToRgba(this._splatPositions) };
+            // sort will be dirty here as just finished filled positions will not be sorted
             const positions = Float32Array.from(this._splatPositions!);
             const vertexCount = this._vertexCount;
             this._worker!.postMessage({ positions, vertexCount }, [positions.buffer]);
-
-            this._postToWorker(true);
+            this._sortIsDirty = true;
         } else {
-            this._covariancesATexture = createTextureFromData(convertRgbToRgba(covA), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
-            this._covariancesBTexture = createTextureFromData(convertRgbToRgba(covB), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
-            this._centersTexture = createTextureFromData(convertRgbToRgba(this._splatPositions), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
-            this._colorsTexture = createTextureFromData(colorArray, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
-            this._instanciateWorker();
+            for (let i = 0; i < vertexCount; i++) {
+                this._makeSplat(i, i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum);
+                if (isAsync && i % 327680 === 0) {
+                    yield;
+                }
+            }
+            // textures
+            this._updateTextures(covA, covB, colorArray);
+            // Update the binfo
+            this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
+            this.setEnabled(true);
         }
+        this._postToWorker(true);
     }
 
-    private _loadData(data: ArrayBuffer): void {
-        if (!data.byteLength) {
-            return;
-        }
-        this.updateData(data);
+    /**
+     * Update asynchronously the buffer
+     * @param data array buffer containing center, color, orientation and scale of splats
+     * @returns a promise
+     */
+    public async updateDataAsync(data: ArrayBuffer): Promise<void> {
+        return runCoroutineAsync(this._updateData(data, true), createYieldingScheduler());
+    }
+
+    /**
+     * @experimental
+     * Update data from GS (position, orientation, color, scaling)
+     * @param data array that contain all the datas
+     */
+    public updateData(data: ArrayBuffer): void {
+        runCoroutineSync(this._updateData(data, false));
     }
 
     // in case size is different
@@ -582,6 +1130,30 @@ export class GaussianSplattingMesh extends Mesh {
         this.forcedInstanceCount = vertexCount;
     }
 
+    private _updateSubTextures(centers: Float32Array, covA: Uint16Array, covB: Uint16Array, colors: Uint8Array, lineStart: number, lineCount: number): void {
+        const updateTextureFromData = (texture: BaseTexture, data: Float32Array, width: number, lineStart: number, lineCount: number) => {
+            (this.getEngine() as ThinEngine).updateTextureData(texture.getInternalTexture()!, data, 0, lineStart, width, lineCount, 0, 0, false);
+        };
+        const updateTextureFromDataU8 = (texture: BaseTexture, data: Uint8Array, width: number, lineStart: number, lineCount: number) => {
+            (this.getEngine() as ThinEngine).updateTextureData(texture.getInternalTexture()!, data, 0, lineStart, width, lineCount, 0, 0, false);
+        };
+        const updateTextureFromDataF16 = (texture: BaseTexture, data: Uint16Array, width: number, lineStart: number, lineCount: number) => {
+            (this.getEngine() as ThinEngine).updateTextureData(texture.getInternalTexture()!, data, 0, lineStart, width, lineCount, 0, 0, false);
+        };
+
+        const textureSize = this._getTextureSize(this._vertexCount);
+        const covBSItemSize = this._useRGBACovariants ? 4 : 2;
+        const texelStart = lineStart * textureSize.x;
+        const texelCount = lineCount * textureSize.x;
+        const covAView = new Uint16Array(covA.buffer, texelStart * 4 * Uint16Array.BYTES_PER_ELEMENT, texelCount * 4);
+        const covBView = new Uint16Array(covB.buffer, texelStart * covBSItemSize * Uint16Array.BYTES_PER_ELEMENT, texelCount * covBSItemSize);
+        const colorsView = new Uint8Array(colors.buffer, texelStart * 4, texelCount * 4);
+        const centersView = new Float32Array(centers.buffer, texelStart * 4 * Float32Array.BYTES_PER_ELEMENT, texelCount * 4);
+        updateTextureFromDataF16(this._covariancesATexture!, covAView, textureSize.x, lineStart, lineCount);
+        updateTextureFromDataF16(this._covariancesBTexture!, covBView, textureSize.x, lineStart, lineCount);
+        updateTextureFromData(this._centersTexture!, centersView, textureSize.x, lineStart, lineCount);
+        updateTextureFromDataU8(this._colorsTexture!, colorsView, textureSize.x, lineStart, lineCount);
+    }
     private _instanciateWorker(): void {
         if (!this._vertexCount) {
             return;
@@ -613,19 +1185,26 @@ export class GaussianSplattingMesh extends Mesh {
                 }
             }
             if (this._delayedTextureUpdate) {
-                const updateTextureFromData = (texture: BaseTexture, data: Float32Array, width: number, height: number) => {
-                    (this.getEngine() as ThinEngine).updateTextureData(texture.getInternalTexture()!, data, 0, 0, width, height, 0, 0, false);
-                };
                 const textureSize = this._getTextureSize(vertexCount);
-                updateTextureFromData(this._covariancesATexture!, this._delayedTextureUpdate.covA, textureSize.x, textureSize.y);
-                updateTextureFromData(this._covariancesBTexture!, this._delayedTextureUpdate.covB, textureSize.x, textureSize.y);
-                updateTextureFromData(this._centersTexture!, this._delayedTextureUpdate.centers, textureSize.x, textureSize.y);
-                updateTextureFromData(this._colorsTexture!, this._delayedTextureUpdate.colors, textureSize.x, textureSize.y);
+                this._updateSubTextures(
+                    this._delayedTextureUpdate.centers,
+                    this._delayedTextureUpdate.covA,
+                    this._delayedTextureUpdate.covB,
+                    this._delayedTextureUpdate.colors,
+                    0,
+                    textureSize.y
+                );
                 this._delayedTextureUpdate = null;
             }
             this.thinInstanceBufferUpdated("splatIndex");
             this._canPostToWorker = true;
             this._readyToDisplay = true;
+            // sort is dirty when GS is visible for progressive update with a this message arriving but positions were partially filled
+            // another update needs to be kicked. The kick can't happen just when the position buffer is ready because _canPostToWorker might be false.
+            if (this._sortIsDirty) {
+                this._postToWorker(true);
+                this._sortIsDirty = false;
+            }
         };
     }
 

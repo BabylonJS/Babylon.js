@@ -6,6 +6,7 @@ import wireframe from "./svgs/wireframe.svg";
 import matCap from "./svgs/matCap.svg";
 import texture from "./svgs/textureIcon.svg";
 import vertexColor from "./svgs/vertexColor.svg";
+import doubleSided from "./svgs/doubleSided.svg";
 import { PreviewMode } from "./previewMode";
 
 interface IPreviewAreaComponentProps {
@@ -77,6 +78,15 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
         this.forceUpdate();
     }
 
+    changeNormals() {
+        if (this.props.globalState.previewMode === PreviewMode.Normals) {
+            this.props.globalState.previewMode = PreviewMode.Normal;
+        } else {
+            this.props.globalState.previewMode = PreviewMode.Normals;
+        }
+        this.forceUpdate();
+    }
+
     override render() {
         return (
             <>
@@ -86,6 +96,13 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
                 </div>
                 <>
                     <div id="preview-config-bar">
+                        <div
+                            title="Render with normals"
+                            onClick={() => this.changeNormals()}
+                            className={"button mat-normals" + (this.props.globalState.previewMode === PreviewMode.Normals ? " selected" : "")}
+                        >
+                            <img src={doubleSided} alt="" />
+                        </div>
                         <div
                             title="Render with texture"
                             onClick={() => this.changeTexture()}

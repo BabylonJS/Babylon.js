@@ -1,250 +1,658 @@
 {
-    "fromTag": "7.29.0",
+    "fromTag": "7.31.1",
     "changelog": {
-        "7.29.0": [
+        "7.31.2": [
             {
-                "pr": "15558",
-                "title": "Mesh HotSpot",
-                "description": "Compute a world position from point index + barycentric. \r\nIntended use in the viewer.\r\n\r\ntodo:\r\n- [x] PG to pick and compute hotspot query data\r\n- [x] extract code to compute morph/skinning for a set of points\r\n- [x] html tags support + example\r\n\r\ntest pg : https://playground.babylonjs.com/#BQOFIX#4",
+                "pr": "15751",
+                "title": "fix several bugs",
+                "description": null,
                 "author": {
-                    "name": "CedricGuillemet",
-                    "url": "https://github.com/CedricGuillemet"
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
                 },
                 "files": [
-                    "packages/dev/core/src/Meshes/abstractMesh.hotSpot.ts",
-                    "packages/dev/core/src/Meshes/index.ts",
-                    "packages/tools/viewer-alpha/src/viewer.ts",
-                    "packages/tools/viewer-alpha/src/viewerElement.ts",
-                    "packages/tools/viewer-alpha/test/apps/web/index.html"
-                ],
-                "tags": [
-                    "viewer",
-                    "new feature"
-                ]
-            },
-            {
-                "pr": "15676",
-                "title": "WebGPU Snapshot rendering: add SnapshotRenderingHelper class",
-                "description": "This is an helper class to simplify work with FAST snapshot mode.\r\n\r\nPG: https://playground.babylonjs.com/?webgpu#WGZLGJ#10645",
-                "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
-                },
-                "files": [
-                    "packages/dev/core/src/Engines/index.ts",
-                    "packages/dev/core/src/Misc/index.ts",
-                    "packages/dev/core/src/Misc/snapshotRenderingHelper.ts"
-                ],
-                "tags": [
-                    "new feature",
-                    "WebGPU"
-                ]
-            },
-            {
-                "pr": "15682",
-                "title": "De-dupe some shared UI components",
-                "description": "Some quick changes to reduce the number of duplication between our node editors. These were the components that were easiest / required the least amount of changing to de-dupe. The remaining duplicate components will need a closer look.",
-                "author": {
-                    "name": "alexchuber",
-                    "url": "https://github.com/alexchuber"
-                },
-                "files": [
-                    "packages/dev/sharedUiComponents/src/lines/draggableLineComponent.tsx",
-                    "packages/dev/sharedUiComponents/src/lines/draggableLineWithButtonComponent.tsx",
-                    "packages/dev/sharedUiComponents/src/lines/lineWithFileButtonComponent.tsx",
-                    "packages/tools/guiEditor/src/components/guiList/guiListComponent.tsx",
-                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx",
-                    "packages/tools/nodeEditor/src/components/propertyTab/inputsPropertyTabComponent.tsx",
-                    "packages/tools/nodeEditor/src/components/propertyTab/propertyTabComponent.tsx",
-                    "packages/tools/nodeEditor/src/graphSystem/properties/colorMergerPropertyComponent.tsx",
-                    "packages/tools/nodeEditor/src/graphSystem/properties/conditionalNodePropertyComponent.tsx",
-                    "packages/tools/nodeEditor/src/graphSystem/properties/curveNodePropertyComponent.tsx",
-                    "packages/tools/nodeEditor/src/graphSystem/properties/frameNodePortPropertyComponent.tsx",
-                    "packages/tools/nodeEditor/src/graphSystem/properties/framePropertyComponent.tsx",
-                    "packages/tools/nodeEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx",
-                    "packages/tools/nodeEditor/src/graphSystem/properties/gradientNodePropertyComponent.tsx",
-                    "packages/tools/nodeEditor/src/graphSystem/properties/imageSourcePropertyTabComponent.tsx",
-                    "packages/tools/nodeEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx",
-                    "packages/tools/nodeEditor/src/graphSystem/properties/lightInformationPropertyTabComponent.tsx",
-                    "packages/tools/nodeEditor/src/graphSystem/properties/lightPropertyTabComponent.tsx",
-                    "packages/tools/nodeEditor/src/graphSystem/properties/nodePortPropertyComponent.tsx",
-                    "packages/tools/nodeEditor/src/graphSystem/properties/teleportOutNodePropertyComponent.tsx",
-                    "packages/tools/nodeEditor/src/graphSystem/properties/texturePropertyTabComponent.tsx",
-                    "packages/tools/nodeEditor/src/graphSystem/properties/transformNodePropertyComponent.tsx",
-                    "packages/tools/nodeEditor/src/graphSystem/properties/trigonometryNodePropertyComponent.tsx",
-                    "packages/tools/nodeEditor/src/graphSystem/properties/vectorMergerPropertyComponent.tsx",
-                    "packages/tools/nodeEditor/src/sharedComponents/draggableLineComponent.tsx",
-                    "packages/tools/nodeEditor/src/sharedComponents/fileButtonLineComponent.tsx",
-                    "packages/tools/nodeEditor/src/sharedComponents/lineContainerComponent.tsx",
+                    ".build/config.json",
+                    "package-lock.json",
+                    "packages/dev/core/src/Maths/math.functions.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/cleanGeometryBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlock.ts",
+                    "packages/tools/nodeGeometryEditor/package.json",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
                     "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx",
-                    "packages/tools/nodeGeometryEditor/src/components/propertyTab/inputsPropertyTabComponent.tsx",
-                    "packages/tools/nodeGeometryEditor/src/components/propertyTab/propertyTabComponent.tsx",
-                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/debugNodePropertyComponent.tsx",
-                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/frameNodePortPropertyComponent.tsx",
-                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/framePropertyComponent.tsx",
-                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx",
-                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx",
-                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/meshNodePropertyComponent.tsx",
-                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/nodePortPropertyComponent.tsx",
-                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/outputNodePropertyComponent.tsx",
-                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/teleportOutNodePropertyComponent.tsx",
-                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/textureNodePropertyComponent.tsx",
-                    "packages/tools/nodeGeometryEditor/src/sharedComponents/draggableLineComponent.tsx",
-                    "packages/tools/nodeGeometryEditor/src/sharedComponents/draggableLineWithButtonComponent.tsx",
-                    "packages/tools/nodeGeometryEditor/src/sharedComponents/fileButtonLineComponent.tsx",
-                    "packages/tools/nodeGeometryEditor/src/sharedComponents/lineContainerComponent.tsx",
-                    "packages/tools/nodeGeometryEditor/src/sharedComponents/lineWithFileButtonComponent.tsx"
+                    "packages/tools/nodeGeometryEditor/src/components/preview/previewAreaComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/components/preview/previewManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/preview/previewMode.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/preview/svgs/doubleSided.svg",
+                    "packages/tools/nodeGeometryEditor/src/main.scss",
+                    "packages/tools/nodeGeometryEditor/tsconfig.build.json",
+                    "packages/tools/nodeGeometryEditor/webpack.config.js"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15752",
+                "title": "Viewer: add clear-color attribute",
+                "description": "This change adds a `clear-color` attribute to the Viewer html element. Since it is in the html layer, it relies on WebAPI to convert an arbitrary color string to a Babylon Color4. It is transparent by default. I also made one other small change to have the root div (`:host` in css) inherit all from the outer babylon-viewer element. I think this should be safe, and it lets you do things like this in CSS:\r\n\r\n```css\r\nbabylon-viewer {\r\n  background-image: url(\"https://raw.githubusercontent.com/BabylonJS/Assets/master/textures/Checker_albedo.png\");\r\n}\r\n```\r\n\r\nCombining these two things together, with the default transparent `clear-color` you can get this:\r\n\r\n![image](https://github.com/user-attachments/assets/5310c258-94fa-4271-9b5d-c53749089ca7)\r\n",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts"
                 ],
                 "tags": []
             },
             {
-                "pr": "15681",
-                "title": "Add support for Lattice modifier",
-                "description": null,
-                "author": {
-                    "name": "deltakosh",
-                    "url": "https://github.com/deltakosh"
-                },
-                "files": [
-                    "packages/dev/core/src/Meshes/index.ts",
-                    "packages/dev/core/src/Meshes/lattice.ts",
-                    "packages/tools/tests/test/visualization/ReferenceImages/lattice.png",
-                    "packages/tools/tests/test/visualization/config.json"
-                ],
-                "tags": [
-                    "new feature",
-                    "geometry"
-                ]
-            },
-            {
-                "pr": "15680",
-                "title": "Fix index remapper",
-                "description": null,
-                "author": {
-                    "name": "deltakosh",
-                    "url": "https://github.com/deltakosh"
-                },
-                "files": [
-                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setPositionsBlock.ts"
-                ],
-                "tags": [
-                    "skip changelog"
-                ]
-            },
-            {
-                "pr": "15679",
-                "title": "Allow user to overload picking mechanism",
-                "description": null,
-                "author": {
-                    "name": "deltakosh",
-                    "url": "https://github.com/deltakosh"
-                },
-                "files": [
-                    "packages/dev/core/src/Culling/ray.core.ts"
-                ],
-                "tags": [
-                    "skip changelog"
-                ]
-            },
-            {
-                "pr": "15675",
-                "title": "Sprite maps: add fog and logarithmic depth support",
-                "description": "See https://forum.babylonjs.com/t/fog-support-for-spritemap/53940",
-                "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
-                },
-                "files": [
-                    "packages/dev/core/src/Shaders/spriteMap.fragment.fx",
-                    "packages/dev/core/src/Shaders/spriteMap.vertex.fx",
-                    "packages/dev/core/src/Sprites/spriteMap.ts"
-                ],
-                "tags": [
-                    "enhancement",
-                    "rendering engine"
-                ]
-            },
-            {
-                "pr": "15674",
-                "title": "GreasedLine - setPoints update",
-                "description": "https://forum.babylonjs.com/t/low-level-havok-debug-lines-visualization/53484/45?u=roland\r\n\r\n",
+                "pr": "15748",
+                "title": "inspecting sky material",
+                "description": "Hi!\r\nThis introduces a dependency on the materials library. I'm not sure if this is a correct approach. Please comment!",
                 "author": {
                     "name": "RolandCsibrei",
                     "url": "https://github.com/RolandCsibrei"
                 },
                 "files": [
-                    "packages/dev/core/src/Meshes/Builders/greasedLineBuilder.ts",
-                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineBaseMesh.ts",
-                    "packages/dev/core/src/Misc/greasedLineTools.ts"
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGridTabComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/skyMaterialPropertyGridComponent.tsx"
                 ],
                 "tags": []
             },
             {
-                "pr": "15673",
-                "title": "Supersplat file loading",
-                "description": "To use scene import functions, not with the deprecated function `loadFileAsync`.\r\n\r\nCompression ratio:\r\nHalo_believe.ply : 81.6Mb\r\nHalo_believe.splat: 10.5Mb\r\nHalo_believe.compressed.ply: 5.3Mb\r\n\r\nThere is a small issue with quaternion that I'm fixing before merging.",
+                "pr": "15750",
+                "title": "Allow sliders to go overflow",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/actionTabs.scss",
+                    "packages/dev/sharedUiComponents/src/lines/sliderLineComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15734",
+                "title": "Async loading and parsing of GS",
+                "description": "- replace string comparison with enum (60% faster)\r\n- added async parsing method with coroutines\r\n- update SPLAT loader accordingly\r\n- async `updateData`",
                 "author": {
                     "name": "CedricGuillemet",
                     "url": "https://github.com/CedricGuillemet"
                 },
                 "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts",
                     "packages/dev/loaders/src/SPLAT/splatFileLoader.ts"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "15742",
+                "title": "Standard material: use the specular color of the material for reflectivity when there's no light",
+                "description": "See https://forum.babylonjs.com/t/prepass-renderer-giving-inconsistent-reflectivity-texture-based-on-lights-in-the-scene/54387\r\n\r\nWe align with what the geometry buffer renderer is doing in this case.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/defaultFragmentDeclaration.fx",
+                    "packages/dev/core/src/Shaders/default.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/default.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "15746",
+                "title": "Typo",
+                "description": "https://forum.babylonjs.com/t/edit-released-what-about-a-code-generator-for-the-playground/50396/72",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/tools/playground/public/templates.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15747",
+                "title": "solidify nge",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryTransformBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
+        "7.31.1": [
+            {
+                "pr": "15744",
+                "title": "WebGPU: Sync with specification",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheRenderPipeline.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuConstants.ts",
+                    "packages/dev/core/src/Engines/constants.ts",
+                    "packages/dev/core/src/LibDeclarations/webgpu.d.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "15743",
+                "title": "SnapshotRenderingHelper: Fix interaction with performance priority mode",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/snapshotRenderingHelper.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "15741",
+                "title": "SpriteMap LOD Sampling Fix",
+                "description": "Per this conversation:\r\nhttps://forum.babylonjs.com/t/seams-artifacts-between-texture-tiles-when-using-mipmaps/54269/4",
+                "author": {
+                    "name": "Pryme8",
+                    "url": "https://github.com/Pryme8"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/spriteMap.fragment.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15745",
+                "title": "Fix missing matrix",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/backgroundVertexDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/defaultVertexDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrVertexDeclaration.fx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15740",
+                "title": "Skip frustum clipping in viewer",
+                "description": "I recently removed the code that was setting performancePriority to Aggressive because it broke some rendering scenarios (still investigating). However removing it also breaks other things. Specifically, we need to skip frustum culling (render all meshes) for WebGPU snapshot mode. So I'm adding this back explicitly (along with one other performancePriority related setting) for now. Also I updated the published.html test file to use jsdelivr instead of unpkg as it is faster and easier to use when testing.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/public/@babylonjs/viewer-alpha/test/apps/web/published.html",
+                    "packages/tools/viewer-alpha/src/viewer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15721",
+                "title": "Edge Detection Post Process",
+                "description": "https://forum.babylonjs.com/t/outline-post-process/50488\r\n\r\nI wrote this article with my different accout.\r\n\r\nThis PR adds a new EdgeDetectionPostProcess to BabylonJS.\r\nThis post-process applies an edge detection effect based on normals and depth buffers from the geometry buffer renderer, providing developers with a versatile way to highlight object outlines.\r\n\r\nKey Features\r\nConfigurable edge color, width, and intensity for flexible stylization.\r\nSupports different render modes:\r\n\r\nGeneral\r\nNormal\r\nDepth\r\nOnly Outline\r\nUses Geometry Buffer Renderer to access normals and depth textures for precise edge detection.\r\n\r\nWhy this is needed?\r\nThis post-process enhances the visual rendering capabilities of BabylonJS by allowing developers to add stylized edge detection, which is commonly used in cartoon rendering, technical visualizations, and architectural previews.\r\n\r\nHow to Use\r\nEnable the geometry buffer renderer and apply the post-process:\r\n\r\n// edge detection post process\r\nconst edgeDetectionPP = new BABYLON.EdgeDetectionPostProcess(\"\", scene, 1, camera);\r\nedgeDetectionPP.samples = 4;\r\n// Defines the intensity of the detected edges. Higher values result in more pronounced edges.\r\nedgeDetectionPP.edgeIntensity = .3;\r\n// Defines the width of the detected edges. Higher values result in thicker edges.\r\nedgeDetectionPP.edgeWidth = .2;\r\n// Defines the color of the detected edges\r\nedgeDetectionPP.edgeColor = new BABYLON.Color3(0, 0, 0);\r\n\r\n\r\nhttps://github.com/user-attachments/assets/f988c4cf-aef2-4ff3-a3de-0bdcf804631d\r\n\r\n",
+                "author": {
+                    "name": "UN1TOne",
+                    "url": "https://github.com/UN1TOne"
+                },
+                "files": [
+                    "packages/dev/postProcesses/src/edgeDetection/edgeDetection.fragment.fx",
+                    "packages/dev/postProcesses/src/edgeDetection/edgeDetectionPostProcess.ts",
+                    "packages/dev/postProcesses/src/edgeDetection/index.ts",
+                    "packages/dev/postProcesses/src/index.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15739",
+                "title": "Allow users to extend the dirty system",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Meshes/transformNode.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15738",
+                "title": "SnapshotRenderingHelper: Add new helper method",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/snapshotRenderingHelper.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "15736",
+                "title": "Add warning when detecting negative genus",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/csg2.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15737",
+                "title": "Disable performancePriorty for Viewer",
+                "description": "When I initially enabled this, I missed that it breaks rendering of some models. After a chat with @deltakosh, I tried deferring setting the performancePriority to Aggressive until after the scene is ready and at least one frame has rendered and that seemed to fix this issue for WebGL, but when using WebGPUEngine it's still broken. This PR will at least unbreak the Viewer while we continue investigating performancePriority + WebGPUEngine.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer-alpha/src/viewer.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "7.31.0": [
+            {
+                "pr": "15732",
+                "title": "De-dupe copy.svg and copyStep.svg",
+                "description": "Remove copies (ha!) of copy.svg and copyStep.svg. Use copy.svg and copyStep.svg from shared-ui-components instead.",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/lines/copy.svg",
+                    "packages/dev/inspector/src/components/actionTabs/lines/quaternionLineComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/gradientStepComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/metadata/metadataPropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/imgs/copyStep.svg",
+                    "packages/dev/sharedUiComponents/src/lines/checkBoxLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/colorLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/copy.svg",
+                    "packages/dev/sharedUiComponents/src/lines/copyStep.svg",
+                    "packages/dev/sharedUiComponents/src/lines/floatLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/optionsLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/sliderLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/vector3LineComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/gradientStepComponent.tsx",
+                    "packages/tools/nodeEditor/src/imgs/copy.svg",
+                    "packages/tools/nodeEditor/src/sharedComponents/copy.svg",
+                    "packages/tools/nodeGeometryEditor/src/imgs/copy.svg",
+                    "packages/tools/nodeGeometryEditor/src/sharedComponents/copy.svg"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15729",
+                "title": "Update GS parsing for back compatibility loading",
+                "description": "Quick patch to unblock partner. This change adds compressed ply support to back compatibility loading.\r\nI'll work on factorizing more duplicated code ASAP.\r\n\r\nOnce merged, partial updates like this are possible:\r\n\r\nhttps://playground.babylonjs.com/#EUY1MS",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts",
+                    "packages/dev/loaders/src/SPLAT/splatFileLoader.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15731",
+                "title": "Allow user to specify material for csg2",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/csg2.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15728",
+                "title": "Inspector: Fix crash when viewing texture in inspector with WebGL1",
+                "description": "See https://forum.babylonjs.com/t/inspector-unable-to-preview-texture-in-webgl1-engine/54298",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/lod.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "15727",
+                "title": "Update gltf_validator.js to 2.0.0-dev.3.10",
+                "description": "See https://github.com/KhronosGroup/glTF-Validator/pull/240.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/tools/babylonServer/public/gltf_validator.js"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            }
+        ],
+        "7.30.1": [
+            {
+                "pr": "15720",
+                "title": "Reduce splat VRAM size",
+                "description": "From 64 bytes per splat to 32 (36 for webgl1). ",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/GaussianSplatting/splatReaderBlock.ts",
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/gaussianSplatting.fx",
+                    "packages/dev/core/src/Shaders/gaussianSplatting.vertex.fx"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "15724",
+                "title": "Fix issue when creating instances from a gltf object",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "15726",
+                "title": "- New Geometry Aggregator Node",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/aggregatorBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx"
+                ],
+                "tags": [
+                    "new feature",
+                    "nge"
+                ]
+            },
+            {
+                "pr": "15677",
+                "title": "NME for Gaussian Splatting",
+                "description": "This snippet: #CSD1ZK#1\r\nwill show this:\r\nhttps://github.com/user-attachments/assets/65fa9f69-2eb1-4115-8cc8-a80cb5969f2e\r\n\r\n",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/GaussianSplatting/gaussianSplattingMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/GaussianSplatting/gaussianBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/GaussianSplatting/gaussianSplattingBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/GaussianSplatting/index.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/GaussianSplatting/splatReaderBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Input/inputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/index.ts",
+                    "packages/dev/core/src/Materials/Node/Enums/nodeMaterialModes.ts",
+                    "packages/dev/core/src/Materials/Node/index.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialDefault.ts",
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/gaussianSplatting.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/gaussianSplattingFragmentDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/gaussianSplattingUboDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/gaussianSplattingVertexDeclaration.fx",
+                    "packages/dev/core/src/Shaders/gaussianSplatting.fragment.fx",
+                    "packages/dev/core/src/Shaders/gaussianSplatting.vertex.fx",
+                    "packages/tools/nodeEditor/public/index.js",
+                    "packages/tools/nodeEditor/src/blockTools.ts",
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts",
+                    "packages/tools/nodeEditor/src/components/preview/previewMeshControlComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/preview/previewType.ts",
+                    "packages/tools/nodeEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gsplat-nme.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "new feature",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "15723",
+                "title": "Make sure the _enginePromise variable is cleared when not needed.",
+                "description": "ee https://forum.babylonjs.com/t/engine-at-dumptools-is-not-being-disposed-properly/54259?u=raananw",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/dumpTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15713",
+                "title": "CSG2: Using Manifold for boolean operations",
+                "description": "To test:\r\n\r\n#IW43EB#15 - basic operations\r\n#JUKXQD#6104 - skill vs box\r\n#JUKXQD#6111 - skill vs vertex data\r\n",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/booleanGeometryBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlock.ts",
+                    "packages/dev/core/src/Meshes/csg.ts",
+                    "packages/dev/core/src/Meshes/csg2.ts",
+                    "packages/dev/core/src/Meshes/index.ts",
+                    "packages/dev/core/src/Meshes/mesh.vertexData.ts",
+                    "packages/dev/core/src/Misc/tools.internals.ts",
+                    "packages/dev/core/src/Misc/tools.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/csg.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/csgVertColor.png",
+                    "packages/tools/tests/test/visualization/config.json"
                 ],
                 "tags": [
                     "new feature"
                 ]
             },
             {
-                "pr": "15672",
-                "title": "Typo in the Particle Editor",
-                "description": "Not the most urgent issue. :)\r\n\r\nThe typo appears in the [Particle Editor](https://playground.babylonjs.com/#M7MYT8#11) when you stop a particle system and it still takes time until it is stopped:\r\n\r\n![image](https://github.com/user-attachments/assets/5b043076-13f8-4341-b2a9-7aa8dd11e53d)\r\n",
-                "author": {
-                    "name": "KarlKeiser",
-                    "url": "https://github.com/KarlKeiser"
-                },
-                "files": [
-                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/particleSystemPropertyGridComponent.tsx"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "15669",
-                "title": "Erroneous morph target manager ids",
-                "description": "Fixes Bug #15668 \r\n[Forum Post](https://forum.babylonjs.com/t/erroneous-morph-target-manager-ids/53848)\r\n[PG example](https://playground.babylonjs.com/#M9S259#3)\r\n\r\nWhile testing the models in my PG example I stumbled on another bug in the `importMesh` function.\r\nChecking for unused transform nodes only considered the direct parent, therefore meshes couldn't be loaded if they are located in a deeply nested transform node structure.\r\nI tried to fix that right away, works fine in my PG example.",
-                "author": {
-                    "name": "HoferMarkus",
-                    "url": "https://github.com/HoferMarkus"
-                },
-                "files": [
-                    "packages/dev/core/src/Loading/Plugins/babylonFileLoader.ts",
-                    "packages/dev/core/src/Meshes/abstractMesh.ts",
-                    "packages/dev/core/src/Meshes/mesh.ts",
-                    "packages/dev/core/src/Morph/morphTargetManager.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "15670",
-                "title": "Global Illumination: Fix WGSL code",
-                "description": "I also fixed debug marker groups in WebGPU.",
+                "pr": "15722",
+                "title": "WebGPU: Fix collisions in bind group cache",
+                "description": "[This PG - localhost](http://localhost:1338/#8R5SSE#354) from #15634 generated bind group cache collisions. This is fixed by this PR.\r\n\r\nI've also corrected the anisotropy value used to calculate the sampler hash code (I've mixed up the MSAA values - which are limited to 1 or 4 - with the anisotropy values, which are not!).",
                 "author": {
                     "name": "Popov72",
                     "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.debugging.ts",
-                    "packages/dev/core/src/Engines/webgpuEngine.ts",
-                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
-                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
-                    "packages/dev/core/src/ShadersWGSL/bilateralBlurQuality.fragment.fx",
-                    "packages/dev/core/src/ShadersWGSL/geometry.fragment.fx",
-                    "packages/dev/core/src/ShadersWGSL/geometry.vertex.fx",
-                    "packages/dev/core/src/ShadersWGSL/rsmFullGlobalIllumination.fragment.fx"
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheBindGroups.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheSampler.ts"
                 ],
                 "tags": [
                     "bug",
-                    "rendering engine"
+                    "WebGPU"
                 ]
+            },
+            {
+                "pr": "15716",
+                "title": "fixed NME trying to switch to webgpu but failing",
+                "description": null,
+                "author": {
+                    "name": "ricardovg4",
+                    "url": "https://github.com/ricardovg4"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/public/index.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15714",
+                "title": "Fix crash",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/lines/vector2LineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/vector3LineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/vector4LineComponent.tsx"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15715",
+                "title": "Set missing morph target id for serialization",
+                "description": "See https://forum.babylonjs.com/t/morph-target-id-not-loaded-from-gltf-model/54152.\r\n\r\nSetting id to name in morph target constructor is analogous to what happens with scene nodes.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Morph/morphTarget.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15709",
+                "title": "Improve handling of texture names in glTF loader",
+                "description": "See https://forum.babylonjs.com/t/gltfloader-option-to-keep-or-prefer-original-texture-or-image-name-as-name-of-loaded-texture/37307\r\n\r\nTested with this PG: http://localhost:1338/#SJUH9H#3",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/texture.ts",
+                    "packages/dev/core/src/Materials/Textures/textureSampler.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts",
+                    "packages/dev/loaders/src/glTF/glTFFileLoader.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15712",
+                "title": "Fix nme switching to webgpu when not supported",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/public/index.js"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15710",
+                "title": "Materials: Add plug-ins even if the material has already been used for rendering",
+                "description": "Test PG: https://playground.babylonjs.com/#BC851Q",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Background/backgroundMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Materials/materialPluginManager.ts",
+                    "packages/dev/core/src/Materials/pushMaterial.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "15711",
+                "title": "Add Pivot input to the Transform Node.",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryTransformBlock.ts"
+                ],
+                "tags": []
             }
         ],
         "7.30.0": [
@@ -538,6 +946,252 @@
                     "packages/tools/viewer-alpha/test/apps/web/index.html"
                 ],
                 "tags": []
+            }
+        ],
+        "7.29.0": [
+            {
+                "pr": "15558",
+                "title": "Mesh HotSpot",
+                "description": "Compute a world position from point index + barycentric. \r\nIntended use in the viewer.\r\n\r\ntodo:\r\n- [x] PG to pick and compute hotspot query data\r\n- [x] extract code to compute morph/skinning for a set of points\r\n- [x] html tags support + example\r\n\r\ntest pg : https://playground.babylonjs.com/#BQOFIX#4",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.hotSpot.ts",
+                    "packages/dev/core/src/Meshes/index.ts",
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts",
+                    "packages/tools/viewer-alpha/test/apps/web/index.html"
+                ],
+                "tags": [
+                    "viewer",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15676",
+                "title": "WebGPU Snapshot rendering: add SnapshotRenderingHelper class",
+                "description": "This is an helper class to simplify work with FAST snapshot mode.\r\n\r\nPG: https://playground.babylonjs.com/?webgpu#WGZLGJ#10645",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/index.ts",
+                    "packages/dev/core/src/Misc/index.ts",
+                    "packages/dev/core/src/Misc/snapshotRenderingHelper.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "15682",
+                "title": "De-dupe some shared UI components",
+                "description": "Some quick changes to reduce the number of duplication between our node editors. These were the components that were easiest / required the least amount of changing to de-dupe. The remaining duplicate components will need a closer look.",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/lines/draggableLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/draggableLineWithButtonComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/lineWithFileButtonComponent.tsx",
+                    "packages/tools/guiEditor/src/components/guiList/guiListComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/inputsPropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/colorMergerPropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/conditionalNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/curveNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/frameNodePortPropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/framePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/gradientNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/imageSourcePropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/lightInformationPropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/lightPropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/nodePortPropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/teleportOutNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/texturePropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/transformNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/trigonometryNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/vectorMergerPropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/sharedComponents/draggableLineComponent.tsx",
+                    "packages/tools/nodeEditor/src/sharedComponents/fileButtonLineComponent.tsx",
+                    "packages/tools/nodeEditor/src/sharedComponents/lineContainerComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/components/propertyTab/inputsPropertyTabComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/debugNodePropertyComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/frameNodePortPropertyComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/framePropertyComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/meshNodePropertyComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/nodePortPropertyComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/outputNodePropertyComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/teleportOutNodePropertyComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/textureNodePropertyComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/sharedComponents/draggableLineComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/sharedComponents/draggableLineWithButtonComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/sharedComponents/fileButtonLineComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/sharedComponents/lineContainerComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/sharedComponents/lineWithFileButtonComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15681",
+                "title": "Add support for Lattice modifier",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/index.ts",
+                    "packages/dev/core/src/Meshes/lattice.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/lattice.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "new feature",
+                    "geometry"
+                ]
+            },
+            {
+                "pr": "15680",
+                "title": "Fix index remapper",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setPositionsBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15679",
+                "title": "Allow user to overload picking mechanism",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/ray.core.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15675",
+                "title": "Sprite maps: add fog and logarithmic depth support",
+                "description": "See https://forum.babylonjs.com/t/fog-support-for-spritemap/53940",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/spriteMap.fragment.fx",
+                    "packages/dev/core/src/Shaders/spriteMap.vertex.fx",
+                    "packages/dev/core/src/Sprites/spriteMap.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "15674",
+                "title": "GreasedLine - setPoints update",
+                "description": "https://forum.babylonjs.com/t/low-level-havok-debug-lines-visualization/53484/45?u=roland\r\n\r\n",
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/greasedLineBuilder.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineBaseMesh.ts",
+                    "packages/dev/core/src/Misc/greasedLineTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15673",
+                "title": "Supersplat file loading",
+                "description": "To use scene import functions, not with the deprecated function `loadFileAsync`.\r\n\r\nCompression ratio:\r\nHalo_believe.ply : 81.6Mb\r\nHalo_believe.splat: 10.5Mb\r\nHalo_believe.compressed.ply: 5.3Mb\r\n\r\nThere is a small issue with quaternion that I'm fixing before merging.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/loaders/src/SPLAT/splatFileLoader.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15672",
+                "title": "Typo in the Particle Editor",
+                "description": "Not the most urgent issue. :)\r\n\r\nThe typo appears in the [Particle Editor](https://playground.babylonjs.com/#M7MYT8#11) when you stop a particle system and it still takes time until it is stopped:\r\n\r\n![image](https://github.com/user-attachments/assets/5b043076-13f8-4341-b2a9-7aa8dd11e53d)\r\n",
+                "author": {
+                    "name": "KarlKeiser",
+                    "url": "https://github.com/KarlKeiser"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/particleSystemPropertyGridComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15669",
+                "title": "Erroneous morph target manager ids",
+                "description": "Fixes Bug #15668 \r\n[Forum Post](https://forum.babylonjs.com/t/erroneous-morph-target-manager-ids/53848)\r\n[PG example](https://playground.babylonjs.com/#M9S259#3)\r\n\r\nWhile testing the models in my PG example I stumbled on another bug in the `importMesh` function.\r\nChecking for unused transform nodes only considered the direct parent, therefore meshes couldn't be loaded if they are located in a deeply nested transform node structure.\r\nI tried to fix that right away, works fine in my PG example.",
+                "author": {
+                    "name": "HoferMarkus",
+                    "url": "https://github.com/HoferMarkus"
+                },
+                "files": [
+                    "packages/dev/core/src/Loading/Plugins/babylonFileLoader.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Morph/morphTargetManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15670",
+                "title": "Global Illumination: Fix WGSL code",
+                "description": "I also fixed debug marker groups in WebGPU.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.debugging.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
+                    "packages/dev/core/src/ShadersWGSL/bilateralBlurQuality.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/geometry.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/geometry.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/rsmFullGlobalIllumination.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
             }
         ],
         "7.28.0": [
