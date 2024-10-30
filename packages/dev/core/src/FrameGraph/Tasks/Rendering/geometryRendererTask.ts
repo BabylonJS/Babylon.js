@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { FrameGraphTextureHandle, Scene, Camera, AbstractEngine, FrameGraph, GeometryRenderingTextureClearType, FrameGraphObjectList } from "core/index";
+import type { FrameGraphTextureHandle, Scene, Camera, AbstractEngine, FrameGraph, GeometryRenderingTextureClearType, FrameGraphObjectList, AbstractMesh } from "core/index";
 import { backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
 import { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture";
 import { Color4 } from "core/Maths/math.color";
@@ -211,7 +211,7 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
     /**
      * Gets the list of excluded meshes from the velocity texture.
      */
-    public get excludedSkinnedMeshFromVelocityTexture() {
+    public get excludedSkinnedMeshFromVelocityTexture(): AbstractMesh[] {
         return MaterialHelperGeometryRendering.GetConfiguration(this._rtt.renderPassId).excludedSkinnedMesh;
     }
 
