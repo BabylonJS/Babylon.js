@@ -230,6 +230,10 @@ export class MaterialHelperGeometryRendering {
      * @param defines The defines to update according to the geometry rendering configuration.
      */
     public static PrepareDefines(renderPassId: number, mesh: AbstractMesh, defines: MaterialDefines) {
+        if (!defines._arePrePassDirty) {
+            return;
+        }
+
         const configuration = MaterialHelperGeometryRendering._Configurations[renderPassId];
         if (!configuration) {
             return;
@@ -237,7 +241,7 @@ export class MaterialHelperGeometryRendering {
 
         defines["PREPASS"] = true;
         defines["PREPASS_COLOR"] = false;
-        delete defines["PREPASS_COLOR_INDEX"];
+        defines["PREPASS_COLOR_INDEX"] = -1;
 
         let numMRT = 0;
 
