@@ -296,7 +296,6 @@ export class HTML3DElement extends LitElement {
     @property({
         attribute: "clear-color",
         reflect: true,
-        type: "string",
         converter: {
             fromAttribute: parseColor,
             toAttribute: (color: Nullable<Color4>) => (color ? color.toHexString() : null),
@@ -305,10 +304,15 @@ export class HTML3DElement extends LitElement {
     public clearColor: Nullable<Color4> = null;
 
     /**
+     * Disables camera auto-orbit.
+     */
+    @property({ attribute: "camera-auto-orbit-disabled", reflect: true, type: Boolean })
+    public cameraAutoOrbitDisabled = false;
+
+    /**
      * A string value that encodes one or more hotspots.
      */
     @property({
-        type: "string",
         converter: (value) => {
             if (!value) {
                 return null;
@@ -406,11 +410,15 @@ export class HTML3DElement extends LitElement {
             this._tearDownViewer();
             this._setupViewer();
         } else {
-            if (changedProperties.has("clearColor")) {
+            if (changedProperties.has("clearColor" satisfies keyof this)) {
                 this._updateClearColor();
             }
 
-            if (changedProperties.has("animationSpeed")) {
+            if (changedProperties.has("cameraAutoOrbitDisabled" satisfies keyof this)) {
+                this._updateCameraAutoOrbit();
+            }
+
+            if (changedProperties.has("animationSpeed" satisfies keyof this)) {
                 this._updateAnimationSpeed();
             }
 
@@ -579,6 +587,7 @@ export class HTML3DElement extends LitElement {
                         });
 
                         this._updateClearColor();
+                        this._updateCameraAutoOrbit();
                         this._updateSelectedAnimation();
                         this._updateAnimationSpeed();
                         this._updateModel();
@@ -610,6 +619,12 @@ export class HTML3DElement extends LitElement {
     private _updateClearColor() {
         if (this._viewerDetails) {
             this._viewerDetails.scene.clearColor = this.clearColor ?? new Color4(0, 0, 0, 0);
+        }
+    }
+
+    private _updateCameraAutoOrbit() {
+        if (this._viewerDetails) {
+            this._viewerDetails.viewer.cameraAutoOrbit = !this.cameraAutoOrbitDisabled;
         }
     }
 

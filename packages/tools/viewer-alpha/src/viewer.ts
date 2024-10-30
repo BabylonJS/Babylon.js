@@ -226,6 +226,23 @@ export class Viewer implements IDisposable {
     }
 
     /**
+     * Enables or disables camera auto orbit.
+     */
+    public get cameraAutoOrbit(): boolean {
+        return this._camera.behaviors.includes(this._autoRotationBehavior);
+    }
+
+    public set cameraAutoOrbit(value: boolean) {
+        if (value !== this.cameraAutoOrbit) {
+            if (value) {
+                this._camera.addBehavior(this._autoRotationBehavior);
+            } else {
+                this._camera.removeBehavior(this._autoRotationBehavior);
+            }
+        }
+    }
+
+    /**
      * The list of animation names for the currently loaded model.
      */
     public get animations(): readonly string[] {
