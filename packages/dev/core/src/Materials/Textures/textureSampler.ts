@@ -108,7 +108,7 @@ export class TextureSampler {
     public _comparisonFunction: number = 0;
 
     /**
-     * Used for debugging purpose only
+     * General label used for debugging or storing a name.
      */
     public label?: string;
 

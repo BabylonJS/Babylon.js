@@ -11,7 +11,7 @@ uniform vec2 texSize;
 uniform int gamma;
 void main(void)
 {
-    gl_FragColor = textureLod(textureSampler,vUV,lod);
+    gl_FragColor = texture2DLodEXT(textureSampler,vUV,lod);
     if (gamma == 0) {
         gl_FragColor.rgb = pow(gl_FragColor.rgb, vec3(GammaEncodePowerApprox));
     }

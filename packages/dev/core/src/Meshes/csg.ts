@@ -428,6 +428,7 @@ class Node {
 
 /**
  * Class for building Constructive Solid Geometry
+ * @deprecated Please use CSG2 instead
  */
 export class CSG {
     private _polygons = new Array<CSGPolygon>();

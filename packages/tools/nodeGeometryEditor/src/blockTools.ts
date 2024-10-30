@@ -75,6 +75,8 @@ import { GeometryRotate2dBlock } from "core/Meshes/Node/Blocks/geometryRotate2dB
 import { GeometryLengthBlock } from "core/Meshes/Node/Blocks/geometryLengthBlock";
 import { GeometryInterceptorBlock } from "core/Meshes/Node/Blocks/geometryInterceptorBlock";
 import { LatticeBlock } from "core/Meshes/Node/Blocks/Set/latticeBlock";
+import { AggregatorBlock } from "core/Meshes/Node/Blocks/Set/aggregatorBlock";
+import { CleanGeometryBlock } from "core/Meshes/Node/Blocks/cleanGeometryBlock";
 
 /**
  * Static class for BlockTools
@@ -82,6 +84,10 @@ import { LatticeBlock } from "core/Meshes/Node/Blocks/Set/latticeBlock";
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "CleanGeometryBlock":
+                return new CleanGeometryBlock("Clean");
+            case "AggregatorBlock":
+                return new AggregatorBlock("Aggregator");
             case "LatticeBlock":
                 return new LatticeBlock("Lattice");
             case "InterceptorBlock":

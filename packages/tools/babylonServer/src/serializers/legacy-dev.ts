@@ -12,8 +12,6 @@ if (typeof globalObject !== "undefined") {
     }
 }
 
-export * from "../../../../dev/serializers/src/OBJ/index";
-
 /* eslint-disable import/no-internal-modules */
 import * as STLSerializers from "../../../../dev/serializers/src/stl/index";
 
@@ -27,7 +25,12 @@ if (typeof globalObject !== "undefined") {
     }
 }
 
-export * from "../../../../dev/serializers/src/stl/index";
+import * as USDZSerializers from "../../../../dev/serializers/src/USDZ/index";
+if (typeof globalObject !== "undefined") {
+    for (const serializer in USDZSerializers) {
+        (<any>globalObject).BABYLON[serializer] = (<any>USDZSerializers)[serializer];
+    }
+}
 
 /* eslint-disable import/no-internal-modules */
 import * as Exporters from "../../../../dev/serializers/src/glTF/glTFFileExporter";
@@ -76,5 +79,4 @@ if (typeof globalObject !== "undefined") {
     }
 }
 
-export * from "../../../../dev/serializers/src/glTF/glTFFileExporter";
-export * from "../../../../dev/serializers/src/glTF/2.0/index";
+export * from "../../../../dev/serializers/src/index";

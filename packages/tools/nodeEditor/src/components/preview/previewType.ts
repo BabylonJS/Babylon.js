@@ -19,4 +19,9 @@ export enum PreviewType {
 
     // Env
     Room,
+
+    // Gaussian Splatting
+    Parrot,
+    BricksSkull,
+    Plants,
 }
