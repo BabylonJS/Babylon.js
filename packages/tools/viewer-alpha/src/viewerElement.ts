@@ -323,6 +323,12 @@ export class HTML3DElement extends LitElement {
     public environment: Nullable<string> = null;
 
     /**
+     * A value between 0 and 1 that specifies how much to blur the skybox.
+     */
+    @property({ attribute: "skybox-blur", reflect: true })
+    public skyboxBlur: Nullable<number> = null;
+
+    /**
      * The clear color (e.g. background color) for the viewer.
      */
     @property({
@@ -680,7 +686,7 @@ export class HTML3DElement extends LitElement {
         if (this._viewerDetails) {
             try {
                 if (this.environment) {
-                    await this._viewerDetails.viewer.loadEnvironment(this.environment);
+                    await this._viewerDetails.viewer.loadEnvironment(this.environment, { blur: this.skyboxBlur ?? undefined });
                 } else {
                     await this._viewerDetails.viewer.resetEnvironment();
                 }

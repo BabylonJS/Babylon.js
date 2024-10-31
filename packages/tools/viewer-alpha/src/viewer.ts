@@ -88,6 +88,15 @@ export type ViewerOptions = Partial<
     }>
 >;
 
+export type EnvironmentOptions = Partial<
+    Readonly<{
+        /**
+         * A value between 0 and 1 that specifies how much to blur the skybox.
+         */
+        blur: number;
+    }>
+>;
+
 export type ViewerHotSpotQuery = {
     /**
      * The index of the mesh within the loaded model.
@@ -410,7 +419,7 @@ export class Viewer implements IDisposable {
      * @param options The options to use when loading the environment.
      * @param abortSignal An optional signal that can be used to abort the loading process.
      */
-    public async loadEnvironment(url: string, options?: {}, abortSignal?: AbortSignal): Promise<void> {
+    public async loadEnvironment(url: string, options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
         await this._updateEnvironment(url, options, abortSignal);
     }
 
@@ -422,7 +431,7 @@ export class Viewer implements IDisposable {
         await this._updateEnvironment(undefined, undefined, abortSignal);
     }
 
-    private async _updateEnvironment(url: Nullable<string | undefined>, options?: {}, abortSignal?: AbortSignal): Promise<void> {
+    private async _updateEnvironment(url: Nullable<string | undefined>, options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
 
         this._loadEnvironmentAbortController?.abort("New environment is being loaded before previous environment finished loading.");
@@ -441,7 +450,7 @@ export class Viewer implements IDisposable {
                         const cubeTexture = CubeTexture.CreateFromPrefilteredData(url, this._details.scene);
                         this._details.scene.environmentTexture = cubeTexture;
 
-                        const skybox = createSkybox(this._details.scene, this._camera, cubeTexture, 0.3);
+                        const skybox = createSkybox(this._details.scene, this._camera, cubeTexture, options?.blur ?? 0.3);
                         this._snapshotHelper.fixMeshes([skybox]);
                         this._skybox = skybox;
 
