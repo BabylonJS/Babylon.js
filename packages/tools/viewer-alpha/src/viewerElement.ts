@@ -97,6 +97,17 @@ export class HTML3DElement extends LitElement {
             (details) => (this.cameraAutoOrbit = details.viewer.cameraAutoOrbit)
         ),
         this._createPropertyBinding(
+            "animationSpeed",
+            (details) => details.viewer.onAnimationSpeedChanged,
+            (details) => (details.viewer.animationSpeed = this.animationSpeed),
+            (details) => {
+                let speed = details.viewer.animationSpeed;
+                speed = allowedAnimationSpeeds.reduce((prev, curr) => (Math.abs(curr - speed) < Math.abs(prev - speed) ? curr : prev));
+                this.animationSpeed = speed;
+                this._dispatchCustomEvent("animationspeedchange", (type) => new Event(type));
+            }
+        ),
+        this._createPropertyBinding(
             selectedAnimationKey,
             (details) => details.viewer.onSelectedAnimationChanged,
             (details) => (details.viewer.selectedAnimation = this[selectedAnimationKey]),
@@ -458,14 +469,10 @@ export class HTML3DElement extends LitElement {
     override update(changedProperties: PropertyValues): void {
         super.update(changedProperties);
 
-        if (changedProperties.get("engine")) {
+        if (changedProperties.get("engine" satisfies keyof this)) {
             this._tearDownViewer();
             this._setupViewer();
         } else {
-            if (changedProperties.has("animationSpeed")) {
-                this._updateAnimationSpeed();
-            }
-
             this._propertyBindings.filter((binding) => changedProperties.has(binding.property)).forEach((binding) => binding.updateViewer(this._viewerDetails));
 
             if (changedProperties.has("source")) {
@@ -620,13 +627,6 @@ export class HTML3DElement extends LitElement {
 
                         this._propertyBindings.forEach((binding) => binding.onInitialized(details));
 
-                        details.viewer.onAnimationSpeedChanged.add(() => {
-                            let speed = details.viewer.animationSpeed ?? 1;
-                            speed = allowedAnimationSpeeds.reduce((prev, curr) => (Math.abs(curr - speed) < Math.abs(prev - speed) ? curr : prev));
-                            this.animationSpeed = speed;
-                            this._dispatchCustomEvent("animationspeedchange", (type) => new Event(type));
-                        });
-
                         details.viewer.onIsAnimationPlayingChanged.add(() => {
                             this._isAnimationPlaying = details.viewer.isAnimationPlaying ?? false;
                             this._dispatchCustomEvent("animationplayingchange", (type) => new Event(type));
@@ -637,7 +637,6 @@ export class HTML3DElement extends LitElement {
                             this._dispatchCustomEvent("animationprogresschange", (type) => new Event(type));
                         });
 
-                        this._updateAnimationSpeed();
                         this._updateModel();
 
                         this._dispatchCustomEvent("viewerready", (type) => new Event(type));
@@ -661,12 +660,6 @@ export class HTML3DElement extends LitElement {
                 this._canvasContainer.removeChild(this._canvasContainer.firstElementChild);
             }
         });
-    }
-
-    private _updateAnimationSpeed() {
-        if (this._viewerDetails) {
-            this._viewerDetails.viewer.animationSpeed = this.animationSpeed;
-        }
     }
 
     private async _updateModel() {
