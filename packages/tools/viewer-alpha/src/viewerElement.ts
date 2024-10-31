@@ -61,10 +61,6 @@ type PrivateState = {
     [selectedAnimationKey]: number;
 };
 
-// function test(input: HTML3DElement & PrivateState) {
-//     input
-// }
-
 /**
  * Represents a custom element that displays a 3D model using the Babylon.js Viewer.
  */
