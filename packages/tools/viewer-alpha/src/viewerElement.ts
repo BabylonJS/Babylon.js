@@ -63,35 +63,30 @@ export class HTML3DElement extends LitElement {
     private readonly _propertyBindings = [
         this._createPropertyBinding(
             "clearColor",
-            false,
             (details) => details.scene.onClearColorChangedObservable,
             (details) => (details.scene.clearColor = this.clearColor ?? new Color4(0, 0, 0, 0)),
             (details) => (this.clearColor = details.scene.clearColor)
         ),
         this._createPropertyBinding(
             "cameraAutoOrbit",
-            true,
             (details) => details.viewer.onCameraAutoOrbitChanged,
             (details) => (details.viewer.cameraAutoOrbit = this.cameraAutoOrbit),
             (details) => (this.cameraAutoOrbit = details.viewer.cameraAutoOrbit)
         ),
         this._createPropertyBinding(
             "cameraOrbitAlpha",
-            true,
             (details) => details.camera.onViewMatrixChangedObservable,
             (details) => (details.camera.alpha = this.cameraOrbitAlpha ?? details.camera.alpha),
             (details) => (this.cameraOrbitAlpha = details.camera.alpha)
         ),
         this._createPropertyBinding(
             "cameraOrbitBeta",
-            true,
             (details) => details.camera.onViewMatrixChangedObservable,
             (details) => (details.camera.beta = this.cameraOrbitBeta ?? details.camera.beta),
             (details) => (this.cameraOrbitBeta = details.camera.beta)
         ),
         this._createPropertyBinding(
             "animationSpeed",
-            true,
             (details) => details.viewer.onAnimationSpeedChanged,
             (details) => (details.viewer.animationSpeed = this.animationSpeed),
             (details) => {
@@ -103,7 +98,6 @@ export class HTML3DElement extends LitElement {
         ),
         this._createPropertyBinding(
             "selectedAnimation",
-            true,
             (details) => details.viewer.onSelectedAnimationChanged,
             (details) => (details.viewer.selectedAnimation = this.selectedAnimation),
             (details) => (this.selectedAnimation = details.viewer.selectedAnimation ?? -1)
@@ -364,7 +358,6 @@ export class HTML3DElement extends LitElement {
      */
     @property({
         attribute: "camera-auto-orbit-disabled",
-        reflect: true,
         type: Boolean,
         converter: {
             fromAttribute: (value: string) => !!value,
@@ -449,7 +442,7 @@ export class HTML3DElement extends LitElement {
     /**
      * The speed scale at which animations are played.
      */
-    @property({ attribute: "animation-speed", reflect: true })
+    @property({ attribute: "animation-speed" })
     public animationSpeed = 1;
 
     /**
@@ -599,14 +592,12 @@ export class HTML3DElement extends LitElement {
 
     private _createPropertyBinding(
         property: keyof HTML3DElement,
-        resetOnModelChange: boolean,
         getObservable: (viewerDetails: Readonly<ViewerDetails>) => Observable<any>,
         updateViewer: (viewerDetails: Readonly<ViewerDetails>) => void,
         updateElement: (viewerDetails: Readonly<ViewerDetails>) => void
     ) {
         return {
             property,
-            resetOnModelChange,
             onInitialized: (viewerDetails: Readonly<ViewerDetails>) => {
                 getObservable(viewerDetails).add(() => updateElement(viewerDetails));
                 updateViewer(viewerDetails);
@@ -668,6 +659,14 @@ export class HTML3DElement extends LitElement {
 
                         details.viewer.onModelChanged.add(() => {
                             this._animations = [...details.viewer.animations];
+                            if (this.defaultAnimation) {
+                                details.viewer.selectedAnimation = this.defaultAnimation;
+                            }
+                            if (this.animationAutoPlay) {
+                                details.viewer.playAnimation();
+                            }
+                            this._propertyBindings.forEach((binding) => binding.syncToAttribute());
+
                             this._dispatchCustomEvent("modelchange", (type) => new Event(type));
                         });
 
@@ -719,14 +718,6 @@ export class HTML3DElement extends LitElement {
             try {
                 if (this.source) {
                     await this._viewerDetails.viewer.loadModel(this.source, { pluginExtension: this.extension ?? undefined });
-                    if (this.defaultAnimation) {
-                        this._viewerDetails.viewer.selectedAnimation = this.defaultAnimation;
-                    }
-                    if (this.animationAutoPlay) {
-                        this._viewerDetails.viewer.playAnimation();
-                    }
-
-                    this._propertyBindings.filter((binding) => binding.resetOnModelChange).forEach((binding) => binding.syncToAttribute());
                 } else {
                     await this._viewerDetails.viewer.resetModel();
                 }
