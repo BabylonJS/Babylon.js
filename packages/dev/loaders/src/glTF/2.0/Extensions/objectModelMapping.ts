@@ -2,21 +2,24 @@
 
 import type { TransformNode } from "core/Meshes/transformNode";
 import type { AnimationPropertyInfo } from "../glTFLoaderAnimation";
-import { TransformNodeAnimationPropertyInfo, getVector3, getQuaternion, WeightAnimationPropertyInfo, getWeights } from "../glTFLoaderAnimation";
 import type { ICamera, IKHRLightsPunctual_Light, IMaterial, INode } from "../glTFLoaderInterfaces";
-import type { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector";
+import type { Vector3 } from "core/Maths/math.vector";
+import { Matrix, Quaternion } from "core/Maths/math.vector";
 import { Constants } from "core/Engines/constants";
 import type { Color3 } from "core/Maths/math.color";
 import { Color4 } from "core/Maths/math.color";
 import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { Light } from "core/Lights/light";
 import type { Nullable } from "core/types";
+import type { SpotLight } from "core/Lights/spotLight";
+import type { IEXTLightsImageBased_LightImageBased } from "babylonjs-gltf2interface";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 
 export interface IGLTFObjectModelTree {
     cameras: IGLTFObjectModelTreeCamerasObject;
     nodes: IGLTFObjectModelTreeNodesObject;
     materials: IGLTFObjectModelTreeMaterialsObject;
-    extensions: {};
+    extensions: IGLTFObjectModelTreeExtensionsObject;
     animations: {};
     meshes: {};
 }
@@ -162,6 +165,7 @@ export interface IGLTFObjectModelTreeMaterialsObject {
             };
             KHR_materials_specular: {
                 specularFactor: IGLTFObjectModelTreeMember<IMaterial, PBRMaterial, number>;
+                specularColorFactor: IGLTFObjectModelTreeMember<IMaterial, PBRMaterial, Color3>;
                 specularTexture: {
                     extensions: {
                         KHR_texture_transform: ITextureDefinition;
@@ -176,6 +180,20 @@ export interface IGLTFObjectModelTreeMaterialsObject {
             KHR_materials_transmission: {
                 transmissionFactor: IGLTFObjectModelTreeMember<IMaterial, PBRMaterial, number>;
                 transmissionTexture: {
+                    extensions: {
+                        KHR_texture_transform: ITextureDefinition;
+                    };
+                };
+            };
+            KHR_materials_diffuse_transmission: {
+                diffuseTransmissionFactor: IGLTFObjectModelTreeMember<IMaterial, PBRMaterial, number>;
+                diffuseTransmissionTexture: {
+                    extensions: {
+                        KHR_texture_transform: ITextureDefinition;
+                    };
+                };
+                diffuseTransmissionColorFactor: IGLTFObjectModelTreeMember<IMaterial, PBRMaterial, Nullable<Color3>>;
+                diffuseTransmissionColorTexture: {
                     extensions: {
                         KHR_texture_transform: ITextureDefinition;
                     };
@@ -223,19 +241,19 @@ export interface IGLTFObjectModelTreeExtensionsObject {
             };
         };
     };
-    EXT_lights_ies: {
-        lights: {
-            length: IGLTFObjectModelTreeMember<IKHRLightsPunctual_Light[], Light[], number>;
-        };
-    };
+    // EXT_lights_ies: {
+    //     lights: {
+    //         length: IGLTFObjectModelTreeMember<IKHRLightsPunctual_Light[], Light[], number>;
+    //     };
+    // };
     EXT_lights_image_based: {
         lights: {
             __array__: {
                 __target__: boolean;
-                intensity: IGLTFObjectModelTreeMember<IKHRLightsPunctual_Light, Light, number>;
-                rotation: IGLTFObjectModelTreeMember<IKHRLightsPunctual_Light, Light, number>;
+                intensity: IGLTFObjectModelTreeMember<IEXTLightsImageBased_LightImageBased, BaseTexture, number>;
+                rotation: IGLTFObjectModelTreeMember<IEXTLightsImageBased_LightImageBased, BaseTexture, Quaternion>;
             };
-            length: IGLTFObjectModelTreeMember<IKHRLightsPunctual_Light[], Light[], number>;
+            length: IGLTFObjectModelTreeMember<IEXTLightsImageBased_LightImageBased[], BaseTexture[], number>;
         };
     };
 }
@@ -299,7 +317,6 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
             set: [(value: Vector3, node: INode) => node._babylonTransformNode?.position.copyFrom(value)],
             getTarget: [(node: INode) => node._babylonTransformNode],
             getPropertyName: [(_node: INode) => "position"],
-            interpolation: [new TransformNodeAnimationPropertyInfo(Constants.ANIMATIONTYPE_VECTOR3, "position", getVector3, () => 3)],
         },
         rotation: {
             type: ["Quaternion"],
@@ -307,7 +324,6 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
             set: [(value: Quaternion, node: INode) => node._babylonTransformNode?.rotationQuaternion?.copyFrom(value)],
             getTarget: [(node: INode) => node._babylonTransformNode],
             getPropertyName: [(_node: INode) => "rotationQuaternion"],
-            interpolation: [new TransformNodeAnimationPropertyInfo(Constants.ANIMATIONTYPE_QUATERNION, "rotationQuaternion", getQuaternion, () => 4)],
         },
         scale: {
             type: ["Vector3"],
@@ -315,7 +331,6 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
             set: [(value: Vector3, node: INode) => node._babylonTransformNode?.scaling.copyFrom(value)],
             getTarget: [(node: INode) => node._babylonTransformNode],
             getPropertyName: [(_node: INode) => "scaling"],
-            interpolation: [new TransformNodeAnimationPropertyInfo(Constants.ANIMATIONTYPE_VECTOR3, "scaling", getVector3, () => 3)],
         },
         weights: {
             length: {
@@ -331,14 +346,12 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
                 // set: [(value: number, node: INode, index?: number) => node._babylonTransformNode?.getMorphTargetManager()?.getTarget(index)?.setInfluence(value)],
                 getTarget: [(node: INode) => node._babylonTransformNode],
                 getPropertyName: [(_node: INode) => "influence"],
-                interpolation: [new WeightAnimationPropertyInfo(Constants.ANIMATIONTYPE_FLOAT, "influence", getWeights, (target) => target._numMorphTargets!)],
             },
             type: ["number[]"],
             get: [(node: INode, index?: number) => [0]], // TODO: get the weights correctly
             // set: [(value: number, node: INode, index?: number) => node._babylonTransformNode?.getMorphTargetManager()?.getTarget(index)?.setInfluence(value)],
             getTarget: [(node: INode) => node._babylonTransformNode],
             getPropertyName: [(_node: INode) => "influence"],
-            interpolation: [new WeightAnimationPropertyInfo(Constants.ANIMATIONTYPE_FLOAT, "influence", getWeights, (target) => target._numMorphTargets!)],
         },
         // readonly!
         matrix: {
@@ -671,9 +684,15 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
             KHR_materials_specular: {
                 specularFactor: {
                     type: ["number"],
-                    get: [(material, index, payload) => getMaterial(material, index, payload).specularIntensity],
+                    get: [(material, index, payload) => getMaterial(material, index, payload).metallicF0Factor],
                     getTarget: [getMaterial],
-                    set: [(value, material, index, payload) => (getMaterial(material, index, payload).specularIntensity = value)],
+                    set: [(value, material, index, payload) => (getMaterial(material, index, payload).metallicF0Factor = value)],
+                },
+                specularColorFactor: {
+                    type: ["Color3"],
+                    get: [(material, index, payload) => getMaterial(material, index, payload).metallicReflectanceColor],
+                    getTarget: [getMaterial],
+                    set: [(value, material, index, payload) => getMaterial(material, index, payload).metallicReflectanceColor.copyFrom(value)],
                 },
                 specularTexture: {
                     extensions: {
@@ -696,6 +715,30 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                 transmissionTexture: {
                     extensions: {
                         KHR_texture_transform: generateTextureMap("subSurface", "refractionIntensityTexture"),
+                    },
+                },
+            },
+            KHR_materials_diffuse_transmission: {
+                diffuseTransmissionFactor: {
+                    type: ["number"],
+                    get: [(material, index, payload) => getMaterial(material, index, payload).subSurface.translucencyIntensity],
+                    getTarget: [getMaterial],
+                    set: [(value, material, index, payload) => (getMaterial(material, index, payload).subSurface.translucencyIntensity = value)],
+                },
+                diffuseTransmissionTexture: {
+                    extensions: {
+                        KHR_texture_transform: generateTextureMap("subSurface", "translucencyIntensityTexture"),
+                    },
+                },
+                diffuseTransmissionColorFactor: {
+                    type: ["Color3"],
+                    get: [(material, index, payload) => getMaterial(material, index, payload).subSurface.translucencyColor],
+                    getTarget: [getMaterial],
+                    set: [(value, material, index, payload) => value && getMaterial(material, index, payload).subSurface.translucencyColor?.copyFrom(value)],
+                },
+                diffuseTransmissionColorTexture: {
+                    extensions: {
+                        KHR_texture_transform: generateTextureMap("subSurface", "translucencyColorTexture"),
                     },
                 },
             },
@@ -722,6 +765,108 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                     extensions: {
                         KHR_texture_transform: generateTextureMap("subSurface", "thicknessTexture"),
                     },
+                },
+            },
+        },
+    },
+};
+
+const extensionsTree: IGLTFObjectModelTreeExtensionsObject = {
+    KHR_lights_punctual: {
+        lights: {
+            length: {
+                type: ["number"],
+                get: [(lights: IKHRLightsPunctual_Light[]) => lights.length],
+                getTarget: [(lights: IKHRLightsPunctual_Light[]) => lights.map((light) => light._babylonLight!)],
+                getPropertyName: [(_lights: IKHRLightsPunctual_Light[]) => "length"],
+            },
+            __array__: {
+                __target__: true,
+                color: {
+                    type: ["Color3"],
+                    get: [(light: IKHRLightsPunctual_Light) => light._babylonLight?.diffuse],
+                    set: [(value: Color3, light: IKHRLightsPunctual_Light) => light._babylonLight?.diffuse.copyFrom(value)],
+                    getTarget: [(light: IKHRLightsPunctual_Light) => light._babylonLight],
+                    getPropertyName: [(_light: IKHRLightsPunctual_Light) => "diffuse"],
+                },
+                intensity: {
+                    type: ["number"],
+                    get: [(light: IKHRLightsPunctual_Light) => light._babylonLight?.intensity],
+                    set: [(value: number, light: IKHRLightsPunctual_Light) => (light._babylonLight ? (light._babylonLight.intensity = value) : undefined)],
+                    getTarget: [(light: IKHRLightsPunctual_Light) => light._babylonLight],
+                    getPropertyName: [(_light: IKHRLightsPunctual_Light) => "intensity"],
+                },
+                range: {
+                    type: ["number"],
+                    get: [(light: IKHRLightsPunctual_Light) => light._babylonLight?.range],
+                    set: [(value: number, light: IKHRLightsPunctual_Light) => (light._babylonLight ? (light._babylonLight.range = value) : undefined)],
+                    getTarget: [(light: IKHRLightsPunctual_Light) => light._babylonLight],
+                    getPropertyName: [(_light: IKHRLightsPunctual_Light) => "range"],
+                },
+                spot: {
+                    innerConeAngle: {
+                        type: ["number"],
+                        get: [(light: IKHRLightsPunctual_Light) => (light._babylonLight as SpotLight)?.innerAngle],
+                        set: [(value: number, light: IKHRLightsPunctual_Light) => (light._babylonLight ? ((light._babylonLight as SpotLight).innerAngle = value) : undefined)],
+                        getTarget: [(light: IKHRLightsPunctual_Light) => light._babylonLight],
+                        getPropertyName: [(_light: IKHRLightsPunctual_Light) => "innerConeAngle"],
+                    },
+                    outerConeAngle: {
+                        type: ["number"],
+                        get: [(light: IKHRLightsPunctual_Light) => (light._babylonLight as SpotLight)?.angle],
+                        set: [(value: number, light: IKHRLightsPunctual_Light) => (light._babylonLight ? ((light._babylonLight as SpotLight).angle = value) : undefined)],
+                        getTarget: [(light: IKHRLightsPunctual_Light) => light._babylonLight],
+                        getPropertyName: [(_light: IKHRLightsPunctual_Light) => "outerConeAngle"],
+                    },
+                },
+            },
+        },
+    },
+    // EXT_lights_ies: {
+    //     lights: {
+    //         length: {
+    //             type: ["number"],
+    //             get: [(lights: IKHRLightsPunctual_Light[]) => lights.length],
+    //             getTarget: [(lights: IKHRLightsPunctual_Light[]) => lights.map((light) => light._babylonLight!)],
+    //             getPropertyName: [(_lights: IKHRLightsPunctual_Light[]) => "length"],
+    //         },
+    //     },
+    // },
+    EXT_lights_image_based: {
+        lights: {
+            length: {
+                type: ["number"],
+                get: [(lights) => lights.length],
+                getTarget: [(lights) => lights.map((light) => light._babylonTexture!)],
+                getPropertyName: [(_lights) => "length"],
+            },
+            __array__: {
+                __target__: true,
+                intensity: {
+                    type: ["number"],
+                    get: [(light) => light._babylonTexture?.level],
+                    set: [
+                        (value, light) => {
+                            if (light._babylonTexture) light._babylonTexture.level = value;
+                        },
+                    ],
+                    getTarget: [(light) => light._babylonTexture],
+                },
+                rotation: {
+                    type: ["Quaternion"],
+                    get: [(light) => light._babylonTexture && Quaternion.FromRotationMatrix(light._babylonTexture?.getReflectionTextureMatrix())],
+                    set: [
+                        (value, light) => {
+                            if (!light._babylonTexture) return;
+                            // Invert the rotation so that positive rotation is counter-clockwise.
+                            if (!light._babylonTexture.getScene()?.useRightHandedSystem) {
+                                value = Quaternion.Inverse(value);
+                            }
+
+                            Matrix.FromQuaternionToRef(value, light._babylonTexture.getReflectionTextureMatrix());
+                        },
+                    ],
+                    getTarget: [(light) => light._babylonTexture],
                 },
             },
         },
@@ -773,11 +918,11 @@ function generateTextureMap(textureType: keyof PBRMaterial, textureInObject?: st
     };
 }
 
-export const objecyModelMapping: IGLTFObjectModelTree = {
+export const objectModelMapping: IGLTFObjectModelTree = {
     cameras: camerasTree,
     nodes: nodesTree,
     materials: materialsTree,
-    extensions: {},
+    extensions: extensionsTree,
     animations: {},
     meshes: {},
 };
