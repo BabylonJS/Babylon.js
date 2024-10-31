@@ -46,8 +46,6 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public isEnabled = false;
 
-    private _isPBR = false;
-
     protected _markAllSubMeshesAsTexturesDirty(): void {
         this._enable(this._isEnabled);
         this._internalMarkAllSubMeshesAsTexturesDirty();
