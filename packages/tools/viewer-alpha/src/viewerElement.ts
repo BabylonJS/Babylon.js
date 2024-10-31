@@ -379,6 +379,12 @@ export class HTML3DElement extends LitElement {
     public hotspots: Nullable<Record<string, ViewerHotSpotQuery>> = null;
 
     /**
+     * This default animation index to select when a model is loaded.
+     */
+    @property({ attribute: "default-animation", reflect: true })
+    public defaultAnimation: Nullable<number> = null;
+
+    /**
      * The list of animation names for the currently loaded model.
      */
     public get animations(): readonly string[] {
@@ -645,26 +651,33 @@ export class HTML3DElement extends LitElement {
     }
 
     private async _updateModel() {
-        try {
-            if (this.source) {
-                await this._viewerDetails?.viewer.loadModel(this.source, { pluginExtension: this.extension ?? undefined });
-            } else {
-                await this._viewerDetails?.viewer.resetModel();
+        if (this._viewerDetails) {
+            try {
+                if (this.source) {
+                    await this._viewerDetails.viewer.loadModel(this.source, { pluginExtension: this.extension ?? undefined });
+                    if (this.defaultAnimation) {
+                        this._viewerDetails.viewer.selectedAnimation = this.defaultAnimation;
+                    }
+                } else {
+                    await this._viewerDetails.viewer.resetModel();
+                }
+            } catch (error) {
+                Logger.Log(error);
             }
-        } catch (error) {
-            Logger.Log(error);
         }
     }
 
     private async _updateEnv() {
-        try {
-            if (this.environment) {
-                await this._viewerDetails?.viewer.loadEnvironment(this.environment);
-            } else {
-                await this._viewerDetails?.viewer.resetEnvironment();
+        if (this._viewerDetails) {
+            try {
+                if (this.environment) {
+                    await this._viewerDetails.viewer.loadEnvironment(this.environment);
+                } else {
+                    await this._viewerDetails.viewer.resetEnvironment();
+                }
+            } catch (error) {
+                Logger.Log(error);
             }
-        } catch (error) {
-            Logger.Log(error);
         }
     }
 }
