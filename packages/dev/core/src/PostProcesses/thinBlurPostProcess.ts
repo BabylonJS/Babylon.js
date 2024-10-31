@@ -51,6 +51,7 @@ export class ThinBlurPostProcess extends EffectWrapper {
      * @param options Options to configure the effect
      */
     constructor(name: string, engine: Nullable<AbstractEngine> = null, direction: Vector2, kernel: number, options?: EffectWrapperCreationOptions) {
+        const blockCompilationFinal = !!options?.blockCompilation;
         super({
             ...options,
             name,
@@ -64,7 +65,7 @@ export class ThinBlurPostProcess extends EffectWrapper {
             blockCompilation: true,
         });
 
-        this.options.blockCompilation = false;
+        this.options.blockCompilation = blockCompilationFinal;
 
         this.direction = direction;
         this.kernel = kernel;

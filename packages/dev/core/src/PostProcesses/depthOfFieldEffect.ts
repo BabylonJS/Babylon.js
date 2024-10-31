@@ -114,7 +114,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
             true
         );
 
-        this._thinDepthOfFieldEffect = new ThinDepthOfFieldEffect("Depth of Field", engine, blurLevel as unknown as ThinDepthOfFieldEffectBlurLevel);
+        this._thinDepthOfFieldEffect = new ThinDepthOfFieldEffect("Depth of Field", engine, blurLevel as unknown as ThinDepthOfFieldEffectBlurLevel, false, blockCompilation);
 
         // Use R-only formats if supported to store the circle of confusion values.
         // This should be more space and bandwidth efficient than using RGBA.

@@ -47,6 +47,7 @@ export class DepthOfFieldMergePostProcess extends PostProcess {
         textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false
     ) {
+        const blockCompilationFinal = typeof options === "number" ? blockCompilation : !!options.blockCompilation;
         const localOptions = {
             samplers: ThinDepthOfFieldMergePostProcess.Samplers,
             size: typeof options === "number" ? options : undefined,
@@ -73,7 +74,7 @@ export class DepthOfFieldMergePostProcess extends PostProcess {
             });
         });
 
-        if (!blockCompilation) {
+        if (!blockCompilationFinal) {
             this.updateEffect();
         }
     }

@@ -59,13 +59,14 @@ export class ThinBloomEffect {
      * @param name The name of the bloom render effect
      * @param engine The engine which the render effect will be applied. (default: current engine)
      * @param scale The ratio of the blur texture to the input texture that should be used to compute the bloom.
+     * @param blockCompilation If shaders should not be compiled when the effect is created (default: false)
      */
-    constructor(name: string, engine: Nullable<AbstractEngine>, scale: number) {
+    constructor(name: string, engine: Nullable<AbstractEngine>, scale: number, blockCompilation = false) {
         this.scale = scale;
-        this._downscale = new ThinExtractHighlightsPostProcess(name + "_downscale", engine);
-        this._blurX = new ThinBlurPostProcess(name + "_blurX", engine, new Vector2(1, 0), 10);
-        this._blurY = new ThinBlurPostProcess(name + "_blurY", engine, new Vector2(0, 1), 10);
-        this._merge = new ThinBloomMergePostProcess(name + "_merge", engine);
+        this._downscale = new ThinExtractHighlightsPostProcess(name + "_downscale", engine, { blockCompilation });
+        this._blurX = new ThinBlurPostProcess(name + "_blurX", engine, new Vector2(1, 0), 10, { blockCompilation });
+        this._blurY = new ThinBlurPostProcess(name + "_blurY", engine, new Vector2(0, 1), 10, { blockCompilation });
+        this._merge = new ThinBloomMergePostProcess(name + "_merge", engine, { blockCompilation });
     }
 
     /**

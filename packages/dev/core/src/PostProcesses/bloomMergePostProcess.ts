@@ -61,6 +61,7 @@ export class BloomMergePostProcess extends PostProcess {
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false
     ) {
+        const blockCompilationFinal = typeof options === "number" ? blockCompilation : !!options.blockCompilation;
         const localOptions = {
             uniforms: ThinBloomMergePostProcess.Uniforms,
             samplers: ThinBloomMergePostProcess.Samplers,
@@ -70,8 +71,8 @@ export class BloomMergePostProcess extends PostProcess {
             engine,
             reusable,
             textureType,
-            blockCompilation: true,
             ...(options as PostProcessOptions),
+            blockCompilation: true,
         };
 
         super(name, ThinBloomMergePostProcess.FragmentUrl, {
@@ -86,7 +87,7 @@ export class BloomMergePostProcess extends PostProcess {
             effect.setTextureFromPostProcessOutput("bloomBlur", blurred);
         });
 
-        if (!blockCompilation) {
+        if (!blockCompilationFinal) {
             this.updateEffect();
         }
     }

@@ -82,7 +82,7 @@ export class BloomEffect extends PostProcessRenderEffect {
             true
         );
 
-        this._thinBloomEffect = new ThinBloomEffect("bloom", engine, bloomScale);
+        this._thinBloomEffect = new ThinBloomEffect("bloom", engine, bloomScale, blockCompilation);
 
         this._downscale = new ExtractHighlightsPostProcess("highlights", {
             size: 1.0,

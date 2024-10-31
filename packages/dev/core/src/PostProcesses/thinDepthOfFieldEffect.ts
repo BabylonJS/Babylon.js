@@ -81,9 +81,16 @@ export class ThinDepthOfFieldEffect {
      * @param engine The engine which the render effect will be applied. (default: current engine)
      * @param blurLevel The quality of the effect. (default: DepthOfFieldEffectBlurLevel.Low)
      * @param depthNotNormalized If the (view) depth used in circle of confusion post-process is normalized (0.0 to 1.0 from near to far) or not (0 to camera max distance) (default: false)
+     * @param blockCompilation If shaders should not be compiled when the effect is created (default: false)
      */
-    constructor(name: string, engine: Nullable<AbstractEngine>, blurLevel: ThinDepthOfFieldEffectBlurLevel = ThinDepthOfFieldEffectBlurLevel.Low, depthNotNormalized = false) {
-        this._circleOfConfusion = new ThinCircleOfConfusionPostProcess(name, engine, { depthNotNormalized });
+    constructor(
+        name: string,
+        engine: Nullable<AbstractEngine>,
+        blurLevel: ThinDepthOfFieldEffectBlurLevel = ThinDepthOfFieldEffectBlurLevel.Low,
+        depthNotNormalized = false,
+        blockCompilation = false
+    ) {
+        this._circleOfConfusion = new ThinCircleOfConfusionPostProcess(name, engine, { depthNotNormalized, blockCompilation });
         this.blurLevel = blurLevel;
 
         let blurCount = 1;
@@ -109,12 +116,12 @@ export class ThinDepthOfFieldEffect {
         const adjustedKernelSize = kernelSize / Math.pow(2, blurCount - 1);
         let ratio = 1.0;
         for (let i = 0; i < blurCount; i++) {
-            this._depthOfFieldBlurY.push([new ThinBlurPostProcess(name, engine, new Vector2(0, 1), adjustedKernelSize), ratio]);
+            this._depthOfFieldBlurY.push([new ThinBlurPostProcess(name, engine, new Vector2(0, 1), adjustedKernelSize, { blockCompilation }), ratio]);
             ratio = 0.75 / Math.pow(2, i);
-            this._depthOfFieldBlurX.push([new ThinBlurPostProcess(name, engine, new Vector2(1, 0), adjustedKernelSize), ratio]);
+            this._depthOfFieldBlurX.push([new ThinBlurPostProcess(name, engine, new Vector2(1, 0), adjustedKernelSize, { blockCompilation }), ratio]);
         }
 
-        this._dofMerge = new ThinDepthOfFieldMergePostProcess(name, engine);
+        this._dofMerge = new ThinDepthOfFieldMergePostProcess(name, engine, { blockCompilation });
     }
 
     /**

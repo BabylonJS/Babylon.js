@@ -81,7 +81,7 @@ export class BlurPostProcess extends PostProcess {
      * @param reusable If the post process can be reused on the same frame. (default: false)
      * @param textureType Type of textures used when performing the post process. (default: 0)
      * @param defines
-     * @param _blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
+     * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
      * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
      */
     constructor(
@@ -95,9 +95,10 @@ export class BlurPostProcess extends PostProcess {
         reusable?: boolean,
         textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
         defines = "",
-        _blockCompilation = false,
+        blockCompilation = false,
         textureFormat = Constants.TEXTUREFORMAT_RGBA
     ) {
+        const blockCompilationFinal = typeof options === "number" ? blockCompilation : !!options.blockCompilation;
         const localOptions = {
             uniforms: ThinBlurPostProcess.Uniforms,
             samplers: ThinBlurPostProcess.Samplers,
@@ -112,12 +113,15 @@ export class BlurPostProcess extends PostProcess {
             textureFormat,
             defines,
             ...(options as PostProcessOptions),
+            blockCompilation: true,
         };
 
         super(name, ThinBlurPostProcess.FragmentUrl, {
             effectWrapper: typeof options === "number" || !options.effectWrapper ? new ThinBlurPostProcess(name, engine, direction, kernel, localOptions) : undefined,
             ...localOptions,
         });
+
+        this._effectWrapper.options.blockCompilation = blockCompilationFinal;
 
         this.direction = direction;
         this.onApplyObservable.add(() => {
