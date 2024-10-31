@@ -5,12 +5,12 @@ import type { PropertyValues } from "lit";
 import type { ViewerDetails, ViewerHotSpot, ViewerHotSpotQuery } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
-import { LitElement, css, html } from "lit";
+import { LitElement, css, defaultConverter, html } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
 
+import { Color4 } from "core/Maths/math.color";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { Logger } from "core/Misc/logger";
-import { Color4 } from "core/Maths/math.color";
 import { createViewerForCanvas, getDefaultEngine } from "./viewerFactory";
 
 // Icon SVG is pulled from https://fluentuipr.z22.web.core.windows.net/heads/master/public-docsite-v9/storybook/iframe.html?id=icons-catalog--page&viewMode=story
@@ -63,18 +63,35 @@ export class HTML3DElement extends LitElement {
     private readonly _propertyBindings = [
         this._createPropertyBinding(
             "clearColor",
+            false,
             (details) => details.scene.onClearColorChangedObservable,
             (details) => (details.scene.clearColor = this.clearColor ?? new Color4(0, 0, 0, 0)),
             (details) => (this.clearColor = details.scene.clearColor)
         ),
         this._createPropertyBinding(
             "cameraAutoOrbit",
+            true,
             (details) => details.viewer.onCameraAutoOrbitChanged,
             (details) => (details.viewer.cameraAutoOrbit = this.cameraAutoOrbit),
             (details) => (this.cameraAutoOrbit = details.viewer.cameraAutoOrbit)
         ),
         this._createPropertyBinding(
+            "cameraOrbitAlpha",
+            true,
+            (details) => details.camera.onViewMatrixChangedObservable,
+            (details) => (details.camera.alpha = this.cameraOrbitAlpha ?? details.camera.alpha),
+            (details) => (this.cameraOrbitAlpha = details.camera.alpha)
+        ),
+        this._createPropertyBinding(
+            "cameraOrbitBeta",
+            true,
+            (details) => details.camera.onViewMatrixChangedObservable,
+            (details) => (details.camera.beta = this.cameraOrbitBeta ?? details.camera.beta),
+            (details) => (this.cameraOrbitBeta = details.camera.beta)
+        ),
+        this._createPropertyBinding(
             "animationSpeed",
+            true,
             (details) => details.viewer.onAnimationSpeedChanged,
             (details) => (details.viewer.animationSpeed = this.animationSpeed),
             (details) => {
@@ -86,6 +103,7 @@ export class HTML3DElement extends LitElement {
         ),
         this._createPropertyBinding(
             "selectedAnimation",
+            true,
             (details) => details.viewer.onSelectedAnimationChanged,
             (details) => (details.viewer.selectedAnimation = this.selectedAnimation),
             (details) => (this.selectedAnimation = details.viewer.selectedAnimation ?? -1)
@@ -356,6 +374,18 @@ export class HTML3DElement extends LitElement {
     public cameraAutoOrbit = true;
 
     /**
+     * The camera's horizontal rotation around the target.
+     */
+    @property({ attribute: "camera-orbit-alpha" })
+    public cameraOrbitAlpha: Nullable<number> = null;
+
+    /**
+     * The camera's vertical rotation around the target.
+     */
+    @property({ attribute: "camera-orbit-beta" })
+    public cameraOrbitBeta: Nullable<number> = null;
+
+    /**
      * A string value that encodes one or more hotspots.
      */
     @property({
@@ -569,12 +599,14 @@ export class HTML3DElement extends LitElement {
 
     private _createPropertyBinding(
         property: keyof HTML3DElement,
+        resetOnModelChange: boolean,
         getObservable: (viewerDetails: Readonly<ViewerDetails>) => Observable<any>,
         updateViewer: (viewerDetails: Readonly<ViewerDetails>) => void,
         updateElement: (viewerDetails: Readonly<ViewerDetails>) => void
     ) {
         return {
             property,
+            resetOnModelChange,
             onInitialized: (viewerDetails: Readonly<ViewerDetails>) => {
                 getObservable(viewerDetails).add(() => updateElement(viewerDetails));
                 updateViewer(viewerDetails);
@@ -582,6 +614,26 @@ export class HTML3DElement extends LitElement {
             updateViewer: (viewerDetails?: Readonly<ViewerDetails>) => {
                 if (viewerDetails) {
                     updateViewer(viewerDetails);
+                }
+            },
+            syncToAttribute: () => {
+                const descriptor = HTML3DElement.elementProperties.get(property);
+                if (descriptor) {
+                    if (descriptor.attribute) {
+                        const attributeName = descriptor.attribute === true ? property : descriptor.attribute;
+                        if (this.hasAttribute(attributeName)) {
+                            const attributeValue = this.getAttribute(attributeName);
+
+                            const converter =
+                                typeof descriptor.converter === "function"
+                                    ? descriptor.converter
+                                    : descriptor.converter?.fromAttribute !== undefined
+                                      ? descriptor.converter.fromAttribute
+                                      : defaultConverter.fromAttribute;
+
+                            (this as any)[property] = converter ? converter(attributeValue, descriptor.type) : attributeValue;
+                        }
+                    }
                 }
             },
         };
@@ -673,6 +725,8 @@ export class HTML3DElement extends LitElement {
                     if (this.animationAutoPlay) {
                         this._viewerDetails.viewer.playAnimation();
                     }
+
+                    this._propertyBindings.filter((binding) => binding.resetOnModelChange).forEach((binding) => binding.syncToAttribute());
                 } else {
                     await this._viewerDetails.viewer.resetModel();
                 }
