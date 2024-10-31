@@ -118,7 +118,7 @@ export class _IblShadowsVoxelTracingPass {
     private _sssParameters: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
     private _opacityParameters: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
     private _voxelBiasParameters: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
-    private _voxelNormalBias: number = 1.0;
+    private _voxelNormalBias: number = 1.4;
     /**
      * The bias to apply to the voxel sampling in the direction of the surface normal of the geometry.
      */
@@ -207,7 +207,6 @@ export class _IblShadowsVoxelTracingPass {
 
     /** The default rotation of the environment map will align the shadows with the default lighting orientation */
     private _envRotation: number = 0.0;
-    // private _downscale: number = 1.0;
 
     /**
      * Set the matrix to use for scaling the world space to voxel space
@@ -308,16 +307,13 @@ export class _IblShadowsVoxelTracingPass {
             },
             "iblShadowVoxelTracing",
             this._scene,
-            textureOptions,
-            false,
-            false,
-            Constants.TEXTURETYPE_UNSIGNED_INT
+            textureOptions
         );
         this._outputTexture.refreshRate = -1;
         this._outputTexture.autoClear = false;
         this._outputTexture.defines = defines;
         // Need to set all the textures first so that the effect gets created with the proper uniforms.
-        this._update(this._scene.activeCamera!);
+        this._setBindings(this._scene.activeCamera!);
 
         let counter = 0;
         this._scene.onBeforeRenderObservable.add(() => {
@@ -326,14 +322,14 @@ export class _IblShadowsVoxelTracingPass {
         this._scene.onAfterRenderTargetsRenderObservable.add(() => {
             if (++counter == 2) {
                 if (this.enabled && this._outputTexture.isReady()) {
-                    this._update(this._scene.activeCamera!);
+                    this._setBindings(this._scene.activeCamera!);
                     this._outputTexture.render();
                 }
             }
         });
     }
 
-    private _update(camera: Camera) {
+    private _setBindings(camera: Camera) {
         if (this._scene.useRightHandedSystem) {
             this._outputTexture.defines = "#define RIGHT_HANDED\n";
         }
@@ -347,12 +343,11 @@ export class _IblShadowsVoxelTracingPass {
 
         this._frameId++;
 
-        // const downscaleSquared = this._downscale * this._downscale;
         let rotation = this._scene.useRightHandedSystem ? -(this._envRotation + 0.5 * Math.PI) : this._envRotation - 0.5 * Math.PI;
         rotation = rotation % (2.0 * Math.PI);
         this._shadowParameters.set(this._sampleDirections, this._frameId, 1.0, rotation);
         this._outputTexture.setVector4("shadowParameters", this._shadowParameters);
-        const voxelGrid = this._renderPipeline!.getVoxelGridTexture();
+        const voxelGrid = this._renderPipeline!._getVoxelGridTexture();
         const highestMip = Math.floor(Math.log2(voxelGrid!.getSize().width));
         this._voxelBiasParameters.set(this._voxelNormalBias, this._voxelDirectionBias, highestMip, 0.0);
         this._outputTexture.setVector4("voxelBiasParameters", this._voxelBiasParameters);
@@ -363,9 +358,9 @@ export class _IblShadowsVoxelTracingPass {
         this._opacityParameters.set(this._voxelShadowOpacity, this._ssShadowOpacity, 0.0, 0.0);
         this._outputTexture.setVector4("shadowOpacity", this._opacityParameters);
         this._outputTexture.setTexture("voxelGridSampler", voxelGrid);
-        this._outputTexture.setTexture("blueNoiseSampler", this._renderPipeline!.getNoiseTexture());
-        this._outputTexture.setTexture("icdfySampler", this._renderPipeline!.getIcdfyTexture());
-        this._outputTexture.setTexture("icdfxSampler", this._renderPipeline!.getIcdfxTexture());
+        this._outputTexture.setTexture("blueNoiseSampler", this._renderPipeline!._getNoiseTexture());
+        this._outputTexture.setTexture("icdfySampler", this._renderPipeline!._getIcdfyTexture());
+        this._outputTexture.setTexture("icdfxSampler", this._renderPipeline!._getIcdfxTexture());
         if (this._debugVoxelMarchEnabled) {
             this._outputTexture.defines += "#define VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION 1u\n";
         }
@@ -400,9 +395,9 @@ export class _IblShadowsVoxelTracingPass {
         return (
             this._outputTexture.isReady() &&
             !(this._debugPassPP && !this._debugPassPP.isReady()) &&
-            this._renderPipeline!.getIcdfyTexture().isReady() &&
-            this._renderPipeline!.getIcdfxTexture().isReady() &&
-            this._renderPipeline!.getVoxelGridTexture().isReady()
+            this._renderPipeline!._getIcdfyTexture().isReady() &&
+            this._renderPipeline!._getIcdfxTexture().isReady() &&
+            this._renderPipeline!._getVoxelGridTexture().isReady()
         );
     }
 

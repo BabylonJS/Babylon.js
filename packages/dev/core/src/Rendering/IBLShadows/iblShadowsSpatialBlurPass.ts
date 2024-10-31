@@ -20,6 +20,7 @@ export class _IblShadowsSpatialBlurPass {
     private _renderPipeline: IblShadowsRenderPipeline;
     private _outputTexture: ProceduralTexture;
     private _worldScale: number = 1.0;
+    private _blurParameters: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
 
     /**
      * Is the effect enabled
@@ -158,7 +159,7 @@ export class _IblShadowsSpatialBlurPass {
         this._outputTexture.autoClear = false;
 
         // Need to set all the textures first so that the effect gets created with the proper uniforms.
-        this._update();
+        this._setBindings();
 
         let counter = 0;
         this._scene.onBeforeRenderObservable.add(() => {
@@ -167,17 +168,18 @@ export class _IblShadowsSpatialBlurPass {
         this._scene.onAfterRenderTargetsRenderObservable.add(() => {
             if (++counter == 2) {
                 if (this.enabled && this._outputTexture.isReady()) {
-                    this._update();
+                    this._setBindings();
                     this._outputTexture.render();
                 }
             }
         });
     }
 
-    private _update() {
-        this._outputTexture.setTexture("voxelTracingSampler", this._renderPipeline.getVoxelTracingTexture());
+    private _setBindings() {
+        this._outputTexture.setTexture("voxelTracingSampler", this._renderPipeline._getVoxelTracingTexture());
         const iterationCount = 1;
-        this._outputTexture.setVector4("blurParameters", new Vector4(iterationCount, this._worldScale, 0.0, 0.0));
+        this._blurParameters.set(iterationCount, this._worldScale, 0.0, 0.0);
+        this._outputTexture.setVector4("blurParameters", this._blurParameters);
         const geometryBufferRenderer = this._scene.geometryBufferRenderer;
         if (!geometryBufferRenderer) {
             return;
@@ -205,7 +207,7 @@ export class _IblShadowsSpatialBlurPass {
      * @returns true if the pass is ready
      */
     public isReady() {
-        return this._outputTexture && this._outputTexture.isReady() && !(this._debugPassPP && !this._debugPassPP.isReady());
+        return this._outputTexture.isReady() && !(this._debugPassPP && !this._debugPassPP.isReady());
     }
 
     /**

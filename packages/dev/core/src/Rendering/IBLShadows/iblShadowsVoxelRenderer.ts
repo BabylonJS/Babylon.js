@@ -151,6 +151,7 @@ export class _IblShadowsVoxelRenderer {
     }
     private _voxelDebugAxis: number = -1;
     private _debugSizeParams: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
+    private _includedMeshes: Mesh[] = [];
 
     /**
      * Sets params that control the position and scaling of the debug display on the screen.
@@ -205,10 +206,15 @@ export class _IblShadowsVoxelRenderer {
         }
         // Add the slab debug RT if needed.
         if (this._voxelDebugEnabled) {
-            this._addRTsForRender([this._voxelSlabDebugRT], [], this._voxelDebugAxis, 1, true);
+            this._addRTsForRender([this._voxelSlabDebugRT], this._includedMeshes, this._voxelDebugAxis, 1, true);
+            this._setDebugBindingsBound = this._setDebugBindings.bind(this);
+            this._scene.onBeforeRenderObservable.add(this._setDebugBindingsBound);
+        } else {
+            this._scene.onBeforeRenderObservable.removeCallback(this._setDebugBindingsBound);
         }
     }
 
+    private _setDebugBindingsBound: () => void;
     /**
      * Creates the debug post process effect for this pass
      */
@@ -549,10 +555,11 @@ export class _IblShadowsVoxelRenderer {
                 }
             },
         });
-        this._scene.onBeforeRenderObservable.add(() => {
-            this._voxelSlabDebugMaterial.setMatrix("projection", this._scene.activeCamera!.getProjectionMatrix());
-            this._voxelSlabDebugMaterial.setMatrix("cameraViewMatrix", this._scene.activeCamera!.getViewMatrix());
-        });
+    }
+
+    private _setDebugBindings() {
+        this._voxelSlabDebugMaterial.setMatrix("projection", this._scene.activeCamera!.getProjectionMatrix());
+        this._voxelSlabDebugMaterial.setMatrix("cameraViewMatrix", this._scene.activeCamera!.getViewMatrix());
     }
 
     /**
@@ -609,7 +616,7 @@ export class _IblShadowsVoxelRenderer {
      */
     public updateVoxelGrid(includedMeshes: Mesh[]) {
         this._stopVoxelization();
-
+        this._includedMeshes = includedMeshes;
         this._voxelizationInProgress = true;
 
         if (this._triPlanarVoxelization) {
@@ -622,9 +629,7 @@ export class _IblShadowsVoxelRenderer {
         if (this._voxelDebugEnabled) {
             this._addRTsForRender([this._voxelSlabDebugRT], includedMeshes, this._voxelDebugAxis, 1, true);
         }
-
-        (this as any).boundVoxelGridRenderFn = this._renderVoxelGrid.bind(this);
-        this._scene.onAfterRenderTargetsRenderObservable.addOnce((this as any).boundVoxelGridRenderFn);
+        this._scene.onAfterRenderTargetsRenderObservable.addOnce(this._renderVoxelGrid.bind(this));
     }
 
     private _renderVoxelGrid() {

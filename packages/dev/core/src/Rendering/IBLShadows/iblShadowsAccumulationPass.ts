@@ -278,7 +278,7 @@ export class _IblShadowsAccumulationPass {
     private _setOutputTextureBindings() {
         const remenance = this._isMoving ? this.remenance : 1.0;
         this._accumulationParams.set(remenance, this.reset ? 1.0 : 0.0, 0.0, 0.0);
-        this._outputTexture.setTexture("spatialBlurSampler", this._renderPipeline.getSpatialBlurTexture());
+        this._outputTexture.setTexture("spatialBlurSampler", this._renderPipeline._getSpatialBlurTexture());
         this._outputTexture.setVector4("accumulationParameters", this._accumulationParams);
         this._outputTexture.setTexture("oldAccumulationSampler", this._oldAccumulationCopy ? this._oldAccumulationCopy : this._renderPipeline._dummyTexture2d);
         this._outputTexture.setTexture("prevPositionSampler", this._oldPositionCopy ? this._oldPositionCopy : this._renderPipeline._dummyTexture2d);

@@ -15,11 +15,10 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
  */
 class MaterialIBLShadowsRenderDefines extends MaterialDefines {
     public RENDER_WITH_IBL_SHADOWS = false;
-    public RSMCREATE_PROJTEXTURE = false;
 }
 
 /**
- * Plugin used to render the global illumination contribution.
+ * Plugin used to render the contribution from IBL shadows.
  */
 export class IBLShadowsPluginMaterial extends MaterialPluginBase {
     /**
@@ -28,7 +27,7 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
     public static readonly Name = "IBLShadowsPluginMaterial";
 
     /**
-     * The texture containing the global illumination contribution.
+     * The texture containing the contribution from IBL shadows.
      */
     @serialize()
     public iblShadowsTexture: InternalTexture;
@@ -47,6 +46,8 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public isEnabled = false;
 
+    private _isPBR = false;
+
     protected _markAllSubMeshesAsTexturesDirty(): void {
         this._enable(this._isEnabled);
         this._internalMarkAllSubMeshesAsTexturesDirty();
@@ -64,7 +65,6 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
 
     constructor(material: Material | StandardMaterial | PBRBaseMaterial) {
         super(material, IBLShadowsPluginMaterial.Name, 310, new MaterialIBLShadowsRenderDefines());
-
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }
 
@@ -114,7 +114,7 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
 
                     fn computeIndirectShadow() -> f32 {
                         var uv = fragmentInputs.position.xy / uniforms.renderTargetSize;
-                        var shadowValue: f32 = toLinearSpace(textureSample(iblShadowsTexture, iblShadowsTextureSampler, uv).r);
+                        var shadowValue: f32 = textureSample(iblShadowsTexture, iblShadowsTextureSampler, uv).r;
                         return mix(shadowValue, 1.0, 1.0 - uniforms.shadowOpacity);
                     }
                 #endif
