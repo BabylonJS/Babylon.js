@@ -40,6 +40,10 @@ function parseColor(color: string | null | undefined): Nullable<Color4> {
     return new Color4(data[0] / 255, data[1] / 255, data[2] / 255, data[3] / 255);
 }
 
+// 1. When element property changes, update the viewer
+// 2. When viewer is instantiated, update the viewer
+// 3. When viewer property changes, update the element
+
 interface HTML3DElementEventMap extends HTMLElementEventMap {
     viewerready: Event;
     environmentchange: Event;
@@ -51,6 +55,15 @@ interface HTML3DElementEventMap extends HTMLElementEventMap {
     animationplayingchange: Event;
     animationprogresschange: Event;
 }
+
+const selectedAnimationKey = Symbol("_selectedAnimation");
+type PrivateState = {
+    [selectedAnimationKey]: number;
+};
+
+// function test(input: HTML3DElement & PrivateState) {
+//     input
+// }
 
 /**
  * Represents a custom element that displays a 3D model using the Babylon.js Viewer.
@@ -349,7 +362,7 @@ export class HTML3DElement extends LitElement {
      * The currently selected animation index.
      */
     public get selectedAnimation(): number {
-        return this._selectedAnimation;
+        return this[selectedAnimationKey];
     }
 
     /**
@@ -375,7 +388,7 @@ export class HTML3DElement extends LitElement {
     private _animations: string[] = [];
 
     @state()
-    private _selectedAnimation = -1;
+    private [selectedAnimationKey]: PrivateState[typeof selectedAnimationKey] = -1;
 
     @state()
     private _isAnimationPlaying = false;
@@ -403,34 +416,34 @@ export class HTML3DElement extends LitElement {
     }
 
     // eslint-disable-next-line babylonjs/available
-    override update(changedProperties: PropertyValues): void {
+    override update(changedProperties: PropertyValues<this> & PropertyValues<PrivateState>): void {
         super.update(changedProperties);
 
-        if (changedProperties.get("engine" satisfies keyof this)) {
+        if (changedProperties.get("engine")) {
             this._tearDownViewer();
             this._setupViewer();
         } else {
-            if (changedProperties.has("clearColor" satisfies keyof this)) {
+            if (changedProperties.has("clearColor")) {
                 this._updateClearColor();
             }
 
-            if (changedProperties.has("cameraAutoOrbitDisabled" satisfies keyof this)) {
+            if (changedProperties.has("cameraAutoOrbitDisabled")) {
                 this._updateCameraAutoOrbit();
             }
 
-            if (changedProperties.has("animationSpeed" satisfies keyof this)) {
+            if (changedProperties.has("animationSpeed")) {
                 this._updateAnimationSpeed();
             }
 
-            if (changedProperties.has("_selectedAnimation")) {
+            if (changedProperties.has(selectedAnimationKey)) {
                 this._updateSelectedAnimation();
             }
 
-            if (changedProperties.has("source" satisfies keyof this)) {
+            if (changedProperties.has("source")) {
                 this._updateModel();
             }
 
-            if (changedProperties.has("environment" satisfies keyof this)) {
+            if (changedProperties.has("environment")) {
                 this._updateEnv();
             }
         }
@@ -501,7 +514,7 @@ export class HTML3DElement extends LitElement {
 
     private _onSelectedAnimationChanged(event: Event) {
         const selectElement = event.target as HTMLSelectElement;
-        this._selectedAnimation = Number(selectElement.value);
+        this[selectedAnimationKey] = Number(selectElement.value);
     }
 
     private _onAnimationSpeedChanged(event: Event) {
@@ -565,7 +578,7 @@ export class HTML3DElement extends LitElement {
                         });
 
                         details.viewer.onSelectedAnimationChanged.add(() => {
-                            this._selectedAnimation = details.viewer.selectedAnimation ?? -1;
+                            this[selectedAnimationKey] = details.viewer.selectedAnimation ?? -1;
                             this._dispatchCustomEvent("selectedanimationchange", (type) => new Event(type));
                         });
 
@@ -636,7 +649,7 @@ export class HTML3DElement extends LitElement {
 
     private _updateSelectedAnimation() {
         if (this._viewerDetails) {
-            this._viewerDetails.viewer.selectedAnimation = this._selectedAnimation;
+            this._viewerDetails.viewer.selectedAnimation = this[selectedAnimationKey];
         }
     }
 
