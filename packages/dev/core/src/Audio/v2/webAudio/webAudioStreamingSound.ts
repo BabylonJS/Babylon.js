@@ -11,7 +11,7 @@ export class WebAudioStreamingSound extends AbstractStreamingSound {
     public override readonly engine: WebAudioEngine;
 
     /** @internal */
-    public audioContext: AudioContext;
+    public audioContext: BaseAudioContext;
 
     /** @internal */
     public get volume(): number {

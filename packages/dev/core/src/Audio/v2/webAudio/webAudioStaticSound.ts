@@ -18,7 +18,7 @@ export class WebAudioStaticSound extends AbstractStaticSound {
     public override readonly engine: WebAudioEngine;
 
     /** @internal */
-    public audioContext: AudioContext;
+    public audioContext: BaseAudioContext;
 
     private _buffer: WebAudioStaticSoundBuffer;
 

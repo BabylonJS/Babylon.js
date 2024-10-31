@@ -28,7 +28,7 @@ export interface WebAudioEngineOptions {
     /**
      * The audio context to be used by the engine.
      */
-    audioContext?: AudioContext;
+    audioContext?: BaseAudioContext;
 }
 
 /**
@@ -190,7 +190,7 @@ const formatMimeTypeMap = new Map<string, string>([
 
 /** @internal */
 export class WebAudioEngine extends AbstractWebAudioEngine {
-    private _audioContext: AudioContext;
+    private _audioContext: BaseAudioContext;
     private _mainOutput: Nullable<WebAudioMainOutput> = null;
 
     private _invalidFormats = new Set<string>();
@@ -208,19 +208,22 @@ export class WebAudioEngine extends AbstractWebAudioEngine {
 
     private async _initAudioContext(): Promise<void> {
         if (this._audioContext === undefined) {
-            this._audioContext = new AudioContext();
+            this._audioContext = new BaseAudioContext();
         }
 
-        await this._audioContext.resume();
+        if (this._audioContext instanceof AudioContext) {
+            await this._audioContext.resume();
+        }
+
         this._resolveAudioContext(this._audioContext);
 
         document.removeEventListener("click", this._initAudioContext);
     }
 
-    private _resolveAudioContext: (audioContext: AudioContext) => void;
+    private _resolveAudioContext: (audioContext: BaseAudioContext) => void;
 
     /** @internal */
-    public audioContext = new Promise<AudioContext>((resolve) => {
+    public audioContext = new Promise<BaseAudioContext>((resolve) => {
         this._resolveAudioContext = resolve;
         document.addEventListener("click", this._initAudioContext.bind(this), { once: true });
     });
