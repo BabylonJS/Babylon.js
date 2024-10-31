@@ -50,7 +50,7 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
      * @param context The context when exporting the node
      * @param node glTF node
      * @param babylonNode BabylonJS node
-     * @param nodeMap Node mapping of babylon node to glTF node index
+     * @param nodeMap Current node mapping of babylon node to glTF node index. Useful for combining a node with its parent.
      * @returns nullable INode promise
      */
     postExportNodeAsync?(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap: Map<Node, number>): Promise<Nullable<INode>>;

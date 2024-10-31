@@ -1357,7 +1357,11 @@ export class GLTFExporter {
 
         for (const babylonNode of babylonRootNodes) {
             if (this._shouldExportNode(babylonNode)) {
-                nodes.push(await this._exportNodeAsync(babylonNode, state, convertToRightHanded));
+                // TODO: Do we need to await this?
+                const nodeIndex = await this._exportNodeAsync(babylonNode, state, convertToRightHanded);
+                if (nodeIndex) {
+                    nodes.push(nodeIndex);
+                }
             }
         }
 
@@ -1540,16 +1544,19 @@ export class GLTFExporter {
         }
     }
 
-    private async _exportNodeAsync(babylonNode: Node, state: ExporterState, convertToRightHanded: boolean): Promise<number> {
+    /**
+     * Processes a node to be exported to the glTF file
+     * @returns A promise that resolves with the node index when the processing is complete, or null if the node should not be exported
+     * @internal
+     */
+    private async _exportNodeAsync(babylonNode: Node, state: ExporterState, convertToRightHanded: boolean): Promise<Nullable<number>> {
         let nodeIndex = this._nodeMap.get(babylonNode);
         if (nodeIndex !== undefined) {
             return nodeIndex;
         }
 
+        // Create node to hold translation/rotation/scale and the mesh
         const node: INode = {};
-        nodeIndex = this._nodes.length;
-        this._nodes.push(node);
-        this._nodeMap.set(babylonNode, nodeIndex);
 
         if (babylonNode.name) {
             node.name = babylonNode.name;
@@ -1581,6 +1588,7 @@ export class GLTFExporter {
         }
 
         if (babylonNode instanceof Camera) {
+            // TODO: Do light technique here.
             const gltfCamera = this._camerasMap.get(babylonNode);
 
             if (gltfCamera) {
@@ -1590,13 +1598,6 @@ export class GLTFExporter {
 
                 this._nodesCameraMap.get(gltfCamera)?.push(node);
                 this._setCameraTransformation(node, babylonNode, convertToRightHanded);
-            }
-        }
-
-        for (const babylonChildNode of babylonNode.getChildren()) {
-            if (this._shouldExportNode(babylonChildNode)) {
-                node.children ||= [];
-                node.children.push(await this._exportNodeAsync(babylonChildNode, state, convertToRightHanded));
             }
         }
 
@@ -1638,7 +1639,28 @@ export class GLTFExporter {
             }
         }
 
-        this._extensionsPostExportNodeAsync("exportNodeAsync", node, babylonNode, this._nodeMap);
+        // Apply extensions to the node. If this resolves to null, it means we can skip exporting this node and its children.
+        const processedNode = await this._extensionsPostExportNodeAsync("exportNodeAsync", node, babylonNode, this._nodeMap);
+        if (!processedNode) {
+            Logger.Warn(`Not exporting node ${babylonNode.name}`);
+            return null;
+        }
+
+        nodeIndex = this._nodes.length;
+        this._nodes.push(node);
+        this._nodeMap.set(babylonNode, nodeIndex);
+
+        // Begin processing child nodes only after parent is finished
+        for (const babylonChildNode of babylonNode.getChildren()) {
+            if (this._shouldExportNode(babylonChildNode)) {
+                node.children ||= [];
+                // TODO: Do we need to await this?
+                const childNodeIndex = await this._exportNodeAsync(babylonChildNode, state, convertToRightHanded);
+                if (childNodeIndex) {
+                    node.children.push(childNodeIndex);
+                }
+            }
+        }
 
         return nodeIndex;
     }

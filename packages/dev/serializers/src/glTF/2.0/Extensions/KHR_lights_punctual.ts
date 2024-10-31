@@ -1,7 +1,6 @@
 import type { SpotLight } from "core/Lights/spotLight";
 import type { Nullable } from "core/types";
 import { Vector3, Quaternion, TmpVectors, Matrix } from "core/Maths/math.vector";
-import { Color3 } from "core/Maths/math.color";
 import { Light } from "core/Lights/light";
 import type { Node } from "core/node";
 import { ShadowLight } from "core/Lights/shadowLight";
@@ -26,12 +25,12 @@ const SPOTDEFAULTS: IKHRLightsPunctual_Light["spot"] = {
     outerConeAngle: Math.PI / 4.0,
 };
 
-// TODO: Move elsewhere, since this is common
-const NODEDEFAULTS: Partial<INode> = {
-    translation: [0, 0, 0],
-    rotation: [0, 0, 0, 1],
-    scale: [1, 1, 1],
-};
+// // TODO: Move elsewhere, since this is common
+// const NODEDEFAULTS: Partial<INode> = {
+//     translation: [0, 0, 0],
+//     rotation: [0, 0, 0, 1],
+//     scale: [1, 1, 1],
+// };
 
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md)
@@ -83,6 +82,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
      */
     public postExportNodeAsync(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap: Map<Node, number>): Promise<Nullable<INode>> {
         return new Promise((resolve) => {
+            // If node was nullified (marked as skippable) earlier in the pipeline, or it's not a light, skip
             if (!node || !(babylonNode instanceof ShadowLight)) {
                 resolve(node);
                 return;
@@ -111,6 +111,8 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
             //     node.translation = babylonNode.position.asArray();
             // }
 
+            // TODO: Test light w/o parent node and handedness
+
             // Override the node's rotation with the light's direction, since glTF uses a constant light direction
             if (lightType !== KHRLightsPunctual_LightType.POINT) {
                 const localAxis = babylonNode.direction;
@@ -132,6 +134,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
             };
             light = omitDefaultValues(light, DEFAULTS);
 
+            // Set the required 'spot' field for spot lights, then check its contents for defaults
             if (lightType === KHRLightsPunctual_LightType.SPOT) {
                 const babylonSpotLight = babylonNode as SpotLight;
                 light.spot = {
@@ -150,12 +153,13 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                 light: this._lights.lights.length - 1,
             };
 
-            // Assign the light to its parent node, if possible
+            // Assign the light to its parent node, if possible, to condense the glTF
+            // Why and when: the glTF loader generates a new parent node for each light node, which isn't needed in glTF
             const parentBabylonNode = babylonNode.parent;
-            if (parentBabylonNode && parentBabylonNode.getChildren().length == 1) {
+            if (parentBabylonNode && parentBabylonNode.getChildren().length == 1 && babylonNode.getChildren().length == 0) {
                 const parentNode = this._exporter._nodes[nodeMap.get(parentBabylonNode)!];
                 if (parentNode) {
-                    // Consolidate the light's transformation with the parent's
+                    // Combine the light's transformation with the parent's
                     const parentTranslation = Vector3.FromArrayToRef(parentNode.translation || [0, 0, 0], 0, TmpVectors.Vector3[0]);
                     const parentRotation = Quaternion.FromArrayToRef(parentNode.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[0]);
                     const parentScale = Vector3.FromArrayToRef(parentNode.scale || [1, 1, 1], 0, TmpVectors.Vector3[1]);
@@ -168,7 +172,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                     parentMatrix.multiplyToRef(matrix, matrix);
                     matrix.decompose(parentScale, parentRotation, parentTranslation);
 
-                    // Remove default values
+                    // Remove default values if they are now default
                     if (parentTranslation.equalsToFloats(0, 0, 0)) {
                         delete parentNode.translation;
                     } else {
