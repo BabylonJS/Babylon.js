@@ -148,6 +148,11 @@ export class Viewer implements IDisposable {
     public readonly onModelError = new Observable<unknown>();
 
     /**
+     * Fired when the camera auto orbit state changes.
+     */
+    public readonly onCameraAutoOrbitChanged = new Observable<void>();
+
+    /**
      * Fired when the selected animation changes.
      */
     public readonly onSelectedAnimationChanged = new Observable<void>();
@@ -239,6 +244,7 @@ export class Viewer implements IDisposable {
             } else {
                 this._camera.removeBehavior(this._autoRotationBehavior);
             }
+            this.onCameraAutoOrbitChanged.notifyObservers();
         }
     }
 

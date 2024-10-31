@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { Nullable } from "core/index";
+import type { Nullable, Observable } from "core/index";
 
 import type { PropertyValues } from "lit";
 import type { ViewerDetails, ViewerHotSpot, ViewerHotSpotQuery } from "./viewer";
@@ -40,10 +40,6 @@ function parseColor(color: string | null | undefined): Nullable<Color4> {
     return new Color4(data[0] / 255, data[1] / 255, data[2] / 255, data[3] / 255);
 }
 
-// 1. When element property changes, update the viewer
-// 2. When viewer is instantiated, update the viewer
-// 3. When viewer property changes, update the element
-
 interface HTML3DElementEventMap extends HTMLElementEventMap {
     viewerready: Event;
     environmentchange: Event;
@@ -68,6 +64,45 @@ type PrivateState = {
 export class HTML3DElement extends LitElement {
     private readonly _viewerLock = new AsyncLock();
     private _viewerDetails?: Readonly<ViewerDetails>;
+
+    private readonly _propertyBindings = [
+        this._createPropertyBinding(
+            "environment",
+            (viewer) => viewer.viewer.onEnvironmentChanged,
+            async (details) => {
+                try {
+                    if (this.environment) {
+                        await details.viewer.loadEnvironment(this.environment);
+                    } else {
+                        await details.viewer.resetEnvironment();
+                    }
+                } catch (error) {
+                    Logger.Log(error);
+                }
+            },
+            () => {
+                this._dispatchCustomEvent("environmentchange", (type) => new Event(type));
+            }
+        ),
+        this._createPropertyBinding(
+            "clearColor",
+            (details) => details.scene.onClearColorChangedObservable,
+            (details) => (details.scene.clearColor = this.clearColor ?? new Color4(0, 0, 0, 0)),
+            (details) => (this.clearColor = details.scene.clearColor)
+        ),
+        this._createPropertyBinding(
+            "cameraAutoOrbit",
+            (details) => details.viewer.onCameraAutoOrbitChanged,
+            (details) => (details.viewer.cameraAutoOrbit = this.cameraAutoOrbit),
+            (details) => (this.cameraAutoOrbit = details.viewer.cameraAutoOrbit)
+        ),
+        this._createPropertyBinding(
+            selectedAnimationKey,
+            (details) => details.viewer.onSelectedAnimationChanged,
+            (details) => (details.viewer.selectedAnimation = this[selectedAnimationKey]),
+            (details) => (this[selectedAnimationKey] = details.viewer.selectedAnimation ?? -1)
+        ),
+    ] as const;
 
     // eslint-disable-next-line @typescript-eslint/naming-convention, jsdoc/require-jsdoc
     static override styles = css`
@@ -315,8 +350,16 @@ export class HTML3DElement extends LitElement {
     /**
      * Disables camera auto-orbit.
      */
-    @property({ attribute: "camera-auto-orbit-disabled", reflect: true, type: Boolean })
-    public cameraAutoOrbitDisabled = false;
+    @property({
+        attribute: "camera-auto-orbit-disabled",
+        reflect: true,
+        type: Boolean,
+        converter: {
+            fromAttribute: (value: string) => !!value,
+            toAttribute: (value: boolean) => (value ? null : ""),
+        },
+    })
+    public cameraAutoOrbit = true;
 
     /**
      * A string value that encodes one or more hotspots.
@@ -412,35 +455,21 @@ export class HTML3DElement extends LitElement {
     }
 
     // eslint-disable-next-line babylonjs/available
-    override update(changedProperties: PropertyValues<this> & PropertyValues<PrivateState>): void {
+    override update(changedProperties: PropertyValues): void {
         super.update(changedProperties);
 
         if (changedProperties.get("engine")) {
             this._tearDownViewer();
             this._setupViewer();
         } else {
-            if (changedProperties.has("clearColor")) {
-                this._updateClearColor();
-            }
-
-            if (changedProperties.has("cameraAutoOrbitDisabled")) {
-                this._updateCameraAutoOrbit();
-            }
-
             if (changedProperties.has("animationSpeed")) {
                 this._updateAnimationSpeed();
             }
 
-            if (changedProperties.has(selectedAnimationKey)) {
-                this._updateSelectedAnimation();
-            }
+            this._propertyBindings.filter((binding) => changedProperties.has(binding.property)).forEach((binding) => binding.updateViewer(this._viewerDetails));
 
             if (changedProperties.has("source")) {
                 this._updateModel();
-            }
-
-            if (changedProperties.has("environment")) {
-                this._updateEnv();
             }
         }
     }
@@ -536,6 +565,26 @@ export class HTML3DElement extends LitElement {
         }
     }
 
+    private _createPropertyBinding(
+        property: keyof HTML3DElement | keyof PrivateState,
+        getObservable: (viewerDetails: Readonly<ViewerDetails>) => Observable<any>,
+        updateViewer: (viewerDetails: Readonly<ViewerDetails>) => void,
+        updateElement: (viewerDetails: Readonly<ViewerDetails>) => void
+    ) {
+        return {
+            property,
+            onInitialized: (viewerDetails: Readonly<ViewerDetails>) => {
+                getObservable(viewerDetails).add(() => updateElement(viewerDetails));
+                updateViewer(viewerDetails);
+            },
+            updateViewer: (viewerDetails?: Readonly<ViewerDetails>) => {
+                if (viewerDetails) {
+                    updateViewer(viewerDetails);
+                }
+            },
+        };
+    }
+
     private async _setupViewer() {
         await this._viewerLock.lockAsync(async () => {
             // The first time the element is connected, the canvas container may not be available yet.
@@ -555,10 +604,6 @@ export class HTML3DElement extends LitElement {
                     onInitialized: (details) => {
                         this._viewerDetails = details;
 
-                        details.viewer.onEnvironmentChanged.add(() => {
-                            this._dispatchCustomEvent("environmentchange", (type) => new Event(type));
-                        });
-
                         details.viewer.onEnvironmentError.add((error) => {
                             this._dispatchCustomEvent("environmenterror", (type) => new ErrorEvent(type, { error }));
                         });
@@ -573,10 +618,7 @@ export class HTML3DElement extends LitElement {
                             this._dispatchCustomEvent("modelerror", (type) => new ErrorEvent(type, { error }));
                         });
 
-                        details.viewer.onSelectedAnimationChanged.add(() => {
-                            this[selectedAnimationKey] = details.viewer.selectedAnimation ?? -1;
-                            this._dispatchCustomEvent("selectedanimationchange", (type) => new Event(type));
-                        });
+                        this._propertyBindings.forEach((binding) => binding.onInitialized(details));
 
                         details.viewer.onAnimationSpeedChanged.add(() => {
                             let speed = details.viewer.animationSpeed ?? 1;
@@ -595,12 +637,8 @@ export class HTML3DElement extends LitElement {
                             this._dispatchCustomEvent("animationprogresschange", (type) => new Event(type));
                         });
 
-                        this._updateClearColor();
-                        this._updateCameraAutoOrbit();
-                        this._updateSelectedAnimation();
                         this._updateAnimationSpeed();
                         this._updateModel();
-                        this._updateEnv();
 
                         this._dispatchCustomEvent("viewerready", (type) => new Event(type));
                     },
@@ -625,27 +663,9 @@ export class HTML3DElement extends LitElement {
         });
     }
 
-    private _updateClearColor() {
-        if (this._viewerDetails) {
-            this._viewerDetails.scene.clearColor = this.clearColor ?? new Color4(0, 0, 0, 0);
-        }
-    }
-
-    private _updateCameraAutoOrbit() {
-        if (this._viewerDetails) {
-            this._viewerDetails.viewer.cameraAutoOrbit = !this.cameraAutoOrbitDisabled;
-        }
-    }
-
     private _updateAnimationSpeed() {
         if (this._viewerDetails) {
             this._viewerDetails.viewer.animationSpeed = this.animationSpeed;
-        }
-    }
-
-    private _updateSelectedAnimation() {
-        if (this._viewerDetails) {
-            this._viewerDetails.viewer.selectedAnimation = this[selectedAnimationKey];
         }
     }
 
@@ -655,18 +675,6 @@ export class HTML3DElement extends LitElement {
                 await this._viewerDetails?.viewer.loadModel(this.source, { pluginExtension: this.extension ?? undefined });
             } else {
                 await this._viewerDetails?.viewer.resetModel();
-            }
-        } catch (error) {
-            Logger.Log(error);
-        }
-    }
-
-    private async _updateEnv() {
-        try {
-            if (this.environment) {
-                await this._viewerDetails?.viewer.loadEnvironment(this.environment);
-            } else {
-                await this._viewerDetails?.viewer.resetEnvironment();
             }
         } catch (error) {
             Logger.Log(error);
