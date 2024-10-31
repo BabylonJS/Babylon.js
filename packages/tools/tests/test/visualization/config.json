@@ -961,6 +961,11 @@
             "referenceImage": "gltfTextureLinearInterpolation.png"
         },
         {
+            "title": "GLTF Node visibility test",
+            "playgroundId": "#80DN99#3",
+            "referenceImage": "gltfNodeVisibility.png"
+        },
+        {
             "title": "Asset Containers",
             "playgroundId": "#P3U079#19",
             "referenceImage": "assetContainer.png"

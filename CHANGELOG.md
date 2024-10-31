@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.32.0
+
+### Loaders
+
+- KHR_node_visibility - by [RaananW](https://github.com/RaananW) ([#15754](https://github.com/BabylonJS/Babylon.js/pull/15754))
+
 ## 7.31.2
 
 ### Core

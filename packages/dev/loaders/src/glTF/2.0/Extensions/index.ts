@@ -29,6 +29,5 @@ export * from "./MSFT_lod";
 export * from "./MSFT_minecraftMesh";
 export * from "./MSFT_sRGBFactors";
 export * from "./KHR_interactivity";
-export * from "./KHR_node_selectability";
 export * from "./KHR_node_visibility";
 export * from "./ExtrasAsMetadata";

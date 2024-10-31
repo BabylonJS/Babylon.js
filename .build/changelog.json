@@ -1,6 +1,38 @@
 {
-    "fromTag": "7.31.1",
+    "fromTag": "7.31.2",
     "changelog": {
+        "7.32.0": [
+            {
+                "pr": "15755",
+                "title": "update dependencies",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15754",
+                "title": "KHR_node_visibility",
+                "description": "Adding the implementation of KHR_node_visibilityAs per specs in this PR - https://github.com/KhronosGroup/glTF/pull/2410\n\nVis test added to make sure we support the current specs.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_node_visibility.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/dynamic.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/index.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfNodeVisibility.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            }
+        ],
         "7.31.2": [
             {
                 "pr": "15751",
