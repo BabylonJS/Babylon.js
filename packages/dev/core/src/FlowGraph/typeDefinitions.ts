@@ -1,36 +1,63 @@
+import type { IAnimatable } from "core/Animations/animatable.interface";
+import type { Animation } from "core/Animations/animation";
 import type { FlowGraphConnectionType } from "./flowGraphConnection";
+
+/**
+ * Interpolation generator
+ */
+export interface IInterpolationPropertyInfo {
+    type: number;
+    name: string;
+    getValue: (target: any, source: Float32Array, offset: number, scale: number) => any;
+    getStride: (target: any) => number;
+    /**
+     * @internal
+     */
+    buildAnimations(target: any, name: string, fps: number, keys: any[], callback: (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => void): void;
+}
 
 /**
  * An accessor that allows modifying properties on some other object.
  */
-export interface IObjectAccessor {
+export interface IObjectAccessor<GLTFTargetType = any, BabylonTargetType = any, BabylonValueType = any> {
     /**
-     * The type of the object that is converted
+     * The number of components that are changed in the property when setting this value.
+     * This will usually be 1. But, for example, Babylon has both orthoLeft and orthoRight (two components) properties that are changed when setting xmag (single value in glTF).
+     * Defaults to 1 if not provided!
+     */
+    componentsCount?: number;
+    /**
+     * The (babylon) type of the property.
      */
     type: string;
     /**
-     * Get a property value from the object.
-     * @param args any necessary arguments to get the property value
+     * Get the value of the property.
      */
-    get(...args: any[]): any;
+    get: (target: GLTFTargetType, index?: number, payload?: any) => BabylonValueType | undefined;
     /**
-     * Set a property value on the object.
-     * @param value the value to set
-     * @param args any necessary arguments to set the property value
+     * Get the target of the property.
      */
-    set(value: any, ...args: any[]): void;
+    getTarget: (target: GLTFTargetType, index?: number, payload?: any) => BabylonTargetType | undefined;
     /**
-     * Get the original object
-     * @param args any necessary arguments to get the original object
+     * is the property readonly?
      */
-    getObject(...args: any[]): any;
-
+    isReadOnly?: boolean;
     /**
-     * Get the name of the (babylon) property that is being accessed.
-     * @param args any necessary arguments to get the property name
-     * @returns the name of the property or empty string if not applicable
+     * @deprecated Use get instead
      */
-    getPropertyName(...args: any[]): string;
+    getPropertyName?: Array<(target: GLTFTargetType) => string>;
+    /**
+     * Set a new value to the property.
+     * @param newValue the new value to set
+     * @param target the target object
+     * @param index the index of the target object in the array (optional)
+     */
+    set?: (newValue: BabylonValueType, target: GLTFTargetType, index?: number, payload?: any) => void;
+    /**
+     * Interpolation/animation information for the property.
+     * This is an array that can be used to animate the value over time.
+     */
+    interpolation?: IInterpolationPropertyInfo[];
 }
 
 /**

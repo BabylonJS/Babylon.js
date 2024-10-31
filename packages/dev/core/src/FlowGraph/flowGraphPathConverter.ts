@@ -28,8 +28,8 @@ export class FlowGraphPathConverter implements IPathToObjectConverter<IObjectAcc
                 type: "object",
                 get: () => currentObject[property],
                 set: (value: any) => (currentObject[property] = value),
-                getObject: () => currentObject,
-                getPropertyName: () => property,
+                getTarget: () => currentObject,
+                getPropertyName: [() => property],
             },
         };
     }

@@ -1,5 +1,6 @@
 import type { IObjectInfo, IPathToObjectConverter } from "core/ObjectModel/objectModelInterfaces";
 import type { IGLTF } from "../glTFLoaderInterfaces";
+import type { IObjectAccessor } from "core/FlowGraph/typeDefinitions";
 
 /**
  * A converter that takes a glTF Object Model JSON Pointer
@@ -7,7 +8,7 @@ import type { IGLTF } from "../glTFLoaderInterfaces";
  * objects referenced in the glTF to be associated with their
  * respective Babylon.js objects.
  */
-export class GLTFPathToObjectConverter<T> implements IPathToObjectConverter<T> {
+export class GLTFPathToObjectConverter<T, BabylonType, BabylonValue> implements IPathToObjectConverter<IObjectAccessor<T, BabylonType, BabylonValue>> {
     public constructor(
         private _gltf: IGLTF,
         private _infoTree: any
@@ -35,7 +36,7 @@ export class GLTFPathToObjectConverter<T> implements IPathToObjectConverter<T> {
      * @param path The path to convert
      * @returns The object and info associated with the path
      */
-    public convert(path: string): IObjectInfo<T> {
+    public convert(path: string): IObjectInfo<IObjectAccessor<T, BabylonType, BabylonValue>> {
         let objectTree: any = this._gltf;
         let infoTree: any = this._infoTree;
         let target: any = undefined;

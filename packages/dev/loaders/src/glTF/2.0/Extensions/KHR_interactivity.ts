@@ -5,8 +5,9 @@ import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { ParseFlowGraphAsync } from "core/FlowGraph/flowGraphParser";
 import { convertGLTFToSerializedFlowGraph } from "./KHR_interactivity/interactivityFunctions";
-import { InteractivityPathToObjectConverter } from "./KHR_interactivity/interactivityPathToObjectConverter";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
+import { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
+import { objectModelMapping } from "./objectModelMapping";
 
 const NAME = "KHR_interactivity";
 
@@ -34,7 +35,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
      */
     public enabled: boolean;
 
-    private _pathConverter?: InteractivityPathToObjectConverter;
+    private _pathConverter?: GLTFPathToObjectConverter<any, any, any>;
 
     /**
      * @internal
@@ -42,7 +43,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
      */
     constructor(private _loader: GLTFLoader) {
         this.enabled = this._loader.isExtensionUsed(NAME);
-        this._pathConverter = new InteractivityPathToObjectConverter(this._loader.gltf);
+        this._pathConverter = new GLTFPathToObjectConverter(this._loader.gltf, objectModelMapping);
     }
 
     public dispose() {

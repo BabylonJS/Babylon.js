@@ -54,6 +54,12 @@ export class FlowGraphGetPropertyBlock<P extends any, O extends FlowGraphAssetTy
      */
     public readonly isValid: FlowGraphDataConnection<boolean>;
 
+    /**
+     * Input connection: A function that can be used to get the value of the property.
+     * This will be used if defined, instead of the default get function.
+     */
+    public readonly customGetFunction: FlowGraphDataConnection<(target: AssetType<O>, propertyName: string, context: FlowGraphContext) => P | undefined>;
+
     constructor(
         /**
          * the configuration of the block
@@ -65,12 +71,19 @@ export class FlowGraphGetPropertyBlock<P extends any, O extends FlowGraphAssetTy
         this.propertyName = this.registerDataInput("propertyName", RichTypeAny, config.propertyName);
         this.value = this.registerDataOutput("value", RichTypeAny);
         this.isValid = this.registerDataOutput("isValid", RichTypeAny, false);
+        this.customGetFunction = this.registerDataInput("customGetFunction", RichTypeAny);
     }
 
     public override _updateOutputs(context: FlowGraphContext): void {
-        const target = this.object.getValue(context);
-        const propertyName = this.propertyName.getValue(context);
-        const value = target && propertyName ? this._getPropertyValue(target, propertyName) : undefined;
+        const getter = this.customGetFunction.getValue(context);
+        let value;
+        if (getter) {
+            value = getter(this.object.getValue(context), this.propertyName.getValue(context), context);
+        } else {
+            const target = this.object.getValue(context);
+            const propertyName = this.propertyName.getValue(context);
+            value = target && propertyName ? this._getPropertyValue(target, propertyName) : undefined;
+        }
         if (value === undefined) {
             this.value.resetToDefaultValue(context);
             this.isValid.setValue(false, context);

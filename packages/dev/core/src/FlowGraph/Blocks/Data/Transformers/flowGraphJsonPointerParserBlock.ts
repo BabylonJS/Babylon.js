@@ -19,6 +19,7 @@ export interface IFlowGraphJsonPointerParserBlockConfiguration extends IFlowGrap
      * The path converter to use to convert the path to an object accessor.
      */
     pathConverter: IPathToObjectConverter<IObjectAccessor>;
+
     /**
      * Whether to output the value of the property.
      */
@@ -49,7 +50,12 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
     /**
      * Output connection: A function that can be used to update the value of the property.
      */
-    public readonly updateFunction: FlowGraphDataConnection<(target: O, propertyName: string, value: P, context: FlowGraphContext) => void>;
+    public readonly setterFunction: FlowGraphDataConnection<(target: O, propertyName: string, value: P, context: FlowGraphContext) => void>;
+
+    /**
+     * Output connection: A function that can be used to get the value of the property.
+     */
+    public readonly getterFunction: FlowGraphDataConnection<(target: O, propertyName: string, context: FlowGraphContext) => P | undefined>;
 
     /**
      * Output connection: Whether the value is valid.
@@ -74,7 +80,8 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
         if (config.outputValue) {
             this.value = this.registerDataOutput("value", RichTypeAny);
         }
-        this.updateFunction = this.registerDataOutput("setFunction", RichTypeAny, this._setPropertyValue.bind(this));
+        this.setterFunction = this.registerDataOutput("setFunction", RichTypeAny, this._setPropertyValue.bind(this));
+        this.getterFunction = this.registerDataOutput("getFunction", RichTypeAny, this._getPropertyValue.bind(this));
         this.templateComponent = new FlowGraphPathConverterComponent(config.jsonPointer, this);
     }
 
@@ -82,14 +89,16 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
         try {
             const accessorContainer = this.templateComponent.getAccessor(this.config.pathConverter, context);
             const value = accessorContainer.info.get(accessorContainer.object);
-            const object = accessorContainer.info.getObject(accessorContainer.object);
-            const propertyName = accessorContainer.info.getPropertyName(accessorContainer.object);
-            if (!object || !propertyName) {
+            const object = accessorContainer.info.getTarget?.(accessorContainer.object);
+            const propertyName = accessorContainer.info.getPropertyName?.[0](accessorContainer.object);
+            if (!object) {
                 this.isValid.setValue(false, context);
                 return;
             } else {
                 this.object.setValue(object, context);
-                this.propertyName.setValue(propertyName, context);
+                if (propertyName) {
+                    this.propertyName.setValue(propertyName, context);
+                }
                 this.isValid.setValue(true, context);
             }
             if (this.config.outputValue) {
@@ -108,7 +117,12 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
 
     private _setPropertyValue(_target: O, _propertyName: string, value: P, context: FlowGraphContext): void {
         const accessorContainer = this.templateComponent.getAccessor(this.config.pathConverter, context);
-        accessorContainer.info.set(value, accessorContainer.object);
+        accessorContainer.info.set?.(value, accessorContainer.object);
+    }
+
+    private _getPropertyValue(_target: O, _propertyName: string, context: FlowGraphContext): P | undefined {
+        const accessorContainer = this.templateComponent.getAccessor(this.config.pathConverter, context);
+        return accessorContainer.info.get(accessorContainer.object);
     }
 
     /**

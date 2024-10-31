@@ -755,6 +755,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             // connect the pointer to the getProperty block
             connectFlowGraphNodes("object", "object", serializedObjects[0], serializedObjects[1], true);
             connectFlowGraphNodes("propertyName", "propertyName", serializedObjects[0], serializedObjects[1], true);
+            connectFlowGraphNodes("customGetFunction", "getFunction", serializedObjects[0], serializedObjects[1], true);
             return serializedObjects;
         },
     },
@@ -784,9 +785,9 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
     },
     "pointer/interpolate": {
-        blocks: [FlowGraphBlockNames.ValueInterpolation],
+        blocks: [FlowGraphBlockNames.ValueInterpolation, FlowGraphBlockNames.JsonPointerParser],
         configuration: {
-            pointer: { name: "object;propertyName" },
+            pointer: { name: "jsonPointer", toBlock: FlowGraphBlockNames.JsonPointerParser },
         },
         inputs: {
             values: {
