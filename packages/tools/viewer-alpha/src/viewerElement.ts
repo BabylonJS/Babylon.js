@@ -336,7 +336,7 @@ export class HTML3DElement extends LitElement {
     public clearColor: Nullable<Color4> = null;
 
     /**
-     * Disables camera auto-orbit.
+     * Enables or disables camera auto-orbit.
      */
     @property({
         attribute: "camera-auto-orbit-disabled",
