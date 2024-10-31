@@ -117,7 +117,7 @@ export class BlurPostProcess extends PostProcess {
         };
 
         super(name, ThinBlurPostProcess.FragmentUrl, {
-            effectWrapper: typeof options === "number" || !options.effectWrapper ? new ThinBlurPostProcess(name, engine, direction, kernel, localOptions) : undefined,
+            effectWrapper: typeof options === "number" || !options.effectWrapper ? new ThinBlurPostProcess(name, engine, undefined, undefined, localOptions) : undefined,
             ...localOptions,
         });
 

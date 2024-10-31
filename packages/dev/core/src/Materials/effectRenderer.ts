@@ -490,6 +490,10 @@ export class EffectWrapper {
     }
 
     protected _gatherImports(useWebGPU = false, list: Promise<any>[]) {
+        if (!this.options.useAsPostProcess) {
+            return;
+        }
+
         // this._webGPUReady is used to detect when an effect wrapper is intended to be used with WebGPU
         if (useWebGPU && this._webGPUReady) {
             list.push(Promise.all([import("../ShadersWGSL/postprocess.vertex")]));
@@ -565,12 +569,13 @@ export class EffectWrapper {
 
         this.options.defines = defines || "";
 
-        const waitImportsLoaded = this._shadersLoaded
-            ? undefined
-            : async () => {
-                  await Promise.all(this._importPromises);
-                  this._shadersLoaded = true;
-              };
+        const waitImportsLoaded =
+            this._shadersLoaded || this._importPromises.length === 0
+                ? undefined
+                : async () => {
+                      await Promise.all(this._importPromises);
+                      this._shadersLoaded = true;
+                  };
 
         let extraInitializationsAsync: (() => Promise<void>) | undefined;
         if (this.options.extraInitializationsAsync) {
