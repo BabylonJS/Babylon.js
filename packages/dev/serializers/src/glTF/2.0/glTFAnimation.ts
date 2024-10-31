@@ -391,7 +391,7 @@ export class _GLTFAnimation {
         bufferViews: IBufferView[],
         accessors: IAccessor[],
         animationSampleRate: number,
-        useRightHanded: boolean,
+        leftHandedNodes: Set<Node>,
         shouldExportAnimation?: (animation: Animation) => boolean
     ) {
         let glTFAnimation: IAnimation;
@@ -414,6 +414,9 @@ export class _GLTFAnimation {
                     if (shouldExportAnimation && !shouldExportAnimation(animation)) {
                         continue;
                     }
+
+                    const convertToRightHanded = leftHandedNodes.has(target);
+
                     if (this._IsTransformable(target) || (target.length === 1 && this._IsTransformable(target[0]))) {
                         const animationInfo = _GLTFAnimation._DeduceAnimationInfo(targetAnimation.animation);
                         if (animationInfo) {
@@ -432,7 +435,7 @@ export class _GLTFAnimation {
                                     accessors,
                                     animationInfo.useQuaternion,
                                     animationSampleRate,
-                                    useRightHanded
+                                    convertToRightHanded
                                 );
                             }
                         }
@@ -529,7 +532,7 @@ export class _GLTFAnimation {
                             accessors,
                             animationInfo.useQuaternion,
                             animationSampleRate,
-                            useRightHanded,
+                            false,
                             morphTargetManager?.numTargets
                         );
                     }
@@ -554,7 +557,7 @@ export class _GLTFAnimation {
         accessors: IAccessor[],
         useQuaternion: boolean,
         animationSampleRate: number,
-        useRightHanded: boolean,
+        convertToRightHanded: boolean,
         morphAnimationChannels?: number
     ) {
         const animationData = _GLTFAnimation._CreateNodeAnimation(babylonTransformNode, animation, animationChannelTargetPath, useQuaternion, animationSampleRate);
@@ -619,7 +622,7 @@ export class _GLTFAnimation {
             const tempQuaterionArray = [0, 0, 0, 0];
 
             animationData.outputs.forEach(function (output) {
-                if (useRightHanded) {
+                if (convertToRightHanded) {
                     switch (animationChannelTargetPath) {
                         case AnimationChannelTargetPath.TRANSLATION:
                             Vector3.FromArrayToRef(output, 0, position);

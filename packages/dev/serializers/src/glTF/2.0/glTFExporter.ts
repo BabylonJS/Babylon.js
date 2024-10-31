@@ -88,15 +88,20 @@ class ExporterState {
 
     private _vertexMapColorAlpha = new Map<VertexBuffer, boolean>();
 
+    private _exportedNodes = new Set<Node>();
+
     // Babylon mesh -> glTF mesh index
     private _meshMap = new Map<Mesh, number>();
 
-    public constructor(convertToRightHanded: boolean, userUint16SkinIndex: boolean) {
+    public constructor(convertToRightHanded: boolean, userUint16SkinIndex: boolean, wasAddedByNoopNode: boolean) {
         this.convertToRightHanded = convertToRightHanded;
         this.userUint16SkinIndex = userUint16SkinIndex;
+        this.wasAddedByNoopNode = wasAddedByNoopNode;
     }
 
     public readonly convertToRightHanded: boolean;
+
+    public readonly wasAddedByNoopNode: boolean;
 
     public readonly userUint16SkinIndex: boolean;
 
@@ -133,6 +138,16 @@ class ExporterState {
         }
 
         map4.set(flip, accessorIndex);
+    }
+
+    public pushExportedNode(node: Node) {
+        if (!this._exportedNodes.has(node)) {
+            this._exportedNodes.add(node);
+        }
+    }
+
+    public getNodesSet(): Set<Node> {
+        return this._exportedNodes;
     }
 
     public getVertexBufferView(buffer: Buffer): number | undefined {
@@ -850,10 +865,11 @@ export class GLTFExporter {
 
         const rootNodesRH = new Array<Node>();
         const rootNodesLH = new Array<Node>();
+        const rootNoopNodesRH = new Array<Node>();
 
         for (const rootNode of this._babylonScene.rootNodes) {
             if (this._options.removeNoopRootNodes && !this._options.includeCoordinateSystemConversionNodes && isNoopNode(rootNode, this._babylonScene.useRightHandedSystem)) {
-                rootNodesRH.push(...rootNode.getChildren());
+                rootNoopNodesRH.push(...rootNode.getChildren());
             } else if (this._babylonScene.useRightHandedSystem) {
                 rootNodesRH.push(rootNode);
             } else {
@@ -865,8 +881,13 @@ export class GLTFExporter {
         this._listAvailableSkeletons();
 
         // await this._materialExporter.convertMaterialsToGLTFAsync(this._getMaterials(nodes));
-        scene.nodes.push(...(await this._exportNodesAsync(rootNodesLH, true, this._options.userUint16SkinIndex)));
-        scene.nodes.push(...(await this._exportNodesAsync(rootNodesRH, false, this._options.userUint16SkinIndex)));
+        const stateLH = new ExporterState(true, this._options.userUint16SkinIndex, false);
+        scene.nodes.push(...(await this._exportNodesAsync(rootNodesLH, stateLH)));
+        const stateRH = new ExporterState(false, this._options.userUint16SkinIndex, false);
+        scene.nodes.push(...(await this._exportNodesAsync(rootNodesRH, stateRH)));
+        const noopRH = new ExporterState(false, this._options.userUint16SkinIndex, true);
+        scene.nodes.push(...(await this._exportNodesAsync(rootNoopNodesRH, noopRH)));
+
         this._scenes.push(scene);
 
         this._exportAndAssignCameras();
@@ -881,7 +902,7 @@ export class GLTFExporter {
                 this._bufferViews,
                 this._accessors,
                 this._animationSampleRate,
-                this._babylonScene.useRightHandedSystem
+                stateLH.getNodesSet()
             );
         }
     }
@@ -897,15 +918,14 @@ export class GLTFExporter {
         return result;
     }
 
-    private async _exportNodesAsync(babylonRootNodes: Node[], convertToRightHanded: boolean, useUint16SkinIndex: boolean): Promise<number[]> {
+    private async _exportNodesAsync(babylonRootNodes: Node[], state: ExporterState): Promise<number[]> {
         const nodes = new Array<number>();
-        const state = new ExporterState(convertToRightHanded, useUint16SkinIndex);
 
-        this._exportBuffers(babylonRootNodes, convertToRightHanded, state);
+        this._exportBuffers(babylonRootNodes, state);
 
         for (const babylonNode of babylonRootNodes) {
             if (this._shouldExportNode(babylonNode)) {
-                nodes.push(await this._exportNodeAsync(babylonNode, state, convertToRightHanded));
+                nodes.push(await this._exportNodeAsync(babylonNode, state));
             }
         }
 
@@ -964,7 +984,7 @@ export class GLTFExporter {
         }
     }
 
-    private _exportBuffers(babylonRootNodes: Node[], convertToRightHanded: boolean, state: ExporterState): void {
+    private _exportBuffers(babylonRootNodes: Node[], state: ExporterState): void {
         const bufferToVertexBuffersMap = new Map<Buffer, VertexBuffer[]>();
         const vertexBufferToMeshesMap = new Map<VertexBuffer, Mesh[]>();
         const morphTagetsMeshesMap = new Map<MorphTarget, Mesh[]>();
@@ -1006,7 +1026,7 @@ export class GLTFExporter {
             }
 
             // Performs coordinate conversion if needed (only for position, normal and tanget).
-            if (convertToRightHanded) {
+            if (state.convertToRightHanded) {
                 for (const vertexBuffer of vertexBuffers) {
                     switch (vertexBuffer.getKind()) {
                         case VertexBuffer.PositionKind:
@@ -1080,7 +1100,7 @@ export class GLTFExporter {
         }
 
         for (const [morphTarget, meshes] of morphTagetsMeshesMap) {
-            const glTFMorphTarget = buildMorphTargetBuffers(morphTarget, meshes[0], this._dataWriter, this._bufferViews, this._accessors, convertToRightHanded);
+            const glTFMorphTarget = buildMorphTargetBuffers(morphTarget, meshes[0], this._dataWriter, this._bufferViews, this._accessors, state.convertToRightHanded);
 
             for (const mesh of meshes) {
                 state.bindMorphDataToMesh(mesh, glTFMorphTarget);
@@ -1088,7 +1108,7 @@ export class GLTFExporter {
         }
     }
 
-    private async _exportNodeAsync(babylonNode: Node, state: ExporterState, convertToRightHanded: boolean): Promise<number> {
+    private async _exportNodeAsync(babylonNode: Node, state: ExporterState): Promise<number> {
         let nodeIndex = this._nodeMap.get(babylonNode);
         if (nodeIndex !== undefined) {
             return nodeIndex;
@@ -1109,7 +1129,7 @@ export class GLTFExporter {
             if (babylonNode instanceof Mesh || babylonNode instanceof InstancedMesh) {
                 const babylonMesh = babylonNode instanceof Mesh ? babylonNode : babylonNode.sourceMesh;
                 if (babylonMesh.subMeshes && babylonMesh.subMeshes.length > 0) {
-                    node.mesh = await this._exportMeshAsync(babylonMesh, state, convertToRightHanded);
+                    node.mesh = await this._exportMeshAsync(babylonMesh, state);
                 }
 
                 if (babylonNode.skeleton) {
@@ -1137,14 +1157,14 @@ export class GLTFExporter {
                 }
 
                 this._nodesCameraMap.get(gltfCamera)?.push(node);
-                this._setCameraTransformation(node, babylonNode, convertToRightHanded);
+                this._setCameraTransformation(node, babylonNode, state.convertToRightHanded);
             }
         }
 
         for (const babylonChildNode of babylonNode.getChildren()) {
             if (this._shouldExportNode(babylonChildNode)) {
                 node.children ||= [];
-                node.children.push(await this._exportNodeAsync(babylonChildNode, state, convertToRightHanded));
+                node.children.push(await this._exportNodeAsync(babylonChildNode, state));
             }
         }
 
@@ -1166,7 +1186,7 @@ export class GLTFExporter {
                 this._bufferViews,
                 this._accessors,
                 this._animationSampleRate,
-                convertToRightHanded,
+                state.convertToRightHanded,
                 this._options.shouldExportAnimation
             );
             if (babylonNode.animations.length) {
@@ -1180,7 +1200,7 @@ export class GLTFExporter {
                     this._bufferViews,
                     this._accessors,
                     this._animationSampleRate,
-                    convertToRightHanded,
+                    state.convertToRightHanded,
                     this._options.shouldExportAnimation
                 );
             }
@@ -1197,8 +1217,7 @@ export class GLTFExporter {
         fillMode: number,
         sideOrientation: number,
         state: ExporterState,
-        primitive: IMeshPrimitive,
-        convertToRightHanded: boolean
+        primitive: IMeshPrimitive
     ): void {
         const is32Bits = areIndices32Bits(indices, count);
         let indicesToExport = indices;
@@ -1206,11 +1225,13 @@ export class GLTFExporter {
         primitive.mode = getPrimitiveMode(fillMode);
 
         // Flip if triangle winding order is not CCW as glTF is always CCW.
-        let flip = isTriangleFillMode(fillMode) && sideOrientation !== Material.CounterClockWiseSideOrientation;
+        let invertedMaterial = sideOrientation !== Material.CounterClockWiseSideOrientation;
 
-        if (convertToRightHanded) {
-            flip = !flip;
+        if (state.convertToRightHanded && !state.wasAddedByNoopNode) {
+            invertedMaterial = !invertedMaterial;
         }
+
+        const flip = isTriangleFillMode(fillMode) && invertedMaterial;
 
         if (flip) {
             if (fillMode === Material.TriangleStripDrawMode || fillMode === Material.TriangleFanDrawMode) {
@@ -1341,7 +1362,7 @@ export class GLTFExporter {
         primitive.material = materialIndex;
     }
 
-    private async _exportMeshAsync(babylonMesh: Mesh, state: ExporterState, convertToRightHanded: boolean): Promise<number> {
+    private async _exportMeshAsync(babylonMesh: Mesh, state: ExporterState): Promise<number> {
         let meshIndex = state.getMesh(babylonMesh);
         if (meshIndex !== undefined) {
             return meshIndex;
@@ -1369,7 +1390,7 @@ export class GLTFExporter {
                 const fillMode = babylonMesh.overrideRenderingFillMode ?? babylonMaterial.fillMode;
 
                 const sideOrientation = babylonMaterial._getEffectiveOrientation(babylonMesh);
-                this._exportIndices(indices, subMesh.indexStart, subMesh.indexCount, -subMesh.verticesStart, fillMode, sideOrientation, state, primitive, convertToRightHanded);
+                this._exportIndices(indices, subMesh.indexStart, subMesh.indexCount, -subMesh.verticesStart, fillMode, sideOrientation, state, primitive);
 
                 // Vertex buffers
                 for (const vertexBuffer of Object.values(vertexBuffers)) {
