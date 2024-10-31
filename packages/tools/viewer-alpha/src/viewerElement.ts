@@ -379,10 +379,16 @@ export class HTML3DElement extends LitElement {
     public hotspots: Nullable<Record<string, ViewerHotSpotQuery>> = null;
 
     /**
-     * This default animation index to select when a model is loaded.
+     * The default animation index to select when a model is loaded.
      */
     @property({ attribute: "default-animation", reflect: true })
     public defaultAnimation: Nullable<number> = null;
+
+    /**
+     * True if the default animation should play automatically when a model is loaded.
+     */
+    @property({ attribute: "animation-auto-play", reflect: true, type: Boolean })
+    public animationAutoPlay = false;
 
     /**
      * The list of animation names for the currently loaded model.
@@ -657,6 +663,9 @@ export class HTML3DElement extends LitElement {
                     await this._viewerDetails.viewer.loadModel(this.source, { pluginExtension: this.extension ?? undefined });
                     if (this.defaultAnimation) {
                         this._viewerDetails.viewer.selectedAnimation = this.defaultAnimation;
+                    }
+                    if (this.animationAutoPlay) {
+                        this._viewerDetails.viewer.playAnimation();
                     }
                 } else {
                     await this._viewerDetails.viewer.resetModel();
