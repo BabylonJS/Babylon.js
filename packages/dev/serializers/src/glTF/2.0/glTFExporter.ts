@@ -1225,13 +1225,17 @@ export class GLTFExporter {
         primitive.mode = getPrimitiveMode(fillMode);
 
         // Flip if triangle winding order is not CCW as glTF is always CCW.
-        let invertedMaterial = sideOrientation !== Material.CounterClockWiseSideOrientation;
+        const invertedMaterial = sideOrientation !== Material.CounterClockWiseSideOrientation;
 
-        if (state.convertToRightHanded && !state.wasAddedByNoopNode) {
-            invertedMaterial = !invertedMaterial;
-        }
+        // Temporary logic to handle indices flipping. Not sure how this is working yet.
+        const A = state.wasAddedByNoopNode;
+        const B = state.convertToRightHanded;
+        const C = invertedMaterial;
 
-        const flip = isTriangleFillMode(fillMode) && invertedMaterial;
+        const result1 = !A && !B;
+        const result2 = !A && C;
+
+        const flip = isTriangleFillMode(fillMode) && (result1 || result2);
 
         if (flip) {
             if (fillMode === Material.TriangleStripDrawMode || fillMode === Material.TriangleFanDrawMode) {
