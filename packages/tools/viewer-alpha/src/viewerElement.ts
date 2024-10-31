@@ -67,24 +67,6 @@ export class HTML3DElement extends LitElement {
 
     private readonly _propertyBindings = [
         this._createPropertyBinding(
-            "environment",
-            (viewer) => viewer.viewer.onEnvironmentChanged,
-            async (details) => {
-                try {
-                    if (this.environment) {
-                        await details.viewer.loadEnvironment(this.environment);
-                    } else {
-                        await details.viewer.resetEnvironment();
-                    }
-                } catch (error) {
-                    Logger.Log(error);
-                }
-            },
-            () => {
-                this._dispatchCustomEvent("environmentchange", (type) => new Event(type));
-            }
-        ),
-        this._createPropertyBinding(
             "clearColor",
             (details) => details.scene.onClearColorChangedObservable,
             (details) => (details.scene.clearColor = this.clearColor ?? new Color4(0, 0, 0, 0)),
@@ -475,8 +457,12 @@ export class HTML3DElement extends LitElement {
         } else {
             this._propertyBindings.filter((binding) => changedProperties.has(binding.property)).forEach((binding) => binding.updateViewer(this._viewerDetails));
 
-            if (changedProperties.has("source")) {
+            if (changedProperties.has("source" satisfies keyof this)) {
                 this._updateModel();
+            }
+
+            if (changedProperties.has("environment" satisfies keyof this)) {
+                this._updateEnv();
             }
         }
     }
@@ -611,6 +597,10 @@ export class HTML3DElement extends LitElement {
                     onInitialized: (details) => {
                         this._viewerDetails = details;
 
+                        details.viewer.onEnvironmentChanged.add(() => {
+                            this._dispatchCustomEvent("environmentchange", (type) => new Event(type));
+                        });
+
                         details.viewer.onEnvironmentError.add((error) => {
                             this._dispatchCustomEvent("environmenterror", (type) => new ErrorEvent(type, { error }));
                         });
@@ -625,8 +615,6 @@ export class HTML3DElement extends LitElement {
                             this._dispatchCustomEvent("modelerror", (type) => new ErrorEvent(type, { error }));
                         });
 
-                        this._propertyBindings.forEach((binding) => binding.onInitialized(details));
-
                         details.viewer.onIsAnimationPlayingChanged.add(() => {
                             this._isAnimationPlaying = details.viewer.isAnimationPlaying ?? false;
                             this._dispatchCustomEvent("animationplayingchange", (type) => new Event(type));
@@ -638,6 +626,9 @@ export class HTML3DElement extends LitElement {
                         });
 
                         this._updateModel();
+                        this._updateEnv();
+
+                        this._propertyBindings.forEach((binding) => binding.onInitialized(details));
 
                         this._dispatchCustomEvent("viewerready", (type) => new Event(type));
                     },
@@ -668,6 +659,18 @@ export class HTML3DElement extends LitElement {
                 await this._viewerDetails?.viewer.loadModel(this.source, { pluginExtension: this.extension ?? undefined });
             } else {
                 await this._viewerDetails?.viewer.resetModel();
+            }
+        } catch (error) {
+            Logger.Log(error);
+        }
+    }
+
+    private async _updateEnv() {
+        try {
+            if (this.environment) {
+                await this._viewerDetails?.viewer.loadEnvironment(this.environment);
+            } else {
+                await this._viewerDetails?.viewer.resetEnvironment();
             }
         } catch (error) {
             Logger.Log(error);
