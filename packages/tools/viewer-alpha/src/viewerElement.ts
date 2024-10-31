@@ -52,11 +52,6 @@ interface HTML3DElementEventMap extends HTMLElementEventMap {
     animationprogresschange: Event;
 }
 
-const selectedAnimationKey = Symbol("_selectedAnimation");
-type PrivateState = {
-    [selectedAnimationKey]: number;
-};
-
 /**
  * Represents a custom element that displays a 3D model using the Babylon.js Viewer.
  */
@@ -90,10 +85,10 @@ export class HTML3DElement extends LitElement {
             }
         ),
         this._createPropertyBinding(
-            selectedAnimationKey,
+            "selectedAnimation",
             (details) => details.viewer.onSelectedAnimationChanged,
-            (details) => (details.viewer.selectedAnimation = this[selectedAnimationKey]),
-            (details) => (this[selectedAnimationKey] = details.viewer.selectedAnimation ?? -1)
+            (details) => (details.viewer.selectedAnimation = this.selectedAnimation),
+            (details) => (this.selectedAnimation = details.viewer.selectedAnimation ?? -1)
         ),
     ] as const;
 
@@ -393,9 +388,8 @@ export class HTML3DElement extends LitElement {
     /**
      * The currently selected animation index.
      */
-    public get selectedAnimation(): number {
-        return this[selectedAnimationKey];
-    }
+    @property({ attribute: false, reflect: true })
+    public selectedAnimation = -1;
 
     /**
      * True if an animation is currently playing.
@@ -418,9 +412,6 @@ export class HTML3DElement extends LitElement {
 
     @state()
     private _animations: string[] = [];
-
-    @state()
-    private [selectedAnimationKey]: PrivateState[typeof selectedAnimationKey] = -1;
 
     @state()
     private _isAnimationPlaying = false;
@@ -448,20 +439,20 @@ export class HTML3DElement extends LitElement {
     }
 
     // eslint-disable-next-line babylonjs/available
-    override update(changedProperties: PropertyValues): void {
+    override update(changedProperties: PropertyValues<this>): void {
         super.update(changedProperties);
 
-        if (changedProperties.get("engine" satisfies keyof this)) {
+        if (changedProperties.get("engine")) {
             this._tearDownViewer();
             this._setupViewer();
         } else {
             this._propertyBindings.filter((binding) => changedProperties.has(binding.property)).forEach((binding) => binding.updateViewer(this._viewerDetails));
 
-            if (changedProperties.has("source" satisfies keyof this)) {
+            if (changedProperties.has("source")) {
                 this._updateModel();
             }
 
-            if (changedProperties.has("environment" satisfies keyof this)) {
+            if (changedProperties.has("environment")) {
                 this._updateEnv();
             }
         }
@@ -506,7 +497,7 @@ export class HTML3DElement extends LitElement {
                                   </select>
                                   ${this.animations.length > 1
                                       ? html`<select aria-label="Select Animation" @change="${this._onSelectedAnimationChanged}">
-                                            ${this.animations.map((name, index) => html`<option value="${index}" .selected="${this.selectedAnimation == index}">${name}</option>`)}
+                                            ${this.animations.map((name, index) => html`<option value="${index}" .selected="${this.selectedAnimation === index}">${name}</option>`)}
                                         </select>`
                                       : ""}
                               </div>
@@ -532,7 +523,7 @@ export class HTML3DElement extends LitElement {
 
     private _onSelectedAnimationChanged(event: Event) {
         const selectElement = event.target as HTMLSelectElement;
-        this[selectedAnimationKey] = Number(selectElement.value);
+        this.selectedAnimation = Number(selectElement.value);
     }
 
     private _onAnimationSpeedChanged(event: Event) {
@@ -559,7 +550,7 @@ export class HTML3DElement extends LitElement {
     }
 
     private _createPropertyBinding(
-        property: keyof HTML3DElement | keyof PrivateState,
+        property: keyof HTML3DElement,
         getObservable: (viewerDetails: Readonly<ViewerDetails>) => Observable<any>,
         updateViewer: (viewerDetails: Readonly<ViewerDetails>) => void,
         updateElement: (viewerDetails: Readonly<ViewerDetails>) => void
