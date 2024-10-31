@@ -108,6 +108,14 @@ export interface IBoundingBoxGizmo extends IGizmo {
 }
 
 /**
+ * Dragging operation in observable
+ */
+export const enum DragOperation {
+    Rotation,
+    Scaling,
+}
+
+/**
  * Bounding box gizmo
  */
 export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
@@ -130,6 +138,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
     private _tmpRotationMatrix = new Matrix();
     private _incrementalStartupValue = Vector3.Zero();
     private _incrementalAnchorStartupValue = Vector3.Zero();
+
     /**
      * If child meshes should be ignored when calculating the bounding box. This should be set to true to avoid perf hits with heavily nested meshes (Default: false)
      */
@@ -443,8 +452,13 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                 totalTurnAmountOfDrag = 0;
                 previousProjectDist = 0;
             });
+            const computeAxis = function () {
+                const dragAxisIndex = Math.floor(i / 4);
+                TmpVectors.Vector3[0].set(dragAxisIndex == 0 ? 1 : 0, dragAxisIndex == 1 ? 1 : 0, dragAxisIndex == 2 ? 1 : 0);
+                return TmpVectors.Vector3[0];
+            };
             rotateAnchorsDragBehavior.onDragObservable.add((event) => {
-                this.onRotationSphereDragObservable.notifyObservers({});
+                this.onRotationSphereDragObservable.notifyObservers({ dragOperation: DragOperation.Rotation, dragAxis: computeAxis().clone() });
                 if (this.attachedMesh) {
                     const originalParent = this.attachedMesh.parent;
                     if (originalParent && (originalParent as Mesh).scaling && (originalParent as Mesh).scaling.isNonUniformWithinEpsilon(0.001)) {
@@ -522,12 +536,12 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
 
             // Selection/deselection
             rotateAnchorsDragBehavior.onDragStartObservable.add(() => {
-                this.onDragStartObservable.notifyObservers({});
+                this.onDragStartObservable.notifyObservers({ dragOperation: DragOperation.Rotation, dragAxis: computeAxis().clone() });
                 this._dragging = true;
                 this._selectNode(anchor);
             });
             rotateAnchorsDragBehavior.onDragEndObservable.add((event) => {
-                this.onRotationSphereDragEndObservable.notifyObservers({});
+                this.onRotationSphereDragEndObservable.notifyObservers({ dragOperation: DragOperation.Rotation, dragAxis: computeAxis().clone() });
                 this._dragging = false;
                 this._selectNode(null);
                 this._updateDummy();
@@ -576,7 +590,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                     let previousScale = 0;
                     box.addBehavior(scaleBoxesDragBehavior);
                     scaleBoxesDragBehavior.onDragObservable.add((event) => {
-                        this.onScaleBoxDragObservable.notifyObservers({});
+                        this.onScaleBoxDragObservable.notifyObservers({ dragOperation: DragOperation.Scaling, dragAxis: new Vector3(i - 1, j - 1, k - 1) });
                         if (this.attachedMesh) {
                             const originalParent = this.attachedMesh.parent;
                             if (originalParent && (originalParent as Mesh).scaling && (originalParent as Mesh).scaling.isNonUniformWithinEpsilon(0.001)) {
@@ -657,7 +671,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
 
                     // Selection/deselection
                     scaleBoxesDragBehavior.onDragStartObservable.add(() => {
-                        this.onDragStartObservable.notifyObservers({});
+                        this.onDragStartObservable.notifyObservers({ dragOperation: DragOperation.Scaling, dragAxis: new Vector3(i - 1, j - 1, k - 1) });
                         this._dragging = true;
                         this._selectNode(box);
                         totalRelativeDragDistance = 0;
@@ -666,7 +680,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                         this._incrementalAnchorStartupValue.copyFrom(this._anchorMesh!.scaling);
                     });
                     scaleBoxesDragBehavior.onDragEndObservable.add((event) => {
-                        this.onScaleBoxDragEndObservable.notifyObservers({});
+                        this.onScaleBoxDragEndObservable.notifyObservers({ dragOperation: DragOperation.Scaling, dragAxis: new Vector3(i - 1, j - 1, k - 1) });
                         this._dragging = false;
                         this._selectNode(null);
                         this._updateDummy();
