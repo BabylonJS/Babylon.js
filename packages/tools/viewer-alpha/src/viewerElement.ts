@@ -19,6 +19,7 @@ const pauseFilledIcon = "M5 2a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V4a2
 
 const allowedAnimationSpeeds = [0.5, 1, 1.5, 2] as const;
 
+// Converts any standard html color string to a Color4 object.
 function parseColor(color: string | null | undefined): Nullable<Color4> {
     if (!color) {
         return null;
@@ -40,6 +41,7 @@ function parseColor(color: string | null | undefined): Nullable<Color4> {
     return new Color4(data[0] / 255, data[1] / 255, data[2] / 255, data[3] / 255);
 }
 
+// Custom events for the HTML3DElement.
 interface HTML3DElementEventMap extends HTMLElementEventMap {
     viewerready: Event;
     environmentchange: Event;
@@ -60,6 +62,7 @@ export class HTML3DElement extends LitElement {
     private readonly _viewerLock = new AsyncLock();
     private _viewerDetails?: Readonly<ViewerDetails>;
 
+    // Bindings for properties that are synchronized both ways between the lower level Viewer and the HTML3DElement.
     private readonly _propertyBindings = [
         this._createPropertyBinding(
             "clearColor",
@@ -345,15 +348,15 @@ export class HTML3DElement extends LitElement {
      * Enables or disables camera auto-orbit.
      */
     @property({
-        attribute: "camera-auto-orbit-disabled",
+        attribute: "camera-auto-orbit",
         type: Boolean,
-        converter: {
-            fromAttribute: (value: string) => !!value,
-            toAttribute: (value: boolean) => (value ? null : ""),
-        },
     })
-    public cameraAutoOrbit = true;
+    public cameraAutoOrbit = false;
 
+    /**
+     * Camera orbit can only be set as an attribute, and is set on the camera each time a new model is loaded.
+     * For access to the real time camera properties, use viewerDetails.camera.
+     */
     @property({
         attribute: "camera-orbit",
         converter: (value) => {
@@ -378,6 +381,10 @@ export class HTML3DElement extends LitElement {
     })
     private _cameraOrbitCoercer: Nullable<(camera: ArcRotateCamera) => void> = null;
 
+    /**
+     * Camera target can only be set as an attribute, and is set on the camera each time a new model is loaded.
+     * For access to the real time camera properties, use viewerDetails.camera.
+     */
     @property({
         attribute: "camera-target",
         converter: (value) => {
@@ -610,6 +617,7 @@ export class HTML3DElement extends LitElement {
         }
     }
 
+    // Helper function to simplify keeping Viewer properties in sync with HTML3DElement properties.
     private _createPropertyBinding(
         property: keyof HTML3DElement,
         getObservable: (viewerDetails: Readonly<ViewerDetails>) => Observable<any>,
@@ -618,17 +626,20 @@ export class HTML3DElement extends LitElement {
     ) {
         return {
             property,
+            // Called each time a Viewer instance is created.
             onInitialized: (viewerDetails: Readonly<ViewerDetails>) => {
                 getObservable(viewerDetails).add(() => {
                     updateElement(viewerDetails);
                 });
                 updateViewer(viewerDetails);
             },
+            // Called when the HTML3DElement property should be propagated to the Viewer.
             updateViewer: () => {
                 if (this._viewerDetails) {
                     updateViewer(this._viewerDetails);
                 }
             },
+            // Called to re-sync the HTML3DElement property with its corresponding attribute.
             syncToAttribute: () => {
                 const descriptor = HTML3DElement.elementProperties.get(property);
                 if (descriptor) {
@@ -681,11 +692,16 @@ export class HTML3DElement extends LitElement {
 
                         details.viewer.onModelChanged.add(() => {
                             this._animations = [...details.viewer.animations];
+
+                            // When attributes are explicitly set, they are re-applied when a new model is loaded.
                             this._propertyBindings.forEach((binding) => binding.syncToAttribute());
 
+                            // The same goes for camera pose attributes, but it is handled a little differently because there are no corresponding public properties
+                            // (since the underlying Babylon camera already has these properties).
                             this._cameraOrbitCoercer?.(details.camera);
                             this._cameraTargetCoercer?.(details.camera);
 
+                            // If animation auto play was set, then start the default animation (if possible).
                             if (this.animationAutoPlay) {
                                 details.viewer.playAnimation();
                             }
