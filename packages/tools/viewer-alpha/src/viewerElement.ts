@@ -367,18 +367,42 @@ export class HTML3DElement extends LitElement {
             }
 
             return (camera: ArcRotateCamera) => {
-                let index = 0;
-                for (const property of ["alpha", "beta", "radius"] as const) {
+                for (const [index, property] of (["alpha", "beta", "radius"] as const).entries()) {
                     const value = array[index];
                     if (value !== "auto") {
                         camera[property] = Number(value);
                     }
-                    index++;
                 }
             };
         },
     })
     private _cameraOrbitCoercer: Nullable<(camera: ArcRotateCamera) => void> = null;
+
+    @property({
+        attribute: "camera-target",
+        converter: (value) => {
+            if (!value) {
+                return null;
+            }
+
+            const array = value.split(/\s+/);
+            if (array.length !== 3) {
+                throw new Error("cameraTarget should be defined as 'x y z'");
+            }
+
+            return (camera: ArcRotateCamera) => {
+                const target = camera.target;
+                for (const [index, property] of (["x", "y", "z"] as const).entries()) {
+                    const value = array[index];
+                    if (value !== "auto") {
+                        target[property] = Number(value);
+                    }
+                }
+                camera.target = target.clone();
+            };
+        },
+    })
+    private _cameraTargetCoercer: Nullable<(camera: ArcRotateCamera) => void> = null;
 
     /**
      * A string value that encodes one or more hotspots.
@@ -660,6 +684,7 @@ export class HTML3DElement extends LitElement {
                             this._propertyBindings.forEach((binding) => binding.syncToAttribute());
 
                             this._cameraOrbitCoercer?.(details.camera);
+                            this._cameraTargetCoercer?.(details.camera);
 
                             if (this.animationAutoPlay) {
                                 details.viewer.playAnimation();
