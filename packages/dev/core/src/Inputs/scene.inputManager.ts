@@ -15,6 +15,8 @@ import { EngineStore } from "../Engines/engineStore";
 
 import type { Scene } from "../scene";
 import { _ImportHelper } from "core/import.helper";
+import { getMaxTouchPoints } from "core/DeviceInput/inputHelpers";
+import { Tools } from "core/Misc/tools";
 
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -97,7 +99,12 @@ export class InputManager {
     private _previousButtonPressed: number;
     private _currentPickResult: Nullable<PickingInfo> = null;
     private _previousPickResult: Nullable<PickingInfo> = null;
-    private _activeTouchIds: number[] = [];
+
+    private _maxPointerIds = getMaxTouchPoints();
+    private _activePointerIds: Array<number> = new Array<number>(this._maxPointerIds).fill(-1);
+    /** Tracks the count of used slots in _activePointerIds for perf */
+    private _activePointerIdsCount: number = 0;
+
     private _doubleClickOccured = false;
     private _isSwiping: boolean = false;
     private _swipeButtonPressed: number = -1;
@@ -413,7 +420,7 @@ export class InputManager {
                         );
 
                         if (pickResult?.pickedMesh && actionManager) {
-                            if (this._activeTouchIds.length !== 0 && Date.now() - this._startingPointerTime > InputManager.LongPressDelay && !this._isPointerSwiping()) {
+                            if (this._activePointerIdsCount !== 0 && Date.now() - this._startingPointerTime > InputManager.LongPressDelay && !this._isPointerSwiping()) {
                                 this._startingPointerTime = 0;
                                 actionManager.processTrigger(Constants.ACTION_OnLongPressTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                             }
@@ -809,7 +816,14 @@ export class InputManager {
         };
 
         this._onPointerDown = (evt: IPointerEvent) => {
-            this._activeTouchIds.push(evt.pointerId);
+            const freeIndex = this._activePointerIds.indexOf(-1);
+            if (freeIndex === -1) {
+                // If we don't have an available slot, ignore the event
+                Tools.Warn(`Max number of pointers exceeded.  Ignoring pointers in excess of ${this._maxPointerIds}`);
+                return;
+            }
+            this._activePointerIds[freeIndex] = evt.pointerId;
+            this._activePointerIdsCount++;
             this._pickedDownMesh = null;
             this._meshPickProceed = false;
 
@@ -900,13 +914,14 @@ export class InputManager {
         };
 
         this._onPointerUp = (evt: IPointerEvent) => {
-            const activeTouchIdIndex = this._activeTouchIds.indexOf(evt.pointerId);
-            if (activeTouchIdIndex === -1) {
+            const pointerIdIndex = this._activePointerIds.indexOf(evt.pointerId);
+            if (pointerIdIndex === -1) {
                 // If this pointerId is not paired with an _onPointerDown call, ignore it
                 return;
             }
 
-            this._activeTouchIds.splice(activeTouchIdIndex, 1);
+            this._activePointerIds[pointerIdIndex] = -1;
+            this._activePointerIdsCount--;
             this._pickedUpMesh = null;
             this._meshPickProceed = false;
 
@@ -1073,12 +1088,12 @@ export class InputManager {
                     if (eventData.inputIndex === PointerInput.LeftClick) {
                         if (attachDown && deviceSource.getInput(eventData.inputIndex) === 1) {
                             this._onPointerDown(eventData);
-                            if (this._activeTouchIds.length > 1) {
+                            if (this._activePointerIdsCount > 1) {
                                 this._isMultiTouchGesture = true;
                             }
                         } else if (attachUp && deviceSource.getInput(eventData.inputIndex) === 0) {
                             this._onPointerUp(eventData);
-                            if (this._activeTouchIds.length === 0) {
+                            if (this._activePointerIdsCount === 0) {
                                 this._isMultiTouchGesture = false;
                             }
                         }
