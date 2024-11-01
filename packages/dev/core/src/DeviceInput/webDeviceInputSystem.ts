@@ -6,7 +6,6 @@ import { Tools } from "../Misc/tools";
 import type { Nullable } from "../types";
 import { DeviceEventFactory } from "./eventFactory";
 import { DeviceType, PointerInput } from "./InputDevices/deviceEnums";
-import { getMaxTouchPoints } from "./inputHelpers";
 import type { IDeviceInputSystem } from "./inputInterfaces";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -63,7 +62,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
     // Array to store active Pointer ID values; prevents issues with negative pointerIds
     private _activeTouchIds: Array<number>;
-    private _maxTouchPoints: number = getMaxTouchPoints();
+    private _maxTouchPoints: number = 0;
 
     private _pointerInputClearObserver: Nullable<Observer<AbstractEngine>> = null;
 
@@ -416,6 +415,8 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
      * Handle all actions that come from pointer interaction
      */
     private _handlePointerActions(): void {
+        // If maxTouchPoints is defined, use that value.  Otherwise, allow for a minimum for supported gestures like pinch
+        this._maxTouchPoints = (IsNavigatorAvailable() && navigator.maxTouchPoints) || 2;
         if (!this._activeTouchIds) {
             this._activeTouchIds = new Array<number>(this._maxTouchPoints);
         }

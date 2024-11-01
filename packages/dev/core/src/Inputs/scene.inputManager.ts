@@ -100,8 +100,7 @@ export class InputManager {
     private _currentPickResult: Nullable<PickingInfo> = null;
     private _previousPickResult: Nullable<PickingInfo> = null;
 
-    private _maxPointerIds = getMaxTouchPoints();
-    private _activePointerIds: Array<number> = new Array<number>(this._maxPointerIds).fill(-1);
+    private _activePointerIds: Array<number> = new Array<number>();
     /** Tracks the count of used slots in _activePointerIds for perf */
     private _activePointerIdsCount: number = 0;
 
@@ -818,11 +817,10 @@ export class InputManager {
         this._onPointerDown = (evt: IPointerEvent) => {
             const freeIndex = this._activePointerIds.indexOf(-1);
             if (freeIndex === -1) {
-                // If we don't have an available slot, ignore the event
-                Tools.Warn(`Max number of pointers exceeded.  Ignoring pointers in excess of ${this._maxPointerIds}`);
-                return;
+                this._activePointerIds.push(evt.pointerId);
+            } else {
+                this._activePointerIds[freeIndex] = evt.pointerId;
             }
-            this._activePointerIds[freeIndex] = evt.pointerId;
             this._activePointerIdsCount++;
             this._pickedDownMesh = null;
             this._meshPickProceed = false;
