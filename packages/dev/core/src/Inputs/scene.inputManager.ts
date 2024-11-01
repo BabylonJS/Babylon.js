@@ -15,8 +15,6 @@ import { EngineStore } from "../Engines/engineStore";
 
 import type { Scene } from "../scene";
 import { _ImportHelper } from "core/import.helper";
-import { getMaxTouchPoints } from "core/DeviceInput/inputHelpers";
-import { Tools } from "core/Misc/tools";
 
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
