@@ -74,24 +74,6 @@ export class HTML3DElement extends LitElement {
             (details) => (this.cameraAutoOrbit = details.viewer.cameraAutoOrbit)
         ),
         this._createPropertyBinding(
-            "cameraOrbitAlpha",
-            (details) => details.camera.onViewMatrixChangedObservable,
-            (details) => (details.camera.alpha = this.cameraOrbitAlpha ?? details.camera.alpha),
-            (details) => (this.cameraOrbitAlpha = details.camera.alpha)
-        ),
-        this._createPropertyBinding(
-            "cameraOrbitBeta",
-            (details) => details.camera.onViewMatrixChangedObservable,
-            (details) => (details.camera.beta = this.cameraOrbitBeta ?? details.camera.beta),
-            (details) => (this.cameraOrbitBeta = details.camera.beta)
-        ),
-        this._createPropertyBinding(
-            "cameraOrbitRadius",
-            (details) => details.camera.onViewMatrixChangedObservable,
-            (details) => (details.camera.radius = this.cameraOrbitRadius ?? details.camera.radius),
-            (details) => (this.cameraOrbitRadius = details.camera.radius)
-        ),
-        this._createPropertyBinding(
             "animationSpeed",
             (details) => details.viewer.onAnimationSpeedChanged,
             (details) => (details.viewer.animationSpeed = this.animationSpeed),
@@ -372,23 +354,31 @@ export class HTML3DElement extends LitElement {
     })
     public cameraAutoOrbit = true;
 
-    /**
-     * The camera's horizontal rotation around the target.
-     */
-    @property({ attribute: "camera-orbit-alpha", type: Number })
-    public cameraOrbitAlpha: Nullable<number> = null;
+    @property({
+        attribute: "camera-orbit",
+        converter: (value) => {
+            if (!value) {
+                return null;
+            }
 
-    /**
-     * The camera's vertical rotation around the target.
-     */
-    @property({ attribute: "camera-orbit-beta", type: Number })
-    public cameraOrbitBeta: Nullable<number> = null;
+            const array = value.split(/\s+/);
+            if (array.length !== 3) {
+                throw new Error("cameraOrbit should be defined as 'alpha beta radius'");
+            }
 
-    /**
-     * The camera's distance from the target.
-     */
-    @property({ attribute: "camera-orbit-radius", type: Number })
-    public cameraOrbitRadius: Nullable<number> = null;
+            return (details: ViewerDetails) => {
+                let index = 0;
+                for (const property of ["alpha", "beta", "radius"] as const) {
+                    const value = array[index];
+                    if (value !== "auto") {
+                        details.camera[property] = Number(value);
+                    }
+                    index++;
+                }
+            };
+        },
+    })
+    private _cameraOrbitCoercer: Nullable<(details: ViewerDetails) => void> = null;
 
     /**
      * A string value that encodes one or more hotspots.
@@ -602,28 +592,15 @@ export class HTML3DElement extends LitElement {
         updateViewer: (viewerDetails: Readonly<ViewerDetails>) => void,
         updateElement: (viewerDetails: Readonly<ViewerDetails>) => void
     ) {
-        let suspended = false;
-
         return {
             property,
             onInitialized: (viewerDetails: Readonly<ViewerDetails>) => {
                 getObservable(viewerDetails).add(() => {
-                    if (!suspended) {
-                        updateElement(viewerDetails);
-                    }
+                    updateElement(viewerDetails);
                 });
                 updateViewer(viewerDetails);
             },
             updateViewer: () => {
-                if (this._viewerDetails) {
-                    updateViewer(this._viewerDetails);
-                }
-            },
-            suspend: () => {
-                suspended = true;
-            },
-            resume: () => {
-                suspended = false;
                 if (this._viewerDetails) {
                     updateViewer(this._viewerDetails);
                 }
@@ -681,7 +658,9 @@ export class HTML3DElement extends LitElement {
                         details.viewer.onModelChanged.add(() => {
                             this._animations = [...details.viewer.animations];
                             this._propertyBindings.forEach((binding) => binding.syncToAttribute());
-                            this._propertyBindings.forEach((binding) => binding.resume());
+
+                            this._cameraOrbitCoercer?.(details);
+
                             if (this.animationAutoPlay) {
                                 details.viewer.playAnimation();
                             }
@@ -691,7 +670,6 @@ export class HTML3DElement extends LitElement {
 
                         details.viewer.onModelError.add((error) => {
                             this._animations = [...details.viewer.animations];
-                            this._propertyBindings.forEach((binding) => binding.resume());
                             this._dispatchCustomEvent("modelerror", (type) => new ErrorEvent(type, { error }));
                         });
 
@@ -737,7 +715,6 @@ export class HTML3DElement extends LitElement {
         if (this._viewerDetails) {
             try {
                 if (this.source) {
-                    this._propertyBindings.forEach((binding) => binding.suspend());
                     await this._viewerDetails.viewer.loadModel(this.source, { pluginExtension: this.extension ?? undefined });
                 } else {
                     await this._viewerDetails.viewer.resetModel();
