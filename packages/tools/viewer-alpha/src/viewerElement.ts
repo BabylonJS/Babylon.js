@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { Nullable, Observable } from "core/index";
+import type { ArcRotateCamera, Nullable, Observable } from "core/index";
 
 import type { PropertyValues } from "lit";
 import type { ViewerDetails, ViewerHotSpot, ViewerHotSpotQuery } from "./viewer";
@@ -366,19 +366,19 @@ export class HTML3DElement extends LitElement {
                 throw new Error("cameraOrbit should be defined as 'alpha beta radius'");
             }
 
-            return (details: ViewerDetails) => {
+            return (camera: ArcRotateCamera) => {
                 let index = 0;
                 for (const property of ["alpha", "beta", "radius"] as const) {
                     const value = array[index];
                     if (value !== "auto") {
-                        details.camera[property] = Number(value);
+                        camera[property] = Number(value);
                     }
                     index++;
                 }
             };
         },
     })
-    private _cameraOrbitCoercer: Nullable<(details: ViewerDetails) => void> = null;
+    private _cameraOrbitCoercer: Nullable<(camera: ArcRotateCamera) => void> = null;
 
     /**
      * A string value that encodes one or more hotspots.
@@ -659,7 +659,7 @@ export class HTML3DElement extends LitElement {
                             this._animations = [...details.viewer.animations];
                             this._propertyBindings.forEach((binding) => binding.syncToAttribute());
 
-                            this._cameraOrbitCoercer?.(details);
+                            this._cameraOrbitCoercer?.(details.camera);
 
                             if (this.animationAutoPlay) {
                                 details.viewer.playAnimation();
