@@ -912,6 +912,7 @@ export class InputManager {
         this._onPointerUp = (evt: IPointerEvent) => {
             const pointerIdIndex = this._activePointerIds.indexOf(evt.pointerId);
             if (pointerIdIndex === -1) {
+                // We are attaching the pointer up to windows because of a bug in FF
                 // If this pointerId is not paired with an _onPointerDown call, ignore it
                 return;
             }
