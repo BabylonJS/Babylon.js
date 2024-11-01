@@ -1118,6 +1118,7 @@ export class GLTFExporter {
         nodeIndex = this._nodes.length;
         this._nodes.push(node);
         this._nodeMap.set(babylonNode, nodeIndex);
+        state.pushExportedNode(babylonNode);
 
         if (babylonNode.name) {
             node.name = babylonNode.name;
@@ -1228,12 +1229,8 @@ export class GLTFExporter {
         const invertedMaterial = sideOrientation !== Material.CounterClockWiseSideOrientation;
 
         // Temporary logic to handle indices flipping. Not sure how this is working yet.
-        const A = state.wasAddedByNoopNode;
-        const B = state.convertToRightHanded;
-        const C = invertedMaterial;
-
-        const result1 = !A && !B;
-        const result2 = !A && C;
+        const result1 = !state.wasAddedByNoopNode && !state.convertToRightHanded;
+        const result2 = !state.wasAddedByNoopNode && invertedMaterial;
 
         const flip = isTriangleFillMode(fillMode) && (result1 || result2);
 
