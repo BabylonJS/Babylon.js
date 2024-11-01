@@ -1,11 +1,11 @@
 import { AbstractAudioNode, AudioNodeType } from "./abstractAudioNode";
-import type { AbstractAudioSend } from "./abstractAudioSend";
+import type { AudioSend } from "./audioSend";
 
 /**
  * Abstract base class for audio senders.
  */
-export abstract class AbstractAudioSender extends AbstractAudioNode {
-    private _sends = new Set<AbstractAudioSend>();
+export abstract class AudioSender extends AbstractAudioNode {
+    private _sends = new Set<AudioSend>();
 
     /** @internal */
     constructor(parent: AbstractAudioNode) {
@@ -15,7 +15,7 @@ export abstract class AbstractAudioSender extends AbstractAudioNode {
     /**
      * The audio sends.
      */
-    public get sends(): IterableIterator<AbstractAudioSend> {
+    public get sends(): IterableIterator<AudioSend> {
         return this._sends.values();
     }
 
@@ -23,7 +23,7 @@ export abstract class AbstractAudioSender extends AbstractAudioNode {
      * Adds a send to the audio sender.
      * @param send - The send to add.
      */
-    public addSend(send: AbstractAudioSend): void {
+    public addSend(send: AudioSend): void {
         this._sends.add(send);
     }
 
@@ -31,7 +31,7 @@ export abstract class AbstractAudioSender extends AbstractAudioNode {
      * Removes a send from the audio sender.
      * @param send - The send to remove.
      */
-    public removeSend(send: AbstractAudioSend): void {
+    public removeSend(send: AudioSend): void {
         this._sends.delete(send);
     }
 }

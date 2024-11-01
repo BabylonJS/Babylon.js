@@ -18,7 +18,7 @@ export interface StreamingSoundOptions extends SoundOptions {
 /**
  * Abstract class representing a streaming sound in the audio engine.
  */
-export abstract class AbstractStreamingSound extends AbstractSound {
+export abstract class StreamingSound extends AbstractSound {
     private _preload: StreamingSoundPreloadType = "auto";
 
     /** @internal */

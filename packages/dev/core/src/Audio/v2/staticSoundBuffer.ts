@@ -1,4 +1,4 @@
-import type { AbstractWebAudioEngine } from "./webAudio/webAudioEngine";
+import type { AbstractAudioEngine } from "./abstractAudioEngine";
 
 /**
  * Options for creating a new static sound buffer.
@@ -13,11 +13,11 @@ export interface StaticSoundBufferOptions {
 /**
  * Abstract class for static sound buffer.
  */
-export abstract class AbstractStaticSoundBuffer {
+export abstract class StaticSoundBuffer {
     /**
      * The engine that the sound buffer belongs to.
      */
-    public readonly engine: AbstractWebAudioEngine;
+    public readonly engine: AbstractAudioEngine;
 
     public abstract get sampleRate(): number;
     public abstract get length(): number;
@@ -25,7 +25,7 @@ export abstract class AbstractStaticSoundBuffer {
     public abstract get numberOfChannels(): number;
 
     /** @internal */
-    constructor(engine: AbstractWebAudioEngine) {
+    constructor(engine: AbstractAudioEngine) {
         this.engine = engine;
     }
 }

@@ -1,21 +1,21 @@
 import type { Nullable } from "../../../types";
 import type { AbstractAudioNode } from "../abstractAudioNode";
-import { AbstractStaticSound } from "../abstractStaticSound";
-import { AbstractStaticSoundBuffer } from "../abstractStaticSoundBuffer";
-import { AbstractStaticSoundInstance } from "../abstractStaticSoundInstance";
+import { StaticSound } from "../staticSound";
+import { StaticSoundBuffer } from "../staticSoundBuffer";
+import { StaticSoundInstance } from "../staticSoundInstance";
 import { SoundState } from "../soundState";
 import { WebAudioBus } from "./webAudioBus";
-import type { AbstractWebAudioEngine, WebAudioEngine, WebAudioStaticSoundBufferOptions, WebAudioStaticSoundOptions } from "./webAudioEngine";
+import type { WebAudioEngine, InternalWebAudioEngine, WebAudioStaticSoundBufferOptions, WebAudioStaticSoundOptions } from "./webAudioEngine";
 import { WebAudioMainBus } from "./webAudioMainBus";
 
 const fileExtensionRegex = new RegExp("\\.(\\w{3,4}$|\\?)");
 
 /** @internal */
-export class WebAudioStaticSound extends AbstractStaticSound {
+export class WebAudioStaticSound extends StaticSound {
     private _gainNode: GainNode;
 
     /** @internal */
-    public override readonly engine: WebAudioEngine;
+    public override readonly engine: InternalWebAudioEngine;
 
     /** @internal */
     public audioContext: BaseAudioContext;
@@ -47,7 +47,7 @@ export class WebAudioStaticSound extends AbstractStaticSound {
     }
 
     /** @internal */
-    constructor(name: string, engine: AbstractWebAudioEngine, options: Nullable<WebAudioStaticSoundOptions> = null) {
+    constructor(name: string, engine: WebAudioEngine, options: Nullable<WebAudioStaticSoundOptions> = null) {
         super(name, engine, options);
     }
 
@@ -97,9 +97,9 @@ export class WebAudioStaticSound extends AbstractStaticSound {
 }
 
 /** @internal */
-export class WebAudioStaticSoundBuffer extends AbstractStaticSoundBuffer {
+export class WebAudioStaticSoundBuffer extends StaticSoundBuffer {
     /** @internal */
-    public override readonly engine: WebAudioEngine;
+    public override readonly engine: InternalWebAudioEngine;
 
     /** @internal */
     public audioBuffer: AudioBuffer;
@@ -125,7 +125,7 @@ export class WebAudioStaticSoundBuffer extends AbstractStaticSoundBuffer {
     }
 
     /** @internal */
-    constructor(engine: AbstractWebAudioEngine) {
+    constructor(engine: WebAudioEngine) {
         super(engine);
     }
 
@@ -174,7 +174,7 @@ export class WebAudioStaticSoundBuffer extends AbstractStaticSoundBuffer {
 }
 
 /** @internal */
-export class WebAudioStaticSoundInstance extends AbstractStaticSoundInstance {
+export class WebAudioStaticSoundInstance extends StaticSoundInstance {
     private _state: SoundState = SoundState.Stopped;
     private _currentTime: number = 0;
     private _startTime: number = 0;

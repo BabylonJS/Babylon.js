@@ -14,7 +14,7 @@ export interface AudioPositionerOptions extends SpatialAudioTransformOptions {}
 /**
  * Abstract base class for audio positioners.
  */
-export abstract class AbstractAudioPositioner extends AbstractAudioNode {
+export abstract class AudioPositioner extends AbstractAudioNode {
     // Not owned
     private _pannerGain: number = 1;
     private _pannerPosition: Nullable<Vector3> = null;

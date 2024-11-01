@@ -1,9 +1,9 @@
 import type { AbstractAudioEngine } from "../abstractAudioEngine";
-import { AbstractMainAudioOutput } from "../abstractMainAudioOutput";
-import type { WebAudioEngine } from "./webAudioEngine";
+import { MainAudioOutput } from "../mainAudioOutput";
+import type { InternalWebAudioEngine } from "./webAudioEngine";
 
 /** @internal */
-export class WebAudioMainOutput extends AbstractMainAudioOutput {
+export class WebAudioMainOutput extends MainAudioOutput {
     private _destinationNode: AudioDestinationNode;
 
     /** @internal */
@@ -18,6 +18,6 @@ export class WebAudioMainOutput extends AbstractMainAudioOutput {
 
     /** @internal */
     public async init(): Promise<void> {
-        this._destinationNode = (await (this.engine as WebAudioEngine).audioContext).destination;
+        this._destinationNode = (await (this.engine as InternalWebAudioEngine).audioContext).destination;
     }
 }

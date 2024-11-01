@@ -1,14 +1,14 @@
 import type { Nullable } from "../../../types";
-import { AbstractStreamingSound } from "../abstractStreamingSound";
-import { AbstractStreamingSoundInstance } from "../abstractStreamingSoundInstance";
-import type { AbstractWebAudioEngine, WebAudioEngine, WebAudioStreamingSoundOptions } from "./webAudioEngine";
+import { StreamingSound } from "../streamingSound";
+import { StreamingSoundInstance } from "../streamingSoundInstance";
+import type { WebAudioEngine, InternalWebAudioEngine, WebAudioStreamingSoundOptions } from "./webAudioEngine";
 
 /** @internal */
-export class WebAudioStreamingSound extends AbstractStreamingSound {
+export class WebAudioStreamingSound extends StreamingSound {
     private _gainNode: GainNode;
 
     /** @internal */
-    public override readonly engine: WebAudioEngine;
+    public override readonly engine: InternalWebAudioEngine;
 
     /** @internal */
     public audioContext: BaseAudioContext;
@@ -28,7 +28,7 @@ export class WebAudioStreamingSound extends AbstractStreamingSound {
     }
 
     /** @internal */
-    constructor(name: string, engine: AbstractWebAudioEngine, options: Nullable<WebAudioStreamingSoundOptions> = null) {
+    constructor(name: string, engine: WebAudioEngine, options: Nullable<WebAudioStreamingSoundOptions> = null) {
         super(name, engine, options);
     }
 
@@ -47,7 +47,7 @@ export class WebAudioStreamingSound extends AbstractStreamingSound {
 }
 
 /** @internal */
-export class WebAudioStreamingSoundInstance extends AbstractStreamingSoundInstance {
+export class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
     public get currentTime(): number {
         return 0;
     }

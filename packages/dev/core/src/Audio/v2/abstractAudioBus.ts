@@ -1,96 +1,30 @@
 import type { Nullable } from "../../types";
-import type { AudioBusNodeOptions } from "./abstractAudioBusNode";
-import { AbstractAudioBusNode } from "./abstractAudioBusNode";
 import type { AbstractAudioEngine } from "./abstractAudioEngine";
-import type { AbstractAudioPositioner } from "./abstractAudioPositioner";
-import type { AbstractAudioSender } from "./abstractAudioSender";
-import type { AbstractMainAudioBus } from "./abstractMainAudioBus";
-
-export type AbstractPrimaryAudioBus = AbstractMainAudioBus | AbstractAudioBus;
+import { AbstractNamedAudioNode, AudioNodeType } from "./abstractAudioNode";
 
 /**
- * Options for creating a new audio bus.
+ * Options for creating a new audio bus node.
  */
-export interface AudioBusOptions extends AudioBusNodeOptions {
+export interface AbstractAudioBusOptions {
     /**
-     * Whether to enable the positioner.
+     * The volume of the audio bus.
      */
-    enablePositioner?: boolean;
-    /**
-     * The output bus of the audio bus.
-     */
-    outputBus?: AbstractPrimaryAudioBus;
+    volume?: number;
 }
 
 /**
- * Abstract class for an audio bus.
+ * Abstract class representing an audio bus node with a volume control.
  */
-export abstract class AbstractAudioBus extends AbstractAudioBusNode {
-    private _outputBus: Nullable<AbstractPrimaryAudioBus> = null;
-    private _positioner: Nullable<AbstractAudioPositioner> = null;
-
+export abstract class AbstractAudioBus extends AbstractNamedAudioNode {
     /**
-     * The sender of the audio bus.
+     * The volume of the audio bus.
      */
-    public readonly sender: AbstractAudioSender;
+    public volume: number;
 
     /** @internal */
-    constructor(name: string, engine: AbstractAudioEngine, options: Nullable<AudioBusOptions> = null) {
-        super(name, engine);
+    constructor(name: string, engine: AbstractAudioEngine, options: Nullable<AbstractAudioBusOptions> = null) {
+        super(name, engine, AudioNodeType.InputOutput);
 
-        if (options?.enablePositioner) {
-            this.enablePositioner();
-        }
-
-        this.sender = {} as any; //engine.createSender(this);
-
-        if (options?.outputBus) {
-            this.outputBus = options.outputBus;
-        }
-    }
-
-    /**
-     * The positioner of the audio bus.
-     */
-    public get positioner(): Nullable<AbstractAudioPositioner> {
-        return this._positioner;
-    }
-
-    /**
-     * Enables the positioner of the audio bus.
-     * @returns A promise that resolves when the positioner is enabled.
-     */
-    public async enablePositioner() {
-        if (this._positioner) {
-            return;
-        }
-
-        this._positioner = await this.engine.createPositioner(this);
-    }
-
-    /**
-     * Gets the output bus of the audio bus.
-     */
-    public get outputBus(): Nullable<AbstractPrimaryAudioBus> {
-        return this._outputBus;
-    }
-
-    /**
-     * Sets the output bus of the audio bus.
-     */
-    public set outputBus(outputBus: Nullable<AbstractPrimaryAudioBus>) {
-        if (this._outputBus === outputBus) {
-            return;
-        }
-
-        if (this._outputBus) {
-            this._disconnect(this._outputBus);
-        }
-
-        this._outputBus = outputBus;
-
-        if (this._outputBus) {
-            this._connect(this._outputBus);
-        }
+        this.volume = options?.volume ?? 1;
     }
 }

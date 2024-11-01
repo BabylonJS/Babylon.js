@@ -1,8 +1,8 @@
 import type { AbstractAudioNode } from "../abstractAudioNode";
-import { AbstractAudioSender } from "../abstractAudioSender";
+import { AudioSender } from "../audioSender";
 
 /** @internal */
-export class WebAudioSender extends AbstractAudioSender {
+export class WebAudioSender extends AudioSender {
     /** @internal */
     constructor(parent: AbstractAudioNode) {
         super(parent);

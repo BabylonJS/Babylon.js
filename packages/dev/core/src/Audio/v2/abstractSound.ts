@@ -1,6 +1,6 @@
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
-import type { AbstractPrimaryAudioBus } from "./abstractAudioBus";
+import type { AbstractPrimaryAudioBus } from "./audioBus";
 import type { AbstractAudioEngine } from "./abstractAudioEngine";
 import { AbstractNamedAudioNode, AudioNodeType } from "./abstractAudioNode";
 import type { AbstractSoundInstance } from "./abstractSoundInstance";
