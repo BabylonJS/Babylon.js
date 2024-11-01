@@ -71,6 +71,12 @@ export class HTML3DElement extends LitElement {
             (details) => (this.clearColor = details.scene.clearColor)
         ),
         this._createPropertyBinding(
+            "skyboxBlur",
+            (details) => details.viewer.onSkyboxBlurChanged,
+            (details) => (details.viewer.skyboxBlur = this.skyboxBlur ?? details.viewer.skyboxBlur),
+            (details) => (this.skyboxBlur = details.viewer.skyboxBlur)
+        ),
+        this._createPropertyBinding(
             "cameraAutoOrbit",
             (details) => details.viewer.onCameraAutoOrbitChanged,
             (details) => (details.viewer.cameraAutoOrbit = this.cameraAutoOrbit),
@@ -770,7 +776,7 @@ export class HTML3DElement extends LitElement {
         if (this._viewerDetails) {
             try {
                 if (this.environment) {
-                    await this._viewerDetails.viewer.loadEnvironment(this.environment, { blur: this.skyboxBlur ?? undefined });
+                    await this._viewerDetails.viewer.loadEnvironment(this.environment);
                 } else {
                     await this._viewerDetails.viewer.resetEnvironment();
                 }

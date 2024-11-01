@@ -93,14 +93,7 @@ export type ViewerOptions = Partial<
     }>
 >;
 
-export type EnvironmentOptions = Partial<
-    Readonly<{
-        /**
-         * A value between 0 and 1 that specifies how much to blur the skybox.
-         */
-        blur: number;
-    }>
->;
+export type EnvironmentOptions = Partial<Readonly<{}>>;
 
 export type ViewerHotSpotQuery = {
     /**
@@ -153,6 +146,11 @@ export class Viewer implements IDisposable {
     public readonly onEnvironmentError = new Observable<unknown>();
 
     /**
+     * Fired when the skybox blur changes.
+     */
+    public readonly onSkyboxBlurChanged = new Observable<void>();
+
+    /**
      * Fired when a model is loaded into the viewer (or unloaded from the viewer).
      */
     public readonly onModelChanged = new Observable<void>();
@@ -192,6 +190,7 @@ export class Viewer implements IDisposable {
     private readonly _autoRotationBehavior: AutoRotationBehavior;
     private readonly _renderLoopController: IDisposable;
     private _skybox: Nullable<Mesh> = null;
+    private _skyboxBlur: number = 0.3;
     private _light: Nullable<HemisphericLight> = null;
 
     private _isDisposed = false;
@@ -263,6 +262,28 @@ export class Viewer implements IDisposable {
                 this._details.camera.removeBehavior(this._autoRotationBehavior);
             }
             this.onCameraAutoOrbitChanged.notifyObservers();
+        }
+    }
+
+    /**
+     * A value between 0 and 1 that specifies how much to blur the skybox.
+     */
+    public get skyboxBlur(): number {
+        return this._skyboxBlur;
+    }
+
+    public set skyboxBlur(value: number) {
+        if (value !== this._skyboxBlur) {
+            this._skyboxBlur = value;
+            if (this._skybox) {
+                const material = this._skybox.material;
+                if (material instanceof PBRMaterial) {
+                    this._snapshotHelper.disableSnapshotRendering();
+                    material.microSurface = 1.0 - value;
+                    this._snapshotHelper.enableSnapshotRendering();
+                }
+            }
+            this.onSkyboxBlurChanged.notifyObservers();
         }
     }
 
@@ -459,7 +480,7 @@ export class Viewer implements IDisposable {
                         const cubeTexture = CubeTexture.CreateFromPrefilteredData(url, this._details.scene);
                         this._details.scene.environmentTexture = cubeTexture;
 
-                        const skybox = createSkybox(this._details.scene, this._details.camera, cubeTexture, options?.blur ?? 0.3);
+                        const skybox = createSkybox(this._details.scene, this._details.camera, cubeTexture, this.skyboxBlur);
                         this._snapshotHelper.fixMeshes([skybox]);
                         this._skybox = skybox;
 

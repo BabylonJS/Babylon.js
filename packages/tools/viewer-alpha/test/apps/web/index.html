@@ -120,6 +120,13 @@
                 // The module referenced in the script tag above is loaded asynchronously, so we need to wait for it to load and for the custom element to be defined.
                 // Alternatively, we could just await import("/packages/tools/viewer-alpha/src/index.ts") here instead.
                 await customElements.whenDefined("babylon-viewer");
+
+                setInterval(() => {
+                    //console.log(viewerElement.skyboxBlur);
+                    //viewerElement.skyboxBlur = (Number(viewerElement.skyboxBlur) + 0.01) % 1;
+                    //console.log(viewerElement.skyboxBlur);
+                }, 16);
+
                 await new Promise((resolve) => setTimeout(resolve, 2000));
                 //viewerElement.source = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/BrainStem/glTF-Binary/BrainStem.glb";
                 //viewerElement.environment = "";
