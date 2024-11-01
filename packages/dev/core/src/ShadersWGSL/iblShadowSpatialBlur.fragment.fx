@@ -32,7 +32,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
     var depth: f32 = -textureLoad(depthSampler, gbufferPixelCoord, 0).x;
 
-    var X: vec2f =  vec2f(0.0);
+    var X: vec3f =  vec3f(0.0);
     for(var y: i32 = 0; y < nbWeights; y++) {
         for(var x: i32 = 0; x < nbWeights; x++) {
             var gBufferCoords: vec2i = gbufferPixelCoord + i32(stridef) * vec2i(x - (nbWeights >> 1), y - (nbWeights >> 1));
@@ -46,9 +46,9 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                                (ddepth * ddepth) -
                            1e1 * dot(dN, dN));
 
-            X +=  vec2f(w * T.x, w);
+            X +=  vec3f(w * T.x, w * T.y, w);
         }
     }
 
-    fragmentOutputs.color =  vec4f(X.x / X.y, 1.0, 0.0, 1.0);
+    fragmentOutputs.color =  vec4f(X.x / X.z, X.y / X.z, 0.0, 1.0);
 }

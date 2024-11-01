@@ -32,7 +32,7 @@ void main(void)
 
     float depth = -texelFetch(depthSampler, gbufferPixelCoord, 0).x;
 
-    vec2 X = vec2(0.0);
+    vec3 X = vec3(0.0);
     for(int y = 0; y < nbWeights; ++y) {
         for(int x = 0; x < nbWeights; ++x) {
           ivec2 gBufferCoords = gbufferPixelCoord + int(stridef) * ivec2(x - (nbWeights >> 1), y - (nbWeights >> 1));
@@ -45,9 +45,9 @@ void main(void)
                              (ddepth * ddepth) -
                          1e1 * dot(dN, dN));
 
-          X += vec2(w * T.x, w);
+          X += vec3(w * T.x, w * T.y, w);
         }
     }
 
-    gl_FragColor = vec4(X.x / X.y, 1.0, 0.0, 1.0);
+    gl_FragColor = vec4(X.x / X.z, X.y / X.z, 1.0, 1.0);
 }

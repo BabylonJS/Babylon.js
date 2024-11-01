@@ -429,6 +429,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
   var heat: f32 = 0.0f;
 #endif
   var shadowAccum: f32 = 0.0;
+  var specShadowAccum: f32 = 0.0;
   var sampleWeight : f32 = 0;
   for (var i: u32 = 0; i < nbDirs; i++) {
     var dirId: u32 = nbDirs * GlobalIndex + i;
@@ -485,14 +486,16 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
       opacity = max(opacity, ssShadow);
       shadowAccum += min(1.0 - opacity, cosNL);
       sampleWeight += cosNL;
+      // spec shadow
+      var VR : vec3f = -(uniforms.viewMtx * vec4f(reflect(-L.xyz, N), 0.0)).xyz;
+      specShadowAccum += max(1.0 - (opacity * pow(VR.z, 8.0)), 0.0);
     }
     noise.z = fract(noise.z + GOLD);
   }
 #ifdef VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
   fragmentOutputs.color =
-      vec4f(shadowAccum / sampleWeight, heat / sampleWeight, 0.0, 1.0);
+      vec4f(shadowAccum / sampleWeight, specShadowAccum / sampleWeight, heat / sampleWeight, 1.0);
 #else
-  fragmentOutputs.color = vec4f(shadowAccum / sampleWeight, 0.0, 0.0, 1.0);
+  fragmentOutputs.color = vec4f(shadowAccum / sampleWeight, specShadowAccum / sampleWeight, 0.0, 1.0);
 #endif
-  // fragmentOutputs.color =  vec4f(1.0, 1.0, 0.0, 0.0);
 }

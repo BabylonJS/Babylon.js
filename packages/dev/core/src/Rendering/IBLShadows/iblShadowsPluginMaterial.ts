@@ -110,10 +110,10 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                     var iblShadowsTextureSampler: sampler;
                     var iblShadowsTexture: texture_2d<f32>;
 
-                    fn computeIndirectShadow() -> f32 {
+                    fn computeIndirectShadow() -> vec2f {
                         var uv = fragmentInputs.position.xy / uniforms.renderTargetSize;
-                        var shadowValue: f32 = textureSample(iblShadowsTexture, iblShadowsTextureSampler, uv).r;
-                        return mix(shadowValue, 1.0, 1.0 - uniforms.shadowOpacity);
+                        var shadowValue: vec2f = textureSample(iblShadowsTexture, iblShadowsTextureSampler, uv).rg;
+                        return mix(shadowValue, vec2f(1.0), 1.0 - uniforms.shadowOpacity);
                     }
                 #endif
             `,
@@ -124,17 +124,17 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                 frag["CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION"] = `
                 #ifdef RENDER_WITH_IBL_SHADOWS
                     #ifdef REFLECTION
-                        var shadowValue: f32 = computeIndirectShadow();
-                        finalIrradiance *= vec3f(shadowValue);
-                        finalRadianceScaled *= vec3f(mix(1.0, shadowValue, roughness));
+                        var shadowValue: vec2f = computeIndirectShadow();
+                        finalIrradiance *= vec3f(shadowValue.x);
+                        finalRadianceScaled *= vec3f(mix(pow(shadowValue.y, 4.0), shadowValue.x, roughness));
                     #endif
                 #endif
             `;
             } else {
                 frag["CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR"] = `
                 #ifdef RENDER_WITH_IBL_SHADOWS
-                    var shadowValue: f32 = computeIndirectShadow();
-                    color *= toGammaSpace(vec4f(shadowValue, shadowValue, shadowValue, 1.0f));
+                    var shadowValue: vec2f = computeIndirectShadow();
+                    color *= toGammaSpace(vec4f(shadowValue.x, shadowValue.x, shadowValue.x, 1.0f));
                 #endif
             `;
             }
@@ -145,10 +145,10 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                 #ifdef RENDER_WITH_IBL_SHADOWS
                     uniform sampler2D iblShadowsTexture;
 
-                    float computeIndirectShadow() {
+                    vec2 computeIndirectShadow() {
                         vec2 uv = gl_FragCoord.xy / renderTargetSize;
-                        float shadowValue = texture2D(iblShadowsTexture, uv).r;
-                        return mix(shadowValue, 1.0, 1.0 - shadowOpacity);
+                        vec2 shadowValue = texture2D(iblShadowsTexture, uv).rg;
+                        return mix(shadowValue.rg, vec2(1.0), 1.0 - shadowOpacity);
                     }
                 #endif
             `,
@@ -159,16 +159,17 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                 frag["CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION"] = `
                 #ifdef RENDER_WITH_IBL_SHADOWS
                     #ifdef REFLECTION
-                        float shadowValue = computeIndirectShadow();
-                        finalIrradiance *= shadowValue;
-                        finalRadianceScaled *= mix(1.0, shadowValue, roughness);
+                        vec2 shadowValue = computeIndirectShadow();
+                        finalIrradiance *= shadowValue.x;
+                        finalRadianceScaled *= mix(pow(shadowValue.y, 4.0), shadowValue.x, roughness);
                     #endif
                 #endif
             `;
             } else {
                 frag["CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR"] = `
                 #ifdef RENDER_WITH_IBL_SHADOWS
-                    color.rgb *= toGammaSpace(computeIndirectShadow());
+                    vec2 shadowValue = computeIndirectShadow();
+                    color.rgb *= toGammaSpace(shadowValue.x);
                 #endif
             `;
             }

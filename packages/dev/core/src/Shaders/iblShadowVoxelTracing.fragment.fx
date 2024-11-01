@@ -400,6 +400,7 @@ void main(void) {
   float heat = 0.0f;
 #endif
   float shadowAccum = 0.0;
+  float specShadowAccum = 0.0;
   float sampleWeight = 0.0;
   for (uint i = 0u; i < nbDirs; i++) {
     uint dirId = nbDirs * GlobalIndex + i;
@@ -456,14 +457,16 @@ void main(void) {
       opacity = max(opacity, ssShadow);
       shadowAccum += min(1.0 - opacity, cosNL);
       sampleWeight += cosNL;
+      // spec shadow
+      vec3 VR = -(viewMtx * vec4(reflect(-L.xyz, N), 0.0)).xyz;
+      specShadowAccum += max(1.0 - (opacity * pow(VR.z, 8.0)), 0.0);
     }
     noise.z = fract(noise.z + GOLD);
   }
 #ifdef VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
   gl_FragColor = vec4(shadowAccum / float(sampleWeight),
-                      heat / float(sampleWeight), 0.0, 1.0);
+                      specShadowAccum / float(sampleWeight), heat / float(sampleWeight), 1.0);
 #else
-  gl_FragColor = vec4(shadowAccum / float(sampleWeight), 0.0, 0.0, 1.0);
+  gl_FragColor = vec4(shadowAccum / float(sampleWeight), specShadowAccum / float(sampleWeight), 0.0, 1.0);
 #endif
-  // gl_FragColor = vec4(1.0, 1.0, 0.0, 0.0);
 }

@@ -169,7 +169,7 @@ export class _IblShadowsAccumulationPass {
 
         const outputTextureOptions: IProceduralTextureCreationOptions = {
             type: Constants.TEXTURETYPE_HALF_FLOAT,
-            format: Constants.TEXTUREFORMAT_RG,
+            format: Constants.TEXTUREFORMAT_RGBA,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             generateDepthBuffer: false,
             generateMipMaps: false,
@@ -215,7 +215,7 @@ export class _IblShadowsAccumulationPass {
         // We'll copy the output of the accumulation pass to this texture at the start of every frame.
         const accumulationOptions: IProceduralTextureCreationOptions = {
             type: Constants.TEXTURETYPE_HALF_FLOAT,
-            format: Constants.TEXTUREFORMAT_RG,
+            format: Constants.TEXTUREFORMAT_RGBA,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             generateDepthBuffer: false,
             generateMipMaps: false,

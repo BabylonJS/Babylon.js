@@ -37,13 +37,13 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
   var velocityColor: vec2f = textureLoad(motionSampler, gbufferPixelCoord, 0).xy;
   var prevCoord: vec2f = input.vUV + velocityColor;
   var PrevLP: vec3f = textureSampleLevel(prevPositionSampler, prevPositionSamplerSampler, prevCoord, 0.0).xyz;
-  var PrevShadows: vec2f = textureSampleLevel(oldAccumulationSampler, oldAccumulationSamplerSampler, prevCoord, 0.0).xy;
-  var newShadows : f32 = textureLoad(spatialBlurSampler, shadowPixelCoord, 0).x;
+  var PrevShadows: vec3f = textureSampleLevel(oldAccumulationSampler, oldAccumulationSamplerSampler, prevCoord, 0.0).xyz;
+  var newShadows : vec2f = textureLoad(spatialBlurSampler, shadowPixelCoord, 0).xy;
 
-  PrevShadows.y = select(1.0, max(PrevShadows.y / (1.0 + PrevShadows.y), 1.0 - remanence), !reset && all(lessThan(abs(prevCoord -  vec2f(0.5)),  vec2f(0.5))) &&
+  PrevShadows.z = select(1.0, max(PrevShadows.z / (1.0 + PrevShadows.z), 1.0 - remanence), !reset && all(lessThan(abs(prevCoord -  vec2f(0.5)),  vec2f(0.5))) &&
               distance(LP.xyz, PrevLP) < 5e-2);
-  PrevShadows = max( vec2f(0.0), PrevShadows);
+  PrevShadows = max( vec3f(0.0), PrevShadows);
 
-  fragmentOutputs.color =  vec4f(mix(PrevShadows.x, newShadows, PrevShadows.y),
-                      PrevShadows.y, 0, 1.0);
+  fragmentOutputs.color =  vec4f(mix(PrevShadows.x, newShadows.x, PrevShadows.z),
+                                mix(PrevShadows.y, newShadows.y, PrevShadows.z), PrevShadows.z, 1.0);
 }
