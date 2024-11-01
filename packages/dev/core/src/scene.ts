@@ -5138,6 +5138,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this.onKeyboardObservable.clear();
         this.onActiveCameraChanged.clear();
         this.onScenePerformancePriorityChangedObservable.clear();
+        this.onClearColorChangedObservable.clear();
         this._isDisposed = true;
     }
 
