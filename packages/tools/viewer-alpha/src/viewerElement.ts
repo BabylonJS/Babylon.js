@@ -408,12 +408,6 @@ export class HTML3DElement extends LitElement {
     public hotspots: Nullable<Record<string, ViewerHotSpotQuery>> = null;
 
     /**
-     * The default animation index to select when a model is loaded.
-     */
-    @property({ attribute: "default-animation", reflect: true })
-    public defaultAnimation: Nullable<number> = null;
-
-    /**
      * True if the default animation should play automatically when a model is loaded.
      */
     @property({ attribute: "animation-auto-play", reflect: true, type: Boolean })
@@ -429,7 +423,7 @@ export class HTML3DElement extends LitElement {
     /**
      * The currently selected animation index.
      */
-    @property({ attribute: false, reflect: true })
+    @property({ attribute: "selected-animation" })
     public selectedAnimation = -1;
 
     /**
@@ -659,13 +653,10 @@ export class HTML3DElement extends LitElement {
 
                         details.viewer.onModelChanged.add(() => {
                             this._animations = [...details.viewer.animations];
-                            if (this.defaultAnimation) {
-                                details.viewer.selectedAnimation = this.defaultAnimation;
-                            }
+                            this._propertyBindings.forEach((binding) => binding.syncToAttribute());
                             if (this.animationAutoPlay) {
                                 details.viewer.playAnimation();
                             }
-                            this._propertyBindings.forEach((binding) => binding.syncToAttribute());
 
                             this._dispatchCustomEvent("modelchange", (type) => new Event(type));
                         });
