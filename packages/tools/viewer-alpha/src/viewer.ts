@@ -124,6 +124,7 @@ export type ViewerHotSpot = {
 };
 
 /**
+ * @experimental
  * Provides an experience for viewing a single 3D model.
  * @remarks
  * The Viewer is not tied to a specific UI framework and can be used with Babylon.js in a browser or with Babylon Native.

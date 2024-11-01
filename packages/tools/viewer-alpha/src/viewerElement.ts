@@ -86,6 +86,12 @@ export class HTML3DElement extends LitElement {
             (details) => (this.cameraOrbitBeta = details.camera.beta)
         ),
         this._createPropertyBinding(
+            "cameraOrbitRadius",
+            (details) => details.camera.onViewMatrixChangedObservable,
+            (details) => (details.camera.radius = this.cameraOrbitRadius ?? details.camera.radius),
+            (details) => (this.cameraOrbitRadius = details.camera.radius)
+        ),
+        this._createPropertyBinding(
             "animationSpeed",
             (details) => details.viewer.onAnimationSpeedChanged,
             (details) => (details.viewer.animationSpeed = this.animationSpeed),
@@ -369,14 +375,20 @@ export class HTML3DElement extends LitElement {
     /**
      * The camera's horizontal rotation around the target.
      */
-    @property({ attribute: "camera-orbit-alpha" })
+    @property({ attribute: "camera-orbit-alpha", type: Number })
     public cameraOrbitAlpha: Nullable<number> = null;
 
     /**
      * The camera's vertical rotation around the target.
      */
-    @property({ attribute: "camera-orbit-beta" })
+    @property({ attribute: "camera-orbit-beta", type: Number })
     public cameraOrbitBeta: Nullable<number> = null;
+
+    /**
+     * The camera's distance from the target.
+     */
+    @property({ attribute: "camera-orbit-radius", type: Number })
+    public cameraOrbitRadius: Nullable<number> = null;
 
     /**
      * A string value that encodes one or more hotspots.
@@ -481,7 +493,7 @@ export class HTML3DElement extends LitElement {
             this._tearDownViewer();
             this._setupViewer();
         } else {
-            this._propertyBindings.filter((binding) => changedProperties.has(binding.property)).forEach((binding) => binding.updateViewer(this._viewerDetails));
+            this._propertyBindings.filter((binding) => changedProperties.has(binding.property)).forEach((binding) => binding.updateViewer());
 
             if (changedProperties.has("source")) {
                 this._updateModel();
@@ -590,15 +602,30 @@ export class HTML3DElement extends LitElement {
         updateViewer: (viewerDetails: Readonly<ViewerDetails>) => void,
         updateElement: (viewerDetails: Readonly<ViewerDetails>) => void
     ) {
+        let suspended = false;
+
         return {
             property,
             onInitialized: (viewerDetails: Readonly<ViewerDetails>) => {
-                getObservable(viewerDetails).add(() => updateElement(viewerDetails));
+                getObservable(viewerDetails).add(() => {
+                    if (!suspended) {
+                        updateElement(viewerDetails);
+                    }
+                });
                 updateViewer(viewerDetails);
             },
-            updateViewer: (viewerDetails?: Readonly<ViewerDetails>) => {
-                if (viewerDetails) {
-                    updateViewer(viewerDetails);
+            updateViewer: () => {
+                if (this._viewerDetails) {
+                    updateViewer(this._viewerDetails);
+                }
+            },
+            suspend: () => {
+                suspended = true;
+            },
+            resume: () => {
+                suspended = false;
+                if (this._viewerDetails) {
+                    updateViewer(this._viewerDetails);
                 }
             },
             syncToAttribute: () => {
@@ -654,6 +681,7 @@ export class HTML3DElement extends LitElement {
                         details.viewer.onModelChanged.add(() => {
                             this._animations = [...details.viewer.animations];
                             this._propertyBindings.forEach((binding) => binding.syncToAttribute());
+                            this._propertyBindings.forEach((binding) => binding.resume());
                             if (this.animationAutoPlay) {
                                 details.viewer.playAnimation();
                             }
@@ -663,6 +691,7 @@ export class HTML3DElement extends LitElement {
 
                         details.viewer.onModelError.add((error) => {
                             this._animations = [...details.viewer.animations];
+                            this._propertyBindings.forEach((binding) => binding.resume());
                             this._dispatchCustomEvent("modelerror", (type) => new ErrorEvent(type, { error }));
                         });
 
@@ -708,6 +737,7 @@ export class HTML3DElement extends LitElement {
         if (this._viewerDetails) {
             try {
                 if (this.source) {
+                    this._propertyBindings.forEach((binding) => binding.suspend());
                     await this._viewerDetails.viewer.loadModel(this.source, { pluginExtension: this.extension ?? undefined });
                 } else {
                     await this._viewerDetails.viewer.resetModel();
