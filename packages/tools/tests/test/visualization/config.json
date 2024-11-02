@@ -2250,6 +2250,11 @@
             "referenceImage": "voxelShadows.png",
             "renderCount": 15,
             "excludedEngines": ["webgl1", "webgpu"]
+        },
+        {
+            "title": "Glow layer with vertex alpha",
+            "playgroundId": "#GWAX2G#7",
+            "referenceImage": "Glow-layer-with-vertex-alpha.png"
         }
     ]
 }
