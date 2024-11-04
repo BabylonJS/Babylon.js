@@ -67,7 +67,6 @@ export class SceneComponentConstants {
     public static readonly STEP_AFTERRENDERINGGROUPDRAW_BOUNDINGBOXRENDERER = 1;
 
     public static readonly STEP_BEFORECAMERAUPDATE_SIMPLIFICATIONQUEUE = 0;
-    public static readonly STEP_BEFORECAMERAUPDATE_GAMEPAD = 1;
 
     public static readonly STEP_BEFORECLEAR_PROCEDURALTEXTURE = 0;
     public static readonly STEP_BEFORECLEAR_PREPASS = 1;
