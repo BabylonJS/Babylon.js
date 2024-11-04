@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-addons",
-    "version": "7.32.0",
+    "version": "7.32.2",
     "main": "babylonjs.addons.js",
     "types": "babylonjs.addons.module.d.ts",
     "files": [
