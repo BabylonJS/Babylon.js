@@ -2,7 +2,7 @@ import type { Nullable } from "core/types";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { Material } from "core/Materials/material";
 
-import type { IMaterial } from "../glTFLoaderInterfaces";
+import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsAnisotropy } from "babylonjs-gltf2interface";
@@ -81,6 +81,7 @@ export class KHR_materials_anisotropy implements IGLTFLoaderExtension {
         babylonMaterial.anisotropy.angle = properties.anisotropyRotation ?? 0;
 
         if (properties.anisotropyTexture) {
+            (properties.anisotropyTexture as ITextureInfo).nonColorData = true;
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/anisotropyTexture`, properties.anisotropyTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Anisotropy Intensity)`;
