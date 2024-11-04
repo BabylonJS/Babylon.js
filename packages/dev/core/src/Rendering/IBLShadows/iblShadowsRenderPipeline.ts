@@ -26,6 +26,7 @@ import { IBLShadowsPluginMaterial } from "./iblShadowsPluginMaterial";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import type { Material } from "core/Materials/material";
+import { Observable } from "core/Misc/observable";
 
 interface IblShadowsSettings {
     /**
@@ -128,6 +129,11 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     private _shadowOpacity: number = 0.8;
     private _enabled: boolean = true;
     private _materialsWithRenderPlugin: Material[] = [];
+
+    /**
+     * Observable that triggers when the shadow renderer is ready
+     */
+    public onReadyObservable: Observable<void> = new Observable<void>();
 
     /**
      * The current world-space size of that the voxel grid covers in the scene.
@@ -717,6 +723,9 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._voxelTracingPass = new _IblShadowsVoxelTracingPass(this.scene, this);
         this._spatialBlurPass = new _IblShadowsSpatialBlurPass(this.scene, this);
         this._accumulationPass = new _IblShadowsAccumulationPass(this.scene, this);
+        this._accumulationPass.onReadyObservable.addOnce(() => {
+            this.onReadyObservable.notifyObservers();
+        });
         this.sampleDirections = options.sampleDirections || 2;
         this.voxelShadowOpacity = options.voxelShadowOpacity ?? 1.0;
         this.shadowRenderSizeFactor = options.shadowRenderSizeFactor || 1.0;

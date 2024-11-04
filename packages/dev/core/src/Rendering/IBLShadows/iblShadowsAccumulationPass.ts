@@ -9,6 +9,7 @@ import { GeometryBufferRenderer } from "../../Rendering/geometryBufferRenderer";
 import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import type { IProceduralTextureCreationOptions } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import type { IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
+import { Observable } from "../../Misc/observable";
 
 /**
  * This should not be instanciated directly, as it is part of a scene component
@@ -40,6 +41,11 @@ export class _IblShadowsAccumulationPass {
     public getOutputTexture(): ProceduralTexture {
         return this._outputTexture;
     }
+
+    /**
+     * Observable that triggers when the accumulation texture is ready
+     */
+    public onReadyObservable: Observable<void> = new Observable<void>();
 
     /**
      * Gets the debug pass post process
@@ -194,6 +200,9 @@ export class _IblShadowsAccumulationPass {
         );
         this._outputTexture.refreshRate = -1;
         this._outputTexture.autoClear = false;
+        this._outputTexture.onGeneratedObservable.addOnce(() => {
+            this.onReadyObservable.notifyObservers();
+        });
 
         // Need to set all the textures first so that the effect gets created with the proper uniforms.
         this._setOutputTextureBindings();
