@@ -562,8 +562,10 @@ export class Viewer implements IDisposable {
 
         this.onEnvironmentChanged.clear();
         this.onEnvironmentError.clear();
+        this.onSkyboxBlurChanged.clear();
         this.onModelChanged.clear();
         this.onModelError.clear();
+        this.onCameraAutoOrbitChanged.clear();
         this.onSelectedAnimationChanged.clear();
         this.onAnimationSpeedChanged.clear();
         this.onIsAnimationPlayingChanged.clear();
