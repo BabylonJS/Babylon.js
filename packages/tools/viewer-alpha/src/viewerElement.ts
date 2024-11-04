@@ -130,6 +130,10 @@ export class HTML3DElement extends LitElement {
             height: 100%;
         }
 
+        .canvas {
+            outline: none;
+        }
+
         .children-slot {
             position: absolute;
             top: 0;
@@ -679,7 +683,7 @@ export class HTML3DElement extends LitElement {
 
             if (this._canvasContainer && !this._viewerDetails) {
                 const canvas = document.createElement("canvas");
-                canvas.className = "full-size";
+                canvas.className = "full-size canvas";
                 canvas.setAttribute("touch-action", "none");
                 this._canvasContainer.appendChild(canvas);
 
