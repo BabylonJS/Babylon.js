@@ -538,7 +538,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * Remove a mesh from the shadow-casting list.
      * @param mesh The mesh or list of meshes that you don't want to cast shadows.
      */
-    public removeShadowCastingMesh(mesh: Mesh): void {
+    public removeShadowCastingMesh(mesh: Mesh | Mesh[]): void {
         if (Array.isArray(mesh)) {
             for (const m of mesh) {
                 const index = this._shadowCastingMeshes.indexOf(m);
@@ -1016,7 +1016,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
                 const matIndex = this._materialsWithRenderPlugin.indexOf(m);
                 if (matIndex !== -1) {
                     this._materialsWithRenderPlugin.splice(matIndex, 1);
-                    const plugin = m.pluginManager?.getPlugin(IBLShadowsPluginMaterial.Name) as IBLShadowsPluginMaterial;
+                    const plugin = m.pluginManager?.getPlugin<IBLShadowsPluginMaterial>(IBLShadowsPluginMaterial.Name)!;
                     plugin.isEnabled = false;
                 }
             });
