@@ -55,7 +55,7 @@ export type NamespacePackageName =
     | "BABYLON.NodeRenderGraphEditor"
     | "BABYLON.GuiEditor"
     | "BABYLON.Accessibility"
-    | "BABYLON.Addons"
+    | "ADDONS"
     | "INSPECTOR"
     | "BabylonViewer"
     | "KTX2DECODER"
@@ -349,7 +349,7 @@ const packageMapping: {
         accessibility: "BABYLON.Accessibility",
         "post-processes": "BABYLON",
         "procedural-textures": "BABYLON",
-        addons: "BABYLON.Addons",
+        addons: "ADDONS",
         ktx2decoder: "KTX2DECODER",
         viewer: "BabylonViewer",
         "shared-ui-components": "BABYLON.SharedUIComponents",
