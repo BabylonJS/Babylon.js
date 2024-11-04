@@ -220,10 +220,28 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * Gets or sets a boolean that indicates if the scene must clear the depth and stencil buffers before rendering a frame
      */
     public autoClearDepthAndStencil = true;
+
+    private _clearColor: Color4 = new Color4(0.2, 0.2, 0.3, 1.0);
+
+    /**
+     * Observable triggered when the performance priority is changed
+     */
+    public onClearColorChangedObservable = new Observable<Color4>();
+
     /**
      * Defines the color used to clear the render buffer (Default is (0.2, 0.2, 0.3, 1.0))
      */
-    public clearColor: Color4 = new Color4(0.2, 0.2, 0.3, 1.0);
+    public get clearColor(): Color4 {
+        return this._clearColor;
+    }
+
+    public set clearColor(value: Color4) {
+        if (value !== this._clearColor) {
+            this._clearColor = value;
+            this.onClearColorChangedObservable.notifyObservers(this._clearColor);
+        }
+    }
+
     /**
      * Defines the color used to simulate the ambient color (Default is (0, 0, 0))
      */
@@ -4383,7 +4401,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
                 rtt.onClearObservable.notifyObservers(this._engine);
             } else if (!rtt.skipInitialClear && !camera.isRightCamera) {
                 if (this.autoClear) {
-                    this._engine.clear(rtt.clearColor || this.clearColor, !rtt._cleared, true, true);
+                    this._engine.clear(rtt.clearColor || this._clearColor, !rtt._cleared, true, true);
                 }
                 rtt._cleared = true;
             }
@@ -4700,7 +4718,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
     private _clear(): void {
         if (this.autoClearDepthAndStencil || this.autoClear) {
-            this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe || this.forcePointsCloud, this.autoClearDepthAndStencil, this.autoClearDepthAndStencil);
+            this._engine.clear(this._clearColor, this.autoClear || this.forceWireframe || this.forcePointsCloud, this.autoClearDepthAndStencil, this.autoClearDepthAndStencil);
         }
     }
 
@@ -5225,6 +5243,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this.onKeyboardObservable.clear();
         this.onActiveCameraChanged.clear();
         this.onScenePerformancePriorityChangedObservable.clear();
+        this.onClearColorChangedObservable.clear();
         this._isDisposed = true;
     }
 
