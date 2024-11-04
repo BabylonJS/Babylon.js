@@ -5,6 +5,7 @@ import { Light } from "core/Lights/light";
 import type { Node } from "core/node";
 import { ShadowLight } from "core/Lights/shadowLight";
 import type { INode, IKHRLightsPunctual_LightReference, IKHRLightsPunctual_Light, IKHRLightsPunctual } from "babylonjs-gltf2interface";
+import { TransformNode } from "core/Meshes/transformNode";
 import { KHRLightsPunctual_LightType } from "babylonjs-gltf2interface";
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
@@ -155,10 +156,11 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
             // Assign the light to its parent node, if possible, to condense the glTF
             // Why and when: the glTF loader generates a new parent TransformNode for each light node, which we should undo on export
             const parentBabylonNode = babylonNode.parent;
-            if (parentBabylonNode && parentBabylonNode.getChildren().length == 1 && babylonNode.getChildren().length == 0) {
-                const parentNode = this._exporter._nodes[nodeMap.get(parentBabylonNode)!];
-                if (parentNode) {
+            if (parentBabylonNode && parentBabylonNode instanceof TransformNode && parentBabylonNode.getChildren().length == 1 && babylonNode.getChildren().length == 0) {
+                const parentNodeIndex = nodeMap.get(parentBabylonNode);
+                if (parentNodeIndex) {
                     // Combine the light's transformation with the parent's
+                    const parentNode = this._exporter._nodes[parentNodeIndex];
                     const parentTranslation = Vector3.FromArrayToRef(parentNode.translation || [0, 0, 0], 0, TmpVectors.Vector3[0]);
                     const parentRotation = Quaternion.FromArrayToRef(parentNode.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[0]);
                     const parentScale = Vector3.FromArrayToRef(parentNode.scale || [1, 1, 1], 0, TmpVectors.Vector3[1]);
