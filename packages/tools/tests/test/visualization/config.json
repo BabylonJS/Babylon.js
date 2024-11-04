@@ -909,16 +909,16 @@
             "referenceImage": "glTFSerializerKhrGpuInstancing.png"
         },
         {
-            "title": "GLTF Serializer KHR punctual light",
-            "playgroundId": "#FLXW8B#24",
+            "title": "GLTF Serializer KHR punctual light, left-handed",
+            "playgroundId": "#FLXW8B#25",
             "replace": "//options//, roundtrip = true; useRightHandedSystem = false;",
-            "referenceImage": "glTFSerializerKHRPunctualLight.png"
+            "referenceImage": "glTFSerializerKHRPunctualLightLH.png"
         },
         {
             "title": "GLTF Serializer KHR punctual light, right-handed",
-            "playgroundId": "#FLXW8B#24",
+            "playgroundId": "#FLXW8B#25",
             "replace": "//options//, roundtrip = true; useRightHandedSystem = true;",
-            "referenceImage": "glTFSerializerKHRPunctualLight.png"
+            "referenceImage": "glTFSerializerKHRPunctualLightRH.png"
         },
         {
             "title": "GLTF Buggy with Draco Mesh Compression",
