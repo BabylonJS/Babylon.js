@@ -1662,10 +1662,10 @@ export class GLTFExporter {
         // Begin processing child nodes only after parent is finished
         for (const babylonChildNode of babylonNode.getChildren()) {
             if (this._shouldExportNode(babylonChildNode)) {
-                node.children ||= [];
                 // TODO: Do we need to await this?
                 const childNodeIndex = await this._exportNodeAsync(babylonChildNode, state, convertToRightHanded);
                 if (childNodeIndex !== null) {
+                    node.children ||= [];
                     node.children.push(childNodeIndex);
                 }
             }
