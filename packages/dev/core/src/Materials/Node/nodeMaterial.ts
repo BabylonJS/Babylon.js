@@ -266,7 +266,6 @@ export class NodeMaterial extends PushMaterial {
     private _optimizers = new Array<NodeMaterialOptimizer>();
     private _animationFrame = -1;
     private _buildIsInProgress = false;
-    private _lastBuiltCode = "";
 
     /** Define the Url to load node editor script */
     public static EditorURL = `${Tools._DefaultCdnUrl}/v${AbstractEngine.Version}/nodeEditor/babylon.nodeEditor.js`;
