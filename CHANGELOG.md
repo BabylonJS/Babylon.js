@@ -1,5 +1,18 @@
 # Changelog
 
+## 7.32.2
+
+### Core
+
+- fix(Gamepads): duplicate gamepad status check causing each frame to double up calls - by [foxxyz](https://github.com/foxxyz) ([#15761](https://github.com/BabylonJS/Babylon.js/pull/15761))
+- - Optimize Node Optional Binary Input - by [deltakosh](https://github.com/deltakosh) ([#15763](https://github.com/BabylonJS/Babylon.js/pull/15763))
+- Add cameraAutoOrbit, defaultAnimation, and animationAutoPlay to Viewer - by [ryantrem](https://github.com/ryantrem) ([#15759](https://github.com/BabylonJS/Babylon.js/pull/15759))
+- Frame graph - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#15735](https://github.com/BabylonJS/Babylon.js/pull/15735))
+- Glow layer: Fix crash when using vertex alpha in WebGPU - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15760](https://github.com/BabylonJS/Babylon.js/pull/15760))
+- Ensure pointerDown and pointerUp calls are paired - [_Bug Fix_] by [AmoebaChant](https://github.com/AmoebaChant) ([#15757](https://github.com/BabylonJS/Babylon.js/pull/15757))
+- fix: raw camera texture type mismatch - by [Strik3agle98](https://github.com/Strik3agle98) ([#15753](https://github.com/BabylonJS/Babylon.js/pull/15753))
+- BBox gizmo axis info observable - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#15758](https://github.com/BabylonJS/Babylon.js/pull/15758))
+
 ## 7.32.0
 
 ### Loaders
