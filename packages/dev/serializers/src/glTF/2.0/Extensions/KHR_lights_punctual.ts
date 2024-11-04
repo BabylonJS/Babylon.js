@@ -12,25 +12,17 @@ import { Logger } from "core/Misc/logger";
 import { convertToRightHandedPosition, omitDefaultValues } from "../glTFUtilities";
 
 const NAME = "KHR_lights_punctual";
-
 const DEFAULTS: Partial<IKHRLightsPunctual_Light> = {
     name: "",
     color: [1, 1, 1],
     intensity: 1,
     range: Number.MAX_VALUE,
 };
-
 const SPOTDEFAULTS: IKHRLightsPunctual_Light["spot"] = {
     innerConeAngle: 0,
     outerConeAngle: Math.PI / 4.0,
 };
-
-// // TODO: Move elsewhere, since this is common
-// const NODEDEFAULTS: Partial<INode> = {
-//     translation: [0, 0, 0],
-//     rotation: [0, 0, 0, 1],
-//     scale: [1, 1, 1],
-// };
+const LIGHTDIRECTION = Vector3.Backward();
 
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md)
@@ -116,14 +108,17 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                 node.translation = translation.asArray();
             }
 
-            // Use the light's direction as the node's rotation, since in glTF, lights have a constant direction
-            // TODO: Fix. This was wrong originally, anyway.
+            // Babylon lights have "constant" rotation and variable direction, while
+            // glTF lights have variable rotation and constant direction. Therefore,
+            // compute a quaternion that aligns the Babylon light's direction with glTF's constant one.
             if (lightType !== KHRLightsPunctual_LightType.POINT) {
-                const localAxis = babylonNode.direction;
-                const yaw = -Math.atan2(localAxis.z, localAxis.x) + Math.PI / 2;
-                const len = Math.sqrt(localAxis.x * localAxis.x + localAxis.z * localAxis.z);
-                const pitch = -Math.atan2(localAxis.y, len);
-                const lightRotationQuaternion = Quaternion.RotationYawPitchRoll(yaw + Math.PI, pitch, 0);
+                const direction = babylonNode.direction.normalize();
+                if (convertToRightHanded) {
+                    convertToRightHandedPosition(direction);
+                }
+                const angle = Math.acos(Vector3.Dot(LIGHTDIRECTION, direction));
+                const axis = Vector3.Cross(LIGHTDIRECTION, direction);
+                const lightRotationQuaternion = Quaternion.RotationAxis(axis, angle);
                 if (!Quaternion.IsIdentity(lightRotationQuaternion)) {
                     node.rotation = lightRotationQuaternion.normalize().asArray();
                 }
@@ -138,7 +133,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
             };
             light = omitDefaultValues(light, DEFAULTS);
 
-            // Set the required 'spot' field for spot lights, then check its contents for defaults
+            // Separately handle the required 'spot' field for spot lights
             if (lightType === KHRLightsPunctual_LightType.SPOT) {
                 const babylonSpotLight = babylonNode as SpotLight;
                 light.spot = {
@@ -158,7 +153,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
             };
 
             // Assign the light to its parent node, if possible, to condense the glTF
-            // Why and when: the glTF loader generates a new parent TransformNode for each light node, which isn't needed for glTF
+            // Why and when: the glTF loader generates a new parent TransformNode for each light node, which we should undo on export
             const parentBabylonNode = babylonNode.parent;
             if (parentBabylonNode && parentBabylonNode.getChildren().length == 1 && babylonNode.getChildren().length == 0) {
                 const parentNode = this._exporter._nodes[nodeMap.get(parentBabylonNode)!];
