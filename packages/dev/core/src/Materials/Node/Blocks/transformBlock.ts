@@ -30,7 +30,13 @@ export class TransformBlock extends NodeMaterialBlock {
      * If set to true the complementW value will be set to 0 else it will be set to 1
      */
     @editableInPropertyPage("Transform as direction", PropertyTypeForEdition.Boolean)
-    public transformAsDirection = false;
+    public get transformAsDirection() {
+        return this.complementW === 0;
+    }
+
+    public set transformAsDirection(value: boolean) {
+        this.complementW = value ? 0 : 1;
+    }
 
     /**
      * Creates a new TransformBlock
@@ -179,7 +185,6 @@ export class TransformBlock extends NodeMaterialBlock {
 
         serializationObject.complementZ = this.complementZ;
         serializationObject.complementW = this.complementW;
-        serializationObject.transformAsDirection = !!this.transformAsDirection;
 
         return serializationObject;
     }
@@ -189,14 +194,12 @@ export class TransformBlock extends NodeMaterialBlock {
 
         this.complementZ = serializationObject.complementZ !== undefined ? serializationObject.complementZ : 0.0;
         this.complementW = serializationObject.complementW !== undefined ? serializationObject.complementW : 1.0;
-        this.transformAsDirection = serializationObject.transformAsDirection !== undefined ? serializationObject.transformAsDirection : false;
     }
 
     protected override _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.complementZ = ${this.complementZ};\n`;
 
         codeString += `${this._codeVariableName}.complementW = ${this.complementW};\n`;
-        codeString += `${this._codeVariableName}.transformAsDirection = ${this.transformAsDirection};\n`;
 
         return codeString;
     }

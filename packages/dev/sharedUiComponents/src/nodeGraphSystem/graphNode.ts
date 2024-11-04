@@ -14,6 +14,8 @@ import type { INodeData } from "./interfaces/nodeData";
 import type { IPortData } from "./interfaces/portData";
 import localStyles from "./graphNode.modules.scss";
 import commonStyles from "./common.modules.scss";
+import type { IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
+import { PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 
 export class GraphNode {
     private _visual: HTMLDivElement;
@@ -619,6 +621,28 @@ export class GraphNode {
         this._visual.appendChild(this._executionTime);
 
         // Options
+        const propStore: IPropertyDescriptionForEdition[] = (this.content.data as any)._propStore;
+        if (propStore) {
+            const source = this.content.data;
+            for (const { propertyName, displayName, type, options } of propStore) {
+                switch (type) {
+                    case PropertyTypeForEdition.Boolean: {
+                        const container = root.ownerDocument!.createElement("div");
+                        container.classList.add(commonStyles.booleanContainer);
+                        this._optionsContainer.appendChild(container);
+                        const checkbox = root.ownerDocument!.createElement("input");
+                        checkbox.type = "checkbox";
+                        checkbox.checked = source[propertyName];
+                        checkbox.onclick = () => {};
+                        container.appendChild(checkbox);
+                        const label = root.ownerDocument!.createElement("label");
+                        label.innerText = displayName;
+                        container.appendChild(label);
+                        break;
+                    }
+                }
+            }
+        }
 
         // Connections
         for (const input of this.content.inputs) {
