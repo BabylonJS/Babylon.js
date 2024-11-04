@@ -398,6 +398,14 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 this.props.globalState.stateManager.onGridSizeChanged.notifyObservers();
                             }}
                         />
+                        <CheckBoxLineComponent
+                            label="Undo / Redo"
+                            isSelected={() => DataStorage.ReadBoolean("UndoRedo", true)}
+                            onSelect={(value: boolean) => {
+                                DataStorage.WriteBoolean("UndoRedo", value);
+                                this.props.globalState.stateManager.historyStack.isEnabled = value;
+                            }}
+                        />
                         <TextInputLineComponent
                             label="Node Material ID"
                             value={DataStorage.ReadString("NMEID", "")}
