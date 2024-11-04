@@ -59,7 +59,6 @@ import {
     PrepareUniformsAndSamplersList,
 } from "./materialHelper.functions";
 import { SerializationHelper } from "../Misc/decorators.serialization";
-import { UniformBuffer } from "./uniformBuffer";
 import { ShaderLanguage } from "./shaderLanguage";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
@@ -812,16 +811,7 @@ export class StandardMaterial extends PushMaterial {
      * @param forceGLSL Use the GLSL code generation for the shader (even on WebGPU). Default is false
      */
     constructor(name: string, scene?: Scene, forceGLSL = false) {
-        super(name, scene);
-        const engine = this.getScene().getEngine();
-        if (engine.isWebGPU && !forceGLSL && !StandardMaterial.ForceGLSL) {
-            // Switch main UBO to non UBO to connect to leftovers UBO in webgpu
-            if (this._uniformBuffer) {
-                this._uniformBuffer.dispose();
-            }
-            this._uniformBuffer = new UniformBuffer(engine, undefined, undefined, this.name, true);
-            this._shaderLanguage = ShaderLanguage.WGSL;
-        }
+        super(name, scene, undefined, forceGLSL || StandardMaterial.ForceGLSL);
 
         this.detailMap = new DetailMapConfiguration(this);
 
@@ -1753,9 +1743,7 @@ export class StandardMaterial extends PushMaterial {
                     ubo.updateFloat("pointSize", this.pointSize);
                 }
 
-                if (defines.SPECULARTERM) {
-                    ubo.updateColor4("vSpecularColor", this.specularColor, this.specularPower);
-                }
+                ubo.updateColor4("vSpecularColor", this.specularColor, this.specularPower);
 
                 ubo.updateColor3("vEmissiveColor", StandardMaterial.EmissiveTextureEnabled ? this.emissiveColor : Color3.BlackReadOnly);
                 ubo.updateColor4("vDiffuseColor", this.diffuseColor, this.alpha);

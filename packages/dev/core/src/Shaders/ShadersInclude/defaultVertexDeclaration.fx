@@ -1,5 +1,8 @@
 // Uniforms
 uniform mat4 viewProjection;
+#ifdef MULTIVIEW
+	mat4 viewProjectionR;
+#endif 
 uniform mat4 view;
 
 #ifdef DIFFUSE

@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Gaussian Splatting NME",
+            "playgroundId": "#WXWJKN#4",
+            "referenceImage": "gsplat-nme.png"
+        },
+        {
             "title": "Lattice",
             "playgroundId": "#MDVD75#19",
             "referenceImage": "lattice.png"
@@ -200,7 +205,7 @@
         },
         {
             "title": "CSGVertColor",
-            "playgroundId": "#R0H1IX#0",
+            "playgroundId": "#R0H1IX#4",
             "referenceImage": "csgVertColor.png"
         },
         {
@@ -500,8 +505,7 @@
         },
         {
             "title": "CSG",
-            "scriptToRun": "/Demos/CSG/csg.js",
-            "functionToCall": "CreateCSGTestScene",
+            "playgroundId": "#R0H1IX#8",
             "referenceImage": "csg.png"
         },
         {
@@ -1329,7 +1333,7 @@
         {
             "title": "Shadows with instances in left handed system",
             "renderCount": 10,
-            "playgroundId": "#MSAHKR#12",
+            "playgroundId": "#MSAHKR#79",
             "referenceImage": "shadowsinstancesleft.png"
         },
         {

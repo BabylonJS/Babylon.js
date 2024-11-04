@@ -140,6 +140,13 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
             { label: "Load...", value: PreviewType.Custom + 1 },
         ];
 
+        const gaussianSplattingTypeOptions = [
+            { label: "Default", value: PreviewType.Parrot },
+            { label: "Bricks Skull", value: PreviewType.BricksSkull },
+            { label: "Plants", value: PreviewType.Plants },
+            { label: "Load...", value: PreviewType.Custom + 1 },
+        ];
+
         if (this.props.globalState.listOfCustomPreviewFiles.length > 0) {
             meshTypeOptions.splice(0, 0, {
                 label: "Custom",
@@ -150,14 +157,26 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
                 label: "Custom",
                 value: PreviewType.Custom,
             });
+
+            gaussianSplattingTypeOptions.splice(0, 0, {
+                label: "Custom",
+                value: PreviewType.Custom,
+            });
         }
 
-        const options = this.props.globalState.mode === NodeMaterialModes.Particle ? particleTypeOptions : meshTypeOptions;
+        const options =
+            this.props.globalState.mode === NodeMaterialModes.Particle
+                ? particleTypeOptions
+                : this.props.globalState.mode === NodeMaterialModes.GaussianSplatting
+                  ? gaussianSplattingTypeOptions
+                  : meshTypeOptions;
         const accept = this.props.globalState.mode === NodeMaterialModes.Particle ? ".json" : ".*";
 
         return (
             <div id="preview-mesh-bar">
-                {(this.props.globalState.mode === NodeMaterialModes.Material || this.props.globalState.mode === NodeMaterialModes.Particle) && (
+                {(this.props.globalState.mode === NodeMaterialModes.Material ||
+                    this.props.globalState.mode === NodeMaterialModes.Particle ||
+                    this.props.globalState.mode === NodeMaterialModes.GaussianSplatting) && (
                     <>
                         <OptionsLine
                             label=""

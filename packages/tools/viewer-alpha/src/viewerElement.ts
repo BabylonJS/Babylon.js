@@ -10,6 +10,7 @@ import { customElement, property, query, state } from "lit/decorators.js";
 
 import { AsyncLock } from "core/Misc/asyncLock";
 import { Logger } from "core/Misc/logger";
+import { Color4 } from "core/Maths/math.color";
 import { createViewerForCanvas, getDefaultEngine } from "./viewerFactory";
 
 // Icon SVG is pulled from https://fluentuipr.z22.web.core.windows.net/heads/master/public-docsite-v9/storybook/iframe.html?id=icons-catalog--page&viewMode=story
@@ -17,6 +18,27 @@ const playFilledIcon = "M17.22 8.68a1.5 1.5 0 0 1 0 2.63l-10 5.5A1.5 1.5 0 0 1 5
 const pauseFilledIcon = "M5 2a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H5Zm8 0a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-2Z";
 
 const allowedAnimationSpeeds = [0.5, 1, 1.5, 2] as const;
+
+function parseColor(color: string | null | undefined): Nullable<Color4> {
+    if (!color) {
+        return null;
+    }
+
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 1;
+    const context = canvas.getContext("2d");
+
+    if (!context) {
+        throw new Error("Unable to get 2d context for parseColor");
+    }
+
+    context.clearRect(0, 0, 1, 1);
+    context.fillStyle = color;
+    context.fillRect(0, 0, 1, 1);
+
+    const data = context.getImageData(0, 0, 1, 1).data;
+    return new Color4(data[0] / 255, data[1] / 255, data[2] / 255, data[3] / 255);
+}
 
 interface HTML3DElementEventMap extends HTMLElementEventMap {
     viewerready: Event;
@@ -53,6 +75,7 @@ export class HTML3DElement extends LitElement {
                 calc(var(--ui-background-lightness) - 10%),
                 calc(var(--ui-background-opacity) - 0.1)
             );
+            all: inherit;
         }
 
         * {
@@ -268,6 +291,20 @@ export class HTML3DElement extends LitElement {
     public environment: Nullable<string> = null;
 
     /**
+     * The clear color (e.g. background color) for the viewer.
+     */
+    @property({
+        attribute: "clear-color",
+        reflect: true,
+        type: "string",
+        converter: {
+            fromAttribute: parseColor,
+            toAttribute: (color: Nullable<Color4>) => (color ? color.toHexString() : null),
+        },
+    })
+    public clearColor: Nullable<Color4> = null;
+
+    /**
      * A string value that encodes one or more hotspots.
      */
     @property({
@@ -369,6 +406,10 @@ export class HTML3DElement extends LitElement {
             this._tearDownViewer();
             this._setupViewer();
         } else {
+            if (changedProperties.has("clearColor")) {
+                this._updateClearColor();
+            }
+
             if (changedProperties.has("animationSpeed")) {
                 this._updateAnimationSpeed();
             }
@@ -537,6 +578,7 @@ export class HTML3DElement extends LitElement {
                             this._dispatchCustomEvent("animationprogresschange", (type) => new Event(type));
                         });
 
+                        this._updateClearColor();
                         this._updateSelectedAnimation();
                         this._updateAnimationSpeed();
                         this._updateModel();
@@ -563,6 +605,12 @@ export class HTML3DElement extends LitElement {
                 this._canvasContainer.removeChild(this._canvasContainer.firstElementChild);
             }
         });
+    }
+
+    private _updateClearColor() {
+        if (this._viewerDetails) {
+            this._viewerDetails.scene.clearColor = this.clearColor ?? new Color4(0, 0, 0, 0);
+        }
     }
 
     private _updateAnimationSpeed() {

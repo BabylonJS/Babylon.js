@@ -810,6 +810,14 @@ export class Constants {
     public static readonly GL_ALPHA_FUNCTION_CONSTANT_ALPHA = 0x8003;
     /** Alpha blend function: ONE_MINUS_CONSTANT_ALPHA */
     public static readonly GL_ALPHA_FUNCTION_ONE_MINUS_CONSTANT_ALPHA = 0x8004;
+    /** Alpha blend function: SRC1 */
+    public static readonly GL_ALPHA_FUNCTION_SRC1_COLOR = 0x88f9;
+    /** Alpha blend function: SRC1 */
+    public static readonly GL_ALPHA_FUNCTION_ONE_MINUS_SRC1_COLOR = 0x88fa;
+    /** Alpha blend function: SRC1 */
+    public static readonly GL_ALPHA_FUNCTION_SRC1_ALPHA = 0x8589;
+    /** Alpha blend function: SRC1 */
+    public static readonly GL_ALPHA_FUNCTION_ONE_MINUS_SRC1_ALPHA = 0x88fb;
 
     /** URL to the snippet server. Points to the public snippet server by default */
     public static SnippetUrl = "https://snippet.babylonjs.com";

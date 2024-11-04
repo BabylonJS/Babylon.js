@@ -7,7 +7,7 @@ import { Tools } from "core/Misc/tools";
 import { conflictingValuesPlaceholder } from "./targetsProxy";
 import { InputArrowsComponent } from "./inputArrowsComponent";
 import { copyCommandToClipboard, getClassNameWithNamespace } from "../copyCommandToClipboard";
-import copyIcon from "./copy.svg";
+import copyIcon from "../imgs/copy.svg";
 
 interface IFloatLineComponentProps {
     label: string;

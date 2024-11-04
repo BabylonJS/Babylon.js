@@ -53,58 +53,51 @@ export function buildMorphTargetBuffers(
     const flipX = convertToRightHanded ? -1 : 1;
     const floatSize = 4;
     const difference = Vector3.Zero();
+    let vertexStart = 0;
+    let vertexCount = 0;
+    let byteOffset = 0;
+    let bufferViewIndex = 0;
 
     if (morphTarget.hasPositions) {
         const morphPositions = morphTarget.getPositions()!;
-        const meshPositions = mesh.getPositionData();
+        const originalPositions = mesh.getVerticesData(VertexBuffer.PositionKind, undefined, undefined, true)!;
+        const min = new Array<number>(3).fill(Infinity);
+        const max = new Array<number>(3).fill(-Infinity);
+        vertexCount = originalPositions.length / 3;
+        byteOffset = dataWriter.byteOffset;
+        vertexStart = 0;
+        for (let i = vertexStart; i < vertexCount; ++i) {
+            const originalPosition = Vector3.FromArray(originalPositions, i * 3);
+            const morphPosition = Vector3.FromArray(morphPositions, i * 3);
+            morphPosition.subtractToRef(originalPosition, difference);
+            difference.x *= flipX;
 
-        if (meshPositions) {
-            const byteOffset = dataWriter.byteOffset;
+            min[0] = Math.min(min[0], difference.x);
+            max[0] = Math.max(max[0], difference.x);
 
-            const min = new Array<number>(3).fill(Infinity);
-            const max = new Array<number>(3).fill(-Infinity);
+            min[1] = Math.min(min[1], difference.y);
+            max[1] = Math.max(max[1], difference.y);
 
-            for (let index = 0; index < morphPositions.length; index += 3) {
-                const morphX = morphPositions[index];
-                const morphY = morphPositions[index + 1];
-                const morphZ = morphPositions[index + 2];
+            min[2] = Math.min(min[2], difference.z);
+            max[2] = Math.max(max[2], difference.z);
 
-                const meshX = meshPositions[index];
-                const meshY = meshPositions[index + 1];
-                const meshZ = meshPositions[index + 2];
-
-                const deltaX = (morphX - meshX) * flipX;
-                const deltaY = morphY - meshY;
-                const deltaZ = morphZ - meshZ;
-
-                min[0] = Math.min(min[0], deltaX);
-                max[0] = Math.max(max[0], deltaX);
-
-                min[1] = Math.min(min[1], deltaY);
-                max[1] = Math.max(max[1], deltaY);
-
-                min[2] = Math.min(min[2], deltaZ);
-                max[2] = Math.max(max[2], deltaZ);
-
-                dataWriter.writeFloat32(deltaX);
-                dataWriter.writeFloat32(deltaY);
-                dataWriter.writeFloat32(deltaZ);
-            }
-
-            bufferViews.push(createBufferView(0, byteOffset, morphPositions.length * floatSize, floatSize * 3));
-            const bufferViewIndex = bufferViews.length - 1;
-            accessors.push(createAccessor(bufferViewIndex, AccessorType.VEC3, AccessorComponentType.FLOAT, morphPositions.length / 3, 0, { min, max }));
-            result.attributes["POSITION"] = accessors.length - 1;
+            dataWriter.writeFloat32(difference.x);
+            dataWriter.writeFloat32(difference.y);
+            dataWriter.writeFloat32(difference.z);
         }
+
+        bufferViews.push(createBufferView(0, byteOffset, morphPositions.length * floatSize, floatSize * 3));
+        bufferViewIndex = bufferViews.length - 1;
+        accessors.push(createAccessor(bufferViewIndex, AccessorType.VEC3, AccessorComponentType.FLOAT, morphPositions.length / 3, 0, { min, max }));
+        result.attributes["POSITION"] = accessors.length - 1;
     }
 
     if (morphTarget.hasNormals) {
-        const byteOffset = dataWriter.byteOffset;
-
         const morphNormals = morphTarget.getNormals()!;
         const originalNormals = mesh.getVerticesData(VertexBuffer.NormalKind, undefined, undefined, true)!;
-        const vertexStart = 0;
-        const vertexCount = originalNormals.length / 3;
+        vertexCount = originalNormals.length / 3;
+        byteOffset = dataWriter.byteOffset;
+        vertexStart = 0;
         for (let i = vertexStart; i < vertexCount; ++i) {
             const originalNormal = Vector3.FromArray(originalNormals, i * 3).normalize();
             const morphNormal = Vector3.FromArray(morphNormals, i * 3).normalize();
@@ -115,17 +108,17 @@ export function buildMorphTargetBuffers(
         }
 
         bufferViews.push(createBufferView(0, byteOffset, morphNormals.length * floatSize, floatSize * 3));
-        const bufferViewIndex = bufferViews.length - 1;
+        bufferViewIndex = bufferViews.length - 1;
         accessors.push(createAccessor(bufferViewIndex, AccessorType.VEC3, AccessorComponentType.FLOAT, morphNormals.length / 3, 0));
         result.attributes["NORMAL"] = accessors.length - 1;
     }
 
     if (morphTarget.hasTangents) {
-        const byteOffset = dataWriter.byteOffset;
         const morphTangents = morphTarget.getTangents()!;
         const originalTangents = mesh.getVerticesData(VertexBuffer.TangentKind, undefined, undefined, true)!;
-        const vertexStart = 0;
-        const vertexCount = originalTangents.length / 4;
+        vertexCount = originalTangents.length / 4;
+        vertexStart = 0;
+        byteOffset = dataWriter.byteOffset;
         for (let i = vertexStart; i < vertexCount; ++i) {
             // Only read the x, y, z components and ignore w
             const originalTangent = Vector3.FromArray(originalTangents, i * 4);
@@ -142,7 +135,7 @@ export function buildMorphTargetBuffers(
         }
 
         bufferViews.push(createBufferView(0, byteOffset, vertexCount * floatSize * 3, floatSize * 3));
-        const bufferViewIndex = bufferViews.length - 1;
+        bufferViewIndex = bufferViews.length - 1;
         accessors.push(createAccessor(bufferViewIndex, AccessorType.VEC3, AccessorComponentType.FLOAT, vertexCount, 0));
         result.attributes["TANGENT"] = accessors.length - 1;
     }

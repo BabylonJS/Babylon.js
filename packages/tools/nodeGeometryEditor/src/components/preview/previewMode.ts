@@ -4,4 +4,5 @@ export enum PreviewMode {
     Wireframe,
     VertexColor,
     Textured,
+    Normals,
 }
