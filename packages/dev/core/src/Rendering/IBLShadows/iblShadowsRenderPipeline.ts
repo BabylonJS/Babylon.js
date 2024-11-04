@@ -518,7 +518,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
 
     /**
      * Add a mesh to be used for shadow casting in the IBL shadow pipeline
-     * @param mesh A mesh that you want to cast shadows
+     * @param mesh A mesh or list of meshes that you want to cast shadows
      */
     public addShadowCastingMesh(mesh: Mesh | Mesh[]): void {
         if (Array.isArray(mesh)) {
@@ -536,7 +536,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
 
     /**
      * Remove a mesh from the shadow-casting list.
-     * @param mesh The mesh that you don't want to cast shadows.
+     * @param mesh The mesh or list of meshes that you don't want to cast shadows.
      */
     public removeShadowCastingMesh(mesh: Mesh): void {
         if (Array.isArray(mesh)) {
