@@ -1,0 +1,10 @@
+{
+    "extends": "../../../../tsconfig.json",
+
+    "compilerOptions": {
+        "paths": {
+            "addons/*": ["dev/addons/src/*"],
+            "@lts/addons/*": ["lts/addons/src/*"]
+        }
+    }
+}
