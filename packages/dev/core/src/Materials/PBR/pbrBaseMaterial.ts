@@ -726,12 +726,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     public _alphaCutOff = 0.4;
 
     /**
-     * Enforces alpha test in opaque or blend mode in order to improve the performances of some situations.
-     * @internal
-     */
-    public override _forceAlphaTest = false;
-
-    /**
      * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
      * And/Or occlude the blended part. (alpha is converted to gamma to compute the fresnel)
      * @internal
@@ -1001,55 +995,38 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         return "PBRBaseMaterial";
     }
 
-    /**
-     * Returns true if alpha blending should be disabled.
-     */
-    protected override get _disableAlphaBlending(): boolean {
-        return (
-            this._transparencyMode === PBRBaseMaterial.PBRMATERIAL_OPAQUE ||
-            this._transparencyMode === PBRBaseMaterial.PBRMATERIAL_ALPHATEST ||
-            this.subSurface?.disableAlphaBlending
-        );
+    protected _shouldUseAlphaFromAlbedoTexture(): boolean {
+        return this._albedoTexture != null && this._albedoTexture.hasAlpha && this._useAlphaFromAlbedoTexture && this._transparencyMode !== PBRBaseMaterial.PBRMATERIAL_OPAQUE;
     }
 
-    /**
-     * @returns whether or not this material should be rendered in alpha blend mode.
-     */
+    protected override _hasAlpha(mesh: AbstractMesh): boolean {
+        return super._hasAlpha(mesh) || this._shouldUseAlphaFromAlbedoTexture() || this._opacityTexture != null;
+    }
+
+    /** @override */
     public override needAlphaBlending(): boolean {
-        if (this._disableAlphaBlending) {
-            return false;
-        }
-
-        return this.alpha < 1.0 || this._opacityTexture != null || this._shouldUseAlphaFromAlbedoTexture();
-    }
-
-    /**
-     * @returns whether or not this material should be rendered in alpha test mode.
-     */
-    public override needAlphaTesting(): boolean {
-        if (this._forceAlphaTest) {
-            return true;
+        if (this._hasTransparencyMode) {
+            return this._transparencyModeIsBlend;
         }
 
         if (this.subSurface?.disableAlphaBlending) {
             return false;
         }
 
-        return this._hasAlphaChannel() && (this._transparencyMode == null || this._transparencyMode === PBRBaseMaterial.PBRMATERIAL_ALPHATEST);
+        return super.needAlphaBlending();
     }
 
-    /**
-     * @returns whether or not the alpha value of the albedo texture should be used for alpha blending.
-     */
-    protected _shouldUseAlphaFromAlbedoTexture(): boolean {
-        return this._albedoTexture != null && this._albedoTexture.hasAlpha && this._useAlphaFromAlbedoTexture && this._transparencyMode !== PBRBaseMaterial.PBRMATERIAL_OPAQUE;
-    }
+    /** @override */
+    public override needAlphaTesting(): boolean {
+        if (this._hasTransparencyMode) {
+            return this._transparencyModeIsTest;
+        }
 
-    /**
-     * @returns whether or not there is a usable alpha channel for transparency.
-     */
-    protected _hasAlphaChannel(): boolean {
-        return (this._albedoTexture != null && this._albedoTexture.hasAlpha) || this._opacityTexture != null;
+        if (this.subSurface?.disableAlphaBlending) {
+            return false;
+        }
+
+        return super.needAlphaTesting();
     }
 
     /**
@@ -1894,7 +1871,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 this._useLogarithmicDepth,
                 this.pointsCloud,
                 this.fogEnabled,
-                this._shouldTurnAlphaTestOn(mesh) || this._forceAlphaTest,
+                this.needAlphaTestingForMesh(mesh),
                 defines,
                 this._applyDecalMapAfterDetailMap
             );

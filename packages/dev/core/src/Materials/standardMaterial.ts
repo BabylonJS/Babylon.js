@@ -866,47 +866,17 @@ export class StandardMaterial extends PushMaterial {
         return "StandardMaterial";
     }
 
-    /**
-     * Specifies if the material will require alpha blending
-     * @returns a boolean specifying if alpha blending is needed
-     */
-    public override needAlphaBlending(): boolean {
-        if (this._disableAlphaBlending) {
-            return false;
-        }
-
-        return (
-            this.alpha < 1.0 ||
-            this._opacityTexture != null ||
-            this._shouldUseAlphaFromDiffuseTexture() ||
-            (this._opacityFresnelParameters && this._opacityFresnelParameters.isEnabled)
-        );
-    }
-
-    /**
-     * Specifies if this material should be rendered in alpha test mode
-     * @returns a boolean specifying if an alpha test is needed.
-     */
-    public override needAlphaTesting(): boolean {
-        if (this._forceAlphaTest) {
-            return true;
-        }
-
-        return this._hasAlphaChannel() && (this._transparencyMode == null || this._transparencyMode === Material.MATERIAL_ALPHATEST);
-    }
-
-    /**
-     * @returns whether or not the alpha value of the diffuse texture should be used for alpha blending.
-     */
     protected _shouldUseAlphaFromDiffuseTexture(): boolean {
         return this._diffuseTexture != null && this._diffuseTexture.hasAlpha && this._useAlphaFromDiffuseTexture && this._transparencyMode !== Material.MATERIAL_OPAQUE;
     }
 
-    /**
-     * @returns whether or not there is a usable alpha channel for transparency.
-     */
-    protected _hasAlphaChannel(): boolean {
-        return (this._diffuseTexture != null && this._diffuseTexture.hasAlpha) || this._opacityTexture != null;
+    protected override _hasAlpha(mesh: AbstractMesh): boolean {
+        return super._hasAlpha(mesh) || this._shouldUseAlphaFromDiffuseTexture() || this._opacityTexture != null;
+    }
+
+    /** @override */
+    public override needAlphaBlending(): boolean {
+        return super.needAlphaBlending() || this._opacityFresnelParameters?.isEnabled;
     }
 
     /**
@@ -1221,7 +1191,7 @@ export class StandardMaterial extends PushMaterial {
             this._useLogarithmicDepth,
             this.pointsCloud,
             this.fogEnabled,
-            this._shouldTurnAlphaTestOn(mesh) || this._forceAlphaTest,
+            this.needAlphaTestingForMesh(mesh),
             defines,
             this._applyDecalMapAfterDetailMap
         );
@@ -1687,7 +1657,7 @@ export class StandardMaterial extends PushMaterial {
                         BindTextureMatrix(this._opacityTexture, ubo, "opacity");
                     }
 
-                    if (this._hasAlphaChannel()) {
+                    if (this._hasAlpha(mesh)) {
                         ubo.updateFloat("alphaCutOff", this.alphaCutOff);
                     }
 

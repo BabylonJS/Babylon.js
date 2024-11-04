@@ -1564,7 +1564,7 @@ export class ShadowGenerator implements IShadowGenerator {
             }
 
             // Alpha test
-            const needAlphaTesting = material.needAlphaTesting();
+            const needAlphaTesting = material.needAlphaTestingForMesh(mesh);
 
             if (needAlphaTesting || material.needAlphaBlending()) {
                 if (this.useOpacityTextureForTransparentShadow) {
