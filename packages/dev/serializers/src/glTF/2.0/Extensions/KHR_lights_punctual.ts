@@ -9,7 +9,7 @@ import { KHRLightsPunctual_LightType } from "babylonjs-gltf2interface";
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
 import { Logger } from "core/Misc/logger";
-import { omitDefaultValues } from "../glTFUtilities";
+import { convertToRightHandedPosition, omitDefaultValues } from "../glTFUtilities";
 
 const NAME = "KHR_lights_punctual";
 
@@ -78,9 +78,10 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
      * @param node glTF node
      * @param babylonNode BabylonJS node
      * @param nodeMap Node mapping of babylon node to glTF node index
+     * @param convertToRightHanded Flag to convert the values to right-handed
      * @returns nullable INode promise
      */
-    public postExportNodeAsync(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap: Map<Node, number>): Promise<Nullable<INode>> {
+    public postExportNodeAsync(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap: Map<Node, number>, convertToRightHanded: boolean): Promise<Nullable<INode>> {
         return new Promise((resolve) => {
             // If node was nullified (marked as skippable) earlier in the pipeline, or it's not a light, skip
             if (!node || !(babylonNode instanceof ShadowLight)) {
@@ -106,14 +107,17 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                 Logger.Warn(`${context}: Light falloff for ${babylonNode.name} does not match the ${NAME} specification!`);
             }
 
-            // TODO: Is this needed?
-            // if (!babylonNode.position.equalsToFloats(0, 0, 0)) {
-            //     node.translation = babylonNode.position.asArray();
-            // }
+            // Set the node's translation and rotation here, since lights are not handled in exportNodeAsync
+            if (!babylonNode.position.equalsToFloats(0, 0, 0)) {
+                const translation = TmpVectors.Vector3[0].copyFrom(babylonNode.position);
+                if (convertToRightHanded) {
+                    convertToRightHandedPosition(translation);
+                }
+                node.translation = translation.asArray();
+            }
 
-            // TODO: Test light w/o parent node and handedness
-
-            // Override the node's rotation with the light's direction, since glTF uses a constant light direction
+            // Use the light's direction as the node's rotation, since in glTF, lights have a constant direction
+            // TODO: Fix. This was wrong originally, anyway.
             if (lightType !== KHRLightsPunctual_LightType.POINT) {
                 const localAxis = babylonNode.direction;
                 const yaw = -Math.atan2(localAxis.z, localAxis.x) + Math.PI / 2;
@@ -121,7 +125,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                 const pitch = -Math.atan2(localAxis.y, len);
                 const lightRotationQuaternion = Quaternion.RotationYawPitchRoll(yaw + Math.PI, pitch, 0);
                 if (!Quaternion.IsIdentity(lightRotationQuaternion)) {
-                    node.rotation = lightRotationQuaternion.asArray();
+                    node.rotation = lightRotationQuaternion.normalize().asArray();
                 }
             }
 
@@ -154,7 +158,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
             };
 
             // Assign the light to its parent node, if possible, to condense the glTF
-            // Why and when: the glTF loader generates a new parent node for each light node, which isn't needed in glTF
+            // Why and when: the glTF loader generates a new parent TransformNode for each light node, which isn't needed for glTF
             const parentBabylonNode = babylonNode.parent;
             if (parentBabylonNode && parentBabylonNode.getChildren().length == 1 && babylonNode.getChildren().length == 0) {
                 const parentNode = this._exporter._nodes[nodeMap.get(parentBabylonNode)!];

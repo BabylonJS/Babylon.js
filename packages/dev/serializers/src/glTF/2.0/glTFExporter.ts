@@ -297,8 +297,17 @@ export class GLTFExporter {
         );
     }
 
-    public _extensionsPostExportNodeAsync(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap: Map<Node, number>): Promise<Nullable<INode>> {
-        return this._applyExtensions(node, (extension, node) => extension.postExportNodeAsync && extension.postExportNodeAsync(context, node, babylonNode, nodeMap));
+    public _extensionsPostExportNodeAsync(
+        context: string,
+        node: Nullable<INode>,
+        babylonNode: Node,
+        nodeMap: Map<Node, number>,
+        convertToRightHanded: boolean
+    ): Promise<Nullable<INode>> {
+        return this._applyExtensions(
+            node,
+            (extension, node) => extension.postExportNodeAsync && extension.postExportNodeAsync(context, node, babylonNode, nodeMap, convertToRightHanded)
+        );
     }
 
     public _extensionsPostExportMaterialAsync(context: string, material: Nullable<IMaterial>, babylonMaterial: Material): Promise<Nullable<IMaterial>> {
@@ -1359,7 +1368,7 @@ export class GLTFExporter {
             if (this._shouldExportNode(babylonNode)) {
                 // TODO: Do we need to await this?
                 const nodeIndex = await this._exportNodeAsync(babylonNode, state, convertToRightHanded);
-                if (nodeIndex) {
+                if (nodeIndex !== null) {
                     nodes.push(nodeIndex);
                 }
             }
@@ -1588,7 +1597,7 @@ export class GLTFExporter {
         }
 
         if (babylonNode instanceof Camera) {
-            // TODO: Do light technique here.
+            // TODO: Do light technique here (don't duplicate parent node)
             const gltfCamera = this._camerasMap.get(babylonNode);
 
             if (gltfCamera) {
@@ -1640,7 +1649,7 @@ export class GLTFExporter {
         }
 
         // Apply extensions to the node. If this resolves to null, it means we can skip exporting this node and its children.
-        const processedNode = await this._extensionsPostExportNodeAsync("exportNodeAsync", node, babylonNode, this._nodeMap);
+        const processedNode = await this._extensionsPostExportNodeAsync("exportNodeAsync", node, babylonNode, this._nodeMap, convertToRightHanded);
         if (!processedNode) {
             Logger.Warn(`Not exporting node ${babylonNode.name}`);
             return null;
@@ -1656,7 +1665,7 @@ export class GLTFExporter {
                 node.children ||= [];
                 // TODO: Do we need to await this?
                 const childNodeIndex = await this._exportNodeAsync(babylonChildNode, state, convertToRightHanded);
-                if (childNodeIndex) {
+                if (childNodeIndex !== null) {
                     node.children.push(childNodeIndex);
                 }
             }
