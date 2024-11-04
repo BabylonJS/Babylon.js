@@ -619,7 +619,7 @@ export class Constants {
      */
     public static readonly PREPASS_NORMAL_TEXTURE_TYPE = 6;
     /**
-     * Constant used to retrieve albedo index in the textures array in the prepass
+     * Constant used to retrieve (sqrt) albedo index in the textures array in the prepass
      * using the getIndex(Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE)
      */
     public static readonly PREPASS_ALBEDO_SQRT_TEXTURE_TYPE = 7;
@@ -647,6 +647,12 @@ export class Constants {
      * using getIndex(Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE)
      */
     public static readonly PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE = 11;
+
+    /**
+     * Constant used to retrieve albedo index in the textures array in the prepass
+     * using the getIndex(Constants.PREPASS_ALBEDO_TEXTURE_TYPE)
+     */
+    public static readonly PREPASS_ALBEDO_TEXTURE_TYPE = 12;
 
     /** Flag to create a readable buffer (the buffer can be the source of a copy) */
     public static readonly BUFFER_CREATIONFLAG_READ = 1;

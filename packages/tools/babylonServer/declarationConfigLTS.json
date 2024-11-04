@@ -54,6 +54,12 @@
         "outputDirectory": "./declarations"
     },
     {
+        "declarationLibs": ["@tools/node-render-graph-editor"],
+        "devPackageName": "node-render-graph-editor",
+        "filename": "node-render-graph-editor.d.ts",
+        "outputDirectory": "./declarations"
+    },
+    {
         "declarationLibs": ["@tools/gui-editor"],
         "devPackageName": "gui-editor",
         "filename": "gui-editor.d.ts",

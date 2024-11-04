@@ -97,7 +97,11 @@ export class InputManager {
     private _previousButtonPressed: number;
     private _currentPickResult: Nullable<PickingInfo> = null;
     private _previousPickResult: Nullable<PickingInfo> = null;
-    private _totalPointersPressed = 0;
+
+    private _activePointerIds: Array<number> = new Array<number>();
+    /** Tracks the count of used slots in _activePointerIds for perf */
+    private _activePointerIdsCount: number = 0;
+
     private _doubleClickOccured = false;
     private _isSwiping: boolean = false;
     private _swipeButtonPressed: number = -1;
@@ -413,7 +417,7 @@ export class InputManager {
                         );
 
                         if (pickResult?.pickedMesh && actionManager) {
-                            if (this._totalPointersPressed !== 0 && Date.now() - this._startingPointerTime > InputManager.LongPressDelay && !this._isPointerSwiping()) {
+                            if (this._activePointerIdsCount !== 0 && Date.now() - this._startingPointerTime > InputManager.LongPressDelay && !this._isPointerSwiping()) {
                                 this._startingPointerTime = 0;
                                 actionManager.processTrigger(Constants.ACTION_OnLongPressTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
                             }
@@ -809,7 +813,13 @@ export class InputManager {
         };
 
         this._onPointerDown = (evt: IPointerEvent) => {
-            this._totalPointersPressed++;
+            const freeIndex = this._activePointerIds.indexOf(-1);
+            if (freeIndex === -1) {
+                this._activePointerIds.push(evt.pointerId);
+            } else {
+                this._activePointerIds[freeIndex] = evt.pointerId;
+            }
+            this._activePointerIdsCount++;
             this._pickedDownMesh = null;
             this._meshPickProceed = false;
 
@@ -900,12 +910,15 @@ export class InputManager {
         };
 
         this._onPointerUp = (evt: IPointerEvent) => {
-            if (this._totalPointersPressed === 0) {
+            const pointerIdIndex = this._activePointerIds.indexOf(evt.pointerId);
+            if (pointerIdIndex === -1) {
                 // We are attaching the pointer up to windows because of a bug in FF
-                return; // So we need to test it the pointer down was pressed before.
+                // If this pointerId is not paired with an _onPointerDown call, ignore it
+                return;
             }
 
-            this._totalPointersPressed--;
+            this._activePointerIds[pointerIdIndex] = -1;
+            this._activePointerIdsCount--;
             this._pickedUpMesh = null;
             this._meshPickProceed = false;
 
@@ -1072,12 +1085,12 @@ export class InputManager {
                     if (eventData.inputIndex === PointerInput.LeftClick) {
                         if (attachDown && deviceSource.getInput(eventData.inputIndex) === 1) {
                             this._onPointerDown(eventData);
-                            if (this._totalPointersPressed > 1) {
+                            if (this._activePointerIdsCount > 1) {
                                 this._isMultiTouchGesture = true;
                             }
                         } else if (attachUp && deviceSource.getInput(eventData.inputIndex) === 0) {
                             this._onPointerUp(eventData);
-                            if (this._totalPointersPressed === 0) {
+                            if (this._activePointerIdsCount === 0) {
                                 this._isMultiTouchGesture = false;
                             }
                         }

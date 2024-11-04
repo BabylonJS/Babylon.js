@@ -15,6 +15,14 @@ export const enum PropertyTypeForEdition {
     Vector2,
     /** property is a list of values */
     List,
+    /** property is a Color4 */
+    Color4,
+    /** property (int) should be edited as a combo box with a list of sampling modes */
+    SamplingMode,
+    /** property (int) should be edited as a combo box with a list of texture formats */
+    TextureFormat,
+    /** property (int) should be edited as a combo box with a list of texture types */
+    TextureType,
 }
 
 /**

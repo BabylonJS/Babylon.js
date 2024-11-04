@@ -97,7 +97,20 @@ ThinEngine.prototype.createRenderTargetTexture = function (this: ThinEngine, siz
 
     rtWrapper.setTextures(texture);
 
-    this.updateRenderTargetTextureSampleCount(rtWrapper, samples);
+    if (!colorAttachment) {
+        this.updateRenderTargetTextureSampleCount(rtWrapper, samples);
+    } else {
+        rtWrapper._samples = colorAttachment.samples;
+        if (colorAttachment.samples > 1) {
+            const msaaRenderBuffer = (colorAttachment._hardwareTexture as WebGLHardwareTexture).getMSAARenderBuffer(0);
+
+            rtWrapper._MSAAFramebuffer = gl.createFramebuffer();
+
+            this._bindUnboundFramebuffer(rtWrapper._MSAAFramebuffer!);
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, msaaRenderBuffer);
+            this._bindUnboundFramebuffer(null);
+        }
+    }
 
     return rtWrapper;
 };
@@ -235,15 +248,14 @@ ThinEngine.prototype.updateRenderTargetTextureSampleCount = function (rtWrapper:
     const hardwareTexture = rtWrapper.texture?._hardwareTexture as Nullable<WebGLHardwareTexture>;
     hardwareTexture?.releaseMSAARenderBuffers();
 
-    const framebuffer = gl.createFramebuffer();
-
-    if (!framebuffer) {
-        throw new Error("Unable to create multi sampled framebuffer");
-    }
-
-    rtWrapper._MSAAFramebuffer = framebuffer;
-
     if (rtWrapper.texture && samples > 1 && typeof gl.renderbufferStorageMultisample === "function") {
+        const framebuffer = gl.createFramebuffer();
+
+        if (!framebuffer) {
+            throw new Error("Unable to create multi sampled framebuffer");
+        }
+
+        rtWrapper._MSAAFramebuffer = framebuffer;
         this._bindUnboundFramebuffer(rtWrapper._MSAAFramebuffer);
 
         const colorRenderbuffer = this._createRenderBuffer(
@@ -294,8 +306,8 @@ ThinEngine.prototype._setupDepthStencilTexture = function (
     comparisonFunction: number,
     samples = 1
 ) {
-    const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
-    const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
+    const width = (<{ width: number; height: number; layers?: number }>size).width ?? <number>size;
+    const height = (<{ width: number; height: number; layers?: number }>size).height ?? <number>size;
     const layers = (<{ width: number; height: number; depth?: number; layers?: number }>size).layers || 0;
     const depth = (<{ width: number; height: number; depth?: number; layers?: number }>size).depth || 0;
 

@@ -48,6 +48,8 @@
                 /* --ui-foreground-color: red; */
                 /* --ui-background-hue: 200;
                 --ui-background-saturation: 70%; */
+                /* background-color: aqua; */
+                background-image: url("https://raw.githubusercontent.com/BabylonJS/Assets/master/textures/Checker_albedo.png");
             }
 
             /* babylon-viewer::part(tool-bar) {
@@ -69,6 +71,10 @@
             source="https://raw.githubusercontent.com/BabylonJS/Assets/master/meshes/ufo.glb"
             environment="../../../../../public/@babylonjs/viewer-alpha/assets/photoStudio.env"
             animation-speed="1.5"
+            selected-animation="1"
+            camera-orbit="auto auto auto"
+            camera-target="auto auto auto"
+            camera-auto-orbit
             hotspots="testHotSpot1 1 228 113 111 0.217 0.341 0.442"
         >
             <!-- <div slot="tool-bar" style="position: absolute; top: 12px; left: 12px; width: 100px; height: 36px">
@@ -88,6 +94,16 @@
             const lines = document.querySelectorAll("line");
             const hotspotResult = { screenPosition: [0, 0], worldPosition: [0, 0, 0] };
 
+            setInterval(() => {
+                // viewerElement.cameraAutoOrbit = !viewerElement.cameraAutoOrbit;
+                // viewerElement.viewerDetails.viewer.cameraAutoOrbit = !viewerElement.viewerDetails.viewer.cameraAutoOrbit;
+                // const color = viewerElement.viewerDetails.scene.clearColor.clone();
+                // color.r = Math.random();
+                // viewerElement.viewerDetails.scene.clearColor = color;
+                // console.log(viewerElement.clearColor);
+                // viewerElement.selectedAnimation = 1;
+            }, 3000);
+
             let viewerDetails;
             viewerElement.addEventListener("viewerready", (event) => {
                 viewerDetails = viewerElement.viewerDetails;
@@ -104,6 +120,13 @@
                 // The module referenced in the script tag above is loaded asynchronously, so we need to wait for it to load and for the custom element to be defined.
                 // Alternatively, we could just await import("/packages/tools/viewer-alpha/src/index.ts") here instead.
                 await customElements.whenDefined("babylon-viewer");
+
+                setInterval(() => {
+                    //console.log(viewerElement.skyboxBlur);
+                    //viewerElement.skyboxBlur = (Number(viewerElement.skyboxBlur) + 0.01) % 1;
+                    //console.log(viewerElement.skyboxBlur);
+                }, 16);
+
                 await new Promise((resolve) => setTimeout(resolve, 2000));
                 //viewerElement.source = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/BrainStem/glTF-Binary/BrainStem.glb";
                 //viewerElement.environment = "";

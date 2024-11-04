@@ -9,6 +9,7 @@ varying vec2 vUV;
 const float SLICE_COUNT = 16.0;		// how many slices in the color cube; 1 slice = 1 pixel
 // it means the image is 256x16 pixels
 
+#define inline
 vec4 sampleAs3DTexture(sampler2D textureSampler, vec3 uv, float width) {
 	float sliceSize = 1.0 / width;              // space of 1 slice
 	float slicePixelSize = sliceSize / width;           // space of 1 pixel
