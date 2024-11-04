@@ -2255,6 +2255,34 @@
             "title": "Glow layer with vertex alpha",
             "playgroundId": "#GWAX2G#7",
             "referenceImage": "Glow-layer-with-vertex-alpha.png"
+        },
+        {
+            "title": "IBL Voxel Shadowing Right-Handed",
+            "playgroundId": "#8R5SSE#377",
+            "referenceImage": "voxelShadowsRightHanded.png",
+            "renderCount": 15,
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "IBL Voxel Shadowing Left-Handed",
+            "playgroundId": "#8R5SSE#378",
+            "referenceImage": "voxelShadowsLeftHanded.png",
+            "renderCount": 15,
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "IBL Screen-space Shadowing Left-Handed",
+            "playgroundId": "#8R5SSE#380",
+            "referenceImage": "ssShadowsLeftHanded.png",
+            "renderCount": 15,
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "IBL Screen-space Shadowing Right-Handed",
+            "playgroundId": "#8R5SSE#381",
+            "referenceImage": "ssShadowsRightHanded.png",
+            "renderCount": 15,
+            "excludedEngines": ["webgl1"]
         }
     ]
 }
