@@ -7,7 +7,6 @@ import { ImageSourcePropertyTabComponent } from "./properties/imageSourcePropert
 import { InputPropertyTabComponent } from "./properties/inputNodePropertyComponent";
 import { LightInformationPropertyTabComponent } from "./properties/lightInformationPropertyTabComponent";
 import { TexturePropertyTabComponent } from "./properties/texturePropertyTabComponent";
-import { TransformPropertyTabComponent } from "./properties/transformNodePropertyComponent";
 import { TrigonometryPropertyTabComponent } from "./properties/trigonometryNodePropertyComponent";
 import { VectorMergerPropertyTabComponent } from "./properties/vectorMergerPropertyComponent";
 import { CurvePropertyTabComponent } from "./properties/curveNodePropertyComponent";
@@ -15,7 +14,6 @@ import { TeleportOutPropertyTabComponent } from "./properties/teleportOutNodePro
 
 export const RegisterToPropertyTabManagers = () => {
     PropertyLedger.DefaultControl = GenericPropertyComponent;
-    PropertyLedger.RegisteredControls["TransformBlock"] = TransformPropertyTabComponent;
     PropertyLedger.RegisteredControls["InputBlock"] = InputPropertyTabComponent;
     PropertyLedger.RegisteredControls["GradientBlock"] = GradientPropertyTabComponent;
     PropertyLedger.RegisteredControls["LightInformationBlock"] = LightInformationPropertyTabComponent;

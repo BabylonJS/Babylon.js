@@ -31,8 +31,13 @@
     align-items: center;
 }
 
-.inputsContainer {
+.optionsContainer {
     grid-row: 1;
+    grid-column: 1;
+}
+
+.inputsContainer {
+    grid-row: 3;
     grid-column: 1;
 
     .portLine {
@@ -52,7 +57,7 @@
 }
 
 .outputsContainer {
-    grid-row: 1;
+    grid-row: 2;
     grid-column: 2;
 
     .portLine {

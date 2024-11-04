@@ -22,6 +22,7 @@ export class GraphNode {
     private _headerIconImg: HTMLImageElement;
     private _header: HTMLDivElement;
     private _connections: HTMLDivElement;
+    private _optionsContainer: HTMLDivElement;
     private _inputsContainer: HTMLDivElement;
     private _outputsContainer: HTMLDivElement;
     private _content: HTMLDivElement;
@@ -587,6 +588,10 @@ export class GraphNode {
         this._connections.classList.add(localStyles.connections);
         this._visual.appendChild(this._connections);
 
+        this._optionsContainer = root.ownerDocument!.createElement("div");
+        this._optionsContainer.classList.add(commonStyles.optionsContainer);
+        this._connections.appendChild(this._optionsContainer);
+
         this._inputsContainer = root.ownerDocument!.createElement("div");
         this._inputsContainer.classList.add(commonStyles.inputsContainer);
         this._connections.appendChild(this._inputsContainer);
@@ -612,6 +617,8 @@ export class GraphNode {
         this._executionTime.classList.add(localStyles.executionTime);
 
         this._visual.appendChild(this._executionTime);
+
+        // Options
 
         // Connections
         for (const input of this.content.inputs) {
