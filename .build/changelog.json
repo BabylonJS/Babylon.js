@@ -1,34 +1,65 @@
 {
-    "fromTag": "7.32.0",
+    "fromTag": "7.32.2",
     "changelog": {
-        "7.32.0": [
+        "7.32.3": [
             {
-                "pr": "15755",
-                "title": "update dependencies",
+                "pr": "15768",
+                "title": "Fix various issues",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    ".build/config.json",
+                    "packages/dev/core/src/Materials/Node/Blocks/Input/inputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15769",
+                "title": "Mark anisotropyTexture as non-color data in glTF loader",
+                "description": "Explicitly mark anisotropyTexture as non-color data in glTF loader. ",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_anisotropy.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15766",
+                "title": "Allow user to disable undo/redo for NGE",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/historyStack.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/globalState.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphEditor.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15767",
+                "title": "make sure rimraf is windows-ready",
                 "description": null,
                 "author": {
                     "name": "RaananW",
                     "url": "https://github.com/RaananW"
                 },
                 "files": [
-                    "package-lock.json"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "15754",
-                "title": "KHR_node_visibility",
-                "description": "Adding the implementation of KHR_node_visibilityAs per specs in this PR - https://github.com/KhronosGroup/glTF/pull/2410\n\nVis test added to make sure we support the current specs.",
-                "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
-                },
-                "files": [
-                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_node_visibility.ts",
-                    "packages/dev/loaders/src/glTF/2.0/Extensions/dynamic.ts",
-                    "packages/dev/loaders/src/glTF/2.0/Extensions/index.ts",
-                    "packages/tools/tests/test/visualization/ReferenceImages/gltfNodeVisibility.png",
-                    "packages/tools/tests/test/visualization/config.json"
+                    "packages/tools/nodeRenderGraphEditor/package.json"
                 ],
                 "tags": []
             }
@@ -271,6 +302,38 @@
                     "enhancement",
                     "gizmos"
                 ]
+            }
+        ],
+        "7.32.0": [
+            {
+                "pr": "15755",
+                "title": "update dependencies",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15754",
+                "title": "KHR_node_visibility",
+                "description": "Adding the implementation of KHR_node_visibilityAs per specs in this PR - https://github.com/KhronosGroup/glTF/pull/2410\n\nVis test added to make sure we support the current specs.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_node_visibility.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/dynamic.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/index.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfNodeVisibility.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
             }
         ],
         "7.31.2": [

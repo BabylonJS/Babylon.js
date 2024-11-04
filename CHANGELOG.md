@@ -1,5 +1,14 @@
 # Changelog
 
+## 7.32.3
+
+### Core
+
+
+### Loaders
+
+- Mark anisotropyTexture as non-color data in glTF loader - by [alexchuber](https://github.com/alexchuber) ([#15769](https://github.com/BabylonJS/Babylon.js/pull/15769))
+
 ## 7.32.2
 
 ### Core
