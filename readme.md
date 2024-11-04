@@ -7,8 +7,8 @@ Getting started? Play directly with the Babylon.js API using our [playground](ht
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/BabylonJS/Babylon.js.svg)](http://isitmaintained.com/project/BabylonJS/Babylon.js "Average time to resolve an issue")
 [![Percentage of issues still open](https://isitmaintained.com/badge/open/babylonJS/babylon.js.svg)](https://isitmaintained.com/project/babylonJS/babylon.js "Percentage of issues still open")
 ![Build size](https://img.shields.io/bundlephobia/minzip/babylonjs)
-[![Twitter](https://img.shields.io/twitter/follow/babylonjs.svg?style=social&label=Follow)](https://twitter.com/intent/follow?screen_name=babylonjs)
-![Discourse users](https://img.shields.io/discourse/users?server=https%3A%2F%2Fforum.babylonjs.com)
+[![Twitter](https://img.shields.io/twitter/follow/babylonjs.svg?style=social&label=Follow)](https://x.com/intent/follow?screen_name=babylonjs)
+[![Discord](https://img.shields.io/discord/1067165013397213286?label=discord)](https://discord.com/invite/babylonglobal)
 
 **Any questions?** Here is our official [forum](https://forum.babylonjs.com/).
 
