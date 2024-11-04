@@ -6,6 +6,7 @@ import { PostProcess } from "./postProcess";
 import { Constants } from "../Engines/constants";
 
 import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { ThinDepthOfFieldMergePostProcess } from "./thinDepthOfFieldMergePostProcess";
 
 /**
  * The DepthOfFieldMergePostProcess merges blurred images with the original based on the values of the circle of confusion.
@@ -46,22 +47,24 @@ export class DepthOfFieldMergePostProcess extends PostProcess {
         textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false
     ) {
-        super(
-            name,
-            "depthOfFieldMerge",
-            [],
-            ["circleOfConfusionSampler", "blurStep0", "blurStep1", "blurStep2"],
-            options,
+        const blockCompilationFinal = typeof options === "number" ? blockCompilation : !!options.blockCompilation;
+        const localOptions = {
+            samplers: ThinDepthOfFieldMergePostProcess.Samplers,
+            size: typeof options === "number" ? options : undefined,
             camera,
             samplingMode,
             engine,
             reusable,
-            null,
             textureType,
-            undefined,
-            null,
-            true
-        );
+            ...(options as PostProcessOptions),
+            blockCompilation: true,
+        };
+
+        super(name, ThinDepthOfFieldMergePostProcess.FragmentUrl, {
+            effectWrapper: typeof options === "number" || !options.effectWrapper ? new ThinDepthOfFieldMergePostProcess(name, engine, localOptions) : undefined,
+            ...localOptions,
+        });
+
         this.externalTextureSamplerBinding = true;
         this.onApplyObservable.add((effect: Effect) => {
             effect.setTextureFromPostProcess("textureSampler", originalFromInput);
@@ -71,20 +74,9 @@ export class DepthOfFieldMergePostProcess extends PostProcess {
             });
         });
 
-        if (!blockCompilation) {
+        if (!blockCompilationFinal) {
             this.updateEffect();
         }
-    }
-
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/depthOfFieldMerge.fragment"));
-        } else {
-            list.push(import("../Shaders/depthOfFieldMerge.fragment"));
-        }
-
-        super._gatherImports(useWebGPU, list);
     }
 
     /**

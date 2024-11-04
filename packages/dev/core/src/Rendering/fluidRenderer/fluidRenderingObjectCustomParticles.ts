@@ -132,7 +132,7 @@ export class FluidRenderingObjectCustomParticles extends FluidRenderingObject {
             return;
         }
 
-        const diffuseDrawWrapper = this._diffuseEffectWrapper._drawWrapper;
+        const diffuseDrawWrapper = this._diffuseEffectWrapper.drawWrapper;
         const diffuseEffect = diffuseDrawWrapper.effect!;
 
         this._engine.enableEffect(diffuseDrawWrapper);

@@ -10,6 +10,10 @@ import { Constants } from "../Engines/constants";
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
+import type { ThinCircleOfConfusionPostProcessOptions } from "./thinCircleOfConfusionPostProcess";
+import { ThinCircleOfConfusionPostProcess } from "./thinCircleOfConfusionPostProcess";
+
+export type CircleOfConfusionPostProcessOptions = ThinCircleOfConfusionPostProcessOptions & PostProcessOptions;
 
 /**
  * The CircleOfConfusionPostProcess computes the circle of confusion value for each pixel given required lens parameters. See https://en.wikipedia.org/wiki/Circle_of_confusion
@@ -19,22 +23,49 @@ export class CircleOfConfusionPostProcess extends PostProcess {
      * Max lens size in scene units/1000 (eg. millimeter). Standard cameras are 50mm. (default: 50) The diameter of the resulting aperture can be computed by lensSize/fStop.
      */
     @serialize()
-    public lensSize = 50;
+    public get lensSize() {
+        return this._effectWrapper.lensSize;
+    }
+
+    public set lensSize(value: number) {
+        this._effectWrapper.lensSize = value;
+    }
+
     /**
      * F-Stop of the effect's camera. The diameter of the resulting aperture can be computed by lensSize/fStop. (default: 1.4)
      */
     @serialize()
-    public fStop = 1.4;
+    public get fStop() {
+        return this._effectWrapper.fStop;
+    }
+
+    public set fStop(value: number) {
+        this._effectWrapper.fStop = value;
+    }
+
     /**
      * Distance away from the camera to focus on in scene units/1000 (eg. millimeter). (default: 2000)
      */
     @serialize()
-    public focusDistance = 2000;
+    public get focusDistance() {
+        return this._effectWrapper.focusDistance;
+    }
+
+    public set focusDistance(value: number) {
+        this._effectWrapper.focusDistance = value;
+    }
+
     /**
      * Focal length of the effect's camera in scene units/1000 (eg. millimeter). (default: 50)
      */
     @serialize()
-    public focalLength = 50;
+    public get focalLength() {
+        return this._effectWrapper.focalLength;
+    }
+
+    public set focalLength(value: number) {
+        this._effectWrapper.focalLength = value;
+    }
 
     /**
      * Gets a string identifying the name of the class
@@ -44,7 +75,9 @@ export class CircleOfConfusionPostProcess extends PostProcess {
         return "CircleOfConfusionPostProcess";
     }
 
+    protected override _effectWrapper: ThinCircleOfConfusionPostProcess;
     private _depthTexture: Nullable<RenderTargetTexture> = null;
+
     /**
      * Creates a new instance CircleOfConfusionPostProcess
      * @param name The name of the effect.
@@ -60,7 +93,7 @@ export class CircleOfConfusionPostProcess extends PostProcess {
     constructor(
         name: string,
         depthTexture: Nullable<RenderTargetTexture>,
-        options: number | PostProcessOptions,
+        options: number | CircleOfConfusionPostProcessOptions,
         camera: Nullable<Camera>,
         samplingMode?: number,
         engine?: AbstractEngine,
@@ -68,50 +101,36 @@ export class CircleOfConfusionPostProcess extends PostProcess {
         textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false
     ) {
-        super(
-            name,
-            "circleOfConfusion",
-            ["cameraMinMaxZ", "focusDistance", "cocPrecalculation"],
-            ["depthSampler"],
-            options,
+        const localOptions = {
+            uniforms: ThinCircleOfConfusionPostProcess.Uniforms,
+            samplers: ThinCircleOfConfusionPostProcess.Samplers,
+            defines: typeof options === "object" && options.depthNotNormalized ? ThinCircleOfConfusionPostProcess.DefinesDepthNotNormalized : undefined,
+            size: typeof options === "number" ? options : undefined,
             camera,
             samplingMode,
             engine,
             reusable,
-            null,
             textureType,
-            undefined,
-            null,
-            blockCompilation
-        );
+            blockCompilation,
+            ...(options as PostProcessOptions),
+        };
+
+        super(name, ThinCircleOfConfusionPostProcess.FragmentUrl, {
+            effectWrapper: typeof options === "number" || !options.effectWrapper ? new ThinCircleOfConfusionPostProcess(name, engine, localOptions) : undefined,
+            ...localOptions,
+        });
+
         this._depthTexture = depthTexture;
         this.onApplyObservable.add((effect: Effect) => {
             if (!this._depthTexture) {
                 Logger.Warn("No depth texture set on CircleOfConfusionPostProcess");
                 return;
             }
+
             effect.setTexture("depthSampler", this._depthTexture);
 
-            // Circle of confusion calculation, See https://developer.nvidia.com/gpugems/GPUGems/gpugems_ch23.html
-            const aperture = this.lensSize / this.fStop;
-            const cocPrecalculation = (aperture * this.focalLength) / (this.focusDistance - this.focalLength); // * ((this.focusDistance - pixelDistance)/pixelDistance) [This part is done in shader]
-
-            effect.setFloat("focusDistance", this.focusDistance);
-            effect.setFloat("cocPrecalculation", cocPrecalculation);
-            const activeCamera = this._depthTexture.activeCamera!;
-            effect.setFloat2("cameraMinMaxZ", activeCamera.minZ, activeCamera.maxZ - activeCamera.minZ);
+            this._effectWrapper.camera = this._depthTexture.activeCamera!;
         });
-    }
-
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/circleOfConfusion.fragment"));
-        } else {
-            list.push(import("../Shaders/circleOfConfusion.fragment"));
-        }
-
-        super._gatherImports(useWebGPU, list);
     }
 
     /**

@@ -90,6 +90,7 @@ import { PointerPickingConfiguration } from "./Inputs/pointerPickingConfiguratio
 import { Logger } from "./Misc/logger";
 import type { AbstractEngine } from "./Engines/abstractEngine";
 import { RegisterClass } from "./Misc/typeStore";
+import type { FrameGraph } from "./FrameGraph/frameGraph";
 import type { IAssetContainer } from "./IAssetContainer";
 
 import type { EffectLayer } from "./Layers/effectLayer";
@@ -1382,6 +1383,31 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
     public get texturesEnabled(): boolean {
         return this._texturesEnabled;
+    }
+
+    private _frameGraph: Nullable<FrameGraph> = null;
+    private _currentCustomRenderFunction?: (updateCameras: boolean, ignoreAnimations: boolean) => void;
+    /**
+     * Gets or sets the frame graph used to render the scene. If set, the scene will use the frame graph to render the scene instead of the default render loop.
+     */
+    public get frameGraph() {
+        return this._frameGraph;
+    }
+
+    public set frameGraph(value: Nullable<FrameGraph>) {
+        if (this._frameGraph) {
+            this._frameGraph = value;
+            if (!value) {
+                this.customRenderFunction = this._currentCustomRenderFunction;
+            }
+            return;
+        }
+
+        this._frameGraph = value;
+        if (value) {
+            this._currentCustomRenderFunction = this.customRenderFunction;
+            this.customRenderFunction = this._renderWithFrameGraph;
+        }
     }
 
     // Physics
@@ -4279,17 +4305,26 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         }
     }
 
-    private _activeMesh(sourceMesh: AbstractMesh, mesh: AbstractMesh): void {
-        if (this._skeletonsEnabled && mesh.skeleton !== null && mesh.skeleton !== undefined) {
-            if (this._activeSkeletons.pushNoDuplicate(mesh.skeleton)) {
-                mesh.skeleton.prepare();
-                this._activeBones.addCount(mesh.skeleton.bones.length, false);
-            }
+    /** @internal */
+    public _prepareSkeleton(mesh: AbstractMesh): void {
+        if (!this._skeletonsEnabled || !mesh.skeleton) {
+            return;
+        }
 
-            if (!mesh.computeBonesUsingShaders) {
-                this._softwareSkinnedMeshes.pushNoDuplicate(<Mesh>mesh);
+        if (this._activeSkeletons.pushNoDuplicate(mesh.skeleton)) {
+            mesh.skeleton.prepare();
+            this._activeBones.addCount(mesh.skeleton.bones.length, false);
+        }
+
+        if (!mesh.computeBonesUsingShaders) {
+            if (this._softwareSkinnedMeshes.pushNoDuplicate(<Mesh>mesh) && this.frameGraph) {
+                (<Mesh>mesh).applySkeleton(mesh.skeleton);
             }
         }
+    }
+
+    private _activeMesh(sourceMesh: AbstractMesh, mesh: AbstractMesh): void {
+        this._prepareSkeleton(mesh);
 
         let forcePush = sourceMesh.hasInstances || sourceMesh.isAnInstance || this.dispatchAllSubMeshesOfActiveMeshes || this._skipFrustumClipping || mesh.alwaysSelectAsActiveMesh;
 
@@ -4700,7 +4735,77 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     /**
      * If this function is defined it will take precedence over the standard render() function.
      */
-    public customRenderFunction?: () => void;
+    public customRenderFunction?: (updateCameras: boolean, ignoreAnimations: boolean) => void;
+
+    private _renderWithFrameGraph(updateCameras = true, ignoreAnimations = false): void {
+        this.activeCamera = null;
+
+        this._activeParticleSystems.reset();
+        this._activeSkeletons.reset();
+
+        // Update Cameras
+        if (updateCameras) {
+            for (const camera of this.cameras) {
+                camera.update();
+                if (camera.cameraRigMode !== Constants.RIG_MODE_NONE) {
+                    // rig cameras
+                    for (let index = 0; index < camera._rigCameras.length; index++) {
+                        camera._rigCameras[index].update();
+                    }
+                }
+            }
+        }
+
+        // We must keep these steps because the procedural texture component relies on them.
+        // TODO: move the procedural texture component to the frame graph.
+        for (const step of this._beforeClearStage) {
+            step.action();
+        }
+
+        // Process meshes
+        const meshes = this.getActiveMeshCandidates();
+        const len = meshes.length;
+
+        for (let i = 0; i < len; i++) {
+            const mesh = meshes.data[i];
+
+            if (mesh.isBlocked) {
+                continue;
+            }
+
+            this._totalVertices.addCount(mesh.getTotalVertices(), false);
+
+            if (!mesh.isReady() || !mesh.isEnabled() || mesh.scaling.hasAZeroComponent) {
+                continue;
+            }
+
+            mesh.computeWorldMatrix();
+
+            if (mesh.actionManager && mesh.actionManager.hasSpecificTriggers2(Constants.ACTION_OnIntersectionEnterTrigger, Constants.ACTION_OnIntersectionExitTrigger)) {
+                this._meshesForIntersections.pushNoDuplicate(mesh);
+            }
+        }
+
+        // Animate Particle systems
+        if (this.particlesEnabled) {
+            for (let particleIndex = 0; particleIndex < this.particleSystems.length; particleIndex++) {
+                const particleSystem = this.particleSystems[particleIndex];
+
+                if (!particleSystem.isStarted() || !particleSystem.emitter) {
+                    continue;
+                }
+
+                const emitter = <any>particleSystem.emitter;
+                if (!emitter.position || emitter.isEnabled()) {
+                    this._activeParticleSystems.push(particleSystem);
+                    particleSystem.animate();
+                }
+            }
+        }
+
+        // Render the graph
+        this.frameGraph?.execute();
+    }
 
     /**
      * Render the scene
@@ -4781,7 +4886,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             this._renderId++;
             this._engine.currentRenderPassId = Constants.RENDERPASS_MAIN;
 
-            this.customRenderFunction();
+            this.customRenderFunction(updateCameras, ignoreAnimations);
         } else {
             const engine = this.getEngine();
 

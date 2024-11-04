@@ -135,9 +135,7 @@ void main(void) {
 
 #include<instancesVertex>
 
-#if defined(PREPASS) &&                                                        \
-    (defined(PREPASS_VELOCITY) && !defined(BONES_VELOCITY_ENABLED) ||          \
-     defined(PREPASS_VELOCITY_LINEAR))
+#if defined(PREPASS) && ((defined(PREPASS_VELOCITY) || defined(PREPASS_VELOCITY_LINEAR)) && !defined(BONES_VELOCITY_ENABLED)
     // Compute velocity before bones computation
     vCurrentPosition = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
     vPreviousPosition = previousViewProjection * finalPreviousWorld * vec4(positionUpdated, 1.0);
@@ -149,7 +147,9 @@ void main(void) {
     vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
     vPositionW = vec3(worldPos);
 
-#include<prePassVertex>
+#ifdef PREPASS
+    #include<prePassVertex>
+#endif
 
 #ifdef NORMAL
     mat3 normalWorld = mat3(finalWorld);

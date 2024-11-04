@@ -421,106 +421,96 @@ color = vec4f(max(color.rgb, vec3f(0.)), color.a);
 	var writeGeometryInfo: f32 = select(0.0, 1.0, color.a > 0.4);
 	var fragData: array<vec4<f32>, SCENE_MRT_COUNT>;
 
-    fragData[0] = color; // We can't split irradiance on std material
+    #ifdef PREPASS_COLOR
+    	fragData[PREPASS_COLOR_INDEX] = color; // We can't split irradiance on std material
+	#endif
 
     #ifdef PREPASS_POSITION
-    fragData[PREPASS_POSITION_INDEX] =  vec4f(fragmentInputs.vPositionW, writeGeometryInfo);
+    	fragData[PREPASS_POSITION_INDEX] = vec4f(fragmentInputs.vPositionW, writeGeometryInfo);
     #endif
 
-#ifdef PREPASS_LOCAL_POSITION
-    fragData[PREPASS_LOCAL_POSITION_INDEX] =
-        vec4f(fragmentInputs.vPosition, writeGeometryInfo);
-#endif
+	#ifdef PREPASS_LOCAL_POSITION
+		fragData[PREPASS_LOCAL_POSITION_INDEX] = vec4f(fragmentInputs.vPosition, writeGeometryInfo);
+	#endif
 
-#ifdef PREPASS_VELOCITY
-    var a: vec2f = (fragmentInputs.vCurrentPosition.xy / fragmentInputs.vCurrentPosition.w) * 0.5 + 0.5;
-    var b: vec2f = (fragmentInputs.vPreviousPosition.xy / fragmentInputs.vPreviousPosition.w) * 0.5 + 0.5;
+	#ifdef PREPASS_VELOCITY
+		var a: vec2f = (fragmentInputs.vCurrentPosition.xy / fragmentInputs.vCurrentPosition.w) * 0.5 + 0.5;
+		var b: vec2f = (fragmentInputs.vPreviousPosition.xy / fragmentInputs.vPreviousPosition.w) * 0.5 + 0.5;
 
-    var velocity: vec2f = abs(a - b);
-    velocity =  vec2f(pow(velocity.x, 1.0 / 3.0), pow(velocity.y, 1.0 / 3.0)) * sign(a - b) * 0.5 + 0.5;
+		var velocity: vec2f = abs(a - b);
+		velocity =  vec2f(pow(velocity.x, 1.0 / 3.0), pow(velocity.y, 1.0 / 3.0)) * sign(a - b) * 0.5 + 0.5;
 
-    fragData[PREPASS_VELOCITY_INDEX] =  vec4f(velocity, 0.0, writeGeometryInfo);
-#elif defined(PREPASS_VELOCITY_LINEAR)
-    var velocity : vec2f = vec2f(0.5) * ((fragmentInputs.vPreviousPosition.xy /
-                                          fragmentInputs.vPreviousPosition.w) -
-                                         (fragmentInputs.vCurrentPosition.xy /
-                                          fragmentInputs.vCurrentPosition.w));
-    fragData[PREPASS_VELOCITY_LINEAR_INDEX] =
-        vec4f(velocity, 0.0, writeGeometryInfo);
-#endif
+		fragData[PREPASS_VELOCITY_INDEX] =  vec4f(velocity, 0.0, writeGeometryInfo);
+	#elif defined(PREPASS_VELOCITY_LINEAR)
+		var velocity : vec2f = vec2f(0.5) * ((fragmentInputs.vPreviousPosition.xy / fragmentInputs.vPreviousPosition.w) -
+											(fragmentInputs.vCurrentPosition.xy / fragmentInputs.vCurrentPosition.w));
+		fragData[PREPASS_VELOCITY_LINEAR_INDEX] = vec4f(velocity, 0.0, writeGeometryInfo);
+	#endif
 
-#ifdef PREPASS_IRRADIANCE
-    fragData[PREPASS_IRRADIANCE_INDEX] =
-        vec4f(0.0, 0.0, 0.0,
-              writeGeometryInfo); //  We can't split irradiance on std material
-#endif
+	#ifdef PREPASS_IRRADIANCE
+		fragData[PREPASS_IRRADIANCE_INDEX] = vec4f(0.0, 0.0, 0.0, writeGeometryInfo); //  We can't split irradiance on std material
+	#endif
 
-#ifdef PREPASS_DEPTH
-    fragData[PREPASS_DEPTH_INDEX] = vec4f(fragmentInputs.vViewPos.z, 0.0, 0.0,
-                                          writeGeometryInfo); // Linear depth
-#endif
+	#ifdef PREPASS_DEPTH
+		fragData[PREPASS_DEPTH_INDEX] = vec4f(fragmentInputs.vViewPos.z, 0.0, 0.0, writeGeometryInfo); // Linear depth
+	#endif
 
-#ifdef PREPASS_SCREENSPACE_DEPTH
-    fragData[PREPASS_SCREENSPACE_DEPTH_INDEX] =
-        vec4f(fragmentInputs.position.z, 0.0, 0.0, writeGeometryInfo);
-#endif
+	#ifdef PREPASS_SCREENSPACE_DEPTH
+		fragData[PREPASS_SCREENSPACE_DEPTH_INDEX] = vec4f(fragmentInputs.position.z, 0.0, 0.0, writeGeometryInfo);
+	#endif
 
-#ifdef PREPASS_NORMAL
-#ifdef PREPASS_NORMAL_WORLDSPACE
-    fragData[PREPASS_NORMAL_INDEX] =
-        vec4f(normalW, writeGeometryInfo); // Normal
-#else
-    fragData[PREPASS_NORMAL_INDEX] =
-        vec4f(normalize((scene.view * vec4f(normalW, 0.0)).rgb),
-              writeGeometryInfo); // Normal
-#endif
-#endif
+	#ifdef PREPASS_NORMAL
+		#ifdef PREPASS_NORMAL_WORLDSPACE
+			fragData[PREPASS_NORMAL_INDEX] = vec4f(normalW, writeGeometryInfo);
+		#else
+			fragData[PREPASS_NORMAL_INDEX] = vec4f(normalize((scene.view * vec4f(normalW, 0.0)).rgb), writeGeometryInfo);
+		#endif
+	#endif
 
-#ifdef PREPASS_WORLD_NORMAL
-    fragData[PREPASS_WORLD_NORMAL_INDEX] =
-        vec4f(normalW * 0.5 + 0.5, writeGeometryInfo); // Normal
-#endif
+	#ifdef PREPASS_WORLD_NORMAL
+		fragData[PREPASS_WORLD_NORMAL_INDEX] = vec4f(normalW * 0.5 + 0.5, writeGeometryInfo);
+	#endif
 
-#ifdef PREPASS_ALBEDO_SQRT
-    fragData[PREPASS_ALBEDO_SQRT_INDEX] =
-        vec4f(0.0, 0.0, 0.0,
-              writeGeometryInfo); // We can't split albedo on std material
-#endif
-#ifdef PREPASS_REFLECTIVITY
-#if defined(SPECULAR)
-    fragData[PREPASS_REFLECTIVITY_INDEX] =
-        vec4f(toLinearSpaceVec4(specularMapColor)) *
-        writeGeometryInfo; // no specularity if no visibility
-#else
-    fragData[PREPASS_REFLECTIVITY_INDEX] =
-        vec4f(toLinearSpaceVec3(specularColor), 1.0) * writeGeometryInfo;
-#endif
-#endif
+	#ifdef PREPASS_ALBEDO
+		fragData[PREPASS_ALBEDO_INDEX] = vec4f(baseColor.rgb, writeGeometryInfo);
+	#endif
 
-#if SCENE_MRT_COUNT > 0
-    fragmentOutputs.fragData0 = fragData[0];
-#endif
-#if SCENE_MRT_COUNT > 1
-    fragmentOutputs.fragData1 = fragData[1];
-#endif
-#if SCENE_MRT_COUNT > 2
-    fragmentOutputs.fragData2 = fragData[2];
-#endif
-#if SCENE_MRT_COUNT > 3
-    fragmentOutputs.fragData3 = fragData[3];
-#endif
-#if SCENE_MRT_COUNT > 4
-    fragmentOutputs.fragData4 = fragData[4];
-#endif
-#if SCENE_MRT_COUNT > 5
-    fragmentOutputs.fragData5 = fragData[5];
-#endif
-#if SCENE_MRT_COUNT > 6
-    fragmentOutputs.fragData6 = fragData[6];
-#endif
-#if SCENE_MRT_COUNT > 7
-    fragmentOutputs.fragData7 = fragData[7];
-#endif
+	#ifdef PREPASS_ALBEDO_SQRT
+		fragData[PREPASS_ALBEDO_SQRT_INDEX] = vec4f(sqrt(baseColor.rgb), writeGeometryInfo);
+	#endif
+
+	#ifdef PREPASS_REFLECTIVITY
+		#if defined(SPECULAR)
+			fragData[PREPASS_REFLECTIVITY_INDEX] = vec4f(toLinearSpaceVec4(specularMapColor)) * writeGeometryInfo; // no specularity if no visibility
+		#else
+			fragData[PREPASS_REFLECTIVITY_INDEX] = vec4f(toLinearSpaceVec3(specularColor), 1.0) * writeGeometryInfo;
+		#endif
+	#endif
+
+	#if SCENE_MRT_COUNT > 0
+		fragmentOutputs.fragData0 = fragData[0];
+	#endif
+	#if SCENE_MRT_COUNT > 1
+		fragmentOutputs.fragData1 = fragData[1];
+	#endif
+	#if SCENE_MRT_COUNT > 2
+		fragmentOutputs.fragData2 = fragData[2];
+	#endif
+	#if SCENE_MRT_COUNT > 3
+		fragmentOutputs.fragData3 = fragData[3];
+	#endif
+	#if SCENE_MRT_COUNT > 4
+		fragmentOutputs.fragData4 = fragData[4];
+	#endif
+	#if SCENE_MRT_COUNT > 5
+		fragmentOutputs.fragData5 = fragData[5];
+	#endif
+	#if SCENE_MRT_COUNT > 6
+		fragmentOutputs.fragData6 = fragData[6];
+	#endif
+	#if SCENE_MRT_COUNT > 7
+		fragmentOutputs.fragData7 = fragData[7];
+	#endif
 #endif
 
 #if !defined(PREPASS) && !defined(ORDER_INDEPENDENT_TRANSPARENCY)
