@@ -133,7 +133,12 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     /**
      * Observable that triggers when the shadow renderer is ready
      */
-    public onReadyObservable: Observable<void> = new Observable<void>();
+    public onShadowTextureReadyObservable: Observable<void> = new Observable<void>();
+
+    /**
+     * Observable that triggers when a new IBL is set and the importance sampling is ready
+     */
+    public onNewIblReadyObservable: Observable<void> = new Observable<void>();
 
     /**
      * The current world-space size of that the voxel grid covers in the scene.
@@ -731,7 +736,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._spatialBlurPass = new _IblShadowsSpatialBlurPass(this.scene, this);
         this._accumulationPass = new _IblShadowsAccumulationPass(this.scene, this);
         this._accumulationPass.onReadyObservable.addOnce(() => {
-            this.onReadyObservable.notifyObservers();
+            this.onShadowTextureReadyObservable.notifyObservers();
         });
         this.sampleDirections = options.sampleDirections || 2;
         this.voxelShadowOpacity = options.voxelShadowOpacity ?? 1.0;
@@ -756,8 +761,9 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this.scene.getEngine().onResizeObservable.add(this._handleResize.bind(this));
 
         // Assigning the shadow texture to the materials needs to be done after the RT's are created.
-        this._importanceSamplingRenderer.onReadyObservable.addOnce(() => {
+        this._importanceSamplingRenderer.onReadyObservable.add(() => {
             this._setPluginParameters();
+            this.onNewIblReadyObservable.notifyObservers();
         });
     }
 
