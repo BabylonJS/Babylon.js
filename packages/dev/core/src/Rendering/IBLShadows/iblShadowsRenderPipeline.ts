@@ -141,6 +141,13 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     public voxelGridSize: number = 1.0;
 
     /**
+     * Reset the shadow accumulation.
+     */
+    public resetAccumulation(): void {
+        this._accumulationPass.reset = true;
+    }
+
+    /**
      * How dark the shadows appear. 1.0 is full opacity, 0.0 is no shadows.
      */
     public get shadowOpacity(): number {
