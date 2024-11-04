@@ -25,6 +25,7 @@
             "core/*": ["dev/core/dist/*"],
             "gui/*": ["dev/gui/dist/*"],
             "materials/*": ["dev/materials/dist/*"],
+            "addons/*": ["dev/addons/dist/*"],
             "post-processes/*": ["dev/postProcesses/dist/*"],
             "procedural-textures/*": ["dev/proceduralTextures/dist/*"],
             "loaders/*": ["dev/loaders/dist/*"],
