@@ -39,6 +39,7 @@ export class _IblShadowsVoxelRenderer {
     private _voxelMrtsZaxis: MultiRenderTarget[] = [];
     private _isVoxelGrid3D: boolean = true;
     private _renderInFlight = false;
+    private _voxelMaterials: ShaderMaterial[] = [];
 
     /**
      * Return the voxel grid texture.
@@ -89,7 +90,7 @@ export class _IblShadowsVoxelRenderer {
     }
 
     private _voxelizationInProgress: boolean = false;
-    private _invWorldScaleMatrix: Matrix;
+    private _invWorldScaleMatrix: Matrix = Matrix.Identity();
 
     /**
      * Set the matrix to use for scaling the world space to voxel space
@@ -507,6 +508,10 @@ export class _IblShadowsVoxelRenderer {
         this._mipArray.forEach((mip) => {
             mip.dispose();
         });
+        this._voxelMaterials.forEach((material) => {
+            material.dispose();
+        });
+        this._voxelMaterials = [];
         this._mipArray = [];
         this._voxelMrtsXaxis = [];
         this._voxelMrtsYaxis = [];
@@ -583,19 +588,19 @@ export class _IblShadowsVoxelRenderer {
 
     /**
      * Renders voxel grid of scene for IBL shadows
-     * @param excludedMeshes
+     * @param includedMeshes
      */
-    public updateVoxelGrid(excludedMeshes: number[]) {
+    public updateVoxelGrid(includedMeshes: Mesh[]) {
         this._stopVoxelization();
 
         this._voxelizationInProgress = true;
 
         if (this._triPlanarVoxelization) {
-            this._addRTsForRender(this._voxelMrtsXaxis, excludedMeshes, 0);
-            this._addRTsForRender(this._voxelMrtsYaxis, excludedMeshes, 1);
-            this._addRTsForRender(this._voxelMrtsZaxis, excludedMeshes, 2);
+            this._addRTsForRender(this._voxelMrtsXaxis, includedMeshes, 0);
+            this._addRTsForRender(this._voxelMrtsYaxis, includedMeshes, 1);
+            this._addRTsForRender(this._voxelMrtsZaxis, includedMeshes, 2);
         } else {
-            this._addRTsForRender(this._voxelMrtsZaxis, excludedMeshes, 2);
+            this._addRTsForRender(this._voxelMrtsZaxis, includedMeshes, 2);
         }
 
         // Add the slab debug RT if needed.
@@ -605,7 +610,7 @@ export class _IblShadowsVoxelRenderer {
         }
 
         (this as any).boundVoxelGridRenderFn = this._renderVoxelGrid.bind(this);
-        this._scene.onAfterRenderTargetsRenderObservable.add((this as any).boundVoxelGridRenderFn);
+        this._scene.onAfterRenderTargetsRenderObservable.addOnce((this as any).boundVoxelGridRenderFn);
     }
 
     private _renderVoxelGrid() {
@@ -642,7 +647,7 @@ export class _IblShadowsVoxelRenderer {
         }
     }
 
-    private _addRTsForRender(mrts: RenderTargetTexture[], excludedMeshes: number[], axis: number, shaderType: number = 0, continuousRender: boolean = false) {
+    private _addRTsForRender(mrts: RenderTargetTexture[], includedMeshes: Mesh[], axis: number, shaderType: number = 0, continuousRender: boolean = false) {
         const slabSize = 1.0 / this._computeNumberOfSlabs();
         const meshes = this._scene.meshes;
 
@@ -675,6 +680,7 @@ export class _IblShadowsVoxelRenderer {
                     voxelMaterial.setMatrix("cameraViewMatrix", this._scene.activeCamera!.getViewMatrix());
                 });
             }
+            this._voxelMaterials.push(voxelMaterial);
             const cameraPosition = new Vector3(0, 0, 0);
             let targetPosition = new Vector3(0, 0, 1);
             if (axis === 0) {
@@ -693,8 +699,8 @@ export class _IblShadowsVoxelRenderer {
             voxelMaterial.setFloat("stepSize", stepSize);
 
             // Set this material on every mesh in the scene (for this RT)
-            meshes.forEach((mesh) => {
-                if (mesh instanceof Mesh && mesh.material && excludedMeshes.indexOf(mesh.uniqueId) === -1) {
+            includedMeshes.forEach((mesh) => {
+                if (mesh instanceof Mesh && mesh.material) {
                     mrt.renderList?.push(mesh);
 
                     // TODO - if the mesh already has a voxel material applied, don't create a new one.

@@ -1,6 +1,5 @@
 import { Constants } from "../../Engines/constants";
 import { EngineStore } from "../../Engines/engineStore";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Matrix, Vector3, Vector4, Quaternion } from "../../Maths/math.vector";
 import { Mesh } from "../../Meshes/mesh";
 import type { Scene } from "../../scene";
@@ -112,7 +111,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
 
     private _geometryBufferRenderer: GeometryBufferRenderer;
 
-    private _excludedMeshes: number[] = [];
+    private _shadowCastingMeshes: Mesh[] = [];
 
     private _voxelRenderer: _IblShadowsVoxelRenderer;
     private _importanceSamplingRenderer: _IblShadowsImportanceSamplingRenderer;
@@ -325,6 +324,19 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         return this._dummyTexture2d;
     }
 
+    /**
+     * Returns the accumulated shadow texture.
+     * @returns The accumulated shadow texture.
+     * @internal
+     */
+    public getAccumulatedTexture(): Texture {
+        const tex = this._accumulationPass?.getOutputTexture();
+        if (tex && tex.isReady()) {
+            return tex;
+        }
+        return this._dummyTexture2d;
+    }
+
     private _gbufferDebugPass: PostProcess;
     private _gbufferDebugEnabled: boolean = false;
     private _gBufferDebugSizeParams: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
@@ -502,23 +514,23 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     }
 
     /**
-     * Add a mesh in the exclusion list to prevent it to be handled by the IBL shadow pipeline
-     * @param mesh The mesh to exclude from the IBL shadow pipeline
+     * Add a mesh to be used for shadow casting in the IBL shadow pipeline
+     * @param mesh A mesh that you want to cast shadows
      */
-    public addExcludedMesh(mesh: AbstractMesh): void {
-        if (this._excludedMeshes.indexOf(mesh.uniqueId) === -1) {
-            this._excludedMeshes.push(mesh.uniqueId);
+    public addShadowCastingMesh(mesh: Mesh): void {
+        if (this._shadowCastingMeshes.indexOf(mesh) === -1) {
+            this._shadowCastingMeshes.push(mesh);
         }
     }
 
     /**
-     * Remove a mesh from the exclusion list of the IBL shadow pipeline
-     * @param mesh The mesh to remove
+     * Remove a mesh from the shadow-casting list.
+     * @param mesh The mesh that you don't want to cast shadows.
      */
-    public removeExcludedMesh(mesh: AbstractMesh): void {
-        const index = this._excludedMeshes.indexOf(mesh.uniqueId);
+    public removeShadowCastingMesh(mesh: Mesh): void {
+        const index = this._shadowCastingMeshes.indexOf(mesh);
         if (index !== -1) {
-            this._excludedMeshes.splice(index, 1);
+            this._shadowCastingMeshes.splice(index, 1);
         }
     }
 
@@ -647,7 +659,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         // Setup the geometry buffer target formats
         const textureTypesAndFormats: { [key: number]: { textureType: number; textureFormat: number } } = {};
         textureTypesAndFormats[GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE] = {
-            textureFormat: Constants.TEXTUREFORMAT_DEPTH32_FLOAT,
+            textureFormat: Constants.TEXTUREFORMAT_R,
             textureType: Constants.TEXTURETYPE_FLOAT,
         };
         textureTypesAndFormats[GeometryBufferRenderer.VELOCITY_LINEAR_TEXTURE_TYPE] = {
@@ -701,8 +713,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
 
         scene.postProcessRenderPipelineManager.addPipeline(this);
 
-        // this.scene.onNewMeshAddedObservable.add(this.updateSceneBounds.bind(this));
-        // this.scene.onMeshRemovedObservable.add(this.updateSceneBounds.bind(this));
         this.scene.onActiveCameraChanged.add(this._listenForCameraChanges.bind(this));
         this.scene.onBeforeRenderObservable.add(this._updateBeforeRender.bind(this));
 
@@ -910,7 +920,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * Trigger the scene to be re-voxelized. This is useful when the scene has changed and the voxel grid needs to be updated.
      */
     public updateVoxelization() {
-        this._voxelRenderer.updateVoxelGrid(this._excludedMeshes);
+        this._voxelRenderer.updateVoxelGrid(this._shadowCastingMeshes);
         // Update the SS shadow max distance based on the voxel grid size and resolution.
         // The max distance should be just a little larger than the world size of a single voxel.
         this._updateShadowMaxDist();
@@ -922,7 +932,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      */
     public updateSceneBounds() {
         const bounds = this.scene.getWorldExtends((mesh) => {
-            return mesh instanceof Mesh && this._excludedMeshes.indexOf(mesh.uniqueId) === -1;
+            return mesh instanceof Mesh && this._shadowCastingMeshes.indexOf(mesh) !== -1;
         });
         const size = bounds.max.subtract(bounds.min);
         this.voxelGridSize = Math.max(size.x, Math.max(size.y, size.z));
@@ -957,7 +967,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * Apply the shadows to a material.
      * @param material Material that will be affected by the shadows. If not provided, all materials of the scene will be affected.
      */
-    public addMaterial(material?: Material) {
+    public addShadowReceivingMaterial(material?: Material) {
         if (material) {
             this._addShadowSupportToMaterial(material);
         } else {
@@ -969,6 +979,19 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         }
     }
 
+    /**
+     * Remove a material from receiving shadows
+     * @param material The material that will no longer receive shadows
+     */
+    public removeShadowReceivingMaterial(material: Material) {
+        const matIndex = this._materialsWithRenderPlugin.indexOf(material);
+        if (matIndex !== -1) {
+            this._materialsWithRenderPlugin.splice(matIndex, 1);
+            const plugin = material.pluginManager?.getPlugin(IBLShadowsPluginMaterial.Name) as IBLShadowsPluginMaterial;
+            plugin.isEnabled = false;
+        }
+    }
+
     protected _addShadowSupportToMaterial(material: Material) {
         if (material.pluginManager?.getPlugin(IBLShadowsPluginMaterial.Name)) {
             return;
@@ -977,8 +1000,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         const plugin = new IBLShadowsPluginMaterial(material);
 
         if (this._enabled) {
-            const shadowTexture = this._accumulationPass.getOutputTexture();
-            plugin.iblShadowsTexture = shadowTexture.getInternalTexture() ?? this._dummyTexture3d.getInternalTexture()!;
+            plugin.iblShadowsTexture = this.getAccumulatedTexture().getInternalTexture()!;
             plugin.shadowOpacity = this.shadowOpacity;
         }
 
@@ -995,8 +1017,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._materialsWithRenderPlugin.forEach((mat) => {
             if (mat.pluginManager) {
                 const plugin = mat.pluginManager.getPlugin<IBLShadowsPluginMaterial>(IBLShadowsPluginMaterial.Name)!;
-                const shadowTexture = this._accumulationPass.getOutputTexture().getInternalTexture() ?? this._dummyTexture3d.getInternalTexture()!;
-                plugin.iblShadowsTexture = shadowTexture;
+                plugin.iblShadowsTexture = this.getAccumulatedTexture().getInternalTexture()!;
                 plugin.shadowOpacity = this.shadowOpacity;
             }
         });

@@ -68,8 +68,6 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
         super(material, IBLShadowsPluginMaterial.Name, 310, new MaterialIBLShadowsRenderDefines());
 
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
-
-        this._isPBR = material instanceof PBRBaseMaterial;
     }
 
     public override prepareDefines(defines: MaterialIBLShadowsRenderDefines) {
@@ -116,27 +114,31 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                     var iblShadowsTextureSampler: sampler;
                     var iblShadowsTexture: texture_2d<f32>;
 
-                    fn computeIndirectShadow() -> float {
+                    fn computeIndirectShadow() -> f32 {
                         var uv = fragmentInputs.position.xy / uniforms.renderTargetSize;
-                        return mix(textureSample(iblShadowsTexture, iblShadowsTextureSampler, uv).r, 1.0, 1.0 - uniforms.shadowOpacity);
+                        var shadowValue: f32 = toLinearSpace(textureSample(iblShadowsTexture, iblShadowsTextureSampler, uv).r);
+                        return mix(shadowValue, 1.0, 1.0 - uniforms.shadowOpacity);
                     }
-                #endif
-            `,
-
-                // eslint-disable-next-line @typescript-eslint/naming-convention
-                CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION: `
-                #ifdef RENDER_WITH_IBL_SHADOWS
-                    float shadowValue = computeIndirectShadow();
-                    finalIrradiance *= shadowValue;
-                    finalRadianceScaled *= mix(1.0, shadowValue, roughness);
                 #endif
             `,
             };
 
-            if (!this._isPBR) {
+            if (this._material instanceof PBRBaseMaterial) {
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                frag["CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION"] = `
+                #ifdef RENDER_WITH_IBL_SHADOWS
+                    #ifdef REFLECTION
+                        var shadowValue: f32 = computeIndirectShadow();
+                        finalIrradiance *= vec3f(shadowValue);
+                        finalRadianceScaled *= vec3f(mix(1.0, shadowValue, roughness));
+                    #endif
+                #endif
+            `;
+            } else {
                 frag["CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR"] = `
                 #ifdef RENDER_WITH_IBL_SHADOWS
-                    color = vec4f(color.rgb + computeIndirectShadow() * baseColor.rgb, color.a);
+                    var shadowValue: f32 = computeIndirectShadow();
+                    color *= toGammaSpace(vec4f(shadowValue, shadowValue, shadowValue, 1.0f));
                 #endif
             `;
             }
@@ -149,25 +151,28 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
 
                     float computeIndirectShadow() {
                         vec2 uv = gl_FragCoord.xy / renderTargetSize;
-                        return mix(texture2D(iblShadowsTexture, uv).r, 1.0, 1.0 - shadowOpacity);
+                        float shadowValue = toLinearSpace(texture2D(iblShadowsTexture, uv).r);
+                        return mix(shadowValue, 1.0, 1.0 - shadowOpacity);
                     }
-                #endif
-            `,
-
-                // eslint-disable-next-line @typescript-eslint/naming-convention
-                CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION: `
-                #ifdef RENDER_WITH_IBL_SHADOWS
-                    float shadowValue = computeIndirectShadow();
-                    finalIrradiance *= shadowValue;
-                    finalRadianceScaled *= mix(1.0, shadowValue, roughness);
                 #endif
             `,
             };
 
-            if (!this._isPBR) {
+            if (this._material instanceof PBRBaseMaterial) {
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                frag["CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION"] = `
+                #ifdef RENDER_WITH_IBL_SHADOWS
+                    #ifdef REFLECTION
+                        float shadowValue = computeIndirectShadow();
+                        finalIrradiance *= shadowValue;
+                        finalRadianceScaled *= mix(1.0, shadowValue, roughness);
+                    #endif
+                #endif
+            `;
+            } else {
                 frag["CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR"] = `
                 #ifdef RENDER_WITH_IBL_SHADOWS
-                    color.rgb += computeIndirectShadow() * baseColor.rgb;
+                    color.rgb *= toGammaSpace(computeIndirectShadow());
                 #endif
             `;
             }

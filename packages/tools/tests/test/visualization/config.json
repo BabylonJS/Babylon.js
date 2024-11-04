@@ -2246,10 +2246,10 @@
         },
         {
             "title": "IBL Voxel Shadowing",
-            "playgroundId": "#8R5SSE#180",
+            "playgroundId": "#8R5SSE#323",
             "referenceImage": "voxelShadows.png",
             "renderCount": 15,
-            "excludedEngines": ["webgl1", "webgpu"]
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "Glow layer with vertex alpha",
