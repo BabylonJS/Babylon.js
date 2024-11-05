@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/addons",
-    "version": "7.32.2",
+    "version": "7.32.3",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -18,9 +18,9 @@
         "postcompile": "build-tools -c add-js-to-es6"
     },
     "devDependencies": {
-        "@babylonjs/core": "^7.31.2",
-        "@dev/build-tools": "^1.0.0",
-        "@dev/addons": "^1.0.0"
+        "@babylonjs/core": "^7.32.4",
+        "@dev/addons": "^1.0.0",
+        "@dev/build-tools": "^1.0.0"
     },
     "peerDependencies": {
         "@babylonjs/core": "^7.0.0"

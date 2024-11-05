@@ -1,6 +1,110 @@
 {
-    "fromTag": "7.32.2",
+    "fromTag": "7.32.3",
     "changelog": {
+        "7.32.4": [
+            {
+                "pr": "15771",
+                "title": "Adds a request url accessor",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/webRequest.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15634",
+                "title": "IBL shadows use geometry buffer",
+                "description": "I converted the IBL shadows to use the geometry buffer so that I can generate the shadows before the main render pass and then apply them in the materials with a material plugin. This allows me to apply the shadows only to diffuse reflections and rough specular and not to things like emission.\r\n\r\nSome current issues:\r\n1. We always need to add the plugin to the material before it's used for rendering. However, in WebGPU, I get errors while trying to add the plugin to material in the callback of ImportMesh. `The plugin \"IBLShadowsPluginMaterial\" can't be added to the material \"BoomBox_Mat\" because this material has already been used for rendering!` #8R5SSE#293",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsAccumulationPass.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsImportanceSamplingRenderer.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsPluginMaterial.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsRenderPipeline.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsSpatialBlurPass.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelRenderer.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelTracingPass.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/instancesDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/instancesVertex.fx",
+                    "packages/dev/core/src/Shaders/geometry.fragment.fx",
+                    "packages/dev/core/src/Shaders/geometry.vertex.fx",
+                    "packages/dev/core/src/Shaders/iblShadowAccumulation.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblShadowGBufferDebug.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblShadowSpatialBlur.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblShadowVoxelTracing.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblShadowsCombine.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/instancesDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/instancesVertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/geometry.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/geometry.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblShadowAccumulation.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblShadowGBufferDebug.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblShadowSpatialBlur.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblShadowVoxelTracing.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblShadowsCombine.fragment.fx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/iblShadowsRenderPipelinePropertyGridComponent.tsx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/ssShadowsLeftHanded.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/ssShadowsRightHanded.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/voxelShadows.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/voxelShadowsLeftHanded.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/voxelShadowsRightHanded.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15765",
+                "title": "Addons package",
+                "description": "cc @Deltakosh",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/addons/package.json",
+                    "packages/dev/addons/readme.md",
+                    "packages/dev/addons/src/index.ts",
+                    "packages/dev/addons/tsconfig.build.json",
+                    "packages/dev/addons/tsconfig.json",
+                    "packages/dev/addons/tsconfig.nocomposite.json",
+                    "packages/dev/buildTools/src/packageMapping.ts",
+                    "packages/public/@babylonjs/addons/license.md",
+                    "packages/public/@babylonjs/addons/package.json",
+                    "packages/public/@babylonjs/addons/readme.md",
+                    "packages/public/@babylonjs/addons/tsconfig.build.json",
+                    "packages/public/@babylonjs/addons/tsconfig.json",
+                    "packages/public/umd/babylonjs-addons/config.json",
+                    "packages/public/umd/babylonjs-addons/license.md",
+                    "packages/public/umd/babylonjs-addons/package.json",
+                    "packages/public/umd/babylonjs-addons/readme.md",
+                    "packages/public/umd/babylonjs-addons/src/index.ts",
+                    "packages/public/umd/babylonjs-addons/tsconfig.build.json",
+                    "packages/public/umd/babylonjs-addons/tsconfig.json",
+                    "packages/public/umd/babylonjs-addons/webpack.config.js",
+                    "packages/tools/babylonServer/declarationConfigDev.json",
+                    "packages/tools/babylonServer/package.json",
+                    "packages/tools/babylonServer/public/empty.html",
+                    "packages/tools/babylonServer/public/index-ts.html",
+                    "packages/tools/babylonServer/public/index.html",
+                    "packages/tools/babylonServer/src/addons/index.ts",
+                    "packages/tools/babylonServer/webpack.config.js",
+                    "packages/tools/babylonServer/webpack.config.snapshot.js",
+                    "tsconfig.build.json",
+                    "tsconfig.json"
+                ],
+                "tags": []
+            }
+        ],
         "7.32.3": [
             {
                 "pr": "15768",
