@@ -14,7 +14,7 @@ import type { INodeData } from "./interfaces/nodeData";
 import type { IPortData } from "./interfaces/portData";
 import localStyles from "./graphNode.modules.scss";
 import commonStyles from "./common.modules.scss";
-import type { IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
+import type { IEditablePropertyListOption, IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
 import { PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import { ForceRebuild } from "./automaticProperties";
 
@@ -597,7 +597,7 @@ export class GraphNode {
         this._visual.appendChild(this._connections);
 
         this._optionsContainer = root.ownerDocument!.createElement("div");
-        this._optionsContainer.classList.add(commonStyles.optionsContainer);
+        this._optionsContainer.classList.add(localStyles.optionsContainer);
         this._connections.appendChild(this._optionsContainer);
         this._optionsContainer.addEventListener("pointerdown", (evt) => evt.stopPropagation());
         this._optionsContainer.addEventListener("pointerup", (evt) => evt.stopPropagation());
@@ -640,11 +640,11 @@ export class GraphNode {
                     continue;
                 }
 
+                const container = root.ownerDocument!.createElement("div");
+                this._optionsContainer.appendChild(container);
                 switch (type) {
                     case PropertyTypeForEdition.Boolean: {
-                        const container = root.ownerDocument!.createElement("div");
-                        container.classList.add(commonStyles.booleanContainer);
-                        this._optionsContainer.appendChild(container);
+                        container.classList.add(localStyles.booleanContainer);
                         const checkbox = root.ownerDocument!.createElement("input");
                         checkbox.type = "checkbox";
                         checkbox.id = `checkbox-${idGenerator++}`;
@@ -667,11 +667,9 @@ export class GraphNode {
                         break;
                     }
                     case PropertyTypeForEdition.Float: {
-                        const container = root.ownerDocument!.createElement("div");
-                        this._optionsContainer.appendChild(container);
                         const cantDisplaySlider = isNaN(options.min as number) || isNaN(options.max as number) || options.min === options.max;
                         if (cantDisplaySlider) {
-                            container.classList.add(commonStyles.floatContainer);
+                            container.classList.add(localStyles.floatContainer);
                             const numberInput = root.ownerDocument!.createElement("input");
                             numberInput.type = "number";
                             numberInput.id = `number-${idGenerator++}`;
@@ -687,7 +685,7 @@ export class GraphNode {
                             label.innerText = displayName;
                             container.appendChild(label);
                         } else {
-                            container.classList.add(commonStyles.sliderContainer);
+                            container.classList.add(localStyles.sliderContainer);
                             const label = root.ownerDocument!.createElement("label");
                             container.appendChild(label);
                             const value = root.ownerDocument!.createElement("div");
@@ -711,6 +709,48 @@ export class GraphNode {
                             };
                         }
                         break;
+                    }
+                    case PropertyTypeForEdition.List: {
+                        container.classList.add(localStyles.listContainer);
+                        const select = root.ownerDocument!.createElement("div");
+                        select.classList.add(localStyles.select);
+                        container.appendChild(select);
+                        const selectText = root.ownerDocument!.createElement("div");
+                        selectText.classList.add(localStyles.selectText);
+                        select.appendChild(selectText);
+                        const items = options.options as IEditablePropertyListOption[];
+
+                        this._visualPropertiesRefresh.push(() => {
+                            selectText.innerText = items[source[propertyName]].label;
+                        });
+                        const selectList = root.ownerDocument!.createElement("div");
+                        selectList.classList.add(localStyles.selectList);
+                        selectList.classList.add(commonStyles.hidden);
+                        select.appendChild(selectList);
+                        for (const item of items) {
+                            const option = root.ownerDocument!.createElement("div");
+                            option.classList.add(localStyles.option);
+                            option.innerText = item.label;
+                            option.onclick = () => {
+                                source[propertyName] = item.value;
+                                ForceRebuild(source, this._stateManager, propertyName, options?.notifiers, true);
+                            };
+                            selectList.appendChild(option);
+                        }
+
+                        select.onclick = () => {
+                            selectList.classList.toggle(commonStyles.hidden);
+                            select.classList.toggle(localStyles.active);
+                            this._visual.classList.toggle(localStyles.topMost);
+                            this._stateManager.modalIsDisplayed = !this._stateManager.modalIsDisplayed;
+                        };
+
+                        select.onpointerleave = () => {
+                            selectList.classList.add(commonStyles.hidden);
+                            select.classList.remove(localStyles.active);
+                            this._visual.classList.remove(localStyles.topMost);
+                            this._stateManager.modalIsDisplayed = false;
+                        };
                     }
                 }
             }

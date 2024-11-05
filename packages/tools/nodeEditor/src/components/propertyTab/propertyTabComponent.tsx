@@ -82,7 +82,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             }
         });
 
-        this._onForceUpdateObserver = this.props.globalState.stateManager.onForceUpdateObservable.add(() => {
+        this._onForceUpdateObserver = this.props.globalState.stateManager.onForceUpdatePropertiesObservable.add(() => {
             this.forceUpdate();
         });
 
@@ -93,7 +93,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
     override componentWillUnmount() {
         this.props.globalState.onBuiltObservable.remove(this._onBuiltObserver);
-        this.props.globalState.stateManager.onForceUpdateObservable.remove(this._onForceUpdateObserver);
+        this.props.globalState.stateManager.onForceUpdatePropertiesObservable.remove(this._onForceUpdateObserver);
     }
 
     processInputBlockUpdate(ib: InputBlock) {

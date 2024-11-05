@@ -21,7 +21,7 @@ export function ForceRebuild(source: any, stateManager: StateManager, propertyNa
     if (!notifiers || notifiers.rebuild) {
         stateManager.onRebuildRequiredObservable.notifyObservers();
     } else if (forceUpdate) {
-        stateManager.onForceUpdateObservable.notifyObservers();
+        stateManager.onForceUpdatePropertiesObservable.notifyObservers();
     }
 
     if (notifiers?.activatePreviewCommand) {

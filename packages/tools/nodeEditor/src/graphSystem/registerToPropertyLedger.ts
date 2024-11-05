@@ -7,7 +7,6 @@ import { ImageSourcePropertyTabComponent } from "./properties/imageSourcePropert
 import { InputPropertyTabComponent } from "./properties/inputNodePropertyComponent";
 import { LightInformationPropertyTabComponent } from "./properties/lightInformationPropertyTabComponent";
 import { TexturePropertyTabComponent } from "./properties/texturePropertyTabComponent";
-import { TrigonometryPropertyTabComponent } from "./properties/trigonometryNodePropertyComponent";
 import { VectorMergerPropertyTabComponent } from "./properties/vectorMergerPropertyComponent";
 import { CurvePropertyTabComponent } from "./properties/curveNodePropertyComponent";
 import { TeleportOutPropertyTabComponent } from "./properties/teleportOutNodePropertyComponent";
@@ -25,7 +24,6 @@ export const RegisterToPropertyTabManagers = () => {
     PropertyLedger.RegisteredControls["ParticleTextureBlock"] = TexturePropertyTabComponent;
     PropertyLedger.RegisteredControls["TriPlanarBlock"] = TexturePropertyTabComponent;
     PropertyLedger.RegisteredControls["BiPlanarBlock"] = TexturePropertyTabComponent;
-    PropertyLedger.RegisteredControls["TrigonometryBlock"] = TrigonometryPropertyTabComponent;
     PropertyLedger.RegisteredControls["ConditionalBlock"] = ConditionalPropertyTabComponent;
     PropertyLedger.RegisteredControls["ImageSourceBlock"] = ImageSourcePropertyTabComponent;
     PropertyLedger.RegisteredControls["VectorMergerBlock"] = VectorMergerPropertyTabComponent;

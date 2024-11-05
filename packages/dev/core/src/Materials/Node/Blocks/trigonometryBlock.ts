@@ -5,6 +5,7 @@ import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnection
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../Misc/typeStore";
 import type { Scene } from "../../../scene";
+import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 
 /**
  * Operations supported by the Trigonometry block
@@ -57,6 +58,31 @@ export class TrigonometryBlock extends NodeMaterialBlock {
     /**
      * Gets or sets the operation applied by the block
      */
+    @editableInPropertyPage("Operation", PropertyTypeForEdition.List, "ADVANCED", {
+        notifiers: { rebuild: true },
+        embedded: true,
+        options: [
+            { label: "Cos", value: TrigonometryBlockOperations.Cos },
+            { label: "Sin", value: TrigonometryBlockOperations.Sin },
+            { label: "Abs", value: TrigonometryBlockOperations.Abs },
+            { label: "Exp", value: TrigonometryBlockOperations.Exp },
+            { label: "Exp2", value: TrigonometryBlockOperations.Exp2 },
+            { label: "Round", value: TrigonometryBlockOperations.Round },
+            { label: "Floor", value: TrigonometryBlockOperations.Floor },
+            { label: "Ceiling", value: TrigonometryBlockOperations.Ceiling },
+            { label: "Sqrt", value: TrigonometryBlockOperations.Sqrt },
+            { label: "Log", value: TrigonometryBlockOperations.Log },
+            { label: "Tan", value: TrigonometryBlockOperations.Tan },
+            { label: "ArcTan", value: TrigonometryBlockOperations.ArcTan },
+            { label: "ArcCos", value: TrigonometryBlockOperations.ArcCos },
+            { label: "ArcSin", value: TrigonometryBlockOperations.ArcSin },
+            { label: "Fract", value: TrigonometryBlockOperations.Fract },
+            { label: "Sign", value: TrigonometryBlockOperations.Sign },
+            { label: "Radians", value: TrigonometryBlockOperations.Radians },
+            { label: "Degrees", value: TrigonometryBlockOperations.Degrees },
+            { label: "Set", value: TrigonometryBlockOperations.Set },
+        ],
+    })
     public operation = TrigonometryBlockOperations.Cos;
 
     /**
