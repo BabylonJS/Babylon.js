@@ -48,6 +48,13 @@ export class WebRequest implements IWebRequest {
 
     private _requestURL: string = "";
 
+    /**
+     * Returns the requested URL once open has been called
+     */
+    public get requestURL(): string {
+        return this._requestURL;
+    }
+
     private _injectCustomRequestHeaders(): void {
         if (this._shouldSkipRequestModifications(this._requestURL)) {
             return;
