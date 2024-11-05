@@ -29,7 +29,7 @@ export class TransformBlock extends NodeMaterialBlock {
      * Boolean indicating if the transformation is made for a direction vector and not a position vector
      * If set to true the complementW value will be set to 0 else it will be set to 1
      */
-    @editableInPropertyPage("Transform as direction", PropertyTypeForEdition.Boolean)
+    @editableInPropertyPage("Transform as direction", PropertyTypeForEdition.Boolean, undefined, { embedded: true })
     public get transformAsDirection() {
         return this.complementW === 0;
     }

@@ -135,6 +135,7 @@ export class GlobalState {
         this.stateManager = new StateManager();
         this.stateManager.data = this;
         this.stateManager.lockObject = this.lockObject;
+        this.stateManager.getScene = () => this.nodeMaterial.getScene();
 
         RegisterElbowSupport(this.stateManager);
         RegisterDebugSupport(this.stateManager);

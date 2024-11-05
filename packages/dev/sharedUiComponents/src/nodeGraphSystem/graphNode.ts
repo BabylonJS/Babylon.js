@@ -16,6 +16,7 @@ import localStyles from "./graphNode.modules.scss";
 import commonStyles from "./common.modules.scss";
 import type { IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
 import { PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
+import { ForceRebuild } from "./automaticProperties";
 
 export class GraphNode {
     private _visual: HTMLDivElement;
@@ -51,6 +52,7 @@ export class GraphNode {
     private _displayManager: Nullable<IDisplayManager> = null;
     private _isVisible = true;
     private _enclosingFrameId = -1;
+    private _visualPropertiesRefresh: Array<() => void> = [];
 
     public addClassToVisual(className: string) {
         this._visual.classList.add(className);
@@ -372,6 +374,10 @@ export class GraphNode {
             this._header.innerHTML = this.content.name;
         }
 
+        for (const refresh of this._visualPropertiesRefresh) {
+            refresh();
+        }
+
         for (const port of this._inputPorts) {
             port.refresh();
         }
@@ -593,6 +599,9 @@ export class GraphNode {
         this._optionsContainer = root.ownerDocument!.createElement("div");
         this._optionsContainer.classList.add(commonStyles.optionsContainer);
         this._connections.appendChild(this._optionsContainer);
+        this._optionsContainer.addEventListener("pointerdown", (evt) => evt.stopPropagation());
+        this._optionsContainer.addEventListener("pointerup", (evt) => evt.stopPropagation());
+        this._optionsContainer.addEventListener("pointermove", (evt) => evt.stopPropagation());
 
         this._inputsContainer = root.ownerDocument!.createElement("div");
         this._inputsContainer.classList.add(commonStyles.inputsContainer);
@@ -621,10 +630,16 @@ export class GraphNode {
         this._visual.appendChild(this._executionTime);
 
         // Options
+        let idGenerator = 0;
         const propStore: IPropertyDescriptionForEdition[] = (this.content.data as any)._propStore;
         if (propStore) {
             const source = this.content.data;
+
             for (const { propertyName, displayName, type, options } of propStore) {
+                if (options && !options.embedded) {
+                    continue;
+                }
+
                 switch (type) {
                     case PropertyTypeForEdition.Boolean: {
                         const container = root.ownerDocument!.createElement("div");
@@ -632,16 +647,77 @@ export class GraphNode {
                         this._optionsContainer.appendChild(container);
                         const checkbox = root.ownerDocument!.createElement("input");
                         checkbox.type = "checkbox";
+                        checkbox.id = `checkbox-${idGenerator++}`;
                         checkbox.checked = source[propertyName];
-                        checkbox.onclick = () => {};
+                        this._visualPropertiesRefresh.push(() => {
+                            checkbox.checked = source[propertyName];
+                        });
+                        checkbox.onchange = () => {
+                            source[propertyName] = !source[propertyName];
+                            ForceRebuild(source, this._stateManager, propertyName, options?.notifiers, true);
+                        };
                         container.appendChild(checkbox);
                         const label = root.ownerDocument!.createElement("label");
                         label.innerText = displayName;
+                        label.htmlFor = checkbox.id;
+                        label.onclick = () => {
+                            checkbox.click();
+                        };
                         container.appendChild(label);
+                        break;
+                    }
+                    case PropertyTypeForEdition.Float: {
+                        const container = root.ownerDocument!.createElement("div");
+                        this._optionsContainer.appendChild(container);
+                        const cantDisplaySlider = isNaN(options.min as number) || isNaN(options.max as number) || options.min === options.max;
+                        if (cantDisplaySlider) {
+                            container.classList.add(commonStyles.floatContainer);
+                            const numberInput = root.ownerDocument!.createElement("input");
+                            numberInput.type = "number";
+                            numberInput.id = `number-${idGenerator++}`;
+                            this._visualPropertiesRefresh.push(() => {
+                                numberInput.value = source[propertyName];
+                            });
+                            numberInput.onchange = () => {
+                                source[propertyName] = parseFloat(numberInput.value);
+                                ForceRebuild(source, this._stateManager, propertyName, options?.notifiers, true);
+                            };
+                            container.appendChild(numberInput);
+                            const label = root.ownerDocument!.createElement("div");
+                            label.innerText = displayName;
+                            container.appendChild(label);
+                        } else {
+                            container.classList.add(commonStyles.sliderContainer);
+                            const label = root.ownerDocument!.createElement("label");
+                            container.appendChild(label);
+                            const value = root.ownerDocument!.createElement("div");
+                            container.appendChild(value);
+                            const slider = root.ownerDocument!.createElement("input");
+                            slider.type = "range";
+                            slider.id = `slider-${idGenerator++}`;
+                            slider.step = (Math.abs((options.max as number) - (options.min as number)) / 100.0).toString();
+                            slider.min = (options.min as number).toString();
+                            slider.max = (options.max as number).toString();
+                            container.appendChild(slider);
+                            label.innerText = displayName;
+                            label.htmlFor = slider.id;
+                            this._visualPropertiesRefresh.push(() => {
+                                slider.value = source[propertyName];
+                                value.innerText = source[propertyName];
+                            });
+                            slider.oninput = () => {
+                                source[propertyName] = parseFloat(slider.value);
+                                ForceRebuild(source, this._stateManager, propertyName, options?.notifiers, true);
+                            };
+                        }
                         break;
                     }
                 }
             }
+        }
+
+        if (this._visualPropertiesRefresh.length === 0) {
+            this._inputsContainer.classList.add(commonStyles.inputsContainerUp);
         }
 
         // Connections
