@@ -342,7 +342,7 @@ export class Viewer implements IDisposable {
     /**
      * The tone mapping to use for rendering the scene.
      */
-    public get toneMapping(): ToneMapping {
+    public get toneMapping(): ToneMapping | "unknown" {
         if (!this._toneMappingEnabled) {
             return "none";
         }
@@ -354,6 +354,8 @@ export class Viewer implements IDisposable {
                 return "aces";
             case ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL:
                 return "neutral";
+            default:
+                return "unknown";
         }
     }
 
