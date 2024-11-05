@@ -231,16 +231,6 @@ export class Viewer implements IDisposable {
     ) {
         {
             const scene = new Scene(this._engine);
-            // let toneMappingType = 0;
-            // setInterval(() => {
-            //     console.log(`Setting tone mapping to ${toneMappingType}`);
-            //     this._snapshotHelper.disableSnapshotRendering();
-            //     //scene.imageProcessingConfiguration.isEnabled = true;
-            //     scene.imageProcessingConfiguration.toneMappingEnabled = true;
-            //     scene.imageProcessingConfiguration.toneMappingType = toneMappingType;
-            //     this._snapshotHelper.enableSnapshotRendering();
-            //     toneMappingType = (toneMappingType + 1) % 3;
-            // }, 2000);
             const camera = new ArcRotateCamera("Viewer Default Camera", 0, 0, 1, Vector3.Zero(), scene);
             this._details = {
                 viewer: this,
