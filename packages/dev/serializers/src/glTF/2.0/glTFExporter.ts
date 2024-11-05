@@ -1216,7 +1216,7 @@ export class GLTFExporter {
             }
         }
 
-        // Apply extensions to the node. If this resolves to null, it means we can skip exporting this node and its children.
+        // Apply extensions to the node. If this resolves to null, it means we should skip exporting this node (NOTE: This will also skip its children)
         const processedNode = await this._extensionsPostExportNodeAsync("exportNodeAsync", node, babylonNode, this._nodeMap, state.convertToRightHanded);
         if (!processedNode) {
             Logger.Warn(`Not exporting node ${babylonNode.name}`);
@@ -1228,7 +1228,7 @@ export class GLTFExporter {
         this._nodeMap.set(babylonNode, nodeIndex);
         state.pushExportedNode(babylonNode);
 
-        // Begin processing child nodes once parent is finished
+        // Begin processing child nodes once parent has been added to the node map
         for (const babylonChildNode of babylonNode.getChildren()) {
             if (this._shouldExportNode(babylonChildNode)) {
                 const childNodeIndex = await this._exportNodeAsync(babylonChildNode, state);
