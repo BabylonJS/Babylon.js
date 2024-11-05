@@ -462,6 +462,21 @@ export class Viewer implements IDisposable {
     private async _updateModel(source: string | File | ArrayBufferView | undefined, options?: LoadAssetContainerOptions, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
 
+        // Enable transparency as coverage by default to be 3D Commerce compliant by default.
+        // https://doc.babylonjs.com/setup/support/3D_commerce_certif
+        if (!options?.pluginOptions?.gltf?.transparencyAsCoverage) {
+            options = {
+                ...options,
+                pluginOptions: {
+                    ...options?.pluginOptions,
+                    gltf: {
+                        ...options?.pluginOptions?.gltf,
+                        transparencyAsCoverage: true,
+                    },
+                },
+            };
+        }
+
         this._loadModelAbortController?.abort("New model is being loaded before previous model finished loading.");
         const abortController = (this._loadModelAbortController = new AbortController());
 
