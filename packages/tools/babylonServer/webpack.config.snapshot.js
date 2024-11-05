@@ -44,6 +44,7 @@ module.exports = (env) => {
                 "shared-ui-components": path.resolve(__dirname, "../../", "dev", "sharedUiComponents", outputDirectoryForAliases),
                 "post-processes": path.resolve(basePathForSources, "postProcesses", outputDirectoryForAliases),
                 "procedural-textures": path.resolve(basePathForSources, "proceduralTextures", outputDirectoryForAliases),
+                addons: path.resolve(basePathForSources, "addons", outputDirectoryForAliases),
             },
             symlinks: false,
             // modules: [path.resolve(__dirname, "../../dev/"), 'node_modules'],

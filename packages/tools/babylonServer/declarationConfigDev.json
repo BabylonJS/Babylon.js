@@ -18,6 +18,12 @@
         "outputDirectory": "./declarations"
     },
     {
+        "declarationLibs": ["@dev/addons"],
+        "devPackageName": "addons",
+        "filename": "addons.d.ts",
+        "outputDirectory": "./declarations"
+    },
+    {
         "declarationLibs": ["@dev/inspector"],
         "devPackageName": "inspector",
         "filename": "inspector.d.ts",
