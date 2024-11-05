@@ -33,6 +33,7 @@ export class RandomBlock extends NodeGeometryBlock {
      */
     @editableInPropertyPage("LockMode", PropertyTypeForEdition.List, "ADVANCED", {
         notifiers: { rebuild: true },
+        embedded: true,
         options: [
             { label: "None", value: RandomBlockLocks.None },
             { label: "LoopID", value: RandomBlockLocks.LoopID },

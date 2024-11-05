@@ -22,7 +22,7 @@ export class MeshBlock extends NodeGeometryBlock {
     /**
      * Gets or sets a boolean indicating that this block should serialize its cached data
      */
-    @editableInPropertyPage("Serialize cached data", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { rebuild: true } })
+    @editableInPropertyPage("Serialize cached data", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
     public serializedCachedData = false;
 
     /**

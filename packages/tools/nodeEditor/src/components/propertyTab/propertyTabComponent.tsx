@@ -55,6 +55,7 @@ interface IPropertyTabComponentState {
 
 export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
     private _onBuiltObserver: Nullable<Observer<void>>;
+    private _onForceUpdateObserver: Nullable<Observer<void>>;
     private _modeSelect: React.RefObject<OptionsLine>;
 
     constructor(props: IPropertyTabComponentProps) {
@@ -81,6 +82,10 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             }
         });
 
+        this._onForceUpdateObserver = this.props.globalState.stateManager.onForceUpdatePropertiesObservable.add(() => {
+            this.forceUpdate();
+        });
+
         this._onBuiltObserver = this.props.globalState.onBuiltObservable.add(() => {
             this.forceUpdate();
         });
@@ -88,6 +93,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
     override componentWillUnmount() {
         this.props.globalState.onBuiltObservable.remove(this._onBuiltObserver);
+        this.props.globalState.stateManager.onForceUpdatePropertiesObservable.remove(this._onForceUpdateObserver);
     }
 
     processInputBlockUpdate(ib: InputBlock) {

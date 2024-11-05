@@ -14,7 +14,7 @@ export class GeometryTextureFetchBlock extends NodeGeometryBlock {
     /**
      * Gets or sets a boolean indicating if coordinates should be clamped between 0 and 1
      */
-    @editableInPropertyPage("Clamp Coordinates", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { rebuild: true } })
+    @editableInPropertyPage("Clamp Coordinates", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
     public clampCoordinates = true;
 
     /**
