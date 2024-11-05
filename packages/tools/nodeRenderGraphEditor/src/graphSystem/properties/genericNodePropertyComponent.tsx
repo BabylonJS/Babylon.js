@@ -11,7 +11,8 @@ import { SliderLineComponent } from "shared-ui-components/lines/sliderLineCompon
 import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
 import type { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
 import type { IEditablePropertyListOption } from "core/Decorators/nodeDecorator";
-import { PropertyTypeForEdition, type IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
+import type { IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
+import { PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import { Constants } from "core/Engines/constants";
 import { ForceRebuild } from "shared-ui-components/nodeGraphSystem/automaticProperties";
 
