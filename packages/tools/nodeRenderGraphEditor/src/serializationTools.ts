@@ -20,6 +20,7 @@ export class SerializationTools {
                 blockId: block.uniqueId,
                 x: node ? node.x : 0,
                 y: node ? node.y : 0,
+                isCollapsed: node ? node.isCollapsed : false,
             });
         }
 

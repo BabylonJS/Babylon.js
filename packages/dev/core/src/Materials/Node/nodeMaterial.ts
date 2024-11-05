@@ -2395,6 +2395,7 @@ export class NodeMaterial extends PushMaterial {
                 blockId: number;
                 x: number;
                 y: number;
+                isCollapsed: boolean;
             }[] = source.locations || source.editorData.locations;
 
             for (const location of locations) {
