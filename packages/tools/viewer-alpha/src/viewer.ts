@@ -17,6 +17,7 @@ import type {
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { loadAssetContainerAsync } from "core/Loading/sceneLoader";
+import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Texture } from "core/Materials/Textures/texture";
@@ -31,6 +32,18 @@ import { registerBuiltInLoaders } from "loaders/dynamic";
 import { Viewport } from "core/Maths/math.viewport";
 import { GetHotSpotToRef } from "core/Meshes/abstractMesh.hotSpot";
 import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
+
+const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
+export type ToneMapping = (typeof toneMappingOptions)[number];
+
+/**
+ * Checks if the given value is a valid tone mapping option.
+ * @param value The value to check.
+ * @returns True if the value is a valid tone mapping option, otherwise false.
+ */
+export function isToneMapping(value: string): value is ToneMapping {
+    return toneMappingOptions.includes(value as ToneMapping);
+}
 
 function throwIfAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]): void {
     for (const signal of abortSignals) {
@@ -151,6 +164,11 @@ export class Viewer implements IDisposable {
     public readonly onSkyboxBlurChanged = new Observable<void>();
 
     /**
+     * Fired when the tone mapping changes.
+     */
+    public readonly onToneMappingChanged = new Observable<void>();
+
+    /**
      * Fired when a model is loaded into the viewer (or unloaded from the viewer).
      */
     public readonly onModelChanged = new Observable<void>();
@@ -192,6 +210,7 @@ export class Viewer implements IDisposable {
     private _skybox: Nullable<Mesh> = null;
     private _skyboxBlur: number = 0.3;
     private _light: Nullable<HemisphericLight> = null;
+    private _toneMapping: ToneMapping = "none";
 
     private _isDisposed = false;
 
@@ -212,6 +231,16 @@ export class Viewer implements IDisposable {
     ) {
         {
             const scene = new Scene(this._engine);
+            // let toneMappingType = 0;
+            // setInterval(() => {
+            //     console.log(`Setting tone mapping to ${toneMappingType}`);
+            //     this._snapshotHelper.disableSnapshotRendering();
+            //     //scene.imageProcessingConfiguration.isEnabled = true;
+            //     scene.imageProcessingConfiguration.toneMappingEnabled = true;
+            //     scene.imageProcessingConfiguration.toneMappingType = toneMappingType;
+            //     this._snapshotHelper.enableSnapshotRendering();
+            //     toneMappingType = (toneMappingType + 1) % 3;
+            // }, 2000);
             const camera = new ArcRotateCamera("Viewer Default Camera", 0, 0, 1, Vector3.Zero(), scene);
             this._details = {
                 viewer: this,
@@ -226,6 +255,8 @@ export class Viewer implements IDisposable {
         this._details.camera.attachControl();
         this._updateCamera(); // set default camera values
         this._autoRotationBehavior = this._details.camera.getBehaviorByName("AutoRotation") as AutoRotationBehavior;
+
+        this.toneMapping = "neutral";
 
         // Load a default light, but ignore errors as the user might be immediately loading their own environment.
         this.resetEnvironment().catch(() => {});
@@ -284,6 +315,41 @@ export class Viewer implements IDisposable {
                 }
             }
             this.onSkyboxBlurChanged.notifyObservers();
+        }
+    }
+
+    /**
+     * The tone mapping to use for rendering the scene.
+     */
+    public get toneMapping(): ToneMapping {
+        return this._toneMapping;
+    }
+
+    public set toneMapping(value: ToneMapping) {
+        if (value !== this._toneMapping) {
+            this._toneMapping = value;
+            this._snapshotHelper.disableSnapshotRendering();
+
+            if (value === "none") {
+                this._details.scene.imageProcessingConfiguration.toneMappingEnabled = false;
+            } else {
+                switch (value) {
+                    case "standard":
+                        this._details.scene.imageProcessingConfiguration.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_STANDARD;
+                        break;
+                    case "aces":
+                        this._details.scene.imageProcessingConfiguration.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_ACES;
+                        break;
+                    case "neutral":
+                        this._details.scene.imageProcessingConfiguration.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL;
+                        break;
+                }
+                this._details.scene.imageProcessingConfiguration.toneMappingEnabled = true;
+            }
+
+            this._snapshotHelper.enableSnapshotRendering();
+
+            this.onToneMappingChanged.notifyObservers();
         }
     }
 
@@ -563,6 +629,7 @@ export class Viewer implements IDisposable {
         this.onEnvironmentChanged.clear();
         this.onEnvironmentError.clear();
         this.onSkyboxBlurChanged.clear();
+        this.onToneMappingChanged.clear();
         this.onModelChanged.clear();
         this.onModelError.clear();
         this.onCameraAutoOrbitChanged.clear();

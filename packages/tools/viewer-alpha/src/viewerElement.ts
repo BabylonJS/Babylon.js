@@ -2,7 +2,7 @@
 import type { ArcRotateCamera, Nullable, Observable } from "core/index";
 
 import type { PropertyValues } from "lit";
-import type { ViewerDetails, ViewerHotSpot, ViewerHotSpotQuery } from "./viewer";
+import type { ToneMapping, ViewerDetails, ViewerHotSpot, ViewerHotSpotQuery } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, defaultConverter, html } from "lit";
@@ -11,6 +11,7 @@ import { customElement, property, query, state } from "lit/decorators.js";
 import { Color4 } from "core/Maths/math.color";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { Logger } from "core/Misc/logger";
+import { isToneMapping } from "./viewer";
 import { createViewerForCanvas, getDefaultEngine } from "./viewerFactory";
 
 // Icon SVG is pulled from https://fluentuipr.z22.web.core.windows.net/heads/master/public-docsite-v9/storybook/iframe.html?id=icons-catalog--page&viewMode=story
@@ -75,6 +76,12 @@ export class HTML3DElement extends LitElement {
             (details) => details.viewer.onSkyboxBlurChanged,
             (details) => (details.viewer.skyboxBlur = this.skyboxBlur ?? details.viewer.skyboxBlur),
             (details) => (this.skyboxBlur = details.viewer.skyboxBlur)
+        ),
+        this._createPropertyBinding(
+            "toneMapping",
+            (details) => details.viewer.onToneMappingChanged,
+            (details) => (details.viewer.toneMapping = this.toneMapping ?? details.viewer.toneMapping),
+            (details) => (this.toneMapping = details.viewer.toneMapping)
         ),
         this._createPropertyBinding(
             "cameraAutoOrbit",
@@ -340,6 +347,21 @@ export class HTML3DElement extends LitElement {
      */
     @property({ attribute: "skybox-blur", reflect: true })
     public skyboxBlur: Nullable<number> = null;
+
+    /**
+     * The tone mapping to use for rendering the scene.
+     */
+    @property({
+        attribute: "tone-mapping",
+        reflect: true,
+        converter: (value: string | null): ToneMapping => {
+            if (!value || !isToneMapping(value)) {
+                return "neutral";
+            }
+            return value;
+        },
+    })
+    public toneMapping: Nullable<ToneMapping> = null;
 
     /**
      * The clear color (e.g. background color) for the viewer.
