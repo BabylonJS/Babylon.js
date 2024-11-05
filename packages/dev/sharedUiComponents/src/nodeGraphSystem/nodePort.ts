@@ -12,6 +12,7 @@ import localStyles from "./nodePort.modules.scss";
 
 export class NodePort {
     protected _element: HTMLDivElement;
+    protected _portContainer: HTMLElement;
     protected _img: HTMLImageElement;
     protected _pip: HTMLDivElement;
     protected _stateManager: StateManager;
@@ -27,6 +28,14 @@ export class NodePort {
         }
 
         return this._element;
+    }
+
+    public get container(): HTMLElement {
+        if (this.delegatedPort) {
+            return this.delegatedPort.container;
+        }
+
+        return this._portContainer;
     }
 
     public get portName() {
@@ -106,6 +115,7 @@ export class NodePort {
         public node: GraphNode,
         stateManager: StateManager
     ) {
+        this._portContainer = portContainer;
         this._element = portContainer.ownerDocument!.createElement("div");
         this._element.classList.add(commonStyles.port);
         portContainer.appendChild(this._element);

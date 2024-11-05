@@ -17,13 +17,16 @@ import commonStyles from "./common.modules.scss";
 import type { IEditablePropertyListOption, IEditablePropertyOption, IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
 import { PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import { ForceRebuild } from "./automaticProperties";
+import dropdownArrowIcon from "../imgs/dropdownArrowIcon_white.svg";
 
 export class GraphNode {
     private _visual: HTMLDivElement;
     private _headerContainer: HTMLDivElement;
     private _headerIcon: HTMLDivElement;
     private _headerIconImg: HTMLImageElement;
+    private _headerCollapseImg: HTMLImageElement;
     private _header: HTMLDivElement;
+    private _headerCollapse: HTMLDivElement;
     private _connections: HTMLDivElement;
     private _optionsContainer: HTMLDivElement;
     private _inputsContainer: HTMLDivElement;
@@ -60,6 +63,10 @@ export class GraphNode {
 
     public removeClassFromVisual(className: string) {
         this._visual.classList.remove(className);
+    }
+
+    public get isCollapsed() {
+        return this._isCollapsed;
     }
 
     public get isVisible() {
@@ -400,14 +407,11 @@ export class GraphNode {
         this._executionTime.innerHTML = executionTime >= 0 ? `${executionTime.toFixed(2)} ms` : "";
 
         this.content.prepareHeaderIcon(this._headerIcon, this._headerIconImg);
-        if (this._headerIconImg.src) {
-            this._header.classList.add(localStyles["headerWithIcon"]);
-        }
     }
 
     private _onDown(evt: PointerEvent) {
         // Check if this is coming from the port
-        if (evt.target && (evt.target as HTMLElement).nodeName === "IMG") {
+        if (evt.target && (evt.target as HTMLElement).nodeName === "IMG" && (evt.target as HTMLElement).draggable) {
             return;
         }
 
@@ -563,6 +567,48 @@ export class GraphNode {
         ForceRebuild(source, this._stateManager, propertyName, notifiers);
     }
 
+    private _isCollapsed = false;
+
+    /**
+     * Collapse the node
+     */
+    public collapse() {
+        this._headerCollapse.classList.add(localStyles.collapsed);
+        this._inputPorts
+            .filter((p) => !p.portData.isConnected)
+            .forEach((p) => {
+                p.container.classList.add(commonStyles.hidden);
+            });
+
+        this._outputPorts
+            .filter((p) => !p.portData.isConnected)
+            .forEach((p) => {
+                p.container.classList.add(commonStyles.hidden);
+            });
+
+        this._refreshLinks();
+    }
+
+    /**
+     * Expand the node
+     */
+    public expand() {
+        this._headerCollapse.classList.remove(localStyles.collapsed);
+        this._inputPorts
+            .filter((p) => !p.portData.isConnected)
+            .forEach((p) => {
+                p.container.classList.remove(commonStyles.hidden);
+            });
+
+        this._outputPorts
+            .filter((p) => !p.portData.isConnected)
+            .forEach((p) => {
+                p.container.classList.remove(commonStyles.hidden);
+            });
+
+        this._refreshLinks();
+    }
+
     public appendVisual(root: HTMLDivElement, owner: GraphCanvasComponent) {
         this._ownerCanvas = owner;
 
@@ -592,8 +638,30 @@ export class GraphNode {
         this._headerIcon = root.ownerDocument!.createElement("div");
         this._headerIcon.classList.add(localStyles.headerIcon);
         this._headerIconImg = root.ownerDocument!.createElement("img");
+        this._headerIconImg.draggable = false;
         this._headerIcon.appendChild(this._headerIconImg);
         this._headerContainer.appendChild(this._headerIcon);
+
+        if (this.content.inputs.length > 1 || this.content.outputs.length > 1) {
+            this._headerCollapse = root.ownerDocument!.createElement("div");
+            this._headerCollapse.classList.add(localStyles.headerCollapse);
+            this._headerCollapseImg = root.ownerDocument!.createElement("img");
+            this._headerCollapseImg.src = dropdownArrowIcon;
+            this._headerCollapseImg.draggable = false;
+            this._headerCollapse.appendChild(this._headerCollapseImg);
+            this._headerContainer.appendChild(this._headerCollapse);
+            this._headerCollapse.addEventListener("pointerup", (evt) => evt.stopPropagation());
+            this._headerCollapse.addEventListener("pointermove", (evt) => evt.stopPropagation());
+            this._headerCollapse.addEventListener("pointerdown", (evt) => {
+                this._isCollapsed = !this._isCollapsed;
+                if (this._isCollapsed) {
+                    this.collapse();
+                } else {
+                    this.expand();
+                }
+                evt.stopPropagation();
+            });
+        }
 
         this._selectionBorder = root.ownerDocument!.createElement("div");
         this._selectionBorder.classList.add("selection-border");
@@ -630,7 +698,7 @@ export class GraphNode {
 
         this._visual.appendChild(this._comments);
 
-        // Comments
+        // Execution time
         this._executionTime = root.ownerDocument!.createElement("div");
         this._executionTime.classList.add(localStyles.executionTime);
 
