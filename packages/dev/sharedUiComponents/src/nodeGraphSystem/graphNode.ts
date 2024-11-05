@@ -560,7 +560,7 @@ export class GraphNode {
         for (const refresh of this._visualPropertiesRefresh) {
             refresh();
         }
-        ForceRebuild(source, this._stateManager, propertyName, notifiers, true);
+        ForceRebuild(source, this._stateManager, propertyName, notifiers);
     }
 
     public appendVisual(root: HTMLDivElement, owner: GraphCanvasComponent) {
