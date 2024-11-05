@@ -26,25 +26,25 @@ export class LatticeBlock extends NodeGeometryBlock implements INodeGeometryExec
      * Gets or sets a boolean indicating that this block can evaluate context
      * Build performance is improved when this value is set to false as the system will cache values instead of reevaluating everything per context change
      */
-    @editableInPropertyPage("Evaluate context", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { rebuild: true } })
+    @editableInPropertyPage("Evaluate context", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
     public evaluateContext = true;
 
     /**
      * Resolution on x axis
      */
-    @editableInPropertyPage("resolutionX", PropertyTypeForEdition.Int, "ADVANCED", { notifiers: { rebuild: true }, min: 1, max: 10 })
+    @editableInPropertyPage("resolutionX", PropertyTypeForEdition.Int, "ADVANCED", { embedded: true, notifiers: { rebuild: true }, min: 1, max: 10 })
     public resolutionX = 3;
 
     /**
      * Resolution on y axis
      */
-    @editableInPropertyPage("resolutionY", PropertyTypeForEdition.Int, "ADVANCED", { notifiers: { rebuild: true }, min: 1, max: 10 })
+    @editableInPropertyPage("resolutionY", PropertyTypeForEdition.Int, "ADVANCED", { embedded: true, notifiers: { rebuild: true }, min: 1, max: 10 })
     public resolutionY = 3;
 
     /**
      * Resolution on z axis
      */
-    @editableInPropertyPage("resolutionZ", PropertyTypeForEdition.Int, "ADVANCED", { notifiers: { rebuild: true }, min: 1, max: 10 })
+    @editableInPropertyPage("resolutionZ", PropertyTypeForEdition.Int, "ADVANCED", { embedded: true, notifiers: { rebuild: true }, min: 1, max: 10 })
     public resolutionZ = 3;
 
     /**

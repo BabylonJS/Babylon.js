@@ -28,16 +28,16 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
     private _worldMatrixName = "";
 
     /** Gets or sets a boolean indicating that normal should be inverted on X axis */
-    @editableInPropertyPage("Invert X axis", PropertyTypeForEdition.Boolean, "PROPERTIES", { notifiers: { update: false } })
+    @editableInPropertyPage("Invert X axis", PropertyTypeForEdition.Boolean, "PROPERTIES", { embedded: true, notifiers: { update: false } })
     public invertX = false;
     /** Gets or sets a boolean indicating that normal should be inverted on Y axis */
-    @editableInPropertyPage("Invert Y axis", PropertyTypeForEdition.Boolean, "PROPERTIES", { notifiers: { update: false } })
+    @editableInPropertyPage("Invert Y axis", PropertyTypeForEdition.Boolean, "PROPERTIES", { embedded: true, notifiers: { update: false } })
     public invertY = false;
     /** Gets or sets a boolean indicating that parallax occlusion should be enabled */
-    @editableInPropertyPage("Use parallax occlusion", PropertyTypeForEdition.Boolean)
+    @editableInPropertyPage("Use parallax occlusion", PropertyTypeForEdition.Boolean, undefined, { embedded: true, notifiers: { update: false } })
     public useParallaxOcclusion = false;
     /** Gets or sets a boolean indicating that sampling mode is in Object space */
-    @editableInPropertyPage("Object Space Mode", PropertyTypeForEdition.Boolean, "PROPERTIES", { notifiers: { update: false } })
+    @editableInPropertyPage("Object Space Mode", PropertyTypeForEdition.Boolean, "PROPERTIES", { embedded: true, notifiers: { update: false } })
     public useObjectSpaceNormalMap = false;
 
     /**

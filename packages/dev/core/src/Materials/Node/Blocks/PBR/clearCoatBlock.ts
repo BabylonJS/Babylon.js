@@ -69,7 +69,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
     /**
      * Defines if the F0 value should be remapped to account for the interface change in the material.
      */
-    @editableInPropertyPage("Remap F0 on interface change", PropertyTypeForEdition.Boolean, "ADVANCED")
+    @editableInPropertyPage("Remap F0 on interface change", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true })
     public remapF0OnInterfaceChange: boolean = true;
 
     /**

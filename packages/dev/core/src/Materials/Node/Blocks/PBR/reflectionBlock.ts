@@ -55,13 +55,13 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
      * Defines if the material uses spherical harmonics vs spherical polynomials for the
      * diffuse part of the IBL.
      */
-    @editableInPropertyPage("Spherical Harmonics", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
+    @editableInPropertyPage("Spherical Harmonics", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { update: true } })
     public useSphericalHarmonics: boolean = true;
 
     /**
      * Force the shader to compute irradiance in the fragment shader in order to take bump in account.
      */
-    @editableInPropertyPage("Force irradiance in fragment", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
+    @editableInPropertyPage("Force irradiance in fragment", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { update: true } })
     public forceIrradianceInFragment: boolean = false;
 
     protected override _onGenerateOnlyFragmentCodeChanged(): boolean {

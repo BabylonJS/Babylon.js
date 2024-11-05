@@ -14,7 +14,7 @@ import type { INodeData } from "./interfaces/nodeData";
 import type { IPortData } from "./interfaces/portData";
 import localStyles from "./graphNode.modules.scss";
 import commonStyles from "./common.modules.scss";
-import type { IEditablePropertyListOption, IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
+import type { IEditablePropertyListOption, IEditablePropertyOption, IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
 import { PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import { ForceRebuild } from "./automaticProperties";
 
@@ -556,6 +556,13 @@ export class GraphNode {
         });
     }
 
+    private _forceRebuild(source: any, propertyName: string, notifiers?: IEditablePropertyOption["notifiers"]) {
+        for (const refresh of this._visualPropertiesRefresh) {
+            refresh();
+        }
+        ForceRebuild(source, this._stateManager, propertyName, notifiers, true);
+    }
+
     public appendVisual(root: HTMLDivElement, owner: GraphCanvasComponent) {
         this._ownerCanvas = owner;
 
@@ -654,7 +661,7 @@ export class GraphNode {
                         });
                         checkbox.onchange = () => {
                             source[propertyName] = !source[propertyName];
-                            ForceRebuild(source, this._stateManager, propertyName, options?.notifiers, true);
+                            this._forceRebuild(source, propertyName, options?.notifiers);
                         };
                         container.appendChild(checkbox);
                         const label = root.ownerDocument!.createElement("label");
@@ -666,6 +673,7 @@ export class GraphNode {
                         container.appendChild(label);
                         break;
                     }
+                    case PropertyTypeForEdition.Int:
                     case PropertyTypeForEdition.Float: {
                         const cantDisplaySlider = isNaN(options.min as number) || isNaN(options.max as number) || options.min === options.max;
                         if (cantDisplaySlider) {
@@ -678,7 +686,7 @@ export class GraphNode {
                             });
                             numberInput.onchange = () => {
                                 source[propertyName] = parseFloat(numberInput.value);
-                                ForceRebuild(source, this._stateManager, propertyName, options?.notifiers, true);
+                                this._forceRebuild(source, propertyName, options?.notifiers);
                             };
                             container.appendChild(numberInput);
                             const label = root.ownerDocument!.createElement("div");
@@ -693,7 +701,7 @@ export class GraphNode {
                             const slider = root.ownerDocument!.createElement("input");
                             slider.type = "range";
                             slider.id = `slider-${idGenerator++}`;
-                            slider.step = (Math.abs((options.max as number) - (options.min as number)) / 100.0).toString();
+                            slider.step = type === PropertyTypeForEdition.Int ? "1" : (Math.abs((options.max as number) - (options.min as number)) / 100.0).toString();
                             slider.min = (options.min as number).toString();
                             slider.max = (options.max as number).toString();
                             container.appendChild(slider);
@@ -705,7 +713,8 @@ export class GraphNode {
                             });
                             slider.oninput = () => {
                                 source[propertyName] = parseFloat(slider.value);
-                                ForceRebuild(source, this._stateManager, propertyName, options?.notifiers, true);
+                                value.innerText = source[propertyName];
+                                this._forceRebuild(source, propertyName, options?.notifiers);
                             };
                         }
                         break;
@@ -733,7 +742,7 @@ export class GraphNode {
                             option.innerText = item.label;
                             option.onclick = () => {
                                 source[propertyName] = item.value;
-                                ForceRebuild(source, this._stateManager, propertyName, options?.notifiers, true);
+                                this._forceRebuild(source, propertyName, options?.notifiers);
                             };
                             selectList.appendChild(option);
                         }

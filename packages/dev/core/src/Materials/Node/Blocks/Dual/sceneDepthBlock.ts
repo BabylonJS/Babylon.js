@@ -27,6 +27,7 @@ export class SceneDepthBlock extends NodeMaterialBlock {
      * Defines if the depth renderer should be setup in non linear mode
      */
     @editableInPropertyPage("Use non linear depth", PropertyTypeForEdition.Boolean, "ADVANCED", {
+        embedded: true,
         notifiers: {
             activatePreviewCommand: true,
             callback: (scene, block) => {

@@ -10,10 +10,10 @@ import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
  */
 export class GeometryClampBlock extends NodeGeometryBlock {
     /** Gets or sets the minimum range */
-    @editableInPropertyPage("Minimum", PropertyTypeForEdition.Float)
+    @editableInPropertyPage("Minimum", PropertyTypeForEdition.Float, undefined, { embedded: true })
     public minimum = 0.0;
     /** Gets or sets the maximum range */
-    @editableInPropertyPage("Maximum", PropertyTypeForEdition.Float)
+    @editableInPropertyPage("Maximum", PropertyTypeForEdition.Float, undefined, { embedded: true })
     public maximum = 1.0;
 
     /**

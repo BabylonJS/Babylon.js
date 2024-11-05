@@ -107,6 +107,7 @@ export class MeshAttributeExistsBlock extends NodeMaterialBlock {
      */
     @editableInPropertyPage("Attribute lookup", PropertyTypeForEdition.List, undefined, {
         notifiers: { update: true },
+        embedded: true,
         options: [
             { label: "(None)", value: MeshAttributeExistsBlockTypes.None },
             { label: "Normal", value: MeshAttributeExistsBlockTypes.Normal },
