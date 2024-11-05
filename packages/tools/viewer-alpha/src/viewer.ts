@@ -54,6 +54,7 @@ function throwIfAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]):
 function createSkybox(scene: Scene, camera: Camera, environmentTexture: CubeTexture, blur: number): Mesh {
     const hdrSkybox = CreateBox("hdrSkyBox", undefined, scene);
     const hdrSkyboxMaterial = new PBRMaterial("skyBox", scene);
+    // Use the default image processing configuration on the skybox (e.g. don't apply tone mapping, contrast, or exposure).
     hdrSkyboxMaterial.imageProcessingConfiguration = new ImageProcessingConfiguration();
     hdrSkyboxMaterial.backFaceCulling = false;
     hdrSkyboxMaterial.reflectionTexture = environmentTexture.clone();
@@ -247,6 +248,7 @@ export class Viewer implements IDisposable {
         {
             const scene = new Scene(this._engine);
 
+            // Deduce tone mapping, contrast, and exposure from the scene (so the viewer stays in sync if anything mutates these values directly on the scene).
             this._toneMappingEnabled = scene.imageProcessingConfiguration.toneMappingEnabled;
             this._toneMappingType = scene.imageProcessingConfiguration.toneMappingType;
             this._contrast = scene.imageProcessingConfiguration.contrast;
@@ -289,6 +291,7 @@ export class Viewer implements IDisposable {
         this._updateCamera(); // set default camera values
         this._autoRotationBehavior = this._details.camera.getBehaviorByName("AutoRotation") as AutoRotationBehavior;
 
+        // Default to KHR PBR Neutral tone mapping.
         this.toneMapping = "neutral";
 
         // Load a default light, but ignore errors as the user might be immediately loading their own environment.
