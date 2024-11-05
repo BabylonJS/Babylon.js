@@ -124,6 +124,7 @@ $iconMargin: 6px;
 .booleanContainer {
     height: 20px;
     display: flex;
+    margin-left: 4px;
     input[type="checkbox"] {
         -webkit-appearance: none;
         -moz-appearance: none;
@@ -183,6 +184,7 @@ $iconMargin: 6px;
         z-index: 1;
         text-align: end;
         padding-right: 5px;
+        cursor: col-resize;
 
         &::-webkit-outer-spin-button,
         &::-webkit-inner-spin-button {
@@ -219,9 +221,10 @@ $iconMargin: 6px;
 }
 
 .listContainer {
-    margin-top: 2px;
+    margin-top: 3px;
     height: 20px;
     display: grid;
+    margin-bottom: 3px;
 }
 
 .select {
@@ -251,6 +254,7 @@ $iconMargin: 6px;
     color: white;
     pointer-events: none;
     background: transparent;
+    transform: translateY(-1px);
 }
 
 .active {
