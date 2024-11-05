@@ -80,14 +80,30 @@ export class HTML3DElement extends LitElement {
         this._createPropertyBinding(
             "toneMapping",
             (details) => details.viewer.onToneMappingChanged,
-            (details) => (details.viewer.toneMapping = this.toneMapping ?? details.viewer.toneMapping),
-            (details) => (this.toneMapping = details.viewer.toneMapping)
+            (details) => {
+                if (this.toneMapping) {
+                    details.viewer.toneMapping = this.toneMapping;
+                }
+            },
+            (details) => {
+                if (details.viewer.toneMapping === "unknown") {
+                    this.toneMapping = null;
+                } else {
+                    this.toneMapping = details.viewer.toneMapping;
+                }
+            }
         ),
         this._createPropertyBinding(
             "contrast",
             (details) => details.viewer.onContrastChanged,
             (details) => (details.viewer.contrast = this.contrast ?? details.viewer.contrast),
             (details) => (this.contrast = details.viewer.contrast)
+        ),
+        this._createPropertyBinding(
+            "exposure",
+            (details) => details.viewer.onExposureChanged,
+            (details) => (details.viewer.exposure = this.exposure ?? details.viewer.exposure),
+            (details) => (this.exposure = details.viewer.exposure)
         ),
         this._createPropertyBinding(
             "cameraAutoOrbit",
@@ -373,6 +389,12 @@ export class HTML3DElement extends LitElement {
      */
     @property()
     public contrast: Nullable<number> = null;
+
+    /**
+     * The exposure applied to the scene.
+     */
+    @property()
+    public exposure: Nullable<number> = null;
 
     /**
      * The clear color (e.g. background color) for the viewer.

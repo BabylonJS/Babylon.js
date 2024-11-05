@@ -175,6 +175,11 @@ export class Viewer implements IDisposable {
     public readonly onContrastChanged = new Observable<void>();
 
     /**
+     * Fired when the exposure changes.
+     */
+    public readonly onExposureChanged = new Observable<void>();
+
+    /**
      * Fired when a model is loaded into the viewer (or unloaded from the viewer).
      */
     public readonly onModelChanged = new Observable<void>();
@@ -220,6 +225,7 @@ export class Viewer implements IDisposable {
     private _toneMappingEnabled: boolean;
     private _toneMappingType: number;
     private _contrast: number;
+    private _exposure: number;
 
     private _isDisposed = false;
 
@@ -244,6 +250,7 @@ export class Viewer implements IDisposable {
             this._toneMappingEnabled = scene.imageProcessingConfiguration.toneMappingEnabled;
             this._toneMappingType = scene.imageProcessingConfiguration.toneMappingType;
             this._contrast = scene.imageProcessingConfiguration.contrast;
+            this._exposure = scene.imageProcessingConfiguration.exposure;
 
             this._imageProcessingConfigurationObserver = scene.imageProcessingConfiguration.onUpdateParameters.add(() => {
                 if (this._toneMappingEnabled !== scene.imageProcessingConfiguration.toneMappingEnabled) {
@@ -259,6 +266,11 @@ export class Viewer implements IDisposable {
                 if (this._contrast !== scene.imageProcessingConfiguration.contrast) {
                     this._contrast = scene.imageProcessingConfiguration.contrast;
                     this.onContrastChanged.notifyObservers();
+                }
+
+                if (this._exposure !== scene.imageProcessingConfiguration.exposure) {
+                    this._exposure = scene.imageProcessingConfiguration.exposure;
+                    this.onExposureChanged.notifyObservers();
                 }
             });
 
@@ -392,6 +404,19 @@ export class Viewer implements IDisposable {
     public set contrast(value: number) {
         this._snapshotHelper.disableSnapshotRendering();
         this._details.scene.imageProcessingConfiguration.contrast = value;
+        this._snapshotHelper.enableSnapshotRendering();
+    }
+
+    /**
+     * The exposure applied to the scene.
+     */
+    public get exposure(): number {
+        return this._exposure;
+    }
+
+    public set exposure(value: number) {
+        this._snapshotHelper.disableSnapshotRendering();
+        this._details.scene.imageProcessingConfiguration.exposure = value;
         this._snapshotHelper.enableSnapshotRendering();
     }
 
@@ -688,6 +713,7 @@ export class Viewer implements IDisposable {
         this.onSkyboxBlurChanged.clear();
         this.onToneMappingChanged.clear();
         this.onContrastChanged.clear();
+        this.onExposureChanged.clear();
         this.onModelChanged.clear();
         this.onModelError.clear();
         this.onCameraAutoOrbitChanged.clear();
