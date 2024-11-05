@@ -1,6 +1,117 @@
 {
-    "fromTag": "7.32.3",
+    "fromTag": "7.32.4",
     "changelog": {
+        "7.32.5": [
+            {
+                "pr": "15772",
+                "title": "Allow both CSG in NGE",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    ".build/config.json",
+                    "packages/dev/core/src/Meshes/Node/Blocks/booleanGeometryBlock.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/automaticProperties.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.modules.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/stateManager.ts",
+                    "packages/tools/nodeEditor/src/components/propertyTab/propertyTabComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15770",
+                "title": "On Node Properties",
+                "description": "Boolean, lists ,float and float-slider are supported\r\n\r\n\r\n![image](https://github.com/user-attachments/assets/16c2d3be-247e-4f32-8f1d-a06f3da11e8a)\r\n",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Decorators/nodeDecorator.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/sceneDepthBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/perturbNormalBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/clearCoatBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/reflectionBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/refractionBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/sheenBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/clampBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/cloudBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/conditionalBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/curveBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/loopBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/meshAttributeExistsBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/transformBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/triPlanarBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/trigonometryBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/waveBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/worleyNoise3DBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateBaseBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/aggregatorBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/latticeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setColorsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setMaterialIDBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setNormalsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setPositionsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setTangentsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setUVsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/boxBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/capsuleBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/cylinderBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/discBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/gridBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/icoSphereBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/meshBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/planeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/sphereBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/torusBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Textures/geometryTextureBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Textures/geometryTextureFetchBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/booleanGeometryBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/cleanGeometryBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/conditionBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryClampBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryCollectionBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryCurveBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryOptimizeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryTransformBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryTrigonometryBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/mappingBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/mathBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/mergeGeometryBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/randomBlock.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/automaticProperties.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/common.modules.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.modules.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/stateManager.ts",
+                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts",
+                    "packages/tools/nodeEditor/src/components/preview/previewMeshControlComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/globalState.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/clampDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/trigonometryDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/conditionalNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/curveNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/transformNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/trigonometryNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/registerToPropertyLedger.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/components/preview/previewManager.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/components/preview/previewMeshControlComponent.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/globalState.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            }
+        ],
         "7.32.4": [
             {
                 "pr": "15771",
