@@ -21,7 +21,8 @@ export type DevPackageName =
     | "viewer"
     | "ktx2decoder"
     | "shared-ui-components"
-    | "babylonjs-gltf2interface";
+    | "babylonjs-gltf2interface"
+    | "addons";
 export type UMDPackageName =
     | "babylonjs"
     | "babylonjs-gui"
@@ -39,7 +40,8 @@ export type UMDPackageName =
     | "babylonjs-post-process"
     | "babylonjs-ktx2decoder"
     | "babylonjs-shared-ui-components"
-    | "babylonjs-gltf2interface";
+    | "babylonjs-gltf2interface"
+    | "babylonjs-addons";
 export type NamespacePackageName =
     | "BABYLON"
     | "BABYLON.GUI"
@@ -53,6 +55,7 @@ export type NamespacePackageName =
     | "BABYLON.NodeRenderGraphEditor"
     | "BABYLON.GuiEditor"
     | "BABYLON.Accessibility"
+    | "ADDONS"
     | "INSPECTOR"
     | "BabylonViewer"
     | "KTX2DECODER"
@@ -79,6 +82,7 @@ export type ES6PackageName =
     | "@babylonjs/viewer"
     | "@babylonjs/ktx2decoder"
     | "@babylonjs/shared-ui-components"
+    | "@babylonjs/addons"
     | "babylonjs-gltf2interface";
 
 export const umdPackageMapping: { [key in UMDPackageName]: { baseDir: string; baseFilename: string; isBundle?: boolean } } = {
@@ -151,6 +155,10 @@ export const umdPackageMapping: { [key in UMDPackageName]: { baseDir: string; ba
         baseDir: "", // keep in root of the cdn
         baseFilename: "",
     },
+    "babylonjs-addons": {
+        baseDir: "addons",
+        baseFilename: "babylonjs.addons",
+    },
 };
 export type ESMPackageName = "@babylonjs/esm";
 
@@ -203,6 +211,7 @@ const packageMapping: {
         viewer: "babylonjs-viewer",
         "shared-ui-components": "babylonjs-shared-ui-components",
         "babylonjs-gltf2interface": "babylonjs-gltf2interface",
+        addons: "babylonjs-addons",
     },
     es6: {
         core: "@babylonjs/core",
@@ -222,6 +231,7 @@ const packageMapping: {
         viewer: "@babylonjs/viewer",
         "shared-ui-components": "@babylonjs/shared-ui-components",
         "babylonjs-gltf2interface": "babylonjs-gltf2interface",
+        addons: "@babylonjs/addons",
     },
     esm: {
         core: "@babylonjs/esm",
@@ -239,6 +249,7 @@ const packageMapping: {
         "procedural-textures": "@babylonjs/esm",
         ktx2decoder: "@babylonjs/esm",
         viewer: "@babylonjs/esm",
+        addons: "@babylonjs/esm",
         "shared-ui-components": "@babylonjs/esm",
         "babylonjs-gltf2interface": "babylonjs-gltf2interface",
     },
@@ -338,6 +349,7 @@ const packageMapping: {
         accessibility: "BABYLON.Accessibility",
         "post-processes": "BABYLON",
         "procedural-textures": "BABYLON",
+        addons: "ADDONS",
         ktx2decoder: "KTX2DECODER",
         viewer: "BabylonViewer",
         "shared-ui-components": "BABYLON.SharedUIComponents",

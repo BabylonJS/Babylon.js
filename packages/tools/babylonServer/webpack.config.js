@@ -98,6 +98,7 @@ module.exports = (env) => {
             "nodeGeometryEditor/babylon.nodeGeometryEditor.min": `./src/nodeGeometryEditor/index.ts`,
             "nodeRenderGraphEditor/babylon.nodeRenderGraphEditor.min": `./src/nodeRenderGraphEditor/index.ts`,
             "guiEditor/babylon.guiEditor.min": `./src/guiEditor/index.ts`,
+            "addons/babylonjs.addons.min": `./src/addons/index.ts`,
             "accessibility/babylon.accessibility.min": `./src/accessibility/index.ts`,
             "babylon.ktx2Decoder": `./src/ktx2Decoder/index.ts`,
         },
@@ -118,6 +119,7 @@ module.exports = (env) => {
                 "node-render-graph-editor": path.resolve(basePathForTools, "nodeRenderGraphEditor", outputDirectoryForAliases),
                 "gui-editor": path.resolve(basePathForTools, "guiEditor", outputDirectoryForAliases),
                 accessibility: path.resolve(basePathForTools, "accessibility", outputDirectoryForAliases),
+                addons: path.resolve(basePathForSources, "addons", outputDirectoryForAliases),
             },
             symlinks: false,
             // modules: [path.resolve(__dirname, "../../dev/"), 'node_modules'],
@@ -170,6 +172,10 @@ module.exports = (env) => {
         {
             from: "/materialsLibrary/babylonjs.materials.js",
             to: "/materialsLibrary/babylonjs.materials.min.js",
+        },
+        {
+            from: "/addons/babylonjs.addons.js",
+            to: "/addons/babylonjs.addons.min.js",
         },
         {
             from: "/postProcessesLibrary/babylonjs.postProcess.js",
@@ -258,6 +264,10 @@ module.exports = (env) => {
         {
             from: "/serializers/babylonjs.serializers.d.ts",
             to: "/serializers.d.ts",
+        },
+        {
+            from: "/addons/babylonjs.addons.d.ts",
+            to: "/addons.d.ts",
         },
     ];
     commonConfig.devServer.historyApiFallback = {

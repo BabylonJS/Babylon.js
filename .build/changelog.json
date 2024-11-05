@@ -1,6 +1,309 @@
 {
-    "fromTag": "7.31.2",
+    "fromTag": "7.32.2",
     "changelog": {
+        "7.32.3": [
+            {
+                "pr": "15768",
+                "title": "Fix various issues",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    ".build/config.json",
+                    "packages/dev/core/src/Materials/Node/Blocks/Input/inputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15769",
+                "title": "Mark anisotropyTexture as non-color data in glTF loader",
+                "description": "Explicitly mark anisotropyTexture as non-color data in glTF loader. ",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_anisotropy.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15766",
+                "title": "Allow user to disable undo/redo for NGE",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/historyStack.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/globalState.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphEditor.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15767",
+                "title": "make sure rimraf is windows-ready",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/nodeRenderGraphEditor/package.json"
+                ],
+                "tags": []
+            }
+        ],
+        "7.32.2": [
+            {
+                "pr": "15764",
+                "title": "update ngre back color",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeRenderGraphEditor/src/main.scss"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15761",
+                "title": "fix(Gamepads): duplicate gamepad status check causing each frame to double up calls",
+                "description": "Per [discussion on the forums](https://forum.babylonjs.com/t/scene-performance-using-universalcamera-quickly-deteriorates-and-eventually-crashes-when-gamepad-attached/54457/3):\r\n\r\n### What Happens\r\n\r\nWhen a simple scene is loaded with camera control attached, and a gamepad is attached, performance will quickly deteriorate and the FPS will start to go down within minutes. [(Repro)](https://playground.babylonjs.com/#SF2UOQ) _- make sure to have a gamepad attached_\r\n\r\n### What Should Happen\r\n\r\nPerformance should not be impacted by a gamepad being connected.\r\n\r\n### Proposed Solution\r\n\r\nRemove the call to [`_checkGamepadStatus()` in `gamepadSceneComponent.ts`](https://github.com/BabylonJS/Babylon.js/blob/master/packages/dev/core/src/Gamepads/gamepadSceneComponent.ts#L138). The call to [`_checkGamepadStatus()` in `gamepadManager._startMonitoringGamepads()`](https://github.com/BabylonJS/Babylon.js/blob/master/packages/dev/core/src/Gamepads/gamepadManager.ts#L194) should be enough to kick off a recursive loop that ensures it is called just once per frame.\r\n\r\nRel: https://github.com/BabylonJS/Babylon.js/pull/13798 (might have unintentionally triggered this?)",
+                "author": {
+                    "name": "foxxyz",
+                    "url": "https://github.com/foxxyz"
+                },
+                "files": [
+                    "packages/dev/core/src/Gamepads/gamepadSceneComponent.ts",
+                    "packages/dev/core/src/sceneComponent.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15763",
+                "title": "- Optimize Node Optional Binary Input",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryOptimizeBlock.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15759",
+                "title": "Add cameraAutoOrbit, defaultAnimation, and animationAutoPlay to Viewer",
+                "description": "The main change here is to add a few more Viewer properties/attributes:\r\n\r\n| Property | Attribute |\r\n|--------|--------|\r\n| `cameraAutoOrbit` | `camera-auto-orbit` |\r\n| N/A | `camera-orbit` |\r\n| N/A | `camera-target` |\r\n| `selectedAnimation`| `selected-animation` |\r\n| `animationAutoPlay` | `animation-auto-play` |\r\n| `skyboxBlur` | `skybox-blur` |\r\n\r\nI also added a `_createPropertyBinding` helper function that just simplifies creating a \"two way binding\" between a property on the lower level state (Viewer, Scene, etc.) and the higher level HTML3DElement. Not all properties fit this pattern, but for the ones that do it is simpler (and I expect there will be more).",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Cameras/autoRotationBehavior.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts",
+                    "packages/tools/viewer-alpha/test/apps/web/index.html"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15735",
+                "title": "Frame graph",
+                "description": "Sorry, monster PR!\r\n\r\n**Warning**: Everything is experimental at this stage! Everything may/will change before version 8.0 is released, so be warned that your code may break without notice if you use this new feature.\r\n\r\n----\r\n<h3>Reviewing the PR</h3>\r\n\r\nThere's still a lot to do, but I had to deliver a first version before continuing, so that the existing code could be reviewed and team members could work on extending the framework.\r\n\r\nAs the PR has over 18,000 changes, I think I should point out the most important code to review:\r\n* I had to make a number of changes in the core engine to properly handle multiple rendering targets. These are the files under `Engines/`.\r\n* The frame graph framework:\r\n  * everything in the `FrameGraph/` directory\r\n  * the two files under `packages/dev/gui/src/2D/FrameGraph/` and `packages/gui/src/2D/advancedDynamicTexture.ts`.\r\n* The new architecture of post-process classes:\r\n  * The files `PostProcesses/ThinXXXPostProcess.ts` and `PostProcesses/ThinXXXEffect.ts` implement the core of post-processes / rendering effects. Note that only a few post-processes / rendering effects have been ported to the new architecture for the time being.\r\n  * `EffectWrapper` has been extended to be the base class used by the new `ThinXXX` classes: `Materials/effectRenderer.ts`.\r\n\r\nApart from these files, there have been many changes in the configuration files to support the new NRGE (Node Render Graph Editor). Of course, there's also the NRGE itself (`packages/tools/nodeRenderGraphEditor/`) if you'd like to take a look!\r\n\r\n----\r\n<h3>Quick instructions to get started</h3>\r\n\r\nTo use a frame graph to render a scene, you need... :\r\n* set `scene.frameGraph` to the frame graph\r\n* set `scene.useFrameGraph = true`.\r\n* When a frame graph is used, it will use the new `scene.customRenderFunction` to render the scene.\r\n  * This means that a lot of code is no longer executed (`scene._evaluateActiveMeshes`, `scene._renderForCamera`, many observables are no longer notified, etc).\r\n  * A number of features are currently broken because of this (frozen meshes, snapshot rendering, and others). We'll be fixing this over the coming months.\r\n* **Important**: also set `scene.cameraToUseForPointers` to a proper camera!\r\n  * There is no longer a “current active camera” when using the frame graph for rendering, which would last for the duration of `scene.render` and is normally used as the “camera to use for pointers” (`scene.activeCamera` is still used - a lot of code depends on it - but only when running `RenderTargetTexture.render`).\r\n\r\nYou can create a frame graph in 3 ways:\r\n* using the `FrameGraphXXX` classes: http://localhost:1338/#2VHZFE#4\r\n* by importing a node render graph from NRGE: http://localhost:1338/#T6F4ZE#59 (the node render graph: http://localhost:1344/#PSA9PS#42)\r\n* create it using the `NodeRenderGraphXXX` classes, by manually connecting the nodes => probably won't be used much\r\n\r\nNote that you can also use frame graphs without setting `scene.frameGraph` / `scene.useFrameGraph` parameters: you can simply call `FrameGraph.execute` yourself when you want a graph to be executed.\r\n\r\nIn [this example](http://localhost:1338/#C8Z7GS#47), a pass post-process is used to render the scene in a texture, which is then used by the frame graph to apply a number of effects (black and white, bloom effect, GUI).",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    ".vscode/launch.json",
+                    ".vscode/tasks.json",
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/buildTools/src/packageMapping.ts",
+                    "packages/dev/core/src/Cameras/camera.ts",
+                    "packages/dev/core/src/Decorators/nodeDecorator.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.debugging.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuHardwareTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureHelper.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureManager.ts",
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/constants.ts",
+                    "packages/dev/core/src/Engines/renderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/blackAndWhitePostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/bloomPostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/blurPostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/circleOfConfusionPostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/depthOfFieldPostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/extractHighlightsPostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/cullObjectsBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/geometryRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/objectRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Teleport/teleportInBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Teleport/teleportOutBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Textures/clearBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Textures/copyTextureBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Textures/generateMipmapsBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/elbowBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/index.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/inputBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/outputBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Types/nodeRenderGraphTypes.ts",
+                    "packages/dev/core/src/FrameGraph/Node/nodeRenderGraph.ts",
+                    "packages/dev/core/src/FrameGraph/Node/nodeRenderGraphBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/nodeRenderGraphBlockConnectionPoint.ts",
+                    "packages/dev/core/src/FrameGraph/Node/nodeRenderGraphBuildState.ts",
+                    "packages/dev/core/src/FrameGraph/Passes/cullPass.ts",
+                    "packages/dev/core/src/FrameGraph/Passes/pass.ts",
+                    "packages/dev/core/src/FrameGraph/Passes/renderPass.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/blackAndWhiteTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/bloomMergeTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/bloomTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/blurTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/circleOfConfusionTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/depthOfFieldBlurTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/depthOfFieldMergeTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/depthOfFieldTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/extractHighlightsTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/postProcessTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/cullObjectsTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/geometryRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/objectRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Texture/clearTextureTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Texture/copyToBackbufferColorTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Texture/copyToTextureTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Texture/generateMipMapsTask.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraph.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphContext.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphObjectList.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphRenderContext.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphTask.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphTextureManager.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphTypes.ts",
+                    "packages/dev/core/src/FrameGraph/index.ts",
+                    "packages/dev/core/src/Layers/layer.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/Textures/dynamicTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/index.ts",
+                    "packages/dev/core/src/Materials/Textures/mirrorTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/multiRenderTarget.ts",
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/textureCreationOptions.ts",
+                    "packages/dev/core/src/Materials/effectRenderer.ts",
+                    "packages/dev/core/src/Materials/index.ts",
+                    "packages/dev/core/src/Materials/materialHelper.functions.ts",
+                    "packages/dev/core/src/Materials/materialHelper.geometryrendering.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Maths/index.ts",
+                    "packages/dev/core/src/Misc/copyTextureToTexture.ts",
+                    "packages/dev/core/src/PostProcesses/blackAndWhitePostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/bloomEffect.ts",
+                    "packages/dev/core/src/PostProcesses/bloomMergePostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/blurPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/circleOfConfusionPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/depthOfFieldBlurPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/depthOfFieldEffect.ts",
+                    "packages/dev/core/src/PostProcesses/depthOfFieldMergePostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/extractHighlightsPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/index.ts",
+                    "packages/dev/core/src/PostProcesses/postProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinBlackAndWhitePostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinBloomEffect.ts",
+                    "packages/dev/core/src/PostProcesses/thinBloomMergePostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinBlurPostProcess.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "nrge"
+                ]
+            },
+            {
+                "pr": "15760",
+                "title": "Glow layer: Fix crash when using vertex alpha in WebGPU",
+                "description": "See https://forum.babylonjs.com/t/error-when-using-webgpu-with-glow-layer/54510\r\n\r\nPG to reproduce: https://playground.babylonjs.com/?webgpu#GWAX2G#7",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/ShadersWGSL/background.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/glowMapGeneration.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/glowMapGeneration.vertex.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Glow-layer-with-vertex-alpha.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "15757",
+                "title": "Ensure pointerDown and pointerUp calls are paired",
+                "description": "This is a fix for the issue reported [here](https://forum.babylonjs.com/t/there-is-a-problem-with-the-touch-operation/54359).\r\n\r\nIn this situation, BaseCameraPointersInput began ignoring all pointer move events because it was tracking pointerIds in this._pointA and this._pointB which had been released (pointer up), but the event never made it to BaseCameraPointersInput and never would.  \r\n\r\nThat's because upstream, scene.inputManager.ts tracked how many active touchpoints there were (_totalPointersPressed) and ignored pointer up events if _totalPointersPressed was 0, yet_totalPointersPressed could get incorrectly decremented.  \r\n\r\nThat happens when, further upstream, webDeviceInputSystem had rejected a pointer down (call it pointerId 6) because all slots were full, but then a slot opened up, and then pointerId 6 had a pointer move event, which webDeviceInputSystem then allowed through because a slot was open (_activeTouchIds).  Once _pointerMoveEvent() added pointerId 6 to _activeTouchIds, then later when _pointerUpEvent() came along, it would find pointerId 6 in _activeTouchIds and pass the call along to scene.inputManager.\r\n\r\nNow note that scene.inputManager never heard about the pointer down event for pointerId 6, but it gets this pointer up event for it, so it decrements _totalPointersPressed.\r\n\r\nNow _totalPointersPressed can get to 0 before all of the pointerIds that it did get pointer down events for have been released with pointer up events.  \r\n\r\nBaseCameraPointersInput may be tracking one of those pointerIds as _pointA or _pointB, and if so, it will never get the pointer up event for that pointerId, and never clear _pointA or _pointB since upstream, scene.inputManager incorrectly ignored the pointer up event for that pointerId (since _totalPointersPressed was incorrectly 0 already).\r\n\r\nThe fix is to make scene.inputManager more carefully track pointerId down/up pairs, instead of assuming that it will always get matching events.  This is similar to the strategy that webDeviceInputSystem uses.  Now it will only process pointer up events whose pointerId was processed previously by a pointer down event.\r\n\r\nConfirmed that this fixes the current repro, and does not regress the bug reported [originally ](https://forum.babylonjs.com/t/pointer-capture-failing-for-babylon-pointer-observable-during-a-scroll-event/43253) which exposed this issue.  That was introduced by the code in _pointerMoveEvent() which would add a pointerId to the _activeTouchIds list even if its touch down had been ignored.  That set us up for the situation where the pointer up would then be processed at the webDeviceInputSystem layer even though the pointer down had not been.",
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15753",
+                "title": "fix: raw camera texture type mismatch",
+                "description": "From the issue discussed in [forum](https://forum.babylonjs.com/t/read-pixels-from-raw-camera-texture/51358/19)\r\n\r\nThis PR aim to fix the issue where calling `texture.readPixels()` from texture obtained from `onTexturesUpdatedObservable` method result in an array of zeros\r\n",
+                "author": {
+                    "name": "Strik3agle98",
+                    "url": "https://github.com/Strik3agle98"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRRawCameraAccess.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15758",
+                "title": "BBox gizmo axis info observable",
+                "description": "https://forum.babylonjs.com/t/a-little-help-about-boundingbox-gizmo/53457/5\r\n\r\nadd observable axis and operator type parameters",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/boundingBoxGizmo.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "gizmos"
+                ]
+            }
+        ],
         "7.32.0": [
             {
                 "pr": "15755",
