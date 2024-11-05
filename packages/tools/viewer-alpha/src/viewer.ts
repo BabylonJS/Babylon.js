@@ -54,6 +54,7 @@ function throwIfAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]):
 function createSkybox(scene: Scene, camera: Camera, environmentTexture: CubeTexture, blur: number): Mesh {
     const hdrSkybox = CreateBox("hdrSkyBox", undefined, scene);
     const hdrSkyboxMaterial = new PBRMaterial("skyBox", scene);
+    hdrSkyboxMaterial.imageProcessingConfiguration = new ImageProcessingConfiguration();
     hdrSkyboxMaterial.backFaceCulling = false;
     hdrSkyboxMaterial.reflectionTexture = environmentTexture.clone();
     if (hdrSkyboxMaterial.reflectionTexture) {
@@ -169,6 +170,11 @@ export class Viewer implements IDisposable {
     public readonly onToneMappingChanged = new Observable<void>();
 
     /**
+     * Fired when the contrast changes.
+     */
+    public readonly onContrastChanged = new Observable<void>();
+
+    /**
      * Fired when a model is loaded into the viewer (or unloaded from the viewer).
      */
     public readonly onModelChanged = new Observable<void>();
@@ -207,10 +213,13 @@ export class Viewer implements IDisposable {
     private readonly _snapshotHelper: SnapshotRenderingHelper;
     private readonly _autoRotationBehavior: AutoRotationBehavior;
     private readonly _renderLoopController: IDisposable;
+    private readonly _imageProcessingConfigurationObserver: Observer<ImageProcessingConfiguration>;
     private _skybox: Nullable<Mesh> = null;
     private _skyboxBlur: number = 0.3;
     private _light: Nullable<HemisphericLight> = null;
-    private _toneMapping: ToneMapping = "none";
+    private _toneMappingEnabled: boolean;
+    private _toneMappingType: number;
+    private _contrast: number;
 
     private _isDisposed = false;
 
@@ -231,6 +240,28 @@ export class Viewer implements IDisposable {
     ) {
         {
             const scene = new Scene(this._engine);
+
+            this._toneMappingEnabled = scene.imageProcessingConfiguration.toneMappingEnabled;
+            this._toneMappingType = scene.imageProcessingConfiguration.toneMappingType;
+            this._contrast = scene.imageProcessingConfiguration.contrast;
+
+            this._imageProcessingConfigurationObserver = scene.imageProcessingConfiguration.onUpdateParameters.add(() => {
+                if (this._toneMappingEnabled !== scene.imageProcessingConfiguration.toneMappingEnabled) {
+                    this._toneMappingEnabled = scene.imageProcessingConfiguration.toneMappingEnabled;
+                    this.onToneMappingChanged.notifyObservers();
+                }
+
+                if (this._toneMappingType !== scene.imageProcessingConfiguration.toneMappingType) {
+                    this._toneMappingType = scene.imageProcessingConfiguration.toneMappingType;
+                    this.onToneMappingChanged.notifyObservers();
+                }
+
+                if (this._contrast !== scene.imageProcessingConfiguration.contrast) {
+                    this._contrast = scene.imageProcessingConfiguration.contrast;
+                    this.onContrastChanged.notifyObservers();
+                }
+            });
+
             const camera = new ArcRotateCamera("Viewer Default Camera", 0, 0, 1, Vector3.Zero(), scene);
             this._details = {
                 viewer: this,
@@ -312,35 +343,54 @@ export class Viewer implements IDisposable {
      * The tone mapping to use for rendering the scene.
      */
     public get toneMapping(): ToneMapping {
-        return this._toneMapping;
+        if (!this._toneMappingEnabled) {
+            return "none";
+        }
+
+        switch (this._toneMappingType) {
+            case ImageProcessingConfiguration.TONEMAPPING_STANDARD:
+                return "standard";
+            case ImageProcessingConfiguration.TONEMAPPING_ACES:
+                return "aces";
+            case ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL:
+                return "neutral";
+        }
     }
 
     public set toneMapping(value: ToneMapping) {
-        if (value !== this._toneMapping) {
-            this._toneMapping = value;
-            this._snapshotHelper.disableSnapshotRendering();
+        this._snapshotHelper.disableSnapshotRendering();
 
-            if (value === "none") {
-                this._details.scene.imageProcessingConfiguration.toneMappingEnabled = false;
-            } else {
-                switch (value) {
-                    case "standard":
-                        this._details.scene.imageProcessingConfiguration.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_STANDARD;
-                        break;
-                    case "aces":
-                        this._details.scene.imageProcessingConfiguration.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_ACES;
-                        break;
-                    case "neutral":
-                        this._details.scene.imageProcessingConfiguration.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL;
-                        break;
-                }
-                this._details.scene.imageProcessingConfiguration.toneMappingEnabled = true;
+        if (value === "none") {
+            this._details.scene.imageProcessingConfiguration.toneMappingEnabled = false;
+        } else {
+            switch (value) {
+                case "standard":
+                    this._details.scene.imageProcessingConfiguration.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_STANDARD;
+                    break;
+                case "aces":
+                    this._details.scene.imageProcessingConfiguration.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_ACES;
+                    break;
+                case "neutral":
+                    this._details.scene.imageProcessingConfiguration.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL;
+                    break;
             }
-
-            this._snapshotHelper.enableSnapshotRendering();
-
-            this.onToneMappingChanged.notifyObservers();
+            this._details.scene.imageProcessingConfiguration.toneMappingEnabled = true;
         }
+
+        this._snapshotHelper.enableSnapshotRendering();
+    }
+
+    /**
+     * The contrast applied to the scene.
+     */
+    public get contrast(): number {
+        return this._contrast;
+    }
+
+    public set contrast(value: number) {
+        this._snapshotHelper.disableSnapshotRendering();
+        this._details.scene.imageProcessingConfiguration.contrast = value;
+        this._snapshotHelper.enableSnapshotRendering();
     }
 
     /**
@@ -635,6 +685,7 @@ export class Viewer implements IDisposable {
         this.onEnvironmentError.clear();
         this.onSkyboxBlurChanged.clear();
         this.onToneMappingChanged.clear();
+        this.onContrastChanged.clear();
         this.onModelChanged.clear();
         this.onModelError.clear();
         this.onCameraAutoOrbitChanged.clear();
@@ -642,6 +693,8 @@ export class Viewer implements IDisposable {
         this.onAnimationSpeedChanged.clear();
         this.onIsAnimationPlayingChanged.clear();
         this.onAnimationProgressChanged.clear();
+
+        this._imageProcessingConfigurationObserver.remove();
 
         this._isDisposed = true;
     }

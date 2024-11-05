@@ -84,6 +84,12 @@ export class HTML3DElement extends LitElement {
             (details) => (this.toneMapping = details.viewer.toneMapping)
         ),
         this._createPropertyBinding(
+            "contrast",
+            (details) => details.viewer.onContrastChanged,
+            (details) => (details.viewer.contrast = this.contrast ?? details.viewer.contrast),
+            (details) => (this.contrast = details.viewer.contrast)
+        ),
+        this._createPropertyBinding(
             "cameraAutoOrbit",
             (details) => details.viewer.onCameraAutoOrbitChanged,
             (details) => (details.viewer.cameraAutoOrbit = this.cameraAutoOrbit),
@@ -345,7 +351,7 @@ export class HTML3DElement extends LitElement {
     /**
      * A value between 0 and 1 that specifies how much to blur the skybox.
      */
-    @property({ attribute: "skybox-blur", reflect: true })
+    @property({ attribute: "skybox-blur" })
     public skyboxBlur: Nullable<number> = null;
 
     /**
@@ -353,7 +359,6 @@ export class HTML3DElement extends LitElement {
      */
     @property({
         attribute: "tone-mapping",
-        reflect: true,
         converter: (value: string | null): ToneMapping => {
             if (!value || !isToneMapping(value)) {
                 return "neutral";
@@ -362,6 +367,12 @@ export class HTML3DElement extends LitElement {
         },
     })
     public toneMapping: Nullable<ToneMapping> = null;
+
+    /**
+     * The contrast applied to the scene.
+     */
+    @property()
+    public contrast: Nullable<number> = null;
 
     /**
      * The clear color (e.g. background color) for the viewer.
