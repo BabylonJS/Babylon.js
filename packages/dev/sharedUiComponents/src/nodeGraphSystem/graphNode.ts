@@ -692,6 +692,34 @@ export class GraphNode {
                             const label = root.ownerDocument!.createElement("div");
                             label.innerText = displayName;
                             container.appendChild(label);
+
+                            let shouldCapture = false;
+                            numberInput.onpointerdown = (evt) => {
+                                shouldCapture = true;
+                                evt.preventDefault();
+                            };
+                            numberInput.onpointerup = (evt) => {
+                                if (numberInput.hasPointerCapture(evt.pointerId)) {
+                                    numberInput.releasePointerCapture(evt.pointerId);
+                                    shouldCapture = false;
+                                    evt.preventDefault();
+                                } else {
+                                    numberInput.focus();
+                                    numberInput.select();
+                                }
+                            };
+                            numberInput.onpointermove = (evt) => {
+                                if (shouldCapture) {
+                                    numberInput.setPointerCapture(evt.pointerId);
+                                }
+
+                                if (numberInput.hasPointerCapture(evt.pointerId)) {
+                                    numberInput.value = (parseFloat(numberInput.value) + evt.movementX * 0.01).toFixed(2);
+                                    source[propertyName] = parseFloat(numberInput.value);
+                                    this._forceRebuild(source, propertyName, options?.notifiers);
+                                    evt.preventDefault();
+                                }
+                            };
                         } else {
                             container.classList.add(localStyles.sliderContainer);
                             const label = root.ownerDocument!.createElement("label");
