@@ -168,6 +168,7 @@ export class AutoRotationBehavior implements Behavior<ArcRotateCamera> {
 
         this._attachedCamera.onAfterCheckInputsObservable.remove(this._onAfterCheckInputsObserver);
         this._attachedCamera = null;
+        this._lastFrameTime = null;
     }
 
     /**

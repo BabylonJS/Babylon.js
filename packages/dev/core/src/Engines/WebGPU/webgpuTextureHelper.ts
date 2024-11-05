@@ -14,20 +14,14 @@ export class WebGPUTextureHelper {
 
     public static GetTextureTypeFromFormat(format: GPUTextureFormat): number {
         switch (format) {
-            // One Component = 8 bits
+            // One Component = 8 bits unsigned
             case WebGPUConstants.TextureFormat.R8Unorm:
-            case WebGPUConstants.TextureFormat.R8Snorm:
             case WebGPUConstants.TextureFormat.R8Uint:
-            case WebGPUConstants.TextureFormat.R8Sint:
             case WebGPUConstants.TextureFormat.RG8Unorm:
-            case WebGPUConstants.TextureFormat.RG8Snorm:
             case WebGPUConstants.TextureFormat.RG8Uint:
-            case WebGPUConstants.TextureFormat.RG8Sint:
             case WebGPUConstants.TextureFormat.RGBA8Unorm:
             case WebGPUConstants.TextureFormat.RGBA8UnormSRGB:
-            case WebGPUConstants.TextureFormat.RGBA8Snorm:
             case WebGPUConstants.TextureFormat.RGBA8Uint:
-            case WebGPUConstants.TextureFormat.RGBA8Sint:
             case WebGPUConstants.TextureFormat.BGRA8Unorm:
             case WebGPUConstants.TextureFormat.BGRA8UnormSRGB:
             case WebGPUConstants.TextureFormat.RGB10A2UINT: // composite format - let's say it's byte...
@@ -37,15 +31,12 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.BC7RGBAUnorm:
             case WebGPUConstants.TextureFormat.BC7RGBAUnormSRGB:
             case WebGPUConstants.TextureFormat.BC6HRGBUFloat:
-            case WebGPUConstants.TextureFormat.BC6HRGBFloat:
             case WebGPUConstants.TextureFormat.BC5RGUnorm:
-            case WebGPUConstants.TextureFormat.BC5RGSnorm:
             case WebGPUConstants.TextureFormat.BC3RGBAUnorm:
             case WebGPUConstants.TextureFormat.BC3RGBAUnormSRGB:
             case WebGPUConstants.TextureFormat.BC2RGBAUnorm:
             case WebGPUConstants.TextureFormat.BC2RGBAUnormSRGB:
             case WebGPUConstants.TextureFormat.BC4RUnorm:
-            case WebGPUConstants.TextureFormat.BC4RSnorm:
             case WebGPUConstants.TextureFormat.BC1RGBAUnorm:
             case WebGPUConstants.TextureFormat.BC1RGBAUnormSRGB:
             case WebGPUConstants.TextureFormat.ETC2RGB8Unorm:
@@ -55,9 +46,7 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.ETC2RGBA8Unorm:
             case WebGPUConstants.TextureFormat.ETC2RGBA8UnormSRGB:
             case WebGPUConstants.TextureFormat.EACR11Unorm:
-            case WebGPUConstants.TextureFormat.EACR11Snorm:
             case WebGPUConstants.TextureFormat.EACRG11Unorm:
-            case WebGPUConstants.TextureFormat.EACRG11Snorm:
             case WebGPUConstants.TextureFormat.ASTC4x4Unorm:
             case WebGPUConstants.TextureFormat.ASTC4x4UnormSRGB:
             case WebGPUConstants.TextureFormat.ASTC5x4Unorm:
@@ -89,27 +78,47 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.Stencil8:
                 return Constants.TEXTURETYPE_UNSIGNED_BYTE;
 
-            // One component = 16 bits
+            // One Component = 8 bits signed
+            case WebGPUConstants.TextureFormat.R8Snorm:
+            case WebGPUConstants.TextureFormat.R8Sint:
+            case WebGPUConstants.TextureFormat.RG8Snorm:
+            case WebGPUConstants.TextureFormat.RG8Sint:
+            case WebGPUConstants.TextureFormat.RGBA8Snorm:
+            case WebGPUConstants.TextureFormat.RGBA8Sint:
+            case WebGPUConstants.TextureFormat.BC6HRGBFloat:
+            case WebGPUConstants.TextureFormat.BC5RGSnorm:
+            case WebGPUConstants.TextureFormat.BC4RSnorm:
+            case WebGPUConstants.TextureFormat.EACR11Snorm:
+            case WebGPUConstants.TextureFormat.EACRG11Snorm:
+                return Constants.TEXTURETYPE_BYTE;
+
+            // One component = 16 bits unsigned
             case WebGPUConstants.TextureFormat.R16Uint:
-            case WebGPUConstants.TextureFormat.R16Sint:
             case WebGPUConstants.TextureFormat.RG16Uint:
-            case WebGPUConstants.TextureFormat.RG16Sint:
             case WebGPUConstants.TextureFormat.RGBA16Uint:
-            case WebGPUConstants.TextureFormat.RGBA16Sint:
             case WebGPUConstants.TextureFormat.Depth16Unorm:
                 return Constants.TEXTURETYPE_UNSIGNED_SHORT;
+
+            // One component = 16 bits signed
+            case WebGPUConstants.TextureFormat.R16Sint:
+            case WebGPUConstants.TextureFormat.RG16Sint:
+            case WebGPUConstants.TextureFormat.RGBA16Sint:
+                return Constants.TEXTURETYPE_SHORT;
 
             case WebGPUConstants.TextureFormat.R16Float:
             case WebGPUConstants.TextureFormat.RG16Float:
             case WebGPUConstants.TextureFormat.RGBA16Float:
                 return Constants.TEXTURETYPE_HALF_FLOAT;
 
-            // One component = 32 bits
+            // One component = 32 bits unsigned
             case WebGPUConstants.TextureFormat.R32Uint:
-            case WebGPUConstants.TextureFormat.R32Sint:
             case WebGPUConstants.TextureFormat.RG32Uint:
-            case WebGPUConstants.TextureFormat.RG32Sint:
             case WebGPUConstants.TextureFormat.RGBA32Uint:
+                return Constants.TEXTURETYPE_UNSIGNED_INTEGER;
+
+            // One component = 32 bits signed
+            case WebGPUConstants.TextureFormat.R32Sint:
+            case WebGPUConstants.TextureFormat.RG32Sint:
             case WebGPUConstants.TextureFormat.RGBA32Sint:
                 return Constants.TEXTURETYPE_UNSIGNED_INTEGER;
 

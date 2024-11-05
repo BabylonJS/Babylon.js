@@ -110,6 +110,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         // Create the stack
         this._historyStack = new HistoryStack(dataProvider, applyUpdate);
+        this._historyStack.isEnabled = DataStorage.ReadBoolean("UndoRedo", true);
         globalState.stateManager.historyStack = this._historyStack;
 
         // Connect to relevant events

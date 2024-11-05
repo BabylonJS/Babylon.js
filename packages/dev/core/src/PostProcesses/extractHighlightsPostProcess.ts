@@ -4,11 +4,11 @@ import type { Effect } from "../Materials/effect";
 import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
 import type { AbstractEngine } from "../Engines/abstractEngine";
-import { ToGammaSpace } from "../Maths/math.constants";
 import { Constants } from "../Engines/constants";
 
 import { serialize } from "../Misc/decorators";
 import { RegisterClass } from "../Misc/typeStore";
+import { ThinExtractHighlightsPostProcess } from "./thinExtractHighlightsPostProcess";
 
 /**
  * The extract highlights post process sets all pixels to black except pixels above the specified luminance threshold. Used as the first step for a bloom effect.
@@ -18,10 +18,23 @@ export class ExtractHighlightsPostProcess extends PostProcess {
      * The luminance threshold, pixels below this value will be set to black.
      */
     @serialize()
-    public threshold = 0.9;
+    public get threshold() {
+        return this._effectWrapper.threshold;
+    }
+
+    public set threshold(value: number) {
+        this._effectWrapper.threshold = value;
+    }
 
     /** @internal */
-    public _exposure = 1;
+    public get _exposure() {
+        return this._effectWrapper._exposure;
+    }
+
+    /** @internal */
+    public set _exposure(value: number) {
+        this._effectWrapper._exposure = value;
+    }
 
     /**
      * Post process which has the input texture to be used when performing highlight extraction
@@ -37,36 +50,41 @@ export class ExtractHighlightsPostProcess extends PostProcess {
         return "ExtractHighlightsPostProcess";
     }
 
+    protected override _effectWrapper: ThinExtractHighlightsPostProcess;
+
     constructor(
         name: string,
         options: number | PostProcessOptions,
-        camera: Nullable<Camera>,
+        camera: Nullable<Camera> = null,
         samplingMode?: number,
         engine?: AbstractEngine,
         reusable?: boolean,
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false
     ) {
-        super(name, "extractHighlights", ["threshold", "exposure"], null, options, camera, samplingMode, engine, reusable, null, textureType, undefined, null, blockCompilation);
+        const localOptions = {
+            uniforms: ThinExtractHighlightsPostProcess.Uniforms,
+            size: typeof options === "number" ? options : undefined,
+            camera,
+            samplingMode,
+            engine,
+            reusable,
+            textureType,
+            blockCompilation,
+            ...(options as PostProcessOptions),
+        };
+
+        super(name, ThinExtractHighlightsPostProcess.FragmentUrl, {
+            effectWrapper: typeof options === "number" || !options.effectWrapper ? new ThinExtractHighlightsPostProcess(name, engine, localOptions) : undefined,
+            ...localOptions,
+        });
+
         this.onApplyObservable.add((effect: Effect) => {
             this.externalTextureSamplerBinding = !!this._inputPostProcess;
             if (this._inputPostProcess) {
                 effect.setTextureFromPostProcess("textureSampler", this._inputPostProcess);
             }
-            effect.setFloat("threshold", Math.pow(this.threshold, ToGammaSpace));
-            effect.setFloat("exposure", this._exposure);
         });
-    }
-
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/extractHighlights.fragment"));
-        } else {
-            list.push(import("../Shaders/extractHighlights.fragment"));
-        }
-
-        super._gatherImports(useWebGPU, list);
     }
 }
 

@@ -183,14 +183,6 @@ export class MirrorTexture extends RenderTargetTexture {
             this._sceneUBO = scene.createSceneUniformBuffer(`Scene for Mirror Texture (name "${name}")`);
         }
 
-        this.onBeforeBindObservable.add(() => {
-            engine._debugPushGroup?.(`mirror generation for ${name}`, 1);
-        });
-
-        this.onAfterUnbindObservable.add(() => {
-            engine._debugPopGroup?.(1);
-        });
-
         let saveClipPlane: Nullable<Plane>;
 
         this.onBeforeRenderObservable.add(() => {

@@ -20,7 +20,6 @@ import { loadAssetContainerAsync } from "core/Loading/sceneLoader";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Texture } from "core/Materials/Textures/texture";
-import { Color4 } from "core/Maths/math.color";
 import { Clamp } from "core/Maths/math.scalar.functions";
 import { TmpVectors, Vector3 } from "core/Maths/math.vector";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
@@ -63,10 +62,6 @@ function updateSkybox(skybox: Nullable<Mesh>, camera: Camera): void {
     skybox?.scaling.setAll((camera.maxZ - camera.minZ) / 2);
 }
 
-const defaultViewerOptions = {
-    backgroundColor: new Color4(0.1, 0.1, 0.2, 1.0),
-} as const;
-
 export type ViewerDetails = {
     /**
      * Gets the Viewer instance.
@@ -79,20 +74,26 @@ export type ViewerDetails = {
     scene: Scene;
 
     /**
+     * Provides access to the Camera managed by the Viewer.
+     */
+    camera: ArcRotateCamera;
+
+    /**
      * Provides access to the currently loaded model.
      */
     model: Nullable<AssetContainer>;
 };
 
 export type ViewerOptions = Partial<
-    typeof defaultViewerOptions &
-        Readonly<{
-            /**
-             * Called once when the viewer is initialized and provides viewer details that can be used for advanced customization.
-             */
-            onInitialized: (details: Readonly<ViewerDetails>) => void;
-        }>
+    Readonly<{
+        /**
+         * Called once when the viewer is initialized and provides viewer details that can be used for advanced customization.
+         */
+        onInitialized: (details: Readonly<ViewerDetails>) => void;
+    }>
 >;
+
+export type EnvironmentOptions = Partial<Readonly<{}>>;
 
 export type ViewerHotSpotQuery = {
     /**
@@ -116,6 +117,7 @@ export type ViewerHotSpot = {
 };
 
 /**
+ * @experimental
  * Provides an experience for viewing a single 3D model.
  * @remarks
  * The Viewer is not tied to a specific UI framework and can be used with Babylon.js in a browser or with Babylon Native.
@@ -144,6 +146,11 @@ export class Viewer implements IDisposable {
     public readonly onEnvironmentError = new Observable<unknown>();
 
     /**
+     * Fired when the skybox blur changes.
+     */
+    public readonly onSkyboxBlurChanged = new Observable<void>();
+
+    /**
      * Fired when a model is loaded into the viewer (or unloaded from the viewer).
      */
     public readonly onModelChanged = new Observable<void>();
@@ -152,6 +159,11 @@ export class Viewer implements IDisposable {
      * Fired when an error occurs while loading a model.
      */
     public readonly onModelError = new Observable<unknown>();
+
+    /**
+     * Fired when the camera auto orbit state changes.
+     */
+    public readonly onCameraAutoOrbitChanged = new Observable<void>();
 
     /**
      * Fired when the selected animation changes.
@@ -175,10 +187,10 @@ export class Viewer implements IDisposable {
 
     private readonly _details: ViewerDetails;
     private readonly _snapshotHelper: SnapshotRenderingHelper;
-    private readonly _camera: ArcRotateCamera;
     private readonly _autoRotationBehavior: AutoRotationBehavior;
     private readonly _renderLoopController: IDisposable;
     private _skybox: Nullable<Mesh> = null;
+    private _skyboxBlur: number = 0.3;
     private _light: Nullable<HemisphericLight> = null;
 
     private _isDisposed = false;
@@ -198,20 +210,22 @@ export class Viewer implements IDisposable {
         private readonly _engine: AbstractEngine,
         options?: ViewerOptions
     ) {
-        const finalOptions = { ...defaultViewerOptions, ...options };
-        this._details = {
-            viewer: this,
-            scene: new Scene(this._engine),
-            model: null,
-        };
+        {
+            const scene = new Scene(this._engine);
+            const camera = new ArcRotateCamera("Viewer Default Camera", 0, 0, 1, Vector3.Zero(), scene);
+            this._details = {
+                viewer: this,
+                scene,
+                camera,
+                model: null,
+            };
+        }
         this._details.scene.skipFrustumClipping = true;
         this._details.scene.skipPointerMovePicking = true;
-        this._details.scene.clearColor = finalOptions.backgroundColor;
         this._snapshotHelper = new SnapshotRenderingHelper(this._details.scene, { morphTargetsNumMaxInfluences: 30 });
-        this._camera = new ArcRotateCamera("camera1", 0, 0, 1, Vector3.Zero(), this._details.scene);
-        this._camera.attachControl();
+        this._details.camera.attachControl();
         this._updateCamera(); // set default camera values
-        this._autoRotationBehavior = this._camera.getBehaviorByName("AutoRotation") as AutoRotationBehavior;
+        this._autoRotationBehavior = this._details.camera.getBehaviorByName("AutoRotation") as AutoRotationBehavior;
 
         // Load a default light, but ignore errors as the user might be immediately loading their own environment.
         this.resetEnvironment().catch(() => {});
@@ -231,6 +245,46 @@ export class Viewer implements IDisposable {
         };
 
         options?.onInitialized?.(this._details);
+    }
+
+    /**
+     * Enables or disables camera auto orbit.
+     */
+    public get cameraAutoOrbit(): boolean {
+        return this._details.camera.behaviors.includes(this._autoRotationBehavior);
+    }
+
+    public set cameraAutoOrbit(value: boolean) {
+        if (value !== this.cameraAutoOrbit) {
+            if (value) {
+                this._details.camera.addBehavior(this._autoRotationBehavior);
+            } else {
+                this._details.camera.removeBehavior(this._autoRotationBehavior);
+            }
+            this.onCameraAutoOrbitChanged.notifyObservers();
+        }
+    }
+
+    /**
+     * A value between 0 and 1 that specifies how much to blur the skybox.
+     */
+    public get skyboxBlur(): number {
+        return this._skyboxBlur;
+    }
+
+    public set skyboxBlur(value: number) {
+        if (value !== this._skyboxBlur) {
+            this._skyboxBlur = value;
+            if (this._skybox) {
+                const material = this._skybox.material;
+                if (material instanceof PBRMaterial) {
+                    this._snapshotHelper.disableSnapshotRendering();
+                    material.microSurface = 1.0 - value;
+                    this._snapshotHelper.enableSnapshotRendering();
+                }
+            }
+            this.onSkyboxBlurChanged.notifyObservers();
+        }
     }
 
     /**
@@ -395,7 +449,7 @@ export class Viewer implements IDisposable {
      * @param options The options to use when loading the environment.
      * @param abortSignal An optional signal that can be used to abort the loading process.
      */
-    public async loadEnvironment(url: string, options?: {}, abortSignal?: AbortSignal): Promise<void> {
+    public async loadEnvironment(url: string, options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
         await this._updateEnvironment(url, options, abortSignal);
     }
 
@@ -407,7 +461,7 @@ export class Viewer implements IDisposable {
         await this._updateEnvironment(undefined, undefined, abortSignal);
     }
 
-    private async _updateEnvironment(url: Nullable<string | undefined>, options?: {}, abortSignal?: AbortSignal): Promise<void> {
+    private async _updateEnvironment(url: Nullable<string | undefined>, options?: EnvironmentOptions, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
 
         this._loadEnvironmentAbortController?.abort("New environment is being loaded before previous environment finished loading.");
@@ -426,7 +480,7 @@ export class Viewer implements IDisposable {
                         const cubeTexture = CubeTexture.CreateFromPrefilteredData(url, this._details.scene);
                         this._details.scene.environmentTexture = cubeTexture;
 
-                        const skybox = createSkybox(this._details.scene, this._camera, cubeTexture, 0.3);
+                        const skybox = createSkybox(this._details.scene, this._details.camera, cubeTexture, this.skyboxBlur);
                         this._snapshotHelper.fixMeshes([skybox]);
                         this._skybox = skybox;
 
@@ -508,8 +562,10 @@ export class Viewer implements IDisposable {
 
         this.onEnvironmentChanged.clear();
         this.onEnvironmentError.clear();
+        this.onSkyboxBlurChanged.clear();
         this.onModelChanged.clear();
         this.onModelError.clear();
+        this.onCameraAutoOrbitChanged.clear();
         this.onSelectedAnimationChanged.clear();
         this.onAnimationSpeedChanged.clear();
         this.onIsAnimationPlayingChanged.clear();
@@ -539,8 +595,8 @@ export class Viewer implements IDisposable {
         const renderWidth = this._engine.getRenderWidth(); // Get the canvas width
         const renderHeight = this._engine.getRenderHeight(); // Get the canvas height
 
-        const viewportWidth = this._camera.viewport.width * renderWidth;
-        const viewportHeight = this._camera.viewport.height * renderHeight;
+        const viewportWidth = this._details.camera.viewport.width * renderWidth;
+        const viewportHeight = this._details.camera.viewport.height * renderHeight;
         const scene = this._details.scene;
 
         Vector3.ProjectToRef(worldPos, mesh.getWorldMatrix(), scene.getTransformMatrix(), new Viewport(0, 0, viewportWidth, viewportHeight), screenPos);
@@ -551,15 +607,15 @@ export class Viewer implements IDisposable {
 
     private _updateCamera(): void {
         // Enable camera's behaviors
-        this._camera.useFramingBehavior = true;
-        const framingBehavior = this._camera.getBehaviorByName("Framing") as FramingBehavior;
+        this._details.camera.useFramingBehavior = true;
+        const framingBehavior = this._details.camera.getBehaviorByName("Framing") as FramingBehavior;
         framingBehavior.framingTime = 0;
         framingBehavior.elevationReturnTime = -1;
 
         let radius = 1;
         if (this._details.model?.meshes.length) {
             // get bounds and prepare framing/camera radius from its values
-            this._camera.lowerRadiusLimit = null;
+            this._details.camera.lowerRadiusLimit = null;
 
             const maxExtents = computeMaxExtents(this._details.model.meshes, this._activeAnimation);
             const worldExtents = {
@@ -578,25 +634,25 @@ export class Viewer implements IDisposable {
                 worldCenter.copyFromFloats(0, 0, 0);
             }
 
-            this._camera.setTarget(worldCenter);
+            this._details.camera.setTarget(worldCenter);
         }
-        this._camera.lowerRadiusLimit = radius * 0.01;
-        this._camera.wheelPrecision = 100 / radius;
-        this._camera.alpha = Math.PI / 2;
-        this._camera.beta = Math.PI / 2.4;
-        this._camera.radius = radius;
-        this._camera.minZ = radius * 0.01;
-        this._camera.maxZ = radius * 1000;
-        this._camera.speed = radius * 0.2;
-        this._camera.useAutoRotationBehavior = true;
-        this._camera.pinchPrecision = 200 / this._camera.radius;
-        this._camera.upperRadiusLimit = 5 * this._camera.radius;
-        this._camera.wheelDeltaPercentage = 0.01;
-        this._camera.pinchDeltaPercentage = 0.01;
-        this._camera.restoreStateInterpolationFactor = 0.1;
-        this._camera.storeState();
+        this._details.camera.lowerRadiusLimit = radius * 0.01;
+        this._details.camera.wheelPrecision = 100 / radius;
+        this._details.camera.alpha = Math.PI / 2;
+        this._details.camera.beta = Math.PI / 2.4;
+        this._details.camera.radius = radius;
+        this._details.camera.minZ = radius * 0.01;
+        this._details.camera.maxZ = radius * 1000;
+        this._details.camera.speed = radius * 0.2;
+        this._details.camera.useAutoRotationBehavior = true;
+        this._details.camera.pinchPrecision = 200 / this._details.camera.radius;
+        this._details.camera.upperRadiusLimit = 5 * this._details.camera.radius;
+        this._details.camera.wheelDeltaPercentage = 0.01;
+        this._details.camera.pinchDeltaPercentage = 0.01;
+        this._details.camera.restoreStateInterpolationFactor = 0.1;
+        this._details.camera.storeState();
 
-        updateSkybox(this._skybox, this._camera);
+        updateSkybox(this._skybox, this._details.camera);
     }
 
     private _updateLight() {

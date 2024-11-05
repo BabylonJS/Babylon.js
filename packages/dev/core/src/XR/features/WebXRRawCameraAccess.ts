@@ -168,7 +168,7 @@ export class WebXRRawCameraAccess extends WebXRAbstractFeature {
             internalTexture.invertY = false;
             internalTexture.format = Constants.TEXTUREFORMAT_RGBA;
             internalTexture.generateMipMaps = true;
-            internalTexture.type = Constants.TEXTURETYPE_FLOAT;
+            internalTexture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
             internalTexture.samplingMode = Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR;
             internalTexture.width = view.camera.width;
             internalTexture.height = view.camera.height;

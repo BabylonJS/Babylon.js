@@ -67,6 +67,7 @@ import {
     PrepareUniformsAndSamplersList,
 } from "../materialHelper.functions";
 import { ShaderLanguage } from "../shaderLanguage";
+import { MaterialHelperGeometryRendering } from "../materialHelper.geometryrendering";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -195,8 +196,12 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
     public INSTANCESCOLOR = false;
 
     public PREPASS = false;
+    public PREPASS_COLOR = false;
+    public PREPASS_COLOR_INDEX = -1;
     public PREPASS_IRRADIANCE = false;
     public PREPASS_IRRADIANCE_INDEX = -1;
+    public PREPASS_ALBEDO = false;
+    public PREPASS_ALBEDO_INDEX = -1;
     public PREPASS_ALBEDO_SQRT = false;
     public PREPASS_ALBEDO_SQRT_INDEX = -1;
     public PREPASS_DEPTH = false;
@@ -1501,6 +1506,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this._eventInfo.indexParameters = indexParameters;
         this._callbackPluginEventGeneric(MaterialPluginEvent.PrepareEffect, this._eventInfo);
 
+        MaterialHelperGeometryRendering.AddUniformsAndSamplers(uniforms, samplers);
+
         PrePassConfiguration.AddUniforms(uniforms);
         PrePassConfiguration.AddSamplers(samplers);
         addClipPlaneUniforms(uniforms);
@@ -1584,6 +1591,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         // Order independant transparency
         PrepareDefinesForOIT(scene, defines, oit);
+
+        MaterialHelperGeometryRendering.PrepareDefines(engine.currentRenderPassId, mesh, defines);
 
         // Textures
         defines.METALLICWORKFLOW = this.isMetallicWorkflow();
@@ -2054,6 +2063,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this._uniformBuffer.bindToEffect(effect, "Material");
 
         this.prePassConfiguration.bindForSubMesh(this._activeEffect, scene, mesh, world, this.isFrozen);
+
+        MaterialHelperGeometryRendering.Bind(engine.currentRenderPassId, this._activeEffect, mesh, world);
 
         this._eventInfo.subMesh = subMesh;
         this._callbackPluginEventHardBindForSubMesh(this._eventInfo);

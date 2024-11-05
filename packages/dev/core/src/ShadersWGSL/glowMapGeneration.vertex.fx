@@ -99,7 +99,7 @@ var worldPos: vec4f = finalWorld *  vec4f(positionUpdated, 1.0);
 #endif
 
 #ifdef VERTEXALPHA
-    vertexOutputs.vColor = color;
+    vertexOutputs.vColor = vertexInputs.color;
 #endif
 
 #include<clipPlaneVertex>

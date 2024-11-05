@@ -165,4 +165,9 @@ export function registerBuiltInGLTFExtensions() {
         const { MSFT_sRGBFactors } = await import("./MSFT_sRGBFactors");
         return new MSFT_sRGBFactors(loader);
     });
+
+    registerGLTFExtension("KHR_node_visibility", true, async (loader) => {
+        const { KHR_node_visibility } = await import("./KHR_node_visibility");
+        return new KHR_node_visibility(loader);
+    });
 }

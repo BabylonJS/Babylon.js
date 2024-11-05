@@ -7,26 +7,24 @@ varying vec2 vUV;
 
 uniform sampler2D depthSampler;
 uniform sampler2D worldNormalSampler;
-uniform sampler2D worldPositionSampler;
 uniform sampler2D blueNoiseSampler;
 // Importance sampling
 uniform sampler2D icdfxSampler;
 uniform sampler2D icdfySampler;
 uniform sampler3D voxelGridSampler;
 
-// shadow parameters: int nbDirs, int frameId, int downscale, float envRot
+// shadow parameters: int nbDirs, int frameId, unused, float envRot
 uniform vec4 shadowParameters;
 
 #define SHADOWdirs shadowParameters.x
 #define SHADOWframe shadowParameters.y
-#define SHADOWdownscale shadowParameters.z
 #define SHADOWenvRot shadowParameters.w
 
-// morton code offset, max voxel grid mip
-uniform vec4 offsetDataParameters;
+// voxel tracing bias parameters (normal bias, direction bias, unused, max
+// mip count)
+uniform vec4 voxelBiasParameters;
 
-#define PixelOffset offsetDataParameters.xy
-#define highestMipLevel offsetDataParameters.z
+#define highestMipLevel voxelBiasParameters.z
 
 // screen space shadow parameters
 uniform vec4 sssParameters;
@@ -246,8 +244,12 @@ bool anyHitVoxels(const Ray ray_vs) {
   return false;
 }
 
+float linearizeDepth(float depth, float near, float far) {
+    return (near * far) / (far - depth * (far - near));
+}
+
 float screenSpaceShadow(vec3 csOrigin, vec3 csDirection, vec2 csZBufferSize,
-                        float nearPlaneZ, float noise) {
+                        float nearPlaneZ, float farPlaneZ, float noise) {
   // Camera space Z direction
   #ifdef RIGHT_HANDED
     float csZDir = -1.0;
@@ -272,15 +274,10 @@ float screenSpaceShadow(vec3 csOrigin, vec3 csDirection, vec2 csZBufferSize,
 
   vec4 H0 = projMtx * vec4(csOrigin, 1.0);
   vec4 H1 = projMtx * vec4(csEndPoint, 1.0);
-#ifndef IS_NDC_HALF_ZRANGE
-  float Z0 = (0.5 * H0.z / H0.w + 0.5);
-  float Z1 = (0.5 * H1.z / H1.w + 0.5);
-#else
-  float Z0 = (H0.z / H0.w);
-  float Z1 = (H1.z / H1.w);
-#endif
-  vec2 P0 = csZBufferSize * (0.5 * H0.xy / H0.w + 0.5);
-  vec2 P1 = csZBufferSize * (0.5 * H1.xy / H1.w + 0.5);
+  vec2 Z0 = vec2(csOrigin.z  , 1.0) / H0.w;
+  vec2 Z1 = vec2(csEndPoint.z, 1.0) / H1.w;
+  vec2 P0 = csZBufferSize * (0.5 * H0.xy * Z0.y + 0.5);
+  vec2 P1 = csZBufferSize * (0.5 * H1.xy * Z1.y + 0.5);
 
   P1 += vec2(distanceSquared(P0, P1) < 0.0001 ? 0.01 : 0.0);
   vec2 delta = P1 - P0;
@@ -295,25 +292,30 @@ float screenSpaceShadow(vec3 csOrigin, vec3 csDirection, vec2 csZBufferSize,
   float stepDirection = sign(delta.x);
   float invdx = stepDirection / delta.x;
   vec2 dP = ssStride * vec2(stepDirection, invdx * delta.y);
-  float dZ = ssStride * invdx * (Z1 - Z0);
+  vec2 dZ = ssStride * invdx * (Z1 - Z0);
 
   float opacity = 0.0;
   vec2 P = P0 + noise * dP;
-  float Z = Z0 + noise * dZ;
+  vec2 Z = Z0 + noise * dZ;
   float end = P1.x * stepDirection;
+  float rayZMax = csZDir * Z.x / Z.y;
+  float sceneDepth = rayZMax;
   Z += dZ;
 
   for (float stepCount = 0.0;
-       opacity < 1.0 && P.x * stepDirection < end && stepCount < ssSamples;
+       opacity < 1.0 && P.x * stepDirection < end && sceneDepth > 0.0 && stepCount < ssSamples;
        stepCount++, P += dP,
              Z += dZ) { // 'sceneDepth > 0.0' instead of 'sceneDepth < 0.0'
     ivec2 coords = ivec2(permute ? P.yx : P);
-    float sceneDepth = texelFetch(depthSampler, coords, 0).x;
-    // Scale the thickness based on the scene depth to make it constant.
-    float thicknessScale = pow(1.0 - sceneDepth, 1.6);
-    opacity +=
-        max(opacity, step(Z + dZ, sceneDepth + thicknessScale * ssThickness) *
-                         step(sceneDepth, Z));
+    sceneDepth = texelFetch(depthSampler, coords, 0).x;
+    sceneDepth = linearizeDepth(sceneDepth, nearPlaneZ, farPlaneZ);
+    sceneDepth = csZDir * sceneDepth;
+    if (sceneDepth <= 0.0) {
+            break;
+    }
+    float rayZMin = rayZMax;
+    rayZMax = csZDir * Z.x / Z.y;
+    opacity += max(opacity, step(rayZMax, sceneDepth + ssThickness) * step(sceneDepth, rayZMin));
   }
 
   return opacity;
@@ -332,8 +334,11 @@ float voxelShadow(vec3 wsOrigin, vec3 wsDirection, vec3 wsNormal,
   genTB(wsDirection, T, B);
   vec2 DitherXY = sqrt(DitherNoise.x) * vec2(cos(2.0 * PI * DitherNoise.y),
                                              sin(2.0 * PI * DitherNoise.y));
+  float sceneScale = wsNormalizationMtx[0][0];
+
   vec3 Dithering =
-      (2.0 * wsNormal + 3.0 * wsDirection + DitherXY.x * T + DitherXY.y * B) /
+      (voxelBiasParameters.x * wsNormal + voxelBiasParameters.y * wsDirection +
+       DitherXY.x * T + DitherXY.y * B) /
       vxResolution;
   vec3 O = 0.5 * wsOrigin + 0.5 + Dithering;
 
@@ -362,18 +367,16 @@ float voxelShadow(vec3 wsOrigin, vec3 wsDirection, vec3 wsNormal,
 void main(void) {
   uint nbDirs = uint(SHADOWdirs);
   uint frameId = uint(SHADOWframe);
-  int downscale = int(SHADOWdownscale);
   float envRot = SHADOWenvRot;
 
   vec2 Resolution = vec2(textureSize(depthSampler, 0));
   ivec2 currentPixel = ivec2(vUV * Resolution);
-  ivec2 PixelCoord = ivec2(vec2(currentPixel * downscale) + PixelOffset.xy);
-  uint GlobalIndex =
-      (frameId * uint(Resolution.y) + uint(PixelCoord.y)) * uint(Resolution.x) +
-      uint(PixelCoord.x);
+  uint GlobalIndex = (frameId * uint(Resolution.y) + uint(currentPixel.y)) *
+                         uint(Resolution.x) +
+                     uint(currentPixel.x);
 
-  vec3 N = texelFetch(worldNormalSampler, PixelCoord, 0).xyz;
-  N = N * vec3(2.0) - vec3(1.0);
+  vec3 N = texelFetch(worldNormalSampler, currentPixel, 0).xyz;
+  // N = N * vec3(2.0) - vec3(1.0);
   if (length(N) < 0.01) {
     glFragColor = vec4(1.0, 1.0, 0.0, 1.0);
     return;
@@ -381,23 +384,24 @@ void main(void) {
 
   float normalizedRotation = envRot / (2.0 * PI);
 
-  float depth = texelFetch(depthSampler, PixelCoord, 0).x;
-  #ifndef IS_NDC_HALF_ZRANGE
-    depth = depth * 2.0 - 1.0;
-  #endif
-  vec2 temp = (vec2(PixelCoord) + vec2(0.5)) * 2.0 / Resolution - vec2(1.0);
-  vec2 temp2 = vUV * vec2(2.0) - vec2(1.0);
+  float depth = texelFetch(depthSampler, currentPixel, 0).x;
+#ifndef IS_NDC_HALF_ZRANGE
+  depth = depth * 2.0 - 1.0;
+#endif
+  vec2 temp = (vec2(currentPixel) + vec2(0.5)) * 2.0 / Resolution - vec2(1.0);
   vec4 VP = invProjMtx * vec4(temp.x, -temp.y, depth, 1.0);
   VP /= VP.w;
 
   N = normalize(N);
-  vec3 noise = texelFetch(blueNoiseSampler, PixelCoord & 0xFF, 0).xyz;
+  vec3 noise = texelFetch(blueNoiseSampler, currentPixel & 0xFF, 0).xyz;
   noise.z = fract(noise.z + goldenSequence(frameId * nbDirs));
 
 #ifdef VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
   float heat = 0.0f;
 #endif
   float shadowAccum = 0.0;
+  float specShadowAccum = 0.0;
+  float sampleWeight = 0.0;
   for (uint i = 0u; i < nbDirs; i++) {
     uint dirId = nbDirs * GlobalIndex + i;
     vec4 L;
@@ -423,7 +427,6 @@ void main(void) {
       VP2.y *= -1.0;
       // rte world-space normalization
       vec4 unormWP = invViewMtx * VP2;
-      // vec4 unormWP = texelFetch(worldPositionSampler, PixelCoord, 0);
       vec3 WP = (wsNormalizationMtx * unormWP).xyz;
       vec2 vxNoise =
           vec2(uint2float(hash(dirId * 2u)), uint2float(hash(dirId * 2u + 1u)));
@@ -440,23 +443,30 @@ void main(void) {
 
       // sss
       vec3 VL = (viewMtx * L).xyz;
-      float nearPlaneZ =
-          -projMtx[3][2] / projMtx[2][2]; // retreive camera Z near value
+      
+      #ifdef RIGHT_HANDED
+        float nearPlaneZ = -projMtx[3][2] / (projMtx[2][2] - 1.0); // retreive camera Z near value
+        float farPlaneZ = -projMtx[3][2] / (projMtx[2][2] + 1.0);
+      #else
+        float nearPlaneZ = -projMtx[3][2] / (projMtx[2][2] + 1.0); // retreive camera Z near value
+        float farPlaneZ = -projMtx[3][2] / (projMtx[2][2] - 1.0);
+      #endif
       float ssShadow = shadowOpacity.y *
-                       screenSpaceShadow(VP2.xyz, VL, Resolution, nearPlaneZ,
+                       screenSpaceShadow(VP2.xyz, VL, Resolution, nearPlaneZ, farPlaneZ,
                                          abs(2.0 * noise.z - 1.0));
       opacity = max(opacity, ssShadow);
-      shadowAccum += min(1.0 - opacity, smoothstep(-0.1, 0.2, cosNL));
-    } else {
-      shadowAccum += min(1.0 - opacity, smoothstep(-0.1, 0.2, cosNL));
+      shadowAccum += min(1.0 - opacity, cosNL);
+      sampleWeight += cosNL;
+      // spec shadow
+      vec3 VR = -(viewMtx * vec4(reflect(-L.xyz, N), 0.0)).xyz;
+      specShadowAccum += max(1.0 - (opacity * pow(VR.z, 8.0)), 0.0);
     }
     noise.z = fract(noise.z + GOLD);
   }
 #ifdef VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-  gl_FragColor =
-      vec4(shadowAccum / float(nbDirs), heat / float(nbDirs), 0.0, 1.0);
+  gl_FragColor = vec4(shadowAccum / float(sampleWeight),
+                      specShadowAccum / float(sampleWeight), heat / float(sampleWeight), 1.0);
 #else
-  gl_FragColor = vec4(shadowAccum / float(nbDirs), 0.0, 0.0, 1.0);
+  gl_FragColor = vec4(shadowAccum / float(sampleWeight), specShadowAccum / float(sampleWeight), 0.0, 1.0);
 #endif
-  // gl_FragColor = vec4(1.0, 1.0, 0.0, 0.0);
 }

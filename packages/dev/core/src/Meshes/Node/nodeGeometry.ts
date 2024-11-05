@@ -266,10 +266,12 @@ export class NodeGeometry {
         state.buildId = this._buildId;
         state.verbose = verbose;
 
-        this.outputBlock.build(state);
-
-        if (updateBuildId) {
-            this._buildId = NodeGeometry._BuildIdGenerator++;
+        try {
+            this.outputBlock.build(state);
+        } finally {
+            if (updateBuildId) {
+                this._buildId = NodeGeometry._BuildIdGenerator++;
+            }
         }
 
         this._buildExecutionTime = PrecisionDate.Now - now;

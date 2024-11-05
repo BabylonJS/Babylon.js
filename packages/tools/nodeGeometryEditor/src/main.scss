@@ -212,7 +212,7 @@
         grid-row: 4;
         grid-column: 1;
         display: grid;
-        grid-template-columns: 1fr 40px 40px 40px 40px 40px;
+        grid-template-columns: 1fr 40px 40px 40px 40px 40px 40px;
         color: white;
         align-items: center;
         font-size: 18px;
@@ -270,20 +270,24 @@
                 width: 100%;
             }
 
-            &.mat-texture {
+            &.mat-normals {
                 grid-column: 3;
             }
 
-            &.mat-cap {
+            &.mat-texture {
                 grid-column: 4;
             }
 
-            &.vertex-color {
+            &.mat-cap {
                 grid-column: 5;
             }
 
-            &.wireframe {
+            &.vertex-color {
                 grid-column: 6;
+            }
+
+            &.wireframe {
+                grid-column: 7;
             }
         }
     }
