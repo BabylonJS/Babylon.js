@@ -156,6 +156,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
             // Assign the light to its parent node, if possible, to condense the glTF
             // Why and when: the glTF loader generates a new parent TransformNode for each light node, which we should undo on export
             const parentBabylonNode = babylonNode.parent;
+            // TODO: May be able to simplify this logic by using our previous check for the root node
             if (parentBabylonNode && parentBabylonNode instanceof TransformNode && parentBabylonNode.getChildren().length == 1 && babylonNode.getChildren().length == 0) {
                 const parentNodeIndex = nodeMap.get(parentBabylonNode);
                 if (parentNodeIndex) {
@@ -174,6 +175,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                     matrix.decompose(parentScale, parentRotation, parentTranslation);
 
                     // Remove default values if they are now default
+                    // TODO: Find good, common place to store node transformation defaults and use them here
                     if (parentTranslation.equalsToFloats(0, 0, 0)) {
                         delete parentNode.translation;
                     } else {

@@ -50,7 +50,7 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
      * @param context The context when exporting the node
      * @param node glTF node
      * @param babylonNode BabylonJS node
-     * @param nodeMap Current node mapping of babylon node to glTF node index. Useful for combining a node with its parent.
+     * @param nodeMap Current node mapping of babylon node to glTF node index. Useful for combining nodes together.
      * @param convertToRightHanded Flag indicating whether to convert values to right-handed
      * @returns nullable INode promise
      */

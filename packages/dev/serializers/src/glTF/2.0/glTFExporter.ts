@@ -1132,7 +1132,6 @@ export class GLTFExporter {
             return nodeIndex;
         }
 
-        // Create node to hold translation/rotation/scale and the mesh
         const node: INode = {};
 
         if (babylonNode.name) {
@@ -1165,7 +1164,7 @@ export class GLTFExporter {
         }
 
         if (babylonNode instanceof Camera) {
-            // TODO: Do light technique here (don't duplicate parent node)
+            // TODO: Combine any TransformNode parent with child camera node, like we do for lights
             const gltfCamera = this._camerasMap.get(babylonNode);
 
             if (gltfCamera) {
@@ -1228,7 +1227,7 @@ export class GLTFExporter {
         this._nodeMap.set(babylonNode, nodeIndex);
         state.pushExportedNode(babylonNode);
 
-        // Begin processing child nodes once parent has been added to the node map
+        // Begin processing child nodes once parent has been added to the node list
         for (const babylonChildNode of babylonNode.getChildren()) {
             if (this._shouldExportNode(babylonChildNode)) {
                 const childNodeIndex = await this._exportNodeAsync(babylonChildNode, state);
