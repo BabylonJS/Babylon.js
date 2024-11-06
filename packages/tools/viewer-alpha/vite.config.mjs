@@ -7,7 +7,6 @@ import chalk from "chalk";
 import { mkdirSync, createWriteStream } from "fs";
 import { execSync } from "child_process";
 import path from "path";
-import { inspect } from "util";
 
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, process.cwd());
