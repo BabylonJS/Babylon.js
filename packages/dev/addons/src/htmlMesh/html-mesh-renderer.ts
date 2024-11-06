@@ -573,17 +573,8 @@ export class HtmlMeshRenderer {
 
         Matrix.FromArrayToRef(cameraMatrixWorldAsArray, 0, cameraMatrixWorld);
 
-        const cameraCSSMatrix =
-            // "translateZ(" +
-            // fov +
-            // "px)" +
-            this._getCameraCSSMatrix(cameraMatrixWorld);
-        const style = cameraCSSMatrix; //+
-        // "translate(" +
-        // this._widthHalf +
-        // "px," +
-        // this._heightHalf +
-        // "px)";
+        const cameraCSSMatrix = this._getCameraCSSMatrix(cameraMatrixWorld);
+        const style = cameraCSSMatrix;
 
         if (this._cache.cameraData.style !== style) {
             [this._inSceneElements?.cameraElement, this._overlayElements?.cameraElement].forEach((el) => {
