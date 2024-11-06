@@ -2,7 +2,7 @@ import type { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
 import { BlockTools } from "../../blockTools";
 import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
-import styles from "./inputDisplayManager.modules.scss";
+import styles from "./inputDisplayManager.module.scss";
 import type { GeometryInputBlock } from "core/Meshes/Node/Blocks/geometryInputBlock";
 import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryContextualSources } from "core/Meshes/Node/Enums/nodeGeometryContextualSources";

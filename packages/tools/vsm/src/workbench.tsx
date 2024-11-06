@@ -5,7 +5,7 @@ import type { FC } from "react";
 import { CommandBarComponent } from "shared-ui-components/components/bars/CommandBarComponent";
 import { FlexibleGridLayout } from "shared-ui-components/components/layout/FlexibleGridLayout";
 import { SceneContext } from "./context/SceneContext";
-import style from "./workbench.modules.scss";
+import style from "./workbench.module.scss";
 import { StateSelectionContext } from "./context/StateSelectionContext";
 import { initialLayout } from "./initialLayout";
 import { StateMachine } from "./stateMachine/StateMachine";

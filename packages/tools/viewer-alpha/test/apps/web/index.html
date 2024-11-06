@@ -33,6 +33,12 @@
                 right: 10px;
             }
 
+            .toggle-inspector-button {
+                position: absolute;
+                top: 100px;
+                right: 10px;
+            }
+
             .lineContainer {
                 pointer-events: none;
                 display: block;
@@ -84,10 +90,12 @@
                 <line class="line"></line>
             </svg>
         </babylon-viewer>
+        <div id="inspector-host" style="width: 100%"></div>
         <button class="toggle-dom-button" onclick="onToggleDOM()">Toggle DOM</button>
         <button class="toggle-engine-button" onclick="onToggleEngine()">Toggle Engine</button>
 
         <button id="anchor-button" class="toggle-hotspot-button" onclick="onToggleHotSpot()">Toggle Hot Spot</button>
+        <button id="inspector-button" class="toggle-inspector-button" onclick="onToggleInspector()">Toggle Inspector</button>
         <script type="module" src="/packages/tools/viewer-alpha/src/index.ts"></script>
         <script>
             const viewerElement = document.querySelector("babylon-viewer");
@@ -177,6 +185,15 @@
                 hotspotVisible = !hotspotVisible;
                 lines[0].style.visibility = hotspotVisible ? "visible" : "hidden";
                 startHotSpotLinesRenderLoop();
+            }
+
+            function onToggleInspector() {
+                const inspectorHost = document.querySelector("#inspector-host");
+                if (inspectorHost.children.length === 0) {
+                    viewerElement.viewerDetails.viewer.showInspector(inspectorHost);
+                } else {
+                    viewerElement.viewerDetails.viewer.hideInspector();
+                }
             }
         </script>
     </body>

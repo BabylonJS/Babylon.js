@@ -8,7 +8,7 @@ import { IsFramePortData } from "./tools";
 import type { FramePortPosition } from "./graphFrame";
 import type { StateManager } from "./stateManager";
 import type { FramePortData } from "./types/framePortData";
-import commonStyles from "./common.modules.scss";
+import commonStyles from "./common.module.scss";
 
 export class FrameNodePort extends NodePort {
     private _parentFrameId: number;

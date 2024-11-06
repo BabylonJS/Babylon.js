@@ -7,6 +7,7 @@ import chalk from "chalk";
 import { mkdirSync, createWriteStream } from "fs";
 import { execSync } from "child_process";
 import path from "path";
+import { inspect } from "util";
 
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, process.cwd());
@@ -54,6 +55,13 @@ export default defineConfig(({ mode }) => {
             alias: {
                 core: `@${source}/core/dist`,
                 loaders: `@${source}/loaders/dist`,
+                inspector: `@${source}/inspector/dist`,
+                //"shared-ui-components": `@${source}/sharedUiComponents/dist`,
+                materials: `@${source}/materials/dist`,
+                serializers: `@${source}/serializers/dist`,
+                gui: `@${source}/gui/dist`,
+                "shared-ui-components": path.resolve("../../dev/sharedUiComponents/dist"),
+                "gui-editor": path.resolve("../../tools/guiEditor/dist"),
             },
         },
     };
