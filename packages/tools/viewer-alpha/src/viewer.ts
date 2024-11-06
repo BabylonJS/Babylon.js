@@ -612,6 +612,9 @@ export class Viewer implements IDisposable {
             try {
                 if (source) {
                     this._loadingProgress.isLoading = true;
+                    if (this._loadingProgress.isLoading) {
+                        this._loadingProgress.progress = 0;
+                    }
                     this.onLoadingProgressChanged.notifyObservers();
                     this._details.model = await loadAssetContainerAsync(source, this._details.scene, options);
                     this._details.model.animationGroups.forEach((group) => {

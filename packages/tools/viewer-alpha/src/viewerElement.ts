@@ -171,7 +171,7 @@ export class HTML3DElement extends LitElement {
             pointer-events: none;
         }
 
-        .loading-progress {
+        .loading-progress-outer {
             position: absolute;
             width: calc(100% - 24px);
             height: 8px;
@@ -184,32 +184,24 @@ export class HTML3DElement extends LitElement {
             left: 50%;
             transform: translateX(-50%);
             background-color: var(--ui-background-color);
-            color: var(--ui-foreground-color);
             pointer-events: none;
             transition: opacity 0.5s ease;
         }
 
-        .loading-progress-active {
+        .loading-progress-outer-active {
             opacity: 1;
         }
 
-        .loading-progress-inactive {
+        .loading-progress-outer-inactive {
             opacity: 0;
         }
 
-        .loading-progress::-webkit-progress-bar {
-            background-color: var(--ui-background-color);
+        .loading-progress-inner {
+            width: 0;
+            height: 100%;
             border-radius: 4px;
-        }
-
-        .loading-progress::-webkit-progress-value {
             background-color: var(--ui-foreground-color);
-            border-radius: 4px;
-        }
-
-        .loading-progress::-moz-progress-bar {
-            background-color: var(--ui-foreground-color);
-            border-radius: 4px;
+            //transition: width 0.2s ease;
         }
 
         .tool-bar {
@@ -649,17 +641,22 @@ export class HTML3DElement extends LitElement {
 
     // eslint-disable-next-line babylonjs/available
     override render() {
+        const showProgressBar = this.loadingProgress !== false;
+        const progressValue = typeof this.loadingProgress === "boolean" ? (this.loadingProgress ? 0 : 100) : this.loadingProgress * 100;
+
         // NOTE: The unnamed 'slot' element holds all child elements of the <babylon-viewer> that do not specify a 'slot' attribute.
         return html`
             <div class="full-size">
                 <div id="canvasContainer" class="full-size"></div>
                 <slot class="full-size children-slot"></slot>
                 <slot name="progress-bar">
-                    <progress
-                        class="loading-progress ${this.loadingProgress === false ? "loading-progress-inactive" : "loading-progress-active"}"
-                        value="${this.loadingProgress === false ? 1 : this.loadingProgress}"
-                        max="1"
-                    ></progress>
+                    <div
+                        part="loading-progress"
+                        class="loading-progress-outer ${showProgressBar ? "loading-progress-outer-active" : "loading-progress-outer-inactive"}"
+                        aria-label="Loading Progress"
+                    >
+                        <div class="loading-progress-inner" style="width: ${progressValue}%"></div>
+                    </div>
                 </slot>
                 ${this.animations.length === 0
                     ? ""
