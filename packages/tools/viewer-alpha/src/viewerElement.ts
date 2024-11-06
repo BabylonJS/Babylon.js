@@ -201,7 +201,31 @@ export class HTML3DElement extends LitElement {
             height: 100%;
             border-radius: 4px;
             background-color: var(--ui-foreground-color);
-            //transition: width 0.2s ease;
+        }
+
+        @keyframes indeterminate {
+            0% {
+                left: 0%;
+                width: 0%;
+            }
+            20% {
+                left: 0%;
+                width: 30%;
+            }
+            80% {
+                left: 70%;
+                width: 30%;
+            }
+            100% {
+                left: 100%;
+                width: 0%;
+            }
+        }
+
+        .loading-progress-inner-indeterminate {
+            position: absolute;
+            animation: indeterminate 1.5s infinite;
+            animation-timing-function: linear;
         }
 
         .tool-bar {
@@ -642,7 +666,8 @@ export class HTML3DElement extends LitElement {
     // eslint-disable-next-line babylonjs/available
     override render() {
         const showProgressBar = this.loadingProgress !== false;
-        const progressValue = typeof this.loadingProgress === "boolean" ? (this.loadingProgress ? 0 : 100) : this.loadingProgress * 100;
+        const progressValue = typeof this.loadingProgress === "boolean" ? 100 : this.loadingProgress * 100;
+        const isIndeterminate = this.loadingProgress === true;
 
         // NOTE: The unnamed 'slot' element holds all child elements of the <babylon-viewer> that do not specify a 'slot' attribute.
         return html`
@@ -655,7 +680,10 @@ export class HTML3DElement extends LitElement {
                         class="loading-progress-outer ${showProgressBar ? "loading-progress-outer-active" : "loading-progress-outer-inactive"}"
                         aria-label="Loading Progress"
                     >
-                        <div class="loading-progress-inner" style="width: ${progressValue}%"></div>
+                        <div
+                            class="loading-progress-inner ${isIndeterminate ? "loading-progress-inner-indeterminate" : ""}"
+                            style="${isIndeterminate ? "" : `width: ${progressValue}%`}"
+                        ></div>
                     </div>
                 </slot>
                 ${this.animations.length === 0
