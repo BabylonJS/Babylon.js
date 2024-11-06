@@ -777,7 +777,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         },
         extraProcessor(_gltfBlock, _mapping, arrays, serializedObjects, _context, _globalGLTF) {
-            // connect the pointer to the getProperty block
+            // connect the pointer to the setProperty block
             connectFlowGraphNodes("object", "object", serializedObjects[0], serializedObjects[1], true);
             connectFlowGraphNodes("propertyName", "propertyName", serializedObjects[0], serializedObjects[1], true);
             connectFlowGraphNodes("customSetFunction", "setFunction", serializedObjects[0], serializedObjects[1], true);
@@ -785,7 +785,8 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
     },
     "pointer/interpolate": {
-        blocks: [FlowGraphBlockNames.ValueInterpolation, FlowGraphBlockNames.JsonPointerParser],
+        // interpolate, parse the pointer and play the animation generated. 3 blocks!
+        blocks: [FlowGraphBlockNames.ValueInterpolation, FlowGraphBlockNames.JsonPointerParser, FlowGraphBlockNames.PlayAnimation],
         configuration: {
             pointer: { name: "jsonPointer", toBlock: FlowGraphBlockNames.JsonPointerParser },
         },
@@ -793,15 +794,25 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             values: {
                 value: { name: "value" },
                 "[segment]": { name: "$1", toBlock: FlowGraphBlockNames.JsonPointerParser },
-                duration: { name: "duration", gltfType: "number" /*, inOptions: true */ },
-                p1: { name: "initialValue", gltfType: "number" /*, inOptions: true*/ },
-                p2: { name: "endValue", gltfType: "number" /*, inOptions: true*/ },
+                duration: { name: "duration-1", gltfType: "number" /*, inOptions: true */ },
+                p1: { name: "initialValue" /*, inOptions: true*/ },
+                p2: { name: "endValue" /*, inOptions: true*/ },
+            },
+            flows: {
+                in: { name: "in", toBlock: FlowGraphBlockNames.PlayAnimation },
             },
         },
         outputs: {
             flows: {
                 err: { name: "error" },
             },
+        },
+        extraProcessor(gltfBlock, mapping, arrays, serializedObjects, context, globalGLTF) {
+            // connect the pointer to the getProperty block
+            connectFlowGraphNodes("object", "object", serializedObjects[2], serializedObjects[1], true);
+            connectFlowGraphNodes("propertyName", "propertyName", serializedObjects[0], serializedObjects[1], true);
+            connectFlowGraphNodes("animation", "animation", serializedObjects[2], serializedObjects[0], true);
+            return serializedObjects;
         },
     },
     "animation/start": {

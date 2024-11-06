@@ -49,17 +49,17 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     /**
      * Will be initialized if no animation group was provided in the configuration.
      */
-    public readonly animationGroupInput: FlowGraphDataConnection<AnimationGroup>;
+    public readonly animationGroup: FlowGraphDataConnection<AnimationGroup>;
 
     /**
      * If provided this animation will be used. Priority will be given to the animation group input.
      */
-    public readonly animationInput: FlowGraphDataConnection<Animation>;
+    public readonly animation: FlowGraphDataConnection<Animation | Animation[]>;
 
     /**
      * Input connection: The target object that will be animated. If animation group is provided this input will be ignored.
      */
-    public readonly targetInput: FlowGraphDataConnection<any>;
+    public readonly object: FlowGraphDataConnection<any>;
 
     public constructor(
         /**
@@ -78,9 +78,9 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
         this.currentTime = this.registerDataOutput("currentTime", RichTypeNumber);
 
         this.currentAnimationGroup = this.registerDataOutput("currentAnimationGroup", RichTypeAny);
-        this.animationGroupInput = this.registerDataInput("animationGroupInput", RichTypeAny, config?.animationGroup);
-        this.animationInput = this.registerDataInput("animationInput", RichTypeAny);
-        this.targetInput = this.registerDataInput("targetInput", RichTypeAny);
+        this.animationGroup = this.registerDataInput("animationGroup", RichTypeAny, config?.animationGroup);
+        this.animation = this.registerDataInput("animation", RichTypeAny);
+        this.object = this.registerDataInput("object", RichTypeAny);
     }
 
     /**
@@ -88,8 +88,8 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
      * @param context
      */
     public _preparePendingTasks(context: FlowGraphContext): void {
-        const ag = this.animationGroupInput.getValue(context);
-        const animation = this.animationInput.getValue(context);
+        const ag = this.animationGroup.getValue(context);
+        const animation = this.animation.getValue(context);
         if (!ag && !animation) {
             this.error.payload = "No animation group or animation provided";
             this.error._activateSignal(context);
@@ -104,13 +104,20 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             let animationGroupToUse = ag;
             // check which animation to use
             if (animation && !animationGroupToUse) {
-                const target = this.targetInput.getValue(context);
+                const target = this.object.getValue(context);
                 if (!target) {
                     this.error._activateSignal(context);
                     return;
                 }
-                animationGroupToUse = new AnimationGroup("flowGraphAnimationGroup-" + animation.name + "-" + target.name, context.configuration.scene);
-                animationGroupToUse.addTargetedAnimation(animation, target);
+                const name = Array.isArray(animation) ? animation[0].name : animation.name;
+                animationGroupToUse = new AnimationGroup("flowGraphAnimationGroup-" + name + "-" + target.name, context.configuration.scene);
+                if (Array.isArray(animation)) {
+                    for (const anim of animation) {
+                        animationGroupToUse.addTargetedAnimation(anim, target);
+                    }
+                } else {
+                    animationGroupToUse.addTargetedAnimation(animation, target);
+                }
             }
             // not accepting 0
             const speed = this.speed.getValue(context) || 1;

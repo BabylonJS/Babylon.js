@@ -59,7 +59,7 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
     /**
      * output connection: The animation that will be created when in is triggered.
      */
-    public readonly animation: FlowGraphDataConnection<Animation>;
+    public readonly animation: FlowGraphDataConnection<Animation | Animation[]>;
 
     /**
      * Input connection: An optional easing function to use for the interpolation.
@@ -69,7 +69,7 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
     /**
      * Input connection: The name of the property that will be set
      */
-    public readonly propertyName: FlowGraphDataConnection<string>;
+    public readonly propertyName: FlowGraphDataConnection<string | string[]>;
 
     /**
      * The keyframes to interpolate between.
@@ -84,14 +84,15 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
         super(config);
         const type = getRichTypeByAnimationType(config?.animationType ?? Constants.ANIMATIONTYPE_FLOAT);
         this.initialValue = this.registerDataInput("initialValue", type);
+        this.endValue = this.registerDataInput("endValue", type);
         this.easingFunction = this.registerDataInput("easingFunction", RichTypeAny);
         this.animation = this.registerDataOutput("animation", RichTypeAny);
         this.propertyName = this.registerDataInput("propertyName", RichTypeAny, config?.propertyName);
 
         const numberOfKeyFrames = config?.keyFramesCount ?? 1;
         for (let i = 0; i < numberOfKeyFrames; i++) {
-            const duration = this.registerDataInput(`Duration-${i + 1}`, RichTypeNumber, i === numberOfKeyFrames - 1 ? config.duration : undefined);
-            const value = this.registerDataInput(`Value-${i + 1}`, type);
+            const duration = this.registerDataInput(`duration-${i + 1}`, RichTypeNumber, i === numberOfKeyFrames - 1 ? config.duration : undefined);
+            const value = this.registerDataInput(`value-${i + 1}`, type);
             this.keyFrames.push({ duration, value });
         }
     }
@@ -103,7 +104,7 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
         this.animation.setValue(animation, context);
     }
 
-    private _createAnimation(context: FlowGraphContext, propertyName: string, easingFunction: EasingFunction): Animation {
+    private _createAnimation(context: FlowGraphContext, propertyName: string | string[], easingFunction: EasingFunction): Animation | Animation[] {
         const type = this.initialValue.richType;
         const keys: { frame: number; value: T }[] = [];
         // add initial value
@@ -111,8 +112,8 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
         keys.push({ frame: 0, value: currentValue });
         const numberOfKeyFrames = this.config?.numberOfKeyFrames ?? 1;
         for (let i = 0; i < numberOfKeyFrames; i++) {
-            const duration = this.getDataInput(`Duration-${i + 1}`)?.getValue(context);
-            let value = this.getDataInput(`Value-${i + 1}`)?.getValue(context);
+            const duration = this.keyFrames[i].duration?.getValue(context);
+            let value = this.keyFrames[i].value?.getValue(context);
             if (i === numberOfKeyFrames - 1) {
                 value = this.endValue.getValue(context) || value || type.defaultValue;
             }
@@ -121,9 +122,18 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
                 keys.push({ frame: duration * 60, value });
             }
         }
-        const animation = Animation.CreateAnimation(propertyName, type.animationType, 60, easingFunction);
-        animation.setKeys(keys);
-        return animation;
+        if (typeof propertyName === "string") {
+            const animation = Animation.CreateAnimation(propertyName, type.animationType, 60, easingFunction);
+            animation.setKeys(keys);
+            return animation;
+        } else {
+            const animations = propertyName.map((name) => {
+                const animation = Animation.CreateAnimation(name, type.animationType, 60, easingFunction);
+                animation.setKeys(keys);
+                return animation;
+            });
+            return animations;
+        }
     }
 
     public override getClassName(): string {
