@@ -7,9 +7,8 @@ import type { StateManager } from "./stateManager";
  * @param stateManager defines the state manager to use
  * @param propertyName name of the property that has been changed
  * @param notifiers list of notifiers to use
- * @param forceUpdate defines if we should force a react update
  */
-export function ForceRebuild(source: any, stateManager: StateManager, propertyName: string, notifiers?: IEditablePropertyOption["notifiers"], forceUpdate = false) {
+export function ForceRebuild(source: any, stateManager: StateManager, propertyName: string, notifiers?: IEditablePropertyOption["notifiers"]) {
     if (notifiers?.onValidation && !notifiers?.onValidation(source, propertyName)) {
         return;
     }
@@ -20,8 +19,6 @@ export function ForceRebuild(source: any, stateManager: StateManager, propertyNa
 
     if (!notifiers || notifiers.rebuild) {
         stateManager.onRebuildRequiredObservable.notifyObservers();
-    } else if (forceUpdate) {
-        stateManager.onForceUpdatePropertiesObservable.notifyObservers();
     }
 
     if (notifiers?.activatePreviewCommand) {

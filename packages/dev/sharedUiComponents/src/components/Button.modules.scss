@@ -1,4 +1,4 @@
-@import "Colors.scss";
+@use "Colors.scss" as *;
 :local .button {
     composes: fontRegular from "Fonts.scss";
     width: 55px;

@@ -39,33 +39,51 @@
     transform: scaleX(1.01) translateY(-0.5px);
     transform-origin: center;
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: auto 1fr auto;
     grid-template-rows: 100%;
 }
-
-$iconSize: 20px;
-$iconMargin: 6px;
 
 .headerIcon {
     z-index: 10;
     align-self: center;
     user-select: none;
-    pointer-events: none;
-    width: $iconSize;
     display: grid;
-    margin-left: $iconMargin;
+    transform: translateY(1px);
+    grid-row: 1;
+    grid-column: 3;
+}
+
+.headerCollapse {
+    grid-row: 1;
+    grid-column: 1;
+    z-index: 10;
+    align-self: center;
+    user-select: none;
+    display: grid;
+    cursor: pointer;
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    justify-content: center;
+    width: 20px;
+    transform: rotate(0deg);
+    transition: transform 0.2s;
+    transform-origin: center;
+}
+
+.collapsed {
+    transform: rotate(-90deg);
 }
 
 .header {
+    grid-row: 1;
+    grid-column: 2;
     font-size: 16px;
     text-align: center;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
-}
-
-.headerWithIcon {
-    margin-left: calc(#{$iconSize} + #{$iconMargin});
+    transform: translateY(-2px);
 }
 
 .connections {
@@ -124,6 +142,7 @@ $iconMargin: 6px;
 .booleanContainer {
     height: 20px;
     display: flex;
+    margin-left: 4px;
     input[type="checkbox"] {
         -webkit-appearance: none;
         -moz-appearance: none;
@@ -183,6 +202,7 @@ $iconMargin: 6px;
         z-index: 1;
         text-align: end;
         padding-right: 5px;
+        cursor: col-resize;
 
         &::-webkit-outer-spin-button,
         &::-webkit-inner-spin-button {
@@ -219,9 +239,10 @@ $iconMargin: 6px;
 }
 
 .listContainer {
-    margin-top: 2px;
+    margin-top: 3px;
     height: 20px;
     display: grid;
+    margin-bottom: 3px;
 }
 
 .select {
@@ -251,6 +272,7 @@ $iconMargin: 6px;
     color: white;
     pointer-events: none;
     background: transparent;
+    transform: translateY(-1px);
 }
 
 .active {

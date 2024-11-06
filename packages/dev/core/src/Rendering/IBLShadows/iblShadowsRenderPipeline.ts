@@ -34,67 +34,67 @@ interface IblShadowsSettings {
      * shadows but are more expensive to compute and require more memory.
      * The resolution is calculated as 2 to the power of this number.
      */
-    resolutionExp: number;
+    resolutionExp?: number;
 
     /**
      * The number of different directions to sample during the voxel tracing pass. Higher
      * values will result in better quality, more stable shadows but are more expensive to compute.
      */
-    sampleDirections: number;
+    sampleDirections?: number;
 
     /**
      * How dark the shadows are. 1.0 is full opacity, 0.0 is no shadows.
      */
-    shadowOpacity: number;
+    shadowOpacity?: number;
 
     /**
      * How long the shadows remain in the scene. 0.0 is no persistence, 1.0 is full persistence.
      */
-    shadowRemenance: number;
+    shadowRemenance?: number;
 
     /**
      * Render the voxel grid from 3 different axis. This will result in better quality shadows with fewer
      * bits of missing geometry.
      */
-    triPlanarVoxelization: boolean;
+    triPlanarVoxelization?: boolean;
 
     /**
      * A multiplier for the render size of the shadows. Used for rendering lower-resolution shadows
      * to increase performance. Should be a value between 0 and 1.
      */
-    shadowRenderSizeFactor: number;
+    shadowRenderSizeFactor?: number;
 
     /**
      * Separate control for the opacity of the voxel shadows.
      */
-    voxelShadowOpacity: number;
+    voxelShadowOpacity?: number;
 
     /**
      * Include screen-space shadows in the IBL shadow pipeline. This adds sharp shadows to small details
      * but only applies close to a shadow-casting object.
      */
-    ssShadowsEnabled: boolean;
+    ssShadowsEnabled?: boolean;
 
     /**
      * The number of samples used in the screen space shadow pass.
      */
-    ssShadowSampleCount: number;
+    ssShadowSampleCount?: number;
 
     /**
      * The stride of the screen-space shadow pass. This controls the distance between samples.
      */
-    ssShadowStride: number;
+    ssShadowStride?: number;
 
     /**
      * The maximum distance a shadow can be cast in screen space. This should usually be kept small
      * as screenspace shadows are mostly useful for small details.
      */
-    ssShadowDistanceScale: number;
+    ssShadowDistanceScale?: number;
 
     /**
      * Screen-space shadow thickness. This value controls the perceived thickness of the SS shadows.
      */
-    ssShadowThicknessScale: number;
+    ssShadowThicknessScale?: number;
 }
 
 /**

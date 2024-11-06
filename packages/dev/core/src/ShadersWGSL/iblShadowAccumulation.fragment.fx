@@ -4,6 +4,7 @@ uniform accumulationParameters: vec4f;
 
 #define remanence uniforms.accumulationParameters.x
 #define resetb uniforms.accumulationParameters.y
+#define sceneSize uniforms.accumulationParameters.z
 
 var motionSampler: texture_2d<f32>;
 var positionSampler: texture_2d<f32>;
@@ -41,7 +42,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
   var newShadows : vec2f = textureLoad(spatialBlurSampler, shadowPixelCoord, 0).xy;
 
   PrevShadows.z = select(1.0, max(PrevShadows.z / (1.0 + PrevShadows.z), 1.0 - remanence), !reset && all(lessThan(abs(prevCoord -  vec2f(0.5)),  vec2f(0.5))) &&
-              distance(LP.xyz, PrevLP) < 5e-2);
+              distance(LP.xyz, PrevLP) < 5e-2 * sceneSize);
   PrevShadows = max( vec3f(0.0), PrevShadows);
 
   fragmentOutputs.color =  vec4f(mix(PrevShadows.x, newShadows.x, PrevShadows.z),

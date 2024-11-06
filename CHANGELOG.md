@@ -1,5 +1,15 @@
 # Changelog
 
+## 7.32.5
+
+### Core
+
+- On Node Properties - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15770](https://github.com/BabylonJS/Babylon.js/pull/15770))
+
+### Node Editor
+
+- On Node Properties - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15770](https://github.com/BabylonJS/Babylon.js/pull/15770))
+
 ## 7.32.4
 
 ### Core
