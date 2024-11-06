@@ -2,7 +2,7 @@ import type { AbstractMesh } from "@babylonjs/core/Meshes/abstractMesh";
 import type { Behavior } from "@babylonjs/core/Behaviors/behavior";
 import type { Scene } from "@babylonjs/core/scene";
 import { Logger } from "@babylonjs/core/Misc/logger";
-import { requestCapture, requestRelease, releaseCurrent, getCapturingId } from "./pointer-events-capture";
+import { requestCapture, requestRelease, releaseCurrent, getCapturingId } from "./pointerEventsCapture";
 import { getCanvasRectOrNull } from "./util";
 
 // Module level variable for holding the current scene

@@ -1,7 +1,7 @@
-import { HtmlMeshRenderer } from "./html-mesh-renderer";
-import { HtmlMesh } from "./html-mesh";
-import { PointerEventsCaptureBehavior } from "./pointer-events-capture-behavior";
-import { FitStrategy } from "./fit-strategy";
+import { HtmlMeshRenderer } from "./htmlMeshRenderer";
+import { HtmlMesh } from "./htmlMesh";
+import { PointerEventsCaptureBehavior } from "./pointerEventsCaptureBehavior";
+import { FitStrategy } from "./fitStrategy";
 
 // Export public classes and functions
 export { HtmlMeshRenderer, HtmlMesh, PointerEventsCaptureBehavior, FitStrategy };

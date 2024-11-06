@@ -2,11 +2,11 @@ import { Mesh } from "@babylonjs/core/Meshes/mesh";
 import { CreatePlaneVertexData } from "@babylonjs/core/Meshes/Builders/planeBuilder";
 import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
 import { Matrix } from "@babylonjs/core/Maths/math";
-import { PointerEventsCaptureBehavior } from "./pointer-events-capture-behavior";
+import { PointerEventsCaptureBehavior } from "./pointerEventsCaptureBehavior";
 import type { Scene } from "@babylonjs/core/scene";
 import { Logger } from "@babylonjs/core/Misc/logger";
-import type { FitStrategyType } from "./fit-strategy";
-import { FitStrategy } from "./fit-strategy";
+import type { FitStrategyType } from "./fitStrategy";
+import { FitStrategy } from "./fitStrategy";
 
 /**
  * This class represents HTML content that we want to render as though it is part of the scene.  The HTML content is actually
@@ -292,7 +292,7 @@ export class HtmlMesh extends Mesh {
     }
 
     protected _createMask() {
-        const vertexData = CreatePlaneVertexData({ width: 1, height: 1 }); // BJS 5
+        const vertexData = CreatePlaneVertexData({ width: 1, height: 1 });
         vertexData.applyToMesh(this);
 
         const scene = this.getScene();

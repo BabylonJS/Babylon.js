@@ -1,7 +1,7 @@
 import type { Scene } from "@babylonjs/core/scene";
 import { Matrix, Quaternion, Vector3 } from "@babylonjs/core/Maths/math";
 
-import type { HtmlMesh } from "./html-mesh";
+import type { HtmlMesh } from "./htmlMesh";
 import { Camera } from "@babylonjs/core/Cameras/camera";
 import type { SubMesh } from "@babylonjs/core/Meshes/subMesh";
 import { RenderingGroup } from "@babylonjs/core/Rendering/renderingGroup";
