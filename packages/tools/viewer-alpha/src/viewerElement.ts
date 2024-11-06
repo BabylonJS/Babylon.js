@@ -49,6 +49,7 @@ interface HTML3DElementEventMap extends HTMLElementEventMap {
     environmenterror: ErrorEvent;
     modelchange: Event;
     modelerror: ErrorEvent;
+    loadingprogresschange: Event;
     selectedanimationchange: Event;
     animationspeedchange: Event;
     animationplayingchange: Event;
@@ -170,6 +171,47 @@ export class HTML3DElement extends LitElement {
             pointer-events: none;
         }
 
+        .loading-progress {
+            position: absolute;
+            width: calc(100% - 24px);
+            height: 8px;
+            border-radius: 4px;
+            border: none;
+            outline: none;
+            min-width: 150px;
+            max-width: 1280px;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--ui-background-color);
+            color: var(--ui-foreground-color);
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-progress-active {
+            opacity: 1;
+        }
+
+        .loading-progress-inactive {
+            opacity: 0;
+        }
+
+        .loading-progress::-webkit-progress-bar {
+            background-color: var(--ui-background-color);
+            border-radius: 4px;
+        }
+
+        .loading-progress::-webkit-progress-value {
+            background-color: var(--ui-foreground-color);
+            border-radius: 4px;
+        }
+
+        .loading-progress::-moz-progress-bar {
+            background-color: var(--ui-foreground-color);
+            border-radius: 4px;
+        }
+
         .tool-bar {
             position: absolute;
             display: flex;
@@ -245,7 +287,7 @@ export class HTML3DElement extends LitElement {
             height: 32px;
         }
 
-        .progress-control {
+        .animation-timeline {
             display: flex;
             flex: 1;
             position: relative;
@@ -256,7 +298,7 @@ export class HTML3DElement extends LitElement {
             border-color: inherit;
         }
 
-        .progress-wrapper {
+        .animation-timeline-input {
             -webkit-appearance: none;
             cursor: pointer;
             width: 100%;
@@ -268,13 +310,13 @@ export class HTML3DElement extends LitElement {
             background-color: transparent;
         }
 
-        .progress-wrapper:focus-visible {
+        .animation-timeline-input:focus-visible {
             border-color: inherit;
         }
 
         /*Chrome -webkit */
 
-        .progress-wrapper::-webkit-slider-thumb {
+        .animation-timeline-input::-webkit-slider-thumb {
             -webkit-appearance: none;
             width: 20px;
             height: 20px;
@@ -285,7 +327,7 @@ export class HTML3DElement extends LitElement {
             margin-top: -10px;
         }
 
-        .progress-wrapper::-webkit-slider-runnable-track {
+        .animation-timeline-input::-webkit-slider-runnable-track {
             height: 2px;
             -webkit-appearance: none;
             background-color: var(--ui-foreground-color);
@@ -293,12 +335,12 @@ export class HTML3DElement extends LitElement {
 
         /** FireFox -moz */
 
-        .progress-wrapper::-moz-range-progress {
+        .animation-timeline-input::-moz-range-progress {
             height: 2px;
             background-color: var(--ui-foreground-color);
         }
 
-        .progress-wrapper::-moz-range-thumb {
+        .animation-timeline-input::-moz-range-thumb {
             width: 16px;
             height: 16px;
             border: 2px solid var(--ui-foreground-color);
@@ -306,7 +348,7 @@ export class HTML3DElement extends LitElement {
             background: hsla(var(--ui-background-hue), var(--ui-background-saturation), var(--ui-background-lightness), 1);
         }
 
-        .progress-wrapper::-moz-range-track {
+        .animation-timeline-input::-moz-range-track {
             height: 2px;
             background: var(--ui-foreground-color);
         }
@@ -363,6 +405,20 @@ export class HTML3DElement extends LitElement {
      */
     @property({ reflect: true })
     public environment: Nullable<string> = null;
+
+    @state()
+    private _loadingProgress: boolean | number = false;
+
+    /**
+     * Gets information about loading activity.
+     * @remarks
+     * false indicates no loading activity.
+     * true indicates loading activity with no progress information.
+     * A number between 0 and 1 indicates loading activity with progress information.
+     */
+    public get loadingProgress(): boolean | number {
+        return this._loadingProgress;
+    }
 
     /**
      * A value between 0 and 1 that specifies how much to blur the skybox.
@@ -598,12 +654,19 @@ export class HTML3DElement extends LitElement {
             <div class="full-size">
                 <div id="canvasContainer" class="full-size"></div>
                 <slot class="full-size children-slot"></slot>
+                <slot name="progress-bar">
+                    <progress
+                        class="loading-progress ${this.loadingProgress === false ? "loading-progress-inactive" : "loading-progress-active"}"
+                        value="${this.loadingProgress === false ? 1 : this.loadingProgress}"
+                        max="1"
+                    ></progress>
+                </slot>
                 ${this.animations.length === 0
                     ? ""
                     : html`
                           <slot name="tool-bar">
                               <div part="tool-bar" class="tool-bar">
-                                  <div class="progress-control">
+                                  <div class="animation-timeline">
                                       <button aria-label="${this.isAnimationPlaying ? "Pause" : "Play"}" @click="${this.toggleAnimation}">
                                           ${!this.isAnimationPlaying
                                               ? html`<svg viewBox="0 0 20 20">
@@ -615,7 +678,7 @@ export class HTML3DElement extends LitElement {
                                       </button>
                                       <input
                                           aria-label="Animation Progress"
-                                          class="progress-wrapper"
+                                          class="animation-timeline-input"
                                           type="range"
                                           min="0"
                                           max="1"
@@ -777,6 +840,11 @@ export class HTML3DElement extends LitElement {
                         details.viewer.onModelError.add((error) => {
                             this._animations = [...details.viewer.animations];
                             this._dispatchCustomEvent("modelerror", (type) => new ErrorEvent(type, { error }));
+                        });
+
+                        details.viewer.onLoadingProgressChanged.add(() => {
+                            this._loadingProgress = details.viewer.loadingProgress;
+                            this._dispatchCustomEvent("loadingprogresschange", (type) => new Event(type));
                         });
 
                         details.viewer.onIsAnimationPlayingChanged.add(() => {
