@@ -191,12 +191,10 @@ export class HTML3DElement extends LitElement {
             transition: opacity 0.5s ease;
         }
 
-        .loading-progress-outer-active {
-            opacity: 1;
-        }
-
         .loading-progress-outer-inactive {
             opacity: 0;
+            /* Set the background color to the foreground color while in the inactive state so that the color seen is correct while fading out the opacity. */
+            background-color: var(--ui-foreground-color);
         }
 
         .loading-progress-inner {
@@ -204,6 +202,7 @@ export class HTML3DElement extends LitElement {
             height: 100%;
             border-radius: 2px;
             background-color: var(--ui-foreground-color);
+            transition: width 0.25s ease;
         }
 
         @keyframes indeterminate {
@@ -662,7 +661,8 @@ export class HTML3DElement extends LitElement {
     // eslint-disable-next-line babylonjs/available
     override render() {
         const showProgressBar = this.loadingProgress !== false;
-        const progressValue = typeof this.loadingProgress === "boolean" ? 100 : this.loadingProgress * 100;
+        // If loadingProgress is true, then the progress bar is indeterminate so the value doesn't matter.
+        const progressValue = typeof this.loadingProgress === "boolean" ? 0 : this.loadingProgress * 100;
         const isIndeterminate = this.loadingProgress === true;
 
         // NOTE: The unnamed 'slot' element holds all child elements of the <babylon-viewer> that do not specify a 'slot' attribute.
@@ -671,11 +671,7 @@ export class HTML3DElement extends LitElement {
                 <div id="canvasContainer" class="full-size"></div>
                 <slot class="full-size children-slot"></slot>
                 <slot name="progress-bar">
-                    <div
-                        part="loading-progress"
-                        class="bar loading-progress-outer ${showProgressBar ? "loading-progress-outer-active" : "loading-progress-outer-inactive"}"
-                        aria-label="Loading Progress"
-                    >
+                    <div part="loading-progress" class="bar loading-progress-outer ${showProgressBar ? "" : "loading-progress-outer-inactive"}" aria-label="Loading Progress">
                         <div
                             class="loading-progress-inner ${isIndeterminate ? "loading-progress-inner-indeterminate" : ""}"
                             style="${isIndeterminate ? "" : `width: ${progressValue}%`}"
