@@ -174,8 +174,8 @@ export class HTML3DElement extends LitElement {
         .loading-progress-outer {
             position: absolute;
             width: calc(100% - 24px);
-            height: 8px;
-            border-radius: 4px;
+            height: 4px;
+            border-radius: 2px;
             border: none;
             outline: none;
             min-width: 150px;
@@ -199,7 +199,7 @@ export class HTML3DElement extends LitElement {
         .loading-progress-inner {
             width: 0;
             height: 100%;
-            border-radius: 4px;
+            border-radius: 2px;
             background-color: var(--ui-foreground-color);
         }
 
