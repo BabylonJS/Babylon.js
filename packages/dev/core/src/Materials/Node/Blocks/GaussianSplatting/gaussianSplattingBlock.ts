@@ -109,7 +109,8 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
         const projection = this.projection;
         const output = this.splatVertex;
 
-        let splatScaleParameter = "vec2(1.,1.)";
+        const addF = state.fSuffix;
+        let splatScaleParameter = `vec2${addF}(1.,1.)`;
         if (splatScale.isConnected) {
             splatScaleParameter = splatScale.associatedVariableName;
         }

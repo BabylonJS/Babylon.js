@@ -571,6 +571,9 @@ export class PreviewManager {
                             this._prepareScene();
                         });
                         break;
+                    case PreviewType.Custom:
+                        this._globalState.filesInput.loadFiles({ target: { files: this._globalState.listOfCustomPreviewFiles } });
+                        return;
                 }
             }
         }
