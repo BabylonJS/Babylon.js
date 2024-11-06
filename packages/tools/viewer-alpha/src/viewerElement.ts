@@ -171,19 +171,22 @@ export class HTML3DElement extends LitElement {
             pointer-events: none;
         }
 
-        .loading-progress-outer {
+        .bar {
             position: absolute;
             width: calc(100% - 24px);
+            min-width: 150px;
+            max-width: 1280px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--ui-background-color);
+        }
+
+        .loading-progress-outer {
             height: 4px;
             border-radius: 2px;
             border: none;
             outline: none;
-            min-width: 150px;
-            max-width: 1280px;
             top: 12px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: var(--ui-background-color);
             pointer-events: none;
             transition: opacity 0.5s ease;
         }
@@ -229,19 +232,12 @@ export class HTML3DElement extends LitElement {
         }
 
         .tool-bar {
-            position: absolute;
             display: flex;
             flex-direction: row;
             border-radius: 12px;
             border-color: var(--ui-foreground-color);
             height: 48px;
-            width: calc(100% - 24px);
-            min-width: 150px;
-            max-width: 1280px;
             bottom: 12px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: var(--ui-background-color);
             color: var(--ui-foreground-color);
             -webkit-tap-highlight-color: transparent;
         }
@@ -677,7 +673,7 @@ export class HTML3DElement extends LitElement {
                 <slot name="progress-bar">
                     <div
                         part="loading-progress"
-                        class="loading-progress-outer ${showProgressBar ? "loading-progress-outer-active" : "loading-progress-outer-inactive"}"
+                        class="bar loading-progress-outer ${showProgressBar ? "loading-progress-outer-active" : "loading-progress-outer-inactive"}"
                         aria-label="Loading Progress"
                     >
                         <div
@@ -690,7 +686,7 @@ export class HTML3DElement extends LitElement {
                     ? ""
                     : html`
                           <slot name="tool-bar">
-                              <div part="tool-bar" class="tool-bar">
+                              <div part="tool-bar" class="bar tool-bar">
                                   <div class="animation-timeline">
                                       <button aria-label="${this.isAnimationPlaying ? "Pause" : "Play"}" @click="${this.toggleAnimation}">
                                           ${!this.isAnimationPlaying
