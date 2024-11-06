@@ -202,7 +202,7 @@ export class HTML3DElement extends LitElement {
             height: 100%;
             border-radius: 2px;
             background-color: var(--ui-foreground-color);
-            transition: width 0.3s ease;
+            transition: width 0.3s linear;
         }
 
         @keyframes indeterminate {
