@@ -1,5 +1,5 @@
-import type { Scene } from "@babylonjs/core/scene";
-import { Logger } from "@babylonjs/core/Misc/logger";
+import type { Scene } from "core/scene";
+import { Logger } from "core/Misc/logger";
 
 const _canvasRectUpdateInterval = 500; // Update the canvas rect every 500ms
 let _getCanvasRectGenerator: Generator<DOMRect | null> | null = null;

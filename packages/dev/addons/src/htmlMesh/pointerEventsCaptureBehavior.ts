@@ -1,7 +1,7 @@
-import type { AbstractMesh } from "@babylonjs/core/Meshes/abstractMesh";
-import type { Behavior } from "@babylonjs/core/Behaviors/behavior";
-import type { Scene } from "@babylonjs/core/scene";
-import { Logger } from "@babylonjs/core/Misc/logger";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { Behavior } from "core/Behaviors/behavior";
+import type { Scene } from "core/scene";
+import { Logger } from "core/Misc/logger";
 import { requestCapture, requestRelease, releaseCurrent, getCapturingId } from "./pointerEventsCapture";
 import { getCanvasRectOrNull } from "./util";
 

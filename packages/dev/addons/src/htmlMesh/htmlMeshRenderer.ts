@@ -1,14 +1,14 @@
-import type { Scene } from "@babylonjs/core/scene";
-import { Matrix, Quaternion, Vector3 } from "@babylonjs/core/Maths/math";
+import type { Scene } from "core/scene";
+import { Matrix, Quaternion, Vector3 } from "core/Maths/math";
 
 import type { HtmlMesh } from "./htmlMesh";
-import { Camera } from "@babylonjs/core/Cameras/camera";
-import type { SubMesh } from "@babylonjs/core/Meshes/subMesh";
-import { RenderingGroup } from "@babylonjs/core/Rendering/renderingGroup";
+import { Camera } from "core/Cameras/camera";
+import type { SubMesh } from "core/Meshes/subMesh";
+import { RenderingGroup } from "core/Rendering/renderingGroup";
 
 import { babylonUnitsToPixels, getCanvasRectAsync, getCanvasRectOrNull } from "./util";
-import type { Observer } from "@babylonjs/core/Misc/observable";
-import { Logger } from "@babylonjs/core/Misc/logger";
+import type { Observer } from "core/Misc/observable";
+import { Logger } from "core/Misc/logger";
 
 const _positionUpdateFailMessage = "Failed to update html mesh renderer position due to failure to get canvas rect.  HtmlMesh instances may not render correctly";
 

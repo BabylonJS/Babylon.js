@@ -1,10 +1,10 @@
-import { Mesh } from "@babylonjs/core/Meshes/mesh";
-import { CreatePlaneVertexData } from "@babylonjs/core/Meshes/Builders/planeBuilder";
-import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
-import { Matrix } from "@babylonjs/core/Maths/math";
+import { Mesh } from "core/Meshes/mesh";
+import { CreatePlaneVertexData } from "core/Meshes/Builders/planeBuilder";
+import { StandardMaterial } from "core/Materials/standardMaterial";
+import { Matrix } from "core/Maths/math";
 import { PointerEventsCaptureBehavior } from "./pointerEventsCaptureBehavior";
-import type { Scene } from "@babylonjs/core/scene";
-import { Logger } from "@babylonjs/core/Misc/logger";
+import type { Scene } from "core/scene";
+import { Logger } from "core/Misc/logger";
 import type { FitStrategyType } from "./fitStrategy";
 import { FitStrategy } from "./fitStrategy";
 
@@ -15,7 +15,8 @@ import { FitStrategy } from "./fitStrategy";
  * the HTML content so that it matches the camera and mesh orientation.  The class supports interactions in editable and non-editable mode.
  * In non-editable mode (the default), events are passed to the HTML content when the pointer is over the mask (and not occluded by other meshes
  * in the scene).
- * #HVHYJC#4
+ * #HVHYJC#5
+ * #B17TC7#112
  */
 export class HtmlMesh extends Mesh {
     /**
@@ -171,7 +172,7 @@ export class HtmlMesh extends Mesh {
      */
     setContent(element: HTMLElement, width: number, height: number) {
         // If content is changed, we are no longer ready
-        this._setReady(false);
+        this._setAsReady(false);
 
         // Also invalidate the source width and height
         this._sourceWidth = null;
@@ -194,7 +195,7 @@ export class HtmlMesh extends Mesh {
         }
 
         if (this.sourceWidth && this.sourceHeight) {
-            this._setReady(true);
+            this._setAsReady(true);
         }
     }
 
