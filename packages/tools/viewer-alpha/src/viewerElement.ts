@@ -205,16 +205,20 @@ export class HTML3DElement extends LitElement {
             transition: width 0.3s linear;
         }
 
+        /* The right side of the inner progress bar starts aligned with the left side of the outer progress bar (container).
+           So, if the width is 30%, then the left side of the inner progress bar moves a total of 130% of the width of the container.
+           This is why the first keyframe is at 23% ((100/130)*30).
+         */
         @keyframes indeterminate {
             0% {
                 left: 0%;
                 width: 0%;
             }
-            20% {
+            23% {
                 left: 0%;
                 width: 30%;
             }
-            80% {
+            77% {
                 left: 70%;
                 width: 30%;
             }
