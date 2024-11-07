@@ -1,13 +1,13 @@
 import type { Nullable } from "../../types";
 import type { AbstractAudioEngine } from "./abstractAudioEngine";
-import type { SoundOptions } from "./abstractSound";
+import type { ISoundOptions } from "./abstractSound";
 import { AbstractSound } from "./abstractSound";
 import type { StaticSoundBuffer } from "./staticSoundBuffer";
 
 /**
  * Options for creating a new static sound.
  */
-export interface StaticSoundOptions extends SoundOptions {
+export interface IStaticSoundOptions extends ISoundOptions {
     /**
      * The start of the loop range in seconds.
      */
@@ -28,7 +28,7 @@ export abstract class StaticSound extends AbstractSound {
     public abstract readonly buffer: StaticSoundBuffer;
 
     /** @internal */
-    constructor(name: string, engine: AbstractAudioEngine, options: Nullable<StaticSoundOptions> = null) {
+    constructor(name: string, engine: AbstractAudioEngine, options: Nullable<IStaticSoundOptions> = null) {
         super(name, engine, options);
 
         this._loopStart = options?.loopStart ?? 0;

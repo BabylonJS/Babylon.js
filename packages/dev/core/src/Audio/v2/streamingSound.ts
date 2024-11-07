@@ -1,6 +1,6 @@
 import type { Nullable } from "../../types";
 import type { AbstractAudioEngine } from "./abstractAudioEngine";
-import type { SoundOptions } from "./abstractSound";
+import type { ISoundOptions } from "./abstractSound";
 import { AbstractSound } from "./abstractSound";
 
 export type StreamingSoundPreloadType = "none" | "metadata" | "auto";
@@ -8,7 +8,7 @@ export type StreamingSoundPreloadType = "none" | "metadata" | "auto";
 /**
  * Options for creating a new streaming sound.
  */
-export interface StreamingSoundOptions extends SoundOptions {
+export interface IStreamingSoundOptions extends ISoundOptions {
     /**
      * The preload type of the sound.
      */
@@ -22,7 +22,7 @@ export abstract class StreamingSound extends AbstractSound {
     private _preload: StreamingSoundPreloadType = "auto";
 
     /** @internal */
-    constructor(name: string, engine: AbstractAudioEngine, options: Nullable<StreamingSoundOptions> = null) {
+    constructor(name: string, engine: AbstractAudioEngine, options: Nullable<IStreamingSoundOptions> = null) {
         super(name, engine, options);
 
         this._preload = options?.preload ?? "auto";

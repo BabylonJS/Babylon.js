@@ -9,7 +9,7 @@ import { SoundState } from "./soundState";
 /**
  * Options for creating a new sound.
  */
-export interface SoundOptions {
+export interface ISoundOptions {
     /**
      * Whether the sound should start playing immediately.
      */
@@ -129,7 +129,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
     }
 
     /** @internal */
-    constructor(name: string, engine: AbstractAudioEngine, options: Nullable<SoundOptions> = null) {
+    constructor(name: string, engine: AbstractAudioEngine, options: Nullable<ISoundOptions> = null) {
         super(name, engine, AudioNodeType.Output);
 
         this.autoplay = options?.autoplay ?? false;

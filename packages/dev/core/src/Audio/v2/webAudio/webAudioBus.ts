@@ -1,6 +1,6 @@
 import type { Nullable } from "core/types";
 import type { AbstractAudioNode } from "../abstractAudioNode";
-import type { AudioBusOptions } from "../audioBus";
+import type { IAudioBusOptions } from "../audioBus";
 import { AudioBus } from "../audioBus";
 import type { AudioPositioner } from "../audioPositioner";
 import type { WebAudioEngine } from "./webAudioEngine";
@@ -10,7 +10,7 @@ import { CreateAudioPositionerAsync } from "./webAudioPositioner";
 /**
  * Options for creating a new WebAudioBus.
  */
-export interface WebAudioBusOptions extends AudioBusOptions {}
+export interface IWebAudioBusOptions extends IAudioBusOptions {}
 
 /** @internal */
 export class WebAudioBus extends AudioBus {
@@ -27,7 +27,7 @@ export class WebAudioBus extends AudioBus {
     }
 
     /** @internal */
-    constructor(name: string, engine: WebAudioEngine, options: Nullable<WebAudioBusOptions> = null) {
+    constructor(name: string, engine: WebAudioEngine, options: Nullable<IWebAudioBusOptions> = null) {
         super(name, engine, options);
     }
 

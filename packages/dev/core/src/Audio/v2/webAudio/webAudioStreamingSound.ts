@@ -1,6 +1,6 @@
 import type { Nullable } from "../../../types";
 import type { AbstractAudioEngine } from "../abstractAudioEngine";
-import type { StreamingSoundOptions } from "../streamingSound";
+import type { IStreamingSoundOptions } from "../streamingSound";
 import { StreamingSound } from "../streamingSound";
 import { StreamingSoundInstance } from "../streamingSoundInstance";
 import type { WebAudioEngine } from "./webAudioEngine";
@@ -8,7 +8,7 @@ import type { WebAudioEngine } from "./webAudioEngine";
 /**
  * Options for creating a new WebAudioStreamingSound.
  */
-export interface WebAudioStreamingSoundOptions extends StreamingSoundOptions {
+export interface IWebAudioStreamingSoundOptions extends IStreamingSoundOptions {
     /**
      * The URL of the sound source.
      */
@@ -22,7 +22,7 @@ export interface WebAudioStreamingSoundOptions extends StreamingSoundOptions {
  * @param options - The options for the streaming sound.
  * @returns A promise that resolves to the created streaming sound.
  */
-export async function CreateStreamingSoundAsync(name: string, engine: AbstractAudioEngine, options: Nullable<StreamingSoundOptions> = null): Promise<StreamingSound> {
+export async function CreateStreamingSoundAsync(name: string, engine: AbstractAudioEngine, options: Nullable<IStreamingSoundOptions> = null): Promise<StreamingSound> {
     if (!engine.isWebAudio) {
         throw new Error("Unsupported engine type.");
     }
@@ -58,12 +58,12 @@ class WebAudioStreamingSound extends StreamingSound {
     }
 
     /** @internal */
-    constructor(name: string, engine: WebAudioEngine, options: Nullable<WebAudioStreamingSoundOptions> = null) {
+    constructor(name: string, engine: WebAudioEngine, options: Nullable<IWebAudioStreamingSoundOptions> = null) {
         super(name, engine, options);
     }
 
     /** @internal */
-    public async init(options: Nullable<WebAudioStreamingSoundOptions> = null): Promise<void> {
+    public async init(options: Nullable<IWebAudioStreamingSoundOptions> = null): Promise<void> {
         this.audioContext = await this.engine.audioContext;
 
         this._gainNode = new GainNode(this.audioContext);

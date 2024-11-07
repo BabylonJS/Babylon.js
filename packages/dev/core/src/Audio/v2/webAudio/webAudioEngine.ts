@@ -10,7 +10,7 @@ import { CreateMainAudioOutputAsync } from "./webAudioMainOutput";
 /**
  * Options for creating a new WebAudioEngine.
  */
-export interface WebAudioEngineOptions {
+export interface IWebAudioEngineOptions {
     /**
      * The audio context to be used by the engine.
      */
@@ -22,7 +22,7 @@ export interface WebAudioEngineOptions {
  * @param options - The options for creating the audio engine.
  * @returns A promise that resolves with the created audio engine.
  */
-export async function CreateAudioEngineAsync(options: Nullable<WebAudioEngineOptions> = null): Promise<AbstractAudioEngine> {
+export async function CreateAudioEngineAsync(options: Nullable<IWebAudioEngineOptions> = null): Promise<AbstractAudioEngine> {
     const engine = new WebAudioEngine();
     await engine.init(options);
     return engine;
@@ -91,7 +91,7 @@ export class WebAudioEngine extends AbstractAudioEngine {
     }
 
     /** @internal */
-    public async init(options: Nullable<WebAudioEngineOptions> = null): Promise<void> {
+    public async init(options: Nullable<IWebAudioEngineOptions> = null): Promise<void> {
         if (options?.audioContext) {
             this._audioContext = options.audioContext;
             this._initAudioContext();

@@ -5,7 +5,7 @@ import { AbstractNamedAudioNode, AudioNodeType } from "./abstractAudioNode";
 /**
  * Options for creating a new audio bus node.
  */
-export interface AbstractAudioBusOptions {
+export interface IAbstractAudioBusOptions {
     /**
      * The volume of the audio bus.
      */
@@ -22,7 +22,7 @@ export abstract class AbstractAudioBus extends AbstractNamedAudioNode {
     public volume: number;
 
     /** @internal */
-    constructor(name: string, engine: AbstractAudioEngine, options: Nullable<AbstractAudioBusOptions> = null) {
+    constructor(name: string, engine: AbstractAudioEngine, options: Nullable<IAbstractAudioBusOptions> = null) {
         super(name, engine, AudioNodeType.InputOutput);
 
         this.volume = options?.volume ?? 1;

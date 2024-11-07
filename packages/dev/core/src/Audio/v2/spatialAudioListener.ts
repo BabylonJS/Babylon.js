@@ -3,7 +3,7 @@ import type { TransformNode } from "../../Meshes";
 import type { IDisposable } from "../../scene";
 import type { Nullable } from "../../types";
 import type { AbstractAudioEngine } from "./abstractAudioEngine";
-import type { SpatialAudioTransformOptions } from "./spatialAudioTransform";
+import type { ISpatialAudioTransformOptions } from "./spatialAudioTransform";
 import { SpatialAudioTransform } from "./spatialAudioTransform";
 
 /** @internal */
@@ -12,7 +12,7 @@ export class SpatialAudioListener implements IDisposable {
     private _spatialTransform: SpatialAudioTransform;
 
     /** @internal */
-    constructor(engine: AbstractAudioEngine, options: Nullable<SpatialAudioTransformOptions> = null) {
+    constructor(engine: AbstractAudioEngine, options: Nullable<ISpatialAudioTransformOptions> = null) {
         this._engine = engine;
         this._spatialTransform = new SpatialAudioTransform(options);
 

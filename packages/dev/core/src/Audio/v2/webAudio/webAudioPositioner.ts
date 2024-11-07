@@ -1,20 +1,20 @@
 import type { Nullable } from "../../../types";
 import type { AbstractAudioNode } from "../abstractAudioNode";
-import type { AudioPositionerOptions } from "../audioPositioner";
+import type { IAudioPositionerOptions } from "../audioPositioner";
 import { AudioPositioner } from "../audioPositioner";
-import type { SpatialAudioTransformOptions } from "../spatialAudioTransform";
+import type { ISpatialAudioTransformOptions } from "../spatialAudioTransform";
 
 /** @internal */
-export interface WebAudioPositionerOptions extends AudioPositionerOptions {}
+export interface IWebAudioPositionerOptions extends IAudioPositionerOptions {}
 
 /** @internal */
-export async function CreateAudioPositionerAsync(parent: AbstractAudioNode, options: Nullable<WebAudioPositionerOptions> = null): Promise<AudioPositioner> {
+export async function CreateAudioPositionerAsync(parent: AbstractAudioNode, options: Nullable<IWebAudioPositionerOptions> = null): Promise<AudioPositioner> {
     return new WebAudioPositioner(parent, options);
 }
 
 class WebAudioPositioner extends AudioPositioner {
     /** @internal */
-    constructor(parent: AbstractAudioNode, options: Nullable<SpatialAudioTransformOptions> = null) {
+    constructor(parent: AbstractAudioNode, options: Nullable<ISpatialAudioTransformOptions> = null) {
         super(parent, options);
     }
 

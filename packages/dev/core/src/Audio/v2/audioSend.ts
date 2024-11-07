@@ -20,7 +20,7 @@ export enum AudioSendType {
 /**
  * Options for creating a new audio send.
  */
-export interface AudioSendOptions {
+export interface IAudioSendOptions {
     /**
      * The type of send.
      */
@@ -35,7 +35,7 @@ export abstract class AudioSend extends AbstractAudioNode {
     private _sendType: AudioSendType;
 
     /** @internal */
-    constructor(engine: AbstractAudioEngine, options: Nullable<AudioSendOptions> = null) {
+    constructor(engine: AbstractAudioEngine, options: Nullable<IAudioSendOptions> = null) {
         super(engine, AudioNodeType.InputOutput);
 
         this._sendType = options?.sendType ?? AudioSendType.PostFader;

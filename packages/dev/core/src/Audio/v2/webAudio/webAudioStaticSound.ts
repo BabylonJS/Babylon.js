@@ -2,9 +2,9 @@ import type { Nullable } from "../../../types";
 import type { AbstractAudioEngine } from "../abstractAudioEngine";
 import type { AbstractAudioNode } from "../abstractAudioNode";
 import { SoundState } from "../soundState";
-import type { StaticSoundOptions } from "../staticSound";
+import type { IStaticSoundOptions } from "../staticSound";
 import { StaticSound } from "../staticSound";
-import type { StaticSoundBufferOptions } from "../staticSoundBuffer";
+import type { IStaticSoundBufferOptions } from "../staticSoundBuffer";
 import { StaticSoundBuffer } from "../staticSoundBuffer";
 import { StaticSoundInstance } from "../staticSoundInstance";
 import type { WebAudioBus } from "./webAudioBus";
@@ -16,7 +16,7 @@ const fileExtensionRegex = new RegExp("\\.(\\w{3,4}$|\\?)");
 /**
  * Options for creating a new WebAudioStaticSoundBuffer.
  */
-export interface WebAudioStaticSoundBufferOptions extends StaticSoundBufferOptions {
+export interface IWebAudioStaticSoundBufferOptions extends IStaticSoundBufferOptions {
     /**
      * The ArrayBuffer to be used as the sound source.
      */
@@ -42,8 +42,8 @@ export interface WebAudioStaticSoundBufferOptions extends StaticSoundBufferOptio
 /**
  * Options for creating a new WebAudioStaticSound.
  */
-export type WebAudioStaticSoundOptions = StaticSoundOptions &
-    WebAudioStaticSoundBufferOptions & {
+export type IWebAudioStaticSoundOptions = IStaticSoundOptions &
+    IWebAudioStaticSoundBufferOptions & {
         sourceBuffer?: StaticSoundBuffer;
     };
 
@@ -54,7 +54,7 @@ export type WebAudioStaticSoundOptions = StaticSoundOptions &
  * @param options - The options for the static sound.
  * @returns A promise that resolves to the created static sound.
  */
-export async function CreateSoundAsync(name: string, engine: AbstractAudioEngine, options: Nullable<WebAudioStaticSoundOptions> = null): Promise<StaticSound> {
+export async function CreateSoundAsync(name: string, engine: AbstractAudioEngine, options: Nullable<IWebAudioStaticSoundOptions> = null): Promise<StaticSound> {
     if (!engine.isWebAudio) {
         throw new Error("Unsupported engine type.");
     }
@@ -71,7 +71,7 @@ export async function CreateSoundAsync(name: string, engine: AbstractAudioEngine
  * @param options - The options for the static sound buffer.
  * @returns A promise that resolves to the created static sound buffer.
  */
-export async function CreateSoundBufferAsync(engine: AbstractAudioEngine, options: Nullable<WebAudioStaticSoundBufferOptions> = null): Promise<StaticSoundBuffer> {
+export async function CreateSoundBufferAsync(engine: AbstractAudioEngine, options: Nullable<IWebAudioStaticSoundBufferOptions> = null): Promise<StaticSoundBuffer> {
     if (!engine.isWebAudio) {
         throw new Error("Unsupported engine type.");
     }
@@ -118,12 +118,12 @@ class WebAudioStaticSound extends StaticSound {
     }
 
     /** @internal */
-    constructor(name: string, engine: WebAudioEngine, options: Nullable<WebAudioStaticSoundOptions> = null) {
+    constructor(name: string, engine: WebAudioEngine, options: Nullable<IWebAudioStaticSoundOptions> = null) {
         super(name, engine, options);
     }
 
     /** @internal */
-    public async init(options: Nullable<WebAudioStaticSoundOptions> = null): Promise<void> {
+    public async init(options: Nullable<IWebAudioStaticSoundOptions> = null): Promise<void> {
         this.audioContext = await this.engine.audioContext;
 
         this._gainNode = new GainNode(this.audioContext);
@@ -207,7 +207,7 @@ class WebAudioStaticSoundBuffer extends StaticSoundBuffer {
         super(engine);
     }
 
-    public async init(options: Nullable<WebAudioStaticSoundBufferOptions> = null): Promise<void> {
+    public async init(options: Nullable<IWebAudioStaticSoundBufferOptions> = null): Promise<void> {
         if (options?.sourceAudioBuffer) {
             this.audioBuffer = options.sourceAudioBuffer;
         } else if (options?.sourceUrl) {
