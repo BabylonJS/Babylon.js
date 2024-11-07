@@ -23,7 +23,7 @@ export interface ISoundOptions {
      */
     loop?: boolean;
     /**
-     * The maximum number of instances to play simultaneously.
+     * The maximum number of instances to play simultaneously before stopping old instances to play new ones.
      */
     maxInstances?: number;
     /**
@@ -77,7 +77,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
     public loop: boolean;
 
     /**
-     * The maximum number of instances to play simultaneously.
+     * The maximum number of instances to play simultaneously before stopping old instances to play new ones.
      */
     public maxInstances: number;
 
