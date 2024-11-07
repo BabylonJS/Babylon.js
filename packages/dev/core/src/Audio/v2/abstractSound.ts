@@ -23,6 +23,10 @@ export interface ISoundOptions {
      */
     loop?: boolean;
     /**
+     * The maximum number of instances to play simultaneously.
+     */
+    maxInstances?: number;
+    /**
      * The pitch of the sound.
      */
     pitch?: number;
@@ -71,6 +75,11 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * Whether the sound should loop.
      */
     public loop: boolean;
+
+    /**
+     * The maximum number of instances to play simultaneously.
+     */
+    public maxInstances: number;
 
     /**
      * The pitch of the sound.
@@ -135,6 +144,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         this.autoplay = options?.autoplay ?? false;
         this.duration = options?.duration ?? 0;
         this.loop = options?.loop ?? false;
+        this.maxInstances = options?.maxInstances ?? Infinity;
         this.pitch = options?.pitch ?? 0;
         this.playbackRate = options?.playbackRate ?? 1;
         this.startOffset = options?.startOffset ?? 0;
@@ -170,6 +180,18 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         }
 
         this._state = SoundState.Playing;
+
+        if (this.maxInstances < Infinity) {
+            const oldInstancesCount = this._soundInstances.size - this.maxInstances + 1;
+            const it = this._soundInstances.values();
+
+            for (let i = 0; i < oldInstancesCount; i++) {
+                const instance = it.next().value;
+                if (instance.state === SoundState.Playing) {
+                    instance.stop();
+                }
+            }
+        }
 
         const instance = this._createSoundInstance();
         instance.onEndedObservable.addOnce(this._onSoundInstanceEnded.bind(this));
