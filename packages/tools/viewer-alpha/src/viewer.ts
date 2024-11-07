@@ -113,6 +113,11 @@ export type EnvironmentOptions = Partial<Readonly<{}>>;
 
 export type ViewerHotSpotQuery = {
     /**
+     * The type of the hot spot.
+     */
+    type: "surface";
+
+    /**
      * The index of the mesh within the loaded model.
      */
     meshIndex: number;

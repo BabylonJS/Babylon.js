@@ -75,7 +75,14 @@
             camera-orbit="auto auto auto"
             camera-target="auto auto auto"
             camera-auto-orbit
-            hotspots="testHotSpot1 1 228 113 111 0.217 0.341 0.442"
+            hotspots='{
+                "testHotSpot1": {
+                    "type": "surface",
+                    "meshIndex": 1,
+                    "pointIndex": [228, 113, 111],
+                    "barycentric": [0.217, 0.341, 0.442]
+                }
+            }'
         >
             <!-- <div slot="tool-bar" style="position: absolute; top: 12px; left: 12px; width: 100px; height: 36px">
                 <button onclick="document.querySelector('babylon-viewer').toggleAnimation()">Toggle Animation</button>

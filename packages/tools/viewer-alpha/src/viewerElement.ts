@@ -557,22 +557,7 @@ export class HTML3DElement extends LitElement {
                 return null;
             }
 
-            const array = value.split(/\s+/);
-            if (array.length % 8 !== 0) {
-                throw new Error(
-                    `hotspots should be defined in sets of 8 elements: 'name meshIndex pointIndex1 pointIndex2 pointIndex3 barycentricCoord1 barycentricCoord2 barycentricCoord3', but a total of ${array.length} elements were found in '${value}'`
-                );
-            }
-
-            const hotSpots: Record<string, ViewerHotSpotQuery> = {};
-            for (let offset = 0; offset < array.length; offset += 8) {
-                hotSpots[array[offset]] = {
-                    meshIndex: Number(array[offset + 1]),
-                    pointIndex: [Number(array[offset + 2]), Number(array[offset + 3]), Number(array[offset + 4])],
-                    barycentric: [Number(array[offset + 5]), Number(array[offset + 6]), Number(array[offset + 7])],
-                };
-            }
-            return hotSpots;
+            return JSON.parse(value);
         },
     })
     public hotSpots: Nullable<Record<string, ViewerHotSpotQuery>> = null;
