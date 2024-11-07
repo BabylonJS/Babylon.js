@@ -100,6 +100,13 @@ export class EdgeDetectionPostProcess extends PostProcess {
             // Geometry buffer renderer is not supported. So, work as a passthrough.
             Logger.Error("Geometry Buffer Renderer support is required for this post-process.");
         } else {
+            const h1 = new RenderTargetTexture("h1", { width: this.width, height: this.height }, scene, {
+                samplingMode: Constants.TEXTURE_NEAREST_NEAREST,
+                generateMipMaps: false,
+                generateDepthBuffer: false,
+                type: Constants.TEXTURETYPE_HALF_FLOAT,
+            });
+
             // Geometry buffer renderer is supported.
             this.onApply = (effect: Effect) => {
                 effect.setFloat("width", this.width);
@@ -113,13 +120,6 @@ export class EdgeDetectionPostProcess extends PostProcess {
 
                 effect.setTexture("normalSampler", normalTexture);
                 effect.setTexture("depthSampler", depthTexture);
-
-                const h1 = new RenderTargetTexture("h1", { width: this.width, height: this.height }, scene, {
-                    samplingMode: Constants.TEXTURE_NEAREST_NEAREST,
-                    generateMipMaps: false,
-                    generateDepthBuffer: false,
-                    type: Constants.TEXTURETYPE_HALF_FLOAT,
-                });
 
                 switch (this.renderMode) {
                     case 0:

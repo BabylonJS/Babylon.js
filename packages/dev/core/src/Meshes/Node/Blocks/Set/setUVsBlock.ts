@@ -19,7 +19,7 @@ export class SetUVsBlock extends NodeGeometryBlock implements INodeGeometryExecu
      * Gets or sets a boolean indicating that this block can evaluate context
      * Build performance is improved when this value is set to false as the system will cache values instead of reevaluating everything per context change
      */
-    @editableInPropertyPage("Evaluate context", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { rebuild: true } })
+    @editableInPropertyPage("Evaluate context", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
     public evaluateContext = true;
 
     /**
@@ -27,6 +27,7 @@ export class SetUVsBlock extends NodeGeometryBlock implements INodeGeometryExecu
      */
     @editableInPropertyPage("Texture coordinates index", PropertyTypeForEdition.List, "ADVANCED", {
         notifiers: { update: true },
+        embedded: true,
         options: [
             { label: "UV1", value: 0 },
             { label: "UV2", value: 1 },

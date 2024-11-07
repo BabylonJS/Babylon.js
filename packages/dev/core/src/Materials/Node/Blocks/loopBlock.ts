@@ -17,7 +17,7 @@ export class LoopBlock extends NodeMaterialBlock {
      * Gets or sets number of iterations
      * Will be ignored if the iterations input is connected
      */
-    @editableInPropertyPage("Iterations", PropertyTypeForEdition.Int)
+    @editableInPropertyPage("Iterations", PropertyTypeForEdition.Int, undefined, { embedded: true })
     public iterations = 4;
 
     /**

@@ -29,7 +29,6 @@ export class GlobalState {
     onReOrganizedRequiredObservable = new Observable<void>();
     onLogRequiredObservable = new Observable<LogEntry>();
     onIsLoadingChanged = new Observable<boolean>();
-    onPreviewCommandActivated = new Observable<boolean>();
     onLightUpdated = new Observable<void>();
     onFrame = new Observable<void>();
     onAnimationCommandActivated = new Observable<void>();

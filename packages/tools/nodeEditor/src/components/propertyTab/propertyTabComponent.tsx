@@ -80,7 +80,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 this.setState({ currentNode: null, currentFrame: null, currentFrameNodePort: null, currentNodePort: null });
             }
         });
-
         this._onBuiltObserver = this.props.globalState.onBuiltObservable.add(() => {
             this.forceUpdate();
         });

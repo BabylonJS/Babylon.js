@@ -1,6 +1,338 @@
 {
-    "fromTag": "7.32.2",
+    "fromTag": "7.32.5",
     "changelog": {
+        "7.33.0": [
+            {
+                "pr": "15782",
+                "title": "Enable .env file for playwright tests",
+                "description": "The .env file is not being read when running playwright tests. This change imports the `populateEnvironment` utility function and calls it so the .env file gets read.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/tools/tests/playwright.config.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15779",
+                "title": "EffectWrapper: Fix backward compatibility for alpha mode",
+                "description": "See https://forum.babylonjs.com/t/oit-seems-broken-with-7-32-2/54591",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/effectRenderer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "15777",
+                "title": "Optimize RenderTargetTexture handling",
+                "description": "To prevent repeated instantiation and potential memory leaks, \r\nI fixed the code about \"RenderTargetTexture\".\r\n\r\n",
+                "author": {
+                    "name": "UN1TOne",
+                    "url": "https://github.com/UN1TOne"
+                },
+                "files": [
+                    "packages/dev/postProcesses/src/edgeDetection/edgeDetectionPostProcess.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15775",
+                "title": "IBL Shadows accumulation for different scene sizes",
+                "description": "Accumulation is dependent upon distance between previous and current world positions and this scales with scene size.\r\nThe fix is to scale this comparison based on the size of the voxel grid.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsAccumulationPass.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsRenderPipeline.ts",
+                    "packages/dev/core/src/Shaders/iblShadowAccumulation.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblShadowAccumulation.fragment.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15776",
+                "title": "Collapsible nodes for node editors",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/FrameGraph/Node/nodeRenderGraph.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts",
+                    "packages/dev/sharedUiComponents/src/imgs/dropdownArrowIcon_white.svg",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.modules.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/interfaces/nodeLocationInfo.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodePort.ts",
+                    "packages/tools/nodeEditor/src/serializationTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/serializationTools.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/serializationTools.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15774",
+                "title": "Better float UI",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragmentOutputBlock.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.modules.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15773",
+                "title": "Add toneMapping, contrast, and exposure to Viewer",
+                "description": "This change primarily adds three new properties (and corresponding attributes) to the viewer: `toneMapping`, `contrast`, and `exposure`. Notes on this:\r\n- Tone mapping is set to KHR PBR Neutral by default.\r\n- Tone mapping, contrast, and exposure are not applied to the skybox.\r\n- When these attributes are explicitly set, they are re-applied when a new model is loaded. If they are not set, then the current property value is retained (similar behavior as some other attributes).\r\n\r\nThis change includes a few other small fixes as well:\r\n- Enable transparency as coverage by default.\r\n- Remove the outline from the canvas (otherwise it is clicked it shows a black outline).",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "7.32.5": [
+            {
+                "pr": "15772",
+                "title": "Allow both CSG in NGE",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    ".build/config.json",
+                    "packages/dev/core/src/Meshes/Node/Blocks/booleanGeometryBlock.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/automaticProperties.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.modules.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/stateManager.ts",
+                    "packages/tools/nodeEditor/src/components/propertyTab/propertyTabComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15770",
+                "title": "On Node Properties",
+                "description": "Boolean, lists ,float and float-slider are supported\r\n\r\n\r\n![image](https://github.com/user-attachments/assets/16c2d3be-247e-4f32-8f1d-a06f3da11e8a)\r\n",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Decorators/nodeDecorator.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/sceneDepthBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/perturbNormalBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/clearCoatBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/reflectionBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/refractionBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/sheenBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/clampBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/cloudBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/conditionalBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/curveBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/loopBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/meshAttributeExistsBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/transformBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/triPlanarBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/trigonometryBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/waveBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/worleyNoise3DBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateBaseBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/aggregatorBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/latticeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setColorsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setMaterialIDBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setNormalsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setPositionsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setTangentsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setUVsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/boxBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/capsuleBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/cylinderBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/discBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/gridBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/icoSphereBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/meshBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/planeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/sphereBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/torusBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Textures/geometryTextureBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Textures/geometryTextureFetchBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/booleanGeometryBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/cleanGeometryBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/conditionBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryClampBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryCollectionBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryCurveBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryOptimizeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryTransformBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryTrigonometryBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/mappingBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/mathBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/mergeGeometryBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/randomBlock.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/automaticProperties.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/common.modules.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.modules.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/stateManager.ts",
+                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts",
+                    "packages/tools/nodeEditor/src/components/preview/previewMeshControlComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/globalState.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/clampDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/trigonometryDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/conditionalNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/curveNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/transformNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/trigonometryNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/registerToPropertyLedger.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/components/preview/previewManager.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/components/preview/previewMeshControlComponent.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/globalState.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            }
+        ],
+        "7.32.4": [
+            {
+                "pr": "15771",
+                "title": "Adds a request url accessor",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/webRequest.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15634",
+                "title": "IBL shadows use geometry buffer",
+                "description": "I converted the IBL shadows to use the geometry buffer so that I can generate the shadows before the main render pass and then apply them in the materials with a material plugin. This allows me to apply the shadows only to diffuse reflections and rough specular and not to things like emission.\r\n\r\nSome current issues:\r\n1. We always need to add the plugin to the material before it's used for rendering. However, in WebGPU, I get errors while trying to add the plugin to material in the callback of ImportMesh. `The plugin \"IBLShadowsPluginMaterial\" can't be added to the material \"BoomBox_Mat\" because this material has already been used for rendering!` #8R5SSE#293",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsAccumulationPass.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsImportanceSamplingRenderer.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsPluginMaterial.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsRenderPipeline.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsSpatialBlurPass.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelRenderer.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelTracingPass.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/instancesDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/instancesVertex.fx",
+                    "packages/dev/core/src/Shaders/geometry.fragment.fx",
+                    "packages/dev/core/src/Shaders/geometry.vertex.fx",
+                    "packages/dev/core/src/Shaders/iblShadowAccumulation.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblShadowGBufferDebug.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblShadowSpatialBlur.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblShadowVoxelTracing.fragment.fx",
+                    "packages/dev/core/src/Shaders/iblShadowsCombine.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/instancesDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/instancesVertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/geometry.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/geometry.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblShadowAccumulation.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblShadowGBufferDebug.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblShadowSpatialBlur.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblShadowVoxelTracing.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblShadowsCombine.fragment.fx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/iblShadowsRenderPipelinePropertyGridComponent.tsx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/ssShadowsLeftHanded.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/ssShadowsRightHanded.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/voxelShadows.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/voxelShadowsLeftHanded.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/voxelShadowsRightHanded.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15765",
+                "title": "Addons package",
+                "description": "cc @Deltakosh",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/addons/package.json",
+                    "packages/dev/addons/readme.md",
+                    "packages/dev/addons/src/index.ts",
+                    "packages/dev/addons/tsconfig.build.json",
+                    "packages/dev/addons/tsconfig.json",
+                    "packages/dev/addons/tsconfig.nocomposite.json",
+                    "packages/dev/buildTools/src/packageMapping.ts",
+                    "packages/public/@babylonjs/addons/license.md",
+                    "packages/public/@babylonjs/addons/package.json",
+                    "packages/public/@babylonjs/addons/readme.md",
+                    "packages/public/@babylonjs/addons/tsconfig.build.json",
+                    "packages/public/@babylonjs/addons/tsconfig.json",
+                    "packages/public/umd/babylonjs-addons/config.json",
+                    "packages/public/umd/babylonjs-addons/license.md",
+                    "packages/public/umd/babylonjs-addons/package.json",
+                    "packages/public/umd/babylonjs-addons/readme.md",
+                    "packages/public/umd/babylonjs-addons/src/index.ts",
+                    "packages/public/umd/babylonjs-addons/tsconfig.build.json",
+                    "packages/public/umd/babylonjs-addons/tsconfig.json",
+                    "packages/public/umd/babylonjs-addons/webpack.config.js",
+                    "packages/tools/babylonServer/declarationConfigDev.json",
+                    "packages/tools/babylonServer/package.json",
+                    "packages/tools/babylonServer/public/empty.html",
+                    "packages/tools/babylonServer/public/index-ts.html",
+                    "packages/tools/babylonServer/public/index.html",
+                    "packages/tools/babylonServer/src/addons/index.ts",
+                    "packages/tools/babylonServer/webpack.config.js",
+                    "packages/tools/babylonServer/webpack.config.snapshot.js",
+                    "tsconfig.build.json",
+                    "tsconfig.json"
+                ],
+                "tags": []
+            }
+        ],
         "7.32.3": [
             {
                 "pr": "15768",

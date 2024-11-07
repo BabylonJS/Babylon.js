@@ -2,7 +2,7 @@
 import type { ArcRotateCamera, Nullable, Observable } from "core/index";
 
 import type { PropertyValues } from "lit";
-import type { ViewerDetails, ViewerHotSpot, ViewerHotSpotQuery } from "./viewer";
+import type { ToneMapping, ViewerDetails, ViewerHotSpot, ViewerHotSpotQuery } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, defaultConverter, html } from "lit";
@@ -11,6 +11,7 @@ import { customElement, property, query, state } from "lit/decorators.js";
 import { Color4 } from "core/Maths/math.color";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { Logger } from "core/Misc/logger";
+import { isToneMapping } from "./viewer";
 import { createViewerForCanvas, getDefaultEngine } from "./viewerFactory";
 
 // Icon SVG is pulled from https://fluentuipr.z22.web.core.windows.net/heads/master/public-docsite-v9/storybook/iframe.html?id=icons-catalog--page&viewMode=story
@@ -77,6 +78,34 @@ export class HTML3DElement extends LitElement {
             (details) => (this.skyboxBlur = details.viewer.skyboxBlur)
         ),
         this._createPropertyBinding(
+            "toneMapping",
+            (details) => details.viewer.onToneMappingChanged,
+            (details) => {
+                if (this.toneMapping) {
+                    details.viewer.toneMapping = this.toneMapping;
+                }
+            },
+            (details) => {
+                if (details.viewer.toneMapping === "unknown") {
+                    this.toneMapping = null;
+                } else {
+                    this.toneMapping = details.viewer.toneMapping;
+                }
+            }
+        ),
+        this._createPropertyBinding(
+            "contrast",
+            (details) => details.viewer.onContrastChanged,
+            (details) => (details.viewer.contrast = this.contrast ?? details.viewer.contrast),
+            (details) => (this.contrast = details.viewer.contrast)
+        ),
+        this._createPropertyBinding(
+            "exposure",
+            (details) => details.viewer.onExposureChanged,
+            (details) => (details.viewer.exposure = this.exposure ?? details.viewer.exposure),
+            (details) => (this.exposure = details.viewer.exposure)
+        ),
+        this._createPropertyBinding(
             "cameraAutoOrbit",
             (details) => details.viewer.onCameraAutoOrbitChanged,
             (details) => (details.viewer.cameraAutoOrbit = this.cameraAutoOrbit),
@@ -128,6 +157,10 @@ export class HTML3DElement extends LitElement {
             position: relative;
             width: 100%;
             height: 100%;
+        }
+
+        .canvas {
+            outline: none;
         }
 
         .children-slot {
@@ -334,8 +367,34 @@ export class HTML3DElement extends LitElement {
     /**
      * A value between 0 and 1 that specifies how much to blur the skybox.
      */
-    @property({ attribute: "skybox-blur", reflect: true })
+    @property({ attribute: "skybox-blur" })
     public skyboxBlur: Nullable<number> = null;
+
+    /**
+     * The tone mapping to use for rendering the scene.
+     */
+    @property({
+        attribute: "tone-mapping",
+        converter: (value: string | null): ToneMapping => {
+            if (!value || !isToneMapping(value)) {
+                return "neutral";
+            }
+            return value;
+        },
+    })
+    public toneMapping: Nullable<ToneMapping> = null;
+
+    /**
+     * The contrast applied to the scene.
+     */
+    @property()
+    public contrast: Nullable<number> = null;
+
+    /**
+     * The exposure applied to the scene.
+     */
+    @property()
+    public exposure: Nullable<number> = null;
 
     /**
      * The clear color (e.g. background color) for the viewer.
@@ -679,7 +738,7 @@ export class HTML3DElement extends LitElement {
 
             if (this._canvasContainer && !this._viewerDetails) {
                 const canvas = document.createElement("canvas");
-                canvas.className = "full-size";
+                canvas.className = "full-size canvas";
                 canvas.setAttribute("touch-action", "none");
                 this._canvasContainer.appendChild(canvas);
 

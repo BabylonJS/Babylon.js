@@ -1446,6 +1446,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     if (data && data.uniqueId === location.blockId) {
                         node.x = location.x;
                         node.y = location.y;
+                        if (location.isCollapsed) {
+                            node.collapse();
+                        }
                         node.cleanAccumulation();
                         break;
                     }

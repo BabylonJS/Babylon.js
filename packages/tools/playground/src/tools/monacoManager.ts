@@ -308,6 +308,7 @@ class Playground {
             "https://preview.babylonjs.com/serializers/babylonjs.serializers.d.ts",
             "https://preview.babylonjs.com/inspector/babylon.inspector.d.ts",
             "https://preview.babylonjs.com/accessibility/babylon.accessibility.d.ts",
+            "https://preview.babylonjs.com/addons/babylonjs.addons.d.ts",
         ];
 
         let snapshot = "";
