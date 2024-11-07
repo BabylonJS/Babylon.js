@@ -140,7 +140,5 @@ export class FrameGraphTAAObjectRendererTask extends FrameGraphObjectRendererTas
                 passDisabled.useTexture(handle);
             }
         }
-
-        return pass;
     }
 }
