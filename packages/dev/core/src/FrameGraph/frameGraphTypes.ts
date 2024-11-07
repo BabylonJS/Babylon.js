@@ -28,6 +28,9 @@ export type FrameGraphTextureCreationOptions = {
 
     /** If true, indicates that "size" is percentages relative to the screen size */
     sizeIsPercentage: boolean;
+
+    /** Indicates that the texture is a history texture */
+    isHistoryTexture?: boolean;
 };
 
 /**

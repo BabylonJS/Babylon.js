@@ -204,7 +204,7 @@ export class PreviewManager {
         const serialized = this._globalState.nodeRenderGraph.serialize();
         this._nodeRenderGraph?.dispose();
         this._nodeRenderGraph = NodeRenderGraph.Parse(serialized, this._scene, {
-            rebuildGraphOnEngineResize: false,
+            rebuildGraphOnEngineResize: true,
             autoFillExternalInputs: false,
             debugTextures,
         });
