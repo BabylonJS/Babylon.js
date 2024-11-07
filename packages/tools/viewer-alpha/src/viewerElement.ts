@@ -49,6 +49,7 @@ interface HTML3DElementEventMap extends HTMLElementEventMap {
     environmenterror: ErrorEvent;
     modelchange: Event;
     modelerror: ErrorEvent;
+    loadingprogresschange: Event;
     selectedanimationchange: Event;
     animationspeedchange: Event;
     animationplayingchange: Event;
@@ -170,20 +171,76 @@ export class HTML3DElement extends LitElement {
             pointer-events: none;
         }
 
-        .tool-bar {
+        .bar {
             position: absolute;
+            width: calc(100% - 24px);
+            min-width: 150px;
+            max-width: 1280px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--ui-background-color);
+        }
+
+        .loading-progress-outer {
+            height: 4px;
+            border-radius: 2px;
+            border: none;
+            outline: none;
+            top: 12px;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-progress-outer-inactive {
+            opacity: 0;
+            /* Set the background color to the foreground color while in the inactive state so that the color seen is correct while fading out the opacity. */
+            background-color: var(--ui-foreground-color);
+        }
+
+        .loading-progress-inner {
+            width: 0;
+            height: 100%;
+            border-radius: inherit;
+            background-color: var(--ui-foreground-color);
+            transition: width 0.3s linear;
+        }
+
+        /* The right side of the inner progress bar starts aligned with the left side of the outer progress bar (container).
+           So, if the width is 30%, then the left side of the inner progress bar moves a total of 130% of the width of the container.
+           This is why the first keyframe is at 23% ((100/130)*30).
+         */
+        @keyframes indeterminate {
+            0% {
+                left: 0%;
+                width: 0%;
+            }
+            23% {
+                left: 0%;
+                width: 30%;
+            }
+            77% {
+                left: 70%;
+                width: 30%;
+            }
+            100% {
+                left: 100%;
+                width: 0%;
+            }
+        }
+
+        .loading-progress-inner-indeterminate {
+            position: absolute;
+            animation: indeterminate 1.5s infinite;
+            animation-timing-function: linear;
+        }
+
+        .tool-bar {
             display: flex;
             flex-direction: row;
             border-radius: 12px;
             border-color: var(--ui-foreground-color);
             height: 48px;
-            width: calc(100% - 24px);
-            min-width: 150px;
-            max-width: 1280px;
             bottom: 12px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: var(--ui-background-color);
             color: var(--ui-foreground-color);
             -webkit-tap-highlight-color: transparent;
         }
@@ -245,7 +302,7 @@ export class HTML3DElement extends LitElement {
             height: 32px;
         }
 
-        .progress-control {
+        .animation-timeline {
             display: flex;
             flex: 1;
             position: relative;
@@ -256,7 +313,7 @@ export class HTML3DElement extends LitElement {
             border-color: inherit;
         }
 
-        .progress-wrapper {
+        .animation-timeline-input {
             -webkit-appearance: none;
             cursor: pointer;
             width: 100%;
@@ -268,13 +325,13 @@ export class HTML3DElement extends LitElement {
             background-color: transparent;
         }
 
-        .progress-wrapper:focus-visible {
+        .animation-timeline-input:focus-visible {
             border-color: inherit;
         }
 
         /*Chrome -webkit */
 
-        .progress-wrapper::-webkit-slider-thumb {
+        .animation-timeline-input::-webkit-slider-thumb {
             -webkit-appearance: none;
             width: 20px;
             height: 20px;
@@ -285,7 +342,7 @@ export class HTML3DElement extends LitElement {
             margin-top: -10px;
         }
 
-        .progress-wrapper::-webkit-slider-runnable-track {
+        .animation-timeline-input::-webkit-slider-runnable-track {
             height: 2px;
             -webkit-appearance: none;
             background-color: var(--ui-foreground-color);
@@ -293,12 +350,12 @@ export class HTML3DElement extends LitElement {
 
         /** FireFox -moz */
 
-        .progress-wrapper::-moz-range-progress {
+        .animation-timeline-input::-moz-range-progress {
             height: 2px;
             background-color: var(--ui-foreground-color);
         }
 
-        .progress-wrapper::-moz-range-thumb {
+        .animation-timeline-input::-moz-range-thumb {
             width: 16px;
             height: 16px;
             border: 2px solid var(--ui-foreground-color);
@@ -306,7 +363,7 @@ export class HTML3DElement extends LitElement {
             background: hsla(var(--ui-background-hue), var(--ui-background-saturation), var(--ui-background-lightness), 1);
         }
 
-        .progress-wrapper::-moz-range-track {
+        .animation-timeline-input::-moz-range-track {
             height: 2px;
             background: var(--ui-foreground-color);
         }
@@ -363,6 +420,20 @@ export class HTML3DElement extends LitElement {
      */
     @property({ reflect: true })
     public environment: Nullable<string> = null;
+
+    @state()
+    private _loadingProgress: boolean | number = false;
+
+    /**
+     * Gets information about loading activity.
+     * @remarks
+     * false indicates no loading activity.
+     * true indicates loading activity with no progress information.
+     * A number between 0 and 1 indicates loading activity with progress information.
+     */
+    public get loadingProgress(): boolean | number {
+        return this._loadingProgress;
+    }
 
     /**
      * A value between 0 and 1 that specifies how much to blur the skybox.
@@ -593,17 +664,30 @@ export class HTML3DElement extends LitElement {
 
     // eslint-disable-next-line babylonjs/available
     override render() {
+        const showProgressBar = this.loadingProgress !== false;
+        // If loadingProgress is true, then the progress bar is indeterminate so the value doesn't matter.
+        const progressValue = typeof this.loadingProgress === "boolean" ? 0 : this.loadingProgress * 100;
+        const isIndeterminate = this.loadingProgress === true;
+
         // NOTE: The unnamed 'slot' element holds all child elements of the <babylon-viewer> that do not specify a 'slot' attribute.
         return html`
             <div class="full-size">
                 <div id="canvasContainer" class="full-size"></div>
                 <slot class="full-size children-slot"></slot>
+                <slot name="progress-bar">
+                    <div part="progress-bar" class="bar loading-progress-outer ${showProgressBar ? "" : "loading-progress-outer-inactive"}" aria-label="Loading Progress">
+                        <div
+                            class="loading-progress-inner ${isIndeterminate ? "loading-progress-inner-indeterminate" : ""}"
+                            style="${isIndeterminate ? "" : `width: ${progressValue}%`}"
+                        ></div>
+                    </div>
+                </slot>
                 ${this.animations.length === 0
                     ? ""
                     : html`
                           <slot name="tool-bar">
-                              <div part="tool-bar" class="tool-bar">
-                                  <div class="progress-control">
+                              <div part="tool-bar" class="bar tool-bar">
+                                  <div class="animation-timeline">
                                       <button aria-label="${this.isAnimationPlaying ? "Pause" : "Play"}" @click="${this.toggleAnimation}">
                                           ${!this.isAnimationPlaying
                                               ? html`<svg viewBox="0 0 20 20">
@@ -615,7 +699,7 @@ export class HTML3DElement extends LitElement {
                                       </button>
                                       <input
                                           aria-label="Animation Progress"
-                                          class="progress-wrapper"
+                                          class="animation-timeline-input"
                                           type="range"
                                           min="0"
                                           max="1"
@@ -777,6 +861,11 @@ export class HTML3DElement extends LitElement {
                         details.viewer.onModelError.add((error) => {
                             this._animations = [...details.viewer.animations];
                             this._dispatchCustomEvent("modelerror", (type) => new ErrorEvent(type, { error }));
+                        });
+
+                        details.viewer.onLoadingProgressChanged.add(() => {
+                            this._loadingProgress = details.viewer.loadingProgress;
+                            this._dispatchCustomEvent("loadingprogresschange", (type) => new Event(type));
                         });
 
                         details.viewer.onIsAnimationPlayingChanged.add(() => {

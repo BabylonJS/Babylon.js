@@ -7,6 +7,7 @@ import type {
     FramingBehavior,
     HotSpotQuery,
     IDisposable,
+    ISceneLoaderProgressEvent,
     LoadAssetContainerOptions,
     Mesh,
     Nullable,
@@ -191,6 +192,11 @@ export class Viewer implements IDisposable {
     public readonly onModelError = new Observable<unknown>();
 
     /**
+     * Fired when progress changes on loading activity.
+     */
+    public readonly onLoadingProgressChanged = new Observable<void>();
+
+    /**
      * Fired when the camera auto orbit state changes.
      */
     public readonly onCameraAutoOrbitChanged = new Observable<void>();
@@ -236,6 +242,9 @@ export class Viewer implements IDisposable {
     private readonly _loadEnvironmentLock = new AsyncLock();
     private _environment: Nullable<IDisposable> = null;
     private _loadEnvironmentAbortController: Nullable<AbortController> = null;
+
+    private _isLoadingModel = false;
+    private _modelLoadingProgress: Nullable<number> = null;
 
     private _selectedAnimation = -1;
     private _activeAnimationObservers: Observer<AnimationGroup>[] = [];
@@ -424,6 +433,21 @@ export class Viewer implements IDisposable {
     }
 
     /**
+     * Gets information about loading activity.
+     * @remarks
+     * false indicates no loading activity.
+     * true indicates loading activity with no progress information.
+     * A number between 0 and 1 indicates loading activity with progress information.
+     */
+    public get loadingProgress(): boolean | number {
+        if (this._isLoadingModel) {
+            return this._modelLoadingProgress ?? true;
+        }
+
+        return false;
+    }
+
+    /**
      * The list of animation names for the currently loaded model.
      */
     public get animations(): readonly string[] {
@@ -542,6 +566,15 @@ export class Viewer implements IDisposable {
     private async _updateModel(source: string | File | ArrayBufferView | undefined, options?: LoadAssetContainerOptions, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
 
+        const originalOnProgress = options?.onProgress;
+        const onProgress = (event: ISceneLoaderProgressEvent) => {
+            originalOnProgress?.(event);
+            if (this._isLoadingModel) {
+                this._modelLoadingProgress = event.lengthComputable ? event.loaded / event.total : null;
+                this.onLoadingProgressChanged.notifyObservers();
+            }
+        };
+
         // Enable transparency as coverage by default to be 3D Commerce compliant by default.
         // https://doc.babylonjs.com/setup/support/3D_commerce_certif
         if (!options?.pluginOptions?.gltf?.transparencyAsCoverage) {
@@ -554,6 +587,7 @@ export class Viewer implements IDisposable {
                         transparencyAsCoverage: true,
                     },
                 },
+                onProgress,
             };
         }
 
@@ -569,6 +603,9 @@ export class Viewer implements IDisposable {
 
             try {
                 if (source) {
+                    this._isLoadingModel = true;
+                    this._modelLoadingProgress = 0;
+                    this.onLoadingProgressChanged.notifyObservers();
                     this._details.model = await loadAssetContainerAsync(source, this._details.scene, options);
                     this._details.model.animationGroups.forEach((group) => {
                         group.start(true, this.animationSpeed);
@@ -587,6 +624,8 @@ export class Viewer implements IDisposable {
                 this.onModelError.notifyObservers(e);
                 throw e;
             } finally {
+                this._isLoadingModel = false;
+                this.onLoadingProgressChanged.notifyObservers();
                 this._snapshotHelper.enableSnapshotRendering();
             }
         });
@@ -724,6 +763,7 @@ export class Viewer implements IDisposable {
         this.onAnimationSpeedChanged.clear();
         this.onIsAnimationPlayingChanged.clear();
         this.onAnimationProgressChanged.clear();
+        this.onLoadingProgressChanged.clear();
 
         this._imageProcessingConfigurationObserver.remove();
 
