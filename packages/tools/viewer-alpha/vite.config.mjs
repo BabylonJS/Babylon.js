@@ -55,7 +55,6 @@ export default defineConfig(({ mode }) => {
                 core: `@${source}/core/dist`,
                 loaders: `@${source}/loaders/dist`,
                 inspector: `@${source}/inspector/dist`,
-                //"shared-ui-components": `@${source}/sharedUiComponents/dist`,
                 materials: `@${source}/materials/dist`,
                 serializers: `@${source}/serializers/dist`,
                 gui: `@${source}/gui/dist`,
