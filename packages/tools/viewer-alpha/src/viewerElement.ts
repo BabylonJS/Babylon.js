@@ -388,9 +388,9 @@ export class HTML3DElement extends LitElement {
         let resultFound = false;
         // Iterate through each hotspot to get the 'data-surface' and 'data-name' attributes
         if (this._viewerDetails) {
-            const hotspot = this.hotspots?.[name];
-            if (hotspot) {
-                resultFound = this._viewerDetails.viewer.getHotSpotToRef(hotspot, result);
+            const hotSpot = this.hotSpots?.[name];
+            if (hotSpot) {
+                resultFound = this._viewerDetails.viewer.getHotSpotToRef(hotSpot, result);
             }
         }
         return resultFound;
@@ -551,6 +551,7 @@ export class HTML3DElement extends LitElement {
      * A string value that encodes one or more hotspots.
      */
     @property({
+        attribute: "hotspots",
         converter: (value) => {
             if (!value) {
                 return null;
@@ -563,18 +564,18 @@ export class HTML3DElement extends LitElement {
                 );
             }
 
-            const hotspots: Record<string, ViewerHotSpotQuery> = {};
+            const hotSpots: Record<string, ViewerHotSpotQuery> = {};
             for (let offset = 0; offset < array.length; offset += 8) {
-                hotspots[array[offset]] = {
+                hotSpots[array[offset]] = {
                     meshIndex: Number(array[offset + 1]),
                     pointIndex: [Number(array[offset + 2]), Number(array[offset + 3]), Number(array[offset + 4])],
                     barycentric: [Number(array[offset + 5]), Number(array[offset + 6]), Number(array[offset + 7])],
                 };
             }
-            return hotspots;
+            return hotSpots;
         },
     })
-    public hotspots: Nullable<Record<string, ViewerHotSpotQuery>> = null;
+    public hotSpots: Nullable<Record<string, ViewerHotSpotQuery>> = null;
 
     /**
      * True if the default animation should play automatically when a model is loaded.
