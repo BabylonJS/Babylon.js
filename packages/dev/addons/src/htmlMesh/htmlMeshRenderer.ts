@@ -298,6 +298,10 @@ export class HtmlMeshRenderer {
         this._height = height;
         this._heightHalf = this._height / 2;
 
+        if (!this._inSceneElements || !this._overlayElements) {
+            return;
+        }
+
         const domElements = [this._inSceneElements!.domElement, this._overlayElements!.domElement, this._inSceneElements!.cameraElement, this._overlayElements!.cameraElement];
         domElements.forEach((dom) => {
             if (dom) {
