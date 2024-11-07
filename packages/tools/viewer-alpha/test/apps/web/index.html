@@ -90,7 +90,6 @@
                 <line class="line"></line>
             </svg>
         </babylon-viewer>
-        <div id="inspector-host" style="width: 100%"></div>
         <button class="toggle-dom-button" onclick="onToggleDOM()">Toggle DOM</button>
         <button class="toggle-engine-button" onclick="onToggleEngine()">Toggle Engine</button>
 
@@ -187,13 +186,14 @@
                 startHotSpotLinesRenderLoop();
             }
 
+            let isInspectorVisible = false;
             function onToggleInspector() {
-                const inspectorHost = document.querySelector("#inspector-host");
-                if (inspectorHost.children.length === 0) {
-                    viewerElement.viewerDetails.viewer.showInspector(inspectorHost);
+                if (isInspectorVisible) {
+                    viewerElement.hideInspector();
                 } else {
-                    viewerElement.viewerDetails.viewer.hideInspector();
+                    viewerElement.showInspector();
                 }
+                isInspectorVisible = !isInspectorVisible;
             }
         </script>
     </body>
