@@ -83,18 +83,21 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
     constructor(config: IFlowGraphInterpolationBlockConfiguration = {}) {
         super(config);
         const type = getRichTypeByAnimationType(config?.animationType ?? Constants.ANIMATIONTYPE_FLOAT);
-        this.initialValue = this.registerDataInput("initialValue", type);
-        this.endValue = this.registerDataInput("endValue", type);
+
+        const numberOfKeyFrames = config?.keyFramesCount ?? 1;
+        const duration = this.registerDataInput(`duration-0`, RichTypeNumber, 0);
+        const value = this.registerDataInput(`value-0`, type);
+        this.keyFrames.push({ duration, value });
+        for (let i = 1; i < numberOfKeyFrames + 1; i++) {
+            const duration = this.registerDataInput(`duration-${i}`, RichTypeNumber, i === numberOfKeyFrames ? config.duration : undefined);
+            const value = this.registerDataInput(`value-${i}`, type);
+            this.keyFrames.push({ duration, value });
+        }
+        this.initialValue = this.keyFrames[0].value;
+        this.endValue = this.keyFrames[numberOfKeyFrames].value;
         this.easingFunction = this.registerDataInput("easingFunction", RichTypeAny);
         this.animation = this.registerDataOutput("animation", RichTypeAny);
         this.propertyName = this.registerDataInput("propertyName", RichTypeAny, config?.propertyName);
-
-        const numberOfKeyFrames = config?.keyFramesCount ?? 1;
-        for (let i = 0; i < numberOfKeyFrames; i++) {
-            const duration = this.registerDataInput(`duration-${i + 1}`, RichTypeNumber, i === numberOfKeyFrames - 1 ? config.duration : undefined);
-            const value = this.registerDataInput(`value-${i + 1}`, type);
-            this.keyFrames.push({ duration, value });
-        }
     }
 
     public override _updateOutputs(context: FlowGraphContext): void {
@@ -111,13 +114,13 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
         const currentValue = this.initialValue.getValue(context) || type.defaultValue;
         keys.push({ frame: 0, value: currentValue });
         const numberOfKeyFrames = this.config?.numberOfKeyFrames ?? 1;
-        for (let i = 0; i < numberOfKeyFrames; i++) {
+        for (let i = 1; i < numberOfKeyFrames + 1; i++) {
             const duration = this.keyFrames[i].duration?.getValue(context);
             let value = this.keyFrames[i].value?.getValue(context);
             if (i === numberOfKeyFrames - 1) {
-                value = this.endValue.getValue(context) || value || type.defaultValue;
+                value = value || type.defaultValue;
             }
-            if (duration && value) {
+            if (duration !== undefined && value) {
                 // convert duration to frames, based on 60 fps
                 keys.push({ frame: duration * 60, value });
             }
