@@ -200,7 +200,7 @@ export class HTML3DElement extends LitElement {
         .loading-progress-inner {
             width: 0;
             height: 100%;
-            border-radius: 2px;
+            border-radius: inherit;
             background-color: var(--ui-foreground-color);
             transition: width 0.3s linear;
         }
@@ -671,7 +671,7 @@ export class HTML3DElement extends LitElement {
                 <div id="canvasContainer" class="full-size"></div>
                 <slot class="full-size children-slot"></slot>
                 <slot name="progress-bar">
-                    <div part="loading-progress" class="bar loading-progress-outer ${showProgressBar ? "" : "loading-progress-outer-inactive"}" aria-label="Loading Progress">
+                    <div part="progress-bar" class="bar loading-progress-outer ${showProgressBar ? "" : "loading-progress-outer-inactive"}" aria-label="Loading Progress">
                         <div
                             class="loading-progress-inner ${isIndeterminate ? "loading-progress-inner-indeterminate" : ""}"
                             style="${isIndeterminate ? "" : `width: ${progressValue}%`}"
