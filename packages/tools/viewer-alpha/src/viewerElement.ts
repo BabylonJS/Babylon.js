@@ -2,7 +2,7 @@
 import type { ArcRotateCamera, Nullable, Observable } from "core/index";
 
 import type { PropertyValues } from "lit";
-import type { ToneMapping, ViewerDetails, ViewerHotSpot, ViewerHotSpotQuery } from "./viewer";
+import type { ToneMapping, ViewerDetails, ViewerHotSpotResult, ViewerHotSpotQuery } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, defaultConverter, html } from "lit";
@@ -383,7 +383,7 @@ export class HTML3DElement extends LitElement {
      * @param result resulting world and screen positions
      * @returns world and screen space coordinates
      */
-    public queryHotSpot(name: string, result: ViewerHotSpot): boolean {
+    public queryHotSpot(name: string, result: ViewerHotSpotResult): boolean {
         // Retrieve all hotspots inside the viewer element
         let resultFound = false;
         // Iterate through each hotspot to get the 'data-surface' and 'data-name' attributes

@@ -118,14 +118,12 @@ export type ViewerHotSpotQuery = {
     meshIndex: number;
 } & HotSpotQuery;
 
-/**
- * Information computed from the hot spot surface data, canvas and mesh datas
- */
-export type ViewerHotSpot = {
+export type ViewerHotSpotResult = {
     /**
      * 2D canvas position in pixels
      */
     screenPosition: [number, number];
+
     /**
      * 3D world coordinates
      */
@@ -772,21 +770,21 @@ export class Viewer implements IDisposable {
 
     /**
      * retrun world and canvas coordinates of an hot spot
-     * @param hotSpotQuery mesh index and surface information to query the hot spot positions
-     * @param res Query a Hot Spot and does the conversion for Babylon Hot spot to a more generic HotSpotPositions, without Vector types
+     * @param query mesh index and surface information to query the hot spot positions
+     * @param result Query a Hot Spot and does the conversion for Babylon Hot spot to a more generic HotSpotPositions, without Vector types
      * @returns true if hotspot found
      */
-    public getHotSpotToRef(hotSpotQuery: Readonly<ViewerHotSpotQuery>, res: ViewerHotSpot): boolean {
+    public getHotSpotToRef(query: Readonly<ViewerHotSpotQuery>, result: ViewerHotSpotResult): boolean {
         if (!this._details.model) {
             return false;
         }
         const worldPos = TmpVectors.Vector3[1];
         const screenPos = TmpVectors.Vector3[0];
-        const mesh = this._details.model.meshes[hotSpotQuery.meshIndex];
+        const mesh = this._details.model.meshes[query.meshIndex];
         if (!mesh) {
             return false;
         }
-        GetHotSpotToRef(mesh, hotSpotQuery, worldPos);
+        GetHotSpotToRef(mesh, query, worldPos);
 
         const renderWidth = this._engine.getRenderWidth(); // Get the canvas width
         const renderHeight = this._engine.getRenderHeight(); // Get the canvas height
@@ -796,8 +794,8 @@ export class Viewer implements IDisposable {
         const scene = this._details.scene;
 
         Vector3.ProjectToRef(worldPos, mesh.getWorldMatrix(), scene.getTransformMatrix(), new Viewport(0, 0, viewportWidth, viewportHeight), screenPos);
-        res.screenPosition = [screenPos.x, screenPos.y];
-        res.worldPosition = [worldPos.x, worldPos.y, worldPos.z];
+        result.screenPosition = [screenPos.x, screenPos.y];
+        result.worldPosition = [worldPos.x, worldPos.y, worldPos.z];
         return true;
     }
 
