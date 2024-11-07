@@ -32,7 +32,8 @@
 }
 
 .inputsContainer {
-    grid-row: 1;
+    margin-top: 5px;
+    grid-row: 3;
     grid-column: 1;
 
     .portLine {
@@ -49,9 +50,14 @@
             transform: translateX(-12px);
         }
     }
+
+    &.inputsContainerUp {
+        grid-row: 1;
+    }
 }
 
 .outputsContainer {
+    margin-top: 5px;
     grid-row: 1;
     grid-column: 2;
 

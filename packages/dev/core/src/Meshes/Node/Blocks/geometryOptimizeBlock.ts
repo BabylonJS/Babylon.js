@@ -18,19 +18,19 @@ export class GeometryOptimizeBlock extends NodeGeometryBlock implements INodeGeo
      * Gets or sets a boolean indicating that this block can evaluate context
      * Build performance is improved when this value is set to false as the system will cache values instead of reevaluating everything per context change
      */
-    @editableInPropertyPage("Evaluate context", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { rebuild: true } })
+    @editableInPropertyPage("Evaluate context", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
     public evaluateContext = true;
 
     /**
      * Define the epsilon used to compare similar positions
      */
-    @editableInPropertyPage("Epsilon", PropertyTypeForEdition.Float, "ADVANCED", { notifiers: { rebuild: true } })
+    @editableInPropertyPage("Epsilon", PropertyTypeForEdition.Float, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
     public epsilon = Epsilon;
 
     /**
      * Optimize faces (by removing duplicates)
      */
-    @editableInPropertyPage("Optimize faces", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { rebuild: true } })
+    @editableInPropertyPage("Optimize faces", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
     public optimizeFaces = false;
 
     /**

@@ -1,5 +1,38 @@
 # Changelog
 
+## 7.33.0
+
+### Core
+
+- EffectWrapper: Fix backward compatibility for alpha mode - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15779](https://github.com/BabylonJS/Babylon.js/pull/15779))
+- IBL Shadows accumulation for different scene sizes - by [MiiBond](https://github.com/MiiBond) ([#15775](https://github.com/BabylonJS/Babylon.js/pull/15775))
+- Collapsible nodes for node editors - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15776](https://github.com/BabylonJS/Babylon.js/pull/15776))
+
+### Node Editor
+
+- Collapsible nodes for node editors - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15776](https://github.com/BabylonJS/Babylon.js/pull/15776))
+
+## 7.32.5
+
+### Core
+
+- On Node Properties - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15770](https://github.com/BabylonJS/Babylon.js/pull/15770))
+
+### Node Editor
+
+- On Node Properties - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15770](https://github.com/BabylonJS/Babylon.js/pull/15770))
+
+## 7.32.4
+
+### Core
+
+- Adds a request url accessor - by [sebavan](https://github.com/sebavan) ([#15771](https://github.com/BabylonJS/Babylon.js/pull/15771))
+- IBL shadows use geometry buffer - by [MiiBond](https://github.com/MiiBond) ([#15634](https://github.com/BabylonJS/Babylon.js/pull/15634))
+
+### Inspector
+
+- IBL shadows use geometry buffer - by [MiiBond](https://github.com/MiiBond) ([#15634](https://github.com/BabylonJS/Babylon.js/pull/15634))
+
 ## 7.32.3
 
 ### Core

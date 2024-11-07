@@ -51,7 +51,7 @@ export class PreviewManager {
             this._frameCamera();
         });
 
-        this._onPreviewCommandActivatedObserver = globalState.onPreviewCommandActivated.add((forceRefresh: boolean) => {
+        this._onPreviewCommandActivatedObserver = globalState.stateManager.onPreviewCommandActivated.add((forceRefresh: boolean) => {
             if (forceRefresh) {
                 this._currentType = -1;
             }
@@ -433,7 +433,7 @@ export class PreviewManager {
 
     public dispose() {
         this._globalState.onFrame.remove(this._onFrameObserver);
-        this._globalState.onPreviewCommandActivated.remove(this._onPreviewCommandActivatedObserver);
+        this._globalState.stateManager.onPreviewCommandActivated.remove(this._onPreviewCommandActivatedObserver);
         this._globalState.stateManager.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
         this._globalState.stateManager.onRebuildRequiredObservable.remove(this._onRebuildRequiredObserver);
         this._globalState.onImportFrameObservable.remove(this._onImportFrameObserver);

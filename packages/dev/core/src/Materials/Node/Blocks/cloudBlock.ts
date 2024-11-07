@@ -12,7 +12,7 @@ import { ShaderLanguage } from "../../../Materials/shaderLanguage";
  */
 export class CloudBlock extends NodeMaterialBlock {
     /** Gets or sets the number of octaves */
-    @editableInPropertyPage("Octaves", PropertyTypeForEdition.Int)
+    @editableInPropertyPage("Octaves", PropertyTypeForEdition.Int, undefined, { embedded: true })
     public octaves = 6.0;
 
     /**

@@ -10,6 +10,7 @@ import type { IPortData } from "./interfaces/portData";
 import type { ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
 import type { NodePort } from "./nodePort";
 import type { HistoryStack } from "../historyStack";
+import type { Scene } from "core/scene";
 
 export class StateManager {
     data: any;
@@ -35,6 +36,7 @@ export class StateManager {
     onGridSizeChanged = new Observable<void>();
     onNewBlockRequiredObservable = new Observable<{ type: string; targetX: number; targetY: number; needRepositioning?: boolean; smartAdd?: boolean }>();
     onHighlightNodeObservable = new Observable<{ data: any; active: boolean }>();
+    onPreviewCommandActivated = new Observable<boolean>();
 
     exportData: (data: any, frame?: Nullable<GraphFrame>) => string;
     isElbowConnectionAllowed: (nodeA: FrameNodePort | NodePort, nodeB: FrameNodePort | NodePort) => boolean;
@@ -44,6 +46,8 @@ export class StateManager {
     storeEditorData: (serializationObject: any, frame?: Nullable<GraphFrame>) => void;
 
     getEditorDataMap: () => { [key: number]: number };
+
+    getScene?: () => Scene;
 
     createDefaultInputData: (rootData: any, portData: IPortData, nodeContainer: INodeContainer) => Nullable<{ data: INodeData; name: string }>;
 }

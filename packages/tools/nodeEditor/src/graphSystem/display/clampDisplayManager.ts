@@ -1,8 +1,6 @@
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
-import type { ClampBlock } from "core/Materials/Node/Blocks/clampBlock";
 import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
-import styles from "./clampDisplayManager.modules.scss";
 
 export class ClampDisplayManager implements IDisplayManager {
     public getHeaderClass() {
@@ -10,7 +8,7 @@ export class ClampDisplayManager implements IDisplayManager {
     }
 
     public shouldDisplayPortLabels(): boolean {
-        return false;
+        return true;
     }
 
     public getHeaderText(nodeData: INodeData): string {
@@ -21,10 +19,5 @@ export class ClampDisplayManager implements IDisplayManager {
         return "#4086BB";
     }
 
-    public updatePreviewContent(nodeData: INodeData, contentArea: HTMLDivElement): void {
-        const clampBlock = nodeData.data as ClampBlock;
-
-        contentArea.classList.add(styles.clampBlock);
-        contentArea.innerHTML = `[${clampBlock.minimum}, ${clampBlock.maximum}]`;
-    }
+    public updatePreviewContent(nodeData: INodeData, contentArea: HTMLDivElement): void {}
 }

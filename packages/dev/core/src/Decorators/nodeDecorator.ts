@@ -39,6 +39,10 @@ export interface IEditablePropertyListOption {
  * Interface that defines the options available for an editable property
  */
 export interface IEditablePropertyOption {
+    /**
+     * Define if the property is displayed inside the source block or in a separate property tab
+     */
+    embedded?: boolean;
     /** min value */
     min?: number;
     /** max value */

@@ -5,6 +5,7 @@ import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnection
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../Misc/typeStore";
 import type { Scene } from "../../../scene";
+import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 
 /**
  * Operations supported by the ConditionalBlock block
@@ -38,6 +39,21 @@ export class ConditionalBlock extends NodeMaterialBlock {
     /**
      * Gets or sets the condition applied by the block
      */
+    @editableInPropertyPage("Condition", PropertyTypeForEdition.List, "ADVANCED", {
+        notifiers: { rebuild: true },
+        embedded: true,
+        options: [
+            { label: "Equal", value: ConditionalBlockConditions.Equal },
+            { label: "NotEqual", value: ConditionalBlockConditions.NotEqual },
+            { label: "LessThan", value: ConditionalBlockConditions.LessThan },
+            { label: "GreaterThan", value: ConditionalBlockConditions.GreaterThan },
+            { label: "LessOrEqual", value: ConditionalBlockConditions.LessOrEqual },
+            { label: "GreaterOrEqual", value: ConditionalBlockConditions.GreaterOrEqual },
+            { label: "Xor", value: ConditionalBlockConditions.Xor },
+            { label: "And", value: ConditionalBlockConditions.And },
+            { label: "Or", value: ConditionalBlockConditions.Or },
+        ],
+    })
     public condition = ConditionalBlockConditions.LessThan;
 
     /**

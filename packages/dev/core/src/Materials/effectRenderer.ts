@@ -342,7 +342,7 @@ export class EffectWrapper {
     }
 
     /**
-     * Type of alpha mode to use when applying the effect (default: Engine.ALPHA_DISABLE)
+     * Type of alpha mode to use when applying the effect (default: Engine.ALPHA_DISABLE). Used only if useAsPostProcess is true.
      */
     public alphaMode = Constants.ALPHA_DISABLE;
 
@@ -636,9 +636,8 @@ export class EffectWrapper {
      * Binds the data to the effect.
      */
     public bind() {
-        this.options.engine.setAlphaMode(this.alphaMode);
-
         if (this.options.useAsPostProcess) {
+            this.options.engine.setAlphaMode(this.alphaMode);
             this.drawWrapper.effect!.setFloat2("scale", 1, 1);
         }
 
