@@ -62,7 +62,7 @@ export abstract class AuxiliaryAudioBus extends AbstractAudioBus {
             return;
         }
 
-        this._positioner = await this.engine.createPositioner(this);
+        this._positioner = await this._createPositioner();
     }
 
     /**
@@ -87,4 +87,6 @@ export abstract class AuxiliaryAudioBus extends AbstractAudioBus {
             this._connect(this._outputBus);
         }
     }
+
+    protected abstract _createPositioner(): Promise<AudioPositioner>;
 }

@@ -131,6 +131,12 @@ export abstract class AbstractAudioNode extends AbstractAudioNodeParent {
     }
 
     /**
+     * Gets a string identifying the name of the class
+     * @returns the class's name as a string
+     */
+    public abstract getClassName(): string;
+
+    /**
      * Connect to a downstream audio input node.
      * @param node - The downstream audio input node to connect
      */

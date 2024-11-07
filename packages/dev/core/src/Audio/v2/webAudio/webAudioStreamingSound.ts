@@ -1,14 +1,44 @@
 import type { Nullable } from "../../../types";
+import type { AbstractAudioEngine } from "../abstractAudioEngine";
+import type { StreamingSoundOptions } from "../streamingSound";
 import { StreamingSound } from "../streamingSound";
 import { StreamingSoundInstance } from "../streamingSoundInstance";
-import type { WebAudioEngine, InternalWebAudioEngine, WebAudioStreamingSoundOptions } from "./webAudioEngine";
+import type { WebAudioEngine } from "./webAudioEngine";
+
+/**
+ * Options for creating a new WebAudioStreamingSound.
+ */
+export interface WebAudioStreamingSoundOptions extends StreamingSoundOptions {
+    /**
+     * The URL of the sound source.
+     */
+    sourceUrl?: string;
+}
+
+/**
+ * Creates a new streaming sound.
+ * @param name - The name of the sound.
+ * @param engine - The audio engine.
+ * @param options - The options for the streaming sound.
+ * @returns A promise that resolves to the created streaming sound.
+ */
+export async function CreateStreamingSoundAsync(name: string, engine: AbstractAudioEngine, options: Nullable<StreamingSoundOptions> = null): Promise<StreamingSound> {
+    if (!engine.isWebAudio) {
+        throw new Error("Unsupported engine type.");
+    }
+
+    const sound = new WebAudioStreamingSound(name, engine as WebAudioEngine, options);
+    await sound.init(options);
+    (engine as WebAudioEngine).addSound(sound);
+    return sound;
+}
 
 /** @internal */
-export class WebAudioStreamingSound extends StreamingSound {
+class WebAudioStreamingSound extends StreamingSound {
     private _gainNode: GainNode;
 
     /** @internal */
-    public override readonly engine: InternalWebAudioEngine;
+    public override readonly engine: WebAudioEngine;
 
     /** @internal */
     public audioContext: BaseAudioContext;
@@ -41,13 +71,20 @@ export class WebAudioStreamingSound extends StreamingSound {
         this.volume = options?.volume ?? 1;
     }
 
+    /** @internal */
+    public getClassName(): string {
+        return "WebAudioStreamingSound";
+    }
+
     protected _createSoundInstance(): WebAudioStreamingSoundInstance {
-        return this.engine.createStreamingSoundInstance(this);
+        const soundInstance = new WebAudioStreamingSoundInstance(this);
+        this.engine.addSoundInstance(soundInstance);
+        return soundInstance;
     }
 }
 
 /** @internal */
-export class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
+class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
     public get currentTime(): number {
         return 0;
     }
@@ -69,4 +106,9 @@ export class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
 
     /** @internal */
     public override stop(waitTime: Nullable<number> = null): void {}
+
+    /** @internal */
+    public getClassName(): string {
+        return "WebAudioStreamingSoundInstance";
+    }
 }

@@ -1,15 +1,9 @@
 import type { Nullable } from "../../types";
 import type { AbstractAudioNode } from "./abstractAudioNode";
 import { AbstractAudioNodeParent } from "./abstractAudioNodeParent";
-import type { AudioPositioner } from "./audioPositioner";
-import type { AudioSender } from "./audioSender";
 import type { MainAudioBus } from "./mainAudioBus";
-import type { MainAudioOutput } from "./mainAudioOutput";
 import type { AbstractSound } from "./abstractSound";
 import type { AbstractSoundInstance } from "./abstractSoundInstance";
-import type { StaticSound, StaticSoundOptions } from "./staticSound";
-import type { StaticSoundBuffer, StaticSoundBufferOptions } from "./staticSoundBuffer";
-import type { StreamingSound, StreamingSoundOptions } from "./streamingSound";
 import type { SpatialAudioListener } from "./spatialAudioListener";
 
 /**
@@ -32,6 +26,11 @@ export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
      * The spatial audio listeners.
      */
     public readonly listeners = new Set<SpatialAudioListener>(); // Owned
+
+    /**
+     * `true` if the engine is a WebAudio engine; otherwise `false`.
+     */
+    public abstract get isWebAudio(): boolean;
 
     /**
      * The current time in seconds.
@@ -76,6 +75,8 @@ export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
         this._sounds.clear();
     }
 
+    public abstract formatIsValid(format: string): boolean;
+
     protected _addMainBus(mainBus: MainAudioBus): void {
         this._mainBuses.add(mainBus);
         mainBus.onDisposeObservable.addOnce(() => {
@@ -96,12 +97,4 @@ export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
             this._soundInstances.delete(soundInstance);
         });
     }
-
-    public abstract createMainBus(name: string): Promise<MainAudioBus>;
-    public abstract createMainOutput(): Promise<MainAudioOutput>;
-    public abstract createPositioner(parent: AbstractAudioNode): Promise<AudioPositioner>;
-    public abstract createSender(parent: AbstractAudioNode): Promise<AudioSender>;
-    public abstract createSound(name: string, options: Nullable<StaticSoundOptions>): Promise<StaticSound>;
-    public abstract createSoundBuffer(options: Nullable<StaticSoundBufferOptions>): Promise<StaticSoundBuffer>;
-    public abstract createStreamingSound(name: string, options: Nullable<StreamingSoundOptions>): Promise<StreamingSound>;
 }
