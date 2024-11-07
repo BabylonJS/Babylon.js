@@ -118,15 +118,6 @@ export type ViewerHotSpotQuery = {
     meshIndex: number;
 } & HotSpotQuery;
 
-type LoadingProgress =
-    | {
-          isLoading: true;
-          progress?: number;
-      }
-    | {
-          isLoading: false;
-      };
-
 /**
  * Information computed from the hot spot surface data, canvas and mesh datas
  */
@@ -252,7 +243,8 @@ export class Viewer implements IDisposable {
     private _environment: Nullable<IDisposable> = null;
     private _loadEnvironmentAbortController: Nullable<AbortController> = null;
 
-    private readonly _loadingProgress: LoadingProgress = { isLoading: false };
+    private _isLoadingModel = false;
+    private _modelLoadingProgress: Nullable<number> = null;
 
     private _selectedAnimation = -1;
     private _activeAnimationObservers: Observer<AnimationGroup>[] = [];
@@ -448,8 +440,8 @@ export class Viewer implements IDisposable {
      * A number between 0 and 1 indicates loading activity with progress information.
      */
     public get loadingProgress(): boolean | number {
-        if (this._loadingProgress.isLoading) {
-            return this._loadingProgress.progress ?? true;
+        if (this._isLoadingModel) {
+            return this._modelLoadingProgress ?? true;
         }
 
         return false;
@@ -577,8 +569,8 @@ export class Viewer implements IDisposable {
         const originalOnProgress = options?.onProgress;
         const onProgress = (event: ISceneLoaderProgressEvent) => {
             originalOnProgress?.(event);
-            if (this._loadingProgress.isLoading) {
-                this._loadingProgress.progress = event.lengthComputable ? event.loaded / event.total : undefined;
+            if (this._isLoadingModel) {
+                this._modelLoadingProgress = event.lengthComputable ? event.loaded / event.total : null;
                 this.onLoadingProgressChanged.notifyObservers();
             }
         };
@@ -611,10 +603,8 @@ export class Viewer implements IDisposable {
 
             try {
                 if (source) {
-                    this._loadingProgress.isLoading = true;
-                    if (this._loadingProgress.isLoading) {
-                        this._loadingProgress.progress = 0;
-                    }
+                    this._isLoadingModel = true;
+                    this._modelLoadingProgress = 0;
                     this.onLoadingProgressChanged.notifyObservers();
                     this._details.model = await loadAssetContainerAsync(source, this._details.scene, options);
                     this._details.model.animationGroups.forEach((group) => {
@@ -634,7 +624,7 @@ export class Viewer implements IDisposable {
                 this.onModelError.notifyObservers(e);
                 throw e;
             } finally {
-                this._loadingProgress.isLoading = false;
+                this._isLoadingModel = false;
                 this.onLoadingProgressChanged.notifyObservers();
                 this._snapshotHelper.enableSnapshotRendering();
             }
