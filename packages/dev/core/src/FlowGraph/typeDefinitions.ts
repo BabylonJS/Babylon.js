@@ -159,4 +159,9 @@ export interface ISerializedFlowGraph {
      * Blocks belonging to the flow graph
      */
     allBlocks: ISerializedFlowGraphBlock[];
+
+    /**
+     * Is the flow graph in RHS mode?
+     */
+    rightHanded?: boolean;
 }

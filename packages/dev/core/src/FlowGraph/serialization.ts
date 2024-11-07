@@ -30,14 +30,21 @@ function isVectorClassName(className: string) {
     );
 }
 
-function parseVector(className: string, value: Array<number>) {
+function parseVector(className: string, value: Array<number>, flipHandedness = false) {
     if (className === FlowGraphTypes.Vector2) {
         return Vector2.FromArray(value);
     } else if (className === FlowGraphTypes.Vector3) {
+        if (flipHandedness) {
+            value[2] *= -1;
+        }
         return Vector3.FromArray(value);
     } else if (className === FlowGraphTypes.Vector4) {
         return Vector4.FromArray(value);
     } else if (className === FlowGraphTypes.Quaternion) {
+        if (flipHandedness) {
+            value[2] *= -1;
+            value[3] *= -1;
+        }
         return Quaternion.FromArray(value);
     } else if (className === FlowGraphTypes.Color3) {
         return new Color3(value[0], value[1], value[2]);
@@ -85,16 +92,17 @@ export function defaultValueSerializationFunction(key: string, value: any, seria
  * @param serializationObject the object that will be parsed
  * @param assetsContainer the assets container that will be used to find the objects
  * @param scene
+ * @param rightHanded whether the data provided is right-handed (NOT the scene!)
  * @returns
  */
-export function defaultValueParseFunction(key: string, serializationObject: any, assetsContainer: IAssetContainer, scene: Scene) {
+export function defaultValueParseFunction(key: string, serializationObject: any, assetsContainer: IAssetContainer, scene: Scene, rightHanded?: boolean) {
     const intermediateValue = serializationObject[key];
     let finalValue;
     const className = intermediateValue?.className;
     if (isMeshClassName(className)) {
         finalValue = intermediateValue.id ? (scene.getMeshById(intermediateValue.id) ?? scene.getNodeById(intermediateValue.id)) : scene.getMeshByName(intermediateValue.name);
     } else if (isVectorClassName(className)) {
-        finalValue = parseVector(className, intermediateValue.value);
+        finalValue = parseVector(className, intermediateValue.value, rightHanded === scene.useRightHandedSystem);
     } else if (className === FlowGraphTypes.Matrix) {
         finalValue = Matrix.FromArray(intermediateValue.value);
     } else if (className === FlowGraphInteger.ClassName) {

@@ -776,7 +776,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 err: { name: "error" },
             },
         },
-        extraProcessor(_gltfBlock, _mapping, arrays, serializedObjects, _context, _globalGLTF) {
+        extraProcessor(_gltfBlock, _mapping, arrays, serializedObjects) {
             // connect the pointer to the setProperty block
             connectFlowGraphNodes("object", "object", serializedObjects[0], serializedObjects[1], true);
             connectFlowGraphNodes("propertyName", "propertyName", serializedObjects[0], serializedObjects[1], true);
@@ -807,7 +807,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 err: { name: "error" },
             },
         },
-        extraProcessor(gltfBlock, mapping, arrays, serializedObjects, context, globalGLTF) {
+        extraProcessor(_gltfBlock, _mapping, _arrays, serializedObjects) {
             // connect the pointer to the getProperty block
             connectFlowGraphNodes("object", "object", serializedObjects[2], serializedObjects[1], true);
             connectFlowGraphNodes("propertyName", "propertyName", serializedObjects[0], serializedObjects[1], true);

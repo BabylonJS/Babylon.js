@@ -129,7 +129,7 @@ export function ParseFlowGraph(serializationObject: ISerializedFlowGraph, option
         }
     }
     for (const serializedContext of serializationObject.executionContexts) {
-        ParseFlowGraphContext(serializedContext, { graph, valueParseFunction });
+        ParseFlowGraphContext(serializedContext, { graph, valueParseFunction }, serializationObject.rightHanded);
     }
     return graph;
 }
@@ -138,9 +138,10 @@ export function ParseFlowGraph(serializationObject: ISerializedFlowGraph, option
  * Parses a context
  * @param serializationObject the object containing the context serialization values
  * @param options the options for parsing the context
+ * @param rightHanded whether the serialized data is right handed
  * @returns
  */
-function ParseFlowGraphContext(serializationObject: ISerializedFlowGraphContext, options: IFlowGraphContextParseOptions): FlowGraphContext {
+function ParseFlowGraphContext(serializationObject: ISerializedFlowGraphContext, options: IFlowGraphContextParseOptions, rightHanded?: boolean): FlowGraphContext {
     const result = options.graph.createContext();
     const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
     result.uniqueId = serializationObject.uniqueId;
@@ -179,11 +180,11 @@ function ParseFlowGraphContext(serializationObject: ISerializedFlowGraphContext,
         result.assetsContext = assetsContext;
     }
     for (const key in serializationObject._userVariables) {
-        const value = valueParseFunction(key, serializationObject._userVariables, result.assetsContext, scene);
+        const value = valueParseFunction(key, serializationObject._userVariables, result.assetsContext, scene, rightHanded);
         result.userVariables[key] = value;
     }
     for (const key in serializationObject._connectionValues) {
-        const value = valueParseFunction(key, serializationObject._connectionValues, result.assetsContext, scene);
+        const value = valueParseFunction(key, serializationObject._connectionValues, result.assetsContext, scene, rightHanded);
         result._setConnectionValueByKey(key, value);
     }
 

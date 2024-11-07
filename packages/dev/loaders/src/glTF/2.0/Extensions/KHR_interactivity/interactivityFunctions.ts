@@ -330,5 +330,6 @@ export function convertGLTFToSerializedFlowGraph(gltf: IKHRInteractivity, refere
     return {
         allBlocks: flowGraphJsonBlocks,
         executionContexts,
+        rightHanded: true,
     };
 }
