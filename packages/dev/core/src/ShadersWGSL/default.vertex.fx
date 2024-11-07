@@ -165,7 +165,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
 #ifdef MAINUV2
     vertexOutputs.vMainUV2 = uv2Updated;
 #endif
-    #include<uvVariableDeclaration>[2..7]
+    #include<uvVariableDeclaration>[3..7]
 
     #include<samplerVertexImplementation>(_DEFINENAME_,DIFFUSE,_VARYINGNAME_,Diffuse,_MATRIXNAME_,diffuse,_INFONAME_,DiffuseInfos.x)
     #include<samplerVertexImplementation>(_DEFINENAME_,DETAIL,_VARYINGNAME_,Detail,_MATRIXNAME_,detail,_INFONAME_,DetailInfos.x)
