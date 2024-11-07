@@ -37,6 +37,23 @@ import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
 
+export type CameraAutoOrbit = {
+    /**
+     * Whether the camera should automatically orbit around the model when idle.
+     */
+    enabled: boolean;
+
+    /**
+     * The speed at which the camera orbits around the model when idle.
+     */
+    speed: number;
+
+    /**
+     * The delay in milliseconds before the camera starts orbiting around the model when idle.
+     */
+    delay: number;
+};
+
 /**
  * Checks if the given value is a valid tone mapping option.
  * @param value The value to check.
@@ -324,21 +341,34 @@ export class Viewer implements IDisposable {
     }
 
     /**
-     * Enables or disables camera auto orbit.
+     * The camera auto orbit configuration.
      */
-    public get cameraAutoOrbit(): boolean {
-        return this._details.camera.behaviors.includes(this._autoRotationBehavior);
+    public get cameraAutoOrbit(): Readonly<CameraAutoOrbit> {
+        return {
+            enabled: this._details.camera.behaviors.includes(this._autoRotationBehavior),
+            speed: this._autoRotationBehavior.idleRotationSpeed,
+            delay: this._autoRotationBehavior.idleRotationWaitTime,
+        };
     }
 
-    public set cameraAutoOrbit(value: boolean) {
-        if (value !== this.cameraAutoOrbit) {
-            if (value) {
+    public set cameraAutoOrbit(value: Partial<Readonly<CameraAutoOrbit>>) {
+        if (value.enabled !== undefined && value.enabled !== this.cameraAutoOrbit.enabled) {
+            if (value.enabled) {
                 this._details.camera.addBehavior(this._autoRotationBehavior);
             } else {
                 this._details.camera.removeBehavior(this._autoRotationBehavior);
             }
-            this.onCameraAutoOrbitChanged.notifyObservers();
         }
+
+        if (value.delay !== undefined) {
+            this._autoRotationBehavior.idleRotationWaitTime = value.delay;
+        }
+
+        if (value.speed !== undefined) {
+            this._autoRotationBehavior.idleRotationSpeed = value.speed;
+        }
+
+        this.onCameraAutoOrbitChanged.notifyObservers();
     }
 
     /**

@@ -109,8 +109,20 @@ export class HTML3DElement extends LitElement {
         this._createPropertyBinding(
             "cameraAutoOrbit",
             (details) => details.viewer.onCameraAutoOrbitChanged,
-            (details) => (details.viewer.cameraAutoOrbit = this.cameraAutoOrbit),
-            (details) => (this.cameraAutoOrbit = details.viewer.cameraAutoOrbit)
+            (details) => (details.viewer.cameraAutoOrbit = { enabled: this.cameraAutoOrbit }),
+            (details) => (this.cameraAutoOrbit = details.viewer.cameraAutoOrbit.enabled)
+        ),
+        this._createPropertyBinding(
+            "cameraAutoOrbitSpeed",
+            (details) => details.viewer.onCameraAutoOrbitChanged,
+            (details) => (details.viewer.cameraAutoOrbit = { speed: this.cameraAutoOrbitSpeed ?? undefined }),
+            (details) => (this.cameraAutoOrbitSpeed = details.viewer.cameraAutoOrbit.speed)
+        ),
+        this._createPropertyBinding(
+            "cameraAutoOrbitDelay",
+            (details) => details.viewer.onCameraAutoOrbitChanged,
+            (details) => (details.viewer.cameraAutoOrbit = { delay: this.cameraAutoOrbitDelay ?? undefined }),
+            (details) => (this.cameraAutoOrbitDelay = details.viewer.cameraAutoOrbit.delay)
         ),
         this._createPropertyBinding(
             "animationSpeed",
@@ -488,6 +500,24 @@ export class HTML3DElement extends LitElement {
         type: Boolean,
     })
     public cameraAutoOrbit = false;
+
+    /**
+     * The speed at which the camera auto-orbits around the target.
+     */
+    @property({
+        attribute: "camera-auto-orbit-speed",
+        type: Number,
+    })
+    public cameraAutoOrbitSpeed: Nullable<number> = null;
+
+    /**
+     * The delay in milliseconds before the camera starts auto-orbiting.
+     */
+    @property({
+        attribute: "camera-auto-orbit-delay",
+        type: Number,
+    })
+    public cameraAutoOrbitDelay: Nullable<number> = null;
 
     /**
      * Camera orbit can only be set as an attribute, and is set on the camera each time a new model is loaded.
