@@ -253,7 +253,6 @@ class WebAudioStaticSoundBuffer extends StaticSoundBuffer {
 
 /** @internal */
 class WebAudioStaticSoundInstance extends StaticSoundInstance {
-    private _state: SoundState = SoundState.Stopped;
     private _currentTime: number = 0;
     private _startTime: number = 0;
 

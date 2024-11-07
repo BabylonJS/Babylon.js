@@ -2,14 +2,21 @@ import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 import { AbstractAudioNode, AudioNodeType } from "./abstractAudioNode";
 import type { AbstractSound } from "./abstractSound";
+import { SoundState } from "./soundState";
 
 /** @internal */
 export abstract class AbstractSoundInstance extends AbstractAudioNode {
-    // Owned by AbstractAudioEngine.
-    // Output-only node that connects to a downstream input node.
-
+    // Owned by audio engine.
+    protected _state: SoundState = SoundState.Stopped;
     protected _source: AbstractSound;
     protected _startOffset: number = 0;
+
+    /**
+     * The state of the sound instance.
+     */
+    public get state(): SoundState {
+        return this._state;
+    }
 
     /** @internal */
     public onEndedObservable = new Observable<AbstractSoundInstance>();
