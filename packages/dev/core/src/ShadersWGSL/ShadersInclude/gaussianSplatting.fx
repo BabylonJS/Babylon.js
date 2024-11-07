@@ -1,7 +1,7 @@
-fn getDataUV(index: i32, textureSize: vec2f) -> vec2<i32> {
-    let y = index / i32(textureSize.x);
-    let x = index % i32(textureSize.x);
-    return vec2<i32>(x, y);
+fn getDataUV(index: f32, textureSize: vec2f) -> vec2<f32> {
+    let y: f32 = floor(index / textureSize.x);
+    let x: f32 = index - y * textureSize.x;
+    return vec2f((x + 0.5), (y + 0.5));
 }
 
 struct Splat {
@@ -13,11 +13,12 @@ struct Splat {
 
 fn readSplat(splatIndex: f32, textureSize: vec2f) -> Splat {
     var splat: Splat;
-    let splatUV = getDataUV(i32(splatIndex), textureSize);
-    splat.center = textureLoad(centersTexture, splatUV, 0);
-    splat.color = textureLoad(colorsTexture, splatUV, 0);
-    splat.covA = textureLoad(covariancesATexture, splatUV, 0) * splat.center.w;
-    splat.covB = textureLoad(covariancesBTexture, splatUV, 0) * splat.center.w;
+    let splatUV = getDataUV(splatIndex, textureSize);
+    let splatUVi32 = vec2<i32>(i32(splatUV.x), i32(splatUV.y));
+    splat.center = textureLoad(centersTexture, splatUVi32, 0);
+    splat.color = textureLoad(colorsTexture, splatUVi32, 0);
+    splat.covA = textureLoad(covariancesATexture, splatUVi32, 0) * splat.center.w;
+    splat.covB = textureLoad(covariancesBTexture, splatUVi32, 0) * splat.center.w;
 
     return splat;
 }
@@ -39,7 +40,7 @@ fn gaussianSplatting(
     let pos2d = projectionMatrix * camspace;
 
     let bounds = 1.2 * pos2d.w;
-    if (pos2d.z < -pos2d.w || pos2d.x < -bounds || pos2d.x > bounds || pos2d.y < -bounds || pos2d.y > bounds) {
+    if (pos2d.z < 0. || pos2d.x < -bounds || pos2d.x > bounds || pos2d.y < -bounds || pos2d.y > bounds) {
         return vec4f(0.0, 0.0, 2.0, 1.0);
     }
 
