@@ -1,4 +1,4 @@
-import { Tools } from "@babylonjs/core/Misc/tools";
+import { Tools } from "core/Misc/tools";
 
 // A capture management system to ensure that the correct object has the pointer
 // events by eliminating race conditions that can cause the pointer events to be
