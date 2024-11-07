@@ -13,6 +13,8 @@ import { RegisterClass } from "../../Misc/typeStore";
 import { addClipPlaneUniforms, bindClipPlane } from "../clipPlaneMaterialHelper";
 import { Camera } from "core/Cameras/camera";
 
+import "../../Shaders/gaussianSplatting.fragment";
+import "../../Shaders/gaussianSplatting.vertex";
 import {
     BindFogParameters,
     BindLogDepth,
