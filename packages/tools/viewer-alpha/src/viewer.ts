@@ -33,8 +33,6 @@ import { Viewport } from "core/Maths/math.viewport";
 import { GetHotSpotToRef } from "core/Meshes/abstractMesh.hotSpot";
 import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
 
-import type { Inspector } from "inspector/inspector";
-
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
 
@@ -242,8 +240,6 @@ export class Viewer implements IDisposable {
     private _selectedAnimation = -1;
     private _activeAnimationObservers: Observer<AnimationGroup>[] = [];
     private _animationSpeed = 1;
-
-    private _inspectorInstance: Nullable<typeof Inspector> = null;
 
     public constructor(
         private readonly _engine: AbstractEngine,
@@ -541,27 +537,6 @@ export class Viewer implements IDisposable {
      */
     public async resetModel(abortSignal?: AbortSignal): Promise<void> {
         await this._updateModel(undefined, undefined, abortSignal);
-    }
-
-    /**
-     * Show the inspector for this scene
-     * @param rootElement the root element to attach the inspector to. defaults to body (but body will need to be styled correctly)
-     */
-    public async showInspector(rootElement?: HTMLElement): Promise<void> {
-        if (!this._inspectorInstance) {
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            await import("inspector/inspector").then(({ Inspector }) => {
-                this._inspectorInstance = Inspector;
-            });
-        }
-        this._inspectorInstance?.Show(this._details.scene, { globalRoot: rootElement || document.body });
-    }
-
-    /**
-     * Hide the inspector for this scene
-     */
-    public hideInspector(): void {
-        this._inspectorInstance?.Hide();
     }
 
     private async _updateModel(source: string | File | ArrayBufferView | undefined, options?: LoadAssetContainerOptions, abortSignal?: AbortSignal): Promise<void> {
