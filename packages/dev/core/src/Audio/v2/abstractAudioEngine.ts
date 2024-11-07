@@ -33,6 +33,11 @@ export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
     public abstract get isWebAudio(): boolean;
 
     /**
+     * The current state of the audio engine.
+     */
+    public abstract get state(): string;
+
+    /**
      * The current time in seconds.
      */
     public abstract get currentTime(): number;
@@ -75,7 +80,25 @@ export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
         this._sounds.clear();
     }
 
+    /**
+     * Checks if the specified format is valid.
+     * @param format The format to check. The format is the audio file extension, such as "mp3" or "wav".
+     * @returns `true` if the format is valid; otherwise `false`.
+     */
     public abstract formatIsValid(format: string): boolean;
+
+    /**
+     * Pauses the audio engine if it is running.
+     * @param waitTime The time in seconds to wait before pausing the audio engine.
+     * @returns A promise that resolves when the audio engine is paused.
+     */
+    public abstract pause(waitTime?: Nullable<number>): Promise<void>;
+
+    /**
+     * Resumes the audio engine if it is not running.
+     * @returns A promise that resolves when the audio engine is running.
+     */
+    public abstract resume(): Promise<void>;
 
     protected _addMainBus(mainBus: MainAudioBus): void {
         this._mainBuses.add(mainBus);
