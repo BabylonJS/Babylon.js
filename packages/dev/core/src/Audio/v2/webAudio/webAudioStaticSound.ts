@@ -260,10 +260,6 @@ class WebAudioStaticSoundInstance extends StaticSoundInstance {
         return this._currentTime + timeSinceLastStart;
     }
 
-    public get webAudioOutputNode() {
-        return this.sourceNode;
-    }
-
     constructor(source: WebAudioStaticSound) {
         super(source);
         this._initSourceNode();
@@ -342,7 +338,7 @@ class WebAudioStaticSoundInstance extends StaticSoundInstance {
         super._connect(node);
 
         if (node instanceof WebAudioStaticSound && node.webAudioInputNode) {
-            this.webAudioOutputNode?.connect(node.webAudioInputNode);
+            this.sourceNode?.connect(node.webAudioInputNode);
         } else {
             throw new Error("Unsupported node type.");
         }
@@ -352,7 +348,7 @@ class WebAudioStaticSoundInstance extends StaticSoundInstance {
         super._disconnect(node);
 
         if (node instanceof WebAudioStaticSound && node.webAudioInputNode) {
-            this.webAudioOutputNode?.disconnect(node.webAudioInputNode);
+            this.sourceNode?.disconnect(node.webAudioInputNode);
         } else {
             throw new Error("Unsupported node type.");
         }

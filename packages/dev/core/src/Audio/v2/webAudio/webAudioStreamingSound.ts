@@ -1,9 +1,14 @@
+import { Tools } from "../../../Misc/tools";
 import type { Nullable } from "../../../types";
 import type { AbstractAudioEngine } from "../abstractAudioEngine";
+import type { AbstractAudioNode } from "../abstractAudioNode";
+import { SoundState } from "../soundState";
 import type { IStreamingSoundOptions } from "../streamingSound";
 import { StreamingSound } from "../streamingSound";
 import { StreamingSoundInstance } from "../streamingSoundInstance";
+import type { WebAudioBus } from "./webAudioBus";
 import type { WebAudioEngine } from "./webAudioEngine";
+import type { WebAudioMainBus } from "./webAudioMainBus";
 
 /**
  * Options for creating a new WebAudioStreamingSound.
@@ -12,7 +17,7 @@ export interface IWebAudioStreamingSoundOptions extends IStreamingSoundOptions {
     /**
      * The URL of the sound source.
      */
-    sourceUrl?: string;
+    source: string;
 }
 
 /**
@@ -22,7 +27,7 @@ export interface IWebAudioStreamingSoundOptions extends IStreamingSoundOptions {
  * @param options - The options for the streaming sound.
  * @returns A promise that resolves to the created streaming sound.
  */
-export async function CreateStreamingSoundAsync(name: string, engine: AbstractAudioEngine, options: Nullable<IStreamingSoundOptions> = null): Promise<StreamingSound> {
+export async function CreateStreamingSoundAsync(name: string, engine: AbstractAudioEngine, options: Nullable<IWebAudioStreamingSoundOptions> = null): Promise<StreamingSound> {
     if (!engine.isWebAudio) {
         throw new Error("Unsupported engine type.");
     }
@@ -38,10 +43,13 @@ class WebAudioStreamingSound extends StreamingSound {
     private _gainNode: GainNode;
 
     /** @internal */
+    public source: string;
+
+    /** @internal */
     public override readonly engine: WebAudioEngine;
 
     /** @internal */
-    public audioContext: BaseAudioContext;
+    public audioContext: AudioContext;
 
     /** @internal */
     public get volume(): number {
@@ -50,6 +58,16 @@ class WebAudioStreamingSound extends StreamingSound {
 
     public set volume(value: number) {
         this._gainNode.gain.value = value;
+    }
+
+    /** @internal */
+    public get webAudioInputNode() {
+        return this._gainNode;
+    }
+
+    /** @internal */
+    public get webAudioOutputNode() {
+        return this._gainNode;
     }
 
     /** @internal */
@@ -64,11 +82,23 @@ class WebAudioStreamingSound extends StreamingSound {
 
     /** @internal */
     public async init(options: Nullable<IWebAudioStreamingSoundOptions> = null): Promise<void> {
-        this.audioContext = await this.engine.audioContext;
+        const audioContext = await this.engine.audioContext;
+
+        if (!(audioContext instanceof AudioContext)) {
+            throw new Error("Unsupported audio context type.");
+        }
+
+        this.audioContext = audioContext;
 
         this._gainNode = new GainNode(this.audioContext);
 
+        this.source = options?.source ?? "";
+        this.outputBus = options?.outputBus ?? this.engine.defaultMainBus;
         this.volume = options?.volume ?? 1;
+
+        if (options?.autoplay) {
+            this.play(null, this.startOffset, this.duration > 0 ? this.duration : null);
+        }
     }
 
     /** @internal */
@@ -81,22 +111,90 @@ class WebAudioStreamingSound extends StreamingSound {
         this.engine.addSoundInstance(soundInstance);
         return soundInstance;
     }
+
+    protected override _connect(node: AbstractAudioNode): void {
+        super._connect(node);
+
+        if (node.getClassName() === "WebAudioMainBus" || node.getClassName() === "WebAudioBus") {
+            this.webAudioOutputNode.connect((node as WebAudioMainBus | WebAudioBus).webAudioInputNode);
+        } else {
+            throw new Error("Unsupported node type.");
+        }
+    }
+
+    protected override _disconnect(node: AbstractAudioNode): void {
+        super._disconnect(node);
+
+        if (node.getClassName() === "WebAudioMainBus" || node.getClassName() === "WebAudioBus") {
+            this.webAudioOutputNode.disconnect((node as WebAudioMainBus | WebAudioBus).webAudioInputNode);
+        } else {
+            throw new Error("Unsupported node type.");
+        }
+    }
 }
 
 /** @internal */
 class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
+    // private _currentTime: number = 0;
+    // private _startTime: number = 0;
+
+    private _isReady: boolean = false;
+
+    private _onCanPlayThrough: () => void = (() => {
+        this._isReady = true;
+
+        if (this._state === SoundState.Playing) {
+            this._play();
+        }
+    }).bind(this);
+
+    protected override _source: WebAudioStreamingSound;
+
+    /** @internal */
+    public audioElement: Nullable<HTMLAudioElement>;
+
+    /** @internal */
+    public sourceNode: Nullable<MediaElementAudioSourceNode>;
+
     public get currentTime(): number {
         return 0;
     }
 
     constructor(source: WebAudioStreamingSound) {
         super(source);
+
+        if (typeof source.source === "string") {
+            this._initFromUrl(source.source);
+        }
     }
 
-    public async init(): Promise<void> {}
+    private _initFromUrl(url: string): void {
+        const audio = new Audio(url);
+        audio.controls = false;
+        audio.loop = this._source.loop;
+        Tools.SetCorsBehavior(url, audio);
+        audio.preload = this._source.preload;
+        audio.addEventListener("canplaythrough", this._onCanPlayThrough, { once: true });
+        audio.load();
+
+        document.body.appendChild(audio);
+
+        this.sourceNode = new MediaElementAudioSourceNode(this._source.audioContext, { mediaElement: audio });
+        this._connect(this._source);
+
+        this.audioElement = audio;
+    }
 
     /** @internal */
-    public play(waitTime: Nullable<number> = null, startOffset: Nullable<number> = null, duration: Nullable<number> = null): void {}
+    public play(waitTime: Nullable<number> = null, startOffset: Nullable<number> = null, duration: Nullable<number> = null): void {
+        if (this._state === SoundState.Playing) {
+            return;
+        }
+
+        this._state = SoundState.Playing;
+
+        this._play();
+    }
 
     /** @internal */
     public pause(): void {}
@@ -110,5 +208,35 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
     /** @internal */
     public getClassName(): string {
         return "WebAudioStreamingSoundInstance";
+    }
+
+    protected override _connect(node: AbstractAudioNode): void {
+        super._connect(node);
+
+        if (node instanceof WebAudioStreamingSound && node.webAudioInputNode) {
+            this.sourceNode?.connect(node.webAudioInputNode);
+        } else {
+            throw new Error("Unsupported node type.");
+        }
+    }
+
+    protected override _disconnect(node: AbstractAudioNode): void {
+        super._disconnect(node);
+
+        if (node instanceof WebAudioStreamingSound && node.webAudioInputNode) {
+            this.sourceNode?.disconnect(node.webAudioInputNode);
+        } else {
+            throw new Error("Unsupported node type.");
+        }
+    }
+
+    private _play(): void {
+        if (!this._isReady) {
+            return;
+        }
+
+        if (this.audioElement) {
+            this.audioElement.play();
+        }
     }
 }

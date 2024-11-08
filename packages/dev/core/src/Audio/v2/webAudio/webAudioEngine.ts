@@ -88,7 +88,7 @@ export class WebAudioEngine extends AbstractAudioEngine {
 
         this._audioContext.addEventListener("statechange", this._onAudioContextStateChange);
 
-        this.resume();
+        await this.resume();
 
         document.removeEventListener("click", this._initAudioContext);
     }).bind(this);
@@ -135,10 +135,9 @@ export class WebAudioEngine extends AbstractAudioEngine {
 
         this._resumeOnInteraction = options?.resumeOnInteraction ?? true;
 
-        this.audioContext.then(async () => {
-            this._mainOutput = await CreateMainAudioOutputAsync(this);
-            await CreateMainAudioBusAsync("default", this);
-        });
+        await this.audioContext;
+        this._mainOutput = await CreateMainAudioOutputAsync(this);
+        await CreateMainAudioBusAsync("default", this);
     }
 
     /** @internal */
