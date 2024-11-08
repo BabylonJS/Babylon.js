@@ -1,6 +1,6 @@
-fn getDataUV(index: f32, textureSize: vec2f) -> vec2<f32> {
-    let y: f32 = floor(index / textureSize.x);
-    let x: f32 = index - y * textureSize.x;
+fn getDataUV(index: f32) -> vec2<f32> {
+    let y: f32 = floor(index / uniforms.dataTextureSize.x);
+    let x: f32 = index - y * uniforms.dataTextureSize.x;
     return vec2f((x + 0.5), (y + 0.5));
 }
 
@@ -11,9 +11,9 @@ struct Splat {
     covB: vec4f,
 };
 
-fn readSplat(splatIndex: f32, textureSize: vec2f) -> Splat {
+fn readSplat(splatIndex: f32) -> Splat {
     var splat: Splat;
-    let splatUV = getDataUV(splatIndex, textureSize);
+    let splatUV = getDataUV(splatIndex);
     let splatUVi32 = vec2<i32>(i32(splatUV.x), i32(splatUV.y));
     splat.center = textureLoad(centersTexture, splatUVi32, 0);
     splat.color = textureLoad(colorsTexture, splatUVi32, 0);
@@ -31,9 +31,7 @@ fn gaussianSplatting(
     covB: vec3<f32>, 
     worldMatrix: mat4x4<f32>, 
     viewMatrix: mat4x4<f32>, 
-    projectionMatrix: mat4x4<f32>,
-    focal: vec2<f32>, 
-    invViewport: vec2<f32>
+    projectionMatrix: mat4x4<f32>
 ) -> vec4f {
     let modelView = viewMatrix * worldMatrix;
     let camspace = viewMatrix * vec4f(worldPos, 1.0);
@@ -51,8 +49,8 @@ fn gaussianSplatting(
     );
 
     let J = mat3x3<f32>(
-        focal.x / camspace.z, 0.0, -(focal.x * camspace.x) / (camspace.z * camspace.z),
-        0.0, focal.y / camspace.z, -(focal.y * camspace.y) / (camspace.z * camspace.z),
+        uniforms.focal.x / camspace.z, 0.0, -(uniforms.focal.x * camspace.x) / (camspace.z * camspace.z),
+        0.0, uniforms.focal.y / camspace.z, -(uniforms.focal.y * camspace.y) / (camspace.z * camspace.z),
         0.0, 0.0, 0.0
     );
 
@@ -83,7 +81,7 @@ fn gaussianSplatting(
 
     let vCenter = vec2<f32>(pos2d.x, pos2d.y);
     return vec4f(
-        vCenter + ((meshPos.x * majorAxis + meshPos.y * minorAxis) * invViewport * pos2d.w) * scale, 
+        vCenter + ((meshPos.x * majorAxis + meshPos.y * minorAxis) * uniforms.invViewport * pos2d.w) * scale, 
         pos2d.z, 
         pos2d.w
     );

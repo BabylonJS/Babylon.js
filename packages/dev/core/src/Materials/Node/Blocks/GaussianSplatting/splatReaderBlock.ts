@@ -108,7 +108,7 @@ export class SplatReaderBlock extends NodeMaterialBlock {
         const splatVariablename = state._getFreeVariableName("splat");
 
         if (state.shaderLanguage === ShaderLanguage.WGSL) {
-            state.compilationString += `var ${splatVariablename}: Splat = readSplat(${splatIndex.associatedVariableName}, uniforms.dataTextureSize);\n`;
+            state.compilationString += `var ${splatVariablename}: Splat = readSplat(${splatIndex.associatedVariableName});\n`;
             state.compilationString += `var covA: vec3f = splat.covA.xyz; var covB: vec3f = vec3f(splat.covA.w, splat.covB.xy);\n`;
             state.compilationString += "vertexOutputs.vPosition = input.position;\n";
         } else {
