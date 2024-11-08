@@ -129,8 +129,8 @@ export class HTML3DElement extends LitElement {
         this._createPropertyBinding(
             "selectedAnimation",
             (details) => details.viewer.onSelectedAnimationChanged,
-            (details) => (details.viewer.selectedAnimation = this.selectedAnimation),
-            (details) => (this.selectedAnimation = details.viewer.selectedAnimation ?? -1)
+            (details) => (details.viewer.selectedAnimation = this.selectedAnimation ?? details.viewer.selectedAnimation),
+            (details) => (this.selectedAnimation = details.viewer.selectedAnimation)
         ),
     ] as const;
 
