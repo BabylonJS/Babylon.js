@@ -1520,7 +1520,7 @@ export class SceneLoader {
      * @returns a plugin or null if none works
      */
     public static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory | undefined {
-        return getPluginForExtension(extension)?.plugin;
+        return getPluginForExtension(extension, true)?.plugin;
     }
 
     /**
