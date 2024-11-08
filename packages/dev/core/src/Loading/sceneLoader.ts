@@ -575,23 +575,26 @@ async function loadDataAsync(
         throw "When using ArrayBufferView to load data the file extension must be provided.";
     }
 
-    let registeredPlugin: IRegisteredPlugin | undefined;
     const fileExtension = !directLoad && !pluginExtension ? getFilenameExtension(fileInfo.url) : "";
 
-    if (!registeredPlugin) {
-        registeredPlugin = pluginExtension
-            ? getPluginForExtension(pluginExtension, true)
-            : directLoad
-              ? getPluginForDirectLoad(fileInfo.url)
-              : getPluginForExtension(fileExtension, false);
-    }
+    let registeredPlugin = pluginExtension
+        ? getPluginForExtension(pluginExtension, true)
+        : directLoad
+          ? getPluginForDirectLoad(fileInfo.url)
+          : getPluginForExtension(fileExtension, false);
 
     if (!registeredPlugin && fileExtension) {
-        // Fetching head content to get the mime type
-        const response = await _FetchAsync(fileInfo.url, { method: "HEAD", responseHeaders: ["Content-Type"] });
-        const mimeType = response.headerValues ? response.headerValues["Content-Type"] : "";
-        if (mimeType) {
-            registeredPlugin = getPluginForMimeType(mimeType);
+        if (fileInfo.url && !fileInfo.url.startsWith("blob:")) {
+            // Fetching head content to get the mime type
+            const response = await _FetchAsync(fileInfo.url, { method: "HEAD", responseHeaders: ["Content-Type"] });
+            const mimeType = response.headerValues ? response.headerValues["Content-Type"] : "";
+            if (mimeType) {
+                registeredPlugin = getPluginForMimeType(mimeType);
+            }
+        }
+
+        if (!registeredPlugin) {
+            registeredPlugin = getDefaultPlugin();
         }
     }
 
@@ -980,7 +983,7 @@ function loadScene(
  * @param options an object that configures aspects of how the scene is loaded
  * @returns The loaded scene
  */
-export function LoadSceneAsync(source: SceneSource, engine: AbstractEngine, options?: LoadOptions): Promise<Scene> {
+export function loadSceneAsync(source: SceneSource, engine: AbstractEngine, options?: LoadOptions): Promise<Scene> {
     const { rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = options ?? {};
     return loadSceneAsyncCore(rootUrl, source, engine, onProgress, pluginExtension, name, pluginOptions);
 }
@@ -1126,7 +1129,7 @@ async function appendAsync(
  * @param scene is the instance of BABYLON.Scene to append to
  * @param options an object that configures aspects of how the scene is loaded
  */
-export async function AppendSceneAsync(source: SceneSource, scene: Scene, options?: LoadAssetContainerOptions): Promise<void> {
+export async function appendSceneAsync(source: SceneSource, scene: Scene, options?: LoadAssetContainerOptions): Promise<void> {
     const { rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = options ?? {};
     await appendSceneAsyncCore(rootUrl, source, scene, onProgress, pluginExtension, name, pluginOptions);
 }
@@ -1268,7 +1271,7 @@ async function loadAssetContainerCoreAsync(
  * @param options an object that configures aspects of how the scene is loaded
  * @returns The loaded asset container
  */
-export function LoadAssetContainerAsync(source: SceneSource, scene: Scene, options?: LoadAssetContainerOptions): Promise<AssetContainer> {
+export function loadAssetContainerAsync(source: SceneSource, scene: Scene, options?: LoadAssetContainerOptions): Promise<AssetContainer> {
     const { rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = options ?? {};
     return internalLoadAssetContainerAsync(rootUrl, source, scene, onProgress, pluginExtension, name, pluginOptions);
 }
@@ -1386,7 +1389,7 @@ function importAnimations(
  * @param scene is the instance of BABYLON.Scene to append to
  * @param options an object that configures aspects of how the scene is loaded
  */
-export async function ImportAnimationsAsync(source: SceneSource, scene: Scene, options?: ImportAnimationsOptions): Promise<void> {
+export async function importAnimationsAsync(source: SceneSource, scene: Scene, options?: ImportAnimationsOptions): Promise<void> {
     const { rootUrl = "", overwriteAnimations, animationGroupLoadingMode, targetConverter, onProgress, pluginExtension, name, pluginOptions } = options ?? {};
     await importAnimationsAsyncCore(rootUrl, source, scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, onProgress, pluginExtension, name, pluginOptions);
 }
