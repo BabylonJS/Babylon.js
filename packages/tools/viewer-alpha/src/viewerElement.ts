@@ -2,7 +2,7 @@
 import type { ArcRotateCamera, Nullable, Observable } from "core/index";
 
 import type { PropertyValues } from "lit";
-import type { ToneMapping, ViewerDetails, ViewerHotSpotResult, ViewerHotSpotQuery } from "./viewer";
+import type { ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, defaultConverter, html } from "lit";
@@ -11,7 +11,7 @@ import { customElement, property, query, state } from "lit/decorators.js";
 import { Color4 } from "core/Maths/math.color";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { Logger } from "core/Misc/logger";
-import { isToneMapping } from "./viewer";
+import { isToneMapping, ViewerHotSpotResult } from "./viewer";
 import { createViewerForCanvas, getDefaultEngine } from "./viewerFactory";
 
 // Icon SVG is pulled from https://fluentuipr.z22.web.core.windows.net/heads/master/public-docsite-v9/storybook/iframe.html?id=icons-catalog--page&viewMode=story
@@ -41,6 +41,8 @@ function parseColor(color: string | null | undefined): Nullable<Color4> {
     const data = context.getImageData(0, 0, 1, 1).data;
     return new Color4(data[0] / 255, data[1] / 255, data[2] / 255, data[3] / 255);
 }
+
+type HotSpot = ViewerHotSpotQuery & { cameraOrbit?: [alpha: number, beta: number, radius: number] };
 
 // Custom events for the HTML3DElement.
 interface HTML3DElementEventMap extends HTMLElementEventMap {
@@ -384,17 +386,47 @@ export class HTML3DElement extends LitElement {
      * @returns world and screen space coordinates
      */
     public queryHotSpot(name: string, result: ViewerHotSpotResult): boolean {
-        // Retrieve all hotspots inside the viewer element
-        let resultFound = false;
-        // Iterate through each hotspot to get the 'data-surface' and 'data-name' attributes
+        return this._queryHotSpot(name, result) != null;
+    }
+
+    private _queryHotSpot(name: string, result: ViewerHotSpotResult): Nullable<HotSpot> {
         if (this._viewerDetails) {
             const hotSpot = this.hotSpots?.[name];
             if (hotSpot) {
-                resultFound = this._viewerDetails.viewer.getHotSpotToRef(hotSpot, result);
+                if (this._viewerDetails.viewer.getHotSpotToRef(hotSpot, result)) {
+                    return hotSpot;
+                }
             }
         }
-        return resultFound;
+        return null;
     }
+
+    /**
+     * Updates the camera to focus on a named hotspot.
+     * @param name The name of the hotspot to focus on.
+     * @returns true if the hotspot was found and the camera was updated, false otherwise.
+     */
+    public focusHotSpot(name: string): boolean {
+        const result = new ViewerHotSpotResult();
+        const query = this._queryHotSpot(name, result);
+        if (query && this._viewerDetails) {
+            let cameraOrbit = query.cameraOrbit;
+            if (!cameraOrbit) {
+                // TODO: calculate
+                cameraOrbit = [0, 0, 0];
+            }
+
+            // TODO: Call a new function on ArcRotateCamera to do the animation (same logic it already has for restoring the original pose)
+            this._viewerDetails.camera.target.x = result.worldPosition[0];
+            this._viewerDetails.camera.target.y = result.worldPosition[1];
+            this._viewerDetails.camera.target.z = result.worldPosition[2];
+            this._viewerDetails.camera.alpha = cameraOrbit[0];
+            this._viewerDetails.camera.beta = cameraOrbit[1];
+            this._viewerDetails.camera.radius = cameraOrbit[2];
+        }
+        return false;
+    }
+
     /**
      * The engine to use for rendering.
      */
@@ -560,7 +592,7 @@ export class HTML3DElement extends LitElement {
             return JSON.parse(value);
         },
     })
-    public hotSpots: Nullable<Record<string, ViewerHotSpotQuery>> = null;
+    public hotSpots: Nullable<Record<string, HotSpot>> = null;
 
     /**
      * True if the default animation should play automatically when a model is loaded.

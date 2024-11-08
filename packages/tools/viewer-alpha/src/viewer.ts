@@ -123,17 +123,20 @@ export type ViewerHotSpotQuery = {
     meshIndex: number;
 } & HotSpotQuery;
 
-export type ViewerHotSpotResult = {
+/**
+ * Provides the result of a hot spot query.
+ */
+export class ViewerHotSpotResult {
     /**
      * 2D canvas position in pixels
      */
-    screenPosition: [number, number];
+    public readonly screenPosition: [x: number, y: number] = [NaN, NaN];
 
     /**
      * 3D world coordinates
      */
-    worldPosition: [number, number, number];
-};
+    public readonly worldPosition: [x: number, y: number, z: number] = [NaN, NaN, NaN];
+}
 
 /**
  * @experimental
@@ -799,8 +802,11 @@ export class Viewer implements IDisposable {
         const scene = this._details.scene;
 
         Vector3.ProjectToRef(worldPos, mesh.getWorldMatrix(), scene.getTransformMatrix(), new Viewport(0, 0, viewportWidth, viewportHeight), screenPos);
-        result.screenPosition = [screenPos.x, screenPos.y];
-        result.worldPosition = [worldPos.x, worldPos.y, worldPos.z];
+        result.screenPosition[0] = screenPos.x;
+        result.screenPosition[1] = screenPos.y;
+        result.worldPosition[0] = worldPos.x;
+        result.worldPosition[1] = worldPos.y;
+        result.worldPosition[2] = worldPos.z;
         return true;
     }
 
