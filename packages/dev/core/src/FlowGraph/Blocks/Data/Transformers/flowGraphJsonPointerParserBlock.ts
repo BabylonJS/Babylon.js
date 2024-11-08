@@ -125,6 +125,11 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
         return accessorContainer.info.get(accessorContainer.object);
     }
 
+    private _getInterpolationAnimationPropertyInfo(_target: O, _propertyName: string, context: FlowGraphContext) {
+        const accessorContainer = this.templateComponent.getAccessor(this.config.pathConverter, context);
+        return accessorContainer.info.interpolation?.[0];
+    }
+
     /**
      * Gets the class name of this block
      * @returns the class name

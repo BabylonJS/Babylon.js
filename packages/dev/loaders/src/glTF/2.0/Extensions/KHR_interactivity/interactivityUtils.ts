@@ -792,11 +792,11 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         inputs: {
             values: {
-                value: { name: "value" },
+                value: { name: "value-1" },
                 "[segment]": { name: "$1", toBlock: FlowGraphBlockNames.JsonPointerParser },
                 duration: { name: "duration-1", gltfType: "number" /*, inOptions: true */ },
-                p1: { name: "initialValue" /*, inOptions: true*/ },
-                p2: { name: "endValue" /*, inOptions: true*/ },
+                // p1: { name: "initialValue" /*, inOptions: true*/ },
+                // p2: { name: "endValue" /*, inOptions: true*/ },
             },
             flows: {
                 in: { name: "in", toBlock: FlowGraphBlockNames.PlayAnimation },
@@ -811,7 +811,23 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             // connect the pointer to the getProperty block
             connectFlowGraphNodes("object", "object", serializedObjects[2], serializedObjects[1], true);
             connectFlowGraphNodes("propertyName", "propertyName", serializedObjects[0], serializedObjects[1], true);
+            connectFlowGraphNodes("value-0", "value", serializedObjects[0], serializedObjects[1], true);
             connectFlowGraphNodes("animation", "animation", serializedObjects[2], serializedObjects[0], true);
+            // search for p1 and p2 and remove them, for now
+            serializedObjects.forEach((serializedObject) => {
+                // check if it is the json pointer block
+                if (serializedObject.className === FlowGraphBlockNames.JsonPointerParser) {
+                    // remove the p1 and p2
+                    serializedObject.dataInputs.length = 0;
+                    serializedObject.config = serializedObject.config || {};
+                    serializedObject.config.outputValue = true;
+                } else if (serializedObject.className === FlowGraphBlockNames.ValueInterpolation) {
+                    // remove the p1 and p2
+                    serializedObject.config = serializedObject.config || {};
+                    // get the type of the pointer interpolation
+                    serializedObject.config.animationType = "linear";
+                }
+            });
             return serializedObjects;
         },
     },

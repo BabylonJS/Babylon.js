@@ -3,8 +3,8 @@
         "generator": "Khronos glTF Blender I/O v0.9.28",
         "version": "2.0"
     },
-    "extensionsUsed": ["KHR_lights_punctual", "KHR_interactivity", "KHR_node_selectability"],
-    "extensionsRequired": ["KHR_lights_punctual", "KHR_interactivity", "KHR_node_selectability"],
+    "extensionsUsed": ["KHR_lights_punctual", "KHR_interactivity", "KHR__node_selectability"],
+    "extensionsRequired": ["KHR_lights_punctual", "KHR_interactivity", "KHR__node_selectability"],
     "extensions": {
         "KHR_lights_punctual": {
             "lights": [
@@ -19,17 +19,78 @@
         "KHR_interactivity": {
             "nodes": [
                 {
-                    "type": "event/onStart",
+                    "type": "event/onSelect",
+                    "configuration": [
+                        {
+                            "id": "nodeIndex",
+                            "value": 4
+                        }
+                    ],
                     "flows": [
                         {
                             "id": "out",
-                            "node": 1,
+                            "node": 6,
                             "socket": "in"
                         }
                     ]
                 },
                 {
-                    "type": "pointer/interpolate",
+                    "type": "event/onStart",
+                    "flows": [
+                        {
+                            "id": "out",
+                            "node": 4,
+                            "socket": "in"
+                        }
+                    ]
+                },
+                {
+                    "type": "math/add",
+                    "values": [
+                        {
+                            "id": "a",
+                            "node": 5,
+                            "socket": "value"
+                        },
+                        {
+                            "id": "b",
+                            "value": [0, 1, 0],
+                            "type": 0
+                        }
+                    ]
+                },
+                {
+                    "type": "babylon/log",
+                    "values": [
+                        {
+                            "id": "message",
+                            "node": 0,
+                            "socket": "selectionPoint"
+                        }
+                    ]
+                },
+                {
+                    "type": "babylon/log",
+                    "values": [
+                        {
+                            "id": "message",
+                            "node": 5,
+                            "socket": "value"
+                        }
+                    ]
+                },
+                {
+                    "type": "pointer/get",
+                    "configuration": [
+                        {
+                            "id": "pointer",
+                            "type": 2,
+                            "value": "/nodes/4/translation"
+                        }
+                    ]
+                },
+                {
+                    "type": "pointer/set",
                     "configuration": [
                         {
                             "id": "pointer",
@@ -39,29 +100,21 @@
                     ],
                     "values": [
                         {
-                            "id": "duration",
-                            "type": 1,
-                            "value": [2]
-                        },
-                        {
                             "id": "value",
-                            "value": [0, 0, 0],
-                            "type": 0
-                        },
+                            "node": 2,
+                            "socket": "value"
+                        }
+                    ],
+                    "flows": [
                         {
-                            "id": "p1",
-                            "value": [0, 0],
-                            "type": 0
-                        },
-                        {
-                            "id": "p2",
-                            "value": [1, 1],
-                            "type": 0
+                            "id": "out",
+                            "node": 4,
+                            "socket": "in"
                         }
                     ]
                 }
             ],
-            "types": [{ "signature": "float3" }, { "signature": "float" }, { "signature": "float2" }]
+            "types": [{ "signature": "float3" }]
         }
     },
     "scene": 0,

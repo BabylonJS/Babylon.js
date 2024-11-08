@@ -7,6 +7,7 @@ import { getRichTypeByAnimationType, RichTypeAny, RichTypeNumber } from "core/Fl
 import { Animation } from "core/Animations/animation";
 import { RegisterClass } from "core/Misc/typeStore";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
+import { IAnimatable } from "core/Animations/animatable.interface";
 
 export interface IFlowGraphInterpolationBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
@@ -70,6 +71,10 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
      * Input connection: The name of the property that will be set
      */
     public readonly propertyName: FlowGraphDataConnection<string | string[]>;
+
+    public readonly customBuildAnimation: FlowGraphDataConnection<
+        (target: any, name: string, fps: number, keys: any[], callback: (_animatable: any, babylonAnimation: Animation) => void) => void
+    >;
 
     /**
      * The keyframes to interpolate between.
@@ -145,3 +150,5 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
 }
 
 RegisterClass(FlowGraphBlockNames.ValueInterpolation, FlowGraphInterpolationBlock);
+
+// #L54P2C
