@@ -117,10 +117,12 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
         }
 
         let input = "position";
+        let uniforms = "";
         if (state.shaderLanguage === ShaderLanguage.WGSL) {
             input = "input.position";
+            uniforms = ", uniforms.focal, uniforms.invViewport";
         }
-        state.compilationString += `${state._declareOutput(output)} = gaussianSplatting(${input}, ${splatPosition.associatedVariableName}, ${splatScaleParameter}, covA, covB, ${world.associatedVariableName}, ${view.associatedVariableName}, ${projection.associatedVariableName});\n`;
+        state.compilationString += `${state._declareOutput(output)} = gaussianSplatting(${input}, ${splatPosition.associatedVariableName}, ${splatScaleParameter}, covA, covB, ${world.associatedVariableName}, ${view.associatedVariableName}, ${projection.associatedVariableName}${uniforms});\n`;
         return this;
     }
 }

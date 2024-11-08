@@ -29,7 +29,7 @@ varying vPosition: vec2f;
 @vertex
 fn main(input : VertexInputs) -> FragmentInputs {
 
-    var splat: Splat = readSplat(input.splatIndex);
+    var splat: Splat = readSplat(input.splatIndex, uniforms.dataTextureSize);
     var covA: vec3f = splat.covA.xyz;
     var covB: vec3f = vec3f(splat.covA.w, splat.covB.xy);
 
@@ -37,7 +37,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
     vertexOutputs.vColor = splat.color;
     vertexOutputs.vPosition = input.position;
-    vertexOutputs.position = gaussianSplatting(input.position, worldPos.xyz, vec2f(1.0, 1.0), covA, covB, mesh.world, scene.view, scene.projection);
+    vertexOutputs.position = gaussianSplatting(input.position, worldPos.xyz, vec2f(1.0, 1.0), covA, covB, mesh.world, scene.view, scene.projection, uniforms.focal, uniforms.invViewport);
 
 #include<clipPlaneVertex>
 #include<fogVertex>
