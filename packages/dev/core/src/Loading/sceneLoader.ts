@@ -22,6 +22,7 @@ import { RuntimeError, ErrorCodes } from "../Misc/error";
 import type { ISpriteManager } from "../Sprites/spriteManager";
 import { RandomGUID } from "../Misc/guid";
 import { AbstractEngine } from "../Engines/abstractEngine";
+import { _FetchAsync } from "core/Misc/webRequest.fetch";
 
 /**
  * Type used for the success callback of ImportMesh
@@ -111,6 +112,7 @@ export interface ISceneLoaderPluginExtensions {
      */
     readonly [extension: string]: {
         readonly isBinary: boolean;
+        readonly mimeType?: string;
     };
 }
 
@@ -333,6 +335,7 @@ interface IRegisteredPlugin {
      * Defines if the plugin supports binary data
      */
     isBinary: boolean;
+    mimeType?: string;
 }
 
 function isFactory(pluginOrFactory: IRegisteredPlugin["plugin"]): pluginOrFactory is ISceneLoaderPluginFactory {
@@ -470,7 +473,7 @@ export interface ImportAnimationsOptions extends SceneLoaderOptions {
     targetConverter?: Nullable<(target: unknown) => unknown>;
 }
 
-function isFile(value: unknown): value is File {
+function _isFile(value: unknown): value is File {
     return !!(value as File).name;
 }
 
@@ -478,11 +481,21 @@ const onPluginActivatedObservable = new Observable<ISceneLoaderPlugin | ISceneLo
 const registeredPlugins: { [extension: string]: IRegisteredPlugin } = {};
 let showingLoadingScreen = false;
 
-function getDefaultPlugin(): IRegisteredPlugin | undefined {
+function _getDefaultPlugin(): IRegisteredPlugin | undefined {
     return registeredPlugins[".babylon"];
 }
 
-function getPluginForExtension(extension: string): IRegisteredPlugin | undefined {
+function _getPluginForMimeType(mimeType: string): IRegisteredPlugin | undefined {
+    for (const registeredPluginKey in registeredPlugins) {
+        const registeredPlugin = registeredPlugins[registeredPluginKey];
+        if (registeredPlugin.mimeType === mimeType) {
+            return registeredPlugin;
+        }
+    }
+    return undefined;
+}
+
+function _getPluginForExtension(extension: string): IRegisteredPlugin | undefined {
     const registeredPlugin = registeredPlugins[extension];
     if (registeredPlugin) {
         return registeredPlugin;
@@ -492,14 +505,14 @@ function getPluginForExtension(extension: string): IRegisteredPlugin | undefined
             extension +
             " files. Trying to use .babylon default plugin. To load from a specific filetype (eg. gltf) see: https://doc.babylonjs.com/features/featuresDeepDive/importers/loadingFileTypes"
     );
-    return getDefaultPlugin();
+    return _getDefaultPlugin();
 }
 
-function isPluginForExtensionAvailable(extension: string): boolean {
+function _isPluginForExtensionAvailable(extension: string): boolean {
     return !!registeredPlugins[extension];
 }
 
-function getPluginForDirectLoad(data: string): IRegisteredPlugin | undefined {
+function _getPluginForDirectLoad(data: string): IRegisteredPlugin | undefined {
     for (const extension in registeredPlugins) {
         const plugin = registeredPlugins[extension].plugin;
 
@@ -508,10 +521,10 @@ function getPluginForDirectLoad(data: string): IRegisteredPlugin | undefined {
         }
     }
 
-    return getDefaultPlugin();
+    return _getDefaultPlugin();
 }
 
-function getPluginForFilename(sceneFilename: string): IRegisteredPlugin | undefined {
+function _getPluginForFilename(sceneFilename: string): IRegisteredPlugin | undefined {
     const queryStringPosition = sceneFilename.indexOf("?");
 
     if (queryStringPosition !== -1) {
@@ -521,10 +534,10 @@ function getPluginForFilename(sceneFilename: string): IRegisteredPlugin | undefi
     const dotPosition = sceneFilename.lastIndexOf(".");
 
     const extension = sceneFilename.substring(dotPosition, sceneFilename.length).toLowerCase();
-    return getPluginForExtension(extension);
+    return _getPluginForExtension(extension);
 }
 
-function getDirectLoad(sceneFilename: string): Nullable<string> {
+function _getDirectLoad(sceneFilename: string): Nullable<string> {
     if (sceneFilename.substring(0, 5) === "data:") {
         return sceneFilename.substring(5);
     }
@@ -532,7 +545,7 @@ function getDirectLoad(sceneFilename: string): Nullable<string> {
     return null;
 }
 
-function formatErrorMessage(fileInfo: IFileInfo, message?: string, exception?: any): string {
+function _formatErrorMessage(fileInfo: IFileInfo, message?: string, exception?: any): string {
     const fromLoad = fileInfo.rawData ? "binary data" : fileInfo.url;
     let errorMessage = "Unable to load from " + fromLoad;
 
@@ -545,7 +558,7 @@ function formatErrorMessage(fileInfo: IFileInfo, message?: string, exception?: a
     return errorMessage;
 }
 
-function loadData(
+async function _loadDataAsync(
     fileInfo: IFileInfo,
     scene: Scene,
     onSuccess: (plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync, data: unknown, responseURL?: string) => void,
@@ -555,15 +568,28 @@ function loadData(
     pluginExtension: Nullable<string>,
     name: string,
     pluginOptions: PluginOptions
-): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
-    const directLoad = getDirectLoad(fileInfo.url);
+): Promise<Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>> {
+    const directLoad = _getDirectLoad(fileInfo.url);
 
     if (fileInfo.rawData && !pluginExtension) {
         // eslint-disable-next-line no-throw-literal
         throw "When using ArrayBufferView to load data the file extension must be provided.";
     }
 
-    const registeredPlugin = pluginExtension ? getPluginForExtension(pluginExtension) : directLoad ? getPluginForDirectLoad(fileInfo.url) : getPluginForFilename(fileInfo.url);
+    let registeredPlugin: IRegisteredPlugin | undefined;
+
+    if (!directLoad && !pluginExtension) {
+        // Fetching head content to get the mime type
+        const response = await _FetchAsync(fileInfo.url, { method: "HEAD", responseHeaders: ["Content-Type"] });
+        const mimeType = response.headerValues ? response.headerValues["Content-Type"] : "";
+        if (mimeType) {
+            registeredPlugin = _getPluginForMimeType(mimeType);
+        }
+    }
+
+    if (!registeredPlugin) {
+        registeredPlugin = pluginExtension ? _getPluginForExtension(pluginExtension) : directLoad ? _getPluginForDirectLoad(fileInfo.url) : _getPluginForFilename(fileInfo.url);
+    }
 
     if (!registeredPlugin) {
         throw new Error(`No plugin or fallback for ${pluginExtension ?? fileInfo.url}`);
@@ -582,8 +608,8 @@ function loadData(
         // For plugin factories, the plugin is instantiated on each SceneLoader operation. This makes options handling
         // much simpler as we can just pass the options to the factory, rather than passing options through to every possible
         // plugin call. Given this, options are only supported for plugins that provide a factory function.
-        if (isFactory(registeredPlugin.plugin)) {
-            const pluginFactory = registeredPlugin.plugin;
+        if (isFactory(registeredPlugin!.plugin)) {
+            const pluginFactory = registeredPlugin!.plugin;
             const partialPlugin = pluginFactory.createPlugin(pluginOptions ?? {});
             if (partialPlugin instanceof Promise) {
                 partialPlugin.then(callback).catch((error) => {
@@ -597,8 +623,8 @@ function loadData(
                 return partialPlugin;
             }
         } else {
-            callback(registeredPlugin.plugin);
-            return registeredPlugin.plugin;
+            callback(registeredPlugin!.plugin);
+            return registeredPlugin!.plugin;
         }
     };
 
@@ -632,7 +658,7 @@ function loadData(
             return;
         }
 
-        const useArrayBuffer = registeredPlugin.isBinary;
+        const useArrayBuffer = registeredPlugin!.isBinary;
 
         const dataCallback = (data: unknown, responseURL?: string) => {
             if (scene.isDisposed) {
@@ -699,7 +725,7 @@ function loadData(
     });
 }
 
-function getFileInfo(rootUrl: string, sceneSource: SceneSource): Nullable<IFileInfo> {
+function _getFileInfo(rootUrl: string, sceneSource: SceneSource): Nullable<IFileInfo> {
     let url: string;
     let name: string;
     let file: Nullable<File> = null;
@@ -709,7 +735,7 @@ function getFileInfo(rootUrl: string, sceneSource: SceneSource): Nullable<IFileI
         url = rootUrl;
         name = Tools.GetFilename(rootUrl);
         rootUrl = Tools.GetFolderPath(rootUrl);
-    } else if (isFile(sceneSource)) {
+    } else if (_isFile(sceneSource)) {
         url = `file:${sceneSource.name}`;
         name = sceneSource.name;
         file = sceneSource;
@@ -761,12 +787,13 @@ export function registerSceneLoaderPlugin(plugin: ISceneLoaderPlugin | ISceneLoa
             registeredPlugins[extension.toLowerCase()] = {
                 plugin: plugin,
                 isBinary: extensions[extension].isBinary,
+                mimeType: extensions[extension].mimeType,
             };
         });
     }
 }
 
-function importMesh(
+async function _importMeshAsync(
     meshNames: string | readonly string[] | null | undefined,
     rootUrl: string,
     sceneFilename: SceneSource = "",
@@ -777,13 +804,13 @@ function importMesh(
     pluginExtension: Nullable<string> = null,
     name = "",
     pluginOptions: PluginOptions = {}
-): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
+): Promise<Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>> {
     if (!scene) {
         Logger.Error("No scene available to import mesh to");
         return null;
     }
 
-    const fileInfo = getFileInfo(rootUrl, sceneFilename);
+    const fileInfo = _getFileInfo(rootUrl, sceneFilename);
     if (!fileInfo) {
         return null;
     }
@@ -796,7 +823,7 @@ function importMesh(
     };
 
     const errorHandler = (message?: string, exception?: any) => {
-        const errorMessage = formatErrorMessage(fileInfo, message, exception);
+        const errorMessage = _formatErrorMessage(fileInfo, message, exception);
 
         if (onError) {
             onError(scene, errorMessage, new RuntimeError(errorMessage, ErrorCodes.SceneLoaderError, exception));
@@ -832,7 +859,7 @@ function importMesh(
         scene.removePendingData(loadingToken);
     };
 
-    return loadData(
+    return await _loadDataAsync(
         fileInfo,
         scene,
         (plugin, data, responseURL) => {
@@ -883,7 +910,7 @@ function importMesh(
     );
 }
 
-function importMeshAsyncCore(
+function _importMeshAsyncCore(
     meshNames: string | readonly string[] | null | undefined,
     rootUrl: string,
     sceneFilename?: SceneSource,
@@ -894,7 +921,7 @@ function importMeshAsyncCore(
     pluginOptions?: PluginOptions
 ): Promise<ISceneLoaderAsyncResult> {
     return new Promise((resolve, reject) => {
-        importMesh(
+        _importMeshAsync(
             meshNames,
             rootUrl,
             sceneFilename,
@@ -922,7 +949,7 @@ function importMeshAsyncCore(
     });
 }
 
-function loadScene(
+function _loadScene(
     rootUrl: string,
     sceneFilename: SceneSource = "",
     engine: Nullable<AbstractEngine> = EngineStore.LastCreatedEngine,
@@ -932,13 +959,13 @@ function loadScene(
     pluginExtension: Nullable<string> = null,
     name = "",
     pluginOptions: PluginOptions = {}
-): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
+): void {
     if (!engine) {
         Tools.Error("No engine available");
-        return null;
+        return;
     }
 
-    return append(rootUrl, sceneFilename, new Scene(engine), onSuccess, onProgress, onError, pluginExtension, name, pluginOptions);
+    _appendAsync(rootUrl, sceneFilename, new Scene(engine), onSuccess, onProgress, onError, pluginExtension, name, pluginOptions);
 }
 
 /**
@@ -964,7 +991,7 @@ function loadSceneAsyncCore(
     pluginOptions?: PluginOptions
 ): Promise<Scene> {
     return new Promise((resolve, reject) => {
-        loadScene(
+        _loadScene(
             rootUrl,
             sceneFilename,
             engine,
@@ -982,7 +1009,7 @@ function loadSceneAsyncCore(
     });
 }
 
-function append(
+async function _appendAsync(
     rootUrl: string,
     sceneFilename: SceneSource = "",
     scene: Nullable<Scene> = EngineStore.LastCreatedScene,
@@ -992,13 +1019,13 @@ function append(
     pluginExtension: Nullable<string> = null,
     name = "",
     pluginOptions: PluginOptions = {}
-): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
+): Promise<Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>> {
     if (!scene) {
         Logger.Error("No scene available to append to");
         return null;
     }
 
-    const fileInfo = getFileInfo(rootUrl, sceneFilename);
+    const fileInfo = _getFileInfo(rootUrl, sceneFilename);
     if (!fileInfo) {
         return null;
     }
@@ -1020,7 +1047,7 @@ function append(
     }
 
     const errorHandler = (message?: string, exception?: any) => {
-        const errorMessage = formatErrorMessage(fileInfo, message, exception);
+        const errorMessage = _formatErrorMessage(fileInfo, message, exception);
 
         if (onError) {
             onError(scene, errorMessage, new RuntimeError(errorMessage, ErrorCodes.SceneLoaderError, exception));
@@ -1054,7 +1081,7 @@ function append(
         scene.removePendingData(loadingToken);
     };
 
-    return loadData(
+    return await _loadDataAsync(
         fileInfo,
         scene,
         (plugin, data) => {
@@ -1097,10 +1124,10 @@ function append(
  */
 export async function appendSceneAsync(source: SceneSource, scene: Scene, options?: LoadAssetContainerOptions): Promise<void> {
     const { rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = options ?? {};
-    await appendSceneAsyncCore(rootUrl, source, scene, onProgress, pluginExtension, name, pluginOptions);
+    await _appendSceneAsyncCore(rootUrl, source, scene, onProgress, pluginExtension, name, pluginOptions);
 }
 
-function appendSceneAsyncCore(
+function _appendSceneAsyncCore(
     rootUrl: string,
     sceneFilename?: SceneSource,
     scene?: Nullable<Scene>,
@@ -1110,7 +1137,7 @@ function appendSceneAsyncCore(
     pluginOptions?: PluginOptions
 ): Promise<Scene> {
     return new Promise((resolve, reject) => {
-        append(
+        _appendAsync(
             rootUrl,
             sceneFilename,
             scene,
@@ -1128,7 +1155,7 @@ function appendSceneAsyncCore(
     });
 }
 
-function loadAssetContainer(
+async function _loadAssetContainerAsync(
     rootUrl: string,
     sceneFilename: SceneSource = "",
     scene: Nullable<Scene> = EngineStore.LastCreatedScene,
@@ -1138,13 +1165,13 @@ function loadAssetContainer(
     pluginExtension: Nullable<string> = null,
     name = "",
     pluginOptions: PluginOptions = {}
-): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
+): Promise<Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>> {
     if (!scene) {
         Logger.Error("No scene available to load asset container to");
         return null;
     }
 
-    const fileInfo = getFileInfo(rootUrl, sceneFilename);
+    const fileInfo = _getFileInfo(rootUrl, sceneFilename);
     if (!fileInfo) {
         return null;
     }
@@ -1157,7 +1184,7 @@ function loadAssetContainer(
     };
 
     const errorHandler = (message?: string, exception?: any) => {
-        const errorMessage = formatErrorMessage(fileInfo, message, exception);
+        const errorMessage = _formatErrorMessage(fileInfo, message, exception);
 
         if (onError) {
             onError(scene, errorMessage, new RuntimeError(errorMessage, ErrorCodes.SceneLoaderError, exception));
@@ -1191,7 +1218,7 @@ function loadAssetContainer(
         scene.removePendingData(loadingToken);
     };
 
-    return loadData(
+    return await _loadDataAsync(
         fileInfo,
         scene,
         (plugin, data) => {
@@ -1239,10 +1266,10 @@ function loadAssetContainer(
  */
 export function loadAssetContainerAsync(source: SceneSource, scene: Scene, options?: LoadAssetContainerOptions): Promise<AssetContainer> {
     const { rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = options ?? {};
-    return loadAssetContainerAsyncCore(rootUrl, source, scene, onProgress, pluginExtension, name, pluginOptions);
+    return _loadAssetContainerAsyncCore(rootUrl, source, scene, onProgress, pluginExtension, name, pluginOptions);
 }
 
-function loadAssetContainerAsyncCore(
+function _loadAssetContainerAsyncCore(
     rootUrl: string,
     sceneFilename?: SceneSource,
     scene?: Nullable<Scene>,
@@ -1252,7 +1279,7 @@ function loadAssetContainerAsyncCore(
     pluginOptions?: PluginOptions
 ): Promise<AssetContainer> {
     return new Promise((resolve, reject) => {
-        loadAssetContainer(
+        _loadAssetContainerAsync(
             rootUrl,
             sceneFilename,
             scene,
@@ -1270,7 +1297,7 @@ function loadAssetContainerAsyncCore(
     });
 }
 
-function importAnimations(
+function _importAnimations(
     rootUrl: string,
     sceneFilename: SceneSource = "",
     scene: Nullable<Scene> = EngineStore.LastCreatedScene,
@@ -1345,7 +1372,7 @@ function importAnimations(
         }
     };
 
-    loadAssetContainer(rootUrl, sceneFilename, scene, onAssetContainerLoaded, onProgress, onError, pluginExtension, name, pluginOptions);
+    _loadAssetContainerAsync(rootUrl, sceneFilename, scene, onAssetContainerLoaded, onProgress, onError, pluginExtension, name, pluginOptions);
 }
 
 /**
@@ -1357,10 +1384,10 @@ function importAnimations(
  */
 export async function importAnimationsAsync(source: SceneSource, scene: Scene, options?: ImportAnimationsOptions): Promise<void> {
     const { rootUrl = "", overwriteAnimations, animationGroupLoadingMode, targetConverter, onProgress, pluginExtension, name, pluginOptions } = options ?? {};
-    await importAnimationsAsyncCore(rootUrl, source, scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, onProgress, pluginExtension, name, pluginOptions);
+    await _importAnimationsAsyncCore(rootUrl, source, scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, onProgress, pluginExtension, name, pluginOptions);
 }
 
-function importAnimationsAsyncCore(
+function _importAnimationsAsyncCore(
     rootUrl: string,
     sceneFilename?: SceneSource,
     scene?: Nullable<Scene>,
@@ -1373,7 +1400,7 @@ function importAnimationsAsyncCore(
     pluginOptions?: PluginOptions
 ): Promise<Scene> {
     return new Promise((resolve, reject) => {
-        importAnimations(
+        _importAnimations(
             rootUrl,
             sceneFilename,
             scene,
@@ -1478,7 +1505,7 @@ export class SceneLoader {
      * @returns the .babylon plugin
      */
     public static GetDefaultPlugin(): IRegisteredPlugin | undefined {
-        return getDefaultPlugin();
+        return _getDefaultPlugin();
     }
 
     // Public functions
@@ -1489,7 +1516,7 @@ export class SceneLoader {
      * @returns a plugin or null if none works
      */
     public static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory | undefined {
-        return getPluginForExtension(extension)?.plugin;
+        return _getPluginForExtension(extension)?.plugin;
     }
 
     /**
@@ -1498,7 +1525,7 @@ export class SceneLoader {
      * @returns true if the extension is supported
      */
     public static IsPluginForExtensionAvailable(extension: string): boolean {
-        return isPluginForExtensionAvailable(extension);
+        return _isPluginForExtensionAvailable(extension);
     }
 
     /**
@@ -1520,7 +1547,7 @@ export class SceneLoader {
      * @param onError a callback with the scene, a message, and possibly an exception when import fails
      * @param pluginExtension the extension used to determine the plugin
      * @param name defines the name of the file, if the data is binary
-     * @returns The loaded plugin
+     * @deprecated Please use ImportMeshAsync instead
      */
     public static ImportMesh(
         meshNames: string | readonly string[] | null | undefined,
@@ -1532,8 +1559,8 @@ export class SceneLoader {
         onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>,
         pluginExtension?: Nullable<string>,
         name?: string
-    ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
-        return importMesh(meshNames, rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name);
+    ): void {
+        _importMeshAsync(meshNames, rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name);
     }
 
     /**
@@ -1556,7 +1583,7 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ): Promise<ISceneLoaderAsyncResult> {
-        return importMeshAsyncCore(meshNames, rootUrl, sceneFilename, scene, onProgress, pluginExtension, name);
+        return _importMeshAsyncCore(meshNames, rootUrl, sceneFilename, scene, onProgress, pluginExtension, name);
     }
 
     /**
@@ -1569,7 +1596,7 @@ export class SceneLoader {
      * @param onError a callback with the scene, a message, and possibly an exception when import fails
      * @param pluginExtension the extension used to determine the plugin
      * @param name defines the filename, if the data is binary
-     * @returns The loaded plugin
+     * @deprecated Please use LoadAsync instead
      */
     public static Load(
         rootUrl: string,
@@ -1580,8 +1607,8 @@ export class SceneLoader {
         onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>,
         pluginExtension?: Nullable<string>,
         name?: string
-    ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
-        return loadScene(rootUrl, sceneFilename, engine, onSuccess, onProgress, onError, pluginExtension, name);
+    ) {
+        _loadScene(rootUrl, sceneFilename, engine, onSuccess, onProgress, onError, pluginExtension, name);
     }
 
     /**
@@ -1615,7 +1642,7 @@ export class SceneLoader {
      * @param onError a callback with the scene, a message, and possibly an exception when import fails
      * @param pluginExtension the extension used to determine the plugin
      * @param name defines the name of the file, if the data is binary
-     * @returns The loaded plugin
+     * @deprecated Please use AppendAsync instead
      */
     public static Append(
         rootUrl: string,
@@ -1626,8 +1653,8 @@ export class SceneLoader {
         onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>,
         pluginExtension?: Nullable<string>,
         name?: string
-    ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
-        return append(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name);
+    ) {
+        _appendAsync(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name);
     }
 
     /**
@@ -1648,7 +1675,7 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ): Promise<Scene> {
-        return appendSceneAsyncCore(rootUrl, sceneFilename, scene, onProgress, pluginExtension, name);
+        return _appendSceneAsyncCore(rootUrl, sceneFilename, scene, onProgress, pluginExtension, name);
     }
 
     /**
@@ -1661,7 +1688,7 @@ export class SceneLoader {
      * @param onError a callback with the scene, a message, and possibly an exception when import fails
      * @param pluginExtension the extension used to determine the plugin
      * @param name defines the filename, if the data is binary
-     * @returns The loaded plugin
+     * @deprecated Please use LoadAssetContainerAsync instead
      */
     public static LoadAssetContainer(
         rootUrl: string,
@@ -1672,8 +1699,8 @@ export class SceneLoader {
         onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>,
         pluginExtension?: Nullable<string>,
         name?: string
-    ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
-        return loadAssetContainer(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name);
+    ) {
+        _loadAssetContainerAsync(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name);
     }
 
     /**
@@ -1694,7 +1721,7 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ): Promise<AssetContainer> {
-        return loadAssetContainerAsyncCore(rootUrl, sceneFilename, scene, onProgress, pluginExtension, name);
+        return _loadAssetContainerAsyncCore(rootUrl, sceneFilename, scene, onProgress, pluginExtension, name);
     }
 
     /**
@@ -1710,6 +1737,7 @@ export class SceneLoader {
      * @param onError a callback with the scene, a message, and possibly an exception when import fails
      * @param pluginExtension the extension used to determine the plugin
      * @param name defines the filename, if the data is binary
+     * @deprecated Please use ImportAnimationsAsync instead
      */
     public static ImportAnimations(
         rootUrl: string,
@@ -1724,7 +1752,7 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ): void {
-        importAnimations(rootUrl, sceneFilename, scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, onSuccess, onProgress, onError, pluginExtension, name);
+        _importAnimations(rootUrl, sceneFilename, scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, onSuccess, onProgress, onError, pluginExtension, name);
     }
 
     /**
@@ -1757,6 +1785,6 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ): Promise<Scene> {
-        return importAnimationsAsyncCore(rootUrl, sceneFilename, scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, onProgress, pluginExtension, name);
+        return _importAnimationsAsyncCore(rootUrl, sceneFilename, scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, onProgress, pluginExtension, name);
     }
 }

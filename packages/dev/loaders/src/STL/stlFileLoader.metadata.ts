@@ -3,7 +3,6 @@ import type { ISceneLoaderPluginExtensions, ISceneLoaderPluginMetadata } from "c
 
 export const STLFileLoaderMetadata = {
     name: "stl",
-
     extensions: {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         ".stl": { isBinary: true },

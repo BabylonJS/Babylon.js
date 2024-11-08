@@ -3,7 +3,6 @@ import type { ISceneLoaderPluginExtensions, ISceneLoaderPluginMetadata } from "c
 
 export const SPLATFileLoaderMetadata = {
     name: "splat",
-
     extensions: {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         ".splat": { isBinary: true },
