@@ -15,6 +15,8 @@ import { Camera } from "core/Cameras/camera";
 
 import "../../Shaders/gaussianSplatting.fragment";
 import "../../Shaders/gaussianSplatting.vertex";
+import "../../ShadersWGSL/gaussianSplatting.fragment";
+import "../../ShadersWGSL/gaussianSplatting.vertex";
 import {
     BindFogParameters,
     BindLogDepth,
@@ -24,6 +26,7 @@ import {
     PrepareDefinesForMisc,
     PrepareUniformsAndSamplersList,
 } from "../materialHelper.functions";
+import { ShaderLanguage } from "../shaderLanguage";
 
 /**
  * @internal
@@ -160,6 +163,15 @@ export class GaussianSplattingMaterial extends PushMaterial {
                     defines: join,
                     onCompiled: this.onCompiled,
                     onError: this.onError,
+                    indexParameters: {},
+                    shaderLanguage: this._shaderLanguage,
+                    extraInitializationsAsync: async () => {
+                        if (this._shaderLanguage === ShaderLanguage.WGSL) {
+                            await Promise.all([import("../../ShadersWGSL/gaussianSplatting.fragment"), import("../../ShadersWGSL/gaussianSplatting.vertex")]);
+                        } else {
+                            await Promise.all([import("../../Shaders/gaussianSplatting.fragment"), import("../../Shaders/gaussianSplatting.vertex")]);
+                        }
+                    },
                 },
                 engine
             );
