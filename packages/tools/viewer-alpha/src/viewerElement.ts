@@ -9,6 +9,7 @@ import { LitElement, css, defaultConverter, html } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
 
 import { Color4 } from "core/Maths/math.color";
+import { Vector3 } from "core/Maths/math.vector";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { Logger } from "core/Misc/logger";
 import { isToneMapping, ViewerHotSpotResult } from "./viewer";
@@ -410,19 +411,14 @@ export class HTML3DElement extends LitElement {
         const result = new ViewerHotSpotResult();
         const query = this._queryHotSpot(name, result);
         if (query && this._viewerDetails) {
-            let cameraOrbit = query.cameraOrbit;
-            if (!cameraOrbit) {
-                // TODO: calculate
-                cameraOrbit = [0, 0, 0];
-            }
-
-            // TODO: Call a new function on ArcRotateCamera to do the animation (same logic it already has for restoring the original pose)
-            this._viewerDetails.camera.target.x = result.worldPosition[0];
-            this._viewerDetails.camera.target.y = result.worldPosition[1];
-            this._viewerDetails.camera.target.z = result.worldPosition[2];
-            this._viewerDetails.camera.alpha = cameraOrbit[0];
-            this._viewerDetails.camera.beta = cameraOrbit[1];
-            this._viewerDetails.camera.radius = cameraOrbit[2];
+            const cameraOrbit = query.cameraOrbit ?? [undefined, undefined, undefined];
+            this._viewerDetails.camera.interpolateTo(
+                cameraOrbit[0],
+                cameraOrbit[1],
+                cameraOrbit[2],
+                new Vector3(result.worldPosition[0], result.worldPosition[1], result.worldPosition[2])
+            );
+            return true;
         }
         return false;
     }
