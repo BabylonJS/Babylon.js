@@ -20,10 +20,11 @@ export async function CreateMainAudioOutputAsync(engine: AbstractAudioEngine): P
 /** @internal */
 export class WebAudioMainOutput extends MainAudioOutput {
     private _destinationNode: AudioDestinationNode;
+    private _gainNode: GainNode;
 
     /** @internal */
     public get webAudioInputNode(): AudioNode {
-        return this._destinationNode;
+        return this._gainNode;
     }
 
     /** @internal */
@@ -33,7 +34,12 @@ export class WebAudioMainOutput extends MainAudioOutput {
 
     /** @internal */
     public async init(): Promise<void> {
-        this._destinationNode = (await (this.engine as WebAudioEngine).audioContext).destination;
+        const audioContext = await (this.engine as WebAudioEngine).audioContext;
+
+        this._gainNode = new GainNode(audioContext);
+        this._destinationNode = audioContext.destination;
+
+        this._gainNode.connect(this._destinationNode);
     }
 
     /** @internal */
