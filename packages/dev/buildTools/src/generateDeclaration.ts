@@ -449,9 +449,9 @@ function getPackageDeclaration(
         console.log("found next", nextIndex);
         if (nextIndex !== -1) {
             processedSource =
+                processedSource.substring(0, globalIndex) +
                 `}
 ` +
-                processedSource.substring(0, globalIndex) +
                 processedSource.substring(globalIndex + 9, nextIndex) +
                 `declare module ${thisFileModuleName} {
     ` +
