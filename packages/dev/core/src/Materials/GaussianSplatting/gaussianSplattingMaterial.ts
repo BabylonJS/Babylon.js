@@ -15,6 +15,8 @@ import { Camera } from "core/Cameras/camera";
 
 import "../../Shaders/gaussianSplatting.fragment";
 import "../../Shaders/gaussianSplatting.vertex";
+import "../../ShadersWGSL/gaussianSplatting.fragment";
+import "../../ShadersWGSL/gaussianSplatting.vertex";
 import {
     BindFogParameters,
     BindLogDepth,
