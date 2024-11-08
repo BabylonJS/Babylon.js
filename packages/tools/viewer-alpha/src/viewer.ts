@@ -23,7 +23,7 @@ import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { Clamp } from "core/Maths/math.scalar.functions";
-import { TmpVectors, Vector3 } from "core/Maths/math.vector";
+import { Matrix, TmpVectors, Vector3 } from "core/Maths/math.vector";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { computeMaxExtents } from "core/Meshes/meshUtils";
 import { AsyncLock } from "core/Misc/asyncLock";
@@ -801,7 +801,7 @@ export class Viewer implements IDisposable {
         const viewportHeight = this._details.camera.viewport.height * renderHeight;
         const scene = this._details.scene;
 
-        Vector3.ProjectToRef(worldPos, mesh.getWorldMatrix(), scene.getTransformMatrix(), new Viewport(0, 0, viewportWidth, viewportHeight), screenPos);
+        Vector3.ProjectToRef(worldPos, Matrix.IdentityReadOnly, scene.getTransformMatrix(), new Viewport(0, 0, viewportWidth, viewportHeight), screenPos);
         result.screenPosition[0] = screenPos.x;
         result.screenPosition[1] = screenPos.y;
         result.worldPosition[0] = worldPos.x;
