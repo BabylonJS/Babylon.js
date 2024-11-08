@@ -37,6 +37,13 @@ import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
 
+export type LoadModelOptions = LoadAssetContainerOptions & {
+    /**
+     * The default animation index.
+     */
+    defaultAnimation?: number;
+};
+
 /**
  * Checks if the given value is a valid tone mapping option.
  * @param value The value to check.
@@ -502,7 +509,7 @@ export class Viewer implements IDisposable {
                 ];
             }
 
-            this._updateCamera();
+            this._updateCamera(true);
             this.onSelectedAnimationChanged.notifyObservers();
         }
     }
@@ -557,7 +564,7 @@ export class Viewer implements IDisposable {
      * @param options The options to use when loading the model.
      * @param abortSignal An optional signal that can be used to abort the loading process.
      */
-    public async loadModel(source: string | File | ArrayBufferView, options?: LoadAssetContainerOptions, abortSignal?: AbortSignal): Promise<void> {
+    public async loadModel(source: string | File | ArrayBufferView, options?: LoadModelOptions, abortSignal?: AbortSignal): Promise<void> {
         await this._updateModel(source, options, abortSignal);
     }
 
@@ -569,7 +576,7 @@ export class Viewer implements IDisposable {
         await this._updateModel(undefined, undefined, abortSignal);
     }
 
-    private async _updateModel(source: string | File | ArrayBufferView | undefined, options?: LoadAssetContainerOptions, abortSignal?: AbortSignal): Promise<void> {
+    private async _updateModel(source: string | File | ArrayBufferView | undefined, options?: LoadModelOptions, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
 
         const originalOnProgress = options?.onProgress;
@@ -617,7 +624,7 @@ export class Viewer implements IDisposable {
                         group.start(true, this.animationSpeed);
                         group.pause();
                     });
-                    this.selectedAnimation = 0;
+                    this.selectedAnimation = options?.defaultAnimation ?? 0;
                     this._snapshotHelper.fixMeshes(this._details.model.meshes);
                     this._details.model.addAllToScene();
                 }
@@ -810,14 +817,23 @@ export class Viewer implements IDisposable {
         return true;
     }
 
-    private _updateCamera(): void {
+    private _updateCamera(interpolate = false): void {
         // Enable camera's behaviors
         this._details.camera.useFramingBehavior = true;
         const framingBehavior = this._details.camera.getBehaviorByName("Framing") as FramingBehavior;
         framingBehavior.framingTime = 0;
         framingBehavior.elevationReturnTime = -1;
 
-        let radius = 1;
+        const currentAlpha = this._details.camera.alpha;
+        const currentBeta = this._details.camera.beta;
+        const currentRadius = this._details.camera.radius;
+        const currentTarget = this._details.camera.target;
+
+        const goalAlpha = Math.PI / 2;
+        const goalBeta = Math.PI / 2.4;
+        let goalRadius = 1;
+        let goalTarget = currentTarget;
+
         if (this._details.model?.meshes.length) {
             // get bounds and prepare framing/camera radius from its values
             this._details.camera.lowerRadiusLimit = null;
@@ -832,23 +848,24 @@ export class Viewer implements IDisposable {
             const worldSize = worldExtents.max.subtract(worldExtents.min);
             const worldCenter = worldExtents.min.add(worldSize.scale(0.5));
 
-            radius = worldSize.length() * 1.1;
+            goalRadius = worldSize.length() * 1.1;
 
-            if (!isFinite(radius)) {
-                radius = 1;
+            if (!isFinite(goalRadius)) {
+                goalRadius = 1;
                 worldCenter.copyFromFloats(0, 0, 0);
             }
 
-            this._details.camera.setTarget(worldCenter);
+            goalTarget = worldCenter;
         }
-        this._details.camera.lowerRadiusLimit = radius * 0.01;
-        this._details.camera.wheelPrecision = 100 / radius;
+        this._details.camera.lowerRadiusLimit = goalRadius * 0.01;
+        this._details.camera.wheelPrecision = 100 / goalRadius;
         this._details.camera.alpha = Math.PI / 2;
         this._details.camera.beta = Math.PI / 2.4;
-        this._details.camera.radius = radius;
-        this._details.camera.minZ = radius * 0.01;
-        this._details.camera.maxZ = radius * 1000;
-        this._details.camera.speed = radius * 0.2;
+        this._details.camera.radius = goalRadius;
+        this._details.camera.target = goalTarget;
+        this._details.camera.minZ = goalRadius * 0.01;
+        this._details.camera.maxZ = goalRadius * 1000;
+        this._details.camera.speed = goalRadius * 0.2;
         this._details.camera.useAutoRotationBehavior = true;
         this._details.camera.pinchPrecision = 200 / this._details.camera.radius;
         this._details.camera.upperRadiusLimit = 5 * this._details.camera.radius;
@@ -856,6 +873,14 @@ export class Viewer implements IDisposable {
         this._details.camera.pinchDeltaPercentage = 0.01;
         this._details.camera.restoreStateInterpolationFactor = 0.1;
         this._details.camera.storeState();
+
+        if (interpolate) {
+            this._details.camera.alpha = currentAlpha;
+            this._details.camera.beta = currentBeta;
+            this._details.camera.radius = currentRadius;
+            this._details.camera.target = currentTarget;
+            this._details.camera.interpolateTo(goalAlpha, goalBeta, goalRadius, goalTarget);
+        }
 
         updateSkybox(this._skybox, this._details.camera);
     }

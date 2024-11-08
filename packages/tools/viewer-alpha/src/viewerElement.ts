@@ -606,8 +606,8 @@ export class HTML3DElement extends LitElement {
     /**
      * The currently selected animation index.
      */
-    @property({ attribute: "selected-animation" })
-    public selectedAnimation = -1;
+    @property({ attribute: "selected-animation", type: Number })
+    public selectedAnimation: Nullable<number> = null;
 
     /**
      * True if an animation is currently playing.
@@ -924,7 +924,7 @@ export class HTML3DElement extends LitElement {
         if (this._viewerDetails) {
             try {
                 if (this.source) {
-                    await this._viewerDetails.viewer.loadModel(this.source, { pluginExtension: this.extension ?? undefined });
+                    await this._viewerDetails.viewer.loadModel(this.source, { pluginExtension: this.extension ?? undefined, defaultAnimation: this.selectedAnimation ?? 0 });
                 } else {
                     await this._viewerDetails.viewer.resetModel();
                 }
