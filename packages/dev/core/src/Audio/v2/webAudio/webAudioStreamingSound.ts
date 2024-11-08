@@ -135,9 +135,6 @@ class WebAudioStreamingSound extends StreamingSound {
 
 /** @internal */
 class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
-    // private _currentTime: number = 0;
-    // private _startTime: number = 0;
-
     private _isReady: boolean = false;
 
     private _onCanPlayThrough: () => void = (() => {
@@ -156,8 +153,13 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
     /** @internal */
     public sourceNode: Nullable<MediaElementAudioSourceNode>;
 
-    public get currentTime(): number {
-        return 0;
+    /** @internal */
+    get currentTime(): number {
+        if (this._state === SoundState.Stopped) {
+            return 0;
+        }
+
+        return this.audioElement?.currentTime ?? 0;
     }
 
     constructor(source: WebAudioStreamingSound) {
@@ -176,6 +178,7 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
         audio.preload = this._source.preload;
         audio.addEventListener("canplaythrough", this._onCanPlayThrough, { once: true });
         audio.load();
+        audio.addEventListener("ended", this._onEnded);
 
         document.body.appendChild(audio);
 
@@ -183,6 +186,18 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
         this._connect(this._source);
 
         this.audioElement = audio;
+    }
+
+    /** @internal */
+    public override dispose(): void {
+        super.dispose();
+
+        if (this.audioElement) {
+            this.audioElement?.removeEventListener("ended", this._onEnded);
+            this.audioElement?.remove();
+        }
+
+        this.sourceNode = null;
     }
 
     /** @internal */
@@ -197,18 +212,45 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
     }
 
     /** @internal */
-    public pause(): void {}
+    public pause(): void {
+        if (this._state === SoundState.Paused) {
+            return;
+        }
+
+        this._state = SoundState.Paused;
+
+        this.audioElement?.pause();
+    }
 
     /** @internal */
-    public resume(): void {}
+    public resume(): void {
+        if (this._state === SoundState.Paused) {
+            this.play();
+        }
+    }
 
     /** @internal */
-    public override stop(waitTime: Nullable<number> = null): void {}
+    public override stop(waitTime: Nullable<number> = null): void {
+        if (this._state === SoundState.Stopped) {
+            return;
+        }
+
+        this._state = SoundState.Stopped;
+
+        this.audioElement?.pause();
+
+        this._onEnded();
+    }
 
     /** @internal */
     public getClassName(): string {
         return "WebAudioStreamingSoundInstance";
     }
+
+    protected _onEnded = (() => {
+        this.onEndedObservable.notifyObservers(this);
+        this.dispose();
+    }).bind(this);
 
     protected override _connect(node: AbstractAudioNode): void {
         super._connect(node);
