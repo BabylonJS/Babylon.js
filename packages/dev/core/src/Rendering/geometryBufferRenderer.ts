@@ -806,6 +806,10 @@ export class GeometryBufferRenderer {
             defines.push("#define SCENE_MRT_COUNT " + this._multiRenderTarget.textures.length);
         }
 
+        if (this._scene.useRightHandedSystem) {
+            defines.push("#define RIGHT_HANDED");
+        }
+
         prepareStringDefinesForClipPlanes(material, this._scene, defines);
 
         // Get correct effect
