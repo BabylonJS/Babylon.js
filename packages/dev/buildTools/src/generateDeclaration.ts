@@ -431,7 +431,6 @@ function getPackageDeclaration(
     const globalIndex = processedSource.indexOf(" global {");
     console.log("found global", globalIndex);
     if (globalIndex !== -1) {
-        console.log(processedSource);
         // find where the ending } is. What we do is we count +1 if we find a { and -1 if we find a }. when we get to 0, this is the end of the global
         let count = 1;
         let i = -1;
@@ -446,7 +445,6 @@ function getPackageDeclaration(
             }
         }
         const nextIndex = i;
-        console.log("found next", nextIndex);
         if (nextIndex !== -1) {
             processedSource =
                 processedSource.substring(0, globalIndex) +
