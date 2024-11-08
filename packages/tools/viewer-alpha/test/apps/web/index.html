@@ -80,7 +80,8 @@
                     "type": "surface",
                     "meshIndex": 1,
                     "pointIndex": [228, 113, 111],
-                    "barycentric": [0.217, 0.341, 0.442]
+                    "barycentric": [0.217, 0.341, 0.442],
+                    "cameraOrbit": [1.085, 1.417, 0.518]
                 }
             }'
         >
@@ -184,6 +185,10 @@
                 hotspotVisible = !hotspotVisible;
                 lines[0].style.visibility = hotspotVisible ? "visible" : "hidden";
                 startHotSpotLinesRenderLoop();
+
+                if (hotspotVisible) {
+                    viewerElement.focusHotSpot("testHotSpot1");
+                }
             }
         </script>
     </body>
