@@ -813,6 +813,13 @@ export class InputText extends Control {
     }
 
     /**
+     * Allow the user to select all text
+     */
+    public selectAllText() {
+        this._selectAllText();
+    }
+
+    /**
      * Handles the keyboard event
      * @param evt Defines the KeyboardEvent
      */
