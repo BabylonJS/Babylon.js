@@ -4,7 +4,6 @@ import type { AbstractAudioNode } from "../abstractAudioNode";
 import { SoundState } from "../soundState";
 import type { IStaticSoundOptions } from "../staticSound";
 import { StaticSound } from "../staticSound";
-import type { IStaticSoundBufferOptions } from "../staticSoundBuffer";
 import { StaticSoundBuffer } from "../staticSoundBuffer";
 import { StaticSoundInstance } from "../staticSoundInstance";
 import type { WebAudioBus } from "./webAudioBus";
@@ -16,36 +15,21 @@ const fileExtensionRegex = new RegExp("\\.(\\w{3,4}$|\\?)");
 /**
  * Options for creating a new WebAudioStaticSoundBuffer.
  */
-export interface IWebAudioStaticSoundBufferOptions extends IStaticSoundBufferOptions {
+export interface IWebAudioStaticSoundBufferOptions {
     /**
-     * The ArrayBuffer to be used as the sound source.
+     * The sound source.
      */
-    sourceArrayBuffer?: ArrayBuffer;
+    source?: ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[];
     /**
-     * The AudioBuffer to be used as the sound source.
+     * Whether to skip codec checking when before attempting to load each source URL when `source` is a string array.
      */
-    sourceAudioBuffer?: AudioBuffer;
-    /**
-     * The URL of the sound buffer.
-     */
-    sourceUrl?: string;
-    /**
-     * Potential URLs of the sound buffer. The first one that is successfully loaded will be used.
-     */
-    sourceUrls?: string[];
-    /**
-     * Whether to skip codec checking when before attempting to load each source URL in `sourceUrls`.
-     */
-    sourceUrlsSkipCodecCheck?: boolean;
+    skipCodecCheck?: boolean;
 }
 
 /**
  * Options for creating a new WebAudioStaticSound.
  */
-export type IWebAudioStaticSoundOptions = IStaticSoundOptions &
-    IWebAudioStaticSoundBufferOptions & {
-        sourceBuffer?: StaticSoundBuffer;
-    };
+export type IWebAudioStaticSoundOptions = IStaticSoundOptions & IWebAudioStaticSoundBufferOptions;
 
 /**
  * Creates a new static sound.
@@ -128,9 +112,9 @@ class WebAudioStaticSound extends StaticSound {
 
         this._gainNode = new GainNode(this.audioContext);
 
-        if (options?.sourceBuffer) {
-            this._buffer = options.sourceBuffer as WebAudioStaticSoundBuffer;
-        } else if (options?.sourceUrl || options?.sourceUrls || options?.sourceArrayBuffer || options?.sourceAudioBuffer) {
+        if (options?.source instanceof WebAudioStaticSoundBuffer) {
+            this._buffer = options.source as WebAudioStaticSoundBuffer;
+        } else if (typeof options?.source === "string" || Array.isArray(options?.source) || options?.source instanceof ArrayBuffer || options?.source instanceof AudioBuffer) {
             this._buffer = (await CreateSoundBufferAsync(this.engine, options)) as WebAudioStaticSoundBuffer;
         }
 
@@ -208,14 +192,19 @@ class WebAudioStaticSoundBuffer extends StaticSoundBuffer {
     }
 
     public async init(options: Nullable<IWebAudioStaticSoundBufferOptions> = null): Promise<void> {
-        if (options?.sourceAudioBuffer) {
-            this.audioBuffer = options.sourceAudioBuffer;
-        } else if (options?.sourceUrl) {
-            await this._initFromUrl(options.sourceUrl);
-        } else if (options?.sourceUrls) {
-            await this._initFromUrls(options.sourceUrls, options.sourceUrlsSkipCodecCheck ?? false);
-        } else if (options?.sourceArrayBuffer) {
-            await this._initFromArrayBuffer(options.sourceArrayBuffer);
+        if (!options) {
+            // TODO: Use a default source when no options are given.
+            return;
+        }
+
+        if (options.source instanceof AudioBuffer) {
+            this.audioBuffer = options.source;
+        } else if (typeof options.source === "string") {
+            await this._initFromUrl(options.source);
+        } else if (Array.isArray(options.source)) {
+            await this._initFromUrls(options.source, options.skipCodecCheck ?? false);
+        } else if (options.source instanceof ArrayBuffer) {
+            await this._initFromArrayBuffer(options.source);
         }
     }
 

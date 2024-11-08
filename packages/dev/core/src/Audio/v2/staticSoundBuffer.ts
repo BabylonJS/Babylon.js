@@ -1,16 +1,6 @@
 import type { AbstractAudioEngine } from "./abstractAudioEngine";
 
 /**
- * Options for creating a new static sound buffer.
- */
-export interface IStaticSoundBufferOptions {
-    /**
-     * The URL of the sound source.
-     */
-    sourceUrl?: string;
-}
-
-/**
  * Abstract class for static sound buffer.
  */
 export abstract class StaticSoundBuffer {
