@@ -179,6 +179,7 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
         audio.controls = false;
         audio.loop = this._source.loop;
         audio.preload = this._source.preload;
+        audio.preservesPitch = this._source.preservesPitch;
 
         audio.addEventListener("canplaythrough", this._onCanPlayThrough, { once: true });
         audio.addEventListener("ended", this._onEnded);

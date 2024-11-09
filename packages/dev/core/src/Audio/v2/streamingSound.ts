@@ -13,6 +13,11 @@ export interface IStreamingSoundOptions extends ISoundOptions {
      * The preload type of the sound.
      */
     preload?: StreamingSoundPreloadType;
+
+    /**
+     * Set to `true` to preserve the pitch of the sound when changing the playback rate; otherwise `false`. Default is `false`.
+     */
+    preservesPitch?: boolean;
 }
 
 /**
@@ -24,10 +29,16 @@ export abstract class StreamingSound extends AbstractSound {
      */
     public preload: StreamingSoundPreloadType = "auto";
 
+    /**
+     * Set to `true` to preserve the pitch of the sound when changing the playback rate; otherwise `false`.
+     */
+    public preservesPitch: boolean = false;
+
     /** @internal */
     constructor(name: string, engine: AbstractAudioEngine, options: Nullable<IStreamingSoundOptions> = null) {
         super(name, engine, options);
 
         this.preload = options?.preload ?? "auto";
+        this.preservesPitch = options?.preservesPitch ?? false;
     }
 }
