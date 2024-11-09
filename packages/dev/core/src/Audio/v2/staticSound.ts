@@ -22,8 +22,16 @@ export interface IStaticSoundOptions extends ISoundOptions {
  * Abstract class representing a static sound in the audio engine.
  */
 export abstract class StaticSound extends AbstractSound {
-    private _loopStart: number;
-    private _loopEnd: number;
+
+    /**
+     * The start of the loop range in seconds.
+     */
+    public loopStart: number;
+
+    /**
+     * The end of the loop range in seconds.
+     */
+    public loopEnd: number;
 
     public abstract readonly buffer: StaticSoundBuffer;
 
@@ -31,29 +39,7 @@ export abstract class StaticSound extends AbstractSound {
     constructor(name: string, engine: AbstractAudioEngine, options: Nullable<IStaticSoundOptions> = null) {
         super(name, engine, options);
 
-        this._loopStart = options?.loopStart ?? 0;
-        this._loopEnd = options?.loopEnd ?? 0;
-    }
-
-    /**
-     * The start of the loop range in seconds.
-     */
-    public get loopStart(): number {
-        return this._loopStart;
-    }
-
-    public set loopStart(value: number) {
-        this._loopStart = value;
-    }
-
-    /**
-     * The end of the loop range in seconds.
-     */
-    public get loopEnd(): number {
-        return this._loopEnd;
-    }
-
-    public set loopEnd(value: number) {
-        this._loopEnd = value;
+        this.loopStart = options?.loopStart ?? 0;
+        this.loopEnd = options?.loopEnd ?? 0;
     }
 }

@@ -19,27 +19,15 @@ export interface IStreamingSoundOptions extends ISoundOptions {
  * Abstract class representing a streaming sound in the audio engine.
  */
 export abstract class StreamingSound extends AbstractSound {
-    private _preload: StreamingSoundPreloadType = "auto";
+    /**
+     * The preload type for the sound stream.
+     */
+    public preload: StreamingSoundPreloadType = "auto";
 
     /** @internal */
     constructor(name: string, engine: AbstractAudioEngine, options: Nullable<IStreamingSoundOptions> = null) {
         super(name, engine, options);
 
-        this._preload = options?.preload ?? "auto";
-    }
-
-    /**
-     * The preload type of the sound.
-     */
-    public get preload(): StreamingSoundPreloadType {
-        return this._preload;
-    }
-
-    public set preload(preload: StreamingSoundPreloadType) {
-        if (this._preload === preload) {
-            return;
-        }
-
-        this._preload = preload;
+        this.preload = options?.preload ?? "auto";
     }
 }
