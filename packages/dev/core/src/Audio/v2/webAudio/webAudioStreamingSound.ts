@@ -172,13 +172,17 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
 
     private _initFromUrl(url: string): void {
         const audio = new Audio(url);
+
+        Tools.SetCorsBehavior(url, audio);
+
         audio.controls = false;
         audio.loop = this._source.loop;
-        Tools.SetCorsBehavior(url, audio);
         audio.preload = this._source.preload;
+
         audio.addEventListener("canplaythrough", this._onCanPlayThrough, { once: true });
-        audio.load();
         audio.addEventListener("ended", this._onEnded);
+
+        audio.load();
 
         document.body.appendChild(audio);
 
