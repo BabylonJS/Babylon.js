@@ -11,6 +11,8 @@ import type { WebAudioBus } from "./webAudioBus";
 import type { WebAudioEngine } from "./webAudioEngine";
 import type { WebAudioMainBus } from "./webAudioMainBus";
 
+type StreamingSoundSourceType = string | string[];
+
 /**
  * Options for creating a new WebAudioStreamingSound.
  */
@@ -18,7 +20,7 @@ export interface IWebAudioStreamingSoundOptions extends IStreamingSoundOptions {
     /**
      * The URL of the sound source.
      */
-    source: string;
+    source: StreamingSoundSourceType;
 }
 
 /**
@@ -44,7 +46,7 @@ class WebAudioStreamingSound extends StreamingSound {
     private _gainNode: GainNode;
 
     /** @internal */
-    public source: string;
+    public source: StreamingSoundSourceType;
 
     /** @internal */
     public override readonly engine: WebAudioEngine;
@@ -170,6 +172,9 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
         if (typeof source.source === "string") {
             this._initFromUrl(source.source);
         }
+        if (Array.isArray(source.source)) {
+            this._initFromUrls(source.source);
+        }
     }
 
     private _initFromUrl(url: string): void {
@@ -177,6 +182,24 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
 
         Tools.SetCorsBehavior(url, audio);
 
+        this._initFromAudioElement(audio);
+    }
+
+    private _initFromUrls(urls: string[]): void {
+        const audio = new Audio();
+
+        for (const url of urls) {
+            const source = document.createElement("source");
+            source.src = url;
+            audio.appendChild(source);
+
+            Tools.SetCorsBehavior(url, audio);
+        }
+
+        this._initFromAudioElement(audio);
+    }
+
+    private _initFromAudioElement(audio: HTMLAudioElement): void {
         audio.controls = false;
         audio.loop = this._source.loop;
         audio.preload = this._source.preload;

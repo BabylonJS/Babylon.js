@@ -12,6 +12,8 @@ import type { WebAudioMainBus } from "./webAudioMainBus";
 
 const fileExtensionRegex = new RegExp("\\.(\\w{3,4}$|\\?)");
 
+type StaticSoundSourceType = ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[];
+
 /**
  * Options for creating a new WebAudioStaticSoundBuffer.
  */
@@ -19,7 +21,7 @@ export interface IWebAudioStaticSoundBufferOptions {
     /**
      * The sound source.
      */
-    source?: ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[];
+    source?: StaticSoundSourceType;
     /**
      * Whether to skip codec checking when before attempting to load each source URL when `source` is a string array.
      */
