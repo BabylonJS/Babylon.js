@@ -9,6 +9,10 @@ import type { StaticSoundBuffer } from "./staticSoundBuffer";
  */
 export interface IStaticSoundOptions extends ISoundOptions {
     /**
+     * How long to play the sound in seconds.
+     */
+    duration?: number;
+    /**
      * The start of the loop range in seconds.
      */
     loopStart?: number;
@@ -22,6 +26,10 @@ export interface IStaticSoundOptions extends ISoundOptions {
  * Abstract class representing a static sound in the audio engine.
  */
 export abstract class StaticSound extends AbstractSound {
+    /**
+     * How long to play the sound in seconds.
+     */
+    public duration: number;
 
     /**
      * The start of the loop range in seconds.
@@ -39,6 +47,7 @@ export abstract class StaticSound extends AbstractSound {
     constructor(name: string, engine: AbstractAudioEngine, options: Nullable<IStaticSoundOptions> = null) {
         super(name, engine, options);
 
+        this.duration = options?.duration ?? 0;
         this.loopStart = options?.loopStart ?? 0;
         this.loopEnd = options?.loopEnd ?? 0;
     }

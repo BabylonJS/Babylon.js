@@ -97,7 +97,7 @@ class WebAudioStreamingSound extends StreamingSound {
         this.volume = options?.volume ?? 1;
 
         if (options?.autoplay) {
-            this.play(null, this.startOffset, this.duration > 0 ? this.duration : null);
+            this.play(null, this.startOffset);
         }
     }
 
@@ -201,7 +201,7 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
     }
 
     /** @internal */
-    public play(waitTime: Nullable<number> = null, startOffset: Nullable<number> = null, duration: Nullable<number> = null): void {
+    public play(waitTime: Nullable<number> = null, startOffset: Nullable<number> = null): void {
         if (this._state === SoundState.Playing) {
             return;
         }
