@@ -137,6 +137,7 @@ class WebAudioStreamingSound extends StreamingSound {
 /** @internal */
 class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
     private _isReady: boolean = false;
+    private _waitTimer: Nullable<NodeJS.Timeout> = null;
 
     private _onCanPlayThrough: () => void = (() => {
         this._isReady = true;
@@ -201,6 +202,8 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
     public override dispose(): void {
         super.dispose();
 
+        this._clearWaitTimer();
+
         if (this.audioElement) {
             this.audioElement?.removeEventListener("ended", this._onEnded);
             this.audioElement?.remove();
@@ -215,14 +218,23 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
             return;
         }
 
-        this._state = SoundState.Playing;
+        this._clearWaitTimer();
 
-        this._play();
+        if (waitTime && waitTime > 0) {
+            this._waitTimer = setTimeout(() => {
+                this._waitTimer = null;
+                this._state = SoundState.Playing;
+                this._play();
+            }, waitTime * 1000);
+        } else {
+            this._state = SoundState.Playing;
+            this._play();
+        }
     }
 
     /** @internal */
     public pause(): void {
-        if (this._state === SoundState.Paused) {
+        if (this._state !== SoundState.Playing) {
             return;
         }
 
@@ -244,11 +256,18 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
             return;
         }
 
-        this._state = SoundState.Stopped;
+        this._clearWaitTimer();
 
-        this.audioElement?.pause();
-
-        this._onEnded();
+        if (waitTime && waitTime > 0) {
+            this._waitTimer = setTimeout(() => {
+                this._waitTimer = null;
+                this._state = SoundState.Stopped;
+                this._stop();
+            }, waitTime * 1000);
+        } else {
+            this._state = SoundState.Stopped;
+            this._stop();
+        }
     }
 
     /** @internal */
@@ -288,6 +307,18 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
 
         if (this.audioElement) {
             this.audioElement.play();
+        }
+    }
+
+    private _stop(): void {
+        this.audioElement?.pause();
+        this._onEnded();
+    }
+
+    private _clearWaitTimer(): void {
+        if (this._waitTimer) {
+            clearTimeout(this._waitTimer);
+            this._waitTimer = null;
         }
     }
 }
