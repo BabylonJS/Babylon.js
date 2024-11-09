@@ -11,7 +11,7 @@ import type { WebAudioBus } from "./webAudioBus";
 import type { WebAudioEngine } from "./webAudioEngine";
 import type { WebAudioMainBus } from "./webAudioMainBus";
 
-type StreamingSoundSourceType = string | string[];
+type StreamingSoundSourceType = HTMLMediaElement | string | string[];
 
 /**
  * Options for creating a new WebAudioStreamingSound.
@@ -152,7 +152,7 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
     protected override _source: WebAudioStreamingSound;
 
     /** @internal */
-    public audioElement: Nullable<HTMLAudioElement>;
+    public mediaElement: Nullable<HTMLMediaElement>;
 
     /** @internal */
     public sourceNode: Nullable<MediaElementAudioSourceNode>;
@@ -163,7 +163,7 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
             return 0;
         }
 
-        return this.audioElement?.currentTime ?? 0;
+        return this.mediaElement?.currentTime ?? 0;
     }
 
     constructor(source: WebAudioStreamingSound) {
@@ -175,14 +175,14 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
         if (Array.isArray(source.source)) {
             this._initFromUrls(source.source);
         }
+        if (source.source instanceof HTMLMediaElement) {
+            this._initFromMediaElement(source.source);
+        }
     }
 
     private _initFromUrl(url: string): void {
         const audio = new Audio(url);
-
-        Tools.SetCorsBehavior(url, audio);
-
-        this._initFromAudioElement(audio);
+        this._initFromMediaElement(audio);
     }
 
     private _initFromUrls(urls: string[]): void {
@@ -192,33 +192,33 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
             const source = document.createElement("source");
             source.src = url;
             audio.appendChild(source);
-
-            Tools.SetCorsBehavior(url, audio);
         }
 
-        this._initFromAudioElement(audio);
+        this._initFromMediaElement(audio);
     }
 
-    private _initFromAudioElement(audio: HTMLAudioElement): void {
-        audio.controls = false;
-        audio.loop = this._source.loop;
-        audio.preload = this._source.preload;
-        audio.preservesPitch = this._source.preservesPitch;
+    private _initFromMediaElement(mediaElement: HTMLMediaElement): void {
+        Tools.SetCorsBehavior(mediaElement.currentSrc, mediaElement);
 
-        audio.addEventListener("canplaythrough", this._onCanPlayThrough, { once: true });
-        audio.addEventListener("ended", this._onEnded);
+        mediaElement.controls = false;
+        mediaElement.loop = this._source.loop;
+        mediaElement.preload = this._source.preload;
+        mediaElement.preservesPitch = this._source.preservesPitch;
 
-        audio.load();
+        mediaElement.addEventListener("canplaythrough", this._onCanPlayThrough, { once: true });
+        mediaElement.addEventListener("ended", this._onEnded);
+
+        mediaElement.load();
 
         // NB: `HTMLAudioElement.load()` sets `playbackRate` to 1, so we set it after calling `load()`.
-        audio.playbackRate = this._source.playbackRate * centsToPlaybackRate(this._source.pitch);
+        mediaElement.playbackRate = this._source.playbackRate * centsToPlaybackRate(this._source.pitch);
 
-        document.body.appendChild(audio);
+        document.body.appendChild(mediaElement);
 
-        this.sourceNode = new MediaElementAudioSourceNode(this._source.audioContext, { mediaElement: audio });
+        this.sourceNode = new MediaElementAudioSourceNode(this._source.audioContext, { mediaElement: mediaElement });
         this._connect(this._source);
 
-        this.audioElement = audio;
+        this.mediaElement = mediaElement;
     }
 
     /** @internal */
@@ -227,9 +227,9 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
 
         this._clearWaitTimer();
 
-        if (this.audioElement) {
-            this.audioElement?.removeEventListener("ended", this._onEnded);
-            this.audioElement?.remove();
+        if (this.mediaElement) {
+            this.mediaElement?.removeEventListener("ended", this._onEnded);
+            this.mediaElement?.remove();
         }
 
         this.sourceNode = null;
@@ -242,8 +242,8 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
         }
 
         if (startOffset && startOffset > 0) {
-            if (this.audioElement) {
-                this.audioElement.currentTime = startOffset;
+            if (this.mediaElement) {
+                this.mediaElement.currentTime = startOffset;
             }
         }
 
@@ -269,7 +269,7 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
 
         this._state = SoundState.Paused;
 
-        this.audioElement?.pause();
+        this.mediaElement?.pause();
     }
 
     /** @internal */
@@ -334,13 +334,13 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
             return;
         }
 
-        if (this.audioElement) {
-            this.audioElement.play();
+        if (this.mediaElement) {
+            this.mediaElement.play();
         }
     }
 
     private _stop(): void {
-        this.audioElement?.pause();
+        this.mediaElement?.pause();
         this._onEnded();
     }
 
