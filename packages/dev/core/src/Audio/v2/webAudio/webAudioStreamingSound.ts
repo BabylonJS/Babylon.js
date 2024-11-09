@@ -218,6 +218,12 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
             return;
         }
 
+        if (startOffset && startOffset > 0) {
+            if (this.audioElement) {
+                this.audioElement.currentTime = startOffset;
+            }
+        }
+
         this._clearWaitTimer();
 
         if (waitTime && waitTime > 0) {
