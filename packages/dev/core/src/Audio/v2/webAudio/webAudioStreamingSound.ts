@@ -171,11 +171,9 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
 
         if (typeof source.source === "string") {
             this._initFromUrl(source.source);
-        }
-        if (Array.isArray(source.source)) {
+        } else if (Array.isArray(source.source)) {
             this._initFromUrls(source.source);
-        }
-        if (source.source instanceof HTMLMediaElement) {
+        } else if (source.source instanceof HTMLMediaElement) {
             this._initFromMediaElement(source.source);
         }
     }
