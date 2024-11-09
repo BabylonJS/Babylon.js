@@ -2,6 +2,7 @@ import { Tools } from "../../../Misc/tools";
 import type { Nullable } from "../../../types";
 import type { AbstractAudioEngine } from "../abstractAudioEngine";
 import type { AbstractAudioNode } from "../abstractAudioNode";
+import { centsToPlaybackRate } from "../audioUtils";
 import { SoundState } from "../soundState";
 import type { IStreamingSoundOptions } from "../streamingSound";
 import { StreamingSound } from "../streamingSound";
@@ -183,6 +184,9 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
         audio.addEventListener("ended", this._onEnded);
 
         audio.load();
+
+        // NB: `HTMLAudioElement.load()` sets `playbackRate` to 1, so we set it after calling `load()`.
+        audio.playbackRate = this._source.playbackRate * centsToPlaybackRate(this._source.pitch);
 
         document.body.appendChild(audio);
 
