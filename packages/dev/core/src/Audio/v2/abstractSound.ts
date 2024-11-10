@@ -53,7 +53,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
     // Owned by AbstractAudioEngine.
 
     // Non-owning.
-    protected _soundInstances = new Set<AbstractSoundInstance>();
+    protected _soundInstances = new Array<AbstractSoundInstance>();
 
     protected _outputBus: Nullable<AbstractPrimaryAudioBus> = null;
 
@@ -149,7 +149,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         this.stop();
 
         this._outputBus = null;
-        this._soundInstances.clear();
+        this._soundInstances.length = 0;
         this.onEndedObservable.clear();
 
         this.onDisposeObservable.notifyObservers(this);
@@ -164,7 +164,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * @param duration - How long to play the sound in seconds.
      */
     public play(waitTime: Nullable<number> = null, startOffset: Nullable<number> = null, duration: Nullable<number> = null): void {
-        if (this._state === SoundState.Paused && this._soundInstances.size > 0) {
+        if (this._state === SoundState.Paused && this._soundInstances.length > 0) {
             this.resume();
             return;
         }
@@ -176,10 +176,10 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
 
         instance.play(waitTime, startOffset, duration);
 
-        this._soundInstances.add(instance);
+        this._soundInstances.push(instance);
 
         if (this.maxInstances < Infinity) {
-            const numberOfInstancesToStop = this._soundInstances.size - this.maxInstances;
+            const numberOfInstancesToStop = this._soundInstances.length - this.maxInstances;
             const it = this._soundInstances.values();
 
             for (let i = 0; i < numberOfInstancesToStop; i++) {
@@ -242,9 +242,12 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
     }
 
     protected _onSoundInstanceEnded(instance: AbstractSoundInstance): void {
-        this._soundInstances.delete(instance);
+        const index = this._soundInstances.indexOf(instance);
+        if (index !== -1) {
+            this._soundInstances.splice(index, 1);
+        }
 
-        if (this._soundInstances.size === 0) {
+        if (this._soundInstances.length === 0) {
             this.onEndedObservable.notifyObservers(this);
         }
     }

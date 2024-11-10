@@ -8,7 +8,7 @@ export class AbstractAudioNodeParent implements IDisposable {
     /**
      * The children audio nodes.
      */
-    public readonly children = new Set<AbstractAudioNode>();
+    public readonly children = new Array<AbstractAudioNode>();
 
     /**
      * Releases associated resources.
@@ -18,7 +18,7 @@ export class AbstractAudioNodeParent implements IDisposable {
             for (const node of this.children) {
                 node.dispose();
             }
-            this.children.clear();
+            this.children.length = 0;
         }
     }
 }
