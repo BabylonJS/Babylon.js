@@ -27,12 +27,12 @@ export abstract class StreamingSound extends AbstractSound {
     /**
      * The preload type for the sound stream.
      */
-    public preload: StreamingSoundPreloadType = "auto";
+    public preload: StreamingSoundPreloadType;
 
     /**
      * Set to `true` to preserve the pitch of the sound when changing the playback rate; otherwise `false`.
      */
-    public preservesPitch: boolean = false;
+    public preservesPitch: boolean;
 
     /** @internal */
     constructor(name: string, engine: AbstractAudioEngine, options: Nullable<IStreamingSoundOptions> = null) {
