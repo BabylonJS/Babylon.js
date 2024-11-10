@@ -11,32 +11,28 @@ import type { WebAudioBus } from "./webAudioBus";
 import type { WebAudioEngine } from "./webAudioEngine";
 import type { WebAudioMainBus } from "./webAudioMainBus";
 
-type StreamingSoundSourceType = HTMLMediaElement | string | string[];
-
-/**
- * Options for creating a new WebAudioStreamingSound.
- */
-export interface IWebAudioStreamingSoundOptions extends IStreamingSoundOptions {
-    /**
-     * The URL of the sound source.
-     */
-    source: StreamingSoundSourceType;
-}
+export type StreamingSoundSourceType = HTMLMediaElement | string | string[];
 
 /**
  * Creates a new streaming sound.
  * @param name - The name of the sound.
+ * @param source - The source of the sound.
  * @param engine - The audio engine.
  * @param options - The options for the streaming sound.
  * @returns A promise that resolves to the created streaming sound.
  */
-export async function CreateStreamingSoundAsync(name: string, engine: AbstractAudioEngine, options: Nullable<IWebAudioStreamingSoundOptions> = null): Promise<StreamingSound> {
+export async function CreateStreamingSoundAsync(
+    name: string,
+    source: StreamingSoundSourceType,
+    engine: AbstractAudioEngine,
+    options: Nullable<IStreamingSoundOptions> = null
+): Promise<StreamingSound> {
     if (!engine.isWebAudio) {
         throw new Error("Unsupported engine type.");
     }
 
     const sound = new WebAudioStreamingSound(name, engine as WebAudioEngine, options);
-    await sound.init(options);
+    await sound.init(source, options);
     (engine as WebAudioEngine).addSound(sound);
     return sound;
 }
@@ -79,12 +75,12 @@ class WebAudioStreamingSound extends StreamingSound {
     }
 
     /** @internal */
-    constructor(name: string, engine: WebAudioEngine, options: Nullable<IWebAudioStreamingSoundOptions> = null) {
+    constructor(name: string, engine: WebAudioEngine, options: Nullable<IStreamingSoundOptions> = null) {
         super(name, engine, options);
     }
 
     /** @internal */
-    public async init(options: Nullable<IWebAudioStreamingSoundOptions> = null): Promise<void> {
+    public async init(source: StreamingSoundSourceType, options: Nullable<IStreamingSoundOptions> = null): Promise<void> {
         const audioContext = await this.engine.audioContext;
 
         if (!(audioContext instanceof AudioContext)) {
@@ -95,7 +91,7 @@ class WebAudioStreamingSound extends StreamingSound {
 
         this._gainNode = new GainNode(this.audioContext);
 
-        this.source = options?.source ?? "";
+        this.source = source;
         this.outputBus = options?.outputBus ?? this.engine.defaultMainBus;
         this.volume = options?.volume ?? 1;
 

@@ -20,6 +20,10 @@ export interface IStaticSoundOptions extends ISoundOptions {
      * The end of the loop range in seconds.
      */
     loopEnd?: number;
+    /**
+     * Whether to skip codec checking before attempting to load each source URL when `source` is a string array.
+     */
+    skipCodecCheck?: boolean;
 }
 
 /**
