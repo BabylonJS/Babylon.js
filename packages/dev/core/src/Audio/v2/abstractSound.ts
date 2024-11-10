@@ -171,24 +171,24 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
 
         this._state = SoundState.Playing;
 
-        if (this.maxInstances < Infinity) {
-            const oldInstancesCount = this._soundInstances.size - this.maxInstances + 1;
-            const it = this._soundInstances.values();
-
-            for (let i = 0; i < oldInstancesCount; i++) {
-                const instance = it.next().value;
-                if (instance.state === SoundState.Playing) {
-                    instance.stop();
-                }
-            }
-        }
-
         const instance = this._createSoundInstance();
         instance.onEndedObservable.addOnce(this._onSoundInstanceEnded.bind(this));
 
         instance.play(waitTime, startOffset, duration);
 
         this._soundInstances.add(instance);
+
+        if (this.maxInstances < Infinity) {
+            const numberOfInstancesToStop = this._soundInstances.size - this.maxInstances;
+            const it = this._soundInstances.values();
+
+            for (let i = 0; i < numberOfInstancesToStop; i++) {
+                const instance = it.next().value;
+                if (instance.state === SoundState.Playing) {
+                    instance.stop();
+                }
+            }
+        }
     }
 
     /**
