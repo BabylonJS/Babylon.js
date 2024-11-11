@@ -791,11 +791,11 @@ export class ArcRotateCamera extends TargetCamera {
      * @returns the camera itself
      */
     public override storeState(): Camera {
-        this._storedAlpha = this.alpha;
-        this._storedBeta = this.beta;
-        this._storedRadius = this.radius;
-        this._storedTarget = this._getTargetPosition().clone();
-        this._storedTargetScreenOffset = this.targetScreenOffset.clone();
+        this._storedAlpha = this._goalAlpha = this.alpha;
+        this._storedBeta = this._goalBeta = this.beta;
+        this._storedRadius = this._goalRadius = this.radius;
+        this._storedTarget = this._goalTarget = this._getTargetPosition().clone();
+        this._storedTargetScreenOffset = this._goalTargetScreenOffset = this.targetScreenOffset.clone();
 
         return super.storeState();
     }
@@ -843,6 +843,10 @@ export class ArcRotateCamera extends TargetCamera {
         this.inertialRadiusOffset = 0;
         this.inertialPanningX = 0;
         this.inertialPanningY = 0;
+
+        alpha = Math.min(Math.max(alpha, this.lowerAlphaLimit ?? -Infinity), this.upperAlphaLimit ?? Infinity);
+        beta = Math.min(Math.max(beta, this.lowerBetaLimit ?? -Infinity), this.upperBetaLimit ?? Infinity);
+        radius = Math.min(Math.max(radius, this.lowerRadiusLimit ?? -Infinity), this.upperRadiusLimit ?? Infinity);
 
         this._goalAlpha = alpha;
         this._goalBeta = beta;
