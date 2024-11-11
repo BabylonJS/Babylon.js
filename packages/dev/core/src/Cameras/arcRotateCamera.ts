@@ -3,6 +3,7 @@ import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import type { Scene } from "../scene";
 import { Matrix, Vector3, Vector2, TmpVectors, Quaternion } from "../Maths/math.vector";
+import { Clamp } from "../Maths/math.scalar.functions";
 import { Node } from "../node";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
@@ -844,9 +845,9 @@ export class ArcRotateCamera extends TargetCamera {
         this.inertialPanningX = 0;
         this.inertialPanningY = 0;
 
-        alpha = Math.min(Math.max(alpha, this.lowerAlphaLimit ?? -Infinity), this.upperAlphaLimit ?? Infinity);
-        beta = Math.min(Math.max(beta, this.lowerBetaLimit ?? -Infinity), this.upperBetaLimit ?? Infinity);
-        radius = Math.min(Math.max(radius, this.lowerRadiusLimit ?? -Infinity), this.upperRadiusLimit ?? Infinity);
+        alpha = Clamp(alpha, this.lowerAlphaLimit ?? -Infinity, this.upperAlphaLimit ?? Infinity);
+        beta = Clamp(beta, this.lowerBetaLimit ?? -Infinity, this.upperBetaLimit ?? Infinity);
+        radius = Clamp(radius, this.lowerRadiusLimit ?? -Infinity, this.upperRadiusLimit ?? Infinity);
 
         this._goalAlpha = alpha;
         this._goalBeta = beta;
