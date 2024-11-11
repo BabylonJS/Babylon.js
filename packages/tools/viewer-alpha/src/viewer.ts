@@ -507,9 +507,10 @@ export class Viewer implements IDisposable {
                         this.onAnimationProgressChanged.notifyObservers();
                     }),
                 ];
+
+                this._updateCamera(!this._isLoadingModel);
             }
 
-            this._updateCamera(true);
             this.onSelectedAnimationChanged.notifyObservers();
         }
     }

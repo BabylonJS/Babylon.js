@@ -15,9 +15,11 @@ import { Logger } from "core/Misc/logger";
 import { isToneMapping, ViewerHotSpotResult } from "./viewer";
 import { createViewerForCanvas, getDefaultEngine } from "./viewerFactory";
 
-// Icon SVG is pulled from https://fluentuipr.z22.web.core.windows.net/heads/master/public-docsite-v9/storybook/iframe.html?id=icons-catalog--page&viewMode=story
+// Icon SVG is pulled from https://react.fluentui.dev/?path=/docs/icons-catalog--docs
 const playFilledIcon = "M17.22 8.68a1.5 1.5 0 0 1 0 2.63l-10 5.5A1.5 1.5 0 0 1 5 15.5v-11A1.5 1.5 0 0 1 7.22 3.2l10 5.5Z";
 const pauseFilledIcon = "M5 2a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H5Zm8 0a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-2Z";
+const targetFilledIcon =
+    "M10 11.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM5 10a5 5 0 1 1 10 0 5 5 0 0 1-10 0Zm5-3.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7ZM2 10a8 8 0 1 1 16 0 8 8 0 0 1-16 0Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13Z";
 
 const allowedAnimationSpeeds = [0.5, 1, 1.5, 2] as const;
 
@@ -152,10 +154,6 @@ export class HTML3DElement extends LitElement {
             all: inherit;
         }
 
-        * {
-            box-sizing: border-box;
-        }
-
         .full-size {
             display: block;
             position: relative;
@@ -182,6 +180,12 @@ export class HTML3DElement extends LitElement {
             left: 50%;
             transform: translateX(-50%);
             background-color: var(--ui-background-color);
+        }
+
+        .bar-min {
+            width: unset;
+            min-width: unset;
+            max-width: unset;
         }
 
         .loading-progress-outer {
@@ -240,6 +244,7 @@ export class HTML3DElement extends LitElement {
         .tool-bar {
             display: flex;
             flex-direction: row;
+            align-items: center;
             border-radius: 12px;
             border-color: var(--ui-foreground-color);
             height: 48px;
@@ -253,6 +258,13 @@ export class HTML3DElement extends LitElement {
             min-width: 48px;
         }
 
+        .tool-bar .divider {
+            min-width: 1px;
+            margin: 0px 6px;
+            height: 66%;
+            background-color: var(--ui-foreground-color);
+        }
+
         .tool-bar select {
             background: none;
             min-width: 52px;
@@ -261,11 +273,30 @@ export class HTML3DElement extends LitElement {
             border-radius: inherit;
             color: inherit;
             font-size: 14px;
-            padding: 12px;
+            padding: 0px 12px;
             cursor: pointer;
             outline: none;
             appearance: none; /* Remove default styling */
             -webkit-appearance: none; /* Remove default styling for Safari */
+        }
+
+        .tool-bar .select-container {
+            position: relative;
+            display: flex;
+            border-radius: inherit;
+            border-width: 0;
+            padding: 0;
+        }
+
+        .tool-bar .select-container select {
+            position: absolute;
+            min-width: 0;
+            width: 100%;
+        }
+
+        .tool-bar .select-container button {
+            position: absolute;
+            border-width: 0;
         }
 
         .tool-bar select:hover,
@@ -582,13 +613,17 @@ export class HTML3DElement extends LitElement {
         attribute: "hotspots",
         converter: (value) => {
             if (!value) {
-                return null;
+                return {};
             }
 
             return JSON.parse(value);
         },
     })
-    public hotSpots: Nullable<Record<string, HotSpot>> = null;
+    public hotSpots: Readonly<Record<string, HotSpot>> = {};
+
+    private get _hasHotSpots(): boolean {
+        return Object.keys(this.hotSpots).length > 0;
+    }
 
     /**
      * True if the default animation should play automatically when a model is loaded.
@@ -601,6 +636,10 @@ export class HTML3DElement extends LitElement {
      */
     public get animations(): readonly string[] {
         return this._animations;
+    }
+
+    private get _hasAnimations(): boolean {
+        return this._animations.length > 0;
     }
 
     /**
@@ -696,40 +735,58 @@ export class HTML3DElement extends LitElement {
                         ></div>
                     </div>
                 </slot>
-                ${this.animations.length === 0
+                ${this._viewerDetails?.model == null || (!this._hasAnimations && !this._hasHotSpots)
                     ? ""
                     : html`
                           <slot name="tool-bar">
-                              <div part="tool-bar" class="bar tool-bar">
-                                  <div class="animation-timeline">
-                                      <button aria-label="${this.isAnimationPlaying ? "Pause" : "Play"}" @click="${this.toggleAnimation}">
-                                          ${!this.isAnimationPlaying
-                                              ? html`<svg viewBox="0 0 20 20">
-                                                    <path d="${playFilledIcon}" fill="currentColor"></path>
-                                                </svg>`
-                                              : html`<svg viewBox="-3 -2 24 24">
-                                                    <path d="${pauseFilledIcon}" fill="currentColor"></path>
-                                                </svg>`}
-                                      </button>
-                                      <input
-                                          aria-label="Animation Progress"
-                                          class="animation-timeline-input"
-                                          type="range"
-                                          min="0"
-                                          max="1"
-                                          step="0.0001"
-                                          .value="${this.animationProgress}"
-                                          @input="${this._onProgressChanged}"
-                                          @pointerdown="${this._onProgressPointerDown}"
-                                      />
-                                  </div>
-                                  <select aria-label="Select Animation Speed" @change="${this._onAnimationSpeedChanged}">
-                                      ${allowedAnimationSpeeds.map((speed) => html`<option value="${speed}" .selected="${this.animationSpeed === speed}">${speed}x</option>`)}
-                                  </select>
+                              <div part="tool-bar" class="bar ${this._hasAnimations ? "" : "bar-min"} tool-bar">
+                                  ${!this._hasAnimations
+                                      ? ""
+                                      : html`<div class="animation-timeline">
+                                                <button aria-label="${this.isAnimationPlaying ? "Pause" : "Play"}" @click="${this.toggleAnimation}">
+                                                    ${!this.isAnimationPlaying
+                                                        ? html`<svg viewBox="0 0 20 20">
+                                                              <path d="${playFilledIcon}" fill="currentColor"></path>
+                                                          </svg>`
+                                                        : html`<svg viewBox="-3 -2 24 24">
+                                                              <path d="${pauseFilledIcon}" fill="currentColor"></path>
+                                                          </svg>`}
+                                                </button>
+                                                <input
+                                                    aria-label="Animation Progress"
+                                                    class="animation-timeline-input"
+                                                    type="range"
+                                                    min="0"
+                                                    max="1"
+                                                    step="0.0001"
+                                                    .value="${this.animationProgress}"
+                                                    @input="${this._onAnimationTimelineChanged}"
+                                                    @pointerdown="${this._onAnimationTimelinePointerDown}"
+                                                />
+                                            </div>
+                                            <select aria-label="Select Animation Speed" @change="${this._onAnimationSpeedChanged}">
+                                                ${allowedAnimationSpeeds.map(
+                                                    (speed) => html`<option value="${speed}" .selected="${this.animationSpeed === speed}">${speed}x</option>`
+                                                )}
+                                            </select> `}
                                   ${this.animations.length > 1
                                       ? html`<select aria-label="Select Animation" @change="${this._onSelectedAnimationChanged}">
                                             ${this.animations.map((name, index) => html`<option value="${index}" .selected="${this.selectedAnimation === index}">${name}</option>`)}
                                         </select>`
+                                      : ""}
+                                  ${this._hasAnimations && this._hasHotSpots ? html`<div class="divider"></div>` : ""}
+                                  ${this._hasHotSpots
+                                      ? html`<div class="select-container">
+                                            <select id="hotspotsSelect" aria-label="Select HotSpot" @change="${this._onHotSpotsChanged}">
+                                                <option value="" hidden selected></option>
+                                                ${Object.keys(this.hotSpots).map((name) => html`<option value="${name}">${name}&nbsp;&nbsp;</option>`)}
+                                            </select>
+                                            <button style="pointer-events: none">
+                                                <svg viewBox="0 0 20 20">
+                                                    <path d="${targetFilledIcon}" fill="currentColor"></path>
+                                                </svg>
+                                            </button>
+                                        </div> `
                                       : ""}
                               </div>
                           </slot>
@@ -762,7 +819,7 @@ export class HTML3DElement extends LitElement {
         this.animationSpeed = Number(selectElement.value);
     }
 
-    private _onProgressChanged(event: Event) {
+    private _onAnimationTimelineChanged(event: Event) {
         if (this._viewerDetails) {
             const input = event.target as HTMLInputElement;
             const value = Number(input.value);
@@ -772,12 +829,20 @@ export class HTML3DElement extends LitElement {
         }
     }
 
-    private _onProgressPointerDown(event: Event) {
+    private _onAnimationTimelinePointerDown(event: Event) {
         if (this._viewerDetails?.viewer.isAnimationPlaying) {
             this._viewerDetails.viewer.pauseAnimation();
             const input = event.target as HTMLInputElement;
             input.addEventListener("pointerup", () => this._viewerDetails?.viewer.playAnimation(), { once: true });
         }
+    }
+
+    private _onHotSpotsChanged(event: Event) {
+        const selectElement = event.target as HTMLSelectElement;
+        const hotSpotName = selectElement.value;
+        // We don't actually want a selected value, this is just a one time trigger.
+        selectElement.value = "";
+        this.focusHotSpot(hotSpotName);
     }
 
     // Helper function to simplify keeping Viewer properties in sync with HTML3DElement properties.
