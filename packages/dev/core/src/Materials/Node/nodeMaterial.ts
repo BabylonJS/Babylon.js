@@ -1008,7 +1008,7 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
-     * Runs an otpimization phase to try to improve the shader code
+     * Runs an optimization phase to try to improve the shader code
      */
     public optimize() {
         for (const optimizer of this._optimizers) {
