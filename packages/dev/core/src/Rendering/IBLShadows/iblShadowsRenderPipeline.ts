@@ -700,7 +700,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     }
 
     /**
-     * Trigger the scene to be re-voxelized. This is useful when the scene has changed and the voxel grid needs to be updated.
+     * Trigger the scene to be re-voxelized. This should be run when any shadow-casters have been added, removed or moved.
      */
     public updateVoxelization() {
         if (this._shadowCastingMeshes.length === 0) {
