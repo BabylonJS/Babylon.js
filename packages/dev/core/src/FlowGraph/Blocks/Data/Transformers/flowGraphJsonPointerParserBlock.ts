@@ -62,7 +62,7 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
     /**
      * Output connection: A function that can be used to get the interpolation animation property info.
      */
-    public readonly generateAnimationsFunction: FlowGraphDataConnection<(keys: any[], fps: number, easingFunction?: EasingFunction) => Animation[]>;
+    public readonly generateAnimationsFunction: FlowGraphDataConnection<() => (keys: any[], fps: number, easingFunction?: EasingFunction) => Animation[]>;
 
     /**
      * Output connection: Whether the value is valid.

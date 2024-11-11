@@ -812,6 +812,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             connectFlowGraphNodes("object", "object", serializedObjects[2], serializedObjects[1], true);
             connectFlowGraphNodes("propertyName", "propertyName", serializedObjects[0], serializedObjects[1], true);
             connectFlowGraphNodes("value-0", "value", serializedObjects[0], serializedObjects[1], true);
+            connectFlowGraphNodes("customBuildAnimation", "generateAnimationsFunction", serializedObjects[0], serializedObjects[1], true);
             connectFlowGraphNodes("animation", "animation", serializedObjects[2], serializedObjects[0], true);
             // search for p1 and p2 and remove them, for now
             serializedObjects.forEach((serializedObject) => {
@@ -825,7 +826,15 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                     // remove the p1 and p2
                     serializedObject.config = serializedObject.config || {};
                     // get the type of the pointer interpolation
-                    serializedObject.config.animationType = "linear";
+                    _gltfBlock.values?.forEach((value) => {
+                        if (value.id === "value") {
+                            // get the type of the value
+                            const type = value.type;
+                            if (type !== undefined) {
+                                serializedObject.config.animationType = _arrays.types[type];
+                            }
+                        }
+                    });
                 }
             });
             return serializedObjects;

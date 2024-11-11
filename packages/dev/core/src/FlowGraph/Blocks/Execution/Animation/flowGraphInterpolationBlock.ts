@@ -3,7 +3,7 @@ import { Constants } from "core/Engines/constants";
 import { FlowGraphBlock, type IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
-import { getRichTypeByAnimationType, RichTypeAny, RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
+import { getRichTypeByAnimationType, getRichTypeByFlowGraphType, RichTypeAny, RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
 import { Animation } from "core/Animations/animation";
 import { RegisterClass } from "core/Misc/typeStore";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
@@ -30,7 +30,7 @@ export interface IFlowGraphInterpolationBlockConfiguration extends IFlowGraphBlo
      * Default is ANIMATIONTYPE_FLOAT
      * This cannot be changed after set, so make sure to pass the right value.
      */
-    animationType?: number;
+    animationType?: number | string;
 }
 
 /**
@@ -74,7 +74,7 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
     /**
      * If provided, this function will be used to create the animation object(s).
      */
-    public readonly customBuildAnimation: FlowGraphDataConnection<(keys: any[], fps: number, easingFunction?: EasingFunction) => Animation | Animation[]>;
+    public readonly customBuildAnimation: FlowGraphDataConnection<() => (keys: any[], fps: number, easingFunction?: EasingFunction) => Animation | Animation[]>;
 
     /**
      * The keyframes to interpolate between.
@@ -87,7 +87,10 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
 
     constructor(config: IFlowGraphInterpolationBlockConfiguration = {}) {
         super(config);
-        const type = getRichTypeByAnimationType(config?.animationType ?? Constants.ANIMATIONTYPE_FLOAT);
+        const type =
+            typeof config?.animationType === "string"
+                ? getRichTypeByFlowGraphType(config.animationType)
+                : getRichTypeByAnimationType(config?.animationType ?? Constants.ANIMATIONTYPE_FLOAT);
 
         const numberOfKeyFrames = config?.keyFramesCount ?? 1;
         const duration = this.registerDataInput(`duration-0`, RichTypeNumber, 0);
@@ -133,7 +136,7 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
         }
         const customBuildAnimation = this.customBuildAnimation.getValue(context);
         if (customBuildAnimation) {
-            return customBuildAnimation(keys, 60, easingFunction);
+            return customBuildAnimation()(keys, 60, easingFunction);
         }
         if (typeof propertyName === "string") {
             const animation = Animation.CreateAnimation(propertyName, type.animationType, 60, easingFunction);
