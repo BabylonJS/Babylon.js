@@ -173,7 +173,7 @@
             // use requestAnimationFrame to update with renderer
             const startHotSpotLinesRenderLoop = () => {
                 const hotspotBaseRect = document.querySelector("#anchor-button").getBoundingClientRect();
-                drawHotSpotLine(lines[0], "testHotSpot1", hotspotBaseRect);
+                drawHotSpotLine(lines[0], "hotspot 1", hotspotBaseRect);
                 if (hotspotVisible) {
                     requestAnimationFrame(startHotSpotLinesRenderLoop);
                 }
@@ -192,10 +192,6 @@
                 hotspotVisible = !hotspotVisible;
                 lines[0].style.visibility = hotspotVisible ? "visible" : "hidden";
                 startHotSpotLinesRenderLoop();
-
-                if (hotspotVisible) {
-                    viewerElement.focusHotSpot("testHotSpot1");
-                }
             }
         </script>
     </body>
