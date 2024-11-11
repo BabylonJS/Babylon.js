@@ -779,8 +779,10 @@ export class HTML3DElement extends LitElement {
                                       ? html`<div class="select-container">
                                             <select id="hotspotsSelect" aria-label="Select HotSpot" @change="${this._onHotSpotsChanged}">
                                                 <option value="" hidden selected></option>
+                                                <!-- When the select is forced to be less wide than the options, padding on the right is lost. Pad with white space. -->
                                                 ${Object.keys(this.hotSpots).map((name) => html`<option value="${name}">${name}&nbsp;&nbsp;</option>`)}
                                             </select>
+                                            <!-- This button is not actually interactive, we want input to pass through to the select below. -->
                                             <button style="pointer-events: none">
                                                 <svg viewBox="0 0 20 20">
                                                     <path d="${targetFilledIcon}" fill="currentColor"></path>
