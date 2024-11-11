@@ -375,6 +375,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             case NodeMaterialModes.Particle:
                 this.props.globalState.previewType = PreviewType.Bubbles;
                 break;
+            case NodeMaterialModes.GaussianSplatting:
+                this.props.globalState.previewType = PreviewType.BricksSkull;
+                break;
         }
 
         this.props.globalState.listOfCustomPreviewFiles = [];

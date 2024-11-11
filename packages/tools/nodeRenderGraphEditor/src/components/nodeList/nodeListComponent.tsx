@@ -41,6 +41,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         ExtractHighlightsBlock: "Applies an extract highlights post process",
         GUIBlock: "Used to render a GUI",
         ObjectRendererBlock: "Renders objects to a render target",
+        TAAObjectRendererBlock: "Renders objects with Temporal Anti-Aliasing to a render target",
         GeometryRendererBlock: "Generates geometry buffers for a list of objects",
         ObjectListBlock: "List of objects (meshes, particle systems, sprites)",
         CullBlock: "Culls a list of objects",
@@ -134,7 +135,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Misc: ["ElbowBlock", "TeleportInBlock", "TeleportOutBlock", "GUIBlock"],
             Textures: ["ClearBlock", "CopyTextureBlock", "GenerateMipmapsBlock"],
             Output_Nodes: ["OutputBlock"],
-            Rendering: ["ObjectRendererBlock", "GeometryRendererBlock", "CullBlock"],
+            Rendering: ["ObjectRendererBlock", "GeometryRendererBlock", "CullBlock", "TAAObjectRendererBlock"],
         };
 
         // Create node menu

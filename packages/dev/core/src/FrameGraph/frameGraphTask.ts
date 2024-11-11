@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { RenderTargetWrapper, FrameGraph, FrameGraphObjectList, IFrameGraphPass, Nullable } from "core/index";
+import type { RenderTargetWrapper, FrameGraph, FrameGraphObjectList, IFrameGraphPass, Nullable, FrameGraphTextureHandle } from "core/index";
 import { FrameGraphCullPass } from "./Passes/cullPass";
 import { FrameGraphRenderPass } from "./Passes/renderPass";
 
@@ -107,6 +107,7 @@ export abstract class FrameGraphTask {
         }
 
         let disabledOutputTexture: Nullable<RenderTargetWrapper> = null;
+        let disabledOutputTextureHandle: FrameGraphTextureHandle = -1;
         let disabledOutputDepthTexture: Nullable<RenderTargetWrapper> = null;
         let disabledOutputObjectList: FrameGraphObjectList | undefined;
 
@@ -117,6 +118,7 @@ export abstract class FrameGraphTask {
             }
             if (FrameGraphRenderPass.IsRenderPass(pass)) {
                 disabledOutputTexture = this._frameGraph.getTexture(pass.renderTarget);
+                disabledOutputTextureHandle = pass.renderTarget;
                 disabledOutputDepthTexture = pass.renderTargetDepth !== undefined ? this._frameGraph.getTexture(pass.renderTargetDepth) : null;
             } else if (FrameGraphCullPass.IsCullPass(pass)) {
                 disabledOutputObjectList = pass.objectList;
@@ -125,7 +127,9 @@ export abstract class FrameGraphTask {
 
         if (this._passesDisabled.length > 0) {
             if (outputTexture !== disabledOutputTexture) {
-                throw new Error(`The output texture of the task "${this.name}" is different when it is enabled or disabled.`);
+                if (!this._frameGraph.isHistoryTexture(disabledOutputTextureHandle)) {
+                    throw new Error(`The output texture of the task "${this.name}" is different when it is enabled or disabled.`);
+                }
             }
             if (outputDepthTexture !== disabledOutputDepthTexture) {
                 throw new Error(`The output depth texture of the task "${this.name}" is different when it is enabled or disabled.`);

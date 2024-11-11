@@ -4,6 +4,7 @@ import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Block used for the Gaussian Splatting Fragment part
@@ -70,7 +71,12 @@ export class GaussianBlock extends NodeMaterialBlock {
         const color = this.splatColor;
         const output = this._outputs[0];
 
-        state.compilationString += `${state._declareOutput(output)} = gaussianColor(${color.associatedVariableName});\n`;
+        if (state.shaderLanguage === ShaderLanguage.WGSL) {
+            state.compilationString += `${state._declareOutput(output)} = gaussianColor(${color.associatedVariableName}, input.vPosition);\n`;
+        } else {
+            state.compilationString += `${state._declareOutput(output)} = gaussianColor(${color.associatedVariableName});\n`;
+        }
+
         return this;
     }
 }
