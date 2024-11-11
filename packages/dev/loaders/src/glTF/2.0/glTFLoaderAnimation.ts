@@ -44,20 +44,21 @@ export abstract class AnimationPropertyInfo {
     }
 
     /** @internal */
-    public abstract buildAnimations(target: any, name: string, fps: number, keys: any[], callback: (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => void): void;
+    public abstract buildAnimations(target: any, name: string, fps: number, keys: any[]): { babylonAnimatable: IAnimatable; babylonAnimation: Animation }[];
 }
 
 /** @internal */
 export class TransformNodeAnimationPropertyInfo extends AnimationPropertyInfo {
     /** @internal */
-    public buildAnimations(target: INode, name: string, fps: number, keys: any[], callback: (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => void): void {
-        callback(target._babylonTransformNode!, this._buildAnimation(name, fps, keys));
+    public buildAnimations(target: INode, name: string, fps: number, keys: any[]) {
+        return [{ babylonAnimatable: target._babylonTransformNode!, babylonAnimation: this._buildAnimation(name, fps, keys) }];
     }
 }
 
 /** @internal */
 export class WeightAnimationPropertyInfo extends AnimationPropertyInfo {
-    public buildAnimations(target: INode, name: string, fps: number, keys: any[], callback: (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => void): void {
+    public buildAnimations(target: INode, name: string, fps: number, keys: any[]) {
+        const babylonAnimations: { babylonAnimatable: IAnimatable; babylonAnimation: Animation }[] = [];
         if (target._numMorphTargets) {
             for (let targetIndex = 0; targetIndex < target._numMorphTargets; targetIndex++) {
                 const babylonAnimation = new Animation(`${name}_${targetIndex}`, this.name, fps, this.type);
@@ -77,12 +78,13 @@ export class WeightAnimationPropertyInfo extends AnimationPropertyInfo {
                             const morphTarget = babylonMesh.morphTargetManager.getTarget(targetIndex);
                             const babylonAnimationClone = babylonAnimation.clone();
                             morphTarget.animations.push(babylonAnimationClone);
-                            callback(morphTarget, babylonAnimationClone);
+                            babylonAnimations.push({ babylonAnimatable: morphTarget, babylonAnimation: babylonAnimationClone });
                         }
                     }
                 }
             }
         }
+        return babylonAnimations;
     }
 }
 

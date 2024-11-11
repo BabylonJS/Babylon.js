@@ -1785,10 +1785,11 @@ export class GLTFLoader implements IGLTFLoader {
 
                 if (outputOffset > 0) {
                     const name = `${animation.name || `animation${animation.index}`}_channel${channel.index}_${numAnimations}`;
-                    propertyInfo.buildAnimations(target, name, fps, keys, (babylonAnimatable, babylonAnimation) => {
-                        ++numAnimations;
-                        onLoad(babylonAnimatable, babylonAnimation);
-                    });
+                    const babylonAnimations = propertyInfo.buildAnimations(target, name, fps, keys);
+                    for (const babylonAnimation of babylonAnimations) {
+                        numAnimations++;
+                        onLoad(babylonAnimation.babylonAnimatable, babylonAnimation.babylonAnimation);
+                    }
                 }
             }
         });

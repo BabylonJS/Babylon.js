@@ -13,7 +13,7 @@ export interface IInterpolationPropertyInfo {
     /**
      * @internal
      */
-    buildAnimations(target: any, name: string, fps: number, keys: any[], callback: (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => void): void;
+    buildAnimations(target: any, name: string, fps: number, keys: any[]): { babylonAnimatable: IAnimatable; babylonAnimation: Animation }[];
 }
 
 /**

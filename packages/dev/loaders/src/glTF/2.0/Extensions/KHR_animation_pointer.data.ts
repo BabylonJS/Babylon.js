@@ -47,30 +47,29 @@ function getTextureTransformTree(textureName: string) {
 
 class CameraAnimationPropertyInfo extends AnimationPropertyInfo {
     /** @internal */
-    public buildAnimations(target: ICamera, name: string, fps: number, keys: any[], callback: (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => void): void {
-        callback(target._babylonCamera!, this._buildAnimation(name, fps, keys));
+    public buildAnimations(target: ICamera, name: string, fps: number, keys: any[]) {
+        return [{ babylonAnimatable: target._babylonCamera!, babylonAnimation: this._buildAnimation(name, fps, keys) }];
     }
 }
 
 class MaterialAnimationPropertyInfo extends AnimationPropertyInfo {
     /** @internal */
-    public buildAnimations(target: IMaterial, name: string, fps: number, keys: any[], callback: (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => void): void {
+    public buildAnimations(target: IMaterial, name: string, fps: number, keys: any[]) {
+        const babylonAnimations: { babylonAnimatable: IAnimatable; babylonAnimation: Animation }[] = [];
         for (const fillMode in target._data!) {
-            callback(target._data![fillMode].babylonMaterial, this._buildAnimation(name, fps, keys));
+            babylonAnimations.push({
+                babylonAnimatable: target._data![fillMode].babylonMaterial,
+                babylonAnimation: this._buildAnimation(name, fps, keys),
+            });
         }
+        return babylonAnimations;
     }
 }
 
 class LightAnimationPropertyInfo extends AnimationPropertyInfo {
     /** @internal */
-    public buildAnimations(
-        target: IKHRLightsPunctual_Light,
-        name: string,
-        fps: number,
-        keys: any[],
-        callback: (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => void
-    ): void {
-        callback(target._babylonLight!, this._buildAnimation(name, fps, keys));
+    public buildAnimations(target: IKHRLightsPunctual_Light, name: string, fps: number, keys: any[]) {
+        return [{ babylonAnimatable: target._babylonLight!, babylonAnimation: this._buildAnimation(name, fps, keys) }];
     }
 }
 

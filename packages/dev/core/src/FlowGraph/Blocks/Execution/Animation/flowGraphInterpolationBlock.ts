@@ -7,7 +7,6 @@ import { getRichTypeByAnimationType, RichTypeAny, RichTypeNumber } from "core/Fl
 import { Animation } from "core/Animations/animation";
 import { RegisterClass } from "core/Misc/typeStore";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
-import { IAnimatable } from "core/Animations/animatable.interface";
 
 export interface IFlowGraphInterpolationBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
@@ -72,9 +71,10 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
      */
     public readonly propertyName: FlowGraphDataConnection<string | string[]>;
 
-    public readonly customBuildAnimation: FlowGraphDataConnection<
-        (target: any, name: string, fps: number, keys: any[], callback: (_animatable: any, babylonAnimation: Animation) => void) => void
-    >;
+    /**
+     * If provided, this function will be used to create the animation object(s).
+     */
+    public readonly customBuildAnimation: FlowGraphDataConnection<(keys: any[], fps: number, easingFunction?: EasingFunction) => Animation | Animation[]>;
 
     /**
      * The keyframes to interpolate between.
@@ -103,6 +103,7 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
         this.easingFunction = this.registerDataInput("easingFunction", RichTypeAny);
         this.animation = this.registerDataOutput("animation", RichTypeAny);
         this.propertyName = this.registerDataInput("propertyName", RichTypeAny, config?.propertyName);
+        this.customBuildAnimation = this.registerDataInput("customBuildAnimation", RichTypeAny);
     }
 
     public override _updateOutputs(context: FlowGraphContext): void {
@@ -129,6 +130,10 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
                 // convert duration to frames, based on 60 fps
                 keys.push({ frame: duration * 60, value });
             }
+        }
+        const customBuildAnimation = this.customBuildAnimation.getValue(context);
+        if (customBuildAnimation) {
+            return customBuildAnimation(keys, 60, easingFunction);
         }
         if (typeof propertyName === "string") {
             const animation = Animation.CreateAnimation(propertyName, type.animationType, 60, easingFunction);

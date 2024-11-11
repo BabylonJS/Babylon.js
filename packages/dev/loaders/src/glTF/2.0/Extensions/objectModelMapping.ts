@@ -501,6 +501,7 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                     mat.alpha = value.a;
                 },
                 getTarget: (material, index?, payload?) => getMaterial(material, index, payload),
+                // This is correct on the animation level, but incorrect as a single property of a type Color4
                 getPropertyName: [() => "albedoColor", () => "alpha"],
             },
             baseColorTexture: {
@@ -709,12 +710,14 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                     get: (material, index, payload) => getMaterial(material, index, payload).metallicF0Factor,
                     getTarget: getMaterial,
                     set: (value, material, index, payload) => (getMaterial(material, index, payload).metallicF0Factor = value),
+                    getPropertyName: [() => "metallicF0Factor"],
                 },
                 specularColorFactor: {
                     type: "Color3",
                     get: (material, index, payload) => getMaterial(material, index, payload).metallicReflectanceColor,
                     getTarget: getMaterial,
                     set: (value, material, index, payload) => getMaterial(material, index, payload).metallicReflectanceColor.copyFrom(value),
+                    getPropertyName: [() => "metallicReflectanceColor"],
                 },
                 specularTexture: {
                     extensions: {
@@ -733,6 +736,7 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
                     get: (material, index, payload) => getMaterial(material, index, payload).subSurface.refractionIntensity,
                     getTarget: getMaterial,
                     set: (value, material, index, payload) => (getMaterial(material, index, payload).subSurface.refractionIntensity = value),
+                    getPropertyName: [() => "subSurface.refractionIntensity"],
                 },
                 transmissionTexture: {
                     extensions: {
@@ -914,12 +918,14 @@ function generateTextureMap(textureType: keyof PBRMaterial, textureInObject?: st
                 const texture = getTexture(material, payload, textureType, textureInObject);
                 (texture.uOffset = value.x), (texture.vOffset = value.y);
             },
+            getPropertyName: [() => `${textureType}.${textureInObject}.uOffset`, () => `${textureType}.${textureInObject}.vOffset`],
         },
         rotation: {
             type: "number",
             get: (material, _index?, payload?) => getTexture(material, payload, textureType, textureInObject)?.wAng,
             getTarget: getMaterial,
             set: (value, material, _index?, payload?) => (getTexture(material, payload, textureType, textureInObject).wAng = value),
+            getPropertyName: [() => `${textureType}.${textureInObject}.wAng`],
         },
         scale: {
             componentsCount: 2,
@@ -928,12 +934,12 @@ function generateTextureMap(textureType: keyof PBRMaterial, textureInObject?: st
                 const texture = getTexture(material, payload, textureType, textureInObject);
                 return new Vector2(texture?.uScale, texture?.vScale);
             },
-
             getTarget: getMaterial,
             set: (value, material, index?, payload?) => {
                 const texture = getTexture(material, payload, textureType, textureInObject);
                 (texture.uScale = value.x), (texture.vScale = value.y);
             },
+            getPropertyName: [() => `${textureType}.${textureInObject}.uScale`, () => `${textureType}.${textureInObject}.vScale`],
         },
     };
 }

@@ -9,6 +9,8 @@ import type { IObjectAccessor } from "core/FlowGraph/typeDefinitions";
 import type { IPathToObjectConverter } from "core/ObjectModel/objectModelInterfaces";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { RegisterClass } from "core/Misc/typeStore";
+import type { Animation } from "core/Animations/animation";
+import type { EasingFunction } from "core/Animations/easing";
 
 export interface IFlowGraphJsonPointerParserBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
@@ -58,6 +60,11 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
     public readonly getterFunction: FlowGraphDataConnection<(target: O, propertyName: string, context: FlowGraphContext) => P | undefined>;
 
     /**
+     * Output connection: A function that can be used to get the interpolation animation property info.
+     */
+    public readonly generateAnimationsFunction: FlowGraphDataConnection<(keys: any[], fps: number, easingFunction?: EasingFunction) => Animation[]>;
+
+    /**
      * Output connection: Whether the value is valid.
      */
     public readonly isValid: FlowGraphDataConnection<boolean>;
@@ -82,6 +89,7 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
         }
         this.setterFunction = this.registerDataOutput("setFunction", RichTypeAny, this._setPropertyValue.bind(this));
         this.getterFunction = this.registerDataOutput("getFunction", RichTypeAny, this._getPropertyValue.bind(this));
+        this.generateAnimationsFunction = this.registerDataOutput("generateAnimationsFunction", RichTypeAny, this._getInterpolationAnimationPropertyInfo.bind(this));
         this.templateComponent = new FlowGraphPathConverterComponent(config.jsonPointer, this);
     }
 
@@ -125,9 +133,28 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
         return accessorContainer.info.get(accessorContainer.object);
     }
 
-    private _getInterpolationAnimationPropertyInfo(_target: O, _propertyName: string, context: FlowGraphContext) {
+    private _getInterpolationAnimationPropertyInfo(
+        _target: O,
+        _propertyName: string,
+        context: FlowGraphContext
+    ): (keys: any[], fps: number, easingFunction?: EasingFunction) => Animation[] {
         const accessorContainer = this.templateComponent.getAccessor(this.config.pathConverter, context);
-        return accessorContainer.info.interpolation?.[0];
+        return (keys: any[], fps: number, easingFunction?: EasingFunction) => {
+            const animations: Animation[] = [];
+            const object = accessorContainer.info.getTarget?.(accessorContainer.object);
+            accessorContainer.info.interpolation?.forEach((info, index) => {
+                const name = accessorContainer.info.getPropertyName?.[index](accessorContainer.object) || "Animation-interpolation-" + index;
+                const animationData = info.buildAnimations(object, name, 60, keys);
+                animationData.forEach((animation) => {
+                    if (easingFunction) {
+                        animation.babylonAnimation.setEasingFunction(easingFunction);
+                    }
+                    animations.push(animation.babylonAnimation);
+                });
+            });
+
+            return animations;
+        };
     }
 
     /**
