@@ -74,21 +74,20 @@
             selected-animation="1"
             camera-orbit="auto auto auto"
             camera-target="auto auto auto"
-            camera-auto-orbit
             hotspots='{
-                "hotspot 1": {
+                "antenna": {
                     "type": "surface",
                     "meshIndex": 1,
-                    "pointIndex": [228, 113, 111],
-                    "barycentric": [0.217, 0.341, 0.442],
-                    "cameraOrbit": [1.085, 1.417, 0.518]
+                    "pointIndex": [94, 93, 76],
+                    "barycentric": [0.391, 0.387, 0.223],
+                    "cameraOrbit": [1.270, 1.424, 0.514]
                 },
-                "hotspot 2": {
-                    "type": "surface",
-                    "meshIndex": 1,
-                    "pointIndex": [228, 113, 111],
-                    "barycentric": [0.217, 0.341, 0.442],
-                    "cameraOrbit": [2.085, 2.417, 2.518]
+                "thruster": {
+                  "type": "surface",
+                  "meshIndex": 1,
+                  "pointIndex": [8339, 8338, 8337],
+                  "barycentric": [0.213, 0.220, 0.567],
+                  "cameraOrbit": [-5.595, 2.398, 0.787]
                 },
                 "hotspot 3": {
                     "type": "surface",
@@ -104,6 +103,14 @@
             <svg id="lines" style="position: absolute; width: 100%; height: 100%" xmlns="http://www.w3.org/2000/svg" class="lineContainer">
                 <line class="line"></line>
             </svg>
+            <babylon-viewer-hotspot hotspot-name="antenna">
+                 <svg style="width: 20px; height: 20px; transform: translate(-50%, -50%)">
+                    <ellipse cx="10" cy="10" rx="8" ry="8" fill="red" stroke="white" stroke-width="3" />
+                 </svg>
+            </babylon-viewer-hotspot>
+            <babylon-viewer-hotspot hotspot-name="thruster">
+                Thruster
+            </babylon-viewer-hotspot>
         </babylon-viewer>
         <button class="toggle-dom-button" onclick="onToggleDOM()">Toggle DOM</button>
         <button class="toggle-engine-button" onclick="onToggleEngine()">Toggle Engine</button>
@@ -179,7 +186,7 @@
             // use requestAnimationFrame to update with renderer
             const startHotSpotLinesRenderLoop = () => {
                 const hotspotBaseRect = document.querySelector("#anchor-button").getBoundingClientRect();
-                drawHotSpotLine(lines[0], "hotspot 1", hotspotBaseRect);
+                drawHotSpotLine(lines[0], "antenna", hotspotBaseRect);
                 if (hotspotVisible) {
                     requestAnimationFrame(startHotSpotLinesRenderLoop);
                 }
