@@ -10,7 +10,6 @@ const horizontalAlignment = ["left", "center", "right"] as const;
 const verticalAlignment = ["top", "center", "bottom"] as const;
 type HorizontalAlignment = (typeof horizontalAlignment)[number];
 type VerticalAlignment = (typeof verticalAlignment)[number];
-type Alignment = `${HorizontalAlignment} ${VerticalAlignment}`;
 
 @customElement("babylon-viewer-hotspot")
 export class HTMLHotSpotElement extends LitElement {
@@ -19,24 +18,9 @@ export class HTMLHotSpotElement extends LitElement {
         :host {
             display: inline-block;
         }
-        .hidden {
-            display: none;
-        }
     `;
 
-    private readonly _mutationObserver: MutationObserver;
     private _viewerAttachment: Nullable<IDisposable> = null;
-
-    public constructor() {
-        super();
-        this._mutationObserver = new MutationObserver((mutations) => {
-            for (const mutation of mutations) {
-                if (mutation.type === "childList") {
-                    this._removeHiddenAttribute(mutation.removedNodes);
-                }
-            }
-        });
-    }
 
     @property({ attribute: "hotspot-name" })
     public hotSpotName: string = "";
@@ -75,9 +59,6 @@ export class HTMLHotSpotElement extends LitElement {
             console.warn("The babylon-viewer-hotspot element must be a child of a babylon-viewer element.");
             return;
         }
-
-        this._mutationObserver.observe(this, { childList: true });
-        this._removeHiddenAttribute(this.children);
 
         const viewerElement = this.parentElement;
         const hotSpotResult = new ViewerHotSpotResult();
@@ -121,8 +102,6 @@ export class HTMLHotSpotElement extends LitElement {
     override disconnectedCallback(): void {
         super.disconnectedCallback();
 
-        this._mutationObserver.disconnect();
-
         this._viewerAttachment?.dispose();
         this._viewerAttachment = null;
     }
@@ -130,13 +109,5 @@ export class HTMLHotSpotElement extends LitElement {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     protected override render() {
         return html` <slot ?hidden="${!this._isValid}"></slot> `;
-    }
-
-    private _removeHiddenAttribute(nodes: Iterable<Node>) {
-        for (const node of nodes) {
-            if (node instanceof HTMLElement) {
-                node.removeAttribute("hidden");
-            }
-        }
     }
 }
