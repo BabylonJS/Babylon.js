@@ -34,7 +34,7 @@
                         {
                             "id": "pointer",
                             "type": 2,
-                            "value": "/nodes/4/translation"
+                            "value": "/nodes/4/scale"
                         }
                     ],
                     "values": [
@@ -50,13 +50,52 @@
                         },
                         {
                             "id": "p1",
+                            "value": [1, -0.4],
+                            "type": 2
+                        },
+                        {
+                            "id": "p2",
+                            "value": [0, 1.4],
+                            "type": 2
+                        }
+                    ],
+                    "flows": [
+                        {
+                            "id": "out",
+                            "node": 2,
+                            "socket": "in"
+                        }
+                    ]
+                },
+                {
+                    "type": "pointer/interpolate",
+                    "configuration": [
+                        {
+                            "id": "pointer",
+                            "type": 2,
+                            "value": "/materials/0/pbrMetallicRoughness/roughnessFactor"
+                        }
+                    ],
+                    "values": [
+                        {
+                            "id": "duration",
+                            "type": 1,
+                            "value": [4]
+                        },
+                        {
+                            "id": "value",
+                            "value": [0.1],
+                            "type": 1
+                        },
+                        {
+                            "id": "p1",
                             "value": [0, 0],
-                            "type": 0
+                            "type": 2
                         },
                         {
                             "id": "p2",
                             "value": [1, 1],
-                            "type": 0
+                            "type": 2
                         }
                     ]
                 }
