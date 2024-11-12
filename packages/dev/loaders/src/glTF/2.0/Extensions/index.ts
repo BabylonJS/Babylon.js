@@ -1,3 +1,4 @@
+export * from "./objectModelMapping";
 export * from "./EXT_lights_image_based";
 export * from "./EXT_mesh_gpu_instancing";
 export * from "./EXT_meshopt_compression";
@@ -24,6 +25,7 @@ export * from "./KHR_texture_basisu";
 export * from "./KHR_texture_transform";
 export * from "./KHR_xmp_json_ld";
 export * from "./KHR_animation_pointer";
+export * from "./KHR_animation_pointer.data";
 export * from "./MSFT_audio_emitter";
 export * from "./MSFT_lod";
 export * from "./MSFT_minecraftMesh";
