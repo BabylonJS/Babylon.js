@@ -50,9 +50,11 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
      * @param context The context when exporting the node
      * @param node glTF node
      * @param babylonNode BabylonJS node
+     * @param nodeMap Current node mapping of babylon node to glTF node index. Useful for combining nodes together.
+     * @param convertToRightHanded Flag indicating whether to convert values to right-handed
      * @returns nullable INode promise
      */
-    postExportNodeAsync?(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap: { [key: number]: number }): Promise<Nullable<INode>>;
+    postExportNodeAsync?(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap: Map<Node, number>, convertToRightHanded: boolean): Promise<Nullable<INode>>;
 
     /**
      * Define this method to modify the default behavior when exporting a material

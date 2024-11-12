@@ -312,8 +312,17 @@ export class GLTFExporter {
         );
     }
 
-    public _extensionsPostExportNodeAsync(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap: { [key: number]: number }): Promise<Nullable<INode>> {
-        return this._applyExtensions(node, (extension, node) => extension.postExportNodeAsync && extension.postExportNodeAsync(context, node, babylonNode, nodeMap));
+    public _extensionsPostExportNodeAsync(
+        context: string,
+        node: Nullable<INode>,
+        babylonNode: Node,
+        nodeMap: Map<Node, number>,
+        convertToRightHanded: boolean
+    ): Promise<Nullable<INode>> {
+        return this._applyExtensions(
+            node,
+            (extension, node) => extension.postExportNodeAsync && extension.postExportNodeAsync(context, node, babylonNode, nodeMap, convertToRightHanded)
+        );
     }
 
     public _extensionsPostExportMaterialAsync(context: string, material: Nullable<IMaterial>, babylonMaterial: Material): Promise<Nullable<IMaterial>> {
@@ -368,6 +377,7 @@ export class GLTFExporter {
                     }
                 }
 
+                this._glTF.extensions ||= {};
                 if (extension.onExporting) {
                     extension.onExporting();
                 }
@@ -925,7 +935,10 @@ export class GLTFExporter {
 
         for (const babylonNode of babylonRootNodes) {
             if (this._shouldExportNode(babylonNode)) {
-                nodes.push(await this._exportNodeAsync(babylonNode, state));
+                const nodeIndex = await this._exportNodeAsync(babylonNode, state);
+                if (nodeIndex !== null) {
+                    nodes.push(nodeIndex);
+                }
             }
         }
 
@@ -1108,17 +1121,18 @@ export class GLTFExporter {
         }
     }
 
-    private async _exportNodeAsync(babylonNode: Node, state: ExporterState): Promise<number> {
+    /**
+     * Processes a node to be exported to the glTF file
+     * @returns A promise that resolves with the node index when the processing is complete, or null if the node should not be exported
+     * @internal
+     */
+    private async _exportNodeAsync(babylonNode: Node, state: ExporterState): Promise<Nullable<number>> {
         let nodeIndex = this._nodeMap.get(babylonNode);
         if (nodeIndex !== undefined) {
             return nodeIndex;
         }
 
         const node: INode = {};
-        nodeIndex = this._nodes.length;
-        this._nodes.push(node);
-        this._nodeMap.set(babylonNode, nodeIndex);
-        state.pushExportedNode(babylonNode);
 
         if (babylonNode.name) {
             node.name = babylonNode.name;
@@ -1150,6 +1164,7 @@ export class GLTFExporter {
         }
 
         if (babylonNode instanceof Camera) {
+            // TODO: Combine any TransformNode parent with child camera node, like we do for lights
             const gltfCamera = this._camerasMap.get(babylonNode);
 
             if (gltfCamera) {
@@ -1159,13 +1174,6 @@ export class GLTFExporter {
 
                 this._nodesCameraMap.get(gltfCamera)?.push(node);
                 this._setCameraTransformation(node, babylonNode, state.convertToRightHanded);
-            }
-        }
-
-        for (const babylonChildNode of babylonNode.getChildren()) {
-            if (this._shouldExportNode(babylonChildNode)) {
-                node.children ||= [];
-                node.children.push(await this._exportNodeAsync(babylonChildNode, state));
             }
         }
 
@@ -1204,6 +1212,29 @@ export class GLTFExporter {
                     state.convertToRightHanded,
                     this._options.shouldExportAnimation
                 );
+            }
+        }
+
+        // Apply extensions to the node. If this resolves to null, it means we should skip exporting this node (NOTE: This will also skip its children)
+        const processedNode = await this._extensionsPostExportNodeAsync("exportNodeAsync", node, babylonNode, this._nodeMap, state.convertToRightHanded);
+        if (!processedNode) {
+            Logger.Warn(`Not exporting node ${babylonNode.name}`);
+            return null;
+        }
+
+        nodeIndex = this._nodes.length;
+        this._nodes.push(node);
+        this._nodeMap.set(babylonNode, nodeIndex);
+        state.pushExportedNode(babylonNode);
+
+        // Begin processing child nodes once parent has been added to the node list
+        for (const babylonChildNode of babylonNode.getChildren()) {
+            if (this._shouldExportNode(babylonChildNode)) {
+                const childNodeIndex = await this._exportNodeAsync(babylonChildNode, state);
+                if (childNodeIndex !== null) {
+                    node.children ||= [];
+                    node.children.push(childNodeIndex);
+                }
             }
         }
 

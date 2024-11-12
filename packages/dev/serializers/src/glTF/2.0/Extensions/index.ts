@@ -1,5 +1,5 @@
 // export * from "./EXT_mesh_gpu_instancing";
-// export * from "./KHR_lights_punctual";
+export * from "./KHR_lights_punctual";
 // export * from "./KHR_materials_anisotropy";
 // export * from "./KHR_materials_clearcoat";
 // export * from "./KHR_materials_diffuse_transmission";
