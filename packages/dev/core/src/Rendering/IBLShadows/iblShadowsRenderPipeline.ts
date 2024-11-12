@@ -56,9 +56,9 @@ interface IblShadowsSettings {
      * A factor that controls how long the shadows remain in the scene.
      * 0.0 is no persistence, 1.0 is full persistence.
      * This value applies only while the camera is moving. Once stationary, the pipeline
-     * increases remenance automatically to help the shadows converge.
+     * increases remanence automatically to help the shadows converge.
      */
-    shadowRemenance?: number;
+    shadowRemanence?: number;
 
     /**
      * Render the voxel grid from 3 different axis. This will result in better quality shadows with fewer
@@ -159,7 +159,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     public voxelGridSize: number = 1.0;
 
     /**
-     * Reset the shadow accumulation. This has a similar affect to lowering the remenance for a single frame.
+     * Reset the shadow accumulation. This has a similar affect to lowering the remanence for a single frame.
      * This is useful when making a sudden change to the IBL.
      */
     public resetAccumulation(): void {
@@ -616,16 +616,16 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     /**
      * The decree to which the shadows persist between frames. 0.0 is no persistence, 1.0 is full persistence.
      **/
-    public get shadowRemenance(): number {
-        return this._accumulationPass?.remenance;
+    public get shadowRemanence(): number {
+        return this._accumulationPass?.remanence;
     }
 
     /**
      * The decree to which the shadows persist between frames. 0.0 is no persistence, 1.0 is full persistence.
      **/
-    public set shadowRemenance(value: number) {
+    public set shadowRemanence(value: number) {
         if (!this._accumulationPass) return;
-        this._accumulationPass.remenance = value;
+        this._accumulationPass.remanence = value;
     }
 
     /**
@@ -812,7 +812,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this.ssShadowSampleCount = options.ssShadowSampleCount || 16;
         this.ssShadowStride = options.ssShadowStride || 8;
         this.ssShadowThicknessScale = options.ssShadowThicknessScale || 1.0;
-        this.shadowRemenance = options.shadowRemenance ?? 0.75;
+        this.shadowRemanence = options.shadowRemanence ?? 0.75;
         this._noiseTexture = new Texture("https://assets.babylonjs.com/textures/blue_noise/blue_noise_rgb.png", this.scene, false, true, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
         if (this.scene.environmentTexture) {
             this._importanceSamplingRenderer.iblSource = this.scene.environmentTexture;

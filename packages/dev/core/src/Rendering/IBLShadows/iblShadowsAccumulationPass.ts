@@ -72,7 +72,7 @@ export class _IblShadowsAccumulationPass {
      * A value that controls how much of the previous frame's accumulation to keep.
      * The higher the value, the faster the shadows accumulate but the more potential ghosting you'll see.
      */
-    public get remenance(): number {
+    public get remanence(): number {
         return this._remenance;
     }
 
@@ -80,7 +80,7 @@ export class _IblShadowsAccumulationPass {
      * A value that controls how much of the previous frame's accumulation to keep.
      * The higher the value, the faster the shadows accumulate but the more potential ghosting you'll see.
      */
-    public set remenance(value: number) {
+    public set remanence(value: number) {
         this._remenance = value;
     }
     private _remenance: number = 0.9;
@@ -285,8 +285,8 @@ export class _IblShadowsAccumulationPass {
     }
 
     private _setOutputTextureBindings() {
-        const remenance = this._isMoving ? this.remenance : 0.99;
-        this._accumulationParams.set(remenance, this.reset ? 1.0 : 0.0, this._renderPipeline.voxelGridSize, 0.0);
+        const remanence = this._isMoving ? this.remanence : 0.99;
+        this._accumulationParams.set(remanence, this.reset ? 1.0 : 0.0, this._renderPipeline.voxelGridSize, 0.0);
         this._outputTexture.setTexture("spatialBlurSampler", this._renderPipeline._getSpatialBlurTexture());
         this._outputTexture.setVector4("accumulationParameters", this._accumulationParams);
         this._outputTexture.setTexture("oldAccumulationSampler", this._oldAccumulationCopy ? this._oldAccumulationCopy : this._renderPipeline._dummyTexture2d);
