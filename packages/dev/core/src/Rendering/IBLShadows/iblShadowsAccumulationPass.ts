@@ -73,7 +73,7 @@ export class _IblShadowsAccumulationPass {
      * The higher the value, the faster the shadows accumulate but the more potential ghosting you'll see.
      */
     public get remanence(): number {
-        return this._remenance;
+        return this._remanence;
     }
 
     /**
@@ -81,9 +81,9 @@ export class _IblShadowsAccumulationPass {
      * The higher the value, the faster the shadows accumulate but the more potential ghosting you'll see.
      */
     public set remanence(value: number) {
-        this._remenance = value;
+        this._remanence = value;
     }
-    private _remenance: number = 0.9;
+    private _remanence: number = 0.9;
 
     /**
      * Reset the accumulation.
