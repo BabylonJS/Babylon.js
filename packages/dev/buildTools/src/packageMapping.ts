@@ -63,7 +63,7 @@ export type ES6PackageName =
     | "@babylonjs/gui"
     | "@babylonjs/materials"
     | "@urusgraphics/babylonjs-loaders"
-    | "@babylonjs/serializers"
+    | "@urusgraphics/babylonjs-serializers"
     | "@babylonjs/procedural-textures"
     | "@babylonjs/inspector"
     | "@babylonjs/node-editor"
@@ -194,7 +194,7 @@ const packageMapping: {
         gui: "@babylonjs/gui",
         materials: "@babylonjs/materials",
         loaders: "@urusgraphics/babylonjs-loaders",
-        serializers: "@babylonjs/serializers",
+        serializers: "@urusgraphics/babylonjs-serializers",
         inspector: "@babylonjs/inspector",
         "node-editor": "@babylonjs/node-editor",
         "node-geometry-editor": "@babylonjs/node-geometry-editor",
