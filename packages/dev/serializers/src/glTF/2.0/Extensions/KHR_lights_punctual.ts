@@ -1,16 +1,15 @@
 import type { SpotLight } from "core/Lights/spotLight";
 import type { Nullable } from "core/types";
-import { Vector3, Quaternion, TmpVectors, Matrix } from "core/Maths/math.vector";
+import { Vector3, Quaternion, TmpVectors } from "core/Maths/math.vector";
 import { Light } from "core/Lights/light";
 import type { Node } from "core/node";
 import { ShadowLight } from "core/Lights/shadowLight";
 import type { INode, IKHRLightsPunctual_LightReference, IKHRLightsPunctual_Light, IKHRLightsPunctual } from "babylonjs-gltf2interface";
-import { TransformNode } from "core/Meshes/transformNode";
 import { KHRLightsPunctual_LightType } from "babylonjs-gltf2interface";
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
 import { Logger } from "core/Misc/logger";
-import { convertToRightHandedPosition, omitDefaultValues } from "../glTFUtilities";
+import { convertToRightHandedPosition, omitDefaultValues, colapseParentNode, isImporterAddedNode } from "../glTFUtilities";
 
 const NAME = "KHR_lights_punctual";
 const DEFAULTS: Partial<IKHRLightsPunctual_Light> = {
@@ -156,44 +155,14 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
             // Assign the light to its parent node, if possible, to condense the glTF
             // Why and when: the glTF loader generates a new parent TransformNode for each light node, which we should undo on export
             const parentBabylonNode = babylonNode.parent;
+
             // TODO: May be able to simplify this logic by using our previous check for the root node
-            if (parentBabylonNode && parentBabylonNode instanceof TransformNode && parentBabylonNode.getChildren().length == 1 && babylonNode.getChildren().length == 0) {
+            if (parentBabylonNode && isImporterAddedNode(babylonNode, parentBabylonNode)) {
                 const parentNodeIndex = nodeMap.get(parentBabylonNode);
                 if (parentNodeIndex) {
                     // Combine the light's transformation with the parent's
                     const parentNode = this._exporter._nodes[parentNodeIndex];
-                    const parentTranslation = Vector3.FromArrayToRef(parentNode.translation || [0, 0, 0], 0, TmpVectors.Vector3[0]);
-                    const parentRotation = Quaternion.FromArrayToRef(parentNode.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[0]);
-                    const parentScale = Vector3.FromArrayToRef(parentNode.scale || [1, 1, 1], 0, TmpVectors.Vector3[1]);
-                    const parentMatrix = Matrix.ComposeToRef(parentScale, parentRotation, parentTranslation, TmpVectors.Matrix[0]);
-
-                    const translation = Vector3.FromArrayToRef(node.translation || [0, 0, 0], 0, TmpVectors.Vector3[2]);
-                    const rotation = Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
-                    const matrix = Matrix.ComposeToRef(Vector3.OneReadOnly, rotation, translation, TmpVectors.Matrix[1]);
-
-                    parentMatrix.multiplyToRef(matrix, matrix);
-                    matrix.decompose(parentScale, parentRotation, parentTranslation);
-
-                    // Remove default values if they are now default
-                    // TODO: Find good, common place to store node transformation defaults and use them here
-                    if (parentTranslation.equalsToFloats(0, 0, 0)) {
-                        delete parentNode.translation;
-                    } else {
-                        parentNode.translation = parentTranslation.asArray();
-                    }
-
-                    if (Quaternion.IsIdentity(parentRotation)) {
-                        delete parentNode.rotation;
-                    } else {
-                        parentNode.rotation = parentRotation.asArray();
-                    }
-
-                    if (parentScale.equalsToFloats(1, 1, 1)) {
-                        delete parentNode.scale;
-                    } else {
-                        parentNode.scale = parentScale.asArray();
-                    }
-
+                    colapseParentNode(node, parentNode);
                     parentNode.extensions ||= {};
                     parentNode.extensions[NAME] = lightReference;
 

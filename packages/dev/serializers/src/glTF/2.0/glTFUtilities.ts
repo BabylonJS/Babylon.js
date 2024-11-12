@@ -1,6 +1,6 @@
 /* eslint-disable jsdoc/require-jsdoc */
 
-import type { IBufferView, AccessorComponentType, IAccessor } from "babylonjs-gltf2interface";
+import type { IBufferView, AccessorComponentType, IAccessor, INode } from "babylonjs-gltf2interface";
 import { AccessorType, MeshPrimitiveMode } from "babylonjs-gltf2interface";
 
 import type { DataArray, IndicesArray, Nullable } from "core/types";
@@ -16,6 +16,10 @@ import type { Node } from "core/node";
 
 // Matrix that converts handedness on the X-axis.
 const convertHandednessMatrix = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion.Identity(), Vector3.Zero());
+
+// 180 degrees rotation in Y.
+const rotation180Y = new Quaternion(0, 1, 0, 0);
+const rotation180Z = new Quaternion(0, 0, 1, 0);
 
 /**
  * Creates a buffer view based on the supplied arguments
@@ -203,6 +207,68 @@ export function convertToRightHandedRotation(value: Quaternion): Quaternion {
     value.x *= -1;
     value.y *= -1;
     return value;
+}
+
+/**
+ * Rotation by 180 as glTF has a different convention than Babylon.
+ * @param rotation Target camera rotation.
+ * @returns Ref to camera rotation.
+ */
+export function convertCameraRotationToGLTF(rotation: Quaternion): Quaternion {
+    return rotation.multiplyInPlace(rotation180Y);
+}
+
+export function rotateNode180Y(node: INode) {
+    if (node.rotation) {
+        const rotation = Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
+        rotation.multiplyInPlace(rotation180Y);
+        node.rotation = rotation.asArray();
+    }
+}
+
+export function rotateNodeMinus180Z(node: INode) {
+    if (node.rotation) {
+        const rotation = Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
+        rotation.multiplyInPlace(Quaternion.Inverse(rotation180Z));
+        node.rotation = rotation.asArray();
+    }
+}
+
+export function colapseParentNode(node: INode, parentNode: INode) {
+    const parentTranslation = Vector3.FromArrayToRef(parentNode.translation || [0, 0, 0], 0, TmpVectors.Vector3[0]);
+    const parentRotation = Quaternion.FromArrayToRef(parentNode.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[0]);
+    const parentScale = Vector3.FromArrayToRef(parentNode.scale || [1, 1, 1], 0, TmpVectors.Vector3[1]);
+    const parentMatrix = Matrix.ComposeToRef(parentScale, parentRotation, parentTranslation, TmpVectors.Matrix[0]);
+
+    const translation = Vector3.FromArrayToRef(node.translation || [0, 0, 0], 0, TmpVectors.Vector3[2]);
+    const rotation = Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
+    const scale = Vector3.FromArrayToRef(node.scale || [1, 1, 1], 0, TmpVectors.Vector3[1]);
+    const matrix = Matrix.ComposeToRef(scale, rotation, translation, TmpVectors.Matrix[1]);
+
+    parentMatrix.multiplyToRef(matrix, matrix);
+    matrix.decompose(parentScale, parentRotation, parentTranslation);
+
+    if (parentTranslation.equalsToFloats(0, 0, 0)) {
+        delete parentNode.translation;
+    } else {
+        parentNode.translation = parentTranslation.asArray();
+    }
+
+    if (Quaternion.IsIdentity(parentRotation)) {
+        delete parentNode.rotation;
+    } else {
+        parentNode.rotation = parentRotation.asArray();
+    }
+
+    if (parentScale.equalsToFloats(1, 1, 1)) {
+        delete parentNode.scale;
+    } else {
+        parentNode.scale = parentScale.asArray();
+    }
+}
+
+export function isImporterAddedNode(babylonNode: Node, parentBabylonNode: Node) {
+    return parentBabylonNode instanceof TransformNode && parentBabylonNode.getChildren().length == 1 && babylonNode.getChildren().length == 0;
 }
 
 // /**
