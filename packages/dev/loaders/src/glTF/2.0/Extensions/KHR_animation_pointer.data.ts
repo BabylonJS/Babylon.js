@@ -6,6 +6,7 @@ import type { IAnimatable } from "core/Animations/animatable.interface";
 import { AnimationPropertyInfo } from "../glTFLoaderAnimation";
 import { Color3 } from "core/Maths/math.color";
 import { objectModelMapping } from "./objectModelMapping";
+import type { Material } from "core/Materials/material";
 
 function getColor3(_target: any, source: Float32Array, offset: number, scale: number): Color3 {
     return Color3.FromArray(source, offset).scale(scale);
@@ -54,13 +55,18 @@ class CameraAnimationPropertyInfo extends AnimationPropertyInfo {
 
 class MaterialAnimationPropertyInfo extends AnimationPropertyInfo {
     /** @internal */
-    public buildAnimations(target: IMaterial, name: string, fps: number, keys: any[]) {
+    public buildAnimations(target: IMaterial | Material, name: string, fps: number, keys: any[]) {
         const babylonAnimations: { babylonAnimatable: IAnimatable; babylonAnimation: Animation }[] = [];
-        for (const fillMode in target._data!) {
-            babylonAnimations.push({
-                babylonAnimatable: target._data![fillMode].babylonMaterial,
-                babylonAnimation: this._buildAnimation(name, fps, keys),
-            });
+        if ((target as IMaterial)._data) {
+            const targetAsIMaterial = target as IMaterial;
+            for (const fillMode in targetAsIMaterial._data!) {
+                babylonAnimations.push({
+                    babylonAnimatable: targetAsIMaterial._data![fillMode].babylonMaterial,
+                    babylonAnimation: this._buildAnimation(name, fps, keys),
+                });
+            }
+        } else {
+            babylonAnimations.push({ babylonAnimatable: target as Material, babylonAnimation: this._buildAnimation(name, fps, keys) });
         }
         return babylonAnimations;
     }

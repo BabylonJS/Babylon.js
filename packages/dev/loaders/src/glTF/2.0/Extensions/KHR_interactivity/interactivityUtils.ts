@@ -804,7 +804,9 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         outputs: {
             flows: {
-                err: { name: "error" },
+                err: { name: "error", toBlock: FlowGraphBlockNames.PlayAnimation },
+                out: { name: "out", toBlock: FlowGraphBlockNames.PlayAnimation },
+                done: { name: "done", toBlock: FlowGraphBlockNames.PlayAnimation },
             },
         },
         extraProcessor(_gltfBlock, _mapping, _arrays, serializedObjects) {
