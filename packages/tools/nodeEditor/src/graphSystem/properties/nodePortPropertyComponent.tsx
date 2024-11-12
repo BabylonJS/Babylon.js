@@ -8,23 +8,11 @@ import { TextLineComponent } from "shared-ui-components/lines/textLineComponent"
 import type { NodeMaterialConnectionPoint } from "core/Materials";
 import { NodeMaterialBlockConnectionPointTypes } from "core/Materials";
 
-/**
- *
- */
 export interface IFrameNodePortPropertyTabComponentProps {
-    /**
-     *
-     */
     stateManager: StateManager;
-    /**
-     *
-     */
     nodePort: NodePort;
 }
 
-/**
- *
- */
 export class NodePortPropertyTabComponent extends React.Component<IFrameNodePortPropertyTabComponentProps> {
     constructor(props: IFrameNodePortPropertyTabComponentProps) {
         super(props);
