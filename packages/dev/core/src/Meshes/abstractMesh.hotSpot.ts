@@ -102,4 +102,7 @@ export function GetHotSpotToRef(mesh: AbstractMesh, hotSpotQuery: HotSpotQuery, 
         TmpVectors.Vector3[0].scaleInPlace(hotSpotQuery.barycentric[i]);
         res.addInPlace(TmpVectors.Vector3[0]);
     }
+
+    // Convert the result to world space
+    Vector3.TransformCoordinatesToRef(res, mesh.getWorldMatrix(), res);
 }

@@ -308,10 +308,6 @@ export class CSG2 implements IDisposable {
             throw new Error("Error while creating the CSG: " + e.message);
         }
 
-        if (returnValue._manifold.genus() < 0) {
-            throw new Error("Incorrect volume detected. Make sure you are not using a double sided geometry");
-        }
-
         return returnValue;
     }
 

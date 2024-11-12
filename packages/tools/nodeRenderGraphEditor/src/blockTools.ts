@@ -18,6 +18,7 @@ import { NodeRenderGraphObjectRendererBlock } from "core/FrameGraph/Node/Blocks/
 import { NodeRenderGraphGeometryRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/geometryRendererBlock";
 import { NodeRenderGraphCullObjectsBlock } from "core/FrameGraph/Node/Blocks/Rendering/cullObjectsBlock";
 import { NodeRenderGraphGUIBlock } from "gui/2D/FrameGraph/renderGraphGUIBlock";
+import { NodeRenderGraphTAAObjectRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/taaObjectRendererBlock";
 import type { FrameGraph } from "core/FrameGraph/frameGraph";
 
 /**
@@ -83,6 +84,9 @@ export class BlockTools {
             }
             case "GeometryRendererBlock": {
                 return new NodeRenderGraphGeometryRendererBlock("Geometry renderer", frameGraph, scene);
+            }
+            case "TAAObjectRendererBlock": {
+                return new NodeRenderGraphTAAObjectRendererBlock("TAA Object renderer", frameGraph, scene);
             }
             case "CullBlock": {
                 return new NodeRenderGraphCullObjectsBlock("Cull", frameGraph, scene);
