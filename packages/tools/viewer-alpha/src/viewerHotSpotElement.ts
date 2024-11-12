@@ -6,11 +6,6 @@ import { customElement, property, state } from "lit/decorators.js";
 import { HTML3DElement } from "./viewerElement";
 import { ViewerHotSpotResult } from "./viewer";
 
-const horizontalAlignment = ["left", "center", "right"] as const;
-const verticalAlignment = ["top", "center", "bottom"] as const;
-type HorizontalAlignment = (typeof horizontalAlignment)[number];
-type VerticalAlignment = (typeof verticalAlignment)[number];
-
 @customElement("babylon-viewer-hotspot")
 export class HTMLHotSpotElement extends LitElement {
     // eslint-disable-next-line @typescript-eslint/naming-convention, jsdoc/require-jsdoc
@@ -24,29 +19,6 @@ export class HTMLHotSpotElement extends LitElement {
 
     @property({ attribute: "hotspot-name" })
     public hotSpotName: string = "";
-
-    @property({
-        converter: (value) => {
-            if (!value) {
-                return "center center";
-            } else {
-                let [horizontal = "center", vertical = "center"] = value.split(" ");
-
-                if (!horizontalAlignment.includes(horizontal as HorizontalAlignment)) {
-                    horizontal = "center";
-                }
-                if (!verticalAlignment.includes(vertical as VerticalAlignment)) {
-                    vertical = "center";
-                }
-
-                return {
-                    horizontal: horizontal as HorizontalAlignment,
-                    vertical: vertical as VerticalAlignment,
-                };
-            }
-        },
-    })
-    public alignment: Readonly<{ horizontal: HorizontalAlignment; vertical: VerticalAlignment }> = { horizontal: "center", vertical: "center" };
 
     @state()
     private _isValid = false;
@@ -72,10 +44,6 @@ export class HTMLHotSpotElement extends LitElement {
                     if (this.hotSpotName) {
                         if (viewerElement.queryHotSpot(this.hotSpotName, hotSpotResult)) {
                             // TODO: Raycast to the position and see if the expected triangle is hit. If not, don't show the hotspot.
-                            // this would require updating bounds on every frame which is slow. is there a better way to determine whether the hotspot is visible? depth buffer?
-                            //const offsetX = this.alignment.horizontal === "center" ? "-50%" : this.alignment.horizontal === "left" ? "0" : "-100%";
-                            //const offsetY = this.alignment.vertical === "center" ? "-50%" : this.alignment.vertical === "top" ? "0" : "-100%";
-                            //this.style.transform = `translate(${hotSpotResult.screenPosition[0]}px, ${hotSpotResult.screenPosition[1]}px) translate(${offsetX}, ${offsetY})`;
                             this.style.transform = `translate(${hotSpotResult.screenPosition[0]}px, ${hotSpotResult.screenPosition[1]}px)`;
                             this._isValid = true;
                         } else {
