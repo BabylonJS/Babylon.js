@@ -143,6 +143,7 @@ export function ParseFlowGraph(serializationObject: ISerializedFlowGraph, option
  */
 function ParseFlowGraphContext(serializationObject: ISerializedFlowGraphContext, options: IFlowGraphContextParseOptions, rightHanded?: boolean): FlowGraphContext {
     const result = options.graph.createContext();
+    result.treatDataAsRightHanded = rightHanded || false;
     const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
     result.uniqueId = serializationObject.uniqueId;
     const scene = result.getScene();
@@ -180,11 +181,11 @@ function ParseFlowGraphContext(serializationObject: ISerializedFlowGraphContext,
         result.assetsContext = assetsContext;
     }
     for (const key in serializationObject._userVariables) {
-        const value = valueParseFunction(key, serializationObject._userVariables, result.assetsContext, scene, rightHanded);
+        const value = valueParseFunction(key, serializationObject._userVariables, result.assetsContext, scene);
         result.userVariables[key] = value;
     }
     for (const key in serializationObject._connectionValues) {
-        const value = valueParseFunction(key, serializationObject._connectionValues, result.assetsContext, scene, rightHanded);
+        const value = valueParseFunction(key, serializationObject._connectionValues, result.assetsContext, scene);
         result._setConnectionValueByKey(key, value);
     }
 

@@ -92,17 +92,16 @@ export function defaultValueSerializationFunction(key: string, value: any, seria
  * @param serializationObject the object that will be parsed
  * @param assetsContainer the assets container that will be used to find the objects
  * @param scene
- * @param rightHanded whether the data provided is right-handed (NOT the scene!)
  * @returns
  */
-export function defaultValueParseFunction(key: string, serializationObject: any, assetsContainer: IAssetContainer, scene: Scene, rightHanded?: boolean) {
+export function defaultValueParseFunction(key: string, serializationObject: any, assetsContainer: IAssetContainer, scene: Scene) {
     const intermediateValue = serializationObject[key];
     let finalValue;
     const className = intermediateValue?.className;
     if (isMeshClassName(className)) {
         finalValue = intermediateValue.id ? (scene.getMeshById(intermediateValue.id) ?? scene.getNodeById(intermediateValue.id)) : scene.getMeshByName(intermediateValue.name);
     } else if (isVectorClassName(className)) {
-        finalValue = parseVector(className, intermediateValue.value, rightHanded === scene.useRightHandedSystem);
+        finalValue = parseVector(className, intermediateValue.value);
     } else if (className === FlowGraphTypes.Matrix) {
         finalValue = Matrix.FromArray(intermediateValue.value);
     } else if (className === FlowGraphInteger.ClassName) {

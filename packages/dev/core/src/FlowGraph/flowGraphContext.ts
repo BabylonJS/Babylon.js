@@ -110,6 +110,13 @@ export class FlowGraphContext {
      */
     public assetsContext: IAssetContainer;
 
+    /**
+     * Whether to treat data as right-handed.
+     * This is used when serializing data from a right-handed system, while running the context in a left-handed system, for example in glTF parsing.
+     * Default is false.
+     */
+    public treatDataAsRightHanded = false;
+
     constructor(params: IFlowGraphContextConfiguration) {
         this._configuration = params;
         this.assetsContext = params.assetsContext ?? params.scene;
