@@ -104,12 +104,14 @@
                 <line class="line"></line>
             </svg>
             <babylon-viewer-hotspot hotspot-name="antenna">
-                 <svg style="width: 20px; height: 20px; transform: translate(-50%, -50%)">
-                    <ellipse cx="10" cy="10" rx="8" ry="8" fill="red" stroke="white" stroke-width="3" />
-                 </svg>
+                <div hidden>
+                    <svg style="width: 20px; height: 20px; transform: translate(-50%, -50%)">
+                        <ellipse cx="10" cy="10" rx="8" ry="8" fill="red" stroke="white" stroke-width="3" />
+                    </svg>
+                </div>
             </babylon-viewer-hotspot>
             <babylon-viewer-hotspot hotspot-name="thruster">
-                Thruster
+                <div hidden>Thruster</div>
             </babylon-viewer-hotspot>
         </babylon-viewer>
         <button class="toggle-dom-button" onclick="onToggleDOM()">Toggle DOM</button>

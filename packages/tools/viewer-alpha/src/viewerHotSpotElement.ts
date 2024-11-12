@@ -24,7 +24,19 @@ export class HTMLHotSpotElement extends LitElement {
         }
     `;
 
+    private readonly _mutationObserver: MutationObserver;
     private _viewerAttachment: Nullable<IDisposable> = null;
+
+    public constructor() {
+        super();
+        this._mutationObserver = new MutationObserver((mutations) => {
+            for (const mutation of mutations) {
+                if (mutation.type === "childList") {
+                    this._removeHiddenAttribute(mutation.removedNodes);
+                }
+            }
+        });
+    }
 
     @property({ attribute: "hotspot-name" })
     public hotSpotName: string = "";
@@ -63,6 +75,9 @@ export class HTMLHotSpotElement extends LitElement {
             console.warn("The babylon-viewer-hotspot element must be a child of a babylon-viewer element.");
             return;
         }
+
+        this._mutationObserver.observe(this, { childList: true });
+        this._removeHiddenAttribute(this.children);
 
         const viewerElement = this.parentElement;
         const hotSpotResult = new ViewerHotSpotResult();
@@ -106,12 +121,22 @@ export class HTMLHotSpotElement extends LitElement {
     override disconnectedCallback(): void {
         super.disconnectedCallback();
 
+        this._mutationObserver.disconnect();
+
         this._viewerAttachment?.dispose();
         this._viewerAttachment = null;
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     protected override render() {
-        return html` <slot class="${this._isValid ? "" : "hidden"}"></slot> `;
+        return html` <slot ?hidden="${!this._isValid}"></slot> `;
+    }
+
+    private _removeHiddenAttribute(nodes: Iterable<Node>) {
+        for (const node of nodes) {
+            if (node instanceof HTMLElement) {
+                node.removeAttribute("hidden");
+            }
+        }
     }
 }
