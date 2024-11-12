@@ -249,6 +249,8 @@ export function blockFactory(name: FlowGraphBlockNames): () => Promise<typeof Fl
             return async () => (await import("./Data/Transformers/flowGraphTypeToTypeBlockks")).FlowGraphIntToFloat;
         case FlowGraphBlockNames.FloatToInt:
             return async () => (await import("./Data/Transformers/flowGraphTypeToTypeBlockks")).FlowGraphFloatToInt;
+        case FlowGraphBlockNames.Easing:
+            return async () => (await import("./Execution/Animation/flowGraphEasingBlock")).FlowGraphEasingBlock;
         default:
             throw new Error(`Unknown block name ${name}`);
     }

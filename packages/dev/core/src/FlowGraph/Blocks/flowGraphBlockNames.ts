@@ -122,4 +122,5 @@ export const enum FlowGraphBlockNames {
     IntToBoolean = "FlowGraphIntToBoolean",
     IntToFloat = "FlowGraphIntToFloat",
     FloatToInt = "FlowGraphFloatToInt",
+    Easing = "FlowGraphEasingBlock",
 }
