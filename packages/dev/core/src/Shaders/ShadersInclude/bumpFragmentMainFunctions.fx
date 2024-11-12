@@ -82,19 +82,13 @@
 	}
 
 	// Thanks to http://www.thetenthplanet.de/archives/1180
-	mat3 cotangent_frame(vec3 _normal, vec3 p, vec2 uv, vec2 tangentSpaceParams)
+	mat3 cotangent_frame(vec3 normal, vec3 p, vec2 uv, vec2 tangentSpaceParams)
 	{
 		// get edge vectors of the pixel triangle
 		vec3 dp1 = dFdx(p);
 		vec3 dp2 = dFdy(p);
 		vec2 duv1 = dFdx(uv);
 		vec2 duv2 = dFdy(uv);
-
-		#ifdef RIGHT_HANDED
-			vec3 normal = vec3(-_normal.x, _normal.y, _normal.z);
-		#else
-			vec3 normal = _normal;
-		#endif
 
 		// solve the linear system
 		vec3 dp2perp = cross(dp2, normal);

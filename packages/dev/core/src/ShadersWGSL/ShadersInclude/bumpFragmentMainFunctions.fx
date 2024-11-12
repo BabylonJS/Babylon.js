@@ -83,19 +83,13 @@
 	}
 
 	// Thanks to http://www.thetenthplanet.de/archives/1180
-	fn cotangent_frame(_normal: vec3f, p: vec3f, uv: vec2f, tangentSpaceParams: vec2f) -> mat3x3f
+	fn cotangent_frame(normal: vec3f, p: vec3f, uv: vec2f, tangentSpaceParams: vec2f) -> mat3x3f
 	{
 		// get edge vectors of the pixel triangle
 		var dp1: vec3f = dpdx(p);
 		var dp2: vec3f = dpdy(p);
 		var duv1: vec2f = dpdx(uv);
 		var duv2: vec2f = dpdy(uv);
-
-		#ifdef RIGHT_HANDED
-			let normal = vec3f(-_normal.x, _normal.y, _normal.z);
-		#else
-			let normal = _normal;
-		#endif
 
 		// solve the linear system
 		var dp2perp: vec3f = cross(dp2, normal);
