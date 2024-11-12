@@ -23,7 +23,7 @@ import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { Clamp } from "core/Maths/math.scalar.functions";
-import { TmpVectors, Vector3 } from "core/Maths/math.vector";
+import { Matrix, TmpVectors, Vector3 } from "core/Maths/math.vector";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { computeMaxExtents } from "core/Meshes/meshUtils";
 import { AsyncLock } from "core/Misc/asyncLock";
@@ -36,6 +36,13 @@ import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
 
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
+
+export type LoadModelOptions = LoadAssetContainerOptions & {
+    /**
+     * The default animation index.
+     */
+    defaultAnimation?: number;
+};
 
 /**
  * Checks if the given value is a valid tone mapping option.
@@ -113,24 +120,30 @@ export type EnvironmentOptions = Partial<Readonly<{}>>;
 
 export type ViewerHotSpotQuery = {
     /**
+     * The type of the hot spot.
+     */
+    type: "surface";
+
+    /**
      * The index of the mesh within the loaded model.
      */
     meshIndex: number;
 } & HotSpotQuery;
 
 /**
- * Information computed from the hot spot surface data, canvas and mesh datas
+ * Provides the result of a hot spot query.
  */
-export type ViewerHotSpot = {
+export class ViewerHotSpotResult {
     /**
      * 2D canvas position in pixels
      */
-    screenPosition: [number, number];
+    public readonly screenPosition: [x: number, y: number] = [NaN, NaN];
+
     /**
      * 3D world coordinates
      */
-    worldPosition: [number, number, number];
-};
+    public readonly worldPosition: [x: number, y: number, z: number] = [NaN, NaN, NaN];
+}
 
 /**
  * @experimental
@@ -494,9 +507,10 @@ export class Viewer implements IDisposable {
                         this.onAnimationProgressChanged.notifyObservers();
                     }),
                 ];
+
+                this._updateCamera(!this._isLoadingModel);
             }
 
-            this._updateCamera();
             this.onSelectedAnimationChanged.notifyObservers();
         }
     }
@@ -551,7 +565,7 @@ export class Viewer implements IDisposable {
      * @param options The options to use when loading the model.
      * @param abortSignal An optional signal that can be used to abort the loading process.
      */
-    public async loadModel(source: string | File | ArrayBufferView, options?: LoadAssetContainerOptions, abortSignal?: AbortSignal): Promise<void> {
+    public async loadModel(source: string | File | ArrayBufferView, options?: LoadModelOptions, abortSignal?: AbortSignal): Promise<void> {
         await this._updateModel(source, options, abortSignal);
     }
 
@@ -563,7 +577,7 @@ export class Viewer implements IDisposable {
         await this._updateModel(undefined, undefined, abortSignal);
     }
 
-    private async _updateModel(source: string | File | ArrayBufferView | undefined, options?: LoadAssetContainerOptions, abortSignal?: AbortSignal): Promise<void> {
+    private async _updateModel(source: string | File | ArrayBufferView | undefined, options?: LoadModelOptions, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
 
         const originalOnProgress = options?.onProgress;
@@ -611,7 +625,7 @@ export class Viewer implements IDisposable {
                         group.start(true, this.animationSpeed);
                         group.pause();
                     });
-                    this.selectedAnimation = 0;
+                    this.selectedAnimation = options?.defaultAnimation ?? 0;
                     this._snapshotHelper.fixMeshes(this._details.model.meshes);
                     this._details.model.addAllToScene();
                 }
@@ -772,21 +786,21 @@ export class Viewer implements IDisposable {
 
     /**
      * retrun world and canvas coordinates of an hot spot
-     * @param hotSpotQuery mesh index and surface information to query the hot spot positions
-     * @param res Query a Hot Spot and does the conversion for Babylon Hot spot to a more generic HotSpotPositions, without Vector types
+     * @param query mesh index and surface information to query the hot spot positions
+     * @param result Query a Hot Spot and does the conversion for Babylon Hot spot to a more generic HotSpotPositions, without Vector types
      * @returns true if hotspot found
      */
-    public getHotSpotToRef(hotSpotQuery: Readonly<ViewerHotSpotQuery>, res: ViewerHotSpot): boolean {
+    public getHotSpotToRef(query: Readonly<ViewerHotSpotQuery>, result: ViewerHotSpotResult): boolean {
         if (!this._details.model) {
             return false;
         }
         const worldPos = TmpVectors.Vector3[1];
         const screenPos = TmpVectors.Vector3[0];
-        const mesh = this._details.model.meshes[hotSpotQuery.meshIndex];
+        const mesh = this._details.model.meshes[query.meshIndex];
         if (!mesh) {
             return false;
         }
-        GetHotSpotToRef(mesh, hotSpotQuery, worldPos);
+        GetHotSpotToRef(mesh, query, worldPos);
 
         const renderWidth = this._engine.getRenderWidth(); // Get the canvas width
         const renderHeight = this._engine.getRenderHeight(); // Get the canvas height
@@ -795,20 +809,32 @@ export class Viewer implements IDisposable {
         const viewportHeight = this._details.camera.viewport.height * renderHeight;
         const scene = this._details.scene;
 
-        Vector3.ProjectToRef(worldPos, mesh.getWorldMatrix(), scene.getTransformMatrix(), new Viewport(0, 0, viewportWidth, viewportHeight), screenPos);
-        res.screenPosition = [screenPos.x, screenPos.y];
-        res.worldPosition = [worldPos.x, worldPos.y, worldPos.z];
+        Vector3.ProjectToRef(worldPos, Matrix.IdentityReadOnly, scene.getTransformMatrix(), new Viewport(0, 0, viewportWidth, viewportHeight), screenPos);
+        result.screenPosition[0] = screenPos.x;
+        result.screenPosition[1] = screenPos.y;
+        result.worldPosition[0] = worldPos.x;
+        result.worldPosition[1] = worldPos.y;
+        result.worldPosition[2] = worldPos.z;
         return true;
     }
 
-    private _updateCamera(): void {
+    private _updateCamera(interpolate = false): void {
         // Enable camera's behaviors
         this._details.camera.useFramingBehavior = true;
         const framingBehavior = this._details.camera.getBehaviorByName("Framing") as FramingBehavior;
         framingBehavior.framingTime = 0;
         framingBehavior.elevationReturnTime = -1;
 
-        let radius = 1;
+        const currentAlpha = this._details.camera.alpha;
+        const currentBeta = this._details.camera.beta;
+        const currentRadius = this._details.camera.radius;
+        const currentTarget = this._details.camera.target;
+
+        const goalAlpha = Math.PI / 2;
+        const goalBeta = Math.PI / 2.4;
+        let goalRadius = 1;
+        let goalTarget = currentTarget;
+
         if (this._details.model?.meshes.length) {
             // get bounds and prepare framing/camera radius from its values
             this._details.camera.lowerRadiusLimit = null;
@@ -823,23 +849,24 @@ export class Viewer implements IDisposable {
             const worldSize = worldExtents.max.subtract(worldExtents.min);
             const worldCenter = worldExtents.min.add(worldSize.scale(0.5));
 
-            radius = worldSize.length() * 1.1;
+            goalRadius = worldSize.length() * 1.1;
 
-            if (!isFinite(radius)) {
-                radius = 1;
+            if (!isFinite(goalRadius)) {
+                goalRadius = 1;
                 worldCenter.copyFromFloats(0, 0, 0);
             }
 
-            this._details.camera.setTarget(worldCenter);
+            goalTarget = worldCenter;
         }
-        this._details.camera.lowerRadiusLimit = radius * 0.01;
-        this._details.camera.wheelPrecision = 100 / radius;
+        this._details.camera.lowerRadiusLimit = goalRadius * 0.01;
+        this._details.camera.wheelPrecision = 100 / goalRadius;
         this._details.camera.alpha = Math.PI / 2;
         this._details.camera.beta = Math.PI / 2.4;
-        this._details.camera.radius = radius;
-        this._details.camera.minZ = radius * 0.01;
-        this._details.camera.maxZ = radius * 1000;
-        this._details.camera.speed = radius * 0.2;
+        this._details.camera.radius = goalRadius;
+        this._details.camera.target = goalTarget;
+        this._details.camera.minZ = goalRadius * 0.01;
+        this._details.camera.maxZ = goalRadius * 1000;
+        this._details.camera.speed = goalRadius * 0.2;
         this._details.camera.useAutoRotationBehavior = true;
         this._details.camera.pinchPrecision = 200 / this._details.camera.radius;
         this._details.camera.upperRadiusLimit = 5 * this._details.camera.radius;
@@ -847,6 +874,14 @@ export class Viewer implements IDisposable {
         this._details.camera.pinchDeltaPercentage = 0.01;
         this._details.camera.restoreStateInterpolationFactor = 0.1;
         this._details.camera.storeState();
+
+        if (interpolate) {
+            this._details.camera.alpha = currentAlpha;
+            this._details.camera.beta = currentBeta;
+            this._details.camera.radius = currentRadius;
+            this._details.camera.target = currentTarget;
+            this._details.camera.interpolateTo(goalAlpha, goalBeta, goalRadius, goalTarget);
+        }
 
         updateSkybox(this._skybox, this._details.camera);
     }
