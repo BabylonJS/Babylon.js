@@ -10,6 +10,7 @@ import { Logger } from "core/Misc/logger";
 import { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 import { objectModelMapping } from "./objectModelMapping";
+import "./KHR_animation_pointer.data";
 
 const NAME = "KHR_animation_pointer";
 
