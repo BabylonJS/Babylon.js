@@ -6,16 +6,18 @@ import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { Vector3, Vector4 } from "core/Maths";
 import { Mesh } from "core/Meshes";
 import { ArcRotateCamera } from "core/Cameras";
-import { InteractivityPathToObjectConverter } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityPathToObjectConverter";
 import { Logger } from "core/Misc";
 import { FlowGraphInteger } from "core/FlowGraph/flowGraphInteger";
 import { ParseFlowGraphAsync } from "core/FlowGraph";
+import { GLTFPathToObjectConverter } from "loaders/glTF/2.0/Extensions/gltfPathToObjectConverter";
+import { objectModelMapping } from "loaders/glTF/2.0/Extensions/objectModelMapping";
 
 describe("Babylon Interactivity", () => {
     let engine;
     let scene: Scene;
     const log: jest.SpyInstance = jest.spyOn(Logger, "Log");
     let mockGltf: any;
+    const pathConverter = new GLTFPathToObjectConverter(mockGltf, objectModelMapping);
 
     beforeEach(() => {
         engine = new NullEngine();
@@ -27,7 +29,6 @@ describe("Babylon Interactivity", () => {
     it("should load a basic graph", async () => {
         const json = convertGLTFToSerializedFlowGraph(loggerExample);
         const coordinator = new FlowGraphCoordinator({ scene });
-        const pathConverter = new InteractivityPathToObjectConverter(mockGltf);
         await ParseFlowGraphAsync(json, { coordinator, pathConverter });
 
         coordinator.start();
@@ -39,7 +40,6 @@ describe("Babylon Interactivity", () => {
     it("should load a math graph", async () => {
         const json = convertGLTFToSerializedFlowGraph(mathExample);
         const coordinator = new FlowGraphCoordinator({ scene });
-        const pathConverter = new InteractivityPathToObjectConverter(mockGltf);
         await ParseFlowGraphAsync(json, { coordinator, pathConverter });
 
         coordinator.start();
@@ -51,7 +51,6 @@ describe("Babylon Interactivity", () => {
     it("should do integer math operations", async () => {
         const json = convertGLTFToSerializedFlowGraph(intMathExample);
         const coordinator = new FlowGraphCoordinator({ scene });
-        const pathConverter = new InteractivityPathToObjectConverter(mockGltf);
         await ParseFlowGraphAsync(json, { coordinator, pathConverter });
 
         coordinator.start();
@@ -63,7 +62,6 @@ describe("Babylon Interactivity", () => {
     it("should do matrix math operations", async () => {
         const json = convertGLTFToSerializedFlowGraph(matrixMathExample);
         const coordinator = new FlowGraphCoordinator({ scene });
-        const pathConverter = new InteractivityPathToObjectConverter(mockGltf);
         await ParseFlowGraphAsync(json, { coordinator, pathConverter });
 
         coordinator.start();
@@ -76,7 +74,6 @@ describe("Babylon Interactivity", () => {
     it("should load a custom event graph", async () => {
         const json = convertGLTFToSerializedFlowGraph(customEventExample);
         const coordinator = new FlowGraphCoordinator({ scene });
-        const pathConverter = new InteractivityPathToObjectConverter(mockGltf);
         await ParseFlowGraphAsync(json, { coordinator, pathConverter });
 
         coordinator.start();
@@ -96,7 +93,7 @@ describe("Babylon Interactivity", () => {
         };
         const json = convertGLTFToSerializedFlowGraph(worldPointerExample);
         const coordinator = new FlowGraphCoordinator({ scene });
-        const pathConverter = new InteractivityPathToObjectConverter(gltf);
+        const pathConverter = new GLTFPathToObjectConverter(gltf, objectModelMapping);
         await ParseFlowGraphAsync(json, { coordinator, pathConverter });
 
         coordinator.start();
@@ -109,7 +106,6 @@ describe("Babylon Interactivity", () => {
     it("should execute an event N times with doN", async () => {
         const json = convertGLTFToSerializedFlowGraph(doNExample);
         const coordinator = new FlowGraphCoordinator({ scene });
-        const pathConverter = new InteractivityPathToObjectConverter(mockGltf);
         await ParseFlowGraphAsync(json, { coordinator, pathConverter });
 
         coordinator.start();
