@@ -91,7 +91,8 @@ void main(void)
 
 	#ifdef BUMP
 		vWorldView = view * finalWorld;
-		vNormalW = normalUpdated;
+		mat3 normalWorld = mat3(finalWorld);
+		vNormalW = normalize(normalWorld * normalUpdated);
 	#else
         #ifdef NORMAL_WORLDSPACE
 			vNormalV = normalize(vec3(finalWorld * vec4(normalUpdated, 0.0)));
