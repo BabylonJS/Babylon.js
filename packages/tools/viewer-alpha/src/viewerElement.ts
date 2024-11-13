@@ -1,6 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { ArcRotateCamera, IInspectorOptions, Nullable, Observable } from "core/index";
-import type { Inspector } from "inspector/inspector";
+import type { ArcRotateCamera, Nullable, Observable } from "core/index";
 
 import type { PropertyValues } from "lit";
 import type { ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
@@ -69,7 +68,6 @@ interface HTML3DElementEventMap extends HTMLElementEventMap {
 export class HTML3DElement extends LitElement {
     private readonly _viewerLock = new AsyncLock();
     private _viewerDetails?: Readonly<ViewerDetails>;
-    private _inspectorInstance: Nullable<typeof Inspector> = null;
 
     // Bindings for properties that are synchronized both ways between the lower level Viewer and the HTML3DElement.
     private readonly _propertyBindings = [
@@ -707,28 +705,6 @@ export class HTML3DElement extends LitElement {
      */
     public toggleAnimation() {
         this._viewerDetails?.viewer.toggleAnimation();
-    }
-
-    /**
-     * Show the inspector for this scene
-     * @param options options passed through to Inspector.
-     */
-    public async showInspector(options?: IInspectorOptions): Promise<void> {
-        if (!this._inspectorInstance) {
-            await import("core/Engines/WebGPU/Extensions/engine.query");
-            ({ Inspector: this._inspectorInstance } = await import("inspector/inspector"));
-        }
-
-        if (this._viewerDetails) {
-            this._inspectorInstance.Show(this._viewerDetails.scene, options ?? {});
-        }
-    }
-
-    /**
-     * Hide the inspector for this scene
-     */
-    public hideInspector(): void {
-        this._inspectorInstance?.Hide();
     }
 
     // eslint-disable-next-line babylonjs/available
