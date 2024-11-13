@@ -33,3 +33,5 @@ export * from "./KHR_interactivity";
 export * from "./KHR_node_visibility";
 export * from "./KHR_node_selectability";
 export * from "./ExtrasAsMetadata";
+// eslint-disable-next-line import/no-internal-modules
+export * from "./KHR_interactivity/index";
