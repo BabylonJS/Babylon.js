@@ -707,8 +707,16 @@ export class GraphNode {
         if (propStore) {
             const source = this.content.data;
 
-            for (const { propertyName, displayName, type, options } of propStore) {
-                if (options && !options.embedded) {
+            const classes: string[] = [];
+
+            let proto = Object.getPrototypeOf(source);
+            while (proto) {
+                classes.push(proto.constructor.name);
+                proto = Object.getPrototypeOf(proto);
+            }
+
+            for (const { propertyName, displayName, type, options, className } of propStore) {
+                if (!options || !options.embedded || classes.indexOf(className) === -1) {
                     continue;
                 }
 
