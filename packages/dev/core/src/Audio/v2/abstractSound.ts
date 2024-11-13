@@ -157,6 +157,8 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
 
     protected abstract _createSoundInstance(): AbstractSoundInstance | Promise<AbstractSoundInstance>;
 
+    // TODO: Consider breaking this out into the static and streaming sound classes since static sound don't need to be async. Only streaming sounds need to be async here.
+    // TODO: Or... figure out a better way to handle the async nature of `HTMLMediaElement.play` needing to wait for the `canplaythrough` event to fire before it can be called.
     /**
      * Plays the sound.
      * @param waitTime - The time to wait before playing the sound in seconds.

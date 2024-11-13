@@ -105,6 +105,8 @@ export class WebAudioEngine extends AbstractAudioEngine {
         document.removeEventListener("click", this._onInteraction);
     }).bind(this);
 
+    // TODO: Make this return the audio context directly, not a Promise.
+    // TODO: Consider waiting for a click in init to avoid the console warning, but stop waiting and create the audio context immediately if this member gets accessed, which will trigger the console warning.
     /** @internal */
     public audioContext: Promise<BaseAudioContext>;
 
