@@ -143,6 +143,11 @@ export class ViewerHotSpotResult {
      * 3D world coordinates
      */
     public readonly worldPosition: [x: number, y: number, z: number] = [NaN, NaN, NaN];
+
+    /**
+     * visibility range is [-1..1]. A value of 0 means camera eye is on the plane.
+     */
+    public visibility: number = NaN;
 }
 
 /**
@@ -794,13 +799,14 @@ export class Viewer implements IDisposable {
         if (!this._details.model) {
             return false;
         }
+        const worldNormal = TmpVectors.Vector3[2];
         const worldPos = TmpVectors.Vector3[1];
         const screenPos = TmpVectors.Vector3[0];
         const mesh = this._details.model.meshes[query.meshIndex];
         if (!mesh) {
             return false;
         }
-        GetHotSpotToRef(mesh, query, worldPos);
+        GetHotSpotToRef(mesh, query, worldPos, worldNormal);
 
         const renderWidth = this._engine.getRenderWidth(); // Get the canvas width
         const renderHeight = this._engine.getRenderHeight(); // Get the canvas height
@@ -815,6 +821,14 @@ export class Viewer implements IDisposable {
         result.worldPosition[0] = worldPos.x;
         result.worldPosition[1] = worldPos.y;
         result.worldPosition[2] = worldPos.z;
+
+        // visibility
+        const eyeToSurface = TmpVectors.Vector3[3];
+        eyeToSurface.copyFrom(worldPos);
+        eyeToSurface.subtractInPlace(this._details.camera.globalPosition);
+        eyeToSurface.normalize();
+        result.visibility = Vector3.Dot(eyeToSurface, worldNormal);
+
         return true;
     }
 

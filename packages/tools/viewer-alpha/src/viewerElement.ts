@@ -415,7 +415,7 @@ export class HTML3DElement extends LitElement {
      * Get hotspot world and screen values from a named hotspot
      * @param name slot of the hot spot
      * @param result resulting world and screen positions
-     * @returns world and screen space coordinates
+     * @returns world position, world normal and screen space coordinates
      */
     public queryHotSpot(name: string, result: ViewerHotSpotResult): boolean {
         return this._queryHotSpot(name, result) != null;

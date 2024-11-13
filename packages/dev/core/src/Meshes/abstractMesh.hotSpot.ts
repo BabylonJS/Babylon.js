@@ -93,16 +93,28 @@ export function GetTransformedPosition(mesh: AbstractMesh, index: number, res: V
  * @param mesh mesh used to get hotspot from
  * @param hotSpotQuery point indices and barycentric
  * @param res output world position
+ * @param resNormal optional output world normal
  */
-export function GetHotSpotToRef(mesh: AbstractMesh, hotSpotQuery: HotSpotQuery, res: Vector3): void {
+export function GetHotSpotToRef(mesh: AbstractMesh, hotSpotQuery: HotSpotQuery, res: Vector3, resNormal?: Vector3): void {
     res.set(0, 0, 0);
     for (let i = 0; i < 3; i++) {
         const index = hotSpotQuery.pointIndex[i];
-        GetTransformedPosition(mesh, index, TmpVectors.Vector3[0]);
-        TmpVectors.Vector3[0].scaleInPlace(hotSpotQuery.barycentric[i]);
-        res.addInPlace(TmpVectors.Vector3[0]);
+        GetTransformedPosition(mesh, index, TmpVectors.Vector3[i]);
+        TmpVectors.Vector3[i].scaleInPlace(hotSpotQuery.barycentric[i]);
+        res.addInPlace(TmpVectors.Vector3[i]);
     }
 
     // Convert the result to world space
     Vector3.TransformCoordinatesToRef(res, mesh.getWorldMatrix(), res);
+
+    // compute normal in world space
+    if (resNormal) {
+        TmpVectors.Vector3[3].copyFrom(TmpVectors.Vector3[2]);
+        TmpVectors.Vector3[3].subtractInPlace(TmpVectors.Vector3[1]);
+        TmpVectors.Vector3[4].copyFrom(TmpVectors.Vector3[1]);
+        TmpVectors.Vector3[4].subtractInPlace(TmpVectors.Vector3[0]);
+        Vector3.CrossToRef(TmpVectors.Vector3[3], TmpVectors.Vector3[4], resNormal);
+        Vector3.TransformNormalToRef(resNormal, mesh.getWorldMatrix(), resNormal);
+        resNormal.normalize();
+    }
 }
