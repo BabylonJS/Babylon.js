@@ -925,6 +925,18 @@
             "referenceImage": "glTFSerializerKHRPunctualLightRH.png"
         },
         {
+            "title": "GLTF Serializer Camera, left-handed",
+            "playgroundId": "#O0M0J9",
+            "replace": "//options//, roundtrip = true; useRightHandedSystem = false;",
+            "referenceImage": "glTFSerializerKHRPunctualLightLH.png"
+        },
+        {
+            "title": "GLTF Serializer Camera, right-handed",
+            "playgroundId": "#O0M0J9",
+            "replace": "//options//, roundtrip = true; useRightHandedSystem = true;",
+            "referenceImage": "glTFSerializerKHRPunctualLightRH.png"
+        },
+        {
             "title": "GLTF Buggy with Draco Mesh Compression",
             "playgroundId": "#JNW207#1",
             "referenceImage": "gltfBuggyDraco.png"
