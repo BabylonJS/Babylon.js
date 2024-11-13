@@ -55,6 +55,8 @@ export interface IBoundingBoxGizmo extends IGizmo {
     readonly isDragging: boolean;
     /** Fired when a rotation anchor or scale box is dragged */
     onDragStartObservable: Observable<{}>;
+    /** Fired when a scale box or a rotation anchor is hovered */
+    onBoxOrAnchorHoverObservable: Observable<{}>;
     /** Fired when a scale box is dragged */
     onScaleBoxDragObservable: Observable<{}>;
     /** Fired when a scale box drag is ended */
@@ -182,6 +184,10 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
      * Fired when a rotation anchor or scale box is dragged
      */
     public onDragStartObservable = new Observable<{}>();
+    /**
+     * Fired when a scale box or a rotation anchor is hovered
+     */
+    public onBoxOrAnchorHoverObservable = new Observable<{}>();
     /**
      * Fired when a scale box is dragged
      */
@@ -703,6 +709,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                     .concat(this._scaleBoxesParent.getChildMeshes())
                     .forEach((mesh) => {
                         if (pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh == mesh) {
+                            this.onBoxOrAnchorHoverObservable.notifyObservers({ mesh });
                             pointerIds[(<IPointerEvent>pointerInfo.event).pointerId] = mesh;
                             mesh.material = this._hoverColoredMaterial;
                             this._isHovered = true;
