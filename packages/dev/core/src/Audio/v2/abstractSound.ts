@@ -234,7 +234,11 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * @param waitTime - The time to wait before stopping the sound in seconds.
      */
     public stop(waitTime: Nullable<number> = null): void {
-        this._state = SoundState.Stopped;
+        if (waitTime && 0 < waitTime) {
+            this._state = SoundState.Stopping;
+        } else {
+            this._state = SoundState.Stopped;
+        }
 
         if (!this._soundInstances) {
             return;
@@ -252,6 +256,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         }
 
         if (this._soundInstances.length === 0) {
+            this._state = SoundState.Stopped;
             this.onEndedObservable.notifyObservers(this);
         }
     }

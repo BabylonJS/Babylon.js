@@ -3,6 +3,10 @@
  */
 export enum SoundState {
     /**
+     * The sound is waiting for its instances to stop.
+     */
+    Stopping,
+    /**
      * The sound is stopped.
      */
     Stopped,
