@@ -61,6 +61,23 @@ export type CameraAutoOrbit = {
     delay: number;
 };
 
+export type PostProcessing = {
+    /**
+     * The tone mapping to use for rendering the scene.
+     */
+    toneMapping: ToneMapping;
+
+    /**
+     * The contrast applied to the scene.
+     */
+    contrast: number;
+
+    /**
+     * The exposure applied to the scene.
+     */
+    exposure: number;
+};
+
 /**
  * Checks if the given value is a valid tone mapping option.
  * @param value The value to check.
@@ -197,19 +214,9 @@ export class Viewer implements IDisposable {
     public readonly onSkyboxBlurChanged = new Observable<void>();
 
     /**
-     * Fired when the tone mapping changes.
+     * Fired when the post processing state changes.
      */
-    public readonly onToneMappingChanged = new Observable<void>();
-
-    /**
-     * Fired when the contrast changes.
-     */
-    public readonly onContrastChanged = new Observable<void>();
-
-    /**
-     * Fired when the exposure changes.
-     */
-    public readonly onExposureChanged = new Observable<void>();
+    public readonly onPostProcessingChanged = new Observable<void>();
 
     /**
      * Fired when a model is loaded into the viewer (or unloaded from the viewer).
@@ -294,24 +301,30 @@ export class Viewer implements IDisposable {
             this._exposure = scene.imageProcessingConfiguration.exposure;
 
             this._imageProcessingConfigurationObserver = scene.imageProcessingConfiguration.onUpdateParameters.add(() => {
+                let hasChanged = false;
+
                 if (this._toneMappingEnabled !== scene.imageProcessingConfiguration.toneMappingEnabled) {
                     this._toneMappingEnabled = scene.imageProcessingConfiguration.toneMappingEnabled;
-                    this.onToneMappingChanged.notifyObservers();
+                    hasChanged = true;
                 }
 
                 if (this._toneMappingType !== scene.imageProcessingConfiguration.toneMappingType) {
                     this._toneMappingType = scene.imageProcessingConfiguration.toneMappingType;
-                    this.onToneMappingChanged.notifyObservers();
+                    hasChanged = true;
                 }
 
                 if (this._contrast !== scene.imageProcessingConfiguration.contrast) {
                     this._contrast = scene.imageProcessingConfiguration.contrast;
-                    this.onContrastChanged.notifyObservers();
+                    hasChanged = true;
                 }
 
                 if (this._exposure !== scene.imageProcessingConfiguration.exposure) {
                     this._exposure = scene.imageProcessingConfiguration.exposure;
-                    this.onExposureChanged.notifyObservers();
+                    hasChanged = true;
+                }
+
+                if (hasChanged) {
+                    this.onPostProcessingChanged.notifyObservers();
                 }
             });
 
@@ -331,7 +344,9 @@ export class Viewer implements IDisposable {
         this._autoRotationBehavior = this._details.camera.getBehaviorByName("AutoRotation") as AutoRotationBehavior;
 
         // Default to KHR PBR Neutral tone mapping.
-        this.toneMapping = "neutral";
+        this.postProcessing = {
+            toneMapping: "neutral",
+        };
 
         // Load a default light, but ignore errors as the user might be immediately loading their own environment.
         this.resetEnvironment().catch(() => {});
@@ -407,71 +422,64 @@ export class Viewer implements IDisposable {
     }
 
     /**
-     * The tone mapping to use for rendering the scene.
+     * The post processing configuration.
      */
-    public get toneMapping(): ToneMapping | "unknown" {
-        if (!this._toneMappingEnabled) {
-            return "none";
-        }
-
+    public get postProcessing(): PostProcessing {
+        let toneMapping: ToneMapping;
         switch (this._toneMappingType) {
             case ImageProcessingConfiguration.TONEMAPPING_STANDARD:
-                return "standard";
+                toneMapping = "standard";
+                break;
             case ImageProcessingConfiguration.TONEMAPPING_ACES:
-                return "aces";
+                toneMapping = "aces";
+                break;
             case ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL:
-                return "neutral";
+                toneMapping = "neutral";
+                break;
             default:
-                return "unknown";
+                toneMapping = "none";
+                break;
         }
+
+        return {
+            toneMapping,
+            contrast: this._contrast,
+            exposure: this._exposure,
+        };
     }
 
-    public set toneMapping(value: ToneMapping) {
+    public set postProcessing(value: Partial<Readonly<PostProcessing>>) {
         this._snapshotHelper.disableSnapshotRendering();
 
-        if (value === "none") {
-            this._details.scene.imageProcessingConfiguration.toneMappingEnabled = false;
-        } else {
-            switch (value) {
-                case "standard":
-                    this._details.scene.imageProcessingConfiguration.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_STANDARD;
-                    break;
-                case "aces":
-                    this._details.scene.imageProcessingConfiguration.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_ACES;
-                    break;
-                case "neutral":
-                    this._details.scene.imageProcessingConfiguration.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL;
-                    break;
+        if (value.toneMapping !== undefined) {
+            if (value.toneMapping === "none") {
+                this._details.scene.imageProcessingConfiguration.toneMappingEnabled = false;
+            } else {
+                switch (value.toneMapping) {
+                    case "standard":
+                        this._details.scene.imageProcessingConfiguration.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_STANDARD;
+                        break;
+                    case "aces":
+                        this._details.scene.imageProcessingConfiguration.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_ACES;
+                        break;
+                    case "neutral":
+                        this._details.scene.imageProcessingConfiguration.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL;
+                        break;
+                }
+                this._details.scene.imageProcessingConfiguration.toneMappingEnabled = true;
             }
-            this._details.scene.imageProcessingConfiguration.toneMappingEnabled = true;
         }
 
-        this._snapshotHelper.enableSnapshotRendering();
-    }
+        if (value.contrast !== undefined) {
+            this._details.scene.imageProcessingConfiguration.contrast = value.contrast;
+        }
 
-    /**
-     * The contrast applied to the scene.
-     */
-    public get contrast(): number {
-        return this._contrast;
-    }
+        if (value.exposure !== undefined) {
+            this._details.scene.imageProcessingConfiguration.exposure = value.exposure;
+        }
 
-    public set contrast(value: number) {
-        this._snapshotHelper.disableSnapshotRendering();
-        this._details.scene.imageProcessingConfiguration.contrast = value;
-        this._snapshotHelper.enableSnapshotRendering();
-    }
+        this._details.scene.imageProcessingConfiguration.isEnabled = this._toneMappingEnabled || this._contrast !== 1 || this._exposure !== 1;
 
-    /**
-     * The exposure applied to the scene.
-     */
-    public get exposure(): number {
-        return this._exposure;
-    }
-
-    public set exposure(value: number) {
-        this._snapshotHelper.disableSnapshotRendering();
-        this._details.scene.imageProcessingConfiguration.exposure = value;
         this._snapshotHelper.enableSnapshotRendering();
     }
 
@@ -797,9 +805,7 @@ export class Viewer implements IDisposable {
         this.onEnvironmentChanged.clear();
         this.onEnvironmentError.clear();
         this.onSkyboxBlurChanged.clear();
-        this.onToneMappingChanged.clear();
-        this.onContrastChanged.clear();
-        this.onExposureChanged.clear();
+        this.onPostProcessingChanged.clear();
         this.onModelChanged.clear();
         this.onModelError.clear();
         this.onCameraAutoOrbitChanged.clear();

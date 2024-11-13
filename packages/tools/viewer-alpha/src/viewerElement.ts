@@ -85,31 +85,25 @@ export class HTML3DElement extends LitElement {
         ),
         this._createPropertyBinding(
             "toneMapping",
-            (details) => details.viewer.onToneMappingChanged,
+            (details) => details.viewer.onPostProcessingChanged,
             (details) => {
                 if (this.toneMapping) {
-                    details.viewer.toneMapping = this.toneMapping;
+                    details.viewer.postProcessing = { toneMapping: this.toneMapping };
                 }
             },
-            (details) => {
-                if (details.viewer.toneMapping === "unknown") {
-                    this.toneMapping = null;
-                } else {
-                    this.toneMapping = details.viewer.toneMapping;
-                }
-            }
+            (details) => (this.toneMapping = details.viewer.postProcessing?.toneMapping)
         ),
         this._createPropertyBinding(
             "contrast",
-            (details) => details.viewer.onContrastChanged,
-            (details) => (details.viewer.contrast = this.contrast ?? details.viewer.contrast),
-            (details) => (this.contrast = details.viewer.contrast)
+            (details) => details.viewer.onPostProcessingChanged,
+            (details) => (details.viewer.postProcessing = { contrast: this.contrast ?? undefined }),
+            (details) => (this.contrast = details.viewer.postProcessing.contrast)
         ),
         this._createPropertyBinding(
             "exposure",
-            (details) => details.viewer.onExposureChanged,
-            (details) => (details.viewer.exposure = this.exposure ?? details.viewer.exposure),
-            (details) => (this.exposure = details.viewer.exposure)
+            (details) => details.viewer.onPostProcessingChanged,
+            (details) => (details.viewer.postProcessing = { exposure: this.exposure ?? undefined }),
+            (details) => (this.exposure = details.viewer.postProcessing.exposure)
         ),
         this._createPropertyBinding(
             "cameraAutoOrbit",
