@@ -125,7 +125,7 @@ class WebAudioStaticSound extends StaticSound {
         return "WebAudioStaticSound";
     }
 
-    protected async _createSoundInstance(): Promise<WebAudioStaticSoundInstance> {
+    protected _createSoundInstance(): WebAudioStaticSoundInstance {
         const soundInstance = new WebAudioStaticSoundInstance(this);
         this.engine.addSoundInstance(soundInstance);
         return soundInstance;

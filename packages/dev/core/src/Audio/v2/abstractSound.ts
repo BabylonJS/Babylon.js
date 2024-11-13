@@ -171,7 +171,11 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
 
         this._state = SoundState.Playing;
 
-        const instance = await this._createSoundInstance();
+        let instance = this._createSoundInstance();
+        if (instance instanceof Promise) {
+            instance = await instance;
+        }
+
         instance.onEndedObservable.addOnce(this._onSoundInstanceEnded.bind(this));
 
         instance.play(waitTime, startOffset, duration);
