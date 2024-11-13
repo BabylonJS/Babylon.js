@@ -1020,6 +1020,12 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
         }
         this._scaleBoxesDragBehaviors.length = 0;
         this._rotateAnchorsDragBehaviors.length = 0;
+        this.onDragStartObservable.clear();
+        this.onBoxOrAnchorHoverObservable.clear();
+        this.onScaleBoxDragObservable.clear();
+        this.onScaleBoxDragEndObservable.clear();
+        this.onRotationSphereDragObservable.clear();
+        this.onRotationSphereDragEndObservable.clear();
         super.dispose();
     }
 
