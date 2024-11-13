@@ -629,7 +629,7 @@ export class _IblShadowsVoxelRenderer {
         if (this._voxelDebugEnabled) {
             this._addRTsForRender([this._voxelSlabDebugRT], includedMeshes, this._voxelDebugAxis, 1, true);
         }
-        this._scene.onAfterRenderTargetsRenderObservable.addOnce(this._renderVoxelGrid.bind(this));
+        this._scene.onAfterRenderObservable.addOnce(this._renderVoxelGrid.bind(this));
     }
 
     private _renderVoxelGrid() {
@@ -656,7 +656,6 @@ export class _IblShadowsVoxelRenderer {
                 this._generateMipMaps();
                 this._copyMipMaps();
                 this._voxelizationInProgress = false;
-                this._scene.onAfterRenderTargetsRenderObservable.removeCallback((this as any).boundVoxelGridRenderFn);
             } else if (!this._renderInFlight) {
                 this._renderInFlight = true;
                 setTimeout(() => {
