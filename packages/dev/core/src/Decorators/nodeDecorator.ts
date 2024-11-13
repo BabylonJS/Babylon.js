@@ -78,6 +78,8 @@ export interface IPropertyDescriptionForEdition {
     groupName: string;
     /** options for the property */
     options: IEditablePropertyOption;
+    /** name of the class that contains the property */
+    className: string;
 }
 
 /**
@@ -106,6 +108,7 @@ export function editableInPropertyPage(
             type: propertyType,
             groupName: groupName,
             options: options ?? {},
+            className: target.constructor.name,
         });
     };
 }

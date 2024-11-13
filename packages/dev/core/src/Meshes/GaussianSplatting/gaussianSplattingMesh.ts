@@ -230,6 +230,11 @@ export class GaussianSplattingMesh extends Mesh {
 
     private static _RowOutputLength = 3 * 4 + 3 * 4 + 4 + 4; // Vector3 position, Vector3 scale, 1 u8 quaternion, 1 color with alpha
     private static _SH_C0 = 0.28209479177387814;
+    // batch size between 2 yield calls. This value is a tradeoff between updates overhead and framerate hiccups
+    // This step is faster the PLY conversion. So batch size can be bigger
+    private static _SplatBatchSize = 327680;
+    // batch size between 2 yield calls during the PLY to splat conversion.
+    private static _PlyConversionBatchSize = 32768;
 
     /**
      * Set the number of batch (a batch is 16384 splats) after which a display update is performed
@@ -781,7 +786,7 @@ export class GaussianSplattingMesh extends Mesh {
 
         for (let i = 0; i < header.vertexCount; i++) {
             GaussianSplattingMesh._GetSplat(header, i, compressedChunks, offset);
-            if (i % 30000 === 0 && useCoroutine) {
+            if (i % GaussianSplattingMesh._PlyConversionBatchSize === 0 && useCoroutine) {
                 yield;
             }
         }
@@ -1089,7 +1094,7 @@ export class GaussianSplattingMesh extends Mesh {
         } else {
             for (let i = 0; i < vertexCount; i++) {
                 this._makeSplat(i, i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum);
-                if (isAsync && i % 327680 === 0) {
+                if (isAsync && i % GaussianSplattingMesh._SplatBatchSize === 0) {
                     yield;
                 }
             }

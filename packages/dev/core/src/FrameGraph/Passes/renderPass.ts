@@ -74,7 +74,7 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
             this._depthShared = true;
         }
 
-        this._context._bindRenderTarget(this._renderTarget, `frame graph - render pass '${this.name}'`);
+        this._context.bindRenderTarget(this._renderTarget, `frame graph - render pass '${this.name}'`);
 
         super._execute();
 

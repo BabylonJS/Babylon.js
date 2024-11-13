@@ -143,6 +143,9 @@
     height: 20px;
     display: flex;
     margin-left: 4px;
+    cursor: default;
+    width: fit-content;
+
     input[type="checkbox"] {
         -webkit-appearance: none;
         -moz-appearance: none;
@@ -184,6 +187,7 @@
     margin-top: 5px;
     margin-bottom: 5px;
     height: 20px;
+    cursor: default;
 
     input[type="number"] {
         grid-row: 1;
@@ -243,6 +247,7 @@
     height: 20px;
     display: grid;
     margin-bottom: 3px;
+    cursor: default;
 }
 
 .select {

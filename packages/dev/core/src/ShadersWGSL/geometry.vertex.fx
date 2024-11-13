@@ -96,7 +96,9 @@ fn main(input : VertexInputs) -> FragmentInputs {
 		vertexOutputs.vWorldView1 = vWorldView[1];
 		vertexOutputs.vWorldView2 = vWorldView[2];
 		vertexOutputs.vWorldView3 = vWorldView[3];
-		vertexOutputs.vNormalW = normalUpdated;
+
+		let normalWorld: mat3x3f =  mat3x3f(finalWorld[0].xyz, finalWorld[1].xyz, finalWorld[2].xyz);
+		vertexOutputs.vNormalW = normalize(normalWorld * normalUpdated);
 	#else
         #ifdef NORMAL_WORLDSPACE
 			vertexOutputs.vNormalV = normalize((finalWorld *  vec4f(normalUpdated, 0.0)).xyz);

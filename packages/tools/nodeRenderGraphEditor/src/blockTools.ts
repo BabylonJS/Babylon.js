@@ -18,6 +18,7 @@ import { NodeRenderGraphObjectRendererBlock } from "core/FrameGraph/Node/Blocks/
 import { NodeRenderGraphGeometryRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/geometryRendererBlock";
 import { NodeRenderGraphCullObjectsBlock } from "core/FrameGraph/Node/Blocks/Rendering/cullObjectsBlock";
 import { NodeRenderGraphGUIBlock } from "gui/2D/FrameGraph/renderGraphGUIBlock";
+import { NodeRenderGraphTAAObjectRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/taaObjectRendererBlock";
 import type { FrameGraph } from "core/FrameGraph/frameGraph";
 
 /**
@@ -84,6 +85,9 @@ export class BlockTools {
             case "GeometryRendererBlock": {
                 return new NodeRenderGraphGeometryRendererBlock("Geometry renderer", frameGraph, scene);
             }
+            case "TAAObjectRendererBlock": {
+                return new NodeRenderGraphTAAObjectRendererBlock("TAA Object renderer", frameGraph, scene);
+            }
             case "CullBlock": {
                 return new NodeRenderGraphCullObjectsBlock("Cull", frameGraph, scene);
             }
@@ -104,53 +108,53 @@ export class BlockTools {
     public static GetColorFromConnectionNodeType(type: NodeRenderGraphBlockConnectionPointTypes) {
         let color = "#880000";
         switch (type) {
-            case NodeRenderGraphBlockConnectionPointTypes.Texture:
-                color = "#51b0e5";
-                break;
-            case NodeRenderGraphBlockConnectionPointTypes.TextureBackBuffer:
-                color = "#cb9e27";
-                break;
-            case NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment:
-                color = "#16bcb1";
-                break;
             case NodeRenderGraphBlockConnectionPointTypes.ObjectList:
-                color = "#b786cb";
+                color = "#84995c";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.Camera:
                 color = "#be5126";
                 break;
+            case NodeRenderGraphBlockConnectionPointTypes.Texture:
+                color = "#5170ff";
+                break;
+            case NodeRenderGraphBlockConnectionPointTypes.TextureBackBuffer:
+                color = "#51dcc5";
+                break;
+            case NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment:
+                color = "#51e5c4";
+                break;
             case NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment:
-                color = "#591990";
+                color = "#51e593";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth:
-                color = "#84995c";
+                color = "#51e566";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.TextureViewNormal:
-                color = "#84995c";
+                color = "#7ee551";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.TextureAlbedo:
-                color = "#84995c";
+                color = "#b9e551";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.TextureReflectivity:
-                color = "#84995c";
+                color = "#e5af51";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.TextureWorldPosition:
-                color = "#84995c";
+                color = "#e58551";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.TextureVelocity:
-                color = "#84995c";
+                color = "#e55151";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth:
-                color = "#84995c";
+                color = "#e55185";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.TextureLocalPosition:
-                color = "#84995c";
+                color = "#e551a8";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.TextureWorldNormal:
-                color = "#84995c";
+                color = "#e551d5";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.TextureLinearVelocity:
-                color = "#84995c";
+                color = "#c451e5";
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.BasedOnInput:
                 color = "#f28e0a"; // Used by the teleport blocks

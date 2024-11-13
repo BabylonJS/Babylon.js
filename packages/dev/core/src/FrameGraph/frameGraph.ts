@@ -183,7 +183,9 @@ export class FrameGraph {
      * Executes the frame graph.
      */
     public execute(): void {
-        this._renderContext._bindRenderTarget();
+        this._renderContext.bindRenderTarget();
+
+        this._textureManager.updateHistoryTextures();
 
         for (const task of this._tasks) {
             const passes = task._getPasses();
@@ -311,6 +313,22 @@ export class FrameGraph {
         }
 
         this._textureManager.resolveDanglingHandle(danglingHandle, handle);
+    }
+
+    /**
+     * Checks if a handle is a history texture (or points to a history texture, for a dangling handle)
+     * @param handle The handle to check
+     * @returns True if the handle is a history texture, otherwise false
+     */
+    public isHistoryTexture(handle: FrameGraphTextureHandle): boolean {
+        const entry = this._textureManager._textures.get(handle);
+        if (!entry) {
+            return false;
+        }
+
+        handle = entry.refHandle ?? handle;
+
+        return this._textureManager._historyTextures.has(handle);
     }
 
     /**

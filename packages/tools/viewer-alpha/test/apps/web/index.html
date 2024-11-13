@@ -81,7 +81,28 @@
             camera-orbit="auto auto auto"
             camera-target="auto auto auto"
             camera-auto-orbit
-            hotspots="testHotSpot1 1 228 113 111 0.217 0.341 0.442"
+            hotspots='{
+                "hotspot 1": {
+                    "type": "surface",
+                    "meshIndex": 1,
+                    "pointIndex": [228, 113, 111],
+                    "barycentric": [0.217, 0.341, 0.442],
+                    "cameraOrbit": [1.085, 1.417, 0.518]
+                },
+                "hotspot 2": {
+                    "type": "surface",
+                    "meshIndex": 1,
+                    "pointIndex": [228, 113, 111],
+                    "barycentric": [0.217, 0.341, 0.442],
+                    "cameraOrbit": [2.085, 2.417, 2.518]
+                },
+                "hotspot 3": {
+                    "type": "surface",
+                    "meshIndex": 1,
+                    "pointIndex": [228, 113, 111],
+                    "barycentric": [0.217, 0.341, 0.442]
+                }
+            }'
         >
             <!-- <div slot="tool-bar" style="position: absolute; top: 12px; left: 12px; width: 100px; height: 36px">
                 <button onclick="document.querySelector('babylon-viewer').toggleAnimation()">Toggle Animation</button>
@@ -165,7 +186,7 @@
             // use requestAnimationFrame to update with renderer
             const startHotSpotLinesRenderLoop = () => {
                 const hotspotBaseRect = document.querySelector("#anchor-button").getBoundingClientRect();
-                drawHotSpotLine(lines[0], "testHotSpot1", hotspotBaseRect);
+                drawHotSpotLine(lines[0], "hotspot 1", hotspotBaseRect);
                 if (hotspotVisible) {
                     requestAnimationFrame(startHotSpotLinesRenderLoop);
                 }

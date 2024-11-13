@@ -110,10 +110,18 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
         const componentList: { [groupName: string]: JSX.Element[] } = {},
             groups: string[] = [];
 
-        for (const { propertyName, displayName, type, groupName, options } of propStore) {
+        const classes: string[] = [];
+
+        let proto = Object.getPrototypeOf(block);
+        while (proto) {
+            classes.push(proto.constructor.name);
+            proto = Object.getPrototypeOf(proto);
+        }
+
+        for (const { propertyName, displayName, type, groupName, options, className } of propStore) {
             let components = componentList[groupName];
 
-            if (options.embedded) {
+            if (options.embedded || classes.indexOf(className) === -1) {
                 continue;
             }
 
