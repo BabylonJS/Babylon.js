@@ -246,7 +246,7 @@ export class GLTFExporter {
 
     private readonly _options: Required<IExportOptions>;
 
-    private readonly _materialExporter = new GLTFMaterialExporter(this);
+    public readonly _materialExporter = new GLTFMaterialExporter(this);
 
     private readonly _extensions: { [name: string]: IGLTFExporterExtensionV2 } = {};
 
