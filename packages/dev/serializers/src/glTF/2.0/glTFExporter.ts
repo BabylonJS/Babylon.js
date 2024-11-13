@@ -1190,7 +1190,6 @@ export class GLTFExporter {
                     if (parentNodeIndex) {
                         const parentNode = this._nodes[parentNodeIndex];
                         colapseParentNode(node, parentNode);
-                        //rotateNode180Y(parentNode);
                         this._nodesCameraMap.get(gltfCamera)?.push(parentNode);
                         skipNode = true;
                     }

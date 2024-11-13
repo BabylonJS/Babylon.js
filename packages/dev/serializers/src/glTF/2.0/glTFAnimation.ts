@@ -650,10 +650,10 @@ export class _GLTFAnimation {
 
                             if (isCamera) {
                                 convertCameraRotationToGLTF(rotationQuaternion);
-                            }
-
-                            if (!Quaternion.IsIdentity(rotationQuaternion)) {
-                                convertToRightHandedRotation(rotationQuaternion);
+                            } else {
+                                if (!Quaternion.IsIdentity(rotationQuaternion)) {
+                                    convertToRightHandedRotation(rotationQuaternion);
+                                }
                             }
 
                             rotationQuaternion.toArray(tempQuaterionArray);
