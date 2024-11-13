@@ -58,7 +58,7 @@ import {
     isNoopNode,
     isTriangleFillMode,
     colapseParentNode,
-    isImporterAddedNode,
+    isParentAddedByImporter,
     rotateNodeMinus180Z,
     convertCameraRotationToGLTF,
 } from "./glTFUtilities";
@@ -721,13 +721,11 @@ export class GLTFExporter {
             node.translation = translation.asArray();
         }
 
-        convertCameraRotationToGLTF(rotation);
+        if (convertToRightHanded) {
+            convertCameraRotationToGLTF(rotation);
+        }
 
         if (!Quaternion.IsIdentity(rotation)) {
-            if (convertToRightHanded) {
-                convertToRightHandedRotation(rotation);
-            }
-
             node.rotation = rotation.asArray();
         }
     }
@@ -1166,8 +1164,6 @@ export class GLTFExporter {
                         this._nodesSkinMap.get(skin)?.push(node);
                     }
                 }
-            } else {
-                // TODO: handle other Babylon node types
             }
         }
 
@@ -1184,7 +1180,7 @@ export class GLTFExporter {
                 const parentBabylonNode = babylonNode.parent;
                 this._setCameraTransformation(node, babylonNode, state.convertToRightHanded, parentBabylonNode);
 
-                if (parentBabylonNode && isImporterAddedNode(babylonNode, parentBabylonNode)) {
+                if (parentBabylonNode && isParentAddedByImporter(babylonNode, parentBabylonNode)) {
                     rotateNodeMinus180Z(node);
                     const parentNodeIndex = this._nodeMap.get(parentBabylonNode);
                     if (parentNodeIndex) {

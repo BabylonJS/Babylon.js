@@ -234,6 +234,11 @@ export function rotateNodeMinus180Z(node: INode) {
     }
 }
 
+/**
+ * Colapses GLTF parent and node into a single node. This is useful for removing nodes that were added by the GLTF importer.
+ * @param node Target parent node.
+ * @param parentNode Original GLTF node (Light or Camera).
+ */
 export function colapseParentNode(node: INode, parentNode: INode) {
     const parentTranslation = Vector3.FromArrayToRef(parentNode.translation || [0, 0, 0], 0, TmpVectors.Vector3[0]);
     const parentRotation = Quaternion.FromArrayToRef(parentNode.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[0]);
@@ -267,7 +272,13 @@ export function colapseParentNode(node: INode, parentNode: INode) {
     }
 }
 
-export function isImporterAddedNode(babylonNode: Node, parentBabylonNode: Node) {
+/**
+ * Sometimes the GLTF Importer can add extra transform nodes (for lights and cameras). This checks if a parent node was added by the GLTF Importer. If so, it should be removed during serialization.
+ * @param babylonNode Original GLTF node (Light or Camera).
+ * @param parentBabylonNode Target parent node.
+ * @returns True if the parent node was added by the GLTF importer.
+ */
+export function isParentAddedByImporter(babylonNode: Node, parentBabylonNode: Node): boolean {
     return parentBabylonNode instanceof TransformNode && parentBabylonNode.getChildren().length == 1 && babylonNode.getChildren().length == 0;
 }
 

@@ -9,7 +9,7 @@ import { KHRLightsPunctual_LightType } from "babylonjs-gltf2interface";
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
 import { Logger } from "core/Misc/logger";
-import { convertToRightHandedPosition, omitDefaultValues, colapseParentNode, isImporterAddedNode } from "../glTFUtilities";
+import { convertToRightHandedPosition, omitDefaultValues, colapseParentNode, isParentAddedByImporter } from "../glTFUtilities";
 
 const NAME = "KHR_lights_punctual";
 const DEFAULTS: Partial<IKHRLightsPunctual_Light> = {
@@ -157,7 +157,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
             const parentBabylonNode = babylonNode.parent;
 
             // TODO: May be able to simplify this logic by using our previous check for the root node
-            if (parentBabylonNode && isImporterAddedNode(babylonNode, parentBabylonNode)) {
+            if (parentBabylonNode && isParentAddedByImporter(babylonNode, parentBabylonNode)) {
                 const parentNodeIndex = nodeMap.get(parentBabylonNode);
                 if (parentNodeIndex) {
                     // Combine the light's transformation with the parent's
