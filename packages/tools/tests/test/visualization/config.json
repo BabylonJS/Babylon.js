@@ -424,7 +424,7 @@
         },
         {
             "title": "Chibi Rex",
-            "playgroundId": "#NZ2RZY#3",
+            "playgroundId": "#NZ2RZY#4",
             "renderCount": 50,
             "referenceImage": "chibi-rex.png"
         },
@@ -1622,7 +1622,7 @@
         },
         {
             "title": "GLTF ext MSFT_LOD",
-            "playgroundId": "#2YZFA0#234",
+            "playgroundId": "#2YZFA0#422",
             "referenceImage": "gltfMSFTLOD.png"
         },
         {
@@ -2246,7 +2246,7 @@
         },
         {
             "title": "IBL Voxel Shadowing",
-            "playgroundId": "#8R5SSE#369",
+            "playgroundId": "#8R5SSE#408",
             "referenceImage": "voxelShadows.png",
             "renderCount": 15,
             "excludedEngines": ["webgl1"]
@@ -2258,14 +2258,14 @@
         },
         {
             "title": "IBL Voxel Shadowing Right-Handed",
-            "playgroundId": "#8R5SSE#377",
+            "playgroundId": "#8R5SSE#409",
             "referenceImage": "voxelShadowsRightHanded.png",
             "renderCount": 15,
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "IBL Voxel Shadowing Left-Handed",
-            "playgroundId": "#8R5SSE#378",
+            "playgroundId": "#8R5SSE#410",
             "referenceImage": "voxelShadowsLeftHanded.png",
             "renderCount": 15,
             "excludedEngines": ["webgl1"]
