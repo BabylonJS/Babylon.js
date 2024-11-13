@@ -92,20 +92,20 @@ export function GetTransformedPosition(mesh: AbstractMesh, index: number, res: V
  * Compute a world space hotspot position
  * @param mesh mesh used to get hotspot from
  * @param hotSpotQuery point indices and barycentric
- * @param res output world position
+ * @param resPosition output world position
  * @param resNormal optional output world normal
  */
-export function GetHotSpotToRef(mesh: AbstractMesh, hotSpotQuery: HotSpotQuery, res: Vector3, resNormal?: Vector3): void {
-    res.set(0, 0, 0);
+export function GetHotSpotToRef(mesh: AbstractMesh, hotSpotQuery: HotSpotQuery, resPosition: Vector3, resNormal?: Vector3): void {
+    resPosition.set(0, 0, 0);
     for (let i = 0; i < 3; i++) {
         const index = hotSpotQuery.pointIndex[i];
         GetTransformedPosition(mesh, index, TmpVectors.Vector3[i]);
         TmpVectors.Vector3[i].scaleInPlace(hotSpotQuery.barycentric[i]);
-        res.addInPlace(TmpVectors.Vector3[i]);
+        resPosition.addInPlace(TmpVectors.Vector3[i]);
     }
 
     // Convert the result to world space
-    Vector3.TransformCoordinatesToRef(res, mesh.getWorldMatrix(), res);
+    Vector3.TransformCoordinatesToRef(resPosition, mesh.getWorldMatrix(), resPosition);
 
     // compute normal in world space
     if (resNormal) {
