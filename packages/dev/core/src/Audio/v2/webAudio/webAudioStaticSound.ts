@@ -273,13 +273,15 @@ class WebAudioStaticSoundInstance extends StaticSoundInstance {
             waitTime = 0;
         } else if (startOffset) {
             this._startOffset = startOffset;
+        } else {
+            startOffset = this._startOffset;
         }
 
         this._state = SoundState.Playing;
         this._startTime = this.engine.currentTime + (waitTime ?? 0);
 
         this._initSourceNode();
-        this.sourceNode?.start(this._startTime, this._startOffset, duration === null ? undefined : duration);
+        this.sourceNode?.start(this._startTime, startOffset ?? 0, duration === null ? undefined : duration);
     }
 
     /** @internal */
