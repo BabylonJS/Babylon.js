@@ -155,7 +155,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         this.onDisposeObservable.notifyObservers(this);
     }
 
-    protected abstract _createSoundInstance(): AbstractSoundInstance;
+    protected abstract _createSoundInstance(): AbstractSoundInstance | Promise<AbstractSoundInstance>;
 
     /**
      * Plays the sound.
@@ -163,7 +163,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * @param startOffset - The time within the sound source to start playing the sound in seconds.
      * @param duration - How long to play the sound in seconds.
      */
-    public play(waitTime: Nullable<number> = null, startOffset: Nullable<number> = null, duration: Nullable<number> = null): void {
+    public async play(waitTime: Nullable<number> = null, startOffset: Nullable<number> = null, duration: Nullable<number> = null): Promise<void> {
         if (this._state === SoundState.Paused && this._soundInstances.length > 0) {
             this.resume();
             return;
@@ -171,7 +171,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
 
         this._state = SoundState.Playing;
 
-        const instance = this._createSoundInstance();
+        const instance = await this._createSoundInstance();
         instance.onEndedObservable.addOnce(this._onSoundInstanceEnded.bind(this));
 
         instance.play(waitTime, startOffset, duration);

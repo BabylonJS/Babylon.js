@@ -96,7 +96,7 @@ class WebAudioStreamingSound extends StreamingSound {
         this.volume = options?.volume ?? 1;
 
         if (options?.autoplay) {
-            this.play(null, this.startOffset);
+            await this.play(null, this.startOffset);
         }
     }
 
@@ -105,8 +105,9 @@ class WebAudioStreamingSound extends StreamingSound {
         return "WebAudioStreamingSound";
     }
 
-    protected _createSoundInstance(): WebAudioStreamingSoundInstance {
+    protected async _createSoundInstance(): Promise<WebAudioStreamingSoundInstance> {
         const soundInstance = new WebAudioStreamingSoundInstance(this);
+        await soundInstance.init();
         this.engine.addSoundInstance(soundInstance);
         return soundInstance;
     }
@@ -134,21 +135,21 @@ class WebAudioStreamingSound extends StreamingSound {
 
 /** @internal */
 class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
-    private _isReady: boolean = false;
     private _waitTimer: Nullable<NodeJS.Timeout> = null;
 
-    private _onCanPlayThrough: () => void = (() => {
-        this._isReady = true;
+    private _mediaElementPromise: Promise<HTMLMediaElement> = new Promise((resolve) => {
+        this._resolveMediaElementPromise = resolve;
+    });
+    private _resolveMediaElementPromise: (mediaElement: HTMLMediaElement) => void;
 
-        if (this._state === SoundState.Playing) {
-            this._play();
-        }
+    private _onCanPlayThrough: () => void = (() => {
+        this._resolveMediaElementPromise(this.mediaElement);
     }).bind(this);
 
     protected override _source: WebAudioStreamingSound;
 
     /** @internal */
-    public mediaElement: Nullable<HTMLMediaElement>;
+    public mediaElement: HTMLMediaElement;
 
     /** @internal */
     public sourceNode: Nullable<MediaElementAudioSourceNode>;
@@ -172,6 +173,10 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
         } else if (source.source instanceof HTMLMediaElement) {
             this._initFromMediaElement(source.source);
         }
+    }
+
+    public async init(): Promise<void> {
+        await this._mediaElementPromise;
     }
 
     private _initFromUrl(url: string): void {
@@ -247,11 +252,11 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
             this._waitTimer = setTimeout(() => {
                 this._waitTimer = null;
                 this._state = SoundState.Playing;
-                this._play();
+                this.mediaElement.play();
             }, waitTime * 1000);
         } else {
             this._state = SoundState.Playing;
-            this._play();
+            this.mediaElement.play();
         }
     }
 
@@ -320,16 +325,6 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
             this.sourceNode?.disconnect(node.webAudioInputNode);
         } else {
             throw new Error("Unsupported node type.");
-        }
-    }
-
-    private _play(): void {
-        if (!this._isReady) {
-            return;
-        }
-
-        if (this.mediaElement) {
-            this.mediaElement.play();
         }
     }
 
