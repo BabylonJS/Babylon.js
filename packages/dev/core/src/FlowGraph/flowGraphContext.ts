@@ -13,8 +13,8 @@ import { GetFlowGraphAssetWithType } from "./flowGraphAssetsContext";
 import type { IAssetContainer } from "core/IAssetContainer";
 import type { Nullable } from "core/types";
 import type { PointerInfo } from "core/Events/pointerEvents";
-import type { FlowGraphMeshPickEventBlock } from "./Blocks";
-import { FlowGraphBlockNames } from "./Blocks";
+import type { FlowGraphMeshPickEventBlock } from "./Blocks/Event/flowGraphMeshPickEventBlock";
+import { FlowGraphBlockNames } from "./Blocks/flowGraphBlockNames";
 import { _isADescendantOf } from "./utils";
 
 /**
