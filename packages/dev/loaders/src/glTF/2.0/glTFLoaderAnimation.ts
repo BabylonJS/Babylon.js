@@ -51,7 +51,9 @@ export abstract class AnimationPropertyInfo {
 export class TransformNodeAnimationPropertyInfo extends AnimationPropertyInfo {
     /** @internal */
     public buildAnimations(target: INode, name: string, fps: number, keys: any[]) {
-        return [{ babylonAnimatable: target._babylonTransformNode!, babylonAnimation: this._buildAnimation(name, fps, keys) }];
+        const babylonAnimations: { babylonAnimatable: IAnimatable; babylonAnimation: Animation }[] = [];
+        babylonAnimations.push({ babylonAnimatable: target._babylonTransformNode!, babylonAnimation: this._buildAnimation(name, fps, keys) });
+        return babylonAnimations;
     }
 }
 
