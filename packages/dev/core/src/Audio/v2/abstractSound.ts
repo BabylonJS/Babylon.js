@@ -236,7 +236,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
             return;
         }
 
-        for (const instance of this._soundInstances) {
+        for (const instance of [...this._soundInstances]) {
             instance.stop(waitTime);
         }
     }
