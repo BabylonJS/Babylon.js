@@ -16,13 +16,14 @@ export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
     public _preparePendingTasks(context: FlowGraphContext): void {
         if (!context._getExecutionVariable<Nullable<Observer<Scene>>>(this, "sceneReadyObserver", null)) {
             const scene = context.configuration.scene;
-            const contextObserver = scene.onReadyObservable.add(() => {
+            if (scene.isReady(true)) {
                 this._execute(context);
-            });
-            if (scene.isReady()) {
-                this._execute(context);
+            } else {
+                const contextObserver = scene.onReadyObservable.add(() => {
+                    this._execute(context);
+                });
+                context._setExecutionVariable(this, "sceneReadyObserver", contextObserver);
             }
-            context._setExecutionVariable(this, "sceneReadyObserver", contextObserver);
         }
     }
 

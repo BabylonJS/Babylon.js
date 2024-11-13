@@ -11,17 +11,13 @@ import {
     FlowGraphMultiGateBlock,
     FlowGraphSceneReadyEventBlock,
     FlowGraphSceneTickEventBlock,
-    FlowGraphSetPropertyBlock,
     FlowGraphSwitchBlock,
     FlowGraphThrottleBlock,
-    FlowGraphTimerBlock,
     FlowGraphSetDelayBlock,
 } from "core/FlowGraph";
 import { FlowGraphBranchBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphBranchBlock";
 import { FlowGraphInteger } from "core/FlowGraph/flowGraphInteger";
-import { FlowGraphPathConverter } from "core/FlowGraph/flowGraphPathConverter";
 import { Vector3 } from "core/Maths/math.vector";
-import { Mesh } from "core/Meshes";
 import { Logger } from "core/Misc/logger";
 import { Scene } from "core/scene";
 
@@ -65,7 +61,6 @@ describe("Flow Graph Execution Nodes", () => {
         branch.onFalse.connectTo(onFalse.in);
 
         flowGraph.start();
-        scene.onReadyObservable.notifyObservers(scene);
 
         expect(Logger.Log).toHaveBeenCalledTimes(1);
         expect(Logger.Log).toHaveBeenCalledWith("onTrue");
@@ -89,8 +84,8 @@ describe("Flow Graph Execution Nodes", () => {
 
         const extraCalls = 2;
 
-        for (let i = 0; i < numCalls + extraCalls; i++) {
-            scene.onReadyObservable.notifyObservers(scene);
+        for (let i = 1; i < numCalls + extraCalls; i++) {
+            sceneReady.done._activateSignal(flowGraphContext);
         }
 
         expect(Logger.Log).toHaveBeenCalledTimes(numCalls);
@@ -115,7 +110,6 @@ describe("Flow Graph Execution Nodes", () => {
         done.message.setValue("done", flowGraphContext);
 
         flowGraph.start();
-        scene.onReadyObservable.notifyObservers(scene);
 
         expect(Logger.Log).toHaveBeenCalledTimes(4);
         expect(Logger.Log).toHaveBeenNthCalledWith(1, 1);
@@ -143,18 +137,17 @@ describe("Flow Graph Execution Nodes", () => {
 
         flowGraph.start();
 
-        // notify twice so two of the multi gate blocks will be activated
-        scene.onReadyObservable.notifyObservers(scene);
-        scene.onReadyObservable.notifyObservers(scene);
+        // notify a second time so two of the multi gate blocks will be activated
+        sceneReady.done._activateSignal(flowGraphContext);
         expect(Logger.Log).toHaveBeenNthCalledWith(1, "custom1");
         expect(Logger.Log).toHaveBeenNthCalledWith(2, "custom2");
 
         // activate the third gate
-        scene.onReadyObservable.notifyObservers(scene);
+        sceneReady.done._activateSignal(flowGraphContext);
         expect(Logger.Log).toHaveBeenNthCalledWith(3, "custom3");
 
         // activate the first gate again
-        scene.onReadyObservable.notifyObservers(scene);
+        sceneReady.done._activateSignal(flowGraphContext);
         expect(Logger.Log).toHaveBeenNthCalledWith(4, "custom1");
     });
 
@@ -177,16 +170,15 @@ describe("Flow Graph Execution Nodes", () => {
         switchBlock._getOutputFlowForCase(3)?.connectTo(customFunctionBlock3.in);
 
         flowGraph.start();
-        scene.onReadyObservable.notifyObservers(scene);
 
         expect(Logger.Log).toHaveBeenNthCalledWith(1, "custom2");
 
         switchBlock.selection.setValue(3, flowGraphContext);
-        scene.onReadyObservable.notifyObservers(scene);
+        sceneReady.done._activateSignal(flowGraphContext);
         expect(Logger.Log).toHaveBeenNthCalledWith(2, "custom3");
     });
 
-    it("Timer Block", () => {
+    it("Timer Block", async () => {
         const sceneReady = new FlowGraphSceneReadyEventBlock();
         flowGraph.addEventBlock(sceneReady);
 
@@ -205,7 +197,6 @@ describe("Flow Graph Execution Nodes", () => {
         flowGraph.start();
         // this will run the onReadyObservable and the onBeforeRenderObservable
         scene.render();
-
         expect(Logger.Log).toHaveBeenNthCalledWith(1, "custom");
         expect(Logger.Log).toHaveBeenNthCalledWith(2, "custom2");
     });

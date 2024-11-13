@@ -58,27 +58,24 @@ describe("Flow Graph Data Nodes", () => {
         const add = new FlowGraphAddBlock();
 
         const rnd = new FlowGraphRandomBlock();
-
-        // add a number to itself, which should only trigger the random number block once and cache the result
-        add.a.connectTo(rnd.value);
-        add.b.connectTo(rnd.value);
-
-        // log ther result
         const log = new FlowGraphConsoleLogBlock();
-        log.message.connectTo(add.value);
-        sceneReady.done.connectTo(log.in);
-
-        flowGraph.start();
 
         let mockRandomIndex = 1;
         const mockedRandom = (): number => {
             return mockRandomIndex++;
         };
+        const random = jest.spyOn(global.Math, "random").mockImplementation(mockedRandom);
+        // add a number to itself, which should only trigger the random number block once and cache the result
+        add.a.connectTo(rnd.value);
+        add.b.connectTo(rnd.value);
+
+        // log ther result
+        log.message.connectTo(add.value);
+        sceneReady.done.connectTo(log.in);
+
+        flowGraph.start();
 
         // clear the random mock before calling
-        const random = jest.spyOn(global.Math, "random").mockImplementation(mockedRandom);
-
-        scene.onReadyObservable.notifyObservers(scene);
 
         expect(random).toHaveBeenCalledTimes(1);
         expect(Logger.Log).toHaveBeenCalledWith(2); // 1 + 1
