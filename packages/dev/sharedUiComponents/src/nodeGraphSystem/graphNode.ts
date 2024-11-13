@@ -674,9 +674,6 @@ export class GraphNode {
         this._optionsContainer = root.ownerDocument!.createElement("div");
         this._optionsContainer.classList.add(localStyles.optionsContainer);
         this._connections.appendChild(this._optionsContainer);
-        this._optionsContainer.addEventListener("pointerdown", (evt) => evt.stopPropagation());
-        this._optionsContainer.addEventListener("pointerup", (evt) => evt.stopPropagation());
-        this._optionsContainer.addEventListener("pointermove", (evt) => evt.stopPropagation());
 
         this._inputsContainer = root.ownerDocument!.createElement("div");
         this._inputsContainer.classList.add(commonStyles.inputsContainer);
@@ -716,6 +713,9 @@ export class GraphNode {
                 }
 
                 const container = root.ownerDocument!.createElement("div");
+                container.addEventListener("pointerdown", (evt) => evt.stopPropagation());
+                container.addEventListener("pointerup", (evt) => evt.stopPropagation());
+                container.addEventListener("pointermove", (evt) => evt.stopPropagation());
                 this._optionsContainer.appendChild(container);
                 switch (type) {
                     case PropertyTypeForEdition.Boolean: {
@@ -735,9 +735,6 @@ export class GraphNode {
                         const label = root.ownerDocument!.createElement("label");
                         label.innerText = displayName;
                         label.htmlFor = checkbox.id;
-                        label.onclick = () => {
-                            checkbox.click();
-                        };
                         container.appendChild(label);
                         break;
                     }
