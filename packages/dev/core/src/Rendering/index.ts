@@ -17,6 +17,7 @@ export * from "./renderingManager";
 export * from "./utilityLayerRenderer";
 export * from "./fluidRenderer/index";
 export * from "./reflectiveShadowMap";
+export * from "./objectRenderer";
 export * from "./GlobalIllumination/index";
 
 // Depth

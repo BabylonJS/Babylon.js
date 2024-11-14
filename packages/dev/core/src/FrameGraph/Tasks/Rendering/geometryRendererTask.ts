@@ -1,11 +1,21 @@
-// eslint-disable-next-line import/no-internal-modules
-import type { FrameGraphTextureHandle, Scene, Camera, AbstractEngine, FrameGraph, GeometryRenderingTextureClearType, FrameGraphObjectList, AbstractMesh } from "core/index";
+import type {
+    FrameGraphTextureHandle,
+    Scene,
+    Camera,
+    AbstractEngine,
+    FrameGraph,
+    GeometryRenderingTextureClearType,
+    FrameGraphObjectList,
+    AbstractMesh,
+    ObjectRendererOptions,
+    // eslint-disable-next-line import/no-internal-modules
+} from "core/index";
 import { backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
-import { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture";
 import { Color4 } from "core/Maths/math.color";
 import { MaterialHelperGeometryRendering } from "core/Materials/materialHelper.geometryrendering";
 import { Constants } from "core/Engines/constants";
 import { FrameGraphTask } from "../../frameGraphTask";
+import { ObjectRenderer } from "../../../Rendering/objectRenderer";
 
 /**
  * Description of a texture used by the geometry renderer task.
@@ -50,7 +60,7 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
 
     public set camera(camera: Camera) {
         this._camera = camera;
-        this._rtt.activeCamera = this.camera;
+        this._renderer.activeCamera = this.camera;
     }
 
     /**
@@ -146,10 +156,10 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
     public readonly geometryLinearVelocityTexture: FrameGraphTextureHandle;
 
     /**
-     * The render target texture used by the geometry renderer task.
+     * The object renderer used by the geometry renderer task.
      */
-    public get renderTargetTexture() {
-        return this._rtt;
+    public get objectRenderer() {
+        return this._renderer;
     }
 
     /**
@@ -161,14 +171,16 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
 
     public override set name(value: string) {
         this._name = value;
-        if (this._rtt) {
-            this._rtt.name = value + "_internal_rtt";
+        if (this._renderer) {
+            this._renderer.name = value;
         }
     }
 
     private _engine: AbstractEngine;
     private _scene: Scene;
-    private _rtt: RenderTargetTexture;
+    private _renderer: ObjectRenderer;
+    private _textureWidth: number;
+    private _textureHeight: number;
     private _clearAttachmentsLayout: Map<GeometryRenderingTextureClearType, number[]>;
     private _allAttachmentsLayout: number[];
 
@@ -177,19 +189,23 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
      * @param name The name of the task.
      * @param frameGraph The frame graph the task belongs to.
      * @param scene The scene the frame graph is associated with.
+     * @param options The options of the object renderer.
      */
-    constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
+    constructor(name: string, frameGraph: FrameGraph, scene: Scene, options?: ObjectRendererOptions) {
         super(name, frameGraph);
 
         this._scene = scene;
         this._engine = this._scene.getEngine();
 
-        this._rtt = new RenderTargetTexture(name, 1, scene, {
-            delayAllocation: true,
+        this._renderer = new ObjectRenderer(name, scene, options);
+        this._renderer.renderSprites = false;
+        this._renderer.renderParticles = false;
+
+        this._renderer.onBeforeRenderingManagerRenderObservable.add(() => {
+            if (!this._renderer.options.doNotChangeAspectRatio) {
+                scene.updateTransformMatrix(true);
+            }
         });
-        this._rtt.skipInitialClear = true;
-        this._rtt.renderSprites = false;
-        this._rtt.renderParticles = false;
 
         this.name = name;
         this._clearAttachmentsLayout = new Map();
@@ -212,11 +228,11 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
      * Gets the list of excluded meshes from the velocity texture.
      */
     public get excludedSkinnedMeshFromVelocityTexture(): AbstractMesh[] {
-        return MaterialHelperGeometryRendering.GetConfiguration(this._rtt.renderPassId).excludedSkinnedMesh;
+        return MaterialHelperGeometryRendering.GetConfiguration(this._renderer.renderPassId).excludedSkinnedMesh;
     }
 
     public override isReady() {
-        return this._rtt.isReadyForRendering();
+        return this._renderer.isReadyForRendering(this._textureWidth, this._textureHeight);
     }
 
     public record() {
@@ -230,14 +246,15 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
 
         this._buildClearAttachmentsLayout();
 
-        this._registerForRenderPassId(this._rtt.renderPassId);
+        this._registerForRenderPassId(this._renderer.renderPassId);
 
         const outputTextureDescription = this._frameGraph.getTextureDescription(outputTextureHandle);
 
-        this._rtt._size = outputTextureDescription.size;
+        this._textureWidth = outputTextureDescription.size.width;
+        this._textureHeight = outputTextureDescription.size.height;
 
         // Create pass
-        MaterialHelperGeometryRendering.MarkAsDirty(this._rtt.renderPassId, this.objectList.meshes || this._scene.meshes);
+        MaterialHelperGeometryRendering.MarkAsDirty(this._renderer.renderPassId, this.objectList.meshes || this._scene.meshes);
 
         const pass = this._frameGraph.addRenderPass(this.name);
 
@@ -288,11 +305,8 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
         }
 
         pass.setExecuteFunc((context) => {
-            this._rtt.renderList = this.objectList.meshes;
-            this._rtt.particleSystemList = this.objectList.particleSystems;
-
-            this._scene.incrementRenderId();
-            this._scene.resetCachedMaterial();
+            this._renderer.renderList = this.objectList.meshes;
+            this._renderer.particleSystemList = this.objectList.particleSystems;
 
             context.setDepthStates(this.depthTest && depthEnabled, this.depthWrite && depthEnabled);
 
@@ -302,13 +316,13 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
 
             context.bindAttachments(this._allAttachmentsLayout);
 
-            context.render(this._rtt);
+            context.render(this._renderer, this._textureWidth, this._textureHeight);
         });
     }
 
     public override dispose(): void {
-        MaterialHelperGeometryRendering.DeleteConfiguration(this._rtt.renderPassId);
-        this._rtt.dispose();
+        MaterialHelperGeometryRendering.DeleteConfiguration(this._renderer.renderPassId);
+        this._renderer.dispose();
         super.dispose();
     }
 
