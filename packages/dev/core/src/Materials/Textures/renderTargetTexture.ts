@@ -611,7 +611,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             doNotChangeAspectRatio,
         });
 
-        this._objectRenderer.onBeforeRenderingManagerRenderObservable.addOnce(() => {
+        this._objectRenderer.onBeforeRenderingManagerRenderObservable.add(() => {
             // Before clear
             for (const step of this._scene!._beforeRenderTargetClearStage) {
                 step.action(this, this._currentFaceIndex, this._currentLayer);
@@ -634,7 +634,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             }
         });
 
-        this._objectRenderer.onAfterRenderingManagerRenderObservable.addOnce(() => {
+        this._objectRenderer.onAfterRenderingManagerRenderObservable.add(() => {
             // After Camera Draw
             for (const step of this._scene!._afterRenderTargetDrawStage) {
                 step.action(this, this._currentFaceIndex, this._currentLayer);
