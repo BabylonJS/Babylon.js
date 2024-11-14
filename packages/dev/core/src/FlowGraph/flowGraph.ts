@@ -169,26 +169,7 @@ export class FlowGraph {
     }
 
     private _getContextualOrder(): FlowGraphEventBlock[] {
-        const order: FlowGraphEventBlock[] = [];
-        // TODO - event sorting!
-        for (const block1 of this._eventBlocks) {
-            // If the block is a mesh pick, guarantee that picks of children meshes come before picks of parent meshes
-            // if (block1.getClassName() === FlowGraphBlockNames.MeshPickEvent) {
-            //     const mesh1 = (block1 as FlowGraphMeshPickEventBlock)._getReferencedMesh(context);
-            //     let i = 0;
-            //     for (; i < order.length; i++) {
-            //         const block2 = order[i];
-            //         const mesh2 = (block2 as FlowGraphMeshPickEventBlock)._getReferencedMesh(context);
-            //         if (mesh1 && mesh2 && _isADescendantOf(mesh1, mesh2)) {
-            //             break;
-            //         }
-            //     }
-            //     order.splice(i, 0, block1);
-            // } else {
-            order.push(block1);
-            // }
-        }
-        return order;
+        return this._eventBlocks.sort((a, b) => b.initPriority - a.initPriority);
     }
 
     /**

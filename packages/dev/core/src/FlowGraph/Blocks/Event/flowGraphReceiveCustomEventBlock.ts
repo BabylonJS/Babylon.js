@@ -29,6 +29,7 @@ export interface IFlowGraphReceiveCustomEventBlockConfiguration extends IFlowGra
  * A block that receives a custom event. It saves the data sent in the eventData output.
  */
 export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
+    public override initPriority: number = 1;
     private _eventObserver: Nullable<Observer<any>>;
 
     constructor(
@@ -66,7 +67,7 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
      * @returns class name of the block.
      */
     public override getClassName(): string {
-        return FlowGraphBlockNames.SendCustomEvent;
+        return FlowGraphBlockNames.ReceiveCustomEvent;
     }
 }
-RegisterClass(FlowGraphBlockNames.SendCustomEvent, FlowGraphReceiveCustomEventBlock);
+RegisterClass(FlowGraphBlockNames.ReceiveCustomEvent, FlowGraphReceiveCustomEventBlock);

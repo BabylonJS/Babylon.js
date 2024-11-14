@@ -10,6 +10,7 @@ import { FlowGraphBlockNames } from "../flowGraphBlockNames";
  * Block that triggers when a scene is ready.
  */
 export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
+    public override initPriority: number = -1;
     /**
      * @internal
      */

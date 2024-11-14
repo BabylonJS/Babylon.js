@@ -33,7 +33,6 @@ describe("Babylon Interactivity", () => {
 
         coordinator.start();
 
-        scene.onReadyObservable.notifyObservers(scene);
         expect(log).toHaveBeenCalledWith(new Vector4(2, 4, 6, 8));
     });
 
@@ -44,7 +43,6 @@ describe("Babylon Interactivity", () => {
 
         coordinator.start();
 
-        scene.onReadyObservable.notifyObservers(scene);
         expect(log).toHaveBeenCalledWith(42);
     });
 
@@ -55,7 +53,6 @@ describe("Babylon Interactivity", () => {
 
         coordinator.start();
 
-        scene.onReadyObservable.notifyObservers(scene);
         expect(log).toHaveBeenCalledWith(new FlowGraphInteger(1));
     });
 
@@ -66,9 +63,7 @@ describe("Babylon Interactivity", () => {
 
         coordinator.start();
 
-        log.mockClear();
-        scene.onReadyObservable.notifyObservers(scene);
-        expect(log.mock.calls[0][0].m).toEqual(new Float32Array([0, 4, 8, 12, 2, 6, 10, 14, 1, 5, 9, 13, 3, 7, 11, 15]));
+        expect(log.mock.calls[0][0]._m).toStrictEqual(new Float32Array([0, 4, 8, 12, 2, 6, 10, 14, 1, 5, 9, 13, 3, 7, 11, 15]));
     });
 
     it("should load a custom event graph", async () => {
@@ -78,7 +73,6 @@ describe("Babylon Interactivity", () => {
 
         coordinator.start();
 
-        scene.onReadyObservable.notifyObservers(scene);
         expect(log).toHaveBeenCalledWith(new Vector3(1, 2, 3));
     });
 
@@ -98,7 +92,6 @@ describe("Babylon Interactivity", () => {
 
         coordinator.start();
 
-        scene.onReadyObservable.notifyObservers(scene);
         expect(log).toHaveBeenCalledWith(new Vector3(1, 1, 1));
         expect(mesh.position).toStrictEqual(new Vector3(1, 1, 1));
     });

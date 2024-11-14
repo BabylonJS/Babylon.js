@@ -141,7 +141,8 @@ export class FlowGraphCoordinator {
     public getCustomEventObservable(id: string): Observable<any> {
         let observable = this._customEventsMap.get(id);
         if (!observable) {
-            observable = new Observable<any>();
+            // receive event is initialized before scene start, so no need to notify if triggered. but possible!
+            observable = new Observable<any>(/*undefined, true*/);
             this._customEventsMap.set(id, observable);
         }
         return observable;
