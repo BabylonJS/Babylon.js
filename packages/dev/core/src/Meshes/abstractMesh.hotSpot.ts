@@ -1,6 +1,7 @@
 import { Vector3, TmpVectors, Matrix } from "../Maths/math.vector";
 import type { AbstractMesh } from "./abstractMesh";
 import { VertexBuffer } from "../Buffers/buffer";
+import { Constants } from "core/Engines/constants";
 
 /**
  * Data for mesh hotspot computation
@@ -17,15 +18,14 @@ export type HotSpotQuery = {
 };
 
 /**
- * Return a transformed local vertex component from a mesh and vertex index (position, normal,...)
+ * Return a transformed local vertex position from a mesh and vertex index
  * @param mesh mesh used to get vertex array from
  * @param index vertex index
  * @param res resulting local position
- * @param kind semantic of vertex component
  * @returns false if it was not possible to compute the position for that vertex
  */
-export function GetTransformedVertexComponent(mesh: AbstractMesh, index: number, res: Vector3, kind: string): boolean {
-    const data = mesh.getVerticesData(kind);
+export function GetTransformedPosition(mesh: AbstractMesh, index: number, res: Vector3): boolean {
+    const data = mesh.getVerticesData(VertexBuffer.PositionKind);
     if (!data) {
         return false;
     }
@@ -38,7 +38,7 @@ export function GetTransformedVertexComponent(mesh: AbstractMesh, index: number,
                 const target = mesh.morphTargetManager.getTarget(targetCount);
                 const influence = target.influence;
                 if (influence !== 0) {
-                    const targetData = kind === VertexBuffer.PositionKind ? target.getPositions() : target.getNormals();
+                    const targetData = target.getPositions();
                     if (targetData) {
                         value += (targetData[base + component] - data[base + component]) * influence;
                     }
@@ -82,11 +82,7 @@ export function GetTransformedVertexComponent(mesh: AbstractMesh, index: number,
                 }
             }
 
-            if (kind === VertexBuffer.PositionKind) {
-                Vector3.TransformCoordinatesFromFloatsToRef(values[0], values[1], values[2], finalMatrix, res);
-            } else {
-                Vector3.TransformNormalFromFloatsToRef(values[0], values[1], values[2], finalMatrix, res);
-            }
+            Vector3.TransformCoordinatesFromFloatsToRef(values[0], values[1], values[2], finalMatrix, res);
         }
     }
 
@@ -94,34 +90,8 @@ export function GetTransformedVertexComponent(mesh: AbstractMesh, index: number,
 }
 
 /**
- * Return a transformed local position from a mesh and vertex index
- * @param mesh mesh used to get vertex array from
- * @param index vertex index
- * @param position resulting local position
- * @returns false if it was not possible to compute the position for that vertex
- */
-export function GetTransformedPosition(mesh: AbstractMesh, index: number, position: Vector3): boolean {
-    return GetTransformedVertexComponent(mesh, index, position, VertexBuffer.PositionKind);
-}
-
-/**
- * Return a transformed local normal from a mesh and vertex index
- * @param mesh mesh used to get vertex array from
- * @param index vertex index
- * @param normal resulting local normalized normal
- * @returns false if it was not possible to compute the position for that vertex
- */
-export function GetTransformedNormal(mesh: AbstractMesh, index: number, normal: Vector3): boolean {
-    const res = GetTransformedVertexComponent(mesh, index, normal, VertexBuffer.NormalKind);
-    if (res) {
-        normal.normalize();
-    }
-    return res;
-}
-
-/**
  * Compute a world space hotspot position
- * TmpVectors.Vector3[0..3] are modified by this function. Do not use them as result output.
+ * TmpVectors.Vector3[0..4] are modified by this function. Do not use them as result output.
  * @param mesh mesh used to get hotspot from
  * @param hotSpotQuery point indices and barycentric
  * @param resPosition output world position
@@ -140,30 +110,27 @@ export function GetHotSpotToRef(mesh: AbstractMesh, hotSpotQuery: HotSpotQuery, 
 
     // compute normal in world space
     if (resNormal) {
-        resNormal.set(0, 0, 0);
+        const pointA = TmpVectors.Vector3[0];
+        const pointB = TmpVectors.Vector3[1];
+        const pointC = TmpVectors.Vector3[2];
+        const segmentA = TmpVectors.Vector3[3];
+        const segmentB = TmpVectors.Vector3[4];
+        segmentA.copyFrom(pointB);
+        segmentA.subtractInPlace(pointA);
+        segmentB.copyFrom(pointC);
+        segmentB.subtractInPlace(pointA);
+        segmentA.normalize();
+        segmentB.normalize();
+        Vector3.CrossToRef(segmentB, segmentA, resNormal);
 
-        if (mesh.getVerticesData(VertexBuffer.NormalKind)) {
-            // use normal buffer
-            for (let i = 0; i < 3; i++) {
-                const index = hotSpotQuery.pointIndex[i];
-                GetTransformedNormal(mesh, index, TmpVectors.Vector3[0]);
-                TmpVectors.Vector3[0].scaleAndAddToRef(hotSpotQuery.barycentric[i], resNormal);
-            }
-        } else {
-            // estimate normal
-            const pointA = TmpVectors.Vector3[0];
-            const pointB = TmpVectors.Vector3[1];
-            const pointC = TmpVectors.Vector3[2];
-            const segmentA = TmpVectors.Vector3[3];
-            const segmentB = TmpVectors.Vector3[4];
-            segmentA.copyFrom(pointB);
-            segmentA.subtractInPlace(pointA);
-            segmentB.copyFrom(pointC);
-            segmentB.subtractInPlace(pointA);
-            segmentA.normalize();
-            segmentB.normalize();
-            Vector3.CrossToRef(segmentA, segmentB, resNormal);
+        // flip normal
+        let invertWinding = mesh.material && mesh.material.sideOrientation === Constants.MATERIAL_CounterClockWiseSideOrientation;
+        invertWinding ||= mesh.getWorldMatrix().determinant() < 0;
+        invertWinding ||= mesh.getScene().useRightHandedSystem;
+        if (invertWinding) {
+            resNormal.scaleInPlace(-1);
         }
+
         // Convert the result to world space
         Vector3.TransformNormalToRef(resNormal, mesh.getWorldMatrix(), resNormal);
         resNormal.normalize();
