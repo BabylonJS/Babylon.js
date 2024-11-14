@@ -17,13 +17,13 @@ export class HTMLHotSpotElement extends LitElement {
     static override styles = css`
         :host {
             display: inline-block;
-            transition: opacity 0.2s;
+            transition: opacity 0.25s;
         }
         :host([hidden]) {
             display: none;
         }
         :host(:state(back-facing)) {
-            opacity: 0.3;
+            opacity: 0.2;
         }
         :host(:state(invalid)) {
             display: none;
