@@ -50,6 +50,7 @@ type HotSpot = ViewerHotSpotQuery & { cameraOrbit?: [alpha: number, beta: number
 // Custom events for the HTML3DElement.
 interface HTML3DElementEventMap extends HTMLElementEventMap {
     viewerready: Event;
+    viewerrender: Event;
     environmentchange: Event;
     environmenterror: ErrorEvent;
     modelchange: Event;
@@ -981,6 +982,10 @@ export class HTML3DElement extends LitElement {
                         details.viewer.onAnimationProgressChanged.add(() => {
                             this.animationProgress = details.viewer.animationProgress ?? 0;
                             this._dispatchCustomEvent("animationprogresschange", (type) => new Event(type));
+                        });
+
+                        details.scene.onAfterRenderCameraObservable.add(() => {
+                            this._dispatchCustomEvent("viewerrender", (type) => new Event(type));
                         });
 
                         this._updateModel();

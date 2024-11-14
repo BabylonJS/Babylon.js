@@ -52,40 +52,28 @@ export class HTMLHotSpotElement extends LitElement {
 
         const viewerElement = this.parentElement;
         const hotSpotResult = new ViewerHotSpotResult();
-        let sceneRenderObserver: Nullable<Observer<Scene>> = null;
-        const registerSceneRender = () => {
-            sceneRenderObserver?.remove();
-            sceneRenderObserver = null;
+        const onViewerRendered = () => {
+            if (this.name) {
+                if (viewerElement.queryHotSpot(this.name, hotSpotResult)) {
+                    const [screenX, screenY] = hotSpotResult.screenPosition;
+                    this.style.transform = `translate(${screenX}px, ${screenY}px)`;
+                    this._internals.states.delete("invalid");
 
-            if (viewerElement.viewerDetails) {
-                sceneRenderObserver = viewerElement.viewerDetails.scene.onAfterRenderObservable.add(() => {
-                    if (this.name) {
-                        if (viewerElement.queryHotSpot(this.name, hotSpotResult)) {
-                            const [screenX, screenY] = hotSpotResult.screenPosition;
-                            this.style.transform = `translate(${screenX}px, ${screenY}px)`;
-                            this._internals.states.delete("invalid");
-
-                            if (hotSpotResult.visibility <= 0) {
-                                this._internals.states.add("back-facing");
-                            } else {
-                                this._internals.states.delete("back-facing");
-                            }
-                        } else {
-                            this._internals.states.add("invalid");
-                        }
+                    if (hotSpotResult.visibility <= 0) {
+                        this._internals.states.add("back-facing");
+                    } else {
+                        this._internals.states.delete("back-facing");
                     }
-                });
+                } else {
+                    this._internals.states.add("invalid");
+                }
             }
         };
 
-        registerSceneRender();
-        viewerElement.addEventListener("viewerready", registerSceneRender);
-
+        viewerElement.addEventListener("viewerrender", onViewerRendered);
         this._viewerAttachment = {
             dispose() {
-                viewerElement.removeEventListener("viewerready", registerSceneRender);
-                sceneRenderObserver?.remove();
-                sceneRenderObserver = null;
+                viewerElement.removeEventListener("viewerrender", onViewerRendered);
             },
         };
     }

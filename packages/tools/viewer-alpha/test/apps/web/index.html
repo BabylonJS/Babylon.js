@@ -198,14 +198,10 @@
                 }
             }
 
-            // use requestAnimationFrame to update with renderer
-            const startHotSpotLinesRenderLoop = () => {
+            const updateHotSpotLines = () => {
                 const hotspotBaseRect = document.querySelector("#anchor-button").getBoundingClientRect();
                 drawHotSpotLine(lines[0], "antenna", hotspotBaseRect);
-                if (hotspotVisible) {
-                    requestAnimationFrame(startHotSpotLinesRenderLoop);
-                }
-            };
+            }
 
             function onToggleDOM() {
                 isViewerConnected ? document.body.removeChild(viewerElement) : document.body.appendChild(viewerElement);
@@ -219,7 +215,11 @@
             function onToggleHotSpot() {
                 hotspotVisible = !hotspotVisible;
                 lines[0].style.visibility = hotspotVisible ? "visible" : "hidden";
-                startHotSpotLinesRenderLoop();
+                if (hotspotVisible) {
+                    viewerElement.addEventListener("viewerrender", updateHotSpotLines);
+                } else {
+                    viewerElement.removeEventListener("viewerrender", updateHotSpotLines);
+                }
             }
         </script>
     </body>
