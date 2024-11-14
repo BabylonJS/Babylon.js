@@ -52,10 +52,10 @@
                 background-image: url("https://raw.githubusercontent.com/BabylonJS/Assets/master/textures/Checker_albedo.png");
             }
 
-             /* babylon-viewer-hotspot:state(back-facing) {
+             /* babylon-viewer-annotation:state(back-facing) {
                 display: none;
              } */
-             /* babylon-viewer-hotspot:state(invalid) {
+             /* babylon-viewer-annotation:state(invalid) {
                 display: unset;
                 opacity: 1;
              } */
@@ -116,16 +116,16 @@
             <svg id="lines" style="position: absolute; width: 100%; height: 100%" xmlns="http://www.w3.org/2000/svg" class="lineContainer">
                 <line class="line"></line>
             </svg>
-            <babylon-viewer-hotspot name="antenna">
+            <babylon-viewer-annotation hotspot="antenna">
                 <div>
                     <svg style="width: 20px; height: 20px; transform: translate(-50%, -50%)">
                         <ellipse cx="10" cy="10" rx="8" ry="8" fill="red" stroke="white" stroke-width="3" />
                     </svg>
                 </div>
-            </babylon-viewer-hotspot>
-            <babylon-viewer-hotspot name="thruster">
+            </babylon-viewer-annotation>
+            <babylon-viewer-annotation hotspot="thruster">
                 <div style="background-color: aliceblue; border-radius: 8px; padding: 3px 6px;">Thruster</div>
-            </babylon-viewer-hotspot>
+            </babylon-viewer-annotation>
         </babylon-viewer>
         <button class="toggle-dom-button" onclick="onToggleDOM()">Toggle DOM</button>
         <button class="toggle-engine-button" onclick="onToggleEngine()">Toggle Engine</button>
