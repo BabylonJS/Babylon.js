@@ -14,6 +14,7 @@ import type { SpotLight } from "core/Lights/spotLight";
 import type { IEXTLightsImageBased_LightImageBased } from "babylonjs-gltf2interface";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { IObjectAccessor } from "core/FlowGraph/typeDefinitions";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 
 export interface IGLTFObjectModelTree {
     cameras: IGLTFObjectModelTreeCamerasObject;
@@ -37,6 +38,11 @@ export interface IGLTFObjectModelTreeNodesObject<GLTFTargetType = INode, Babylon
             length: IObjectAccessor<GLTFTargetType, BabylonTargetType, number>;
             __array__: { __target__: boolean } & IObjectAccessor<GLTFTargetType, BabylonTargetType, number>;
         } & IObjectAccessor<GLTFTargetType, BabylonTargetType, number[]>;
+        extensions: {
+            KHR_node_visibility: {
+                visible: IObjectAccessor<GLTFTargetType, BabylonTargetType, boolean>;
+            };
+        };
     };
 }
 
@@ -322,6 +328,33 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
             getTarget: (node: INode) => node._babylonTransformNode,
             getPropertyName: [() => "_worldMatrix"],
             isReadOnly: true,
+        },
+        extensions: {
+            KHR_node_visibility: {
+                visible: {
+                    get: (node: INode) => {
+                        const tn = node._babylonTransformNode as any;
+                        if (tn && tn.isVisible !== undefined) {
+                            return tn.isVisible;
+                        }
+                        return true;
+                    },
+                    set: (value: boolean, node: INode) => {
+                        node._primitiveBabylonMeshes?.forEach((mesh) => {
+                            mesh.inheritVisibility = true;
+                        });
+                        if (node._babylonTransformNode) {
+                            (node._babylonTransformNode as AbstractMesh).isVisible = value;
+                        }
+                        node._primitiveBabylonMeshes?.forEach((mesh) => {
+                            mesh.isVisible = value;
+                        });
+                    },
+                    getTarget: (node: INode) => node._babylonTransformNode,
+                    getPropertyName: [() => "isVisible"],
+                    type: "boolean",
+                },
+            },
         },
     },
 };

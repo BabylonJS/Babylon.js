@@ -24,7 +24,9 @@ function convertVariableValueWithType(configObject: IKHRInteractivity_Variable, 
                 case FlowGraphTypes.Integer:
                 case FlowGraphTypes.Number:
                     // value might not be defined, this way it is just a placeholder with a type.
-                    return configObject.value?.[0];
+                    if (configObject.value !== undefined && Array.isArray(configObject.value)) {
+                        return configObject.value?.[0];
+                    }
                 default:
                     return configObject.value;
             }
