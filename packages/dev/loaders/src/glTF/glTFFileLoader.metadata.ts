@@ -8,9 +8,9 @@ export const GLTFFileLoaderMetadata = {
 
     extensions: {
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        ".gltf": { isBinary: false },
+        ".gltf": { isBinary: false, mimeType: "model/gltf+json" },
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        ".glb": { isBinary: true },
+        ".glb": { isBinary: true, mimeType: "model/gltf-binary" },
     } as const satisfies ISceneLoaderPluginExtensions,
 
     canDirectLoad(data: string): boolean {

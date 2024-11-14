@@ -101,7 +101,55 @@ export class ModelLoader {
 
         const scene = model.rootMesh.getScene();
 
-        model.loader = SceneLoader.ImportMesh(
+        SceneLoader.OnPluginActivatedObservable.addOnce((plugin) => {
+            model.loader = plugin;
+            if (model.loader.name === "gltf") {
+                const gltfLoader = <GLTFFileLoader>model.loader;
+                gltfLoader.animationStartMode = GLTFLoaderAnimationStartMode.NONE;
+                gltfLoader.compileMaterials = true;
+
+                if (!modelConfiguration.file) {
+                    gltfLoader.rewriteRootURL = (rootURL, responseURL) => {
+                        return modelConfiguration.root || Tools.GetFolderPath(responseURL || modelConfiguration.url || "");
+                    };
+                }
+                // if ground is set to "mirror":
+                if (
+                    this._configurationContainer &&
+                    this._configurationContainer.configuration &&
+                    this._configurationContainer.configuration.ground &&
+                    typeof this._configurationContainer.configuration.ground === "object" &&
+                    this._configurationContainer.configuration.ground.mirror
+                ) {
+                    gltfLoader.useClipPlane = true;
+                }
+                Object.keys(gltfLoader)
+                    .filter((name) => name.indexOf("on") === 0 && name.indexOf("Observable") !== -1)
+                    .forEach((functionName) => {
+                        (gltfLoader as any)[functionName].add((payload: any[]) => {
+                            this._checkAndRun(functionName.replace("Observable", ""), payload);
+                        });
+                    });
+
+                gltfLoader.onParsedObservable.add((data) => {
+                    if (data && data.json && (data.json as any)["asset"]) {
+                        model.loadInfo = (data.json as any)["asset"];
+                    }
+                });
+
+                gltfLoader.onCompleteObservable.add(() => {
+                    model.loaderDone = true;
+                });
+            } else {
+                model.loaderDone = true;
+            }
+
+            this._checkAndRun("onInit", model.loader, model);
+
+            this._loaders.push(model.loader);
+        });
+
+        SceneLoader.ImportMesh(
             undefined,
             this._baseUrl,
             filename,
@@ -135,51 +183,6 @@ export class ModelLoader {
             },
             plugin
         )!;
-
-        if (model.loader.name === "gltf") {
-            const gltfLoader = <GLTFFileLoader>model.loader;
-            gltfLoader.animationStartMode = GLTFLoaderAnimationStartMode.NONE;
-            gltfLoader.compileMaterials = true;
-
-            if (!modelConfiguration.file) {
-                gltfLoader.rewriteRootURL = (rootURL, responseURL) => {
-                    return modelConfiguration.root || Tools.GetFolderPath(responseURL || modelConfiguration.url || "");
-                };
-            }
-            // if ground is set to "mirror":
-            if (
-                this._configurationContainer &&
-                this._configurationContainer.configuration &&
-                this._configurationContainer.configuration.ground &&
-                typeof this._configurationContainer.configuration.ground === "object" &&
-                this._configurationContainer.configuration.ground.mirror
-            ) {
-                gltfLoader.useClipPlane = true;
-            }
-            Object.keys(gltfLoader)
-                .filter((name) => name.indexOf("on") === 0 && name.indexOf("Observable") !== -1)
-                .forEach((functionName) => {
-                    (gltfLoader as any)[functionName].add((payload: any[]) => {
-                        this._checkAndRun(functionName.replace("Observable", ""), payload);
-                    });
-                });
-
-            gltfLoader.onParsedObservable.add((data) => {
-                if (data && data.json && (data.json as any)["asset"]) {
-                    model.loadInfo = (data.json as any)["asset"];
-                }
-            });
-
-            gltfLoader.onCompleteObservable.add(() => {
-                model.loaderDone = true;
-            });
-        } else {
-            model.loaderDone = true;
-        }
-
-        this._checkAndRun("onInit", model.loader, model);
-
-        this._loaders.push(model.loader);
 
         return model;
     }

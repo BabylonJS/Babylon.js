@@ -7,6 +7,7 @@ import type {
     FramingBehavior,
     HotSpotQuery,
     IDisposable,
+    ISceneLoaderProgressEvent,
     LoadAssetContainerOptions,
     Mesh,
     Nullable,
@@ -22,7 +23,7 @@ import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { Clamp } from "core/Maths/math.scalar.functions";
-import { TmpVectors, Vector3 } from "core/Maths/math.vector";
+import { Matrix, TmpVectors, Vector3 } from "core/Maths/math.vector";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { computeMaxExtents } from "core/Meshes/meshUtils";
 import { AsyncLock } from "core/Misc/asyncLock";
@@ -35,6 +36,47 @@ import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
 
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
+
+export type LoadModelOptions = LoadAssetContainerOptions & {
+    /**
+     * The default animation index.
+     */
+    defaultAnimation?: number;
+};
+
+export type CameraAutoOrbit = {
+    /**
+     * Whether the camera should automatically orbit around the model when idle.
+     */
+    enabled: boolean;
+
+    /**
+     * The speed at which the camera orbits around the model when idle.
+     */
+    speed: number;
+
+    /**
+     * The delay in milliseconds before the camera starts orbiting around the model when idle.
+     */
+    delay: number;
+};
+
+export type PostProcessing = {
+    /**
+     * The tone mapping to use for rendering the scene.
+     */
+    toneMapping: ToneMapping;
+
+    /**
+     * The contrast applied to the scene.
+     */
+    contrast: number;
+
+    /**
+     * The exposure applied to the scene.
+     */
+    exposure: number;
+};
 
 /**
  * Checks if the given value is a valid tone mapping option.
@@ -112,24 +154,30 @@ export type EnvironmentOptions = Partial<Readonly<{}>>;
 
 export type ViewerHotSpotQuery = {
     /**
+     * The type of the hot spot.
+     */
+    type: "surface";
+
+    /**
      * The index of the mesh within the loaded model.
      */
     meshIndex: number;
 } & HotSpotQuery;
 
 /**
- * Information computed from the hot spot surface data, canvas and mesh datas
+ * Provides the result of a hot spot query.
  */
-export type ViewerHotSpot = {
+export class ViewerHotSpotResult {
     /**
      * 2D canvas position in pixels
      */
-    screenPosition: [number, number];
+    public readonly screenPosition: [x: number, y: number] = [NaN, NaN];
+
     /**
      * 3D world coordinates
      */
-    worldPosition: [number, number, number];
-};
+    public readonly worldPosition: [x: number, y: number, z: number] = [NaN, NaN, NaN];
+}
 
 /**
  * @experimental
@@ -166,19 +214,9 @@ export class Viewer implements IDisposable {
     public readonly onSkyboxBlurChanged = new Observable<void>();
 
     /**
-     * Fired when the tone mapping changes.
+     * Fired when the post processing state changes.
      */
-    public readonly onToneMappingChanged = new Observable<void>();
-
-    /**
-     * Fired when the contrast changes.
-     */
-    public readonly onContrastChanged = new Observable<void>();
-
-    /**
-     * Fired when the exposure changes.
-     */
-    public readonly onExposureChanged = new Observable<void>();
+    public readonly onPostProcessingChanged = new Observable<void>();
 
     /**
      * Fired when a model is loaded into the viewer (or unloaded from the viewer).
@@ -189,6 +227,11 @@ export class Viewer implements IDisposable {
      * Fired when an error occurs while loading a model.
      */
     public readonly onModelError = new Observable<unknown>();
+
+    /**
+     * Fired when progress changes on loading activity.
+     */
+    public readonly onLoadingProgressChanged = new Observable<void>();
 
     /**
      * Fired when the camera auto orbit state changes.
@@ -237,6 +280,9 @@ export class Viewer implements IDisposable {
     private _environment: Nullable<IDisposable> = null;
     private _loadEnvironmentAbortController: Nullable<AbortController> = null;
 
+    private _isLoadingModel = false;
+    private _modelLoadingProgress: Nullable<number> = null;
+
     private _selectedAnimation = -1;
     private _activeAnimationObservers: Observer<AnimationGroup>[] = [];
     private _animationSpeed = 1;
@@ -255,24 +301,30 @@ export class Viewer implements IDisposable {
             this._exposure = scene.imageProcessingConfiguration.exposure;
 
             this._imageProcessingConfigurationObserver = scene.imageProcessingConfiguration.onUpdateParameters.add(() => {
+                let hasChanged = false;
+
                 if (this._toneMappingEnabled !== scene.imageProcessingConfiguration.toneMappingEnabled) {
                     this._toneMappingEnabled = scene.imageProcessingConfiguration.toneMappingEnabled;
-                    this.onToneMappingChanged.notifyObservers();
+                    hasChanged = true;
                 }
 
                 if (this._toneMappingType !== scene.imageProcessingConfiguration.toneMappingType) {
                     this._toneMappingType = scene.imageProcessingConfiguration.toneMappingType;
-                    this.onToneMappingChanged.notifyObservers();
+                    hasChanged = true;
                 }
 
                 if (this._contrast !== scene.imageProcessingConfiguration.contrast) {
                     this._contrast = scene.imageProcessingConfiguration.contrast;
-                    this.onContrastChanged.notifyObservers();
+                    hasChanged = true;
                 }
 
                 if (this._exposure !== scene.imageProcessingConfiguration.exposure) {
                     this._exposure = scene.imageProcessingConfiguration.exposure;
-                    this.onExposureChanged.notifyObservers();
+                    hasChanged = true;
+                }
+
+                if (hasChanged) {
+                    this.onPostProcessingChanged.notifyObservers();
                 }
             });
 
@@ -292,7 +344,9 @@ export class Viewer implements IDisposable {
         this._autoRotationBehavior = this._details.camera.getBehaviorByName("AutoRotation") as AutoRotationBehavior;
 
         // Default to KHR PBR Neutral tone mapping.
-        this.toneMapping = "neutral";
+        this.postProcessing = {
+            toneMapping: "neutral",
+        };
 
         // Load a default light, but ignore errors as the user might be immediately loading their own environment.
         this.resetEnvironment().catch(() => {});
@@ -315,21 +369,34 @@ export class Viewer implements IDisposable {
     }
 
     /**
-     * Enables or disables camera auto orbit.
+     * The camera auto orbit configuration.
      */
-    public get cameraAutoOrbit(): boolean {
-        return this._details.camera.behaviors.includes(this._autoRotationBehavior);
+    public get cameraAutoOrbit(): Readonly<CameraAutoOrbit> {
+        return {
+            enabled: this._details.camera.behaviors.includes(this._autoRotationBehavior),
+            speed: this._autoRotationBehavior.idleRotationSpeed,
+            delay: this._autoRotationBehavior.idleRotationWaitTime,
+        };
     }
 
-    public set cameraAutoOrbit(value: boolean) {
-        if (value !== this.cameraAutoOrbit) {
-            if (value) {
+    public set cameraAutoOrbit(value: Partial<Readonly<CameraAutoOrbit>>) {
+        if (value.enabled !== undefined && value.enabled !== this.cameraAutoOrbit.enabled) {
+            if (value.enabled) {
                 this._details.camera.addBehavior(this._autoRotationBehavior);
             } else {
                 this._details.camera.removeBehavior(this._autoRotationBehavior);
             }
-            this.onCameraAutoOrbitChanged.notifyObservers();
         }
+
+        if (value.delay !== undefined) {
+            this._autoRotationBehavior.idleRotationWaitTime = value.delay;
+        }
+
+        if (value.speed !== undefined) {
+            this._autoRotationBehavior.idleRotationSpeed = value.speed;
+        }
+
+        this.onCameraAutoOrbitChanged.notifyObservers();
     }
 
     /**
@@ -355,72 +422,80 @@ export class Viewer implements IDisposable {
     }
 
     /**
-     * The tone mapping to use for rendering the scene.
+     * The post processing configuration.
      */
-    public get toneMapping(): ToneMapping | "unknown" {
-        if (!this._toneMappingEnabled) {
-            return "none";
-        }
-
+    public get postProcessing(): PostProcessing {
+        let toneMapping: ToneMapping;
         switch (this._toneMappingType) {
             case ImageProcessingConfiguration.TONEMAPPING_STANDARD:
-                return "standard";
+                toneMapping = "standard";
+                break;
             case ImageProcessingConfiguration.TONEMAPPING_ACES:
-                return "aces";
+                toneMapping = "aces";
+                break;
             case ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL:
-                return "neutral";
+                toneMapping = "neutral";
+                break;
             default:
-                return "unknown";
+                toneMapping = "none";
+                break;
         }
+
+        return {
+            toneMapping,
+            contrast: this._contrast,
+            exposure: this._exposure,
+        };
     }
 
-    public set toneMapping(value: ToneMapping) {
+    public set postProcessing(value: Partial<Readonly<PostProcessing>>) {
         this._snapshotHelper.disableSnapshotRendering();
 
-        if (value === "none") {
-            this._details.scene.imageProcessingConfiguration.toneMappingEnabled = false;
-        } else {
-            switch (value) {
-                case "standard":
-                    this._details.scene.imageProcessingConfiguration.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_STANDARD;
-                    break;
-                case "aces":
-                    this._details.scene.imageProcessingConfiguration.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_ACES;
-                    break;
-                case "neutral":
-                    this._details.scene.imageProcessingConfiguration.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL;
-                    break;
+        if (value.toneMapping !== undefined) {
+            if (value.toneMapping === "none") {
+                this._details.scene.imageProcessingConfiguration.toneMappingEnabled = false;
+            } else {
+                switch (value.toneMapping) {
+                    case "standard":
+                        this._details.scene.imageProcessingConfiguration.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_STANDARD;
+                        break;
+                    case "aces":
+                        this._details.scene.imageProcessingConfiguration.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_ACES;
+                        break;
+                    case "neutral":
+                        this._details.scene.imageProcessingConfiguration.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL;
+                        break;
+                }
+                this._details.scene.imageProcessingConfiguration.toneMappingEnabled = true;
             }
-            this._details.scene.imageProcessingConfiguration.toneMappingEnabled = true;
         }
 
+        if (value.contrast !== undefined) {
+            this._details.scene.imageProcessingConfiguration.contrast = value.contrast;
+        }
+
+        if (value.exposure !== undefined) {
+            this._details.scene.imageProcessingConfiguration.exposure = value.exposure;
+        }
+
+        this._details.scene.imageProcessingConfiguration.isEnabled = this._toneMappingEnabled || this._contrast !== 1 || this._exposure !== 1;
+
         this._snapshotHelper.enableSnapshotRendering();
     }
 
     /**
-     * The contrast applied to the scene.
+     * Gets information about loading activity.
+     * @remarks
+     * false indicates no loading activity.
+     * true indicates loading activity with no progress information.
+     * A number between 0 and 1 indicates loading activity with progress information.
      */
-    public get contrast(): number {
-        return this._contrast;
-    }
+    public get loadingProgress(): boolean | number {
+        if (this._isLoadingModel) {
+            return this._modelLoadingProgress ?? true;
+        }
 
-    public set contrast(value: number) {
-        this._snapshotHelper.disableSnapshotRendering();
-        this._details.scene.imageProcessingConfiguration.contrast = value;
-        this._snapshotHelper.enableSnapshotRendering();
-    }
-
-    /**
-     * The exposure applied to the scene.
-     */
-    public get exposure(): number {
-        return this._exposure;
-    }
-
-    public set exposure(value: number) {
-        this._snapshotHelper.disableSnapshotRendering();
-        this._details.scene.imageProcessingConfiguration.exposure = value;
-        this._snapshotHelper.enableSnapshotRendering();
+        return false;
     }
 
     /**
@@ -470,9 +545,10 @@ export class Viewer implements IDisposable {
                         this.onAnimationProgressChanged.notifyObservers();
                     }),
                 ];
+
+                this._updateCamera(!this._isLoadingModel);
             }
 
-            this._updateCamera();
             this.onSelectedAnimationChanged.notifyObservers();
         }
     }
@@ -527,7 +603,7 @@ export class Viewer implements IDisposable {
      * @param options The options to use when loading the model.
      * @param abortSignal An optional signal that can be used to abort the loading process.
      */
-    public async loadModel(source: string | File | ArrayBufferView, options?: LoadAssetContainerOptions, abortSignal?: AbortSignal): Promise<void> {
+    public async loadModel(source: string | File | ArrayBufferView, options?: LoadModelOptions, abortSignal?: AbortSignal): Promise<void> {
         await this._updateModel(source, options, abortSignal);
     }
 
@@ -539,8 +615,17 @@ export class Viewer implements IDisposable {
         await this._updateModel(undefined, undefined, abortSignal);
     }
 
-    private async _updateModel(source: string | File | ArrayBufferView | undefined, options?: LoadAssetContainerOptions, abortSignal?: AbortSignal): Promise<void> {
+    private async _updateModel(source: string | File | ArrayBufferView | undefined, options?: LoadModelOptions, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
+
+        const originalOnProgress = options?.onProgress;
+        const onProgress = (event: ISceneLoaderProgressEvent) => {
+            originalOnProgress?.(event);
+            if (this._isLoadingModel) {
+                this._modelLoadingProgress = event.lengthComputable ? event.loaded / event.total : null;
+                this.onLoadingProgressChanged.notifyObservers();
+            }
+        };
 
         // Enable transparency as coverage by default to be 3D Commerce compliant by default.
         // https://doc.babylonjs.com/setup/support/3D_commerce_certif
@@ -554,6 +639,7 @@ export class Viewer implements IDisposable {
                         transparencyAsCoverage: true,
                     },
                 },
+                onProgress,
             };
         }
 
@@ -569,12 +655,15 @@ export class Viewer implements IDisposable {
 
             try {
                 if (source) {
+                    this._isLoadingModel = true;
+                    this._modelLoadingProgress = 0;
+                    this.onLoadingProgressChanged.notifyObservers();
                     this._details.model = await loadAssetContainerAsync(source, this._details.scene, options);
                     this._details.model.animationGroups.forEach((group) => {
                         group.start(true, this.animationSpeed);
                         group.pause();
                     });
-                    this.selectedAnimation = 0;
+                    this.selectedAnimation = options?.defaultAnimation ?? 0;
                     this._snapshotHelper.fixMeshes(this._details.model.meshes);
                     this._details.model.addAllToScene();
                 }
@@ -587,6 +676,8 @@ export class Viewer implements IDisposable {
                 this.onModelError.notifyObservers(e);
                 throw e;
             } finally {
+                this._isLoadingModel = false;
+                this.onLoadingProgressChanged.notifyObservers();
                 this._snapshotHelper.enableSnapshotRendering();
             }
         });
@@ -714,9 +805,7 @@ export class Viewer implements IDisposable {
         this.onEnvironmentChanged.clear();
         this.onEnvironmentError.clear();
         this.onSkyboxBlurChanged.clear();
-        this.onToneMappingChanged.clear();
-        this.onContrastChanged.clear();
-        this.onExposureChanged.clear();
+        this.onPostProcessingChanged.clear();
         this.onModelChanged.clear();
         this.onModelError.clear();
         this.onCameraAutoOrbitChanged.clear();
@@ -724,6 +813,7 @@ export class Viewer implements IDisposable {
         this.onAnimationSpeedChanged.clear();
         this.onIsAnimationPlayingChanged.clear();
         this.onAnimationProgressChanged.clear();
+        this.onLoadingProgressChanged.clear();
 
         this._imageProcessingConfigurationObserver.remove();
 
@@ -732,21 +822,21 @@ export class Viewer implements IDisposable {
 
     /**
      * retrun world and canvas coordinates of an hot spot
-     * @param hotSpotQuery mesh index and surface information to query the hot spot positions
-     * @param res Query a Hot Spot and does the conversion for Babylon Hot spot to a more generic HotSpotPositions, without Vector types
+     * @param query mesh index and surface information to query the hot spot positions
+     * @param result Query a Hot Spot and does the conversion for Babylon Hot spot to a more generic HotSpotPositions, without Vector types
      * @returns true if hotspot found
      */
-    public getHotSpotToRef(hotSpotQuery: Readonly<ViewerHotSpotQuery>, res: ViewerHotSpot): boolean {
+    public getHotSpotToRef(query: Readonly<ViewerHotSpotQuery>, result: ViewerHotSpotResult): boolean {
         if (!this._details.model) {
             return false;
         }
         const worldPos = TmpVectors.Vector3[1];
         const screenPos = TmpVectors.Vector3[0];
-        const mesh = this._details.model.meshes[hotSpotQuery.meshIndex];
+        const mesh = this._details.model.meshes[query.meshIndex];
         if (!mesh) {
             return false;
         }
-        GetHotSpotToRef(mesh, hotSpotQuery, worldPos);
+        GetHotSpotToRef(mesh, query, worldPos);
 
         const renderWidth = this._engine.getRenderWidth(); // Get the canvas width
         const renderHeight = this._engine.getRenderHeight(); // Get the canvas height
@@ -755,20 +845,32 @@ export class Viewer implements IDisposable {
         const viewportHeight = this._details.camera.viewport.height * renderHeight;
         const scene = this._details.scene;
 
-        Vector3.ProjectToRef(worldPos, mesh.getWorldMatrix(), scene.getTransformMatrix(), new Viewport(0, 0, viewportWidth, viewportHeight), screenPos);
-        res.screenPosition = [screenPos.x, screenPos.y];
-        res.worldPosition = [worldPos.x, worldPos.y, worldPos.z];
+        Vector3.ProjectToRef(worldPos, Matrix.IdentityReadOnly, scene.getTransformMatrix(), new Viewport(0, 0, viewportWidth, viewportHeight), screenPos);
+        result.screenPosition[0] = screenPos.x;
+        result.screenPosition[1] = screenPos.y;
+        result.worldPosition[0] = worldPos.x;
+        result.worldPosition[1] = worldPos.y;
+        result.worldPosition[2] = worldPos.z;
         return true;
     }
 
-    private _updateCamera(): void {
+    private _updateCamera(interpolate = false): void {
         // Enable camera's behaviors
         this._details.camera.useFramingBehavior = true;
         const framingBehavior = this._details.camera.getBehaviorByName("Framing") as FramingBehavior;
         framingBehavior.framingTime = 0;
         framingBehavior.elevationReturnTime = -1;
 
-        let radius = 1;
+        const currentAlpha = this._details.camera.alpha;
+        const currentBeta = this._details.camera.beta;
+        const currentRadius = this._details.camera.radius;
+        const currentTarget = this._details.camera.target;
+
+        const goalAlpha = Math.PI / 2;
+        const goalBeta = Math.PI / 2.4;
+        let goalRadius = 1;
+        let goalTarget = currentTarget;
+
         if (this._details.model?.meshes.length) {
             // get bounds and prepare framing/camera radius from its values
             this._details.camera.lowerRadiusLimit = null;
@@ -783,23 +885,24 @@ export class Viewer implements IDisposable {
             const worldSize = worldExtents.max.subtract(worldExtents.min);
             const worldCenter = worldExtents.min.add(worldSize.scale(0.5));
 
-            radius = worldSize.length() * 1.1;
+            goalRadius = worldSize.length() * 1.1;
 
-            if (!isFinite(radius)) {
-                radius = 1;
+            if (!isFinite(goalRadius)) {
+                goalRadius = 1;
                 worldCenter.copyFromFloats(0, 0, 0);
             }
 
-            this._details.camera.setTarget(worldCenter);
+            goalTarget = worldCenter;
         }
-        this._details.camera.lowerRadiusLimit = radius * 0.01;
-        this._details.camera.wheelPrecision = 100 / radius;
+        this._details.camera.lowerRadiusLimit = goalRadius * 0.01;
+        this._details.camera.wheelPrecision = 100 / goalRadius;
         this._details.camera.alpha = Math.PI / 2;
         this._details.camera.beta = Math.PI / 2.4;
-        this._details.camera.radius = radius;
-        this._details.camera.minZ = radius * 0.01;
-        this._details.camera.maxZ = radius * 1000;
-        this._details.camera.speed = radius * 0.2;
+        this._details.camera.radius = goalRadius;
+        this._details.camera.target = goalTarget;
+        this._details.camera.minZ = goalRadius * 0.01;
+        this._details.camera.maxZ = goalRadius * 1000;
+        this._details.camera.speed = goalRadius * 0.2;
         this._details.camera.useAutoRotationBehavior = true;
         this._details.camera.pinchPrecision = 200 / this._details.camera.radius;
         this._details.camera.upperRadiusLimit = 5 * this._details.camera.radius;
@@ -807,6 +910,14 @@ export class Viewer implements IDisposable {
         this._details.camera.pinchDeltaPercentage = 0.01;
         this._details.camera.restoreStateInterpolationFactor = 0.1;
         this._details.camera.storeState();
+
+        if (interpolate) {
+            this._details.camera.alpha = currentAlpha;
+            this._details.camera.beta = currentBeta;
+            this._details.camera.radius = currentRadius;
+            this._details.camera.target = currentTarget;
+            this._details.camera.interpolateTo(goalAlpha, goalBeta, goalRadius, goalTarget);
+        }
 
         updateSkybox(this._skybox, this._details.camera);
     }

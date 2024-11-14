@@ -5,6 +5,7 @@ import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { VertexBuffer } from "core/Meshes/buffer";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Block used for the Gaussian Splatting
@@ -109,13 +110,19 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
         const projection = this.projection;
         const output = this.splatVertex;
 
-        let splatScaleParameter = "vec2(1.,1.)";
+        const addF = state.fSuffix;
+        let splatScaleParameter = `vec2${addF}(1.,1.)`;
         if (splatScale.isConnected) {
             splatScaleParameter = splatScale.associatedVariableName;
         }
 
-        state.compilationString += `${state._declareOutput(output)} = gaussianSplatting(position, ${splatPosition.associatedVariableName}, ${splatScaleParameter}, covA, covB, ${world.associatedVariableName}, ${view.associatedVariableName}, ${projection.associatedVariableName});\n`;
-
+        let input = "position";
+        let uniforms = "";
+        if (state.shaderLanguage === ShaderLanguage.WGSL) {
+            input = "input.position";
+            uniforms = ", uniforms.focal, uniforms.invViewport";
+        }
+        state.compilationString += `${state._declareOutput(output)} = gaussianSplatting(${input}, ${splatPosition.associatedVariableName}, ${splatScaleParameter}, covA, covB, ${world.associatedVariableName}, ${view.associatedVariableName}, ${projection.associatedVariableName}${uniforms});\n`;
         return this;
     }
 }

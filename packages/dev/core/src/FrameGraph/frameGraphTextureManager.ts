@@ -14,15 +14,22 @@ import { Texture } from "../Materials/Textures/texture";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "./frameGraphTypes";
 import { Constants } from "../Engines/constants";
 
+type HistoryTexture = {
+    textures: Array<Nullable<RenderTargetWrapper>>;
+    handles: Array<FrameGraphTextureHandle>;
+    index: number;
+    refHandles: Array<FrameGraphTextureHandle>; // (dangling) handles that reference this history texture
+};
+
 type TextureEntry = {
     texture: Nullable<RenderTargetWrapper>;
     name: string;
     creationOptions: FrameGraphTextureCreationOptions;
     namespace: FrameGraphTextureNamespace;
     debug?: Texture;
-    parentHandle?: FrameGraphTextureHandle;
-    parentTextureIndex?: number;
-    refHandle?: FrameGraphTextureHandle;
+    parentHandle?: FrameGraphTextureHandle; // Parent handle if the texture comes from a multi-target texture
+    parentTextureIndex?: number; // Index of the texture in the parent if the texture comes from a multi-target texture
+    refHandle?: FrameGraphTextureHandle; // Handle of the texture this one is referencing - used for dangling handles
 };
 
 enum FrameGraphTextureNamespace {
@@ -39,6 +46,7 @@ export class FrameGraphTextureManager {
     private static _Counter = 2; // 0 and 1 are reserved for backbuffer textures
 
     public _textures: Map<FrameGraphTextureHandle, TextureEntry> = new Map();
+    public _historyTextures: Map<FrameGraphTextureHandle, HistoryTexture> = new Map();
 
     constructor(
         private _engine: AbstractEngine,
@@ -92,6 +100,10 @@ export class FrameGraphTextureManager {
     }
 
     public getTextureFromHandle(handle: FrameGraphTextureHandle): Nullable<RenderTargetWrapper> {
+        const historyEntry = this._historyTextures.get(handle);
+        if (historyEntry) {
+            return historyEntry.textures[historyEntry.index ^ 1]; // get the read texture
+        }
         return this._textures.get(handle)!.texture;
     }
 
@@ -99,7 +111,7 @@ export class FrameGraphTextureManager {
         const internalTexture = texture.texture;
 
         if (!internalTexture) {
-            throw new Error("Texture must have an internal texture to be imported");
+            throw new Error("importTexture: Texture must have an internal texture to be imported");
         }
 
         if (handle !== undefined) {
@@ -165,6 +177,16 @@ export class FrameGraphTextureManager {
         };
     }
 
+    public updateHistoryTextures(): void {
+        this._historyTextures.forEach((entry) => {
+            entry.index = entry.index ^ 1;
+            for (const refHandle of entry.refHandles) {
+                const textureEntry = this._textures.get(refHandle)!;
+                textureEntry.texture = entry.textures[entry.index];
+            }
+        });
+    }
+
     public dispose(): void {
         this.releaseTextures();
     }
@@ -221,6 +243,12 @@ export class FrameGraphTextureManager {
                 entry.debug = this._createDebugTexture(entry.name, entry.texture);
             }
         });
+
+        this._historyTextures.forEach((entry) => {
+            for (let i = 0; i < entry.handles.length; i++) {
+                entry.textures[i] = this._textures.get(entry.handles[i])!.texture;
+            }
+        });
     }
 
     public createDanglingHandle() {
@@ -228,11 +256,11 @@ export class FrameGraphTextureManager {
     }
 
     public resolveDanglingHandle(danglingHandle: FrameGraphTextureHandle, handle: FrameGraphTextureHandle) {
-        if (!this._textures.has(handle)) {
+        const textureEntry = this._textures.get(handle);
+
+        if (textureEntry === undefined) {
             throw new Error(`resolveDanglingHandle: Handle ${handle} does not exist!`);
         }
-
-        const textureEntry = this._textures.get(handle)!;
 
         this._textures.set(danglingHandle, {
             texture: textureEntry.texture,
@@ -242,11 +270,17 @@ export class FrameGraphTextureManager {
                 size: { ...(textureEntry.creationOptions.size as { width: number; height: number; depth?: number; layers?: number }) },
                 options: { ...textureEntry.creationOptions.options, label: textureEntry.name },
                 sizeIsPercentage: textureEntry.creationOptions.sizeIsPercentage,
+                isHistoryTexture: false,
             },
             namespace: textureEntry.namespace,
             parentHandle: textureEntry.parentHandle,
             parentTextureIndex: textureEntry.parentTextureIndex,
         });
+
+        const historyEntry = this._historyTextures.get(handle);
+        if (historyEntry) {
+            historyEntry.refHandles.push(danglingHandle);
+        }
     }
 
     public releaseTextures(releaseAll = true): void {
@@ -268,8 +302,15 @@ export class FrameGraphTextureManager {
             }
         });
 
+        this._historyTextures.forEach((entry) => {
+            for (let i = 0; i < entry.handles.length; i++) {
+                entry.textures[i] = null;
+            }
+        });
+
         if (releaseAll) {
             this._textures.clear();
+            this._historyTextures.clear();
             this._addSystemTextures();
         }
     }
@@ -335,20 +376,40 @@ export class FrameGraphTextureManager {
     ): FrameGraphTextureHandle {
         handle = handle ?? FrameGraphTextureManager._Counter++;
 
-        this._textures.set(handle, {
+        const textureName = creationOptions.isHistoryTexture ? `${name} - ping` : name;
+
+        const textureEntry: TextureEntry = {
             texture,
-            name,
+            name: textureName,
             creationOptions: {
                 size: getDimensionsFromTextureSize(creationOptions.size),
-                options: { ...creationOptions.options, label: name },
+                options: { ...creationOptions.options, label: textureName },
                 sizeIsPercentage: creationOptions.sizeIsPercentage,
+                isHistoryTexture: creationOptions.isHistoryTexture,
             },
             namespace,
             parentHandle,
             parentTextureIndex,
-        });
+        };
+
+        this._textures.set(handle, textureEntry);
 
         if (namespace === FrameGraphTextureNamespace.External) {
+            return handle;
+        }
+
+        if (creationOptions.isHistoryTexture) {
+            const pongCreationOptions: FrameGraphTextureCreationOptions = {
+                size: { ...(textureEntry.creationOptions.size as { width: number; height: number }) },
+                options: { ...textureEntry.creationOptions.options },
+                sizeIsPercentage: textureEntry.creationOptions.sizeIsPercentage,
+                isHistoryTexture: false,
+            };
+
+            const pongTexture = this._createHandleForTexture(`${name} - pong`, null, pongCreationOptions, namespace, false);
+
+            this._historyTextures.set(handle, { textures: [null, null], handles: [handle, pongTexture], index: 0, refHandles: [] });
+
             return handle;
         }
 

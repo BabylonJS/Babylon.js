@@ -472,7 +472,7 @@ export class InputTextArea extends InputText {
 
         // special case - select all. Use key instead of code to support all keyboard layouts
         if (key === "a" && evt && (evt.ctrlKey || evt.metaKey)) {
-            this._selectAllText();
+            this.selectAllText();
             evt.preventDefault();
             return;
         }
@@ -1189,7 +1189,7 @@ export class InputTextArea extends InputText {
     }
 
     /** @internal */
-    protected override _selectAllText() {
+    public override selectAllText() {
         this._isTextHighlightOn = true;
         this._blinkIsEven = true;
 

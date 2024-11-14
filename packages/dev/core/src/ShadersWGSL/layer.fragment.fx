@@ -18,8 +18,10 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
 	var baseColor: vec4f = textureSample(textureSampler, textureSamplerSampler, input.vUV);
 	
-#ifdef LINEAR
-	baseColor = vec4f(toGammaSpace(baseColor.rgb), baseColor.a);
+#if defined(CONVERT_TO_GAMMA)
+	baseColor = toGammaSpace(baseColor);
+#elif defined(CONVERT_TO_LINEAR)
+	baseColor = toLinearSpaceVec4(baseColor);
 #endif
 
 #ifdef ALPHATEST

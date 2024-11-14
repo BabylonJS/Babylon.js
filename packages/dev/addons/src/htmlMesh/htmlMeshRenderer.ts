@@ -6,13 +6,12 @@ import { Camera } from "core/Cameras/camera";
 import type { SubMesh } from "core/Meshes/subMesh";
 import { RenderingGroup } from "core/Rendering/renderingGroup";
 
-import { babylonUnitsToPixels, getCanvasRectAsync, getCanvasRectOrNull } from "./util";
 import type { Observer } from "core/Misc/observable";
 import { Logger } from "core/Misc/logger";
+import type { AbstractEngine } from "core/Engines";
 
 const _positionUpdateFailMessage = "Failed to update html mesh renderer position due to failure to get canvas rect.  HtmlMesh instances may not render correctly";
-
-const _defaultRenderingSize = { width: 0, height: 0 };
+const babylonUnitsToPixels = 100;
 
 /**
  * A function that compares two submeshes and returns a number indicating which
@@ -61,6 +60,7 @@ export class HtmlMeshRenderer {
     private _containerId?: string;
     private _inSceneElements?: RenderLayerElements | null;
     private _overlayElements?: RenderLayerElements | null;
+    private _engine: AbstractEngine;
 
     private _cache = {
         cameraData: { fov: 0, position: new Vector3(), style: "" },
@@ -182,36 +182,21 @@ export class HtmlMeshRenderer {
             this._overlayElements.container.style.pointerEvents = "none";
             parentContainer.insertBefore(this._overlayElements.container, parentContainer.firstChild);
         }
-
-        const { width, height } = getCanvasRectOrNull(scene) ?? _defaultRenderingSize;
-        // Set the size and resize behavior
-        this._setSize(width, height);
-
-        const engine = scene.getEngine();
-        const onResize = () => {
-            engine.resize();
-
-            const { width, height } = getCanvasRectOrNull(scene) ?? _defaultRenderingSize;
-            this._setSize(width, height);
-        };
-        const boundOnResize = onResize.bind(this);
-
-        // If the browser is IE11, then we need to use the resize event
-        if ("ResizeObserver" in window) {
-            const canvas = engine.getRenderingCanvas();
-            // Resize if the canvas size changes
-            const resizeObserver = new ResizeObserver((entries) => {
-                for (const entry of entries) {
-                    if (entry.target === (canvas as any)) {
-                        boundOnResize();
-                    }
-                }
-            });
-
-            resizeObserver.observe(canvas! as any);
-        } else {
-            (window as Window).addEventListener("resize", boundOnResize);
+        this._engine = scene.getEngine();
+        const clientRect = this._engine.getRenderingCanvasClientRect();
+        if (!clientRect) {
+            throw new Error("Failed to get client rect for rendering canvas");
         }
+
+        // Set the size and resize behavior
+        this._setSize(clientRect.width, clientRect.height);
+
+        this._engine.onResizeObservable.add(() => {
+            const clientRect = this._engine.getRenderingCanvasClientRect();
+            if (clientRect) {
+                this._setSize(clientRect.width, clientRect.height);
+            }
+        });
 
         let projectionObs: Observer<Camera>;
         let matrixObs: Observer<Camera>;
@@ -250,7 +235,7 @@ export class HtmlMeshRenderer {
         const transparentRenderOrder = renderOrderFunc(defaultTransparentRenderOrder);
         scene.setRenderingOrder(0, opaqueRenderOrder, alphaTestRenderOrder, transparentRenderOrder);
 
-        this._renderObserver = scene.onAfterRenderObservable.add(() => {
+        this._renderObserver = scene.onBeforeRenderObservable.add(() => {
             this._render(scene, scene.activeCamera as Camera);
         });
     }
@@ -297,6 +282,10 @@ export class HtmlMeshRenderer {
         this._width = width;
         this._height = height;
         this._heightHalf = this._height / 2;
+
+        if (!this._inSceneElements || !this._overlayElements) {
+            return;
+        }
 
         const domElements = [this._inSceneElements!.domElement, this._overlayElements!.domElement, this._inSceneElements!.cameraElement, this._overlayElements!.cameraElement];
         domElements.forEach((dom) => {
@@ -492,7 +481,7 @@ export class HtmlMeshRenderer {
         const useRightHandedSystem = scene.useRightHandedSystem;
 
         // Update the container position and size if necessary
-        this._updateContainerPositionIfNeeded(scene);
+        this._updateContainerPositionIfNeeded();
 
         // Check for a camera change
         if (this._cameraMatrixUpdated) {
@@ -614,9 +603,9 @@ export class HtmlMeshRenderer {
         htmlMesh.setContentSizePx(screenWidth, screenHeight);
     }
 
-    protected async _updateContainerPositionIfNeeded(scene: Scene) {
+    protected _updateContainerPositionIfNeeded() {
         // Determine if the canvas has moved on the screen
-        const canvasRect = await getCanvasRectAsync(scene);
+        const canvasRect = this._engine.getRenderingCanvasClientRect();
 
         // canvas rect may be null if layout not complete
         if (!canvasRect) {

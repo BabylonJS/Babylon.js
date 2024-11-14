@@ -161,7 +161,6 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
 
         // Configure mesh
         this.mesh = mesh ?? VolumetricLightScatteringPostProcess.CreateDefaultMesh("VolumetricLightScatteringMesh", scene);
-
         // Configure
         this._createPass(scene, ratio.passRatio || ratio);
 
