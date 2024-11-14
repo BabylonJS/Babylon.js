@@ -55,8 +55,10 @@ export interface IBoundingBoxGizmo extends IGizmo {
     readonly isDragging: boolean;
     /** Fired when a rotation anchor or scale box is dragged */
     onDragStartObservable: Observable<{}>;
-    /** Fired when a scale box or a rotation anchor is hovered */
-    onBoxOrAnchorHoverObservable: Observable<{}>;
+    /** Fired when the gizmo mesh hovering starts*/
+    onHoverStartObservable: Observable<{}>;
+    /** Fired when the gizmo mesh hovering ends*/
+    onHoverEndObservable: Observable<{}>;
     /** Fired when a scale box is dragged */
     onScaleBoxDragObservable: Observable<{}>;
     /** Fired when a scale box drag is ended */
@@ -185,9 +187,13 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
      */
     public onDragStartObservable = new Observable<{}>();
     /**
-     * Fired when a scale box or a rotation anchor is hovered
+     * Fired when the gizmo mesh hovering starts
      */
-    public onBoxOrAnchorHoverObservable = new Observable<{}>();
+    public onHoverStartObservable = new Observable<{}>();
+    /**
+     * Fired when the gizmo mesh hovering ends
+     */
+    public onHoverEndObservable = new Observable<{}>();
     /**
      * Fired when a scale box is dragged
      */
@@ -709,9 +715,9 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                     .concat(this._scaleBoxesParent.getChildMeshes())
                     .forEach((mesh) => {
                         if (pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh == mesh) {
-                            this.onBoxOrAnchorHoverObservable.notifyObservers({ mesh });
                             pointerIds[(<IPointerEvent>pointerInfo.event).pointerId] = mesh;
                             mesh.material = this._hoverColoredMaterial;
+                            this.onHoverStartObservable.notifyObservers({});
                             this._isHovered = true;
                         }
                     });
@@ -719,6 +725,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                 if (pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh != pointerIds[(<IPointerEvent>pointerInfo.event).pointerId]) {
                     pointerIds[(<IPointerEvent>pointerInfo.event).pointerId].material = this._coloredMaterial;
                     delete pointerIds[(<IPointerEvent>pointerInfo.event).pointerId];
+                    this.onHoverEndObservable.notifyObservers({});
                     this._isHovered = false;
                 }
             }
@@ -1021,7 +1028,8 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
         this._scaleBoxesDragBehaviors.length = 0;
         this._rotateAnchorsDragBehaviors.length = 0;
         this.onDragStartObservable.clear();
-        this.onBoxOrAnchorHoverObservable.clear();
+        this.onHoverStartObservable.clear();
+        this.onHoverEndObservable.clear();
         this.onScaleBoxDragObservable.clear();
         this.onScaleBoxDragEndObservable.clear();
         this.onRotationSphereDragObservable.clear();
