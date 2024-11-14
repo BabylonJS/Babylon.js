@@ -12,20 +12,27 @@ export class HTMLHotSpotElement extends LitElement {
     static override styles = css`
         :host {
             display: inline-block;
+            transition: opacity 0.2s;
+        }
+        :host([hidden]) {
+            opacity: 0.3;
+        }
+        :host(:state(invalid)) {
+            display: none;
         }
     `;
 
+    private readonly _internals = this.attachInternals();
     private _viewerAttachment: Nullable<IDisposable> = null;
 
     @property({ attribute: "hotspot-name" })
     public hotSpotName: string = "";
 
-    @state()
-    private _isValid = false;
-
     // eslint-disable-next-line babylonjs/available
     override connectedCallback(): void {
         super.connectedCallback();
+        this._internals.states.add("invalid");
+
         if (!(this.parentElement instanceof HTML3DElement)) {
             // eslint-disable-next-line no-console
             console.warn("The babylon-viewer-hotspot element must be a child of a babylon-viewer element.");
@@ -43,11 +50,11 @@ export class HTMLHotSpotElement extends LitElement {
                 sceneRenderObserver = viewerElement.viewerDetails.scene.onAfterRenderObservable.add(() => {
                     if (this.hotSpotName) {
                         if (viewerElement.queryHotSpot(this.hotSpotName, hotSpotResult)) {
-                            // TODO: Raycast to the position and see if the expected triangle is hit. If not, don't show the hotspot.
                             this.style.transform = `translate(${hotSpotResult.screenPosition[0]}px, ${hotSpotResult.screenPosition[1]}px)`;
-                            this._isValid = true;
+                            this._internals.states.delete("invalid");
+                            this.hidden = hotSpotResult.visibility <= 0;
                         } else {
-                            this._isValid = false;
+                            this._internals.states.add("invalid");
                         }
                     }
                 });
@@ -72,10 +79,12 @@ export class HTMLHotSpotElement extends LitElement {
 
         this._viewerAttachment?.dispose();
         this._viewerAttachment = null;
+
+        this._internals.states.add("invalid");
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     protected override render() {
-        return html` <slot ?hidden="${!this._isValid}"></slot> `;
+        return html` <slot></slot> `;
     }
 }

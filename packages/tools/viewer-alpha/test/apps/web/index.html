@@ -52,6 +52,14 @@
                 background-image: url("https://raw.githubusercontent.com/BabylonJS/Assets/master/textures/Checker_albedo.png");
             }
 
+            /* babylon-viewer-hotspot[hidden] {
+                display: none;
+            } */
+             /* babylon-viewer-hotspot:state(invalid) {
+                display: unset;
+                opacity: 1;
+             } */
+
             /* babylon-viewer::part(tool-bar) {
                 border-radius: 0;
                 left: 0;
@@ -62,6 +70,11 @@
                 max-width: unset;
                 transform: unset;
             } */
+
+            /* This keeps child nodes hidden while the element loads */
+            :not(:defined) > * {
+                display: none;
+            }
         </style>
     </head>
 
@@ -103,14 +116,14 @@
             <svg id="lines" style="position: absolute; width: 100%; height: 100%" xmlns="http://www.w3.org/2000/svg" class="lineContainer">
                 <line class="line"></line>
             </svg>
-            <babylon-viewer-hotspot hotspot-name="antenna" hidden>
+            <babylon-viewer-hotspot hotspot-name="antenna">
                 <div>
                     <svg style="width: 20px; height: 20px; transform: translate(-50%, -50%)">
                         <ellipse cx="10" cy="10" rx="8" ry="8" fill="red" stroke="white" stroke-width="3" />
                     </svg>
                 </div>
             </babylon-viewer-hotspot>
-            <babylon-viewer-hotspot hotspot-name="thruster" hidden>
+            <babylon-viewer-hotspot hotspot-name="thruster">
                 <div>Thruster</div>
             </babylon-viewer-hotspot>
         </babylon-viewer>
