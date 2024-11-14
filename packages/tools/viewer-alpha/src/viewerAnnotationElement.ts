@@ -17,6 +17,7 @@ export class HTML3DAnnotationElement extends LitElement {
     static override styles = css`
         :host {
             display: inline-block;
+            position: absolute;
             transition: opacity 0.25s;
         }
         :host([hidden]) {
