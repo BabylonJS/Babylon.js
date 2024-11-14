@@ -14,7 +14,7 @@ export class HTMLHotSpotElement extends LitElement {
             display: inline-block;
             transition: opacity 0.2s;
         }
-        :host([hidden]) {
+        :host(:state(back-facing)) {
             opacity: 0.3;
         }
         :host(:state(invalid)) {
@@ -50,9 +50,15 @@ export class HTMLHotSpotElement extends LitElement {
                 sceneRenderObserver = viewerElement.viewerDetails.scene.onAfterRenderObservable.add(() => {
                     if (this.hotSpotName) {
                         if (viewerElement.queryHotSpot(this.hotSpotName, hotSpotResult)) {
-                            this.style.transform = `translate(${hotSpotResult.screenPosition[0]}px, ${hotSpotResult.screenPosition[1]}px)`;
+                            const [screenX, screenY] = hotSpotResult.screenPosition;
+                            this.style.transform = `translate(${screenX}px, ${screenY}px)`;
                             this._internals.states.delete("invalid");
-                            this.hidden = hotSpotResult.visibility <= 0;
+
+                            if (hotSpotResult.visibility <= 0) {
+                                this._internals.states.add("back-facing");
+                            } else {
+                                this._internals.states.delete("back-facing");
+                            }
                         } else {
                             this._internals.states.add("invalid");
                         }
