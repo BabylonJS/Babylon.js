@@ -9,7 +9,7 @@ import { FlowGraphCachedOperationBlock } from "./flowGraphCachedOperationBlock";
 export class FlowGraphConstantOperationBlock<ResultT> extends FlowGraphCachedOperationBlock<ResultT> {
     constructor(
         richType: RichType<ResultT>,
-        private _operation: () => ResultT,
+        private _operation: (context: FlowGraphContext) => ResultT,
         private _className: string,
         config?: IFlowGraphBlockConfiguration
     ) {
@@ -18,11 +18,11 @@ export class FlowGraphConstantOperationBlock<ResultT> extends FlowGraphCachedOpe
 
     /**
      * the operation performed by this block
-     * @param _context the graph context
+     * @param context the graph context
      * @returns the result of the operation
      */
-    public override _doOperation(_context: FlowGraphContext): ResultT {
-        return this._operation();
+    public override _doOperation(context: FlowGraphContext): ResultT {
+        return this._operation(context);
     }
 
     /**

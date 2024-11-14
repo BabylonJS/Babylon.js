@@ -9,7 +9,6 @@ import type { FlowGraphCoordinator } from "./flowGraphCoordinator";
 import type { IObjectAccessor } from "./typeDefinitions";
 import type { IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
 import type { PointerInfo } from "core/Events/pointerEvents";
-import { PointerEventTypes } from "core/Events/pointerEvents";
 import type { IAssetContainer } from "core/IAssetContainer";
 
 export const enum FlowGraphState {
@@ -110,7 +109,7 @@ export class FlowGraph {
                     context._notifyPendingBlocksOnPointer(pointerInfo);
                 }
             }
-        }, PointerEventTypes.POINTERPICK);
+        });
     }
 
     /**

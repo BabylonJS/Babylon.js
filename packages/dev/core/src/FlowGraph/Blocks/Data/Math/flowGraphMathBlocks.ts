@@ -18,6 +18,8 @@ import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
 import { FlowGraphTernaryOperationBlock } from "../flowGraphTernaryOperationBlock";
 import { FlowGraphInteger } from "../../../flowGraphInteger";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
+import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
+import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 
 export type FlowGraphNumber = number | FlowGraphInteger;
 export type FlowGraphVector = Vector2 | Vector3 | Vector4;
@@ -213,11 +215,28 @@ RegisterClass(FlowGraphBlockNames.Divide, FlowGraphDivideBlock);
 
 /**
  * @experimental
- * Random number between 0 and 1.
+ * Random number between min and max (defaults to 0 to 1)
  */
 export class FlowGraphRandomBlock extends FlowGraphConstantOperationBlock<FlowGraphMathOperationType> {
+    /**
+     * The minimum value. defaults to 0.
+     */
+    public readonly min: FlowGraphDataConnection<number>;
+    /**
+     * The maximum value. defaults to 1.
+     */
+    public readonly max: FlowGraphDataConnection<number>;
+
     constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeNumber, () => Math.random(), FlowGraphBlockNames.Random, config);
+        super(RichTypeNumber, (context) => this._random(context), FlowGraphBlockNames.Random, config);
+        this.min = this.registerDataInput("min", RichTypeNumber, 0);
+        this.max = this.registerDataInput("max", RichTypeNumber, 1);
+    }
+
+    private _random(context: FlowGraphContext) {
+        const min = this.min.getValue(context);
+        const max = this.max.getValue(context);
+        return Math.random() * (max - min) + min;
     }
 }
 RegisterClass(FlowGraphBlockNames.Random, FlowGraphRandomBlock);
