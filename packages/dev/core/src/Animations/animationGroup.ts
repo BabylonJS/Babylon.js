@@ -850,16 +850,17 @@ export class AnimationGroup implements IDisposable {
     /**
      * Goes to a specific frame in this animation group. Note that the animation group must be in playing or paused status
      * @param frame the frame number to go to
+     * @param useWeight defines whether the animation weight should be applied to the image to be jumped to (false by default)
      * @returns the animationGroup
      */
-    public goToFrame(frame: number): AnimationGroup {
+    public goToFrame(frame: number, useWeight = false): AnimationGroup {
         if (!this._isStarted) {
             return this;
         }
 
         for (let index = 0; index < this._animatables.length; index++) {
             const animatable = this._animatables[index];
-            animatable.goToFrame(frame);
+            animatable.goToFrame(frame, useWeight);
         }
 
         return this;
