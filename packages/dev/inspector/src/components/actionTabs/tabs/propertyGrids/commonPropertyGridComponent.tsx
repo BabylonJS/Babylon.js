@@ -8,7 +8,7 @@ import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObj
 import type { GlobalState } from "../../../globalState";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { IndentedTextLineComponent } from "shared-ui-components/lines/indentedTextLineComponent";
-import { Tags } from "core/Misc";
+import { Tags } from "core/Misc/tags";
 
 interface ICommonPropertyGridComponentProps {
     globalState: GlobalState;
