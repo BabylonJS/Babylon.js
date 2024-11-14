@@ -62,7 +62,7 @@ interface HTML3DElementEventMap extends HTMLElementEventMap {
 }
 
 /**
- * Represents a custom element that displays a 3D model using the Babylon.js Viewer.
+ * Displays a 3D model using the Babylon.js Viewer.
  */
 @customElement("babylon-viewer")
 export class HTML3DElement extends LitElement {

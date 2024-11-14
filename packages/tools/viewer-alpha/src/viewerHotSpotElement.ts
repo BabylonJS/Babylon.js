@@ -2,10 +2,15 @@
 import type { IDisposable, Nullable, Observer, Scene } from "core/index";
 
 import { LitElement, css, html } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { customElement, property } from "lit/decorators.js";
 import { HTML3DElement } from "./viewerElement";
 import { ViewerHotSpotResult } from "./viewer";
 
+/**
+ * Displays child elements at the screen space location of a hotspot in a babylon-viewer.
+ * @remarks
+ * The babylon-viewer-hotspot element must be a child of a babylon-viewer element.
+ */
 @customElement("babylon-viewer-hotspot")
 export class HTMLHotSpotElement extends LitElement {
     // eslint-disable-next-line @typescript-eslint/naming-convention, jsdoc/require-jsdoc
@@ -13,6 +18,9 @@ export class HTMLHotSpotElement extends LitElement {
         :host {
             display: inline-block;
             transition: opacity 0.2s;
+        }
+        :host([hidden]) {
+            display: none;
         }
         :host(:state(back-facing)) {
             opacity: 0.3;
@@ -25,8 +33,11 @@ export class HTMLHotSpotElement extends LitElement {
     private readonly _internals = this.attachInternals();
     private _viewerAttachment: Nullable<IDisposable> = null;
 
-    @property({ attribute: "hotspot-name" })
-    public hotSpotName: string = "";
+    /**
+     * The name of the hotspot to track.
+     */
+    @property()
+    public name: string = "";
 
     // eslint-disable-next-line babylonjs/available
     override connectedCallback(): void {
@@ -48,8 +59,8 @@ export class HTMLHotSpotElement extends LitElement {
 
             if (viewerElement.viewerDetails) {
                 sceneRenderObserver = viewerElement.viewerDetails.scene.onAfterRenderObservable.add(() => {
-                    if (this.hotSpotName) {
-                        if (viewerElement.queryHotSpot(this.hotSpotName, hotSpotResult)) {
+                    if (this.name) {
+                        if (viewerElement.queryHotSpot(this.name, hotSpotResult)) {
                             const [screenX, screenY] = hotSpotResult.screenPosition;
                             this.style.transform = `translate(${screenX}px, ${screenY}px)`;
                             this._internals.states.delete("invalid");
