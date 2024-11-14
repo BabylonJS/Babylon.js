@@ -95,9 +95,22 @@
                     "barycentric": [0.391, 0.387, 0.223],
                     "cameraOrbit": [1.270, 1.424, 0.514]
                 },
+                "thruster": {
+                  "type": "surface",
+                  "meshIndex": 1,
+                  "pointIndex": [8339, 8338, 8337],
+                  "barycentric": [0.213, 0.220, 0.567],
+                  "cameraOrbit": [-5.595, 2.398, 0.787]
+                },
+                "hotspot 3": {
+                    "type": "surface",
+                    "meshIndex": 1,
+                    "pointIndex": [228, 113, 111],
+                    "barycentric": [0.217, 0.341, 0.442]
+                },
                 "poi": {
                     "type": "world",
-                    "position": [0.001667406779624951, 0.9949996977503324, 0.004576897082055107],
+                    "position": [0.37435858930052035, 0.5999379610676736, 0.021725763097220963],
                     "normal": [0.6903377419741442, 0.44314472456113957, -0.5718885862645555],
                     "cameraOrbit": [-32.108, 1.112, 1.714]
                 }
@@ -121,11 +134,6 @@
             </babylon-viewer-annotation>
             <babylon-viewer-annotation hotspot="poi">
                 <div style="background-color: aliceblue; border-radius: 8px; padding: 3px 6px;">World Space POI</div>
-                <div>
-                    <svg style="width: 20px; height: 20px; transform: translate(-50%, -50%)">
-                        <ellipse cx="10" cy="10" rx="8" ry="8" fill="red" stroke="white" stroke-width="3" />
-                    </svg>
-                </div>
             </babylon-viewer-annotation>
         </babylon-viewer>
         <button class="toggle-dom-button" onclick="onToggleDOM()">Toggle DOM</button>

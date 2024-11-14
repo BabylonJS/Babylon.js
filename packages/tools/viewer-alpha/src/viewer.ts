@@ -861,7 +861,6 @@ export class Viewer implements IDisposable {
             worldPos.copyFromFloats(query.position[0], query.position[1], query.position[2]);
             worldNormal.copyFromFloats(query.normal[0], query.normal[1], query.normal[2]);
         }
-        console.log(`${query.type} [${worldPos.x}, ${worldPos.y}, ${worldPos.z}]`);
 
         const renderWidth = this._engine.getRenderWidth(); // Get the canvas width
         const renderHeight = this._engine.getRenderHeight(); // Get the canvas height
