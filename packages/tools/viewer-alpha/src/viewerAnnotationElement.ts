@@ -31,7 +31,8 @@ export class HTML3DAnnotationElement extends LitElement {
         }
     `;
 
-    private readonly _internals = this.attachInternals();
+    // TODO: Remove the "as any" after TypeScript is updated to 5.5 or higher.
+    private readonly _internals = this.attachInternals() as any;
     private _viewerAttachment: Nullable<IDisposable> = null;
 
     /**
