@@ -90,6 +90,7 @@ export function GetTransformedPosition(mesh: AbstractMesh, index: number, res: V
 
 /**
  * Compute a world space hotspot position
+ * TmpVectors.Vector3[0..4] are modified by this function. Do not use them as result output.
  * @param mesh mesh used to get hotspot from
  * @param hotSpotQuery point indices and barycentric
  * @param resPosition output world position
