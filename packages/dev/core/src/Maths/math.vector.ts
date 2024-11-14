@@ -3400,6 +3400,17 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      */
     public declare readonly rank: 1;
 
+    /** @internal */
+    public _x: number;
+
+    /** [0] x value of the vector */
+    public get x() {
+        return this._x;
+    }
+    public set x(value: number) {
+        this._x = value;
+    }
+
     /**
      * Creates a Vector4 object from the given floats.
      * @param x x value of the vector
@@ -3408,15 +3419,16 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @param w w value of the vector
      */
     constructor(
-        /** [0] x value of the vector */
-        public x: number = 0,
+        x: number = 0,
         /** [0] y value of the vector */
         public y: number = 0,
         /** [0] z value of the vector */
         public z: number = 0,
         /** [0] w value of the vector */
         public w: number = 0
-    ) {}
+    ) {
+        this.x = x;
+    }
 
     /**
      * Returns the string with the Vector4 coordinates.
