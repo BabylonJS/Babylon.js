@@ -1,121 +1,53 @@
 {
-    "fromTag": "7.33.0",
+    "fromTag": "7.34.0",
     "changelog": {
-        "7.33.0": [
+        "7.34.1": [
             {
-                "pr": "15782",
-                "title": "Enable .env file for playwright tests",
-                "description": "The .env file is not being read when running playwright tests. This change imports the `populateEnvironment` utility function and calls it so the .env file gets read.",
-                "author": {
-                    "name": "docEdub",
-                    "url": "https://github.com/docEdub"
-                },
-                "files": [
-                    "packages/tools/tests/playwright.config.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "15779",
-                "title": "EffectWrapper: Fix backward compatibility for alpha mode",
-                "description": "See https://forum.babylonjs.com/t/oit-seems-broken-with-7-32-2/54591",
-                "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/effectRenderer.ts"
-                ],
-                "tags": [
-                    "bug",
-                    "rendering engine"
-                ]
-            },
-            {
-                "pr": "15777",
-                "title": "Optimize RenderTargetTexture handling",
-                "description": "To prevent repeated instantiation and potential memory leaks, \r\nI fixed the code about \"RenderTargetTexture\".\r\n\r\n",
-                "author": {
-                    "name": "UN1TOne",
-                    "url": "https://github.com/UN1TOne"
-                },
-                "files": [
-                    "packages/dev/postProcesses/src/edgeDetection/edgeDetectionPostProcess.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "15775",
-                "title": "IBL Shadows accumulation for different scene sizes",
-                "description": "Accumulation is dependent upon distance between previous and current world positions and this scales with scene size.\r\nThe fix is to scale this comparison based on the size of the voxel grid.",
+                "pr": "15816",
+                "title": "IBL shadow voxelization fix",
+                "description": "Changed to `onAfterRenderObservable` as it seems to prevent the voxelization from failing sometimes. I think it gives time for all the RT's to become ready (shaders compiled, etc.).",
                 "author": {
                     "name": "MiiBond",
                     "url": "https://github.com/MiiBond"
                 },
                 "files": [
-                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsAccumulationPass.ts",
-                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsRenderPipeline.ts",
-                    "packages/dev/core/src/Shaders/iblShadowAccumulation.fragment.fx",
-                    "packages/dev/core/src/ShadersWGSL/iblShadowAccumulation.fragment.fx"
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelRenderer.ts"
                 ],
                 "tags": []
             },
             {
-                "pr": "15776",
-                "title": "Collapsible nodes for node editors",
+                "pr": "15126",
+                "title": "Animation: Use the right weight when calling RuntimeAnimation.goToFrame",
                 "description": null,
                 "author": {
-                    "name": "deltakosh",
-                    "url": "https://github.com/deltakosh"
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/dev/core/src/FrameGraph/Node/nodeRenderGraph.ts",
-                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
-                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts",
-                    "packages/dev/sharedUiComponents/src/imgs/dropdownArrowIcon_white.svg",
-                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
-                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.modules.scss",
-                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts",
-                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/interfaces/nodeLocationInfo.ts",
-                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodePort.ts",
-                    "packages/tools/nodeEditor/src/serializationTools.ts",
-                    "packages/tools/nodeGeometryEditor/src/serializationTools.ts",
-                    "packages/tools/nodeRenderGraphEditor/src/serializationTools.ts"
+                    "packages/dev/core/src/Animations/animatable.ts",
+                    "packages/dev/core/src/Animations/runtimeAnimation.ts"
                 ],
                 "tags": [
-                    "new feature"
+                    "bug",
+                    "animations"
                 ]
             },
             {
-                "pr": "15774",
-                "title": "Better float UI",
-                "description": null,
+                "pr": "15818",
+                "title": "Animation: Use the right weight when calling RuntimeAnimation.goToFrame",
+                "description": "See https://forum.babylonjs.com/t/animation-blending-and-key-interpolation-bug-in-new-cdn/54729/4.\r\n\r\nMy change in #15126 was a breaking change, because when the weight isn't -1, the animation is considered additive, and this can break if there isn't at least one animation that isn't additive.\r\n\r\nI needed this change for Teams Avatar, so I made a change so that the old behavior is the default, but I added a flag so that I could use the animation weight on demand.",
                 "author": {
-                    "name": "deltakosh",
-                    "url": "https://github.com/deltakosh"
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragmentOutputBlock.ts",
-                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.modules.scss",
-                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts"
+                    "packages/dev/core/src/Animations/animatable.core.ts",
+                    "packages/dev/core/src/Animations/animationGroup.ts"
                 ],
                 "tags": [
-                    "skip changelog"
+                    "bug",
+                    "animations"
                 ]
-            },
-            {
-                "pr": "15773",
-                "title": "Add toneMapping, contrast, and exposure to Viewer",
-                "description": "This change primarily adds three new properties (and corresponding attributes) to the viewer: `toneMapping`, `contrast`, and `exposure`. Notes on this:\r\n- Tone mapping is set to KHR PBR Neutral by default.\r\n- Tone mapping, contrast, and exposure are not applied to the skybox.\r\n- When these attributes are explicitly set, they are re-applied when a new model is loaded. If they are not set, then the current property value is retained (similar behavior as some other attributes).\r\n\r\nThis change includes a few other small fixes as well:\r\n- Enable transparency as coverage by default.\r\n- Remove the outline from the canvas (otherwise it is clicked it shows a black outline).",
-                "author": {
-                    "name": "ryantrem",
-                    "url": "https://github.com/ryantrem"
-                },
-                "files": [
-                    "packages/tools/viewer-alpha/src/viewer.ts",
-                    "packages/tools/viewer-alpha/src/viewerElement.ts"
-                ],
-                "tags": []
             }
         ],
         "7.34.0": [
@@ -459,6 +391,123 @@
                     "packages/dev/addons/src/htmlMesh/pointerEventsCaptureBehavior.ts",
                     "packages/dev/addons/src/htmlMesh/util.ts",
                     "packages/dev/addons/src/index.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "7.33.0": [
+            {
+                "pr": "15782",
+                "title": "Enable .env file for playwright tests",
+                "description": "The .env file is not being read when running playwright tests. This change imports the `populateEnvironment` utility function and calls it so the .env file gets read.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/tools/tests/playwright.config.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15779",
+                "title": "EffectWrapper: Fix backward compatibility for alpha mode",
+                "description": "See https://forum.babylonjs.com/t/oit-seems-broken-with-7-32-2/54591",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/effectRenderer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "15777",
+                "title": "Optimize RenderTargetTexture handling",
+                "description": "To prevent repeated instantiation and potential memory leaks, \r\nI fixed the code about \"RenderTargetTexture\".\r\n\r\n",
+                "author": {
+                    "name": "UN1TOne",
+                    "url": "https://github.com/UN1TOne"
+                },
+                "files": [
+                    "packages/dev/postProcesses/src/edgeDetection/edgeDetectionPostProcess.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15775",
+                "title": "IBL Shadows accumulation for different scene sizes",
+                "description": "Accumulation is dependent upon distance between previous and current world positions and this scales with scene size.\r\nThe fix is to scale this comparison based on the size of the voxel grid.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsAccumulationPass.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsRenderPipeline.ts",
+                    "packages/dev/core/src/Shaders/iblShadowAccumulation.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/iblShadowAccumulation.fragment.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15776",
+                "title": "Collapsible nodes for node editors",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/FrameGraph/Node/nodeRenderGraph.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts",
+                    "packages/dev/sharedUiComponents/src/imgs/dropdownArrowIcon_white.svg",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.modules.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/interfaces/nodeLocationInfo.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodePort.ts",
+                    "packages/tools/nodeEditor/src/serializationTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/serializationTools.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/serializationTools.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15774",
+                "title": "Better float UI",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragmentOutputBlock.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.modules.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15773",
+                "title": "Add toneMapping, contrast, and exposure to Viewer",
+                "description": "This change primarily adds three new properties (and corresponding attributes) to the viewer: `toneMapping`, `contrast`, and `exposure`. Notes on this:\r\n- Tone mapping is set to KHR PBR Neutral by default.\r\n- Tone mapping, contrast, and exposure are not applied to the skybox.\r\n- When these attributes are explicitly set, they are re-applied when a new model is loaded. If they are not set, then the current property value is retained (similar behavior as some other attributes).\r\n\r\nThis change includes a few other small fixes as well:\r\n- Enable transparency as coverage by default.\r\n- Remove the outline from the canvas (otherwise it is clicked it shows a black outline).",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts"
                 ],
                 "tags": []
             }
