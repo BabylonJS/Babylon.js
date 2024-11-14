@@ -234,6 +234,29 @@ export function rotateNodeMinus180Z(node: INode) {
     }
 }
 
+export function convertNode(node: INode) {
+    const translation = Vector3.FromArrayToRef(node.translation || [0, 0, 0], 0, TmpVectors.Vector3[2]);
+    const rotation = Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
+
+    translation.y *= -1;
+    translation.x *= -1;
+
+    //rotation.x *= -1;
+    //rotation.y *= -1;
+
+    if (translation.equalsToFloats(0, 0, 0)) {
+        delete node.translation;
+    } else {
+        node.translation = translation.asArray();
+    }
+
+    if (Quaternion.IsIdentity(rotation)) {
+        delete node.rotation;
+    } else {
+        node.rotation = rotation.asArray();
+    }
+}
+
 /**
  * Colapses GLTF parent and node into a single node. This is useful for removing nodes that were added by the GLTF importer.
  * @param node Target parent node.
