@@ -113,7 +113,7 @@ export function GetHotSpotToRef(mesh: AbstractMesh, hotSpotQuery: HotSpotQuery, 
         TmpVectors.Vector3[3].subtractInPlace(TmpVectors.Vector3[1]);
         TmpVectors.Vector3[4].copyFrom(TmpVectors.Vector3[1]);
         TmpVectors.Vector3[4].subtractInPlace(TmpVectors.Vector3[0]);
-        Vector3.CrossToRef(TmpVectors.Vector3[3], TmpVectors.Vector3[4], resNormal);
+        Vector3.CrossToRef(TmpVectors.Vector3[4], TmpVectors.Vector3[3], resNormal);
         Vector3.TransformNormalToRef(resNormal, mesh.getWorldMatrix(), resNormal);
         resNormal.normalize();
     }
