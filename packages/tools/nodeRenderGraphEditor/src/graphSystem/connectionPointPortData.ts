@@ -1,6 +1,10 @@
 import type { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
 import type { NodeRenderGraphConnectionPoint } from "core/FrameGraph/Node/nodeRenderGraphBlockConnectionPoint";
-import { NodeRenderGraphConnectionPointDirection, NodeRenderGraphConnectionPointCompatibilityStates } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
+import {
+    NodeRenderGraphConnectionPointDirection,
+    NodeRenderGraphConnectionPointCompatibilityStates,
+    NodeRenderGraphBlockConnectionPointTypes,
+} from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
 import type { Nullable } from "core/types";
 import type { GlobalState } from "node-render-graph-editor/globalState";
 import type { GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/graphCanvas";
@@ -148,7 +152,7 @@ export class ConnectionPointPortData implements IPortData {
     public getCompatibilityIssueMessage(issue: number, targetNode: GraphNode, targetPort: IPortData) {
         switch (issue) {
             case NodeRenderGraphConnectionPointCompatibilityStates.TypeIncompatible:
-                return "Cannot connect two different connection types";
+                return `Cannot connect two different connection types:\nSource is ${NodeRenderGraphBlockConnectionPointTypes[this.data.type]} and destination is ${NodeRenderGraphBlockConnectionPointTypes[(targetPort.data as NodeRenderGraphConnectionPoint).type]}`;
 
             case NodeRenderGraphConnectionPointCompatibilityStates.HierarchyIssue:
                 return "Source block cannot be connected with one of its ancestors";

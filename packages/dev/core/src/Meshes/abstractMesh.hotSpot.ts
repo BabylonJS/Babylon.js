@@ -1,6 +1,7 @@
 import { Vector3, TmpVectors, Matrix } from "../Maths/math.vector";
 import type { AbstractMesh } from "./abstractMesh";
 import { VertexBuffer } from "../Buffers/buffer";
+import { Constants } from "core/Engines/constants";
 
 /**
  * Data for mesh hotspot computation
@@ -90,6 +91,7 @@ export function GetTransformedPosition(mesh: AbstractMesh, index: number, res: V
 
 /**
  * Compute a world space hotspot position
+ * TmpVectors.Vector3[0..4] are modified by this function. Do not use them as result output.
  * @param mesh mesh used to get hotspot from
  * @param hotSpotQuery point indices and barycentric
  * @param resPosition output world position
@@ -100,8 +102,7 @@ export function GetHotSpotToRef(mesh: AbstractMesh, hotSpotQuery: HotSpotQuery, 
     for (let i = 0; i < 3; i++) {
         const index = hotSpotQuery.pointIndex[i];
         GetTransformedPosition(mesh, index, TmpVectors.Vector3[i]);
-        TmpVectors.Vector3[i].scaleInPlace(hotSpotQuery.barycentric[i]);
-        resPosition.addInPlace(TmpVectors.Vector3[i]);
+        TmpVectors.Vector3[i].scaleAndAddToRef(hotSpotQuery.barycentric[i], resPosition);
     }
 
     // Convert the result to world space
@@ -109,11 +110,28 @@ export function GetHotSpotToRef(mesh: AbstractMesh, hotSpotQuery: HotSpotQuery, 
 
     // compute normal in world space
     if (resNormal) {
-        TmpVectors.Vector3[3].copyFrom(TmpVectors.Vector3[2]);
-        TmpVectors.Vector3[3].subtractInPlace(TmpVectors.Vector3[1]);
-        TmpVectors.Vector3[4].copyFrom(TmpVectors.Vector3[1]);
-        TmpVectors.Vector3[4].subtractInPlace(TmpVectors.Vector3[0]);
-        Vector3.CrossToRef(TmpVectors.Vector3[3], TmpVectors.Vector3[4], resNormal);
+        const pointA = TmpVectors.Vector3[0];
+        const pointB = TmpVectors.Vector3[1];
+        const pointC = TmpVectors.Vector3[2];
+        const segmentA = TmpVectors.Vector3[3];
+        const segmentB = TmpVectors.Vector3[4];
+        segmentA.copyFrom(pointB);
+        segmentA.subtractInPlace(pointA);
+        segmentB.copyFrom(pointC);
+        segmentB.subtractInPlace(pointA);
+        segmentA.normalize();
+        segmentB.normalize();
+        Vector3.CrossToRef(segmentB, segmentA, resNormal);
+
+        // flip normal
+        let invertWinding = mesh.material && mesh.material.sideOrientation === Constants.MATERIAL_CounterClockWiseSideOrientation;
+        invertWinding ||= mesh.getWorldMatrix().determinant() < 0;
+        invertWinding ||= mesh.getScene().useRightHandedSystem;
+        if (invertWinding) {
+            resNormal.scaleInPlace(-1);
+        }
+
+        // Convert the result to world space
         Vector3.TransformNormalToRef(resNormal, mesh.getWorldMatrix(), resNormal);
         resNormal.normalize();
     }

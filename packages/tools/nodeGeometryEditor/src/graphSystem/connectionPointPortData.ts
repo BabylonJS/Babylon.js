@@ -1,3 +1,4 @@
+import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes";
 import type { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
 import {
     NodeGeometryConnectionPointDirection,
@@ -151,7 +152,7 @@ export class ConnectionPointPortData implements IPortData {
     public getCompatibilityIssueMessage(issue: number, targetNode: GraphNode, targetPort: IPortData) {
         switch (issue) {
             case NodeGeometryConnectionPointCompatibilityStates.TypeIncompatible:
-                return "Cannot connect two different connection types";
+                return `Cannot connect two different connection types:\nSource is ${NodeGeometryBlockConnectionPointTypes[this.data.type]} and destination is ${NodeGeometryBlockConnectionPointTypes[(targetPort.data as NodeGeometryConnectionPoint).type]}`;
 
             case NodeGeometryConnectionPointCompatibilityStates.HierarchyIssue:
                 return "Source block cannot be connected with one of its ancestors";

@@ -23,7 +23,7 @@ import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { Clamp } from "core/Maths/math.scalar.functions";
-import { Matrix, TmpVectors, Vector3 } from "core/Maths/math.vector";
+import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { computeMaxExtents } from "core/Meshes/meshUtils";
 import { AsyncLock } from "core/Misc/asyncLock";
@@ -33,6 +33,7 @@ import { registerBuiltInLoaders } from "loaders/dynamic";
 import { Viewport } from "core/Maths/math.viewport";
 import { GetHotSpotToRef } from "core/Meshes/abstractMesh.hotSpot";
 import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
+import { BuildTuple } from "core/Misc/arrayTools";
 
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
@@ -291,6 +292,7 @@ export class Viewer implements IDisposable {
     private _selectedAnimation = -1;
     private _activeAnimationObservers: Observer<AnimationGroup>[] = [];
     private _animationSpeed = 1;
+    private _vector3 = BuildTuple(4, Vector3.Zero);
 
     public constructor(
         private readonly _engine: AbstractEngine,
@@ -835,9 +837,9 @@ export class Viewer implements IDisposable {
         if (!this._details.model) {
             return false;
         }
-        const worldNormal = TmpVectors.Vector3[2];
-        const worldPos = TmpVectors.Vector3[1];
-        const screenPos = TmpVectors.Vector3[0];
+        const worldNormal = this._vector3[2];
+        const worldPos = this._vector3[1];
+        const screenPos = this._vector3[0];
         const mesh = this._details.model.meshes[query.meshIndex];
         if (!mesh) {
             return false;
@@ -859,9 +861,9 @@ export class Viewer implements IDisposable {
         result.worldPosition[2] = worldPos.z;
 
         // visibility
-        const eyeToSurface = TmpVectors.Vector3[3];
-        eyeToSurface.copyFrom(worldPos);
-        eyeToSurface.subtractInPlace(this._details.camera.globalPosition);
+        const eyeToSurface = this._vector3[3];
+        eyeToSurface.copyFrom(this._details.camera.globalPosition);
+        eyeToSurface.subtractInPlace(worldPos);
         eyeToSurface.normalize();
         result.visibility = Vector3.Dot(eyeToSurface, worldNormal);
 

@@ -1,5 +1,53 @@
 # Changelog
 
+## 7.34.1
+
+### Core
+
+- IBL shadow voxelization fix - by [MiiBond](https://github.com/MiiBond) ([#15816](https://github.com/BabylonJS/Babylon.js/pull/15816))
+- Animation: Use the right weight when calling RuntimeAnimation.goToFrame - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15126](https://github.com/BabylonJS/Babylon.js/pull/15126))
+- Animation: Use the right weight when calling RuntimeAnimation.goToFrame - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15818](https://github.com/BabylonJS/Babylon.js/pull/15818))
+
+## 7.34.0
+
+### Core
+
+- Node editors: Fix editable properties for blocks with inheritance hierarchy - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15812](https://github.com/BabylonJS/Babylon.js/pull/15812))
+- Update NRGE colors and define port type on property window - by [deltakosh](https://github.com/deltakosh) ([#15808](https://github.com/BabylonJS/Babylon.js/pull/15808))
+- Correct spelling in IBL Shadows Pipeline - by [MiiBond](https://github.com/MiiBond) ([#15807](https://github.com/BabylonJS/Babylon.js/pull/15807))
+- Geometry buffer renderer: Fix normals not transformed by the world matrix when using normal maps - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15805](https://github.com/BabylonJS/Babylon.js/pull/15805))
+- Viewer hotspot activation - by [ryantrem](https://github.com/ryantrem) ([#15803](https://github.com/BabylonJS/Babylon.js/pull/15803))
+- Update comments in ibl shadows - by [MiiBond](https://github.com/MiiBond) ([#15802](https://github.com/BabylonJS/Babylon.js/pull/15802))
+- Adding support to mimetype autodetection - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15798](https://github.com/BabylonJS/Babylon.js/pull/15798))
+- fix(docs): typo in nodeMaterial - by [kzhsw](https://github.com/kzhsw) ([#15801](https://github.com/BabylonJS/Babylon.js/pull/15801))
+- GS WebGPU + NME ui fixes - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#15778](https://github.com/BabylonJS/Babylon.js/pull/15778))
+- Frame Graph: Add TAA task + support for history textures - by [Popov72](https://github.com/Popov72) ([#15785](https://github.com/BabylonJS/Babylon.js/pull/15785))
+- Layer: Add support for linear colors - by [Popov72](https://github.com/Popov72) ([#15791](https://github.com/BabylonJS/Babylon.js/pull/15791))
+- HTMLMesh not working if there's a VolumetricLightScatteringPostProcess on the scene? - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#15787](https://github.com/BabylonJS/Babylon.js/pull/15787))
+
+### GUI
+
+- Increase the visibility of InputText._selectAllTexts() public, or provide an public alternative - by [deltakosh](https://github.com/deltakosh) ([#15797](https://github.com/BabylonJS/Babylon.js/pull/15797))
+
+### Loaders
+
+- Adding support to mimetype autodetection - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15798](https://github.com/BabylonJS/Babylon.js/pull/15798))
+
+### Node Editor
+
+- Better error message - by [deltakosh](https://github.com/deltakosh) ([#15815](https://github.com/BabylonJS/Babylon.js/pull/15815))
+- Node editors: Fix editable properties for blocks with inheritance hierarchy - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15812](https://github.com/BabylonJS/Babylon.js/pull/15812))
+- Update NRGE colors and define port type on property window - by [deltakosh](https://github.com/deltakosh) ([#15808](https://github.com/BabylonJS/Babylon.js/pull/15808))
+- GS WebGPU + NME ui fixes - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#15778](https://github.com/BabylonJS/Babylon.js/pull/15778))
+
+### Playground
+
+- Fix global declaration processing - by [RaananW](https://github.com/RaananW) ([#15792](https://github.com/BabylonJS/Babylon.js/pull/15792))
+
+### Viewer
+
+- Adding support to mimetype autodetection - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15798](https://github.com/BabylonJS/Babylon.js/pull/15798))
+
 ## 7.33.0
 
 ### Core
