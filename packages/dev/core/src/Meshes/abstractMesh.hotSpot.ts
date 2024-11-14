@@ -1,7 +1,6 @@
 import { Vector3, TmpVectors, Matrix } from "../Maths/math.vector";
 import type { AbstractMesh } from "./abstractMesh";
 import { VertexBuffer } from "../Buffers/buffer";
-import { Constants } from "core/Engines/constants";
 
 /**
  * Data for mesh hotspot computation
