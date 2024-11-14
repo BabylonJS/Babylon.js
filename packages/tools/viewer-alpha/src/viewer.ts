@@ -826,8 +826,8 @@ export class Viewer implements IDisposable {
 
         // visibility
         const eyeToSurface = this._vector3[3];
-        eyeToSurface.copyFrom(worldPos);
-        eyeToSurface.subtractInPlace(this._details.camera.globalPosition);
+        eyeToSurface.copyFrom(this._details.camera.globalPosition);
+        eyeToSurface.subtractInPlace(worldPos);
         eyeToSurface.normalize();
         result.visibility = Vector3.Dot(eyeToSurface, worldNormal);
 

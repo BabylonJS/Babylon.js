@@ -18,7 +18,7 @@ export type HotSpotQuery = {
 };
 
 /**
- * Return a transformed local vertex position from a mesh and vertex index
+ * Return a transformed local position from a mesh and vertex index
  * @param mesh mesh used to get vertex array from
  * @param index vertex index
  * @param res resulting local position
