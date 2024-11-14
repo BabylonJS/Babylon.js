@@ -29,8 +29,8 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     private _renderTargetIsBound = true;
     private readonly _copyTexture: CopyTextureToTexture;
 
-    private static _IsObjectRenderer(object: Layer | ObjectRenderer): object is ObjectRenderer {
-        return (object as ObjectRenderer).initRender !== undefined;
+    private static _IsObjectRenderer(value: Layer | ObjectRenderer): value is ObjectRenderer {
+        return (value as ObjectRenderer).initRender !== undefined;
     }
 
     /** @internal */
