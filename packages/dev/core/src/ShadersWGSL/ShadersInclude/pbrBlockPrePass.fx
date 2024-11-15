@@ -49,7 +49,7 @@ var fragData: array<vec4<f32>, SCENE_MRT_COUNT>;
         #ifdef PREPASS_COLOR
             fragData[PREPASS_COLOR_INDEX] = finalColor; // No split lighting
         #endif
-        fragData[PREPASS_IRRADIANCE_INDEX] = vec4f(clamp(irradiance, vec3f(0.), vec3f(1.)), writeGeometryInfo * 1.); // Irradiance + SS diffusion profile
+        fragData[PREPASS_IRRADIANCE_INDEX] = vec4f(clamp(irradiance, vec3f(0.), vec3f(1.)), writeGeometryInfo); // Irradiance + SS diffusion profile
     #endif
 #elif defined(PREPASS_COLOR)
     fragData[PREPASS_COLOR_INDEX] = vec4f(finalColor.rgb, finalColor.a);
