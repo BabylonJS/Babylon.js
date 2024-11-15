@@ -509,7 +509,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
      * @param size Define the new size
      */
     public override resize(size: any) {
-        this._processSizeParameter(size, false);
+        this._processSizeParameter(size);
         this._rebuild(false, undefined, this._textureNames);
     }
 

@@ -1,9 +1,17 @@
-// eslint-disable-next-line import/no-internal-modules
-import type { NodeRenderGraphConnectionPoint, Scene, NodeRenderGraphBuildState, FrameGraph, FrameGraphTextureHandle, FrameGraphObjectList, Camera } from "core/index";
+import type {
+    NodeRenderGraphConnectionPoint,
+    Scene,
+    NodeRenderGraphBuildState,
+    FrameGraph,
+    FrameGraphTextureHandle,
+    FrameGraphObjectList,
+    Camera,
+    FrameGraphObjectRendererTask,
+    // eslint-disable-next-line import/no-internal-modules
+} from "core/index";
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
-import type { FrameGraphObjectRendererTask } from "../../../Tasks/Rendering/objectRendererTask";
 
 /**
  * @internal

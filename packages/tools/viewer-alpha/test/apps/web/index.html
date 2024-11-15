@@ -43,6 +43,14 @@
                 background-image: url("https://raw.githubusercontent.com/BabylonJS/Assets/master/textures/Checker_albedo.png");
             }
 
+             /* babylon-viewer-annotation:state(back-facing) {
+                display: none;
+             } */
+             /* babylon-viewer-annotation:state(invalid) {
+                display: unset;
+                opacity: 1;
+             } */
+
             /* babylon-viewer::part(tool-bar) {
                 border-radius: 0;
                 left: 0;
@@ -53,6 +61,11 @@
                 max-width: unset;
                 transform: unset;
             } */
+
+            /* This keeps child nodes hidden while custom elements load */
+            :not(:defined) > * {
+                display: none;
+            }
         </style>
     </head>
 
@@ -67,21 +80,20 @@
                 selected-animation="1"
                 camera-orbit="auto auto auto"
                 camera-target="auto auto auto"
-                camera-auto-orbit
-                hotspots='{
-                    "hotspot 1": {
+                    hotspots='{
+                    "antenna": {
                         "type": "surface",
                         "meshIndex": 1,
-                        "pointIndex": [228, 113, 111],
-                        "barycentric": [0.217, 0.341, 0.442],
-                        "cameraOrbit": [1.085, 1.417, 0.518]
+                        "pointIndex": [94, 93, 76],
+                        "barycentric": [0.391, 0.387, 0.223],
+                        "cameraOrbit": [1.270, 1.424, 0.514]
                     },
-                    "hotspot 2": {
-                        "type": "surface",
-                        "meshIndex": 1,
-                        "pointIndex": [228, 113, 111],
-                        "barycentric": [0.217, 0.341, 0.442],
-                        "cameraOrbit": [2.085, 2.417, 2.518]
+                    "thruster": {
+                      "type": "surface",
+                      "meshIndex": 1,
+                      "pointIndex": [8339, 8338, 8337],
+                      "barycentric": [0.213, 0.220, 0.567],
+                      "cameraOrbit": [-5.595, 2.398, 0.787]
                     },
                     "hotspot 3": {
                         "type": "surface",
@@ -97,6 +109,16 @@
                 <svg id="lines" style="position: absolute; width: 100%; height: 100%" xmlns="http://www.w3.org/2000/svg" class="lineContainer">
                     <line class="line"></line>
                 </svg>
+                <babylon-viewer-annotation hotspot="antenna">
+                    <div>
+                        <svg style="width: 20px; height: 20px; transform: translate(-50%, -50%)">
+                            <ellipse cx="10" cy="10" rx="8" ry="8" fill="red" stroke="white" stroke-width="3" />
+                        </svg>
+                    </div>
+                </babylon-viewer-annotation>
+                <babylon-viewer-annotation hotspot="thruster">
+                    <div style="background-color: aliceblue; border-radius: 8px; padding: 3px 6px;">Thruster</div>
+                </babylon-viewer-annotation>
             </babylon-viewer>
         </div>
         <div id="moreLowerPageContent" style="width: 100%; height: 200vh; display: none"></div>
@@ -177,14 +199,10 @@
                 }
             }
 
-            // use requestAnimationFrame to update with renderer
-            const startHotSpotLinesRenderLoop = () => {
+            const updateHotSpotLines = () => {
                 const hotspotBaseRect = document.querySelector("#anchor-button").getBoundingClientRect();
-                drawHotSpotLine(lines[0], "hotspot 1", hotspotBaseRect);
-                if (hotspotVisible) {
-                    requestAnimationFrame(startHotSpotLinesRenderLoop);
-                }
-            };
+                drawHotSpotLine(lines[0], "antenna", hotspotBaseRect);
+            }
 
             globalThis.onToggleDOM = () => {
                 const viewerContainer = document.getElementById("viewerContainer");
@@ -199,7 +217,11 @@
             globalThis.onToggleHotSpot = () => {
                 hotspotVisible = !hotspotVisible;
                 lines[0].style.visibility = hotspotVisible ? "visible" : "hidden";
-                startHotSpotLinesRenderLoop();
+                if (hotspotVisible) {
+                    viewerElement.addEventListener("viewerrender", updateHotSpotLines);
+                } else {
+                    viewerElement.removeEventListener("viewerrender", updateHotSpotLines);
+                }
             }
 
             let isInspectorVisible = false;
