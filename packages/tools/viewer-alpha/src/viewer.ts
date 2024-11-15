@@ -624,9 +624,11 @@ export class Viewer implements IDisposable {
 
             this._engine.runRenderLoop(render);
 
+            let disposed = false;
             this._renderLoopController = {
                 dispose: () => {
-                    if (this._renderLoopController) {
+                    if (!disposed) {
+                        disposed = true;
                         this._engine.stopRenderLoop(render);
                         this._renderLoopController = null;
                     }
