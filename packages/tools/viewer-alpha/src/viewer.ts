@@ -172,12 +172,12 @@ export type ViewerHotSpotQuery =
           type: "world";
 
           /**
-           * The fixed world position of the hot spot.
+           * The fixed world space position of the hot spot.
            */
           position: [x: number, y: number, z: number];
 
           /**
-           * The fixed normal of the hot spot.
+           * The fixed world space normal of the hot spot.
            */
           normal: [x: number, y: number, z: number];
       };
