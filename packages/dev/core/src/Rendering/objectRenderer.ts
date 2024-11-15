@@ -452,7 +452,8 @@ export class ObjectRenderer {
         engine.currentRenderPassId = currentRenderPassId;
     }
 
-    private _checkReadiness(): boolean {
+    /** @internal */
+    public _checkReadiness(): boolean {
         const scene = this._scene;
         const engine = scene.getEngine();
         const currentRenderPassId = engine.currentRenderPassId;

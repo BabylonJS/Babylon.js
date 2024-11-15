@@ -1007,13 +1007,19 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             import("../../Misc/dumpTools").then((module) => (this._dumpTools = module));
         }
 
+        this._objectRenderer.prepareRenderList();
+
         this.onBeforeBindObservable.notifyObservers(this);
 
-        const result = this._objectRenderer.isReadyForRendering(this.getRenderWidth(), this.getRenderHeight());
+        this._objectRenderer.initRender(this.getRenderWidth(), this.getRenderHeight());
+
+        const isReady = this._objectRenderer._checkReadiness();
 
         this.onAfterUnbindObservable.notifyObservers(this);
 
-        return result;
+        this._objectRenderer.finishRender();
+
+        return isReady;
     }
 
     private _render(useCameraPostProcess: boolean = false, dumpForDebug: boolean = false): void {
