@@ -95,7 +95,7 @@ import "./WebGPU/Extensions/engine.cubeTexture";
 import "./WebGPU/Extensions/engine.renderTarget";
 import "./WebGPU/Extensions/engine.renderTargetTexture";
 import "./WebGPU/Extensions/engine.renderTargetCube";
-import "./WebGPU/Extensions/engine.occlusionQuery";
+import "./WebGPU/Extensions/engine.query";
 
 const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
     label: `TextureView_SwapChain_ResolveTarget`,
