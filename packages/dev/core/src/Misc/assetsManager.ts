@@ -12,7 +12,7 @@ import { CubeTexture } from "../Materials/Textures/cubeTexture";
 import { HDRCubeTexture } from "../Materials/Textures/hdrCubeTexture";
 import { EquiRectangularCubeTexture } from "../Materials/Textures/equiRectangularCubeTexture";
 import { Logger } from "../Misc/logger";
-import type { Animatable } from "../Animations/animatable";
+import type { Animatable } from "../Animations/animatable.core";
 import type { AnimationGroup } from "../Animations/animationGroup";
 import type { AssetContainer } from "../assetContainer";
 import { EngineStore } from "../Engines/engineStore";

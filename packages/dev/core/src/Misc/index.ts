@@ -19,6 +19,11 @@ export * from "./smartArray";
 export * from "./stringDictionary";
 export * from "./tags";
 export * from "./textureTools";
+// loaded from texture tools
+export * from "../Shaders/lodCube.fragment";
+export * from "../Shaders/lod.fragment";
+export * from "../ShadersWGSL/lodCube.fragment";
+export * from "../ShadersWGSL/lod.fragment";
 export * from "./tga";
 export * from "./tools";
 export * from "./videoRecorder";
@@ -60,6 +65,7 @@ export * from "./PerformanceViewer/index";
 export * from "./coroutine";
 export * from "./guid";
 export * from "./error";
+export * from "./snapshotRenderingHelper";
 // eslint-disable-next-line import/export
 export * from "./observableCoroutine";
 export * from "./copyTextureToTexture";

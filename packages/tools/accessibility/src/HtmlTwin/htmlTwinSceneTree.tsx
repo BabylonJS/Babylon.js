@@ -29,7 +29,7 @@ function getFullscreenGuiTextures(scene: Scene) {
  * @param props
  * @returns
  */
-export function HTMLTwinSceneTree(props: { scene: Scene; options: IHTMLTwinRendererOptions }) {
+export function HTMLTwinSceneTree(props: { scene: Scene; options: IHTMLTwinRendererOptions }): JSX.Element {
     const { scene, options } = props;
 
     const [, setMeshIds] = useState(new Set<number>());

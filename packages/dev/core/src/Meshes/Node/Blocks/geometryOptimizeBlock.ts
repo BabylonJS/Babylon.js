@@ -6,24 +6,56 @@ import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorat
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import type { FloatArray } from "../../../types";
 import { VertexData } from "../../../Meshes/mesh.vertexData";
-import { Scalar } from "../../../Maths/math.scalar";
+import { WithinEpsilon } from "../../../Maths/math.scalar.functions";
 import { Epsilon } from "../../../Maths/math.constants";
+import type { INodeGeometryExecutionContext } from "../Interfaces/nodeGeometryExecutionContext";
 /**
  * Block used to extract unique positions from a geometry
  */
-export class GeometryOptimizeBlock extends NodeGeometryBlock {
+export class GeometryOptimizeBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext {
+    private _currentIndex: number;
     /**
      * Gets or sets a boolean indicating that this block can evaluate context
      * Build performance is improved when this value is set to false as the system will cache values instead of reevaluating everything per context change
      */
-    @editableInPropertyPage("Evaluate context", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { rebuild: true } })
+    @editableInPropertyPage("Evaluate context", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
     public evaluateContext = true;
 
     /**
      * Define the epsilon used to compare similar positions
      */
-    @editableInPropertyPage("Epsilon", PropertyTypeForEdition.Float, "ADVANCED", { notifiers: { rebuild: true } })
+    @editableInPropertyPage("Epsilon", PropertyTypeForEdition.Float, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
     public epsilon = Epsilon;
+
+    /**
+     * Optimize faces (by removing duplicates)
+     */
+    @editableInPropertyPage("Optimize faces", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
+    public optimizeFaces = false;
+
+    /**
+     * Gets the current index in the current flow
+     * @returns the current index
+     */
+    public getExecutionIndex(): number {
+        return this._currentIndex;
+    }
+
+    /**
+     * Gets the current loop index in the current flow
+     * @returns the current loop index
+     */
+    public getExecutionLoopIndex(): number {
+        return this._currentIndex;
+    }
+
+    /**
+     * Gets the current face index in the current flow
+     * @returns the current face index
+     */
+    public getExecutionFaceIndex(): number {
+        return 0;
+    }
 
     /**
      * Creates a new GeometryOptimizeBlock
@@ -33,6 +65,7 @@ export class GeometryOptimizeBlock extends NodeGeometryBlock {
         super(name);
 
         this.registerInput("geometry", NodeGeometryBlockConnectionPointTypes.Geometry);
+        this.registerInput("selector", NodeGeometryBlockConnectionPointTypes.Int, true);
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.Geometry);
     }
 
@@ -52,6 +85,13 @@ export class GeometryOptimizeBlock extends NodeGeometryBlock {
     }
 
     /**
+     * Gets the selector component
+     */
+    public get selector(): NodeGeometryConnectionPoint {
+        return this._inputs[1];
+    }
+
+    /**
      * Gets the output component
      */
     public get output(): NodeGeometryConnectionPoint {
@@ -66,8 +106,20 @@ export class GeometryOptimizeBlock extends NodeGeometryBlock {
             const vertexData = this.geometry.getConnectedValue(state);
             const newPositions: FloatArray = [];
             const newIndicesMap: { [key: number]: number } = {};
+            state.pushExecutionContext(this);
+            state.pushGeometryContext(vertexData);
 
+            // Optimize positions
             for (let index = 0; index < vertexData.positions.length; index += 3) {
+                this._currentIndex = index / 3;
+
+                if (this.selector.isConnected) {
+                    const selector = this.selector.getConnectedValue(state);
+                    if (!selector) {
+                        continue;
+                    }
+                }
+
                 const x = vertexData.positions[index];
                 const y = vertexData.positions[index + 1];
                 const z = vertexData.positions[index + 2];
@@ -76,9 +128,9 @@ export class GeometryOptimizeBlock extends NodeGeometryBlock {
                 let found = false;
                 for (let checkIndex = 0; checkIndex < newPositions.length; checkIndex += 3) {
                     if (
-                        Scalar.WithinEpsilon(x, newPositions[checkIndex], this.epsilon) &&
-                        Scalar.WithinEpsilon(y, newPositions[checkIndex + 1], this.epsilon) &&
-                        Scalar.WithinEpsilon(z, newPositions[checkIndex + 2], this.epsilon)
+                        WithinEpsilon(x, newPositions[checkIndex], this.epsilon) &&
+                        WithinEpsilon(y, newPositions[checkIndex + 1], this.epsilon) &&
+                        WithinEpsilon(z, newPositions[checkIndex + 2], this.epsilon)
                     ) {
                         newIndicesMap[index / 3] = checkIndex / 3;
                         found = true;
@@ -93,10 +145,54 @@ export class GeometryOptimizeBlock extends NodeGeometryBlock {
             }
             const newVertexData = new VertexData();
             newVertexData.positions = newPositions;
-            newVertexData.indices = vertexData.indices.map((index: number) => newIndicesMap[index]);
+            const indices: number[] = vertexData.indices.map((index: number) => newIndicesMap[index]);
+            const newIndices: number[] = [];
+
+            if (this.optimizeFaces) {
+                // Optimize indices
+                for (let index = 0; index < indices.length; index += 3) {
+                    const a = indices[index];
+                    const b = indices[index + 1];
+                    const c = indices[index + 2];
+
+                    if (a === b || b == c || c === a) {
+                        continue;
+                    }
+
+                    // check if we already have it
+                    let found = false;
+                    for (let checkIndex = 0; checkIndex < newIndices.length; checkIndex += 3) {
+                        if (a === newIndices[checkIndex] && b === newIndices[checkIndex + 1] && c === newIndices[checkIndex + 2]) {
+                            found = true;
+                            continue;
+                        }
+
+                        if (a === newIndices[checkIndex + 1] && b === newIndices[checkIndex + 2] && c === newIndices[checkIndex]) {
+                            found = true;
+                            continue;
+                        }
+
+                        if (a === newIndices[checkIndex + 2] && b === newIndices[checkIndex] && c === newIndices[checkIndex + 1]) {
+                            found = true;
+                            continue;
+                        }
+                    }
+
+                    if (!found) {
+                        newIndices.push(a, b, c);
+                    }
+                }
+
+                newVertexData.indices = newIndices;
+            } else {
+                newVertexData.indices = indices;
+            }
 
             return newVertexData;
         };
+
+        state.restoreGeometryContext();
+        state.restoreExecutionContext();
 
         if (this.evaluateContext) {
             this.output._storedFunction = func;
@@ -109,6 +205,7 @@ export class GeometryOptimizeBlock extends NodeGeometryBlock {
     protected override _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.evaluateContext = ${this.evaluateContext ? "true" : "false"};\n`;
         codeString += `${this._codeVariableName}.epsilon = ${this.epsilon};\n`;
+        codeString += `${this._codeVariableName}.optimizeFaces = ${this.optimizeFaces ? "true" : "false"};\n`;
         return codeString;
     }
 
@@ -121,6 +218,7 @@ export class GeometryOptimizeBlock extends NodeGeometryBlock {
 
         serializationObject.evaluateContext = this.evaluateContext;
         serializationObject.epsilon = this.epsilon;
+        serializationObject.optimizeFaces = this.optimizeFaces;
 
         return serializationObject;
     }
@@ -130,6 +228,7 @@ export class GeometryOptimizeBlock extends NodeGeometryBlock {
 
         this.evaluateContext = serializationObject.evaluateContext;
         this.epsilon = serializationObject.epsilon;
+        this.optimizeFaces = serializationObject.optimizeFaces;
     }
 }
 

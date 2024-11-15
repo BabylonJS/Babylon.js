@@ -1,7 +1,7 @@
 import { DeepCopier } from "../../Misc/deepCopier";
 import type { Matrix } from "../../Maths/math.vector";
 import { Vector3, TmpVectors } from "../../Maths/math.vector";
-import { Scalar } from "../../Maths/math.scalar";
+import { RandomRange } from "../../Maths/math.scalar.functions";
 import type { Particle } from "../../Particles/particle";
 import type { IParticleEmitterType } from "./IParticleEmitterType";
 import type { IndicesArray, Nullable, FloatArray } from "../../types";
@@ -79,9 +79,9 @@ export class MeshParticleEmitter implements IParticleEmitterType {
             return;
         }
 
-        const randX = Scalar.RandomRange(this.direction1.x, this.direction2.x);
-        const randY = Scalar.RandomRange(this.direction1.y, this.direction2.y);
-        const randZ = Scalar.RandomRange(this.direction1.z, this.direction2.z);
+        const randX = RandomRange(this.direction1.x, this.direction2.x);
+        const randY = RandomRange(this.direction1.y, this.direction2.y);
+        const randZ = RandomRange(this.direction1.z, this.direction2.z);
 
         if (isLocal) {
             directionToUpdate.copyFromFloats(randX, randY, randZ);

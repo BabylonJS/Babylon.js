@@ -37,9 +37,15 @@ export class IblShadowsRenderPipelinePropertyGridComponent extends React.Compone
                 />
                 <LineContainerComponent title="Voxel Shadows" selection={this.props.globalState}>
                     <ButtonLineComponent
-                        label="Revoxelize"
+                        label="Update Scene Bounds"
                         onClick={() => {
                             this.props.renderPipeline.updateSceneBounds();
+                        }}
+                    />
+                    <ButtonLineComponent
+                        label="Revoxelize"
+                        onClick={() => {
+                            this.props.renderPipeline.updateVoxelization();
                         }}
                     />
                     <ButtonLineComponent

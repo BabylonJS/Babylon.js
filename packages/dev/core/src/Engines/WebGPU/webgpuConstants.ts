@@ -10,14 +10,19 @@ export const enum FeatureName {
     DepthClipControl = "depth-clip-control",
     Depth32FloatStencil8 = "depth32float-stencil8",
     TextureCompressionBC = "texture-compression-bc",
+    TextureCompressionBCSliced3D = "texture-compression-bc-sliced-3d",
     TextureCompressionETC2 = "texture-compression-etc2",
     TextureCompressionASTC = "texture-compression-astc",
+    TextureCompressionASTCSliced3D = "texture-compression-astc-sliced-3d",
     TimestampQuery = "timestamp-query",
     IndirectFirstInstance = "indirect-first-instance",
     ShaderF16 = "shader-f16",
     RG11B10UFloatRenderable = "rg11b10ufloat-renderable",
     BGRA8UnormStorage = "bgra8unorm-storage",
     Float32Filterable = "float32-filterable",
+    Float32Blendable = "float32-blendable",
+    ClipDistances = "clip-distances",
+    DualSourceBlending = "dual-source-blending",
 }
 
 /** @internal */
@@ -337,6 +342,10 @@ export const enum BlendFactor {
     SrcAlphaSaturated = "src-alpha-saturated",
     Constant = "constant",
     OneMinusConstant = "one-minus-constant",
+    Src1 = "src1",
+    OneMinusSrc1 = "one-minus-src1",
+    Src1Alpha = "src1-alpha",
+    OneMinusSrc1Alpha = "one-minus-src1-alpha",
 }
 
 /** @internal */
@@ -441,6 +450,12 @@ export const enum QueryType {
 export const enum CanvasAlphaMode {
     Opaque = "opaque",
     Premultiplied = "premultiplied",
+}
+
+/** @internal */
+export const enum CanvasToneMappingMode {
+    Standard = "standard",
+    Extended = "extended",
 }
 
 /** @internal */

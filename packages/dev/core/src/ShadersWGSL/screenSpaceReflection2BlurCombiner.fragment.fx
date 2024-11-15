@@ -22,8 +22,12 @@ varying vUV: vec2f;
 
     var normalSampler: texture_2d<f32>;
     var depthSampler: texture_2d<f32>;
-#endif
 
+    #ifdef SSRAYTRACE_SCREENSPACE_DEPTH
+        uniform nearPlaneZ: f32;
+        uniform farPlaneZ: f32;
+    #endif
+#endif
 
 @fragment
 fn main(input: FragmentInputs) -> FragmentOutputs {
@@ -51,6 +55,9 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
     var csNormal: vec3f = textureLoad(normalSampler, vec2<i32>(input.vUV * texSize), 0).xyz;
     var depth: f32 = textureLoad(depthSampler, vec2<i32>(input.vUV * texSize), 0).r;
+    #ifdef SSRAYTRACE_SCREENSPACE_DEPTH
+        depth = linearizeDepth(depth, uniforms.nearPlaneZ, uniforms.farPlaneZ);
+    #endif
     var csPosition: vec3f = computeViewPosFromUVDepth(input.vUV, depth, uniforms.projection, uniforms.invProjectionMatrix);
     var csViewDirection: vec3f = normalize(csPosition);
 

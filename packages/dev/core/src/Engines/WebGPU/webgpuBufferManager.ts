@@ -3,8 +3,8 @@ import type { DataBuffer } from "../../Buffers/dataBuffer";
 import { WebGPUDataBuffer } from "../../Meshes/WebGPU/webgpuDataBuffer";
 import { FromHalfFloat } from "../../Misc/textureTools";
 import type { Nullable } from "../../types";
+import { allocateAndCopyTypedBuffer } from "../abstractEngine.functions";
 import { Constants } from "../constants";
-import { allocateAndCopyTypedBuffer } from "../Extensions/engine.readTexture";
 import type { WebGPUEngine } from "../webgpuEngine";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import * as WebGPUConstants from "./webgpuConstants";
@@ -53,8 +53,9 @@ export class WebGPUBufferManager {
 
     public createBuffer(viewOrSize: ArrayBufferView | number, flags: GPUBufferUsageFlags, label?: string): WebGPUDataBuffer {
         const isView = (viewOrSize as ArrayBufferView).byteLength !== undefined;
-        const buffer = this.createRawBuffer(viewOrSize, flags, undefined, label);
-        const dataBuffer = new WebGPUDataBuffer(buffer);
+        const dataBuffer = new WebGPUDataBuffer();
+        const labelId = "DataBufferUniqueId=" + dataBuffer.uniqueId;
+        dataBuffer.buffer = this.createRawBuffer(viewOrSize, flags, undefined, label ? labelId + "-" + label : labelId);
         dataBuffer.references = 1;
         dataBuffer.capacity = isView ? (viewOrSize as ArrayBufferView).byteLength : (viewOrSize as number);
         dataBuffer.engineId = this._engine.uniqueId;

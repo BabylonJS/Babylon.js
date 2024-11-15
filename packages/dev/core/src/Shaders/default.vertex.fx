@@ -100,14 +100,10 @@ void main(void) {
 
 #include<instancesVertex>
 
-#if defined(PREPASS) &&                                                        \
-    (defined(PREPASS_VELOCITY) && !defined(BONES_VELOCITY_ENABLED) ||          \
-     defined(PREPASS_VELOCITY_LINEAR))
-        // Compute velocity before bones computation
-        vCurrentPosition =
-            viewProjection * finalWorld * vec4(positionUpdated, 1.0);
-        vPreviousPosition = previousViewProjection * finalPreviousWorld *
-                            vec4(positionUpdated, 1.0);
+#if defined(PREPASS) && ((defined(PREPASS_VELOCITY) || defined(PREPASS_VELOCITY_LINEAR)) && !defined(BONES_VELOCITY_ENABLED)
+    // Compute velocity before bones computation
+    vCurrentPosition = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
+    vPreviousPosition = previousViewProjection * finalPreviousWorld * vec4(positionUpdated, 1.0);
 #endif
 
 #include<bonesVertex>
@@ -144,7 +140,9 @@ void main(void) {
 
 	vPositionW = vec3(worldPos);
 
-#include<prePassVertex>
+#ifdef PREPASS
+    #include<prePassVertex>
+#endif
 
 #if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
 	vDirectionW = normalize(vec3(finalWorld * vec4(positionUpdated, 0.0)));

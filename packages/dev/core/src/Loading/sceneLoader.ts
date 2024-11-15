@@ -22,6 +22,7 @@ import { RuntimeError, ErrorCodes } from "../Misc/error";
 import type { ISpriteManager } from "../Sprites/spriteManager";
 import { RandomGUID } from "../Misc/guid";
 import { AbstractEngine } from "../Engines/abstractEngine";
+import { _FetchAsync } from "core/Misc/webRequest.fetch";
 
 /**
  * Type used for the success callback of ImportMesh
@@ -110,25 +111,24 @@ export interface ISceneLoaderPluginExtensions {
      * Defines the list of supported extensions
      */
     readonly [extension: string]: {
-        isBinary: boolean;
+        readonly isBinary: boolean;
+        readonly mimeType?: string;
     };
 }
 
 /**
- * Interface used by SceneLoader plugin factory
+ * Metadata for a SceneLoader plugin that must also be provided by a plugin factory
  */
-export interface ISceneLoaderPluginFactory {
+export interface ISceneLoaderPluginMetadata {
     /**
-     * Defines the name of the factory
+     * The friendly name of the plugin.
      */
     readonly name: string;
 
     /**
-     * Function called to create a new plugin
-     * @param options plugin options that were passed to the SceneLoader operation
-     * @returns the new plugin
+     * The file extensions supported by the plugin.
      */
-    createPlugin(options: SceneLoaderPluginOptions): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
+    readonly extensions: string | ISceneLoaderPluginExtensions;
 
     /**
      * The callback that returns true if the data can be directly loaded.
@@ -139,19 +139,21 @@ export interface ISceneLoaderPluginFactory {
 }
 
 /**
+ * Interface used by SceneLoader plugin factory
+ */
+export interface ISceneLoaderPluginFactory extends ISceneLoaderPluginMetadata {
+    /**
+     * Function called to create a new plugin
+     * @param options plugin options that were passed to the SceneLoader operation
+     * @returns the new plugin
+     */
+    createPlugin(options: SceneLoaderPluginOptions): ISceneLoaderPlugin | ISceneLoaderPluginAsync | Promise<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+}
+
+/**
  * Interface used to define the base of ISceneLoaderPlugin and ISceneLoaderPluginAsync
  */
-export interface ISceneLoaderPluginBase {
-    /**
-     * The friendly name of this plugin.
-     */
-    readonly name: string;
-
-    /**
-     * The file extensions supported by this plugin.
-     */
-    readonly extensions: string | ISceneLoaderPluginExtensions;
-
+export interface ISceneLoaderPluginBase extends ISceneLoaderPluginMetadata {
     /**
      * The callback called when loading from a url.
      * @param scene scene loading this url
@@ -174,13 +176,6 @@ export interface ISceneLoaderPluginBase {
         onError?: (request?: WebRequest, exception?: LoadFileError) => void,
         name?: string
     ): Nullable<IFileRequest>;
-
-    /**
-     * The callback that returns true if the data can be directly loaded.
-     * @param data string containing the file data
-     * @returns if the data can be loaded directly
-     */
-    canDirectLoad?(data: string): boolean;
 
     /**
      * The callback that returns the data to pass to the plugin if the data can be directly loaded.
@@ -335,11 +330,16 @@ interface IRegisteredPlugin {
     /**
      * Defines the plugin to use
      */
-    plugin: (ISceneLoaderPlugin | ISceneLoaderPluginAsync) & Partial<ISceneLoaderPluginFactory> & Partial<ISceneLoaderPluginInternal>;
+    plugin: ((ISceneLoaderPlugin | ISceneLoaderPluginAsync) & Partial<ISceneLoaderPluginInternal>) | ISceneLoaderPluginFactory;
     /**
      * Defines if the plugin supports binary data
      */
     isBinary: boolean;
+    mimeType?: string;
+}
+
+function isFactory(pluginOrFactory: IRegisteredPlugin["plugin"]): pluginOrFactory is ISceneLoaderPluginFactory {
+    return !!(pluginOrFactory as ISceneLoaderPluginFactory).createPlugin;
 }
 
 /**
@@ -481,11 +481,21 @@ const onPluginActivatedObservable = new Observable<ISceneLoaderPlugin | ISceneLo
 const registeredPlugins: { [extension: string]: IRegisteredPlugin } = {};
 let showingLoadingScreen = false;
 
-function getDefaultPlugin(): IRegisteredPlugin {
+function getDefaultPlugin(): IRegisteredPlugin | undefined {
     return registeredPlugins[".babylon"];
 }
 
-function getPluginForExtension(extension: string): IRegisteredPlugin {
+function getPluginForMimeType(mimeType: string): IRegisteredPlugin | undefined {
+    for (const registeredPluginKey in registeredPlugins) {
+        const registeredPlugin = registeredPlugins[registeredPluginKey];
+        if (registeredPlugin.mimeType === mimeType) {
+            return registeredPlugin;
+        }
+    }
+    return undefined;
+}
+
+function getPluginForExtension(extension: string, returnDefault: boolean): IRegisteredPlugin | undefined {
     const registeredPlugin = registeredPlugins[extension];
     if (registeredPlugin) {
         return registeredPlugin;
@@ -495,14 +505,14 @@ function getPluginForExtension(extension: string): IRegisteredPlugin {
             extension +
             " files. Trying to use .babylon default plugin. To load from a specific filetype (eg. gltf) see: https://doc.babylonjs.com/features/featuresDeepDive/importers/loadingFileTypes"
     );
-    return getDefaultPlugin();
+    return returnDefault ? getDefaultPlugin() : undefined;
 }
 
 function isPluginForExtensionAvailable(extension: string): boolean {
     return !!registeredPlugins[extension];
 }
 
-function getPluginForDirectLoad(data: string): IRegisteredPlugin {
+function getPluginForDirectLoad(data: string): IRegisteredPlugin | undefined {
     for (const extension in registeredPlugins) {
         const plugin = registeredPlugins[extension].plugin;
 
@@ -514,7 +524,7 @@ function getPluginForDirectLoad(data: string): IRegisteredPlugin {
     return getDefaultPlugin();
 }
 
-function getPluginForFilename(sceneFilename: string): IRegisteredPlugin {
+function getFilenameExtension(sceneFilename: string): string {
     const queryStringPosition = sceneFilename.indexOf("?");
 
     if (queryStringPosition !== -1) {
@@ -523,13 +533,12 @@ function getPluginForFilename(sceneFilename: string): IRegisteredPlugin {
 
     const dotPosition = sceneFilename.lastIndexOf(".");
 
-    const extension = sceneFilename.substring(dotPosition, sceneFilename.length).toLowerCase();
-    return getPluginForExtension(extension);
+    return sceneFilename.substring(dotPosition, sceneFilename.length).toLowerCase();
 }
 
 function getDirectLoad(sceneFilename: string): Nullable<string> {
-    if (sceneFilename.substr(0, 5) === "data:") {
-        return sceneFilename.substr(5);
+    if (sceneFilename.substring(0, 5) === "data:") {
+        return sceneFilename.substring(5);
     }
 
     return null;
@@ -548,7 +557,7 @@ function formatErrorMessage(fileInfo: IFileInfo, message?: string, exception?: a
     return errorMessage;
 }
 
-function loadData(
+async function loadDataAsync(
     fileInfo: IFileInfo,
     scene: Scene,
     onSuccess: (plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync, data: unknown, responseURL?: string) => void,
@@ -558,7 +567,7 @@ function loadData(
     pluginExtension: Nullable<string>,
     name: string,
     pluginOptions: PluginOptions
-): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
+): Promise<Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>> {
     const directLoad = getDirectLoad(fileInfo.url);
 
     if (fileInfo.rawData && !pluginExtension) {
@@ -566,7 +575,32 @@ function loadData(
         throw "When using ArrayBufferView to load data the file extension must be provided.";
     }
 
-    const registeredPlugin = pluginExtension ? getPluginForExtension(pluginExtension) : directLoad ? getPluginForDirectLoad(fileInfo.url) : getPluginForFilename(fileInfo.url);
+    const fileExtension = !directLoad && !pluginExtension ? getFilenameExtension(fileInfo.url) : "";
+
+    let registeredPlugin = pluginExtension
+        ? getPluginForExtension(pluginExtension, true)
+        : directLoad
+          ? getPluginForDirectLoad(fileInfo.url)
+          : getPluginForExtension(fileExtension, false);
+
+    if (!registeredPlugin && fileExtension) {
+        if (fileInfo.url && !fileInfo.url.startsWith("blob:")) {
+            // Fetching head content to get the mime type
+            const response = await _FetchAsync(fileInfo.url, { method: "HEAD", responseHeaders: ["Content-Type"] });
+            const mimeType = response.headerValues ? response.headerValues["Content-Type"] : "";
+            if (mimeType) {
+                registeredPlugin = getPluginForMimeType(mimeType);
+            }
+        }
+
+        if (!registeredPlugin) {
+            registeredPlugin = getDefaultPlugin();
+        }
+    }
+
+    if (!registeredPlugin) {
+        throw new Error(`No plugin or fallback for ${pluginExtension ?? fileInfo.url}`);
+    }
 
     if (pluginOptions?.[registeredPlugin.plugin.name]?.enabled === false) {
         throw new Error(`The '${registeredPlugin.plugin.name}' plugin is disabled via the loader options passed to the loading operation.`);
@@ -577,108 +611,128 @@ function loadData(
         throw "Loading from ArrayBufferView can not be used with plugins that don't support binary loading.";
     }
 
-    // For plugin factories, the plugin is instantiated on each SceneLoader operation. This makes options handling
-    // much simpler as we can just pass the options to the factory, rather than passing options through to every possible
-    // plugin call. Given this, options are only supported for plugins that provide a factory function.
-    const plugin: IRegisteredPlugin["plugin"] = registeredPlugin.plugin.createPlugin?.(pluginOptions ?? {}) ?? registeredPlugin.plugin;
-    if (!plugin) {
-        // eslint-disable-next-line no-throw-literal
-        throw `The loader plugin corresponding to the '${pluginExtension}' file type has not been found. If using es6, please import the plugin you wish to use before.`;
-    }
-
-    onPluginActivatedObservable.notifyObservers(plugin);
-
-    // Check if we have a direct load url. If the plugin is registered to handle
-    // it or it's not a base64 data url, then pass it through the direct load path.
-    if (directLoad && ((plugin.canDirectLoad && plugin.canDirectLoad(fileInfo.url)) || !IsBase64DataUrl(fileInfo.url))) {
-        if (plugin.directLoad) {
-            const result = plugin.directLoad(scene, directLoad);
-            if (result instanceof Promise) {
-                result
-                    .then((data: unknown) => {
-                        onSuccess(plugin, data);
-                    })
-                    .catch((error: any) => {
-                        onError("Error in directLoad of _loadData: " + error, error);
-                    });
+    const getPluginInstance = (callback: (plugin: (ISceneLoaderPlugin | ISceneLoaderPluginAsync) & Partial<ISceneLoaderPluginInternal>) => void) => {
+        // For plugin factories, the plugin is instantiated on each SceneLoader operation. This makes options handling
+        // much simpler as we can just pass the options to the factory, rather than passing options through to every possible
+        // plugin call. Given this, options are only supported for plugins that provide a factory function.
+        if (isFactory(registeredPlugin!.plugin)) {
+            const pluginFactory = registeredPlugin!.plugin;
+            const partialPlugin = pluginFactory.createPlugin(pluginOptions ?? {});
+            if (partialPlugin instanceof Promise) {
+                partialPlugin.then(callback).catch((error) => {
+                    onError("Error instantiating plugin.", error);
+                });
+                // When async factories are used, the plugin instance cannot be returned synchronously.
+                // In this case, the legacy loader functions will return null.
+                return null;
             } else {
-                onSuccess(plugin, result);
+                callback(partialPlugin);
+                return partialPlugin;
             }
         } else {
-            onSuccess(plugin, directLoad);
+            callback(registeredPlugin!.plugin);
+            return registeredPlugin!.plugin;
         }
-        return plugin;
-    }
-
-    const useArrayBuffer = registeredPlugin.isBinary;
-
-    const dataCallback = (data: unknown, responseURL?: string) => {
-        if (scene.isDisposed) {
-            onError("Scene has been disposed");
-            return;
-        }
-
-        onSuccess(plugin, data, responseURL);
     };
 
-    let request: Nullable<IFileRequest> = null;
-    let pluginDisposed = false;
-    plugin.onDisposeObservable?.add(() => {
-        pluginDisposed = true;
-
-        if (request) {
-            request.abort();
-            request = null;
+    return getPluginInstance((plugin) => {
+        if (!plugin) {
+            // eslint-disable-next-line no-throw-literal
+            throw `The loader plugin corresponding to the '${pluginExtension}' file type has not been found. If using es6, please import the plugin you wish to use before.`;
         }
 
-        onDispose();
-    });
+        onPluginActivatedObservable.notifyObservers(plugin);
 
-    const manifestChecked = () => {
-        if (pluginDisposed) {
+        // Check if we have a direct load url. If the plugin is registered to handle
+        // it or it's not a base64 data url, then pass it through the direct load path.
+        if (directLoad && ((plugin.canDirectLoad && plugin.canDirectLoad(fileInfo.url)) || !IsBase64DataUrl(fileInfo.url))) {
+            if (plugin.directLoad) {
+                const result = plugin.directLoad(scene, directLoad);
+                if (result instanceof Promise) {
+                    result
+                        .then((data: unknown) => {
+                            onSuccess(plugin, data);
+                        })
+                        .catch((error: any) => {
+                            onError("Error in directLoad of _loadData: " + error, error);
+                        });
+                } else {
+                    onSuccess(plugin, result);
+                }
+            } else {
+                onSuccess(plugin, directLoad);
+            }
             return;
         }
 
-        const errorCallback = (request?: WebRequest, exception?: LoadFileError) => {
-            onError(request?.statusText, exception);
+        const useArrayBuffer = registeredPlugin!.isBinary;
+
+        const dataCallback = (data: unknown, responseURL?: string) => {
+            if (scene.isDisposed) {
+                onError("Scene has been disposed");
+                return;
+            }
+
+            onSuccess(plugin, data, responseURL);
         };
 
-        if (!plugin.loadFile && fileInfo.rawData) {
-            // eslint-disable-next-line no-throw-literal
-            throw "Plugin does not support loading ArrayBufferView.";
-        }
+        let request: Nullable<IFileRequest> = null;
+        let pluginDisposed = false;
+        plugin.onDisposeObservable?.add(() => {
+            pluginDisposed = true;
 
-        request = plugin.loadFile
-            ? plugin.loadFile(scene, fileInfo.rawData || fileInfo.file || fileInfo.url, fileInfo.rootUrl, dataCallback, onProgress, useArrayBuffer, errorCallback, name)
-            : scene._loadFile(fileInfo.file || fileInfo.url, dataCallback, onProgress, true, useArrayBuffer, errorCallback);
-    };
-
-    const engine = scene.getEngine();
-    let canUseOfflineSupport = engine.enableOfflineSupport;
-    if (canUseOfflineSupport) {
-        // Also check for exceptions
-        let exceptionFound = false;
-        for (const regex of scene.disableOfflineSupportExceptionRules) {
-            if (regex.test(fileInfo.url)) {
-                exceptionFound = true;
-                break;
+            if (request) {
+                request.abort();
+                request = null;
             }
+
+            onDispose();
+        });
+
+        const manifestChecked = () => {
+            if (pluginDisposed) {
+                return;
+            }
+
+            const errorCallback = (request?: WebRequest, exception?: LoadFileError) => {
+                onError(request?.statusText, exception);
+            };
+
+            if (!plugin.loadFile && fileInfo.rawData) {
+                // eslint-disable-next-line no-throw-literal
+                throw "Plugin does not support loading ArrayBufferView.";
+            }
+
+            request = plugin.loadFile
+                ? plugin.loadFile(scene, fileInfo.rawData || fileInfo.file || fileInfo.url, fileInfo.rootUrl, dataCallback, onProgress, useArrayBuffer, errorCallback, name)
+                : scene._loadFile(fileInfo.file || fileInfo.url, dataCallback, onProgress, true, useArrayBuffer, errorCallback);
+        };
+
+        const engine = scene.getEngine();
+        let canUseOfflineSupport = engine.enableOfflineSupport;
+        if (canUseOfflineSupport) {
+            // Also check for exceptions
+            let exceptionFound = false;
+            for (const regex of scene.disableOfflineSupportExceptionRules) {
+                if (regex.test(fileInfo.url)) {
+                    exceptionFound = true;
+                    break;
+                }
+            }
+
+            canUseOfflineSupport = !exceptionFound;
         }
 
-        canUseOfflineSupport = !exceptionFound;
-    }
-
-    if (canUseOfflineSupport && AbstractEngine.OfflineProviderFactory) {
-        // Checking if a manifest file has been set for this scene and if offline mode has been requested
-        scene.offlineProvider = AbstractEngine.OfflineProviderFactory(fileInfo.url, manifestChecked, engine.disableManifestCheck);
-    } else {
-        manifestChecked();
-    }
-
-    return plugin;
+        if (canUseOfflineSupport && AbstractEngine.OfflineProviderFactory) {
+            // Checking if a manifest file has been set for this scene and if offline mode has been requested
+            scene.offlineProvider = AbstractEngine.OfflineProviderFactory(fileInfo.url, manifestChecked, engine.disableManifestCheck);
+        } else {
+            manifestChecked();
+        }
+    });
 }
 
-function getFileInfo(rootUrl: string, sceneSource: SceneSource): Nullable<IFileInfo> {
+function _getFileInfo(rootUrl: string, sceneSource: SceneSource): Nullable<IFileInfo> {
     let url: string;
     let name: string;
     let file: Nullable<File> = null;
@@ -701,7 +755,7 @@ function getFileInfo(rootUrl: string, sceneSource: SceneSource): Nullable<IFileI
         name = "";
     } else if (rootUrl) {
         const filename = sceneSource;
-        if (filename.substr(0, 1) === "/") {
+        if (filename.substring(0, 1) === "/") {
             Tools.Error("Wrong sceneFilename parameter");
             return null;
         }
@@ -727,7 +781,7 @@ function getFileInfo(rootUrl: string, sceneSource: SceneSource): Nullable<IFileI
  * Adds a new plugin to the list of registered plugins
  * @param plugin defines the plugin to add
  */
-export function registerSceneLoaderPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void {
+export function registerSceneLoaderPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory): void {
     if (typeof plugin.extensions === "string") {
         const extension = plugin.extensions;
         registeredPlugins[extension.toLowerCase()] = {
@@ -740,12 +794,13 @@ export function registerSceneLoaderPlugin(plugin: ISceneLoaderPlugin | ISceneLoa
             registeredPlugins[extension.toLowerCase()] = {
                 plugin: plugin,
                 isBinary: extensions[extension].isBinary,
+                mimeType: extensions[extension].mimeType,
             };
         });
     }
 }
 
-function importMesh(
+async function importMeshAsync(
     meshNames: string | readonly string[] | null | undefined,
     rootUrl: string,
     sceneFilename: SceneSource = "",
@@ -756,13 +811,13 @@ function importMesh(
     pluginExtension: Nullable<string> = null,
     name = "",
     pluginOptions: PluginOptions = {}
-): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
+): Promise<Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>> {
     if (!scene) {
         Logger.Error("No scene available to import mesh to");
         return null;
     }
 
-    const fileInfo = getFileInfo(rootUrl, sceneFilename);
+    const fileInfo = _getFileInfo(rootUrl, sceneFilename);
     if (!fileInfo) {
         return null;
     }
@@ -811,7 +866,7 @@ function importMesh(
         scene.removePendingData(loadingToken);
     };
 
-    return loadData(
+    return await loadDataAsync(
         fileInfo,
         scene,
         (plugin, data, responseURL) => {
@@ -873,7 +928,7 @@ function importMeshAsyncCore(
     pluginOptions?: PluginOptions
 ): Promise<ISceneLoaderAsyncResult> {
     return new Promise((resolve, reject) => {
-        importMesh(
+        importMeshAsync(
             meshNames,
             rootUrl,
             sceneFilename,
@@ -911,13 +966,13 @@ function loadScene(
     pluginExtension: Nullable<string> = null,
     name = "",
     pluginOptions: PluginOptions = {}
-): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
+): void {
     if (!engine) {
         Tools.Error("No engine available");
-        return null;
+        return;
     }
 
-    return append(rootUrl, sceneFilename, new Scene(engine), onSuccess, onProgress, onError, pluginExtension, name, pluginOptions);
+    appendAsync(rootUrl, sceneFilename, new Scene(engine), onSuccess, onProgress, onError, pluginExtension, name, pluginOptions);
 }
 
 /**
@@ -961,7 +1016,7 @@ function loadSceneAsyncCore(
     });
 }
 
-function append(
+async function appendAsync(
     rootUrl: string,
     sceneFilename: SceneSource = "",
     scene: Nullable<Scene> = EngineStore.LastCreatedScene,
@@ -971,13 +1026,13 @@ function append(
     pluginExtension: Nullable<string> = null,
     name = "",
     pluginOptions: PluginOptions = {}
-): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
+): Promise<Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>> {
     if (!scene) {
         Logger.Error("No scene available to append to");
         return null;
     }
 
-    const fileInfo = getFileInfo(rootUrl, sceneFilename);
+    const fileInfo = _getFileInfo(rootUrl, sceneFilename);
     if (!fileInfo) {
         return null;
     }
@@ -1033,7 +1088,7 @@ function append(
         scene.removePendingData(loadingToken);
     };
 
-    return loadData(
+    return await loadDataAsync(
         fileInfo,
         scene,
         (plugin, data) => {
@@ -1089,7 +1144,7 @@ function appendSceneAsyncCore(
     pluginOptions?: PluginOptions
 ): Promise<Scene> {
     return new Promise((resolve, reject) => {
-        append(
+        appendAsync(
             rootUrl,
             sceneFilename,
             scene,
@@ -1107,7 +1162,7 @@ function appendSceneAsyncCore(
     });
 }
 
-function loadAssetContainer(
+async function loadAssetContainerCoreAsync(
     rootUrl: string,
     sceneFilename: SceneSource = "",
     scene: Nullable<Scene> = EngineStore.LastCreatedScene,
@@ -1117,13 +1172,13 @@ function loadAssetContainer(
     pluginExtension: Nullable<string> = null,
     name = "",
     pluginOptions: PluginOptions = {}
-): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
+): Promise<Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>> {
     if (!scene) {
         Logger.Error("No scene available to load asset container to");
         return null;
     }
 
-    const fileInfo = getFileInfo(rootUrl, sceneFilename);
+    const fileInfo = _getFileInfo(rootUrl, sceneFilename);
     if (!fileInfo) {
         return null;
     }
@@ -1170,7 +1225,7 @@ function loadAssetContainer(
         scene.removePendingData(loadingToken);
     };
 
-    return loadData(
+    return await loadDataAsync(
         fileInfo,
         scene,
         (plugin, data) => {
@@ -1218,10 +1273,10 @@ function loadAssetContainer(
  */
 export function loadAssetContainerAsync(source: SceneSource, scene: Scene, options?: LoadAssetContainerOptions): Promise<AssetContainer> {
     const { rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = options ?? {};
-    return loadAssetContainerAsyncCore(rootUrl, source, scene, onProgress, pluginExtension, name, pluginOptions);
+    return internalLoadAssetContainerAsync(rootUrl, source, scene, onProgress, pluginExtension, name, pluginOptions);
 }
 
-function loadAssetContainerAsyncCore(
+function internalLoadAssetContainerAsync(
     rootUrl: string,
     sceneFilename?: SceneSource,
     scene?: Nullable<Scene>,
@@ -1231,7 +1286,7 @@ function loadAssetContainerAsyncCore(
     pluginOptions?: PluginOptions
 ): Promise<AssetContainer> {
     return new Promise((resolve, reject) => {
-        loadAssetContainer(
+        loadAssetContainerCoreAsync(
             rootUrl,
             sceneFilename,
             scene,
@@ -1324,7 +1379,7 @@ function importAnimations(
         }
     };
 
-    loadAssetContainer(rootUrl, sceneFilename, scene, onAssetContainerLoaded, onProgress, onError, pluginExtension, name, pluginOptions);
+    loadAssetContainerCoreAsync(rootUrl, sceneFilename, scene, onAssetContainerLoaded, onProgress, onError, pluginExtension, name, pluginOptions);
 }
 
 /**
@@ -1456,7 +1511,7 @@ export class SceneLoader {
      * Gets the default plugin (used to load Babylon files)
      * @returns the .babylon plugin
      */
-    public static GetDefaultPlugin(): IRegisteredPlugin {
+    public static GetDefaultPlugin(): IRegisteredPlugin | undefined {
         return getDefaultPlugin();
     }
 
@@ -1467,8 +1522,8 @@ export class SceneLoader {
      * @param extension defines the extension to load
      * @returns a plugin or null if none works
      */
-    public static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory {
-        return getPluginForExtension(extension).plugin;
+    public static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory | undefined {
+        return getPluginForExtension(extension, true)?.plugin;
     }
 
     /**
@@ -1484,7 +1539,7 @@ export class SceneLoader {
      * Adds a new plugin to the list of registered plugins
      * @param plugin defines the plugin to add
      */
-    public static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void {
+    public static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory): void {
         registerSceneLoaderPlugin(plugin);
     }
 
@@ -1499,7 +1554,7 @@ export class SceneLoader {
      * @param onError a callback with the scene, a message, and possibly an exception when import fails
      * @param pluginExtension the extension used to determine the plugin
      * @param name defines the name of the file, if the data is binary
-     * @returns The loaded plugin
+     * @deprecated Please use ImportMeshAsync instead
      */
     public static ImportMesh(
         meshNames: string | readonly string[] | null | undefined,
@@ -1511,8 +1566,8 @@ export class SceneLoader {
         onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>,
         pluginExtension?: Nullable<string>,
         name?: string
-    ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
-        return importMesh(meshNames, rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name);
+    ): void {
+        importMeshAsync(meshNames, rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name);
     }
 
     /**
@@ -1548,7 +1603,7 @@ export class SceneLoader {
      * @param onError a callback with the scene, a message, and possibly an exception when import fails
      * @param pluginExtension the extension used to determine the plugin
      * @param name defines the filename, if the data is binary
-     * @returns The loaded plugin
+     * @deprecated Please use LoadAsync instead
      */
     public static Load(
         rootUrl: string,
@@ -1559,8 +1614,8 @@ export class SceneLoader {
         onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>,
         pluginExtension?: Nullable<string>,
         name?: string
-    ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
-        return loadScene(rootUrl, sceneFilename, engine, onSuccess, onProgress, onError, pluginExtension, name);
+    ) {
+        loadScene(rootUrl, sceneFilename, engine, onSuccess, onProgress, onError, pluginExtension, name);
     }
 
     /**
@@ -1594,7 +1649,7 @@ export class SceneLoader {
      * @param onError a callback with the scene, a message, and possibly an exception when import fails
      * @param pluginExtension the extension used to determine the plugin
      * @param name defines the name of the file, if the data is binary
-     * @returns The loaded plugin
+     * @deprecated Please use AppendAsync instead
      */
     public static Append(
         rootUrl: string,
@@ -1605,8 +1660,8 @@ export class SceneLoader {
         onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>,
         pluginExtension?: Nullable<string>,
         name?: string
-    ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
-        return append(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name);
+    ) {
+        appendAsync(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name);
     }
 
     /**
@@ -1640,7 +1695,7 @@ export class SceneLoader {
      * @param onError a callback with the scene, a message, and possibly an exception when import fails
      * @param pluginExtension the extension used to determine the plugin
      * @param name defines the filename, if the data is binary
-     * @returns The loaded plugin
+     * @deprecated Please use LoadAssetContainerAsync instead
      */
     public static LoadAssetContainer(
         rootUrl: string,
@@ -1651,8 +1706,8 @@ export class SceneLoader {
         onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>,
         pluginExtension?: Nullable<string>,
         name?: string
-    ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
-        return loadAssetContainer(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name);
+    ) {
+        loadAssetContainerCoreAsync(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name);
     }
 
     /**
@@ -1673,7 +1728,7 @@ export class SceneLoader {
         pluginExtension?: Nullable<string>,
         name?: string
     ): Promise<AssetContainer> {
-        return loadAssetContainerAsyncCore(rootUrl, sceneFilename, scene, onProgress, pluginExtension, name);
+        return internalLoadAssetContainerAsync(rootUrl, sceneFilename, scene, onProgress, pluginExtension, name);
     }
 
     /**
@@ -1689,6 +1744,7 @@ export class SceneLoader {
      * @param onError a callback with the scene, a message, and possibly an exception when import fails
      * @param pluginExtension the extension used to determine the plugin
      * @param name defines the filename, if the data is binary
+     * @deprecated Please use ImportAnimationsAsync instead
      */
     public static ImportAnimations(
         rootUrl: string,

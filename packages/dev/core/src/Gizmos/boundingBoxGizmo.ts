@@ -4,7 +4,7 @@ import { Logger } from "../Misc/logger";
 import type { Nullable } from "../types";
 import type { PointerInfo } from "../Events/pointerEvents";
 import type { Scene } from "../scene";
-import { Quaternion, Matrix, Vector3 } from "../Maths/math.vector";
+import { Quaternion, Matrix, Vector3, TmpVectors } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { CreateBox } from "../Meshes/Builders/boxBuilder";
@@ -108,6 +108,14 @@ export interface IBoundingBoxGizmo extends IGizmo {
 }
 
 /**
+ * Dragging operation in observable
+ */
+export const enum DragOperation {
+    Rotation,
+    Scaling,
+}
+
+/**
  * Bounding box gizmo
  */
 export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
@@ -130,6 +138,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
     private _tmpRotationMatrix = new Matrix();
     private _incrementalStartupValue = Vector3.Zero();
     private _incrementalAnchorStartupValue = Vector3.Zero();
+
     /**
      * If child meshes should be ignored when calculating the bounding box. This should be set to true to avoid perf hits with heavily nested meshes (Default: false)
      */
@@ -422,7 +431,10 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
         this._rotateAnchorsParent = new TransformNode("", gizmoLayer.utilityLayerScene);
         this._rotateAnchorsParent.rotationQuaternion = new Quaternion();
         for (let i = 0; i < 12; i++) {
-            const anchor = CreateBox("", { width: 0.4, height: 0.4, depth: 1.6 }, gizmoLayer.utilityLayerScene);
+            const anchor = CreateBox("", { width: i < 4 || i >= 8 ? 1.6 : 0.4, height: i >= 4 && i < 8 ? 1.6 : 0.4, depth: 0.4 }, gizmoLayer.utilityLayerScene);
+            anchor.rotation.x = i < 4 || i >= 8 ? Math.PI * 0.25 : 0;
+            anchor.rotation.y = i >= 4 && i < 8 ? Math.PI * 0.25 : 0;
+            anchor.bakeTransformIntoVertices(anchor.computeWorldMatrix(true));
             anchor.rotationQuaternion = new Quaternion();
             anchor.material = this._coloredMaterial;
             anchor.isNearGrabbable = true;
@@ -440,8 +452,13 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                 totalTurnAmountOfDrag = 0;
                 previousProjectDist = 0;
             });
+            const computeAxis = function () {
+                const dragAxisIndex = Math.floor(i / 4);
+                TmpVectors.Vector3[0].set(dragAxisIndex == 0 ? 1 : 0, dragAxisIndex == 1 ? 1 : 0, dragAxisIndex == 2 ? 1 : 0);
+                return TmpVectors.Vector3[0];
+            };
             rotateAnchorsDragBehavior.onDragObservable.add((event) => {
-                this.onRotationSphereDragObservable.notifyObservers({});
+                this.onRotationSphereDragObservable.notifyObservers({ dragOperation: DragOperation.Rotation, dragAxis: computeAxis().clone() });
                 if (this.attachedMesh) {
                     const originalParent = this.attachedMesh.parent;
                     if (originalParent && (originalParent as Mesh).scaling && (originalParent as Mesh).scaling.isNonUniformWithinEpsilon(0.001)) {
@@ -519,12 +536,12 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
 
             // Selection/deselection
             rotateAnchorsDragBehavior.onDragStartObservable.add(() => {
-                this.onDragStartObservable.notifyObservers({});
+                this.onDragStartObservable.notifyObservers({ dragOperation: DragOperation.Rotation, dragAxis: computeAxis().clone() });
                 this._dragging = true;
                 this._selectNode(anchor);
             });
             rotateAnchorsDragBehavior.onDragEndObservable.add((event) => {
-                this.onRotationSphereDragEndObservable.notifyObservers({});
+                this.onRotationSphereDragEndObservable.notifyObservers({ dragOperation: DragOperation.Rotation, dragAxis: computeAxis().clone() });
                 this._dragging = false;
                 this._selectNode(null);
                 this._updateDummy();
@@ -558,8 +575,14 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                     box._internalMetadata = zeroAxisCount === 2; // None homogenous scale handle
                     box.isNearGrabbable = true;
 
+                    // box is oriented so, transform world desired axis to local one
+                    TmpVectors.Vector3[0].set(i - 1, j - 1, k - 1);
+                    TmpVectors.Vector3[0].normalize();
+                    box.computeWorldMatrix(true).invertToRef(TmpVectors.Matrix[0]);
+                    const dragAxis = Vector3.TransformCoordinates(TmpVectors.Vector3[0], TmpVectors.Matrix[0]);
+                    dragAxis.normalize();
+
                     // Dragging logic
-                    const dragAxis = new Vector3(i - 1, j - 1, k - 1).normalize();
                     const scaleBoxesDragBehavior = new PointerDragBehavior({ dragAxis: dragAxis });
                     scaleBoxesDragBehavior.updateDragPlane = false;
                     scaleBoxesDragBehavior.moveAttached = false;
@@ -567,7 +590,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                     let previousScale = 0;
                     box.addBehavior(scaleBoxesDragBehavior);
                     scaleBoxesDragBehavior.onDragObservable.add((event) => {
-                        this.onScaleBoxDragObservable.notifyObservers({});
+                        this.onScaleBoxDragObservable.notifyObservers({ dragOperation: DragOperation.Scaling, dragAxis: new Vector3(i - 1, j - 1, k - 1) });
                         if (this.attachedMesh) {
                             const originalParent = this.attachedMesh.parent;
                             if (originalParent && (originalParent as Mesh).scaling && (originalParent as Mesh).scaling.isNonUniformWithinEpsilon(0.001)) {
@@ -648,7 +671,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
 
                     // Selection/deselection
                     scaleBoxesDragBehavior.onDragStartObservable.add(() => {
-                        this.onDragStartObservable.notifyObservers({});
+                        this.onDragStartObservable.notifyObservers({ dragOperation: DragOperation.Scaling, dragAxis: new Vector3(i - 1, j - 1, k - 1) });
                         this._dragging = true;
                         this._selectNode(box);
                         totalRelativeDragDistance = 0;
@@ -657,7 +680,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                         this._incrementalAnchorStartupValue.copyFrom(this._anchorMesh!.scaling);
                     });
                     scaleBoxesDragBehavior.onDragEndObservable.add((event) => {
-                        this.onScaleBoxDragEndObservable.notifyObservers({});
+                        this.onScaleBoxDragEndObservable.notifyObservers({ dragOperation: DragOperation.Scaling, dragAxis: new Vector3(i - 1, j - 1, k - 1) });
                         this._dragging = false;
                         this._selectNode(null);
                         this._updateDummy();
@@ -842,20 +865,25 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
             for (let j = 0; j < 2; j++) {
                 for (let k = 0; k < 2; k++) {
                     const index = i * 4 + j * 2 + k;
+                    rotateAnchors[index].position.normalizeToRef(TmpVectors.Vector3[0]);
                     if (i == 0) {
                         rotateAnchors[index].position.set(0, this._boundingDimensions.y * (j - 0.5), this._boundingDimensions.z * (k - 0.5));
+                        TmpVectors.Vector3[1].set(1, 0, 0);
                     }
                     if (i == 1) {
                         rotateAnchors[index].position.set(this._boundingDimensions.x * (j - 0.5), 0, this._boundingDimensions.z * (k - 0.5));
+                        TmpVectors.Vector3[1].set(0, 1, 0);
                     }
                     if (i == 2) {
                         rotateAnchors[index].position.set(this._boundingDimensions.x * (j - 0.5), this._boundingDimensions.y * (k - 0.5), 0);
+                        TmpVectors.Vector3[1].set(0, 0, 1);
                     }
-                    if (i == 0 && (j || k)) {
-                        Quaternion.FromEulerAnglesToRef(0, Math.PI * 0.5, 0, rotateAnchors[index].rotationQuaternion!);
-                    } else if (i == 1) {
-                        Quaternion.FromEulerAnglesToRef(Math.PI * 0.5, 0, 0, rotateAnchors[index].rotationQuaternion!);
-                    }
+                    const target = TmpVectors.Vector3[2];
+                    Vector3.CrossToRef(TmpVectors.Vector3[0], TmpVectors.Vector3[1], target);
+                    target.normalize();
+                    target.addInPlace(rotateAnchors[index].position);
+                    rotateAnchors[index].lookAt(target);
+
                     if (this.fixedDragMeshScreenSize && this.gizmoLayer.utilityLayerScene.activeCamera) {
                         rotateAnchors[index].absolutePosition.subtractToRef(this.gizmoLayer.utilityLayerScene.activeCamera.position, this._tmpVector);
                         const distanceFromCamera = (this.rotationSphereSize * this._tmpVector.length()) / this.fixedDragMeshScreenSizeDistanceFactor;

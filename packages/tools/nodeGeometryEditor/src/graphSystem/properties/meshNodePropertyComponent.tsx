@@ -1,8 +1,8 @@
 import * as React from "react";
-import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
-import { FileButtonLineComponent } from "../../sharedComponents/fileButtonLineComponent";
+import { FileButtonLine } from "shared-ui-components/lines/fileButtonLineComponent";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import { EngineStore } from "core/Engines/engineStore";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
@@ -82,7 +82,7 @@ export class MeshPropertyTabComponent extends React.Component<IPropertyComponent
                 <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <LineContainerComponent title="SOURCE">
                     {this.state.isLoading && <TextLineComponent ignoreValue={true} label="Loading..." />}
-                    {!this.state.isLoading && <FileButtonLineComponent label="Load" uploadName={"load-mesh"} onClick={(file) => this.loadMesh(file)} accept=".glb, .babylon" />}
+                    {!this.state.isLoading && <FileButtonLine label="Load" onClick={(file) => this.loadMesh(file)} accept=".glb, .babylon" />}
                     {scene && (
                         <OptionsLine
                             label="Mesh"

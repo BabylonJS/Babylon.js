@@ -3,8 +3,11 @@ var depthSamplerSampler: sampler;
 var depthSampler: texture_2d<f32>;
 
 // precomputed uniforms (not effect parameters)
-// cameraMinMaxZ.y => "maxZ - minZ" i.e., the near-to-far distance.
-uniform cameraMinMaxZ: vec2f;
+// cameraMinMaxZ.x = minZ
+// cameraMinMaxZ.y = maxZ - minZ i.e., the near-to-far distance.
+#ifndef COC_DEPTH_NOT_NORMALIZED
+    uniform cameraMinMaxZ: vec2f;
+#endif
 
 // uniforms
 uniform focusDistance: f32;
@@ -18,7 +21,11 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
     #define CUSTOM_COC_DEPTH
 
-    var pixelDistance: f32 = (uniforms.cameraMinMaxZ.x + uniforms.cameraMinMaxZ.y * depth) * 1000.0; // actual distance from the lens in scene units/1000 (eg. millimeter)
+    #ifdef COC_DEPTH_NOT_NORMALIZED
+        let pixelDistance = depth * 1000.0;
+    #else
+        let pixelDistance: f32 = (uniforms.cameraMinMaxZ.x + uniforms.cameraMinMaxZ.y * depth) * 1000.0; // actual distance from the lens in scene units/1000 (eg. millimeter)
+    #endif
 
     #define CUSTOM_COC_PIXELDISTANCE
 

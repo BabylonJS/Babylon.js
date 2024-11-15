@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/accessibility",
-    "version": "7.22.4",
+    "version": "7.34.1",
     "main": "dist/babylon.accessibility.max.js",
     "module": "dist/babylon.accessibility.max.js",
     "esnext": "dist/babylon.accessibility.max.js",
@@ -24,8 +24,8 @@
         "@types/react-dom": ">=16.0.9"
     },
     "devDependencies": {
-        "@babylonjs/core": "^7.22.4",
-        "@babylonjs/gui": "^7.22.4",
+        "@babylonjs/core": "^7.34.1",
+        "@babylonjs/gui": "^7.34.1",
         "react": "^17.0.2",
         "react-dom": "^17.0.2"
     },

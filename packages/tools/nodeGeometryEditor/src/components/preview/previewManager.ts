@@ -3,10 +3,9 @@ import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import { Engine } from "core/Engines/engine";
 import { Scene } from "core/scene";
-import { Vector3 } from "core/Maths/math.vector";
+import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
-import { Animation } from "core/Animations/animation";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
@@ -19,10 +18,15 @@ import { Texture } from "core/Materials/Textures/texture";
 import { PreviewMode } from "./previewMode";
 import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { DataStorage } from "core/Misc/dataStorage";
-import type { TransformNode } from "core/Meshes/transformNode";
+import { TransformNode } from "core/Meshes/transformNode";
 import { MultiMaterial } from "core/Materials/multiMaterial";
 import { GLTF2Export } from "serializers/glTF/2.0/glTFSerializer";
 import type { GLTFData } from "serializers/glTF/2.0/glTFData";
+import { Animation } from "core/Animations/animation";
+import { AxesViewer } from "core/Debug/axesViewer";
+import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
+import { MeshBuilder } from "core/Meshes/meshBuilder";
+import { NormalMaterial } from "materials/normal/normalMaterial";
 
 export class PreviewManager {
     private _nodeGeometry: NodeGeometry;
@@ -45,6 +49,8 @@ export class PreviewManager {
     private _matStd: MultiMaterial;
     private _matNME: NodeMaterial;
     private _matVertexColor: StandardMaterial;
+    private _matNormals: NormalMaterial;
+    private _axis: AxesViewer;
 
     public constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState) {
         this._nodeGeometry = globalState.nodeGeometry;
@@ -56,7 +62,11 @@ export class PreviewManager {
             }
             const currentMat = this._mesh.material;
             this._mesh.material = this._matStd;
-            GLTF2Export.GLBAsync(this._scene, "node-geometry-scene").then((glb: GLTFData) => {
+            GLTF2Export.GLBAsync(this._scene, "node-geometry-scene", {
+                shouldExportNode: (node) => {
+                    return !node.doNotSerialize;
+                },
+            }).then((glb: GLTFData) => {
                 this._mesh!.material = currentMat;
                 glb.downloadFiles();
             });
@@ -91,6 +101,7 @@ export class PreviewManager {
         this._scene.ambientColor = new Color3(1, 1, 1);
         this._camera = new ArcRotateCamera("Camera", 0, 0.8, 4, Vector3.Zero(), this._scene);
 
+        this._camera.doNotSerialize = true;
         this._camera.lowerRadiusLimit = 3;
         this._camera.upperRadiusLimit = 10;
         this._camera.wheelPrecision = 20;
@@ -124,12 +135,69 @@ export class PreviewManager {
         this._matVertexColor.backFaceCulling = false;
         this._matVertexColor.emissiveColor = Color3.White();
 
+        this._matNormals = new NormalMaterial("normalMaterial", this._scene);
+        this._matNormals.disableLighting = true;
+        this._matNormals.backFaceCulling = false;
+
         this._light = new HemisphericLight("Hemispheric light", new Vector3(0, 1, 0), this._scene);
         this._refreshPreviewMesh(true);
 
         this._engine.runRenderLoop(() => {
             this._engine.resize();
             this._scene.render();
+        });
+
+        // Axis
+        const generateTextPlane = function (text: string, color: string, size: number, scene: Scene, parent: TransformNode) {
+            const dynamicTexture = new DynamicTexture("DynamicTexture", 50, scene, true);
+            dynamicTexture.hasAlpha = true;
+            dynamicTexture.drawText(text, 14, 35, "bold 40px Arial", color, "transparent", true);
+            const plane = MeshBuilder.CreatePlane("TextPlane", { size: size }, scene);
+            const material = new StandardMaterial("TextPlaneMaterial", scene);
+            material.backFaceCulling = false;
+            material.disableLighting = true;
+            material.emissiveTexture = dynamicTexture;
+            material.diffuseTexture = dynamicTexture;
+
+            plane.material = material;
+            plane.billboardMode = TransformNode.BILLBOARDMODE_ALL;
+            plane.renderingGroupId = 2;
+            plane.setParent(parent);
+
+            return plane;
+        };
+
+        this._axis = new AxesViewer(this._scene, 1, 2, undefined, undefined, undefined, 3);
+        const dummy = new TransformNode("Dummy", this._scene);
+        dummy.doNotSerialize = true;
+        this._axis.xAxis.setParent(dummy);
+        this._axis.xAxis.doNotSerialize = true;
+        this._axis.yAxis.setParent(dummy);
+        this._axis.yAxis.doNotSerialize = true;
+        this._axis.zAxis.setParent(dummy);
+        this._axis.zAxis.doNotSerialize = true;
+
+        (this._axis.xAxis.getChildMeshes()[0].material as StandardMaterial).emissiveColor.scaleInPlace(2);
+        (this._axis.yAxis.getChildMeshes()[0].material as StandardMaterial).emissiveColor.scaleInPlace(2);
+        (this._axis.zAxis.getChildMeshes()[0].material as StandardMaterial).emissiveColor.scaleInPlace(2);
+
+        const xPlane = generateTextPlane("x", "red", 0.5, this._scene, dummy);
+        xPlane.position.x = 1;
+        xPlane.position.y = 0.3;
+
+        const yPlane = generateTextPlane("y", "#0F0", 0.5, this._scene, dummy);
+        yPlane.position.y = 1.55;
+
+        const zPlane = generateTextPlane("z", "blue", 0.5, this._scene, dummy);
+        zPlane.position.z = 1;
+        zPlane.position.y = 0.3;
+
+        const targetPosition = new Vector3(3.5, 3.6, 13);
+        const tempMat = Matrix.Identity();
+
+        this._scene.onBeforeCameraRenderObservable.add(() => {
+            this._scene.getViewMatrix().invertToRef(tempMat);
+            Vector3.TransformCoordinatesToRef(targetPosition, tempMat, dummy.position);
         });
     }
 
@@ -255,6 +323,9 @@ export class PreviewManager {
                 break;
             case PreviewMode.VertexColor:
                 this._mesh.material = this._matVertexColor;
+                break;
+            case PreviewMode.Normals:
+                this._mesh.material = this._matNormals;
                 break;
         }
     }

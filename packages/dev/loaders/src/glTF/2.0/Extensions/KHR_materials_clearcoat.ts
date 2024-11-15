@@ -6,6 +6,7 @@ import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsClearcoat } from "babylonjs-gltf2interface";
+import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "KHR_materials_clearcoat";
 
@@ -88,7 +89,7 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
         if (properties.clearcoatTexture) {
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/clearcoatTexture`, properties.clearcoatTexture, (texture) => {
-                    texture.name = `${babylonMaterial.name} (ClearCoat Intensity)`;
+                    texture.name = `${babylonMaterial.name} (ClearCoat)`;
                     babylonMaterial.clearCoat.texture = texture;
                 })
             );
@@ -130,4 +131,5 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_materials_clearcoat(loader));
+unregisterGLTFExtension(NAME);
+registerGLTFExtension(NAME, true, (loader) => new KHR_materials_clearcoat(loader));

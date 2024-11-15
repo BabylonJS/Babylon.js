@@ -1,5 +1,5 @@
 import { Vector3 } from "../../../Maths/math";
-import { Scalar } from "../../../Maths/math.scalar";
+import { ILog2 } from "../../../Maths/math.scalar.functions";
 import type { BaseTexture } from "../baseTexture";
 import type { AbstractEngine } from "../../../Engines/abstractEngine";
 import type { Effect } from "../../../Materials/effect";
@@ -9,9 +9,7 @@ import type { Nullable } from "../../../types";
 import type { RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
 import { Logger } from "../../../Misc/logger";
 
-import "../../../Engines/Extensions/engine.renderTargetCube";
-import "../../../Shaders/hdrFiltering.vertex";
-import "../../../Shaders/hdrFiltering.fragment";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Options for texture filtering
@@ -89,7 +87,7 @@ export class HDRFiltering {
 
     private _prefilterInternal(texture: BaseTexture): BaseTexture {
         const width = texture.getSize().width;
-        const mipmapsCount = Scalar.ILog2(width) + 1;
+        const mipmapsCount = ILog2(width) + 1;
 
         const effect = this._effectWrapper.effect;
         const outputTexture = this._createRenderTarget(width);
@@ -168,6 +166,8 @@ export class HDRFiltering {
 
         defines.push("#define NUM_SAMPLES " + this.quality + "u"); // unsigned int
 
+        const isWebGPU = this._engine.isWebGPU;
+
         const effectWrapper = new EffectWrapper({
             engine: this._engine,
             name: "hdrFiltering",
@@ -178,6 +178,14 @@ export class HDRFiltering {
             useShaderStore: true,
             defines,
             onCompiled: onCompiled,
+            shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            extraInitializationsAsync: async () => {
+                if (isWebGPU) {
+                    await Promise.all([import("../../../ShadersWGSL/hdrFiltering.vertex"), import("../../../ShadersWGSL/hdrFiltering.fragment")]);
+                } else {
+                    await Promise.all([import("../../../Shaders/hdrFiltering.vertex"), import("../../../Shaders/hdrFiltering.fragment")]);
+                }
+            },
         });
 
         return effectWrapper;

@@ -145,6 +145,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                         const engine = new WebGPUEngine(canvas, {
                             enableAllFeatures: true,
                             setMaximumLimits: true,
+                            enableGPUDebugMarkers: true,
                         });
                         await engine.initAsync();
                         return engine;
@@ -276,7 +277,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                             }
                         }
 
-                        if (this._scene.activeCamera || (this._scene.activeCameras && this._scene.activeCameras.length > 0)) {
+                        if (this._scene.activeCamera || this._scene.frameGraph || (this._scene.activeCameras && this._scene.activeCameras.length > 0)) {
                             this._scene.render();
                         }
 
@@ -294,7 +295,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                     code += "\r\n" + "window.scene = " + createSceneFunction + "();";
                 } else {
                     const startCar = code.search("var " + createSceneFunction);
-                    code = code.substr(0, startCar) + code.substr(startCar + 4);
+                    code = code.substring(0, startCar) + code.substr(startCar + 4);
                     code += "\n" + "window.scene = " + createSceneFunction + "();";
                 }
 

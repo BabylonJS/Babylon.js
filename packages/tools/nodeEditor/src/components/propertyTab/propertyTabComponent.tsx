@@ -1,9 +1,9 @@
 import * as React from "react";
 import type { GlobalState } from "../../globalState";
 import type { Nullable } from "core/types";
-import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { StringTools } from "shared-ui-components/stringTools";
-import { FileButtonLineComponent } from "../../sharedComponents/fileButtonLineComponent";
+import { FileButtonLine } from "shared-ui-components/lines/fileButtonLineComponent";
 import { Tools } from "core/Misc/tools";
 import { SerializationTools } from "../../serializationTools";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
@@ -39,7 +39,7 @@ import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObj
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
-
+import { SetToDefaultGaussianSplatting } from "core/Materials/Node/nodeMaterialDefault";
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
     lockObject: LockObject;
@@ -80,7 +80,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 this.setState({ currentNode: null, currentFrame: null, currentFrameNodePort: null, currentNodePort: null });
             }
         });
-
         this._onBuiltObserver = this.props.globalState.onBuiltObservable.add(() => {
             this.forceUpdate();
         });
@@ -211,6 +210,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     this.props.globalState.onResetRequiredObservable.notifyObservers(false);
                 }
                 this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
+                this.props.globalState.onClearUndoStack.notifyObservers();
             },
             undefined,
             true
@@ -327,6 +327,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 if (!this.changeMode(this.props.globalState.nodeMaterial!.mode, true, false)) {
                     this.props.globalState.onResetRequiredObservable.notifyObservers(true);
                 }
+                this.props.globalState.onClearUndoStack.notifyObservers();
             })
             .catch((err) => {
                 this.props.globalState.hostDocument.defaultView!.alert("Unable to load your node material: " + err);
@@ -361,6 +362,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 case NodeMaterialModes.ProceduralTexture:
                     this.props.globalState.nodeMaterial!.setToDefaultProceduralTexture();
                     break;
+                case NodeMaterialModes.GaussianSplatting:
+                    SetToDefaultGaussianSplatting(this.props.globalState.nodeMaterial!);
+                    break;
             }
         }
 
@@ -370,6 +374,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 break;
             case NodeMaterialModes.Particle:
                 this.props.globalState.previewType = PreviewType.Bubbles;
+                break;
+            case NodeMaterialModes.GaussianSplatting:
+                this.props.globalState.previewType = PreviewType.BricksSkull;
                 break;
         }
 
@@ -381,6 +388,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this.props.globalState.mode = value as NodeMaterialModes;
 
         this.props.globalState.onResetRequiredObservable.notifyObservers(true);
+        this.props.globalState.onClearUndoStack.notifyObservers();
         // Env
         (this.props.globalState.envFile as any) = undefined;
 
@@ -428,6 +436,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             { label: "Post Process", value: NodeMaterialModes.PostProcess },
             { label: "Particle", value: NodeMaterialModes.Particle },
             { label: "Procedural", value: NodeMaterialModes.ProceduralTexture },
+            { label: "Gaussian Splatting", value: NodeMaterialModes.GaussianSplatting },
         ];
 
         const engineList = [
@@ -504,8 +513,12 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                     case NodeMaterialModes.ProceduralTexture:
                                         this.props.globalState.nodeMaterial!.setToDefaultProceduralTexture();
                                         break;
+                                    case NodeMaterialModes.GaussianSplatting:
+                                        SetToDefaultGaussianSplatting(this.props.globalState.nodeMaterial!);
+                                        break;
                                 }
                                 this.props.globalState.onResetRequiredObservable.notifyObservers(true);
+                                this.props.globalState.onClearUndoStack.notifyObservers();
                             }}
                         />
                     </LineContainerComponent>
@@ -555,7 +568,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         />
                     </LineContainerComponent>
                     <LineContainerComponent title="FILE">
-                        <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />
+                        <FileButtonLine label="Load" onClick={(file) => this.load(file)} accept=".json" />
                         <ButtonLineComponent
                             label="Save"
                             onClick={() => {
@@ -584,7 +597,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 }}
                             />
                         )}
-                        <FileButtonLineComponent label="Load Frame" uploadName={"frame-upload"} onClick={(file) => this.loadFrame(file)} accept=".json" />
+                        <FileButtonLine label="Load Frame" onClick={(file) => this.loadFrame(file)} accept=".json" />
                     </LineContainerComponent>
                     {!this.props.globalState.customSave && (
                         <LineContainerComponent title="SNIPPET">

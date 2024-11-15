@@ -1,4 +1,4 @@
-import type { Animatable } from "./animatable";
+import type { Animatable } from "./animatable.core";
 import { Animation } from "./animation";
 import type { IMakeAnimationAdditiveOptions } from "./animation";
 import type { IAnimationKey } from "./animationKey";
@@ -8,9 +8,10 @@ import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import { EngineStore } from "../Engines/engineStore";
 
-import type { AbstractScene } from "../abstractScene";
 import { Tags } from "../Misc/tags";
 import type { AnimationGroupMask } from "./animationGroupMask";
+import "./animatable";
+import type { IAssetContainer } from "core/IAssetContainer";
 
 /**
  * This class defines the direct association between an animation and a target
@@ -83,7 +84,7 @@ export class AnimationGroup implements IDisposable {
     private _shouldStart = true;
 
     /** @internal */
-    public _parentContainer: Nullable<AbstractScene> = null;
+    public _parentContainer: Nullable<IAssetContainer> = null;
 
     /**
      * Gets or sets the unique id of the node
@@ -849,16 +850,17 @@ export class AnimationGroup implements IDisposable {
     /**
      * Goes to a specific frame in this animation group. Note that the animation group must be in playing or paused status
      * @param frame the frame number to go to
+     * @param useWeight defines whether the animation weight should be applied to the image to be jumped to (false by default)
      * @returns the animationGroup
      */
-    public goToFrame(frame: number): AnimationGroup {
+    public goToFrame(frame: number, useWeight = false): AnimationGroup {
         if (!this._isStarted) {
             return this;
         }
 
         for (let index = 0; index < this._animatables.length; index++) {
             const animatable = this._animatables[index];
-            animatable.goToFrame(frame);
+            animatable.goToFrame(frame, useWeight);
         }
 
         return this;

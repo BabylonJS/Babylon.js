@@ -9,6 +9,7 @@ import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { INode, IMeshPrimitive, IMesh } from "../glTFLoaderInterfaces";
 import type { IKHRMaterialVariants_Mapping, IKHRMaterialVariants_Variant, IKHRMaterialVariants_Variants } from "babylonjs-gltf2interface";
 import type { TransformNode } from "core/Meshes/transformNode";
+import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "KHR_materials_variants";
 
@@ -310,4 +311,5 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_materials_variants(loader));
+unregisterGLTFExtension(NAME);
+registerGLTFExtension(NAME, true, (loader) => new KHR_materials_variants(loader));

@@ -1,6 +1,6 @@
 import type { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { Observable } from "core/Misc/observable";
-import type { LogEntry } from "./components/log/logComponent";
+import { LogEntry } from "./components/log/logComponent";
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import { PreviewType } from "./components/preview/previewType";
 import { DataStorage } from "core/Misc/dataStorage";
@@ -18,20 +18,20 @@ import { RegisterDefaultInput } from "./graphSystem/registerDefaultInput";
 import { RegisterExportData } from "./graphSystem/registerExportData";
 import type { FilesInput } from "core/Misc/filesInput";
 import { RegisterDebugSupport } from "./graphSystem/registerDebugSupport";
+import { SerializationTools } from "./serializationTools";
 
 export class GlobalState {
-    nodeMaterial: NodeMaterial;
     hostElement: HTMLElement;
     hostDocument: Document;
     hostWindow: Window;
     stateManager: StateManager;
     onBuiltObservable = new Observable<void>();
     onResetRequiredObservable = new Observable<boolean>();
+    onClearUndoStack = new Observable<void>();
     onZoomToFitRequiredObservable = new Observable<void>();
     onReOrganizedRequiredObservable = new Observable<void>();
     onLogRequiredObservable = new Observable<LogEntry>();
     onIsLoadingChanged = new Observable<boolean>();
-    onPreviewCommandActivated = new Observable<boolean>();
     onLightUpdated = new Observable<void>();
     onBackgroundHDRUpdated = new Observable<void>();
     onPreviewBackgroundChanged = new Observable<void>();
@@ -73,7 +73,7 @@ export class GlobalState {
     public set mode(m: NodeMaterialModes) {
         DataStorage.WriteNumber("Mode", m);
         this._mode = m;
-        this.onPreviewCommandActivated.notifyObservers(true);
+        this.stateManager.onPreviewCommandActivated.notifyObservers(true);
     }
 
     /** Gets the engine */
@@ -89,6 +89,32 @@ export class GlobalState {
         DataStorage.WriteNumber("Engine", e);
         this._engine = e;
         location.reload();
+    }
+
+    private _nodeMaterial: NodeMaterial;
+
+    /**
+     * Gets the current node material
+     */
+    public get nodeMaterial(): NodeMaterial {
+        return this._nodeMaterial;
+    }
+
+    /**
+     * Sets the current node material
+     */
+    public set nodeMaterial(nodeMaterial: NodeMaterial) {
+        this._nodeMaterial = nodeMaterial;
+        nodeMaterial.onBuildObservable.add(() => {
+            this.onLogRequiredObservable.notifyObservers(new LogEntry("Node material build successful", false));
+
+            SerializationTools.UpdateLocations(nodeMaterial, this);
+
+            this.onBuiltObservable.notifyObservers();
+        });
+        nodeMaterial.onBuildErrorObservable.add((err: string) => {
+            this.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
+        });
     }
 
     customSave?: { label: string; action: (data: string) => Promise<void> };
@@ -109,6 +135,7 @@ export class GlobalState {
         this.stateManager = new StateManager();
         this.stateManager.data = this;
         this.stateManager.lockObject = this.lockObject;
+        this.stateManager.getScene = () => this.nodeMaterial.getScene();
 
         RegisterElbowSupport(this.stateManager);
         RegisterDebugSupport(this.stateManager);

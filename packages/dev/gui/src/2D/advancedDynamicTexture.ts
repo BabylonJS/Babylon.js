@@ -11,6 +11,7 @@ import type { KeyboardInfoPre } from "core/Events/keyboardEvents";
 import { KeyboardEventTypes } from "core/Events/keyboardEvents";
 import type { Camera } from "core/Cameras/camera";
 import { Texture } from "core/Materials/Textures/texture";
+import type { IDynamicTextureOptions } from "core/Materials/Textures/dynamicTexture";
 import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { Layer } from "core/Layers/layer";
@@ -33,6 +34,19 @@ import type { StandardMaterial } from "core/Materials/standardMaterial";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
+ * Interface used to define options to create an AdvancedDynamicTexture
+ */
+export interface IAdvancedDynamicTextureOptions extends IDynamicTextureOptions {
+    /**
+     * Indicates whether the ADT will be used autonomously. In this mode:
+     * - _checkUpdate() is not called
+     * - the layer is not rendered (so, the ADT is not visible)
+     * It's up to the user to perform the required calls manually to update the ADT.
+     */
+    useStandalone?: boolean;
+}
+
+/**
  * Class used to create texture to support 2D GUI elements
  * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui
  */
@@ -42,6 +56,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
 
     /** Indicates if some optimizations can be performed in GUI GPU management (the downside is additional memory/GPU texture memory used) */
     public static AllowGPUOptimizations = true;
+
+    /** Indicates whether the ADT is used autonomously */
+    public readonly useStandalone: boolean = false;
 
     /** Snippet ID if the content was created from the snippet server */
     public snippetId: string;
@@ -152,6 +169,11 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * Defaults to false.
      */
     public disableTabNavigation = false;
+
+    /**
+     * A boolean indicating whether controls can be picked/clicked on or not. Defaults to false.
+     */
+    public disablePicking = false;
 
     /**
      * If set to true, the POINTERTAP event type will be used for "click", instead of POINTERUP
@@ -389,25 +411,55 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * but it has a performance cost.
      */
     public checkPointerEveryFrame = false;
+
     /**
      * Creates a new AdvancedDynamicTexture
      * @param name defines the name of the texture
-     * @param width defines the width of the texture
-     * @param height defines the height of the texture
-     * @param scene defines the hosting scene
-     * @param generateMipMaps defines a boolean indicating if mipmaps must be generated (false by default)
-     * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
-     * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
+     * @param options The options to be used when constructing the ADT
      */
-    constructor(name: string, width = 0, height = 0, scene?: Nullable<Scene>, generateMipMaps = false, samplingMode = Texture.NEAREST_SAMPLINGMODE, invertY = true) {
-        super(name, { width: width, height: height }, scene, generateMipMaps, samplingMode, Constants.TEXTUREFORMAT_RGBA, invertY);
+    constructor(name: string, options?: IAdvancedDynamicTextureOptions);
+
+    constructor(name: string, width?: number, height?: number, scene?: Nullable<Scene>, generateMipMaps?: boolean, samplingMode?: number, invertY?: boolean);
+
+    /** @internal */
+    constructor(
+        name: string,
+        widthOrOptions?: number | IAdvancedDynamicTextureOptions,
+        _height = 0,
+        scene?: Nullable<Scene>,
+        generateMipMaps = false,
+        samplingMode = Texture.NEAREST_SAMPLINGMODE,
+        invertY = true
+    ) {
+        widthOrOptions = widthOrOptions ?? 0;
+
+        const width = typeof widthOrOptions === "object" && widthOrOptions !== undefined ? (widthOrOptions.width ?? 0) : (widthOrOptions ?? 0);
+        const height = typeof widthOrOptions === "object" && widthOrOptions !== undefined ? (widthOrOptions.height ?? 0) : _height;
+
+        super(
+            name,
+            { width, height },
+            typeof widthOrOptions === "object" && widthOrOptions !== undefined ? widthOrOptions : scene,
+            generateMipMaps,
+            samplingMode,
+            Constants.TEXTUREFORMAT_RGBA,
+            invertY
+        );
+
         scene = this.getScene();
         if (!scene || !this._texture) {
             return;
         }
         this.applyYInversionOnUpdate = invertY;
         this._rootElement = scene.getEngine().getInputElement();
-        this._renderObserver = scene.onBeforeCameraRenderObservable.add((camera: Camera) => this._checkUpdate(camera));
+
+        const adtOptions = widthOrOptions as IAdvancedDynamicTextureOptions;
+
+        this.useStandalone = !!adtOptions?.useStandalone;
+
+        if (!this.useStandalone) {
+            this._renderObserver = scene.onBeforeCameraRenderObservable.add((camera: Camera) => this._checkUpdate(camera));
+        }
 
         /** Whenever a control is added or removed to the root, we have to recheck the camera projection as it can have changed  */
         this._controlAddedObserver = this._rootContainer.onControlAddedObservable.add((control) => {
@@ -716,8 +768,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         return new Vector3(projectedPosition.x, projectedPosition.y, projectedPosition.z);
     }
 
-    private _checkUpdate(camera: Camera, skipUpdate?: boolean): void {
-        if (this._layerToDispose) {
+    /** @internal */
+    public _checkUpdate(camera: Nullable<Camera>, skipUpdate?: boolean): void {
+        if (this._layerToDispose && camera) {
             if ((camera.layerMask & this._layerToDispose.layerMask) === 0) {
                 return;
             }
@@ -838,7 +891,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
     private _doPicking(x: number, y: number, pi: Nullable<PointerInfoBase>, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): void {
         const scene = this.getScene();
-        if (!scene) {
+        if (!scene || this.disablePicking) {
             return;
         }
         const engine = scene.getEngine();
@@ -1576,7 +1629,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * LayerMask is set through advancedTexture.layer.layerMask
      * @param name defines name for the texture
      * @param foreground defines a boolean indicating if the texture must be rendered in foreground (default is true)
-     * @param scene defines the hosting scene
+     * @param sceneOrOptions defines the hosting scene or options (IAdvancedDynamicTextureOptions)
      * @param sampling defines the texture sampling mode (Texture.BILINEAR_SAMPLINGMODE by default)
      * @param adaptiveScaling defines whether to automatically scale root to match hardwarescaling (false by default)
      * @returns a new AdvancedDynamicTexture
@@ -1584,17 +1637,25 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     public static CreateFullscreenUI(
         name: string,
         foreground: boolean = true,
-        scene: Nullable<Scene> = null,
+        sceneOrOptions: Nullable<Scene> | IAdvancedDynamicTextureOptions = null,
         sampling = Texture.BILINEAR_SAMPLINGMODE,
         adaptiveScaling: boolean = false
     ): AdvancedDynamicTexture {
-        const result = new AdvancedDynamicTexture(name, 0, 0, scene, false, sampling);
+        const isScene = !sceneOrOptions || (sceneOrOptions as Scene)._isScene;
+        const result = isScene
+            ? new AdvancedDynamicTexture(name, 0, 0, sceneOrOptions as Scene, false, sampling)
+            : new AdvancedDynamicTexture(name, sceneOrOptions as IAdvancedDynamicTextureOptions);
         // Display
         const resultScene = result.getScene();
         const layer = new Layer(name + "_layer", null, resultScene, !foreground);
         layer.texture = result;
         result._layerToDispose = layer;
         result._isFullscreen = true;
+
+        if (result.useStandalone) {
+            // Make sure the layer is not rendered by the layer component!
+            layer.layerMask = 0;
+        }
 
         if (adaptiveScaling && resultScene) {
             const newScale = 1 / resultScene.getEngine().getHardwareScalingLevel();

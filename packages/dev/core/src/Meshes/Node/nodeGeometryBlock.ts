@@ -209,6 +209,13 @@ export class NodeGeometryBlock {
     }
 
     /**
+     * @internal
+     */
+    public get _isReadyState(): Nullable<Promise<void>> {
+        return null;
+    }
+
+    /**
      * Creates a new NodeGeometryBlock
      * @param name defines the block name
      */
@@ -313,17 +320,6 @@ export class NodeGeometryBlock {
         const now = PrecisionDate.Now;
         this._buildBlock(state);
         this._buildExecutionTime = PrecisionDate.Now - now;
-
-        // Compile connected blocks
-        for (const output of this._outputs) {
-            for (const endpoint of output.endpoints) {
-                const block = endpoint.ownerBlock;
-
-                if (block) {
-                    block.build(state);
-                }
-            }
-        }
 
         this.onBuildObservable.notifyObservers(this);
 

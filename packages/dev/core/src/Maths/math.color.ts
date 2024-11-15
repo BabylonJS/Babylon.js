@@ -3,8 +3,7 @@ import { RegisterClass } from "../Misc/typeStore";
 import type { DeepImmutable, FloatArray, Tuple } from "../types";
 import { Epsilon, ToGammaSpace, ToLinearSpace } from "./math.constants";
 import type { IColor3Like, IColor4Like } from "./math.like";
-import { Scalar } from "./math.scalar";
-import { Clamp, ToHex } from "./math.scalar.functions";
+import { Clamp, ToHex, WithinEpsilon } from "./math.scalar.functions";
 import type { Tensor } from "./tensor";
 
 function colorChannelToLinearSpace(color: number): number {
@@ -328,7 +327,7 @@ export class Color3 implements Tensor<Tuple<number, 3>, IColor3Like>, IColor3Lik
      * @returns true if both colors are distant less than epsilon
      */
     public equalsWithEpsilon(otherColor: DeepImmutable<IColor3Like>, epsilon: number = Epsilon): boolean {
-        return Scalar.WithinEpsilon(this.r, otherColor.r, epsilon) && Scalar.WithinEpsilon(this.g, otherColor.g, epsilon) && Scalar.WithinEpsilon(this.b, otherColor.b, epsilon);
+        return WithinEpsilon(this.r, otherColor.r, epsilon) && WithinEpsilon(this.g, otherColor.g, epsilon) && WithinEpsilon(this.b, otherColor.b, epsilon);
     }
 
     /**
@@ -591,6 +590,23 @@ export class Color3 implements Tensor<Tuple<number, 3>, IColor3Like>, IColor3Lik
     }
 
     /**
+     * Updates the Color3 rgb values from the string containing valid hexadecimal values
+     * @param hex defines a string containing valid hexadecimal values
+     * @returns the current Color3 object
+     */
+    public fromHexString(hex: string): this {
+        if (hex.substring(0, 1) !== "#" || hex.length !== 7) {
+            return this;
+        }
+
+        this.r = parseInt(hex.substring(1, 3), 16) / 255;
+        this.g = parseInt(hex.substring(3, 5), 16) / 255;
+        this.b = parseInt(hex.substring(5, 7), 16) / 255;
+
+        return this;
+    }
+
+    /**
      * Converts current color in rgb space to HSV values
      * @returns a new color3 representing the HSV values
      */
@@ -766,15 +782,7 @@ export class Color3 implements Tensor<Tuple<number, 3>, IColor3Like>, IColor3Lik
      * @returns a new Color3 object
      */
     public static FromHexString(hex: string): Color3 {
-        if (hex.substring(0, 1) !== "#" || hex.length !== 7) {
-            return new Color3(0, 0, 0);
-        }
-
-        const r = parseInt(hex.substring(1, 3), 16);
-        const g = parseInt(hex.substring(3, 5), 16);
-        const b = parseInt(hex.substring(5, 7), 16);
-
-        return Color3.FromInts(r, g, b);
+        return new Color3(0, 0, 0).fromHexString(hex);
     }
 
     /**
@@ -1459,10 +1467,10 @@ export class Color4 implements Tensor<Tuple<number, 4>, IColor4Like>, IColor4Lik
      */
     public equalsWithEpsilon(otherColor: DeepImmutable<IColor4Like>, epsilon: number = Epsilon): boolean {
         return (
-            Scalar.WithinEpsilon(this.r, otherColor.r, epsilon) &&
-            Scalar.WithinEpsilon(this.g, otherColor.g, epsilon) &&
-            Scalar.WithinEpsilon(this.b, otherColor.b, epsilon) &&
-            Scalar.WithinEpsilon(this.a, otherColor.a, epsilon)
+            WithinEpsilon(this.r, otherColor.r, epsilon) &&
+            WithinEpsilon(this.g, otherColor.g, epsilon) &&
+            WithinEpsilon(this.b, otherColor.b, epsilon) &&
+            WithinEpsilon(this.a, otherColor.a, epsilon)
         );
     }
 
@@ -1585,6 +1593,34 @@ export class Color4 implements Tensor<Tuple<number, 4>, IColor4Like>, IColor4Lik
     }
 
     /**
+     * Updates the Color4 rgba values from the string containing valid hexadecimal values.
+     *
+     * A valid hex string is either in the format #RRGGBB or #RRGGBBAA.
+     *
+     * When a hex string without alpha is passed, the resulting Color4 keeps
+     * its previous alpha value.
+     *
+     * An invalid string does not modify this object
+     *
+     * @param hex defines a string containing valid hexadecimal values
+     * @returns the current updated Color4 object
+     */
+    public fromHexString(hex: string): this {
+        if (hex.substring(0, 1) !== "#" || (hex.length !== 9 && hex.length !== 7)) {
+            return this;
+        }
+
+        this.r = parseInt(hex.substring(1, 3), 16) / 255;
+        this.g = parseInt(hex.substring(3, 5), 16) / 255;
+        this.b = parseInt(hex.substring(5, 7), 16) / 255;
+        if (hex.length === 9) {
+            this.a = parseInt(hex.substring(7, 9), 16) / 255;
+        }
+
+        return this;
+    }
+
+    /**
      * Computes a new Color4 converted from the current one to linear space
      * @param exact defines if the conversion will be done in an exact way which is slower but more accurate (default is false)
      * @returns a new Color4 object
@@ -1667,12 +1703,7 @@ export class Color4 implements Tensor<Tuple<number, 4>, IColor4Like>, IColor4Lik
             return new Color4(0.0, 0.0, 0.0, 0.0);
         }
 
-        const r = parseInt(hex.substring(1, 3), 16);
-        const g = parseInt(hex.substring(3, 5), 16);
-        const b = parseInt(hex.substring(5, 7), 16);
-        const a = hex.length === 9 ? parseInt(hex.substring(7, 9), 16) : 255;
-
-        return Color4.FromInts(r, g, b, a);
+        return new Color4(0.0, 0.0, 0.0, 1.0).fromHexString(hex);
     }
 
     /**

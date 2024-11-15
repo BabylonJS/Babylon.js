@@ -275,7 +275,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
             <>
                 <LineContainerComponent title="PREVIEW" selection={this.props.globalState}>
                     <TextureLineComponent ref={this._textureLineRef} texture={texture} width={256} height={256} globalState={this.props.globalState} />
-                    <FileButtonLine label="Load texture from file" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
+                    <FileButtonLine label="Load texture from file" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env, .exr" />
                     <ButtonLineComponent
                         label="Edit"
                         onClick={() => {
@@ -315,6 +315,13 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
                 <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
+                    <TextInputLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Display name"
+                        target={texture}
+                        propertyName="displayName"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                     <TextLineComponent label="Width" value={texture.getSize().width.toString()} />
                     <TextLineComponent label="Height" value={texture.getSize().height.toString()} />
                     {texture.is2DArray && <TextLineComponent label="Layers" value={texture._texture?.depth.toString() ?? "?"} />}

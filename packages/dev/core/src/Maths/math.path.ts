@@ -1,5 +1,5 @@
 import type { DeepImmutable, Nullable } from "../types";
-import { Scalar } from "./math.scalar";
+import { Clamp, WithinEpsilon } from "./math.scalar.functions";
 import { Vector2, Vector3, Quaternion, Matrix } from "./math.vector";
 import type { Vector4 } from "./math.vector";
 import { Epsilon } from "./math.constants";
@@ -105,7 +105,7 @@ export class Angle {
         if (product === 0) return new Angle(Math.PI / 2);
         product = Math.sqrt(product);
         let cosVal = a.dot(b as any) / product;
-        cosVal = Scalar.Clamp(cosVal, -1, 1);
+        cosVal = Clamp(cosVal, -1, 1);
         const angle = Math.acos(cosVal);
         return new Angle(angle);
     }
@@ -850,12 +850,12 @@ export class Path3D {
 
         if (va === undefined || va === null) {
             let point: Vector3;
-            if (!Scalar.WithinEpsilon(Math.abs(vt.y) / tgl, 1.0, Epsilon)) {
+            if (!WithinEpsilon(Math.abs(vt.y) / tgl, 1.0, Epsilon)) {
                 // search for a point in the plane
                 point = new Vector3(0.0, -1.0, 0.0);
-            } else if (!Scalar.WithinEpsilon(Math.abs(vt.x) / tgl, 1.0, Epsilon)) {
+            } else if (!WithinEpsilon(Math.abs(vt.x) / tgl, 1.0, Epsilon)) {
                 point = new Vector3(1.0, 0.0, 0.0);
-            } else if (!Scalar.WithinEpsilon(Math.abs(vt.z) / tgl, 1.0, Epsilon)) {
+            } else if (!WithinEpsilon(Math.abs(vt.z) / tgl, 1.0, Epsilon)) {
                 point = new Vector3(0.0, 0.0, 1.0);
             } else {
                 point = Vector3.Zero();

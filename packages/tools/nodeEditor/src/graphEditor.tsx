@@ -1,6 +1,4 @@
 import * as React from "react";
-import type { GlobalState } from "./globalState";
-
 import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import { NodeListComponent } from "./components/nodeList/nodeListComponent";
 import { PropertyTabComponent } from "./components/propertyTab/propertyTabComponent";
@@ -27,6 +25,8 @@ import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger";
 import type { IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import type { GlobalState } from "./globalState";
+import { HistoryStack } from "shared-ui-components/historyStack";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -58,6 +58,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     private _leftWidth = DataStorage.ReadNumber("LeftWidth", 200);
     private _rightWidth = DataStorage.ReadNumber("RightWidth", 300);
 
+    private _historyStack: HistoryStack;
     private _previewManager: PreviewManager;
     private _mouseLocationX = 0;
     private _mouseLocationY = 0;
@@ -89,12 +90,51 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         return this.appendBlock(newInputBlock);
     }
 
+    prepareHistoryStack() {
+        const material = this.props.globalState.nodeMaterial;
+        const globalState = this.props.globalState;
+
+        const dataProvider = () => {
+            SerializationTools.UpdateLocations(material, globalState);
+            return material.serialize();
+        };
+
+        const applyUpdate = (data: any) => {
+            globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
+            material.parseSerializedObject(data);
+
+            globalState.onResetRequiredObservable.notifyObservers(false);
+        };
+
+        // Create the stack
+        this._historyStack = new HistoryStack(dataProvider, applyUpdate);
+        globalState.stateManager.historyStack = this._historyStack;
+
+        // Connect to relevant events
+        globalState.stateManager.onUpdateRequiredObservable.add(() => {
+            this._historyStack.store();
+        });
+        globalState.stateManager.onRebuildRequiredObservable.add(() => {
+            this._historyStack.store();
+        });
+        globalState.stateManager.onNodeMovedObservable.add(() => {
+            this._historyStack.store();
+        });
+        globalState.stateManager.onNewNodeCreatedObservable.add(() => {
+            this._historyStack.store();
+        });
+        globalState.onClearUndoStack.add(() => {
+            this._historyStack.reset();
+        });
+    }
+
     override componentDidMount() {
         window.addEventListener("wheel", this.onWheel, { passive: false });
 
         if (this.props.globalState.hostDocument) {
             this._graphCanvas = this._graphCanvasRef.current!;
             this._diagramContainer = this._diagramContainerRef.current!;
+            this.prepareHistoryStack();
             this._previewManager = new PreviewManager(this.props.globalState.hostDocument.getElementById("preview-canvas") as HTMLCanvasElement, this.props.globalState);
             (this.props.globalState as any)._previewManager = this._previewManager;
         }
@@ -108,6 +148,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         });
 
         this.build();
+        this.props.globalState.onClearUndoStack.notifyObservers();
     }
 
     override componentWillUnmount() {
@@ -115,6 +156,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         if (this.props.globalState.hostDocument) {
             this.props.globalState.hostDocument!.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
+        }
+
+        if (this._historyStack) {
+            this._historyStack.dispose();
+            this._historyStack = null as any;
         }
 
         if (this._previewManager) {
@@ -201,6 +247,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         };
 
         this.props.globalState.hostDocument!.addEventListener("keydown", (evt) => {
+            if (this._historyStack.processKeyEvent(evt)) {
+                return;
+            }
+
             this._graphCanvas.handleKeyDown(
                 evt,
                 (nodeData) => {
@@ -236,17 +286,14 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             return;
         }
 
+        const material = this.props.globalState.nodeMaterial;
         try {
-            this.props.globalState.nodeMaterial.options.emitComments = true;
-            this.props.globalState.nodeMaterial.build(true);
-            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Node material build successful", false));
+            material.options.emitComments = true;
+
+            material.build(true);
         } catch (err) {
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
         }
-
-        SerializationTools.UpdateLocations(this.props.globalState.nodeMaterial, this.props.globalState);
-
-        this.props.globalState.onBuiltObservable.notifyObservers();
     }
 
     build(ignoreEditorData = false) {
@@ -308,10 +355,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this.showWaitScreen();
         this._graphCanvas._isLoading = true; // Will help loading large graphes
 
-        setTimeout(() => {
-            this._graphCanvas.reOrganize(editorData, isImportingAFrame);
-            this.hideWaitScreen();
-        });
+        this._graphCanvas.reOrganize(editorData, isImportingAFrame);
+        this.hideWaitScreen();
     }
 
     onPointerDown(evt: React.PointerEvent<HTMLDivElement>) {

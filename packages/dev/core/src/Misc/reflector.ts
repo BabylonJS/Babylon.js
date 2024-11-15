@@ -27,12 +27,12 @@ export class Reflector {
         this._webSocket.onmessage = (event) => {
             const message: string = event.data;
             if (message.startsWith(Reflector._SERVER_PREFIX)) {
-                const serverMessage = message.substr(Reflector._SERVER_PREFIX.length);
-                Logger.Log(`[Reflector] Received server message: ${serverMessage.substr(0, 64)}`);
+                const serverMessage = message.substring(Reflector._SERVER_PREFIX.length);
+                Logger.Log(`[Reflector] Received server message: ${serverMessage.substring(0, 64)}`);
                 this._handleServerMessage(serverMessage);
                 return;
             } else {
-                Logger.Log(`[Reflector] Received client message: ${message.substr(0, 64)}`);
+                Logger.Log(`[Reflector] Received client message: ${message.substring(0, 64)}`);
                 this._handleClientMessage();
             }
         };

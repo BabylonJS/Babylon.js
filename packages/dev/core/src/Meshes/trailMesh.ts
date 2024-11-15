@@ -6,7 +6,7 @@ import type { Scene } from "../scene";
 import { Vector3 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
 import { VertexData } from "../Meshes/mesh.vertexData";
-import { Scalar } from "../Maths/math.scalar";
+import { Lerp } from "../Maths/math.scalar.functions";
 import type { TransformNode } from "../Meshes/transformNode";
 
 Mesh._TrailMeshParser = (parsedMesh: any, scene: Scene) => {
@@ -207,15 +207,15 @@ export class TrailMesh extends Mesh {
         if (positions && normals) {
             if (this._doNotTaper) {
                 for (let i: number = index; i < positions.length; i++) {
-                    positions[i - index] = Scalar.Lerp(positions[i - index], positions[i], this._segments / this._length);
+                    positions[i - index] = Lerp(positions[i - index], positions[i], this._segments / this._length);
                 }
             } else {
                 for (let i: number = index; i < positions.length; i++) {
-                    positions[i - index] = Scalar.Lerp(positions[i - index], positions[i], this._segments / this._length) - (normals[i] / this._length) * this.diameter;
+                    positions[i - index] = Lerp(positions[i - index], positions[i], this._segments / this._length) - (normals[i] / this._length) * this.diameter;
                 }
             }
             for (let i: number = index; i < normals.length; i++) {
-                normals[i - index] = Scalar.Lerp(normals[i - index], normals[i], this._segments / this._length);
+                normals[i - index] = Lerp(normals[i - index], normals[i], this._segments / this._length);
             }
             this._updateSectionVectors();
             const l: number = positions.length - 3 * (this._sectionPolygonPointsCount + 1);

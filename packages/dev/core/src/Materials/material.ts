@@ -24,7 +24,6 @@ import { DrawWrapper } from "./drawWrapper";
 import { MaterialStencilState } from "./materialStencilState";
 import { ScenePerformancePriority } from "../scene";
 import type { Scene } from "../scene";
-import type { AbstractScene } from "../abstractScene";
 import type {
     MaterialPluginDisposed,
     MaterialPluginIsReadyForSubMesh,
@@ -52,6 +51,7 @@ import type { InstancedMesh } from "../Meshes/instancedMesh";
 import { BindSceneUniformBuffer } from "./materialHelper.functions";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { ShaderLanguage } from "./shaderLanguage";
+import type { IAssetContainer } from "core/IAssetContainer";
 
 declare let BABYLON: any;
 
@@ -231,6 +231,8 @@ export class Material implements IAnimatable, IClipPlanesHolder {
 
     /** Shader language used by the material */
     protected _shaderLanguage = ShaderLanguage.GLSL;
+
+    protected _forceGLSL = false;
 
     /**
      * Gets the shader language used in this material.
@@ -865,7 +867,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     public meshMap: Nullable<{ [id: string]: AbstractMesh | undefined }> = null;
 
     /** @internal */
-    public _parentContainer: Nullable<AbstractScene> = null;
+    public _parentContainer: Nullable<IAssetContainer> = null;
 
     /** @internal */
     public _dirtyCallbacks: { [code: number]: () => void };
@@ -920,8 +922,9 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * @param name defines the name of the material
      * @param scene defines the scene to reference
      * @param doNotAdd specifies if the material should be added to the scene
+     * @param forceGLSL Use the GLSL code generation for the shader (even on WebGPU). Default is false
      */
-    constructor(name: string, scene?: Nullable<Scene>, doNotAdd?: boolean) {
+    constructor(name: string, scene?: Nullable<Scene>, doNotAdd?: boolean, forceGLSL = false) {
         this.name = name;
         const setScene = scene || EngineStore.LastCreatedScene;
         if (!setScene) {
@@ -929,6 +932,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         }
         this._scene = setScene;
         this._dirtyCallbacks = {};
+        this._forceGLSL = forceGLSL;
 
         this._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag] = this._markAllSubMeshesAsTexturesDirty.bind(this);
         this._dirtyCallbacks[Constants.MATERIAL_LightDirtyFlag] = this._markAllSubMeshesAsLightsDirty.bind(this);
@@ -947,6 +951,8 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         this._uniformBuffer = new UniformBuffer(this._scene.getEngine(), undefined, undefined, name);
         this._useUBO = this.getScene().getEngine().supportsUniformBuffers;
 
+        this._createUniformBuffer();
+
         if (!doNotAdd) {
             this._scene.addMaterial(this);
         }
@@ -956,6 +962,23 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         }
 
         Material.OnEventObservable.notifyObservers(this, MaterialPluginEvent.Created);
+    }
+
+    /** @internal */
+    public _createUniformBuffer() {
+        const engine = this.getScene().getEngine();
+
+        this._uniformBuffer?.dispose();
+
+        if (engine.isWebGPU && !this._forceGLSL) {
+            // Switch main UBO to non UBO to connect to leftovers UBO in webgpu
+            this._uniformBuffer = new UniformBuffer(engine, undefined, undefined, this.name, true);
+            this._shaderLanguage = ShaderLanguage.WGSL;
+        } else {
+            this._uniformBuffer = new UniformBuffer(this._scene.getEngine(), undefined, undefined, this.name);
+        }
+
+        this._uniformBufferLayoutBuilt = false;
     }
 
     /**

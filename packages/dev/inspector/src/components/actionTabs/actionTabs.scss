@@ -34,9 +34,6 @@ $line-padding-left: 2px;
         text-align: center;
         display: grid;
         grid-template-columns: 30px 1fr 50px;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
         user-select: none;
 
         #logo {
@@ -217,9 +214,9 @@ $line-padding-left: 2px;
                         border-radius: 5px;
                         outline: none;
                         opacity: 0.7;
-                        -webkit-transition: 0.2s;
                         transition: opacity 0.2s;
                     }
+
                     .range::-webkit-slider-thumb {
                         -webkit-appearance: none;
                         appearance: none;
@@ -277,15 +274,27 @@ $line-padding-left: 2px;
                 overflow-y: auto;
                 height: 100%;
 
-                -webkit-user-select: none;
-                -moz-user-select: none;
-                -ms-user-select: none;
                 user-select: none;
 
                 .animation-info {
                     border-left: greenyellow 3px solid;
                     margin-left: 5px;
                     padding-left: 5px !important;
+                }
+
+                .tagContainer {
+                    display: flex;
+                    min-height: 20px;
+                    padding: 4px;
+                    width: calc(100% - 8px);
+                    flex-wrap: wrap;
+
+                    .tag {
+                        border: 1px solid white;
+                        border-radius: 6px;
+                        padding: 1px 4px;
+                        margin: 2px;
+                    }
                 }
 
                 .underline {
@@ -484,9 +493,6 @@ $line-padding-left: 2px;
                         margin: 5px;
                         margin-top: 7px;
                         max-width: 200px;
-                        -webkit-user-select: text;
-                        -moz-user-select: text;
-                        -ms-user-select: text;
                         user-select: text;
 
                         &.check {
@@ -1090,8 +1096,11 @@ $line-padding-left: 2px;
                             border-radius: 5px;
                             outline: none;
                             opacity: 0.7;
-                            -webkit-transition: 0.2s;
                             transition: opacity 0.2s;
+
+                            &.overflow {
+                                background-color: red;
+                            }
                         }
 
                         .range:hover {

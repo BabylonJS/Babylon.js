@@ -328,6 +328,9 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
     /** @internal */
     public _waitingMaterialId: Nullable<string> = null;
 
+    /** @internal */
+    public _waitingMorphTargetManagerId: Nullable<number> = null;
+
     /**
      * The culling strategy to use to check whether the mesh must be rendered or not.
      * This value can be changed at any time and will be used on the next render mesh selection.
@@ -1246,6 +1249,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public override markAsDirty(property?: string): AbstractMesh {
         this._currentRenderId = Number.MAX_VALUE;
+        super.markAsDirty(property);
         this._isDirty = true;
         return this;
     }

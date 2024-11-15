@@ -629,12 +629,14 @@ export class ThinEngine extends AbstractEngine {
         if (this._webGLVersion > 1) {
             this._caps.drawBuffersExtension = true;
             this._caps.maxMSAASamples = this._maxMSAASamplesOverride !== null ? this._maxMSAASamplesOverride : this._gl.getParameter(this._gl.MAX_SAMPLES);
+            this._caps.maxDrawBuffers = this._gl.getParameter(this._gl.MAX_DRAW_BUFFERS);
         } else {
             const drawBuffersExtension = this._gl.getExtension("WEBGL_draw_buffers");
 
             if (drawBuffersExtension !== null) {
                 this._caps.drawBuffersExtension = true;
                 this._gl.drawBuffers = drawBuffersExtension.drawBuffersWEBGL.bind(drawBuffersExtension);
+                this._caps.maxDrawBuffers = this._gl.getParameter(drawBuffersExtension.MAX_DRAW_BUFFERS_WEBGL);
                 (this._gl.DRAW_FRAMEBUFFER as any) = this._gl.FRAMEBUFFER;
 
                 for (let i = 0; i < 16; i++) {
@@ -730,8 +732,12 @@ export class ThinEngine extends AbstractEngine {
                 }
             }
             // take into account the forced state that was provided in options
-            // When the issue in angle/chrome is fixed the flag should be taken into account only when it is explicitly defined
-            this._caps.supportSRGBBuffers = this._caps.supportSRGBBuffers && !!(this._creationOptions && (this._creationOptions as EngineOptions).forceSRGBBufferSupportState);
+            if (this._creationOptions) {
+                const forceSRGBBufferSupportState = (this._creationOptions as EngineOptions).forceSRGBBufferSupportState;
+                if (forceSRGBBufferSupportState !== undefined) {
+                    this._caps.supportSRGBBuffers = this._caps.supportSRGBBuffers && forceSRGBBufferSupportState;
+                }
+            }
         }
 
         // Depth buffer
@@ -994,7 +1000,7 @@ export class ThinEngine extends AbstractEngine {
             this.unBindFramebuffer(this._currentRenderTarget);
         }
         this._currentRenderTarget = rtWrapper;
-        this._bindUnboundFramebuffer(webglRTWrapper._MSAAFramebuffer ? webglRTWrapper._MSAAFramebuffer : webglRTWrapper._framebuffer);
+        this._bindUnboundFramebuffer(webglRTWrapper._framebuffer);
 
         const gl = this._gl;
         if (!rtWrapper.isMulti) {
@@ -1034,6 +1040,10 @@ export class ThinEngine extends AbstractEngine {
             } else {
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_2D, depthStencilTexture._hardwareTexture?.underlyingResource, lodLevel);
             }
+        }
+
+        if (webglRTWrapper._MSAAFramebuffer) {
+            this._bindUnboundFramebuffer(webglRTWrapper._MSAAFramebuffer);
         }
 
         if (this._cachedViewport && !forceFullscreenViewport) {
@@ -3421,6 +3431,34 @@ export class ThinEngine extends AbstractEngine {
         this._prepareWebGLTextureContinuation(texture, scene, noMipmap, isCompressed, samplingMode);
     }
 
+    public _getInternalFormatFromDepthTextureFormat(textureFormat: number, hasDepth: boolean, hasStencil: boolean): number {
+        const gl = this._gl;
+
+        if (!hasDepth) {
+            return gl.STENCIL_INDEX8;
+        }
+
+        const format: GLenum = hasStencil ? gl.DEPTH_STENCIL : gl.DEPTH_COMPONENT;
+        let internalFormat = format;
+        if (this.webGLVersion > 1) {
+            if (textureFormat === Constants.TEXTUREFORMAT_DEPTH16) {
+                internalFormat = gl.DEPTH_COMPONENT16;
+            } else if (textureFormat === Constants.TEXTUREFORMAT_DEPTH24) {
+                internalFormat = gl.DEPTH_COMPONENT24;
+            } else if (textureFormat === Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 || textureFormat === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8) {
+                internalFormat = hasStencil ? gl.DEPTH24_STENCIL8 : gl.DEPTH_COMPONENT24;
+            } else if (textureFormat === Constants.TEXTUREFORMAT_DEPTH32_FLOAT) {
+                internalFormat = gl.DEPTH_COMPONENT32F;
+            } else if (textureFormat === Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8) {
+                internalFormat = hasStencil ? gl.DEPTH32F_STENCIL8 : gl.DEPTH_COMPONENT32F;
+            }
+        } else {
+            internalFormat = gl.DEPTH_COMPONENT16;
+        }
+
+        return internalFormat;
+    }
+
     /**
      * @internal
      */
@@ -3429,24 +3467,24 @@ export class ThinEngine extends AbstractEngine {
         generateDepthBuffer: boolean,
         width: number,
         height: number,
-        samples = 1
+        samples = 1,
+        depthTextureFormat?: number
     ): Nullable<WebGLRenderbuffer> {
         const gl = this._gl;
 
+        depthTextureFormat = depthTextureFormat ?? (generateStencilBuffer ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT);
+
+        const internalFormat = this._getInternalFormatFromDepthTextureFormat(depthTextureFormat, generateDepthBuffer, generateStencilBuffer);
+
         // Create the depth/stencil buffer
         if (generateStencilBuffer && generateDepthBuffer) {
-            return this._createRenderBuffer(width, height, samples, gl.DEPTH_STENCIL, gl.DEPTH24_STENCIL8, gl.DEPTH_STENCIL_ATTACHMENT);
+            return this._createRenderBuffer(width, height, samples, gl.DEPTH_STENCIL, internalFormat, gl.DEPTH_STENCIL_ATTACHMENT);
         }
         if (generateDepthBuffer) {
-            let depthFormat: GLenum = gl.DEPTH_COMPONENT16;
-            if (this._webGLVersion > 1) {
-                depthFormat = gl.DEPTH_COMPONENT32F;
-            }
-
-            return this._createRenderBuffer(width, height, samples, depthFormat, depthFormat, gl.DEPTH_ATTACHMENT);
+            return this._createRenderBuffer(width, height, samples, internalFormat, internalFormat, gl.DEPTH_ATTACHMENT);
         }
         if (generateStencilBuffer) {
-            return this._createRenderBuffer(width, height, samples, gl.STENCIL_INDEX8, gl.STENCIL_INDEX8, gl.STENCIL_ATTACHMENT);
+            return this._createRenderBuffer(width, height, samples, internalFormat, internalFormat, gl.STENCIL_ATTACHMENT);
         }
 
         return null;

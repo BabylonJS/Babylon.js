@@ -109,7 +109,7 @@ export class GamepadSystemSceneComponent implements ISceneComponent {
      * Registers the component in a given scene
      */
     public register(): void {
-        this.scene._beforeCameraUpdateStage.registerStep(SceneComponentConstants.STEP_BEFORECAMERAUPDATE_GAMEPAD, this, this._beforeCameraUpdate);
+        // Nothing to do for gamepads
     }
 
     /**
@@ -128,14 +128,6 @@ export class GamepadSystemSceneComponent implements ISceneComponent {
         if (gamepadManager) {
             gamepadManager.dispose();
             this.scene._gamepadManager = null;
-        }
-    }
-
-    private _beforeCameraUpdate(): void {
-        const gamepadManager = this.scene._gamepadManager;
-
-        if (gamepadManager && gamepadManager._isMonitoring) {
-            gamepadManager._checkGamepadsStatus();
         }
     }
 }

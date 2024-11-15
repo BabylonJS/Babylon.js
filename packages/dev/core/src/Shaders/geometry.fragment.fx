@@ -19,7 +19,7 @@ varying vec4 vViewPos;
 varying vec3 vPositionW;
 #endif
 
-#ifdef VELOCITY
+#if defined(VELOCITY) || defined(VELOCITY_LINEAR)
 varying vec4 vCurrentPosition;
 varying vec4 vPreviousPosition;
 #endif
@@ -92,17 +92,14 @@ void main() {
         normalOutput = normalOutput * 0.5 + 0.5;
     #endif
 
-    #ifdef PREPASS
-        #ifdef PREPASS_DEPTH
-            gl_FragData[DEPTH_INDEX] = vec4(vViewPos.z / vViewPos.w, 0.0, 0.0, 1.0);
-        #endif
-
-        #if defined(PREPASS_NORMAL) || defined(PREPASS_WORLD_NORMAL)
-            gl_FragData[NORMAL_INDEX] = vec4(normalOutput, 1.0);
-        #endif
-    #else
-        gl_FragData[0] = vec4(vViewPos.z / vViewPos.w, 0.0, 0.0, 1.0);
-        gl_FragData[1] = vec4(normalOutput, 1.0);
+    #ifdef DEPTH
+        gl_FragData[DEPTH_INDEX] = vec4(vViewPos.z / vViewPos.w, 0.0, 0.0, 1.0);
+    #endif
+    #ifdef NORMAL
+        gl_FragData[NORMAL_INDEX] = vec4(normalOutput, 1.0);
+    #endif
+    #ifdef SCREENSPACE_DEPTH
+        gl_FragData[SCREENSPACE_DEPTH_INDEX] = vec4(gl_FragCoord.z, 0.0, 0.0, 1.0);
     #endif
 
     #ifdef POSITION
@@ -117,6 +114,12 @@ void main() {
         velocity = vec2(pow(velocity.x, 1.0 / 3.0), pow(velocity.y, 1.0 / 3.0)) * sign(a - b) * 0.5 + 0.5;
 
         gl_FragData[VELOCITY_INDEX] = vec4(velocity, 0.0, 1.0);
+    #endif
+
+    #ifdef VELOCITY_LINEAR
+        vec2 velocity = vec2(0.5) * ((vPreviousPosition.xy / vPreviousPosition.w) -
+                                    (vCurrentPosition.xy / vCurrentPosition.w));
+        gl_FragData[VELOCITY_LINEAR_INDEX] = vec4(velocity, 0.0, 1.0);
     #endif
 
     #ifdef REFLECTIVITY

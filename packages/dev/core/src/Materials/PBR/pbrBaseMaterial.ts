@@ -15,7 +15,6 @@ import type { Mesh } from "../../Meshes/mesh";
 import { PBRBRDFConfiguration } from "./pbrBRDFConfiguration";
 import { PrePassConfiguration } from "../prePassConfiguration";
 import { Color3, TmpColors } from "../../Maths/math.color";
-import { Scalar } from "../../Maths/math.scalar";
 
 import type { IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration.defines";
 import { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration";
@@ -68,7 +67,7 @@ import {
     PrepareUniformsAndSamplersList,
 } from "../materialHelper.functions";
 import { ShaderLanguage } from "../shaderLanguage";
-import { UniformBuffer } from "../uniformBuffer";
+import { MaterialHelperGeometryRendering } from "../materialHelper.geometryrendering";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -197,14 +196,18 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
     public INSTANCESCOLOR = false;
 
     public PREPASS = false;
+    public PREPASS_COLOR = false;
+    public PREPASS_COLOR_INDEX = -1;
     public PREPASS_IRRADIANCE = false;
     public PREPASS_IRRADIANCE_INDEX = -1;
+    public PREPASS_ALBEDO = false;
+    public PREPASS_ALBEDO_INDEX = -1;
     public PREPASS_ALBEDO_SQRT = false;
     public PREPASS_ALBEDO_SQRT_INDEX = -1;
     public PREPASS_DEPTH = false;
     public PREPASS_DEPTH_INDEX = -1;
-    public PREPASS_NDC_DEPTH = false;
-    public PREPASS_NDC_DEPTH_INDEX = -1;
+    public PREPASS_SCREENSPACE_DEPTH = false;
+    public PREPASS_SCREENSPACE_DEPTH_INDEX = -1;
     public PREPASS_NORMAL = false;
     public PREPASS_NORMAL_INDEX = -1;
     public PREPASS_NORMAL_WORLDSPACE = false;
@@ -943,18 +946,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * @param forceGLSL Use the GLSL code generation for the shader (even on WebGPU). Default is false
      */
     constructor(name: string, scene?: Scene, forceGLSL = false) {
-        super(name, scene);
-
-        const engine = this.getScene().getEngine();
-
-        if (engine.isWebGPU && !forceGLSL && !PBRBaseMaterial.ForceGLSL) {
-            // Switch main UBO to non UBO to connect to leftovers UBO in webgpu
-            if (this._uniformBuffer) {
-                this._uniformBuffer.dispose();
-            }
-            this._uniformBuffer = new UniformBuffer(engine, undefined, undefined, this.name, true);
-            this._shaderLanguage = ShaderLanguage.WGSL;
-        }
+        super(name, scene, undefined, forceGLSL || PBRBaseMaterial.ForceGLSL);
 
         this.brdf = new PBRBRDFConfiguration(this);
         this.clearCoat = new PBRClearCoatConfiguration(this);
@@ -1514,6 +1506,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this._eventInfo.indexParameters = indexParameters;
         this._callbackPluginEventGeneric(MaterialPluginEvent.PrepareEffect, this._eventInfo);
 
+        MaterialHelperGeometryRendering.AddUniformsAndSamplers(uniforms, samplers);
+
         PrePassConfiguration.AddUniforms(uniforms);
         PrePassConfiguration.AddSamplers(samplers);
         addClipPlaneUniforms(uniforms);
@@ -1597,6 +1591,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         // Order independant transparency
         PrepareDefinesForOIT(scene, defines, oit);
+
+        MaterialHelperGeometryRendering.PrepareDefines(engine.currentRenderPassId, mesh, defines);
 
         // Textures
         defines.METALLICWORKFLOW = this.isMetallicWorkflow();
@@ -2068,6 +2064,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         this.prePassConfiguration.bindForSubMesh(this._activeEffect, scene, mesh, world, this.isFrozen);
 
+        MaterialHelperGeometryRendering.Bind(engine.currentRenderPassId, this._activeEffect, mesh, world);
+
         this._eventInfo.subMesh = subMesh;
         this._callbackPluginEventHardBindForSubMesh(this._eventInfo);
 
@@ -2125,7 +2123,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                         if (this.realTimeFiltering) {
                             const width = reflectionTexture.getSize().width;
-                            ubo.updateFloat2("vReflectionFilteringInfo", width, Scalar.Log2(width));
+                            ubo.updateFloat2("vReflectionFilteringInfo", width, Math.log2(width));
                         }
 
                         if (!defines.USEIRRADIANCEMAP) {
