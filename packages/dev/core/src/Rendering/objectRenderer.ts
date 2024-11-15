@@ -91,7 +91,8 @@ export class ObjectRenderer {
      * The length of this list is passed through renderListLength: don't use renderList.length directly because the array can
      * hold dummy elements!
      */
-    public getCustomRenderList: (layerOrFace: number, renderList: Nullable<Immutable<Array<AbstractMesh>>>, renderListLength: number) => Nullable<Array<AbstractMesh>>;
+    public getCustomRenderList: Nullable<(layerOrFace: number, renderList: Nullable<Immutable<Array<AbstractMesh>>>, renderListLength: number) => Nullable<Array<AbstractMesh>>> =
+        null;
 
     /**
      * Define if particles should be rendered.
@@ -132,27 +133,27 @@ export class ObjectRenderer {
     /**
      * An event triggered before rendering the objects
      */
-    public onBeforeRenderObservable = new Observable<number>();
+    public readonly onBeforeRenderObservable = new Observable<number>();
 
     /**
      * An event triggered after rendering the objects
      */
-    public onAfterRenderObservable = new Observable<number>();
+    public readonly onAfterRenderObservable = new Observable<number>();
 
     /**
      * An event triggered before the rendering group is processed
      */
-    public onBeforeRenderingManagerRenderObservable = new Observable<number>();
+    public readonly onBeforeRenderingManagerRenderObservable = new Observable<number>();
 
     /**
      * An event triggered after the rendering group is processed
      */
-    public onAfterRenderingManagerRenderObservable = new Observable<number>();
+    public readonly onAfterRenderingManagerRenderObservable = new Observable<number>();
 
     /**
      * An event triggered when fast path rendering is used
      */
-    public onFastPathRenderObservable = new Observable<number>();
+    public readonly onFastPathRenderObservable = new Observable<number>();
 
     protected _scene: Scene;
     protected _renderingManager: RenderingManager;
