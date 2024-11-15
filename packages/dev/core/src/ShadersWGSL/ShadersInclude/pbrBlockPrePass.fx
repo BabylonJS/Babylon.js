@@ -44,14 +44,13 @@ var fragData: array<vec4<f32>, SCENE_MRT_COUNT>;
             fragData[PREPASS_COLOR_INDEX] = vec4f(finalColor.rgb - irradiance, finalColor.a); // Split irradiance from final color
         #endif
         irradiance /= sqAlbedo;
+        fragData[PREPASS_IRRADIANCE_INDEX] = vec4f(clamp(irradiance, vec3f(0.), vec3f(1.)), writeGeometryInfo * uniforms.scatteringDiffusionProfile / 255.); // Irradiance + SS diffusion profile
     #else
         #ifdef PREPASS_COLOR
             fragData[PREPASS_COLOR_INDEX] = finalColor; // No split lighting
         #endif
-        var scatteringDiffusionProfile : f32 = 255.;
+        fragData[PREPASS_IRRADIANCE_INDEX] = vec4f(clamp(irradiance, vec3f(0.), vec3f(1.)), writeGeometryInfo * 1.); // Irradiance + SS diffusion profile
     #endif
-
-    fragData[PREPASS_IRRADIANCE_INDEX] = vec4f(clamp(irradiance, vec3f(0.), vec3f(1.)), writeGeometryInfo * scatteringDiffusionProfile / 255.); // Irradiance + SS diffusion profile
 #elif defined(PREPASS_COLOR)
     fragData[PREPASS_COLOR_INDEX] = vec4f(finalColor.rgb, finalColor.a);
 #endif
