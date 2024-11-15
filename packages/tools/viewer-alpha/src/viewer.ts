@@ -166,10 +166,19 @@ export type ViewerHotSpotQuery =
           meshIndex: number;
       } & HotSpotQuery)
     | {
+          /**
+           * The type of the hot spot.
+           */
           type: "world";
 
+          /**
+           * The fixed world position of the hot spot.
+           */
           position: [x: number, y: number, z: number];
 
+          /**
+           * The fixed normal of the hot spot.
+           */
           normal: [x: number, y: number, z: number];
       };
 
