@@ -99,6 +99,12 @@
                         "meshIndex": 1,
                         "pointIndex": [228, 113, 111],
                         "barycentric": [0.217, 0.341, 0.442]
+                    },
+                    "poi": {
+                        "type": "world",
+                        "position": [0.37435858930052035, 0.5999379610676736, 0.021725763097220963],
+                        "normal": [0.6903377419741442, 0.44314472456113957, -0.5718885862645555],
+                        "cameraOrbit": [-32.108, 1.112, 1.714]
                     }
                 }'
             >
@@ -118,7 +124,10 @@
                 <babylon-viewer-annotation hotspot="thruster">
                     <div style="background-color: aliceblue; border-radius: 8px; padding: 3px 6px;">Thruster</div>
                 </babylon-viewer-annotation>
-            </babylon-viewer>
+                <babylon-viewer-annotation hotspot="poi">
+                    <div style="background-color: aliceblue; border-radius: 8px; padding: 3px 6px;">World Space POI</div>
+                </babylon-viewer-annotation>
+        </babylon-viewer>
         </div>
         <div id="moreLowerPageContent" style="width: 100%; height: 200vh; display: none"></div>
         <div class="button-container">
