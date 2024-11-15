@@ -54,19 +54,19 @@ export interface IBoundingBoxGizmo extends IGizmo {
     /** True when a rotation anchor or scale box or a attached mesh is dragged */
     readonly isDragging: boolean;
     /** Fired when a rotation anchor or scale box is dragged */
-    onDragStartObservable: Observable<{ dragOperation: number; dragAxis: Vector3 }>;
+    onDragStartObservable: Observable<{ dragOperation: DragOperation; dragAxis: Vector3 }>;
     /** Fired when the gizmo mesh hovering starts*/
     onHoverStartObservable: Observable<void>;
     /** Fired when the gizmo mesh hovering ends*/
     onHoverEndObservable: Observable<void>;
     /** Fired when a scale box is dragged */
-    onScaleBoxDragObservable: Observable<{ dragOperation: number; dragAxis: Vector3 }>;
+    onScaleBoxDragObservable: Observable<{ dragOperation: DragOperation; dragAxis: Vector3 }>;
     /** Fired when a scale box drag is ended */
-    onScaleBoxDragEndObservable: Observable<{ dragOperation: number; dragAxis: Vector3 }>;
+    onScaleBoxDragEndObservable: Observable<{ dragOperation: DragOperation; dragAxis: Vector3 }>;
     /** Fired when a rotation anchor is dragged */
-    onRotationSphereDragObservable: Observable<{ dragOperation: number; dragAxis: Vector3 }>;
+    onRotationSphereDragObservable: Observable<{ dragOperation: DragOperation; dragAxis: Vector3 }>;
     /** Fired when a rotation anchor drag is ended */
-    onRotationSphereDragEndObservable: Observable<{ dragOperation: number; dragAxis: Vector3 }>;
+    onRotationSphereDragEndObservable: Observable<{ dragOperation: DragOperation; dragAxis: Vector3 }>;
     /** Relative bounding box pivot used when scaling the attached node. */
     scalePivot: Nullable<Vector3>;
     /** Scale factor vector used for masking some axis */
@@ -185,7 +185,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
     /**
      * Fired when a rotation anchor or scale box is dragged
      */
-    public onDragStartObservable = new Observable<{ dragOperation: number; dragAxis: Vector3 }>();
+    public onDragStartObservable = new Observable<{ dragOperation: DragOperation; dragAxis: Vector3 }>();
     /**
      * Fired when the gizmo mesh hovering starts
      */
@@ -197,19 +197,19 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
     /**
      * Fired when a scale box is dragged
      */
-    public onScaleBoxDragObservable = new Observable<{ dragOperation: number; dragAxis: Vector3 }>();
+    public onScaleBoxDragObservable = new Observable<{ dragOperation: DragOperation; dragAxis: Vector3 }>();
     /**
      * Fired when a scale box drag is ended
      */
-    public onScaleBoxDragEndObservable = new Observable<{ dragOperation: number; dragAxis: Vector3 }>();
+    public onScaleBoxDragEndObservable = new Observable<{ dragOperation: DragOperation; dragAxis: Vector3 }>();
     /**
      * Fired when a rotation anchor is dragged
      */
-    public onRotationSphereDragObservable = new Observable<{ dragOperation: number; dragAxis: Vector3 }>();
+    public onRotationSphereDragObservable = new Observable<{ dragOperation: DragOperation; dragAxis: Vector3 }>();
     /**
      * Fired when a rotation anchor drag is ended
      */
-    public onRotationSphereDragEndObservable = new Observable<{ dragOperation: number; dragAxis: Vector3 }>();
+    public onRotationSphereDragEndObservable = new Observable<{ dragOperation: DragOperation; dragAxis: Vector3 }>();
     /**
      * Relative bounding box pivot used when scaling the attached node. When null object with scale from the opposite corner. 0.5,0.5,0.5 for center and 0.5,0,0.5 for bottom (Default: null)
      */
