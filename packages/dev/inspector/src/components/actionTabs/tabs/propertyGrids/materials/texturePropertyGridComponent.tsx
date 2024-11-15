@@ -315,6 +315,13 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
                 <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
+                    <TextInputLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Display name"
+                        target={texture}
+                        propertyName="displayName"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                     <TextLineComponent label="Width" value={texture.getSize().width.toString()} />
                     <TextLineComponent label="Height" value={texture.getSize().height.toString()} />
                     {texture.is2DArray && <TextLineComponent label="Layers" value={texture._texture?.depth.toString() ?? "?"} />}

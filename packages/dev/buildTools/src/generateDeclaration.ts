@@ -37,7 +37,12 @@ function getModuleDeclaration(
 ) {
     const distPosition = filename.replace(/\\/g, "/").indexOf("/dist");
     const packageVariables = getPackageMappingByDevName(config.devPackageName);
-    const moduleName = getPublicPackageName(packageVariables[buildType], filename) + filename.substring(distPosition + 5).replace(".d.ts", "");
+    const moduleName =
+        getPublicPackageName(packageVariables[buildType], filename) +
+        filename
+            .substring(distPosition + 5)
+            .replace(".d.ts", "")
+            .replace(/\\/g, "/");
     const sourceDir = path.dirname(moduleName);
     const lines = source.split("\n");
     const namedExportPathsToExcludeRegExp = config.namedExportPathsToExclude !== undefined ? new RegExp(`export {.*} from ".*${config.namedExportPathsToExclude}"`) : undefined;
