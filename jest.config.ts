@@ -1,7 +1,7 @@
 import type { Config } from "@jest/types";
 import * as fs from "fs";
 import * as path from "path";
-import { pathsToModuleNameMapper } from "ts-jest";
+import { JestConfigWithTsJest, pathsToModuleNameMapper } from "ts-jest";
 
 // const t = Object.assign(ts_preset, puppeteer_preset);
 
@@ -14,7 +14,7 @@ const createProject = (type: string) => {
     const tsTestConfigPath = path.resolve(".", "tsconfig.test.json");
     const globalSetup = fs.existsSync(setupFileLocation) ? setupFileLocation : undefined;
     const setupFilesAfterEnv = fs.existsSync(setupFilesAfterEnvLocation) ? [setupFilesAfterEnvLocation] : undefined;
-    const returnValue: Partial<Config.ProjectConfig> = {
+    const returnValue: Partial<JestConfigWithTsJest> = {
         displayName: {
             name: type,
             color: "yellow",
@@ -22,14 +22,17 @@ const createProject = (type: string) => {
         testRegex: [`/test/${type}/.*test\\.[tj]sx?$`],
         moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, { prefix: "<rootDir>/packages/" }) as any,
         roots: [path.resolve(".")],
-        globals: {
-            "ts-jest": {
-                isolatedModules: true,
-                useESM: true,
-                tsconfig: fs.existsSync(tsTestConfigPath) ? tsTestConfigPath : fs.existsSync(tsConfigPath) ? tsConfigPath : path.resolve(__dirname, "tsconfig.json"),
-            },
-        },
         setupFilesAfterEnv: ["@alex_neo/jest-expect-message"],
+        transform: {
+            "^.+\\.tsx?$": [
+                "ts-jest",
+                {
+                    isolatedModules: true,
+                    useESM: true,
+                    tsconfig: fs.existsSync(tsTestConfigPath) ? tsTestConfigPath : fs.existsSync(tsConfigPath) ? tsConfigPath : path.resolve(__dirname, "tsconfig.json"),
+                },
+            ],
+        },
     };
     if (globalSetup) {
         returnValue.globalSetup = globalSetup;
@@ -59,9 +62,6 @@ const createProject = (type: string) => {
             globalTeardown: "jest-environment-puppeteer/teardown",
             testEnvironment: "jest-environment-puppeteer",
             preset: "jest-puppeteer",
-            transform: {
-                "^.+\\.ts$": "ts-jest",
-            },
             extensionsToTreatAsEsm: [".ts"],
         };
     } else if (type === "interactions") {
