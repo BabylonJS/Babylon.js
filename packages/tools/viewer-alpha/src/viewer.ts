@@ -865,7 +865,6 @@ export class Viewer implements IDisposable {
                 return false;
             }
             GetHotSpotToRef(mesh, query, worldPos, worldNormal);
-            //console.log(worldPos);
         } else {
             worldPos.copyFromFloats(query.position[0], query.position[1], query.position[2]);
             worldNormal.copyFromFloats(query.normal[0], query.normal[1], query.normal[2]);
