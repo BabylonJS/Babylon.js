@@ -465,7 +465,7 @@ export class ObjectRenderer {
         }
 
         const numPasses = this.options.numPasses;
-        for (let passIndex = 0; passIndex < numPasses; passIndex++) {
+        for (let passIndex = 0; passIndex < numPasses && returnValue; passIndex++) {
             let currentRenderList: Nullable<Array<AbstractMesh>> = null;
             const defaultRenderList = this.renderList ? this.renderList : scene.getActiveMeshes().data;
             const defaultRenderListLength = this.renderList ? this.renderList.length : scene.getActiveMeshes().length;

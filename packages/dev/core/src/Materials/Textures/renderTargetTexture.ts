@@ -1006,6 +1006,9 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             // avoid a static import to allow ignoring the import in some cases
             import("../../Misc/dumpTools").then((module) => (this._dumpTools = module));
         }
+
+        this.onBeforeBindObservable.notifyObservers(this);
+
         return this._objectRenderer.isReadyForRendering(this.getRenderWidth(), this.getRenderHeight());
     }
 
