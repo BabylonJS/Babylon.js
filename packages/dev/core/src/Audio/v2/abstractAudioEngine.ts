@@ -14,18 +14,20 @@ export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
     // Owns all AbstractSound objects.
 
     // Not owned, but all items should be in parent's `children` container, too, which is owned.
-    private readonly _mainBuses = new Array<MainAudioBus>();
+    private readonly _mainBuses = new Set<MainAudioBus>();
+
+    private _defaultMainBus: Nullable<MainAudioBus> = null;
 
     // Owned
-    private readonly _sounds = new Array<AbstractSound>();
+    private readonly _sounds = new Set<AbstractSound>();
 
     // Not owned, but all items should be in parent's `children` container, too, which is owned.
-    private readonly _soundInstances = new Array<AbstractSoundInstance>();
+    private readonly _soundInstances = new Set<AbstractSoundInstance>();
 
     /**
      * The spatial audio listeners.
      */
-    public readonly listeners = new Array<SpatialAudioListener>(); // Owned
+    public readonly listeners = new Set<SpatialAudioListener>(); // Owned
 
     /**
      * `true` if the engine is a WebAudio engine; otherwise `false`.
@@ -51,11 +53,15 @@ export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
      * The default main bus.
      */
     public get defaultMainBus(): Nullable<MainAudioBus> {
-        if (this._mainBuses.length === 0) {
+        if (this._mainBuses.size === 0) {
             return null;
         }
 
-        return this._mainBuses[0];
+        if (!this._defaultMainBus) {
+            this._defaultMainBus = Array.from(this._mainBuses)[0];
+        }
+
+        return this._defaultMainBus;
     }
 
     /**
@@ -64,19 +70,19 @@ export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
     public override dispose(): void {
         super.dispose();
 
-        this._soundInstances.length = 0;
+        this._soundInstances.clear();
 
         if (this.listeners) {
-            for (const listener of this.listeners) {
+            for (const listener of Array.from(this.listeners)) {
                 listener.dispose();
             }
-            this.listeners.length = 0;
+            this.listeners.clear();
         }
 
-        for (const source of this._sounds) {
+        for (const source of Array.from(this._sounds)) {
             source.dispose();
         }
-        this._sounds.length = 0;
+        this._sounds.clear();
     }
 
     /**
@@ -100,32 +106,23 @@ export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
     public abstract resume(): Promise<void>;
 
     protected _addMainBus(mainBus: MainAudioBus): void {
-        this._mainBuses.push(mainBus);
+        this._mainBuses.add(mainBus);
         mainBus.onDisposeObservable.addOnce(() => {
-            const index = this._mainBuses.indexOf(mainBus);
-            if (index !== -1) {
-                this._mainBuses.splice(index, 1);
-            }
+            this._mainBuses.delete(mainBus);
         });
     }
 
     protected _addSound(sound: AbstractSound): void {
-        this._sounds.push(sound);
+        this._sounds.add(sound);
         sound.onDisposeObservable.addOnce(() => {
-            const index = this._sounds.indexOf(sound);
-            if (index !== -1) {
-                this._sounds.splice(index, 1);
-            }
+            this._sounds.delete(sound);
         });
     }
 
     protected _addSoundInstance(soundInstance: AbstractSoundInstance): void {
-        this._soundInstances.push(soundInstance);
+        this._soundInstances.add(soundInstance);
         soundInstance.onDisposeObservable.addOnce(() => {
-            const index = this._soundInstances.indexOf(soundInstance);
-            if (index !== -1) {
-                this._soundInstances.splice(index, 1);
-            }
+            this._soundInstances.delete(soundInstance);
         });
     }
 }
