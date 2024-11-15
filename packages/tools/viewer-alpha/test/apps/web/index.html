@@ -12,7 +12,7 @@
                 height: 100%;
                 padding: 0;
                 margin: 0;
-                overflow: hidden;
+                /* overflow: hidden; */
             }
 
             .toggle-dom-button {
@@ -66,6 +66,7 @@
     </head>
 
     <body ondragover="event.preventDefault()" ondrop="onDrop(event)">
+        <!-- <div id="moreUpperPageContent" style="width: 100%; height: 200vh;"></div> -->
         <babylon-viewer
             engine="WebGPU"
             source="https://raw.githubusercontent.com/BabylonJS/Assets/master/meshes/ufo.glb"
@@ -105,6 +106,7 @@
                 <line class="line"></line>
             </svg>
         </babylon-viewer>
+        <div id="moreLowerPageContent" style="width: 100%; height: 200vh;"></div>
         <button class="toggle-dom-button" onclick="onToggleDOM()">Toggle DOM</button>
         <button class="toggle-engine-button" onclick="onToggleEngine()">Toggle Engine</button>
 
@@ -142,11 +144,11 @@
                 // Alternatively, we could just await import("/packages/tools/viewer-alpha/src/index.ts") here instead.
                 await customElements.whenDefined("babylon-viewer");
 
-                setInterval(() => {
-                    //console.log(viewerElement.skyboxBlur);
-                    //viewerElement.skyboxBlur = (Number(viewerElement.skyboxBlur) + 0.01) % 1;
-                    //console.log(viewerElement.skyboxBlur);
-                }, 16);
+                // setInterval(() => {
+                //     console.log(viewerElement.skyboxBlur);
+                //     viewerElement.skyboxBlur = (Number(viewerElement.skyboxBlur) + 0.01) % 1;
+                //     console.log(viewerElement.skyboxBlur);
+                // }, 16);
 
                 await new Promise((resolve) => setTimeout(resolve, 2000));
                 //viewerElement.source = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/BrainStem/glTF-Binary/BrainStem.glb";

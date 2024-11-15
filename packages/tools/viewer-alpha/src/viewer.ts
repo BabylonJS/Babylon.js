@@ -267,8 +267,8 @@ export class Viewer implements IDisposable {
     private readonly _details: ViewerDetails;
     private readonly _snapshotHelper: SnapshotRenderingHelper;
     private readonly _autoRotationBehavior: AutoRotationBehavior;
-    private readonly _renderLoopController: IDisposable;
     private readonly _imageProcessingConfigurationObserver: Observer<ImageProcessingConfiguration>;
+    private _renderLoopController: Nullable<IDisposable> = null;
     private _skybox: Nullable<Mesh> = null;
     private _skyboxBlur: number = 0.3;
     private _light: Nullable<HemisphericLight> = null;
@@ -277,6 +277,7 @@ export class Viewer implements IDisposable {
     private _contrast: number;
     private _exposure: number;
 
+    private _suspendRenderCount = 0;
     private _isDisposed = false;
 
     private readonly _loadModelLock = new AsyncLock();
@@ -358,19 +359,7 @@ export class Viewer implements IDisposable {
         // Load a default light, but ignore errors as the user might be immediately loading their own environment.
         this.resetEnvironment().catch(() => {});
 
-        // TODO: render at least back ground. Maybe we can only run renderloop when a mesh is loaded. What to render until then?
-        const render = () => {
-            this._details.scene.render();
-            if (this.isAnimationPlaying) {
-                this.onAnimationProgressChanged.notifyObservers();
-                this._autoRotationBehavior.resetLastInteractionTime();
-            }
-        };
-
-        this._engine.runRenderLoop(render);
-        this._renderLoopController = {
-            dispose: () => this._engine.stopRenderLoop(render),
-        };
+        this._beginRendering();
 
         options?.onInitialized?.(this._details);
     }
@@ -603,6 +592,50 @@ export class Viewer implements IDisposable {
     }
 
     /**
+     * Suspends the render loop.
+     * @returns A token that should be disposed when the request for suspending rendering is no longer needed.
+     */
+    public suspendRendering(): IDisposable {
+        this._renderLoopController?.dispose();
+        this._suspendRenderCount++;
+        let disposed = false;
+        return {
+            dispose: () => {
+                if (!disposed) {
+                    disposed = true;
+                    this._suspendRenderCount--;
+                    if (this._suspendRenderCount === 0) {
+                        this._beginRendering();
+                    }
+                }
+            },
+        };
+    }
+
+    private _beginRendering(): void {
+        if (!this._renderLoopController) {
+            const render = () => {
+                this._details.scene.render();
+                if (this.isAnimationPlaying) {
+                    this.onAnimationProgressChanged.notifyObservers();
+                    this._autoRotationBehavior.resetLastInteractionTime();
+                }
+            };
+
+            this._engine.runRenderLoop(render);
+
+            this._renderLoopController = {
+                dispose: () => {
+                    if (this._renderLoopController) {
+                        this._engine.stopRenderLoop(render);
+                        this._renderLoopController = null;
+                    }
+                },
+            };
+        }
+    }
+
+    /**
      * Loads a 3D model from the specified URL.
      * @remarks
      * If a model is already loaded, it will be unloaded before loading the new model.
@@ -806,7 +839,7 @@ export class Viewer implements IDisposable {
         this._loadEnvironmentAbortController?.abort("Thew viewer is being disposed.");
         this._loadModelAbortController?.abort("Thew viewer is being disposed.");
 
-        this._renderLoopController.dispose();
+        this._renderLoopController?.dispose();
         this._details.scene.dispose();
 
         this.onEnvironmentChanged.clear();

@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-internal-modules
-import type { ArcRotateCamera, Nullable, Observable } from "core/index";
+import type { ArcRotateCamera, IDisposable, Nullable, Observable } from "core/index";
 
 import type { PropertyValues } from "lit";
 import type { ToneMapping, ViewerDetails, ViewerHotSpotQuery } from "./viewer";
@@ -67,6 +67,9 @@ interface HTML3DElementEventMap extends HTMLElementEventMap {
 @customElement("babylon-viewer")
 export class HTML3DElement extends LitElement {
     private readonly _viewerLock = new AsyncLock();
+    private readonly _intersectionObserver = new IntersectionObserver((entries) => this._onIntersectionChanged(entries));
+    private _isOffScreen = false;
+    private _offScreenRenderingSuspension: Nullable<IDisposable> = null;
     private _viewerDetails?: Readonly<ViewerDetails>;
 
     // Bindings for properties that are synchronized both ways between the lower level Viewer and the HTML3DElement.
@@ -711,12 +714,14 @@ export class HTML3DElement extends LitElement {
     override connectedCallback(): void {
         super.connectedCallback();
         this._setupViewer();
+        this._intersectionObserver.observe(this);
     }
 
     // eslint-disable-next-line babylonjs/available
     override disconnectedCallback(): void {
         super.disconnectedCallback();
         this._tearDownViewer();
+        this._intersectionObserver.unobserve(this);
     }
 
     // eslint-disable-next-line babylonjs/available
@@ -835,6 +840,19 @@ export class HTML3DElement extends LitElement {
         this.dispatchEvent(event(type));
     }
 
+    private _onIntersectionChanged(entries: IntersectionObserverEntry[]) {
+        if (entries.length > 0) {
+            if (entries[entries.length - 1].isIntersecting) {
+                this._isOffScreen = false;
+                this._offScreenRenderingSuspension?.dispose();
+                this._offScreenRenderingSuspension = null;
+            } else {
+                this._isOffScreen = true;
+                this._offScreenRenderingSuspension = this._viewerDetails?.viewer.suspendRendering() ?? null;
+            }
+        }
+    }
+
     private _onSelectedAnimationChanged(event: Event) {
         const selectElement = event.target as HTMLSelectElement;
         this.selectedAnimation = Number(selectElement.value);
@@ -935,6 +953,10 @@ export class HTML3DElement extends LitElement {
                     engine: this.engine,
                     onInitialized: (details) => {
                         this._viewerDetails = details;
+
+                        if (this._isOffScreen) {
+                            this._offScreenRenderingSuspension = this._viewerDetails.viewer.suspendRendering();
+                        }
 
                         details.viewer.onEnvironmentChanged.add(() => {
                             this._dispatchCustomEvent("environmentchange", (type) => new Event(type));
