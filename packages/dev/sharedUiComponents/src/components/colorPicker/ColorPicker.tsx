@@ -4,7 +4,7 @@ import { ColorComponentComponentEntry } from "./ColorComponentEntry";
 import { HexColorComponent } from "./HexColor";
 import type { LockObject } from "../../tabs/propertyGrids/lockObject";
 
-import style from "./ColorPicker.modules.scss";
+import style from "./ColorPicker.module.scss";
 import { ClassNames } from "../classNames";
 import { Logger } from "core/Misc/logger";
 

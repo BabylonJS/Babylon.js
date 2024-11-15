@@ -121,13 +121,15 @@ export function GetHotSpotToRef(mesh: AbstractMesh, hotSpotQuery: HotSpotQuery, 
         segmentB.subtractInPlace(pointA);
         segmentA.normalize();
         segmentB.normalize();
-        Vector3.CrossToRef(segmentB, segmentA, resNormal);
+        Vector3.CrossToRef(segmentA, segmentB, resNormal);
 
-        // flip normal
-        let invertWinding = mesh.material && mesh.material.sideOrientation === Constants.MATERIAL_CounterClockWiseSideOrientation;
-        invertWinding ||= mesh.getWorldMatrix().determinant() < 0;
-        invertWinding ||= mesh.getScene().useRightHandedSystem;
-        if (invertWinding) {
+        // flip normal when face culling is changed
+        const flipNormal =
+            mesh.material &&
+            mesh.material.sideOrientation ===
+                (mesh.getScene().useRightHandedSystem ? Constants.MATERIAL_ClockWiseSideOrientation : Constants.MATERIAL_CounterClockWiseSideOrientation);
+
+        if (flipNormal) {
             resNormal.scaleInPlace(-1);
         }
 

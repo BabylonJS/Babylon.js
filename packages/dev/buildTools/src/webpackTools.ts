@@ -97,7 +97,7 @@ export const getRules = (
         rules.push(
             {
                 sideEffects: options.sideEffects,
-                test: /(?<!modules)\.s[ac]ss$/i,
+                test: /(?<!module)\.s[ac]ss$/i,
                 use: [
                     "style-loader",
                     {
@@ -117,7 +117,7 @@ export const getRules = (
             },
             {
                 sideEffects: options.sideEffects,
-                test: /\.modules\.s[ac]ss$/i,
+                test: /\.module\.s[ac]ss$/i,
                 use: [
                     "style-loader",
                     {

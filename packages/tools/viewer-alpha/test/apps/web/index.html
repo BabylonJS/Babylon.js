@@ -33,6 +33,12 @@
                 right: 10px;
             }
 
+            .toggle-inspector-button {
+                position: absolute;
+                top: 100px;
+                right: 10px;
+            }
+
             .lineContainer {
                 pointer-events: none;
                 display: block;
@@ -140,8 +146,11 @@
         <button class="toggle-engine-button" onclick="onToggleEngine()">Toggle Engine</button>
 
         <button id="anchor-button" class="toggle-hotspot-button" onclick="onToggleHotSpot()">Toggle Hot Spot</button>
+        <button id="inspector-button" class="toggle-inspector-button" onclick="onToggleInspector()">Toggle Inspector</button>
         <script type="module" src="/packages/tools/viewer-alpha/src/index.ts"></script>
-        <script>
+        <script type="module">
+            import { Inspector } from "inspector/inspector";
+
             const viewerElement = document.querySelector("babylon-viewer");
             const lines = document.querySelectorAll("line");
             const hotspotResult = { screenPosition: [0, 0], worldPosition: [0, 0, 0] };
@@ -156,7 +165,7 @@
                 // viewerElement.selectedAnimation = 1;
             }, 3000);
 
-            let viewerDetails;
+            let viewerDetails = viewerElement.viewerDetails;
             viewerElement.addEventListener("viewerready", (event) => {
                 viewerDetails = viewerElement.viewerDetails;
 
@@ -188,7 +197,7 @@
                 //viewerElement.source = "https://playground.babylonjs.com/scenes/BoomBox.glb";
             })();
 
-            async function onDrop(event) {
+            globalThis.onDrop = async (event) => {
                 const file = event.dataTransfer.files[0];
                 if (file) {
                     event.preventDefault();
@@ -212,16 +221,16 @@
                 drawHotSpotLine(lines[0], "antenna", hotspotBaseRect);
             }
 
-            function onToggleDOM() {
+            globalThis.onToggleDOM = () => {
                 isViewerConnected ? document.body.removeChild(viewerElement) : document.body.appendChild(viewerElement);
                 isViewerConnected = !isViewerConnected;
             }
 
-            function onToggleEngine() {
+            globalThis.onToggleEngine = () => {
                 viewerElement.engine = viewerElement.engine === "WebGL" ? "WebGPU" : "WebGL";
             }
 
-            function onToggleHotSpot() {
+            globalThis.onToggleHotSpot = () => {
                 hotspotVisible = !hotspotVisible;
                 lines[0].style.visibility = hotspotVisible ? "visible" : "hidden";
                 if (hotspotVisible) {
@@ -229,6 +238,19 @@
                 } else {
                     viewerElement.removeEventListener("viewerrender", updateHotSpotLines);
                 }
+            }
+
+            let isInspectorVisible = false;
+            globalThis.onToggleInspector = () => {
+                console.log("toggle inspector");
+                if (isInspectorVisible) {
+                    Inspector.Hide();
+                } else {
+                    console.log(viewerDetails != null);
+                    console.log(viewerDetails?.scene != null);
+                    Inspector.Show(viewerDetails.scene, {});
+                }
+                isInspectorVisible = !isInspectorVisible;
             }
         </script>
     </body>

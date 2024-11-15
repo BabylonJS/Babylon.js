@@ -1,7 +1,7 @@
 import * as React from "react";
 import { ClassNames } from "../classNames";
 
-import style from "./CommandButton.modules.scss";
+import style from "./CommandButton.module.scss";
 
 export interface ICommandButtonComponentProps {
     tooltip: string;

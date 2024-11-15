@@ -12,6 +12,7 @@ import type { WebGPUSnapshotRendering } from "./WebGPU/webgpuSnapshotRendering";
 import { Constants } from "./constants";
 import type { WebGPUBundleList } from "./WebGPU/webgpuBundleList";
 import type { WebGPUTimestampQuery } from "./WebGPU/webgpuTimestampQuery";
+import type { WebGPUOcclusionQuery } from "./WebGPU/webgpuOcclusionQuery";
 
 /**
  * The base engine class for WebGPU
@@ -35,6 +36,8 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
     public _textureHelper: WebGPUTextureManager;
     /** @internal */
     public _cacheRenderPipeline: WebGPUCacheRenderPipeline;
+    /** @internal */
+    public _occlusionQuery: WebGPUOcclusionQuery;
 
     // Frame Life Cycle (recreated each frame)
     /** @internal */

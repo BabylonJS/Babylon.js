@@ -3,8 +3,8 @@ import type { ImageSourceBlock } from "core/Materials/Node/Blocks/Dual/imageSour
 import { TextureLineComponent } from "../../sharedComponents/textureLineComponent";
 import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
-import localStyles from "./imageSourceDisplayManager.modules.scss";
-import commonStyles from "./common.modules.scss";
+import localStyles from "./imageSourceDisplayManager.module.scss";
+import commonStyles from "./common.module.scss";
 
 export class ImageSourceDisplayManager implements IDisplayManager {
     private _previewCanvas: HTMLCanvasElement;
