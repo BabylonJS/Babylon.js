@@ -146,7 +146,7 @@ export class WebAudioEngine extends AbstractAudioEngine {
     public override dispose(): void {
         super.dispose();
 
-        if (this._audioContext instanceof AudioContext) {
+        if (this._audioContext instanceof AudioContext && this._audioContext.state !== "closed") {
             this._audioContext.close();
         }
 
