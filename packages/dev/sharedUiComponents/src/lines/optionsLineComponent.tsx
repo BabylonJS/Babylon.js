@@ -3,7 +3,7 @@ import type { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
 import { copyCommandToClipboard, getClassNameWithNamespace } from "../copyCommandToClipboard";
 import type { IInspectableOptions } from "core/Misc/iInspectable";
-import copyIcon from "./copy.svg";
+import copyIcon from "../imgs/copy.svg";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const Null_Value = Number.MAX_SAFE_INTEGER;
@@ -108,7 +108,7 @@ export class OptionsLine extends React.Component<IOptionsLineProps, { value: num
             const { className, babylonNamespace } = getClassNameWithNamespace(this.props.target);
             const targetName = "globalThis.debugNode";
             const targetProperty = this.props.propertyName;
-            const value = this.props.target[this.props.propertyName!];
+            const value = this.props.extractValue ? this.props.extractValue(this.props.target) : this.props.target[this.props.propertyName!];
             const strCommand = targetName + "." + targetProperty + " = " + value + ";// (debugNode as " + babylonNamespace + className + ")";
             copyCommandToClipboard(strCommand);
         } else {

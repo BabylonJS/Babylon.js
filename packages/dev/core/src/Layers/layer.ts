@@ -95,6 +95,11 @@ export class Layer {
     public renderOnlyInRenderTargetTextures = false;
 
     /**
+     * Define if the colors of the layer should be generated in linear space (default: false)
+     */
+    public convertToLinearSpace = false;
+
+    /**
      * Define if the layer is enabled (ie. should be displayed). Default: true
      */
     public isEnabled = true;
@@ -263,8 +268,14 @@ export class Layer {
             defines = "#define ALPHATEST";
         }
 
-        if (this.texture && !this.texture.gammaSpace) {
-            defines += "\n#define LINEAR";
+        if (this.texture) {
+            if (this.texture.gammaSpace) {
+                if (this.convertToLinearSpace) {
+                    defines += "\n#define CONVERT_TO_LINEAR";
+                }
+            } else if (!this.convertToLinearSpace) {
+                defines += "\n#define CONVERT_TO_GAMMA";
+            }
         }
 
         if (this._previousDefines !== defines) {
@@ -295,7 +306,7 @@ export class Layer {
 
         const currentEffect = this._drawWrapper.effect;
 
-        return currentEffect?.isReady() && (!this.texture || this.texture.isReady());
+        return !!currentEffect?.isReady() && (!this.texture || this.texture.isReady());
     }
 
     /**

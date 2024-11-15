@@ -619,7 +619,7 @@ export class Constants {
      */
     public static readonly PREPASS_NORMAL_TEXTURE_TYPE = 6;
     /**
-     * Constant used to retrieve albedo index in the textures array in the prepass
+     * Constant used to retrieve (sqrt) albedo index in the textures array in the prepass
      * using the getIndex(Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE)
      */
     public static readonly PREPASS_ALBEDO_SQRT_TEXTURE_TYPE = 7;
@@ -647,6 +647,12 @@ export class Constants {
      * using getIndex(Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE)
      */
     public static readonly PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE = 11;
+
+    /**
+     * Constant used to retrieve albedo index in the textures array in the prepass
+     * using the getIndex(Constants.PREPASS_ALBEDO_TEXTURE_TYPE)
+     */
+    public static readonly PREPASS_ALBEDO_TEXTURE_TYPE = 12;
 
     /** Flag to create a readable buffer (the buffer can be the source of a copy) */
     public static readonly BUFFER_CREATIONFLAG_READ = 1;
@@ -810,6 +816,14 @@ export class Constants {
     public static readonly GL_ALPHA_FUNCTION_CONSTANT_ALPHA = 0x8003;
     /** Alpha blend function: ONE_MINUS_CONSTANT_ALPHA */
     public static readonly GL_ALPHA_FUNCTION_ONE_MINUS_CONSTANT_ALPHA = 0x8004;
+    /** Alpha blend function: SRC1 */
+    public static readonly GL_ALPHA_FUNCTION_SRC1_COLOR = 0x88f9;
+    /** Alpha blend function: SRC1 */
+    public static readonly GL_ALPHA_FUNCTION_ONE_MINUS_SRC1_COLOR = 0x88fa;
+    /** Alpha blend function: SRC1 */
+    public static readonly GL_ALPHA_FUNCTION_SRC1_ALPHA = 0x8589;
+    /** Alpha blend function: SRC1 */
+    public static readonly GL_ALPHA_FUNCTION_ONE_MINUS_SRC1_ALPHA = 0x88fb;
 
     /** URL to the snippet server. Points to the public snippet server by default */
     public static SnippetUrl = "https://snippet.babylonjs.com";

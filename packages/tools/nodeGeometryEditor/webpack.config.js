@@ -13,7 +13,7 @@ module.exports = (env) => {
             },
             {
                 static: ["public"],
-                port: process.env.NGE_PORT || 1340,
+                port: process.env.NGE_PORT || 1343,
             }
         ),
         resolve: {
@@ -21,6 +21,7 @@ module.exports = (env) => {
             alias: {
                 "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
                 serializers: path.resolve("../../dev/serializers/dist"),
+                materials: path.resolve("../../dev/materials/dist"),
             },
         },
         externals: [

@@ -14,14 +14,21 @@ import type { INodeData } from "./interfaces/nodeData";
 import type { IPortData } from "./interfaces/portData";
 import localStyles from "./graphNode.modules.scss";
 import commonStyles from "./common.modules.scss";
+import type { IEditablePropertyListOption, IEditablePropertyOption, IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
+import { PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
+import { ForceRebuild } from "./automaticProperties";
+import dropdownArrowIcon from "../imgs/dropdownArrowIcon_white.svg";
 
 export class GraphNode {
     private _visual: HTMLDivElement;
     private _headerContainer: HTMLDivElement;
     private _headerIcon: HTMLDivElement;
     private _headerIconImg: HTMLImageElement;
+    private _headerCollapseImg: HTMLImageElement;
     private _header: HTMLDivElement;
+    private _headerCollapse: HTMLDivElement;
     private _connections: HTMLDivElement;
+    private _optionsContainer: HTMLDivElement;
     private _inputsContainer: HTMLDivElement;
     private _outputsContainer: HTMLDivElement;
     private _content: HTMLDivElement;
@@ -48,6 +55,7 @@ export class GraphNode {
     private _displayManager: Nullable<IDisplayManager> = null;
     private _isVisible = true;
     private _enclosingFrameId = -1;
+    private _visualPropertiesRefresh: Array<() => void> = [];
 
     public addClassToVisual(className: string) {
         this._visual.classList.add(className);
@@ -55,6 +63,10 @@ export class GraphNode {
 
     public removeClassFromVisual(className: string) {
         this._visual.classList.remove(className);
+    }
+
+    public get isCollapsed() {
+        return this._isCollapsed;
     }
 
     public get isVisible() {
@@ -369,6 +381,10 @@ export class GraphNode {
             this._header.innerHTML = this.content.name;
         }
 
+        for (const refresh of this._visualPropertiesRefresh) {
+            refresh();
+        }
+
         for (const port of this._inputPorts) {
             port.refresh();
         }
@@ -391,14 +407,11 @@ export class GraphNode {
         this._executionTime.innerHTML = executionTime >= 0 ? `${executionTime.toFixed(2)} ms` : "";
 
         this.content.prepareHeaderIcon(this._headerIcon, this._headerIconImg);
-        if (this._headerIconImg.src) {
-            this._header.classList.add(localStyles["headerWithIcon"]);
-        }
     }
 
     private _onDown(evt: PointerEvent) {
         // Check if this is coming from the port
-        if (evt.target && (evt.target as HTMLElement).nodeName === "IMG") {
+        if (evt.target && (evt.target as HTMLElement).nodeName === "IMG" && (evt.target as HTMLElement).draggable) {
             return;
         }
 
@@ -547,6 +560,55 @@ export class GraphNode {
         });
     }
 
+    private _forceRebuild(source: any, propertyName: string, notifiers?: IEditablePropertyOption["notifiers"]) {
+        for (const refresh of this._visualPropertiesRefresh) {
+            refresh();
+        }
+        ForceRebuild(source, this._stateManager, propertyName, notifiers);
+    }
+
+    private _isCollapsed = false;
+
+    /**
+     * Collapse the node
+     */
+    public collapse() {
+        this._headerCollapse.classList.add(localStyles.collapsed);
+        this._inputPorts
+            .filter((p) => !p.portData.isConnected)
+            .forEach((p) => {
+                p.container.classList.add(commonStyles.hidden);
+            });
+
+        this._outputPorts
+            .filter((p) => !p.portData.isConnected)
+            .forEach((p) => {
+                p.container.classList.add(commonStyles.hidden);
+            });
+
+        this._refreshLinks();
+    }
+
+    /**
+     * Expand the node
+     */
+    public expand() {
+        this._headerCollapse.classList.remove(localStyles.collapsed);
+        this._inputPorts
+            .filter((p) => !p.portData.isConnected)
+            .forEach((p) => {
+                p.container.classList.remove(commonStyles.hidden);
+            });
+
+        this._outputPorts
+            .filter((p) => !p.portData.isConnected)
+            .forEach((p) => {
+                p.container.classList.remove(commonStyles.hidden);
+            });
+
+        this._refreshLinks();
+    }
+
     public appendVisual(root: HTMLDivElement, owner: GraphCanvasComponent) {
         this._ownerCanvas = owner;
 
@@ -576,8 +638,30 @@ export class GraphNode {
         this._headerIcon = root.ownerDocument!.createElement("div");
         this._headerIcon.classList.add(localStyles.headerIcon);
         this._headerIconImg = root.ownerDocument!.createElement("img");
+        this._headerIconImg.draggable = false;
         this._headerIcon.appendChild(this._headerIconImg);
         this._headerContainer.appendChild(this._headerIcon);
+
+        if (this.content.inputs.length > 1 || this.content.outputs.length > 1) {
+            this._headerCollapse = root.ownerDocument!.createElement("div");
+            this._headerCollapse.classList.add(localStyles.headerCollapse);
+            this._headerCollapseImg = root.ownerDocument!.createElement("img");
+            this._headerCollapseImg.src = dropdownArrowIcon;
+            this._headerCollapseImg.draggable = false;
+            this._headerCollapse.appendChild(this._headerCollapseImg);
+            this._headerContainer.appendChild(this._headerCollapse);
+            this._headerCollapse.addEventListener("pointerup", (evt) => evt.stopPropagation());
+            this._headerCollapse.addEventListener("pointermove", (evt) => evt.stopPropagation());
+            this._headerCollapse.addEventListener("pointerdown", (evt) => {
+                this._isCollapsed = !this._isCollapsed;
+                if (this._isCollapsed) {
+                    this.collapse();
+                } else {
+                    this.expand();
+                }
+                evt.stopPropagation();
+            });
+        }
 
         this._selectionBorder = root.ownerDocument!.createElement("div");
         this._selectionBorder.classList.add("selection-border");
@@ -586,6 +670,10 @@ export class GraphNode {
         this._connections = root.ownerDocument!.createElement("div");
         this._connections.classList.add(localStyles.connections);
         this._visual.appendChild(this._connections);
+
+        this._optionsContainer = root.ownerDocument!.createElement("div");
+        this._optionsContainer.classList.add(localStyles.optionsContainer);
+        this._connections.appendChild(this._optionsContainer);
 
         this._inputsContainer = root.ownerDocument!.createElement("div");
         this._inputsContainer.classList.add(commonStyles.inputsContainer);
@@ -607,11 +695,180 @@ export class GraphNode {
 
         this._visual.appendChild(this._comments);
 
-        // Comments
+        // Execution time
         this._executionTime = root.ownerDocument!.createElement("div");
         this._executionTime.classList.add(localStyles.executionTime);
 
         this._visual.appendChild(this._executionTime);
+
+        // Options
+        let idGenerator = 0;
+        const propStore: IPropertyDescriptionForEdition[] = (this.content.data as any)._propStore;
+        if (propStore) {
+            const source = this.content.data;
+
+            const classes: string[] = [];
+
+            let proto = Object.getPrototypeOf(source);
+            while (proto) {
+                classes.push(proto.constructor.name);
+                proto = Object.getPrototypeOf(proto);
+            }
+
+            for (const { propertyName, displayName, type, options, className } of propStore) {
+                if (!options || !options.embedded || classes.indexOf(className) === -1) {
+                    continue;
+                }
+
+                const container = root.ownerDocument!.createElement("div");
+                container.addEventListener("pointerdown", (evt) => evt.stopPropagation());
+                container.addEventListener("pointerup", (evt) => evt.stopPropagation());
+                container.addEventListener("pointermove", (evt) => evt.stopPropagation());
+                this._optionsContainer.appendChild(container);
+                switch (type) {
+                    case PropertyTypeForEdition.Boolean: {
+                        container.classList.add(localStyles.booleanContainer);
+                        const checkbox = root.ownerDocument!.createElement("input");
+                        checkbox.type = "checkbox";
+                        checkbox.id = `checkbox-${idGenerator++}`;
+                        checkbox.checked = source[propertyName];
+                        this._visualPropertiesRefresh.push(() => {
+                            checkbox.checked = source[propertyName];
+                        });
+                        checkbox.onchange = () => {
+                            source[propertyName] = !source[propertyName];
+                            this._forceRebuild(source, propertyName, options?.notifiers);
+                        };
+                        container.appendChild(checkbox);
+                        const label = root.ownerDocument!.createElement("label");
+                        label.innerText = displayName;
+                        label.htmlFor = checkbox.id;
+                        container.appendChild(label);
+                        break;
+                    }
+                    case PropertyTypeForEdition.Int:
+                    case PropertyTypeForEdition.Float: {
+                        const cantDisplaySlider = isNaN(options.min as number) || isNaN(options.max as number) || options.min === options.max;
+                        if (cantDisplaySlider) {
+                            container.classList.add(localStyles.floatContainer);
+                            const numberInput = root.ownerDocument!.createElement("input");
+                            numberInput.type = "number";
+                            numberInput.id = `number-${idGenerator++}`;
+                            this._visualPropertiesRefresh.push(() => {
+                                numberInput.value = source[propertyName];
+                            });
+                            numberInput.onchange = () => {
+                                source[propertyName] = parseFloat(numberInput.value);
+                                this._forceRebuild(source, propertyName, options?.notifiers);
+                            };
+                            container.appendChild(numberInput);
+                            const label = root.ownerDocument!.createElement("div");
+                            label.innerText = displayName;
+                            container.appendChild(label);
+
+                            let shouldCapture = false;
+                            numberInput.onpointerdown = (evt) => {
+                                shouldCapture = true;
+                                evt.preventDefault();
+                            };
+                            numberInput.onpointerup = (evt) => {
+                                if (numberInput.hasPointerCapture(evt.pointerId)) {
+                                    numberInput.releasePointerCapture(evt.pointerId);
+                                    shouldCapture = false;
+                                    evt.preventDefault();
+                                } else {
+                                    numberInput.focus();
+                                    numberInput.select();
+                                }
+                            };
+                            numberInput.onpointermove = (evt) => {
+                                if (shouldCapture) {
+                                    numberInput.setPointerCapture(evt.pointerId);
+                                }
+
+                                if (numberInput.hasPointerCapture(evt.pointerId)) {
+                                    numberInput.value = (parseFloat(numberInput.value) + evt.movementX * 0.01).toFixed(2);
+                                    source[propertyName] = parseFloat(numberInput.value);
+                                    this._forceRebuild(source, propertyName, options?.notifiers);
+                                    evt.preventDefault();
+                                }
+                            };
+                        } else {
+                            container.classList.add(localStyles.sliderContainer);
+                            const label = root.ownerDocument!.createElement("label");
+                            container.appendChild(label);
+                            const value = root.ownerDocument!.createElement("div");
+                            container.appendChild(value);
+                            const slider = root.ownerDocument!.createElement("input");
+                            slider.type = "range";
+                            slider.id = `slider-${idGenerator++}`;
+                            slider.step = type === PropertyTypeForEdition.Int ? "1" : (Math.abs((options.max as number) - (options.min as number)) / 100.0).toString();
+                            slider.min = (options.min as number).toString();
+                            slider.max = (options.max as number).toString();
+                            container.appendChild(slider);
+                            label.innerText = displayName;
+                            label.htmlFor = slider.id;
+                            this._visualPropertiesRefresh.push(() => {
+                                slider.value = source[propertyName];
+                                value.innerText = source[propertyName];
+                            });
+                            slider.oninput = () => {
+                                source[propertyName] = parseFloat(slider.value);
+                                value.innerText = source[propertyName];
+                                this._forceRebuild(source, propertyName, options?.notifiers);
+                            };
+                        }
+                        break;
+                    }
+                    case PropertyTypeForEdition.List: {
+                        container.classList.add(localStyles.listContainer);
+                        const select = root.ownerDocument!.createElement("div");
+                        select.classList.add(localStyles.select);
+                        container.appendChild(select);
+                        const selectText = root.ownerDocument!.createElement("div");
+                        selectText.classList.add(localStyles.selectText);
+                        select.appendChild(selectText);
+                        const items = options.options as IEditablePropertyListOption[];
+
+                        this._visualPropertiesRefresh.push(() => {
+                            selectText.innerText = items[source[propertyName]].label;
+                        });
+                        const selectList = root.ownerDocument!.createElement("div");
+                        selectList.classList.add(localStyles.selectList);
+                        selectList.classList.add(commonStyles.hidden);
+                        select.appendChild(selectList);
+                        for (const item of items) {
+                            const option = root.ownerDocument!.createElement("div");
+                            option.classList.add(localStyles.option);
+                            option.innerText = item.label;
+                            option.onclick = () => {
+                                source[propertyName] = item.value;
+                                this._forceRebuild(source, propertyName, options?.notifiers);
+                            };
+                            selectList.appendChild(option);
+                        }
+
+                        select.onclick = () => {
+                            selectList.classList.toggle(commonStyles.hidden);
+                            select.classList.toggle(localStyles.active);
+                            this._visual.classList.toggle(localStyles.topMost);
+                            this._stateManager.modalIsDisplayed = !this._stateManager.modalIsDisplayed;
+                        };
+
+                        select.onpointerleave = () => {
+                            selectList.classList.add(commonStyles.hidden);
+                            select.classList.remove(localStyles.active);
+                            this._visual.classList.remove(localStyles.topMost);
+                            this._stateManager.modalIsDisplayed = false;
+                        };
+                    }
+                }
+            }
+        }
+
+        if (this._visualPropertiesRefresh.length === 0) {
+            this._inputsContainer.classList.add(commonStyles.inputsContainerUp);
+        }
 
         // Connections
         for (const input of this.content.inputs) {

@@ -145,7 +145,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
     // Vertex color
 #ifdef VERTEXCOLOR
-    vertexOutputs.vColor = color;
+    vertexOutputs.vColor = vertexInputs.color;
 #endif
 
 #include<logDepthVertex>

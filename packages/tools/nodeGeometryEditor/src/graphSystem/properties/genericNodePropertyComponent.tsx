@@ -14,7 +14,8 @@ import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/no
 import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
 import { Vector4LineComponent } from "shared-ui-components/lines/vector4LineComponent";
 import type { IEditablePropertyListOption } from "core/Decorators/nodeDecorator";
-import { PropertyTypeForEdition, type IEditablePropertyOption, type IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
+import { PropertyTypeForEdition, type IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
+import { ForceRebuild } from "shared-ui-components/nodeGraphSystem/automaticProperties";
 
 export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
@@ -198,26 +199,6 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
         super(props);
     }
 
-    forceRebuild(propertyName: string, notifiers?: IEditablePropertyOption["notifiers"]) {
-        if (notifiers?.onValidation && !notifiers?.onValidation(this.props.nodeData.data as NodeGeometryBlock, propertyName)) {
-            return;
-        }
-
-        if (!notifiers || notifiers.update) {
-            this.props.stateManager.onUpdateRequiredObservable.notifyObservers(this.props.nodeData.data as NodeGeometryBlock);
-        }
-
-        if (!notifiers || notifiers.rebuild) {
-            this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
-        }
-
-        const rebuild = notifiers?.callback?.(null, this.props.nodeData.data as NodeGeometryBlock) ?? false;
-
-        if (rebuild) {
-            this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
-        }
-    }
-
     override render() {
         const block = this.props.nodeData.data as NodeGeometryBlock,
             propStore: IPropertyDescriptionForEdition[] = (block as any)._propStore;
@@ -229,8 +210,20 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
         const componentList: { [groupName: string]: JSX.Element[] } = {},
             groups: string[] = [];
 
-        for (const { propertyName, displayName, type, groupName, options } of propStore) {
+        const classes: string[] = [];
+
+        let proto = Object.getPrototypeOf(block);
+        while (proto) {
+            classes.push(proto.constructor.name);
+            proto = Object.getPrototypeOf(proto);
+        }
+
+        for (const { propertyName, displayName, type, groupName, options, className } of propStore) {
             let components = componentList[groupName];
+
+            if (options.embedded || classes.indexOf(className) === -1) {
+                continue;
+            }
 
             if (!components) {
                 components = [];
@@ -246,7 +239,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                             label={displayName}
                             target={block}
                             propertyName={propertyName}
-                            onValueChanged={() => this.forceRebuild(propertyName, options.notifiers)}
+                            onValueChanged={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
                         />
                     );
                     break;
@@ -261,7 +254,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                                 label={displayName}
                                 propertyName={propertyName}
                                 target={block}
-                                onChange={() => this.forceRebuild(propertyName, options.notifiers)}
+                                onChange={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
                             />
                         );
                     } else {
@@ -275,7 +268,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                                 step={Math.abs((options.max as number) - (options.min as number)) / 100.0}
                                 minimum={Math.min(options.min as number, options.max as number)}
                                 maximum={options.max as number}
-                                onChange={() => this.forceRebuild(propertyName, options.notifiers)}
+                                onChange={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
                             />
                         );
                     }
@@ -294,7 +287,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                                 label={displayName}
                                 propertyName={propertyName}
                                 target={block}
-                                onChange={() => this.forceRebuild(propertyName, options.notifiers)}
+                                onChange={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
                             />
                         );
                     } else {
@@ -309,7 +302,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                                 propertyName={propertyName}
                                 minimum={Math.min(options.min as number, options.max as number)}
                                 maximum={options.max as number}
-                                onChange={() => this.forceRebuild(propertyName, options.notifiers)}
+                                onChange={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
                             />
                         );
                     }
@@ -323,7 +316,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                             label={displayName}
                             propertyName={propertyName}
                             target={block}
-                            onChange={() => this.forceRebuild(propertyName, options.notifiers)}
+                            onChange={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
                         />
                     );
                     break;
@@ -336,7 +329,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                             options={options.options as IEditablePropertyListOption[]}
                             target={block}
                             propertyName={propertyName}
-                            onSelect={() => this.forceRebuild(propertyName, options.notifiers)}
+                            onSelect={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
                         />
                     );
                     break;

@@ -18,6 +18,12 @@
         "outputDirectory": "./declarations"
     },
     {
+        "declarationLibs": ["@dev/addons"],
+        "devPackageName": "addons",
+        "filename": "addons.d.ts",
+        "outputDirectory": "./declarations"
+    },
+    {
         "declarationLibs": ["@dev/inspector"],
         "devPackageName": "inspector",
         "filename": "inspector.d.ts",
@@ -28,11 +34,17 @@
         "devPackageName": "node-editor",
         "filename": "node-editor.d.ts",
         "outputDirectory": "./declarations"
-    },    
+    },
     {
         "declarationLibs": ["@tools/node-geometry-editor"],
         "devPackageName": "node-geometry-editor",
         "filename": "node-geometry-editor.d.ts",
+        "outputDirectory": "./declarations"
+    },
+    {
+        "declarationLibs": ["@tools/node-render-graph-editor"],
+        "devPackageName": "node-render-graph-editor",
+        "filename": "node-render-graph-editor.d.ts",
         "outputDirectory": "./declarations"
     },
     {

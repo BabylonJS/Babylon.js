@@ -32,7 +32,6 @@ export class GlobalState {
     onReOrganizedRequiredObservable = new Observable<void>();
     onLogRequiredObservable = new Observable<LogEntry>();
     onIsLoadingChanged = new Observable<boolean>();
-    onPreviewCommandActivated = new Observable<boolean>();
     onLightUpdated = new Observable<void>();
     onBackgroundHDRUpdated = new Observable<void>();
     onPreviewBackgroundChanged = new Observable<void>();
@@ -74,7 +73,7 @@ export class GlobalState {
     public set mode(m: NodeMaterialModes) {
         DataStorage.WriteNumber("Mode", m);
         this._mode = m;
-        this.onPreviewCommandActivated.notifyObservers(true);
+        this.stateManager.onPreviewCommandActivated.notifyObservers(true);
     }
 
     /** Gets the engine */
@@ -136,6 +135,7 @@ export class GlobalState {
         this.stateManager = new StateManager();
         this.stateManager.data = this;
         this.stateManager.lockObject = this.lockObject;
+        this.stateManager.getScene = () => this.nodeMaterial.getScene();
 
         RegisterElbowSupport(this.stateManager);
         RegisterDebugSupport(this.stateManager);

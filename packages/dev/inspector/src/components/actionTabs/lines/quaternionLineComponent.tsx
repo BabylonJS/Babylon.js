@@ -9,7 +9,7 @@ import { Tools } from "core/Misc/tools";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { copyCommandToClipboard, getClassNameWithNamespace } from "shared-ui-components/copyCommandToClipboard";
-import copyIcon from "shared-ui-components/lines/copy.svg";
+import copyIcon from "shared-ui-components/imgs/copy.svg";
 
 interface IQuaternionLineComponentProps {
     label: string;

@@ -65,7 +65,6 @@ export class GlobalState {
         this.stateManager = new StateManager();
         this.stateManager.data = this;
         this.stateManager.lockObject = this.lockObject;
-
         RegisterElbowSupport(this.stateManager);
         RegisterDebugSupport(this.stateManager);
         RegisterNodePortDesign(this.stateManager);

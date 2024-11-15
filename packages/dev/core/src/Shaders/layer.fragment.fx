@@ -17,8 +17,10 @@ void main(void) {
 
 	vec4 baseColor = texture2D(textureSampler, vUV);
 	
-#ifdef LINEAR
+#if defined(CONVERT_TO_GAMMA)
 	baseColor.rgb = toGammaSpace(baseColor.rgb);
+#elif defined(CONVERT_TO_LINEAR)
+	baseColor.rgb = toLinearSpace(baseColor.rgb);
 #endif
 
 #ifdef ALPHATEST

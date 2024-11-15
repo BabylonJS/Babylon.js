@@ -9,8 +9,7 @@
     #if defined(THIN_INSTANCES) && !defined(WORLD_UBO)
         uniform mat4 world;
     #endif
-#if defined(VELOCITY) || defined(PREPASS_VELOCITY) ||                  \
-            defined(PREPASS_VELOCITY_LINEAR)
+#if defined(VELOCITY) || defined(PREPASS_VELOCITY) || defined(PREPASS_VELOCITY_LINEAR) || defined(VELOCITY_LINEAR)
         attribute vec4 previousWorld0;
         attribute vec4 previousWorld1;
         attribute vec4 previousWorld2;
@@ -23,8 +22,7 @@
     #if !defined(WORLD_UBO)
 	    uniform mat4 world;
     #endif
-#if defined(VELOCITY) || defined(PREPASS_VELOCITY) ||              \
-                defined(PREPASS_VELOCITY_LINEAR)
+#if defined(VELOCITY) || defined(PREPASS_VELOCITY) || defined(PREPASS_VELOCITY_LINEAR) || defined(VELOCITY_LINEAR)
             uniform mat4 previousWorld;
 #endif
 #endif

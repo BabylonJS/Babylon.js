@@ -905,8 +905,9 @@ export class Texture extends BaseTexture {
         serializationObject._creationFlags = this._creationFlags;
         serializationObject._useSRGBBuffer = this._useSRGBBuffer;
         if (Texture._SerializeInternalTextureUniqueId) {
-            serializationObject.internalTextureUniqueId = this._texture?.uniqueId ?? undefined;
+            serializationObject.internalTextureUniqueId = this._texture?.uniqueId;
         }
+        serializationObject.internalTextureLabel = this._texture?.label;
         serializationObject.noMipmap = this._noMipmap;
 
         this.name = savedName;
@@ -1003,8 +1004,12 @@ export class Texture extends BaseTexture {
                 }
             }
 
-            if (hasInternalTextureUniqueId && !internalTexture) {
-                texture?._texture?._setUniqueId(parsedTexture.internalTextureUniqueId);
+            if (texture && texture._texture) {
+                if (hasInternalTextureUniqueId && !internalTexture) {
+                    texture._texture._setUniqueId(parsedTexture.internalTextureUniqueId);
+                }
+
+                texture._texture.label = parsedTexture.internalTextureLabel;
             }
         };
 

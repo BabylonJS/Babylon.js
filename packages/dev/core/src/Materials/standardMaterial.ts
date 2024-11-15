@@ -59,8 +59,8 @@ import {
     PrepareUniformsAndSamplersList,
 } from "./materialHelper.functions";
 import { SerializationHelper } from "../Misc/decorators.serialization";
-import { UniformBuffer } from "./uniformBuffer";
 import { ShaderLanguage } from "./shaderLanguage";
+import { MaterialHelperGeometryRendering } from "./materialHelper.geometryrendering";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -167,8 +167,12 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public ALPHABLEND = true;
 
     public PREPASS = false;
+    public PREPASS_COLOR = false;
+    public PREPASS_COLOR_INDEX = -1;
     public PREPASS_IRRADIANCE = false;
     public PREPASS_IRRADIANCE_INDEX = -1;
+    public PREPASS_ALBEDO = false;
+    public PREPASS_ALBEDO_INDEX = -1;
     public PREPASS_ALBEDO_SQRT = false;
     public PREPASS_ALBEDO_SQRT_INDEX = -1;
     public PREPASS_DEPTH = false;
@@ -812,16 +816,7 @@ export class StandardMaterial extends PushMaterial {
      * @param forceGLSL Use the GLSL code generation for the shader (even on WebGPU). Default is false
      */
     constructor(name: string, scene?: Scene, forceGLSL = false) {
-        super(name, scene);
-        const engine = this.getScene().getEngine();
-        if (engine.isWebGPU && !forceGLSL && !StandardMaterial.ForceGLSL) {
-            // Switch main UBO to non UBO to connect to leftovers UBO in webgpu
-            if (this._uniformBuffer) {
-                this._uniformBuffer.dispose();
-            }
-            this._uniformBuffer = new UniformBuffer(engine, undefined, undefined, this.name, true);
-            this._shaderLanguage = ShaderLanguage.WGSL;
-        }
+        super(name, scene, undefined, forceGLSL || StandardMaterial.ForceGLSL);
 
         this.detailMap = new DetailMapConfiguration(this);
 
@@ -968,6 +963,8 @@ export class StandardMaterial extends PushMaterial {
 
         // Order independant transparency
         PrepareDefinesForOIT(scene, defines, oit);
+
+        MaterialHelperGeometryRendering.PrepareDefines(engine.currentRenderPassId, mesh, defines);
 
         // Textures
         if (defines._areTexturesDirty) {
@@ -1439,6 +1436,8 @@ export class StandardMaterial extends PushMaterial {
             this._eventInfo.indexParameters = indexParameters;
             this._callbackPluginEventGeneric(MaterialPluginEvent.PrepareEffect, this._eventInfo);
 
+            MaterialHelperGeometryRendering.AddUniformsAndSamplers(uniforms, samplers);
+
             PrePassConfiguration.AddUniforms(uniforms);
             PrePassConfiguration.AddSamplers(samplers);
 
@@ -1617,6 +1616,8 @@ export class StandardMaterial extends PushMaterial {
 
         this.prePassConfiguration.bindForSubMesh(this._activeEffect, scene, mesh, world, this.isFrozen);
 
+        MaterialHelperGeometryRendering.Bind(scene.getEngine().currentRenderPassId, this._activeEffect, mesh, world);
+
         this._eventInfo.subMesh = subMesh;
         this._callbackPluginEventHardBindForSubMesh(this._eventInfo);
 
@@ -1753,9 +1754,7 @@ export class StandardMaterial extends PushMaterial {
                     ubo.updateFloat("pointSize", this.pointSize);
                 }
 
-                if (defines.SPECULARTERM) {
-                    ubo.updateColor4("vSpecularColor", this.specularColor, this.specularPower);
-                }
+                ubo.updateColor4("vSpecularColor", this.specularColor, this.specularPower);
 
                 ubo.updateColor3("vEmissiveColor", StandardMaterial.EmissiveTextureEnabled ? this.emissiveColor : Color3.BlackReadOnly);
                 ubo.updateColor4("vDiffuseColor", this.diffuseColor, this.alpha);

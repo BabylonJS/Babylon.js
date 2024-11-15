@@ -283,8 +283,9 @@ export class Animatable {
     /**
      * Jump directly to a given frame
      * @param frame defines the frame to jump to
+     * @param useWeight defines whether the animation weight should be applied to the image to be jumped to (false by default)
      */
-    public goToFrame(frame: number): void {
+    public goToFrame(frame: number, useWeight = false): void {
         const runtimeAnimations = this._runtimeAnimations;
 
         if (runtimeAnimations[0]) {
@@ -295,7 +296,7 @@ export class Animatable {
         }
 
         for (let index = 0; index < runtimeAnimations.length; index++) {
-            runtimeAnimations[index].goToFrame(frame, this._weight);
+            runtimeAnimations[index].goToFrame(frame, useWeight ? this._weight : -1);
         }
 
         this._goToFrame = frame;

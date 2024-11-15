@@ -10,6 +10,19 @@ import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import type { ExternalTexture } from "../../Materials/Textures/externalTexture";
 import type { WebGPUDrawContext } from "./webgpuDrawContext";
 
+/**
+ * Sampler hash codes are 19 bits long, so using a start value of 2^20 for buffer ids will ensure we can't have any collision with the sampler hash codes
+ */
+const bufferIdStart = 1 << 20;
+
+/**
+ * textureIdStart is added to texture ids to ensure we can't have any collision with the buffer ids / sampler hash codes.
+ * 2^35 for textureIdStart means we can have:
+ * - 2^(35-20) = 2^15 = 32768 possible buffer ids
+ * - 2^(53-35) = 2^18 = 524288 possible texture ids
+ */
+const textureIdStart = 2 ** 35;
+
 class WebGPUBindGroupCacheNode {
     public values: { [id: number]: WebGPUBindGroupCacheNode };
     public bindGroups: GPUBindGroup[];
@@ -94,7 +107,7 @@ export class WebGPUCacheBindGroups {
             }
 
             for (const bufferName of webgpuPipelineContext.shaderProcessingContext.bufferNames) {
-                const uboId = drawContext.buffers[bufferName]?.uniqueId ?? 0;
+                const uboId = (drawContext.buffers[bufferName]?.uniqueId ?? 0) + bufferIdStart;
                 let nextNode = node.values[uboId];
                 if (!nextNode) {
                     nextNode = new WebGPUBindGroupCacheNode();
@@ -114,7 +127,7 @@ export class WebGPUCacheBindGroups {
             }
 
             for (const textureName of webgpuPipelineContext.shaderProcessingContext.textureNames) {
-                const textureId = materialContext.textures[textureName]?.texture?.uniqueId ?? 0;
+                const textureId = (materialContext.textures[textureName]?.texture?.uniqueId ?? 0) + textureIdStart;
                 let nextNode = node.values[textureId];
                 if (!nextNode) {
                     nextNode = new WebGPUBindGroupCacheNode();

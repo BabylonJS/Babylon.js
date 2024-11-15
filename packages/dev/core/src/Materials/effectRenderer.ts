@@ -1,15 +1,16 @@
-import type { Nullable } from "../types";
+import type { NonNullableFields, Nullable } from "../types";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Viewport } from "../Maths/math.viewport";
 import { Constants } from "../Engines/constants";
 import type { Observer } from "../Misc/observable";
 import { Observable } from "../Misc/observable";
+import type { IShaderPath } from "./effect";
 import { Effect } from "./effect";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import { DrawWrapper } from "./drawWrapper";
 import type { IRenderTargetTexture, RenderTargetWrapper } from "../Engines/renderTargetWrapper";
-import type { ShaderLanguage } from "./shaderLanguage";
+import { ShaderLanguage } from "./shaderLanguage";
 
 // Prevents ES6 issue if not imported.
 import "../Shaders/postprocess.vertex";
@@ -104,7 +105,7 @@ export class EffectRenderer {
         this.engine.setState(true);
         this.engine.depthCullingState.depthTest = false;
         this.engine.stencilState.stencilTest = false;
-        this.engine.enableEffect(effectWrapper._drawWrapper);
+        this.engine.enableEffect(effectWrapper.drawWrapper);
         this.bindBuffers(effectWrapper.effect);
         effectWrapper.onApplyObservable.notifyObservers({});
     }
@@ -139,7 +140,7 @@ export class EffectRenderer {
     /**
      * renders one or more effects to a specified texture
      * @param effectWrapper the effect to renderer
-     * @param outputTexture texture to draw to, if null it will render to the screen.
+     * @param outputTexture texture to draw to, if null it will render to the currently bound frame buffer
      */
     public render(effectWrapper: EffectWrapper, outputTexture: Nullable<RenderTargetWrapper | IRenderTargetTexture> = null) {
         // Ensure effect is ready
@@ -191,27 +192,53 @@ export class EffectRenderer {
 }
 
 /**
+ * Allows for custom processing of the shader code used by an effect wrapper
+ */
+export type EffectWrapperCustomShaderCodeProcessing = {
+    /**
+     * If provided, will be called two times with the vertex and fragment code so that this code can be updated after the #include have been processed
+     */
+    processCodeAfterIncludes?: (postProcessName: string, shaderType: string, code: string) => string;
+    /**
+     * If provided, will be called two times with the vertex and fragment code so that this code can be updated before it is compiled by the GPU
+     */
+    processFinalCode?: (postProcessName: string, shaderType: string, code: string) => string;
+    /**
+     * If provided, will be called before creating the effect to collect additional custom bindings (defines, uniforms, samplers)
+     */
+    defineCustomBindings?: (postProcessName: string, defines: Nullable<string>, uniforms: string[], samplers: string[]) => Nullable<string>;
+    /**
+     * If provided, will be called when binding inputs to the shader code to allow the user to add custom bindings
+     */
+    bindCustomBindings?: (postProcessName: string, effect: Effect) => void;
+};
+
+/**
  * Options to create an EffectWrapper
  */
-interface EffectWrapperCreationOptions {
+export interface EffectWrapperCreationOptions {
     /**
      * Engine to use to create the effect
      */
-    engine: AbstractEngine;
+    engine?: AbstractEngine;
     /**
      * Fragment shader for the effect
      */
-    fragmentShader: string;
+    fragmentShader?: string;
     /**
      * Use the shader store instead of direct source code
      */
     useShaderStore?: boolean;
     /**
-     * Vertex shader for the effect
+     * Vertex shader for the effect (default: "postprocess")
      */
     vertexShader?: string;
     /**
-     * Attributes to use in the shader
+     * Alias for vertexShader
+     */
+    vertexUrl?: string;
+    /**
+     * Attributes to use in the shader (default: ["position"])
      */
     attributeNames?: Array<string>;
     /**
@@ -219,19 +246,40 @@ interface EffectWrapperCreationOptions {
      */
     uniformNames?: Array<string>;
     /**
+     * Alias for uniformNames. Note that if it is provided, it takes precedence over uniformNames.
+     */
+    uniforms?: Nullable<string[]>;
+    /**
      * Texture sampler names to use in the shader
      */
     samplerNames?: Array<string>;
     /**
+     * Alias for samplerNames. Note that if it is provided, it takes precedence over samplerNames.
+     */
+    samplers?: Nullable<string[]>;
+    /**
+     * The list of uniform buffers used in the shader (if any)
+     */
+    uniformBuffers?: Nullable<string[]>;
+    /**
      * Defines to use in the shader
      */
-    defines?: Array<string>;
+    defines?: Nullable<string | Array<string>>;
+    /**
+     * The index parameters to be used for babylons include syntax "#include<kernelBlurVaryingDeclaration>[0..varyingCount]". (default: undefined)
+     * See usage in babylon.blurPostProcess.ts and kernelBlur.vertex.fx
+     */
+    indexParameters?: any;
+    /**
+     * If the shader should not be compiled immediately. (default: false)
+     */
+    blockCompilation?: boolean;
     /**
      * Callback when effect is compiled
      */
     onCompiled?: Nullable<(effect: Effect) => void>;
     /**
-     * The friendly name of the effect displayed in Spector.
+     * The friendly name of the effect (default: "effectWrapper")
      */
     name?: string;
     /**
@@ -239,9 +287,17 @@ interface EffectWrapperCreationOptions {
      */
     shaderLanguage?: ShaderLanguage;
     /**
+     * Defines additional code to call to prepare the shader code
+     */
+    extraInitializations?: (useWebGPU: boolean, list: Promise<any>[]) => void;
+    /**
      * Additional async code to run before preparing the effect
      */
     extraInitializationsAsync?: () => Promise<void>;
+    /**
+     * If the effect should be used as a post process (default: false). If true, the effect will be created with a "scale" uniform and a "textureSampler" sampler
+     */
+    useAsPostProcess?: boolean;
 }
 
 /**
@@ -249,9 +305,79 @@ interface EffectWrapperCreationOptions {
  */
 export class EffectWrapper {
     /**
-     * Event that is fired right before the effect is drawn (should be used to update uniforms)
+     * Force code to compile to glsl even on WebGPU engines.
+     * False by default. This is mostly meant for backward compatibility.
+     */
+    public static ForceGLSL = false;
+
+    private static _CustomShaderCodeProcessing: { [effectWrapperName: string]: EffectWrapperCustomShaderCodeProcessing } = {};
+
+    /**
+     * Registers a shader code processing with an effect wrapper name.
+     * @param effectWrapperName name of the effect wrapper. Use null for the fallback shader code processing. This is the shader code processing that will be used in case no specific shader code processing has been associated to an effect wrapper name
+     * @param customShaderCodeProcessing shader code processing to associate to the effect wrapper name
+     */
+    public static RegisterShaderCodeProcessing(effectWrapperName: Nullable<string>, customShaderCodeProcessing?: EffectWrapperCustomShaderCodeProcessing) {
+        if (!customShaderCodeProcessing) {
+            delete EffectWrapper._CustomShaderCodeProcessing[effectWrapperName ?? ""];
+            return;
+        }
+
+        EffectWrapper._CustomShaderCodeProcessing[effectWrapperName ?? ""] = customShaderCodeProcessing;
+    }
+
+    private static _GetShaderCodeProcessing(effectWrapperName: string) {
+        return EffectWrapper._CustomShaderCodeProcessing[effectWrapperName] ?? EffectWrapper._CustomShaderCodeProcessing[""];
+    }
+
+    /**
+     * Gets or sets the name of the effect wrapper
+     */
+    public get name() {
+        return this.options.name;
+    }
+
+    public set name(value: string) {
+        this.options.name = value;
+    }
+
+    /**
+     * Type of alpha mode to use when applying the effect (default: Engine.ALPHA_DISABLE). Used only if useAsPostProcess is true.
+     */
+    public alphaMode = Constants.ALPHA_DISABLE;
+
+    /**
+     * Executed when the effect is created
+     * @returns effect that was created for this effect wrapper
+     */
+    public onEffectCreatedObservable = new Observable<Effect>(undefined, true);
+
+    /**
+     * Options used to create the effect wrapper
+     */
+    public readonly options: Required<NonNullableFields<EffectWrapperCreationOptions>>;
+
+    /**
+     * Get a value indicating if the effect is ready to be used
+     * @returns true if the post-process is ready (shader is compiled)
+     */
+    public isReady() {
+        return this._drawWrapper.effect?.isReady() ?? false;
+    }
+
+    /**
+     * Get the draw wrapper associated with the effect wrapper
+     * @returns the draw wrapper associated with the effect wrapper
+     */
+    public get drawWrapper() {
+        return this._drawWrapper;
+    }
+
+    /**
+     * Event that is fired (only when the EffectWrapper is used with an EffectRenderer) right before the effect is drawn (should be used to update uniforms)
      */
     public onApplyObservable = new Observable<{}>();
+
     /**
      * The underlying effect
      */
@@ -263,88 +389,259 @@ export class EffectWrapper {
         this._drawWrapper.effect = effect;
     }
 
+    protected readonly _drawWrapper: DrawWrapper;
+    protected _shadersLoaded = false;
+    protected readonly _shaderPath: IShaderPath;
     /** @internal */
-    public _drawWrapper: DrawWrapper;
+    public _webGPUReady = false;
 
     private _onContextRestoredObserver: Nullable<Observer<AbstractEngine>>;
 
     /**
-     * Creates an effect to be renderer
+     * Creates an effect to be rendered
      * @param creationOptions options to create the effect
      */
     constructor(creationOptions: EffectWrapperCreationOptions) {
-        let shaderPath: any;
-        const uniformNames = creationOptions.uniformNames || [];
+        this.options = {
+            ...creationOptions,
+            name: creationOptions.name || "effectWrapper",
+            engine: creationOptions.engine!,
+            uniforms: creationOptions.uniforms || creationOptions.uniformNames || [],
+            uniformNames: undefined as any,
+            samplers: creationOptions.samplers || creationOptions.samplerNames || [],
+            samplerNames: undefined as any,
+            attributeNames: creationOptions.attributeNames || ["position"],
+            uniformBuffers: creationOptions.uniformBuffers || [],
+            defines: creationOptions.defines || "",
+            useShaderStore: creationOptions.useShaderStore || false,
+            vertexUrl: creationOptions.vertexUrl || creationOptions.vertexShader || "postprocess",
+            vertexShader: undefined as any,
+            fragmentShader: creationOptions.fragmentShader || "pass",
+            indexParameters: creationOptions.indexParameters,
+            blockCompilation: creationOptions.blockCompilation || false,
+            shaderLanguage: creationOptions.shaderLanguage || ShaderLanguage.GLSL,
+            onCompiled: creationOptions.onCompiled || (undefined as any),
+            extraInitializations: creationOptions.extraInitializations || (undefined as any),
+            extraInitializationsAsync: creationOptions.extraInitializationsAsync || (undefined as any),
+            useAsPostProcess: creationOptions.useAsPostProcess ?? false,
+        };
 
-        if (creationOptions.vertexShader) {
-            shaderPath = {
-                fragmentSource: creationOptions.fragmentShader,
-                vertexSource: creationOptions.vertexShader,
-                spectorName: creationOptions.name || "effectWrapper",
-            };
-        } else {
-            // Default scale to use in post process vertex shader.
-            uniformNames.push("scale");
+        this.options.uniformNames = this.options.uniforms;
+        this.options.samplerNames = this.options.samplers;
+        this.options.vertexShader = this.options.vertexUrl;
 
-            shaderPath = {
-                fragmentSource: creationOptions.fragmentShader,
-                vertex: "postprocess",
-                spectorName: creationOptions.name || "effectWrapper",
-            };
-
-            // Sets the default scale to identity for the post process vertex shader.
-            this.onApplyObservable.add(() => {
-                this.effect.setFloat2("scale", 1, 1);
-            });
+        if (this.options.useAsPostProcess) {
+            if (this.options.samplers.indexOf("textureSampler") === -1) {
+                this.options.samplers.push("textureSampler");
+            }
+            if (this.options.uniforms.indexOf("scale") === -1) {
+                this.options.uniforms.push("scale");
+            }
         }
 
-        const defines = creationOptions.defines ? creationOptions.defines.join("\n") : "";
-        this._drawWrapper = new DrawWrapper(creationOptions.engine);
+        if (creationOptions.vertexUrl || creationOptions.vertexShader) {
+            this._shaderPath = {
+                vertexSource: this.options.vertexShader,
+            };
+        } else {
+            if (!this.options.useAsPostProcess) {
+                this.options.uniforms.push("scale");
 
-        if (creationOptions.useShaderStore) {
-            shaderPath.fragment = shaderPath.fragmentSource;
-            if (!shaderPath.vertex) {
-                shaderPath.vertex = shaderPath.vertexSource;
+                this.onApplyObservable.add(() => {
+                    this.effect.setFloat2("scale", 1, 1);
+                });
             }
 
-            delete shaderPath.fragmentSource;
-            delete shaderPath.vertexSource;
+            this._shaderPath = {
+                vertex: this.options.vertexShader,
+            };
+        }
 
-            this.effect = creationOptions.engine.createEffect(
-                shaderPath,
-                creationOptions.attributeNames || ["position"],
-                uniformNames,
-                creationOptions.samplerNames,
-                defines,
-                undefined,
-                creationOptions.onCompiled,
-                undefined,
-                undefined,
-                creationOptions.shaderLanguage,
-                creationOptions.extraInitializationsAsync
-            );
-        } else {
-            this.effect = new Effect(
-                shaderPath,
-                creationOptions.attributeNames || ["position"],
-                uniformNames,
-                creationOptions.samplerNames,
-                creationOptions.engine,
-                defines,
-                undefined,
-                creationOptions.onCompiled,
-                undefined,
-                undefined,
-                undefined,
-                creationOptions.shaderLanguage,
-                creationOptions.extraInitializationsAsync
-            );
+        this._shaderPath.fragmentSource = this.options.fragmentShader;
+        this._shaderPath.spectorName = this.options.name;
 
-            this._onContextRestoredObserver = creationOptions.engine.onContextRestoredObservable.add(() => {
+        if (this.options.useShaderStore) {
+            this._shaderPath.fragment = this._shaderPath.fragmentSource;
+            if (!this._shaderPath.vertex) {
+                this._shaderPath.vertex = this._shaderPath.vertexSource;
+            }
+
+            delete this._shaderPath.fragmentSource;
+            delete this._shaderPath.vertexSource;
+        }
+
+        this.onApplyObservable.add(() => {
+            this.bind();
+        });
+
+        if (!this.options.useShaderStore) {
+            this._onContextRestoredObserver = this.options.engine.onContextRestoredObservable.add(() => {
                 this.effect._pipelineContext = null; // because _prepareEffect will try to dispose this pipeline before recreating it and that would lead to webgl errors
                 this.effect._prepareEffect();
             });
         }
+
+        this._drawWrapper = new DrawWrapper(this.options.engine);
+        this._webGPUReady = this.options.shaderLanguage === ShaderLanguage.WGSL;
+
+        const defines = Array.isArray(this.options.defines) ? this.options.defines.join("\n") : this.options.defines;
+
+        this._postConstructor(this.options.blockCompilation, defines, this.options.extraInitializations);
+    }
+
+    protected _gatherImports(useWebGPU = false, list: Promise<any>[]) {
+        if (!this.options.useAsPostProcess) {
+            return;
+        }
+
+        // this._webGPUReady is used to detect when an effect wrapper is intended to be used with WebGPU
+        if (useWebGPU && this._webGPUReady) {
+            list.push(Promise.all([import("../ShadersWGSL/postprocess.vertex")]));
+        } else {
+            list.push(Promise.all([import("../Shaders/postprocess.vertex")]));
+        }
+    }
+
+    private _importPromises: Array<Promise<any>> = [];
+
+    /** @internal */
+    public _postConstructor(
+        blockCompilation: boolean,
+        defines: Nullable<string> = null,
+        extraInitializations?: (useWebGPU: boolean, list: Promise<any>[]) => void,
+        importPromises?: Array<Promise<any>>
+    ) {
+        this._importPromises.length = 0;
+
+        if (importPromises) {
+            this._importPromises.push(...importPromises);
+        }
+
+        const useWebGPU = this.options.engine.isWebGPU && !EffectWrapper.ForceGLSL;
+
+        this._gatherImports(useWebGPU, this._importPromises);
+        if (extraInitializations !== undefined) {
+            extraInitializations(useWebGPU, this._importPromises);
+        }
+
+        if (useWebGPU && this._webGPUReady) {
+            this.options.shaderLanguage = ShaderLanguage.WGSL;
+        }
+
+        if (!blockCompilation) {
+            this.updateEffect(defines);
+        }
+    }
+
+    /**
+     * Updates the effect with the current effect wrapper compile time values and recompiles the shader.
+     * @param defines Define statements that should be added at the beginning of the shader. (default: null)
+     * @param uniforms Set of uniform variables that will be passed to the shader. (default: null)
+     * @param samplers Set of Texture2D variables that will be passed to the shader. (default: null)
+     * @param indexParameters The index parameters to be used for babylons include syntax "#include<kernelBlurVaryingDeclaration>[0..varyingCount]". (default: undefined) See usage in babylon.blurPostProcess.ts and kernelBlur.vertex.fx
+     * @param onCompiled Called when the shader has been compiled.
+     * @param onError Called if there is an error when compiling a shader.
+     * @param vertexUrl The url of the vertex shader to be used (default: the one given at construction time)
+     * @param fragmentUrl The url of the fragment shader to be used (default: the one given at construction time)
+     */
+    public updateEffect(
+        defines: Nullable<string> = null,
+        uniforms: Nullable<string[]> = null,
+        samplers: Nullable<string[]> = null,
+        indexParameters?: any,
+        onCompiled?: (effect: Effect) => void,
+        onError?: (effect: Effect, errors: string) => void,
+        vertexUrl?: string,
+        fragmentUrl?: string
+    ) {
+        const customShaderCodeProcessing = EffectWrapper._GetShaderCodeProcessing(this.name);
+        if (customShaderCodeProcessing?.defineCustomBindings) {
+            const newUniforms = uniforms?.slice() ?? [];
+            newUniforms.push(...this.options.uniforms);
+
+            const newSamplers = samplers?.slice() ?? [];
+            newSamplers.push(...this.options.samplers);
+
+            defines = customShaderCodeProcessing.defineCustomBindings(this.name, defines, newUniforms, newSamplers);
+            uniforms = newUniforms;
+            samplers = newSamplers;
+        }
+
+        this.options.defines = defines || "";
+
+        const waitImportsLoaded =
+            this._shadersLoaded || this._importPromises.length === 0
+                ? undefined
+                : async () => {
+                      await Promise.all(this._importPromises);
+                      this._shadersLoaded = true;
+                  };
+
+        let extraInitializationsAsync: (() => Promise<void>) | undefined;
+        if (this.options.extraInitializationsAsync) {
+            extraInitializationsAsync = async () => {
+                waitImportsLoaded?.();
+                await this.options.extraInitializationsAsync;
+            };
+        } else {
+            extraInitializationsAsync = waitImportsLoaded;
+        }
+
+        if (this.options.useShaderStore) {
+            this._drawWrapper.effect = this.options.engine.createEffect(
+                { vertex: vertexUrl ?? this._shaderPath.vertex, fragment: fragmentUrl ?? this._shaderPath.fragment },
+                {
+                    attributes: this.options.attributeNames,
+                    uniformsNames: uniforms || this.options.uniforms,
+                    uniformBuffersNames: this.options.uniformBuffers,
+                    samplers: samplers || this.options.samplers,
+                    defines: defines !== null ? defines : "",
+                    fallbacks: null,
+                    onCompiled: onCompiled ?? this.options.onCompiled,
+                    onError: onError ?? null,
+                    indexParameters: indexParameters || this.options.indexParameters,
+                    processCodeAfterIncludes: customShaderCodeProcessing?.processCodeAfterIncludes
+                        ? (shaderType: string, code: string) => customShaderCodeProcessing!.processCodeAfterIncludes!(this.name, shaderType, code)
+                        : null,
+                    processFinalCode: customShaderCodeProcessing?.processFinalCode
+                        ? (shaderType: string, code: string) => customShaderCodeProcessing!.processFinalCode!(this.name, shaderType, code)
+                        : null,
+                    shaderLanguage: this.options.shaderLanguage,
+                    extraInitializationsAsync,
+                },
+                this.options.engine
+            );
+        } else {
+            this._drawWrapper.effect = new Effect(
+                this._shaderPath,
+                this.options.attributeNames,
+                uniforms || this.options.uniforms,
+                samplers || this.options.samplerNames,
+                this.options.engine,
+                defines,
+                undefined,
+                onCompiled || this.options.onCompiled,
+                undefined,
+                undefined,
+                undefined,
+                this.options.shaderLanguage,
+                extraInitializationsAsync
+            );
+        }
+
+        this.onEffectCreatedObservable.notifyObservers(this._drawWrapper.effect);
+    }
+
+    /**
+     * Binds the data to the effect.
+     */
+    public bind() {
+        if (this.options.useAsPostProcess) {
+            this.options.engine.setAlphaMode(this.alphaMode);
+            this.drawWrapper.effect!.setFloat2("scale", 1, 1);
+        }
+
+        EffectWrapper._GetShaderCodeProcessing(this.name)?.bindCustomBindings?.(this.name, this._drawWrapper.effect!);
     }
 
     /**
@@ -356,6 +653,7 @@ export class EffectWrapper {
             this.effect.getEngine().onContextRestoredObservable.remove(this._onContextRestoredObserver);
             this._onContextRestoredObserver = null;
         }
+        this.onEffectCreatedObservable.clear();
         this.effect.dispose();
     }
 }

@@ -1,9 +1,7 @@
 uniform vec4 vEyePosition;
 
 uniform vec4 vDiffuseColor;
-#ifdef SPECULARTERM
 uniform vec4 vSpecularColor;
-#endif
 uniform vec3 vEmissiveColor;
 uniform vec3 vAmbientColor;
 

@@ -75,6 +75,7 @@ export class GeometryCurveBlock extends NodeGeometryBlock {
      */
     @editableInPropertyPage("Type", PropertyTypeForEdition.List, "ADVANCED", {
         notifiers: { rebuild: true },
+        embedded: true,
         options: [
             { label: "EaseInSine", value: GeometryCurveBlockTypes.EaseInSine },
             { label: "EaseOutSine", value: GeometryCurveBlockTypes.EaseOutSine },
