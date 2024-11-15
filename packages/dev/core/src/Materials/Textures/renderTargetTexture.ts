@@ -1009,7 +1009,11 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
         this.onBeforeBindObservable.notifyObservers(this);
 
-        return this._objectRenderer.isReadyForRendering(this.getRenderWidth(), this.getRenderHeight());
+        const result = this._objectRenderer.isReadyForRendering(this.getRenderWidth(), this.getRenderHeight());
+
+        this.onAfterUnbindObservable.notifyObservers(this);
+
+        return result;
     }
 
     private _render(useCameraPostProcess: boolean = false, dumpForDebug: boolean = false): void {
