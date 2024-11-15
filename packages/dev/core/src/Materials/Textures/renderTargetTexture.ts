@@ -161,11 +161,15 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * The length of this list is passed through renderListLength: don't use renderList.length directly because the array can
      * hold dummy elements!
      */
-    public get getCustomRenderList(): (layerOrFace: number, renderList: Nullable<Immutable<Array<AbstractMesh>>>, renderListLength: number) => Nullable<Array<AbstractMesh>> {
+    public get getCustomRenderList(): Nullable<
+        (layerOrFace: number, renderList: Nullable<Immutable<Array<AbstractMesh>>>, renderListLength: number) => Nullable<Array<AbstractMesh>>
+    > {
         return this._objectRenderer.getCustomRenderList;
     }
 
-    public set getCustomRenderList(value: (layerOrFace: number, renderList: Nullable<Immutable<Array<AbstractMesh>>>, renderListLength: number) => Nullable<Array<AbstractMesh>>) {
+    public set getCustomRenderList(
+        value: Nullable<(layerOrFace: number, renderList: Nullable<Immutable<Array<AbstractMesh>>>, renderListLength: number) => Nullable<Array<AbstractMesh>>>
+    ) {
         this._objectRenderer.getCustomRenderList = value;
     }
 
@@ -302,10 +306,6 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         return this._objectRenderer.onBeforeRenderObservable;
     }
 
-    public set onBeforeRenderObservable(callback: Observable<number>) {
-        this._objectRenderer.onBeforeRenderObservable = callback;
-    }
-
     private _onBeforeRenderObserver: Nullable<Observer<number>>;
     /**
      * Set a before render callback in the texture.
@@ -323,10 +323,6 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      */
     public get onAfterRenderObservable() {
         return this._objectRenderer.onAfterRenderObservable;
-    }
-
-    public set onAfterRenderObservable(callback: Observable<number>) {
-        this._objectRenderer.onAfterRenderObservable = callback;
     }
 
     private _onAfterRenderObserver: Nullable<Observer<number>>;
