@@ -1,6 +1,6 @@
 import * as React from "react";
 import type { LockObject } from "../../tabs/propertyGrids/lockObject";
-import style from "./ColorComponentEntry.modules.scss";
+import style from "./ColorComponentEntry.module.scss";
 
 export interface IColorComponentEntryProps {
     value: number;

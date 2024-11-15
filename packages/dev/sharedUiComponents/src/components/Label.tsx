@@ -1,6 +1,6 @@
 import type { ReactChild } from "react";
 import { ClassNames } from "./classNames";
-import styles from "./Label.modules.scss";
+import styles from "./Label.module.scss";
 
 export type LabelProps = {
     text: string;

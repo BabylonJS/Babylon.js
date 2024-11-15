@@ -7,7 +7,7 @@ import type { Scene } from "core/scene";
 import type { GlobalState } from "../../components/globalState";
 import type { IExplorerExtensibilityGroup, DebugLayerTab, IExplorerAdditionalNode } from "core/Debug/debugLayer";
 
-const Split = require("split.js").default;
+import Split from "split.js";
 
 const ResizableCasted = Resizable as any as React.ComponentClass<any>;
 
@@ -47,7 +47,7 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
             return;
         }
 
-        Split([this._topPartRef.current, this._bottomPartRef.current], {
+        Split([this._topPartRef.current!, this._bottomPartRef.current!], {
             direction: "vertical",
             minSize: [200, 200],
             gutterSize: 4,

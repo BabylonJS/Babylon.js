@@ -4,7 +4,7 @@ import { LayoutContext } from "./LayoutContext";
 import { FlexibleColumn } from "./FlexibleColumn";
 import { FlexibleDropZone } from "./FlexibleDropZone";
 import { FlexibleTabsContainer } from "./FlexibleTabsContainer";
-import style from "./FlexibleGridContainer.modules.scss";
+import style from "./FlexibleGridContainer.module.scss";
 
 /**
  * Arguments for the GridContainer component.
