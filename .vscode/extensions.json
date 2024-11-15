@@ -6,6 +6,7 @@
         "webhint.vscode-webhint",
         "IronGeek.vscode-env",
         "firsttris.vscode-jest-runner",
-        "ms-playwright.playwright"
+        "ms-playwright.playwright",
+        "orta.vscode-jest"
     ]
 }
