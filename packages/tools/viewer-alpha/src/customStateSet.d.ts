@@ -11,5 +11,5 @@ interface CustomStateSet {
 }
 
 interface ElementInternals {
-    readonly states: CustomStateSet; // TODO: Make this optional?
+    readonly states?: CustomStateSet;
 }

@@ -44,7 +44,7 @@ export class HTML3DAnnotationElement extends LitElement {
     // eslint-disable-next-line babylonjs/available
     override connectedCallback(): void {
         super.connectedCallback();
-        this._internals.states.add("invalid");
+        this._internals.states?.add("invalid");
 
         if (!(this.parentElement instanceof HTML3DElement)) {
             // eslint-disable-next-line no-console
@@ -59,15 +59,15 @@ export class HTML3DAnnotationElement extends LitElement {
                 if (viewerElement.queryHotSpot(this.hotSpot, hotSpotResult)) {
                     const [screenX, screenY] = hotSpotResult.screenPosition;
                     this.style.transform = `translate(${screenX}px, ${screenY}px)`;
-                    this._internals.states.delete("invalid");
+                    this._internals.states?.delete("invalid");
 
                     if (hotSpotResult.visibility <= 0) {
-                        this._internals.states.add("back-facing");
+                        this._internals.states?.add("back-facing");
                     } else {
-                        this._internals.states.delete("back-facing");
+                        this._internals.states?.delete("back-facing");
                     }
                 } else {
-                    this._internals.states.add("invalid");
+                    this._internals.states?.add("invalid");
                 }
             }
         };
@@ -87,7 +87,7 @@ export class HTML3DAnnotationElement extends LitElement {
         this._viewerAttachment?.dispose();
         this._viewerAttachment = null;
 
-        this._internals.states.add("invalid");
+        this._internals.states?.add("invalid");
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
