@@ -15,28 +15,13 @@
                 /* overflow: hidden; */
             }
 
-            .toggle-dom-button {
+            .button-container {
                 position: absolute;
-                top: 10px;
+                top: 50px;
                 right: 10px;
-            }
-
-            .toggle-engine-button {
-                position: absolute;
-                top: 40px;
-                right: 10px;
-            }
-
-            .toggle-hotspot-button {
-                position: absolute;
-                top: 70px;
-                right: 10px;
-            }
-
-            .toggle-inspector-button {
-                position: absolute;
-                top: 100px;
-                right: 10px;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
             }
 
             .lineContainer {
@@ -72,52 +57,57 @@
     </head>
 
     <body ondragover="event.preventDefault()" ondrop="onDrop(event)">
-        <!-- <div id="moreUpperPageContent" style="width: 100%; height: 200vh;"></div> -->
-        <babylon-viewer
-            engine="WebGPU"
-            source="https://raw.githubusercontent.com/BabylonJS/Assets/master/meshes/ufo.glb"
-            environment="../../../../../public/@babylonjs/viewer-alpha/assets/photoStudio.env"
-            animation-speed="1.5"
-            selected-animation="1"
-            camera-orbit="auto auto auto"
-            camera-target="auto auto auto"
-            camera-auto-orbit
-            hotspots='{
-                "hotspot 1": {
-                    "type": "surface",
-                    "meshIndex": 1,
-                    "pointIndex": [228, 113, 111],
-                    "barycentric": [0.217, 0.341, 0.442],
-                    "cameraOrbit": [1.085, 1.417, 0.518]
-                },
-                "hotspot 2": {
-                    "type": "surface",
-                    "meshIndex": 1,
-                    "pointIndex": [228, 113, 111],
-                    "barycentric": [0.217, 0.341, 0.442],
-                    "cameraOrbit": [2.085, 2.417, 2.518]
-                },
-                "hotspot 3": {
-                    "type": "surface",
-                    "meshIndex": 1,
-                    "pointIndex": [228, 113, 111],
-                    "barycentric": [0.217, 0.341, 0.442]
-                }
-            }'
-        >
-            <!-- <div slot="tool-bar" style="position: absolute; top: 12px; left: 12px; width: 100px; height: 36px">
-                <button onclick="document.querySelector('babylon-viewer').toggleAnimation()">Toggle Animation</button>
-            </div> -->
-            <svg id="lines" style="position: absolute; width: 100%; height: 100%" xmlns="http://www.w3.org/2000/svg" class="lineContainer">
-                <line class="line"></line>
-            </svg>
-        </babylon-viewer>
-        <div id="moreLowerPageContent" style="width: 100%; height: 200vh;"></div>
-        <button class="toggle-dom-button" onclick="onToggleDOM()">Toggle DOM</button>
-        <button class="toggle-engine-button" onclick="onToggleEngine()">Toggle Engine</button>
-
-        <button id="anchor-button" class="toggle-hotspot-button" onclick="onToggleHotSpot()">Toggle Hot Spot</button>
-        <button id="inspector-button" class="toggle-inspector-button" onclick="onToggleInspector()">Toggle Inspector</button>
+        <div id="moreUpperPageContent" style="width: 100%; height: 200vh; display: none"></div>
+        <div id="viewerContainer" style="width: 100vw; height: 100vh">
+            <babylon-viewer
+                engine="WebGPU"
+                source="https://raw.githubusercontent.com/BabylonJS/Assets/master/meshes/ufo.glb"
+                environment="../../../../../public/@babylonjs/viewer-alpha/assets/photoStudio.env"
+                animation-speed="1.5"
+                selected-animation="1"
+                camera-orbit="auto auto auto"
+                camera-target="auto auto auto"
+                camera-auto-orbit
+                hotspots='{
+                    "hotspot 1": {
+                        "type": "surface",
+                        "meshIndex": 1,
+                        "pointIndex": [228, 113, 111],
+                        "barycentric": [0.217, 0.341, 0.442],
+                        "cameraOrbit": [1.085, 1.417, 0.518]
+                    },
+                    "hotspot 2": {
+                        "type": "surface",
+                        "meshIndex": 1,
+                        "pointIndex": [228, 113, 111],
+                        "barycentric": [0.217, 0.341, 0.442],
+                        "cameraOrbit": [2.085, 2.417, 2.518]
+                    },
+                    "hotspot 3": {
+                        "type": "surface",
+                        "meshIndex": 1,
+                        "pointIndex": [228, 113, 111],
+                        "barycentric": [0.217, 0.341, 0.442]
+                    }
+                }'
+            >
+                <!-- <div slot="tool-bar" style="position: absolute; top: 12px; left: 12px; width: 100px; height: 36px">
+                    <button onclick="document.querySelector('babylon-viewer').toggleAnimation()">Toggle Animation</button>
+                </div> -->
+                <svg id="lines" style="position: absolute; width: 100%; height: 100%" xmlns="http://www.w3.org/2000/svg" class="lineContainer">
+                    <line class="line"></line>
+                </svg>
+            </babylon-viewer>
+        </div>
+        <div id="moreLowerPageContent" style="width: 100%; height: 200vh; display: none"></div>
+        <div class="button-container">
+            <button onclick="onToggleDOM()">Toggle DOM</button>
+            <button onclick="onToggleEngine()">Toggle Engine</button>
+            <button id="anchor-button" onclick="onToggleHotSpot()">Toggle Hot Spot</button>
+            <button id="inspector-button" onclick="onToggleInspector()">Toggle Inspector</button>
+            <button onClick="onToggleTopContent()">Toggle Top Content ⬆️</button>
+            <button onClick="onToggleBottomContent()">Toggle Bottom Content ⬇️</button>
+        </div>
         <script type="module" src="/packages/tools/viewer-alpha/src/index.ts"></script>
         <script type="module">
             import { Inspector } from "inspector/inspector";
@@ -197,7 +187,8 @@
             };
 
             globalThis.onToggleDOM = () => {
-                isViewerConnected ? document.body.removeChild(viewerElement) : document.body.appendChild(viewerElement);
+                const viewerContainer = document.getElementById("viewerContainer");
+                isViewerConnected ? viewerContainer.removeChild(viewerElement) : viewerContainer.appendChild(viewerElement);
                 isViewerConnected = !isViewerConnected;
             }
 
@@ -222,6 +213,20 @@
                     Inspector.Show(viewerDetails.scene, {});
                 }
                 isInspectorVisible = !isInspectorVisible;
+            }
+
+            let isTopContentVisible = false;
+            globalThis.onToggleTopContent = () => {
+                const topContent = document.getElementById("moreUpperPageContent");
+                topContent.style.display = isTopContentVisible ? "none" : "block";
+                isTopContentVisible = !isTopContentVisible;
+            }
+
+            let isBottomContentVisible = false;
+            globalThis.onToggleBottomContent = () => {
+                const bottomContent = document.getElementById("moreLowerPageContent");
+                bottomContent.style.display = isBottomContentVisible ? "none" : "block";
+                isBottomContentVisible = !isBottomContentVisible;
             }
         </script>
     </body>
