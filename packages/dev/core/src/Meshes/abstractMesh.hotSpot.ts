@@ -123,13 +123,13 @@ export function GetHotSpotToRef(mesh: AbstractMesh, hotSpotQuery: HotSpotQuery, 
         segmentB.normalize();
         Vector3.CrossToRef(segmentA, segmentB, resNormal);
 
-        // flip normal
-        const invertWinding =
+        // flip normal when face culling is changed
+        const flipNormal =
             mesh.material &&
             mesh.material.sideOrientation ===
                 (mesh.getScene().useRightHandedSystem ? Constants.MATERIAL_ClockWiseSideOrientation : Constants.MATERIAL_CounterClockWiseSideOrientation);
 
-        if (invertWinding) {
+        if (flipNormal) {
             resNormal.scaleInPlace(-1);
         }
 
