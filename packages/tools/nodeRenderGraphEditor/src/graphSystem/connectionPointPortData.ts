@@ -151,9 +151,14 @@ export class ConnectionPointPortData implements IPortData {
 
     public getCompatibilityIssueMessage(issue: number, targetNode: GraphNode, targetPort: IPortData) {
         switch (issue) {
-            case NodeRenderGraphConnectionPointCompatibilityStates.TypeIncompatible:
-                return `Cannot connect two different connection types:\nSource is ${NodeRenderGraphBlockConnectionPointTypes[this.data.type]} and destination is ${NodeRenderGraphBlockConnectionPointTypes[(targetPort.data as NodeRenderGraphConnectionPoint).type]}`;
+            case NodeRenderGraphConnectionPointCompatibilityStates.TypeIncompatible: {
+                const port = targetPort.data as NodeRenderGraphConnectionPoint;
+                let acceptedTypes = port.acceptedConnectionPointTypes.map((t) => NodeRenderGraphBlockConnectionPointTypes[t]).join(", ");
 
+                acceptedTypes = `${NodeRenderGraphBlockConnectionPointTypes[port.type]}` + (acceptedTypes ? `,${acceptedTypes}` : "");
+
+                return `Cannot connect two different connection types:\nSource is ${NodeRenderGraphBlockConnectionPointTypes[this.data.type]} but destination only accepts ${acceptedTypes}`;
+            }
             case NodeRenderGraphConnectionPointCompatibilityStates.HierarchyIssue:
                 return "Source block cannot be connected with one of its ancestors";
         }

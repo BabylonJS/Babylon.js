@@ -54,6 +54,12 @@ export default defineConfig(({ mode }) => {
             alias: {
                 core: `@${source}/core/dist`,
                 loaders: `@${source}/loaders/dist`,
+                inspector: `@${source}/inspector/dist`,
+                materials: `@${source}/materials/dist`,
+                serializers: `@${source}/serializers/dist`,
+                gui: `@${source}/gui/dist`,
+                "shared-ui-components": path.resolve("../../dev/sharedUiComponents/dist"),
+                "gui-editor": path.resolve("../../tools/guiEditor/dist"),
             },
         },
     };

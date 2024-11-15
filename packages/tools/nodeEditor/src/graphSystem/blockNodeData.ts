@@ -6,7 +6,7 @@ import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/
 import { ConnectionPointPortData } from "./connectionPointPortData";
 import triangle from "../imgs/triangle.svg";
 import square from "../imgs/square.svg";
-import styles from "./blockNodeData.modules.scss";
+import styles from "./blockNodeData.module.scss";
 import type { NodeMaterialTeleportOutBlock } from "core/Materials/Node/Blocks/Teleport/teleportOutBlock";
 import type { NodeMaterialTeleportInBlock } from "core/Materials/Node/Blocks/Teleport/teleportInBlock";
 
