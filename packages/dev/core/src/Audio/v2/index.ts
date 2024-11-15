@@ -1,10 +1,9 @@
 // TODO: What's the best way to expose the WebAudio factory functions without exposing the WebAudio classes?
-export * from "./soundState";
-export * from "./webAudio/webAudioBus";
-export * from "./webAudio/webAudioEngine";
-export * from "./webAudio/webAudioMainBus";
-export * from "./webAudio/webAudioMainOutput";
-export * from "./webAudio/webAudioPositioner";
-export * from "./webAudio/webAudioSender";
-export * from "./webAudio/webAudioStaticSound";
-export * from "./webAudio/webAudioStreamingSound";
+export { SoundState } from "./soundState";
+export { CreateAudioEngineAsync } from "./webAudio/webAudioEngine";
+export { CreateMainAudioBusAsync } from "./webAudio/webAudioMainBus";
+export { CreateMainAudioOutputAsync } from "./webAudio/webAudioMainOutput";
+export { CreateAudioPositionerAsync } from "./webAudio/webAudioPositioner";
+export { CreateAudioSenderAsync } from "./webAudio/webAudioSender";
+export { CreateSoundAsync, CreateSoundBufferAsync } from "./webAudio/webAudioStaticSound";
+export { CreateStreamingSoundAsync } from "./webAudio/webAudioStreamingSound";
