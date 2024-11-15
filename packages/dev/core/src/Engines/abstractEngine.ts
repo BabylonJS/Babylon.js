@@ -1107,6 +1107,9 @@ export abstract class AbstractEngine {
         useTextureWidthAndHeight?: boolean
     ): void;
 
+    /** @internal */
+    public abstract _unpackFlipY(value: boolean): void;
+
     /**
      * Reads pixels from the current frame buffer. Please note that this function can be slow
      * @param x defines the x coordinate of the rectangle where pixels must be read
@@ -1121,7 +1124,13 @@ export abstract class AbstractEngine {
     public abstract readPixels(x: number, y: number, width: number, height: number, hasAlpha?: boolean, flushRenderer?: boolean): Promise<ArrayBufferView>;
 
     /**
-     * Force a WebGPU flush (ie. a flush of all waiting commands)
+     * Generates mipmaps for a texture
+     * @param texture The texture to generate the mipmaps for
+     */
+    public abstract generateMipmaps(texture: InternalTexture): void;
+
+    /**
+     * Force a flush (ie. a flush of all waiting commands)
      */
     public abstract flushFramebuffer(): void;
 
@@ -1786,14 +1795,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@7.22.4";
+        return "babylonjs@7.34.1";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "7.22.4";
+        return "7.34.1";
     }
 
     /**

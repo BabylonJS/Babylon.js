@@ -70,7 +70,7 @@ var finalColor: vec4f = uniforms.glowColor;
 #endif
 
 #ifdef VERTEXALPHA
-    finalColor = vec4f(finalColor.rgb, finalColor.a * vColor.a);
+    finalColor = vec4f(finalColor.rgb, finalColor.a * fragmentInputs.vColor.a);
 #endif
 
 #ifdef ALPHATEST

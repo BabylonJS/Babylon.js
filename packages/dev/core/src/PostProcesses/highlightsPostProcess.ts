@@ -2,7 +2,7 @@ import type { Nullable } from "../types";
 import type { Camera } from "../Cameras/camera";
 import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
-import type { Engine } from "../Engines/engine";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { Constants } from "../Engines/constants";
 
 /**
@@ -34,7 +34,7 @@ export class HighlightsPostProcess extends PostProcess {
         options: number | PostProcessOptions,
         camera: Nullable<Camera>,
         samplingMode?: number,
-        engine?: Engine,
+        engine?: AbstractEngine,
         reusable?: boolean,
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT
     ) {

@@ -133,6 +133,14 @@ export class NodeLink {
         this._path.setAttribute("stroke", this._portA.element.style.backgroundColor!);
     }
 
+    public get path() {
+        return this._path;
+    }
+
+    public get selectionPath() {
+        return this._selectionPath;
+    }
+
     public constructor(graphCanvas: GraphCanvasComponent, portA: NodePort, nodeA: GraphNode, portB?: NodePort, nodeB?: GraphNode) {
         this._portA = portA;
         this._portB = portB;
@@ -209,6 +217,10 @@ export class NodeLink {
                 targetY: evt.clientY,
                 needRepositioning: true,
             });
+
+            // Make sure the undo/redo stack is reverted as we did 2 actions (create and connect)
+            stateManager.historyStack.collapseLastTwo();
+
             return;
         }
 
@@ -226,6 +238,9 @@ export class NodeLink {
                 targetY: evt.clientY,
                 needRepositioning: true,
             });
+
+            // Make sure the undo/redo stack is reverted as we did 2 actions (create and connect)
+            stateManager.historyStack.collapseLastTwo();
             return;
         }
 

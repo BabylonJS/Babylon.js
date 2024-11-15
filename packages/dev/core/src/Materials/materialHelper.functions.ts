@@ -854,9 +854,9 @@ export function PrepareDefinesForPrePass(scene: Scene, defines: any, canRenderTo
             index: "PREPASS_DEPTH_INDEX",
         },
         {
-            type: Constants.PREPASS_NDC_DEPTH_TEXTURE_TYPE,
-            define: "PREPASS_NDC_DEPTH",
-            index: "PREPASS_NDC_DEPTH_INDEX",
+            type: Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE,
+            define: "PREPASS_SCREENSPACE_DEPTH",
+            index: "PREPASS_SCREENSPACE_DEPTH_INDEX",
         },
         {
             type: Constants.PREPASS_NORMAL_TEXTURE_TYPE,
@@ -874,6 +874,8 @@ export function PrepareDefinesForPrePass(scene: Scene, defines: any, canRenderTo
         defines.PREPASS = true;
         defines.SCENE_MRT_COUNT = scene.prePassRenderer.mrtCount;
         defines.PREPASS_NORMAL_WORLDSPACE = scene.prePassRenderer.generateNormalsInWorldSpace;
+        defines.PREPASS_COLOR = true;
+        defines.PREPASS_COLOR_INDEX = 0;
 
         for (let i = 0; i < texturesList.length; i++) {
             const index = scene.prePassRenderer.getIndex(texturesList[i].type);

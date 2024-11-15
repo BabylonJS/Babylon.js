@@ -10,6 +10,8 @@ export interface IRaycastQuery {
     membership?: number;
     /** CollideWith mask */
     collideWith?: number;
+    /** Should trigger collisions be considered in the query? */
+    shouldHitTriggers?: boolean;
 }
 
 /**

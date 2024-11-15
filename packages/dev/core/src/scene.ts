@@ -12,7 +12,6 @@ import { Tags } from "./Misc/tags";
 import type { Vector2, Vector4 } from "./Maths/math.vector";
 import { Vector3, Matrix, TmpVectors } from "./Maths/math.vector";
 import type { IParticleSystem } from "./Particles/IParticleSystem";
-import { AbstractScene } from "./abstractScene";
 import { ImageProcessingConfiguration } from "./Materials/imageProcessingConfiguration";
 import { UniformBuffer } from "./Materials/uniformBuffer";
 import { PickingInfo } from "./Collisions/pickingInfo";
@@ -67,7 +66,7 @@ import type { Skeleton } from "./Bones/skeleton";
 import type { Bone } from "./Bones/bone";
 import type { Camera } from "./Cameras/camera";
 import type { Collider } from "./Collisions/collider";
-import type { Ray, TrianglePickingPredicate } from "./Culling/ray";
+import type { Ray, MeshPredicate, TrianglePickingPredicate } from "./Culling/ray.core";
 import type { Light } from "./Lights/light";
 import type { PerformanceViewerCollector } from "./Misc/PerformanceViewer/performanceViewerCollector";
 import type { MorphTarget } from "./Morph/morphTarget";
@@ -85,12 +84,20 @@ import type { Mesh } from "./Meshes/mesh";
 import type { SubMesh } from "./Meshes/subMesh";
 import type { Node } from "./node";
 import type { Animation } from "./Animations/animation";
-import type { Animatable } from "./Animations/animatable";
+import type { Animatable } from "./Animations/animatable.core";
 import type { Texture } from "./Materials/Textures/texture";
 import { PointerPickingConfiguration } from "./Inputs/pointerPickingConfiguration";
 import { Logger } from "./Misc/logger";
 import type { AbstractEngine } from "./Engines/abstractEngine";
 import { RegisterClass } from "./Misc/typeStore";
+import type { FrameGraph } from "./FrameGraph/frameGraph";
+import type { IAssetContainer } from "./IAssetContainer";
+
+import type { EffectLayer } from "./Layers/effectLayer";
+import type { Sound } from "./Audio/sound";
+import type { Layer } from "./Layers/layer";
+import type { LensFlareSystem } from "./LensFlares/lensFlareSystem";
+import type { ProceduralTexture } from "./Materials/Textures/Procedurals/proceduralTexture";
 
 /**
  * Define an interface for all classes that will hold resources
@@ -142,7 +149,7 @@ export const enum ScenePerformancePriority {
  * Represents a scene to be rendered by the engine.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene
  */
-export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHolder {
+export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     /** The fog is deactivated */
     public static readonly FOGMODE_NONE = Constants.FOGMODE_NONE;
     /** The fog density is following an exponential function */
@@ -185,6 +192,15 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     // Members
 
     /** @internal */
+    public _tempPickingRay: Nullable<Ray>;
+
+    /** @internal */
+    public _cachedRayForTransform: Ray;
+
+    /** @internal */
+    public _pickWithRayInverseMatrix: Matrix;
+
+    /** @internal */
     public _inputManager = new InputManager(this);
 
     /** Define this parameter if you are using multiple cameras and you want to specify which one should be used for pointer position */
@@ -204,10 +220,28 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Gets or sets a boolean that indicates if the scene must clear the depth and stencil buffers before rendering a frame
      */
     public autoClearDepthAndStencil = true;
+
+    private _clearColor: Color4 = new Color4(0.2, 0.2, 0.3, 1.0);
+
+    /**
+     * Observable triggered when the performance priority is changed
+     */
+    public onClearColorChangedObservable = new Observable<Color4>();
+
     /**
      * Defines the color used to clear the render buffer (Default is (0.2, 0.2, 0.3, 1.0))
      */
-    public clearColor: Color4 = new Color4(0.2, 0.2, 0.3, 1.0);
+    public get clearColor(): Color4 {
+        return this._clearColor;
+    }
+
+    public set clearColor(value: Color4) {
+        if (value !== this._clearColor) {
+            this._clearColor = value;
+            this.onClearColorChangedObservable.notifyObservers(this._clearColor);
+        }
+    }
+
     /**
      * Defines the color used to simulate the ambient color (Default is (0, 0, 0))
      */
@@ -222,28 +256,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * The material properties need to be setup according to the type of texture in use.
      */
     public environmentBRDFTexture: BaseTexture;
-
-    /**
-     * Texture used in all pbr material as the reflection texture.
-     * As in the majority of the scene they are the same (exception for multi room and so on),
-     * this is easier to reference from here than from all the materials.
-     */
-    public override get environmentTexture(): Nullable<BaseTexture> {
-        return this._environmentTexture;
-    }
-    /**
-     * Texture used in all pbr material as the reflection texture.
-     * As in the majority of the scene they are the same (exception for multi room and so on),
-     * this is easier to set here than in all the materials.
-     */
-    public override set environmentTexture(value: Nullable<BaseTexture>) {
-        if (this._environmentTexture === value) {
-            return;
-        }
-
-        this._environmentTexture = value;
-        this.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
-    }
 
     /**
      * Intensity of the environment in all pbr material.
@@ -312,6 +324,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     private _forceWireframe = false;
+
     /**
      * Gets or sets a boolean indicating if all rendering must be done in wireframe
      */
@@ -384,6 +397,172 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Gets or sets the active clipplane 6
      */
     public clipPlane6: Nullable<Plane>;
+
+    /**
+     * Gets the list of root nodes (ie. nodes with no parent)
+     */
+    public rootNodes: Node[] = [];
+
+    /** All of the cameras added to this scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras
+     */
+    public cameras: Camera[] = [];
+
+    /**
+     * All of the lights added to this scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction
+     */
+    public lights: Light[] = [];
+
+    /**
+     * All of the (abstract) meshes added to this scene
+     */
+    public meshes: AbstractMesh[] = [];
+
+    /**
+     * The list of skeletons added to the scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/bonesSkeletons
+     */
+    public skeletons: Skeleton[] = [];
+
+    /**
+     * All of the particle systems added to this scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/particle_system_intro
+     */
+    public particleSystems: IParticleSystem[] = [];
+
+    /**
+     * Gets the current delta time used by animation engine
+     */
+    deltaTime: number;
+
+    /**
+     * Gets a list of Animations associated with the scene
+     */
+    public animations: Animation[] = [];
+
+    /**
+     * All of the animation groups added to this scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/groupAnimations
+     */
+    public animationGroups: AnimationGroup[] = [];
+
+    /**
+     * All of the multi-materials added to this scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/multiMaterials
+     */
+    public multiMaterials: MultiMaterial[] = [];
+
+    /**
+     * All of the materials added to this scene
+     * In the context of a Scene, it is not supposed to be modified manually.
+     * Any addition or removal should be done using the addMaterial and removeMaterial Scene methods.
+     * Note also that the order of the Material within the array is not significant and might change.
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/materials_introduction
+     */
+    public materials: Material[] = [];
+
+    /**
+     * The list of morph target managers added to the scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/dynamicMeshMorph
+     */
+    public morphTargetManagers: MorphTargetManager[] = [];
+
+    /**
+     * The list of geometries used in the scene.
+     */
+    public geometries: Geometry[] = [];
+
+    /**
+     * All of the transform nodes added to this scene
+     * In the context of a Scene, it is not supposed to be modified manually.
+     * Any addition or removal should be done using the addTransformNode and removeTransformNode Scene methods.
+     * Note also that the order of the TransformNode within the array is not significant and might change.
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/parent_pivot/transform_node
+     */
+    public transformNodes: TransformNode[] = [];
+
+    /**
+     * ActionManagers available on the scene.
+     * @deprecated
+     */
+    public actionManagers: AbstractActionManager[] = [];
+
+    /**
+     * Textures to keep.
+     */
+    public textures: BaseTexture[] = [];
+
+    /** @internal */
+    protected _environmentTexture: Nullable<BaseTexture> = null;
+    /**
+     * Texture used in all pbr material as the reflection texture.
+     * As in the majority of the scene they are the same (exception for multi room and so on),
+     * this is easier to reference from here than from all the materials.
+     */
+    public get environmentTexture(): Nullable<BaseTexture> {
+        return this._environmentTexture;
+    }
+    /**
+     * Texture used in all pbr material as the reflection texture.
+     * As in the majority of the scene they are the same (exception for multi room and so on),
+     * this is easier to set here than in all the materials.
+     */
+    public set environmentTexture(value: Nullable<BaseTexture>) {
+        if (this._environmentTexture === value) {
+            return;
+        }
+
+        this._environmentTexture = value;
+        this.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
+
+    /**
+     * The list of postprocesses added to the scene
+     */
+    public postProcesses: PostProcess[] = [];
+
+    /**
+     * The list of effect layers (highlights/glow) added to the scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/highlightLayer
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/glowLayer
+     */
+    public effectLayers: Array<EffectLayer> = [];
+
+    /**
+     * The list of sounds used in the scene.
+     */
+    public sounds: Nullable<Array<Sound>> = null;
+
+    /**
+     * The list of layers (background and foreground) of the scene
+     */
+    public layers: Array<Layer> = [];
+
+    /**
+     * The list of lens flare system added to the scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/lenseFlare
+     */
+    public lensFlareSystems: Array<LensFlareSystem> = [];
+
+    /**
+     * The list of procedural textures added to the scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/proceduralTextures
+     */
+    public proceduralTextures: Array<ProceduralTexture> = [];
+
+    /**
+     * @returns all meshes, lights, cameras, transformNodes and bones
+     */
+    public getNodes(): Array<Node> {
+        let nodes: Node[] = [];
+        nodes = nodes.concat(this.meshes);
+        nodes = nodes.concat(this.lights);
+        nodes = nodes.concat(this.cameras);
+        nodes = nodes.concat(this.transformNodes); // dummies
+        this.skeletons.forEach((skeleton) => (nodes = nodes.concat(skeleton.bones)));
+        return nodes;
+    }
 
     /**
      * Gets or sets a boolean indicating if animations are enabled
@@ -1224,6 +1403,31 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return this._texturesEnabled;
     }
 
+    private _frameGraph: Nullable<FrameGraph> = null;
+    private _currentCustomRenderFunction?: (updateCameras: boolean, ignoreAnimations: boolean) => void;
+    /**
+     * Gets or sets the frame graph used to render the scene. If set, the scene will use the frame graph to render the scene instead of the default render loop.
+     */
+    public get frameGraph() {
+        return this._frameGraph;
+    }
+
+    public set frameGraph(value: Nullable<FrameGraph>) {
+        if (this._frameGraph) {
+            this._frameGraph = value;
+            if (!value) {
+                this.customRenderFunction = this._currentCustomRenderFunction;
+            }
+            return;
+        }
+
+        this._frameGraph = value;
+        if (value) {
+            this._currentCustomRenderFunction = this.customRenderFunction;
+            this.customRenderFunction = this._renderWithFrameGraph;
+        }
+    }
+
     // Physics
     /**
      * Gets or sets a boolean indicating if physic engines are enabled on this scene
@@ -1655,8 +1859,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param options defines the scene options
      */
     constructor(engine: AbstractEngine, options?: SceneOptions) {
-        super();
-
         this.activeCameras = [] as Camera[];
 
         const fullOptions = {
@@ -4121,17 +4323,26 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
     }
 
-    private _activeMesh(sourceMesh: AbstractMesh, mesh: AbstractMesh): void {
-        if (this._skeletonsEnabled && mesh.skeleton !== null && mesh.skeleton !== undefined) {
-            if (this._activeSkeletons.pushNoDuplicate(mesh.skeleton)) {
-                mesh.skeleton.prepare();
-                this._activeBones.addCount(mesh.skeleton.bones.length, false);
-            }
+    /** @internal */
+    public _prepareSkeleton(mesh: AbstractMesh): void {
+        if (!this._skeletonsEnabled || !mesh.skeleton) {
+            return;
+        }
 
-            if (!mesh.computeBonesUsingShaders) {
-                this._softwareSkinnedMeshes.pushNoDuplicate(<Mesh>mesh);
+        if (this._activeSkeletons.pushNoDuplicate(mesh.skeleton)) {
+            mesh.skeleton.prepare();
+            this._activeBones.addCount(mesh.skeleton.bones.length, false);
+        }
+
+        if (!mesh.computeBonesUsingShaders) {
+            if (this._softwareSkinnedMeshes.pushNoDuplicate(<Mesh>mesh) && this.frameGraph) {
+                (<Mesh>mesh).applySkeleton(mesh.skeleton);
             }
         }
+    }
+
+    private _activeMesh(sourceMesh: AbstractMesh, mesh: AbstractMesh): void {
+        this._prepareSkeleton(mesh);
 
         let forcePush = sourceMesh.hasInstances || sourceMesh.isAnInstance || this.dispatchAllSubMeshesOfActiveMeshes || this._skipFrustumClipping || mesh.alwaysSelectAsActiveMesh;
 
@@ -4190,7 +4401,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                 rtt.onClearObservable.notifyObservers(this._engine);
             } else if (!rtt.skipInitialClear && !camera.isRightCamera) {
                 if (this.autoClear) {
-                    this._engine.clear(rtt.clearColor || this.clearColor, !rtt._cleared, true, true);
+                    this._engine.clear(rtt.clearColor || this._clearColor, !rtt._cleared, true, true);
                 }
                 rtt._cleared = true;
             }
@@ -4507,7 +4718,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     private _clear(): void {
         if (this.autoClearDepthAndStencil || this.autoClear) {
-            this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe || this.forcePointsCloud, this.autoClearDepthAndStencil, this.autoClearDepthAndStencil);
+            this._engine.clear(this._clearColor, this.autoClear || this.forceWireframe || this.forcePointsCloud, this.autoClearDepthAndStencil, this.autoClearDepthAndStencil);
         }
     }
 
@@ -4537,6 +4748,81 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         for (const mesh of this.meshes) {
             mesh.resetDrawCache(passId);
         }
+    }
+
+    /**
+     * If this function is defined it will take precedence over the standard render() function.
+     */
+    public customRenderFunction?: (updateCameras: boolean, ignoreAnimations: boolean) => void;
+
+    private _renderWithFrameGraph(updateCameras = true, ignoreAnimations = false): void {
+        this.activeCamera = null;
+
+        this._activeParticleSystems.reset();
+        this._activeSkeletons.reset();
+
+        // Update Cameras
+        if (updateCameras) {
+            for (const camera of this.cameras) {
+                camera.update();
+                if (camera.cameraRigMode !== Constants.RIG_MODE_NONE) {
+                    // rig cameras
+                    for (let index = 0; index < camera._rigCameras.length; index++) {
+                        camera._rigCameras[index].update();
+                    }
+                }
+            }
+        }
+
+        // We must keep these steps because the procedural texture component relies on them.
+        // TODO: move the procedural texture component to the frame graph.
+        for (const step of this._beforeClearStage) {
+            step.action();
+        }
+
+        // Process meshes
+        const meshes = this.getActiveMeshCandidates();
+        const len = meshes.length;
+
+        for (let i = 0; i < len; i++) {
+            const mesh = meshes.data[i];
+
+            if (mesh.isBlocked) {
+                continue;
+            }
+
+            this._totalVertices.addCount(mesh.getTotalVertices(), false);
+
+            if (!mesh.isReady() || !mesh.isEnabled() || mesh.scaling.hasAZeroComponent) {
+                continue;
+            }
+
+            mesh.computeWorldMatrix();
+
+            if (mesh.actionManager && mesh.actionManager.hasSpecificTriggers2(Constants.ACTION_OnIntersectionEnterTrigger, Constants.ACTION_OnIntersectionExitTrigger)) {
+                this._meshesForIntersections.pushNoDuplicate(mesh);
+            }
+        }
+
+        // Animate Particle systems
+        if (this.particlesEnabled) {
+            for (let particleIndex = 0; particleIndex < this.particleSystems.length; particleIndex++) {
+                const particleSystem = this.particleSystems[particleIndex];
+
+                if (!particleSystem.isStarted() || !particleSystem.emitter) {
+                    continue;
+                }
+
+                const emitter = <any>particleSystem.emitter;
+                if (!emitter.position || emitter.isEnabled()) {
+                    this._activeParticleSystems.push(particleSystem);
+                    particleSystem.animate();
+                }
+            }
+        }
+
+        // Render the graph
+        this.frameGraph?.execute();
     }
 
     /**
@@ -4613,73 +4899,80 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         // Before render
         this.onBeforeRenderObservable.notifyObservers(this);
-
-        const engine = this.getEngine();
-
-        // Customs render targets
-        this.onBeforeRenderTargetsRenderObservable.notifyObservers(this);
-
-        const currentActiveCamera = this.activeCameras?.length ? this.activeCameras[0] : this.activeCamera;
-        if (this.renderTargetsEnabled) {
-            Tools.StartPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
-            this._intermediateRendering = true;
-            for (let customIndex = 0; customIndex < this.customRenderTargets.length; customIndex++) {
-                const renderTarget = this.customRenderTargets[customIndex];
-                if (renderTarget._shouldRender()) {
-                    this._renderId++;
-
-                    this.activeCamera = renderTarget.activeCamera || this.activeCamera;
-
-                    if (!this.activeCamera) {
-                        throw new Error("Active camera not set");
-                    }
-
-                    // Viewport
-                    engine.setViewport(this.activeCamera.viewport);
-
-                    // Camera
-                    this.updateTransformMatrix();
-
-                    renderTarget.render(currentActiveCamera !== this.activeCamera, this.dumpNextRenderTargets);
-                }
-            }
-            Tools.EndPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
-            this._intermediateRendering = false;
+        // Custom render function?
+        if (this.customRenderFunction) {
             this._renderId++;
-        }
+            this._engine.currentRenderPassId = Constants.RENDERPASS_MAIN;
 
-        this._engine.currentRenderPassId = currentActiveCamera?.renderPassId ?? Constants.RENDERPASS_MAIN;
-
-        // Restore back buffer
-        this.activeCamera = currentActiveCamera;
-        if (this._activeCamera && this._activeCamera.cameraRigMode !== Constants.RIG_MODE_CUSTOM && !this.prePass) {
-            this._bindFrameBuffer(this._activeCamera, false);
-        }
-        this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
-
-        for (const step of this._beforeClearStage) {
-            step.action();
-        }
-
-        // Clear
-        this._clearFrameBuffer(this.activeCamera);
-
-        // Collects render targets from external components.
-        for (const step of this._gatherRenderTargetsStage) {
-            step.action(this._renderTargets);
-        }
-
-        // Multi-cameras?
-        if (this.activeCameras && this.activeCameras.length > 0) {
-            for (let cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
-                this._processSubCameras(this.activeCameras[cameraIndex], cameraIndex > 0);
-            }
+            this.customRenderFunction(updateCameras, ignoreAnimations);
         } else {
-            if (!this.activeCamera) {
-                throw new Error("No camera defined");
+            const engine = this.getEngine();
+
+            // Customs render targets
+            this.onBeforeRenderTargetsRenderObservable.notifyObservers(this);
+
+            const currentActiveCamera = this.activeCameras?.length ? this.activeCameras[0] : this.activeCamera;
+            if (this.renderTargetsEnabled) {
+                Tools.StartPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
+                this._intermediateRendering = true;
+                for (let customIndex = 0; customIndex < this.customRenderTargets.length; customIndex++) {
+                    const renderTarget = this.customRenderTargets[customIndex];
+                    if (renderTarget._shouldRender()) {
+                        this._renderId++;
+
+                        this.activeCamera = renderTarget.activeCamera || this.activeCamera;
+
+                        if (!this.activeCamera) {
+                            throw new Error("Active camera not set");
+                        }
+
+                        // Viewport
+                        engine.setViewport(this.activeCamera.viewport);
+
+                        // Camera
+                        this.updateTransformMatrix();
+
+                        renderTarget.render(currentActiveCamera !== this.activeCamera, this.dumpNextRenderTargets);
+                    }
+                }
+                Tools.EndPerformanceCounter("Custom render targets", this.customRenderTargets.length > 0);
+                this._intermediateRendering = false;
+                this._renderId++;
             }
 
-            this._processSubCameras(this.activeCamera, !!this.activeCamera.outputRenderTarget);
+            this._engine.currentRenderPassId = currentActiveCamera?.renderPassId ?? Constants.RENDERPASS_MAIN;
+
+            // Restore back buffer
+            this.activeCamera = currentActiveCamera;
+            if (this._activeCamera && this._activeCamera.cameraRigMode !== Constants.RIG_MODE_CUSTOM && !this.prePass) {
+                this._bindFrameBuffer(this._activeCamera, false);
+            }
+            this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
+
+            for (const step of this._beforeClearStage) {
+                step.action();
+            }
+
+            // Clear
+            this._clearFrameBuffer(this.activeCamera);
+
+            // Collects render targets from external components.
+            for (const step of this._gatherRenderTargetsStage) {
+                step.action(this._renderTargets);
+            }
+
+            // Multi-cameras?
+            if (this.activeCameras && this.activeCameras.length > 0) {
+                for (let cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
+                    this._processSubCameras(this.activeCameras[cameraIndex], cameraIndex > 0);
+                }
+            } else {
+                if (!this.activeCamera) {
+                    throw new Error("No camera defined");
+                }
+
+                this._processSubCameras(this.activeCamera, !!this.activeCamera.outputRenderTarget);
+            }
         }
 
         // Intersection checks
@@ -4780,7 +5073,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         this.importedMeshesFiles = [] as string[];
 
-        if (this.stopAllAnimations) {
+        if (this._activeAnimatables && this.stopAllAnimations) {
             // Ensures that no animatable notifies a callback that could start a new animation group, constantly adding new animatables to the active list...
             this._activeAnimatables.forEach((animatable) => {
                 animatable.onAnimationEndObservable.clear();
@@ -4950,6 +5243,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.onKeyboardObservable.clear();
         this.onActiveCameraChanged.clear();
         this.onScenePerformancePriorityChangedObservable.clear();
+        this.onClearColorChangedObservable.clear();
         this._isDisposed = true;
     }
 
@@ -5096,30 +5390,18 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /** @internal */
-    public get _pickingAvailable(): boolean {
-        return false;
-    }
-
-    /** @internal */
     public _registeredActions: number = 0;
 
     /** Launch a ray to try to pick a mesh in the scene
      * @param x position on screen
      * @param y position on screen
-     * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
+     * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true. thinInstanceIndex is -1 when the mesh is non-instanced
      * @param fastCheck defines if the first intersection will be used (and not the closest)
      * @param camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
      * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns a PickingInfo
      */
-    public pick(
-        x: number,
-        y: number,
-        predicate?: (mesh: AbstractMesh) => boolean,
-        fastCheck?: boolean,
-        camera?: Nullable<Camera>,
-        trianglePredicate?: TrianglePickingPredicate
-    ): PickingInfo {
+    public pick(x: number, y: number, predicate?: MeshPredicate, fastCheck?: boolean, camera?: Nullable<Camera>, trianglePredicate?: TrianglePickingPredicate): PickingInfo {
         const warn = _WarnImport("Ray", true);
         if (warn) {
             Logger.Warn(warn);
@@ -5131,12 +5413,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /** Launch a ray to try to pick a mesh in the scene using only bounding information of the main mesh (not using submeshes)
      * @param x position on screen
      * @param y position on screen
-     * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
+     * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true. thinInstanceIndex is -1 when the mesh is non-instanced
      * @param fastCheck defines if the first intersection will be used (and not the closest)
      * @param camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
      * @returns a PickingInfo (Please note that some info will not be set like distance, bv, bu and everything that cannot be capture by only using bounding infos)
      */
-    public pickWithBoundingInfo(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Nullable<Camera>): Nullable<PickingInfo> {
+    public pickWithBoundingInfo(x: number, y: number, predicate?: MeshPredicate, fastCheck?: boolean, camera?: Nullable<Camera>): Nullable<PickingInfo> {
         const warn = _WarnImport("Ray", true);
         if (warn) {
             Logger.Warn(warn);
@@ -5150,12 +5432,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Use the given ray to pick a mesh in the scene. A mesh triangle can be picked both from its front and back sides,
      * irrespective of orientation.
      * @param ray The ray to use to pick meshes
-     * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must have isPickable set to true
+     * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must have isPickable set to true. thinInstanceIndex is -1 when the mesh is non-instanced
      * @param fastCheck defines if the first intersection will be used (and not the closest)
      * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns a PickingInfo
      */
-    public pickWithRay(ray: Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo> {
+    public pickWithRay(ray: Ray, predicate?: MeshPredicate, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo> {
         throw _WarnImport("Ray");
     }
 
@@ -5165,12 +5447,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * irrespective of orientation.
      * @param x X position on screen
      * @param y Y position on screen
-     * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
+     * @param predicate Predicate function used to determine eligible meshes and instances. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true. thinInstanceIndex is -1 when the mesh is non-instanced
      * @param camera camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
      * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns an array of PickingInfo
      */
-    public multiPick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, camera?: Camera, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
+    public multiPick(x: number, y: number, predicate?: MeshPredicate, camera?: Camera, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
         throw _WarnImport("Ray");
     }
 
@@ -5178,11 +5460,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Launch a ray to try to pick a mesh in the scene
      * @param ray Ray to use
-     * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
+     * @param predicate Predicate function used to determine eligible meshes and instances. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true. thinInstanceIndex is -1 when the mesh is non-instanced
      * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns an array of PickingInfo
      */
-    public multiPickWithRay(ray: Ray, predicate?: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
+    public multiPickWithRay(ray: Ray, predicate?: MeshPredicate, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
         throw _WarnImport("Ray");
     }
 

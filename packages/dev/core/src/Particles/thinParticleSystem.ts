@@ -28,7 +28,6 @@ import { addClipPlaneUniforms, prepareStringDefinesForClipPlanes, bindClipPlane 
 
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
-import type { Engine } from "../Engines/engine";
 import { BindFogParameters, BindLogDepth } from "../Materials/materialHelper.functions";
 import { BoxParticleEmitter } from "./EmitterTypes/boxParticleEmitter";
 import { Clamp, Lerp, RandomRange } from "../Maths/math.scalar.functions";
@@ -1788,7 +1787,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         this.fillDefines(defines, blendMode);
 
         // Effect
-        const currentRenderPassId = this._engine._features.supportRenderPasses ? (this._engine as Engine).currentRenderPassId : Constants.RENDERPASS_MAIN;
+        const currentRenderPassId = this._engine._features.supportRenderPasses ? this._engine.currentRenderPassId : Constants.RENDERPASS_MAIN;
         let drawWrappers = this._drawWrappers[currentRenderPassId];
         if (!drawWrappers) {
             drawWrappers = this._drawWrappers[currentRenderPassId] = [];

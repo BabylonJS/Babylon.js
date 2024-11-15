@@ -69,7 +69,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
     /**
      * Defines if the F0 value should be remapped to account for the interface change in the material.
      */
-    @editableInPropertyPage("Remap F0 on interface change", PropertyTypeForEdition.Boolean, "ADVANCED")
+    @editableInPropertyPage("Remap F0 on interface change", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true })
     public remapF0OnInterfaceChange: boolean = true;
 
     /**
@@ -375,11 +375,6 @@ export class ClearCoatBlock extends NodeMaterialBlock {
                         , ${reflectionBlock?._2DSamplerName}
                         ${isWebGPU ? `, ${reflectionBlock?._2DSamplerName}Sampler` : ""}                        
                     #endif
-                #endif
-            #endif
-            #if defined(ENVIRONMENTBRDF) && !defined(${reflectionBlock?._defineSkyboxName})
-                #ifdef RADIANCEOCCLUSION
-                    , ambientMonochrome
                 #endif
             #endif
             #if defined(CLEARCOAT_BUMP) || defined(TWOSIDEDLIGHTING)

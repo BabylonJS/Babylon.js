@@ -6,6 +6,7 @@ import type { IMaterial } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsIridescence } from "babylonjs-gltf2interface";
+import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "KHR_materials_iridescence";
 
@@ -84,7 +85,7 @@ export class KHR_materials_iridescence implements IGLTFLoaderExtension {
         if (properties.iridescenceTexture) {
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/iridescenceTexture`, properties.iridescenceTexture, (texture) => {
-                    texture.name = `${babylonMaterial.name} (Iridescence Intensity)`;
+                    texture.name = `${babylonMaterial.name} (Iridescence)`;
                     babylonMaterial.iridescence.texture = texture;
                 })
             );
@@ -103,4 +104,5 @@ export class KHR_materials_iridescence implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_materials_iridescence(loader));
+unregisterGLTFExtension(NAME);
+registerGLTFExtension(NAME, true, (loader) => new KHR_materials_iridescence(loader));

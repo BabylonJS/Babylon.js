@@ -169,7 +169,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         #endif
 
         #ifndef METALLIC_REFLECTANCE_USE_ALPHA_ONLY
-            metallicReflectanceFactors = vec4f(metallicReflectanceFactors.rgb * reflectanceFactorsMap.rgb, metallicReflectanceFactors.a);
+            metallicReflectanceFactors = vec4f(metallicReflectanceFactors.rgb * metallicReflectanceFactorsMap.rgb, metallicReflectanceFactors.a);
         #endif
         metallicReflectanceFactors *= metallicReflectanceFactorsMap.a;
     #endif
@@ -252,7 +252,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
         #ifndef USE_CUSTOM_REFLECTION
             reflectionOut = reflectionBlock(
-                input.vPositionW
+                fragmentInputs.vPositionW
                 , normalW
                 , alphaG
                 , uniforms.vReflectionMicrosurfaceInfos
@@ -270,7 +270,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                 , reflectionSampler
                 , reflectionSamplerSampler
             #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
-                , input.vEnvironmentIrradiance
+                , fragmentInputs.vEnvironmentIrradiance
             #endif
             #ifdef USESPHERICALFROMREFLECTIONMAP
                 #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
@@ -422,7 +422,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         #endif
 
         clearcoatOut = clearcoatBlock(
-            input.vPositionW
+            fragmentInputs.vPositionW
             , geometricNormalW
             , viewDirectionW
             , uniforms.vClearCoatParams
@@ -472,11 +472,6 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             #endif
             #ifdef REALTIME_FILTERING
                 , uniforms.vReflectionFilteringInfo
-            #endif
-        #endif
-        #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
-            #ifdef RADIANCEOCCLUSION
-                , ambientMonochrome
             #endif
         #endif
         #if defined(CLEARCOAT_BUMP) || defined(TWOSIDEDLIGHTING)
@@ -548,7 +543,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             , surfaceAlbedo
         #endif
         #ifdef SS_REFRACTION
-            , input.vPositionW
+            , fragmentInputs.vPositionW
             , viewDirectionW
             , scene.view
             , uniforms.vRefractionInfos
@@ -628,114 +623,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
 
 #ifdef PREPASS
-    var writeGeometryInfo: f32 = select(0.0, 1.0, finalColor.a > 0.4);
-    var fragData: array<vec4<f32>, SCENE_MRT_COUNT>;
-
-    #ifdef PREPASS_POSITION
-    fragData[PREPASS_POSITION_INDEX] =  vec4f(input.vPositionW, writeGeometryInfo);
-    #endif
-
-    #ifdef PREPASS_VELOCITY
-    var a: vec2f = (fragmentInputs.vCurrentPosition.xy / fragmentInputs.vCurrentPosition.w) * 0.5 + 0.5;
-    var b: vec2f = (fragmentInputs.vPreviousPosition.xy / fragmentInputs.vPreviousPosition.w) * 0.5 + 0.5;
-
-    var velocity: vec2f = abs(a - b);
-    velocity =  vec2f(pow(velocity.x, 1.0 / 3.0), pow(velocity.y, 1.0 / 3.0)) * sign(a - b) * 0.5 + 0.5;
-
-    fragData[PREPASS_VELOCITY_INDEX] =  vec4f(velocity, 0.0, writeGeometryInfo);
-#elif defined(PREPASS_VELOCITY_LINEAR)
-    var velocity : vec2f = vec2f(0.5) * ((fragmentInputs.vPreviousPosition.xy /
-                                          fragmentInputs.vPreviousPosition.w) -
-                                         (fragmentInputs.vCurrentPosition.xy /
-                                          fragmentInputs.vCurrentPosition.w));
-    fragData[PREPASS_VELOCITY_LINEAR_INDEX] =
-        vec4f(velocity, 0.0, writeGeometryInfo);
-#endif
-
-#ifdef PREPASS_ALBEDO_SQRT
-    var sqAlbedo : vec3f = sqrt(surfaceAlbedo); // for pre and post scatter
-#endif
-
-#ifdef PREPASS_IRRADIANCE
-    var irradiance : vec3f = finalDiffuse;
-#ifndef UNLIT
-#ifdef REFLECTION
-    irradiance += finalIrradiance;
-#endif
-#endif
-
-#ifdef SS_SCATTERING
-    fragData[0] = vec4f(finalColor.rgb - irradiance,
-                        finalColor.a); // Split irradiance from final color
-    irradiance /= sqAlbedo;
-#else
-    fragData[0] = finalColor; // No split lighting
-    var scatteringDiffusionProfile : f32 = 255.;
-#endif
-
-    fragData[PREPASS_IRRADIANCE_INDEX] =
-        vec4f(clamp(irradiance, vec3f(0.), vec3f(1.)),
-              writeGeometryInfo * scatteringDiffusionProfile /
-                  255.); // Irradiance + SS diffusion profile
-#else
-    fragData[0] = vec4f(finalColor.rgb, finalColor.a);
-#endif
-
-#ifdef PREPASS_DEPTH
-    fragData[PREPASS_DEPTH_INDEX] = vec4f(fragmentInputs.vViewPos.z, 0.0, 0.0,
-                                          writeGeometryInfo); // Linear depth
-#endif
-
-#ifdef PREPASS_NORMAL
-#ifdef PREPASS_NORMAL_WORLDSPACE
-    fragData[PREPASS_NORMAL_INDEX] =
-        vec4f(normalW, writeGeometryInfo); // Normal
-#else
-    fragData[PREPASS_NORMAL_INDEX] =
-        vec4f(normalize((scene.view * vec4f(normalW, 0.0)).rgb),
-              writeGeometryInfo); // Normal
-#endif
-#endif
-
-#ifdef PREPASS_ALBEDO_SQRT
-    fragData[PREPASS_ALBEDO_SQRT_INDEX] =
-        vec4f(sqAlbedo, writeGeometryInfo); // albedo, for pre and post scatter
-#endif
-
-#ifdef PREPASS_REFLECTIVITY
-#ifndef UNLIT
-    fragData[PREPASS_REFLECTIVITY_INDEX] =
-        vec4f(specularEnvironmentR0, microSurface) * writeGeometryInfo;
-#else
-    fragData[PREPASS_REFLECTIVITY_INDEX] =
-        vec4f(0.0, 0.0, 0.0, 1.0) * writeGeometryInfo;
-#endif
-#endif
-
-#if SCENE_MRT_COUNT > 0
-    fragmentOutputs.fragData0 = fragData[0];
-#endif
-#if SCENE_MRT_COUNT > 1
-    fragmentOutputs.fragData1 = fragData[1];
-#endif
-#if SCENE_MRT_COUNT > 2
-    fragmentOutputs.fragData2 = fragData[2];
-#endif
-#if SCENE_MRT_COUNT > 3
-    fragmentOutputs.fragData3 = fragData[3];
-#endif
-#if SCENE_MRT_COUNT > 4
-    fragmentOutputs.fragData4 = fragData[4];
-#endif
-#if SCENE_MRT_COUNT > 5
-    fragmentOutputs.fragData5 = fragData[5];
-#endif
-#if SCENE_MRT_COUNT > 6
-    fragmentOutputs.fragData6 = fragData[6];
-#endif
-#if SCENE_MRT_COUNT > 7
-    fragmentOutputs.fragData7 = fragData[7];
-#endif
+    #include<pbrBlockPrePass>
 #endif
 
 #if !defined(PREPASS) && !defined(ORDER_INDEPENDENT_TRANSPARENCY)

@@ -1,7 +1,7 @@
 /* eslint-disable jsdoc/require-jsdoc */
 /* eslint-disable babylonjs/available */
 import type { HardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
-import { Scalar } from "../../Maths/math.scalar";
+import { ILog2 } from "../../Maths/math.scalar.functions";
 import type { Nullable } from "../../types";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import * as WebGPUConstants from "./webgpuConstants";
@@ -41,28 +41,29 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
         return this._webgpuTexture;
     }
 
-    public getMSAATexture(index = 0): Nullable<GPUTexture> {
+    public getMSAATexture(index: number): Nullable<GPUTexture> {
         return this._webgpuMSAATexture?.[index] ?? null;
     }
 
-    public setMSAATexture(texture: GPUTexture, index = -1) {
+    public setMSAATexture(texture: GPUTexture, index: number) {
         if (!this._webgpuMSAATexture) {
             this._webgpuMSAATexture = [];
-        }
-
-        if (index === -1) {
-            index = this._webgpuMSAATexture.length;
         }
 
         this._webgpuMSAATexture![index] = texture;
     }
 
-    public releaseMSAATexture() {
+    public releaseMSAATexture(index?: number): void {
         if (this._webgpuMSAATexture) {
-            for (const texture of this._webgpuMSAATexture) {
-                texture?.destroy();
+            if (index) {
+                this._webgpuMSAATexture[index]?.destroy();
+                delete this._webgpuMSAATexture[index];
+            } else {
+                for (const texture of this._webgpuMSAATexture) {
+                    texture?.destroy();
+                }
+                this._webgpuMSAATexture = null;
             }
-            this._webgpuMSAATexture = null;
         }
     }
 
@@ -106,7 +107,7 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
             }_${viewDimension}`,
             format,
             dimension: viewDimension,
-            mipLevelCount: generateMipMaps ? Scalar.ILog2(Math.max(width, height)) + 1 : 1,
+            mipLevelCount: generateMipMaps ? ILog2(Math.max(width, height)) + 1 : 1,
             baseArrayLayer: 0,
             baseMipLevel: 0,
             arrayLayerCount,

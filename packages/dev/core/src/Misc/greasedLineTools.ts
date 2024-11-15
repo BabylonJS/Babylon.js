@@ -5,7 +5,7 @@ import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { IFontData } from "../Meshes/Builders/textBuilder";
 import { CreateTextShapePaths } from "../Meshes/Builders/textBuilder";
 import type { FloatArray, IndicesArray } from "../types";
-import type { GreasedLinePoints } from "../Meshes/GreasedLine/greasedLineBaseMesh";
+import type { GreasedLinePoints, GreasedLinePointsOptions } from "../Meshes/GreasedLine/greasedLineBaseMesh";
 import type { Color3 } from "../Maths/math.color";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import type { Scene } from "../scene";
@@ -19,9 +19,10 @@ export class GreasedLineTools {
     /**
      * Converts GreasedLinePoints to number[][]
      * @param points GreasedLinePoints
+     * @param options GreasedLineToolsConvertPointsOptions
      * @returns number[][] with x, y, z coordinates of the points, like [[x, y, z, x, y, z, ...], [x, y, z, ...]]
      */
-    public static ConvertPoints(points: GreasedLinePoints): number[][] {
+    public static ConvertPoints(points: GreasedLinePoints, options?: GreasedLinePointsOptions): number[][] {
         if (points.length && Array.isArray(points) && typeof points[0] === "number") {
             return [<number[]>points];
         } else if (points.length && Array.isArray(points[0]) && typeof points[0][0] === "number") {
@@ -41,12 +42,26 @@ export class GreasedLineTools {
             });
             return positions;
         } else if (points instanceof Float32Array) {
-            return [Array.from(points)];
+            if (options?.floatArrayStride) {
+                const positions: number[][] = [];
+                const stride = options.floatArrayStride * 3;
+                for (let i = 0; i < points.length; i += stride) {
+                    const linePoints = new Array(stride); // Pre-allocate memory for the line
+                    for (let j = 0; j < stride; j++) {
+                        linePoints[j] = points[i + j];
+                    }
+                    positions.push(linePoints);
+                }
+                return positions;
+            } else {
+                return [Array.from(points)];
+            }
         } else if (points.length && points[0] instanceof Float32Array) {
             const positions: number[][] = [];
             points.forEach((p) => {
                 positions.push(Array.from(p as Float32Array));
             });
+
             return positions;
         }
 

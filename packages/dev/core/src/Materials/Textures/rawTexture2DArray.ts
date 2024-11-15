@@ -1,6 +1,5 @@
 import { Texture } from "./texture";
 import { Constants } from "../../Engines/constants";
-import "../../Engines/Extensions/engine.rawTexture";
 import type { Nullable } from "../../types";
 
 import type { Scene } from "../../scene";

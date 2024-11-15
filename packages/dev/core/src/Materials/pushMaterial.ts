@@ -15,8 +15,8 @@ export class PushMaterial extends Material {
 
     protected _normalMatrix: Matrix = new Matrix();
 
-    constructor(name: string, scene?: Scene, storeEffectOnSubMeshes = true) {
-        super(name, scene);
+    constructor(name: string, scene?: Scene, storeEffectOnSubMeshes = true, forceGLSL = false) {
+        super(name, scene, undefined, forceGLSL);
         this._storeEffectOnSubMeshes = storeEffectOnSubMeshes;
     }
 

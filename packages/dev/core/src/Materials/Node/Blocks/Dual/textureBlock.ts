@@ -271,7 +271,36 @@ export class TextureBlock extends NodeMaterialBlock {
         return this._outputs[6];
     }
 
-    public override get target() {
+    private _isTiedToFragment(input: NodeMaterialConnectionPoint) {
+        if (input.target === NodeMaterialBlockTargets.Fragment) {
+            return true;
+        }
+
+        if (input.target === NodeMaterialBlockTargets.Vertex) {
+            return false;
+        }
+
+        if (input.target === NodeMaterialBlockTargets.Neutral || input.target === NodeMaterialBlockTargets.VertexAndFragment) {
+            const parentBlock = input.ownerBlock;
+
+            if (parentBlock.target === NodeMaterialBlockTargets.Fragment) {
+                return true;
+            }
+
+            for (const input of parentBlock.inputs) {
+                if (!input.isConnected) {
+                    continue;
+                }
+                if (this._isTiedToFragment(input.connectedPoint!)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private _getEffectiveTarget() {
         if (this._fragmentOnly) {
             return NodeMaterialBlockTargets.Fragment;
         }
@@ -286,35 +315,15 @@ export class TextureBlock extends NodeMaterialBlock {
             return NodeMaterialBlockTargets.VertexAndFragment;
         }
 
-        let parent = this.uv.connectedPoint;
-
-        while (parent) {
-            if (parent.target === NodeMaterialBlockTargets.Fragment) {
-                return NodeMaterialBlockTargets.Fragment;
-            }
-
-            if (parent.target === NodeMaterialBlockTargets.Vertex) {
-                return NodeMaterialBlockTargets.VertexAndFragment;
-            }
-
-            if (parent.target === NodeMaterialBlockTargets.Neutral || parent.target === NodeMaterialBlockTargets.VertexAndFragment) {
-                const parentBlock = parent.ownerBlock;
-
-                if (parentBlock.target === NodeMaterialBlockTargets.Fragment) {
-                    return NodeMaterialBlockTargets.Fragment;
-                }
-
-                parent = null;
-                for (const input of parentBlock.inputs) {
-                    if (input.connectedPoint) {
-                        parent = input.connectedPoint;
-                        break;
-                    }
-                }
-            }
+        if (this._isTiedToFragment(this.uv.connectedPoint!)) {
+            return NodeMaterialBlockTargets.Fragment;
         }
 
         return NodeMaterialBlockTargets.VertexAndFragment;
+    }
+
+    public override get target() {
+        return this._getEffectiveTarget();
     }
 
     public override set target(value: NodeMaterialBlockTargets) {}
@@ -327,7 +336,7 @@ export class TextureBlock extends NodeMaterialBlock {
                 if (uvInput) {
                     uvInput.connectTo(this);
                 }
-            } else {
+            } else if (material.mode !== NodeMaterialModes.ProceduralTexture) {
                 const attributeName = material.mode === NodeMaterialModes.Particle ? "particle_uv" : "uv";
 
                 let uvInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === attributeName && additionalFilteringInfo(b));

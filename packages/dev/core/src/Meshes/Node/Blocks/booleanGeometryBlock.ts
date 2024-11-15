@@ -5,6 +5,8 @@ import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConn
 import type { VertexData } from "../../mesh.vertexData";
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
+import { CSG2, InitializeCSG2Async, IsCSG2Ready } from "core/Meshes/csg2";
+import type { Nullable } from "core/types";
 import { CSG } from "core/Meshes/csg";
 
 /**
@@ -27,7 +29,7 @@ export class BooleanGeometryBlock extends NodeGeometryBlock {
      * Gets or sets a boolean indicating that this block can evaluate context
      * Build performance is improved when this value is set to false as the system will cache values instead of reevaluating everything per context change
      */
-    @editableInPropertyPage("Evaluate context", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { rebuild: true } })
+    @editableInPropertyPage("Evaluate context", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
     public evaluateContext = false;
 
     /**
@@ -35,6 +37,7 @@ export class BooleanGeometryBlock extends NodeGeometryBlock {
      */
     @editableInPropertyPage("Operation", PropertyTypeForEdition.List, "ADVANCED", {
         notifiers: { rebuild: true },
+        embedded: true,
         options: [
             { label: "Intersect", value: BooleanGeometryOperations.Intersect },
             { label: "Subtract", value: BooleanGeometryOperations.Subtract },
@@ -42,6 +45,29 @@ export class BooleanGeometryBlock extends NodeGeometryBlock {
         ],
     })
     public operation = BooleanGeometryOperations.Intersect;
+
+    /**
+     * Gets or sets a boolean indicating that this block can evaluate context
+     * Build performance is improved when this value is set to false as the system will cache values instead of reevaluating everything per context change
+     */
+    @editableInPropertyPage("Use old CSG engine", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
+    public useOldCSGEngine = false;
+
+    private _csg2LoadingPromise: Promise<void>;
+    /**
+     * @internal
+     */
+    public override get _isReadyState(): Nullable<Promise<void>> {
+        if (IsCSG2Ready()) {
+            return null;
+        }
+
+        if (!this._csg2LoadingPromise) {
+            this._csg2LoadingPromise = InitializeCSG2Async();
+        }
+
+        return this._csg2LoadingPromise;
+    }
 
     /**
      * Create a new BooleanGeometryBlock
@@ -115,21 +141,36 @@ export class BooleanGeometryBlock extends NodeGeometryBlock {
                 vertexData1.colors = new Array<number>(vertexCount * 4);
             }
 
-            const CSG0 = CSG.FromVertexData(vertexData0);
-            const CSG1 = CSG.FromVertexData(vertexData1);
+            let boolCSG: CSG | CSG2;
 
-            let boolCSG: CSG;
-
-            switch (this.operation) {
-                case BooleanGeometryOperations.Intersect:
-                    boolCSG = CSG0.intersect(CSG1);
-                    break;
-                case BooleanGeometryOperations.Subtract:
-                    boolCSG = CSG0.subtract(CSG1);
-                    break;
-                case BooleanGeometryOperations.Union:
-                    boolCSG = CSG0.union(CSG1);
-                    break;
+            if (this.useOldCSGEngine) {
+                const CSG0 = CSG.FromVertexData(vertexData0);
+                const CSG1 = CSG.FromVertexData(vertexData1);
+                switch (this.operation) {
+                    case BooleanGeometryOperations.Intersect:
+                        boolCSG = CSG0.intersect(CSG1);
+                        break;
+                    case BooleanGeometryOperations.Subtract:
+                        boolCSG = CSG0.subtract(CSG1);
+                        break;
+                    case BooleanGeometryOperations.Union:
+                        boolCSG = CSG0.union(CSG1);
+                        break;
+                }
+            } else {
+                const CSG0 = CSG2.FromVertexData(vertexData0);
+                const CSG1 = CSG2.FromVertexData(vertexData1);
+                switch (this.operation) {
+                    case BooleanGeometryOperations.Intersect:
+                        boolCSG = CSG0.intersect(CSG1);
+                        break;
+                    case BooleanGeometryOperations.Subtract:
+                        boolCSG = CSG0.subtract(CSG1);
+                        break;
+                    case BooleanGeometryOperations.Union:
+                        boolCSG = CSG0.add(CSG1);
+                        break;
+                }
             }
 
             return boolCSG.toVertexData();
@@ -146,6 +187,7 @@ export class BooleanGeometryBlock extends NodeGeometryBlock {
     protected override _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.evaluateContext = ${this.evaluateContext ? "true" : "false"};\n`;
         codeString += `${this._codeVariableName}.operation = BABYLON.BooleanGeometryOperations.${BooleanGeometryOperations[this.operation]};\n`;
+        codeString += `${this._codeVariableName}.useOldCSGEngine = ${this.useOldCSGEngine ? "true" : "false"};\n`;
         return codeString;
     }
 
@@ -158,6 +200,7 @@ export class BooleanGeometryBlock extends NodeGeometryBlock {
 
         serializationObject.evaluateContext = this.evaluateContext;
         serializationObject.operation = this.operation;
+        serializationObject.useOldCSGEngine = this.useOldCSGEngine;
 
         return serializationObject;
     }
@@ -169,6 +212,8 @@ export class BooleanGeometryBlock extends NodeGeometryBlock {
         if (serializationObject.operation) {
             this.operation = serializationObject.operation;
         }
+
+        this.useOldCSGEngine = !!serializationObject.useOldCSGEngine;
     }
 }
 

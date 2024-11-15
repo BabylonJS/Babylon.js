@@ -336,6 +336,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
         vertexCode =
             (needDiagnosticOff ? "diagnostic(off, derivative_uniformity);\n" : "") +
+            "diagnostic(off, chromium.unreachable_code);\n" +
             InjectStartingAndEndingCode(vertexCode, "fn main", vertexMainStartingCode, vertexMainEndingCode);
 
         // fragment code
@@ -355,26 +356,28 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         let fragmentOutputs = "struct FragmentOutputs {\n";
 
         // Adding fragData output locations
-        let regex = /const SCENE_MRT_COUNT = (\d+);/;
-        let match = fragmentCode.match(regex);
+        const regexRoot = "fragmentOutputs\\.fragData";
+        let match = fragmentCode.match(new RegExp(regexRoot + "0", "g"));
         let indexLocation = 0;
 
         if (match) {
-            const number = parseInt(match[1]);
-            if (number > 0) {
-                for (let index = 0; index < number; index++) {
+            fragmentOutputs += ` @location(${indexLocation}) fragData0 : vec4<f32>,\n`;
+            indexLocation++;
+            for (let index = 1; index < 8; index++) {
+                match = fragmentCode.match(new RegExp(regexRoot + index, "g"));
+                if (match) {
                     fragmentOutputs += ` @location(${indexLocation}) fragData${indexLocation} : vec4<f32>,\n`;
                     indexLocation++;
                 }
-                if (fragmentCode.indexOf("MRT_AND_COLOR") !== -1) {
-                    fragmentOutputs += `  @location(${indexLocation}) color : vec4<f32>,\n`;
-                    indexLocation++;
-                }
+            }
+            if (fragmentCode.indexOf("MRT_AND_COLOR") !== -1) {
+                fragmentOutputs += `  @location(${indexLocation}) color : vec4<f32>,\n`;
+                indexLocation++;
             }
         }
 
         // Adding fragData output locations
-        regex = /oitDepthSampler/;
+        const regex = /oitDepthSampler/;
         match = fragmentCode.match(regex);
 
         if (match) {
@@ -421,7 +424,9 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         needDiagnosticOff = fragmentCode.indexOf(Constants.DISABLEUA) !== -1;
 
         fragmentCode =
-            (needDiagnosticOff ? "diagnostic(off, derivative_uniformity);\n" : "") + InjectStartingAndEndingCode(fragmentCode, "fn main", fragmentStartingCode, fragmentEndingCode);
+            (needDiagnosticOff ? "diagnostic(off, derivative_uniformity);\n" : "") +
+            "diagnostic(off, chromium.unreachable_code);\n" +
+            InjectStartingAndEndingCode(fragmentCode, "fn main", fragmentStartingCode, fragmentEndingCode);
 
         this._collectBindingNames();
         this._preCreateBindGroupEntries();

@@ -4,7 +4,6 @@ import { Texture } from "./texture";
 import type { Scene } from "../../scene";
 import type { Nullable } from "../../types";
 import { Tools } from "../../Misc/tools";
-import "../../Engines/Extensions/engine.rawTexture";
 import { Constants } from "../../Engines/constants";
 import { LoadImage } from "../../Misc/fileTools";
 

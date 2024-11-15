@@ -2,11 +2,11 @@ import { InternalTexture, InternalTextureSource } from "../../../Materials/Textu
 import type { Nullable } from "../../../types";
 import { Constants } from "../../constants";
 import type { DepthTextureCreationOptions } from "../../../Materials/Textures/textureCreationOptions";
-import { WebGPUEngine } from "../../webgpuEngine";
 import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 import { WebGPUTextureHelper } from "../webgpuTextureHelper";
 
 import type { Scene } from "../../../scene";
+import { ThinWebGPUEngine } from "core/Engines/thinWebGPUEngine";
 
 declare module "../../abstractEngine" {
     export interface AbstractEngine {
@@ -176,7 +176,7 @@ declare module "../../abstractEngine" {
     }
 }
 
-WebGPUEngine.prototype._createDepthStencilCubeTexture = function (size: number, options: DepthTextureCreationOptions): InternalTexture {
+ThinWebGPUEngine.prototype._createDepthStencilCubeTexture = function (size: number, options: DepthTextureCreationOptions): InternalTexture {
     const internalTexture = new InternalTexture(this, options.generateStencil ? InternalTextureSource.DepthStencil : InternalTextureSource.Depth);
 
     internalTexture.isCube = true;
@@ -193,14 +193,7 @@ WebGPUEngine.prototype._createDepthStencilCubeTexture = function (size: number, 
 
     internalTexture.format = internalOptions.depthTextureFormat;
 
-    this._setupDepthStencilTexture(
-        internalTexture,
-        size,
-        internalOptions.generateStencil,
-        internalOptions.bilinearFiltering,
-        internalOptions.comparisonFunction,
-        internalOptions.samples
-    );
+    this._setupDepthStencilTexture(internalTexture, size, internalOptions.bilinearFiltering, internalOptions.comparisonFunction, internalOptions.samples);
 
     this._textureHelper.createGPUTextureForInternalTexture(internalTexture);
 
@@ -214,7 +207,7 @@ WebGPUEngine.prototype._createDepthStencilCubeTexture = function (size: number, 
     return internalTexture;
 };
 
-WebGPUEngine.prototype.createCubeTexture = function (
+ThinWebGPUEngine.prototype.createCubeTexture = function (
     rootUrl: string,
     scene: Nullable<Scene>,
     files: Nullable<string[]>,
@@ -275,7 +268,7 @@ WebGPUEngine.prototype.createCubeTexture = function (
     );
 };
 
-WebGPUEngine.prototype._setCubeMapTextureParams = function (texture: InternalTexture, loadMipmap: boolean, maxLevel?: number) {
+ThinWebGPUEngine.prototype._setCubeMapTextureParams = function (texture: InternalTexture, loadMipmap: boolean, maxLevel?: number) {
     texture.samplingMode = loadMipmap ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
     texture._cachedWrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
     texture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
@@ -284,7 +277,7 @@ WebGPUEngine.prototype._setCubeMapTextureParams = function (texture: InternalTex
     }
 };
 
-WebGPUEngine.prototype.generateMipMapsForCubemap = function (texture: InternalTexture) {
+ThinWebGPUEngine.prototype.generateMipMapsForCubemap = function (texture: InternalTexture) {
     if (texture.generateMipMaps) {
         const gpuTexture = texture._hardwareTexture?.underlyingResource;
 

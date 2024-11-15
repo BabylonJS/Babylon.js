@@ -1,8 +1,6 @@
 import { Constants } from "../Engines/constants";
 import { PostProcess } from "../PostProcesses/postProcess";
-import type { Engine } from "../Engines/engine";
 
-import "../Engines/Extensions/engine.renderTarget";
 import { ApplyPostProcess } from "./textureTools";
 
 import type { Texture } from "../Materials/Textures/texture";
@@ -14,8 +12,6 @@ import { ShaderLanguage } from "core/Materials";
  * Class used to host RGBD texture specific utilities
  */
 export class RGBDTextureTools {
-    private static _ShaderImported = false;
-
     /**
      * Expand the RGBD Texture from RGBD to Half Float if possible.
      * @param texture the texture to expand.
@@ -27,7 +23,7 @@ export class RGBDTextureTools {
         }
 
         // Gets everything ready.
-        const engine = internalTexture.getEngine() as Engine;
+        const engine = internalTexture.getEngine();
         const caps = engine.getCaps();
         const isReady = internalTexture.isReady;
         let expandTexture = false;
@@ -55,13 +51,10 @@ export class RGBDTextureTools {
             const shaderLanguage = isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
             internalTexture.isReady = false;
 
-            if (!this._ShaderImported) {
-                this._ShaderImported = true;
-                if (isWebGPU) {
-                    await Promise.all([import("../ShadersWGSL/rgbdDecode.fragment"), import("../ShadersWGSL/rgbdEncode.fragment")]);
-                } else {
-                    await Promise.all([import("../Shaders/rgbdDecode.fragment"), import("../Shaders/rgbdEncode.fragment")]);
-                }
+            if (isWebGPU) {
+                await Promise.all([import("../ShadersWGSL/rgbdDecode.fragment"), import("../ShadersWGSL/rgbdEncode.fragment")]);
+            } else {
+                await Promise.all([import("../Shaders/rgbdDecode.fragment"), import("../Shaders/rgbdEncode.fragment")]);
             }
 
             // Expand the texture if possible

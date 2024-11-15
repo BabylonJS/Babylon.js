@@ -1,13 +1,24 @@
-import { Engine } from "core/Engines/engine";
-import type { EngineOptions } from "core/Engines";
+// eslint-disable-next-line import/no-internal-modules
+import type { AbstractEngine, AbstractEngineOptions, EngineOptions, WebGPUEngineOptions } from "core/index";
 
 import type { ViewerOptions } from "./viewer";
 import { Viewer } from "./viewer";
 
-type CanvasViewerOptions = ViewerOptions & ({ engine: "WebGL" } & EngineOptions);
-const defaultCanvasViewerOptions: CanvasViewerOptions = {
-    engine: "WebGL",
-};
+/**
+ * Options for creating a Viewer instance that is bound to an HTML canvas.
+ */
+export type CanvasViewerOptions = ViewerOptions &
+    (({ engine?: undefined } & AbstractEngineOptions) | ({ engine: "WebGL" } & EngineOptions) | ({ engine: "WebGPU" } & WebGPUEngineOptions));
+const defaultCanvasViewerOptions: CanvasViewerOptions = {};
+
+/**
+ * Chooses a default engine for the current browser environment.
+ * @returns The default engine to use.
+ */
+export function getDefaultEngine(): NonNullable<CanvasViewerOptions["engine"]> {
+    // TODO: When WebGPU is fully production ready, we may want to prefer it if it is supported by the browser.
+    return "WebGL";
+}
 
 /**
  * Creates a Viewer instance that is bound to an HTML canvas.
@@ -17,7 +28,7 @@ const defaultCanvasViewerOptions: CanvasViewerOptions = {
  * @param options The options to use when creating the Viewer and binding it to the specified canvas.
  * @returns A Viewer instance that is bound to the specified canvas.
  */
-export function createViewerForCanvas(canvas: HTMLCanvasElement, options?: CanvasViewerOptions): Viewer {
+export async function createViewerForCanvas(canvas: HTMLCanvasElement, options?: CanvasViewerOptions): Promise<Viewer> {
     const finalOptions = { ...defaultCanvasViewerOptions, ...options };
     const disposeActions: (() => void)[] = [];
 
@@ -28,8 +39,23 @@ export function createViewerForCanvas(canvas: HTMLCanvasElement, options?: Canva
     disposeActions.push(() => resizeObserver.disconnect());
 
     // Create an engine instance.
-    // TODO: Create a WebGL or WebGPUEngine based on the engine option.
-    const engine = new Engine(canvas, undefined, options);
+    let engine: AbstractEngine;
+    switch (finalOptions.engine ?? getDefaultEngine()) {
+        case "WebGL": {
+            // eslint-disable-next-line @typescript-eslint/naming-convention, no-case-declarations
+            const { Engine } = await import("core/Engines/engine");
+            engine = new Engine(canvas, undefined, options);
+            break;
+        }
+        case "WebGPU": {
+            // eslint-disable-next-line @typescript-eslint/naming-convention, no-case-declarations
+            const { WebGPUEngine } = await import("core/Engines/webgpuEngine");
+            const webGPUEngine = new WebGPUEngine(canvas, options);
+            await webGPUEngine.initAsync();
+            engine = webGPUEngine;
+            break;
+        }
+    }
 
     // Override the onInitialized callback to add in some specific behavior.
     const onInitialized = finalOptions.onInitialized;
@@ -55,10 +81,6 @@ export function createViewerForCanvas(canvas: HTMLCanvasElement, options?: Canva
 
     // Override the Viewer's dispose method to add in additional cleanup.
     viewer.dispose = () => disposeActions.forEach((dispose) => dispose());
-
-    // TODO: Creating an engine instance will be async if we use a dynamic import for choosing either Engine or WebGPUEngine,
-    //       or even when just creating a WebGPUEngine since we have to call initAsync. To keep the UI integration layer
-    //       simple (e.g. not have to deal with asynchronous creation of the Viewer), should we also be able to pass Promise<AbstractEngine> to the Viewer constructor?
 
     return viewer;
 }

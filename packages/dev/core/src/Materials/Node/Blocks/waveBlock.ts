@@ -5,6 +5,7 @@ import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnection
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../Misc/typeStore";
 import type { Scene } from "../../../scene";
+import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 
 /**
  * Operations supported by the Wave block
@@ -25,6 +26,15 @@ export class WaveBlock extends NodeMaterialBlock {
     /**
      * Gets or sets the kibnd of wave to be applied by the block
      */
+    @editableInPropertyPage("Kind", PropertyTypeForEdition.List, "ADVANCED", {
+        notifiers: { rebuild: true },
+        embedded: true,
+        options: [
+            { label: "SawTooth", value: WaveBlockKind.SawTooth },
+            { label: "Square", value: WaveBlockKind.Square },
+            { label: "Triangle", value: WaveBlockKind.Triangle },
+        ],
+    })
     public kind = WaveBlockKind.SawTooth;
 
     /**

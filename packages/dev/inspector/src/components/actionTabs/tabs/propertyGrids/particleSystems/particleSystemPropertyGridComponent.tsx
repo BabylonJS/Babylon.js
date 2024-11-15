@@ -181,7 +181,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         }}
                     />
                 )}
-                {system.isStopping() && <TextLineComponent label="System is stoppping..." ignoreValue={true} />}
+                {system.isStopping() && <TextLineComponent label="System is stopping..." ignoreValue={true} />}
             </>
         );
     }
@@ -369,7 +369,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     {system.particleTexture && (
                         <>
                             <TextureLinkLineComponent label="Texture" texture={system.particleTexture} onSelectionChangedObservable={this.props.onSelectionChangedObservable} />
-                            <FileButtonLine label="Load texture from file" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
+                            <FileButtonLine label="Load texture from file" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env, .exr" />
                         </>
                     )}
                     <OptionsLine

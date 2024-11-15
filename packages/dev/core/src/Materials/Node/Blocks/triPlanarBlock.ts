@@ -34,7 +34,7 @@ export class TriPlanarBlock extends NodeMaterialBlock {
     /**
      * Project the texture(s) for a better fit to a cube
      */
-    @editableInPropertyPage("Project as cube", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
+    @editableInPropertyPage("Project as cube", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { update: true } })
     public projectAsCube: boolean = false;
 
     protected _texture: Nullable<Texture>;

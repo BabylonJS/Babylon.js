@@ -17,17 +17,14 @@ import { RenderingManager } from "../../Rendering/renderingManager";
 import { Constants } from "../../Engines/constants";
 import type { IRenderTargetTexture, RenderTargetWrapper } from "../../Engines/renderTargetWrapper";
 
-import "../../Engines/Extensions/engine.renderTarget";
-import "../../Engines/Extensions/engine.renderTargetCube";
-import "../../Engines/Extensions/engine.renderTargetTexture";
-
 import { _ObserveArray } from "../../Misc/arrayTools";
-import { DumpFramebuffer } from "../../Misc/dumpTools";
 
 import type { Material } from "../material";
 import { FloorPOT, NearestPOT } from "../../Misc/tools.functions";
 import { Effect } from "../effect";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
+import type { IParticleSystem } from "core/Particles/IParticleSystem";
+import { Logger } from "../../Misc/logger";
 
 declare module "../effect" {
     export interface Effect {
@@ -139,6 +136,9 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     public set renderList(value: Nullable<Array<AbstractMesh>>) {
+        if (this._renderList === value) {
+            return;
+        }
         if (this._unObserveRenderList) {
             this._unObserveRenderList();
             this._unObserveRenderList = null;
@@ -159,6 +159,12 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             });
         }
     };
+
+    /**
+     * Define the list of particle systems to render in the texture. If not provided, will render all the particle systems of the scene.
+     * Note that the particle systems are rendered only if renderParticles is set to true.
+     */
+    public particleSystemList: Nullable<Array<IParticleSystem>> = null;
 
     /**
      * Use this function to overload the renderList array at rendering time.
@@ -309,7 +315,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * Define the clear color of the Render Target if it should be different from the scene.
      */
     public clearColor: Color4;
-    protected _size: TextureSize;
+    /** @internal */
+    public _size: TextureSize;
     protected _initialSizeParameter: TextureSize | { ratio: number };
     protected _sizeRatio: Nullable<number>;
     /** @internal */
@@ -902,11 +909,19 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         this._render(useCameraPostProcess, dumpForDebug);
     }
 
+    private _dumpToolsLoading = false;
+    private _dumpTools: typeof import("../../Misc/dumpTools");
+
     /**
      * This function will check if the render target texture can be rendered (textures are loaded, shaders are compiled)
      * @returns true if all required resources are ready
      */
     public isReadyForRendering(): boolean {
+        if (!this._dumpToolsLoading) {
+            this._dumpToolsLoading = true;
+            // avoid a static import to allow ignoring the import in some cases
+            import("../../Misc/dumpTools").then((module) => (this._dumpTools = module));
+        }
         return this._render(false, false, true);
     }
 
@@ -1050,18 +1065,25 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                     scene.resetCachedMaterial();
                 }
             }
+
+            const particleSystems = this.particleSystemList || scene.particleSystems;
+            for (const particleSystem of particleSystems) {
+                if (!particleSystem.isReady()) {
+                    returnValue = false;
+                }
+            }
         }
 
         this.onAfterUnbindObservable.notifyObservers(this);
 
         engine.currentRenderPassId = currentRenderPassId;
 
+        scene.activeCamera = sceneCamera;
         if (sceneCamera) {
-            scene.activeCamera = sceneCamera;
             if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
-                scene.setTransformMatrix(scene.activeCamera.getViewMatrix(), scene.activeCamera.getProjectionMatrix(true));
+                scene.setTransformMatrix(sceneCamera.getViewMatrix(), sceneCamera.getProjectionMatrix(true));
             }
-            engine.setViewport(scene.activeCamera.viewport);
+            engine.setViewport(sceneCamera.viewport);
         }
 
         scene.resetCachedMaterial();
@@ -1102,10 +1124,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                     continue;
                 }
 
-                if (!mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate && scene.activeCamera) {
-                    mesh._internalAbstractMeshDataInfo._currentLOD = scene.customLODSelector
-                        ? scene.customLODSelector(mesh, this.activeCamera || scene.activeCamera)
-                        : mesh.getLOD(this.activeCamera || scene.activeCamera);
+                if (!mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate && camera) {
+                    mesh._internalAbstractMeshDataInfo._currentLOD = scene.customLODSelector ? scene.customLODSelector(mesh, camera) : mesh.getLOD(camera);
                     mesh._internalAbstractMeshDataInfo._currentLODIsUpToDate = true;
                 }
                 if (!mesh._internalAbstractMeshDataInfo._currentLOD) {
@@ -1113,6 +1133,10 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                 }
 
                 let meshToRender = mesh._internalAbstractMeshDataInfo._currentLOD;
+
+                if (meshToRender !== mesh && meshToRender.billboardMode !== 0) {
+                    meshToRender.computeWorldMatrix(); // Compute world matrix if LOD is billboard
+                }
 
                 meshToRender._preActivateForIntermediateRendering(sceneRenderId);
 
@@ -1137,6 +1161,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                         }
                         meshToRender._internalAbstractMeshDataInfo._isActiveIntermediate = true;
 
+                        scene._prepareSkeleton(meshToRender);
+
                         for (let subIndex = 0; subIndex < meshToRender.subMeshes.length; subIndex++) {
                             const subMesh = meshToRender.subMeshes[subIndex];
                             this._renderingManager.dispatch(subMesh, meshToRender);
@@ -1148,8 +1174,9 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             }
         }
 
-        for (let particleIndex = 0; particleIndex < scene.particleSystems.length; particleIndex++) {
-            const particleSystem = scene.particleSystems[particleIndex];
+        const particleSystems = this.particleSystemList || scene.particleSystems;
+        for (let particleIndex = 0; particleIndex < particleSystems.length; particleIndex++) {
+            const particleSystem = particleSystems[particleIndex];
 
             const emitter: any = particleSystem.emitter;
 
@@ -1209,10 +1236,10 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
         const engine = scene.getEngine();
 
-        engine._debugPushGroup?.(`render to face #${faceIndex} layer #${layer}`, 1);
-
         // Bind
         this._prepareFrame(scene, faceIndex, layer, useCameraPostProcess);
+
+        engine._debugPushGroup?.(`render to face #${faceIndex} layer #${layer}`, 2);
 
         if (this.is2DArray || this.is3D) {
             engine.currentRenderPassId = this._renderPassIds[layer];
@@ -1304,7 +1331,11 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
             // Dump ?
             if (dumpForDebug) {
-                DumpFramebuffer(this.getRenderWidth(), this.getRenderHeight(), engine);
+                if (!this._dumpTools) {
+                    Logger.Error("dumpTools module is still being loaded. To speed up the process import dump tools directly in your project");
+                } else {
+                    this._dumpTools.DumpFramebuffer(this.getRenderWidth(), this.getRenderHeight(), engine);
+                }
             }
         } else {
             // Clear
@@ -1317,14 +1348,14 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             }
         }
 
+        engine._debugPopGroup?.(2);
+
         // Unbind
         this._unbindFrameBuffer(engine, faceIndex);
 
         if (this._texture && this.isCube && faceIndex === 5) {
             engine.generateMipMapsForCubemap(this._texture, true);
         }
-
-        engine._debugPopGroup?.(1);
     }
 
     /**

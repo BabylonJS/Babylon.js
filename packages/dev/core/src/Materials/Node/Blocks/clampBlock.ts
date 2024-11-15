@@ -13,10 +13,10 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
  */
 export class ClampBlock extends NodeMaterialBlock {
     /** Gets or sets the minimum range */
-    @editableInPropertyPage("Minimum", PropertyTypeForEdition.Float)
+    @editableInPropertyPage("Minimum", PropertyTypeForEdition.Float, undefined, { embedded: true })
     public minimum = 0.0;
     /** Gets or sets the maximum range */
-    @editableInPropertyPage("Maximum", PropertyTypeForEdition.Float)
+    @editableInPropertyPage("Maximum", PropertyTypeForEdition.Float, undefined, { embedded: true })
     public maximum = 1.0;
 
     /**

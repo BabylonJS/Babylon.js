@@ -11,7 +11,7 @@
     ],
     "scripts": {
         "build": "npm run clean && npm run compile",
-        "clean": "rimraf dist && rimraf *.tsbuildinfo",
+        "clean": "rimraf dist && rimraf *.tsbuildinfo -g",
         "precompile": "npm run compile:assets",
         "compile": "npm run compile:source",
         "compile:source": "tsc -b tsconfig.build.json",
@@ -45,4 +45,3 @@
         "webpack": "^5.73.0"
     }
 }
-

@@ -7,6 +7,7 @@ import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsDiffuseTransmission } from "babylonjs-gltf2interface";
 import { Color3 } from "core/Maths/math.color";
+import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 const NAME = "KHR_materials_diffuse_transmission";
 
@@ -66,7 +67,6 @@ export class KHR_materials_diffuse_transmission implements IGLTFLoaderExtension 
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialsDiffuseTransmission>(context, material, this.name, (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
-            promises.push(this._loader.loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loadTranslucentPropertiesAsync(extensionContext, material, babylonMaterial, extension));
             return Promise.all(promises).then(() => {});
@@ -108,6 +108,7 @@ export class KHR_materials_diffuse_transmission implements IGLTFLoaderExtension 
             (extension.diffuseTransmissionTexture as ITextureInfo).nonColorData = true;
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/diffuseTransmissionTexture`, extension.diffuseTransmissionTexture).then((texture: BaseTexture) => {
+                    texture.name = `${babylonMaterial.name} (Diffuse Transmission)`;
                     pbrMaterial.subSurface.translucencyIntensityTexture = texture;
                 })
             );
@@ -122,6 +123,7 @@ export class KHR_materials_diffuse_transmission implements IGLTFLoaderExtension 
         if (extension.diffuseTransmissionColorTexture) {
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/diffuseTransmissionColorTexture`, extension.diffuseTransmissionColorTexture).then((texture: BaseTexture) => {
+                    texture.name = `${babylonMaterial.name} (Diffuse Transmission Color)`;
                     pbrMaterial.subSurface.translucencyColorTexture = texture;
                 })
             );
@@ -131,4 +133,5 @@ export class KHR_materials_diffuse_transmission implements IGLTFLoaderExtension 
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_materials_diffuse_transmission(loader));
+unregisterGLTFExtension(NAME);
+registerGLTFExtension(NAME, true, (loader) => new KHR_materials_diffuse_transmission(loader));

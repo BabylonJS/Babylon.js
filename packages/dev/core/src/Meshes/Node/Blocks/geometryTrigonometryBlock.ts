@@ -63,6 +63,7 @@ export class GeometryTrigonometryBlock extends NodeGeometryBlock {
      * Gets or sets the operation applied by the block
      */
     @editableInPropertyPage("Operation", PropertyTypeForEdition.List, "ADVANCED", {
+        embedded: true,
         notifiers: { rebuild: true },
         options: [
             { label: "Cos", value: GeometryTrigonometryBlockOperations.Cos },

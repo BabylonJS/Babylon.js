@@ -62,3 +62,8 @@ export * from "./matrixDeterminantBlock";
 export * from "./matrixTransposeBlock";
 export * from "./meshAttributeExistsBlock";
 export * from "./curveBlock";
+export * from "./colorConverterBlock";
+export * from "./loopBlock";
+export * from "./storageReadBlock";
+export * from "./storageWriteBlock";
+export * from "./GaussianSplatting/index";

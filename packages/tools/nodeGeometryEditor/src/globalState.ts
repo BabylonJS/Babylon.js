@@ -26,6 +26,7 @@ export class GlobalState {
     stateManager: StateManager;
     onBuiltObservable = new Observable<void>();
     onResetRequiredObservable = new Observable<boolean>();
+    onClearUndoStack = new Observable<void>();
     onZoomToFitRequiredObservable = new Observable<void>();
     onReOrganizedRequiredObservable = new Observable<void>();
     onPreviewModeChanged = new Observable<void>();
@@ -64,7 +65,6 @@ export class GlobalState {
         this.stateManager = new StateManager();
         this.stateManager.data = this;
         this.stateManager.lockObject = this.lockObject;
-
         RegisterElbowSupport(this.stateManager);
         RegisterDebugSupport(this.stateManager);
         RegisterNodePortDesign(this.stateManager);

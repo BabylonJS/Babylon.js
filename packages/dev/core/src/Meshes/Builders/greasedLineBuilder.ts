@@ -149,7 +149,7 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
     scene = <Scene>(scene ?? EngineStore.LastCreatedScene);
 
     let instance;
-    const allPoints = GreasedLineTools.ConvertPoints(options.points);
+    const allPoints = GreasedLineTools.ConvertPoints(options.points, options.pointsOptions);
 
     options.widthDistribution = options.widthDistribution ?? GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START;
     if (options.ribbonOptions) {

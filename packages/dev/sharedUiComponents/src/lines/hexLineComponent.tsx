@@ -78,8 +78,8 @@ export class HexLineComponent extends React.Component<IHexLineComponentProps, { 
     }
 
     updateValue(valueString: string, raisePropertyChanged: boolean) {
-        if (valueString.substr(0, 2) != "0x") {
-            if (valueString.substr(0, 1) != "0") {
+        if (valueString.substring(0, 2) != "0x") {
+            if (valueString.substring(0, 1) != "0") {
                 valueString = "0x" + valueString;
             } else {
                 valueString = "0x" + valueString.substr(1);

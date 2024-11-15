@@ -34,6 +34,7 @@ export class MathBlock extends NodeGeometryBlock {
      */
     @editableInPropertyPage("Operation", PropertyTypeForEdition.List, "ADVANCED", {
         notifiers: { rebuild: true },
+        embedded: true,
         options: [
             { label: "Add", value: MathBlockOperations.Add },
             { label: "Subtract", value: MathBlockOperations.Subtract },

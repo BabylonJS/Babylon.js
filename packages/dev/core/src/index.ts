@@ -1,5 +1,4 @@
 /* eslint-disable import/no-internal-modules */
-export * from "./abstractScene";
 export * from "./Actions/index";
 export * from "./Animations/index";
 export * from "./assetContainer";
@@ -47,3 +46,4 @@ export * from "./types";
 export * from "./Compat/index";
 export * from "./FlowGraph/index";
 export * from "./ObjectModel/index";
+export * from "./FrameGraph/index";

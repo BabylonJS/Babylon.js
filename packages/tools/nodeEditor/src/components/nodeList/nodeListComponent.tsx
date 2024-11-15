@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as React from "react";
 import type { GlobalState } from "../../globalState";
-import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import { DraggableLineComponent } from "../../sharedComponents/draggableLineComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
+import { DraggableLineComponent } from "shared-ui-components/lines/draggableLineComponent";
 import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
 import type { Observer } from "core/Misc/observable";
 import type { Nullable } from "core/types";
-import { DraggableLineWithButtonComponent } from "../../sharedComponents/draggableLineWithButtonComponent";
-import { LineWithFileButtonComponent } from "../../sharedComponents/lineWithFileButtonComponent";
+import { DraggableLineWithButtonComponent } from "shared-ui-components/lines/draggableLineWithButtonComponent";
+import { LineWithFileButtonComponent } from "shared-ui-components/lines/lineWithFileButtonComponent";
 import { Tools } from "core/Misc/tools";
 import addButton from "../../imgs/add.svg";
 import deleteButton from "../../imgs/delete.svg";
@@ -155,6 +155,10 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         ParticleRampGradientBlock: "The particle ramp gradient block",
         ParticleBlendMultiplyBlock: "The particle blend multiply block",
         ParticlePositionWorldBlock: "The world position of the particle",
+        GaussianSplattingBlock: "The gaussian splatting block",
+        GaussianBlock: "The gaussian color computation block",
+        SplatReaderBlock: "The gaussian splat reader block",
+        SplatIndexBlock: "The splat index",
         FragCoordBlock: "The gl_FragCoord predefined variable that contains the window relative coordinate (x, y, z, 1/w)",
         ScreenSizeBlock: "The size (in pixels) of the screen window",
         SceneDepthBlock: "The scene depth buffer",
@@ -186,6 +190,10 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         MatrixTransposeBlock: "Compute the transpose of a matrix",
         MeshAttributeExistsBlock: "Falls back to secondary input if specified attribute doesn't exists on the rendered mesh",
         CurveBlock: "Apply a curve function",
+        ColorConverterBlock: "Converts between RGB and HSL color spaces",
+        LoopBlock: "Block used to repeat code",
+        StorageReadBlock: "Block used to read from a loop storage variable",
+        StorageWriteBlock: "Block used to write to a loop storage variable",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -327,7 +335,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Custom_Frames: customFrameNames,
             Custom_Blocks: customBlockNames,
             Animation: ["BonesBlock", "MorphTargetsBlock"],
-            Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock", "DesaturateBlock"],
+            Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock", "DesaturateBlock", "ColorConverterBlock"],
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
             Inputs: [
                 "Float",
@@ -437,6 +445,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "FrontFacingBlock",
                 "MeshAttributeExistsBlock",
             ],
+            Loop: ["LoopBlock", "StorageReadBlock", "StorageWriteBlock"],
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock", "CloudBlock", "VoronoiNoiseBlock"],
             Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "PrePassOutputBlock", "DiscardBlock", "ClipPlanesBlock", "FragDepthBlock"],
             Particle: [
@@ -448,6 +457,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "ParticleTextureMaskBlock",
                 "ParticleUVBlock",
             ],
+            GaussianSplatting: ["GaussianSplattingBlock", "SplatIndexBlock", "SplatReaderBlock", "GaussianBlock"],
             PBR: ["PBRMetallicRoughnessBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
             PostProcess: ["ScreenPositionBlock", "CurrentScreenBlock", "PrePassTextureBlock"],
             Procedural__Texture: ["ScreenPositionBlock"],
@@ -471,6 +481,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 delete allBlocks["PostProcess"];
                 delete allBlocks["Particle"];
                 delete allBlocks["Procedural__Texture"];
+                delete allBlocks["GaussianSplatting"];
                 break;
             case NodeMaterialModes.PostProcess:
                 delete allBlocks["Animation"];
@@ -478,6 +489,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 delete allBlocks["Particle"];
                 delete allBlocks["Procedural__Texture"];
                 delete allBlocks["PBR"];
+                delete allBlocks["GaussianSplatting"];
                 allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("PrePassOutputBlock"), 1);
                 break;
             case NodeMaterialModes.ProceduralTexture:
@@ -486,9 +498,22 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 delete allBlocks["Particle"];
                 delete allBlocks["PostProcess"];
                 delete allBlocks["PBR"];
+                delete allBlocks["GaussianSplatting"];
                 allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("PrePassOutputBlock"), 1);
                 break;
             case NodeMaterialModes.Particle:
+                delete allBlocks["Animation"];
+                delete allBlocks["Mesh"];
+                delete allBlocks["PostProcess"];
+                delete allBlocks["Procedural__Texture"];
+                delete allBlocks["PBR"];
+                delete allBlocks["GaussianSplatting"];
+                allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("VertexOutputBlock"), 1);
+                allBlocks.Scene.splice(allBlocks.Scene.indexOf("FogBlock"), 1);
+                allBlocks.Scene.splice(allBlocks.Scene.indexOf("FogColorBlock"), 1);
+                allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("PrePassOutputBlock"), 1);
+                break;
+            case NodeMaterialModes.GaussianSplatting:
                 delete allBlocks["Animation"];
                 delete allBlocks["Mesh"];
                 delete allBlocks["PostProcess"];
@@ -512,6 +537,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                         return (
                             <DraggableLineWithButtonComponent
                                 key={block}
+                                format={"babylonjs-material-node"}
                                 data={block}
                                 tooltip={this._customFrameList[block] || ""}
                                 iconImage={deleteButton}
@@ -523,6 +549,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                         return (
                             <DraggableLineWithButtonComponent
                                 key={block}
+                                format={"babylonjs-material-node"}
                                 data={block}
                                 tooltip={this._customBlockList[block] || ""}
                                 iconImage={deleteButton}
@@ -532,7 +559,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                             />
                         );
                     }
-                    return <DraggableLineComponent key={block} data={block} tooltip={NodeListComponent._Tooltips[block] || ""} />;
+                    return <DraggableLineComponent key={block} format={"babylonjs-material-node"} data={block} tooltip={NodeListComponent._Tooltips[block] || ""} />;
                 });
 
             if (key === "Custom_Frames") {

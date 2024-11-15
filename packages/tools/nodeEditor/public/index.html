@@ -1,15 +1,17 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <!-- Google tag (gtag.js) -->
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-HHPVE95JSZ"></script>
         <script>
             window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
+            function gtag() {
+                dataLayer.push(arguments);
+            }
+            gtag("js", new Date());
 
-            gtag('config', 'G-HHPVE95JSZ');
-        </script>        
+            gtag("config", "G-HHPVE95JSZ");
+        </script>
         <title>Babylon.js Node Material Editor</title>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -17,7 +19,7 @@
 
         <link rel="stylesheet" href="https://use.typekit.net/cta4xsb.css" />
         <meta name="description" content="Babylon.js Node material editor - shader-based materials editor for Babylon.js" />
-        <meta name="keywords" content="Babylon.js,materials,nme,shaders,webgl" />
+        <meta name="keywords" content="Babylon.js,materials,nme,shaders,webgl,webgpu" />
 
         <style>
             html,
@@ -26,7 +28,6 @@
                 height: 100%;
                 padding: 0;
                 margin: 0;
-                -ms-touch-action: none;
                 touch-action: none;
                 overflow: hidden;
                 overscroll-behavior-x: none;
@@ -41,7 +42,6 @@
                 overflow: hidden;
             }
         </style>
-
     </head>
 
     <body>

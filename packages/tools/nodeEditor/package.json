@@ -18,7 +18,7 @@
         "serve:prod": "webpack serve --env mode=production",
         "serve:https": "webpack serve --env mode=development --server-type https --host ::",
         "serve:dev": "webpack serve --env mode=development --env watch=all",
-        "clean": "rimraf dist && rimraf *.tsbuildinfo"
+        "clean": "rimraf dist && rimraf *.tsbuildinfo -g"
     },
     "dependencies": {
         "react": "^17.0.2",
@@ -38,7 +38,7 @@
         "file-loader": "^6.2.0",
         "html-webpack-plugin": "^5.4.0",
         "mini-css-extract-plugin": "^2.4.3",
-        "sass-loader": "^13.0.0",
+        "sass-loader": "^16.0.0",
         "split.js": "^1.6.5",
         "style-loader": "^3.3.0",
         "url-loader": "^4.1.1",

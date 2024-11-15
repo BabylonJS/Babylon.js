@@ -4,7 +4,7 @@ import type { Observer } from "../Misc/observable";
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import type { Camera } from "../Cameras/camera";
-import type { Scene } from "../scene";
+import { Scene } from "../scene";
 import { Vector2 } from "../Maths/math.vector";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import { VertexBuffer } from "../Buffers/buffer";
@@ -20,7 +20,6 @@ import { PostProcess } from "../PostProcesses/postProcess";
 import { PassPostProcess } from "../PostProcesses/passPostProcess";
 import { BlurPostProcess } from "../PostProcesses/blurPostProcess";
 import { EffectLayer } from "./effectLayer";
-import { AbstractScene } from "../abstractScene";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import { RegisterClass } from "../Misc/typeStore";
@@ -30,8 +29,8 @@ import { SerializationHelper } from "../Misc/decorators.serialization";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
-declare module "../abstractScene" {
-    export interface AbstractScene {
+declare module "../scene" {
+    export interface Scene {
         /**
          * Return a the first highlight layer of the scene with a given name.
          * @param name The name of the highlight layer to look for.
@@ -41,7 +40,7 @@ declare module "../abstractScene" {
     }
 }
 
-AbstractScene.prototype.getHighlightLayerByName = function (name: string): Nullable<HighlightLayer> {
+Scene.prototype.getHighlightLayerByName = function (name: string): Nullable<HighlightLayer> {
     for (let index = 0; index < this.effectLayers?.length; index++) {
         if (this.effectLayers[index].name === name && this.effectLayers[index].getEffectName() === HighlightLayer.EffectName) {
             return (<any>this.effectLayers[index]) as HighlightLayer;
@@ -390,7 +389,13 @@ export class HighlightLayer extends EffectLayer {
             undefined,
             undefined,
             undefined,
-            this._shaderLanguage
+            this._shaderLanguage,
+            this._shadersLoaded
+                ? undefined
+                : async () => {
+                      await this._importShadersAsync();
+                      this._shadersLoaded = true;
+                  }
         );
     }
 

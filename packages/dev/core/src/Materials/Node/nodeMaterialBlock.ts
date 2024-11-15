@@ -26,6 +26,7 @@ export class NodeMaterialBlock {
     protected _target: NodeMaterialBlockTargets;
     private _isFinalMerger = false;
     private _isInput = false;
+    private _isLoop = false;
     private _isTeleportOut = false;
     private _isTeleportIn = false;
     private _name = "";
@@ -125,6 +126,13 @@ export class NodeMaterialBlock {
     }
 
     /**
+     * Gets a boolean indicating if this block is a loop
+     */
+    public get isLoop(): boolean {
+        return this._isLoop;
+    }
+
+    /**
      * Gets or sets the build Id
      */
     public get buildId(): number {
@@ -207,9 +215,21 @@ export class NodeMaterialBlock {
         this._target = target;
         this._originalTargetIsNeutral = target === NodeMaterialBlockTargets.Neutral;
         this._isFinalMerger = isFinalMerger;
-        this._isInput = this.getClassName() === "InputBlock";
-        this._isTeleportOut = this.getClassName() === "NodeMaterialTeleportOutBlock";
-        this._isTeleportIn = this.getClassName() === "NodeMaterialTeleportInBlock";
+        switch (this.getClassName()) {
+            case "InputBlock":
+                this._isInput = true;
+                break;
+            case "NodeMaterialTeleportOutBlock":
+                this._isTeleportOut = true;
+                break;
+            case "NodeMaterialTeleportInBlock":
+                this._isTeleportIn = true;
+                break;
+            case "LoopBlock":
+                this._isLoop = true;
+                break;
+        }
+
         this._name = name;
         this.uniqueId = UniqueIdGenerator.UniqueId;
     }
@@ -437,6 +457,11 @@ export class NodeMaterialBlock {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _buildBlock(state: NodeMaterialBuildState) {
+        // Empty. Must be defined by child nodes
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    protected _postBuildBlock(state: NodeMaterialBuildState) {
         // Empty. Must be defined by child nodes
     }
 
@@ -702,6 +727,31 @@ export class NodeMaterialBlock {
 
         // Compile connected blocks
         for (const output of this._outputs) {
+            if (output._forPostBuild) {
+                continue;
+            }
+            if ((output.target & state.target) === 0) {
+                continue;
+            }
+
+            for (const endpoint of output.endpoints) {
+                const block = endpoint.ownerBlock;
+
+                if (block) {
+                    if (((block.target & state.target) !== 0 && activeBlocks.indexOf(block) !== -1) || state._terminalBlocks.has(block)) {
+                        this._processBuild(block, state, endpoint, activeBlocks);
+                    }
+                }
+            }
+        }
+
+        this._postBuildBlock(state);
+
+        // Compile post build connected blocks
+        for (const output of this._outputs) {
+            if (!output._forPostBuild) {
+                continue;
+            }
             if ((output.target & state.target) === 0) {
                 continue;
             }

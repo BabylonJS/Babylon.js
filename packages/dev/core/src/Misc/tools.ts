@@ -28,6 +28,7 @@ import type { Camera } from "../Cameras/camera";
 import type { IColor4Like } from "../Maths/math.like";
 import { IsExponentOfTwo, Mix } from "./tools.functions";
 import type { AbstractEngine } from "../Engines/abstractEngine";
+import type { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 
 declare function importScripts(...urls: string[]): void;
 
@@ -363,24 +364,7 @@ export class Tools {
      * @returns "pointer" if touch is enabled. Else returns "mouse"
      */
     public static GetPointerPrefix(engine: AbstractEngine): string {
-        let eventPrefix = "pointer";
-
-        // Check if pointer events are supported
-        if (IsWindowObjectExist() && !window.PointerEvent) {
-            eventPrefix = "mouse";
-        }
-
-        // Special Fallback MacOS Safari...
-        if (
-            engine._badDesktopOS &&
-            !engine._badOS &&
-            // And not ipad pros who claim to be macs...
-            !(document && "ontouchend" in document)
-        ) {
-            eventPrefix = "mouse";
-        }
-
-        return eventPrefix;
+        return IsWindowObjectExist() && !window.PointerEvent ? "mouse" : "pointer";
     }
 
     /**
@@ -550,12 +534,15 @@ export class Tools {
      * @param onSuccess defines the callback called when the script is loaded
      * @param onError defines the callback to call if an error occurs
      * @param scriptId defines the id of the script element
+     * @param useModule defines if we should use the module strategy to load the script
      */
-    public static LoadScript(scriptUrl: string, onSuccess: () => void, onError?: (message?: string, exception?: any) => void, scriptId?: string) {
+    public static LoadScript(scriptUrl: string, onSuccess?: () => void, onError?: (message?: string, exception?: any) => void, scriptId?: string, useModule = false) {
         if (typeof importScripts === "function") {
             try {
                 importScripts(scriptUrl);
-                onSuccess();
+                if (onSuccess) {
+                    onSuccess();
+                }
             } catch (e) {
                 onError?.(`Unable to load script '${scriptUrl}' in worker`, e);
             }
@@ -566,8 +553,13 @@ export class Tools {
         }
         const head = document.getElementsByTagName("head")[0];
         const script = document.createElement("script");
-        script.setAttribute("type", "text/javascript");
-        script.setAttribute("src", scriptUrl);
+        if (useModule) {
+            script.setAttribute("type", "module");
+            script.innerText = scriptUrl;
+        } else {
+            script.setAttribute("type", "text/javascript");
+            script.setAttribute("src", scriptUrl);
+        }
         if (scriptId) {
             script.id = scriptId;
         }
@@ -1071,6 +1063,7 @@ export class Tools {
      * @param enableStencilBuffer Whether the stencil buffer should be enabled or not (default: false)
      * @param useLayerMask if the camera's layer mask should be used to filter what should be rendered (default: true)
      * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
+     * @param customizeTexture An optional callback that can be used to modify the render target texture before taking the screenshot. This can be used, for instance, to enable camera post-processes before taking the screenshot.
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static CreateScreenshotUsingRenderTarget(
@@ -1085,7 +1078,8 @@ export class Tools {
         renderSprites = false,
         enableStencilBuffer = false,
         useLayerMask = true,
-        quality?: number
+        quality?: number,
+        customizeTexture?: (texture: RenderTargetTexture) => void
     ): void {
         throw _WarnImport("ScreenshotTools");
     }
@@ -1106,11 +1100,12 @@ export class Tools {
      * @param samples Texture samples (default: 1)
      * @param antialiasing Whether antialiasing should be turned on or not (default: false)
      * @param fileName A name for for the downloaded file.
-     * @returns screenshot as a string of base64-encoded characters. This string can be assigned
      * @param renderSprites Whether the sprites should be rendered or not (default: false)
      * @param enableStencilBuffer Whether the stencil buffer should be enabled or not (default: false)
      * @param useLayerMask if the camera's layer mask should be used to filter what should be rendered (default: true)
      * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
+     * @param customizeTexture An optional callback that can be used to modify the render target texture before taking the screenshot. This can be used, for instance, to enable camera post-processes before taking the screenshot.
+     * @returns screenshot as a string of base64-encoded characters. This string can be assigned
      * to the src parameter of an <img> to display it
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -1125,7 +1120,8 @@ export class Tools {
         renderSprites = false,
         enableStencilBuffer = false,
         useLayerMask = true,
-        quality?: number
+        quality?: number,
+        customizeTexture?: (texture: RenderTargetTexture) => void
     ): Promise<string> {
         throw _WarnImport("ScreenshotTools");
     }

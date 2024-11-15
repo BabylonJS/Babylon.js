@@ -16,7 +16,6 @@ import type { SubMesh } from "../../../../Meshes/subMesh";
 import type { Effect } from "../../../effect";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import type { Scene } from "../../../../scene";
-import { Scalar } from "../../../../Maths/math.scalar";
 import { Logger } from "core/Misc/logger";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
@@ -56,13 +55,13 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
      * Defines if the material uses spherical harmonics vs spherical polynomials for the
      * diffuse part of the IBL.
      */
-    @editableInPropertyPage("Spherical Harmonics", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
+    @editableInPropertyPage("Spherical Harmonics", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { update: true } })
     public useSphericalHarmonics: boolean = true;
 
     /**
      * Force the shader to compute irradiance in the fragment shader in order to take bump in account.
      */
-    @editableInPropertyPage("Force irradiance in fragment", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
+    @editableInPropertyPage("Force irradiance in fragment", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { update: true } })
     public forceIrradianceInFragment: boolean = false;
 
     protected override _onGenerateOnlyFragmentCodeChanged(): boolean {
@@ -247,7 +246,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         const width = reflectionTexture.getSize().width;
 
         effect.setFloat3(this._vReflectionMicrosurfaceInfosName, width, reflectionTexture.lodGenerationScale, reflectionTexture.lodGenerationOffset);
-        effect.setFloat2(this._vReflectionFilteringInfoName, width, Scalar.Log2(width));
+        effect.setFloat2(this._vReflectionFilteringInfoName, width, Math.log2(width));
 
         const defines = subMesh.materialDefines as NodeMaterialDefines;
 

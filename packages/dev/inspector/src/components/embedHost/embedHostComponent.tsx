@@ -130,7 +130,7 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
                 id="embed"
                 minWidth={300}
                 maxWidth={600}
-                size={{ height: "100%" }}
+                defaultSize={{ height: "100%" }}
                 minHeight="100%"
                 enable={{ top: false, right: false, bottom: false, left: true, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false }}
             >

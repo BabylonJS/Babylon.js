@@ -73,6 +73,10 @@ import { GeometryDotBlock } from "core/Meshes/Node/Blocks/geometryDotBlock";
 import { GeometryReplaceColorBlock } from "core/Meshes/Node/Blocks/geometryReplaceColorBlock";
 import { GeometryRotate2dBlock } from "core/Meshes/Node/Blocks/geometryRotate2dBlock";
 import { GeometryLengthBlock } from "core/Meshes/Node/Blocks/geometryLengthBlock";
+import { GeometryInterceptorBlock } from "core/Meshes/Node/Blocks/geometryInterceptorBlock";
+import { LatticeBlock } from "core/Meshes/Node/Blocks/Set/latticeBlock";
+import { AggregatorBlock } from "core/Meshes/Node/Blocks/Set/aggregatorBlock";
+import { CleanGeometryBlock } from "core/Meshes/Node/Blocks/cleanGeometryBlock";
 
 /**
  * Static class for BlockTools
@@ -80,6 +84,14 @@ import { GeometryLengthBlock } from "core/Meshes/Node/Blocks/geometryLengthBlock
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "CleanGeometryBlock":
+                return new CleanGeometryBlock("Clean");
+            case "AggregatorBlock":
+                return new AggregatorBlock("Aggregator");
+            case "LatticeBlock":
+                return new LatticeBlock("Lattice");
+            case "InterceptorBlock":
+                return new GeometryInterceptorBlock("Interceptor");
             case "Rotate2dBlock":
                 return new GeometryRotate2dBlock("Rotate 2D");
             case "LengthBlock":
@@ -310,6 +322,16 @@ export class BlockTools {
             case "FaceIDBlock": {
                 const block = new GeometryInputBlock("Face ID");
                 block.contextualValue = NodeGeometryContextualSources.FaceID;
+                return block;
+            }
+            case "LatticeIDBlock": {
+                const block = new GeometryInputBlock("Lattice ID");
+                block.contextualValue = NodeGeometryContextualSources.LatticeID;
+                return block;
+            }
+            case "LatticeControlBlock": {
+                const block = new GeometryInputBlock("Lattice Control");
+                block.contextualValue = NodeGeometryContextualSources.LatticeControl;
                 return block;
             }
             case "AddBlock": {
