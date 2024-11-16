@@ -915,7 +915,7 @@ export class AnimationGroup implements IDisposable {
         }
 
         // all animatables were removed? animation group ended!
-        if (this._animatables.length === 0) {
+        if (this._animatables.length === this._targetedAnimations.length - this._numActiveAnimatables) {
             this._isStarted = false;
             if (!skipOnAnimationEnd) {
                 this.onAnimationGroupEndObservable.notifyObservers(this);
