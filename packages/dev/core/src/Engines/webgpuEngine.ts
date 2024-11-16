@@ -95,6 +95,7 @@ import "./WebGPU/Extensions/engine.cubeTexture";
 import "./WebGPU/Extensions/engine.renderTarget";
 import "./WebGPU/Extensions/engine.renderTargetTexture";
 import "./WebGPU/Extensions/engine.renderTargetCube";
+import "./WebGPU/Extensions/engine.query";
 
 const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
     label: `TextureView_SwapChain_ResolveTarget`,
@@ -260,8 +261,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     private _emptyVertexBuffer: VertexBuffer;
     /** @internal */
     public _mrtAttachments: number[];
-    /** @internal */
-    public _occlusionQuery: WebGPUOcclusionQuery;
     /** @internal */
     public _compiledComputeEffects: { [key: string]: ComputeEffect } = {};
     /** @internal */

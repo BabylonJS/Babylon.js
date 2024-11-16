@@ -1,7 +1,7 @@
 import { BlockTools } from "../../blockTools";
 import type { IDisplayManager, VisualContentDescription } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
-import styles from "./elbowDisplayManager.modules.scss";
+import styles from "./elbowDisplayManager.module.scss";
 import type { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
 import type { GeometryElbowBlock } from "core/Meshes/Node/Blocks/geometryElbowBlock";
 

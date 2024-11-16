@@ -3,7 +3,7 @@ import type { FC } from "react";
 import { useState } from "react";
 import { SetPositionAction } from "../actions/actions/SetPositionAction";
 import { State } from "../stateMachine/State";
-import style from "./NodeListComponent.modules.scss";
+import style from "./NodeListComponent.module.scss";
 import { useSceneNode } from "./tools/useSceneNode";
 import { useStateMachine } from "./tools/useStateMachine";
 

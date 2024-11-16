@@ -1,6 +1,6 @@
 import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
-import localStyles from "./textureDisplayManager.modules.scss";
+import localStyles from "./textureDisplayManager.module.scss";
 import type { GeometryTextureBlock } from "core/Meshes/Node/Blocks/Textures/geometryTextureBlock";
 import type { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
 

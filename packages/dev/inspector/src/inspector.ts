@@ -64,28 +64,36 @@ export class Inspector {
         this._GlobalState.selectedLineContainerTitles.push(...titles);
     }
 
-    private static _CopyStyles(sourceDoc: HTMLDocument, targetDoc: HTMLDocument) {
-        for (let index = 0; index < sourceDoc.styleSheets.length; index++) {
-            const styleSheet: any = sourceDoc.styleSheets[index];
+    private static _CopyStyles(source: Document, target: DocumentOrShadowRoot) {
+        for (let index = 0; index < source.styleSheets.length; index++) {
+            const styleSheet: any = source.styleSheets[index];
 
             try {
                 if (styleSheet.cssRules) {
                     // for <style> elements
-                    const newStyleEl = sourceDoc.createElement("style");
+                    const newStyleEl = source.createElement("style");
 
                     for (const cssRule of styleSheet.cssRules) {
                         // write the text of each rule into the body of the style element
-                        newStyleEl.appendChild(sourceDoc.createTextNode(cssRule.cssText));
+                        newStyleEl.appendChild(source.createTextNode(cssRule.cssText));
                     }
 
-                    targetDoc.head!.appendChild(newStyleEl);
+                    if ((target as Document).head) {
+                        (target as Document).head.appendChild(newStyleEl);
+                    } else {
+                        (target as ShadowRoot).appendChild(newStyleEl);
+                    }
                 } else if (styleSheet.href) {
                     // for <link> elements loading CSS from a URL
-                    const newLinkEl = sourceDoc.createElement("link");
+                    const newLinkEl = source.createElement("link");
 
                     newLinkEl.rel = "stylesheet";
                     newLinkEl.href = styleSheet.href;
-                    targetDoc.head!.appendChild(newLinkEl);
+                    if ((target as Document).head) {
+                        (target as Document).head.appendChild(newLinkEl);
+                    } else {
+                        (target as ShadowRoot).appendChild(newLinkEl);
+                    }
                 }
             } catch (e) {}
         }
@@ -540,6 +548,14 @@ export class Inspector {
     }
 
     public static _CreateCanvasContainer(parentControl: HTMLElement) {
+        // If the parent control element's root is not the document (such as the ShadowRoot of the Babylon Viewer),
+        // we need to copy the styles from the document to the parent control's root.
+        if (parentControl.getRootNode() !== window.document) {
+            setTimeout(() => {
+                this._CopyStyles(window.document, parentControl.getRootNode() as unknown as DocumentOrShadowRoot);
+            }, 0);
+        }
+
         // Create a container for previous elements
         this._NewCanvasContainer = parentControl.ownerDocument!.createElement("div");
         this._NewCanvasContainer.style.display = parentControl.style.display;

@@ -1,5 +1,16 @@
-// eslint-disable-next-line import/no-internal-modules
-import type { Nullable, AbstractEngine, DrawWrapper, IColor4Like, Layer, FrameGraphTextureHandle, Effect, FrameGraphTextureManager, RenderTargetTexture } from "core/index";
+import type {
+    Nullable,
+    AbstractEngine,
+    DrawWrapper,
+    IColor4Like,
+    Layer,
+    FrameGraphTextureHandle,
+    Effect,
+    FrameGraphTextureManager,
+    ObjectRenderer,
+    Scene,
+    // eslint-disable-next-line import/no-internal-modules
+} from "core/index";
 import { Constants } from "../Engines/constants";
 import { EffectRenderer } from "../Materials/effectRenderer";
 import { CopyTextureToTexture } from "../Misc/copyTextureToTexture";
@@ -18,10 +29,15 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     private _renderTargetIsBound = true;
     private readonly _copyTexture: CopyTextureToTexture;
 
+    private static _IsObjectRenderer(value: Layer | ObjectRenderer): value is ObjectRenderer {
+        return (value as ObjectRenderer).initRender !== undefined;
+    }
+
     /** @internal */
     constructor(
         private readonly _engine: AbstractEngine,
-        private readonly _textureManager: FrameGraphTextureManager
+        private readonly _textureManager: FrameGraphTextureManager,
+        private readonly _scene?: Scene
     ) {
         super();
         this._effectRenderer = new EffectRenderer(this._engine);
@@ -181,7 +197,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      */
     public copyTexture(sourceTexture: FrameGraphTextureHandle, forceCopyToBackbuffer = false): void {
         if (forceCopyToBackbuffer) {
-            this._bindRenderTarget();
+            this.bindRenderTarget();
         }
         this._applyRenderTarget();
         this._copyTexture.copy(this._textureManager.getTextureFromHandle(sourceTexture)!.texture!);
@@ -190,19 +206,37 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     /**
      * Renders a RenderTargetTexture or a layer
      * @param object The RenderTargetTexture/Layer to render
+     * @param viewportWidth The width of the viewport (optional for Layer, but mandatory for ObjectRenderer)
+     * @param viewportHeight The height of the viewport (optional for Layer, but mandatory for ObjectRenderer)
      */
-    public render(object: Layer | RenderTargetTexture): void {
-        this._applyRenderTarget();
-        object.render();
+    public render(object: Layer | ObjectRenderer, viewportWidth?: number, viewportHeight?: number): void {
+        if (FrameGraphRenderContext._IsObjectRenderer(object)) {
+            if (object.shouldRender()) {
+                this._scene?.incrementRenderId();
+                this._scene?.resetCachedMaterial();
+
+                object.prepareRenderList();
+                object.initRender(viewportWidth!, viewportHeight!);
+
+                this._applyRenderTarget();
+                object.render();
+
+                object.finishRender();
+            }
+        } else {
+            this._applyRenderTarget();
+            object.render();
+        }
     }
 
     /**
      * Binds a render target texture so that upcoming draw calls will render to it
      * Note: it is a lazy operation, so the render target will only be bound when needed. This way, it is possible to call
      *   this method several times with different render targets without incurring the cost of binding if no draw calls are made
-     * @internal
+     * @param renderTargetHandle The handle of the render target texture to bind (default: backbufferColorTextureHandle)
+     * @param debugMessage Optional debug message to display when the render target is bound (visible in PIX, for example)
      */
-    public _bindRenderTarget(renderTargetHandle: FrameGraphTextureHandle = backbufferColorTextureHandle, debugMessage?: string) {
+    public bindRenderTarget(renderTargetHandle: FrameGraphTextureHandle = backbufferColorTextureHandle, debugMessage?: string) {
         if (renderTargetHandle === this._currentRenderTargetHandle) {
             this._flushDebugMessages();
             if (debugMessage !== undefined) {
@@ -243,7 +277,12 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         const handle = this._currentRenderTargetHandle;
         const textureSlot = this._textureManager._textures.get(handle)!;
 
-        const renderTarget = textureSlot.texture;
+        let renderTarget = textureSlot.texture;
+
+        if (textureSlot.creationOptions.isHistoryTexture) {
+            const historyEntry = this._textureManager._historyTextures.get(textureSlot.refHandle ?? handle)!;
+            renderTarget = historyEntry.textures[historyEntry.index];
+        }
 
         this._flushDebugMessages();
 

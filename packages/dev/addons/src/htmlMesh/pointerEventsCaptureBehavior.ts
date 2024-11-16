@@ -3,7 +3,6 @@ import type { Behavior } from "core/Behaviors/behavior";
 import type { Scene } from "core/scene";
 import { Logger } from "core/Misc/logger";
 import { requestCapture, requestRelease, releaseCurrent, getCapturingId } from "./pointerEventsCapture";
-import { getCanvasRectOrNull } from "./util";
 
 // Module level variable for holding the current scene
 let _scene: Scene | null = null;
@@ -63,7 +62,7 @@ const onPointerMove = (evt: PointerEvent | TouchEvent) => {
         return;
     }
 
-    const canvasRect = getCanvasRectOrNull(_scene);
+    const canvasRect = _scene.getEngine().getRenderingCanvasClientRect();
     if (!canvasRect) {
         return;
     }

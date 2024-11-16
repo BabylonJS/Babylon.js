@@ -64,22 +64,18 @@ export class PreviewManager {
 
         this._onUpdateRequiredObserver = globalState.stateManager.onUpdateRequiredObservable.add(() => {
             this._createNodeRenderGraph();
-            this._buildGraph();
         });
 
         this._onRebuildRequiredObserver = globalState.stateManager.onRebuildRequiredObservable.add(() => {
             this._createNodeRenderGraph();
-            this._buildGraph();
         });
 
         this._onImportFrameObserver = globalState.onImportFrameObservable.add(() => {
             this._createNodeRenderGraph();
-            this._buildGraph();
         });
 
         this._onResetRequiredObserver = globalState.onResetRequiredObservable.add(() => {
             this._createNodeRenderGraph();
-            this._buildGraph();
         });
 
         this._initAsync(targetCanvas);
@@ -149,11 +145,12 @@ export class PreviewManager {
 
         this._engine.runRenderLoop(() => {
             this._engine.resize();
-            this._scene.render();
+            if (this._scene.frameGraph) {
+                this._scene.render();
+            }
         });
 
         this._createNodeRenderGraph();
-        this._buildGraph();
     }
 
     private _reset() {
@@ -201,13 +198,18 @@ export class PreviewManager {
             return;
         }
 
+        this._scene.frameGraph = null;
+
         const serialized = this._globalState.nodeRenderGraph.serialize();
         this._nodeRenderGraph?.dispose();
         this._nodeRenderGraph = NodeRenderGraph.Parse(serialized, this._scene, {
-            rebuildGraphOnEngineResize: false,
+            rebuildGraphOnEngineResize: true,
             autoFillExternalInputs: false,
             debugTextures,
         });
+
+        this._buildGraph();
+
         (window as any).nrgPreview = this._nodeRenderGraph;
     }
 

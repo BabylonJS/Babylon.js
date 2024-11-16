@@ -1,3 +1,4 @@
+import { NodeMaterialBlockConnectionPointTypes } from "core/Materials";
 import type { FragmentOutputBlock } from "core/Materials/Node/Blocks/Fragment/fragmentOutputBlock";
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import type { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
@@ -162,8 +163,14 @@ export class ConnectionPointPortData implements IPortData {
         }
 
         switch (issue) {
-            case NodeMaterialConnectionPointCompatibilityStates.TypeIncompatible:
-                return "Cannot connect two different connection types";
+            case NodeMaterialConnectionPointCompatibilityStates.TypeIncompatible: {
+                const port = targetPort.data as NodeMaterialConnectionPoint;
+                let acceptedTypes = port.acceptedConnectionPointTypes.map((t) => NodeMaterialBlockConnectionPointTypes[t]).join(", ");
+
+                acceptedTypes = `${NodeMaterialBlockConnectionPointTypes[port.type]}` + (acceptedTypes ? `,${acceptedTypes}` : "");
+
+                return `Cannot connect two different connection types:\nSource is ${NodeMaterialBlockConnectionPointTypes[this.data.type]} but destination only accepts ${acceptedTypes}`;
+            }
 
             case NodeMaterialConnectionPointCompatibilityStates.TargetIncompatible:
                 return "Source block can only work in fragment shader whereas destination block is currently aimed for the vertex shader";

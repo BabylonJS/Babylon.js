@@ -55,9 +55,9 @@ var Versions = {
         "https://rawcdn.githack.com/BabylonJS/Extensions/f43ab677b4bca0a6ab77132d3f785be300382760/ClonerSystem/src/babylonx.cloner.js",
         "https://rawcdn.githack.com/BabylonJS/Extensions/785013ec55b210d12263c91f3f0a2ae70cf0bc8a/CompoundShader/src/babylonx.CompoundShader.js",
     ],
-    "5.71.1": [
+    "5.57.1": [
         "https://cdn.babylonjs.com/timestamp.js?t=" + Date.now(),
-        "https://cdn.babylonjs.com/v5.71.1/babylon.js",
+        "https://cdn.babylonjs.com/v5.57.1/babylon.js",
         "https://cdn.babylonjs.com/v5.57.1/gui/babylon.gui.min.js",
         "https://cdn.babylonjs.com/v5.57.1/inspector/babylon.inspector.bundle.js",
         "https://cdn.babylonjs.com/v5.57.1/nodeEditor/babylon.nodeEditor.js",
@@ -77,7 +77,6 @@ var Versions = {
         "https://cdn.babylonjs.com/4.2.1/gui/babylon.gui.min.js",
         "https://cdn.babylonjs.com/4.2.1/inspector/babylon.inspector.bundle.js",
         "https://cdn.babylonjs.com/4.2.1/nodeEditor/babylon.nodeEditor.js",
-        "https://cdn.babylonjs.com/4.2.1/nodeGeometryEditor/babylon.nodeGeometryEditor.js",
         "https://cdn.babylonjs.com/4.2.1/materialsLibrary/babylonjs.materials.min.js",
         "https://cdn.babylonjs.com/4.2.1/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js",
         "https://cdn.babylonjs.com/4.2.1/postProcessesLibrary/babylonjs.postProcess.min.js",

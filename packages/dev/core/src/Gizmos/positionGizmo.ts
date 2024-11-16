@@ -389,6 +389,7 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
         this.onDragStartObservable.clear();
         this.onDragObservable.clear();
         this.onDragEndObservable.clear();
+        super.dispose();
     }
 
     /**

@@ -8,6 +8,7 @@ import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaus
 import type { Mesh } from "core/Meshes/mesh";
 import type { Effect } from "core/Materials/effect";
 import type { NodeMaterial } from "../../nodeMaterial";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Block used for Reading components of the Gaussian Splatting
@@ -105,10 +106,16 @@ export class SplatReaderBlock extends NodeMaterialBlock {
         const splatColor = this.splatColor;
 
         const splatVariablename = state._getFreeVariableName("splat");
-        state.compilationString += `Splat ${splatVariablename} = readSplat(${splatIndex.associatedVariableName});\n`;
 
-        state.compilationString += "vec3 covA = splat.covA.xyz; vec3 covB = vec3(splat.covA.w, splat.covB.xy);\n";
-        state.compilationString += "vPosition = position;";
+        if (state.shaderLanguage === ShaderLanguage.WGSL) {
+            state.compilationString += `var ${splatVariablename}: Splat = readSplat(${splatIndex.associatedVariableName}, uniforms.dataTextureSize);\n`;
+            state.compilationString += `var covA: vec3f = splat.covA.xyz; var covB: vec3f = vec3f(splat.covA.w, splat.covB.xy);\n`;
+            state.compilationString += "vertexOutputs.vPosition = input.position;\n";
+        } else {
+            state.compilationString += `Splat ${splatVariablename} = readSplat(${splatIndex.associatedVariableName});\n`;
+            state.compilationString += `vec3 covA = splat.covA.xyz; vec3 covB = vec3(splat.covA.w, splat.covB.xy);\n`;
+            state.compilationString += "vPosition = position;\n";
+        }
         state.compilationString += `${state._declareOutput(splatPosition)} = ${splatVariablename}.center.xyz;\n`;
         state.compilationString += `${state._declareOutput(splatColor)} = ${splatVariablename}.color;\n`;
 

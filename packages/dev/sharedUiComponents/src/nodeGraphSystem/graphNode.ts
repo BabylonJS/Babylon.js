@@ -12,8 +12,8 @@ import { PropertyLedger } from "./propertyLedger";
 import { DisplayLedger } from "./displayLedger";
 import type { INodeData } from "./interfaces/nodeData";
 import type { IPortData } from "./interfaces/portData";
-import localStyles from "./graphNode.modules.scss";
-import commonStyles from "./common.modules.scss";
+import localStyles from "./graphNode.module.scss";
+import commonStyles from "./common.module.scss";
 import type { IEditablePropertyListOption, IEditablePropertyOption, IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
 import { PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import { ForceRebuild } from "./automaticProperties";
@@ -674,9 +674,6 @@ export class GraphNode {
         this._optionsContainer = root.ownerDocument!.createElement("div");
         this._optionsContainer.classList.add(localStyles.optionsContainer);
         this._connections.appendChild(this._optionsContainer);
-        this._optionsContainer.addEventListener("pointerdown", (evt) => evt.stopPropagation());
-        this._optionsContainer.addEventListener("pointerup", (evt) => evt.stopPropagation());
-        this._optionsContainer.addEventListener("pointermove", (evt) => evt.stopPropagation());
 
         this._inputsContainer = root.ownerDocument!.createElement("div");
         this._inputsContainer.classList.add(commonStyles.inputsContainer);
@@ -710,12 +707,23 @@ export class GraphNode {
         if (propStore) {
             const source = this.content.data;
 
-            for (const { propertyName, displayName, type, options } of propStore) {
-                if (options && !options.embedded) {
+            const classes: string[] = [];
+
+            let proto = Object.getPrototypeOf(source);
+            while (proto) {
+                classes.push(proto.constructor.name);
+                proto = Object.getPrototypeOf(proto);
+            }
+
+            for (const { propertyName, displayName, type, options, className } of propStore) {
+                if (!options || !options.embedded || classes.indexOf(className) === -1) {
                     continue;
                 }
 
                 const container = root.ownerDocument!.createElement("div");
+                container.addEventListener("pointerdown", (evt) => evt.stopPropagation());
+                container.addEventListener("pointerup", (evt) => evt.stopPropagation());
+                container.addEventListener("pointermove", (evt) => evt.stopPropagation());
                 this._optionsContainer.appendChild(container);
                 switch (type) {
                     case PropertyTypeForEdition.Boolean: {
@@ -735,9 +743,6 @@ export class GraphNode {
                         const label = root.ownerDocument!.createElement("label");
                         label.innerText = displayName;
                         label.htmlFor = checkbox.id;
-                        label.onclick = () => {
-                            checkbox.click();
-                        };
                         container.appendChild(label);
                         break;
                     }
