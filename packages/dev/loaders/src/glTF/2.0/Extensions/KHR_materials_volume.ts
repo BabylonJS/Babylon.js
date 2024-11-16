@@ -41,7 +41,7 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
     /**
      * Defines a number that determines the order the extensions are applied.
      */
-    public order = 173;
+    public order = 176;
 
     private _loader: GLTFLoader;
 

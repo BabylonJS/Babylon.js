@@ -579,7 +579,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         this._extensions.push(...(await Promise.all(extensionPromises)));
 
-        this._extensions.sort((a, b) => (a.order || Number.MAX_VALUE) - (b.order || Number.MAX_VALUE));
+        this._extensions.sort((a, b) => (b.order || Number.MAX_VALUE) - (a.order || Number.MAX_VALUE));
         this._parent.onExtensionLoadedObservable.clear();
 
         if (this._gltf.extensionsRequired) {
