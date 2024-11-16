@@ -354,6 +354,29 @@ export class Viewer implements IDisposable {
             });
 
             const camera = new ArcRotateCamera("Viewer Default Camera", 0, 0, 1, Vector3.Zero(), scene);
+            let isPolling = false;
+            let idleCameraFrames = 0;
+            let idleCameraSuspension: Nullable<IDisposable> = null;
+            const updateCamera = () => {
+                if (isPolling) {
+                    console.log("updateCamera");
+                    camera.update();
+                    requestAnimationFrame(updateCamera);
+                }
+            };
+            camera.onViewMatrixChangedObservable.add(() => {
+                //console.log("camera.onViewMatrixChangedObservable");
+                idleCameraFrames = 0;
+                idleCameraSuspension?.dispose();
+                isPolling = false;
+            });
+            scene.onAfterRenderCameraObservable.add(() => {
+                if (idleCameraFrames++ > 5) {
+                    idleCameraSuspension = this.suspendRendering();
+                    isPolling = true;
+                    requestAnimationFrame(updateCamera);
+                }
+            });
             this._details = {
                 viewer: this,
                 scene,
@@ -631,12 +654,23 @@ export class Viewer implements IDisposable {
 
     private _beginRendering(): void {
         if (!this._renderLoopController) {
+            // let cameraMutated = false;
+            // this._details.camera.onViewMatrixChangedObservable.add(() => {
+            //     cameraMutated = true;
+            // });
             const render = () => {
+                // if (cameraMutated || this.isAnimationPlaying || !this._details.scene.isReady(true)) {
+                //     cameraMutated = false;
                 this._details.scene.render();
+                console.log("rendered");
                 if (this.isAnimationPlaying) {
                     this.onAnimationProgressChanged.notifyObservers();
                     this._autoRotationBehavior.resetLastInteractionTime();
                 }
+                // } else {
+                //     console.log("camera updated");
+                //     this._details.camera.update();
+                // }
             };
 
             this._engine.runRenderLoop(render);
