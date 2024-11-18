@@ -2,7 +2,6 @@ import { Tools } from "../../../Misc/tools";
 import type { Nullable } from "../../../types";
 import type { AbstractAudioEngine } from "../abstractAudioEngine";
 import type { AbstractAudioNode } from "../abstractAudioNode";
-import { centsToPlaybackRate } from "../audioUtils";
 import { SoundState } from "../soundState";
 import type { IStreamingSoundOptions } from "../streamingSound";
 import { StreamingSound } from "../streamingSound";
@@ -221,9 +220,6 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
 
         mediaElement.load();
 
-        // NB: `HTMLAudioElement.load()` sets `playbackRate` to 1, so we set it after calling `load()`.
-        mediaElement.playbackRate = this._source.playbackRate * centsToPlaybackRate(this._source.pitch);
-
         document.body.appendChild(mediaElement);
 
         this.sourceNode = new MediaElementAudioSourceNode(this._source.audioContext, { mediaElement: mediaElement });
@@ -247,7 +243,7 @@ class WebAudioStreamingSoundInstance extends StreamingSoundInstance {
 
         this.mediaElement.removeEventListener("ended", this._onEnded);
         this.mediaElement.removeEventListener("canplaythrough", this._onCanPlayThrough);
-        for (const child of this.mediaElement.children) {
+        for (const child of Array.from(this.mediaElement.children)) {
             this.mediaElement.removeChild(child);
         }
     }

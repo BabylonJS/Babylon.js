@@ -23,14 +23,6 @@ export interface ISoundOptions {
      */
     maxInstances?: number;
     /**
-     * The pitch of the sound.
-     */
-    pitch?: number;
-    /**
-     * The playback rate of the sound.
-     */
-    playbackRate?: number;
-    /**
      * The volume of the sound.
      */
     volume?: number;
@@ -71,16 +63,6 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
      * The maximum number of instances that can play at the same time.
      */
     public maxInstances: number;
-
-    /**
-     * The pitch of the sound.
-     */
-    public pitch: number;
-
-    /**
-     * The playback rate of the sound.
-     */
-    public playbackRate: number;
 
     /**
      * The volume of the sound.
@@ -135,8 +117,6 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         this.autoplay = options?.autoplay ?? false;
         this.loop = options?.loop ?? false;
         this.maxInstances = options?.maxInstances ?? Infinity;
-        this.pitch = options?.pitch ?? 0;
-        this.playbackRate = options?.playbackRate ?? 1;
         this.startOffset = options?.startOffset ?? 0;
     }
 

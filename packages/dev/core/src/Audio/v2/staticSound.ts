@@ -22,6 +22,14 @@ export interface IStaticSoundOptions extends ISoundOptions {
      */
     loopEnd?: number;
     /**
+     * The pitch of the sound.
+     */
+    pitch?: number;
+    /**
+     * The playback rate of the sound.
+     */
+    playbackRate?: number;
+    /**
      * Whether to skip codec checking before attempting to load each source URL when `source` is a string array.
      */
     skipCodecCheck?: boolean;
@@ -46,6 +54,16 @@ export abstract class StaticSound extends AbstractSound {
      */
     public loopEnd: number;
 
+    /**
+     * The pitch of the sound.
+     */
+    public pitch: number;
+
+    /**
+     * The playback rate of the sound.
+     */
+    public playbackRate: number;
+
     public abstract readonly buffer: StaticSoundBuffer;
 
     /** @internal */
@@ -55,6 +73,8 @@ export abstract class StaticSound extends AbstractSound {
         this.duration = options?.duration ?? 0;
         this.loopStart = options?.loopStart ?? 0;
         this.loopEnd = options?.loopEnd ?? 0;
+        this.pitch = options?.pitch ?? 0;
+        this.playbackRate = options?.playbackRate ?? 1;
     }
 
     protected abstract override _createSoundInstance(): StaticSoundInstance;
