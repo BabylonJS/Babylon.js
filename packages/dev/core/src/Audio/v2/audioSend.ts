@@ -1,5 +1,5 @@
 import type { Nullable } from "../../types";
-import type { AbstractAudioEngine } from "./abstractAudioEngine";
+import type { AbstractAudioEngine } from "./audioEngine";
 import { AbstractAudioNode, AudioNodeType } from "./abstractAudioNode";
 import type { AuxiliaryAudioBus } from "./auxilliaryAudioBus";
 

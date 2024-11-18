@@ -1,5 +1,5 @@
 import type { Nullable } from "../../types";
-import type { AbstractAudioEngine } from "./abstractAudioEngine";
+import type { AbstractAudioEngine } from "./audioEngine";
 import type { ISoundOptions } from "./abstractSound";
 import { AbstractSound } from "./abstractSound";
 import type { StaticSoundBuffer } from "./staticSoundBuffer";
