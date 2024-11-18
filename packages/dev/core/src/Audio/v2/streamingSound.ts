@@ -2,6 +2,8 @@ import type { Nullable } from "../../types";
 import type { AbstractAudioEngine } from "./abstractAudioEngine";
 import type { ISoundOptions } from "./abstractSound";
 import { AbstractSound } from "./abstractSound";
+import { SoundState } from "./soundState";
+import type { StreamingSoundInstance } from "./streamingSoundInstance";
 
 export type StreamingSoundPreloadType = "none" | "metadata" | "auto";
 
@@ -40,5 +42,34 @@ export abstract class StreamingSound extends AbstractSound {
 
         this.preload = options?.preload ?? "auto";
         this.preservesPitch = options?.preservesPitch ?? false;
+    }
+
+    protected abstract override _createSoundInstance(): StreamingSoundInstance;
+
+    /**
+     * Plays the sound.
+     * @param waitTime - The time to wait before playing the sound in seconds.
+     * @param startOffset - The time within the sound source to start playing the sound in seconds.
+     * @param duration - How long to play the sound in seconds.
+     * @returns The new playback instance, or `null` if the sound was resumed from pause.
+     */
+    public play(waitTime: Nullable<number> = null, startOffset: Nullable<number> = null, duration: Nullable<number> = null): StreamingSoundInstance {
+        if (this._isPaused && this._soundInstances.size > 0) {
+            this.resume();
+            return Array.from(this._soundInstances)[this._soundInstances.size - 1] as StreamingSoundInstance;
+        }
+
+        const instance = this._createSoundInstance();
+        this._play(instance, waitTime, startOffset, duration);
+
+        const onInstanceStateChanged = () => {
+            if (instance.state === SoundState.Started) {
+                this._stopExcessInstances();
+                instance.onStateChangedObservable.removeCallback(onInstanceStateChanged);
+            }
+        };
+        instance.onStateChangedObservable.add(onInstanceStateChanged);
+
+        return instance;
     }
 }

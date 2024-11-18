@@ -6,20 +6,15 @@ import { SoundState } from "./soundState";
 
 /** @internal */
 export abstract class AbstractSoundInstance extends AbstractAudioNode {
-    // Owned by audio engine.
     protected _state: SoundState = SoundState.Stopped;
     protected _source: AbstractSound;
     protected _startOffset: number = 0;
 
-    /**
-     * The state of the sound instance.
-     */
-    public get state(): SoundState {
-        return this._state;
-    }
+    /** Observable triggered when the sound instance's playback ends */
+    public readonly onEndedObservable = new Observable<AbstractSoundInstance>();
 
-    /** @internal */
-    public onEndedObservable = new Observable<AbstractSoundInstance>();
+    /** Observable triggered when the sound instance's state changes */
+    public readonly onStateChangedObservable = new Observable<AbstractSoundInstance>();
 
     /** @internal */
     constructor(source: AbstractSound) {
@@ -32,15 +27,29 @@ export abstract class AbstractSoundInstance extends AbstractAudioNode {
     /** @internal */
     public override dispose(): void {
         super.dispose();
-
         this.stop();
-        this.onEndedObservable.clear();
+        this.onStateChangedObservable.clear();
     }
 
+    public abstract get startTime(): number;
     public abstract get currentTime(): number;
+
+    /** The playback state of sound instance */
+    public get state(): SoundState {
+        return this._state;
+    }
 
     public abstract play(waitTime?: Nullable<number>, startOffset?: Nullable<number>, duration?: Nullable<number>): void;
     public abstract pause(): void;
     public abstract resume(): void;
     public abstract stop(waitTime?: Nullable<number>): void;
+
+    protected _setState(value: SoundState) {
+        if (this._state === value) {
+            return;
+        }
+
+        this._state = value;
+        this.onStateChangedObservable.notifyObservers(this);
+    }
 }

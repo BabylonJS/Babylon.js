@@ -1,9 +1,9 @@
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
-import type { AbstractPrimaryAudioBus } from "./audioBus";
 import type { AbstractAudioEngine } from "./abstractAudioEngine";
 import { AbstractNamedAudioNode, AudioNodeType } from "./abstractAudioNode";
 import type { AbstractSoundInstance } from "./abstractSoundInstance";
+import type { AbstractPrimaryAudioBus } from "./audioBus";
 import { SoundState } from "./soundState";
 
 /**
@@ -155,54 +155,12 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         this.onDisposeObservable.notifyObservers(this);
     }
 
-    protected abstract _createSoundInstance(): AbstractSoundInstance | Promise<AbstractSoundInstance>;
-
-    // TODO: Consider breaking this out into the static and streaming sound classes since static sound don't need to be async. Only streaming sounds need to be async here.
-    // TODO: Or... figure out a better way to handle the async nature of `HTMLMediaElement.play` needing to wait for the `canplaythrough` event to fire before it can be called.
-    /**
-     * Plays the sound.
-     * @param waitTime - The time to wait before playing the sound in seconds.
-     * @param startOffset - The time within the sound source to start playing the sound in seconds.
-     * @param duration - How long to play the sound in seconds.
-     */
-    public async play(waitTime: Nullable<number> = null, startOffset: Nullable<number> = null, duration: Nullable<number> = null): Promise<void> {
-        if (this._state === SoundState.Paused && this._soundInstances.size > 0) {
-            this.resume();
-            return;
-        }
-
-        this._state = SoundState.Playing;
-
-        let instance = this._createSoundInstance();
-        if (instance instanceof Promise) {
-            instance = await instance;
-        }
-
-        instance.onEndedObservable.addOnce(this._onSoundInstanceEnded.bind(this));
-
-        instance.play(waitTime, startOffset, duration);
-
-        this._soundInstances.add(instance);
-
-        if (this.maxInstances < Infinity) {
-            const numberOfInstancesToStop = this._soundInstances.size - this.maxInstances;
-            const it = this._soundInstances.values();
-
-            for (let i = 0; i < numberOfInstancesToStop; i++) {
-                const instance = it.next().value;
-                if (instance.state === SoundState.Playing) {
-                    instance.stop();
-                }
-            }
-        }
-    }
+    protected abstract _createSoundInstance(): AbstractSoundInstance;
 
     /**
      * Pauses the sound.
      */
     public pause(): void {
-        this._state = SoundState.Paused;
-
         if (!this._soundInstances) {
             return;
         }
@@ -210,6 +168,8 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         for (const instance of Array.from(this._soundInstances)) {
             instance.pause();
         }
+
+        this._state = SoundState.Paused;
     }
 
     /**
@@ -220,8 +180,6 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
             return;
         }
 
-        this._state = SoundState.Playing;
-
         if (!this._soundInstances) {
             return;
         }
@@ -229,6 +187,8 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         for (const instance of Array.from(this._soundInstances)) {
             instance.resume();
         }
+
+        this._state = SoundState.Started;
     }
 
     /**
@@ -251,12 +211,49 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
         }
     }
 
-    protected _onSoundInstanceEnded(instance: AbstractSoundInstance): void {
+    protected get _isPaused(): boolean {
+        return this._state === SoundState.Paused && this._soundInstances.size > 0;
+    }
+
+    protected _onSoundInstanceEnded: (instance: AbstractSoundInstance) => void = (instance) => {
         this._soundInstances.delete(instance);
 
         if (this._soundInstances.size === 0) {
             this._state = SoundState.Stopped;
             this.onEndedObservable.notifyObservers(this);
+        }
+    };
+
+    protected _play(
+        instance: AbstractSoundInstance,
+        waitTime: Nullable<number> = null,
+        startOffset: Nullable<number> = null,
+        duration: Nullable<number> = null
+    ): Nullable<AbstractSoundInstance> {
+        if (this.state === SoundState.Paused && this._soundInstances.size > 0) {
+            this.resume();
+            return null;
+        }
+
+        instance.onEndedObservable.addOnce(this._onSoundInstanceEnded);
+        instance.play(waitTime, startOffset, duration);
+
+        this._soundInstances.add(instance);
+
+        this._state = SoundState.Started;
+
+        return instance;
+    }
+
+    protected _stopExcessInstances(): void {
+        if (this.maxInstances < Infinity) {
+            const numberOfInstancesToStop = Array.from(this._soundInstances).filter((instance) => instance.state === SoundState.Started).length - this.maxInstances;
+            const it = this._soundInstances.values();
+
+            for (let i = 0; i < numberOfInstancesToStop; i++) {
+                const instance = it.next().value;
+                instance.stop();
+            }
         }
     }
 }

@@ -1,10 +1,15 @@
+import { Observable } from "../../Misc/observable";
 import type { AbstractSound } from "./abstractSound";
 import { AbstractSoundInstance } from "./abstractSoundInstance";
 
-/** @internal */
+/**
+ * A streaming sound instance.
+ */
 export abstract class StreamingSoundInstance extends AbstractSoundInstance {
-    /** @internal */
-    constructor(source: AbstractSound) {
+    /** Observable triggered when the instance is ready to play */
+    public onReadyObservable = new Observable<StreamingSoundInstance>();
+
+    protected constructor(source: AbstractSound) {
         super(source);
     }
 }

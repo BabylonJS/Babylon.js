@@ -11,9 +11,13 @@ export enum SoundState {
      */
     Stopped,
     /**
-     * The sound is playing.
+     * The sound is waiting for its instances to start.
      */
-    Playing,
+    Starting,
+    /**
+     * The sound has started playing.
+     */
+    Started,
     /**
      * The sound is paused.
      */
