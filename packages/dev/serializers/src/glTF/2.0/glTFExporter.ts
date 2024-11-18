@@ -22,8 +22,8 @@ import type {
 import { AccessorComponentType, AccessorType, CameraType, ImageMimeType } from "babylonjs-gltf2interface";
 
 import type { FloatArray, IndicesArray, Nullable } from "core/types";
+import { Matrix } from "core/Maths/math.vector";
 import { TmpVectors, Quaternion } from "core/Maths/math.vector";
-import type { Matrix } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
 import type { Buffer } from "core/Buffers/buffer";
 import { VertexBuffer } from "core/Buffers/buffer";
@@ -57,6 +57,9 @@ import {
     indicesArrayToUint8Array,
     isNoopNode,
     isTriangleFillMode,
+    isParentAddedByImporter,
+    convertToRightHandedNode,
+    rotateNode180Y,
 } from "./glTFUtilities";
 import { DataWriter } from "./dataWriter";
 import { Camera } from "core/Cameras/camera";
@@ -68,9 +71,6 @@ import { _GLTFAnimation } from "./glTFAnimation";
 import type { MorphTarget } from "core/Morph";
 import { buildMorphTargetBuffers } from "./glTFMorphTargetsUtilities";
 import type { GlTFMorphTarget } from "./glTFMorphTargetsUtilities";
-
-// 180 degrees rotation in Y.
-const rotation180Y = new Quaternion(0, 1, 0, 0);
 
 class ExporterState {
     // Babylon indices array, start, count, offset, flip -> glTF accessor index
@@ -699,27 +699,25 @@ export class GLTFExporter {
         }
     }
 
-    private _setCameraTransformation(node: INode, babylonCamera: Camera, convertToRightHanded: boolean): void {
+    private _setCameraTransformation(node: INode, babylonCamera: Camera, convertToRightHanded: boolean, parent: Nullable<Node>): void {
         const translation = TmpVectors.Vector3[0];
         const rotation = TmpVectors.Quaternion[0];
-        babylonCamera.getWorldMatrix().decompose(undefined, rotation, translation);
+
+        if (parent !== null) {
+            // We need local coordinates. If camera has parent we need to que local translation/rotation.
+            const parentWorldMatrix = Matrix.Invert(parent.getWorldMatrix());
+            const cameraWorldMatrix = babylonCamera.getWorldMatrix();
+            const cameraLocal = cameraWorldMatrix.multiply(parentWorldMatrix);
+            cameraLocal.decompose(undefined, rotation, translation);
+        } else {
+            babylonCamera.getWorldMatrix().decompose(undefined, rotation, translation);
+        }
 
         if (!translation.equalsToFloats(0, 0, 0)) {
-            if (convertToRightHanded) {
-                convertToRightHandedPosition(translation);
-            }
-
             node.translation = translation.asArray();
         }
 
-        // Rotation by 180 as glTF has a different convention than Babylon.
-        rotation.multiplyInPlace(rotation180Y);
-
         if (!Quaternion.IsIdentity(rotation)) {
-            if (convertToRightHanded) {
-                convertToRightHandedRotation(rotation);
-            }
-
             node.rotation = rotation.asArray();
         }
     }
@@ -1158,13 +1156,12 @@ export class GLTFExporter {
                         this._nodesSkinMap.get(skin)?.push(node);
                     }
                 }
-            } else {
-                // TODO: handle other Babylon node types
             }
         }
 
+        let skipNode = false;
+
         if (babylonNode instanceof Camera) {
-            // TODO: Combine any TransformNode parent with child camera node, like we do for lights
             const gltfCamera = this._camerasMap.get(babylonNode);
 
             if (gltfCamera) {
@@ -1172,34 +1169,37 @@ export class GLTFExporter {
                     this._nodesCameraMap.set(gltfCamera, []);
                 }
 
-                this._nodesCameraMap.get(gltfCamera)?.push(node);
-                this._setCameraTransformation(node, babylonNode, state.convertToRightHanded);
+                const parentBabylonNode = babylonNode.parent;
+                this._setCameraTransformation(node, babylonNode, state.convertToRightHanded, parentBabylonNode);
+
+                // If a camera has a node that was added by the GLTF importer, we can just use the parent node transform as the "camera" transform.
+                if (parentBabylonNode && isParentAddedByImporter(babylonNode, parentBabylonNode)) {
+                    const parentNodeIndex = this._nodeMap.get(parentBabylonNode);
+                    if (parentNodeIndex) {
+                        const parentNode = this._nodes[parentNodeIndex];
+                        this._nodesCameraMap.get(gltfCamera)?.push(parentNode);
+                        skipNode = true;
+                    }
+                } else {
+                    if (state.convertToRightHanded) {
+                        convertToRightHandedNode(node);
+                        rotateNode180Y(node);
+                    }
+                    this._nodesCameraMap.get(gltfCamera)?.push(node);
+                }
             }
         }
 
-        const runtimeGLTFAnimation: IAnimation = {
-            name: "runtime animations",
-            channels: [],
-            samplers: [],
-        };
-        const idleGLTFAnimations: IAnimation[] = [];
+        if (!skipNode) {
+            const runtimeGLTFAnimation: IAnimation = {
+                name: "runtime animations",
+                channels: [],
+                samplers: [],
+            };
+            const idleGLTFAnimations: IAnimation[] = [];
 
-        if (!this._babylonScene.animationGroups.length) {
-            _GLTFAnimation._CreateMorphTargetAnimationFromMorphTargetAnimations(
-                babylonNode,
-                runtimeGLTFAnimation,
-                idleGLTFAnimations,
-                this._nodeMap,
-                this._nodes,
-                this._dataWriter,
-                this._bufferViews,
-                this._accessors,
-                this._animationSampleRate,
-                state.convertToRightHanded,
-                this._options.shouldExportAnimation
-            );
-            if (babylonNode.animations.length) {
-                _GLTFAnimation._CreateNodeAnimationFromNodeAnimations(
+            if (!this._babylonScene.animationGroups.length) {
+                _GLTFAnimation._CreateMorphTargetAnimationFromMorphTargetAnimations(
                     babylonNode,
                     runtimeGLTFAnimation,
                     idleGLTFAnimations,
@@ -1212,33 +1212,50 @@ export class GLTFExporter {
                     state.convertToRightHanded,
                     this._options.shouldExportAnimation
                 );
-            }
-        }
-
-        // Apply extensions to the node. If this resolves to null, it means we should skip exporting this node (NOTE: This will also skip its children)
-        const processedNode = await this._extensionsPostExportNodeAsync("exportNodeAsync", node, babylonNode, this._nodeMap, state.convertToRightHanded);
-        if (!processedNode) {
-            Logger.Warn(`Not exporting node ${babylonNode.name}`);
-            return null;
-        }
-
-        nodeIndex = this._nodes.length;
-        this._nodes.push(node);
-        this._nodeMap.set(babylonNode, nodeIndex);
-        state.pushExportedNode(babylonNode);
-
-        // Begin processing child nodes once parent has been added to the node list
-        for (const babylonChildNode of babylonNode.getChildren()) {
-            if (this._shouldExportNode(babylonChildNode)) {
-                const childNodeIndex = await this._exportNodeAsync(babylonChildNode, state);
-                if (childNodeIndex !== null) {
-                    node.children ||= [];
-                    node.children.push(childNodeIndex);
+                if (babylonNode.animations.length) {
+                    _GLTFAnimation._CreateNodeAnimationFromNodeAnimations(
+                        babylonNode,
+                        runtimeGLTFAnimation,
+                        idleGLTFAnimations,
+                        this._nodeMap,
+                        this._nodes,
+                        this._dataWriter,
+                        this._bufferViews,
+                        this._accessors,
+                        this._animationSampleRate,
+                        state.convertToRightHanded,
+                        this._options.shouldExportAnimation
+                    );
                 }
             }
+
+            // Apply extensions to the node. If this resolves to null, it means we should skip exporting this node (NOTE: This will also skip its children)
+            const processedNode = await this._extensionsPostExportNodeAsync("exportNodeAsync", node, babylonNode, this._nodeMap, state.convertToRightHanded);
+            if (!processedNode) {
+                Logger.Warn(`Not exporting node ${babylonNode.name}`);
+                return null;
+            }
+
+            nodeIndex = this._nodes.length;
+            this._nodes.push(node);
+            this._nodeMap.set(babylonNode, nodeIndex);
+            state.pushExportedNode(babylonNode);
+
+            // Begin processing child nodes once parent has been added to the node list
+            for (const babylonChildNode of babylonNode.getChildren()) {
+                if (this._shouldExportNode(babylonChildNode)) {
+                    const childNodeIndex = await this._exportNodeAsync(babylonChildNode, state);
+                    if (childNodeIndex !== null) {
+                        node.children ||= [];
+                        node.children.push(childNodeIndex);
+                    }
+                }
+            }
+
+            return nodeIndex;
         }
 
-        return nodeIndex;
+        return null;
     }
 
     private _exportIndices(
