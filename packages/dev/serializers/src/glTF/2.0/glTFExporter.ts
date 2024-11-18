@@ -700,7 +700,7 @@ export class GLTFExporter {
 
     private _setCameraTransformation(node: INode, babylonCamera: Camera, convertToRightHanded: boolean, parent: Nullable<Node>): void {
         const translation = TmpVectors.Vector3[0];
-        let rotation = TmpVectors.Quaternion[0];
+        const rotation = TmpVectors.Quaternion[0];
 
         if (parent !== null) {
             const parentWorldMatrix = Matrix.Invert(parent.getWorldMatrix());

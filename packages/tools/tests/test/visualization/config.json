@@ -926,20 +926,26 @@
         },
         {
             "title": "GLTF Serializer Camera, left-handed",
-            "playgroundId": "#O0M0J9#7",
-            "replace": "//options//, roundtripCount = 3; useRightHandedSystem = false;",
+            "playgroundId": "#O0M0J9#8",
+            "replace": "//options//, roundtripCount = 1; useRightHandedSystem = false;",
             "referenceImage": "glTFSerializerCamera.png"
         },
         {
             "title": "GLTF Serializer Camera, right-handed",
-            "playgroundId": "#O0M0J9#7",
-            "replace": "//options//, roundtripCount = 3; useRightHandedSystem = true;",
+            "playgroundId": "#O0M0J9#8",
+            "replace": "//options//, roundtripCount = 1; useRightHandedSystem = true;",
+            "referenceImage": "glTFSerializerCamera.png"
+        },
+        {
+            "title": "GLTF Serializer Camera, left-handed, round trip twice",
+            "playgroundId": "#O0M0J9#8",
+            "replace": "//options//, roundtripCount = 2; useRightHandedSystem = false;",
             "referenceImage": "glTFSerializerCamera.png"
         },
         {
             "title": "GLTF Serializer Camera, right-handed, round trip twice",
-            "playgroundId": "#O0M0J9#7",
-            "replace": "//options//, roundtripCount = 4; useRightHandedSystem = false;",
+            "playgroundId": "#O0M0J9#8",
+            "replace": "//options//, roundtripCount = 2; useRightHandedSystem = true;",
             "referenceImage": "glTFSerializerCamera.png"
         },
         {
