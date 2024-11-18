@@ -58,8 +58,7 @@ import {
     isNoopNode,
     isTriangleFillMode,
     isParentAddedByImporter,
-    rotateNodeMinus180Z,
-    convertCameraRotationToGLTF,
+    rotateNode180Y,
 } from "./glTFUtilities";
 import { DataWriter } from "./dataWriter";
 import { Camera } from "core/Cameras/camera";
@@ -701,7 +700,7 @@ export class GLTFExporter {
 
     private _setCameraTransformation(node: INode, babylonCamera: Camera, convertToRightHanded: boolean, parent: Nullable<Node>): void {
         const translation = TmpVectors.Vector3[0];
-        const rotation = TmpVectors.Quaternion[0];
+        let rotation = TmpVectors.Quaternion[0];
 
         if (parent !== null) {
             const parentWorldMatrix = Matrix.Invert(parent.getWorldMatrix());
@@ -715,13 +714,10 @@ export class GLTFExporter {
         if (!translation.equalsToFloats(0, 0, 0)) {
             if (convertToRightHanded) {
                 convertToRightHandedPosition(translation);
+                translation.x *= -1;
             }
 
             node.translation = translation.asArray();
-        }
-
-        if (convertToRightHanded) {
-            convertCameraRotationToGLTF(rotation);
         }
 
         if (!Quaternion.IsIdentity(rotation)) {
@@ -1180,7 +1176,6 @@ export class GLTFExporter {
                 this._setCameraTransformation(node, babylonNode, state.convertToRightHanded, parentBabylonNode);
 
                 if (parentBabylonNode && isParentAddedByImporter(babylonNode, parentBabylonNode)) {
-                    rotateNodeMinus180Z(node);
                     const parentNodeIndex = this._nodeMap.get(parentBabylonNode);
                     if (parentNodeIndex) {
                         const parentNode = this._nodes[parentNodeIndex];
@@ -1188,6 +1183,9 @@ export class GLTFExporter {
                         skipNode = true;
                     }
                 } else {
+                    if (state.convertToRightHanded) {
+                        rotateNode180Y(node);
+                    }
                     this._nodesCameraMap.get(gltfCamera)?.push(node);
                 }
             }

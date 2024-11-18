@@ -19,7 +19,6 @@ const convertHandednessMatrix = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion
 
 // 180 degrees rotation in Y.
 const rotation180Y = new Quaternion(0, 1, 0, 0);
-const rotation180Z = new Quaternion(0, 0, 1, 0);
 
 /**
  * Creates a buffer view based on the supplied arguments
@@ -222,14 +221,6 @@ export function rotateNode180Y(node: INode) {
     if (node.rotation) {
         const rotation = Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
         rotation.multiplyInPlace(rotation180Y);
-        node.rotation = rotation.asArray();
-    }
-}
-
-export function rotateNodeMinus180Z(node: INode) {
-    if (node.rotation) {
-        const rotation = Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
-        rotation.multiplyInPlace(Quaternion.Inverse(rotation180Z));
         node.rotation = rotation.asArray();
     }
 }
