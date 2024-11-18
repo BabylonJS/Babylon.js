@@ -346,6 +346,7 @@ export class TerrainMaterial extends PushMaterial {
 
         // Matrices
         this.bindOnlyWorldMatrix(world);
+        this._activeEffect.setMatrix("view", scene.getViewMatrix());
         this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
 
         // Bones
