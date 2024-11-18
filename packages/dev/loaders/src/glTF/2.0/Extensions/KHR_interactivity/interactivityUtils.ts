@@ -941,6 +941,7 @@ export const gltfTypeToBabylonType: {
     float4: FlowGraphTypes.Vector4,
     float4x4: FlowGraphTypes.Matrix,
     int: FlowGraphTypes.Integer,
+    // int[] is configuration only, not used as value type
 };
 
 /*

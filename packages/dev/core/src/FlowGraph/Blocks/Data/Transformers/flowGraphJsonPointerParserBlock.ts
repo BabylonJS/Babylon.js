@@ -11,6 +11,8 @@ import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { RegisterClass } from "core/Misc/typeStore";
 import type { Animation } from "core/Animations/animation";
 import type { EasingFunction } from "core/Animations/easing";
+import type { Vector4 } from "core/Maths/math.vector";
+import { Color3, Color4 } from "core/Maths/math.color";
 
 export interface IFlowGraphJsonPointerParserBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
@@ -125,6 +127,10 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
 
     private _setPropertyValue(_target: O, _propertyName: string, value: P, context: FlowGraphContext): void {
         const accessorContainer = this.templateComponent.getAccessor(this.config.pathConverter, context);
+        const type = accessorContainer.info.type;
+        if (type.startsWith("Color")) {
+            value = ToColor(value as Vector4, type) as unknown as P;
+        }
         accessorContainer.info.set?.(value, accessorContainer.object);
     }
 
@@ -137,14 +143,35 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
         _target: O,
         _propertyName: string,
         context: FlowGraphContext
-    ): (keys: any[], fps: number, easingFunction?: EasingFunction) => Animation[] {
+    ): (keys: any[], fps: number, animationType: number, easingFunction?: EasingFunction) => Animation[] {
         const accessorContainer = this.templateComponent.getAccessor(this.config.pathConverter, context);
-        return (keys: any[], fps: number, easingFunction?: EasingFunction) => {
+        return (keys: any[], fps: number, animationType: number, easingFunction?: EasingFunction) => {
             const animations: Animation[] = [];
             const object = accessorContainer.info.getTarget?.(accessorContainer.object);
+            // make sure keys are of the right type (in case of float3 color/vector)
+            const type = accessorContainer.info.type;
+            if (type.startsWith("Color")) {
+                keys = keys.map((key) => {
+                    return {
+                        frame: key.frame,
+                        value: ToColor(key.value, type),
+                    };
+                });
+            }
             accessorContainer.info.interpolation?.forEach((info, index) => {
                 const name = accessorContainer.info.getPropertyName?.[index](accessorContainer.object) || "Animation-interpolation-" + index;
-                const animationData = info.buildAnimations(object, name, 60, keys);
+                // generate the keys based on interpolation info
+                let newKeys: any[] = keys;
+                if (animationType !== info.type) {
+                    // convert the keys to the right type
+                    newKeys = keys.map((key) => {
+                        return {
+                            frame: key.frame,
+                            value: info.getValue(undefined, key.value.asArray ? key.value.asArray() : [key.value], 0, 1),
+                        };
+                    });
+                }
+                const animationData = info.buildAnimations(object, name, 60, newKeys);
                 animationData.forEach((animation) => {
                     if (easingFunction) {
                         animation.babylonAnimation.setEasingFunction(easingFunction);
@@ -164,6 +191,18 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
     public override getClassName(): string {
         return FlowGraphBlockNames.JsonPointerParser;
     }
+}
+
+function ToColor(value: any, expectedValue: string) {
+    if (value.getClassName().startsWith("Color")) {
+        return value as unknown as Color3 | Color4;
+    }
+    if (expectedValue === "Color3") {
+        return new Color3(value.x, value.y, value.z);
+    } else if (expectedValue === "Color4") {
+        return new Color4(value.x, value.y, value.z, value.w);
+    }
+    return value;
 }
 
 RegisterClass(FlowGraphBlockNames.JsonPointerParser, FlowGraphJsonPointerParserBlock);

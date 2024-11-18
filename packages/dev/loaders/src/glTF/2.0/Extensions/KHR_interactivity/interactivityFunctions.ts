@@ -26,6 +26,8 @@ function convertVariableValueWithType(configObject: IKHRInteractivity_Variable, 
                     // value might not be defined, this way it is just a placeholder with a type.
                     if (configObject.value !== undefined && Array.isArray(configObject.value)) {
                         return configObject.value?.[0];
+                    } else {
+                        return configObject.value;
                     }
                 default:
                     return configObject.value;
