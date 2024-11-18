@@ -60,7 +60,6 @@ import {
     isParentAddedByImporter,
     rotateNodeMinus180Z,
     convertCameraRotationToGLTF,
-    convertNode,
 } from "./glTFUtilities";
 import { DataWriter } from "./dataWriter";
 import { Camera } from "core/Cameras/camera";
@@ -1186,7 +1185,6 @@ export class GLTFExporter {
                     if (parentNodeIndex) {
                         const parentNode = this._nodes[parentNodeIndex];
                         this._nodesCameraMap.get(gltfCamera)?.push(parentNode);
-                        convertNode(parentNode);
                         skipNode = true;
                     }
                 } else {
