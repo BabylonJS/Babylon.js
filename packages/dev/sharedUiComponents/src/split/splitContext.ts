@@ -5,6 +5,11 @@ export enum ControlledSize {
     Second,
 }
 
+export enum SplitDirection {
+    Horizontal,
+    Vertical,
+}
+
 /**
  * Context used to share data with splitters
  */
@@ -12,7 +17,7 @@ export interface ISplitContext {
     /**
      * Split direction
      */
-    direction: "horizontal" | "vertical";
+    direction: SplitDirection;
     /**
      * Function called by splitters to update the offset
      * @param offset new offet
@@ -42,4 +47,4 @@ export interface ISplitContext {
 }
 
 // Create the context
-export const SplitContext = createContext<ISplitContext>({ direction: "horizontal", drag: () => {}, beginDrag: () => {}, endDrag: () => {}, init: () => {} });
+export const SplitContext = createContext<ISplitContext>({ direction: SplitDirection.Horizontal, drag: () => {}, beginDrag: () => {}, endDrag: () => {}, init: () => {} });

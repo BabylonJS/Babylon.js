@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 import styles from "./splitContainer.module.scss";
-import { ControlledSize } from "./splitContext";
-import { SplitContext } from "./splitContext";
+import { ControlledSize, SplitDirection, SplitContext } from "./splitContext";
 
 /**
  * Split container properties
@@ -15,7 +14,7 @@ export interface ISplitContainerProps {
     /**
      * Split direction
      */
-    direction: "horizontal" | "vertical";
+    direction: SplitDirection;
 
     /**
      * RefObject to the root div element
@@ -91,7 +90,7 @@ export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
                 }
             }
 
-            if (props.direction === "horizontal") {
+            if (props.direction === SplitDirection.Horizontal) {
                 childElement.style.gridRow = "1";
                 childElement.style.gridColumn = gridIndex.toString();
             } else {
@@ -102,7 +101,7 @@ export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
             gridIndex++;
         }
 
-        if (props.direction === "horizontal") {
+        if (props.direction === SplitDirection.Horizontal) {
             elementRef.current.style.gridTemplateRows = "100%";
             elementRef.current.style.gridTemplateColumns = gridDefinition;
         } else {
@@ -136,7 +135,7 @@ export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
 
         let split: string[] = [];
 
-        if (props.direction === "horizontal") {
+        if (props.direction === SplitDirection.Horizontal) {
             const gridTemplateColumns = elementRef.current.style.gridTemplateColumns;
             split = gridTemplateColumns.split(" ");
         } else {
@@ -150,7 +149,7 @@ export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
             split[sourceIndex + 1] = `${newSize}px`;
         }
 
-        if (props.direction === "horizontal") {
+        if (props.direction === SplitDirection.Horizontal) {
             elementRef.current.style.gridTemplateColumns = split.join(" ");
         } else {
             elementRef.current.style.gridTemplateRows = split.join(" ");
@@ -166,7 +165,7 @@ export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
         for (const child of children) {
             const childElement = child as HTMLElement;
 
-            if (props.direction === "horizontal") {
+            if (props.direction === SplitDirection.Horizontal) {
                 sizes.push(childElement.getBoundingClientRect().width);
             } else {
                 sizes.push(childElement.getBoundingClientRect().height);

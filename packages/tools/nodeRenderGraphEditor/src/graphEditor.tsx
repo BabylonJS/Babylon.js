@@ -30,7 +30,7 @@ import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import { Constants } from "core/Engines/constants";
 import { SplitContainer } from "shared-ui-components/split/splitContainer";
 import { Splitter } from "shared-ui-components/split/splitter";
-import { ControlledSize } from "shared-ui-components/split/splitContext";
+import { ControlledSize, SplitDirection } from "shared-ui-components/split/splitContext";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -634,7 +634,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             <Portal globalState={this.props.globalState}>
                 <SplitContainer
                     id="node-render-graph-editor-graph-root"
-                    direction="horizontal"
+                    direction={SplitDirection.Horizontal}
                     onPointerMove={(evt) => {
                         this._mouseLocationX = evt.pageX;
                         this._mouseLocationY = evt.pageY;
@@ -653,7 +653,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
                     {/* The node graph diagram */}
                     <SplitContainer
-                        direction="vertical"
+                        direction={SplitDirection.Vertical}
                         className="diagram-container"
                         containerRef={this._diagramContainerRef}
                         onDrop={(event) => {
