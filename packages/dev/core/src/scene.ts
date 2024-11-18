@@ -98,6 +98,7 @@ import type { Sound } from "./Audio/sound";
 import type { Layer } from "./Layers/layer";
 import type { LensFlareSystem } from "./LensFlares/lensFlareSystem";
 import type { ProceduralTexture } from "./Materials/Textures/Procedurals/proceduralTexture";
+import { DelayCall } from "./Misc/tools.functions";
 
 /**
  * Define an interface for all classes that will hold resources
@@ -2650,7 +2651,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             newMesh._addToSceneRootNodes();
         }
 
-        this.onNewMeshAddedObservable.notifyObservers(newMesh);
+        DelayCall(() => {
+            this.onNewMeshAddedObservable.notifyObservers(newMesh);
+        });
 
         if (recursive) {
             newMesh.getChildMeshes().forEach((m) => {
@@ -2974,7 +2977,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             }
         }
 
-        this.onNewLightAddedObservable.notifyObservers(newLight);
+        DelayCall(() => {
+            this.onNewLightAddedObservable.notifyObservers(newLight);
+        });
     }
 
     /**
@@ -2996,7 +3001,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         }
 
         this.cameras.push(newCamera);
-        this.onNewCameraAddedObservable.notifyObservers(newCamera);
+        DelayCall(() => {
+            this.onNewCameraAddedObservable.notifyObservers(newCamera);
+        });
 
         if (!newCamera.parent) {
             newCamera._addToSceneRootNodes();
@@ -3012,7 +3019,10 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             return;
         }
         this.skeletons.push(newSkeleton);
-        this.onNewSkeletonAddedObservable.notifyObservers(newSkeleton);
+
+        DelayCall(() => {
+            this.onNewSkeletonAddedObservable.notifyObservers(newSkeleton);
+        });
     }
 
     /**
@@ -3057,7 +3067,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             return;
         }
         this.multiMaterials.push(newMultiMaterial);
-        this.onNewMultiMaterialAddedObservable.notifyObservers(newMultiMaterial);
+        DelayCall(() => {
+            this.onNewMultiMaterialAddedObservable.notifyObservers(newMultiMaterial);
+        });
     }
 
     /**
@@ -3076,7 +3088,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         newMaterial._indexInSceneMaterialArray = this.materials.length;
         this.materials.push(newMaterial);
-        this.onNewMaterialAddedObservable.notifyObservers(newMaterial);
+        DelayCall(() => {
+            this.onNewMaterialAddedObservable.notifyObservers(newMaterial);
+        });
     }
 
     /**
@@ -3483,7 +3497,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         this.addGeometry(geometry);
 
-        this.onNewGeometryAddedObservable.notifyObservers(geometry);
+        DelayCall(() => {
+            this.onNewGeometryAddedObservable.notifyObservers(geometry);
+        });
 
         return true;
     }

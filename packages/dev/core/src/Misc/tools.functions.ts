@@ -1,6 +1,14 @@
 import { Constants } from "../Engines/constants";
 
 /**
+ * Execute the function on the next microtask
+ * @param func defines the function to execute
+ */
+export function DelayCall(func: () => void): void {
+    setTimeout(func, 0);
+}
+
+/**
  * Function indicating if a number is an exponent of 2
  * @param value defines the value to test
  * @returns true if the value is an exponent of 2
