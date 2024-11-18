@@ -452,7 +452,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
 
                 // Project delta drag from the drag plane onto the drag axis
                 pickedPoint.subtractToRef(this.lastDragPosition, this._tmpVector);
-                dragLength = Vector3.Dot(this._tmpVector, this._worldDragAxis);
+                dragLength = Vector3.Dot(this._tmpVector, this._worldDragAxis) / (Vector3.Dot(this._worldDragAxis, this._worldDragAxis) || 1);
                 this._worldDragAxis.scaleToRef(dragLength, this._dragDelta);
             } else {
                 dragLength = this._dragDelta.length();
