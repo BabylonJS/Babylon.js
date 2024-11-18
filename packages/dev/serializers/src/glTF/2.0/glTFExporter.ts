@@ -1028,7 +1028,8 @@ export class GLTFExporter {
                     // Convert StandardMaterial vertex colors from gamma to linear space.
                     case VertexBuffer.ColorKind: {
                         const meshes = vertexBufferToMeshesMap.get(vertexBuffer)!;
-                        const stdMatCount = meshes.filter((mesh) => mesh.material instanceof StandardMaterial).length;
+                        // Count the number of StandardMaterials, including null materials (which default to )
+                        const stdMatCount = meshes.filter((mesh) => mesh.material instanceof StandardMaterial || mesh.material === null).length;
                         // If buffer is used by only PBR materials, nothing to do.
                         if (stdMatCount === 0) {
                             break;
@@ -1039,13 +1040,33 @@ export class GLTFExporter {
                             Logger.Warn("Not converting StandardMaterial's vertex color, as buffer is shared with non-StandardMaterial meshes. Results may look incorrect.");
                             break;
                         }
-                        // Otherwise, buffer is used by only StandardMaterials, so we convert to linear.
+
+                        // Otherwise, buffer is used by only StandardMaterials, so we convert to linear..
+
                         const { byteOffset, byteStride, type, normalized } = vertexBuffer;
-                        if (vertexBuffer.type == VertexBuffer.UNSIGNED_SHORT) {
+
+                        if (type == VertexBuffer.BYTE || type == VertexBuffer.UNSIGNED_BYTE) {
+                            Logger.Warn("Converting UINT8 vertex colors to linear space. Results may look incorrect.");
+                        }
+
                         const size = vertexBuffer.getSize();
+                        const maxTotalVertices = meshes.reduce((max, current) => {
+                            return current.getTotalVertices() > max ? current.getTotalVertices() : max;
+                        }, -Number.MAX_VALUE);
+                        /**
+                         * say we have 4 available elements in our vertex buffer (indices [0,1,2,3])
+                            and say 2 meshes point to this vertex buffer, having the following EBOs:
+
+                            mesh 1 EBO: [0,1,2]
+                            mesh 2 EBO: [0,1,3]
+
+                            maxTotalVertices(mesh1, mesh2) = 3
+
+                            so if we enumerate until we've processed 3 elements, [0,1,2], we never hit 3??
+                         */
                         const vertexData: Color3 | Color4 = byteStride === 3 ? new Color3() : new Color4();
                         const useExactSrgbConversions = this._babylonScene.getEngine().useExactSrgbConversions;
-                        enumerateFloatValues(bytes, byteOffset, byteStride, size, type, meshes[0].getTotalVertices() * size, normalized, (values) => {
+                        enumerateFloatValues(bytes, byteOffset, byteStride, size, type, maxTotalVertices * size, normalized, (values) => {
                             // Cast values to Color3 or Color4 to ensure TS calls correct functions
                             if (values.length === 4) {
                                 (vertexData as Color4).fromArray(values, 0);
