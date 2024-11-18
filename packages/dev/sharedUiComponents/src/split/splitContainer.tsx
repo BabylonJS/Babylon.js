@@ -66,6 +66,7 @@ export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
     const elementRef: React.RefObject<HTMLDivElement> = props.containerRef || useRef(null);
     const sizes: number[] = [];
     const initialSizes: string[] = [];
+    const gridCells: string[] = [];
 
     useEffect(() => {
         if (!elementRef.current) {
@@ -74,19 +75,18 @@ export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
 
         const children = elementRef.current.children;
 
-        let gridDefinition = "";
         let gridIndex = 1;
         const pickArray = Array.from(children);
         for (const child of children) {
             const childElement = child as HTMLElement;
             if (child.classList.contains(styles["splitter"])) {
-                gridDefinition += "auto ";
+                gridCells.push("auto");
             } else {
                 const sourceIndex = pickArray.indexOf(child);
                 if (initialSizes[sourceIndex]) {
-                    gridDefinition += initialSizes[sourceIndex] + " ";
+                    gridCells.push(initialSizes[sourceIndex]);
                 } else {
-                    gridDefinition += "1fr ";
+                    gridCells.push("1fr");
                 }
             }
 
@@ -101,6 +101,7 @@ export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
             gridIndex++;
         }
 
+        const gridDefinition = gridCells.join(" ");
         if (props.direction === SplitDirection.Horizontal) {
             elementRef.current.style.gridTemplateRows = "100%";
             elementRef.current.style.gridTemplateColumns = gridDefinition;
@@ -133,26 +134,17 @@ export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
             return;
         }
 
-        let split: string[] = [];
-
-        if (props.direction === SplitDirection.Horizontal) {
-            const gridTemplateColumns = elementRef.current.style.gridTemplateColumns;
-            split = gridTemplateColumns.split(" ");
-        } else {
-            const gridTemplateRows = elementRef.current.style.gridTemplateRows;
-            split = gridTemplateRows.split(" ");
-        }
-
         if (controlledSide === ControlledSize.First) {
-            split[sourceIndex - 1] = `${newSize}px`;
+            gridCells[sourceIndex - 1] = `${newSize}px`;
         } else {
-            split[sourceIndex + 1] = `${newSize}px`;
+            gridCells[sourceIndex + 1] = `${newSize}px`;
         }
 
+        const gridDefinition = gridCells.join(" ");
         if (props.direction === SplitDirection.Horizontal) {
-            elementRef.current.style.gridTemplateColumns = split.join(" ");
+            elementRef.current.style.gridTemplateColumns = gridDefinition;
         } else {
-            elementRef.current.style.gridTemplateRows = split.join(" ");
+            elementRef.current.style.gridTemplateRows = gridDefinition;
         }
     };
 
