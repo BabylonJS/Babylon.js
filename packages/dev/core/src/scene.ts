@@ -98,7 +98,6 @@ import type { Sound } from "./Audio/sound";
 import type { Layer } from "./Layers/layer";
 import type { LensFlareSystem } from "./LensFlares/lensFlareSystem";
 import type { ProceduralTexture } from "./Materials/Textures/Procedurals/proceduralTexture";
-import { DelayCall } from "./Misc/tools.functions";
 
 /**
  * Define an interface for all classes that will hold resources
@@ -2651,7 +2650,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             newMesh._addToSceneRootNodes();
         }
 
-        DelayCall(() => {
+        Tools.SetImmediate(() => {
             this.onNewMeshAddedObservable.notifyObservers(newMesh);
         });
 
@@ -2977,7 +2976,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             }
         }
 
-        DelayCall(() => {
+        Tools.SetImmediate(() => {
             this.onNewLightAddedObservable.notifyObservers(newLight);
         });
     }
@@ -3001,7 +3000,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         }
 
         this.cameras.push(newCamera);
-        DelayCall(() => {
+        Tools.SetImmediate(() => {
             this.onNewCameraAddedObservable.notifyObservers(newCamera);
         });
 
@@ -3020,7 +3019,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         }
         this.skeletons.push(newSkeleton);
 
-        DelayCall(() => {
+        Tools.SetImmediate(() => {
             this.onNewSkeletonAddedObservable.notifyObservers(newSkeleton);
         });
     }
@@ -3067,7 +3066,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             return;
         }
         this.multiMaterials.push(newMultiMaterial);
-        DelayCall(() => {
+        Tools.SetImmediate(() => {
             this.onNewMultiMaterialAddedObservable.notifyObservers(newMultiMaterial);
         });
     }
@@ -3088,7 +3087,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         newMaterial._indexInSceneMaterialArray = this.materials.length;
         this.materials.push(newMaterial);
-        DelayCall(() => {
+        Tools.SetImmediate(() => {
             this.onNewMaterialAddedObservable.notifyObservers(newMaterial);
         });
     }
@@ -3497,7 +3496,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         this.addGeometry(geometry);
 
-        DelayCall(() => {
+        Tools.SetImmediate(() => {
             this.onNewGeometryAddedObservable.notifyObservers(geometry);
         });
 
