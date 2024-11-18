@@ -253,7 +253,7 @@ export function rotateNode180Y(node: INode) {
  * @param node Target parent node.
  * @param parentNode Original GLTF node (Light or Camera).
  */
-export function colapseParentNode(node: INode, parentNode: INode) {
+export function collapseParentNode(node: INode, parentNode: INode) {
     const parentTranslation = Vector3.FromArrayToRef(parentNode.translation || [0, 0, 0], 0, TmpVectors.Vector3[0]);
     const parentRotation = Quaternion.FromArrayToRef(parentNode.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[0]);
     const parentScale = Vector3.FromArrayToRef(parentNode.scale || [1, 1, 1], 0, TmpVectors.Vector3[1]);
