@@ -59,7 +59,7 @@ import {
     isTriangleFillMode,
     isParentAddedByImporter,
     convertToRightHandedNode,
-    rotateNodeMinus180Y,
+    rotateNode180Y,
 } from "./glTFUtilities";
 import { DataWriter } from "./dataWriter";
 import { Camera } from "core/Cameras/camera";
@@ -1183,7 +1183,7 @@ export class GLTFExporter {
                 } else {
                     if (state.convertToRightHanded) {
                         convertToRightHandedNode(node);
-                        rotateNodeMinus180Y(node);
+                        rotateNode180Y(node);
                     }
                     this._nodesCameraMap.get(gltfCamera)?.push(node);
                 }

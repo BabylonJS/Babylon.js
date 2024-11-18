@@ -19,7 +19,6 @@ const convertHandednessMatrix = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion
 
 // 180 degrees rotation in Y.
 const rotation180Y = new Quaternion(0, 1, 0, 0);
-const rotation180MinusY = new Quaternion(0, 1, 0, 0).invert();
 
 /**
  * Creates a buffer view based on the supplied arguments
@@ -244,15 +243,7 @@ export function convertCameraRotationToGLTF(rotation: Quaternion): Quaternion {
 export function rotateNode180Y(node: INode) {
     if (node.rotation) {
         const rotation = Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
-        rotation.multiplyInPlace(rotation180Y);
-        node.rotation = rotation.asArray();
-    }
-}
-
-export function rotateNodeMinus180Y(node: INode) {
-    if (node.rotation) {
-        const rotation = Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
-        rotation180MinusY.multiplyToRef(rotation, rotation);
+        rotation180Y.multiplyToRef(rotation, rotation);
         node.rotation = rotation.asArray();
     }
 }
