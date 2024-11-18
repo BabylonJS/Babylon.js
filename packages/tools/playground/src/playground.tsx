@@ -16,9 +16,9 @@ import { ErrorDisplayComponent } from "./components/errorDisplayComponent";
 import { ExamplesComponent } from "./components/examplesComponent";
 import { QRCodeComponent } from "./components/qrCodeComponent";
 import { SplitContainer } from "shared-ui-components/split/splitContainer";
+import { Splitter } from "shared-ui-components/split/splitter";
 
 import "./scss/main.scss";
-import * as Split from "split.js";
 
 interface IPlaygroundProps {
     runtimeMode: RuntimeMode;
@@ -101,11 +101,11 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
                 }
                 this._renderingRef.current!.classList.remove("hidden");
                 this._monacoRef.current!.classList.remove("hidden");
-                this._splitInstance = (Split as any).default([this._monacoRef.current, this._renderingRef.current], {
-                    direction: "horizontal",
-                    minSize: [200, 200],
-                    gutterSize: 4,
-                });
+                // this._splitInstance = (Split as any).default([this._monacoRef.current, this._renderingRef.current], {
+                //     direction: "horizontal",
+                //     minSize: [200, 200],
+                //     gutterSize: 4,
+                // });
                 break;
         }
     }
@@ -141,8 +141,9 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
         return (
             <div id="pg-root">
                 <HeaderComponent globalState={this._globalState} />
-                <SplitContainer id="pg-split">
+                <SplitContainer id="pg-split" direction="vertical">
                     <MonacoComponent globalState={this._globalState} className="pg-split-part" refObject={this._monacoRef} />
+                    <Splitter size={10} />
                     <div ref={this._renderingRef} id="canvasZone" className="pg-split-part canvasZone">
                         <RenderingComponent globalState={this._globalState} />
                     </div>
