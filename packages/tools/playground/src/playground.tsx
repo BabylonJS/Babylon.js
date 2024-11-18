@@ -29,7 +29,6 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
     private _renderingRef: React.RefObject<HTMLDivElement>;
 
     private _globalState: GlobalState;
-    private _splitInstance: any;
 
     public saveManager: SaveManager;
     public loadManager: LoadManager;
@@ -82,30 +81,18 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
 
         switch (this.state.mode) {
             case EditionMode.CodeOnly:
-                this._splitInstance?.destroy();
-                this._splitInstance = null;
                 this._renderingRef.current!.classList.add("hidden");
                 this._monacoRef.current!.classList.remove("hidden");
                 this._monacoRef.current!.style.width = "100%";
                 break;
             case EditionMode.RenderingOnly:
-                this._splitInstance?.destroy();
-                this._splitInstance = null;
                 this._monacoRef.current!.classList.add("hidden");
                 this._renderingRef.current!.classList.remove("hidden");
                 this._renderingRef.current!.style.width = "100%";
                 break;
             case EditionMode.Desktop:
-                if (this._splitInstance) {
-                    return;
-                }
                 this._renderingRef.current!.classList.remove("hidden");
                 this._monacoRef.current!.classList.remove("hidden");
-                // this._splitInstance = (Split as any).default([this._monacoRef.current, this._renderingRef.current], {
-                //     direction: "horizontal",
-                //     minSize: [200, 200],
-                //     gutterSize: 4,
-                // });
                 break;
         }
     }
@@ -114,7 +101,7 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
         if (this._globalState.runtimeMode === RuntimeMode.Full) {
             return (
                 <>
-                    <MonacoComponent globalState={this._globalState} className="pg-split-part hidden" refObject={this._monacoRef} />
+                    <MonacoComponent globalState={this._globalState} className="hidden" refObject={this._monacoRef} />
                     <div className="canvasZone" id="pg-root-full">
                         <RenderingComponent globalState={this._globalState} />
                         <ErrorDisplayComponent globalState={this._globalState} />
@@ -127,7 +114,7 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
         if (this._globalState.runtimeMode === RuntimeMode.Frame) {
             return (
                 <>
-                    <MonacoComponent globalState={this._globalState} className="pg-split-part hidden" refObject={this._monacoRef} />
+                    <MonacoComponent globalState={this._globalState} className="hidden" refObject={this._monacoRef} />
                     <div className="canvasZone" id="pg-root-frame">
                         <RenderingComponent globalState={this._globalState} />
                         <FooterComponent globalState={this._globalState} />
@@ -141,10 +128,10 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
         return (
             <div id="pg-root">
                 <HeaderComponent globalState={this._globalState} />
-                <SplitContainer id="pg-split" direction="vertical">
-                    <MonacoComponent globalState={this._globalState} className="pg-split-part" refObject={this._monacoRef} />
-                    <Splitter size={10} />
-                    <div ref={this._renderingRef} id="canvasZone" className="pg-split-part canvasZone">
+                <SplitContainer id="pg-split" direction="horizontal">
+                    <MonacoComponent globalState={this._globalState} refObject={this._monacoRef} />
+                    <Splitter size={6} minSize1={300} minSize2={500} />
+                    <div ref={this._renderingRef} id="canvasZone" className="canvasZone">
                         <RenderingComponent globalState={this._globalState} />
                     </div>
                 </SplitContainer>
