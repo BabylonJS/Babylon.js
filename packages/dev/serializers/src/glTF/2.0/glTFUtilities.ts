@@ -236,13 +236,12 @@ export function rotateNodeMinus180Z(node: INode) {
 
 export function convertNode(node: INode) {
     const translation = Vector3.FromArrayToRef(node.translation || [0, 0, 0], 0, TmpVectors.Vector3[2]);
-    const rotation = Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
+    let rotation = Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
 
     translation.y *= -1;
     translation.x *= -1;
 
-    //rotation.x *= -1;
-    //rotation.y *= -1;
+    rotation = convertToRightHandedRotation(rotation);
 
     if (translation.equalsToFloats(0, 0, 0)) {
         delete node.translation;

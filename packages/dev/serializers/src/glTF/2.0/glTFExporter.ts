@@ -57,7 +57,6 @@ import {
     indicesArrayToUint8Array,
     isNoopNode,
     isTriangleFillMode,
-    colapseParentNode,
     isParentAddedByImporter,
     rotateNodeMinus180Z,
     convertCameraRotationToGLTF,
@@ -1186,10 +1185,8 @@ export class GLTFExporter {
                     const parentNodeIndex = this._nodeMap.get(parentBabylonNode);
                     if (parentNodeIndex) {
                         const parentNode = this._nodes[parentNodeIndex];
-                        colapseParentNode(node, parentNode);
                         this._nodesCameraMap.get(gltfCamera)?.push(parentNode);
                         convertNode(parentNode);
-                        rotateNodeMinus180Z(parentNode);
                         skipNode = true;
                     }
                 } else {
