@@ -1,6 +1,6 @@
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
-import type { AbstractAudioEngine } from "./audioEngine";
+import type { AudioEngineV2 } from "./audioEngine";
 import { AbstractAudioNodeParent } from "./abstractAudioNodeParent";
 
 export enum AudioNodeType {
@@ -44,7 +44,7 @@ export abstract class AbstractAudioNode extends AbstractAudioNodeParent {
     /**
      * The audio engine this node belongs to.
      */
-    public readonly engine: AbstractAudioEngine;
+    public readonly engine: AudioEngineV2;
 
     /**
      * Observable for when the audio node is disposed.
@@ -52,7 +52,7 @@ export abstract class AbstractAudioNode extends AbstractAudioNodeParent {
     public readonly onDisposeObservable = new Observable<AbstractAudioNode>();
 
     /** @internal */
-    constructor(engine: AbstractAudioEngine, nodeType: AudioNodeType, parent: Nullable<AbstractAudioNodeParent> = null) {
+    constructor(engine: AudioEngineV2, nodeType: AudioNodeType, parent: Nullable<AbstractAudioNodeParent> = null) {
         super();
 
         this.engine = engine;
@@ -203,7 +203,7 @@ export abstract class AbstractNamedAudioNode extends AbstractAudioNode {
      */
     public name: string;
 
-    constructor(name: string, engine: AbstractAudioEngine, nodeType: AudioNodeType) {
+    constructor(name: string, engine: AudioEngineV2, nodeType: AudioNodeType) {
         super(engine, nodeType);
         this.name = name;
     }

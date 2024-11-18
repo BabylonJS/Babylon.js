@@ -1,7 +1,7 @@
 import type { Nullable } from "../../types";
 import type { IAbstractAudioBusOptions } from "./abstractAudioBus";
 import { AbstractAudioBus } from "./abstractAudioBus";
-import type { AbstractAudioEngine } from "./audioEngine";
+import type { AudioEngineV2 } from "./audioEngine";
 import type { AudioPositioner } from "./audioPositioner";
 import type { AudioSender } from "./audioSender";
 
@@ -32,7 +32,7 @@ export abstract class AuxiliaryAudioBus extends AbstractAudioBus {
     public readonly sender: AudioSender;
 
     /** @internal */
-    constructor(name: string, engine: AbstractAudioEngine, options: Nullable<IAuxilliaryAudioBusOptions> = null) {
+    constructor(name: string, engine: AudioEngineV2, options: Nullable<IAuxilliaryAudioBusOptions> = null) {
         super(name, engine);
 
         if (options?.enablePositioner) {

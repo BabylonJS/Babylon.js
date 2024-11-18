@@ -1,4 +1,4 @@
-import type { AbstractAudioEngine } from "./audioEngine";
+import type { AudioEngineV2 } from "./audioEngine";
 
 /**
  * Abstract class for static sound buffer.
@@ -7,7 +7,7 @@ export abstract class StaticSoundBuffer {
     /**
      * The engine that the sound buffer belongs to.
      */
-    public readonly engine: AbstractAudioEngine;
+    public readonly engine: AudioEngineV2;
 
     public abstract get sampleRate(): number;
     public abstract get length(): number;
@@ -15,7 +15,7 @@ export abstract class StaticSoundBuffer {
     public abstract get numberOfChannels(): number;
 
     /** @internal */
-    constructor(engine: AbstractAudioEngine) {
+    constructor(engine: AudioEngineV2) {
         this.engine = engine;
     }
 }

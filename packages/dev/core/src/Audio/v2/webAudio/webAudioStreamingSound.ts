@@ -1,6 +1,6 @@
 import { Tools } from "../../../Misc/tools";
 import type { Nullable } from "../../../types";
-import type { AbstractAudioEngine } from "../audioEngine";
+import type { AudioEngineV2 } from "../audioEngine";
 import type { AbstractAudioNode } from "../abstractAudioNode";
 import { SoundState } from "../soundState";
 import type { IStreamingSoundOptions } from "../streamingSound";
@@ -23,7 +23,7 @@ export type StreamingSoundSourceType = HTMLMediaElement | string | string[];
 export async function CreateStreamingSoundAsync(
     name: string,
     source: StreamingSoundSourceType,
-    engine: AbstractAudioEngine,
+    engine: AudioEngineV2,
     options: Nullable<IStreamingSoundOptions> = null
 ): Promise<StreamingSound> {
     if (!engine.isWebAudio) {

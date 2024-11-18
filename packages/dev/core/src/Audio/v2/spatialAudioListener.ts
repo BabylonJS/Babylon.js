@@ -2,17 +2,17 @@ import type { Quaternion, Vector3 } from "../../Maths/math.vector";
 import type { TransformNode } from "../../Meshes";
 import type { IDisposable } from "../../scene";
 import type { Nullable } from "../../types";
-import type { AbstractAudioEngine } from "./audioEngine";
+import type { AudioEngineV2 } from "./audioEngine";
 import type { ISpatialAudioTransformOptions } from "./spatialAudioTransform";
 import { SpatialAudioTransform } from "./spatialAudioTransform";
 
 /** @internal */
 export class SpatialAudioListener implements IDisposable {
-    private _engine: AbstractAudioEngine;
+    private _engine: AudioEngineV2;
     private _spatialTransform: SpatialAudioTransform;
 
     /** @internal */
-    constructor(engine: AbstractAudioEngine, options: Nullable<ISpatialAudioTransformOptions> = null) {
+    constructor(engine: AudioEngineV2, options: Nullable<ISpatialAudioTransformOptions> = null) {
         this._engine = engine;
         this._spatialTransform = new SpatialAudioTransform(options);
 

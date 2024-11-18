@@ -1,5 +1,5 @@
 import type { Nullable } from "../../types";
-import type { AbstractAudioEngine } from "./audioEngine";
+import type { AudioEngineV2 } from "./audioEngine";
 import type { ISoundOptions } from "./abstractSound";
 import { AbstractSound } from "./abstractSound";
 import type { StaticSoundBuffer } from "./staticSoundBuffer";
@@ -67,7 +67,7 @@ export abstract class StaticSound extends AbstractSound {
     public abstract readonly buffer: StaticSoundBuffer;
 
     /** @internal */
-    constructor(name: string, engine: AbstractAudioEngine, options: Nullable<IStaticSoundOptions> = null) {
+    constructor(name: string, engine: AudioEngineV2, options: Nullable<IStaticSoundOptions> = null) {
         super(name, engine, options);
 
         this.duration = options?.duration ?? 0;

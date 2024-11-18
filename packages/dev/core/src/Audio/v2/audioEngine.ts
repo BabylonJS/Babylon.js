@@ -9,7 +9,7 @@ import type { SpatialAudioListener } from "./spatialAudioListener";
 /**
  * Abstract base class for audio engines.
  */
-export abstract class AbstractAudioEngine extends AbstractAudioNodeParent {
+export abstract class AudioEngineV2 extends AbstractAudioNodeParent {
     // Owns top-level AbstractAudioNode objects.
     // Owns all AbstractSound objects.
 

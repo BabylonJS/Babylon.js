@@ -1,4 +1,4 @@
-import type { AbstractAudioEngine } from "../audioEngine";
+import type { AudioEngineV2 } from "../audioEngine";
 import type { AbstractAudioNode } from "../abstractAudioNode";
 import { MainAudioBus } from "../mainAudioBus";
 import type { WebAudioEngine } from "./webAudioEngine";
@@ -10,7 +10,7 @@ import type { WebAudioMainOutput } from "./webAudioMainOutput";
  * @param engine - The audio engine.
  * @returns A promise that resolves with the created main audio bus.
  */
-export async function CreateMainAudioBusAsync(name: string, engine: AbstractAudioEngine): Promise<MainAudioBus> {
+export async function CreateMainAudioBusAsync(name: string, engine: AudioEngineV2): Promise<MainAudioBus> {
     if (!engine.isWebAudio) {
         throw new Error("Wrong engine type.");
     }

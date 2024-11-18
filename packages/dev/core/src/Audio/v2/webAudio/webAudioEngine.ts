@@ -1,5 +1,5 @@
 import type { Nullable } from "../../../types";
-import { AbstractAudioEngine } from "../audioEngine";
+import { AudioEngineV2 } from "../audioEngine";
 import type { AbstractAudioNode } from "../abstractAudioNode";
 import type { AbstractSound } from "../abstractSound";
 import type { AbstractSoundInstance } from "../abstractSoundInstance";
@@ -27,7 +27,7 @@ export interface IWebAudioEngineOptions {
  * @param options - The options for creating the audio engine.
  * @returns A promise that resolves with the created audio engine.
  */
-export async function CreateAudioEngineAsync(options: Nullable<IWebAudioEngineOptions> = null): Promise<AbstractAudioEngine> {
+export async function CreateAudioEngineAsync(options: Nullable<IWebAudioEngineOptions> = null): Promise<AudioEngineV2> {
     const engine = new WebAudioEngine();
     await engine.init(options);
     return engine;
@@ -46,7 +46,7 @@ const formatMimeTypeMap = new Map<string, string>([
 ]);
 
 /** @internal */
-export class WebAudioEngine extends AbstractAudioEngine {
+export class WebAudioEngine extends AudioEngineV2 {
     private _audioContext: AudioContext | OfflineAudioContext;
     private _audioContextStarted = false;
 

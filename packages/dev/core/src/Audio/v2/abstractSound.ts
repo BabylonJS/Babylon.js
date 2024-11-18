@@ -1,6 +1,6 @@
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
-import type { AbstractAudioEngine } from "./audioEngine";
+import type { AudioEngineV2 } from "./audioEngine";
 import { AbstractNamedAudioNode, AudioNodeType } from "./abstractAudioNode";
 import type { AbstractSoundInstance } from "./abstractSoundInstance";
 import type { AbstractPrimaryAudioBus } from "./audioBus";
@@ -111,7 +111,7 @@ export abstract class AbstractSound extends AbstractNamedAudioNode {
     }
 
     /** @internal */
-    constructor(name: string, engine: AbstractAudioEngine, options: Nullable<ISoundOptions> = null) {
+    constructor(name: string, engine: AudioEngineV2, options: Nullable<ISoundOptions> = null) {
         super(name, engine, AudioNodeType.Output);
 
         this.autoplay = options?.autoplay ?? false;

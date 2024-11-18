@@ -1,5 +1,5 @@
 import type { Nullable } from "../../types";
-import type { AbstractAudioEngine } from "./audioEngine";
+import type { AudioEngineV2 } from "./audioEngine";
 import { AbstractNamedAudioNode, AudioNodeType } from "./abstractAudioNode";
 
 /**
@@ -22,7 +22,7 @@ export abstract class AbstractAudioBus extends AbstractNamedAudioNode {
     public volume: number;
 
     /** @internal */
-    constructor(name: string, engine: AbstractAudioEngine, options: Nullable<IAbstractAudioBusOptions> = null) {
+    constructor(name: string, engine: AudioEngineV2, options: Nullable<IAbstractAudioBusOptions> = null) {
         super(name, engine, AudioNodeType.InputOutput);
 
         this.volume = options?.volume ?? 1;

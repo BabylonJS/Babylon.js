@@ -1,5 +1,5 @@
 import type { Nullable } from "../../types";
-import type { AbstractAudioEngine } from "./audioEngine";
+import type { AudioEngineV2 } from "./audioEngine";
 import { AbstractAudioNode, AudioNodeType } from "./abstractAudioNode";
 import type { AuxiliaryAudioBus } from "./auxilliaryAudioBus";
 
@@ -35,7 +35,7 @@ export abstract class AudioSend extends AbstractAudioNode {
     private _sendType: AudioSendType;
 
     /** @internal */
-    constructor(engine: AbstractAudioEngine, options: Nullable<IAudioSendOptions> = null) {
+    constructor(engine: AudioEngineV2, options: Nullable<IAudioSendOptions> = null) {
         super(engine, AudioNodeType.InputOutput);
 
         this._sendType = options?.sendType ?? AudioSendType.PostFader;
