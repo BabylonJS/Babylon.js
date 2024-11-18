@@ -67,8 +67,10 @@ export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
         }
     }, []);
 
+    const updateOffset = (offset: number) => {};
+
     return (
-        <SplitContext.Provider value={{ direction: props.direction }}>
+        <SplitContext.Provider value={{ direction: props.direction, updateOffset: updateOffset }}>
             <div id={props.id} className={styles["split-container"]} ref={elementRef}>
                 {props.children}
             </div>

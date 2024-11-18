@@ -40,5 +40,18 @@ export const Splitter: React.FC<ISplitterProps> = (props) => {
         }
     }, []);
 
-    return <div id={props.id} className={styles["splitter"]} ref={elementRef}></div>;
+    const onPointerDown = (evt: React.PointerEvent) => {};
+    const onPointerMove = (evt: React.PointerEvent) => {};
+    const onPointerUp = (evt: React.PointerEvent) => {};
+
+    return (
+        <div
+            id={props.id}
+            className={styles["splitter"]}
+            ref={elementRef}
+            onPointerDown={(evt) => onPointerDown(evt)}
+            onPointerUp={(evt) => onPointerUp(evt)}
+            onPointerMove={(evt) => onPointerMove(evt)}
+        ></div>
+    );
 };
