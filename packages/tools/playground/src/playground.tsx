@@ -19,6 +19,7 @@ import { SplitContainer } from "shared-ui-components/split/splitContainer";
 import { Splitter } from "shared-ui-components/split/splitter";
 
 import "./scss/main.scss";
+import { ControlledSize, SplitDirection } from "shared-ui-components/split/splitContext";
 
 interface IPlaygroundProps {
     runtimeMode: RuntimeMode;
@@ -128,9 +129,9 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
         return (
             <div id="pg-root">
                 <HeaderComponent globalState={this._globalState} />
-                <SplitContainer id="pg-split" direction="horizontal">
+                <SplitContainer id="pg-split" direction={SplitDirection.Horizontal}>
                     <MonacoComponent globalState={this._globalState} refObject={this._monacoRef} />
-                    <Splitter size={6} minSize1={300} minSize2={500} />
+                    <Splitter size={6} minSize={300} controlledSide={ControlledSize.First} />
                     <div ref={this._renderingRef} id="canvasZone" className="canvasZone">
                         <RenderingComponent globalState={this._globalState} />
                     </div>
