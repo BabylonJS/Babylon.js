@@ -676,7 +676,7 @@ export class GraphFrame {
         this._portContainer.appendChild(this._outputPortContainer);
 
         this._inputPortContainer = root.ownerDocument!.createElement("div");
-        this._inputPortContainer.classList.add(commonStyles["inputsContainer"]);
+        this._inputPortContainer.classList.add(commonStyles["inputsContainer"], commonStyles["inputsContainerUp"]);
         this._portContainer.appendChild(this._inputPortContainer);
 
         this.name = "Frame";
