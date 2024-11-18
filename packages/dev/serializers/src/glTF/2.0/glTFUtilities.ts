@@ -19,6 +19,7 @@ const convertHandednessMatrix = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion
 
 // 180 degrees rotation in Y.
 const rotation180Y = new Quaternion(0, 1, 0, 0);
+const rotation180MinusY = new Quaternion(0, 1, 0, 0).invert();
 
 /**
  * Creates a buffer view based on the supplied arguments
@@ -208,6 +209,29 @@ export function convertToRightHandedRotation(value: Quaternion): Quaternion {
     return value;
 }
 
+export function convertToRightHandedNode(value: INode) {
+    let translation = Vector3.FromArrayToRef(value.translation || [0, 0, 0], 0, TmpVectors.Vector3[0]);
+    let rotation = Quaternion.FromArrayToRef(value.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[0]);
+
+    translation = convertToRightHandedPosition(translation);
+    rotation = convertToRightHandedRotation(rotation);
+
+    value.rotation = rotation.asArray();
+    value.translation = translation.asArray();
+
+    if (translation.equalsToFloats(0, 0, 0)) {
+        delete value.translation;
+    } else {
+        value.translation = translation.asArray();
+    }
+
+    if (Quaternion.IsIdentity(rotation)) {
+        delete value.rotation;
+    } else {
+        value.rotation = rotation.asArray();
+    }
+}
+
 /**
  * Rotation by 180 as glTF has a different convention than Babylon.
  * @param rotation Target camera rotation.
@@ -221,6 +245,14 @@ export function rotateNode180Y(node: INode) {
     if (node.rotation) {
         const rotation = Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
         rotation.multiplyInPlace(rotation180Y);
+        node.rotation = rotation.asArray();
+    }
+}
+
+export function rotateNodeMinus180Y(node: INode) {
+    if (node.rotation) {
+        const rotation = Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
+        rotation180MinusY.multiplyToRef(rotation, rotation);
         node.rotation = rotation.asArray();
     }
 }

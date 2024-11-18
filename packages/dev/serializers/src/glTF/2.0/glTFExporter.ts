@@ -58,7 +58,8 @@ import {
     isNoopNode,
     isTriangleFillMode,
     isParentAddedByImporter,
-    rotateNode180Y,
+    convertToRightHandedNode,
+    rotateNodeMinus180Y,
 } from "./glTFUtilities";
 import { DataWriter } from "./dataWriter";
 import { Camera } from "core/Cameras/camera";
@@ -1171,6 +1172,7 @@ export class GLTFExporter {
                 const parentBabylonNode = babylonNode.parent;
                 this._setCameraTransformation(node, babylonNode, state.convertToRightHanded, parentBabylonNode);
 
+                // If a camera has a node that was added by the GLTF importer, we can just use the parent node transform as the "camera" transform.
                 if (parentBabylonNode && isParentAddedByImporter(babylonNode, parentBabylonNode)) {
                     const parentNodeIndex = this._nodeMap.get(parentBabylonNode);
                     if (parentNodeIndex) {
@@ -1180,7 +1182,8 @@ export class GLTFExporter {
                     }
                 } else {
                     if (state.convertToRightHanded) {
-                        rotateNode180Y(node);
+                        convertToRightHandedNode(node);
+                        rotateNodeMinus180Y(node);
                     }
                     this._nodesCameraMap.get(gltfCamera)?.push(node);
                 }
