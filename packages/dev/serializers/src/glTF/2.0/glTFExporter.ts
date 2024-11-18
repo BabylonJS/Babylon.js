@@ -68,6 +68,7 @@ import { _GLTFAnimation } from "./glTFAnimation";
 import type { MorphTarget } from "core/Morph";
 import { buildMorphTargetBuffers } from "./glTFMorphTargetsUtilities";
 import type { GlTFMorphTarget } from "./glTFMorphTargetsUtilities";
+import { Color3, Color4 } from "core/Maths/math.color";
 
 // 180 degrees rotation in Y.
 const rotation180Y = new Quaternion(0, 1, 0, 0);
@@ -1006,11 +1007,12 @@ export class GLTFExporter {
 
             const bytes = dataArrayToUint8Array(data).slice();
 
-            // Normalize normals and tangents.
             for (const vertexBuffer of vertexBuffers) {
                 switch (vertexBuffer.getKind()) {
+                    // Normalize normals and tangents.
                     case VertexBuffer.NormalKind:
                     case VertexBuffer.TangentKind: {
+                        // Q: Why do we iterate through all the meshes for each vertex buffer?
                         for (const mesh of vertexBufferToMeshesMap.get(vertexBuffer)!) {
                             const { byteOffset, byteStride, type, normalized } = vertexBuffer;
                             const size = vertexBuffer.getSize();
@@ -1021,6 +1023,40 @@ export class GLTFExporter {
                                 values[2] *= invLength;
                             });
                         }
+                        break;
+                    }
+                    // Convert StandardMaterial vertex colors from gamma to linear space.
+                    case VertexBuffer.ColorKind: {
+                        const meshes = vertexBufferToMeshesMap.get(vertexBuffer)!;
+                        const stdMatCount = meshes.filter((mesh) => mesh.material instanceof StandardMaterial).length;
+                        // If buffer is used by only PBR materials, nothing to do.
+                        if (stdMatCount === 0) {
+                            break;
+                        }
+                        // If buffer is shared by both PBR and non-PBR materials, we won't convert for now.
+                        // TODO: Implement this case.
+                        if (stdMatCount < meshes.length) {
+                            Logger.Warn("Not converting StandardMaterial's vertex color, as buffer is shared with non-StandardMaterial meshes. Results may look incorrect.");
+                            break;
+                        }
+                        // Otherwise, buffer is used by only StandardMaterials, so we convert to linear.
+                        const { byteOffset, byteStride, type, normalized } = vertexBuffer;
+                        if (vertexBuffer.type == VertexBuffer.UNSIGNED_SHORT) {
+                        const size = vertexBuffer.getSize();
+                        const vertexData: Color3 | Color4 = byteStride === 3 ? new Color3() : new Color4();
+                        const useExactSrgbConversions = this._babylonScene.getEngine().useExactSrgbConversions;
+                        enumerateFloatValues(bytes, byteOffset, byteStride, size, type, meshes[0].getTotalVertices() * size, normalized, (values) => {
+                            // Cast values to Color3 or Color4 to ensure TS calls correct functions
+                            if (values.length === 4) {
+                                (vertexData as Color4).fromArray(values, 0);
+                                (vertexData as Color4).toLinearSpaceToRef(vertexData as Color4, useExactSrgbConversions);
+                                (vertexData as Color4).toArray(values, 0);
+                            } else if (values.length === 3) {
+                                (vertexData as Color3).fromArray(values, 0);
+                                (vertexData as Color3).toLinearSpaceToRef(vertexData as Color3);
+                                (vertexData as Color3).toArray(values, 0);
+                            }
+                        });
                     }
                 }
             }
