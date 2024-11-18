@@ -4,6 +4,9 @@ import { createContext } from "react";
  * Context used to share data with splitters
  */
 export interface ISplitContext {
+    /**
+     * Split direction
+     */
     direction: "horizontal" | "vertical";
 }
 

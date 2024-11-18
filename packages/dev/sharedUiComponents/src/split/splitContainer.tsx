@@ -38,13 +38,24 @@ export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
         }
 
         let gridDefinition = "";
-
+        let gridIndex = 1;
         for (const child of children) {
+            const childElement = child as HTMLElement;
             if (child.classList.contains(styles["splitter"])) {
-                gridDefinition += "1fr ";
+                gridDefinition += "auto ";
             } else {
                 gridDefinition += "1fr";
             }
+
+            if (props.direction === "horizontal") {
+                childElement.style.gridRow = "1";
+                childElement.style.gridColumn = gridIndex.toString();
+            } else {
+                childElement.style.gridColumn = "1";
+                childElement.style.gridRow = gridIndex.toString();
+            }
+
+            gridIndex++;
         }
 
         if (props.direction === "horizontal") {
