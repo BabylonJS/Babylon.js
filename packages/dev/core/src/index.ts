@@ -9,6 +9,7 @@ export * from "./Bones/index";
 export * from "./Buffers/index";
 export * from "./Cameras/index";
 export * from "./Collisions/index";
+export * from "./Compat/index";
 export * from "./Compute/index";
 export * from "./Culling/index";
 export * from "./Debug/index";
