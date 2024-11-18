@@ -110,6 +110,8 @@ import { EmptyPropertyGridComponent } from "./propertyGrids/emptyPropertyGridCom
 import { MetadataGridComponent } from "inspector/components/actionTabs/tabs/propertyGrids/metadata/metadataPropertyGridComponent";
 import type { SkyMaterial } from "materials/sky/skyMaterial";
 import { SkyMaterialPropertyGridComponent } from "./propertyGrids/materials/skyMaterialPropertyGridComponent";
+import { Tags } from "core/Misc/tags";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 
 /**
  *
@@ -729,12 +731,29 @@ export class PropertyGridTabComponent extends PaneComponent {
         return null;
     }
 
+    renderTags() {
+        const tags = Object.keys(Tags.GetTags(this.props.selectedEntity, false));
+
+        return tags.map((tag: string, i: number) => {
+            return (
+                <div className="tag" key={"tag" + i}>
+                    {tag}
+                </div>
+            );
+        });
+    }
+
     override render() {
         const entity = this.props.selectedEntity || {};
         const entityHasMetadataProp = Object.prototype.hasOwnProperty.call(entity, "metadata");
         return (
             <div className="pane">
                 {this.renderContent()}
+                {Tags.HasTags(entity) && (
+                    <LineContainerComponent title="TAGS" selection={this.props.globalState}>
+                        <div className="tagContainer">{this.renderTags()}</div>
+                    </LineContainerComponent>
+                )}
                 {entityHasMetadataProp && <MetadataGridComponent globalState={this.props.globalState} entity={entity} />}
             </div>
         );

@@ -850,14 +850,14 @@ export class GraphNode {
 
                         select.onclick = () => {
                             selectList.classList.toggle(commonStyles.hidden);
-                            select.classList.toggle(localStyles.active);
+                            select.classList.toggle(localStyles.activeNode);
                             this._visual.classList.toggle(localStyles.topMost);
                             this._stateManager.modalIsDisplayed = !this._stateManager.modalIsDisplayed;
                         };
 
                         select.onpointerleave = () => {
                             selectList.classList.add(commonStyles.hidden);
-                            select.classList.remove(localStyles.active);
+                            select.classList.remove(localStyles.activeNode);
                             this._visual.classList.remove(localStyles.topMost);
                             this._stateManager.modalIsDisplayed = false;
                         };
