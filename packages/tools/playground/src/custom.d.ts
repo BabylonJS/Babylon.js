@@ -4,6 +4,11 @@ declare module "*.svg" {
     export default content;
 }
 
+declare module "*.scss" {
+    const content: { [className: string]: string };
+    export default content;
+}
+
 declare module "monaco-editor/esm/vs/language/typescript/languageFeatures" {
     const SuggestAdapter: any;
     export type SuggestAdapter = any;

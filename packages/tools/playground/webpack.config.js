@@ -39,6 +39,11 @@ module.exports = (env) => {
                         use: ["@svgr/webpack"],
                     },
                 ],
+                tsOptions: {
+                    compilerOptions: {
+                        rootDir: "../../",
+                    },
+                },
             }),
         },
         plugins: [
