@@ -417,6 +417,12 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         if (this._worldScaleObserver) {
             this._xrSessionManager.onWorldScaleFactorChangedObservable.remove(this._worldScaleObserver);
         }
+        this.onTargetMeshPositionUpdatedObservable.clear();
+        this.onTargetMeshPositionUpdatedObservable.clear();
+        this.onBeforeCameraTeleportRotation.clear();
+        this.onAfterCameraTeleportRotation.clear();
+        this.onBeforeCameraTeleport.clear();
+        this.onAfterCameraTeleport.clear();
     }
 
     /**

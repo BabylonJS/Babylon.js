@@ -323,6 +323,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
             });
             this.rootMesh.dispose(!!this._controllerCache, !this._controllerCache);
         }
+        this.onModelLoadedObservable.clear();
     }
 
     /**

@@ -206,6 +206,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
      */
     public override dispose(): void {
         this._cachedDepthImageTexture?.dispose();
+        this.onGetDepthInMetersAvailable.clear();
     }
 
     protected _onXRFrame(_xrFrame: XRFrame): void {

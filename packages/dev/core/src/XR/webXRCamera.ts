@@ -206,6 +206,7 @@ export class WebXRCamera extends FreeCamera {
     public override dispose() {
         super.dispose();
         this._lastXRViewerPose = undefined;
+        this.onTrackingStateChanged.clear();
     }
 
     private _updateDepthNearFar() {
