@@ -703,6 +703,7 @@ export class GLTFExporter {
         const rotation = TmpVectors.Quaternion[0];
 
         if (parent !== null) {
+            // We need local coordinates. If camera has parent we need to que local translation/rotation.
             const parentWorldMatrix = Matrix.Invert(parent.getWorldMatrix());
             const cameraWorldMatrix = babylonCamera.getWorldMatrix();
             const cameraLocal = cameraWorldMatrix.multiply(parentWorldMatrix);
@@ -712,11 +713,6 @@ export class GLTFExporter {
         }
 
         if (!translation.equalsToFloats(0, 0, 0)) {
-            if (convertToRightHanded) {
-                convertToRightHandedPosition(translation);
-                translation.x *= -1;
-            }
-
             node.translation = translation.asArray();
         }
 
