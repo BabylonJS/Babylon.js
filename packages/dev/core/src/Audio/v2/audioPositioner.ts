@@ -1,5 +1,5 @@
 import type { Quaternion, Vector3 } from "../../Maths/math.vector";
-import type { TransformNode } from "../../Meshes";
+import type { TransformNode } from "../../Meshes/transformNode";
 import type { Nullable } from "../../types";
 import { AbstractAudioNode, AudioNodeType } from "./abstractAudioNode";
 import type { SpatialAudioListener } from "./spatialAudioListener";

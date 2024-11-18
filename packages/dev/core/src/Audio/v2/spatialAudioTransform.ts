@@ -1,5 +1,5 @@
 import { Quaternion, Vector3 } from "../../Maths/math.vector";
-import type { TransformNode } from "../../Meshes";
+import type { TransformNode } from "../../Meshes/transformNode";
 import type { IDisposable } from "../../scene";
 import type { Nullable } from "../../types";
 
