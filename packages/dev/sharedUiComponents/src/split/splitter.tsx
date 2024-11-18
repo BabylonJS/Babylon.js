@@ -1,7 +1,7 @@
 import { useContext, useEffect, useRef } from "react";
 import styles from "./splitContainer.module.scss";
 import type { ControlledSize } from "./splitContext";
-import { SplitContext } from "./splitContext";
+import { SplitContext, SplitDirection } from "./splitContext";
 
 /**
  * Splitter component properties
@@ -54,7 +54,7 @@ export const Splitter: React.FC<ISplitterProps> = (props) => {
             return;
         }
 
-        if (splitContext.direction === "horizontal") {
+        if (splitContext.direction === SplitDirection.Horizontal) {
             elementRef.current.style.width = `${props.size}px`;
             elementRef.current.style.height = `100%`;
             elementRef.current.classList.add(styles["horizontal"]);
@@ -77,7 +77,7 @@ export const Splitter: React.FC<ISplitterProps> = (props) => {
         isCaptured = true;
         splitContext.beginDrag();
 
-        if (splitContext.direction === "horizontal") {
+        if (splitContext.direction === SplitDirection.Horizontal) {
             startValue = evt.clientX;
         } else {
             startValue = evt.clientY;
@@ -88,7 +88,7 @@ export const Splitter: React.FC<ISplitterProps> = (props) => {
         if (!elementRef.current || !isCaptured) {
             return;
         }
-        if (splitContext.direction === "horizontal") {
+        if (splitContext.direction === SplitDirection.Horizontal) {
             splitContext.drag(evt.clientX - startValue, elementRef.current, props.controlledSide, props.minSize, props.maxSize);
         } else {
             splitContext.drag(evt.clientY - startValue, elementRef.current, props.controlledSide, props.minSize, props.maxSize);
