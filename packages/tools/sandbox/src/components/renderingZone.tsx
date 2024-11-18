@@ -19,7 +19,8 @@ import "core/Helpers/sceneHelpers";
 
 import "../scss/renderingZone.scss";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
-import { ITextureCreationOptions, Texture } from "core/Materials/Textures/texture";
+import { Texture } from "core/Materials/Textures/texture";
+import type { ITextureCreationOptions } from "core/Materials/Textures/texture";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { setOpenGLOrientationForUV, useOpenGLOrientationForUV } from "core/Compat/compatibilityOptions";
