@@ -339,7 +339,8 @@ export class FlowGraphContext {
         }
     }
 
-    _notifyPendingBlocksOnPointer(pointerInfo: PointerInfo) {
+    /** @internal */
+    public _notifyPendingBlocksOnPointer(pointerInfo: PointerInfo) {
         const order: FlowGraphAsyncExecutionBlock[] = [];
         // TODO - improve pick sorting
         for (const block1 of this._pendingBlocks) {
