@@ -1,5 +1,10 @@
 import { createContext } from "react";
 
+export enum ControlledSize {
+    First,
+    Second,
+}
+
 /**
  * Context used to share data with splitters
  */
@@ -12,12 +17,11 @@ export interface ISplitContext {
      * Function called by splitters to update the offset
      * @param offset new offet
      * @param source source element
-     * @param minSize1 minimum size for the first element
-     * @param minSize2 minimum size for the second element
-     * @param maxSize1 maximum size for the first element
-     * @param maxSize2 maximum size for the second element
+     * @param controlledSide defined controlled element
+     * @param minSize minimum size for the controlled element
+     * @param maxSize maximum size for the controlled element
      */
-    drag: (offset: number, source: HTMLElement, minSize1?: number, minSize2?: number, maxSize1?: number, maxSize2?: number) => void;
+    drag: (offset: number, source: HTMLElement, controlledSide: ControlledSize, minSize?: number, maxSize?: number) => void;
     /**
      * Function called by splitters to begin dragging
      */
@@ -30,10 +34,11 @@ export interface ISplitContext {
     /**
      * Defines initial sizes for the elements
      * @param source source element
-     * @param size1 size of the first element
+     * @param controlledSide defined controlled element
+     * @param size size of the controlled element
      * @param size2 size of the second element
      */
-    init: (source: HTMLElement, size1?: number, size2?: number) => void;
+    init: (source: HTMLElement, controlledSide: ControlledSize, size: number) => void;
 }
 
 // Create the context

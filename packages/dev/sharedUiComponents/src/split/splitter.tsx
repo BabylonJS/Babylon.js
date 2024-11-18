@@ -1,5 +1,6 @@
 import { useContext, useEffect, useRef } from "react";
 import styles from "./splitContainer.module.scss";
+import type { ControlledSize } from "./splitContext";
 import { SplitContext } from "./splitContext";
 
 /**
@@ -17,31 +18,24 @@ export interface ISplitterProps {
     size: number;
 
     /**
-     * Minimum size for the first element
+     * Minimum size for the controlled element
      */
-    minSize1?: number;
-    /**
-     * Minimum size for the second element
-     */
-    minSize2?: number;
+    minSize?: number;
 
     /**
-     * Maximum size for the first element
+     * Maximum size for the controlled element
      */
-    maxSize1?: number;
-    /**
-     * Maximum size for the second element
-     */
-    maxSize2?: number;
+    maxSize?: number;
 
     /**
-     * Initial size for the first element
+     * Initial size for the controlled element
      */
-    initialSize1?: number;
+    initialSize?: number;
+
     /**
-     * Initial size for the second element
+     * Defines the controlled side
      */
-    initialSize2?: number;
+    controlledSide: ControlledSize;
 }
 
 /**
@@ -70,8 +64,8 @@ export const Splitter: React.FC<ISplitterProps> = (props) => {
             elementRef.current.classList.add(styles["vertical"]);
         }
 
-        if (props.initialSize1 || props.initialSize2) {
-            splitContext.init(elementRef.current, props.initialSize1, props.initialSize2);
+        if (props.initialSize) {
+            splitContext.init(elementRef.current, props.controlledSide, props.initialSize);
         }
     }, []);
 
@@ -88,16 +82,18 @@ export const Splitter: React.FC<ISplitterProps> = (props) => {
         } else {
             startValue = evt.clientY;
         }
+        evt.preventDefault();
     };
     const onPointerMove = (evt: React.PointerEvent) => {
         if (!elementRef.current || !isCaptured) {
             return;
         }
         if (splitContext.direction === "horizontal") {
-            splitContext.drag(evt.clientX - startValue, elementRef.current, props.minSize1, props.minSize2, props.maxSize1, props.maxSize2);
+            splitContext.drag(evt.clientX - startValue, elementRef.current, props.controlledSide, props.minSize, props.maxSize);
         } else {
-            splitContext.drag(evt.clientY - startValue, elementRef.current, props.minSize1, props.minSize2, props.maxSize1, props.maxSize2);
+            splitContext.drag(evt.clientY - startValue, elementRef.current, props.controlledSide, props.minSize, props.maxSize);
         }
+        evt.preventDefault();
     };
     const onPointerUp = (evt: React.PointerEvent) => {
         if (!elementRef.current) {
@@ -106,6 +102,7 @@ export const Splitter: React.FC<ISplitterProps> = (props) => {
         elementRef.current.releasePointerCapture(evt.pointerId);
         isCaptured = false;
         splitContext.endDrag();
+        evt.preventDefault();
     };
 
     return (

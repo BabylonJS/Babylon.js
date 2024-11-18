@@ -4,7 +4,6 @@ import { NodeListComponent } from "./components/nodeList/nodeListComponent";
 import { PropertyTabComponent } from "./components/propertyTab/propertyTabComponent";
 import { Portal } from "./portal";
 import { LogComponent, LogEntry } from "./components/log/logComponent";
-import { DataStorage } from "core/Misc/dataStorage";
 import type { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
 import { CustomBlock } from "core/Materials/Node/Blocks/customBlock";
 import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
@@ -25,6 +24,7 @@ import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger";
 import { SplitContainer } from "shared-ui-components/split/splitContainer";
 import { Splitter } from "shared-ui-components/split/splitter";
+import { ControlledSize } from "shared-ui-components/split/splitContext";
 import type { IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import type { GlobalState } from "./globalState";
@@ -52,13 +52,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     private _graphCanvasRef: React.RefObject<GraphCanvasComponent>;
     private _diagramContainerRef: React.RefObject<HTMLDivElement>;
     private _graphCanvas: GraphCanvasComponent;
-    private _diagramContainer: HTMLDivElement;
-
-    private _startX: number;
-    private _moveInProgress: boolean;
-
-    private _leftWidth = DataStorage.ReadNumber("LeftWidth", 200);
-    private _rightWidth = DataStorage.ReadNumber("RightWidth", 300);
 
     private _historyStack: HistoryStack;
     private _previewManager: PreviewManager;
@@ -135,7 +128,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         if (this.props.globalState.hostDocument) {
             this._graphCanvas = this._graphCanvasRef.current!;
-            this._diagramContainer = this._diagramContainerRef.current!;
             this.prepareHistoryStack();
             this._previewManager = new PreviewManager(this.props.globalState.hostDocument.getElementById("preview-canvas") as HTMLCanvasElement, this.props.globalState);
             (this.props.globalState as any)._previewManager = this._previewManager;
@@ -188,8 +180,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             let targetY = eventData.targetY;
 
             if (eventData.needRepositioning) {
-                targetX = targetX - this._diagramContainer.offsetLeft;
-                targetY = targetY - this._diagramContainer.offsetTop;
+                const container = this._diagramContainerRef.current!;
+                targetX = targetX - container.offsetLeft;
+                targetY = targetY - container.offsetTop;
             }
 
             const selectedLink = this._graphCanvas.selectedLink;
@@ -361,17 +354,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this.hideWaitScreen();
     }
 
-    onPointerDown(evt: React.PointerEvent<HTMLDivElement>) {
-        this._startX = evt.clientX;
-        this._moveInProgress = true;
-        evt.currentTarget.setPointerCapture(evt.pointerId);
-    }
-
-    onPointerUp(evt: React.PointerEvent<HTMLDivElement>) {
-        this._moveInProgress = false;
-        evt.currentTarget.releasePointerCapture(evt.pointerId);
-    }
-
     onWheel = (evt: WheelEvent) => {
         if (this.props.globalState.pointerOverCanvas) {
             return evt.preventDefault();
@@ -391,34 +373,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             return evt.preventDefault();
         }
     };
-
-    resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft = true) {
-        if (!this._moveInProgress) {
-            return;
-        }
-
-        const deltaX = evt.clientX - this._startX;
-        const rootElement = evt.currentTarget.ownerDocument!.getElementById("node-editor-graph-root") as HTMLDivElement;
-
-        if (forLeft) {
-            this._leftWidth += deltaX;
-            this._leftWidth = Math.max(150, Math.min(400, this._leftWidth));
-            DataStorage.WriteNumber("LeftWidth", this._leftWidth);
-        } else {
-            this._rightWidth -= deltaX;
-            this._rightWidth = Math.max(250, Math.min(500, this._rightWidth));
-            DataStorage.WriteNumber("RightWidth", this._rightWidth);
-            rootElement.ownerDocument!.getElementById("preview")!.style.height = this._rightWidth + "px";
-        }
-
-        rootElement.style.gridTemplateColumns = this.buildColumnLayout();
-
-        this._startX = evt.clientX;
-    }
-
-    buildColumnLayout() {
-        return `${this._leftWidth}px 4px calc(100% - ${this._leftWidth + 8 + this._rightWidth}px) 4px ${this._rightWidth}px`;
-    }
 
     emitNewBlock(blockType: string, targetX: number, targetY: number) {
         let newNode: GraphNode;
@@ -515,7 +469,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     dropNewBlock(event: React.DragEvent<HTMLDivElement>) {
         const data = event.dataTransfer.getData("babylonjs-material-node") as string;
 
-        this.emitNewBlock(data, event.clientX - this._diagramContainer.offsetLeft, event.clientY - this._diagramContainer.offsetTop);
+        const container = this._diagramContainerRef.current!;
+        this.emitNewBlock(data, event.clientX - container.offsetLeft, event.clientY - container.offsetTop);
     }
 
     handlePopUp = () => {
@@ -659,7 +614,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         if (this._previewHost) {
             const previewAreaComponentHost = React.createElement(PreviewAreaComponent, {
                 globalState: this.props.globalState,
-                width: 200,
             });
             ReactDOM.render(previewAreaComponentHost, this._previewHost);
         }
@@ -691,33 +645,33 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 <SplitContainer
                     id="node-editor-graph-root"
                     direction="horizontal"
-                    // onMouseMove={(evt) => {
-                    //     this._mouseLocationX = evt.pageX;
-                    //     this._mouseLocationY = evt.pageY;
-                    // }}
-                    // onMouseDown={(evt) => {
-                    //     if ((evt.target as HTMLElement).nodeName === "INPUT") {
-                    //         return;
-                    //     }
-                    //     this.props.globalState.lockObject.lock = false;
-                    // }}
+                    onPointerMove={(evt) => {
+                        this._mouseLocationX = evt.pageX;
+                        this._mouseLocationY = evt.pageY;
+                    }}
+                    onPointerDown={(evt) => {
+                        if ((evt.target as HTMLElement).nodeName === "INPUT") {
+                            return;
+                        }
+                        this.props.globalState.lockObject.lock = false;
+                    }}
                 >
                     {/* Node creation menu */}
                     <NodeListComponent globalState={this.props.globalState} />
 
-                    <Splitter size={8} minSize1={180} minSize2={400} initialSize1={200} maxSize1={350} />
+                    <Splitter size={8} minSize={180} initialSize={200} maxSize={350} controlledSide={ControlledSize.First} />
 
                     {/* The node graph diagram */}
                     <SplitContainer
                         direction="vertical"
                         className="diagram-container"
-                        ref={this._diagramContainerRef}
-                        // onDrop={(event) => {
-                        //     this.dropNewBlock(event);
-                        // }}
-                        // onDragOver={(event) => {
-                        //     event.preventDefault();
-                        // }}
+                        containerRef={this._diagramContainerRef}
+                        onDrop={(event) => {
+                            this.dropNewBlock(event);
+                        }}
+                        onDragOver={(event) => {
+                            event.preventDefault();
+                        }}
                     >
                         <GraphCanvasComponent
                             ref={this._graphCanvasRef}
@@ -726,17 +680,17 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                                 return this.appendBlock(nodeData.data as NodeMaterialBlock);
                             }}
                         />
-                        <Splitter size={8} minSize1={400} minSize2={120} initialSize2={120} maxSize2={500} />
+                        <Splitter size={8} minSize={40} initialSize={120} maxSize={500} controlledSide={ControlledSize.Second} />
                         <LogComponent globalState={this.props.globalState} />
                     </SplitContainer>
 
-                    <Splitter size={8} minSize1={400} minSize2={250} initialSize2={300} maxSize2={450} />
+                    <Splitter size={8} minSize={250} initialSize={300} maxSize={500} controlledSide={ControlledSize.Second} />
 
                     {/* Property tab */}
                     <div className="nme-right-panel">
                         <PropertyTabComponent lockObject={this.props.globalState.lockObject} globalState={this.props.globalState} />
                         {!this.state.showPreviewPopUp ? <PreviewMeshControlComponent globalState={this.props.globalState} togglePreviewAreaComponent={this.handlePopUp} /> : null}
-                        {!this.state.showPreviewPopUp ? <PreviewAreaComponent globalState={this.props.globalState} width={this._rightWidth} /> : null}
+                        {!this.state.showPreviewPopUp ? <PreviewAreaComponent globalState={this.props.globalState} /> : null}
                     </div>
                 </SplitContainer>
                 <MessageDialog message={this.state.message} isError={this.state.isError} onClose={() => this.setState({ message: "" })} />

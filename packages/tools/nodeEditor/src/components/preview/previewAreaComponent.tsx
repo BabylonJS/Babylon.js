@@ -16,7 +16,6 @@ import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 
 interface IPreviewAreaComponentProps {
     globalState: GlobalState;
-    width: number;
 }
 
 export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentProps, { isLoading: boolean }> {
@@ -85,7 +84,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
 
         return (
             <>
-                <div id="preview" style={{ height: this.props.width + "px" }}>
+                <div id="preview">
                     <canvas onPointerOver={this._onPointerOverCanvas} onPointerOut={this._onPointerOutCanvas} id="preview-canvas" />
                     {<div className={"waitPanel" + (this.state.isLoading ? "" : " hidden")}>Please wait, loading...</div>}
                 </div>
